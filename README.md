@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
+
 Foundation is a library for bootstrapping Minecraft plugins.
 
 (c) 2013 - 2019 - All rights reserved.
