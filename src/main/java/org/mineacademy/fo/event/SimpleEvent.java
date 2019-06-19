@@ -20,4 +20,14 @@ public abstract class SimpleEvent extends Event {
 		// see https://github.com/PaperMC/Paper/issues/2099
 		super(!Bukkit.isPrimaryThread());
 	}
+
+	/**
+	 * Create a new event indicating whether it is run from
+	 * the primary Minecraft server thread or not
+	 *
+	 * @param async
+	 */
+	protected SimpleEvent(boolean async) {
+		super(async);
+	}
 }
