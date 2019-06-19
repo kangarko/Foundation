@@ -204,7 +204,7 @@ public abstract class SimpleCommandGroup {
 					"&8" + Common.chatLine(),
 					"&6&l  " + SimplePlugin.getNamed() + "&6\u2122 &7" + SimplePlugin.getVersion(),
 					" ",
-					"   &7Made by &f" + String.join(", ", SimplePlugin.getInstance().getDescription().getAuthors()) + " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " + yearNow : ""),
+					"   &7Made by &f" + String.join(", ", SimplePlugin.getInstance().getDescription().getAuthors()) + " &7\u00A9 " + (foundedYear != -1 ? foundedYear + (yearNow != foundedYear ? " - " : "") + yearNow : ""),
 					"   &7Visit &fmineacademy.org &7for more information.",
 					"&8" + Common.chatLine());
 		}
