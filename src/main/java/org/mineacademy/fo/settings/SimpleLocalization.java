@@ -90,21 +90,21 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		 * "&cYou may only use this command as a player"
 		 *
 		 */
-		public static String NO_CONSOLE;
+		public static String NO_CONSOLE = "&cYou may only use this command as a player";
 
 		/**
 		 * The message at "Reload_Success" key shown when the plugin has been reloaded successfully, typically:
 		 *
 		 * "{plugin_name} {plugin_version} has been reloaded."
 		 */
-		public static String RELOAD_SUCCESS;
+		public static String RELOAD_SUCCESS = "{plugin_name} {plugin_version} has been reloaded.";
 
 		/**
 		 * The message at "Reload_Fail" key shown when the plugin has failed to reload, typically:
 		 *
 		 * "&4Oups, &creloading failed! See the console for more information. Error: {error}"
 		 */
-		public static String RELOAD_FAIL;
+		public static String RELOAD_FAIL = "&4Oups, &creloading failed! See the console for more information. Error: {error}";
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -126,18 +126,20 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * The "Update_Available" key you need to put in your locale file, typically can look like this:
 	 *
 	 * Update_Available: |-
-	 *   &2A new version of &3ChatControl&2 is available.
+	 *   &2A new version of &3{plugin.name}&2 is available.
 	 *   &2Current version: &f{current}&2; New version: &f{new}
 	 *   &2URL: &7https://www.spigotmc.org/resources/10258/.
 	 */
-	public static String UPDATE_AVAILABLE;
+	public static String UPDATE_AVAILABLE = "&2A new version of &3{plugin.name}&2 is available.\n"
+			+ "&2Current version: &f{current}&2; New version: &f{new}\n"
+			+ "&2URL: &7https://www.spigotmc.org/resources/10258/.";
 
 	/**
 	 * The message for player if they lack a permission, typical example:
 	 *
 	 * "&cInsufficient permission ({permission})."
 	 */
-	public static String NO_PERMISSION;
+	public static String NO_PERMISSION = "&cInsufficient permission ({permission}).";
 
 	// --------------------------------------------------------------------
 	// Optional localized keys
@@ -149,7 +151,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 *
 	 * Default: "&c{name} lacks database information! Please only create {type} in-game! Skipping.."
 	 */
-	public static String DATA_MISSING;
+	public static String DATA_MISSING = "&c{name} lacks database information! Please only create {type} in-game! Skipping..";
 
 	/**
 	 * The message when the console attempts to start a server conversation which is prevented.
@@ -157,7 +159,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * Default: "Only players may enter this conversation."
 	 *
 	 */
-	public static String CONVERSATION_REQUIRES_PLAYER;
+	public static String CONVERSATION_REQUIRES_PLAYER = "Only players may enter this conversation.";
 
 	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
