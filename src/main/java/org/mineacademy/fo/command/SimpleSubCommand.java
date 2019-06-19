@@ -1,0 +1,103 @@
+package org.mineacademy.fo.command;
+
+import java.util.Arrays;
+
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.plugin.SimplePlugin;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * A simple subcommand belonging to a {@link SimpleCommandGroup}
+ */
+public abstract class SimpleSubCommand extends SimpleCommand {
+
+	/**
+	 * All registered sublabels this subcommand can have
+	 */
+	@Getter
+	private final String[] sublabels;
+
+	/**
+	 * The latest sublabel used when the subcommand was run,
+	 * always updated on executing
+	 */
+	@Setter(value = AccessLevel.PROTECTED)
+	@Getter(value = AccessLevel.PROTECTED)
+	private String sublabel;
+
+	/**
+	 * Create a new subcommand given the main plugin instance defines a main command group
+	 *
+	 * @param sublabel
+	 */
+	protected SimpleSubCommand(String sublabel) {
+		this(getMainCommandGroup0(), sublabel);
+	}
+
+	/*
+	 * Attempts to get the main command group, failing with an error if not defined
+	 */
+	private static SimpleCommandGroup getMainCommandGroup0() {
+		final SimpleCommandGroup main = SimplePlugin.getInstance().getMainCommand();
+		Valid.checkNotNull(main, SimplePlugin.getNamed() + " does not define a main command group!");
+
+		return main;
+	}
+
+	/**
+	 * Creates a new subcommand belonging to a command group
+	 *
+	 * @param parent
+	 * @param sublabel
+	 */
+	protected SimpleSubCommand(SimpleCommandGroup parent, String sublabel) {
+		super(parent.getLabel());
+
+		this.sublabels = sublabel.split("\\|");
+		Valid.checkBoolean(sublabels.length > 0, "Please set at least 1 sublabel");
+
+		this.sublabel = sublabels[0];
+	}
+
+	/**
+	 * The command group automatically displays all subcommands in the /{label} help|? menu.
+	 * Shall we display the subcommand in this menu?
+	 *
+	 * @return
+	 */
+	protected boolean showInHelp() {
+		return true;
+	}
+
+	/**
+	 * Replace additional {sublabel} placeholder for this subcommand.
+	 * See {@link SimpleCommand#replacePlaceholders(String)}
+	 */
+	@Override
+	protected final String replacePlaceholders(String message) {
+		return super.replacePlaceholders(message).replace("{sublabel}", getSublabel());
+	}
+
+	/**
+	 * Return the permission for this command.
+	 *
+	 * If this subcommand is a part of the {@link SimplePlugin#getMainCommand()} then
+	 * we return {plugin.name}.command.{sublabel} by default.
+	 *
+	 * @return
+	 */
+	@Override
+	public String getPermission() {
+		final SimpleCommandGroup main = SimplePlugin.getInstance().getMainCommand();
+
+		return main != null && main.getLabel().equals(this.getMainLabel()) ? super.getPermission().replace("{label}", "{sublabel}") : super.getPermission();
+	}
+
+	@Override
+	public final boolean equals(Object obj) {
+		return obj instanceof SimpleSubCommand ? Arrays.equals(((SimpleSubCommand) obj).sublabels, this.sublabels) : false;
+	}
+}
