@@ -27,6 +27,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
@@ -125,6 +126,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Return true if the {@link #getMainCommand()} is registered and its label
+	 * equals to the given label
+	 *
+	 * @param label
+	 * @return
+	 */
+	public static final boolean isMainCommand(String label) {
+		return getInstance().getMainCommand() != null && getInstance().getMainCommand().getLabel().equals(label);
+	}
+
+	/**
 	 * Get if the instance that is used across the library has been set. Normally it
 	 * is always set, except for testing.
 	 *
@@ -156,6 +168,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	@Override
 	public final void onLoad() {
+
+		// Set the instance
+		getInstance();
+
 		// Rename to keep plugin consistency
 		onPluginLoad();
 	}
@@ -170,6 +186,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Load debug mode early
 		Debugger.detectDebugMode();
 
+		// Add the logging prefix
+		Common.ADD_LOG_PREFIX = true;
+
 		// --------------------------------------------
 		// Call the main pre start method
 		// --------------------------------------------
@@ -180,8 +199,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (!isEnabled || !isEnabled())
 			return;
 
-		if (getStartupLogo() != null)
+		if (getStartupLogo() != null) {
+			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
+
+			Common.ADD_LOG_PREFIX = false;
 			Common.log(getStartupLogo());
+			Common.ADD_LOG_PREFIX = hadLogPrefix;
+		}
 
 		try {
 
@@ -574,6 +598,24 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		listener.register();
 	}
 
+	/**
+	 * Convenience method for registering a bukkit command
+	 *
+	 * @param command
+	 */
+	protected final void registerCommand(Command command) {
+		Remain.registerCommand(command);
+	}
+
+	/**
+	 * Convenience shortcut for calling the register method in {@link SimpleCommand}
+	 *
+	 * @param command
+	 */
+	protected final void registerCommand(SimpleCommand command) {
+		command.register();
+	}
+
 	// ----------------------------------------------------------------------------------------
 	// Additional features
 	// ----------------------------------------------------------------------------------------
@@ -581,14 +623,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * The start-up fancy logo
 	 *
-	 * @return
+	 * @return null by default
 	 */
 	protected String[] getStartupLogo() {
-		return new String[] {
-				"",
-				" " + getName() + " " + getVersion(),
-				""
-		};
+		return null;
 	}
 
 	/**
@@ -639,26 +677,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * The prefix of the server. Example: &7[&eAmazingServer&7]
-	 * Defaults to [Server]
-	 *
-	 * @return the server prefix
-	 */
-	public String getServerPrefix() {
-		return "[Server]";
-	}
-
-	/**
-	 * The prefix of the console. Example: &c[JESUS]:
-	 * Defaults to CONSOLE:
-	 *
-	 * @return the console name
-	 */
-	public String getConsoleName() {
-		return "CONSOLE:";
-	}
-
-	/**
 	 * When processing regular expressions, limit executing to the specified time.
 	 * This prevents server freeze/crash on malformed regex (loops).
 	 *
@@ -695,6 +713,25 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Should we replace variables in {@link Variables} also in the javascript code?
+	 *
+	 * @return
+	 */
+	public boolean replaceVariablesInCustom() {
+		return false;
+	}
+
+	/**
+	 * Should we replace script variables in {@link Variables} also in the
+	 * javascript code?
+	 *
+	 * @return
+	 */
+	public boolean replaceScriptVariablesInCustom() {
+		return false;
+	}
+
+	/**
 	 * If vault is enabled, it will return player's prefix from each of their group
 	 *
 	 * @return
@@ -719,25 +756,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @return
 	 */
 	public boolean enforeNewLine() {
-		return false;
-	}
-
-	/**
-	 * Should we replace variables in {@link Variables} also in the javascript code?
-	 *
-	 * @return
-	 */
-	public boolean replaceVariablesInCustom() {
-		return false;
-	}
-
-	/**
-	 * Should we replace script variables in {@link Variables} also in the
-	 * javascript code?
-	 *
-	 * @return
-	 */
-	public boolean replaceScriptVariablesInCustom() {
 		return false;
 	}
 

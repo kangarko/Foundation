@@ -115,7 +115,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Prefix: "&8[&3ChatControl&8]&7 "
 	 */
-	public static String PLUGIN_PREFIX = "[" + SimplePlugin.getNamed() + "]"; // Only defined here so we can log messages before settings are loaded, but you still need to write it
+	public static String PLUGIN_PREFIX = "&7" + SimplePlugin.getNamed() + " //";
 
 	/**
 	 * The server name used in {server_name} variable or Bungeecords, if your plugin supports either of those.
