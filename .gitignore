@@ -113,7 +113,7 @@ local.properties
 
 # Build results
 
-[Dd]ebug/
+/[Dd]ebug/
 [Rr]elease/
 x64/
 build/
