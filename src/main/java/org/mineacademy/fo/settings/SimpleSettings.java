@@ -79,6 +79,9 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	// Unless specified in the init() method, you must write the values
 	// below to your settings.yml for this class to function!
 
+	// Values here are defined below so that plugins not definiting their settings.yml still can function,
+	// however if your plugin has a settings.yml file you MUST specify all of them in that file.
+
 	/**
 	 * What commands should trigger the your main plugin command (separated by a comma ,)? See {@link SimplePlugin#getMainCommand()}
 	 *
@@ -86,7 +89,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Command_Aliases: [chatcontrol, chc, cc]
 	 */
-	public static StrictList<String> MAIN_COMMAND_ALIASES;
+	public static StrictList<String> MAIN_COMMAND_ALIASES = new StrictList<>();
 
 	/**
 	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
@@ -94,7 +97,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Typically this is left empty: Debug: []
 	 */
-	public static StrictList<String> DEBUG_SECTIONS = new StrictList<>(); // Only defined here so we can log messages before settings are loaded, but you still need to write it
+	public static StrictList<String> DEBUG_SECTIONS = new StrictList<>();
 
 	/**
 	 * The localization prefix, given you are using {@link SimpleLocalization} class to load and manage your
@@ -102,7 +105,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Typically: Locale: en
 	 */
-	public static String LOCALE_PREFIX;
+	public static String LOCALE_PREFIX = "en";
 
 	/**
 	 * The plugin prefix in front of chat/console messages, added automatically unless
@@ -121,12 +124,12 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Server_Name: "My ChatControl Server"
 	 */
-	public static String SERVER_NAME;
+	public static String SERVER_NAME = "Server";
 
 	/**
 	 * Antipiracy stuff for our protected software, leave empty to Serialization: ""
 	 */
-	public static String SECRET_KEY;
+	public static String SECRET_KEY = "";
 
 	/**
 	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to 0 to disable.
@@ -146,7 +149,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Notify_Updates: true
 	 */
-	public static Boolean NOTIFY_UPDATES;
+	public static Boolean NOTIFY_UPDATES = false;
 
 	/**
 	 * Should we enable inbuilt advertisements?
@@ -158,7 +161,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Notify_Promotions: true
 	 */
-	public static Boolean NOTIFY_PROMOTIONS;
+	public static Boolean NOTIFY_PROMOTIONS = true;
 
 	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
