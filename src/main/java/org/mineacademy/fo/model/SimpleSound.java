@@ -86,7 +86,7 @@ public final class SimpleSound {
 			return;
 		}
 
-		Valid.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'");
+		Valid.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
 		Valid.checkNotNull(sound, "Unable to parse sound from: " + line);
 
 		volume = Float.parseFloat(values[1]);
@@ -136,6 +136,6 @@ public final class SimpleSound {
 
 	@Override
 	public String toString() {
-		return sound + ", " + volume + ", " + pitch + ", randomPitch = " + randomPitch;
+		return sound + ", " + volume + ", " + pitch;
 	}
 }
