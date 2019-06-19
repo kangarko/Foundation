@@ -119,7 +119,9 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkBoolean(!(this instanceof TabCompleter), "Please do not write 'implements TabCompleter' for /" + super.getLabel() + " cmd, simply override tabComplete method");
 
 		setLabel(label);
-		setAliases(aliases);
+
+		if (aliases != null)
+			setAliases(aliases);
 
 		// Set a default permission for this command
 		setPermission("{plugin.name}.command.{label}");
