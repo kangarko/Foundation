@@ -139,7 +139,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Is this plugin enabled? Checked for after {@link #pluginPreStart()}
+	 * Is this plugin enabled? Checked for after {@link #onPluginPreStart()}
 	 */
 	protected boolean isEnabled = true;
 
@@ -157,7 +157,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	public final void onLoad() {
 		// Rename to keep plugin consistency
-		pluginLoad();
+		onPluginLoad();
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// --------------------------------------------
 		// Call the main pre start method
 		// --------------------------------------------
-		pluginPreStart();
+		onPluginPreStart();
 		// --------------------------------------------
 
 		// Return if plugin pre start indicated a fatal problem
@@ -186,8 +186,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		try {
 
 			// Load our main static settings classes
-			YamlStaticConfig.load(getSettingsClasses());
-			Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
+			if (getSettings() != null) {
+				YamlStaticConfig.load(getSettings());
+				Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
+			}
 
 			// Load our dependency system
 			HookManager.loadDependencies();
@@ -202,7 +204,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
-			pluginStart();
+			onPluginStart();
 			// --------------------------------------------
 
 			// Start update check
@@ -231,7 +233,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Finish off by starting metrics (currently bStats)
 			new Metrics(this);
 
-		} catch (final Throwable t) {
+		} catch (
+
+		final Throwable t) {
 			displayError0(t);
 		}
 	}
@@ -357,7 +361,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			return;
 
 		try {
-			pluginStop();
+			onPluginStop();
 		} catch (final Throwable t) {
 			Common.log("&cPlugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
@@ -398,38 +402,36 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Called before the plugin is started, see {@link JavaPlugin#onLoad()}
 	 */
-	protected void pluginLoad() {
+	protected void onPluginLoad() {
 	}
 
 	/**
-	 * Called before we start loading the plugin, but after {@link #pluginLoad()}
+	 * Called before we start loading the plugin, but after {@link #onPluginLoad()}
 	 */
-	protected void pluginPreStart() {
+	protected void onPluginPreStart() {
 	}
 
 	/**
 	 * The main loading method, called when we are ready to load
-	 *
-	 * @throws Throwable
 	 */
-	protected abstract void pluginStart() throws Throwable;
+	protected abstract void onPluginStart();
 
 	/**
 	 * The main method called when we are about to shut down
 	 */
-	protected void pluginStop() {
+	protected void onPluginStop() {
 	}
 
 	/**
 	 * Invoked before settings were reloaded.
 	 */
-	protected void pluginPreReload() {
+	protected void onPluginPreReload() {
 	}
 
 	/**
 	 * Invoked after settings were reloaded.
 	 */
-	protected void pluginReload() {
+	protected void onPluginReload() {
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -453,11 +455,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			unregisterReloadables();
 
-			pluginPreReload();
+			onPluginPreReload();
 			reloadables.reload();
 
 			YamlConfig.clearLoadedFiles();
-			YamlStaticConfig.load(getSettingsClasses());
+
+			if (getSettings() != null)
+				YamlStaticConfig.load(getSettings());
 
 			if (isVariablesEnabled())
 				Variables.reload();
@@ -466,7 +470,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
-			pluginReload();
+			onPluginReload();
 
 		} catch (final Throwable t) {
 			Common.throwError(t, "Error reloading " + getName() + " " + getVersion());
@@ -571,41 +575,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	// ----------------------------------------------------------------------------------------
-	// Mandatory features you must implement
-	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * The minimum MC version to run
-	 *
-	 * @return
-	 */
-	protected abstract MinecraftVersion.V getMinimumVersion();
-
-	/**
-	 * Return your main setting classes extending {@link YamlStaticConfig}.
-	 *
-	 * TIP: Extend {@link SimpleSettings} and {@link SimpleLocalization}
-	 *
-	 * @return
-	 */
-	public abstract List<Class<? extends YamlStaticConfig>> getSettingsClasses();
-
-	/**
-	 * Get your main command group, e.g. for ChatControl it's /chatcontrol
-	 *
-	 * @return
-	 */
-	public abstract SimpleCommandGroup getMainCommand();
-
-	/**
-	 * Get the year of foundation displayed in {@link #getMainCommand()}
-	 *
-	 * @return
-	 */
-	public abstract int getFoundedYear();
-
-	// ----------------------------------------------------------------------------------------
-	// Additional extra features
+	// Additional features
 	// ----------------------------------------------------------------------------------------
 
 	/**
@@ -619,6 +589,44 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				" " + getName() + " " + getVersion(),
 				""
 		};
+	}
+
+	/**
+	 * The minimum MC version to run
+	 *
+	 * @return
+	 */
+	public MinecraftVersion.V getMinimumVersion() {
+		return null;
+	}
+
+	/**
+	 * Return your main setting classes extending {@link YamlStaticConfig}.
+	 *
+	 * TIP: Extend {@link SimpleSettings} and {@link SimpleLocalization}
+	 *
+	 * @return
+	 */
+	public List<Class<? extends YamlStaticConfig>> getSettings() {
+		return null;
+	}
+
+	/**
+	 * Get your main command group, e.g. for ChatControl it's /chatcontrol
+	 *
+	 * @return
+	 */
+	public SimpleCommandGroup getMainCommand() {
+		return null;
+	}
+
+	/**
+	 * Get the year of foundation displayed in {@link #getMainCommand()}
+	 *
+	 * @return -1 by default, or the founded year
+	 */
+	public int getFoundedYear() {
+		return -1;
 	}
 
 	/**
