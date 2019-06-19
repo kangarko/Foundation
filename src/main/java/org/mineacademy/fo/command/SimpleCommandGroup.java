@@ -147,6 +147,9 @@ public abstract class SimpleCommandGroup {
 		 */
 		private MainCommand(String label) {
 			super(label);
+
+			// Let everyone view credits of this command when they run it without any sublabels
+			setPermission(null);
 		}
 
 		/**
@@ -183,14 +186,6 @@ public abstract class SimpleCommandGroup {
 			// Handle unknown argument
 			else
 				returnTell("&cInvalid command. Run &6/" + getLabel() + " ? &cfor help.");
-		}
-
-		/**
-		 * Let everyone view credits of this command when they run it without any sublabels
-		 */
-		@Override
-		public String getPermission() {
-			return null;
 		}
 
 		/**

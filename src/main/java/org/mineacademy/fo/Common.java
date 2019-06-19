@@ -46,6 +46,7 @@ import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.LocalCommandSender;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -93,17 +94,23 @@ public final class Common {
 	/**
 	 * Should we add a prefix to the messages we send to players using tell() methods?
 	 */
-	public static boolean ADD_TELL_PREFIX = true;
+	public static boolean ADD_TELL_PREFIX = false;
 
 	/**
 	 * Should we add a prefix to the messages we send to the console?
+	 *
+	 * This is enabled automatically when a {@link SimplePlugin} starts
 	 */
-	public static boolean ADD_LOG_PREFIX = true;
+	public static boolean ADD_LOG_PREFIX = false;
 
 	/**
 	 * The tell prefix applied on tell() messages
 	 */
 	private static String tellPrefix = "";
+
+	static {
+		tellPrefix = "[" + SimplePlugin.getNamed() + "] ";
+	}
 
 	/**
 	 * Get the tell prefix applied for messages to players and console
@@ -273,7 +280,7 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellConversing(Conversable conversable, String message) {
-		conversable.sendRawMessage(Common.colorize((ADD_TELL_PREFIX ? Common.getTellPrefix() : "") + message));
+		conversable.sendRawMessage(Common.colorize((ADD_TELL_PREFIX ? tellPrefix : "") + message));
 	}
 
 	/**
@@ -368,7 +375,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String resolveSenderName(CommandSender sender) {
-		return sender instanceof Player || sender instanceof DiscordSender ? sender.getName() : SimplePlugin.getInstance().getConsoleName();
+		return sender instanceof Player || sender instanceof DiscordSender ? sender.getName() : SimpleLocalization.CONSOLE_NAME;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -418,8 +425,8 @@ public final class Common {
 		return message == null || message.isEmpty() ? ""
 				: ChatColor.translateAlternateColorCodes('&', message
 						.replace("{prefix}", tellPrefix)
-						.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase())
-						.replace("{server}", SimplePlugin.getInstance().getServerPrefix()));
+						.replace("{server}", SimpleLocalization.SERVER_PREFIX)
+						.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	/**

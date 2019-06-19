@@ -35,6 +35,12 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 */
 	protected SimpleSubCommand(String sublabel) {
 		this(getMainCommandGroup0(), sublabel);
+
+		// If this subcommand is a part of the main command for this plugin, then
+		// we return {plugin.name}.command.{sublabel} if the default command permission
+		// has not been changed
+		if (SimplePlugin.isMainCommand(this.getMainLabel()) && getPermission() != null)
+			setPermission(getPermission().replace("{label}", "{sublabel}"));
 	}
 
 	/*
@@ -79,21 +85,6 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	@Override
 	protected final String replacePlaceholders(String message) {
 		return super.replacePlaceholders(message).replace("{sublabel}", getSublabel());
-	}
-
-	/**
-	 * Return the permission for this command.
-	 *
-	 * If this subcommand is a part of the {@link SimplePlugin#getMainCommand()} then
-	 * we return {plugin.name}.command.{sublabel} by default.
-	 *
-	 * @return
-	 */
-	@Override
-	public String getPermission() {
-		final SimpleCommandGroup main = SimplePlugin.getInstance().getMainCommand();
-
-		return main != null && main.getLabel().equals(this.getMainLabel()) ? super.getPermission().replace("{label}", "{sublabel}") : super.getPermission();
 	}
 
 	@Override

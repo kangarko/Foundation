@@ -28,6 +28,7 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * A simple command used to replace all Bukkit/Spigot command functionality
@@ -119,6 +120,9 @@ public abstract class SimpleCommand extends Command {
 
 		setLabel(label);
 		setAliases(aliases);
+
+		// Set a default permission for this command
+		setPermission("{plugin.name}.command.{label}");
 	}
 
 	/*
@@ -271,22 +275,6 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * By default we check if the player has the permission you set in setPermission.
-	 *
-	 * If that is null, we check for the following:
-	 * {yourpluginname}.command.{label}
-	 *
-	 * We handle lacking permissions automatically and return with an no-permission message
-	 * when the player lacks it.
-	 *
-	 * @return
-	 */
-	@Override
-	public String getPermission() {
-		return Common.getOrDefault(super.getPermission(), "{plugin.name}.command.{label}");
-	}
-
-	/**
 	 * Shall we add your plugin's prefix when sending messages for players?
 	 *
 	 * @param args
@@ -323,7 +311,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param perm
 	 * @throws CommandException
 	 */
-	public final void checkPerm(String perm) throws CommandException {
+	public final void checkPerm(@NonNull String perm) throws CommandException {
 		if (isPlayer() && !PlayerUtil.hasPerm(sender, perm))
 			throw new CommandException(getPermissionMessage().replace("{permission}", perm));
 	}
@@ -591,6 +579,41 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Get the permission for this command, either the one you set or our from Localization
+	 */
+	@Override
+	public final String getPermissionMessage() {
+		return Common.getOrDefault(super.getPermissionMessage(), "&c" + SimpleLocalization.NO_PERMISSION);
+	}
+
+	/**
+	 * By default we check if the player has the permission you set in setPermission.
+	 *
+	 * If that is null, we check for the following:
+	 * {yourpluginname}.command.{label}
+	 *
+	 * We handle lacking permissions automatically and return with an no-permission message
+	 * when the player lacks it.
+	 *
+	 * @return
+	 */
+	@Override
+	public final String getPermission() {
+		return super.getPermission();
+	}
+
+	/**
+	 * Sets the permission required for this command to run. If you set the
+	 * permission to null we will not require any permission (unsafe).
+	 *
+	 * @param
+	 */
+	@Override
+	public final void setPermission(String permission) {
+		super.setPermission(permission);
+	}
+
+	/**
 	 * Get the sender of this command
 	 *
 	 * @return
@@ -658,14 +681,6 @@ public abstract class SimpleCommand extends Command {
 		this.label = name;
 
 		return super.setLabel(name);
-	}
-
-	/**
-	 * Get the permission for this command, either the one you set or our from Localization
-	 */
-	@Override
-	public final String getPermissionMessage() {
-		return Common.getOrDefault(super.getPermissionMessage(), "&c" + SimpleLocalization.NO_PERMISSION);
 	}
 
 	@Override

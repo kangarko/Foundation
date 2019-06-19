@@ -146,6 +146,17 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
+	 * The server prefix. Example: you have to use it manually if you are sending messages
+	 * from the console to players
+	 */
+	public static String SERVER_PREFIX = "[Server]";
+
+	/**
+	 * The console localized name. Example: Console
+	 */
+	public static String CONSOLE_NAME = "Console";
+
+	/**
 	 * The message when a section is missing from data.db file (typically we use
 	 * this file to store serialized values such as arenas from minigame plugins).
 	 *
@@ -170,8 +181,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 		UPDATE_AVAILABLE = getString("Update_Available");
 		NO_PERMISSION = getString("No_Permission");
-		DATA_MISSING = isSet("Data_Missing") ? getString("Data_Missing") : "&c{name} lacks database information! Please only create {type} in-game! Skipping..";
-		CONVERSATION_REQUIRES_PLAYER = isSet("Conversation_Requires_Player") ? getString("Conversation_Requires_Player") : "Only players may enter this conversation.";
+
+		SERVER_PREFIX = isSet("Server_Prefix") ? getString("Server_Prefix") : SERVER_PREFIX;
+		CONSOLE_NAME = isSet("Console_Name") ? getString("Console_Name") : CONSOLE_NAME;
+		DATA_MISSING = isSet("Data_Missing") ? getString("Data_Missing") : DATA_MISSING;
+		CONVERSATION_REQUIRES_PLAYER = isSet("Conversation_Requires_Player") ? getString("Conversation_Requires_Player") : CONVERSATION_REQUIRES_PLAYER;
 
 		localizationClassCalled = true;
 	}
