@@ -117,7 +117,7 @@ public class ItemCreator {
 	 *
 	 * This will be stored at the key "Your plugin name + _Item"
 	 *
-	 * @deprecated use with caution
+	 * @deprecated use NBTItem static methods
 	 */
 	@Deprecated
 	private final String nbt;
