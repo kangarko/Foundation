@@ -501,7 +501,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 * @return
 	 */
-	protected final String[] replacePlaceholders(String[] messages) {
+	private final String[] replacePlaceholders(String[] messages) {
 		for (int i = 0; i < messages.length; i++)
 			messages[i] = replacePlaceholders(messages[i]).replace("{prefix}", Common.getTellPrefix());
 
