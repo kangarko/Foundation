@@ -15,7 +15,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * A very simple way of sending interactive chat messages
  */
-public final class Component {
+public final class ChatComponent {
 
 	/**
 	 * The past components having different hover/click events
@@ -32,7 +32,7 @@ public final class Component {
 	 *
 	 * @param text
 	 */
-	public Component(String... text) {
+	public ChatComponent(String... text) {
 		this.currentComponent = new TextComponent(String.join("\n", Common.colorize(text)));
 	}
 
@@ -46,7 +46,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component onHover(String... text) {
+	public ChatComponent onHover(String... text) {
 		return onHover(String.join("\n", text));
 	}
 
@@ -56,7 +56,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component onHover(String text) {
+	public ChatComponent onHover(String text) {
 		return onHover(HoverEvent.Action.SHOW_TEXT, text);
 	}
 
@@ -67,7 +67,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component onHover(HoverEvent.Action action, String text) {
+	public ChatComponent onHover(HoverEvent.Action action, String text) {
 		currentComponent.setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
 
 		return this;
@@ -79,7 +79,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component onClickRunCmd(String text) {
+	public ChatComponent onClickRunCmd(String text) {
 		return onClick(Action.RUN_COMMAND, text);
 	}
 
@@ -89,7 +89,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component onClickSuggestCmd(String text) {
+	public ChatComponent onClickSuggestCmd(String text) {
 		return onClick(Action.SUGGEST_COMMAND, text);
 	}
 
@@ -100,7 +100,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component onClick(Action action, String text) {
+	public ChatComponent onClick(Action action, String text) {
 		currentComponent.setClickEvent(new ClickEvent(action, Common.colorize(text)));
 
 		return this;
@@ -118,7 +118,7 @@ public final class Component {
 	 * @param text
 	 * @return
 	 */
-	public Component append(String text) {
+	public ChatComponent append(String text) {
 		pastComponents.add(currentComponent);
 		currentComponent = new TextComponent(Common.colorize(text));
 
@@ -146,7 +146,7 @@ public final class Component {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Attempts to send the complete {@link Component} to the given
+	 * Attempts to send the complete {@link ChatComponent} to the given
 	 * command senders. If they are players, we send them interactive elements.
 	 *
 	 * If they are console, they receive a plain text message.
