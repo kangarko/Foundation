@@ -22,7 +22,7 @@ import lombok.NonNull;
  * The code is based off JavaScript with new Java methods, see:
  * https://winterbe.com/posts/2014/04/05/java8-nashorn-tutorial/
  */
-public final class NashornScriptExecutor {
+public final class JavaScriptExecutor {
 
 	/**
 	 * The engine singleton

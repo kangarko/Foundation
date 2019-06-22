@@ -492,7 +492,7 @@ class ScriptVariable {
 					try {
 						Debugger.debug("variables", "Replacing variable " + var.variable + " with " + variables);
 
-						variables.put(var.variable, NashornScriptExecutor.run(var.script, variables));
+						variables.put(var.variable, JavaScriptExecutor.run(var.script, variables));
 					} catch (final Throwable t) {
 						Common.throwError(t,
 								"Failed to replace " + var.variable + " in script! ",
@@ -502,7 +502,7 @@ class ScriptVariable {
 				}
 			}
 
-			return message.replace(variable, Common.colorize(NashornScriptExecutor.run(script, variables).toString()));
+			return message.replace(variable, Common.colorize(JavaScriptExecutor.run(script, variables).toString()));
 		}
 
 		return message;
