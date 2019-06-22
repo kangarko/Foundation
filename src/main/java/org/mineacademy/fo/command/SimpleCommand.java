@@ -393,6 +393,24 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	// ----------------------------------------------------------------------
+	// Other checks
+	// ----------------------------------------------------------------------
+
+	/**
+	 * A convenience check for quickly determining if the sender has a given
+	 * permission.
+	 *
+	 * TIP: For a more complete check use {@link #checkPerm(String)} that
+	 * will automatically return your command if they lack the permission.
+	 *
+	 * @param permission
+	 * @return
+	 */
+	protected final boolean hasPerm(String permission) {
+		return PlayerUtil.hasPerm(sender, permission);
+	}
+
+	// ----------------------------------------------------------------------
 	// Messaging
 	// ----------------------------------------------------------------------
 
@@ -470,6 +488,14 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void returnTell(Collection<String> messages) throws CommandException {
 		returnTell(messages.toArray(new String[messages.size()]));
+	}
+
+	/**
+	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_PARAMETER}
+	 * message for player
+	 */
+	protected final void returnInvalidArgs() {
+		returnTell(SimpleLocalization.Commands.INVALID_PARAMETER.replace("{label}", getLabel()));
 	}
 
 	/**
@@ -691,7 +717,7 @@ public abstract class SimpleCommand extends Command {
 	 * Updates the label of this command
 	 */
 	@Override
-	public boolean setLabel(String name) {
+	public final boolean setLabel(String name) {
 		this.label = name;
 
 		return super.setLabel(name);

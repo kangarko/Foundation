@@ -185,7 +185,7 @@ public abstract class SimpleCommandGroup {
 
 			// Handle unknown argument
 			else
-				returnTell("&cInvalid command. Run &6/" + getLabel() + " ? &cfor help.");
+				returnInvalidArgs();
 		}
 
 		/**
