@@ -1,15 +1,8 @@
-<!-- 
-	(c) 2013 - 2019 - All rights reserved.
-	Do not share, copy, reproduce or sell
-	any part of this library unless you
-	have written permission from MineAcademy.org.
-	All infringements will be prosecuted.
-	
-	If you are the personal owner of the
-	MineAcademy.org End User License then you may
-	use it for your own use in plugins but not for
-	any other purpose.
- -->
+<!-- (c) 2013 - 2019 - All rights reserved. Do not share, copy, reproduce 
+	or sell any part of this library unless you have written permission from 
+	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
+	owner of the MineAcademy.org End User License then you may use it for your 
+	own use in plugins but not for any other purpose. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -25,6 +18,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
 	</properties>
 
 	<repositories>
@@ -255,8 +249,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
 			</plugin>
 		</plugins>
