@@ -93,6 +93,16 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String NO_CONSOLE = "&cYou may only use this command as a player";
 
 		/**
+		 * The message shown when the player tries a command but inputs a
+		 * invalid first argument parameter. We suggest he types /{label} ? for help so make
+		 * sure you implement some help there as well. Typically the message is:
+		 *
+		 * "&cInvalid parameter. Run &6/{label} ? &cfor help."
+		 *
+		 */
+		public static String INVALID_PARAMETER = "&cInvalid parameter. Run &6/{label} ? &cfor help.";
+
+		/**
 		 * The message at "Reload_Success" key shown when the plugin has been reloaded successfully, typically:
 		 *
 		 * "{plugin_name} {plugin_version} has been reloaded."
@@ -113,6 +123,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 			pathPrefix("Commands");
 
 			NO_CONSOLE = getString("No_Console");
+			INVALID_PARAMETER = getString("Invalid_Parameter");
 			RELOAD_SUCCESS = getString("Reload_Success");
 			RELOAD_FAIL = getString("Reload_Fail");
 		}
