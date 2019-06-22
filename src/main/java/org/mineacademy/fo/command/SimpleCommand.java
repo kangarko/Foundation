@@ -22,6 +22,7 @@ import org.mineacademy.fo.command.placeholder.Placeholder;
 import org.mineacademy.fo.command.placeholder.PositionPlaceholder;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
+import org.mineacademy.fo.model.ChatComponent;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
@@ -442,12 +443,23 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 */
 	protected final void tell(String... messages) {
-		messages = Common.replace("{prefix}", Common.getTellPrefix(), replacePlaceholders(messages));
+		messages = replacePlaceholders(messages);
 
 		if (messages.length > 2)
 			Common.tellNoPrefix(sender, messages);
 		else
 			Common.tell(sender, messages);
+	}
+
+	/**
+	 * Sends a interactive chat component to the sender, not replacing any special
+	 * variables just executing the {@link ChatComponent#send(CommandSender...)} method
+	 * as a shortcut
+	 *
+	 * @param component
+	 */
+	protected final void tell(ChatComponent component) {
+		component.send(sender);
 	}
 
 	/**
@@ -467,7 +479,7 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final void returnTell(String... messages) throws CommandException {
-		throw new CommandException(Common.replace("{prefix}", Common.getTellPrefix(), replacePlaceholders(messages)));
+		throw new CommandException(replacePlaceholders(messages));
 	}
 
 	// ----------------------------------------------------------------------
@@ -491,7 +503,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final String[] replacePlaceholders(String[] messages) {
 		for (int i = 0; i < messages.length; i++)
-			messages[i] = replacePlaceholders(messages[i]);
+			messages[i] = replacePlaceholders(messages[i]).replace("{prefix}", Common.getTellPrefix());
 
 		return messages;
 	}
