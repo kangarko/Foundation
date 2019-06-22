@@ -80,40 +80,40 @@ public final class PlayerUtil {
 	 * Checks if the given UUID has a certain permission, returns false if failed
 	 *
 	 * @param id
-	 * @param perm
+	 * @param permission
 	 * @return
 	 * @deprecated returns false if failed for whatever reason
 	 */
 	@Deprecated
-	public static boolean hasPermUnsafe(UUID id, String perm) {
-		return HookManager.hasPermissionUnsafe(id, perm.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+	public static boolean hasPermUnsafe(UUID id, String permission) {
+		return HookManager.hasPermissionUnsafe(id, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	/**
 	 * Checks if the given name has a certain permission, returns false if failed
 	 *
 	 * @param playerName
-	 * @param perm
+	 * @param permission
 	 * @return
 	 * @deprecated returns false if failed for whatever reason, also can connect to the internet for UUID lookup on the main thread
 	 */
 	@Deprecated
-	public static boolean hasPermUnsafe(String playerName, String perm) {
-		return HookManager.hasPermissionUnsafe(playerName, perm.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+	public static boolean hasPermUnsafe(String playerName, String permission) {
+		return HookManager.hasPermissionUnsafe(playerName, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	/**
 	 * Returns true if the player has a permission using Vault
 	 *
 	 * @param player
-	 * @param perm
+	 * @param permission
 	 * @deprecated Due to vault API Limitations, this will return false if the node is
 	 * false or undefined. Some permissions plugins don't load superperms into their
 	 * dataset, so this should not be relied on.
 	 */
 	@Deprecated
-	public static boolean hasPermVault(Player player, String perm) {
-		return perm == null || HookManager.hasPermissionVault(player, perm.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+	public static boolean hasPermVault(Player player, String permission) {
+		return permission == null || HookManager.hasPermissionVault(player, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	/**
@@ -121,11 +121,11 @@ public final class PlayerUtil {
 	 * You can use {plugin.name} to replace with your plugin name (lower-cased)
 	 *
 	 * @param sender
-	 * @param perm
+	 * @param permission
 	 * @return
 	 */
-	public static boolean hasPerm(@NonNull Permissible sender, String perm) {
-		return perm == null || sender.hasPermission(perm.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+	public static boolean hasPerm(@NonNull Permissible sender, String permission) {
+		return permission == null || sender.hasPermission(permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
