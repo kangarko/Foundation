@@ -49,6 +49,7 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -104,25 +105,19 @@ public final class Common {
 	public static boolean ADD_LOG_PREFIX = false;
 
 	/**
-	 * The tell prefix applied on tell() messages
+	 * The tell prefix applied on tell() methods
 	 */
-	private static String tellPrefix = "";
-
-	static {
-		tellPrefix = "[" + SimplePlugin.getNamed() + "] ";
-	}
+	@Getter
+	private static String tellPrefix = "[" + SimplePlugin.getNamed() + "] ";
 
 	/**
-	 * Get the tell prefix applied for messages to players and console
-	 *
-	 * @return
+	 * The log prefix applied on log() methods
 	 */
-	public static String getTellPrefix() {
-		return tellPrefix;
-	}
+	@Getter
+	private static String logPrefix = "[" + SimplePlugin.getNamed() + "] ";
 
 	/**
-	 * Set the tell prefix applied for messages to players and console
+	 * Set the tell prefix applied for messages to players from tell() methods.
 	 *
 	 * We add an empty space after it for you automatically.
 	 *
@@ -132,6 +127,19 @@ public final class Common {
 	 */
 	public static void setTellPrefix(String prefix) {
 		tellPrefix = colorize(prefix) + " ";
+	}
+
+	/**
+	 * Set the log prefix applied for messages in the console from log() methods.
+	 *
+	 * We add an empty space after it for you automatically.
+	 *
+	 * Colors with & letter are translated automatically.
+	 *
+	 * @param prefix
+	 */
+	public static void setLogPrefix(String prefix) {
+		logPrefix = colorize(prefix) + " ";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -862,7 +870,7 @@ public final class Common {
 	/**
 	 * Logs a bunch of messages to the console, & colors are supported
 	 *
-	 * Does not add {@link #getTellPrefix()}
+	 * Does not add {@link #getLogPrefix()}
 	 *
 	 * @param messages
 	 */
@@ -873,10 +881,10 @@ public final class Common {
 	/**
 	 * Logs a bunch of messages to the console, & colors are supported
 	 *
-	 * @param addTellPrefix should we add {@link #getTellPrefix()} ?
+	 * @param addLogPrefix should we add {@link #getLogPrefix()} ?
 	 * @param messages
 	 */
-	public static void log(boolean addTellPrefix, String... messages) {
+	public static void log(boolean addLogPrefix, String... messages) {
 		for (String message : messages) {
 			if (message.isEmpty() || message.equals("none"))
 				continue;
@@ -891,7 +899,7 @@ public final class Common {
 
 			} else
 				for (final String part : splitNewline(message))
-					CONSOLE_SENDER.sendMessage((addTellPrefix && ADD_LOG_PREFIX ? tellPrefix : "") + part.replace("\n", colorize("\n&r")));
+					CONSOLE_SENDER.sendMessage((addLogPrefix && ADD_LOG_PREFIX ? logPrefix : "") + part.replace("\n", colorize("\n&r")));
 		}
 	}
 
