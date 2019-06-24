@@ -546,14 +546,12 @@ public abstract class Menu {
 	/**
 	 * Calculates the center slot of this menu
 	 *
-	 * @deprecated not exact
+	 * Credits to Gober at https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/
+	 *
 	 * @return the estimated center slot
 	 */
-	@Deprecated
 	protected final int getCenterSlot() {
-		int pos = Arrays.asList(13, 22, 31).contains(pos = size / 2) ? pos : pos - 5;
-
-		return pos;
+		return size / 2 + (size / 9 % 2 > 0 ? 1 : 5);
 	}
 
 	/**
