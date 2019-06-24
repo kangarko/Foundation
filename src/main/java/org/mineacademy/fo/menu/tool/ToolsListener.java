@@ -271,10 +271,10 @@ public final class ToolsListener implements Listener {
 		final Projectile projectile = event.getEntity();
 		final ShotRocket shot = shotRockets.remove(projectile.getUniqueId());
 
-		final Rocket rocket = shot.getRocket();
-		final Player shooter = shot.getShooter();
-
 		if (shot != null) {
+			final Rocket rocket = shot.getRocket();
+			final Player shooter = shot.getShooter();
+
 			if (rocket.canExplode(projectile, shooter)) {
 				final RocketExplosionEvent rocketEvent = new RocketExplosionEvent(rocket, projectile, rocket.getExplosionPower(), rocket.isBreakBlocks());
 
