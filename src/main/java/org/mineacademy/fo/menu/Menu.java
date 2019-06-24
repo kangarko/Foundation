@@ -157,14 +157,24 @@ public abstract class Menu {
 	private Player viewer;
 
 	/**
-	 * Create a new menu without parent menu
+	 * Create a new menu without parent menu with the size of 9*3
+	 *
+	 * You are encouraged to change the size and title of this menu in your constructor
+	 * by calling {@link #setTitle(String)} and {@link #setSize(Integer)}
+	 *
+	 * NB: The {@link #getViewer()} of this menu is yet null!
 	 */
 	protected Menu() {
 		this(null);
 	}
 
 	/**
-	 * Create a new menu with parent menu
+	 * Create a new menu with parent menu with the size of 9*3
+	 *
+	 * You are encouraged to change the size and title of this menu in your constructor
+	 * by calling {@link #setTitle(String)} and {@link #setSize(Integer)}
+	 *
+	 * NB: The {@link #getViewer()} of this menu is yet null!
 	 *
 	 * @param parent the parent menu
 	 */
@@ -173,7 +183,12 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Create a new menu with parent menu
+	 * Create a new menu with parent menu with the size of 9*3
+	 *
+	 * You are encouraged to change the size and title of this menu in your constructor
+	 * by calling {@link #setTitle(String)} and {@link #setSize(Integer)}
+	 *
+	 * NB: The {@link #getViewer()} of this menu is yet null!
 	 *
 	 * @param parent                 the parent
 	 * @param returnMakesNewInstance should we re-instatiate the parent menu when
