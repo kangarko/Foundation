@@ -28,10 +28,12 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.menu.button.ButtonReturnBack;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
+import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
 import org.mineacademy.fo.model.OneTimeRunnable;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 
 import lombok.Getter;
@@ -147,14 +149,19 @@ public abstract class Menu {
 	private Integer size = 9 * 3;
 
 	/**
-	 * The inventory title of the menu
+	 * The inventory title of the menu, colors & are supported
 	 */
-	private String title;
+	private String title = "&0Menu";
 
 	/**
 	 * The viewer of this menu, is null until {@link #displayTo(Player)} is called
 	 */
 	private Player viewer;
+
+	/**
+	 * Debug option to render empty spaces as glass panel having the slot id visible
+	 */
+	private boolean slotNumbersVisible;
 
 	/**
 	 * Create a new menu without parent menu with the size of 9*3
@@ -278,11 +285,9 @@ public abstract class Menu {
 				Objects.requireNonNull(button, "Menu button is null at " + getClass().getSimpleName());
 				Objects.requireNonNull(button.getItem(), "Itemstack cannot be null at " + button.getClass().getSimpleName());
 
-				try {
-					if (button.getItem().equals(fromItem))
-						return button;
-				} catch (final NullPointerException ex) {
-				}
+				if (button.getItem().equals(fromItem))
+					return button;
+
 			}
 
 		return null;
@@ -337,8 +342,8 @@ public abstract class Menu {
 	 *                                 server conversation?
 	 */
 	public final void displayTo(Player player, boolean ignoreServerConversation) {
-		Objects.requireNonNull(size, "Size not set in " + this);
-		Objects.requireNonNull(title, "Title not set in " + this);
+		Objects.requireNonNull(size, "Size not set in " + this + " (call setSize in your constructor)");
+		Objects.requireNonNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
 
 		this.viewer = player;
 		this.buttonsRegistrator.runIfHasnt();
@@ -359,6 +364,9 @@ public abstract class Menu {
 
 		// Allow last minute modifications
 		onDisplay(drawer);
+
+		// Render empty slots as slot numbers if enabled
+		debugSlotNumbers(drawer);
 
 		// Call event after items have been set to allow to get them
 		if (!Common.callEvent(new MenuOpenEvent(this, drawer, player)))
@@ -388,6 +396,22 @@ public abstract class Menu {
 
 			player.setMetadata(TAG_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
 		});
+	}
+
+	/**
+	 * Sets all empty slots to light gray pane or adds a slot number to existing items lores
+	 * if {@link #slotNumbersVisible} is true
+	 *
+	 * @param drawer
+	 */
+	private void debugSlotNumbers(InventoryDrawer drawer) {
+		if (slotNumbersVisible)
+			for (int slot = 0; slot < drawer.getSize(); slot++) {
+				final ItemStack item = drawer.getItem(slot);
+
+				if (item == null)
+					drawer.setItem(slot, ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "Slot " + slot).build().make());
+			}
 	}
 
 	/**
@@ -559,14 +583,13 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Sets the title of this inventory, adding black color at the front
-	 * automatically - this change is not reflected in client, you must
+	 * Sets the title of this inventory, this change is not reflected in client, you must
 	 * call {@link #restartMenu()} to take change
 	 *
 	 * @param title the new title
 	 */
 	protected final void setTitle(String title) {
-		this.title = "&0" + title;
+		this.title = title;
 	}
 
 	/**
@@ -613,6 +636,19 @@ public abstract class Menu {
 	 */
 	protected final void setViewer(Player viewer) {
 		this.viewer = viewer;
+	}
+
+	/**
+	 * If you wonder what slot numbers does each empty slot in your menu
+	 * has then set this to true in your constructor
+	 *
+	 * Only takes change when used in constructor or before calling {@link #displayTo(Player)}
+	 * and cannot be updated in {@link #restartMenu()}
+	 *
+	 * @param visible
+	 */
+	protected void setSlotNumbersVisible() {
+		this.slotNumbersVisible = true;
 	}
 
 	// --------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 package org.mineacademy.fo.event;
 
-import org.bukkit.Location;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -28,11 +27,6 @@ public final class RocketExplosionEvent extends SimpleEvent implements Cancellab
 	private final Projectile projectile;
 
 	/**
-	 * The explosion location
-	 */
-	private final Location location;
-
-	/**
 	 * The power of this explosion
 	 */
 	@Setter
@@ -50,10 +44,9 @@ public final class RocketExplosionEvent extends SimpleEvent implements Cancellab
 	@Setter
 	private boolean cancelled;
 
-	public RocketExplosionEvent(Rocket rocket, Projectile projectile, Location location, float power, boolean breakBlocks) {
+	public RocketExplosionEvent(Rocket rocket, Projectile projectile, float power, boolean breakBlocks) {
 		this.rocket = rocket;
 		this.projectile = projectile;
-		this.location = location;
 		this.power = power;
 		this.breakBlocks = breakBlocks;
 	}

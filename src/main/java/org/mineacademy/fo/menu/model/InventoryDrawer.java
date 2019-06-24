@@ -27,7 +27,7 @@ public final class InventoryDrawer {
 	/**
 	 * The inventory title
 	 */
-	private final String title;
+	private String title;
 
 	/**
 	 * The items in this inventory
@@ -73,20 +73,33 @@ public final class InventoryDrawer {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 */
-	public void setItem(int slot, ItemStack item) {
-		content[slot] = item;
-	}
-
-	/**
 	 * Is the current slot occupied by a non-null {@link ItemStack}?
 	 *
 	 * @param slot the slot
 	 * @return true if the slot is occupied
 	 */
 	public boolean isSet(int slot) {
-		return slot < content.length && content[slot] != null;
+		return getItem(slot) != null;
+	}
+
+	/**
+	 * Get an item at the slot, or null if slot overflown or item not set
+	 *
+	 * @param slot
+	 * @return
+	 */
+	public ItemStack getItem(int slot) {
+		return slot < content.length ? content[slot] : null;
+	}
+
+	/**
+	 * Set an item at the certain slot
+	 *
+	 * @param slot
+	 * @param item
+	 */
+	public void setItem(int slot, ItemStack item) {
+		content[slot] = item;
 	}
 
 	/**
@@ -102,12 +115,24 @@ public final class InventoryDrawer {
 	}
 
 	/**
+	 * Set the title of this inventory drawer, not updating the inventory if it is being viewed
+	 *
+	 * @param title
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	/**
 	 * Display the inventory to the player
 	 *
 	 * @param player the player
 	 */
 	public void display(Player player) {
-		final Inventory inv = Bukkit.createInventory(player, size, Common.colorize(title));
+
+		// Automatically append the black color in the menu, can be overriden by colors
+		final Inventory inv = Bukkit.createInventory(player, size, Common.colorize("&0" + title));
+
 		inv.setContents(content);
 
 		if (player.getOpenInventory() != null)

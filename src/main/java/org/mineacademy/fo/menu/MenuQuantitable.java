@@ -1,12 +1,12 @@
 package org.mineacademy.fo.menu;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuQuantity;
+import org.mineacademy.fo.remain.CompMaterial;
 
 /**
  * Advanced menu concept allowing to change quality of an item
@@ -66,7 +66,7 @@ public interface MenuQuantitable {
 			@Override
 			public ItemStack getItem() {
 				return ItemCreator
-						.of(Material.STRING,
+						.of(CompMaterial.STRING,
 								"Edit Quantity: &7" + getQuantity().getAmount(),
 								"",
 								"&8< &7Left click to decrease",

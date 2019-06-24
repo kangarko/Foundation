@@ -12,10 +12,10 @@ import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
+import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.PageManager;
 import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.remain.CompSound;
 
 import lombok.Getter;
 import lombok.val;
@@ -52,108 +52,103 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * Create a new paged menu
 	 *
-	 * @param cellSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
-	 * @param parent the parent menu
+	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
 	 * @param pages the pages
 	 */
-	protected MenuPagged(int cellSize, Menu parent, Iterable<T> pages) {
-		this(cellSize, parent, false, pages);
+	protected MenuPagged(int pageSize, Iterable<T> pages) {
+		this(pageSize, null, pages);
 	}
 
 	/**
 	 * Create a new paged menu
 	 *
-	 * @param cellSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
+	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
 	 * @param parent the parent menu
-	 * @param returnMakesNewInstance should we create new instance of parent when returning back
 	 * @param pages the pages the pages
 	 */
-	protected MenuPagged(int cellSize, Menu parent, boolean returnMakesNewInstance, Iterable<T> pages) {
-		super(parent, returnMakesNewInstance);
+	protected MenuPagged(int pageSize, Menu parent, Iterable<T> pages) {
+		super(parent, true);
 
 		this.currentPage = 1;
-		this.pages = PageManager.populate(cellSize, pages);
+		this.pages = PageManager.populate(pageSize, pages);
 
-		setSize(9 + cellSize);
-		setTitleAndButtons();
+		setSize(9 + pageSize);
+		setButtons();
 	}
 
-	// Render the title and buttons
-	private final void setTitleAndButtons() {
+	// Render the next/prev buttons
+	private final void setButtons() {
 		final boolean hasPages = pages.size() > 1;
 
-		{ // Set title
-			final String title = getTitlePrefix() + (hasPages ? " &8" + currentPage + "/" + pages.size() : "");
+		// Set previous button
+		this.prevButton = hasPages ? new Button() {
+			final boolean canGo = currentPage > 1;
 
-			if (getViewer() != null)
-				ReflectionUtil.updateInventoryTitle(getViewer(), title);
-			else
-				setTitle(title);
-		}
+			@Override
+			public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
+				if (canGo) {
+					MenuPagged.this.currentPage = MathUtil.range(currentPage - 1, 1, pages.size());
 
-		{ // Set buttons
-			this.prevButton = hasPages ? new Button() {
-				final boolean canGo = currentPage > 1;
-
-				@Override
-				public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
-					if (canGo) {
-						MenuPagged.this.currentPage = MathUtil.range(currentPage - 1, 1, pages.size());
-
-						updatePage();
-					}
+					updatePage();
 				}
+			}
 
-				@Override
-				public ItemStack getItem() {
-					final int str = currentPage - 1;
+			@Override
+			public ItemStack getItem() {
+				final int str = currentPage - 1;
 
-					return ItemCreator.of(CompMaterial.fromLegacy("INK_SACK", canGo ? 10 : 8)).name(str == 0 ? "&7First Page" : "&8<< &fPage " + str).build().make();
+				return ItemCreator.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE).name(str == 0 ? "&7First Page" : "&8<< &fPage " + str).build().make();
+			}
+		} : Button.makeEmpty();
+
+		// Set next page button
+		this.nextButton = hasPages ? new Button() {
+			final boolean canGo = currentPage < pages.size();
+
+			@Override
+			public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
+				if (canGo) {
+					MenuPagged.this.currentPage = MathUtil.range(currentPage + 1, 1, pages.size());
+
+					updatePage();
 				}
-			} : Button.makeEmpty();
+			}
 
-			this.nextButton = hasPages ? new Button() {
-				final boolean canGo = currentPage < pages.size();
+			@Override
+			public ItemStack getItem() {
+				final boolean last = currentPage == pages.size();
 
-				@Override
-				public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
-					if (canGo) {
-						MenuPagged.this.currentPage = MathUtil.range(currentPage + 1, 1, pages.size());
-
-						updatePage();
-					}
-				}
-
-				@Override
-				public ItemStack getItem() {
-					final boolean last = currentPage == pages.size();
-
-					return ItemCreator.of(CompMaterial.fromLegacy("INK_SACK", canGo ? 10 : 8)).name(last ? "&7Last Page" : "Page " + (currentPage + 1) + " &8>>").build().make();
-				}
-			} : Button.makeEmpty();
-		}
+				return ItemCreator.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE).name(last ? "&7Last Page" : "Page " + (currentPage + 1) + " &8>>").build().make();
+			}
+		} : Button.makeEmpty();
 	}
 
 	// Reinits the menu and plays the anvil sound
 	private final void updatePage() {
-		setTitleAndButtons();
+		setButtons();
 		redraw();
 		registerButtons();
 
-		CompSound.ANVIL_LAND.play(getViewer(), 1, 1);
+		Menu.getSound().play(getViewer());
+		ReflectionUtil.updateInventoryTitle(getViewer(), compileTitle0());
+	}
+
+	// Compile title and page numbers
+	private final String compileTitle0() {
+		final boolean canAddNumbers = addPageNumbers() && pages.size() > 1;
+
+		return getTitle() + (canAddNumbers ? " &8" + currentPage + "/" + pages.size() : "");
 	}
 
 	/**
-	 * Since we override the default menu title due to page number,
-	 * you can return the prefix title here.
+	 * Automatically preped the title with page numbers
 	 *
-	 * Example:
-	 * "Available classes" and we will add the pages so it becomes:
-	 * "Available classes 1/4"
-	 *
-	 * @return the title prefix
+	 * @param
 	 */
-	protected abstract String getTitlePrefix();
+	@Override
+	protected final void onDisplay(InventoryDrawer drawer) {
+		drawer.setTitle(compileTitle0());
+	}
 
 	/**
 	 * Return the {@link ItemStack} representation of an item on a certain page
@@ -184,6 +179,16 @@ public abstract class MenuPagged<T> extends Menu {
 	}
 
 	/**
+	 * Return true if you want our system to add page/totalPages suffix
+	 * after your title, true by default
+	 *
+	 * @return
+	 */
+	protected boolean addPageNumbers() {
+		return true;
+	}
+
+	/**
 	 * Automatically get the correct item from the actual page, including prev/next buttons
 	 *
 	 * @param slot the slot
@@ -191,8 +196,8 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	@Override
 	public ItemStack getItemAt(int slot) {
-		if (slot < getPageItems().size()) {
-			final T object = getPageItems().get(slot);
+		if (slot < getCurrentPageItems().size()) {
+			final T object = getCurrentPageItems().get(slot);
 
 			if (object != null)
 				return convertToItemStack(object);
@@ -211,34 +216,34 @@ public abstract class MenuPagged<T> extends Menu {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void onMenuClick(Player pl, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
-		if (slot < getPageItems().size()) {
-			final T obj = getPageItems().get(slot);
+	public final void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
+		if (slot < getCurrentPageItems().size()) {
+			final T obj = getCurrentPageItems().get(slot);
 
 			if (obj != null) {
-				val prevType = pl.getOpenInventory().getType();
-				onPageClick(pl, obj, click);
+				val prevType = player.getOpenInventory().getType();
+				onPageClick(player, obj, click);
 
-				if (updateButtonOnClick() && prevType == pl.getOpenInventory().getType())
-					pl.getOpenInventory().getTopInventory().setItem(slot, getItemAt(slot));
+				if (updateButtonOnClick() && prevType == player.getOpenInventory().getType())
+					player.getOpenInventory().getTopInventory().setItem(slot, getItemAt(slot));
 			}
 		}
 	}
 
 	// Do not allow override
 	@Override
-	public final void onButtonClick(Player pl, int slot, InventoryAction action, ClickType click, Button button) {
-		super.onButtonClick(pl, slot, action, click, button);
+	public final void onButtonClick(Player player, int slot, InventoryAction action, ClickType click, Button button) {
+		super.onButtonClick(player, slot, action, click, button);
 	}
 
 	// Do not allow override
 	@Override
-	public final void onMenuClick(Player pl, int slot, ItemStack clicked) {
+	public final void onMenuClick(Player player, int slot, ItemStack clicked) {
 		throw new FoException("Simplest click unsupported");
 	}
 
 	// Get all items in a page
-	private final List<T> getPageItems() {
+	private final List<T> getCurrentPageItems() {
 		Validate.isTrue(pages.containsKey(currentPage - 1), "The menu has only " + pages.size() + " pages, not " + currentPage + "!");
 
 		return pages.get(currentPage - 1);

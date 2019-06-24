@@ -344,18 +344,6 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return new item creator
 	 */
-	public static ItemCreatorBuilder of(Material material, String name, @NonNull String... lore) {
-		return of(CompMaterial.fromMaterial(material), name, lore);
-	}
-
-	/**
-	 * Convenience method to get a new item creator with material, name and lore set
-	 *
-	 * @param material
-	 * @param name
-	 * @param lore
-	 * @return new item creator
-	 */
 	public static ItemCreatorBuilder of(CompMaterial material, String name, @NonNull String... lore) {
 		for (int i = 0; i < lore.length; i++)
 			lore[i] = "&7" + lore[i];
@@ -381,19 +369,6 @@ public final class ItemCreator {
 	 */
 	public static ItemCreatorBuilder of(ItemStack item) {
 		return ItemCreator.builder().item(item);
-	}
-
-	/**
-	 * Get a new item creator from material
-	 *
-	 * @param material existing material
-	 * @deprecated use {@link #of(CompMaterial)} to ensure maximum cross-version
-	 *             compatibility
-	 * @return the new item creator
-	 */
-	@Deprecated
-	public static ItemCreatorBuilder of(Material material) {
-		return of(CompMaterial.fromMaterial(material));
 	}
 
 	/**

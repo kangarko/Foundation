@@ -22,7 +22,7 @@ import org.mineacademy.fo.remain.CompItemFlag;
  * A standardized menu to display a list of tools
  * player can toggle to get in his inventory
  */
-public abstract class MenuListTools extends Menu {
+public abstract class MenuTools extends Menu {
 
 	/**
 	 * The list of tools
@@ -32,7 +32,7 @@ public abstract class MenuListTools extends Menu {
 	/**
 	 * Make a new tools menu
 	 */
-	protected MenuListTools() {
+	protected MenuTools() {
 		this(null);
 	}
 
@@ -41,13 +41,13 @@ public abstract class MenuListTools extends Menu {
 	 *
 	 * @param parent
 	 */
-	protected MenuListTools(Menu parent) {
+	protected MenuTools(Menu parent) {
 		super(parent);
 
 		setSize(9 * 1);
 		setTitle("Tools Menu");
 
-		this.tools = compile0(makeTools());
+		this.tools = compile0(compileTools());
 	}
 
 	/**
@@ -55,11 +55,9 @@ public abstract class MenuListTools extends Menu {
 	 * Accepts an array containing {@link Button}, {@link ItemStack}
 	 * or enter 0 for air.
 	 *
-	 * @deprecated unclear
 	 * @return the array of items in this menu
 	 */
-	@Deprecated
-	protected abstract Object[] makeTools();
+	protected abstract Object[] compileTools();
 
 	// Compiles the given tools from makeTools()
 	private final List<ToggleableTool> compile0(Object... tools) {
@@ -73,7 +71,7 @@ public abstract class MenuListTools extends Menu {
 	}
 
 	/**
-	 * Returns the {@link #makeTools()} at their respective positions for each slot
+	 * Returns the {@link #compileTools()} at their respective positions for each slot
 	 *
 	 * @param slot the slot
 	 * @return the tool or null
@@ -134,7 +132,7 @@ final class ToggleableTool {
 	/**
 	 * Create a new tool
 	 *
-	 * @param unparsed the object to parse, see {@link MenuListTools#makeTools()}
+	 * @param unparsed the object to parse, see {@link MenuTools#compileTools()}
 	 */
 	ToggleableTool(Object unparsed) {
 		if (unparsed != null) {
@@ -144,11 +142,11 @@ final class ToggleableTool {
 			else if (unparsed instanceof Tool)
 				this.item = ((Tool) unparsed).getItem();
 
-			else if (unparsed instanceof Number)
+			else if (unparsed instanceof Number && ((Number) unparsed).intValue() == 0)
 				this.item = new ItemStack(Material.AIR);
 
 			else
-				throw new FoException("Unknown HaveableItem: " + unparsed);
+				throw new FoException("Unknown tool: " + unparsed + " (we only accept ItemStack, Tool or 0 for air)");
 
 		} else
 			this.item = new ItemStack(Material.AIR);
