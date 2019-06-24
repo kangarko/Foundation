@@ -7,11 +7,11 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.menu.Menu;
-import org.mineacademy.fo.menu.MenuDialogRemove;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompDye;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +75,7 @@ public final class ButtonRemove extends Button {
 	 * The button that when clicked, actually removes the object
 	 */
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	public final class RemoveConfirmButton extends Button {
+	final class RemoveConfirmButton extends Button {
 
 		@Override
 		public ItemStack getItem() {
@@ -98,11 +98,11 @@ public final class ButtonRemove extends Button {
 		 * Remove the object using {@link ButtonRemove#removeAction}
 		 */
 		@Override
-		public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
-			pl.closeInventory();
+		public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+			player.closeInventory();
 			removeAction.remove(toRemoveName);
 
-			Common.tell(pl, "&2The " + (!toRemoveType.isEmpty() ? toRemoveType + " " : "") + toRemoveName + " has been deleted.");
+			Common.tell(player, SimpleLocalization.Menu.ITEM_DELETED.replace("{item}", (!toRemoveType.isEmpty() ? toRemoveType + " " : "") + toRemoveName));
 		}
 	}
 
@@ -117,5 +117,59 @@ public final class ButtonRemove extends Button {
 		 * @param object the object's name, for example "Warrior" for class
 		 */
 		void remove(String object);
+	}
+
+	/**
+	 * A prepared menu to allow two-step object removal with a confirmation step
+	 */
+	final class MenuDialogRemove extends Menu {
+
+		/**
+		 * The confirmation button that triggers the removal
+		 */
+		private final Button confirmButton;
+
+		/**
+		 * The return button
+		 */
+		private final Button returnButton;
+
+		/**
+		 * Create a new confirmation remove dialog
+		 *
+		 * @param parentMenu the parent menu
+		 * @param confirmButton the remove button
+		 */
+		public MenuDialogRemove(Menu parentMenu, RemoveConfirmButton confirmButton) {
+			super(parentMenu);
+
+			this.confirmButton = confirmButton;
+			this.returnButton = new ButtonReturnBack(parentMenu);
+
+			setSize(9 * 3);
+			setTitle("&0Confirm removal");
+		}
+
+		/**
+		 * Returns the proper item at the correct slot
+		 *
+		 * @param slot the slot
+		 * @return the item or null
+		 */
+		@Override
+		public ItemStack getItemAt(int slot) {
+			if (slot == 9 + 3)
+				return confirmButton.getItem();
+
+			if (slot == 9 + 5)
+				return returnButton.getItem();
+
+			return null;
+		}
+
+		@Override
+		protected String[] getInfo() {
+			return null;
+		}
 	}
 }

@@ -564,15 +564,6 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Return the return button or null
-	 *
-	 * @return
-	 */
-	public final Button getReturnButton() {
-		return returnButton;
-	}
-
-	/**
 	 * Get the size of this menu
 	 *
 	 * @return
