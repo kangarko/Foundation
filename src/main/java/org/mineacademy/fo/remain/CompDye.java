@@ -1,7 +1,9 @@
 package org.mineacademy.fo.remain;
 
+import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.ColorConverter;
 
 import lombok.Getter;
 
@@ -110,5 +112,15 @@ public enum CompDye {
 				return comp;
 
 		throw new FoException("Could not get CompDye from DyeColor." + dye.toString());
+	}
+
+	/**
+	 * Returns a {@link CompDye} from the given chat color
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static final CompDye fromChatColor(ChatColor color) {
+		return fromDye(ColorConverter.toDye(color));
 	}
 }
