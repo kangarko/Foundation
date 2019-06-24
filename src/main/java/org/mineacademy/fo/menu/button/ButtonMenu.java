@@ -1,6 +1,7 @@
 package org.mineacademy.fo.menu.button;
 
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -24,7 +25,7 @@ public final class ButtonMenu extends Button {
 	 *
 	 * Use this helper to set them right before showing the button
 	 */
-	private final MenuLateBind menuLateBind;
+	private final Callable<Menu> menuLateBind;
 
 	/**
 	 * The menu this button opens
@@ -77,7 +78,7 @@ public final class ButtonMenu extends Button {
 	 * @param menuLateBind
 	 * @param item
 	 */
-	public ButtonMenu(MenuLateBind menuLateBind, ItemCreator.ItemCreatorBuilder item) {
+	public ButtonMenu(Callable menuLateBind, ItemCreator.ItemCreatorBuilder item) {
 		this(null, menuLateBind, item.hideTags(true).build().make());
 	}
 
@@ -87,7 +88,7 @@ public final class ButtonMenu extends Button {
 	 * @param menuLateBind
 	 * @param item
 	 */
-	public ButtonMenu(MenuLateBind menuLateBind, ItemStack item) {
+	public ButtonMenu(Callable menuLateBind, ItemStack item) {
 		this(null, menuLateBind, item);
 	}
 
@@ -136,7 +137,7 @@ public final class ButtonMenu extends Button {
 	}
 
 	// Private constructor
-	private ButtonMenu(Menu menuToOpen, MenuLateBind menuLateBind, ItemStack item) {
+	private ButtonMenu(Menu menuToOpen, Callable<Menu> menuLateBind, ItemStack item) {
 		this.menuToOpen = menuToOpen;
 		this.menuLateBind = menuLateBind;
 		this.item = item;
@@ -148,8 +149,11 @@ public final class ButtonMenu extends Button {
 	@Override
 	public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
 		if (menuLateBind != null)
-			menuLateBind.getMenu().displayTo(pl);
-
+			try {
+				menuLateBind.call().displayTo(pl);
+			} catch (final Exception ex) {
+				ex.printStackTrace();
+			}
 		else {
 			Objects.requireNonNull(menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
 

@@ -52,7 +52,7 @@ public interface MenuQuantitable {
 	 * @param menu the menu
 	 * @return the button that is responsible for setting the quantity edit
 	 */
-	default Button getEditQuantityButton(MenuStandard menu) {
+	default Button getEditQuantityButton(Menu menu) {
 		return new Button() {
 
 			@Override

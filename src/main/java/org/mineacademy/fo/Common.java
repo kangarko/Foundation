@@ -1337,10 +1337,27 @@ public final class Common {
 	}
 
 	/**
+	 * Convenience method for getting a list of players that the
+	 * sender can see and are not vanished
+	 *
+	 * @param sender
+	 * @return
+	 */
+	public static List<String> getPlayerNames(Player sender) {
+		final List<String> found = new ArrayList<>();
+
+		for (final Player online : Remain.getOnlinePlayers())
+			if (!PlayerUtil.isVanished(online, sender))
+				found.add(online.getName());
+
+		return found;
+	}
+
+	/**
 	 * Converts a list having one type object into another
 	 *
 	 * @param list the old list
-	 * @param converter the converter
+	 * @param converter the converter;
 	 * @return the new list
 	 */
 	public static <OLD, NEW> List<NEW> convert(Iterable<OLD> list, TypeConverter<OLD, NEW> converter) {
@@ -1786,7 +1803,7 @@ public final class Common {
 	 * @param task the task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLater(Runnable task) {
+	public static <T extends Runnable> BukkitTask runLater(T task) {
 		return runLater(1, task);
 	}
 

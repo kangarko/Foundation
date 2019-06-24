@@ -1,6 +1,7 @@
 package org.mineacademy.fo.settings;
 
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -81,40 +82,65 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * Locale keys related to your plugin commands
-	 * */
+	 */
 	public static class Commands {
 
 		/**
-		 * The message at "No_Console" key shown when console is denied executing a command, typically:
-		 *
-		 * "&cYou may only use this command as a player"
-		 *
+		 * The message at "No_Console" key shown when console is denied executing a command.
 		 */
 		public static String NO_CONSOLE = "&cYou may only use this command as a player";
 
 		/**
-		 * The message shown when the player tries a command but inputs a
+		 * The message shown when the player tries a command but inputs an
 		 * invalid first argument parameter. We suggest he types /{label} ? for help so make
-		 * sure you implement some help there as well. Typically the message is:
-		 *
-		 * "&cInvalid parameter. Run &6/{label} ? &cfor help."
+		 * sure you implement some help there as well.
 		 *
 		 */
-		public static String INVALID_PARAMETER = "&cInvalid parameter. Run &6/{label} ? &cfor help.";
+		public static String INVALID_ARGUMENT = "&cInvalid argument. Run &6/{label} ? &cfor help.";
 
 		/**
-		 * The message at "Reload_Success" key shown when the plugin has been reloaded successfully, typically:
+		 * The message shown when the player tries a command but inputs an
+		 * invalid second argument parameter. We so suggest he types /{label} {0} for help
 		 *
-		 * "{plugin_name} {plugin_version} has been reloaded."
+		 */
+		public static String INVALID_SUB_ARGUMENT = "&cInvalid argument. Run '/{label} {0}' for help.";
+
+		/**
+		 * The message shown on the same occasion as {@link #INVALID_ARGUMENT} however
+		 * this is shows when the command overrides {@link SimpleCommand#getMultilineUsageMessage()}
+		 *
+		 */
+		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
+
+		/**
+		 * The description label
+		 */
+		public static String LABEL_DESCRIPTION = "&cDescription: {description}";
+
+		/**
+		 * The multiline usages label, see {@link SimpleCommand#getMultilineUsageMessage()}
+		 */
+		public static String LABEL_USAGES = "&cUsages:";
+
+		/**
+		 * The usage label
+		 */
+		public static String LABEL_USAGE = "&cUsage:";
+
+		/**
+		 * The message at "Reload_Success" key shown when the plugin has been reloaded successfully.
 		 */
 		public static String RELOAD_SUCCESS = "{plugin_name} {plugin_version} has been reloaded.";
 
 		/**
-		 * The message at "Reload_Fail" key shown when the plugin has failed to reload, typically:
-		 *
-		 * "&4Oups, &creloading failed! See the console for more information. Error: {error}"
+		 * The message at "Reload_Fail" key shown when the plugin has failed to reload.
 		 */
 		public static String RELOAD_FAIL = "&4Oups, &creloading failed! See the console for more information. Error: {error}";
+
+		/**
+		 * The message shown when there is a fatal error running this command
+		 */
+		public static String ERROR = "&4&lOups! &cThe command failed :( Check the console and report the error.";
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -123,9 +149,39 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 			pathPrefix("Commands");
 
 			NO_CONSOLE = getString("No_Console");
-			INVALID_PARAMETER = getString("Invalid_Parameter");
+
+			INVALID_ARGUMENT = getString("Invalid_Argument");
+			INVALID_SUB_ARGUMENT = getString("Invalid_Sub_Argument");
+			INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
+
+			LABEL_DESCRIPTION = getString("Label_Description");
+			LABEL_USAGE = getString("Label_Usage");
+			LABEL_USAGES = getString("Label_Usages");
+
 			RELOAD_SUCCESS = getString("Reload_Success");
 			RELOAD_FAIL = getString("Reload_Fail");
+
+			ERROR = getString("Error");
+		}
+	}
+
+	/**
+	 * Key related to players
+	 */
+	public static class Player {
+
+		/**
+		 * Message shown when the player is not online on this server
+		 */
+		public static String NOT_ONLINE = "&cPlayer {player} &cis not online on this server.";
+
+		/**
+		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
+		 */
+		private static void init() {
+			pathPrefix("Player");
+
+			NOT_ONLINE = getString("Not_Online");
 		}
 	}
 
@@ -134,26 +190,19 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
-	 * The "Update_Available" key you need to put in your locale file, typically can look like this:
-	 *
-	 * Update_Available: |-
-	 *   &2A new version of &3{plugin.name}&2 is available.
-	 *   &2Current version: &f{current}&2; New version: &f{new}
-	 *   &2URL: &7https://www.spigotmc.org/resources/10258/.
+	 * The "Update_Available" key you need to put in your locale file.
 	 */
 	public static String UPDATE_AVAILABLE = "&2A new version of &3{plugin.name}&2 is available.\n"
 			+ "&2Current version: &f{current}&2; New version: &f{new}\n"
 			+ "&2URL: &7https://www.spigotmc.org/resources/10258/.";
 
 	/**
-	 * The message for player if they lack a permission, typical example:
-	 *
-	 * "&cInsufficient permission ({permission})."
+	 * The message for player if they lack a permission.
 	 */
 	public static String NO_PERMISSION = "&cInsufficient permission ({permission}).";
 
 	// --------------------------------------------------------------------
-	// Optional localized keys
+	// Optional localized keys, no need to write them, defaults can be used
 	// --------------------------------------------------------------------
 
 	/**
@@ -170,16 +219,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	/**
 	 * The message when a section is missing from data.db file (typically we use
 	 * this file to store serialized values such as arenas from minigame plugins).
-	 *
-	 * Default: "&c{name} lacks database information! Please only create {type} in-game! Skipping.."
 	 */
 	public static String DATA_MISSING = "&c{name} lacks database information! Please only create {type} in-game! Skipping..";
 
 	/**
 	 * The message when the console attempts to start a server conversation which is prevented.
-	 *
-	 * Default: "Only players may enter this conversation."
-	 *
 	 */
 	public static String CONVERSATION_REQUIRES_PLAYER = "Only players may enter this conversation.";
 

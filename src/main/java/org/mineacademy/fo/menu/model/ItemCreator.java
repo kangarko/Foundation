@@ -37,7 +37,7 @@ import lombok.Singular;
  * You can use this to make named items with incredible speed and quality.
  */
 @Builder
-public class ItemCreator {
+public final class ItemCreator {
 
 	/**
 	 * The initial item stack

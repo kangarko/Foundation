@@ -16,7 +16,7 @@ import lombok.Getter;
  * This is also handy if you simply want to show
  * a certain inventory without creating the full menu.
  */
-public final class InventoryDrawer implements ItemSetter {
+public final class InventoryDrawer {
 
 	/**
 	 * The size of the inventory.
@@ -73,6 +73,13 @@ public final class InventoryDrawer implements ItemSetter {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	public void setItem(int slot, ItemStack item) {
+		content[slot] = item;
+	}
+
+	/**
 	 * Is the current slot occupied by a non-null {@link ItemStack}?
 	 *
 	 * @param slot the slot
@@ -80,14 +87,6 @@ public final class InventoryDrawer implements ItemSetter {
 	 */
 	public boolean isSet(int slot) {
 		return slot < content.length && content[slot] != null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setItem(int slot, ItemStack item) {
-		content[slot] = item;
 	}
 
 	/**

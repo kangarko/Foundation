@@ -36,6 +36,16 @@ public abstract class Tool {
 	}
 
 	/**
+	 * Evaluates the given itemstack whether it is this tool
+	 *
+	 * @param item the itemstack
+	 * @return true if this tool is the given itemstack
+	 */
+	public boolean isTool(ItemStack item) {
+		return ItemUtil.isSimilar(getItem(), item);
+	}
+
+	/**
 	 * Get the tool item
 	 *
 	 * TIP: Use {@link ItemCreator}
@@ -49,7 +59,7 @@ public abstract class Tool {
 	 *
 	 * @param event the event
 	 */
-	public abstract void onBlockClick(PlayerInteractEvent event);
+	protected abstract void onBlockClick(PlayerInteractEvent event);
 
 	/**
 	 * Called when the player swap items in their hotbar and the new slot matches
@@ -57,7 +67,7 @@ public abstract class Tool {
 	 *
 	 * @param player the player
 	 */
-	public void onHotbarFocused(Player player) {
+	protected void onHotbarFocused(Player player) {
 	}
 
 	/**
@@ -65,17 +75,7 @@ public abstract class Tool {
 	 *
 	 * @param player the player
 	 */
-	public void onHotbarDefocused(Player player) {
-	}
-
-	/**
-	 * Evaluates the given itemstack whether it is this tool
-	 *
-	 * @param item the itemstack
-	 * @return true if this tool is the given itemstack
-	 */
-	public boolean isTool(ItemStack item) {
-		return ItemUtil.isSimilar(getItem(), item);
+	protected void onHotbarDefocused(Player player) {
 	}
 
 	/**
@@ -86,7 +86,7 @@ public abstract class Tool {
 	 *
 	 * @return true if we should ignore the click event if it was cancelled
 	 */
-	public boolean ignoreCancelled() {
+	protected boolean ignoreCancelled() {
 		return true;
 	}
 
@@ -97,12 +97,18 @@ public abstract class Tool {
 	 * @return true if the interact event should be cancelled automatically false by
 	 *         default
 	 */
-	public boolean autoCancel() {
+	protected boolean autoCancel() {
 		return false;
 	}
 
+	/**
+	 * Returns true if the compared object is a tool with the same {@link #getItem()}
+	 *
+	 * @param obj
+	 * @return
+	 */
 	@Override
-	public boolean equals(Object obj) {
+	public final boolean equals(Object obj) {
 		return obj instanceof Tool && ((Tool) obj).getItem().equals(getItem());
 	}
 }

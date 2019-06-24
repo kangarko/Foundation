@@ -68,10 +68,10 @@ public final class MenuListener implements Listener {
 			if (action.toString().contains("PICKUP") || action.toString().contains("PLACE") || action == InventoryAction.CLONE_STACK) {
 				if (whereClicked == MenuClickLocation.MENU) {
 					try {
-						final Button tool = menu.getButton(slotItem);
+						final Button button = menu.getButton(slotItem);
 
-						if (tool != null)
-							menu.onButtonClick(player, event.getSlot(), action, event.getClick(), tool);
+						if (button != null)
+							menu.onButtonClick(player, event.getSlot(), action, event.getClick(), button);
 						else
 							menu.onMenuClick(player, event.getSlot(), action, event.getClick(), cursor, slotItem, !allowed);
 

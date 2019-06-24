@@ -264,6 +264,17 @@ public final class PlayerUtil {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return if the player is vanished, see {@link #isVanished(Player)} or if the other player can see him
+	 *
+	 * @param player
+	 * @param otherPlayer
+	 * @return
+	 */
+	public static boolean isVanished(Player player, Player otherPlayer) {
+		return isVanished(player) || !otherPlayer.canSee(player);
+	}
+
+	/**
 	 * Return true if the player is vanished. We check for Essentials and CMI vanish and also "vanished"
 	 * metadata value which is supported by most plugins
 	 *
@@ -282,17 +293,6 @@ public final class PlayerUtil {
 					return true;
 
 		return false;
-	}
-
-	/**
-	 * Return if the player is vanished, see {@link #isVanished(Player)} or if the other player can see him
-	 *
-	 * @param player
-	 * @param otherPlayer
-	 * @return
-	 */
-	public static boolean isVanished(Player player, Player otherPlayer) {
-		return isVanished(player) || !otherPlayer.canSee(player);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

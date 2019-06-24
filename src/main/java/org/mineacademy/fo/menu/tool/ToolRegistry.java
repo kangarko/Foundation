@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
  *
  * The items are added here automatically upon calling the constructor of {@link Tool}
  */
-public class ToolRegistry {
+public final class ToolRegistry {
 
 	/**
 	 * The registered tools
@@ -25,7 +25,7 @@ public class ToolRegistry {
 	 *
 	 * @param tool the tool
 	 */
-	static final synchronized void register(Tool tool) {
+	static synchronized void register(Tool tool) {
 		Validate.isTrue(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
 
 		tools.add(tool);
@@ -37,7 +37,7 @@ public class ToolRegistry {
 	 * @param tool the tool
 	 * @return true if the tool is registered
 	 */
-	static final synchronized boolean isRegistered(Tool tool) {
+	static synchronized boolean isRegistered(Tool tool) {
 		return getTool(tool.getItem()) != null;
 	}
 
@@ -47,7 +47,7 @@ public class ToolRegistry {
 	 * @param item the item
 	 * @return the corresponding tool, or null
 	 */
-	public static final Tool getTool(ItemStack item) {
+	public static Tool getTool(ItemStack item) {
 		for (final Tool t : tools)
 			if (t.isTool(item))
 				return t;
@@ -60,7 +60,7 @@ public class ToolRegistry {
 	 *
 	 * @return the registered tools array
 	 */
-	public static final Tool[] getTools() {
+	public static Tool[] getTools() {
 		return tools.toArray(new Tool[tools.size()]);
 	}
 }

@@ -62,7 +62,9 @@ public abstract class SimpleCommandGroup {
 
 		mainCommand = new MainCommand(label);
 
-		mainCommand.setAliases(aliases);
+		if (aliases != null)
+			mainCommand.setAliases(aliases);
+
 		mainCommand.register();
 
 		registerSubcommands();
@@ -120,6 +122,10 @@ public abstract class SimpleCommandGroup {
 		subcommands.add(new FillerSubCommand(this, menuHelp));
 	}
 
+	// ----------------------------------------------------------------------
+	// Shortcuts
+	// ----------------------------------------------------------------------
+
 	/**
 	 * Get the label for this command group, failing if not yet registered
 	 *
@@ -129,6 +135,96 @@ public abstract class SimpleCommandGroup {
 		Valid.checkBoolean(isRegistered(), "Main command not yet registered!");
 
 		return mainCommand.getMainLabel();
+	}
+
+	// ----------------------------------------------------------------------
+	// Functions
+	// ----------------------------------------------------------------------
+
+	/**
+	 * Return the message displayed when no parameter is given, by
+	 * default we give credits
+	 *
+	 * If you specify "author" in your plugin.yml we display author information
+	 * If you override {@link SimplePlugin#getFoundedYear()} we display copyright
+	 *
+	 * @return
+	 */
+	protected String[] getNoParamsHeader() {
+		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
+		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
+
+		final List<String> messages = new ArrayList<>();
+
+		messages.add("&8" + Common.chatLine());
+		messages.add("&6&l  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion());
+		messages.add(" ");
+
+		{
+			final String authors = String.join(", ", SimplePlugin.getInstance().getDescription().getAuthors());
+
+			if (!authors.isEmpty())
+				messages.add("   &7Made by &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " : "") + yearNow : ""));
+		}
+
+		{
+			final String credits = getCredits();
+
+			if (credits != null && !credits.isEmpty())
+				messages.add("   " + credits);
+		}
+
+		messages.add("&8" + Common.chatLine());
+
+		return messages.toArray(new String[messages.size()]);
+	}
+
+	// Return the TM symbol in case we have it for kangarko's plugins
+	private final String getTrademark() {
+		return SimplePlugin.getInstance().getDescription().getAuthors().contains("kangarko") ? "&6\u2122" : "";
+	}
+
+	/**
+	 * Get a part of the {@link #getNoParamsHeader()} typically showing
+	 * your website where the user can find more information about this command
+	 * or your plugin in general
+	 *
+	 * @return
+	 */
+	protected String getCredits() {
+		return "&7Visit &fmineacademy.org &7for more information.";
+	}
+
+	/**
+	 * Return which subcommands should trigger the automatic help
+	 * menu that shows all subcommands sender has permission for.
+	 *
+	 * Also see {@link #getHelpHeader()}
+	 *
+	 * Default: help and ?
+	 *
+	 * @return
+	 */
+	protected List<String> getHelpLabel() {
+		return Arrays.asList("help", "?");
+	}
+
+	/**
+	 * Return the header messages used in /{label} help|? typically
+	 * used to tell all available subcommands from this command group
+	 *
+	 * @return
+	 */
+	protected String[] getHelpHeader() {
+		return new String[] {
+				"&8",
+				"&8" + Common.chatLine(),
+				"&6&l  " + SimplePlugin.getNamed() + "&6\u2122 &7" + SimplePlugin.getVersion(),
+				" ",
+				"&2  [] &f= optional arguments",
+				"&6  <> &f= required arguments",
+				" "
+		};
 	}
 
 	// ----------------------------------------------------------------------
@@ -161,7 +257,7 @@ public abstract class SimpleCommandGroup {
 
 			// Print a special message on no arguments
 			if (args.length == 0) {
-				tellCredits();
+				tell(getNoParamsHeader());
 
 				return;
 			}
@@ -180,8 +276,8 @@ public abstract class SimpleCommandGroup {
 			}
 
 			// Handle help argument
-			else if ("help".equals(argument) || "?".equals(argument))
-				tellSubcommandsUsage();
+			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel()))
+				tellSubcommandsHelp();
 
 			// Handle unknown argument
 			else
@@ -189,36 +285,13 @@ public abstract class SimpleCommandGroup {
 		}
 
 		/**
-		 * Tell credits message when no arguments are used
-		 */
-		private void tellCredits() {
-			final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
-			final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
-
-			tell(
-					"&8" + Common.chatLine(),
-					"&6&l  " + SimplePlugin.getNamed() + "&6\u2122 &7" + SimplePlugin.getVersion(),
-					" ",
-					"   &7Made by &f" + String.join(", ", SimplePlugin.getInstance().getDescription().getAuthors()) + " &7\u00A9 " + (foundedYear != -1 ? foundedYear + (yearNow != foundedYear ? " - " : "") + yearNow : ""),
-					"   &7Visit &fmineacademy.org &7for more information.",
-					"&8" + Common.chatLine());
-		}
-
-		/**
 		 * Automatically tells all help for all subcommands
 		 */
-		private void tellSubcommandsUsage() {
-			tell(
-					"&8",
-					"&8" + Common.chatLine(),
-					"&6&l  " + SimplePlugin.getNamed() + "&6\u2122 &7" + SimplePlugin.getVersion(),
-					" ",
-					"&2  [] &f= optional arguments",
-					"&6  <> &f= required arguments",
-					" ");
+		private void tellSubcommandsHelp() {
+			tell(getHelpHeader());
 
 			for (final SimpleSubCommand subcommand : subcommands)
-				if (subcommand.showInHelp()) {
+				if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
 					if (subcommand instanceof FillerSubCommand) {
 						tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
 
@@ -226,9 +299,9 @@ public abstract class SimpleCommandGroup {
 					}
 
 					final String usage = colorizeUsage(subcommand.getUsage());
-					final String desc = subcommand.getDescription();
+					final String desc = Common.getOrEmpty(subcommand.getDescription());
 
-					tellNoPrefix(" &f/" + getLabel() + " " + subcommand.getSublabels()[0] + (!usage.startsWith("/") ? " " + usage : "") + (desc != null ? " &e- " + desc : ""));
+					tellNoPrefix(" &f/" + getLabel() + " " + subcommand.getSublabels()[0] + (!usage.startsWith("/") ? " " + usage : "") + (!desc.isEmpty() ? " &e- " + desc : ""));
 				}
 		}
 
@@ -265,7 +338,7 @@ public abstract class SimpleCommandGroup {
 		 * Handle tabcomplete for subcommands and their tabcomplete
 		 */
 		@Override
-		public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+		public List<String> tabComplete() {
 			if (args.length == 1)
 				return tabCompleteSubcommands(sender, args[0]);
 
@@ -273,7 +346,7 @@ public abstract class SimpleCommandGroup {
 				final SimpleSubCommand cmd = findSubcommand(args[0]);
 
 				if (cmd != null)
-					return cmd.tabComplete(sender, alias, Arrays.copyOfRange(args, 1, args.length));
+					return cmd.tabComplete(sender, getLabel(), Arrays.copyOfRange(args, 1, args.length));
 			}
 
 			return null;
@@ -292,7 +365,7 @@ public abstract class SimpleCommandGroup {
 			final List<String> tab = new ArrayList<>();
 
 			for (final SimpleSubCommand subcommand : subcommands)
-				if (!(subcommand instanceof FillerSubCommand))
+				if (!(subcommand instanceof FillerSubCommand) && hasPerm(subcommand.getPermission()))
 					for (final String label : subcommand.getSublabels())
 						if (!label.trim().isEmpty() && label.startsWith(param))
 							tab.add(label);

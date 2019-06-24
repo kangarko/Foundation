@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.Remain;
 
@@ -39,6 +40,74 @@ public final class ToolsListener implements Listener {
 		private final Player shooter;
 		private final Rocket rocket;
 	}
+
+	// -------------------------------------------------------------------------------------------
+	// Main tool listener
+	// -------------------------------------------------------------------------------------------
+
+	/**
+	 * Handles clicking tools
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onToolClick(PlayerInteractEvent event) {
+		if (!Remain.isInteractEventPrimaryHand(event))
+			return;
+
+		final Player player = event.getPlayer();
+		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
+
+		if (tool != null)
+			try {
+				if ((event.isCancelled() || !event.hasBlock()) && tool.ignoreCancelled())
+					return;
+
+				tool.onBlockClick(event);
+
+				if (tool.autoCancel())
+					event.setCancelled(true);
+
+			} catch (final Throwable t) {
+				Common.tell(player, "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details.");
+
+				event.setCancelled(true);
+				t.printStackTrace();
+			}
+	}
+
+	/**
+	 * Handles hotbar focus/defocus for tools
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onHeltItem(PlayerItemHeldEvent e) {
+		final Player pl = e.getPlayer();
+
+		final Tool curr = ToolRegistry.getTool(pl.getInventory().getItem(e.getNewSlot()));
+		final Tool prev = ToolRegistry.getTool(pl.getInventory().getItem(e.getPreviousSlot()));
+
+		// Player has attained focus
+		if (curr != null) {
+
+			if (prev != null) {
+
+				// Not really
+				if (prev.equals(curr))
+					return;
+
+				prev.onHotbarDefocused(pl);
+			}
+
+			curr.onHotbarFocused(pl);
+		}
+		// Player lost focus
+		else if (prev != null)
+			prev.onHotbarDefocused(pl);
+	}
+
+	// -------------------------------------------------------------------------------------------
+	// Rockets
+	// -------------------------------------------------------------------------------------------
 
 	/**
 	 * Handles launching a rocket
@@ -116,37 +185,6 @@ public final class ToolsListener implements Listener {
 		final ShotRocket rocket = shotRockets.remove(proj.getUniqueId());
 
 		if (rocket != null)
-			rocket.getRocket().onImpact(proj, rocket.getShooter(), proj.getLocation());
-	}
-
-	/**
-	 * Handles clicking tools
-	 *
-	 * @param event
-	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onToolClick(PlayerInteractEvent event) {
-		if (!Remain.isInteractEventPrimaryHand(event))
-			return;
-
-		final Player player = event.getPlayer();
-		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
-
-		if (tool != null)
-			try {
-				if ((event.isCancelled() || !event.hasBlock()) && tool.ignoreCancelled())
-					return;
-
-				tool.onBlockClick(event);
-
-				if (tool.autoCancel())
-					event.setCancelled(true);
-
-			} catch (final Throwable t) {
-				Common.tell(player, "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details.");
-
-				event.setCancelled(true);
-				t.printStackTrace();
-			}
+			rocket.getRocket().onHit(proj, rocket.getShooter(), proj.getLocation());
 	}
 }

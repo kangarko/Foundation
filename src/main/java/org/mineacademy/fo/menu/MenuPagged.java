@@ -25,7 +25,7 @@ import lombok.val;
  *
  * @param <T> the item that each page consists of
  */
-public abstract class MenuPagged<T> extends MenuStandard {
+public abstract class MenuPagged<T> extends Menu {
 
 	/**
 	 * The pages by the page number, containing a list of items

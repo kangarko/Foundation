@@ -35,12 +35,6 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 */
 	protected SimpleSubCommand(String sublabel) {
 		this(getMainCommandGroup0(), sublabel);
-
-		// If this subcommand is a part of the main command for this plugin, then
-		// we return {plugin.name}.command.{sublabel} if the default command permission
-		// has not been changed
-		if (SimplePlugin.isMainCommand(this.getMainLabel()) && getPermission() != null)
-			setPermission(getPermission().replace("{label}", "{sublabel}"));
 	}
 
 	/*
@@ -66,6 +60,13 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 		Valid.checkBoolean(sublabels.length > 0, "Please set at least 1 sublabel");
 
 		this.sublabel = sublabels[0];
+
+		// If the default perm was not changed, improve it
+		if (getRawPermission().equals(DEFAULT_PERMISSION_SYNTAX))
+			if (SimplePlugin.isMainCommand(this.getMainLabel()))
+				setPermission(getRawPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
+			else
+				setPermission(getRawPermission() + ".{sublabel}"); // append the sublabel at the end since this is not our main command
 	}
 
 	/**
