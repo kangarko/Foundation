@@ -50,6 +50,15 @@ public abstract class MenuPagged<T> extends Menu {
 	private Button prevButton;
 
 	/**
+	 * Create a new paged menu where each page has 3 rows + 1 bottom bar
+	 *
+	 * @param pages the pages
+	 */
+	protected MenuPagged(Iterable<T> pages) {
+		this(9 * 3, pages);
+	}
+
+	/**
 	 * Create a new paged menu
 	 *
 	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
@@ -67,6 +76,19 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param pages the pages the pages
 	 */
 	protected MenuPagged(int pageSize, Menu parent, Iterable<T> pages) {
+		this(pageSize, parent, pages, false);
+	}
+
+	/**
+	 * Create a new paged menu
+	 *
+	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
+	 * @param parent the parent menu
+	 * @param pages the pages the pages
+	 * @param returnMakesNewInstance should we re-instatiate the parent menu when
+	 *                               returning to it?
+	 */
+	protected MenuPagged(int pageSize, Menu parent, Iterable<T> pages, boolean returnMakesNewInstance) {
 		super(parent, true);
 
 		this.currentPage = 1;
