@@ -89,7 +89,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                               returning to it?
 	 */
 	protected MenuPagged(int pageSize, Menu parent, Iterable<T> pages, boolean returnMakesNewInstance) {
-		super(parent, true);
+		super(parent, returnMakesNewInstance);
 
 		this.currentPage = 1;
 		this.pages = PageManager.populate(pageSize, pages);
