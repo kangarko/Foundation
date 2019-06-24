@@ -92,7 +92,7 @@ public final class ToolsListener implements Listener {
 
 								tools.add((Tool) instance);
 
-							} catch (NoSuchMethodError | NullPointerException ex) {
+							} catch (NoSuchMethodError | NoSuchMethodException | NullPointerException ex) {
 								// Ignore
 							} catch (final Throwable t) {
 								Common.log("Failed to register Tool class " + toolClass + " due to " + t);
