@@ -190,6 +190,26 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
+	 * Key related to players
+	 */
+	public static class Menu {
+
+		/**
+		 * Message shown when the player is not online on this server
+		 */
+		public static String ITEM_DELETED = "&2The {item} has been deleted.";
+
+		/**
+		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
+		 */
+		private static void init() {
+			pathPrefix("Menu");
+
+			ITEM_DELETED = isSet("Item_Deleted") ? getString("Item_Deleted") : ITEM_DELETED;
+		}
+	}
+
+	/**
 	 * The "Update_Available" key you need to put in your locale file.
 	 */
 	public static String UPDATE_AVAILABLE = "&2A new version of &3{plugin.name}&2 is available.\n"
