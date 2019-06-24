@@ -102,6 +102,15 @@ public abstract class Tool {
 	}
 
 	/**
+	 * Convenience method for quickly adding this tool into a players inventory
+	 *
+	 * @param player
+	 */
+	public final void give(Player player) {
+		player.getInventory().addItem(getItem());
+	}
+
+	/**
 	 * Returns true if the compared object is a tool with the same {@link #getItem()}
 	 *
 	 * @param obj

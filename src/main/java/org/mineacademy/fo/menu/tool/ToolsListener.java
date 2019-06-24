@@ -1,9 +1,14 @@
 package org.mineacademy.fo.menu.tool;
 
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,7 +22,10 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.event.RocketExplosionEvent;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Data;
@@ -26,6 +34,14 @@ import lombok.Data;
  * The event listener class responsible for firing events in tools
  */
 public final class ToolsListener implements Listener {
+
+	/**
+	 * We automatically scan classes in your plugin to find classes extending "Tool" and register 'em
+	 * This process is only done once since startup
+	 *
+	 * To make this work make sure your tool class has "public static Tool getInstance" method
+	 */
+	private static boolean toolsRegistered = false;
 
 	/**
 	 * Stores rockets that were shot
@@ -41,12 +57,60 @@ public final class ToolsListener implements Listener {
 		private final Rocket rocket;
 	}
 
+	// Create a new instance for event listening
+	public ToolsListener() {
+		autoRegisterTools();
+	}
+
+	/**
+	 * Scan classes and load tools that have "getInstance", see {@link #toolsRegistered}
+	 *
+	 * @return
+	 */
+	private static void autoRegisterTools() {
+		if (toolsRegistered)
+			return;
+
+		toolsRegistered = true;
+
+		final Set<Tool> tools = new HashSet<>();
+
+		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
+
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+				final JarEntry jar = entry.nextElement();
+				final String name = jar.getName().replace("/", ".");
+
+				if (name.endsWith(".class") && !name.contains("$"))
+					try {
+						final Class<?> toolClass = Class.forName(name.substring(0, name.length() - 6));
+
+						if (Tool.class.isAssignableFrom(toolClass) && !Tool.class.equals(toolClass) && !Rocket.class.equals(toolClass))
+							try {
+								// Calling getInstance will also make the tool being automatically registered
+								final Object instance = toolClass.getMethod("getInstance").invoke(null);
+
+								tools.add((Tool) instance);
+
+							} catch (NoSuchMethodError | NullPointerException ex) {
+								// Ignore
+							} catch (final Throwable t) {
+								Common.log("Failed to register Tool class " + toolClass + " due to " + t);
+							}
+
+					} catch (final NoClassDefFoundError ex) {
+					}
+			}
+		} catch (final Throwable t) {
+		}
+	}
+
 	// -------------------------------------------------------------------------------------------
 	// Main tool listener
 	// -------------------------------------------------------------------------------------------
 
 	/**
-	 * Handles clicking tools
+	 * Handles clicking tools and shooting rocket
 	 *
 	 * @param event
 	 */
@@ -63,7 +127,16 @@ public final class ToolsListener implements Listener {
 				if ((event.isCancelled() || !event.hasBlock()) && tool.ignoreCancelled())
 					return;
 
-				tool.onBlockClick(event);
+				if (tool instanceof Rocket) {
+					final Rocket rocket = (Rocket) tool;
+
+					if (rocket.canLaunch(player, player.getEyeLocation()))
+						player.launchProjectile(rocket.getProjectile(), player.getEyeLocation().getDirection().multiply(rocket.getFlightSpeed()));
+					else
+						event.setCancelled(true);
+
+				} else
+					tool.onBlockClick(event);
 
 				if (tool.autoCancel())
 					event.setCancelled(true);
@@ -159,6 +232,20 @@ public final class ToolsListener implements Listener {
 
 						shotRockets.put(copy.getUniqueId(), new ShotRocket(player, rocket));
 						rocket.onLaunch(copy, player);
+
+						Common.runTimer(1, new BukkitRunnable() {
+
+							private long elapsedTicks = 0;
+
+							@Override
+							public void run() {
+								if (!copy.isValid() || copy.isOnGround() || elapsedTicks++ > 20 * 30 /*Remove after 30 seconds to reduce server strain*/)
+									cancel();
+
+								else
+									rocket.onFlyTick(copy, player);
+							}
+						});
 					});
 
 				} else {
@@ -181,10 +268,25 @@ public final class ToolsListener implements Listener {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onRocketHit(ProjectileHitEvent event) {
-		final Projectile proj = event.getEntity();
-		final ShotRocket rocket = shotRockets.remove(proj.getUniqueId());
+		final Projectile projectile = event.getEntity();
+		final ShotRocket shot = shotRockets.remove(projectile.getUniqueId());
 
-		if (rocket != null)
-			rocket.getRocket().onHit(proj, rocket.getShooter(), proj.getLocation());
+		final Rocket rocket = shot.getRocket();
+		final Player shooter = shot.getShooter();
+
+		if (shot != null) {
+			if (rocket.canExplode(projectile, shooter)) {
+				final RocketExplosionEvent rocketEvent = new RocketExplosionEvent(rocket, projectile, rocket.getExplosionPower(), rocket.isBreakBlocks());
+
+				if (Common.callEvent(rocketEvent)) {
+					final Location location = projectile.getLocation();
+
+					shot.getRocket().onExplode(projectile, shot.getShooter());
+					projectile.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), rocketEvent.getPower(), false, rocketEvent.isBreakBlocks());
+				}
+
+			} else
+				projectile.remove();
+		}
 	}
 }

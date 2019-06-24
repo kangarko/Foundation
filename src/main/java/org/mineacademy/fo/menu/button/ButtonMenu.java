@@ -3,7 +3,6 @@ package org.mineacademy.fo.menu.button;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -47,29 +46,7 @@ public final class ButtonMenu extends Button {
 	 * @param lore
 	 */
 	public ButtonMenu(Class<? extends Menu> menuClass, CompMaterial material, String name, String... lore) {
-		this(menuClass, ItemCreator.of(material, name, lore));
-	}
-
-	/**
-	 * Create a new button that triggers another menu
-	 *
-	 * @param menuClass
-	 * @param material
-	 * @param name
-	 * @param lore
-	 */
-	public ButtonMenu(Class<? extends Menu> menuClass, Material material, String name, String... lore) {
-		this(menuClass, ItemCreator.of(material, name, lore));
-	}
-
-	/**
-	 * Create a new button that triggers another menu
-	 *
-	 * @param menuClass
-	 * @param item
-	 */
-	public ButtonMenu(Class<? extends Menu> menuClass, ItemCreator.ItemCreatorBuilder item) {
-		this(null, () -> ReflectionUtil.instatiate(menuClass), item.hideTags(true).build().make());
+		this(null, () -> ReflectionUtil.instatiate(menuClass), ItemCreator.of(material, name, lore).hideTags(true).build().make());
 	}
 
 	/**
@@ -101,18 +78,6 @@ public final class ButtonMenu extends Button {
 	 * @param lore
 	 */
 	public ButtonMenu(Menu menu, CompMaterial material, String name, String... lore) {
-		this(menu, ItemCreator.of(material, name, lore));
-	}
-
-	/**
-	 * Create a new button that triggers another menu
-	 *
-	 * @param menu
-	 * @param material
-	 * @param name
-	 * @param lore
-	 */
-	public ButtonMenu(Menu menu, Material material, String name, String... lore) {
 		this(menu, ItemCreator.of(material, name, lore));
 	}
 
