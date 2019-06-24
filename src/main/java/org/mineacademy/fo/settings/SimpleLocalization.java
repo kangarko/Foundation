@@ -150,18 +150,29 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			NO_CONSOLE = getString("No_Console");
 
-			INVALID_ARGUMENT = getString("Invalid_Argument");
-			INVALID_SUB_ARGUMENT = getString("Invalid_Sub_Argument");
-			INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
+			if (isSet("Invalid_Argument"))
+				INVALID_ARGUMENT = getString("Invalid_Argument");
 
-			LABEL_DESCRIPTION = getString("Label_Description");
-			LABEL_USAGE = getString("Label_Usage");
-			LABEL_USAGES = getString("Label_Usages");
+			if (isSet("Invalid_Sub_Argument"))
+				INVALID_SUB_ARGUMENT = getString("Invalid_Sub_Argument");
+
+			if (isSet("Invalid_Argument_Multiline"))
+				INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
+
+			if (isSet("Label_Description"))
+				LABEL_DESCRIPTION = getString("Label_Description");
+
+			if (isSet("Label_Usage"))
+				LABEL_USAGE = getString("Label_Usage");
+
+			if (isSet("Label_Usages"))
+				LABEL_USAGES = getString("Label_Usages");
 
 			RELOAD_SUCCESS = getString("Reload_Success");
 			RELOAD_FAIL = getString("Reload_Fail");
 
-			ERROR = getString("Error");
+			if (isSet("Error"))
+				ERROR = getString("Error");
 		}
 	}
 
