@@ -10,7 +10,7 @@ import org.mineacademy.fo.menu.model.InventoryDrawer;
 /**
  *  An incremental menu that list items.
  */
-public abstract class MenuList extends MenuStandard {
+public abstract class MenuList extends Menu {
 
 	private final List<String> list;
 
@@ -46,7 +46,7 @@ public abstract class MenuList extends MenuStandard {
 	protected abstract Button getListButton(String listName, int listIndex);
 
 	@Override
-	protected final void onDraw(InventoryDrawer inv) {
+	protected final void onDisplay(InventoryDrawer inv) {
 		for (final Button item : getButtonsToAutoRegister())
 			inv.pushItem(item.getItem());
 	}

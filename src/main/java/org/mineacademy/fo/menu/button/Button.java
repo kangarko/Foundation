@@ -113,11 +113,6 @@ public abstract class Button {
 		return getClass().getSimpleName() + "{" + getItem().getType() + "}";
 	}
 
-	@FunctionalInterface
-	public interface MenuLateBind {
-		Menu getMenu();
-	}
-
 	// ----------------------------------------------------------------
 	// Helper classes methods
 	// ----------------------------------------------------------------

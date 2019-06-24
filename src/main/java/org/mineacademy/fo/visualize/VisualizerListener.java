@@ -1,7 +1,6 @@
 package org.mineacademy.fo.visualize;
 
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -10,11 +9,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.menu.tool.ToolRegistry;
 import org.mineacademy.fo.remain.Remain;
 
 public final class VisualizerListener implements Listener {
@@ -61,35 +57,6 @@ public final class VisualizerListener implements Listener {
 
 		if (findVisualizer(block) != null)
 			e.setCancelled(true);
-	}
-
-	public static final class HeldListener implements Listener {
-
-		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-		public void onHeltItem(PlayerItemHeldEvent e) {
-			final Player pl = e.getPlayer();
-
-			final Tool curr = ToolRegistry.getTool(pl.getInventory().getItem(e.getNewSlot()));
-			final Tool prev = ToolRegistry.getTool(pl.getInventory().getItem(e.getPreviousSlot()));
-
-			// Player has attained focus
-			if (curr != null) {
-
-				if (prev != null) {
-
-					// Not really
-					if (prev.equals(curr))
-						return;
-
-					prev.onHotbarDefocused(pl);
-				}
-
-				curr.onHotbarFocused(pl);
-			}
-			// Player lost focus
-			else if (prev != null)
-				prev.onHotbarDefocused(pl);
-		}
 	}
 
 	// -------------------------------------------------------------------------------

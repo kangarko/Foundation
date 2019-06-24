@@ -7,13 +7,11 @@ import org.bukkit.event.HandlerList;
 import org.mineacademy.fo.menu.tool.Rocket;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /**
  * The event that is triggered when a {@link Rocket} explodes.
  */
-@RequiredArgsConstructor
 @Getter
 public final class RocketExplosionEvent extends SimpleEvent implements Cancellable {
 
@@ -35,10 +33,30 @@ public final class RocketExplosionEvent extends SimpleEvent implements Cancellab
 	private final Location location;
 
 	/**
+	 * The power of this explosion
+	 */
+	@Setter
+	private float power;
+
+	/**
+	 * Should this explosion break blocks?
+	 */
+	@Setter
+	private boolean breakBlocks;
+
+	/**
 	 * Is the event cancelled?
 	 */
 	@Setter
 	private boolean cancelled;
+
+	public RocketExplosionEvent(Rocket rocket, Projectile projectile, Location location, float power, boolean breakBlocks) {
+		this.rocket = rocket;
+		this.projectile = projectile;
+		this.location = location;
+		this.power = power;
+		this.breakBlocks = breakBlocks;
+	}
 
 	@Override
 	public HandlerList getHandlers() {

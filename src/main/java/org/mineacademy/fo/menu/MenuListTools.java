@@ -22,7 +22,7 @@ import org.mineacademy.fo.remain.CompItemFlag;
  * A standardized menu to display a list of tools
  * player can toggle to get in his inventory
  */
-public abstract class MenuListTools extends MenuStandard {
+public abstract class MenuListTools extends Menu {
 
 	/**
 	 * The list of tools

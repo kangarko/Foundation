@@ -227,6 +227,15 @@ public enum CompSound {
 	}
 
 	/**
+	 * Plays a sound for the given player with 1F volume and 1F pitch
+	 *
+	 * @param player
+	 */
+	public final void play(Player player) {
+		play(player, 1F, 1F);
+	}
+
+	/**
 	 * Plays a sound for the given player
 	 *
 	 * @param player
@@ -240,6 +249,15 @@ public enum CompSound {
 		} catch (final Throwable t) {
 			// Fail-through
 		}
+	}
+
+	/**
+	 * Plays a sound at the given location with 1F volume and 1F pitch
+	 *
+	 * @param loc
+	 */
+	public final void play(Location loc) {
+		play(loc, 1F, 1F);
 	}
 
 	/**

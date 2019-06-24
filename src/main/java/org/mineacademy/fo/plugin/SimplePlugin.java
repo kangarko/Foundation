@@ -27,6 +27,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
@@ -76,6 +77,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * It is recommended to override this in your own {@link SimplePlugin}
 	 * implementation so you will get the instance of that, directly.
+	 * @param <T>
 	 *
 	 * @return this instance
 	 */
@@ -222,8 +224,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerOutgoingPluginChannel(BungeeChannel.BUNGEECORD);
 
 			// Register main command if it is set
-			if (getMainCommand() != null)
+			if (getMainCommand() != null) {
+				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
+
 				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+			}
 
 			// --------------------------------------------
 			// Call the main start method
@@ -245,7 +250,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(new FoundationsListener());
 			registerEvents(new ToolsListener());
 			registerEvents(new VisualizerListener());
-			registerEvents(new VisualizerListener.HeldListener());
 
 			// Load variables if enabled
 			if (isVariablesEnabled())
@@ -614,6 +618,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	protected final void registerCommand(SimpleCommand command) {
 		command.register();
+	}
+
+	protected final void registerCommands(String label, SimpleCommandGroup group) {
+		registerCommands(label, null, group);
+	}
+
+	protected final void registerCommands(String label, List<String> aliases, SimpleCommandGroup group) {
+		group.register(label, aliases);
+	}
+
+	protected final void registerCommands(StrictList<String> labelAndAliases, SimpleCommandGroup group) {
+		group.register(labelAndAliases);
 	}
 
 	// ----------------------------------------------------------------------------------------

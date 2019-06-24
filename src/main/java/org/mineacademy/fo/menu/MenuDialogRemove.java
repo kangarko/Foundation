@@ -2,9 +2,8 @@ package org.mineacademy.fo.menu;
 
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.button.Button;
-import org.mineacademy.fo.menu.button.ButtonReturnBack;
 import org.mineacademy.fo.menu.button.ButtonRemove.RemoveConfirmButton;
-import org.mineacademy.fo.menu.model.InventoryDrawer;
+import org.mineacademy.fo.menu.button.ButtonReturnBack;
 
 /**
  * A prepared menu to allow two-step object removal with a confirmation step
@@ -28,8 +27,13 @@ public final class MenuDialogRemove extends Menu {
 	 * @param confirmButton the remove button
 	 */
 	public MenuDialogRemove(Menu parentMenu, RemoveConfirmButton confirmButton) {
+		super(parentMenu);
+
 		this.confirmButton = confirmButton;
 		this.returnButton = new ButtonReturnBack(parentMenu);
+
+		setSize(9 * 3);
+		setTitle("&0Confirm removal");
 	}
 
 	/**
@@ -49,23 +53,8 @@ public final class MenuDialogRemove extends Menu {
 		return null;
 	}
 
-	/**
-	 * Draws the inventory, 3 rows
-	 *
-	 * @return the inventory drawer
-	 */
 	@Override
-	protected InventoryDrawer drawInventory() {
-		return InventoryDrawer.of(9 * 3, getTitle());
-	}
-
-	/**
-	 * Get the title for this menu
-	 *
-	 * @return "Confirm removal"
-	 */
-	@Override
-	public String getTitle() {
-		return "&0Confirm removal";
+	protected String[] getInfo() {
+		return null;
 	}
 }

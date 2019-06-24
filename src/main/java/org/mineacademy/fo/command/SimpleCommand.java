@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,11 +17,13 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
+import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.command.placeholder.Placeholder;
 import org.mineacademy.fo.command.placeholder.PositionPlaceholder;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
 import org.mineacademy.fo.model.ChatComponent;
 import org.mineacademy.fo.model.Replacer;
@@ -36,6 +39,11 @@ import lombok.NonNull;
  * across any plugin that utilizes this.
  */
 public abstract class SimpleCommand extends Command {
+
+	/**
+	 * The default permission syntax for this command.
+	 */
+	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin.name}.command.{label}";
 
 	/**
 	 * A list of placeholders to replace in this command, see {@link Placeholder}
@@ -125,7 +133,7 @@ public abstract class SimpleCommand extends Command {
 			setAliases(aliases);
 
 		// Set a default permission for this command
-		setPermission("{plugin.name}.command.{label}");
+		setPermission(DEFAULT_PERMISSION_SYNTAX);
 	}
 
 	/*
@@ -208,25 +216,32 @@ public abstract class SimpleCommand extends Command {
 
 			// Check if sender has the proper permission
 			if (getPermission() != null)
-				checkPerm(getPermission()
-						.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase())
-						.replace("{label}", super.getLabel())
-						.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel()));
+				checkPerm(getPermission());
 
 			// Check for minimum required arguments and print help
 			if (args.length < getMinArguments()) {
 
-				if (getDescription() != null)
-					Common.tell(sender, "&cDescription: " + getDescription());
+				// Enforce setUsage being used
+				if (Common.getOrEmpty(getUsage()).isEmpty())
+					throw new FoException("If you set getMinArguments you must also call setUsage for /" + getLabel() + " command!");
+
+				if (!Common.getOrEmpty(getDescription()).isEmpty())
+					Common.tell(sender, SimpleLocalization.Commands.LABEL_DESCRIPTION.replace("{description}", getDescription()));
 
 				if (getMultilineUsageMessage() != null) {
-					Common.tell(sender, "&cUsages: ");
+					Common.tell(sender, SimpleLocalization.Commands.LABEL_USAGES);
 					Common.tell(sender, getMultilineUsageMessage());
 
 				} else {
-					final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
+					if (getMultilineUsageMessage() != null) {
+						Common.tell(sender, SimpleLocalization.Commands.LABEL_USAGES);
+						Common.tell(sender, getMultilineUsageMessage());
 
-					Common.tell(sender, "&cUsage: /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : ""));
+					} else {
+						final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
+
+						Common.tell(sender, SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : ""));
+					}
 				}
 
 				return true;
@@ -236,9 +251,9 @@ public abstract class SimpleCommand extends Command {
 
 		} catch (final InvalidCommandArgException ex) {
 			if (getMultilineUsageMessage() == null)
-				Common.tell(sender, ex.getMessage() != null ? ex.getMessage() : "&cInvalid arguments. Run '/{label} " + args[0] + "' for help.");
+				Common.tell(sender, ex.getMessage() != null ? ex.getMessage() : replacePlaceholders(SimpleLocalization.Commands.INVALID_SUB_ARGUMENT));
 			else {
-				Common.tell(sender, "&cInvalid arguments. Usage:");
+				Common.tell(sender, SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
 				Common.tell(sender, getMultilineUsageMessage());
 			}
 
@@ -254,7 +269,7 @@ public abstract class SimpleCommand extends Command {
 			}
 
 		} catch (final Throwable t) {
-			Common.tell(sender, "&4&lOups! &cThe command failed :( Check the console and report the error.");
+			Common.tell(sender, SimpleLocalization.Commands.ERROR);
 
 			t.printStackTrace();
 		}
@@ -356,6 +371,18 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Attempts to find a non-vanished online player, failing with the message
+	 * found at {@link SimpleLocalization.Player#NOT_ONLINE}
+	 *
+	 * @param name
+	 * @return
+	 * @throws CommandException
+	 */
+	protected final Player findPlayer(String name) throws CommandException {
+		return findPlayer(name, SimpleLocalization.Player.NOT_ONLINE);
+	}
+
+	/**
 	 * Attempts to find a non-vanished online player, failing with a false message
 	 *
 	 * @param name
@@ -372,6 +399,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Finds an enumeration of a certain type, if it fails it prints a false message to the player
+	 * You can use the {enum} variable in the false message for the name parameter
 	 *
 	 * @param <T>
 	 * @param enumType
@@ -390,6 +418,28 @@ public abstract class SimpleCommand extends Command {
 
 		checkNotNull(found, falseMessage.replace("{enum}", name));
 		return found;
+	}
+
+	/**
+	 * A convenience method for parsing a number at the given args index
+	 *
+	 * @param index
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findNumber(int index, String falseMessage) {
+		checkBoolean(index < args.length, falseMessage);
+
+		Integer parsed = null;
+
+		try {
+			parsed = Integer.parseInt(args[index]);
+
+		} catch (final NumberFormatException ex) {
+		}
+
+		checkNotNull(parsed, falseMessage);
+		return parsed;
 	}
 
 	// ----------------------------------------------------------------------
@@ -461,12 +511,14 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 */
 	protected final void tell(String... messages) {
-		messages = replacePlaceholders(messages);
+		if (messages != null) {
+			messages = replacePlaceholders(messages);
 
-		if (messages.length > 2)
-			Common.tellNoPrefix(sender, messages);
-		else
-			Common.tell(sender, messages);
+			if (messages.length > 2)
+				Common.tellNoPrefix(sender, messages);
+			else
+				Common.tell(sender, messages);
+		}
 	}
 
 	/**
@@ -491,11 +543,11 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_PARAMETER}
+	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_ARGUMENT}
 	 * message for player
 	 */
 	protected final void returnInvalidArgs() {
-		returnTell(SimpleLocalization.Commands.INVALID_PARAMETER.replace("{label}", getLabel()));
+		returnTell(SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", getLabel()));
 	}
 
 	/**
@@ -523,11 +575,12 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Replaces placeholders in all messages
+	 * To change them override {@link #replacePlaceholders(String)}
 	 *
 	 * @param messages
 	 * @return
 	 */
-	private final String[] replacePlaceholders(String[] messages) {
+	protected final String[] replacePlaceholders(String[] messages) {
 		for (int i = 0; i < messages.length; i++)
 			messages[i] = replacePlaceholders(messages[i]).replace("{prefix}", Common.getTellPrefix());
 
@@ -542,9 +595,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected String replacePlaceholders(String message) {
 		// Replace basic labels
-		message = message
-				.replace("{label}", getLabel())
-				.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
+		message = replaceBasicPlaceholders0(message);
 
 		// Replace {X} with arguments
 		for (int i = 0; i <= args.length; i++)
@@ -570,6 +621,19 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Internal method for replacing {label} {sublabel} and {plugin.name} placeholders
+	 *
+	 * @param message
+	 * @return
+	 */
+	private final String replaceBasicPlaceholders0(String message) {
+		return message
+				.replace("{label}", getLabel())
+				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
+				.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
+	}
+
+	/**
 	 * Utility method to safely update the args, increasing them if the position is too high
 	 *
 	 * Used in placeholders
@@ -584,20 +648,144 @@ public abstract class SimpleCommand extends Command {
 		args[position] = value;
 	}
 
+	/**
+	 * Convenience method for returning the last word in arguments
+	 *
+	 * @return
+	 */
+	protected final String getLastArg() {
+		return args.length > 0 ? args[args.length - 1] : "";
+	}
+
 	// ----------------------------------------------------------------------
-	// Temporary variables and safety
+	// Tab completion
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Sets the minimum number of arguments to run this command
+	 * Show tab completion suggestions when the given sender
+	 * writes the command with the given arguments
 	 *
-	 * @param minArguments
+	 * Tab completion is only shown if the sender has {@link #getPermission()}
+	 *
+	 * @param sender
+	 * @param alias
+	 * @param args
+	 * @param location
+	 *
+	 * @return
+	 *
+	 * @deprecated location is not used
 	 */
-	protected final void setMinArguments(int minArguments) {
-		Valid.checkBoolean(minArguments >= 0, "Minimum arguments must be 0 or greater");
-
-		this.minArguments = minArguments;
+	@Deprecated
+	@Override
+	public final List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
+		return tabComplete(sender, alias, args);
 	}
+
+	/**
+	 * Show tab completion suggestions when the given sender
+	 * writes the command with the given arguments
+	 *
+	 * Tab completion is only shown if the sender has {@link #getPermission()}
+	 *
+	 * @param sender
+	 * @param alias
+	 * @param args
+	 *
+	 * @return
+	 */
+	@Override
+	public final List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+		this.sender = sender;
+		this.label = alias;
+		this.args = args;
+
+		if (hasPerm(getPermission())) {
+			List<String> suggestions = tabComplete();
+
+			// Return online player names when suggestions are null - simulate Bukkit behaviour
+			if (suggestions == null)
+				suggestions = completeLastWordPlayerNames();
+
+			return suggestions;
+		}
+
+		return new ArrayList<>();
+	}
+
+	/**
+	 * Override this method to support tab completing in your command.
+	 *
+	 * You can then use "sender", "label" or "args" fields from {@link SimpleCommand}
+	 * class normally and return a list of tab completion suggestions.
+	 *
+	 * We already check for {@link #getPermission()} and only call this method if the
+	 * sender has it.
+	 *
+	 * TIP: Use {@link #completeLastWord(Iterable)} and {@link #getLastArg()} methods
+	 * 		in {@link SimpleCommand} for your convenience
+	 *
+	 *
+	 * @return the list of suggestions to complete, or null to complete player names automatically
+	 */
+	protected List<String> tabComplete() {
+		return null;
+	}
+
+	/**
+	 * Convenience method for automatically completing the last word
+	 * with the given suggestions. We sort them and only select ones
+	 * that the last word starts with.
+	 *
+	 * @param <T>
+	 * @param suggestions
+	 * @return
+	 */
+	protected final <T> List<String> completeLastWord(List<String> suggestions) {
+		return TabUtil.complete(getLastArg(), suggestions);
+	}
+
+	/**
+	 * Convenience method for automatically completing the last word
+	 * with the given suggestions. We sort them and only select ones
+	 * that the last word starts with.
+	 *
+	 * @param <T>
+	 * @param suggestions
+	 * @return
+	 */
+	protected final <T> List<String> completeLastWord(Iterable<String> suggestions) {
+		return TabUtil.complete(getLastArg(), suggestions);
+	}
+
+	/**
+	 * Convenience method for automatically completing the last word
+	 * with the given suggestions. We sort them and only select ones
+	 * that the last word starts with.
+	 *
+	 * @param <T>
+	 * @param suggestions
+	 * @return
+	 */
+	protected final <T> List<String> completeLastWord(T... suggestions) {
+		return TabUtil.complete(getLastArg(), suggestions);
+	}
+
+	/**
+	 * Convenience method for completing all player names that the sender can see
+	 * and that are not vanished
+	 *
+	 * TIP: You can simply return null for the same behaviour
+	 *
+	 * @return
+	 */
+	protected final List<String> completeLastWordPlayerNames() {
+		return TabUtil.complete(getLastArg(), isPlayer() ? Common.getPlayerNames(getPlayer()) : Common.getPlayerNames());
+	}
+
+	// ----------------------------------------------------------------------
+	// Temporary variables and safety
+	// ----------------------------------------------------------------------
 
 	/**
 	 * Attempts to get the sender as player, only works if the sender is actually a player,
@@ -619,6 +807,17 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Sets the minimum number of arguments to run this command
+	 *
+	 * @param minArguments
+	 */
+	protected final void setMinArguments(int minArguments) {
+		Valid.checkBoolean(minArguments >= 0, "Minimum arguments must be 0 or greater");
+
+		this.minArguments = minArguments;
+	}
+
+	/**
 	 * Get the permission for this command, either the one you set or our from Localization
 	 */
 	@Override
@@ -630,7 +829,8 @@ public abstract class SimpleCommand extends Command {
 	 * By default we check if the player has the permission you set in setPermission.
 	 *
 	 * If that is null, we check for the following:
-	 * {yourpluginname}.command.{label}
+	 * {yourpluginname}.command.{label} for {@link SimpleCommand}
+	 * {yourpluginname}.command.{label}.{sublabel} for {@link SimpleSubCommand}
 	 *
 	 * We handle lacking permissions automatically and return with an no-permission message
 	 * when the player lacks it.
@@ -639,6 +839,17 @@ public abstract class SimpleCommand extends Command {
 	 */
 	@Override
 	public final String getPermission() {
+		return super.getPermission() == null ? null : replaceBasicPlaceholders0(super.getPermission());
+	}
+
+	/**
+	 * Get the permission without replacing {plugin.name}, {label} or {sublabel}
+	 *
+	 * @deprecated internal use only
+	 * @return
+	 */
+	@Deprecated
+	public final String getRawPermission() {
 		return super.getPermission();
 	}
 
