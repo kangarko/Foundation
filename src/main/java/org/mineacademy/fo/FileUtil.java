@@ -103,7 +103,7 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Return a file in a path in our plugin folder
+	 * Return a file in a path in our plugin folder, file may not exist
 	 *
 	 * @param path
 	 * @return
@@ -244,7 +244,7 @@ public final class FileUtil {
 	 * @param lines
 	 */
 	public static void write(String to, Collection<String> lines) {
-		write(FileUtil.getOrMakeFile(to), lines, StandardOpenOption.APPEND);
+		write(getOrMakeFile(to), lines, StandardOpenOption.APPEND);
 	}
 
 	/**
