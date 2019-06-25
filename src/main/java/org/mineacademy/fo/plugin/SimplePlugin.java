@@ -174,12 +174,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Set the instance
 		getInstance();
 
-		// Rename to keep plugin consistency
+		// Call parent
 		onPluginLoad();
 	}
 
 	@Override
 	public final void onEnable() {
+
+		// Check if Foundation is correctly moved
+		checkShading();
+
+		if (!isEnabled)
+			return;
 
 		// Before all, check if necessary libraries and the minimum required MC version
 		if (!checkLibraries0() || !checkMinimumVersion0())
@@ -265,6 +271,47 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		final Throwable t) {
 			displayError0(t);
+		}
+	}
+
+	/**
+	 * A dirty way of checking if Foundation has been shaded correctly
+	 */
+	private final void checkShading() {
+		try {
+			throw new ShadingException();
+		} catch (final Throwable t) {
+		}
+	}
+
+	/**
+	 * The exception enabling us to check if for some reason {@link SimplePlugin}'s instance
+	 * does not match this class' instance, which is most likely caused by wrong repackaging
+	 * or no repackaging at all (two plugins using Foundation must both have different packages
+	 * for their own Foundation version).
+	 *
+	 * Or, this is caused by a PlugMan, and we have no mercy for that.
+	 */
+	private final class ShadingException extends Throwable {
+		private static final long serialVersionUID = 1L;
+
+		public ShadingException() {
+			if (!SimplePlugin.getNamed().equals(getDescription().getName())) {
+				System.out.println(Common.consoleLine());
+				System.out.println("We have a class path problem in the Foundation library");
+				System.out.println("preventing " + getDescription().getName() + " from loading correctly!");
+				System.out.println("");
+				System.out.println("This is likely caused by two plugins having the");
+				System.out.println("same Foundation library paths - make sure you");
+				System.out.println("relocale the package! If you are testing using");
+				System.out.println("Ant, only test one plugin at the time.");
+				System.out.println("");
+				System.out.println("Possible cause: " + SimplePlugin.getNamed());
+				System.out.println("Foundations package: " + SimplePlugin.class.getPackage().getName());
+				System.out.println(Common.consoleLine());
+
+				isEnabled = false;
+			}
 		}
 	}
 
