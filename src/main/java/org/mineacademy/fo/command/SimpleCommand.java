@@ -170,7 +170,7 @@ public abstract class SimpleCommand extends Command {
 		final PluginCommand oldCommand = Bukkit.getPluginCommand(getLabel());
 
 		if (oldCommand != null) {
-			Common.log("&eCommand &f/" + getLabel() + " &eis already used by " + oldCommand.getPlugin().getName() + ", unregistering...");
+			Common.log("&eCommand &f/" + getLabel() + " &ealready used by " + oldCommand.getPlugin().getName() + ", unregistering...");
 
 			Remain.unregisterCommand(oldCommand.getLabel());
 		}
@@ -271,7 +271,7 @@ public abstract class SimpleCommand extends Command {
 		} catch (final Throwable t) {
 			Common.tell(sender, SimpleLocalization.Commands.ERROR);
 
-			t.printStackTrace();
+			Common.error(t, "Failed to execute command /" + getLabel() + " " + String.join(" ", args));
 		}
 
 		return true;
@@ -598,8 +598,8 @@ public abstract class SimpleCommand extends Command {
 		message = replaceBasicPlaceholders0(message);
 
 		// Replace {X} with arguments
-		for (int i = 0; i <= args.length; i++)
-			message = message.replace("{" + i + "}", Common.getOrEmpty(i == 0 ? getLabel() : args[i - 1]));
+		for (int i = 0; i < args.length; i++)
+			message = message.replace("{" + i + "}", Common.getOrEmpty(args[i]));
 
 		// Replace saved placeholders
 		for (final Placeholder placeholder : placeholders) {

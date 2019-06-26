@@ -1,9 +1,16 @@
 package org.mineacademy.fo.menu.tool;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 /**
@@ -29,8 +36,27 @@ public abstract class Tool {
 					e.printStackTrace();
 				}
 
-				if (!ToolRegistry.isRegistered(Tool.this))
-					ToolRegistry.register(Tool.this);
+				final Tool instance = Tool.this;
+
+				if (!ToolRegistry.isRegistered(instance))
+					ToolRegistry.register(instance);
+
+				if (instance instanceof Listener) {
+					try {
+						System.out.println("get instance for " + instance);
+
+						ReflectionUtil.getField(instance, "getInstance", Tool.class);
+						final Constructor<?> con = instance.getClass().getConstructor();
+
+						System.out.println("Check constructor for " + instance);
+						Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor of " + instance + " not private while implementing listener");
+
+					} catch (final Throwable ex) {
+						ex.printStackTrace();
+
+						throw new FoException("Your Tool " + instance + " is implementing Listener must be a singleton (have getInstance)!");
+					}
+				}
 			}
 		}.start();
 	}

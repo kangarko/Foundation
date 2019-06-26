@@ -11,7 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.TimeUtilFo;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -155,7 +155,7 @@ public final class Debugger {
 
 		// Write out header and server info
 		fill(lines,
-				"------------------------------------[ " + TimeUtilFo.getFormattedDate() + " ]-----------------------------------",
+				"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
 				header,
 				"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
 				"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),

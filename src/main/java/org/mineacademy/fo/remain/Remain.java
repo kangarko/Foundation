@@ -1109,33 +1109,35 @@ public class Remain {
 	 * @param player
 	 * @param item
 	 */
-	public static final void takeItemLegacy(Player player, ItemStack item) {
-		if (item.getAmount() > 1) {
-			item.setAmount(item.getAmount() - 1);
+	public static final void takeItemOnePiece(Player player, ItemStack item) {
+		Common.runLater(() -> {
+			if (item.getAmount() > 1) {
+				item.setAmount(item.getAmount() - 1);
 
-		} else {
-			if (MinecraftVersion.atLeast(V.v1_9))
-				item.setAmount(0);
+			} else {
+				if (MinecraftVersion.atLeast(V.v1_9))
+					item.setAmount(0);
 
-			// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
-			else {
-				final ItemStack[] content = player.getInventory().getContents();
+				// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
+				else {
+					final ItemStack[] content = player.getInventory().getContents();
 
-				for (int i = 0; i < content.length; i++) {
-					final ItemStack c = content[i];
+					for (int i = 0; i < content.length; i++) {
+						final ItemStack c = content[i];
 
-					if (c != null && c.equals(item)) {
-						content[i] = null;
+						if (c != null && c.equals(item)) {
+							content[i] = null;
 
-						break;
+							break;
+						}
 					}
+
+					player.getInventory().setContents(content);
 				}
-
-				player.getInventory().setContents(content);
 			}
-		}
 
-		player.updateInventory();
+			player.updateInventory();
+		});
 	}
 
 	/**

@@ -26,7 +26,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.TimeUtilFo;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
@@ -1250,7 +1250,7 @@ public class YamlConfig {
 			final String str = getObject(path).toString().equals("0") ? "0" : getString(path);
 
 			raw = str;
-			timeTicks = (int) TimeUtilFo.toTicks(raw);
+			timeTicks = (int) TimeUtil.toTicks(raw);
 		}
 
 		@Override

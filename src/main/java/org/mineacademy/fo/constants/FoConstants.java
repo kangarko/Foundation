@@ -1,7 +1,7 @@
 package org.mineacademy.fo.constants;
 
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.TimeUtilFo;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -88,7 +88,7 @@ public final class FoConstants {
 		public static final String[] UPDATED_FILE = new String[] {
 				Common.configLine(),
 				"",
-				" Your file has been automatically updated at " + TimeUtilFo.getFormattedDate(),
+				" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
 				" to " + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion(),
 				"",
 				" Unfortunatelly, due to how Bukkit saves all .yml files, it was not possible",

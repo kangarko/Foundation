@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.TimeUtilFo;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.collection.StrictMap;
@@ -323,7 +323,7 @@ public final class Variables {
 			case "nms_version":
 				return MinecraftVersion.getServerVersion();
 			case "timestamp":
-				return TimeUtilFo.getFormattedDate();
+				return TimeUtil.getFormattedDate();
 
 			case "town":
 				return player == null ? "" : HookManager.getTownName(player);

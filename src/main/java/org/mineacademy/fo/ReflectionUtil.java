@@ -362,6 +362,8 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T getFieldContent(Class<?> clazz, String field, Object instance) {
+		final String originalClassName = clazz.getSimpleName();
+
 		do {
 			// note: getDeclaredFields() fails if any of the fields are classes that cannot be loaded
 			for (final Field f : clazz.getDeclaredFields())
@@ -370,7 +372,7 @@ public final class ReflectionUtil {
 
 		} while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
 
-		throw new ReflectionException("No such field " + field + " in " + clazz);
+		throw new ReflectionException("No such field " + field + " in " + originalClassName + " or its superclasses");
 	}
 
 	/**

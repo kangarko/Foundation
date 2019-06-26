@@ -414,6 +414,33 @@ public final class PlayerUtil {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
+	 * Attempts to retrieve the first item that is similar (See {@link ItemUtil#isSimilar(ItemStack, ItemStack)})
+	 * to the given item.
+	 *
+	 * @param player
+	 * @param item the found item or null if none
+	 * @return
+	 */
+	public static ItemStack getFirstItem(Player player, ItemStack item) {
+		for (final ItemStack otherItem : player.getInventory().getContents())
+			if (otherItem != null && ItemUtil.isSimilar(otherItem, item))
+				return otherItem;
+
+		return null;
+	}
+
+	/**
+	 * Removes one piece of the given item stack, setting the slot to air
+	 * if the item is only 1 amount
+	 *
+	 * @param player
+	 * @param item
+	 */
+	public static void takeOnePiece(Player player, ItemStack item) {
+		Remain.takeItemOnePiece(player, item);
+	}
+
+	/**
 	 * Attempts to search and replace the first similar itemstack with the new one
 	 *
 	 * @param inv

@@ -764,7 +764,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @return the channel name in an enum object.
 	 */
 	public BungeeChannel getDefaultBungeeChannel() {
-		throw new FoException("Default bungee channel not configured");
+		throw new FoException("Must override getDefaultBungeeChannel()");
 	}
 
 	/**
@@ -857,6 +857,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	private final FoException unsupported(String method) {
-		return new FoException("Cannot call " + method + " in " + getName());
+		return new FoException("Cannot call " + method + " in " + getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
 	}
 }

@@ -1,7 +1,7 @@
 package org.mineacademy.fo.model;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.mineacademy.fo.TimeUtilFo;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
@@ -109,10 +109,10 @@ public class RangedValue {
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 
 		final String first = parts[0];
-		final Integer min = NumberUtils.isNumber(first) ? Integer.parseInt(first) : (int) (TimeUtilFo.toTicks(first) / 20);
+		final Integer min = NumberUtils.isNumber(first) ? Integer.parseInt(first) : (int) (TimeUtil.toTicks(first) / 20);
 
 		final String second = parts.length == 2 ? parts[1] : "";
-		final Integer max = parts.length == 2 ? NumberUtils.isNumber(second) ? Integer.parseInt(second) : (int) (TimeUtilFo.toTicks(second) / 20) : min;
+		final Integer max = parts.length == 2 ? NumberUtils.isNumber(second) ? Integer.parseInt(second) : (int) (TimeUtil.toTicks(second) / 20) : min;
 		Valid.checkBoolean(min != null && max != null, "Malformed value " + line);
 
 		return new RangedValue(min, max);
