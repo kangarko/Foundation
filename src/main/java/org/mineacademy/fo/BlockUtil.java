@@ -11,6 +11,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.util.Vector;
@@ -370,6 +372,83 @@ public final class BlockUtil {
 		}
 
 		return -1;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Shooting blocks
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Shoot the given block to the sky with the given velocity (maybe your arrow velocity?)
+	 * and can even make the block burn on impact. The shot block is set to air
+	 *
+	 * @param block
+	 * @param velocity
+	 * @return
+	 */
+	public static FallingBlock shootBlock(Block block, Vector velocity) {
+		return shootBlock(block, velocity, 0D);
+	}
+
+	/**
+	 * Shoot the given block to the sky with the given velocity (maybe your arrow velocity?)
+	 * and can even make the block burn on impact. The shot block is set to air
+	 *
+	 * @param block
+	 * @param velocity
+	 * @param burnOnFallChance from 0.0 to 1.0
+	 * @return
+	 */
+	public static FallingBlock shootBlock(Block block, Vector velocity, double burnOnFallChance) {
+		if (!canShootBlock(block))
+			return null;
+
+		final FallingBlock falling = Remain.spawnFallingBlock(block.getLocation(), block.getType());
+
+		{ // Set velocity to reflect the given velocity but change a bit for more realism
+			final double x = MathUtil.range(velocity.getX(), -2, 2) * 0.5D;
+			final double y = Math.random();
+			final double z = MathUtil.range(velocity.getZ(), -2, 2) * 0.5D;
+
+			falling.setVelocity(new Vector(x, y, z));
+		}
+
+		if (RandomUtil.chanceD(burnOnFallChance) && block.getType().isBurnable())
+			scheduleBurnOnFall(falling);
+
+		// Prevent drop
+		falling.setDropItem(false);
+
+		// Remove the block
+		block.setType(Material.AIR);
+
+		return falling;
+	}
+
+	/**
+	 * Return the allowed material types to shoot this block
+	 *
+	 * @param block
+	 * @return
+	 */
+	private static boolean canShootBlock(Block block) {
+		final Material material = block.getType();
+
+		return !CompMaterial.isAir(material) && (material.toString().contains("STEP") || material.toString().contains("SLAB") || BlockUtil.isForBlockSelection(material));
+	}
+
+	/**
+	 * Schedule to set the flying block on fire upon impact
+	 *
+	 * @param block
+	 */
+	private static void scheduleBurnOnFall(FallingBlock block) {
+		EntityUtil.trackFalling(block, () -> {
+			final Block upperBlock = block.getLocation().getBlock().getRelative(BlockFace.UP);
+
+			if (upperBlock.getType() == Material.AIR)
+				upperBlock.setType(Material.FIRE);
+		});
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
