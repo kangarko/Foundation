@@ -41,7 +41,7 @@ public final class FoException extends RuntimeException {
 	public FoException(String message, Throwable t) {
 		super(message, t);
 
-		Debugger.saveError(t);
+		Debugger.saveError(t, message);
 	}
 
 	/**
