@@ -43,12 +43,12 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.14.2-R0.1-SNAPSHOT</version>
+			<version>1.14.3-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.server</groupId>
 			<artifactId>PaperSpigot</artifactId>
-			<version>1.14.2-SNAPSHOT-95</version>
+			<version>1.14.3-SNAPSHOT-114</version>
 		</dependency>
 		<!-- Plugins -->
 		<dependency>
@@ -229,12 +229,12 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.0.0-SNAPSHOT-4314</version>
+			<version>7.0.0-SNAPSHOT-4415</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldGuard</artifactId>
-			<version>7.0.0-SNAPSHOT-1836</version>
+			<version>7.0.1-SNAPSHOT-1928</version>
 		</dependency>
 	</dependencies>
 	<build>
