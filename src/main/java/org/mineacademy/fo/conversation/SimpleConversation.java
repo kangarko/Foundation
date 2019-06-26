@@ -1,16 +1,20 @@
 package org.mineacademy.fo.conversation;
 
 import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.ConversationPrefix;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
@@ -20,11 +24,38 @@ import org.mineacademy.fo.settings.SimpleLocalization;
  */
 public abstract class SimpleConversation implements ConversationAbandonedListener {
 
+	/**
+	 * The menu to return to, if any
+	 */
+	private Menu menu;
+
+	/**
+	 * Creates a simple conversation
+	 */
 	protected SimpleConversation() {
+		this(null);
 	}
 
 	/**
-	 * Start a conversation with the player
+	 * Creates a simple conversation that opens the
+	 * menu when finished
+	 *
+	 * @param menu
+	 */
+	protected SimpleConversation(Menu menu) {
+		if (menu != null)
+			try {
+				menu.newInstance();
+
+			} catch (final Throwable t) {
+				Common.throwError(t, "Cannot open new conversation with menu " + menu + " as it does not support newInstance!");
+			}
+
+		this.menu = menu;
+	}
+
+	/**
+	 * Start a conversation with the player, throwing error if {@link Player#isConversing()}
 	 *
 	 * @param player
 	 */
@@ -48,7 +79,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				.addConversationAbandonedListener(this);
 
-		if (insertPrefix())
+		if (insertPrefix() && getPrefix() != null)
 			factory.withPrefix(getPrefix());
 
 		factory.buildConversation(player).begin();
@@ -62,6 +93,43 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	protected abstract Prompt getFirstPrompt();
 
 	/**
+	 * Listen for and handle existing the conversation
+	 */
+	@Override
+	public final void conversationAbandoned(ConversationAbandonedEvent event) {
+		final Conversable conversing = event.getContext().getForWhom();
+		final Object source = event.getSource();
+
+		if (source instanceof Conversation) {
+			final Conversation convo = (Conversation) source;
+			final Prompt currentPrompt = ReflectionUtil.getField(convo, "currentPrompt", Prompt.class);
+
+			if (currentPrompt != null && currentPrompt instanceof SimplePrompt)
+				((SimplePrompt) currentPrompt).onConversationEnd(this, event);
+		}
+
+		onConversationEnd(event);
+
+		if (conversing instanceof Player) {
+			final Player player = (Player) conversing;
+
+			(event.gracefulExit() ? CompSound.SUCCESSFUL_HIT : CompSound.NOTE_BASS).play(player, 1F, 1F);
+
+			if (menu != null && reopenMenu())
+				menu.newInstance().displayTo(player);
+		}
+	}
+
+	/**
+	 * Fired when the user quits this conversation (see {@link #getCanceller()}, or
+	 * simply quits the game)
+	 *
+	 * @param event
+	 */
+	protected void onConversationEnd(ConversationAbandonedEvent event) {
+	}
+
+	/**
 	 * Get conversation prefix before each message
 	 *
 	 * By default we use the plugins tell prefix
@@ -70,8 +138,8 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @return
 	 */
-	protected ConversationPrefix getPrefix() {
-		return new SimplePrefix(Common.getTellPrefix());
+	protected SimplePrefix getPrefix() {
+		return new SimplePrefix(Common.ADD_TELL_PREFIX ? Common.getTellPrefix() : "");
 	}
 
 	/**
@@ -94,6 +162,15 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	}
 
 	/**
+	 * If we detect the player has a menu opened should we reopen it?
+	 *
+	 * @return
+	 */
+	protected boolean reopenMenu() {
+		return true;
+	}
+
+	/**
 	 * Get the timeout in seconds before automatically exiting the convo
 	 *
 	 * @return
@@ -102,6 +179,14 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		return 60;
 	}
 
+	/**
+	 * Sets the menu to return to after the end of this conversation
+	 *
+	 * @param menu
+	 */
+	public void setMenuToReturnTo(Menu menu) {
+		this.menu = menu;
+	}
 	// ------------------------------------------------------------------------------------------------------------
 	// Static access
 	// ------------------------------------------------------------------------------------------------------------

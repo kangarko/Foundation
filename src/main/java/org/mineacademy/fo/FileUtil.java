@@ -222,7 +222,7 @@ public final class FileUtil {
 		if (!message.equalsIgnoreCase("none") && !message.isEmpty())
 			for (final String line : Common.splitNewline(message))
 				if (!line.isEmpty())
-					write(to, "[" + TimeUtilFo.getFormattedDate() + "] " + (prefix != null ? prefix + ": " : "") + line);
+					write(to, "[" + TimeUtil.getFormattedDate() + "] " + (prefix != null ? prefix + ": " : "") + line);
 	}
 
 	/**

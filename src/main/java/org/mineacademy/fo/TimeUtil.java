@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  * Utility class for calculating time from ticks and back.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TimeUtilFo {
+public final class TimeUtil {
 
 	/**
 	 * The date format in dd.MM.yyy HH:mm:ss

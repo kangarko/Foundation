@@ -259,14 +259,14 @@ public final class Common {
 		if (!TIMED_TELL_CACHE.containsKey(message)) {
 			tell(sender, message);
 
-			TIMED_TELL_CACHE.put(message, TimeUtilFo.currentTimeSeconds());
+			TIMED_TELL_CACHE.put(message, TimeUtil.currentTimeSeconds());
 			return;
 		}
 
-		if (TimeUtilFo.currentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
+		if (TimeUtil.currentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
 			tell(sender, message);
 
-			TIMED_TELL_CACHE.put(message, TimeUtilFo.currentTimeSeconds());
+			TIMED_TELL_CACHE.put(message, TimeUtil.currentTimeSeconds());
 		}
 	}
 
@@ -372,8 +372,14 @@ public final class Common {
 				Remain.sendJson(sender, stripped);
 
 		} else
-			for (final String part : splitNewline(message))
-				sender.sendMessage((ADD_TELL_PREFIX && !hasPrefix ? tellPrefix : "") + part);
+			for (final String part : splitNewline(message)) {
+				final String toSend = (ADD_TELL_PREFIX && !hasPrefix ? tellPrefix : "") + part;
+
+				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
+					((Conversable) sender).sendRawMessage(toSend);
+				else
+					sender.sendMessage(toSend);
+			}
 	}
 
 	/**
@@ -814,13 +820,13 @@ public final class Common {
 	public static void logTimed(int delaySec, String msg) {
 		if (!TIMED_LOG_CACHE.containsKey(msg)) {
 			log(msg);
-			TIMED_LOG_CACHE.put(msg, TimeUtilFo.currentTimeSeconds());
+			TIMED_LOG_CACHE.put(msg, TimeUtil.currentTimeSeconds());
 			return;
 		}
 
-		if (TimeUtilFo.currentTimeSeconds() - TIMED_LOG_CACHE.get(msg) > delaySec) {
+		if (TimeUtil.currentTimeSeconds() - TIMED_LOG_CACHE.get(msg) > delaySec) {
 			log(msg);
-			TIMED_LOG_CACHE.put(msg, TimeUtilFo.currentTimeSeconds());
+			TIMED_LOG_CACHE.put(msg, TimeUtil.currentTimeSeconds());
 		}
 	}
 
