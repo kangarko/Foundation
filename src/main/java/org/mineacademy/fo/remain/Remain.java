@@ -343,20 +343,30 @@ public class Remain {
 	}
 
 	/**
+	 * Spawns a falling block
+	 *
+	 * @param loc
+	 * @param material
+	 * @return
+	 */
+	public static FallingBlock spawnFallingBlock(Location loc, Material material) {
+		return spawnFallingBlock(loc, material, (byte) 0);
+	}
+
+	/**
 	 * Spawns a falling block.
 	 *
-	 * @param world
 	 * @param loc
 	 * @param material
 	 * @param data
 	 * @return
 	 */
-	public static FallingBlock spawnFallingBlock(World world, Location loc, Material material, byte data) {
+	public static FallingBlock spawnFallingBlock(Location loc, Material material, byte data) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return world.spawnFallingBlock(loc, Bukkit.getUnsafe().fromLegacy(material, data));
+			return loc.getWorld().spawnFallingBlock(loc, Bukkit.getUnsafe().fromLegacy(material, data));
 		else {
 			try {
-				return (FallingBlock) world.getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(world, loc, material.getId(), data);
+				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, material.getId(), data);
 			} catch (final ReflectiveOperationException ex) {
 				ex.printStackTrace();
 
