@@ -1,5 +1,8 @@
 package org.mineacademy.fo;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
@@ -12,7 +15,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Wolf;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.mineacademy.fo.EntityUtil.HitListener;
+import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
 
 import lombok.AccessLevel;
@@ -23,6 +32,10 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EntityUtil {
+
+	static {
+		Common.registerEvents(new HitTracking());
+	}
 
 	/**
 	 * Returns the entity target only if it is a player, or null
@@ -90,26 +103,26 @@ public final class EntityUtil {
 	 * when the given entity isOnGround. If the entity gets removed before it hits
 	 * the ground, nothing is called
 	 *
-	 * If the entity still flies after 20 seconds, nothing is called
+	 * If the entity still flies after 30 seconds, nothing is called
 	 *
 	 * @param entity
 	 * @param hitGroundListener
 	 */
 	public static void trackFalling(Entity entity, Runnable hitGroundListener) {
-		track(entity, 20 * 20, null, hitGroundListener);
+		track(entity, 30 * 20, null, hitGroundListener);
 	}
 
 	/**
 	 * Runs a timer task with the tick period of 1 and will trigger your fly listener
 	 * each tick until entity is either removed or isOnGround
 	 *
-	 * If the entity still flies after 20 seconds, nothing is called
+	 * If the entity still flies after 30 seconds, nothing is called
 	 *
 	 * @param entity
 	 * @param flyListener
 	 */
 	public static void trackFlying(Entity entity, Runnable flyListener) {
-		track(entity, 20 * 20, flyListener, null);
+		track(entity, 30 * 20, flyListener, null);
 	}
 
 	/**
@@ -127,6 +140,11 @@ public final class EntityUtil {
 	public static void track(Entity entity, int timeoutTicks, Runnable flyListener, Runnable hitGroundListener) {
 		if (flyListener == null && hitGroundListener == null)
 			throw new FoException("Cannot track entity with fly and hit listeners on null!");
+
+		final boolean isProjectile = entity instanceof Projectile;
+
+		if (isProjectile && hitGroundListener != null)
+			HitTracking.addFlyingProjectile((Projectile) entity, (event) -> hitGroundListener.run());
 
 		Common.runTimer(1, new BukkitRunnable() {
 
@@ -151,7 +169,7 @@ public final class EntityUtil {
 
 				// Run the hit listener
 				if (entity.isOnGround()) {
-					if (hitGroundListener != null)
+					if (!isProjectile && hitGroundListener != null)
 						hitGroundListener.run();
 
 					cancel();
@@ -162,5 +180,65 @@ public final class EntityUtil {
 				}
 			}
 		});
+	}
+
+	/**
+	 * (No timer task) Starts tracking a projectile's impact and executes the hit
+	 * task when it hits something. After 30 seconds of flight we stop tracking
+	 * to save performance
+	 *
+	 * @param projectile
+	 * @param hitTask
+	 */
+	public static void trackHit(Projectile projectile, HitListener hitTask) {
+		HitTracking.addFlyingProjectile(projectile, hitTask);
+	}
+
+	/**
+	 * The class responsible for tracking projectile's impact
+	 */
+	public interface HitListener {
+
+		/**
+		 * What should happen when the projectile hits something?
+		 *
+		 * @param event
+		 */
+		void onHit(ProjectileHitEvent event);
+	}
+}
+
+/**
+ * Class responsible for tracking connection between projectile launch and projectile hit event
+ */
+class HitTracking implements Listener {
+
+	/**
+	 * List of flying projectiles with code to run on impact,
+	 * stop tracking after 30 seconds to prevent overloading the map
+	 */
+	private static ExpiringMap<UUID, HitListener> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
+
+	/**
+	 * Invoke the hit listener when the registered projectile hits something
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onHit(ProjectileHitEvent event) {
+		final HitListener hitListener = flyingProjectiles.remove(event.getEntity().getUniqueId());
+
+		if (hitListener != null)
+			hitListener.onHit(event);
+	}
+
+	/**
+	 * Add a new flying projectile that will be pending and execute code when collide
+	 *
+	 * @param projectile
+	 * @param hitTask
+	 */
+	static void addFlyingProjectile(Projectile projectile, HitListener hitTask) {
+		flyingProjectiles.put(projectile.getUniqueId(), hitTask);
 	}
 }
