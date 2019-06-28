@@ -1,5 +1,7 @@
 package org.mineacademy.fo.region;
 
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -37,14 +39,14 @@ public interface Region extends ConfigSerializable {
 	 *
 	 * @return
 	 */
-	Block[] getBlocks();
+	List<Block> getBlocks();
 
 	/**
-	 * Ret all regions within this region
+	 * Get all regions within this region
 	 *
 	 * @return
 	 */
-	Entity[] getEntities();
+	List<Entity> getEntities();
 
 	/**
 	 * Get the region world
@@ -53,5 +55,11 @@ public interface Region extends ConfigSerializable {
 	 */
 	World getWorld();
 
+	/**
+	 * Return true if the given location is within this region
+	 *
+	 * @param loc
+	 * @return
+	 */
 	boolean isWithin(Location loc);
 }

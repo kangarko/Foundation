@@ -3,22 +3,24 @@ package org.mineacademy.fo.menu.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.model.SimpleEnchant;
+import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompDye;
 import org.mineacademy.fo.remain.CompItemFlag;
@@ -59,7 +61,7 @@ public final class ItemCreator {
 	 * The item damage
 	 */
 	@Builder.Default
-	private final short damage = 0;
+	private final int damage = -1;
 
 	/**
 	 * The item name, colors are replaced
@@ -97,7 +99,8 @@ public final class ItemCreator {
 	/**
 	 * Should we hide all tags from the item (enchants, etc.)?
 	 */
-	private final boolean hideTags;
+	@Builder.Default
+	private boolean hideTags = false;
 
 	/**
 	 * Should we add glow to the item? (adds a fake enchant and uses
@@ -147,6 +150,20 @@ public final class ItemCreator {
 	 */
 	public ItemStack makeMenuTool() {
 		unbreakable = true;
+		hideTags = true;
+
+		return make();
+	}
+
+	/**
+	 * Make an item suitable for survival where we remove the "hideFlag"
+	 * that is automatically put in {@link ItemCreator#of(CompMaterial, String, String...)}
+	 * to hide enchants, attributes etc.
+	 *
+	 * @return
+	 */
+	public ItemStack makeSurvival() {
+		hideTags = false;
 
 		return make();
 	}
@@ -169,7 +186,7 @@ public final class ItemCreator {
 	 */
 	public ItemStack make() {
 		if (item == null)
-			Objects.requireNonNull(material, "Material == null!");
+			Valid.checkNotNull(material, "Material == null!");
 
 		ItemStack is = item != null ? item.clone() : null;
 
@@ -180,9 +197,9 @@ public final class ItemCreator {
 		if (MinecraftVersion.atLeast(V.v1_13)) {
 
 			if (is == null)
-				is = new ItemStack(material.getMaterial(), amount, damage);
+				is = new ItemStack(material.getMaterial(), amount, (short) (damage == -1 ? 0 : damage));
 
-			color: if (color != null) {
+			color: if (color != null && !is.getType().toString().contains("LEATHER")) {
 				final String dye = color.getDye().toString();
 
 				// Apply specific material color if possible
@@ -213,7 +230,7 @@ public final class ItemCreator {
 				if (!material.toString().contains("LEATHER") && color != null)
 					dataValue = color.getDye().getWoolData();
 
-				is = new ItemStack(material.getMaterial(), amount, damage, (byte) dataValue);
+				is = new ItemStack(material.getMaterial(), amount, (short) (damage == -1 ? 0 : damage), (byte) dataValue);
 			}
 		}
 
@@ -223,8 +240,8 @@ public final class ItemCreator {
 			if (material == null)
 				material = CompMaterial.fromMaterial(is.getType());
 
-			Objects.requireNonNull(is, "ItemStack is null for " + material);
-			Objects.requireNonNull(material, "Could not find CompMaterial from Bukkit's " + is.getType());
+			Valid.checkNotNull(is, "ItemStack is null for " + material);
+			Valid.checkNotNull(material, "Could not find CompMaterial from Bukkit's " + is.getType());
 
 		}
 
@@ -277,6 +294,13 @@ public final class ItemCreator {
 		if (skullOwner != null && myMeta instanceof SkullMeta)
 			((SkullMeta) myMeta).setOwner(skullOwner);
 
+		try {
+			if (myMeta instanceof Damageable && damage != -1)
+				((Damageable) myMeta).setDamage(damage);
+
+		} catch (final Throwable t) {
+		}
+
 		if (glow) {
 			myMeta.addEnchant(Enchantment.DURABILITY, 1, true);
 
@@ -321,6 +345,7 @@ public final class ItemCreator {
 		}
 
 		is.setItemMeta(myMeta);
+		is = SimpleEnchantment.addEnchantmentLores(is);
 
 		if (nbt != null) {
 			final NBTItem nbtItem = new NBTItem(is);
@@ -378,7 +403,7 @@ public final class ItemCreator {
 	 * @return the new item creator
 	 */
 	public static ItemCreatorBuilder of(CompMaterial mat) {
-		Objects.requireNonNull(mat, "Material cannot be null!");
+		Valid.checkNotNull(mat, "Material cannot be null!");
 
 		return ItemCreator.builder().material(mat);
 	}

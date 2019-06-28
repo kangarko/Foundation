@@ -4,16 +4,15 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
@@ -76,7 +75,7 @@ public final class CompMonsterEgg {
 	 *         {@link #acceptUnsafeEggs}
 	 */
 	public static EntityType getEntity(ItemStack item) {
-		Validate.isTrue(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
+		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 		EntityType type = null;
 
 		if (MinecraftVersion.atLeast(V.v1_13))
@@ -94,7 +93,7 @@ public final class CompMonsterEgg {
 		if (type == null && acceptUnsafeEggs)
 			type = EntityType.UNKNOWN;
 
-		Objects.requireNonNull(type, "Could not detect monster type from " + item + " (data = " + item.getData() + ", dura = " + item.getDurability() + ")");
+		Valid.checkNotNull(type, "Could not detect monster type from " + item + " (data = " + item.getData() + ", dura = " + item.getDurability() + ")");
 		return type;
 	}
 
@@ -115,7 +114,7 @@ public final class CompMonsterEgg {
 					type = all;
 		}
 
-		Objects.requireNonNull(type, "Unable to find EntityType from Material." + item.getType());
+		Valid.checkNotNull(type, "Unable to find EntityType from Material." + item.getType());
 		return type;
 	}
 
@@ -140,7 +139,7 @@ public final class CompMonsterEgg {
 	}
 
 	private static EntityType readEntity0(ItemStack item) {
-		Objects.requireNonNull(item, "Reading entity got null item");
+		Valid.checkNotNull(item, "Reading entity got null item");
 
 		final NBTItem nbt = new NBTItem(item);
 		final String type = nbt.hasKey(TAG) ? nbt.getCompound(TAG).getString("entity") : null;
@@ -159,7 +158,7 @@ public final class CompMonsterEgg {
 			if (tagCompound == null && acceptUnsafeEggs)
 				return null;
 
-			Objects.requireNonNull(tagCompound, "Spawn egg lacks tag compound: " + item);
+			Valid.checkNotNull(tagCompound, "Spawn egg lacks tag compound: " + item);
 
 			final Method tagGetCompound = tagCompound.getClass().getMethod("getCompound", String.class);
 			final Object entityTag = tagGetCompound.invoke(tagCompound, "EntityTag");
@@ -189,8 +188,8 @@ public final class CompMonsterEgg {
 	 * @return the itemstack
 	 */
 	public static ItemStack setEntity(ItemStack item, EntityType type) {
-		Objects.requireNonNull(item, "Item == null");
-		Validate.isTrue(type.isSpawnable(), type + " cannot be spawned and thus set into a monster egg!");
+		Valid.checkNotNull(item, "Item == null");
+		Valid.checkBoolean(type.isSpawnable(), type + " cannot be spawned and thus set into a monster egg!");
 
 		if (MinecraftVersion.atLeast(V.v1_13)) {
 			item.setType(CompMaterial.makeMonsterEgg(type).getMaterial());
@@ -198,7 +197,7 @@ public final class CompMonsterEgg {
 			return item;
 		}
 
-		Validate.isTrue(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
+		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 
 		if (Remain.hasSpawnEggMeta())
 			item = setTypeByMeta(item, type);
@@ -235,8 +234,8 @@ public final class CompMonsterEgg {
 	}
 
 	private static ItemStack writeEntity0(ItemStack item, EntityType type) {
-		Objects.requireNonNull(item, "setting nbt got null item");
-		Objects.requireNonNull(type, "setting nbt got null entity");
+		Valid.checkNotNull(item, "setting nbt got null item");
+		Valid.checkNotNull(type, "setting nbt got null entity");
 
 		final NBTItem nbt = new NBTItem(item);
 		final NBTCompound tag = nbt.addCompound(TAG);

@@ -3,8 +3,8 @@ package org.mineacademy.fo.menu.tool;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Valid;
 
 /**
  * Represents the tool registry holding all registered items
@@ -26,7 +26,7 @@ public final class ToolRegistry {
 	 * @param tool the tool
 	 */
 	static synchronized void register(Tool tool) {
-		Validate.isTrue(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
+		Valid.checkBoolean(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
 
 		tools.add(tool);
 	}

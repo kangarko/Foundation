@@ -1,5 +1,7 @@
 package org.mineacademy.fo.region;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Location;
@@ -54,7 +56,7 @@ public final class RegionIncomplete implements Region {
 	 */
 	@Deprecated
 	@Override
-	public Entity[] getEntities() {
+	public List<Entity> getEntities() {
 		throw new FoException("Region incomplete");
 	}
 
@@ -63,7 +65,7 @@ public final class RegionIncomplete implements Region {
 	 */
 	@Deprecated
 	@Override
-	public Block[] getBlocks() {
+	public List<Block> getBlocks() {
 		throw new FoException("Region incomplete");
 	}
 

@@ -1,14 +1,13 @@
 package org.mineacademy.fo.remain;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
 
-import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -77,8 +76,8 @@ public enum CompProperty {
 	 * @param key
 	 */
 	public final void apply(Object instance, Object key) {
-		Objects.requireNonNull(instance, "instance is null!");
-		Validate.isTrue(requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
+		Valid.checkNotNull(instance, "instance is null!");
+		Valid.checkBoolean(requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
 
 		try {
 			final Method m = getMethod(instance.getClass());

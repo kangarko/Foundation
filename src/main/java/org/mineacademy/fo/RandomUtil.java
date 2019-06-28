@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 
@@ -179,5 +180,25 @@ public final class RandomUtil {
 		final Location newLoc = origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 
 		return newLoc;
+	}
+
+	/**
+	 * Return a random x location within that chunk
+	 *
+	 * @param chunk
+	 * @return
+	 */
+	public static int nextChunkX(Chunk chunk) {
+		return RandomUtil.nextInt(16) + (chunk.getX() << 4) - 16;
+	}
+
+	/**
+	 * Return a random z location within that chunk
+	 *
+	 * @param chunk
+	 * @return
+	 */
+	public static int nextChunkZ(Chunk chunk) {
+		return RandomUtil.nextInt(16) + (chunk.getZ() << 4) - 16;
 	}
 }
