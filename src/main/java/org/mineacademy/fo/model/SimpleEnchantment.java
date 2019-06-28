@@ -275,7 +275,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 *
 	 * @deprecated internal use only
 	 * @param item
-	 * @return
+	 * @return the modified item or null if item was not edited (no enchants found)
 	 */
 	@Deprecated
 	public static ItemStack addEnchantmentLores(ItemStack item) {
@@ -304,8 +304,10 @@ public abstract class SimpleEnchantment extends Enchantment {
 
 			// Update the item stack
 			item.setItemMeta(meta);
+
+			return item;
 		}
 
-		return item;
+		return null;
 	}
 }

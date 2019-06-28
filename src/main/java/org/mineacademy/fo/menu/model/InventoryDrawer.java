@@ -129,7 +129,6 @@ public final class InventoryDrawer {
 	 * @param player the player
 	 */
 	public void display(Player player) {
-
 		// Automatically append the black color in the menu, can be overriden by colors
 		final Inventory inv = Bukkit.createInventory(player, size, Common.colorize("&0" + title));
 

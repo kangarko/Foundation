@@ -939,8 +939,7 @@ public enum CompMaterial {
 	DIORITE_SLAB("STEP", "STONE_SLAB", 0),
 	DIORITE_STAIRS("COBBLESTONE_STAIRS", 0),
 	DIORITE_WALL("COBBLESTONE_WALL"),
-
-	;
+	SKULL_BANNER_PATTERN("STONE");
 
 	// Safety compatibility check
 	public static boolean COMPATIBLE = true;

@@ -43,14 +43,6 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param menu
 	 */
 	protected SimpleConversation(Menu menu) {
-		if (menu != null)
-			try {
-				menu.newInstance();
-
-			} catch (final Throwable t) {
-				Common.throwError(t, "Cannot open new conversation with menu " + menu + " as it does not support newInstance!");
-			}
-
 		this.menu = menu;
 	}
 

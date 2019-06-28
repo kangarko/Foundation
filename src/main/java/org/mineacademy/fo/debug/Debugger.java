@@ -279,6 +279,9 @@ public final class Debugger {
 
 	// Print a simple console message
 	private static void print(String message) {
-		System.out.println(message);
+		if (SimplePlugin.hasInstance())
+			Common.logNoPrefix(message);
+		else
+			System.out.println(message);
 	}
 }
