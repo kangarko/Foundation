@@ -258,10 +258,13 @@ public final class Debugger {
 				print("\tat " + line);
 		}
 
-		final Throwable cause = throwable.getCause();
+		Throwable cause = throwable.getCause();
 
 		if (cause != null)
-			printStackTrace(cause);
+			do {
+				if (cause != null)
+					printStackTrace(cause);
+			} while ((cause = cause.getCause()) != null);
 	}
 
 	/**

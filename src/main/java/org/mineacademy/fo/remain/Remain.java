@@ -1,5 +1,8 @@
 package org.mineacademy.fo.remain;
 
+import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
+import static org.mineacademy.fo.ReflectionUtil.getOFCClass;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -17,12 +20,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Statistic;
+import org.bukkit.Statistic.Type;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -37,9 +46,12 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -57,10 +69,13 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
@@ -80,10 +95,16 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
+/**
+ * Our main cross-version compatibility class.
+ *
+ * Look up for many methods enabling you to make your plugin
+ * compatible with MC 1.8.8 up to the latest version.
+ */
 public final class Remain {
 
 	// ----------------------------------------------------------------------------------------------------
-	// Flags below
+	// Methods below
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
@@ -95,6 +116,25 @@ public final class Remain {
 	 * The get player health method stored here for performance
 	 */
 	private static Method getHealthMethod;
+
+	/**
+	 * The CraftPlayer.getHandle method
+	 */
+	private static Method getHandle;
+
+	/**
+	 * The EntityPlayer.playerConnection method
+	 */
+	private static Field fieldPlayerConnection;
+
+	/**
+	 * The PlayerConnection.sendPacket method
+	 */
+	private static Method sendPacket;
+
+	// ----------------------------------------------------------------------------------------------------
+	// Flags below
+	// ----------------------------------------------------------------------------------------------------
 
 	/**
 	 * Does the current server version get player list as a collection?
@@ -177,7 +217,7 @@ public final class Remain {
 			for (final CompMaterial compMaterial : CompMaterial.values())
 				compMaterial.getMaterial();
 
-			ReflectionUtil.getNMSClass("Entity");
+			getNMSClass("Entity");
 		} catch (final Throwable t) {
 			System.out.println("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION **");
 			System.out.println("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
@@ -197,6 +237,23 @@ public final class Remain {
 				throw new UnsupportedOperationException("Minecraft 1.2.5 is not supported.");
 			}
 
+			// Load optional parts
+			try {
+				getHandle = getOFCClass("entity.CraftPlayer").getMethod("getHandle");
+				fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
+				sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
+
+			} catch (final Throwable t) {
+				System.out.println("Unable to find setup some parts of reflection. Plugin will still function.");
+				System.out.println("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+				System.out.println("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
+
+				fieldPlayerConnection = null;
+				sendPacket = null;
+				getHandle = null;
+			}
+
+			// Load mandatory parts
 			getPlayersMethod = Bukkit.class.getMethod("getOnlinePlayers");
 			isGetPlayersCollection = getPlayersMethod.getReturnType() == Collection.class;
 
@@ -267,61 +324,79 @@ public final class Remain {
 	}
 
 	// ----------------------------------------------------------------------------------------------------
-	// Getters for various server functions
+	// Various server functions
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
-	 * Is 'net.md_5.bungee.api.chat' package present? Spigot 1.7.10 and never.
+	 * Returns Minecraft World class
 	 *
-	 * @return if the bungee chat API is present
+	 * @param world
+	 * @return
 	 */
-	public static boolean isBungeeApiPresent() {
-		return bungeeApiPresent;
+	public static Object getHandleWorld(World world) {
+		Object nms = null;
+		final Method handle = ReflectionUtil.getMethod(world.getClass(), "getHandle");
+		try {
+			nms = handle.invoke(world);
+		} catch (final ReflectiveOperationException e) {
+			e.printStackTrace();
+		}
+		return nms;
 	}
 
 	/**
-	 * Is this server supporting native scoreboard api?
+	 * Returns Minecraft Entity class
 	 *
-	 * @return if server supports native scoreboard api
+	 * @param entity
+	 * @return
 	 */
-	public static boolean hasNewScoreboardAPI() {
-		return newScoreboardAPI;
+	public static Object getHandleEntity(Entity entity) {
+		Object nms_entity = null;
+		final Method handle = ReflectionUtil.getMethod(entity.getClass(), "getHandle");
+		try {
+			nms_entity = handle.invoke(entity);
+		} catch (final ReflectiveOperationException e) {
+			e.printStackTrace();
+		}
+		return nms_entity;
 	}
 
 	/**
-	 * Is this server supporting particles?
+	 * Returns true if we are running a 1.8 protocol hack
 	 *
-	 * @return if server supports native particle api
+	 * @return
 	 */
-	public static boolean hasParticleAPI() {
-		return hasParticleAPI;
+	public static boolean isProtocol18Hack() {
+		try {
+			getNMSClass("PacketPlayOutEntityTeleport").getConstructor(new Class<?>[] { int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class });
+		} catch (final Throwable t) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
-	 * Is this server supporting book event?
+	 * Advanced: Sends a packet to the player
 	 *
-	 * @return if server supports book event
+	 * @param player the player
+	 * @param packet the packet
 	 */
-	public static boolean hasBookEvent() {
-		return hasBookEvent;
-	}
+	public static void sendPacket(Player player, Object packet) {
+		if (getHandle == null || fieldPlayerConnection == null || sendPacket == null) {
+			System.out.println("Cannot send packet " + packet.getClass().getSimpleName() + " on your server sofware (known to be broken on Cauldron).");
+			return;
+		}
 
-	/**
-	 * Is this server supporting permanent scoreboard tags?
-	 *
-	 * @return if server supports permanent scoreboard tags
-	 */
-	public static boolean hasScoreboardTags() {
-		return hasScoreboardTags;
-	}
+		try {
+			final Object handle = getHandle.invoke(player);
+			final Object playerConnection = fieldPlayerConnection.get(handle);
 
-	/**
-	 * Return if the server version supports {@link SpawnEggMeta}
-	 *
-	 * @return true if egg meta are supported
-	 */
-	public static boolean hasSpawnEggMeta() {
-		return hasSpawnEggMeta;
+			sendPacket.invoke(playerConnection, packet);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new ReflectionException("Could not send " + packet.getClass().getSimpleName() + " to " + player.getName(), ex);
+		}
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -377,6 +452,53 @@ public final class Remain {
 
 				return null;
 			}
+		}
+	}
+
+	/**
+	 * Attempts to drop the item allowing space for applying properties to the item
+	 * before it is spawned
+	 *
+	 * @param location
+	 * @param item
+	 * @param modifier
+	 * @return the item
+	 * @deprecated use {@link EntityUtil#dropItem(Location, ItemStack, Consumer)}
+	 */
+	@Deprecated
+	public static Item spawnItem(Location location, ItemStack item, Consumer<Item> modifier) {
+		try {
+			final Class<?> nmsWorldClass = getNMSClass("World");
+			final Class<?> nmsStackClass = getNMSClass("ItemStack");
+			final Class<?> nmsEntityClass = getNMSClass("Entity");
+			final Class<?> nmsItemClass = getNMSClass("EntityItem");
+
+			final Constructor<?> entityConstructor = nmsItemClass.getConstructor(nmsWorldClass, double.class, double.class, double.class, nmsStackClass);
+
+			final Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
+			final Method asNmsCopy = getOFCClass("inventory.CraftItemStack").getMethod("asNMSCopy", ItemStack.class);
+
+			final Object nmsEntity = entityConstructor.newInstance(nmsWorld, location.getX(), location.getY(), location.getZ(), asNmsCopy.invoke(null, item));
+
+			final Class<?> craftItemClass = getOFCClass("entity.CraftItem");
+			final Class<?> craftServerClass = getOFCClass("CraftServer");
+
+			final Object bukkitItem = craftItemClass.getConstructor(craftServerClass, nmsItemClass).newInstance(Bukkit.getServer(), nmsEntity);
+			Valid.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
+
+			modifier.accept((Item) bukkitItem);
+
+			{ // add to the world + call event
+				final Method addEntity = location.getWorld().getClass().getMethod("addEntity", nmsEntityClass, SpawnReason.class);
+				addEntity.invoke(location.getWorld(), nmsEntity, SpawnReason.CUSTOM);
+			}
+
+			return (Item) bukkitItem;
+
+		} catch (final ReflectiveOperationException ex) {
+			Common.error(ex, "Error spawning item " + item.getType() + " at " + location);
+
+			return null;
 		}
 	}
 
@@ -438,35 +560,6 @@ public final class Remain {
 				ex.printStackTrace();
 			}
 		}
-	}
-
-	/**
-	 * Sends a fake block update to a certain location, and than reverts it back to
-	 * the real block after a while.
-	 *
-	 * @param delayTicks the pause between reverting back
-	 * @param player     the player
-	 * @param loc        the location
-	 * @param material   the material
-	 */
-	public static void animateBlockChange(final int delayTicks, final Player player, final Location loc, final CompMaterial material) {
-		// Force to run sync
-		Common.runLater(() -> {
-			try {
-				player.sendBlockChange(loc, material.getMaterial().createBlockData());
-			} catch (final NoSuchMethodError ex) {
-				player.sendBlockChange(loc, material.getMaterial(), (byte) material.getData());
-			}
-		});
-
-		// Rest
-		Common.runLater(delayTicks, () -> {
-			try {
-				player.sendBlockChange(loc, loc.getBlock().getBlockData());
-			} catch (final NoSuchMethodError ex) {
-				player.sendBlockChange(loc, material.getMaterial(), (byte) material.getData());
-			}
-		});
 	}
 
 	/**
@@ -711,7 +804,7 @@ public final class Remain {
 			return con.newInstance(label, SimplePlugin.getInstance());
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Unable to create command: /" + label, ex);
+			throw new FoException(ex, "Unable to create command: /" + label);
 		}
 	}
 
@@ -782,17 +875,17 @@ public final class Remain {
 					cmdMap.remove(alias);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Failed to unregister command /" + label, ex);
+			throw new FoException(ex, "Failed to unregister command /" + label);
 		}
 	}
 
 	// Return servers command map
 	private static SimpleCommandMap getCommandMap() {
 		try {
-			return (SimpleCommandMap) ReflectionUtil.getOFCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
+			return (SimpleCommandMap) getOFCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Unable to get the command map", ex);
+			throw new FoException(ex, "Unable to get the command map");
 		}
 	}
 
@@ -847,6 +940,35 @@ public final class Remain {
 	}
 
 	/**
+	 * Return the NMS statistic name for the given statistic
+	 *
+	 * @param stat
+	 * @param mat
+	 * @param en
+	 * @return
+	 */
+	public static String getNMSStatisticName(Statistic stat, @Nullable Material mat, @Nullable EntityType en) {
+		final Class<?> craftStatistic = getOFCClass("CraftStatistic");
+		Object nmsStatistic = null;
+
+		try {
+			if (stat.getType() == Type.UNTYPED)
+				nmsStatistic = craftStatistic.getMethod("getNMSStatistic", stat.getClass()).invoke(null, stat);
+
+			else if (stat.getType() == Type.ENTITY)
+				nmsStatistic = craftStatistic.getMethod("getEntityStatistic", stat.getClass(), en.getClass()).invoke(null, stat, en);
+
+			else
+				nmsStatistic = craftStatistic.getMethod("getMaterialStatistic", stat.getClass(), mat.getClass()).invoke(null, stat, mat);
+
+			Valid.checkNotNull(nmsStatistic, "Could not get NMS statistic from Bukkit's " + stat);
+			return (String) nmsStatistic.getClass().getMethod("getName").invoke(nmsStatistic);
+		} catch (final Throwable t) {
+			throw new FoException(t, "Error getting NMS statistic name from " + stat);
+		}
+	}
+
+	/**
 	 * Attempts to respawn the player, either via native method or reflection
 	 *
 	 * @param player
@@ -867,9 +989,139 @@ public final class Remain {
 				player.spigot().respawn();
 
 			} catch (final NoSuchMethodError err) {
-				ReflectionUtil.respawn(player);
+				try {
+					final Object respawnEnum = getNMSClass("EnumClientCommand").getEnumConstants()[0];
+					final Constructor<?>[] constructors = getNMSClass("PacketPlayInClientCommand").getConstructors();
+
+					for (final Constructor<?> constructor : constructors) {
+						final Class<?>[] args = constructor.getParameterTypes();
+						if (args.length == 1 && args[0] == respawnEnum.getClass()) {
+							final Object packet = getNMSClass("PacketPlayInClientCommand").getConstructor(args).newInstance(respawnEnum);
+
+							sendPacket(player, packet);
+							break;
+						}
+					}
+
+				} catch (final Throwable e) {
+					throw new FoException(e, "Failed to send respawn packet to " + player.getName());
+				}
 			}
 		});
+	}
+
+	/**
+	 * Update the player's inventory title without closing the window
+	 *
+	 * @deprecated use {@link PlayerUtil#updateInventoryTitle(Player, String)}
+	 * @param player the player
+	 * @param title  the new title
+	 */
+	@Deprecated
+	public static void updateInventoryTitle(Player player, String title) {
+		try {
+			if (MinecraftVersion.olderThan(V.v1_8))
+				return;
+
+			if (MinecraftVersion.olderThan(V.v1_9) && title.length() > 16)
+				title = title.substring(0, 15);
+
+			final Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
+
+			final Object activeContainer = entityPlayer.getClass().getField("activeContainer").get(entityPlayer);
+			final Constructor<?> chatMessageConst = getNMSClass("ChatMessage").getConstructor(String.class, Object[].class);
+
+			final Object windowId = activeContainer.getClass().getField("windowId").get(activeContainer);
+			final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
+
+			final Object packet;
+
+			if (MinecraftVersion.newerThan(V.v1_13)) {
+				final Class<?> containersClass = getNMSClass("Containers");
+				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent"));
+
+				final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
+
+				if (inventorySize < 1 || inventorySize > 6) {
+					Common.log("Cannot update title for " + player.getName() + " as their inventory has non typical size: " + inventorySize + " rows");
+
+					return;
+				}
+
+				final Object container = containersClass.getField("GENERIC_9X" + inventorySize).get(null);
+
+				packet = packetConst.newInstance(windowId, container, chatMessage);
+
+			} else {
+				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent"), int.class);
+
+				packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
+			}
+
+			sendPacket(player, packet);
+
+			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container")).invoke(entityPlayer, activeContainer);
+		} catch (final ReflectiveOperationException ex) {
+			Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
+		}
+	}
+
+	/**
+	 * Sends a fake block update to a certain location, and than reverts it back to
+	 * the real block after a while.
+	 *
+	 * @param delayTicks the pause between reverting back
+	 * @param player     the player
+	 * @param loc        the location
+	 * @param material   the material
+	 */
+	public static void animateBlockChange(final int delayTicks, final Player player, final Location loc, final CompMaterial material) {
+		// Force to run sync
+		Common.runLater(() -> {
+			try {
+				player.sendBlockChange(loc, material.getMaterial().createBlockData());
+			} catch (final NoSuchMethodError ex) {
+				player.sendBlockChange(loc, material.getMaterial(), (byte) material.getData());
+			}
+		});
+
+		// Rest
+		Common.runLater(delayTicks, () -> {
+			try {
+				player.sendBlockChange(loc, loc.getBlock().getBlockData());
+			} catch (final NoSuchMethodError ex) {
+				player.sendBlockChange(loc, material.getMaterial(), (byte) material.getData());
+			}
+		});
+	}
+
+	/**
+	 * Return how long the player has played on this server (pulled from your world statistics file)
+	 * in minutes
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static int getPlaytimeMinutes(Player player) {
+		return player.getStatistic(getPlayTimeStatisticName()) / (isPlaytimeStatisticTicks() ? 20 : 1);
+	}
+
+	/**
+	 * Return either PLAY_ONE_TICK for MC <1.13 or PLAY_ONE_MINUTE for 1.13+
+	 *
+	 * @return
+	 */
+	public static Statistic getPlayTimeStatisticName() {
+		return Statistic.valueOf(MinecraftVersion.olderThan(V.v1_13) ? "PLAY_ONE_TICK" : "PLAY_ONE_MINUTE");
+	}
+
+	/**
+	 * Return if the play time statistic is measured in ticks
+	 *
+	 * @return
+	 */
+	public static boolean isPlaytimeStatisticTicks() {
+		return MinecraftVersion.olderThan(V.v1_13);
 	}
 
 	/**
@@ -1060,7 +1312,7 @@ public final class Remain {
 				return (Block) en.getClass().getMethod("getTargetBlock", HashSet.class, int.class).invoke(en, (HashSet<Byte>) null, radius);
 
 			} catch (final ReflectiveOperationException ex2) {
-				throw new FoException("Unable to get target block for " + en, ex);
+				throw new FoException(ex, "Unable to get target block for " + en);
 			}
 		}
 	}
@@ -1428,6 +1680,64 @@ public final class Remain {
 		}
 	}
 
+	// ----------------------------------------------------------------------------------------------------
+	// Getters for various server functions
+	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Is 'net.md_5.bungee.api.chat' package present? Spigot 1.7.10 and never.
+	 *
+	 * @return if the bungee chat API is present
+	 */
+	public static boolean isBungeeApiPresent() {
+		return bungeeApiPresent;
+	}
+
+	/**
+	 * Is this server supporting native scoreboard api?
+	 *
+	 * @return if server supports native scoreboard api
+	 */
+	public static boolean hasNewScoreboardAPI() {
+		return newScoreboardAPI;
+	}
+
+	/**
+	 * Is this server supporting particles?
+	 *
+	 * @return if server supports native particle api
+	 */
+	public static boolean hasParticleAPI() {
+		return hasParticleAPI;
+	}
+
+	/**
+	 * Is this server supporting book event?
+	 *
+	 * @return if server supports book event
+	 */
+	public static boolean hasBookEvent() {
+		return hasBookEvent;
+	}
+
+	/**
+	 * Is this server supporting permanent scoreboard tags?
+	 *
+	 * @return if server supports permanent scoreboard tags
+	 */
+	public static boolean hasScoreboardTags() {
+		return hasScoreboardTags;
+	}
+
+	/**
+	 * Return if the server version supports {@link SpawnEggMeta}
+	 *
+	 * @return true if egg meta are supported
+	 */
+	public static boolean hasSpawnEggMeta() {
+		return hasSpawnEggMeta;
+	}
+
 	// ------------------------ Legacy ------------------------
 
 	// return the legacy online player array
@@ -1435,7 +1745,7 @@ public final class Remain {
 		try {
 			return (Player[]) getPlayersMethod.invoke(null);
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Reflection malfunction", ex);
+			throw new FoException(ex, "Reflection malfunction");
 		}
 	}
 
@@ -1444,7 +1754,7 @@ public final class Remain {
 		try {
 			return (int) getHealthMethod.invoke(pl);
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Reflection malfunction", ex);
+			throw new FoException(ex, "Reflection malfunction");
 		}
 	}
 

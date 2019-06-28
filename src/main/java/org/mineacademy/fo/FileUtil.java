@@ -165,7 +165,7 @@ public final class FileUtil {
 				return lines;
 
 			} catch (final IOException ee) {
-				throw new FoException("Could not read lines from " + file.getName(), ee);
+				throw new FoException(ee, "Could not read lines from " + file.getName());
 			}
 		}
 	}
@@ -187,16 +187,16 @@ public final class FileUtil {
 			conf.load(file);
 
 		} catch (final FileNotFoundException ex) {
-			throw new FoException("Configuration file missing: " + file.getName(), ex);
+			throw new FoException(ex, "Configuration file missing: " + file.getName());
 
 		} catch (final IOException ex) {
-			throw new FoException("IO exception opening " + file.getName(), ex);
+			throw new FoException(ex, "IO exception opening " + file.getName());
 
 		} catch (final InvalidConfigurationException ex) {
-			throw new FoException("Malformed YAML file " + file.getName(), ex);
+			throw new FoException(ex, "Malformed YAML file " + file.getName());
 
 		} catch (final Throwable t) {
-			throw new FoException("Error reading YAML file " + file.getName(), t);
+			throw new FoException(t, "Error reading YAML file " + file.getName());
 		}
 
 		Valid.checkNotNull(conf, "Could not load: " + file.getName());

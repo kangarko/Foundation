@@ -18,7 +18,6 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompBarColor;
@@ -68,7 +67,7 @@ public class BossBarInternals implements Listener {
 
 	// Initialize reflection and start listening to events
 	static {
-		if (ReflectionUtil.isProtocolHack()) {
+		if (Remain.isProtocol18Hack()) {
 			entityClass = v1_8Hack.class;
 			isBelowGround = false;
 
@@ -94,12 +93,12 @@ public class BossBarInternals implements Listener {
 
 			Bukkit.getPluginManager().registerEvents(singleton, SimplePlugin.getInstance());
 
-			if (ReflectionUtil.isProtocolHack())
+			if (Remain.isProtocol18Hack())
 				Common.runTimer(5, () -> {
 					for (final UUID uuid : players.keySet()) {
 						final Player player = Remain.getPlayerByUUID(uuid);
 
-						ReflectionUtil.sendPacket(player, players.get(uuid).getTeleportPacket(getDragonLocation(player.getLocation())));
+						Remain.sendPacket(player, players.get(uuid).getTeleportPacket(getDragonLocation(player.getLocation())));
 					}
 				});
 		}
@@ -160,7 +159,7 @@ public class BossBarInternals implements Listener {
 			final float health = oldDragon.health;
 			final String message = oldDragon.name;
 
-			ReflectionUtil.sendPacket(player, getDragon(player, "").getDestroyPacket());
+			Remain.sendPacket(player, getDragon(player, "").getDestroyPacket());
 
 			players.remove(player.getUniqueId());
 
@@ -274,7 +273,7 @@ public class BossBarInternals implements Listener {
 		if (dragon instanceof v1_9Native) {
 			((v1_9Native) dragon).removePlayer(player);
 		} else
-			ReflectionUtil.sendPacket(player, getDragon(player, "").getDestroyPacket());
+			Remain.sendPacket(player, getDragon(player, "").getDestroyPacket());
 
 		players.remove(player.getUniqueId());
 
@@ -307,8 +306,8 @@ public class BossBarInternals implements Listener {
 			bar.addPlayer(player);
 			bar.setProgress(dragon.health / dragon.getMaxHealth());
 		} else {
-			ReflectionUtil.sendPacket(player, dragon.getMetaPacket(dragon.getWatcher()));
-			ReflectionUtil.sendPacket(player, dragon.getTeleportPacket(getDragonLocation(player.getLocation())));
+			Remain.sendPacket(player, dragon.getMetaPacket(dragon.getWatcher()));
+			Remain.sendPacket(player, dragon.getTeleportPacket(getDragonLocation(player.getLocation())));
 		}
 	}
 
@@ -326,7 +325,7 @@ public class BossBarInternals implements Listener {
 			((v1_9Native) dragon).addPlayer(player);
 
 		else
-			ReflectionUtil.sendPacket(player, dragon.getSpawnPacket());
+			Remain.sendPacket(player, dragon.getSpawnPacket());
 
 		players.put(player.getUniqueId(), dragon);
 
@@ -340,7 +339,7 @@ public class BossBarInternals implements Listener {
 			((v1_9Native) dragon).addPlayer(player);
 
 		else
-			ReflectionUtil.sendPacket(player, dragon.getSpawnPacket());
+			Remain.sendPacket(player, dragon.getSpawnPacket());
 
 		players.put(player.getUniqueId(), dragon);
 

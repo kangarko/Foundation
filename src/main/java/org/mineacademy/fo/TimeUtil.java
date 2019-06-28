@@ -163,18 +163,32 @@ public final class TimeUtil {
 	 * @param seconds
 	 * @return
 	 */
-	public static String formatTimeGeneric(int seconds) {
-		final int second = seconds % 60;
-		int minute = seconds / 60;
+	public static String formatTimeGeneric(long seconds) {
+		final long second = seconds % 60;
+		long minute = seconds / 60;
 		String hourMsg = "";
 
 		if (minute >= 60) {
-			final int hour = seconds / 60;
+			final long hour = seconds / 60;
 			minute %= 60;
 
 			hourMsg = (hour == 1 ? "hour" : "hours") + " ";
 		}
 
 		return hourMsg + minute + (minute > 0 ? (minute == 1 ? " minute" : " minutes") + " " : "") + second + (second == 1 ? " second" : " seconds");
+	}
+
+	/**
+	 * Format time in "X days Y hours Z minutes Å seconds"
+	 *
+	 * @param seconds
+	 * @return
+	 */
+	public static String formatTimeDays(long seconds) {
+		final long minutes = seconds / 60;
+		final long hours = minutes / 60;
+		final long days = hours / 24;
+
+		return days + " days " + hours % 24 + " hours " + minutes % 60 + " minutes " + seconds % 60 + " seconds";
 	}
 }

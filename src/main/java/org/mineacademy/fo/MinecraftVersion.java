@@ -8,12 +8,11 @@ import lombok.Getter;
 /**
  * Represents the current Minecraft version the plugin loaded on
  */
-public class MinecraftVersion {
+public final class MinecraftVersion {
 
 	/**
 	 * The string representation of the version, for example V1_13
 	 */
-	@Getter
 	private static String serverVersion;
 
 	/**
@@ -128,7 +127,7 @@ public class MinecraftVersion {
 	}
 
 	// Compares two versions by the number
-	private final static int compareWith(V version) {
+	private static int compareWith(V version) {
 		try {
 			return getCurrent().ver - version.ver;
 
@@ -137,6 +136,15 @@ public class MinecraftVersion {
 
 			return 0;
 		}
+	}
+
+	/**
+	 * Return the class versioning such as v1_14_R1
+	 *
+	 * @return
+	 */
+	public static String getServerVersion() {
+		return serverVersion.equals("craftbukkit") ? "" : serverVersion;
 	}
 
 	// Initialize the version

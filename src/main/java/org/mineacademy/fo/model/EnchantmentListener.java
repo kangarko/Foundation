@@ -17,8 +17,10 @@ import org.mineacademy.fo.EntityUtil;
 
 /**
  * Listens and executes events for {@link SimpleEnchantment}
+ *
+ * Internal use only!
  */
-public class EnchantmentListener implements Listener {
+public final class EnchantmentListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {

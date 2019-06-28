@@ -1,8 +1,12 @@
 package org.mineacademy.fo;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -10,7 +14,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Statistic;
+import org.bukkit.Statistic.Type;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +31,9 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.jsonsimple.JSONObject;
+import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -53,7 +64,7 @@ public final class PlayerUtil {
 	 * The default duration of the new animated title before
 	 * it is reverted back to the old one
 	 *
-	 * Used in {@link #animateInvTitle(Menu, Player, String, String)}
+	 * Used in {@link #updateInventoryTitle(Menu, Player, String, String)}
 	 */
 	public static int ANIMATION_DURATION_TICKS = 20;
 
@@ -69,6 +80,156 @@ public final class PlayerUtil {
 	 */
 	public static void kick(final Player player, final String... message) {
 		Common.runLater(() -> player.kickPlayer(Common.colorize(message)));
+	}
+
+	/**
+	 * Return statistics of ALL offline players ever played
+	 *
+	 * @param statistic
+	 * @return
+	 */
+	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic) {
+		return getStatistics(statistic, null, null);
+	}
+
+	/**
+	 * Return statistics of ALL offline players ever played
+	 *
+	 * @param statistic
+	 * @param material
+	 * @return
+	 */
+	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic, Material material) {
+		return getStatistics(statistic, material, null);
+	}
+
+	/**
+	 * Return statistics of ALL offline players ever played
+	 *
+	 * @param statistic
+	 * @param entityType
+	 * @return
+	 */
+	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic, EntityType entityType) {
+		return getStatistics(statistic, null, entityType);
+	}
+
+	/**
+	 * Return statistics of ALL offline players ever played
+	 *
+	 * @param statistic
+	 * @param material
+	 * @param entityType
+	 * @return
+	 */
+	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic, Material material, EntityType entityType) {
+		final TreeMap<Long, OfflinePlayer> statistics = new TreeMap<>(Collections.reverseOrder());
+
+		for (final OfflinePlayer offline : Bukkit.getOfflinePlayers()) {
+			final long time = getStatistic(offline, statistic, material, entityType);
+
+			statistics.put(time, offline);
+		}
+
+		return statistics;
+	}
+
+	/**
+	 * Return a statistic of an online player
+	 *
+	 * @param player
+	 * @param statistic
+	 * @return
+	 */
+	public static long getStatistic(OfflinePlayer player, Statistic statistic) {
+		return getStatistic(player, statistic, null, null);
+	}
+
+	/**
+	 * Return a statistic of an online player
+	 *
+	 * @param player
+	 * @param statistic
+	 * @param material
+	 * @return
+	 */
+	public static long getStatistic(OfflinePlayer player, Statistic statistic, Material material) {
+		return getStatistic(player, statistic, material, null);
+	}
+
+	/**
+	 * Return a statistic of an online player
+	 *
+	 * @param player
+	 * @param statistic
+	 * @param entityType
+	 * @return
+	 */
+	public static long getStatistic(OfflinePlayer player, Statistic statistic, EntityType entityType) {
+		return getStatistic(player, statistic, null, entityType);
+	}
+
+	/**
+	 * Return a statistic of an online player
+	 *
+	 * @param player
+	 * @param statistic
+	 * @return
+	 */
+	private static long getStatistic(OfflinePlayer player, Statistic statistic, Material material, EntityType entityType) {
+		// Return live statistic for up to date data and best performance if possible
+		if (player.isOnline()) {
+			final Player online = player.getPlayer();
+
+			if (statistic.getType() == Type.UNTYPED)
+				return online.getStatistic(statistic);
+
+			else if (statistic.getType() == Type.ENTITY)
+				return online.getStatistic(statistic, entityType);
+
+			return online.getStatistic(statistic, material);
+		}
+
+		// Otherwise read his stats file
+		return getStatisticFile(player, statistic, material, entityType);
+	}
+
+	// Read json file for the statistic
+	private static long getStatisticFile(OfflinePlayer player, Statistic statistic, Material material, EntityType entityType) {
+		final File worldFolder = new File(Bukkit.getServer().getWorlds().get(0).getWorldFolder(), "stats");
+		final File statFile = new File(worldFolder, player.getUniqueId().toString() + ".json");
+
+		if (statFile.exists()) {
+			try {
+				final JSONObject json = (JSONObject) JSONParser.getInstance().parse(new FileReader(statFile));
+				final String name = Remain.getNMSStatisticName(statistic, material, entityType);
+
+				JSONObject section = json.getObject("stats");
+				long result = 0;
+
+				for (String part : name.split("\\:")) {
+					part = part.replace(".", ":");
+
+					if (section != null) {
+						final JSONObject nextSection = section.getObject(part);
+
+						if (nextSection == null) {
+							result = Long.parseLong(section.containsKey(part) ? section.get(part).toString() : "0");
+							break;
+						}
+
+						section = nextSection;
+					}
+				}
+
+				return result;
+
+			} catch (final Throwable t) {
+				throw new FoException(t);
+			}
+		}
+
+		return 0;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -359,11 +520,11 @@ public final class PlayerUtil {
 	 *
 	 * @param menu the menu
 	 * @param player the player
-	 * @param animated the animated title
-	 * @param old the old title
+	 * @param temporaryTitle the animated title
+	 * @param oldTitle the old title
 	 */
-	public static void animateInvTitle(Menu menu, Player player, String animated, String old) {
-		animateInvTitle(menu, player, animated, old, ANIMATION_DURATION_TICKS);
+	public static void updateInventoryTitle(Menu menu, Player player, String temporaryTitle, String oldTitle) {
+		updateInventoryTitle(menu, player, temporaryTitle, oldTitle, ANIMATION_DURATION_TICKS);
 	}
 
 	/**
@@ -371,18 +532,18 @@ public final class PlayerUtil {
 	 *
 	 * @param menu the menu
 	 * @param player the player
-	 * @param animated the animated title
-	 * @param old the old title to revert to
+	 * @param temporaryTitle the animated title
+	 * @param oldTitle the old title to revert to
 	 * @param duration the duration in ticks
 	 */
-	public static void animateInvTitle(Menu menu, Player player, String animated, String old, int duration) {
+	public static void updateInventoryTitle(Menu menu, Player player, String temporaryTitle, String oldTitle, int duration) {
 		Valid.checkNotNull(menu, "Menu == null");
 		Valid.checkNotNull(player, "Player == null");
-		Valid.checkNotNull(animated, "Title == null");
-		Valid.checkNotNull(old, "Old Title == null");
+		Valid.checkNotNull(temporaryTitle, "Title == null");
+		Valid.checkNotNull(oldTitle, "Old Title == null");
 
 		// Send the packet
-		ReflectionUtil.updateInventoryTitle(player, MinecraftVersion.atLeast(V.v1_13) ? animated.replace("%", "%%") : animated);
+		updateInventoryTitle(player, MinecraftVersion.atLeast(V.v1_13) ? temporaryTitle.replace("%", "%%") : temporaryTitle);
 
 		// Prevent flashing titles
 		BukkitTask pending = titleRestoreTasks.get(player.getUniqueId());
@@ -394,7 +555,7 @@ public final class PlayerUtil {
 			final Menu futureMenu = Menu.getMenu(player);
 
 			if (futureMenu != null && futureMenu.getClass().getName().equals(menu.getClass().getName()))
-				ReflectionUtil.updateInventoryTitle(player, old);
+				updateInventoryTitle(player, oldTitle);
 		});
 
 		final UUID uid = player.getUniqueId();
@@ -406,6 +567,16 @@ public final class PlayerUtil {
 			if (titleRestoreTasks.containsKey(uid))
 				titleRestoreTasks.remove(uid);
 		});
+	}
+
+	/**
+	 * Update the player's inventory title without closing the window
+	 *
+	 * @param player the player
+	 * @param title  the new title
+	 */
+	public static void updateInventoryTitle(Player player, String title) {
+		Remain.updateInventoryTitle(player, title);
 	}
 
 	// ----------------------------------------------------------------------------------------------------

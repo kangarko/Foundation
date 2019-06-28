@@ -111,21 +111,21 @@ public class ChatInternals {
 			if (titleTimesConstructor != null) {
 				final Object packet = titleTimesConstructor.newInstance(fadeIn, stay, fadeOut);
 
-				ReflectionUtil.sendPacket(player, packet);
+				Remain.sendPacket(player, packet);
 			}
 
 			if (title != null) {
 				final Object chatTitle = serializeText(title);
 				final Object packet = titleConstructor.newInstance(enumTitle, chatTitle);
 
-				ReflectionUtil.sendPacket(player, packet);
+				Remain.sendPacket(player, packet);
 			}
 
 			if (subtitle != null) {
 				final Object chatSubtitle = serializeText(subtitle);
 				final Object packet = subtitleConstructor.newInstance(enumSubtitle, chatSubtitle);
 
-				ReflectionUtil.sendPacket(player, packet);
+				Remain.sendPacket(player, packet);
 			}
 		} catch (final ReflectiveOperationException ex) {
 			throw new ReflectionException("Error sending title to: " + player.getName(), ex);
@@ -146,7 +146,7 @@ public class ChatInternals {
 
 			final Object packet = resetTitleConstructor.newInstance(enumReset, null);
 
-			ReflectionUtil.sendPacket(player, packet);
+			Remain.sendPacket(player, packet);
 		} catch (final ReflectiveOperationException ex) {
 			throw new ReflectionException("Error resetting title to: " + player.getName());
 		}
@@ -177,7 +177,7 @@ public class ChatInternals {
 				f.set(packet, footer);
 			}
 
-			ReflectionUtil.sendPacket(player, packet);
+			Remain.sendPacket(player, packet);
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Failed to send tablist to " + player.getName() + ", title: " + headerRaw + " " + footerRaw);
@@ -212,7 +212,7 @@ public class ChatInternals {
 			} else
 				packet = chatMessageConstructor.newInstance(message, type);
 
-			ReflectionUtil.sendPacket(pl, packet);
+			Remain.sendPacket(pl, packet);
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Failed to send chat packet type " + type + " to " + pl.getName() + ", message: " + text);
@@ -226,7 +226,7 @@ public class ChatInternals {
 			return componentSerializer.invoke(null, "{\"text\":\"" + Matcher.quoteReplacement(text) + "\"}");
 
 		} catch (final Throwable t) {
-			throw new FoException("Failed to serialize text: " + text, t);
+			throw new FoException(t, "Failed to serialize text: " + text);
 		}
 	}
 
