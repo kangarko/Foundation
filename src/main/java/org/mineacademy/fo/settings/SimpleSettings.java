@@ -115,6 +115,14 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
+	 * When processing regular expressions, limit executing to the specified time.
+	 * This prevents server freeze/crash on malformed regex (loops).
+	 *
+	 * Regex_Timeout_Milis: 100
+	 */
+	public static Integer REGEX_TIMEOUT = 100;
+
+	/**
 	 * What commands should trigger the your main plugin command (separated by a comma ,)? See {@link SimplePlugin#getMainCommand()}
 	 *
 	 * Typical values for ChatControl:
@@ -227,6 +235,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 			NOTIFY_UPDATES = keySet ? getBoolean("Notify_Updates") : NOTIFY_UPDATES;
 		}
 
+		REGEX_TIMEOUT = isSet("Regex_Timeout_Milis") ? getInteger("Regex_Timeout_Milis") : REGEX_TIMEOUT;
 		SERVER_NAME = isSet("Server_Name") ? Common.colorize(getString("Server_Name")) : "Server Name Undefined";
 		NOTIFY_PROMOTIONS = isSet("Notify_Promotions") ? getBoolean("Notify_Promotions") : NOTIFY_PROMOTIONS;
 		SECRET_KEY = isSet("Serialization") ? getString("Serialization") : SECRET_KEY;
