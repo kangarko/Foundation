@@ -196,7 +196,7 @@ public enum ParticleInternals {
 			}
 		}
 
-		ReflectionUtil.sendPacket(player, packet);
+		Remain.sendPacket(player, packet);
 	}
 
 	/**

@@ -295,9 +295,14 @@ public final class ItemCreator {
 			((SkullMeta) myMeta).setOwner(skullOwner);
 
 		try {
+			if (damage != -1)
+				is.setDurability((short) damage);
+		} catch (final Throwable t) {
+		}
+
+		try {
 			if (myMeta instanceof Damageable && damage != -1)
 				((Damageable) myMeta).setDamage(damage);
-
 		} catch (final Throwable t) {
 		}
 

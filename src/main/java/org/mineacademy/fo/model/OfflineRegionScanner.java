@@ -76,23 +76,27 @@ public abstract class OfflineRegionScanner {
 	}
 
 	private final void scan0(World world) {
+		Thread watchdog = null;
 
-		WatchdogThread watchdog;
-
-		// Disable to prevent lag warnings since we scan chunks on the main thread
 		try {
-			final Field f = WatchdogThread.class.getDeclaredField("instance");
-			f.setAccessible(true);
 
-			watchdog = (WatchdogThread) f.get(null);
-			watchdog.suspend();
+			// Disable to prevent lag warnings since we scan chunks on the main thread
+			try {
+				final Field f = WatchdogThread.class.getDeclaredField("instance");
+				f.setAccessible(true);
 
-		} catch (final Throwable t) {
-			System.out.println("FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
-			Common.callEvent(new RegionScanCompleteEvent(world));
+				watchdog = (WatchdogThread) f.get(null);
+				watchdog.suspend();
 
-			t.printStackTrace();
-			return;
+			} catch (final Throwable t) {
+				System.out.println("FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
+				Common.callEvent(new RegionScanCompleteEvent(world));
+
+				t.printStackTrace();
+				return;
+			}
+		} catch (final NoClassDefFoundError err) {
+			//
 		}
 
 		System.out.println(Common.consoleLine());
@@ -118,7 +122,8 @@ public abstract class OfflineRegionScanner {
 		// Start the schedule
 		schedule(queue);
 
-		watchdog.resume();
+		if (watchdog != null)
+			watchdog.resume();
 
 		LagCatcher.end("Region scanner for " + world.getName(), 0);
 	}

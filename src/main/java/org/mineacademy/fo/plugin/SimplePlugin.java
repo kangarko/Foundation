@@ -323,6 +323,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 					if (isTool || isEnchant) {
 
+						if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
+							System.out.println("**** WARNING ****");
+							System.out.println("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
+
+							continue;
+						}
+
 						try {
 							Field instanceField = null;
 
@@ -353,7 +360,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 							// Ignore if no field is present
 
 						} catch (final Throwable t) {
-							Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
+							final String error = Common.getOrEmpty(t.getMessage());
+
+							if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
+								System.out.println("**** WARNING ****");
+
+								if (error.contains("DragonFireball"))
+									System.out.println("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
+								else
+									System.out.println("Your Minecraft version does not have " + error + " class you call in: " + clazz);
+							} else
+								Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
 						}
 					}
 				}

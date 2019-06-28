@@ -80,10 +80,10 @@ public final class ToolsListener implements Listener {
 					event.setCancelled(true);
 
 			} catch (final Throwable t) {
-				Common.tell(player, "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details.");
-
 				event.setCancelled(true);
-				t.printStackTrace();
+
+				Common.tell(player, "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details.");
+				Common.error(t, "Failed to handle " + event.getAction() + " using Tool: " + tool.getClass());
 			}
 	}
 
@@ -192,10 +192,10 @@ public final class ToolsListener implements Listener {
 				}
 
 			} catch (final Throwable t) {
-				Common.tell(player, "&cOups! There was a problem with this projectile! Please contact the administrator to review the console for details.");
-
 				event.setCancelled(true);
-				t.printStackTrace();
+
+				Common.tell(player, "&cOups! There was a problem with this projectile! Please contact the administrator to review the console for details.");
+				Common.error(t, "Failed to shoot Rocket " + tool.getClass());
 			}
 	}
 
@@ -213,18 +213,23 @@ public final class ToolsListener implements Listener {
 			final Rocket rocket = shot.getRocket();
 			final Player shooter = shot.getShooter();
 
-			if (rocket.canExplode(projectile, shooter)) {
-				final RocketExplosionEvent rocketEvent = new RocketExplosionEvent(rocket, projectile, rocket.getExplosionPower(), rocket.isBreakBlocks());
+			try {
+				if (rocket.canExplode(projectile, shooter)) {
+					final RocketExplosionEvent rocketEvent = new RocketExplosionEvent(rocket, projectile, rocket.getExplosionPower(), rocket.isBreakBlocks());
 
-				if (Common.callEvent(rocketEvent)) {
-					final Location location = projectile.getLocation();
+					if (Common.callEvent(rocketEvent)) {
+						final Location location = projectile.getLocation();
 
-					shot.getRocket().onExplode(projectile, shot.getShooter());
-					projectile.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), rocketEvent.getPower(), false, rocketEvent.isBreakBlocks());
-				}
+						shot.getRocket().onExplode(projectile, shot.getShooter());
+						projectile.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), rocketEvent.getPower(), false, rocketEvent.isBreakBlocks());
+					}
 
-			} else
-				projectile.remove();
+				} else
+					projectile.remove();
+			} catch (final Throwable t) {
+				Common.tell(shooter, "&cOups! There was a problem with this rocket! Please contact the administrator to review the console for details.");
+				Common.error(t, "Failed to handle impact by Rocket " + shot.getRocket().getClass());
+			}
 		}
 	}
 }

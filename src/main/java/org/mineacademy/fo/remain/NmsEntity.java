@@ -24,7 +24,7 @@ public final class NmsEntity {
 		try {
 			NmsAccessor.call();
 		} catch (final Throwable t) {
-			throw new FoException("Failed to setup entity reflection! MC version: " + MinecraftVersion.getCurrent(), t);
+			throw new FoException(t, "Failed to setup entity reflection! MC version: " + MinecraftVersion.getCurrent());
 		}
 
 		this.bukkitWorld = loc.getWorld();
@@ -46,7 +46,7 @@ public final class NmsEntity {
 			return NmsAccessor.createEntity.invoke(bukkitWorld, loc, cl);
 
 		} catch (final ReflectiveOperationException e) {
-			throw new FoException("Error creating entity " + cl + " at " + loc, e);
+			throw new FoException(e, "Error creating entity " + cl + " at " + loc);
 		}
 	}
 
@@ -56,7 +56,7 @@ public final class NmsEntity {
 			return (T) NmsAccessor.addEntity(bukkitWorld, nmsEntity, reason);
 
 		} catch (final ReflectiveOperationException e) {
-			throw new FoException("Error creating entity " + nmsEntity + " for " + reason, e);
+			throw new FoException(e, "Error creating entity " + nmsEntity + " for " + reason);
 		}
 	}
 
@@ -65,7 +65,7 @@ public final class NmsEntity {
 			return (Entity) NmsAccessor.bukkitEntity.invoke(nmsEntity);
 
 		} catch (final ReflectiveOperationException e) {
-			throw new FoException("Error getting bukkit entity from " + nmsEntity, e);
+			throw new FoException(e, "Error getting bukkit entity from " + nmsEntity);
 		}
 	}
 }
@@ -100,7 +100,7 @@ final class NmsAccessor {
 			olderThen18 = MinecraftVersion.olderThan(V.v1_8);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Error setting up nms entity accessor!", ex);
+			throw new FoException(ex, "Error setting up nms entity accessor!");
 		}
 	}
 

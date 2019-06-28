@@ -2,7 +2,9 @@ package org.mineacademy.fo;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
@@ -19,10 +21,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.EntityUtil.HitListener;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -97,6 +101,27 @@ public final class EntityUtil {
 				entity instanceof Projectile ||
 				entity instanceof ExperienceOrb;
 	}
+
+	// ----------------------------------------------------------------------------------------------------
+	// Dropping
+	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Attempts to drop the item allowing space for applying properties to the item
+	 * before it is spawned
+	 *
+	 * @param location
+	 * @param item
+	 * @param modifier
+	 * @return the item
+	 */
+	public static Item dropItem(Location location, ItemStack item, Consumer<Item> modifier) {
+		return Remain.spawnItem(location, item, modifier);
+	}
+
+	// ----------------------------------------------------------------------------------------------------
+	// Tracking
+	// ----------------------------------------------------------------------------------------------------
 
 	/**
 	 * Runs a timer task with the tick period of 1 and will trigger your hit listener

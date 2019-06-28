@@ -212,6 +212,8 @@ import java.util.Stack;
 
 import org.mineacademy.fo.exception.FoException;
 
+import lombok.Getter;
+
 /**
  * Parses JSON data (<u>not</u> thread-safe).
  * @author FangYidong(fangyidong@yahoo.com.cn)
@@ -225,6 +227,9 @@ public class JSONParser {
 	// -	Removed the ContainerFactory
 	// -	Updated the documentation
 	// ====
+
+	@Getter
+	public static final JSONParser instance = new JSONParser();
 
 	private static final int S_INIT = 0;
 	private static final int S_IN_FINISHED_VALUE = 1;

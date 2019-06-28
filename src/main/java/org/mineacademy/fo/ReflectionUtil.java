@@ -14,65 +14,21 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.remain.Remain;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * Utility class for various reflection methods
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtil {
-
-	/**
-	 * The CraftPlayer.getHandle method
-	 */
-	private static Method getHandle;
-
-	/**
-	 * The EntityPlayer.playerConnection method
-	 */
-	private static Field fieldPlayerConnection;
-
-	/**
-	 * The PlayerConnection.sendPacket method
-	 */
-	private static Method sendPacket;
-
-	// Static access
-	private ReflectionUtil() {
-	}
-
-	// Load things automatically
-	static {
-		try {
-			getHandle = getOFCClass("entity.CraftPlayer").getMethod("getHandle");
-			fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
-			sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
-
-		} catch (final Throwable t) {
-			System.out.println("Unable to find setup reflection. Plugin will still function.");
-			System.out.println("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-			System.out.println("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
-
-			fieldPlayerConnection = null;
-			sendPacket = null;
-			getHandle = null;
-		}
-	}
 
 	/**
 	 * Find a class in net.minecraft.server package, adding the version
@@ -82,7 +38,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getNMSClass(String name) {
-		return lookupClass("net.minecraft.server." + getClassVersioning() + "." + name);
+		return ReflectionUtil.lookupClass("net.minecraft.server." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
 	/**
@@ -93,241 +49,16 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getOFCClass(String name) {
-		return lookupClass("org.bukkit.craftbukkit." + getClassVersioning() + "." + name);
+		return ReflectionUtil.lookupClass("org.bukkit.craftbukkit." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
 	/**
-	 * Return the current class versioning such as v1_15_R1
+	 * Set the static field to the given value
 	 *
-	 * @return
+	 * @param clazz
+	 * @param fieldName
+	 * @param fieldValue
 	 */
-	public static String getClassVersioning() {
-		final String curr = MinecraftVersion.getServerVersion();
-
-		return curr.equals("craftbukkit") ? "" : curr;
-	}
-
-	// ------------------------------------------------------------------------------------------
-	// Minecraft related methods
-	// ------------------------------------------------------------------------------------------
-
-	/**
-	 * Attempts to send the respawn packet to player
-	 *
-	 * @param player
-	 * @deprecated this is last resort, use {@link Remain#respawn(Player, int)}
-	 *             instead
-	 */
-	@Deprecated
-	public static void respawn(Player player) {
-		try {
-			final Object respawnEnum = ReflectionUtil.getNMSClass("EnumClientCommand").getEnumConstants()[0];
-			final Constructor<?>[] constructors = ReflectionUtil.getNMSClass("PacketPlayInClientCommand").getConstructors();
-
-			for (final Constructor<?> constructor : constructors) {
-				final Class<?>[] args = constructor.getParameterTypes();
-				if (args.length == 1 && args[0] == respawnEnum.getClass()) {
-					final Object packet = ReflectionUtil.getNMSClass("PacketPlayInClientCommand").getConstructor(args).newInstance(respawnEnum);
-
-					ReflectionUtil.sendPacket(player, packet);
-					break;
-				}
-			}
-
-		} catch (final Throwable e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Attempts to drop the item allowing space for applying properties to the item
-	 * before it is spawned
-	 *
-	 * @param loc
-	 * @param item
-	 * @param modifier
-	 * @return the item
-	 */
-	public static Item dropItem(Location loc, ItemStack item, ItemPreSpawnAction modifier) {
-		try {
-			final Class<?> nmsWorldClass = getNMSClass("World");
-			final Class<?> nmsStackClass = getNMSClass("ItemStack");
-			final Class<?> nmsEntityClass = getNMSClass("Entity");
-			final Class<?> nmsItemClass = getNMSClass("EntityItem");
-
-			final Constructor<?> entityConstructor = nmsItemClass.getConstructor(nmsWorldClass, double.class, double.class, double.class, nmsStackClass);
-
-			final Object nmsWorld = loc.getWorld().getClass().getMethod("getHandle").invoke(loc.getWorld());
-			final Method asNmsCopy = getOFCClass("inventory.CraftItemStack").getMethod("asNMSCopy", ItemStack.class);
-
-			final Object nmsEntity = entityConstructor.newInstance(nmsWorld, loc.getX(), loc.getY(), loc.getZ(), asNmsCopy.invoke(null, item));
-
-			final Class<?> craftItemClass = getOFCClass("entity.CraftItem");
-			final Class<?> craftServerClass = getOFCClass("CraftServer");
-
-			final Object bukkitItem = craftItemClass.getConstructor(craftServerClass, nmsItemClass).newInstance(Bukkit.getServer(), nmsEntity);
-			Valid.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
-
-			modifier.modify((Item) bukkitItem);
-
-			{ // add to the world + call event
-				final Method addEntity = loc.getWorld().getClass().getMethod("addEntity", nmsEntityClass, SpawnReason.class);
-				addEntity.invoke(loc.getWorld(), nmsEntity, SpawnReason.CUSTOM);
-			}
-
-			return (Item) bukkitItem;
-
-		} catch (final ReflectiveOperationException ex) {
-			Common.error(ex, "Error spawning item " + item.getType() + " at " + loc);
-
-			return null;
-		}
-	}
-
-	/**
-	 * Represents an action that happens with the item before the
-	 * {@link ItemSpawnEvent} is called and item appears in the world
-	 */
-	public interface ItemPreSpawnAction {
-
-		/**
-		 * Modify the item early (see above)
-		 *
-		 * @param item
-		 */
-		void modify(Item item);
-	}
-
-	/**
-	 * Update the player's inventory title without closing the window
-	 *
-	 * @param player the player
-	 * @param title  the new title
-	 */
-	public static void updateInventoryTitle(Player player, String title) {
-		try {
-			if (MinecraftVersion.olderThan(V.v1_8))
-				return;
-
-			if (MinecraftVersion.olderThan(V.v1_9) && title.length() > 16)
-				title = title.substring(0, 15);
-
-			final Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
-
-			final Object activeContainer = entityPlayer.getClass().getField("activeContainer").get(entityPlayer);
-			final Constructor<?> chatMessageConst = getNMSClass("ChatMessage").getConstructor(String.class, Object[].class);
-
-			final Object windowId = activeContainer.getClass().getField("windowId").get(activeContainer);
-			final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
-
-			final Object packet;
-
-			if (MinecraftVersion.newerThan(V.v1_13)) {
-				final Class<?> containersClass = getNMSClass("Containers");
-				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent"));
-
-				final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
-
-				if (inventorySize < 1 || inventorySize > 6) {
-					Common.log("Cannot update title for " + player.getName() + " as their inventory has non typical size: " + inventorySize + " rows");
-
-					return;
-				}
-
-				final Object container = containersClass.getField("GENERIC_9X" + inventorySize).get(null);
-
-				packet = packetConst.newInstance(windowId, container, chatMessage);
-
-			} else {
-				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent"), int.class);
-
-				packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
-			}
-
-			sendPacket(player, packet);
-
-			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container")).invoke(entityPlayer, activeContainer);
-		} catch (final ReflectiveOperationException ex) {
-			Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
-		}
-	}
-
-	/**
-	 * Advanced: Sends a packet to the player
-	 *
-	 * @param player the player
-	 * @param packet the packet
-	 */
-	public static void sendPacket(Player player, Object packet) {
-		if (getHandle == null || fieldPlayerConnection == null || sendPacket == null) {
-			System.out.println("Cannot send packet " + packet.getClass().getSimpleName() + " on your server sofware (known to be broken on Cauldron).");
-			return;
-		}
-
-		try {
-			final Object handle = getHandle.invoke(player);
-			final Object playerConnection = fieldPlayerConnection.get(handle);
-
-			sendPacket.invoke(playerConnection, packet);
-
-		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Could not send " + packet.getClass().getSimpleName() + " to " + player.getName(), ex);
-		}
-	}
-
-	/**
-	 * Returns Minecraft World class
-	 *
-	 * @param world
-	 * @return
-	 */
-	public static Object getHandleWorld(World world) {
-		Object nms = null;
-		final Method handle = getMethod(world.getClass(), "getHandle");
-		try {
-			nms = handle.invoke(world);
-		} catch (final ReflectiveOperationException e) {
-			e.printStackTrace();
-		}
-		return nms;
-	}
-
-	/**
-	 * Returns Minecraft Entity class
-	 *
-	 * @param entity
-	 * @return
-	 */
-	public static Object getHandleEntity(Entity entity) {
-		Object nms_entity = null;
-		final Method handle = getMethod(entity.getClass(), "getHandle");
-		try {
-			nms_entity = handle.invoke(entity);
-		} catch (final ReflectiveOperationException e) {
-			e.printStackTrace();
-		}
-		return nms_entity;
-	}
-
-	/**
-	 * Returns true if we are running a 1.8 protocol hack
-	 *
-	 * @return
-	 */
-	public static boolean isProtocolHack() {
-		try {
-			ReflectionUtil.getNMSClass("PacketPlayOutEntityTeleport").getConstructor(new Class<?>[] { int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class });
-		} catch (final Throwable t) {
-			return false;
-		}
-
-		return true;
-	}
-
-	// ------------------------------------------------------------------------------------------
-	// Java related methods
-	// ------------------------------------------------------------------------------------------
-
 	public static void setStaticField(Class<?> clazz, String fieldName, Object fieldValue) {
 		try {
 			final Field field = getDeclaredField(clazz, fieldName);
@@ -335,7 +66,7 @@ public final class ReflectionUtil {
 			field.set(null, fieldValue);
 
 		} catch (final Throwable t) {
-			throw new FoException("Could not set " + fieldName + " in " + clazz + " to " + fieldValue, t);
+			throw new FoException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
 		}
 	}
 
@@ -633,7 +364,7 @@ public final class ReflectionUtil {
 	 * @param path
 	 * @return
 	 */
-	private static Class<?> lookupClass(String path) {
+	public static Class<?> lookupClass(String path) {
 		try {
 			return Class.forName(path);
 
@@ -842,7 +573,7 @@ public final class ReflectionUtil {
 			return getClasses0(plugin);
 
 		} catch (ReflectiveOperationException | IOException ex) {
-			throw new FoException("Failed getting classes for " + plugin.getName(), ex);
+			throw new FoException(ex, "Failed getting classes for " + plugin.getName());
 		}
 	}
 

@@ -488,7 +488,7 @@ public abstract class Menu {
 	 * @param title the title to animate
 	 */
 	public final void animateTitle(String title) {
-		PlayerUtil.animateInvTitle(this, getViewer(), title, getTitle());
+		PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
 	}
 
 	// --------------------------------------------------------------------------------

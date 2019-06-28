@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -18,10 +19,16 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
+
+import lombok.NonNull;
 
 /**
  * Represents a simple way of getting your own enchantments into Minecraft
@@ -35,6 +42,11 @@ import org.mineacademy.fo.remain.Remain;
  * to check
  */
 public abstract class SimpleEnchantment extends Enchantment {
+
+	/**
+	 * Pattern for matching namespaces
+	 */
+	private static final Pattern VALID_NAMESPACE = Pattern.compile("[a-z0-9._-]+");
 
 	/**
 	 * The name of this enchant
@@ -52,12 +64,24 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 * @param name
 	 */
 	protected SimpleEnchantment(String name, int maxLevel) {
-		super(new NamespacedKey(SimplePlugin.getInstance(), name));
+		super(toKey(name));
 
 		this.name = name;
 		this.maxLevel = maxLevel;
 
 		Remain.registerEnchantment(this);
+	}
+
+	// Convert a name into a namespace
+	private static NamespacedKey toKey(@NonNull String name) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_13), "Unfortunately, SimpleEnchantment requires Minecraft 1.13.2 or greater. Cannot make " + name);
+
+		name = new String(name);
+		name = name.toLowerCase().replace(" ", "_");
+		name = ChatUtil.replaceDiacritic(name);
+
+		Valid.checkBoolean(name != null && VALID_NAMESPACE.matcher(name).matches(), "Enchant name must only contain English alphabet names: " + name);
+		return new NamespacedKey(SimplePlugin.getInstance(), name);
 	}
 
 	// ------------------------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 package org.mineacademy.fo.remain.internal;
 
 import org.bukkit.Location;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.remain.CompBarColor;
 import org.mineacademy.fo.remain.CompBarStyle;
+import org.mineacademy.fo.remain.Remain;
 
 /**
  * Represents the fake dragon entity
@@ -36,7 +36,7 @@ abstract class EnderDragonEntity {
 		this.y = loc.getBlockY();
 		this.z = loc.getBlockZ();
 		this.health = percent / 100F * maxHealth;
-		this.world = ReflectionUtil.getHandleWorld(loc.getWorld());
+		this.world = Remain.getHandleWorld(loc.getWorld());
 	}
 
 	EnderDragonEntity(String name, Location loc) {
@@ -44,7 +44,7 @@ abstract class EnderDragonEntity {
 		this.x = loc.getBlockX();
 		this.y = loc.getBlockY();
 		this.z = loc.getBlockZ();
-		this.world = ReflectionUtil.getHandleWorld(loc.getWorld());
+		this.world = Remain.getHandleWorld(loc.getWorld());
 	}
 
 	public float getMaxHealth() {

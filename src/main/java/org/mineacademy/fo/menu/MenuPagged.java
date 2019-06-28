@@ -8,7 +8,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
@@ -152,7 +152,7 @@ public abstract class MenuPagged<T> extends Menu {
 		registerButtons();
 
 		Menu.getSound().play(getViewer());
-		ReflectionUtil.updateInventoryTitle(getViewer(), compileTitle0());
+		PlayerUtil.updateInventoryTitle(getViewer(), compileTitle0());
 	}
 
 	// Compile title and page numbers
