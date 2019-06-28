@@ -3,36 +3,33 @@ package org.mineacademy.fo.remain.nbt;
 import org.bukkit.entity.Entity;
 
 /**
- * Represents an entity NBT tag
+ * NBT class to access vanilla tags from Entities. Entities don't support custom
+ * tags. Use the NBTInjector for custom tags. Changes will be instantly applied
+ * to the Entity, use the merge method to do many things at once.
+ * 
+ * @author tr7zw
+ *
  */
 public class NBTEntity extends NBTCompound {
 
-	// Safety compatibility check
-	public static boolean COMPATIBLE = true;
+	private final Entity ent;
 
 	/**
-	 * The entity associated with this tag
-	 */
-	private final Entity entity;
-
-	/**
-	 * Access an entity's NBT tag
+	 * @param entity Any valid Bukkit Entity
 	 */
 	public NBTEntity(Entity entity) {
 		super(null, null);
-
-		this.entity = entity;
+		ent = entity;
 	}
 
 	@Override
-	protected Object getCompound() {
-		return !COMPATIBLE ? null : NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(entity));
+	public Object getCompound() {
+		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(ent));
 	}
 
 	@Override
-	protected void setCompound(Object tag) {
-		if (COMPATIBLE)
-			NBTReflectionUtil.setEntityNBTTag(tag, NBTReflectionUtil.getNMSEntity(entity));
+	protected void setCompound(Object compound) {
+		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
 	}
 
 }

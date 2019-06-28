@@ -1,12 +1,12 @@
 package org.mineacademy.fo.remain.nbt;
 
-import lombok.Getter;
-
 /**
- * Represents a NBT tag type
+ * Enum of all NBT Types Minecraft contains
+ *
+ * @author tr7zw
+ *
  */
 public enum NBTType {
-
 	NBTTagEnd(0),
 	NBTTagByte(1),
 	NBTTagShort(2),
@@ -20,32 +20,28 @@ public enum NBTType {
 	NBTTagList(9),
 	NBTTagCompound(10);
 
-	/**
-	 * Create a new enum by tag ID
-	 *
-	 * @param id
-	 */
-	private NBTType(int id) {
-		this.id = id;
+	NBTType(int i) {
+		id = i;
 	}
 
-	/**
-	 * The internal tag id
-	 */
-	@Getter
 	private final int id;
 
 	/**
-	 * Get NBTType from internal ID
-	 *
-	 * @param id
-	 * @return the tag, or NBTTagEnd if not found
+	 * @return Id used by Minecraft internally
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id Internal Minecraft id
+	 * @return Enum representing the id, NBTTagEnd for invalide ids
 	 */
 	public static NBTType valueOf(int id) {
 		for (final NBTType t : values())
 			if (t.getId() == id)
 				return t;
-
 		return NBTType.NBTTagEnd;
 	}
+
 }

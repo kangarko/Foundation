@@ -6,39 +6,85 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
 
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
- * Represents an item's NBT tag
+ * NBT class to access vanilla/custom tags on ItemStacks. This class doesn't
+ * autosave to the Itemstack, use getItem to get the changed ItemStack
+ *
+ * @author tr7zw
+ *
  */
-@Setter
-@Getter
-public final class NBTItem extends NBTCompound {
+public class NBTItem extends NBTCompound {
+
+	private ItemStack bukkitItem;
 
 	/**
-	 * The associated item stack
+	 * Constructor for NBTItems. The ItemStack will be cloned!
+	 *
+	 * @param item
 	 */
-	private ItemStack item;
-
-	/**
-	 * Access an items's NBT tag
-	 */
-	public NBTItem(@NonNull ItemStack item) {
+	public NBTItem(ItemStack item) {
 		super(null, null);
-		this.item = item.clone();
+		if (item == null) {
+			throw new NullPointerException("ItemStack can't be null!");
+		}
+		bukkitItem = item.clone();
 	}
 
 	@Override
-	protected Object getCompound() {
-		return !NBTEntity.COMPATIBLE ? null : NBTReflectionUtil.getItemRootNBTTagCompound(NBTReflectionUtil.getNMSItemStack(item));
+	public Object getCompound() {
+		return NBTReflectionUtil.getItemRootNBTTagCompound(WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
 	}
 
 	@Override
-	protected void setCompound(Object tag) {
-		if (NBTEntity.COMPATIBLE)
-			item = NBTReflectionUtil.getBukkitItemStack(NBTReflectionUtil.setNBTTag(tag, NBTReflectionUtil.getNMSItemStack(item)));
+	protected void setCompound(Object compound) {
+		final Object stack = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+		WrapperMethod.ITEMSTACK_SET_TAG.run(stack, compound);
+		bukkitItem = (ItemStack) WrapperMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
+	}
+
+	/**
+	 * @return The modified ItemStack
+	 */
+	public ItemStack getItem() {
+		return bukkitItem;
+	}
+
+	protected void setItem(ItemStack item) {
+		bukkitItem = item;
+	}
+
+	/**
+	 * This may return true even when the NBT is empty.
+	 *
+	 * @return Does the ItemStack have a NBTCompound.
+	 */
+	public boolean hasNBTData() {
+		return getCompound() != null;
+	}
+
+	/**
+	 * Helper method that converts {@link ItemStack} to {@link NBTContainer} with
+	 * all it's data like Material, Damage, Amount and Tags.
+	 *
+	 * @param item
+	 * @return Standalone {@link NBTContainer} with the Item's data
+	 */
+	public static NBTContainer convertItemtoNBT(ItemStack item) {
+		return NBTReflectionUtil.convertNMSItemtoNBTCompound(WrapperMethod.ITEMSTACK_NMSCOPY.run(null, item));
+	}
+
+	/**
+	 * Helper method to do the inverse to "convertItemtoNBT". Creates an
+	 * {@link ItemStack} using the {@link NBTCompound}
+	 *
+	 * @param comp
+	 * @return ItemStack using the {@link NBTCompound}'s data
+	 */
+	public static ItemStack convertNBTtoItem(NBTCompound comp) {
+		return (ItemStack) WrapperMethod.ITEMSTACK_BUKKITMIRROR.run(null,
+				NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
 	}
 
 	// -----------------------------------------------------------------------------
@@ -214,4 +260,5 @@ public final class NBTItem extends NBTCompound {
 
 		return name;
 	}
+
 }

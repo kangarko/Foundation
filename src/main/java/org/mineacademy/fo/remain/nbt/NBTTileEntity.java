@@ -3,32 +3,34 @@ package org.mineacademy.fo.remain.nbt;
 import org.bukkit.block.BlockState;
 
 /**
- * Represents a tile entity's NBT tag
+ * NBT class to access vanilla tags from TileEntities. TileEntities don't
+ * support custom tags. Use the NBTInjector for custom tags. Changes will be
+ * instantly applied to the Tile, use the merge method to do many things at
+ * once.
+ * 
+ * @author tr7zw
+ *
  */
 public class NBTTileEntity extends NBTCompound {
 
-	/**
-	 * The tile entity
-	 */
 	private final BlockState tile;
 
 	/**
-	 * Access a tile entity's NBT tag
+	 * @param tile BlockState from any TileEntity
 	 */
 	public NBTTileEntity(BlockState tile) {
 		super(null, null);
-
 		this.tile = tile;
 	}
 
 	@Override
-	protected Object getCompound() {
+	public Object getCompound() {
 		return NBTReflectionUtil.getTileEntityNBTTagCompound(tile);
 	}
 
 	@Override
-	protected void setCompound(Object tag) {
-		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, tag);
+	protected void setCompound(Object compound) {
+		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, compound);
 	}
 
 }
