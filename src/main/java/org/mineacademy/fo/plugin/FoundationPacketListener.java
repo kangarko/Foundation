@@ -25,6 +25,7 @@ public final class FoundationPacketListener {
 			HookManager.addPacketListener(new PacketAdapter(SimplePlugin.getInstance(), PacketType.Play.Server.SET_SLOT) {
 				@Override
 				public void onPacketSending(PacketEvent event) {
+
 					final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
 					ItemStack item = itemModifier.read(0);
 
@@ -32,7 +33,8 @@ public final class FoundationPacketListener {
 						item = SimpleEnchantment.addEnchantmentLores(item);
 
 						// Write the item
-						itemModifier.write(0, item);
+						if (item != null)
+							itemModifier.write(0, item);
 					}
 				}
 			});

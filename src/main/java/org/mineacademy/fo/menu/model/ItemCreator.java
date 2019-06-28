@@ -123,7 +123,7 @@ public final class ItemCreator {
 	 * @deprecated use NBTItem static methods
 	 */
 	@Deprecated
-	private final String nbt;
+	private String nbt;
 
 	/**
 	 * The item meta, overriden by other fields
@@ -350,12 +350,17 @@ public final class ItemCreator {
 		}
 
 		is.setItemMeta(myMeta);
-		is = SimpleEnchantment.addEnchantmentLores(is);
+
+		final ItemStack copy = SimpleEnchantment.addEnchantmentLores(is);
+
+		if (copy != null)
+			is = copy;
 
 		if (nbt != null) {
 			final NBTItem nbtItem = new NBTItem(is);
 			nbtItem.setString(SimplePlugin.getNamed() + "_Item", nbt);
 
+			nbt = null;
 			return nbtItem.getItem();
 		}
 

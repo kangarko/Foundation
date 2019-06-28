@@ -46,6 +46,7 @@ import org.mineacademy.fo.model.LocalCommandSender;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -1052,7 +1053,7 @@ public final class Common {
 			FileUtil.writeFormatted(FoConstants.File.ERRORS, null, "Matching timed out (bad regex?) (plugin ver. " + SimplePlugin.getVersion() + ")! \nString checked: " + ex.getCheckedMessage() + "\nRegex: " + (matcher != null ? matcher.pattern().pattern() : "null") + "");
 
 			logFramed(false,
-					"&cRegex check took too long! (allowed: " + SimplePlugin.getInstance().getRegexTimeout() + "ms)",
+					"&cRegex check took too long! (allowed: " + SimpleSettings.REGEX_TIMEOUT + "ms)",
 					"&cRegex:&f " + (matcher != null ? matcher.pattern().pattern() : matcher),
 					"&cMessage:&f " + ex.getCheckedMessage());
 
@@ -1073,7 +1074,7 @@ public final class Common {
 	public static Matcher compileMatcher(@NonNull Pattern pattern, String message) {
 		try {
 			final String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
-			final int timeout = SimplePlugin.getInstance().getRegexTimeout();
+			final int timeout = SimpleSettings.REGEX_TIMEOUT;
 
 			return pattern.matcher(new TimedCharSequence(strippedMessage, timeout));
 
@@ -1081,7 +1082,7 @@ public final class Common {
 			FileUtil.writeFormatted(FoConstants.File.ERRORS, null, "Regex check timed out (bad regex?) (plugin ver. " + SimplePlugin.getVersion() + ")! \nString checked: " + ex.getCheckedMessage() + "\nRegex: " + pattern.pattern() + "");
 
 			throwError(ex,
-					"&cChecking a message took too long! (limit: " + SimplePlugin.getInstance().getRegexTimeout() + ")",
+					"&cChecking a message took too long! (limit: " + SimpleSettings.REGEX_TIMEOUT + ")",
 					"&cReg-ex:&f " + pattern.pattern(),
 					"&cString:&f " + ex.getCheckedMessage());
 			return null;

@@ -279,15 +279,15 @@ public abstract class Menu {
 	final Button getButton(ItemStack fromItem) {
 		buttonsRegistrator.runIfHasnt();
 
-		if (fromItem != null)
+		if (fromItem != null) {
 			for (final Button button : registeredButtons) {
 				Valid.checkNotNull(button, "Menu button is null at " + getClass().getSimpleName());
 				Valid.checkNotNull(button.getItem(), "Itemstack cannot be null at " + button.getClass().getSimpleName());
 
 				if (button.getItem().equals(fromItem))
 					return button;
-
 			}
+		}
 
 		return null;
 	}

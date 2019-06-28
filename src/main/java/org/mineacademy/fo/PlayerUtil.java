@@ -306,76 +306,75 @@ public final class PlayerUtil {
 	 * @param cleanInventory
 	 */
 	public static void normalize(Player player, boolean cleanInventory) {
-		HookManager.setGodMode(player, false);
+		synchronized (titleRestoreTasks) {
+			HookManager.setGodMode(player, false);
 
-		player.setGameMode(GameMode.SURVIVAL);
+			player.setGameMode(GameMode.SURVIVAL);
 
-		if (cleanInventory) {
-			cleanInventoryAndFood(player);
+			if (cleanInventory) {
+				cleanInventoryAndFood(player);
 
-			player.resetMaxHealth();
-			player.setHealth(20);
-			player.setHealthScaled(false);
+				player.resetMaxHealth();
+				player.setHealth(20);
+				player.setHealthScaled(false);
 
-			for (final PotionEffect potion : player.getActivePotionEffects())
-				player.removePotionEffect(potion.getType());
-		}
-
-		player.setTotalExperience(0);
-		player.setLevel(0);
-		player.setExp(0F);
-
-		player.resetPlayerTime();
-		player.resetPlayerWeather();
-
-		player.setFallDistance(0);
-
-		try {
-			player.setGlowing(false);
-			player.setInvulnerable(false);
-			player.setSilent(false);
-		} catch (final NoSuchMethodError err) {
-			/* old MC */}
-
-		player.setAllowFlight(false);
-		player.setFlying(false);
-
-		player.setFlySpeed(0.2F);
-		player.setWalkSpeed(0.2F);
-
-		player.setCanPickupItems(true);
-
-		player.setVelocity(new Vector(0, 0, 0));
-		player.eject();
-
-		if (player.isInsideVehicle())
-			player.getVehicle().remove();
-
-		try {
-			for (final Entity passenger : player.getPassengers())
-				player.removePassenger(passenger);
-
-			for (final String tag : player.getScoreboardTags())
-				player.removeScoreboardTag(tag);
-		} catch (final NoSuchMethodError err) {
-			/* old MC */}
-
-		try {
-			if (player.hasMetadata("vanished")) {
-				final Plugin plugin = player.getMetadata("vanished").get(0).getOwningPlugin();
-
-				player.removeMetadata("vanished", plugin);
+				for (final PotionEffect potion : player.getActivePotionEffects())
+					player.removePotionEffect(potion.getType());
 			}
 
-			for (final Player other : Remain.getOnlinePlayers())
-				if (!other.getName().equals(player.getName()) && !other.canSee(player))
-					other.showPlayer(player);
+			player.setTotalExperience(0);
+			player.setLevel(0);
+			player.setExp(0F);
 
-		} catch (final NoSuchMethodError err) {
-			/* old MC */
+			player.resetPlayerTime();
+			player.resetPlayerWeather();
 
-		} catch (final Exception ex) {
-			ex.printStackTrace();
+			player.setFallDistance(0);
+
+			try {
+				player.setGlowing(false);
+				player.setInvulnerable(false);
+				player.setSilent(false);
+			} catch (final NoSuchMethodError err) {
+				/* old MC */}
+
+			player.setAllowFlight(false);
+			player.setFlying(false);
+
+			player.setFlySpeed(0.2F);
+			player.setWalkSpeed(0.2F);
+
+			player.setCanPickupItems(true);
+
+			player.setVelocity(new Vector(0, 0, 0));
+			player.eject();
+
+			if (player.isInsideVehicle())
+				player.getVehicle().remove();
+
+			try {
+				for (final Entity passenger : player.getPassengers())
+					player.removePassenger(passenger);
+			} catch (final NoSuchMethodError err) {
+				/* old MC */}
+
+			try {
+				if (player.hasMetadata("vanished")) {
+					final Plugin plugin = player.getMetadata("vanished").get(0).getOwningPlugin();
+
+					player.removeMetadata("vanished", plugin);
+				}
+
+				for (final Player other : Remain.getOnlinePlayers())
+					if (!other.getName().equals(player.getName()) && !other.canSee(player))
+						other.showPlayer(player);
+
+			} catch (final NoSuchMethodError err) {
+				/* old MC */
+
+			} catch (final Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 
