@@ -33,7 +33,7 @@ public final class LagCatcher {
 		if (SimpleSettings.LAG_THRESHOLD_MILLIS == 0)
 			return;
 
-		timings.put(section, System.currentTimeMillis());
+		timings.put(section, System.nanoTime());
 	}
 
 	/**
@@ -58,9 +58,9 @@ public final class LagCatcher {
 
 		if (lag > thresholdMs) {
 			if (SimplePlugin.hasInstance())
-				Common.logNoPrefix("&3[&f" + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + "&3] &7" + section + " took &f" + MathUtil.formatThreeDigits(lag) + " ms");
+				Common.logNoPrefix("&3[&f" + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + "&3] &7" + section + " took &f" + MathUtil.formatTwoDigits(lag) + " ms");
 			else
-				System.out.println("[LagCatcher] " + section + " took " + MathUtil.formatThreeDigits(lag) + " ms");
+				System.out.println("[LagCatcher] " + section + " took " + MathUtil.formatTwoDigits(lag) + " ms");
 		}
 	}
 
@@ -84,7 +84,7 @@ public final class LagCatcher {
 			lagMap.add(finishAndCalculate(name));
 		}
 
-		System.out.println("Test '" + name + "' took " + finishAndCalculate(name + "-whole") + " ms. Average " + MathUtil.average(lagMap) + " ms");
+		System.out.println("Test '" + name + "' took " + MathUtil.formatTwoDigits(finishAndCalculate(name + "-whole")) + " ms. Average " + MathUtil.average(lagMap) + " ms");
 	}
 
 	/**
@@ -94,8 +94,8 @@ public final class LagCatcher {
 	 * @return
 	 */
 	private static double finishAndCalculate(String section) {
-		final Long time = timings.remove(section);
+		final Long nanoTime = timings.remove(section);
 
-		return time == null ? 0 : System.currentTimeMillis() - time;
+		return nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D;
 	}
 }

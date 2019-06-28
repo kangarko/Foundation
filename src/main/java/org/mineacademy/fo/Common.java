@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -1683,7 +1682,7 @@ public final class Common {
 	 * @return the value, or default it the value is null
 	 */
 	public static <T> T getOrDefault(T value, T def) {
-		Objects.requireNonNull(def, "The default value must not be null!");
+		Valid.checkNotNull(def, "The default value must not be null!");
 
 		return value != null ? value : def;
 	}

@@ -1,10 +1,8 @@
 package org.mineacademy.fo.remain.internal;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -19,8 +17,9 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompBarColor;
 import org.mineacademy.fo.remain.CompBarStyle;
@@ -88,7 +87,7 @@ public class BossBarInternals implements Listener {
 				entityClass = v1_9Native.class;
 		}
 
-		Objects.requireNonNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
+		Valid.checkNotNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
 
 		if (singleton == null && SimplePlugin.getInstance().isEnabled()) {
 			singleton = new BossBarInternals();
@@ -192,7 +191,7 @@ public class BossBarInternals implements Listener {
 	 *                                  bounds.
 	 */
 	public static void setMessage(Player player, String message, float percent, CompBarColor color, CompBarStyle style) {
-		Validate.isTrue(0F <= percent && percent <= 100F, "Percent must be between 0F and 100F, but was: " + percent);
+		Valid.checkBoolean(0F <= percent && percent <= 100F, "Percent must be between 0F and 100F, but was: " + percent);
 
 		if (hasBar(player))
 			removeBar(player);
@@ -232,7 +231,7 @@ public class BossBarInternals implements Listener {
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
 	public static void setMessage(final Player player, String message, int seconds, CompBarColor color, CompBarStyle style) {
-		Validate.isTrue(seconds > 0, "Seconds must be > 1 ");
+		Valid.checkBoolean(seconds > 0, "Seconds must be > 1 ");
 
 		if (hasBar(player))
 			removeBar(player);

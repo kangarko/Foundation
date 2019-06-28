@@ -11,13 +11,20 @@
 package org.mineacademy.fo.plugin;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -35,11 +42,15 @@ import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
+import org.mineacademy.fo.menu.tool.Rocket;
+import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.BungeeChannel;
 import org.mineacademy.fo.model.BungeeListener;
+import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
@@ -223,6 +234,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
 			}
 
+			// Register classes
+			checkSingletons();
+
 			// Load our dependency system
 			HookManager.loadDependencies();
 
@@ -253,9 +267,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Register our listeners
 			registerEvents(this); // For convenience
 			registerEvents(new MenuListener());
-			registerEvents(new FoundationsListener());
+			registerEvents(new FoundationListener());
 			registerEvents(new ToolsListener());
 			registerEvents(new VisualizerListener());
+			registerEvents(new EnchantmentListener());
+
+			// Register our packet listener
+			FoundationPacketListener.addPacketListener();
 
 			// Load variables if enabled
 			if (isVariablesEnabled())
@@ -271,6 +289,77 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		final Throwable t) {
 			displayError0(t);
+		}
+	}
+
+	/**
+	 * Scans your plugin and if your {@link Tool} or {@link SimpleEnchantment} class implements {@link Listener}
+	 * and has "instance" method to be a singleton, your events are registered there automatically
+	 *
+	 * If not, we only call the instance constructor in case there is any underlying registration going on
+	 */
+	private static void checkSingletons() {
+
+		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+				final JarEntry jar = entry.nextElement();
+				final String name = jar.getName().replace("/", ".");
+
+				if (name.endsWith(".class")) {
+					final String className = name.substring(0, name.length() - 6);
+					Class<?> clazz = null;
+
+					try {
+						clazz = SimplePlugin.class.getClassLoader().loadClass(className);
+					} catch (final NoClassDefFoundError | ClassNotFoundException error) {
+						if (Debugger.isDebugModeEnabled())
+							System.out.println("### Failed to find class '" + className + "'");
+
+						continue;
+					}
+
+					final boolean isTool = Tool.class.isAssignableFrom(clazz) && !Tool.class.equals(clazz) && !Rocket.class.equals(clazz);
+					final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz) && !SimpleEnchantment.class.equals(clazz);
+
+					if (isTool || isEnchant) {
+
+						try {
+							Field instanceField = null;
+
+							for (final Field field : clazz.getDeclaredFields()) {
+								if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
+										&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
+									instanceField = field;
+							}
+
+							if (SimpleEnchantment.class.isAssignableFrom(clazz))
+								Valid.checkNotNull(instanceField, "Your enchant class " + clazz.getSimpleName() + " must be a singleton and have static 'instance' field and private constructors!");
+
+							if (instanceField != null) {
+								instanceField.setAccessible(true);
+
+								final Object instance = instanceField.get(null);
+
+								// Enforce private constructors
+								for (final Constructor<?> con : instance.getClass().getDeclaredConstructors())
+									Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your tools class?");
+
+								// Finally register events
+								if (instance instanceof Listener)
+									Common.registerEvents((Listener) instance);
+							}
+
+						} catch (final NoSuchFieldError ex) {
+							// Ignore if no field is present
+
+						} catch (final Throwable t) {
+							Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
+						}
+					}
+				}
+			}
+		} catch (final Throwable t) {
+			Common.error(t, "Failed to auto register events using Foundation!");
 		}
 	}
 
@@ -307,7 +396,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				System.out.println("Ant, only test one plugin at the time.");
 				System.out.println("");
 				System.out.println("Possible cause: " + SimplePlugin.getNamed());
-				System.out.println("Foundations package: " + SimplePlugin.class.getPackage().getName());
+				System.out.println("Foundation package: " + SimplePlugin.class.getPackage().getName());
 				System.out.println(Common.consoleLine());
 
 				isEnabled = false;
@@ -543,6 +632,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			if (getMainCommand() != null)
 				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+
+			FoundationPacketListener.addPacketListener();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();

@@ -15,11 +15,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -63,6 +61,8 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.UidtoNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -80,7 +80,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
-public class Remain {
+public final class Remain {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Flags below
@@ -150,6 +150,11 @@ public class Remain {
 	 * Does the current server has the "net.md_5.bungee" library present?
 	 */
 	private static boolean bungeeApiPresent = true;
+
+	/**
+	 * Stores player cooldowns for old MC versions
+	 */
+	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
 
 	// Singleton
 	private Remain() {
@@ -489,7 +494,7 @@ public class Remain {
 	 *                   found.
 	 */
 	public static String toLegacyText(String json, boolean denyEvents) throws InteractiveTextFoundException {
-		Validate.isTrue(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 		String text = "";
 
 		try {
@@ -511,7 +516,7 @@ public class Remain {
 	 * world converts to {text:"Hello world",color="gold"}
 	 */
 	public static String toJson(String message) {
-		Validate.isTrue(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		return toJson(TextComponent.fromLegacyText(message));
 	}
@@ -523,7 +528,7 @@ public class Remain {
 	 * @return
 	 */
 	public static String toJson(BaseComponent... comps) {
-		Validate.isTrue(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		String json;
 
@@ -544,7 +549,7 @@ public class Remain {
 	 * @return
 	 */
 	public static BaseComponent[] toComponent(String json) {
-		Validate.isTrue(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		return ComponentSerializer.parse(json);
 	}
@@ -615,7 +620,7 @@ public class Remain {
 	 * @param footer the footer
 	 */
 	public static void sendTablist(Player player, String header, String footer) {
-		Validate.isTrue(MinecraftVersion.newerThan(V.v1_7), "Sending tab list requires Minecraft 1.8x or newer!");
+		Valid.checkBoolean(MinecraftVersion.newerThan(V.v1_7), "Sending tab list requires Minecraft 1.8x or newer!");
 
 		if (MinecraftVersion.atLeast(V.v1_13))
 			player.setPlayerListHeaderFooter(Common.colorize(header), Common.colorize(footer));
@@ -716,7 +721,7 @@ public class Remain {
 	 * @param command
 	 * @param name
 	 */
-	public static final void setCommandName(PluginCommand command, String name) {
+	public static void setCommandName(PluginCommand command, String name) {
 		try {
 			command.setName(name);
 		} catch (final NoSuchMethodError ex) {
@@ -732,7 +737,7 @@ public class Remain {
 		final CommandMap commandMap = getCommandMap();
 		commandMap.register(command.getLabel(), command);
 
-		Validate.isTrue(command.isRegistered(), "Command /" + command.getLabel() + " could not have been registered properly!");
+		Valid.checkBoolean(command.isRegistered(), "Command /" + command.getLabel() + " could not have been registered properly!");
 	}
 
 	/**
@@ -788,6 +793,38 @@ public class Remain {
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException("Unable to get the command map", ex);
+		}
+	}
+
+	/**
+	 * Register a new enchantment in Bukkit, unregistering it first to avoid errors
+	 *
+	 * @param enchantment
+	 */
+	public static void registerEnchantment(Enchantment enchantment) {
+		unregisterEnchantment(enchantment);
+
+		ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
+		Enchantment.registerEnchantment(enchantment);
+
+	}
+
+	/**
+	 * Unregister an enchantment from Bukkit. Works even for vanilla MC enchantments (found in Enchantment class)
+	 *
+	 * @param enchantment
+	 */
+	public static void unregisterEnchantment(Enchantment enchantment) {
+		{ // Unregister by key
+			final Map<NamespacedKey, Enchantment> byKey = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byKey");
+
+			byKey.remove(enchantment.getKey());
+		}
+
+		{ // Unregister by name
+			final Map<String, Enchantment> byName = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byName");
+
+			byName.remove(enchantment.getName());
 		}
 	}
 
@@ -874,7 +911,7 @@ public class Remain {
 	 * @param entry
 	 * @return
 	 */
-	public static final Score getScore(Objective obj, String entry) {
+	public static Score getScore(Objective obj, String entry) {
 		entry = Common.colorize(entry);
 
 		try {
@@ -893,7 +930,7 @@ public class Remain {
 	 * @param id
 	 * @return
 	 */
-	public static final OfflinePlayer getOfflinePlayerByUUID(UUID id) {
+	public static OfflinePlayer getOfflinePlayerByUUID(UUID id) {
 		try {
 			return Bukkit.getOfflinePlayer(id);
 
@@ -916,7 +953,7 @@ public class Remain {
 	 * @param id
 	 * @return
 	 */
-	public static final Player getPlayerByUUID(UUID id) {
+	public static Player getPlayerByUUID(UUID id) {
 		try {
 			return Bukkit.getPlayer(id);
 
@@ -935,7 +972,7 @@ public class Remain {
 	 * @param e
 	 * @return
 	 */
-	public static final double getFinalDamage(EntityDamageEvent e) {
+	public static double getFinalDamage(EntityDamageEvent e) {
 		try {
 			return e.getFinalDamage();
 
@@ -952,7 +989,7 @@ public class Remain {
 	 * @return the actual inventory clicked, either bottom or top, or null if
 	 *         clicked outside
 	 */
-	public static final Inventory getClickedInventory(InventoryClickEvent e) {
+	public static Inventory getClickedInventory(InventoryClickEvent e) {
 		final int slot = e.getRawSlot();
 		final InventoryView view = e.getView();
 
@@ -965,7 +1002,7 @@ public class Remain {
 	 * @param en
 	 * @param name
 	 */
-	public static final void setCustomName(Entity en, String name) {
+	public static void setCustomName(Entity en, String name) {
 		try {
 			en.setCustomNameVisible(true);
 			en.setCustomName(Common.colorize(name));
@@ -980,7 +1017,7 @@ public class Remain {
 	 * @param fallback
 	 * @return
 	 */
-	public static final CompMaterial getMaterial(String material, CompMaterial fallback) {
+	public static CompMaterial getMaterial(String material, CompMaterial fallback) {
 		Material mat = null;
 
 		try {
@@ -998,7 +1035,7 @@ public class Remain {
 	 * @param oldMaterial
 	 * @return
 	 */
-	public static final Material getMaterial(String newMaterial, String oldMaterial) {
+	public static Material getMaterial(String newMaterial, String oldMaterial) {
 		try {
 			return Material.getMaterial(newMaterial);
 
@@ -1014,7 +1051,7 @@ public class Remain {
 	 * @param radius
 	 * @return
 	 */
-	public static final Block getTargetBlock(LivingEntity en, int radius) {
+	public static Block getTargetBlock(LivingEntity en, int radius) {
 		try {
 			return (Block) en.getClass().getMethod("getTargetBlock", Set.class, int.class).invoke(en, (HashSet<Material>) null, radius);
 
@@ -1035,7 +1072,7 @@ public class Remain {
 	 * @param receiver
 	 * @param message
 	 */
-	public static final void sendToast(Player receiver, String message) {
+	public static void sendToast(Player receiver, String message) {
 		if (hasAdvancements && message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
@@ -1049,18 +1086,88 @@ public class Remain {
 	}
 
 	/**
-	 * Finds an entity by its uuid
+	 * Set the visual cooldown for the given material, see {@link Player#setCooldown(Material, int)}
+	 * You still have to implement custom handling of it
 	 *
-	 * @param id
-	 * @return the entity, or null
+	 * Old MC versions are supported and handled by us
+	 * however there is no visual effect
+	 *
+	 * @param player
+	 * @param material
+	 * @param cooldownTicks
 	 */
-	public static final Entity getEntity(UUID id) {
+	public static void setCooldown(Player player, Material material, int cooldownTicks) {
+		try {
+			player.setCooldown(material, cooldownTicks);
+
+		} catch (final Throwable t) {
+			final StrictMap<Material, Integer> cooldown = getCooldown(player);
+
+			cooldown.override(material, cooldownTicks);
+			cooldowns.override(player.getUniqueId(), cooldown);
+		}
+	}
+
+	/**
+	 * See {@link Player#hasCooldown(Material)}
+	 *
+	 * Old MC versions are supported and handled by us
+	 * however there is no visual effect
+	 *
+	 * @param player
+	 * @param material
+	 * @return
+	 */
+	public static boolean hasCooldown(Player player, Material material) {
+		try {
+			return player.hasCooldown(material);
+
+		} catch (final Throwable t) {
+			final StrictMap<Material, Integer> cooldown = getCooldown(player);
+
+			return cooldown.contains(material);
+		}
+	}
+
+	/**
+	 * Return the item cooldown as specified in {@link Player#getCooldown(Material)}
+	 *
+	 * Old MC versions are supported and handled by us
+	 * however there is no visual effect
+	 *
+	 * @param player
+	 * @param material
+	 * @return
+	 */
+	public static int getCooldown(Player player, Material material) {
+		try {
+			return player.getCooldown(material);
+
+		} catch (final Throwable t) {
+			final StrictMap<Material, Integer> cooldown = getCooldown(player);
+
+			return cooldown.getOrDefault(material, 0);
+		}
+	}
+
+	// Internal method to get a players cooldown map
+	private static StrictMap<Material, Integer> getCooldown(Player player) {
+		return cooldowns.getOrDefault(player.getUniqueId(), new StrictMap<>());
+	}
+
+	/**
+	 * Return the entity by UUID
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	public static Entity getEntity(UUID uuid) {
 		catchAsync("iterating through entities [CMN]");
 
-		for (final World w : Bukkit.getWorlds())
-			for (final Entity e : w.getEntities())
-				if (e.getUniqueId().equals(id))
-					return e;
+		for (final World world : Bukkit.getWorlds())
+			for (final Entity entity : world.getEntities())
+				if (entity.getUniqueId().equals(uuid))
+					return entity;
 
 		return null;
 	}
@@ -1068,19 +1175,19 @@ public class Remain {
 	/**
 	 * Return nearby entities in a location
 	 *
-	 * @param loc
+	 * @param location
 	 * @param radius
 	 * @return
 	 */
-	public static final Collection<Entity> getNearbyEntities(Location loc, double radius) {
+	public static Collection<Entity> getNearbyEntities(Location location, double radius) {
 		try {
-			return loc.getWorld().getNearbyEntities(loc, radius, radius, radius);
+			return location.getWorld().getNearbyEntities(location, radius, radius, radius);
 
 		} catch (final Throwable t) {
 			final List<Entity> found = new ArrayList<>();
 
-			for (final Entity e : loc.getWorld().getEntities())
-				if (e.getLocation().distance(loc) <= radius)
+			for (final Entity e : location.getWorld().getEntities())
+				if (e.getLocation().distance(location) <= radius)
 					found.add(e);
 
 			return found;
@@ -1092,7 +1199,7 @@ public class Remain {
 	 *
 	 * @param player
 	 */
-	public static final void takeHandItem(Player player) {
+	public static void takeHandItem(Player player) {
 		takeItemAndSetAsHand(player, player.getItemInHand());
 	}
 
@@ -1102,7 +1209,7 @@ public class Remain {
 	 * @param player
 	 * @param item
 	 */
-	public static final void takeItemAndSetAsHand(Player player, ItemStack item) {
+	public static void takeItemAndSetAsHand(Player player, ItemStack item) {
 		if (item.getAmount() > 1) {
 			item.setAmount(item.getAmount() - 1);
 			player.getInventory().setItemInHand(item);
@@ -1119,7 +1226,7 @@ public class Remain {
 	 * @param player
 	 * @param item
 	 */
-	public static final void takeItemOnePiece(Player player, ItemStack item) {
+	public static void takeItemOnePiece(Player player, ItemStack item) {
 		Common.runLater(() -> {
 			if (item.getAmount() > 1) {
 				item.setAmount(item.getAmount() - 1);
@@ -1157,7 +1264,7 @@ public class Remain {
 	 * @param type
 	 * @param level
 	 */
-	public static final void setPotion(ItemStack item, PotionEffectType type, int level) {
+	public static void setPotion(ItemStack item, PotionEffectType type, int level) {
 		final PotionType wrapped = PotionType.getByEffect(type);
 		final PotionMeta meta = (PotionMeta) item.getItemMeta();
 
@@ -1186,7 +1293,7 @@ public class Remain {
 	 * @param item the {@link ItemStack} to get I18N name from
 	 * @return the I18N localized name or Material name
 	 */
-	public static final String getI18NDisplayName(ItemStack item) {
+	public static String getI18NDisplayName(ItemStack item) {
 		try {
 			return (String) item.getClass().getDeclaredMethod("getI18NDisplayName").invoke(item);
 
@@ -1211,7 +1318,7 @@ public class Remain {
 			ex.printStackTrace();
 		}
 
-		Objects.requireNonNull(conf, "Could not load configuration from " + is);
+		Valid.checkNotNull(conf, "Could not load configuration from " + is);
 		return conf;
 	}
 
@@ -1236,8 +1343,8 @@ public class Remain {
 	}
 
 	// Load the YAML configuration from stream
-	private final static void loadFromString(InputStream stream, YamlConfiguration conf) throws IOException, InvalidConfigurationException {
-		Objects.requireNonNull(stream, "Stream cannot be null");
+	private static void loadFromString(InputStream stream, YamlConfiguration conf) throws IOException, InvalidConfigurationException {
+		Valid.checkNotNull(stream, "Stream cannot be null");
 
 		final StringBuilder builder = new StringBuilder();
 		final InputStreamReader reader = new InputStreamReader(stream);
@@ -1259,7 +1366,7 @@ public class Remain {
 	 *
 	 * @return max health, or 2048 if not found
 	 */
-	public static final double getMaxHealth() {
+	public static double getMaxHealth() {
 		try {
 			final String health = String.valueOf(Class.forName("org.spigotmc.SpigotConfig").getField("maxHealth").get(null));
 
@@ -1299,7 +1406,7 @@ public class Remain {
 	 *
 	 * @param message
 	 */
-	public static final void catchAsync(String message) {
+	public static void catchAsync(String message) {
 		try {
 			Class.forName("org.spigotmc.AsyncCatcher").getMethod("catchOp", String.class).invoke(null, message);
 		} catch (final Throwable t) {
@@ -1412,7 +1519,7 @@ class BungeeChatProvider {
 	}
 
 	private static void tell0(CommandSender sender, String msg) {
-		Objects.requireNonNull(sender, "Sender cannot be null");
+		Valid.checkNotNull(sender, "Sender cannot be null");
 
 		if (msg.isEmpty() || "none".equals(msg))
 			return;

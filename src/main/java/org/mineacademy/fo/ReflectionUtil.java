@@ -9,13 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Objects;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -84,7 +82,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getNMSClass(String name) {
-		return lookupClass("net.minecraft.server." + getClassVersioning() + name);
+		return lookupClass("net.minecraft.server." + getClassVersioning() + "." + name);
 	}
 
 	/**
@@ -95,14 +93,18 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getOFCClass(String name) {
-		return lookupClass("org.bukkit.craftbukkit." + getClassVersioning() + name);
+		return lookupClass("org.bukkit.craftbukkit." + getClassVersioning() + "." + name);
 	}
 
-	// get the current class versioning
-	private static String getClassVersioning() {
+	/**
+	 * Return the current class versioning such as v1_15_R1
+	 *
+	 * @return
+	 */
+	public static String getClassVersioning() {
 		final String curr = MinecraftVersion.getServerVersion();
 
-		return curr.equals("craftbukkit") ? "" : curr + ".";
+		return curr.equals("craftbukkit") ? "" : curr;
 	}
 
 	// ------------------------------------------------------------------------------------------
@@ -164,7 +166,7 @@ public final class ReflectionUtil {
 			final Class<?> craftServerClass = getOFCClass("CraftServer");
 
 			final Object bukkitItem = craftItemClass.getConstructor(craftServerClass, nmsItemClass).newInstance(Bukkit.getServer(), nmsEntity);
-			Validate.isTrue(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
+			Valid.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
 
 			modifier.modify((Item) bukkitItem);
 
@@ -326,6 +328,17 @@ public final class ReflectionUtil {
 	// Java related methods
 	// ------------------------------------------------------------------------------------------
 
+	public static void setStaticField(Class<?> clazz, String fieldName, Object fieldValue) {
+		try {
+			final Field field = getDeclaredField(clazz, fieldName);
+
+			field.set(null, fieldValue);
+
+		} catch (final Throwable t) {
+			throw new FoException("Could not set " + fieldName + " in " + clazz + " to " + fieldValue, t);
+		}
+	}
+
 	/**
 	 * Get the field content
 	 *
@@ -413,12 +426,15 @@ public final class ReflectionUtil {
 	 * Gets the declared field in class by its name
 	 *
 	 * @param clazz
-	 * @param field
+	 * @param fieldName
 	 * @return
 	 */
-	public static Field getDeclaredField(Class<?> clazz, String field) {
+	public static Field getDeclaredField(Class<?> clazz, String fieldName) {
 		try {
-			return clazz.getDeclaredField(field);
+			final Field field = clazz.getDeclaredField(fieldName);
+			field.setAccessible(true);
+
+			return field;
 
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
@@ -436,8 +452,11 @@ public final class ReflectionUtil {
 	 */
 	public static Method getMethod(Class<?> clazz, String methodName, Class<?>... args) {
 		for (final Method method : clazz.getMethods())
-			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes()))
+			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes())) {
+				method.setAccessible(true);
+
 				return method;
+			}
 
 		return null;
 	}
@@ -458,14 +477,17 @@ public final class ReflectionUtil {
 	 * Gets a class method
 	 *
 	 * @param clazz
-	 * @param method
+	 * @param methodName
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, String method, Integer args) {
-		for (final Method m : clazz.getMethods())
-			if (m.getName().equals(method) && args.equals(new Integer(m.getParameterTypes().length)))
-				return m;
+	public static Method getMethod(Class<?> clazz, String methodName, Integer args) {
+		for (final Method method : clazz.getMethods())
+			if (method.getName().equals(methodName) && args.equals(new Integer(method.getParameterTypes().length))) {
+				method.setAccessible(true);
+
+				return method;
+			}
 
 		return null;
 	}
@@ -474,13 +496,15 @@ public final class ReflectionUtil {
 	 * Gets a class method
 	 *
 	 * @param clazz
-	 * @param method
+	 * @param methodName
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, String method) {
-		for (final Method m : clazz.getMethods())
-			if (m.getName().equals(method))
-				return m;
+	public static Method getMethod(Class<?> clazz, String methodName) {
+		for (final Method method : clazz.getMethods())
+			if (method.getName().equals(methodName)) {
+				method.setAccessible(true);
+				return method;
+			}
 
 		return null;
 	}
@@ -538,7 +562,7 @@ public final class ReflectionUtil {
 	 */
 	public static <T> T invoke(Method method, Object instance, Object... params) {
 		try {
-			Objects.requireNonNull(method, "Method cannot be null for " + instance);
+			Valid.checkNotNull(method, "Method cannot be null for " + instance);
 
 			return (T) method.invoke(instance, params);
 
@@ -577,7 +601,7 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Object o : args) {
-				Objects.requireNonNull(o, "Argument cannot be null when instatiating " + clazz);
+				Valid.checkNotNull(o, "Argument cannot be null when instatiating " + clazz);
 
 				classes.add(o.getClass());
 			}
@@ -646,8 +670,8 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <E extends Enum<E>> E lookupEnum(Class<E> enumType, String name, String errMessage) {
-		Objects.requireNonNull(enumType, "Type missing for " + name);
-		Objects.requireNonNull(name, "Name missing for " + enumType);
+		Valid.checkNotNull(enumType, "Type missing for " + name);
+		Valid.checkNotNull(name, "Name missing for " + enumType);
 
 		final String rawName = new String(name).toUpperCase().replace(" ", "_");
 
@@ -824,8 +848,8 @@ public final class ReflectionUtil {
 
 	// Attempts to search for classes inside of the plugin's jar
 	private static TreeSet<Class<?>> getClasses0(Plugin plugin) throws ReflectiveOperationException, IOException {
-		Objects.requireNonNull(plugin, "Plugin is null!");
-		Validate.isTrue(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
+		Valid.checkNotNull(plugin, "Plugin is null!");
+		Valid.checkBoolean(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
 
 		// Get the plugin .jar
 		final Method m = JavaPlugin.class.getDeclaredMethod("getFile");

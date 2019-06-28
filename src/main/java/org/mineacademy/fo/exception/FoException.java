@@ -6,7 +6,7 @@ import org.mineacademy.fo.debug.Debugger;
  * Represents our core exception. All exceptions of this
  * kind are logged automatically to the error.log file
  */
-public final class FoException extends RuntimeException {
+public class FoException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 

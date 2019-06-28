@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
+import org.mineacademy.fo.remain.nbt.NBTCompoundList;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.remain.nbt.NBTList;
@@ -74,16 +75,17 @@ public class NBTInternals {
 			comp.setInteger(INT_KEY, INT_VALUE * 2);
 			comp.setDouble(DOUBLE_KEY, DOUBLE_VALUE * 2);
 
-			NBTList list = comp.getList("testlist", NBTType.NBTTagString);
-			list.addString("test1");
-			list.addString("test2");
-			list.addString("test3");
-			list.addString("test4");
-			list.setString(2, "test42");
+			NBTList list = comp.getStringList("testlist");
+			list.add("test1");
+			list.add("test2");
+			list.add("test3");
+			list.add("test4");
+			list.set(2, "test42");
 			list.remove(1);
 
-			NBTList taglist = comp.getList("complist", NBTType.NBTTagCompound);
+			NBTCompoundList taglist = comp.getCompoundList("complist");
 			NBTListCompound lcomp = taglist.addCompound();
+
 			lcomp.setDouble("double1", 0.3333);
 			lcomp.setInteger("int1", 42);
 			lcomp.setString("test1", "test1");
@@ -142,18 +144,18 @@ public class NBTInternals {
 				compatible = false;
 			}
 
-			list = comp.getList("testlist", NBTType.NBTTagString);
+			list = comp.getStringList("testlist");
 			if (comp.getType("testlist") != NBTType.NBTTagList) {
 				System.out.println("Wasn't able to get the correct Tag type!");
 
 				compatible = false;
 			}
-			if (!list.getString(1).equals("test42") || list.size() != 3) {
+			if (!list.get(1).equals("test42") || list.size() != 3) {
 				System.out.println("The List support got an error, and may not work!");
 			}
-			taglist = comp.getList("complist", NBTType.NBTTagCompound);
+			taglist = comp.getCompoundList("complist");
 			if (taglist.size() == 1) {
-				lcomp = taglist.getCompound(0);
+				lcomp = taglist.get(0);
 				if (lcomp.getKeys().size() != 3) {
 					System.out.println("Wrong key amount in Taglist (" + lcomp.getKeys().size() + ")!");
 

@@ -1,15 +1,15 @@
 package org.mineacademy.fo.remain;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -145,8 +145,8 @@ public enum CompAttribute {
 	 */
 	public final void set(LivingEntity entity, double value) {
 		try {
-			Objects.requireNonNull(entity, "Entity cannot be null");
-			Objects.requireNonNull(entity, "Attribute cannot be null");
+			Valid.checkNotNull(entity, "Entity cannot be null");
+			Valid.checkNotNull(entity, "Attribute cannot be null");
 
 			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(toString()));
 

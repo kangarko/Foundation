@@ -3,7 +3,6 @@ package org.mineacademy.fo;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -377,10 +376,10 @@ public final class PlayerUtil {
 	 * @param duration the duration in ticks
 	 */
 	public static void animateInvTitle(Menu menu, Player player, String animated, String old, int duration) {
-		Objects.requireNonNull(menu, "Menu == null");
-		Objects.requireNonNull(player, "Player == null");
-		Objects.requireNonNull(animated, "Title == null");
-		Objects.requireNonNull(old, "Old Title == null");
+		Valid.checkNotNull(menu, "Menu == null");
+		Valid.checkNotNull(player, "Player == null");
+		Valid.checkNotNull(animated, "Title == null");
+		Valid.checkNotNull(old, "Old Title == null");
 
 		// Send the packet
 		ReflectionUtil.updateInventoryTitle(player, MinecraftVersion.atLeast(V.v1_13) ? animated.replace("%", "%%") : animated);

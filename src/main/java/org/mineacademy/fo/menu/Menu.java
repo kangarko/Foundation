@@ -7,9 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -22,6 +20,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
@@ -102,7 +101,7 @@ public abstract class Menu {
 	private static Menu getMenu0(Player player, String tag) {
 		if (player.hasMetadata(tag)) {
 			final Menu menu = (Menu) player.getMetadata(tag).get(0).value();
-			Objects.requireNonNull(menu, "Menu missing from " + player.getName() + "'s metadata '" + tag + "' tag!");
+			Valid.checkNotNull(menu, "Menu missing from " + player.getName() + "'s metadata '" + tag + "' tag!");
 
 			return menu;
 		}
@@ -246,15 +245,15 @@ public abstract class Menu {
 		if (Button.class.isAssignableFrom(type)) {
 			final Button button = (Button) ReflectionUtil.getFieldContent(field, this);
 
-			Objects.requireNonNull(button, "Null button field named " + field.getName() + " in " + this);
+			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
 			registeredButtons.add(button);
 		}
 
 		else if (Button[].class.isAssignableFrom(type)) {
-			Validate.isTrue(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
+			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
 
-			Validate.isTrue(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
+			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
 			registeredButtons.addAll(Arrays.asList(buttons));
 		}
 	}
@@ -282,8 +281,8 @@ public abstract class Menu {
 
 		if (fromItem != null)
 			for (final Button button : registeredButtons) {
-				Objects.requireNonNull(button, "Menu button is null at " + getClass().getSimpleName());
-				Objects.requireNonNull(button.getItem(), "Itemstack cannot be null at " + button.getClass().getSimpleName());
+				Valid.checkNotNull(button, "Menu button is null at " + getClass().getSimpleName());
+				Valid.checkNotNull(button.getItem(), "Itemstack cannot be null at " + button.getClass().getSimpleName());
 
 				if (button.getItem().equals(fromItem))
 					return button;
@@ -342,8 +341,8 @@ public abstract class Menu {
 	 *                                 server conversation?
 	 */
 	public final void displayTo(Player player, boolean ignoreServerConversation) {
-		Objects.requireNonNull(size, "Size not set in " + this + " (call setSize in your constructor)");
-		Objects.requireNonNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
+		Valid.checkNotNull(size, "Size not set in " + this + " (call setSize in your constructor)");
+		Valid.checkNotNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
 
 		this.viewer = player;
 		this.buttonsRegistrator.runIfHasnt();
@@ -451,12 +450,12 @@ public abstract class Menu {
 	 */
 	final void redraw() {
 		final Inventory inv = getViewer().getOpenInventory().getTopInventory();
-		Validate.isTrue(inv.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
+		Valid.checkBoolean(inv.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
 
 		for (int i = 0; i < size; i++) {
 			final ItemStack item = getItemAt(i);
 
-			Validate.isTrue(i < inv.getSize(), "Item (" + (item != null ? item.getType() : "null") + ") position (" + i + ") > inv size (" + inv.getSize() + ")");
+			Valid.checkBoolean(i < inv.getSize(), "Item (" + (item != null ? item.getType() : "null") + ") position (" + i + ") > inv size (" + inv.getSize() + ")");
 			inv.setItem(i, item);
 		}
 

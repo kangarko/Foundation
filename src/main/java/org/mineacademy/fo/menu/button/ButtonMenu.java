@@ -1,12 +1,12 @@
 package org.mineacademy.fo.menu.button;
 
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -120,7 +120,7 @@ public final class ButtonMenu extends Button {
 				ex.printStackTrace();
 			}
 		else {
-			Objects.requireNonNull(menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
+			Valid.checkNotNull(menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
 
 			menuToOpen.displayTo(pl);
 		}

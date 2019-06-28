@@ -3,17 +3,16 @@ package org.mineacademy.fo.remain.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Objects;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.remain.Remain;
 
@@ -101,7 +100,7 @@ public class ChatInternals {
 	 * @param subtitle
 	 */
 	public static void sendTitleLegacy(Player player, int fadeIn, int stay, int fadeOut, String title, String subtitle) {
-		Validate.isTrue(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (titleConstructor == null)
@@ -139,7 +138,7 @@ public class ChatInternals {
 	 * @param player
 	 */
 	public static void resetTitleLegacy(Player player) {
-		Validate.isTrue(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (resetTitleConstructor == null)
@@ -161,7 +160,7 @@ public class ChatInternals {
 	 * @param footerRaw
 	 */
 	public static void sendTablistLegacy(Player player, String headerRaw, String footerRaw) {
-		Validate.isTrue(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (tabConstructor == null)
@@ -192,7 +191,7 @@ public class ChatInternals {
 	 * @param message
 	 */
 	public static void sendActionBarLegacy(Player player, String message) {
-		Validate.isTrue(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		sendChat(player, message, (byte) 2);
 	}
@@ -201,7 +200,7 @@ public class ChatInternals {
 	private static void sendChat(Player pl, String text, byte type) {
 		try {
 			final Object message = serializeText(text);
-			Objects.requireNonNull(message, "Message cannot be null!");
+			Valid.checkNotNull(message, "Message cannot be null!");
 
 			final Object packet;
 

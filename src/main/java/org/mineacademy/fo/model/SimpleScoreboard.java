@@ -34,7 +34,7 @@ public class SimpleScoreboard {
 	/**
 	 * The name of our objective
 	 */
-	private final static String OBJECTIVE_NAME = "FoundationsBoard";
+	private final static String OBJECTIVE_NAME = "FoundationBoard";
 
 	/**
 	 * List of all active scoreboard (added upon creating a new instance)

@@ -8,8 +8,8 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.remain.internal.ParticleInternals;
 
 import lombok.Getter;

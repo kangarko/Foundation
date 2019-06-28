@@ -1,17 +1,9 @@
 package org.mineacademy.fo.menu.tool;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 /**
@@ -39,44 +31,10 @@ public abstract class Tool {
 
 				final Tool instance = Tool.this;
 
-				if (!ToolRegistry.isRegistered(instance)) {
+				if (!ToolRegistry.isRegistered(instance))
 					ToolRegistry.register(instance);
-
-					checkListener();
-				}
 			}
 		}.start();
-	}
-
-	/**
-	 * Check if the listener tool is singleton to avoid registering events multiple times
-	 * and registers the events to Bukkit automatically
-	 */
-	private void checkListener() {
-		if (this instanceof Listener) {
-			try {
-				Field instanceField = null;
-
-				try {
-					instanceField = getClass().getDeclaredField("instance");
-
-				} catch (final NoSuchFieldException ex) {
-					throw new NoSuchFieldException("Please make static final field 'instance' in your tool class!");
-				}
-
-				Valid.checkBoolean(Modifier.isStatic(instanceField.getModifiers()) && Modifier.isFinal(instanceField.getModifiers()), "Field instance must be 'static final'");
-
-				for (final Constructor<?> con : getClass().getDeclaredConstructors())
-					Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your tools class?");
-
-			} catch (final Throwable ex) {
-				ex.printStackTrace();
-
-				throw new FoException("Your Tool " + this + " that 'implements Listener' appears not to be a singleton!");
-			}
-
-			Common.registerEvents((Listener) this);
-		}
 	}
 
 	/**

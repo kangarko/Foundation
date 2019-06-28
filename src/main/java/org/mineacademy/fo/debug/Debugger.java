@@ -49,7 +49,7 @@ public final class Debugger {
 			debugModeEnabled = true;
 
 			System.out.println("Detected debug.lock file, debug features enabled!");
-		
+
 		} else
 			debugModeEnabled = false;
 	}
@@ -66,10 +66,14 @@ public final class Debugger {
 	public static void debug(String section, String... messages) {
 		if (isDebugged(section)) {
 			for (final String message : messages)
-				Common.log("[" + section + "] " + message);
+				if (SimplePlugin.hasInstance())
+					Common.log("[" + section + "] " + message);
+				else
+					System.out.println("[" + section + "] " + message);
 
-			for (final String message : messages)
-				FileUtil.writeFormatted(FoConstants.File.DEBUG, "[" + section + "]", message);
+			if (SimplePlugin.hasInstance())
+				for (final String message : messages)
+					FileUtil.writeFormatted(FoConstants.File.DEBUG, "[" + section + "]", message);
 		}
 	}
 

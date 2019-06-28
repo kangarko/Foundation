@@ -15,8 +15,8 @@ import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.event.RegionScanCompleteEvent;
@@ -291,9 +291,9 @@ class RegionAccessor {
 		saveMethodName = MinecraftVersion.atLeast(V.v1_13) ? "close" : "c";
 
 		try {
-			final Class<?> rgClas = ReflectionUtil.getNMSClass("RegionFile");
-			regionFileConstructor = rgClas.getConstructor(File.class);
-			isChunkSaved = rgClas.getMethod(MinecraftVersion.atLeast(V.v1_13) ? "b" : "c", int.class, int.class);
+			final Class<?> regionFileClass = ReflectionUtil.getNMSClass("RegionFile");
+			regionFileConstructor = regionFileClass.getConstructor(File.class);
+			isChunkSaved = MinecraftVersion.newerThan(V.v1_13) ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair")) : regionFileClass.getMethod(MinecraftVersion.atLeast(V.v1_13) ? "b" : "c", int.class, int.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			Remain.sneaky(ex);
@@ -310,6 +310,12 @@ class RegionAccessor {
 
 	static boolean isChunkSaved(Object region, int x, int z) {
 		try {
+			if (MinecraftVersion.newerThan(V.v1_13)) {
+				final Object chunkCoordinates = ReflectionUtil.getNMSClass("ChunkCoordIntPair").getConstructor(int.class, int.class).newInstance(x, z);
+
+				return (boolean) isChunkSaved.invoke(region, chunkCoordinates);
+			}
+
 			return (boolean) isChunkSaved.invoke(region, x, z);
 
 		} catch (final ReflectiveOperationException ex) {

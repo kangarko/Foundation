@@ -1,14 +1,8 @@
 package org.mineacademy.fo.menu.tool;
 
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -24,8 +18,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Data;
@@ -34,14 +28,6 @@ import lombok.Data;
  * The event listener class responsible for firing events in tools
  */
 public final class ToolsListener implements Listener {
-
-	/**
-	 * We automatically scan classes in your plugin to find classes extending "Tool" and register 'em
-	 * This process is only done once since startup
-	 *
-	 * To make this work make sure your tool class has "public static Tool getInstance" method
-	 */
-	private static boolean toolsRegistered = false;
 
 	/**
 	 * Stores rockets that were shot
@@ -55,54 +41,6 @@ public final class ToolsListener implements Listener {
 	private final class ShotRocket {
 		private final Player shooter;
 		private final Rocket rocket;
-	}
-
-	// Create a new instance for event listening
-	public ToolsListener() {
-		autoRegisterTools();
-	}
-
-	/**
-	 * Scan classes and load tools that have "getInstance", see {@link #toolsRegistered}
-	 *
-	 * @return
-	 */
-	private static void autoRegisterTools() {
-		if (toolsRegistered)
-			return;
-
-		toolsRegistered = true;
-
-		final Set<Tool> tools = new HashSet<>();
-
-		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
-
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
-				final JarEntry jar = entry.nextElement();
-				final String name = jar.getName().replace("/", ".");
-
-				if (name.endsWith(".class") && !name.contains("$"))
-					try {
-						final Class<?> toolClass = Class.forName(name.substring(0, name.length() - 6));
-
-						if (Tool.class.isAssignableFrom(toolClass) && !Tool.class.equals(toolClass) && !Rocket.class.equals(toolClass))
-							try {
-								// Calling getInstance will also make the tool being automatically registered
-								final Object instance = toolClass.getMethod("getInstance").invoke(null);
-
-								tools.add((Tool) instance);
-
-							} catch (NoSuchMethodError | NoSuchMethodException | NullPointerException ex) {
-								// Ignore
-							} catch (final Throwable t) {
-								Common.log("Failed to register Tool class " + toolClass + " due to " + t);
-							}
-
-					} catch (final NoClassDefFoundError ex) {
-					}
-			}
-		} catch (final Throwable t) {
-		}
 	}
 
 	// -------------------------------------------------------------------------------------------
@@ -221,9 +159,9 @@ public final class ToolsListener implements Listener {
 					Common.runLater(() -> shot.remove());
 
 					Common.runLater(1, () -> {
-						Objects.requireNonNull(shot, "shot = null");
-						Objects.requireNonNull(world, "shot.world = null");
-						Objects.requireNonNull(loc, "shot.location = null");
+						Valid.checkNotNull(shot, "shot = null");
+						Valid.checkNotNull(world, "shot.world = null");
+						Valid.checkNotNull(loc, "shot.location = null");
 
 						final Location directedLoc = player.getEyeLocation().add(player.getEyeLocation().getDirection().setY(0).normalize().multiply(1.05)).add(0, 0.2, 0);
 

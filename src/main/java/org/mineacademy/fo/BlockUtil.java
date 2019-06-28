@@ -2,10 +2,12 @@ package org.mineacademy.fo;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -189,6 +191,134 @@ public final class BlockUtil {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
+	// Spherical manipulation
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Get all locations within the given 3D spherical radius, hollow or not
+	 *
+	 * NOTE: Calling this operation causes performance penaulty (>100ms for 30 radius!), be careful.
+	 *
+	 * @param location
+	 * @param radius
+	 * @param hollow
+	 * @return
+	 */
+	public static Set<Location> getSphere(Location location, int radius, boolean hollow) {
+		final Set<Location> blocks = new HashSet<>();
+		final World world = location.getWorld();
+		final int X = location.getBlockX();
+		final int Y = location.getBlockY();
+		final int Z = location.getBlockZ();
+		final int radiusSquared = radius * radius;
+
+		if (hollow) {
+			for (int x = X - radius; x <= X + radius; x++)
+				for (int y = Y - radius; y <= Y + radius; y++)
+					for (int z = Z - radius; z <= Z + radius; z++)
+						if ((X - x) * (X - x) + (Y - y) * (Y - y) + (Z - z) * (Z - z) <= radiusSquared)
+							blocks.add(new Location(world, x, y, z));
+
+			return makeHollow(blocks, true);
+		}
+
+		for (int x = X - radius; x <= X + radius; x++)
+			for (int y = Y - radius; y <= Y + radius; y++)
+				for (int z = Z - radius; z <= Z + radius; z++)
+					if ((X - x) * (X - x) + (Y - y) * (Y - y) + (Z - z) * (Z - z) <= radiusSquared)
+						blocks.add(new Location(world, x, y, z));
+
+		return blocks;
+	}
+
+	/**
+	 * Get all locations within the given 2D circle radius, hollow or full circle
+	 *
+	 * NOTE: Calling this operation causes performance penaulty (>100ms for 30 radius!), be careful.
+	 *
+	 * @param location
+	 * @param radius
+	 * @param hollow
+	 * @return
+	 */
+	public static Set<Location> getCircle(Location location, int radius, boolean hollow) {
+		final Set<Location> blocks = new HashSet<>();
+		final World world = location.getWorld();
+
+		final int initialX = location.getBlockX();
+		final int initialY = location.getBlockY();
+		final int initialZ = location.getBlockZ();
+		final int radiusSquared = radius * radius;
+
+		if (hollow) {
+			for (int x = initialX - radius; x <= initialX + radius; x++)
+				for (int z = initialZ - radius; z <= initialZ + radius; z++)
+					if ((initialX - x) * (initialX - x) + (initialZ - z) * (initialZ - z) <= radiusSquared)
+						blocks.add(new Location(world, x, initialY, z));
+
+			return makeHollow(blocks, false);
+		}
+
+		for (int x = initialX - radius; x <= initialX + radius; x++)
+			for (int z = initialZ - radius; z <= initialZ + radius; z++)
+				if ((initialX - x) * (initialX - x) + (initialZ - z) * (initialZ - z) <= radiusSquared)
+					blocks.add(new Location(world, x, initialY, z));
+
+		return blocks;
+	}
+
+	/**
+	 * Creates a new list of outer location points from all given points
+	 *
+	 * @param blocks
+	 * @param sphere
+	 * @return
+	 */
+	private static Set<Location> makeHollow(Set<Location> blocks, boolean sphere) {
+		final Set<Location> edge = new HashSet<>();
+
+		if (!sphere) {
+			for (final Location location : blocks) {
+				final World world = location.getWorld();
+				final int x = location.getBlockX();
+				final int y = location.getBlockY();
+				final int z = location.getBlockZ();
+
+				final Location front = new Location(world, x + 1, y, z);
+				final Location back = new Location(world, x - 1, y, z);
+				final Location left = new Location(world, x, y, z + 1);
+				final Location right = new Location(world, x, y, z - 1);
+
+				if (!(blocks.contains(front) && blocks.contains(back) && blocks.contains(left) && blocks.contains(right)))
+					edge.add(location);
+
+			}
+			return edge;
+		}
+
+		for (final Location location : blocks) {
+			final World world = location.getWorld();
+
+			final int x = location.getBlockX();
+			final int y = location.getBlockY();
+			final int z = location.getBlockZ();
+
+			final Location front = new Location(world, x + 1, y, z);
+			final Location back = new Location(world, x - 1, y, z);
+			final Location left = new Location(world, x, y, z + 1);
+			final Location right = new Location(world, x, y, z - 1);
+			final Location top = new Location(world, x, y + 1, z);
+			final Location bottom = new Location(world, x, y - 1, z);
+
+			if (!(blocks.contains(front) && blocks.contains(back) && blocks.contains(left) && blocks.contains(right) && blocks.contains(top) && blocks.contains(bottom)))
+				edge.add(location);
+		}
+
+		return edge;
+
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
 	// Getting blocks within a cuboid
 	// ------------------------------------------------------------------------------------------------------------
 
@@ -199,7 +329,7 @@ public final class BlockUtil {
 	 * @param secondary
 	 * @return
 	 */
-	public static Block[] getBlocks(final Location primary, final Location secondary) {
+	public static List<Block> getBlocks(final Location primary, final Location secondary) {
 		Valid.checkNotNull(primary, "Primary region point must be set!");
 		Valid.checkNotNull(secondary, "Secondary region point must be set!");
 
@@ -223,7 +353,7 @@ public final class BlockUtil {
 						blocks.add(block);
 				}
 
-		return blocks.toArray(new Block[blocks.size()]);
+		return blocks;
 	}
 
 	/**
@@ -236,7 +366,7 @@ public final class BlockUtil {
 	 *
 	 * @return all the Block with the given Type in the specified radius
 	 */
-	public static Block[] getBlocks(Location loc, int height, int radius) {
+	public static List<Block> getBlocks(Location loc, int height, int radius) {
 		final List<Block> blocks = new ArrayList<>();
 
 		for (int y = 0; y < height; y++)
@@ -247,7 +377,22 @@ public final class BlockUtil {
 					if (checkBlock != null && checkBlock.getType() != Material.AIR)
 						blocks.add(checkBlock);
 				}
-		return blocks.toArray(new Block[blocks.size()]);
+		return blocks;
+	}
+
+	public static List<Chunk> getChunks(Location location, int radius) {
+		final HashSet<Chunk> addedChunks = new HashSet<>();
+		final World world = location.getWorld();
+
+		final int chunkX = location.getBlockX() >> 4;
+		final int chunkZ = location.getBlockZ() >> 4;
+
+		for (int x = chunkX - radius; x <= chunkX + radius; ++x)
+			for (int z = chunkZ - radius; z <= chunkZ + radius; ++z)
+				if (world.isChunkLoaded(x, z))
+					addedChunks.add(world.getChunkAt(x, z));
+
+		return new ArrayList<>(addedChunks);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -348,7 +493,7 @@ public final class BlockUtil {
 	 * This will return the free coordinate above the snow layer.
 	 *
 	 * @param loc
-	 * @return
+	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlockNoSnow(Location loc) {
 		return findHighestBlockNoSnow(loc.getWorld(), loc.getBlockX(), loc.getBlockZ());
@@ -361,7 +506,7 @@ public final class BlockUtil {
 	 * @param world
 	 * @param x
 	 * @param z
-	 * @return
+	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlockNoSnow(World world, int x, int z) {
 		for (int y = world.getMaxHeight(); y > 0; y--) {

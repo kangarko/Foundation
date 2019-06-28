@@ -2,7 +2,6 @@ package org.mineacademy.fo.remain;
 
 import java.util.HashMap;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -943,6 +942,9 @@ public enum CompMaterial {
 
 	;
 
+	// Safety compatibility check
+	public static boolean COMPATIBLE = true;
+
 	// Holds history of last called translated names, for performance.
 	private static HashMap<String, CompMaterial> cachedSearch = new HashMap<>();
 
@@ -1089,9 +1091,9 @@ public enum CompMaterial {
 		if (comp.getType() == toMaterial() && comp.getData().getData() == data)
 			return true;
 
-		final CompMaterial xmat = fromMaterial(comp.getType());
+		final CompMaterial compMat = fromMaterial(comp.getType());
 
-		if (isDamageable(xmat) && toMaterial() == comp.getType())
+		if (isDamageable(compMat) && toMaterial() == comp.getType())
 			return true;
 
 		return false;
@@ -1403,6 +1405,9 @@ public enum CompMaterial {
 	 * @return the corresponding egg, or Sheep Monster Egg if does not exist
 	 */
 	public static CompMaterial makeMonsterEgg(EntityType type) {
+		if (!COMPATIBLE)
+			return null;
+
 		String name = type.toString() + "_SPAWN_EGG";
 
 		// Special cases
@@ -1425,7 +1430,7 @@ public enum CompMaterial {
 	 * @return the egg, or null if does not exist in the current MC version
 	 */
 	public static EntityType makeEntityType(CompMaterial monsterEgg) {
-		Validate.isTrue(monsterEgg.toString().endsWith("_SPAWN_EGG"), "Material " + monsterEgg + " is not a valid monster egg! (Must end with _SPAWN_EGG)");
+		Valid.checkBoolean(monsterEgg.toString().endsWith("_SPAWN_EGG"), "Material " + monsterEgg + " is not a valid monster egg! (Must end with _SPAWN_EGG)");
 
 		final String name = monsterEgg.toString().replace("_SPAWN_EGG", "");
 
@@ -1458,9 +1463,9 @@ public enum CompMaterial {
 			return CompMaterial.valueOf(mat.toString());
 
 		} catch (final IllegalArgumentException e) {
-			for (final CompMaterial xmat : CompMaterial.values())
-				if (xmat.legacyName.equals(mat.toString()))
-					return xmat;
+			for (final CompMaterial compMat : CompMaterial.values())
+				if (compMat.legacyName.equals(mat.toString()))
+					return compMat;
 		}
 		return null;
 	}

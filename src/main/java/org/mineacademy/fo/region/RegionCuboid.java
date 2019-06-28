@@ -68,12 +68,12 @@ public final class RegionCuboid implements Region {
 	}
 
 	@Override
-	public Block[] getBlocks() {
+	public List<Block> getBlocks() {
 		return BlockUtil.getBlocks(primary, secondary);
 	}
 
 	@Override
-	public Entity[] getEntities() {
+	public List<Entity> getEntities() {
 		final List<Entity> found = new LinkedList<>();
 
 		final int xMin = (int) primary.getX() >> 4;
@@ -91,7 +91,7 @@ public final class RegionCuboid implements Region {
 			}
 		}
 
-		return found.toArray(new Entity[found.size()]);
+		return found;
 	}
 
 	@Override
