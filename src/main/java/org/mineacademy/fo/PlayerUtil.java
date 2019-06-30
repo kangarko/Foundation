@@ -37,6 +37,7 @@ import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -602,11 +603,30 @@ public final class PlayerUtil {
 	 * Removes one piece of the given item stack, setting the slot to air
 	 * if the item is only 1 amount
 	 *
+	 * THIS SETS THE AMOUNT OF THE GIVEN ITEMSTACK TO -1 OF ITS CURRENT AMOUNT
+	 * AND DOES NOT AUTOMATICALLY REMOVE ITEMS
+	 *
 	 * @param player
 	 * @param item
 	 */
 	public static void takeOnePiece(Player player, ItemStack item) {
 		Remain.takeItemOnePiece(player, item);
+	}
+
+	/**
+	 * Scans the inventory and removes one piece of the first found item
+	 * matching the given material
+	 *
+	 * @param player
+	 * @param material
+	 */
+	public static void takeFirstOnePiece(Player player, CompMaterial material) {
+		for (final ItemStack item : player.getInventory().getContents())
+			if (item != null && item.getType() == material.getMaterial()) {
+				takeOnePiece(player, item);
+
+				break;
+			}
 	}
 
 	/**
