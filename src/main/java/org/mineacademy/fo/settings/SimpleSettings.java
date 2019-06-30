@@ -279,7 +279,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 			}
 
 			// Archaic
-			if (isSetAbsolute("Debug") && !(getGodKnowsWhat("Debug") instanceof List))
+			if (isSetAbsolute("Debug") && !(getObject("Debug") instanceof List))
 				set("Debug", null);
 		}
 
