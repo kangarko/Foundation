@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class YamlConfig {
 	 *
 	 * @param file
 	 */
-	public static final void removeLoadedFile(File file) {
+	public static final void unregisterLoadedFile(File file) {
 		for (final ConfigInstance instance : loadedFiles.keySet()) {
 			if (instance.equals(file)) {
 				loadedFiles.remove(instance);
@@ -122,34 +121,6 @@ public class YamlConfig {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Allows super global headers
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * List of super global headers.
-	 */
-	private static final Map<String /* File Name*/, String[] /* Header */> globalHeaders = new HashMap<>();
-
-	/**
-	 * Add a new super global header. These are used AFTER the header set by this instance but before the default ones.
-	 *
-	 * @param fileName The file name where this header applies to.
-	 * @param header
-	 */
-	public static final void addHeader(String fileName, String[] header) {
-		globalHeaders.put(fileName, header);
-	}
-
-	/**
-	 * Returns true if a super global header exists for the given file name.
-	 *
-	 * @param fileName
-	 * @return
-	 */
-	public static final boolean hasHeader(String fileName) {
-		return globalHeaders.containsKey(fileName);
-	}
-
 	// Static end /
 	// ------------------------------------------------------------------------------------------------------------
 
@@ -166,7 +137,6 @@ public class YamlConfig {
 	/**
 	 * The config header
 	 */
-	@Setter(value = AccessLevel.PROTECTED)
 	private String[] header;
 
 	/**
@@ -378,8 +348,17 @@ public class YamlConfig {
 	 *
 	 * @return
 	 */
-	public final String getFileName() {
+	protected final String getFileName() {
 		return instance.getFile().getName();
+	}
+
+	/**
+	 * Set the header of this configuration, use {@link #save()} to save
+	 *
+	 * @param header
+	 */
+	protected final void setHeader(String... header) {
+		this.header = header;
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -392,7 +371,7 @@ public class YamlConfig {
 	public final void save() {
 		final String file = getFileName();
 
-		instance.save(header != null ? header : Common.getOrDefault(globalHeaders.get(file), file.equals("data.db") ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE));
+		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
 
 		Debugger.debug("config", "&eSaved updated file: " + file + " (# Comments removed)");
@@ -475,7 +454,7 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	public final Object getObject(String path, Object def) {
+	protected final Object getObject(String path, Object def) {
 		final Object result = getObject(path);
 		forceSingleDefaults(path, def);
 
@@ -488,7 +467,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final Object getObject(String path) {
+	protected final Object getObject(String path) {
 		return getT(path, Object.class);
 	}
 
@@ -499,7 +478,7 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	public final Boolean getBoolean(String path, boolean def) {
+	protected final Boolean getBoolean(String path, boolean def) {
 		forceSingleDefaults(path, def);
 
 		return isSet(path) ? getBoolean(path) : def;
@@ -511,7 +490,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final Boolean getBoolean(String path) {
+	protected final Boolean getBoolean(String path) {
 		return getT(path, Boolean.class);
 	}
 
@@ -522,7 +501,7 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	public final String getString(String path, String def) {
+	protected final String getString(String path, String def) {
 		forceSingleDefaults(path, def);
 
 		return isSet(path) ? getString(path) : def;
@@ -534,7 +513,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final String getString(String path) {
+	protected final String getString(String path) {
 		return getT(path, String.class);
 	}
 
@@ -545,7 +524,7 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	public final Integer getInteger(String path, Integer def) {
+	protected final Integer getInteger(String path, Integer def) {
 		forceSingleDefaults(path, def);
 
 		return isSet(path) ? getInteger(path) : def;
@@ -557,7 +536,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final Integer getInteger(String path) {
+	protected final Integer getInteger(String path) {
 		return getT(path, Integer.class);
 	}
 
@@ -567,7 +546,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final Double getDoubleSafe(String path) {
+	protected final Double getDoubleSafe(String path) {
 		final String raw = getObject(path).toString();
 
 		return raw != null ? Double.parseDouble(raw) : null;
@@ -580,7 +559,7 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	public final Double getDouble(String path, Double def) {
+	protected final Double getDouble(String path, Double def) {
 		forceSingleDefaults(path, def);
 
 		return isSet(path) ? getDouble(path) : def;
@@ -592,7 +571,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final Double getDouble(String path) {
+	protected final Double getDouble(String path) {
 		return getT(path, Double.class);
 	}
 
@@ -602,7 +581,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final Location getLocation(String path) {
+	protected final Location getLocation(String path) {
 		return SerializeUtil.deserializeLocation(getObject(path));
 	}
 
@@ -612,7 +591,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final SimpleSound getSound(String path) {
+	protected final SimpleSound getSound(String path) {
 		return new SimpleSound(getString(path));
 	}
 
@@ -622,7 +601,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final CasusHelper getCasus(String path) {
+	protected final CasusHelper getCasus(String path) {
 		return new CasusHelper(getString(path));
 	}
 
@@ -632,7 +611,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final TitleHelper getTitle(String path) {
+	protected final TitleHelper getTitle(String path) {
 		return new TitleHelper(path);
 	}
 
@@ -642,7 +621,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final TimeHelper getTime(String path) {
+	protected final TimeHelper getTime(String path) {
 		return new TimeHelper(path);
 	}
 
@@ -652,7 +631,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final BoxedMessage getBoxedMessage(String path) {
+	protected final BoxedMessage getBoxedMessage(String path) {
 		return new BoxedMessage(getString(path));
 	}
 
@@ -662,7 +641,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final CompMaterial getMaterial(String path) {
+	protected final CompMaterial getMaterial(String path) {
 		final String name = getString(path);
 
 		if (name == null)
@@ -678,8 +657,32 @@ public class YamlConfig {
 	 * @param of
 	 * @return
 	 */
-	public final List<Object> getList(String path) {
+	protected final List<Object> getList(String path) {
 		return getT(path, List.class);
+	}
+
+	/**
+	 * Return a list of hash maps at the given location
+	 *
+	 * @param path
+	 * @return list of maps, null if not set
+	 */
+	protected final List<SerializedMap> getMapList(String path) {
+		final List<Object> baseList = getList("Classes");
+
+		if (baseList != null) {
+			final List<SerializedMap> mapList = new ArrayList<>();
+
+			for (final Object object : baseList) {
+				final SerializedMap map = SerializedMap.of(Common.getMapFromSection(object));
+
+				mapList.add(map);
+			}
+
+			return mapList;
+		}
+
+		return null;
 	}
 
 	/**
@@ -688,7 +691,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final String[] getStringArray(String path) {
+	protected final String[] getStringArray(String path) {
 		return String.join("\n", getObject(path).toString()).split("\n");
 	}
 
@@ -698,7 +701,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final List<String> getStringList(String path) {
+	protected final List<String> getStringList(String path) {
 		final List<Object> list = getList(path);
 
 		return list != null ? fixYamlBooleansInList(list) : new ArrayList<>();
@@ -727,7 +730,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final StrictList<String> getCommandList(String path) {
+	protected final StrictList<String> getCommandList(String path) {
 		final List<String> list = getStringList(path);
 		Valid.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + getFileName() + ") for this will be used as your main command!");
 
@@ -740,7 +743,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final StrictList<Material> getMaterialList(String path) {
+	protected final StrictList<Material> getMaterialList(String path) {
 		final StrictList<Material> list = new StrictList<>();
 
 		for (final String raw : getStringList(path)) {
@@ -759,7 +762,7 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	public final StrictList<Enchantment> getEnchants(String path) {
+	protected final StrictList<Enchantment> getEnchants(String path) {
 		final StrictList<Enchantment> list = new StrictList<>();
 
 		for (final String name : getStringList(path))
@@ -776,7 +779,7 @@ public class YamlConfig {
 	 * @param listType
 	 * @return
 	 */
-	public final <E extends Enum<E>> StrictList<E> getEnumList(String path, Class<E> listType) {
+	protected final <E extends Enum<E>> StrictList<E> getEnumList(String path, Class<E> listType) {
 		final StrictList<E> list = new StrictList<>();
 
 		for (final String item : getStringList(path))
@@ -817,7 +820,7 @@ public class YamlConfig {
 	 * @param typeOf
 	 * @return
 	 */
-	public final <E extends Enum<E>> E getEnum(String path, Class<E> typeOf) {
+	protected final <E extends Enum<E>> E getEnum(String path, Class<E> typeOf) {
 		return ReflectionUtil.lookupEnum(typeOf, getString(path));
 	}
 
@@ -825,9 +828,9 @@ public class YamlConfig {
 	 * Get a serialized map
 	 *
 	 * @param path
-	 * @return
+	 * @return map, or empty map
 	 */
-	public final SerializedMap getMap(String path) {
+	protected final SerializedMap getMap(String path) {
 		return isSet(path) ? SerializedMap.of(Common.getMapFromSection(getT(path, Object.class))) : new SerializedMap();
 	}
 
@@ -841,7 +844,7 @@ public class YamlConfig {
 	 * @param valueType
 	 * @return
 	 */
-	public final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType) {
+	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType) {
 		Valid.checkNotNull(path, "Path cannot be null");
 		if (pathPrefix != null)
 			if (!path.startsWith(pathPrefix))
@@ -882,7 +885,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	@Deprecated
-	public final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(String path) {
+	protected final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(String path) {
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
 
@@ -922,7 +925,7 @@ public class YamlConfig {
 	 * @param path
 	 * @param value
 	 */
-	public final void save(String path, Object value) {
+	protected final void save(String path, Object value) {
 		setNoSave(path, value);
 
 		save();
@@ -937,7 +940,7 @@ public class YamlConfig {
 	 * @param path
 	 * @param value
 	 */
-	public final void setNoSave(String path, Object value) {
+	protected final void setNoSave(String path, Object value) {
 		path = formPathPrefix(path);
 		value = SerializeUtil.serialize(value);
 
@@ -952,7 +955,7 @@ public class YamlConfig {
 	 * @param fromRelative
 	 * @param toAbsolute
 	 */
-	public final void move(String fromRelative, String toAbsolute) {
+	protected final void move(String fromRelative, String toAbsolute) {
 		move(getObject(fromRelative), fromRelative, toAbsolute);
 	}
 
@@ -963,7 +966,7 @@ public class YamlConfig {
 	 * @param fromPathRel
 	 * @param toPathAbs
 	 */
-	public final void move(Object value, String fromPathRel, String toPathAbs) {
+	protected final void move(Object value, String fromPathRel, String toPathAbs) {
 		final String oldPathPrefix = pathPrefix;
 
 		fromPathRel = formPathPrefix(fromPathRel);
@@ -971,7 +974,7 @@ public class YamlConfig {
 
 		pathPrefix = oldPathPrefix; // set to previous
 
-		prepareSave(toPathAbs, value, false);
+		checkAndFlagForSave(toPathAbs, value, false);
 		getConfig().set(toPathAbs, value);
 
 		Common.log("&7Update " + getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
@@ -985,7 +988,7 @@ public class YamlConfig {
 	 * @param path, the path to the key with path prefix added automatically
 	 * @return
 	 */
-	public final boolean isSet(String path) {
+	protected final boolean isSet(String path) {
 		return isSetAbsolute(formPathPrefix(path));
 	}
 
@@ -995,7 +998,7 @@ public class YamlConfig {
 	 * @param path, the path to the key without adding path prefix automatically
 	 * @return
 	 */
-	public final boolean isSetAbsolute(String path) {
+	protected final boolean isSetAbsolute(String path) {
 		return getConfig().isSet(path);
 	}
 
@@ -1025,7 +1028,7 @@ public class YamlConfig {
 			Valid.checkNotNull(object, "Default '" + getFileName() + "' lacks " + Common.article(type.getSimpleName()) + " at '" + pathAbs + "'");
 			checkAssignable(true, pathAbs, object, type);
 
-			prepareSave(pathAbs, object);
+			checkAndFlagForSave(pathAbs, object);
 			getConfig().set(pathAbs, object);
 		}
 	}
@@ -1052,8 +1055,8 @@ public class YamlConfig {
 	 * @param path
 	 * @param def
 	 */
-	private final <T> void prepareSave(String path, T def) {
-		prepareSave(path, def, true);
+	private final <T> void checkAndFlagForSave(String path, T def) {
+		checkAndFlagForSave(path, def, true);
 	}
 
 	/**
@@ -1065,16 +1068,16 @@ public class YamlConfig {
 	 * @param def
 	 * @param logUpdate
 	 */
-	private final <T> void prepareSave(String path, T def, boolean logUpdate) {
+	private final <T> void checkAndFlagForSave(String path, T def, boolean logUpdate) {
 		Valid.checkBoolean(instance.getFile() != null && instance.getFile().exists() && instance.getConfig() != null, "Inbuilt file or config is null! File: " + instance.getFile() + ", config: " + instance.getConfig());
 
 		if (getDefaults() != null)
 			Valid.checkNotNull(def, "Inbuilt config " + getFileName() + " lacks " + (def == null ? "key" : def.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
 
-		save = true;
-
 		if (logUpdate)
 			Common.log("&7Update " + getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
+
+		save = true;
 	}
 
 	/**
@@ -1125,38 +1128,6 @@ public class YamlConfig {
 	 */
 	protected final String getPathPrefix() {
 		return pathPrefix;
-	}
-
-	// ------------------------------------------------------------------------------------
-	// Static easy access
-	// ------------------------------------------------------------------------------------
-
-	/**
-	 * A simple shortcut to load the {@link YamlConfig} without a default file with a specific header
-	 *
-	 * @param to
-	 * @param header
-	 * @return
-	 */
-	public static final YamlConfig loadNoDefaults(String to, String[] header) {
-		return load(null, to, header);
-	}
-
-	/**
-	 * A simple shortcut to load the {@link YamlConfig}
-	 *
-	 * @param from
-	 * @param to
-	 * @param header
-	 * @return
-	 */
-	public static final YamlConfig load(String from, String to, String[] header) {
-		final YamlConfig config = new YamlConfig();
-
-		config.setHeader(header);
-		config.loadConfiguration(from, to);
-
-		return config;
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1317,7 +1288,7 @@ class ConfigInstance {
 	 * Removes the config file from the disk
 	 */
 	protected void delete() {
-		YamlConfig.removeLoadedFile(file);
+		YamlConfig.unregisterLoadedFile(file);
 
 		file.delete();
 	}
