@@ -207,6 +207,33 @@ public final class Debugger {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
+	 * Print out where your method is being called from
+	 * Such as: YourClass > YourMainClass > MinecraftServer > Thread
+	 *
+	 * Also can print line numbers YourClass#LineNumber
+	 *
+	 * @param trackLineNumbers
+	 * @return
+	 */
+	public static List<String> traceRoute(boolean trackLineNumbers) {
+		final Exception exception = new RuntimeException("I love horses");
+		final List<String> paths = new ArrayList<>();
+
+		for (final StackTraceElement el : exception.getStackTrace()) {
+			final String[] classNames = el.getClassName().split("\\.");
+			final String className = classNames[classNames.length - 1];
+
+			if (!paths.contains(className))
+				paths.add(className + (trackLineNumbers ? "#" + el.getLineNumber() : ""));
+		}
+
+		if (!paths.isEmpty())
+			paths.remove(0);
+
+		return paths;
+	}
+
+	/**
 	 * Prints array values with their indexes on each line
 	 *
 	 * @param values
