@@ -4,10 +4,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +32,7 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.region.RegionCuboid;
@@ -68,10 +72,12 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import fr.xephi.authme.data.auth.PlayerCache;
 import io.loyloy.nicky.Nick;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import me.crafter.mc.lockettepro.LocketteProAPI;
 import net.citizensnpcs.api.CitizensAPI;
@@ -900,6 +906,52 @@ public final class HookManager {
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
 	}
 
+	/**
+	 * If PlaceholderAPI is loaded, registers a new placeholder within it
+	 * with the given variable and value.
+	 *
+	 * The variable is automatically prepended with your plugin name, lowercased + _,
+	 * such as chatcontrol_ or boss_ + your variable.
+	 *
+	 * Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
+	 *
+	 * The value will be called against the given player and the variable you set initially
+	 *
+	 * NB: In your chat formatting plugin you can append your variable with a "+" sign
+	 * to automatically insert a space after it in case it is not empty (NOT HERE, but in your
+	 * chat control plugin)
+	 *
+	 * @param variable
+	 * @param value
+	 */
+	public static void addPlaceholder(String variable, BiFunction<Player, String, String> value) {
+		if (isPlaceholderAPILoaded())
+			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value));
+	}
+
+	/**
+	 * If PlaceholderAPI is loaded, registers a new placeholder within it
+	 * with the given variable and value.
+	 *
+	 * The variable is automatically prepended with your plugin name, lowercased + _,
+	 * such as chatcontrol_ or boss_ + your variable.
+	 *
+	 * Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
+	 *
+	 * The value will be called against the given player
+	 *
+	 * NB: In your chat formatting plugin you can append your variable with a "+" sign
+	 * to automatically insert a space after it in case it is not empty (NOT HERE, but in your
+	 * chat control plugin)
+	 *
+	 * @param variable
+	 * @param value
+	 */
+	public static void addPlaceholder(String variable, Function<Player, String> value) {
+		if (isPlaceholderAPILoaded())
+			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)));
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Factions
 	// ------------------------------------------------------------------------------------------------------------
@@ -1115,6 +1167,21 @@ public final class HookManager {
 	 */
 	public static boolean isNPC(Entity entity) {
 		return isCitizensLoaded() ? citizensHook.isNPC(entity) : false;
+	}
+
+	/**
+	 * Represents a PlaceholderAPI placeholder replacer with the given
+	 * variable (will be prepended with the name of your plugin, such as
+	 *
+	 * chatcontrol_ + this variable
+	 *
+	 * and the value that is callable so that you can return updated value each time.
+	 */
+	@Data
+	static class PAPIPlaceholder {
+
+		private final String variable;
+		private final BiFunction<Player, String, String> value;
 	}
 }
 
@@ -1604,6 +1671,16 @@ class VaultHook {
 
 class PlaceholderAPIHook {
 
+	private final Set<PAPIPlaceholder> placeholders = new HashSet<>();
+
+	PlaceholderAPIHook() {
+		new VariablesInjector().register();
+	}
+
+	final void addPlaceholder(PAPIPlaceholder placeholder) {
+		placeholders.add(placeholder);
+	}
+
 	final String replacePlaceholders(Player pl, String msg) {
 		try {
 			return setPlaceholders(pl, msg);
@@ -1695,6 +1772,107 @@ class PlaceholderAPIHook {
 		}
 
 		return text;
+	}
+
+	private class VariablesInjector extends PlaceholderExpansion {
+
+		/**
+		 * Because this is an internal class,
+		 * you must override this method to let PlaceholderAPI know to not unregister your expansion class when
+		 * PlaceholderAPI is reloaded
+		 *
+		 * @return true to persist through reloads
+		 */
+		@Override
+		public boolean persist() {
+			return true;
+		}
+
+		/**
+		 * Because this is a internal class, this check is not needed
+		 * and we can simply return {@code true}
+		 *
+		 * @return Always true since it's an internal class.
+		 */
+		@Override
+		public boolean canRegister() {
+			return true;
+		}
+
+		/**
+		 * The name of the person who created this expansion should go here.
+		 * <br>For convienience do we return the author from the plugin.yml
+		 *
+		 * @return The name of the author as a String.
+		 */
+		@Override
+		public String getAuthor() {
+			return SimplePlugin.getInstance().getDescription().getAuthors().toString();
+		}
+
+		/**
+		 * The placeholder identifier should go here.
+		 * <br>This is what tells PlaceholderAPI to call our onRequest
+		 * method to obtain a value if a placeholder starts with our
+		 * identifier.
+		 * <br>This must be unique and can not contain % or _
+		 *
+		 * @return The identifier in {@code %<identifier>_<value>%} as String.
+		 */
+		@Override
+		public String getIdentifier() {
+			return SimplePlugin.getNamed().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
+		}
+
+		/**
+		 * This is the version of the expansion.
+		 * <br>You don't have to use numbers, since it is set as a String.
+		 *
+		 * For convenience do we return the version from the plugin.yml
+		 *
+		 * @return The version as a String.
+		 */
+		@Override
+		public String getVersion() {
+			return SimplePlugin.getInstance().getDescription().getVersion();
+		}
+
+		/**
+		 * This is the method called when a placeholder with our identifier
+		 * is found and needs a value.
+		 * <br>We specify the value identifier in this method.
+		 * <br>Since version 2.9.1 can you use OfflinePlayers in your requests.
+		 *
+		 * @param  player
+		 *         A {@link org.bukkit.Player Player}.
+		 * @param  identifier
+		 *         A String containing the identifier/value.
+		 *
+		 * @return possibly-null String of the requested identifier.
+		 */
+		@Override
+		public String onPlaceholderRequest(Player player, String identifier) {
+
+			if (player == null)
+				return "";
+
+			final boolean insertSpace = identifier.endsWith("+");
+			identifier = insertSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
+
+			for (final PAPIPlaceholder replacer : placeholders)
+				if (identifier.equalsIgnoreCase(replacer.getVariable()))
+					try {
+						final String value = Common.getOrEmpty(replacer.getValue().apply(player, identifier));
+
+						return value + (!value.isEmpty() && insertSpace ? " " : "");
+
+					} catch (final Exception e) {
+						Common.error(e, "Failed to replace your '" + identifier + "' variable for " + player.getName());
+					}
+
+			// We return null if an invalid placeholder (f.e. %someplugin_placeholder3%) was provided
+			return null;
+		}
 	}
 }
 
