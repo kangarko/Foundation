@@ -322,7 +322,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getBoxedMessage(path);
 	}
 
-	protected static final Object getGodKnowsWhat(String path) {
+	protected static final Object getObject(String path) {
 		return TEMPORARY_INSTANCE.getObject(path);
 	}
 
