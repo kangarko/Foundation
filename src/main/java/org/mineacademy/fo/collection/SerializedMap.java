@@ -338,6 +338,27 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Return an object at the given location
+	 *
+	 * @param key
+	 * @return
+	 */
+	public Object getObject(String key) {
+		return get(key, Object.class);
+	}
+
+	/**
+	 * Return an object at the given location, or default if it does not exist
+	 *
+	 * @param key
+	 * @param def
+	 * @return
+	 */
+	public Object getObject(String key, Object def) {
+		return get(key, Object.class, def);
+	}
+
+	/**
 	 * Returns a key and attempts to deserialize it as the given type
 	 *
 	 * @param <T>
