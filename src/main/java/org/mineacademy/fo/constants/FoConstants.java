@@ -27,6 +27,11 @@ public final class FoConstants {
 		public static final String DEBUG = "debug.log";
 
 		/**
+		 * The data.db file (uses YAML) for saving various data
+		 */
+		public static final String DATA = "data.db";
+
+		/**
 		 * Files related to the ChatControl plugin
 		 */
 		public static final class ChatControl {

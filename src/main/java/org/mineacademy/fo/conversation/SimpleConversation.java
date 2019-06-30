@@ -131,7 +131,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @return
 	 */
 	protected SimplePrefix getPrefix() {
-		return new SimplePrefix(Common.ADD_TELL_PREFIX ? Common.getTellPrefix() : "");
+		return new SimplePrefix(Common.ADD_TELL_PREFIX && Common.ADD_TELL_PREFIX_IN_CONVERSATION ? Common.getTellPrefix() : "");
 	}
 
 	/**
