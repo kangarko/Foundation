@@ -1,5 +1,7 @@
 package org.mineacademy.fo;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -158,8 +160,10 @@ public final class RandomUtil {
 	 * @param items
 	 * @return
 	 */
-	public static <T> T nextItem(List<T> items) {
-		return items.get(nextInt(items.size()));
+	public static <T> T nextItem(Collection<T> items) {
+		final List<T> list = items instanceof List ? (List<T>) items : new ArrayList<>(items);
+
+		return list.get(nextInt(list.size()));
 	}
 
 	/**
