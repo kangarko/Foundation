@@ -3,6 +3,7 @@ package org.mineacademy.fo.conversation;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.ConversationPrefix;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.ValidatingPrompt;
 import org.bukkit.entity.Player;
@@ -30,6 +31,16 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	protected SimplePrompt(boolean openMenu) {
 		this.openMenu = openMenu;
+	}
+
+	/**
+	 * Return the prefix before tell messages
+	 *
+	 * @param ctx
+	 * @return
+	 */
+	protected String getCustomPrefix() {
+		return null;
 	}
 
 	/**
@@ -102,7 +113,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected void tell(Conversable conversable, String message) {
-		Common.tellConversing(conversable, message);
+		Common.tellConversing(conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
 	}
 
 	/**
@@ -148,6 +159,13 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			@Override
 			protected Prompt getFirstPrompt() {
 				return SimplePrompt.this;
+			}
+
+			@Override
+			protected ConversationPrefix getPrefix() {
+				final String prefix = SimplePrompt.this.getCustomPrefix();
+
+				return prefix != null ? new SimplePrefix(prefix) : super.getPrefix();
 			}
 		};
 
