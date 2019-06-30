@@ -661,6 +661,11 @@ public class YamlConfig {
 		return getT(path, List.class);
 	}
 
+	@Deprecated
+	protected final void test() {
+
+	}
+
 	/**
 	 * Return a list of hash maps at the given location
 	 *
@@ -668,7 +673,7 @@ public class YamlConfig {
 	 * @return list of maps, null if not set
 	 */
 	protected final List<SerializedMap> getMapList(String path) {
-		final List<Object> baseList = getList("Classes");
+		final List<Object> baseList = getList(path);
 
 		if (baseList != null) {
 			final List<SerializedMap> mapList = new ArrayList<>();
