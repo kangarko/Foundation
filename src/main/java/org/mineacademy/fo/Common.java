@@ -100,7 +100,7 @@ public final class Common {
 	/**
 	 * If {@link #ADD_TELL_PREFIX} is true, shall we automatically add prefix even in conversations?
 	 */
-	public static boolean ADD_TELL_PREFIX_IN_CONVERSATION = true;
+	public static boolean ADD_TELL_PREFIX_IN_CONVERSATION = false;
 
 	/**
 	 * Should we add a prefix to the messages we send to the console?
@@ -108,6 +108,12 @@ public final class Common {
 	 * This is enabled automatically when a {@link SimplePlugin} starts
 	 */
 	public static boolean ADD_LOG_PREFIX = false;
+
+	/**
+	 * Should we send tellX methods even if the player is conversing?
+	 * Defaults to false
+	 */
+	public static boolean SEND_TELL_TO_CONVERSING = false;
 
 	/**
 	 * The tell prefix applied on tell() methods
@@ -376,8 +382,9 @@ public final class Common {
 			for (final String part : splitNewline(message)) {
 				final String toSend = ((ADD_TELL_PREFIX && !hasPrefix ? tellPrefix : "") + removeFirstSpaces(part)).trim();
 
-				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
+				if (SEND_TELL_TO_CONVERSING && sender instanceof Conversable && ((Conversable) sender).isConversing())
 					((Conversable) sender).sendRawMessage(toSend);
+
 				else
 					sender.sendMessage(toSend);
 			}
