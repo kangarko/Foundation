@@ -30,6 +30,10 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
 		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -49,6 +53,12 @@
 			<groupId>org.mineacademy.server</groupId>
 			<artifactId>PaperSpigot</artifactId>
 			<version>1.14.3-SNAPSHOT-114</version>
+		</dependency>
+		<!-- Item-NBT-API -->
+		<dependency>
+			<groupId>com.github.tr7zw</groupId>
+			<artifactId>Item-NBT-API</artifactId>
+			<version>master-SNAPSHOT</version>
 		</dependency>
 		<!-- Plugins -->
 		<dependency>

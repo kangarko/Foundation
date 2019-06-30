@@ -1,18 +1,21 @@
 package org.mineacademy.fo.remain;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.nbt.NBTTileEntity;
+import org.mineacademy.fo.remain.nbt.NBTCompound;
+import org.mineacademy.fo.remain.nbt.NBTItem;
 
 /**
  * Utility class for persistent metadata manipulation
@@ -34,6 +37,25 @@ public class CompMetadata {
 	// ----------------------------------------------------------------------------------------
 	// Setting metadata
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * A shortcut for setting a tag with key-value pair on an item
+	 *
+	 * @param item
+	 * @param compoundTag
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public static ItemStack setMetadata(ItemStack item, String key, String value) {
+		Valid.checkNotNull(item, "Setting NBT tag got null item");
+
+		final NBTItem nbt = new NBTItem(item);
+		final NBTCompound tag = nbt.addCompound(FoConstants.NBT.TAG);
+
+		tag.setString(key, value);
+		return nbt.getItem();
+	}
 
 	/**
 	 * Attempts to set a persistent metadata for entity
@@ -62,26 +84,19 @@ public class CompMetadata {
 				entity.addScoreboardTag(tag);
 
 		} catch (NoSuchMethodError | NoSuchFieldError ex) {
+			checkNBTAPI();
 
-			// Lost upon reload
-			entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), tag));
+			try {
+				de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).setString(key, value);
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to set NBT tag for " + entity.getType() + ". Tag: " + key + ", value: " + value);
+			}
 		}
 	}
 
 	// Format the syntax of stored tags
 	private static final String format(String key, String value) {
 		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
-	}
-
-	/**
-	 * Sets persistent tile entity metadata
-	 *
-	 * @param tileBlock
-	 * @param key
-	 * @param value
-	 */
-	public static final void setMetadata(Block tileBlock, String key, String value) {
-		setMetadata(tileBlock.getState(), key, value);
 	}
 
 	/**
@@ -104,10 +119,13 @@ public class CompMetadata {
 		}
 
 		else {
-			tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+			checkNBTAPI();
 
-			final NBTTileEntity nbt = new NBTTileEntity(tileEntity);
-			nbt.setString(key, value);
+			try {
+				de.tr7zw.nbtinjector.NBTInjector.getNbtData(tileEntity).setString(key, value);
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to set NBT tag for " + tileEntity.getType() + ". Tag: " + key + ", value: " + value);
+			}
 		}
 
 		tileEntity.update();
@@ -120,6 +138,24 @@ public class CompMetadata {
 	// ----------------------------------------------------------------------------------------
 	// Getting metadata
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * A shortcut from reading a certain key from an item's given compound tag
+	 *
+	 * @param item
+	 * @param compoundTag
+	 * @param key
+	 * @return
+	 */
+	public static String getMetadata(ItemStack item, String key) {
+		Valid.checkNotNull(item, "Reading NBT tag got null item");
+
+		final String compoundTag = FoConstants.NBT.TAG;
+		final NBTItem nbt = new NBTItem(item);
+		final String name = nbt.hasKey(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
+
+		return name;
+	}
 
 	/**
 	 * Attempts to get the entity's metadata, first from scoreboard tag,
@@ -141,8 +177,13 @@ public class CompMetadata {
 			}
 
 		} catch (NoSuchMethodError | NoSuchFieldError ex) {
-			if (entity.hasMetadata(key))
-				return getTag(entity.getMetadata(key).get(0).asString(), key);
+			checkNBTAPI();
+
+			try {
+				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).getString(key);
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
+			}
 		}
 
 		return null;
@@ -153,17 +194,6 @@ public class CompMetadata {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
-	}
-
-	/**
-	 * Return saved tile entity metadata, or null if none
-	 *
-	 * @param tileBlock
-	 * @param key
-	 * @return
-	 */
-	public static final String getMetadata(Block tileBlock, String key) {
-		return getMetadata(tileBlock.getState(), key);
 	}
 
 	/**
@@ -184,10 +214,15 @@ public class CompMetadata {
 			return getNamedspaced(tile, key);
 		}
 
-		final String nbt = new NBTTileEntity(tileEntity).getString(key);
-		final String result = (nbt == null || "".equals(nbt)) && tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : nbt;
+		checkNBTAPI();
 
-		return result != null && result.isEmpty() ? null : result;
+		try {
+			return de.tr7zw.nbtinjector.NBTInjector.getNbtData(tileEntity).getString(key);
+		} catch (final Throwable t) {
+			Common.throwError(t, "Failed to get NBT tag for " + tileEntity.getType() + ". Tag: " + key);
+
+			return null;
+		}
 	}
 
 	private static final String getNamedspaced(TileState tile, String key) {
@@ -197,6 +232,23 @@ public class CompMetadata {
 	// ----------------------------------------------------------------------------------------
 	// Checking for metadata
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Return true if the given itemstack has the given key stored at its compound
+	 * tag {@link FoConstants.NBT#TAG}
+	 *
+	 * @param item
+	 * @param key
+	 * @return
+	 */
+	public static final boolean hasMetadata(ItemStack item, String key) {
+		Valid.checkNotNull(item);
+
+		final NBTItem nbt = new NBTItem(item);
+		final NBTCompound tag = nbt.getCompound(FoConstants.NBT.TAG);
+
+		return tag != null && tag.hasKey(key);
+	}
 
 	/**
 	 * Returns if the entity has the given tag by key, first checks scoreboard tags,
@@ -215,22 +267,16 @@ public class CompMetadata {
 					return true;
 
 		} catch (NoSuchMethodError | NoSuchFieldError ex) {
-			return entity.hasMetadata(key);
+			checkNBTAPI();
+
+			try {
+				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).hasKey(key);
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
+			}
 		}
 
 		return false;
-	}
-
-	/**
-	 * Return true if the given tile entity block such as {@link CreatureSpawner} has
-	 * the given key
-	 *
-	 * @param tileBlock
-	 * @param key
-	 * @return
-	 */
-	public static final boolean hasMetadata(Block tileBlock, String key) {
-		return hasMetadata(tileBlock.getState(), key);
 	}
 
 	/**
@@ -252,9 +298,15 @@ public class CompMetadata {
 			return hasNamedspaced(tile, key);
 		}
 
-		final boolean nbtHas = new NBTTileEntity(tileEntity).hasKey(key);
+		checkNBTAPI();
 
-		return !nbtHas && tileEntity.hasMetadata(key) ? true : nbtHas;
+		try {
+			return de.tr7zw.nbtinjector.NBTInjector.getNbtData(tileEntity).hasKey(key);
+		} catch (final Throwable t) {
+			Common.throwError(t, "Failed to get NBT tag for " + tileEntity.getType() + ". Tag: " + key);
+
+			return false;
+		}
 	}
 
 	private static final boolean hasNamedspaced(TileState tile, String key) {
@@ -266,5 +318,11 @@ public class CompMetadata {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
+	}
+
+	private static final void checkNBTAPI() {
+		System.out.println("**** DO NOT REPORT THE FOLLOWING ERROR, YOU NEED TO INSTALL AN ADDITIONAL LIBRARY FOR THIS PLUGIN TO WORK");
+		Valid.checkBoolean(HookManager.isNbtAPILoaded(), "Storing persistent NBT tags on Entities/Blocks requries MC 1.14+ or NBTAPI plugin. Please download the 800kb+ plugin file from https://ci.codemc.org/job/Tr7zw/job/Item-NBT-API");
+
 	}
 }
