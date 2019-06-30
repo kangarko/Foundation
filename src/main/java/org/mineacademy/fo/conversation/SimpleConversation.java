@@ -6,6 +6,7 @@ import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.ConversationPrefix;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
@@ -130,7 +131,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @return
 	 */
-	protected SimplePrefix getPrefix() {
+	protected ConversationPrefix getPrefix() {
 		return new SimplePrefix(Common.ADD_TELL_PREFIX && Common.ADD_TELL_PREFIX_IN_CONVERSATION ? Common.getTellPrefix() : "");
 	}
 
