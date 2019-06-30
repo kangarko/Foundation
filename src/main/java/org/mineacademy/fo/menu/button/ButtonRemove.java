@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  * Typically we use this to remove an arena, class, upgrade etc.
  */
 @RequiredArgsConstructor
-public final class ButtonRemove extends Button {
+public class ButtonRemove extends Button {
 
 	/**
 	 * The parent menu
@@ -63,6 +63,26 @@ public final class ButtonRemove extends Button {
 				.build().make();
 	}
 
+	public ItemStack getRemoveConfirmItem() {
+		return ItemCreator
+
+				.ofWool(CompDye.RED)
+				.name("&6&lRemove " + toRemoveName)
+
+				.lores(Arrays.asList(
+						"&r",
+						"&7Confirm that this " + toRemoveType + " will",
+						"&7be removed permanently.",
+						"&cCannot be undone."))
+
+				.flag(CompItemFlag.HIDE_ATTRIBUTES)
+				.build().make();
+	}
+
+	public String getMenuTitle() {
+		return "&0Confirm removal";
+	}
+
 	/**
 	 * Open the confirm dialog when clicked
 	 */
@@ -79,19 +99,7 @@ public final class ButtonRemove extends Button {
 
 		@Override
 		public ItemStack getItem() {
-			return ItemCreator
-
-					.ofWool(CompDye.RED)
-					.name("&6&lRemove " + toRemoveName)
-
-					.lores(Arrays.asList(
-							"&r",
-							"&7Confirm that this " + toRemoveType + " will",
-							"&7be removed permanently.",
-							"&cCannot be undone."))
-
-					.flag(CompItemFlag.HIDE_ATTRIBUTES)
-					.build().make();
+			return getRemoveConfirmItem();
 		}
 
 		/**
@@ -147,7 +155,7 @@ public final class ButtonRemove extends Button {
 			this.returnButton = new ButtonReturnBack(parentMenu);
 
 			setSize(9 * 3);
-			setTitle("&0Confirm removal");
+			setTitle(getMenuTitle());
 		}
 
 		/**
