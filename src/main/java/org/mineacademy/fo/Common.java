@@ -98,6 +98,11 @@ public final class Common {
 	public static boolean ADD_TELL_PREFIX = false;
 
 	/**
+	 * If {@link #ADD_TELL_PREFIX} is true, shall we automatically add prefix even in conversations?
+	 */
+	public static boolean ADD_TELL_PREFIX_IN_CONVERSATION = true;
+
+	/**
 	 * Should we add a prefix to the messages we send to the console?
 	 *
 	 * This is enabled automatically when a {@link SimplePlugin} starts
@@ -117,29 +122,25 @@ public final class Common {
 	private static String logPrefix = "[" + SimplePlugin.getNamed() + "] ";
 
 	/**
-	 * Set the tell prefix applied for messages to players from tell() methods.
-	 *
-	 * We add an empty space after it for you automatically.
+	 * Set the tell prefix applied for messages to players from tell() methods
 	 *
 	 * Colors with & letter are translated automatically.
 	 *
 	 * @param prefix
 	 */
 	public static void setTellPrefix(String prefix) {
-		tellPrefix = colorize(prefix) + " ";
+		tellPrefix = colorize(prefix);
 	}
 
 	/**
 	 * Set the log prefix applied for messages in the console from log() methods.
-	 *
-	 * We add an empty space after it for you automatically.
 	 *
 	 * Colors with & letter are translated automatically.
 	 *
 	 * @param prefix
 	 */
 	public static void setLogPrefix(String prefix) {
-		logPrefix = colorize(prefix) + " ";
+		logPrefix = colorize(prefix);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -288,7 +289,7 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellConversing(Conversable conversable, String message) {
-		conversable.sendRawMessage(Common.colorize((ADD_TELL_PREFIX ? tellPrefix : "") + message));
+		conversable.sendRawMessage(Common.colorize((ADD_TELL_PREFIX && ADD_TELL_PREFIX_IN_CONVERSATION ? tellPrefix : "") + removeFirstSpaces(message)).trim());
 	}
 
 	/**
@@ -373,7 +374,7 @@ public final class Common {
 
 		} else
 			for (final String part : splitNewline(message)) {
-				final String toSend = (ADD_TELL_PREFIX && !hasPrefix ? tellPrefix : "") + part;
+				final String toSend = ((ADD_TELL_PREFIX && !hasPrefix ? tellPrefix : "") + removeFirstSpaces(part)).trim();
 
 				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
 					((Conversable) sender).sendRawMessage(toSend);
@@ -390,6 +391,16 @@ public final class Common {
 	 */
 	public static String resolveSenderName(CommandSender sender) {
 		return sender instanceof Player || sender instanceof DiscordSender ? sender.getName() : SimpleLocalization.CONSOLE_NAME;
+	}
+
+	// Remove first spaces from the given message
+	private static String removeFirstSpaces(String message) {
+		message = Common.getOrEmpty(message);
+
+		while (message.startsWith(" "))
+			message = message.substring(1);
+
+		return message;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -438,9 +449,19 @@ public final class Common {
 	public static String colorize(String message) {
 		return message == null || message.isEmpty() ? ""
 				: ChatColor.translateAlternateColorCodes('&', message
-						.replace("{prefix}", tellPrefix)
+						.replace("{prefix}", removeSurroundingSpaces(tellPrefix.trim()))
 						.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 						.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+	}
+
+	// Remove first and last spaces from the given message
+	private static String removeSurroundingSpaces(String message) {
+		message = getOrEmpty(message);
+
+		while (message.endsWith(" "))
+			message = message.substring(0, message.length() - 1);
+
+		return removeFirstSpaces(message);
 	}
 
 	/**
@@ -905,7 +926,7 @@ public final class Common {
 
 			} else
 				for (final String part : splitNewline(message))
-					CONSOLE_SENDER.sendMessage((addLogPrefix && ADD_LOG_PREFIX ? logPrefix : "") + part.replace("\n", colorize("\n&r")));
+					CONSOLE_SENDER.sendMessage(((addLogPrefix && ADD_LOG_PREFIX ? logPrefix : "") + removeFirstSpaces(part).replace("\n", colorize("\n&r"))).trim());
 		}
 	}
 
