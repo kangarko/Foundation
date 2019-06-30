@@ -118,6 +118,7 @@ public final class HookManager {
 	private static CitizensHook citizensHook;
 	// Only register if DiscordSRV is present
 	private static boolean discordSRVDummyHook = false;
+	private static boolean nbtAPIDummyHook = false;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Main loading method
@@ -174,6 +175,9 @@ public final class HookManager {
 
 		if (Common.doesPluginExistSilently("Citizens"))
 			citizensHook = new CitizensHook();
+
+		if (Common.doesPluginExistSilently("NBTAPI"))
+			nbtAPIDummyHook = true;
 
 		// EssentialsX
 		if (Common.doesPluginExistSilently("Essentials")) {
@@ -433,6 +437,15 @@ public final class HookManager {
 	 */
 	public static boolean isDiscordSRVLoaded() {
 		return discordSRVDummyHook;
+	}
+
+	/**
+	 * Is NBTAPI loaded as a plugin?
+	 *
+	 * @return
+	 */
+	public static boolean isNbtAPILoaded() {
+		return nbtAPIDummyHook;
 	}
 
 	/**
