@@ -67,6 +67,12 @@ public abstract class SimpleCommand extends Command {
 	private boolean registered = false;
 
 	/**
+	 * Should we add {@link Common#getTellPrefix()} automatically when calling tell and returnTell methods
+	 * from this command?
+	 */
+	private boolean addTellPrefix = true;
+
+	/**
 	 * Minimum arguments required to run this command
 	 */
 	@Getter
@@ -211,6 +217,10 @@ public abstract class SimpleCommand extends Command {
 		this.label = label;
 		this.args = args;
 
+		// Set tell prefix
+		final boolean hadTellPrefix = Common.ADD_TELL_PREFIX;
+		Common.ADD_TELL_PREFIX = addTellPrefix;
+
 		// Catch "errors" that contain a message to send to the player
 		try {
 
@@ -272,6 +282,9 @@ public abstract class SimpleCommand extends Command {
 			Common.tell(sender, SimpleLocalization.Commands.ERROR);
 
 			Common.error(t, "Failed to execute command /" + getLabel() + " " + String.join(" ", args));
+
+		} finally {
+			Common.ADD_TELL_PREFIX = hadTellPrefix;
 		}
 
 		return true;
@@ -483,15 +496,6 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Sends a simple message to the player
-	 *
-	 * @param messages
-	 */
-	protected final void tell(String messages) {
-		Common.tell(sender, replacePlaceholders(messages));
-	}
-
-	/**
 	 * Sends a multiline message to the player without plugins prefix
 	 *
 	 * @param messages
@@ -514,7 +518,7 @@ public abstract class SimpleCommand extends Command {
 		if (messages != null) {
 			messages = replacePlaceholders(messages);
 
-			if (messages.length > 2)
+			if (!addTellPrefix || messages.length > 2)
 				Common.tellNoPrefix(sender, messages);
 			else
 				Common.tell(sender, messages);
@@ -815,6 +819,16 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkBoolean(minArguments >= 0, "Minimum arguments must be 0 or greater");
 
 		this.minArguments = minArguments;
+	}
+
+	/**
+	 * Should we add {@link Common#getTellPrefix()} automatically when calling tell and returnTell methods
+	 * from this command?
+	 *
+	 * @param addTellPrefix
+	 */
+	protected final void addTellPrefix(boolean addTellPrefix) {
+		this.addTellPrefix = addTellPrefix;
 	}
 
 	/**
