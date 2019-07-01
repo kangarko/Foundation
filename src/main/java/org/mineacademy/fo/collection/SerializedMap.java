@@ -2,6 +2,7 @@ package org.mineacademy.fo.collection;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,6 +57,7 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * Puts a new key-value pair in the map, failing if the value is null
+	 * or if the old key exists
 	 *
 	 * @param key
 	 * @param value
@@ -64,6 +66,19 @@ public final class SerializedMap extends StrictCollection {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
 
 		map.put(key, value);
+	}
+
+	/**
+	 * Puts a new key-value pair in the map, failing if key is null
+	 * and replacing the old key if exist
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void override(String key, Object value) {
+		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
+
+		map.override(key, value);
 	}
 
 	/**
@@ -316,6 +331,25 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Return a list of serialized maps or null if not set
+	 *
+	 * @param key
+	 * @return
+	 */
+	public List<SerializedMap> getMapList(String key) {
+		if (!map.contains(key))
+			return null;
+
+		final List<Object> objects = (List<Object>) map.get(key);
+		final List<SerializedMap> maps = new ArrayList<>();
+
+		for (final Object object : objects)
+			maps.add(SerializedMap.of(object));
+
+		return maps;
+	}
+
+	/**
 	 * Return a serialized map or an empty one if it does not exist
 	 *
 	 * @param key
@@ -410,6 +444,20 @@ public final class SerializedMap extends StrictCollection {
 	public void forEach(BiConsumer<String, Object> consumer) {
 		for (final Entry<String, Object> e : map.entrySet())
 			consumer.accept(e.getKey(), e.getValue());
+	}
+
+	/**
+	 * @see Map#keySet()
+	 */
+	public Set<String> keySet() {
+		return map.keySet();
+	}
+
+	/**
+	 * @see Map#values()
+	 */
+	public Collection<Object> values() {
+		return map.values();
 	}
 
 	/**
