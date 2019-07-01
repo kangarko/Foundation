@@ -30,7 +30,7 @@ public final class LagCatcher {
 	 * @param section
 	 */
 	public static void start(String section) {
-		if (SimpleSettings.LAG_THRESHOLD_MILLIS == 0)
+		if (SimpleSettings.LAG_THRESHOLD_MILLIS == -1)
 			return;
 
 		timings.put(section, System.nanoTime());
