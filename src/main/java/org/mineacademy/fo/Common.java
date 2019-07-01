@@ -254,6 +254,28 @@ public final class Common {
 	 * The delay in seconds is the delay between which we won't send player the
 	 * same message, in case you call this method again.
 	 *
+	 * Does not prepend the message with {@link #getTellPrefix()}
+	 *
+	 * See {@link #TIMED_TELL_CACHE} for more explanation.
+	 *
+	 * @param delaySeconds
+	 * @param sender
+	 * @param message
+	 */
+	public static void tellTimedNoPrefix(int delaySeconds, CommandSender sender, String message) {
+		final boolean hadPrefix = ADD_TELL_PREFIX;
+		ADD_TELL_PREFIX = false;
+
+		tellTimed(delaySeconds, sender, message);
+
+		ADD_TELL_PREFIX = hadPrefix;
+	}
+
+	/**
+	 * Sends a message to the player and saves the time when it was sent.
+	 * The delay in seconds is the delay between which we won't send player the
+	 * same message, in case you call this method again.
+	 *
 	 * See {@link #TIMED_TELL_CACHE} for more explanation.
 	 *
 	 * @param delaySeconds
