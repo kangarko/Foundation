@@ -1,22 +1,24 @@
 package org.mineacademy.fo.conversation;
 
+import java.util.concurrent.TimeUnit;
+
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationCanceller;
-import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.ConversationPrefix;
+import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
-import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
  * A simple way to communicate with the player
@@ -24,6 +26,11 @@ import org.mineacademy.fo.settings.SimpleLocalization;
  * the conversation input.
  */
 public abstract class SimpleConversation implements ConversationAbandonedListener {
+
+	/**
+	 * How often should we show the question in the prompt again, in seconds?
+	 */
+	private static final int QUESTION_SHOW_THRESHOLD = 20;
 
 	/**
 	 * The menu to return to, if any
@@ -59,23 +66,17 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		player.closeInventory();
 
 		// Setup
-		final ConversationFactory factory = new ConversationFactory(SimplePlugin.getInstance())
-				.withModality(true)
-				.withLocalEcho(false)
+		final CustomConversation conversation = new CustomConversation(player);
 
-				.withTimeout(getTimeout())
+		final InactivityConversationCanceller inactivityCanceller = new InactivityConversationCanceller(SimplePlugin.getInstance(), 5);
+		inactivityCanceller.setConversation(conversation);
 
-				.thatExcludesNonPlayersWithMessage(SimpleLocalization.CONVERSATION_REQUIRES_PLAYER)
+		conversation.getCancellers().add(inactivityCanceller);
+		conversation.getCancellers().add(getCanceller());
 
-				.withFirstPrompt(getFirstPrompt())
-				.withConversationCanceller(getCanceller())
+		conversation.addConversationAbandonedListener(this);
 
-				.addConversationAbandonedListener(this);
-
-		if (insertPrefix() && getPrefix() != null)
-			factory.withPrefix(getPrefix());
-
-		factory.buildConversation(player).begin();
+		conversation.begin();
 	}
 
 	/**
@@ -224,5 +225,49 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 */
 	protected static final void tellLater(int delayTicks, Conversable conversable, String message) {
 		Common.tellLaterConversing(delayTicks, conversable, message);
+	}
+
+	/**
+	 * Custom conversation class used for only showing the question once per 20 seconds interval
+	 *
+	 */
+	private final class CustomConversation extends Conversation {
+
+		public CustomConversation(Conversable forWhom) {
+			super(SimplePlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
+
+			localEchoEnabled = false;
+
+			if (insertPrefix() && SimpleConversation.this.getPrefix() != null)
+				prefix = SimpleConversation.this.getPrefix();
+		}
+
+		@Override
+		public void outputNextPrompt() {
+			if (currentPrompt == null) {
+				abandon(new ConversationAbandonedEvent(this));
+
+			} else {
+				// Edit start
+				final String promptClass = currentPrompt.getClass().getSimpleName();
+
+				final String question = currentPrompt.getPromptText(context);
+				final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData()
+						.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(QUESTION_SHOW_THRESHOLD, TimeUnit.SECONDS).build());
+
+				if (!askedQuestions.containsKey(question)) {
+					askedQuestions.put(question, null);
+
+					context.setSessionData("Asked_" + promptClass, askedQuestions);
+					context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
+				}
+				// Edit end
+
+				if (!currentPrompt.blocksForInput(context)) {
+					currentPrompt = currentPrompt.acceptInput(context, null);
+					outputNextPrompt();
+				}
+			}
+		}
 	}
 }
