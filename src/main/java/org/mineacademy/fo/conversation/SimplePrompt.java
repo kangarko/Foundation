@@ -117,6 +117,17 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	}
 
 	/**
+	 * Sends the message to the player later
+	 *
+	 * @param delayTicks
+	 * @param conversable
+	 * @param message
+	 */
+	protected void tellLater(int delayTicks, Conversable conversable, String message) {
+		Common.tellLaterConversing(delayTicks, conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
+	}
+
+	/**
 	 * Called when the whole conversation is over. This is called before {@link SimpleConversation#onConversationEnd(ConversationAbandonedEvent)}
 	 *
 	 * @param conversation
@@ -135,7 +146,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			final String failPrompt = getFailedValidationText(context, input);
 
 			if (failPrompt != null)
-				tell(context, "&c" + failPrompt);
+				tellLater(1, context.getForWhom(), "&c" + failPrompt);
 
 			// Redisplay this prompt to the user to re-collect input
 			return this;
