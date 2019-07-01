@@ -102,7 +102,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	public static String PLUGIN_PREFIX = "&7" + SimplePlugin.getNamed() + " //";
 
 	/**
-	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to 0 to disable.
+	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to -1 to disable.
 	 *
 	 * Typically for ChatControl:
 	 *
@@ -199,6 +199,8 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		PLUGIN_PREFIX = getString("Prefix");
 		LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
+		Valid.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Millis must be either -1 to disable, 0 to log all or greater!");
+
 		DEBUG_SECTIONS = new StrictList<>(getStringList("Debug"));
 
 		// -------------------------------------------------------------------

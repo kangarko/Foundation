@@ -170,7 +170,7 @@ public final class SerializeUtil {
 	public static <T> T deserialize(@NonNull Class<T> classOf, @NonNull Object object, Object... deserializeParameters) {
 		final SerializedMap map = SerializedMap.of(object);
 
-		// Step 1 - Search for basic deserialize(Map) method
+		// Step 1 - Search for basic deserialize(SerializedMap) method
 		Method deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", SerializedMap.class);
 
 		if (deserializeMethod != null)
