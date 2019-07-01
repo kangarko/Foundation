@@ -2,8 +2,10 @@ package org.mineacademy.fo;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 
 import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
@@ -161,7 +163,28 @@ public final class RandomUtil {
 	 * @return
 	 */
 	public static <T> T nextItem(Collection<T> items) {
+		return nextItem(items, null);
+	}
+
+	/**
+	 * Return a random item in list only among those that match the given condition
+	 *
+	 * @param <T>
+	 * @param items
+	 * @param condition the condition applying when selecting
+	 * @return
+	 */
+	public static <T> T nextItem(Collection<T> items, Predicate<T> condition) {
 		final List<T> list = items instanceof List ? (List<T>) items : new ArrayList<>(items);
+
+		// Remove values failing the condition
+		if (condition != null)
+			for (final Iterator it = list.iterator(); it.hasNext();) {
+				final T item = (T) it.next();
+
+				if (!condition.test(item))
+					it.remove();
+			}
 
 		return list.get(nextInt(list.size()));
 	}
