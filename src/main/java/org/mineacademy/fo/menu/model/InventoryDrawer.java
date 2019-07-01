@@ -1,11 +1,11 @@
 package org.mineacademy.fo.menu.model;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.Getter;
 
@@ -111,7 +111,7 @@ public final class InventoryDrawer {
 	 */
 	public void setContent(ItemStack[] newContent) {
 		for (int i = 0; i < content.length; i++)
-			content[i] = i < newContent.length ? newContent[i] : new ItemStack(Material.AIR);
+			content[i] = i < newContent.length ? newContent[i] : new ItemStack(CompMaterial.AIR.getMaterial());
 	}
 
 	/**
@@ -124,7 +124,7 @@ public final class InventoryDrawer {
 	}
 
 	/**
-	 * Display the inventory to the player
+	 * Display the inventory to the player, closing older inventory if already opened
 	 *
 	 * @param player the player
 	 */
@@ -134,6 +134,7 @@ public final class InventoryDrawer {
 
 		inv.setContents(content);
 
+		// Before opening make sure we close his old inventory if exist
 		if (player.getOpenInventory() != null)
 			player.closeInventory();
 
