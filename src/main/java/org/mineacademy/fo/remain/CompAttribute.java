@@ -128,6 +128,9 @@ public enum CompAttribute {
 			try {
 				return hasLegacy() ? getLegacy(entity) : null;
 
+			} catch (final NullPointerException exx) {
+				return null;
+
 			} catch (final Throwable t) {
 				if (MinecraftVersion.olderThan(V.v1_9))
 					t.printStackTrace();
