@@ -119,13 +119,13 @@ public final class Common {
 	 * The tell prefix applied on tell() methods
 	 */
 	@Getter
-	private static String tellPrefix = "[" + SimplePlugin.getNamed() + "] ";
+	private static String tellPrefix = "[" + SimplePlugin.getNamed() + "]";
 
 	/**
 	 * The log prefix applied on log() methods
 	 */
 	@Getter
-	private static String logPrefix = "[" + SimplePlugin.getNamed() + "] ";
+	private static String logPrefix = "[" + SimplePlugin.getNamed() + "]";
 
 	/**
 	 * Set the tell prefix applied for messages to players from tell() methods
@@ -402,7 +402,7 @@ public final class Common {
 
 		} else
 			for (final String part : splitNewline(message)) {
-				final String toSend = ((ADD_TELL_PREFIX && !hasPrefix ? tellPrefix : "") + removeFirstSpaces(part)).trim();
+				final String toSend = ((ADD_TELL_PREFIX && !hasPrefix ? removeSurroundingSpaces(tellPrefix) + " " : "") + removeFirstSpaces(part)).trim();
 
 				if (SEND_TELL_TO_CONVERSING && sender instanceof Conversable && ((Conversable) sender).isConversing())
 					((Conversable) sender).sendRawMessage(toSend);

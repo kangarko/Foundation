@@ -35,7 +35,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	/**
 	 * The menu to return to, if any
 	 */
-	private Menu menu;
+	private Menu menuToReturnTo;
 
 	/**
 	 * Creates a simple conversation
@@ -48,10 +48,10 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * Creates a simple conversation that opens the
 	 * menu when finished
 	 *
-	 * @param menu
+	 * @param menuToReturnTo
 	 */
-	protected SimpleConversation(Menu menu) {
-		this.menu = menu;
+	protected SimpleConversation(Menu menuToReturnTo) {
+		this.menuToReturnTo = menuToReturnTo;
 	}
 
 	/**
@@ -109,8 +109,8 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 			(event.gracefulExit() ? CompSound.SUCCESSFUL_HIT : CompSound.NOTE_BASS).play(player, 1F, 1F);
 
-			if (menu != null && reopenMenu())
-				menu.newInstance().displayTo(player);
+			if (menuToReturnTo != null && reopenMenu())
+				menuToReturnTo.newInstance().displayTo(player);
 		}
 	}
 
@@ -179,7 +179,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param menu
 	 */
 	public void setMenuToReturnTo(Menu menu) {
-		this.menu = menu;
+		this.menuToReturnTo = menu;
 	}
 	// ------------------------------------------------------------------------------------------------------------
 	// Static access

@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.material.MaterialData;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -185,25 +186,29 @@ public final class ItemCreator {
 	 * @return the finished item
 	 */
 	public ItemStack make() {
-		if (item == null)
-			Valid.checkNotNull(material, "Material == null!");
+		//
+		// First, make sure the ItemStack is not null (it can be null if you create this class only using material)
+		//
 
-		ItemStack is = item != null ? item.clone() : null;
+		Valid.checkBoolean(material != null || item != null, "Material or item must be set!");
+		ItemStack is = item != null ? item.clone() : new ItemStack(material.getMaterial(), amount);
+		final ItemMeta itemMeta = meta != null ? meta.clone() : is.getItemMeta();
 
 		// Skip if air
-		if (item != null && item.getType() == Material.AIR || material != null && material == CompMaterial.AIR)
-			return new ItemStack(Material.AIR);
+		if (CompMaterial.isAir(is.getType()))
+			return is;
+
+		// Override with given material
+		if (this.material != null)
+			is.setType(this.material.getMaterial());
 
 		if (MinecraftVersion.atLeast(V.v1_13)) {
 
-			if (is == null)
-				is = new ItemStack(material.getMaterial(), amount, (short) (damage == -1 ? 0 : damage));
-
+			// Apply specific material color if possible
 			color: if (color != null && !is.getType().toString().contains("LEATHER")) {
 				final String dye = color.getDye().toString();
-
-				// Apply specific material color if possible
-				final List<String> colorableMaterials = Arrays.asList("BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
+				final List<String> colorableMaterials = Arrays.asList(
+						"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
 						"STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
 
 				for (final String colorable : colorableMaterials) {
@@ -219,34 +224,23 @@ public final class ItemCreator {
 				// If not revert to wool
 				is.setType(Material.valueOf(dye + "_WOOL"));
 			}
-
 		}
 
 		// If using legacy MC version
 		else {
-			if (is == null) {
-				int dataValue = material.getData();
+			int dataValue = is.getData().getData();
 
-				if (!material.toString().contains("LEATHER") && color != null)
-					dataValue = color.getDye().getWoolData();
+			if (!is.getType().toString().contains("LEATHER") && color != null)
+				dataValue = color.getDye().getWoolData();
 
-				is = new ItemStack(material.getMaterial(), amount, (short) (damage == -1 ? 0 : damage), (byte) dataValue);
-			}
-		}
+			if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
+				dataValue = 0;
 
-		CompMaterial material = this.material;
-
-		{ // Assign both material and item
-			if (material == null)
-				material = CompMaterial.fromMaterial(is.getType());
-
-			Valid.checkNotNull(is, "ItemStack is null for " + material);
-			Valid.checkNotNull(material, "Could not find CompMaterial from Bukkit's " + is.getType());
-
+			is.setData(new MaterialData(is.getType(), (byte) dataValue));
 		}
 
 		// Fix monster eggs
-		if (material.toString().endsWith("SPAWN_EGG")) {
+		if (is.getType().toString().endsWith("SPAWN_EGG")) {
 
 			EntityType entity = null;
 
@@ -260,7 +254,7 @@ public final class ItemCreator {
 			}
 
 			if (entity == null) {
-				final String itemName = material.toString();
+				final String itemName = is.getType().toString();
 
 				String entityRaw = itemName.replace("_SPAWN_EGG", "");
 
@@ -284,46 +278,45 @@ public final class ItemCreator {
 				is = CompMonsterEgg.setEntity(is, entity);
 		}
 
-		final ItemMeta myMeta = meta != null ? meta.clone() : is.getItemMeta();
-
 		flags = new ArrayList<>(Common.getOrDefault(flags, new ArrayList<>()));
 
-		if (color != null && is.getType().toString().contains("LEATHER"))
-			((LeatherArmorMeta) myMeta).setColor(color.getDye().getColor());
-
-		if (skullOwner != null && myMeta instanceof SkullMeta)
-			((SkullMeta) myMeta).setOwner(skullOwner);
-
-		try {
-			if (damage != -1)
+		if (damage != -1) {
+			try {
 				is.setDurability((short) damage);
-		} catch (final Throwable t) {
+			} catch (final Throwable t) {
+			}
+
+			try {
+				if (itemMeta instanceof Damageable)
+					((Damageable) itemMeta).setDamage(damage);
+			} catch (final Throwable t) {
+			}
 		}
 
-		try {
-			if (myMeta instanceof Damageable && damage != -1)
-				((Damageable) myMeta).setDamage(damage);
-		} catch (final Throwable t) {
-		}
+		if (color != null && is.getType().toString().contains("LEATHER"))
+			((LeatherArmorMeta) itemMeta).setColor(color.getDye().getColor());
+
+		if (skullOwner != null && itemMeta instanceof SkullMeta)
+			((SkullMeta) itemMeta).setOwner(skullOwner);
 
 		if (glow) {
-			myMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+			itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
 
 			flags.add(CompItemFlag.HIDE_ENCHANTS);
 		}
 
 		if (enchants != null)
 			for (final SimpleEnchant ench : enchants)
-				myMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
+				itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
 
 		if (name != null)
-			myMeta.setDisplayName(Common.colorize("&r" + name));
+			itemMeta.setDisplayName(Common.colorize("&r" + name));
 
 		if (lores != null) {
-			final List<String> coloredLore = new ArrayList<>();
+			final List<String> coloredLores = new ArrayList<>();
 
-			lores.forEach((line) -> coloredLore.add(Common.colorize("&7" + line)));
-			myMeta.setLore(coloredLore);
+			lores.forEach((line) -> coloredLores.add(Common.colorize("&7" + line)));
+			itemMeta.setLore(coloredLores);
 		}
 
 		if (unbreakable != null) {
@@ -331,10 +324,10 @@ public final class ItemCreator {
 			flags.add(CompItemFlag.HIDE_UNBREAKABLE);
 
 			if (MinecraftVersion.olderThan(V.v1_12))
-				myMeta.spigot().setUnbreakable(true);
+				itemMeta.spigot().setUnbreakable(true);
 
 			else
-				CompProperty.UNBREAKABLE.apply(myMeta, true);
+				CompProperty.UNBREAKABLE.apply(itemMeta, true);
 		}
 
 		if (hideTags)
@@ -342,26 +335,25 @@ public final class ItemCreator {
 				if (!flags.contains(f))
 					flags.add(f);
 
-		try {
-			final List<org.bukkit.inventory.ItemFlag> f = Common.convert(flags, obj -> org.bukkit.inventory.ItemFlag.valueOf(obj.toString()));
+		for (final CompItemFlag flag : flags)
+			try {
+				itemMeta.addItemFlags(org.bukkit.inventory.ItemFlag.valueOf(flag.toString()));
+			} catch (final Throwable t) {
+			}
 
-			myMeta.addItemFlags(f.toArray(new org.bukkit.inventory.ItemFlag[f.size()]));
-		} catch (final Throwable t) {
-		}
+		is.setItemMeta(itemMeta);
 
-		is.setItemMeta(myMeta);
+		final ItemStack enchantedIs = SimpleEnchantment.addEnchantmentLores(is);
 
-		final ItemStack copy = SimpleEnchantment.addEnchantmentLores(is);
-
-		if (copy != null)
-			is = copy;
+		if (enchantedIs != null)
+			is = enchantedIs;
 
 		if (nbt != null) {
 			final NBTItem nbtItem = new NBTItem(is);
 			nbtItem.setString(SimplePlugin.getNamed() + "_Item", nbt);
 
 			nbt = null;
-			return nbtItem.getItem();
+			is = nbtItem.getItem();
 		}
 
 		return is;
