@@ -87,6 +87,7 @@ public class CompMetadata {
 			checkNBTAPI();
 
 			try {
+				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
 				de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).setString(key, value);
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to set NBT tag for " + entity.getType() + ". Tag: " + key + ", value: " + value);
@@ -180,6 +181,7 @@ public class CompMetadata {
 			checkNBTAPI();
 
 			try {
+				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
 				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).getString(key);
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
@@ -270,6 +272,7 @@ public class CompMetadata {
 			checkNBTAPI();
 
 			try {
+				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
 				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).hasKey(key);
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
