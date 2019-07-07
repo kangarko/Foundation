@@ -91,6 +91,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String NO_CONSOLE = "&cYou may only use this command as a player";
 
 		/**
+		 * The message shown when there is a fatal error running this command
+		 */
+		public static String COOLDOWN_WAIT = "Wait {duration} second(s) before using this command again.";
+
+		/**
 		 * The message shown when the player tries a command but inputs an
 		 * invalid first argument parameter. We suggest he types /{label} ? for help so make
 		 * sure you implement some help there as well.
@@ -149,6 +154,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 			pathPrefix("Commands");
 
 			NO_CONSOLE = getString("No_Console");
+
+			if (isSet("Cooldown_Wait"))
+				COOLDOWN_WAIT = getString("Cooldown_Wait");
 
 			if (isSet("Invalid_Argument"))
 				INVALID_ARGUMENT = getString("Invalid_Argument");

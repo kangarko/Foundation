@@ -43,7 +43,19 @@ public final class LagCatcher {
 	 * @param section
 	 */
 	public static void end(String section) {
-		end(section, SimpleSettings.LAG_THRESHOLD_MILLIS);
+		end(section, false);
+	}
+
+	/**
+	 * Stops measuring time in a code section and print a console message
+	 * when it took over the threshold. Rapid means we always log how long it took,
+	 * false means we log it if took over the limit set in {@link SimpleSettings}
+	 *
+	 * @param section
+	 * @param rapid
+	 */
+	public static void end(String section, boolean rapid) {
+		end(section, rapid ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS);
 	}
 
 	/**

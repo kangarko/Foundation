@@ -10,12 +10,15 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
+import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -100,6 +103,12 @@ public final class SerializeUtil {
 		else if (obj instanceof Enum<?>)
 			return obj.toString();
 
+		else if (obj instanceof ItemCreator.ItemCreatorBuilder)
+			return ((ItemCreator.ItemCreatorBuilder) obj).build().make();
+
+		else if (obj instanceof ItemCreator)
+			return ((ItemCreator) obj).make();
+
 		else if (obj instanceof Iterable) {
 			final List<Object> serialized = new ArrayList<>();
 
@@ -109,7 +118,16 @@ public final class SerializeUtil {
 			return serialized;
 		}
 
-		return obj;
+		else if (obj instanceof YamlConfig)
+			throw new FoException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
+
+		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
+				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
+				|| obj instanceof ItemStack
+		/*|| obj instanceof MemorySection*/)
+			return obj;
+
+		throw new FoException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
 	}
 
 	/**
@@ -198,16 +216,25 @@ public final class SerializeUtil {
 				return ReflectionUtil.invokeStatic(deserializeMethod, joinedParams);
 		}
 
-		// Step 3 - If there is no deserialize method, just deserialize the given object
-		if (object != null) {
-			if (classOf == Location.class)
-				object = deserializeLocation(object);
+		// Step 3 - Search for "getByName" method used by us or some Bukkit classes such as Enchantment
+		if (deserializeMethod == null && object instanceof String) {
+			deserializeMethod = ReflectionUtil.getMethod(classOf, "getByName", String.class);
 
-			else if (classOf == CompMaterial.class)
-				object = CompMaterial.fromString(object.toString());
+			if (deserializeMethod != null)
+				return ReflectionUtil.invokeStatic(deserializeMethod, object);
+		}
+
+		// Step 4 - If there is no deserialize method, just deserialize the given object
+		if (object != null) {
+
+			if (classOf == String.class)
+				object = object.toString();
 
 			else if (classOf == Integer.class)
 				object = Double.valueOf(object.toString()).intValue();
+
+			else if (classOf == Long.class)
+				object = Double.valueOf(object.toString()).longValue();
 
 			else if (classOf == Double.class)
 				object = Double.valueOf(object.toString());
@@ -218,8 +245,23 @@ public final class SerializeUtil {
 			else if (classOf == Boolean.class)
 				object = Boolean.valueOf(object.toString());
 
+			else if (classOf == SerializedMap.class)
+				object = SerializedMap.of(object);
+
+			else if (classOf == Location.class)
+				object = deserializeLocation(object);
+
+			else if (classOf == CompMaterial.class)
+				object = CompMaterial.fromString(object.toString());
+
 			else if (Enum.class.isAssignableFrom(classOf))
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
+
+			else if (classOf == Object.class) {
+				// pass through
+
+			} else
+				throw new FoException("Unable to deserialize " + classOf.getSimpleName() + ", lacking static deserialize method! Data: " + object);
 		}
 
 		return (T) object;

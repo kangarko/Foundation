@@ -10,6 +10,7 @@ import java.util.Set;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 import com.google.gson.Gson;
 
@@ -79,6 +80,8 @@ public class NBTReflectionUtil {
 	 * @return NMS Compound
 	 */
 	public static Object getItemRootNBTTagCompound(Object nmsitem) {
+		Valid.checkNotNull(nmsitem, "NMSItem cannot be null!");
+
 		try {
 			final Object answer = WrapperMethod.NMSITEM_GETTAG.run(nmsitem);
 			return answer != null ? answer : WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();

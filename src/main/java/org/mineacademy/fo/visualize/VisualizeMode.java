@@ -3,7 +3,7 @@ package org.mineacademy.fo.visualize;
 /**
  * How should the block be visualized?
  */
-public enum BlockVisualizeMode {
+public enum VisualizeMode {
 
 	/**
 	 * Render a glowing bounding box around the block?

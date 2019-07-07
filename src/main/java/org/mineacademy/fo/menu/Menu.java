@@ -305,7 +305,6 @@ public abstract class Menu {
 		try {
 			return ReflectionUtil.instatiate(getClass());
 		} catch (final Throwable t) {
-
 			try {
 				final Object parent = getClass().getMethod("getParent").invoke(getClass());
 
@@ -313,9 +312,11 @@ public abstract class Menu {
 					return ReflectionUtil.instatiate(getClass(), parent);
 			} catch (final Throwable tt) {
 			}
+
+			t.printStackTrace();
 		}
 
-		throw new FoException("Could not make new instance of menu " + getClass() + ", please override 'newInstance'!");
+		throw new FoException("Could not instatiate menu of " + getClass() + ", override 'newInstance' and ensure constructor is public!");
 	}
 
 	// --------------------------------------------------------------------------------

@@ -22,36 +22,35 @@ import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.model.BlockClick;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-public abstract class VisualizerTool extends Tool {
+public abstract class ToolVisualizer extends Tool {
 
 	@Getter
 	private final BlockVisualizer visualizer;
 
 	@Deprecated // unsafe
-	@Getter(AccessLevel.PROTECTED)
-	@Setter(AccessLevel.PROTECTED)
+	@Getter
+	@Setter
 	private Location calledLocation;
 
 	@Getter
 	@Setter
-	private BlockVisualizeMode defaultMode = BlockVisualizeMode.GLOW;
+	private VisualizeMode defaultMode = VisualizeMode.GLOW;
 
-	protected VisualizerTool() {
+	protected ToolVisualizer() {
 		this.visualizer = new BlockVisualizer(this) {
 
 			@Override
 			public String getBlockName(Block block) {
-				return VisualizerTool.this.getBlockTitle(block);
+				return ToolVisualizer.this.getBlockTitle(block);
 			}
 
 			@Override
 			public void onRemove(Player player, Block block) {
-				VisualizerTool.this.onRemove(player, block);
+				ToolVisualizer.this.onRemove(player, block);
 			}
 		};
 	}
@@ -112,7 +111,7 @@ public abstract class VisualizerTool extends Tool {
 		handleDataLoad(pl, null);
 
 		cache.add(pl);
-		visualizer.updateStored(BlockVisualizeMode.GLOW);
+		visualizer.updateStored(VisualizeMode.GLOW);
 		cache.remove(pl);
 	}
 
@@ -124,7 +123,7 @@ public abstract class VisualizerTool extends Tool {
 		handleDataLoad(pl, null);
 
 		cache.add(pl);
-		visualizer.updateStored(BlockVisualizeMode.MASK);
+		visualizer.updateStored(VisualizeMode.MASK);
 		cache.remove(pl);
 	}
 
@@ -160,7 +159,7 @@ public abstract class VisualizerTool extends Tool {
 
 	protected abstract CompMaterial getMenuItem();
 
-	protected abstract CompMaterial getMask();
+	public abstract CompMaterial getMask();
 
 	protected abstract String getName();
 
@@ -189,11 +188,11 @@ public abstract class VisualizerTool extends Tool {
 	}
 
 	protected final void visualizeMask(Location loc) {
-		visualizer.show(loc, BlockVisualizeMode.MASK);
+		visualizer.show(loc, VisualizeMode.MASK);
 	}
 
 	protected final void visualizeGlow(Location loc) {
-		visualizer.show(loc, BlockVisualizeMode.MASK);
+		visualizer.show(loc, VisualizeMode.MASK);
 	}
 
 	protected final void hide(Location loc) {

@@ -191,4 +191,23 @@ public final class TimeUtil {
 
 		return days + " days " + hours % 24 + " hours " + minutes % 60 + " minutes " + seconds % 60 + " seconds";
 	}
+
+	/**
+	 * Format the time in seconds, for example: 10d 5h 10m 20s or just 5m 10s
+	 * If the seconds are zero, an output 0s is given
+	 *
+	 * @param seconds
+	 * @return
+	 */
+	public static String formatTimeShort(long seconds) {
+		long minutes = seconds / 60;
+		long hours = minutes / 60;
+		final long days = hours / 24;
+
+		hours = hours % 24;
+		minutes = minutes % 60;
+		seconds = seconds % 60;
+
+		return (days > 0 ? days + "d " : "") + (hours > 0 ? hours + "h " : "") + (minutes > 0 ? minutes + "m " : "") + seconds + "s";
+	}
 }

@@ -35,7 +35,6 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.Region;
-import org.mineacademy.fo.region.RegionCuboid;
 import org.mineacademy.fo.remain.Remain;
 
 import com.Zrips.CMI.CMI;
@@ -2040,7 +2039,7 @@ class WorldGuardHook {
 							locMax = new Location(w, (Double) getX.invoke(regMax), (Double) getY.invoke(regMax), (Double) getZ.invoke(regMax));
 							locMin = new Location(w, (Double) getX.invoke(regMin), (Double) getY.invoke(regMin), (Double) getZ.invoke(regMin));
 
-							return new RegionCuboid(locMin, locMax);
+							return new Region(name, locMin, locMax);
 						}
 					}
 
@@ -2061,7 +2060,7 @@ class WorldGuardHook {
 						locMax = new Location(w, regMax.getX(), regMax.getY(), regMax.getZ());
 						locMin = new Location(w, regMin.getX(), regMin.getY(), regMin.getZ());
 
-						return new RegionCuboid(locMin, locMax);
+						return new Region(name, locMin, locMax);
 					}
 				}
 			}

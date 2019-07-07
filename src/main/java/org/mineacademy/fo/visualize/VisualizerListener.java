@@ -39,10 +39,10 @@ public final class VisualizerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent e) {
-		final BlockVisualizer v = findVisualizer(e.getBlock());
+		final BlockVisualizer visualizer = findVisualizer(e.getBlock());
 
-		if (v != null) {
-			v.onRemove(e.getPlayer(), e.getBlock());
+		if (visualizer != null) {
+			visualizer.onRemove(e.getPlayer(), e.getBlock());
 
 			e.setCancelled(true);
 		}
@@ -68,9 +68,9 @@ public final class VisualizerListener implements Listener {
 	}
 
 	private BlockVisualizer findVisualizer0(Block block) {
-		for (final BlockVisualizer v : registered)
-			if (v.isStored(block))
-				return v;
+		for (final BlockVisualizer visualizer : registered)
+			if (visualizer.isStored(block))
+				return visualizer;
 
 		return null;
 	}

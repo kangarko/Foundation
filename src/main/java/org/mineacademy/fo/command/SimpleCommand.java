@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,6 +22,7 @@ import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.command.placeholder.Placeholder;
 import org.mineacademy.fo.command.placeholder.PositionPlaceholder;
 import org.mineacademy.fo.exception.CommandException;
@@ -44,6 +47,12 @@ public abstract class SimpleCommand extends Command {
 	 * The default permission syntax for this command.
 	 */
 	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin.name}.command.{label}";
+
+	/**
+	 * You can set the cooldown time before executing the command again. This map
+	 * stores the player uuid and his last execution of the command.
+	 */
+	private final ExpiringMap<UUID, Long> cooldownMap = ExpiringMap.builder().expiration(30, TimeUnit.MINUTES).build();
 
 	/**
 	 * A list of placeholders to replace in this command, see {@link Placeholder}
@@ -73,10 +82,36 @@ public abstract class SimpleCommand extends Command {
 	private boolean addTellPrefix = true;
 
 	/**
+	 * The {@link Common#getTellPrefix()} custom prefix only used for sending messages in {@link #onCommand()} method
+	 * for this command, empty by default, then we use the one in Common
+	 */
+	private String tellPrefix = "";
+
+	/**
 	 * Minimum arguments required to run this command
 	 */
 	@Getter
 	private int minArguments = 0;
+
+	/**
+	 * The command cooldown before we can run this command again
+	 */
+	private int cooldownSeconds = 0;
+
+	/**
+	 * A custom message when the player attempts to run this command
+	 * within {@link #cooldownSeconds}. By default we use the one found in
+	 * {@link SimpleLocalization.Commands#COOLDOWN_WAIT}
+	 *
+	 * TIP: Use {duration} to replace the remaining time till next run
+	 */
+	private String cooldownMessage = null;
+
+	/**
+	 * Should we automatically send usage message when the first argument
+	 * equals to "help" or "?" ?
+	 */
+	private boolean autoHandleHelp = true;
 
 	// ----------------------------------------------------------------------
 	// Temporary variables
@@ -217,9 +252,10 @@ public abstract class SimpleCommand extends Command {
 		this.label = label;
 		this.args = args;
 
-		// Set tell prefix
+		// Set tell prefix only if the parent setting was on
 		final boolean hadTellPrefix = Common.ADD_TELL_PREFIX;
-		Common.ADD_TELL_PREFIX = addTellPrefix;
+		if (hadTellPrefix)
+			Common.ADD_TELL_PREFIX = addTellPrefix;
 
 		// Catch "errors" that contain a message to send to the player
 		try {
@@ -229,57 +265,56 @@ public abstract class SimpleCommand extends Command {
 				checkPerm(getPermission());
 
 			// Check for minimum required arguments and print help
-			if (args.length < getMinArguments()) {
+			if (args.length < getMinArguments() ||
+					autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 
 				// Enforce setUsage being used
 				if (Common.getOrEmpty(getUsage()).isEmpty())
 					throw new FoException("If you set getMinArguments you must also call setUsage for /" + getLabel() + " command!");
 
 				if (!Common.getOrEmpty(getDescription()).isEmpty())
-					Common.tell(sender, SimpleLocalization.Commands.LABEL_DESCRIPTION.replace("{description}", getDescription()));
+					tellNoPrefix(SimpleLocalization.Commands.LABEL_DESCRIPTION.replace("{description}", getDescription()));
 
 				if (getMultilineUsageMessage() != null) {
-					Common.tell(sender, SimpleLocalization.Commands.LABEL_USAGES);
-					Common.tell(sender, getMultilineUsageMessage());
+					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES);
+					tellNoPrefix(getMultilineUsageMessage());
 
 				} else {
 					if (getMultilineUsageMessage() != null) {
-						Common.tell(sender, SimpleLocalization.Commands.LABEL_USAGES);
-						Common.tell(sender, getMultilineUsageMessage());
+						tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES);
+						tellNoPrefix(getMultilineUsageMessage());
 
 					} else {
 						final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
-						Common.tell(sender, SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : ""));
+						tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : ""));
 					}
 				}
 
 				return true;
 			}
 
+			// Check if we can run this command in time
+			if (cooldownSeconds > 0)
+				handleCooldown();
+
 			onCommand();
 
 		} catch (final InvalidCommandArgException ex) {
 			if (getMultilineUsageMessage() == null)
-				Common.tell(sender, ex.getMessage() != null ? ex.getMessage() : replacePlaceholders(SimpleLocalization.Commands.INVALID_SUB_ARGUMENT));
+				tellNoPrefix(ex.getMessage() != null ? ex.getMessage() : SimpleLocalization.Commands.INVALID_SUB_ARGUMENT);
+
 			else {
-				Common.tell(sender, SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
-				Common.tell(sender, getMultilineUsageMessage());
+				tellNoPrefix(SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
+				tellNoPrefix(getMultilineUsageMessage());
 			}
 
 		} catch (final CommandException ex) {
-			if (ex.getMessages() != null) {
-				final boolean tellPrefix = Common.ADD_TELL_PREFIX;
-
-				if (ex.getMessages().length > 2 || !addTellPrefix(args))
-					Common.ADD_TELL_PREFIX = false;
-
-				Common.tell(sender, replacePlaceholders(ex.getMessages()));
-				Common.ADD_TELL_PREFIX = tellPrefix;
-			}
+			if (ex.getMessages() != null)
+				tell(ex.getMessages());
 
 		} catch (final Throwable t) {
-			Common.tell(sender, SimpleLocalization.Commands.ERROR);
+			tell(SimpleLocalization.Commands.ERROR);
 
 			Common.error(t, "Failed to execute command /" + getLabel() + " " + String.join(" ", args));
 
@@ -288,6 +323,25 @@ public abstract class SimpleCommand extends Command {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if the command cooldown is active and if the command
+	 * is run within the given limit, we stop it and inform the player
+	 */
+	private final void handleCooldown() {
+		if (isPlayer()) {
+			final Player player = getPlayer();
+
+			final long lastExecution = cooldownMap.getOrDefault(player.getUniqueId(), 0L);
+			final long lastExecutionDifference = (System.currentTimeMillis() - lastExecution) / 1000;
+
+			// Check if the command was not run earlier within the wait threshold
+			checkBoolean(lastExecution == 0 || lastExecutionDifference > cooldownSeconds, Common.getOrDefault(cooldownMessage, SimpleLocalization.Commands.COOLDOWN_WAIT).replace("{duration}", cooldownSeconds - lastExecutionDifference + 1 + ""));
+
+			// Update the last try with the current time
+			cooldownMap.put(player.getUniqueId(), System.currentTimeMillis());
+		}
 	}
 
 	/**
@@ -303,16 +357,6 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected String[] getMultilineUsageMessage() {
 		return null;
-	}
-
-	/**
-	 * Shall we add your plugin's prefix when sending messages for players?
-	 *
-	 * @param args
-	 * @return
-	 */
-	protected boolean addTellPrefix(String[] args) {
-		return true;
 	}
 
 	// ----------------------------------------------------------------------
@@ -434,6 +478,23 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * A convenience method for parsing a number that is between two bounds
+	 * You can use {min} and {max} in the message to be automatically replaced
+	 *
+	 * @param index
+	 * @param min
+	 * @param max
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findNumber(int index, int min, int max, String falseMessage) {
+		final int number = findNumber(index, falseMessage);
+		checkBoolean(number >= min && number <= max, falseMessage.replace("{min}", min + "").replace("{max}", max + ""));
+
+		return number;
+	}
+
+	/**
 	 * A convenience method for parsing a number at the given args index
 	 *
 	 * @param index
@@ -502,11 +563,15 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void tellNoPrefix(String... messages) {
 		final boolean tellPrefix = Common.ADD_TELL_PREFIX;
+		final boolean localPrefix = addTellPrefix;
+
 		Common.ADD_TELL_PREFIX = false;
+		addTellPrefix = false;
 
 		tell(messages);
 
 		Common.ADD_TELL_PREFIX = tellPrefix;
+		addTellPrefix = localPrefix;
 	}
 
 	/**
@@ -520,8 +585,13 @@ public abstract class SimpleCommand extends Command {
 
 			if (!addTellPrefix || messages.length > 2)
 				Common.tellNoPrefix(sender, messages);
-			else
-				Common.tell(sender, messages);
+			else {
+				if (tellPrefix.isEmpty())
+					Common.tell(sender, messages);
+				else
+					for (final String message : messages)
+						Common.tellNoPrefix(sender, tellPrefix + " " + message);
+			}
 		}
 	}
 
@@ -811,6 +881,27 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Should we add {@link Common#getTellPrefix()} automatically when calling tell and returnTell methods
+	 * from this command?
+	 *
+	 * @param addTellPrefix
+	 */
+	protected final void addTellPrefix(boolean addTellPrefix) {
+		this.addTellPrefix = addTellPrefix;
+	}
+
+	/**
+	 * Sets a custom prefix used in tell messages for this command.
+	 * This overrides {@link Common#getTellPrefix()} however won't work if
+	 * {@link #addTellPrefix} is disabled
+	 *
+	 * @param tellPrefix
+	 */
+	protected final void setTellPrefix(String tellPrefix) {
+		this.tellPrefix = tellPrefix;
+	}
+
+	/**
 	 * Sets the minimum number of arguments to run this command
 	 *
 	 * @param minArguments
@@ -822,13 +913,26 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Should we add {@link Common#getTellPrefix()} automatically when calling tell and returnTell methods
-	 * from this command?
+	 * Set the time before the same player can execute this command again
 	 *
-	 * @param addTellPrefix
+	 * @param cooldown
+	 * @param unit
 	 */
-	protected final void addTellPrefix(boolean addTellPrefix) {
-		this.addTellPrefix = addTellPrefix;
+	protected final void setCooldown(int cooldown, TimeUnit unit) {
+		Valid.checkBoolean(cooldown >= 0, "Cooldown must be >= 0 for /" + getLabel());
+
+		this.cooldownSeconds = (int) unit.toSeconds(cooldown);
+	}
+
+	/**
+	 * Set a custom cooldown message, by default we use the one found in {@link SimpleLocalization.Commands#COOLDOWN_WAIT}
+	 *
+	 * Use {duration} to dynamically replace the remaining time
+	 *
+	 * @param cooldownMessage
+	 */
+	protected final void setCooldownMessage(String cooldownMessage) {
+		this.cooldownMessage = cooldownMessage;
 	}
 
 	/**
@@ -946,6 +1050,18 @@ public abstract class SimpleCommand extends Command {
 		this.label = name;
 
 		return super.setLabel(name);
+	}
+
+	/**
+	 * Set whether we automatically show usage params in {@link #getMinArguments()}
+	 * and when the first arg == "help" or "?"
+	 *
+	 * True by default
+	 *
+	 * @param autoHandleHelp
+	 */
+	protected final void setAutoHandleHelp(boolean autoHandleHelp) {
+		this.autoHandleHelp = autoHandleHelp;
 	}
 
 	@Override

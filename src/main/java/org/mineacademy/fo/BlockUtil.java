@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.bukkit.Chunk;
@@ -492,11 +493,11 @@ public final class BlockUtil {
 	 * Scan the location from top to bottom to find the highest Y coordinate that is not air and not snow.
 	 * This will return the free coordinate above the snow layer.
 	 *
-	 * @param loc
+	 * @param location
 	 * @return the y coordinate, or -1 if not found
 	 */
-	public static int findHighestBlockNoSnow(Location loc) {
-		return findHighestBlockNoSnow(loc.getWorld(), loc.getBlockX(), loc.getBlockZ());
+	public static int findHighestBlockNoSnow(Location location) {
+		return findHighestBlockNoSnow(location.getWorld(), location.getBlockX(), location.getBlockZ());
 	}
 
 	/**
@@ -512,11 +513,45 @@ public final class BlockUtil {
 		for (int y = world.getMaxHeight(); y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
-			if (block != null && !CompMaterial.isAir(block) && block.getType() != Material.SNOW)
+			if (block != null && !CompMaterial.isAir(block) && block.getType() != CompMaterial.SNOW.getMaterial())
 				return y + 1;
 		}
 
 		return -1;
+	}
+
+	/**
+	 * Scans the location from top to bottom to find the highest Y non-air coordinate that matches
+	 * the given predicate.
+	 *
+	 * @param world
+	 * @param predicate
+	 * @return the y coordinate, or -1 if not found
+	 */
+	public static int findHighestBlock(Location location, Predicate<Material> predicate) {
+		return findHighestBlock(location.getWorld(), location.getBlockX(), location.getBlockZ(), predicate);
+	}
+
+	/**
+	 * Scans the location from top to bottom to find the highest Y non-air coordinate that matches
+	 * the given predicate.
+	 *
+	 * @param world
+	 * @param x
+	 * @param z
+	 * @param predicate
+	 * @return the y coordinate, or -1 if not found
+	 */
+	public static int findHighestBlock(World world, int x, int z, Predicate<Material> predicate) {
+		for (int y = world.getMaxHeight(); y > 0; y--) {
+			final Block block = world.getBlockAt(x, y, z);
+
+			if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
+				return y + 1;
+		}
+
+		return -1;
+
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

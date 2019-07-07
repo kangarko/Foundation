@@ -3,11 +3,13 @@ package org.mineacademy.fo.collection;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -32,6 +34,18 @@ public final class SerializedMap extends StrictCollection {
 	 * The internal map with values
 	 */
 	private final StrictMap<String, Object> map = new StrictMap<>();
+
+	/**
+	 * Creates a new serialized map with the given first key-value pair
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public SerializedMap(String key, Object value) {
+		this();
+
+		put(key, value);
+	}
 
 	public SerializedMap() {
 		super("Cannot remove '%s' as it is not in the map!", "Value '%s' is already in the map!");
@@ -316,18 +330,10 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	@SuppressWarnings("serial")
 	public List<String> getStringList(String key, List<String> def) {
-		final Object list = map.get(key);
+		final List<String> list = getList(key, String.class);
 
-		if (list == null)
-			return def;
-
-		return list instanceof List ? (List<String>) list : new ArrayList<String>() {
-			{
-				add(list.toString());
-			}
-		};
+		return list == null ? def : list;
 	}
 
 	/**
@@ -337,16 +343,77 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	public List<SerializedMap> getMapList(String key) {
+		return getList(key, SerializedMap.class);
+	}
+
+	/**
+	 * @see #getList(String, Class), except that this method
+	 * never returns null, instead, if the key is not present,
+	 * we return an empty list instead of null
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> List<T> getListSafe(String key, Class<T> type) {
+		final List<T> list = getList(key, type);
+
+		return Common.getOrDefault(list, new ArrayList<>());
+	}
+
+	/**
+	 * @see #getList(String, Class), except that this method
+	 * never returns null, instead, if the key is not present,
+	 * we return an empty set instead of null
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> Set<T> getSetSafe(String key, Class<T> type) {
+		final Set<T> list = getSet(key, type);
+
+		return Common.getOrDefault(list, new HashSet<>());
+	}
+
+	/**
+	 * @see #getList(String, Class)
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> Set<T> getSet(String key, Class<T> type) {
+		final List<T> list = getList(key, type);
+
+		return list == null ? null : new HashSet<>(list);
+	}
+
+	/**
+	 * Return a list of objects of the given type
+	 *
+	 * If the type is your own class make sure to put public static deserialize(SerializedMap)
+	 * method into it that returns the class object from the map!
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> List<T> getList(String key, Class<T> type) {
 		if (!map.contains(key))
 			return null;
 
 		final List<Object> objects = (List<Object>) map.get(key);
-		final List<SerializedMap> maps = new ArrayList<>();
+		final List<T> list = new ArrayList<>();
 
 		for (final Object object : objects)
-			maps.add(SerializedMap.of(object));
+			list.add(SerializeUtil.deserialize(type, object));
 
-		return maps;
+		return list;
 	}
 
 	/**
@@ -489,6 +556,44 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public boolean isEmpty() {
 		return map.isEmpty();
+	}
+
+	/**
+	 * Automatically convert a section within this map from one type to another
+	 *
+	 * @param <O>
+	 * @param <N>
+	 * @param path
+	 * @param from
+	 * @param to
+	 * @param converter
+	 */
+	public <O, N> void convert(String path, Class<O> from, Class<N> to, Function<O, N> converter) {
+		final Object old = getObject(path);
+
+		if (old != null) {
+			// If the old is a collection check if the first value is old, assume the rest is old as well
+			if (old instanceof Collection) {
+				final Collection<?> collection = (Collection) old;
+
+				if (collection.isEmpty() || !from.isAssignableFrom(collection.iterator().next().getClass()))
+					return;
+
+				final List<N> newCollection = new ArrayList<>();
+
+				for (final O oldItem : (Collection<O>) collection)
+					newCollection.add(converter.apply(oldItem));
+
+				override(path, newCollection);
+
+				Common.log("&7Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
+
+			} else if (from.isAssignableFrom(old.getClass())) {
+				override(path, converter.apply((O) old));
+
+				Common.log("&7Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
+			}
+		}
 	}
 
 	@Override
