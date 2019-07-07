@@ -1,6 +1,8 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.remain.CompMaterial;
 
 /**
  * NBT class to access vanilla/custom tags on ItemStacks. This class doesn't
@@ -28,7 +30,14 @@ public class NBTItem extends NBTCompound {
 
 	@Override
 	public Object getCompound() {
-		return NBTReflectionUtil.getItemRootNBTTagCompound(WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
+		Valid.checkNotNull(bukkitItem, "Bukkit item cannot be null!");
+
+		if (CompMaterial.isAir(bukkitItem.getType()))
+			return null;
+
+		final Object nmsItem = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+
+		return NBTReflectionUtil.getItemRootNBTTagCompound(nmsItem);
 	}
 
 	@Override

@@ -1,9 +1,13 @@
 package org.mineacademy.fo;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -17,7 +21,12 @@ public final class ChatUtil {
 	/**
 	 * The default center padding
 	 */
-	private final static int CENTER_PX = 154;
+	public final static int CENTER_PX = 154;
+
+	/**
+	 * The vertical lines a player can see at once in his chat history
+	 */
+	public final static int VISIBLE_CHAT_LINES = 20;
 
 	/**
 	 * Centers a message automatically for padding {@link #CENTER_PX}
@@ -26,17 +35,45 @@ public final class ChatUtil {
 	 * @return
 	 */
 	public static String center(String message) {
-		return center(message, CENTER_PX);
+		return center(message, ' ', ChatColor.WHITE);
 	}
 
 	/**
-	 * Centers a message according to the given padding
+	 * Centers a message for padding using the given center px
 	 *
 	 * @param message
 	 * @param centerPx
 	 * @return
 	 */
 	public static String center(String message, int centerPx) {
+		return center(message, ' ', ChatColor.WHITE, centerPx);
+	}
+
+	/**
+	 * Centers a message for padding {@link #CENTER_PX} with the given space character
+	 * colored by the given chat color, example:
+	 *
+	 * ================= My Centered Message ================= (if the space is '=')
+	 *
+	 * @param message
+	 * @param space
+	 * @param spaceColor
+	 * @return
+	 */
+	public static String center(String message, char space, ChatColor spaceColor) {
+		return center(message, space, spaceColor, CENTER_PX);
+	}
+
+	/**
+	 * Centers a message according to the given space character, color and padding
+	 *
+	 * @param message
+	 * @param space
+	 * @param spaceColor
+	 * @param centerPx
+	 * @return
+	 */
+	public static String center(String message, char space, ChatColor spaceColor, int centerPx) {
 		if (message == null || message.equals(""))
 			return "";
 
@@ -73,17 +110,37 @@ public final class ChatUtil {
 
 		final int halvedMessageSize = messagePxSize / 2;
 		final int toCompensate = centerPx - halvedMessageSize;
-		final int spaceLength = DefaultFontInfo.SPACE.getLength() + 1;
+		final int spaceLength = DefaultFontInfo.getDefaultFontInfo(space).getLength() + 1;
 
 		int compensated = 0;
 
 		while (compensated < toCompensate) {
-			builder.append(" ");
+			builder.append(spaceColor.toString() + space);
 
 			compensated += spaceLength;
 		}
 
-		return builder.toString() + message;
+		return builder.toString() + " " + message + " " + builder.toString();
+	}
+
+	public static String[] verticalCenter(String... messages) {
+		return verticalCenter(Arrays.asList(messages));
+	}
+
+	public static String[] verticalCenter(Collection<String> messages) {
+		final List<String> lines = new ArrayList<>();
+		final long padding = MathUtil.ceiling((VISIBLE_CHAT_LINES - messages.size()) / 2);
+
+		for (int i = 0; i < padding; i++)
+			lines.add(RandomUtil.nextChatColor());
+
+		for (final String message : messages)
+			lines.add(message);
+
+		for (int i = 0; i < padding; i++)
+			lines.add(RandomUtil.nextChatColor());
+
+		return lines.toArray(new String[lines.size()]);
 	}
 
 	/**
@@ -437,6 +494,7 @@ enum DefaultFontInfo {
 		for (final DefaultFontInfo dFI : DefaultFontInfo.values())
 			if (dFI.getCharacter() == c)
 				return dFI;
+
 		return DefaultFontInfo.DEFAULT;
 	}
 }

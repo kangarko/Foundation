@@ -402,7 +402,7 @@ public final class Common {
 
 		} else
 			for (final String part : splitNewline(message)) {
-				final String toSend = ((ADD_TELL_PREFIX && !hasPrefix ? removeSurroundingSpaces(tellPrefix) + " " : "") + removeFirstSpaces(part)).trim();
+				final String toSend = (ADD_TELL_PREFIX && !hasPrefix ? removeSurroundingSpaces(tellPrefix) + " " : "") + part;
 
 				if (SEND_TELL_TO_CONVERSING && sender instanceof Conversable && ((Conversable) sender).isConversing())
 					((Conversable) sender).sendRawMessage(toSend);
@@ -617,7 +617,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String chatLine() {
-		return "*--------------------------------------------------*";
+		return "*----------------------------------------------------*";
 	}
 
 	/**
@@ -626,7 +626,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String chatLineSmooth() {
-		return ChatColor.STRIKETHROUGH + "-----------------------------------------------------";
+		return ChatColor.STRIKETHROUGH + "――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――";
 	}
 
 	/**
@@ -955,7 +955,7 @@ public final class Common {
 
 			} else
 				for (final String part : splitNewline(message))
-					CONSOLE_SENDER.sendMessage(((addLogPrefix && ADD_LOG_PREFIX ? logPrefix : "") + removeFirstSpaces(part).replace("\n", colorize("\n&r"))).trim());
+					CONSOLE_SENDER.sendMessage(((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + part.replace("\n", colorize("\n&r"))).trim());
 		}
 	}
 

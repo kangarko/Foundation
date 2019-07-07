@@ -939,7 +939,9 @@ public enum CompMaterial {
 	DIORITE_SLAB("STEP", "STONE_SLAB", 0),
 	DIORITE_STAIRS("COBBLESTONE_STAIRS", 0),
 	DIORITE_WALL("COBBLESTONE_WALL"),
-	SKULL_BANNER_PATTERN("STONE");
+	SKULL_BANNER_PATTERN("STONE"),
+	SUSPICIOUS_STEW("MUSHROOM_SOUP"),
+	SWEET_BERRIES("SWEET_BERRIES");
 
 	// Safety compatibility check
 	public static boolean COMPATIBLE = true;
@@ -1190,6 +1192,16 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Return true if the given material is leaves (any variation)
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static final boolean isLeaves(Material mat) {
+		return mat.toString().endsWith("_LEAVES") || nameEquals(mat, "LEAVES", "LEAVES_2");
+	}
+
+	/**
 	 * Returns true if the given material is a hard clay (any variations), later
 	 * named terracotta.
 	 *
@@ -1357,6 +1369,7 @@ public enum CompMaterial {
 		return false;
 	}
 
+	// Utility method for evaluating matches.
 	private static final boolean nameEquals(Material mat, String... names) {
 		final String matName = mat.toString();
 

@@ -24,9 +24,9 @@ public abstract class BlockVisualizer {
 	/**
 	 * The mask that is shown when the block is visualized
 	 */
-	private final VisualizerTool tool;
+	private final ToolVisualizer tool;
 
-	public BlockVisualizer(VisualizerTool tool) {
+	public BlockVisualizer(ToolVisualizer tool) {
 		this.tool = tool;
 
 		VisualizerListener.register(this);
@@ -37,7 +37,7 @@ public abstract class BlockVisualizer {
 	 * @param location
 	 * @param mode
 	 */
-	public final void show(Location location, BlockVisualizeMode mode) {
+	public final void show(Location location, VisualizeMode mode) {
 		synchronized (LOCK) {
 			Valid.checkNotNull(location, "Location == null");
 			Valid.checkNotNull(location.getWorld(), "Location.World == null");
@@ -82,7 +82,7 @@ public abstract class BlockVisualizer {
 
 	/**
 	 * Get if the block that this tool holds, is stored (it has been put
-	 * to the map by the {@link #show(Block, BlockVisualizeMode)} method?)
+	 * to the map by the {@link #show(Block, VisualizeMode)} method?)
 	 *
 	 * @param block the block
 	 * @return whether or not the block is visualized
@@ -100,7 +100,7 @@ public abstract class BlockVisualizer {
 	 *
 	 * @param mode the new mode
 	 */
-	public final void updateStored(BlockVisualizeMode mode) {
+	public final void updateStored(VisualizeMode mode) {
 		synchronized (LOCK) {
 			for (final VisualizedBlock v : stored.values())
 				v.visualize(mode);

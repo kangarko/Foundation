@@ -52,7 +52,7 @@ public abstract class VisualizedBlock {
 		this.mask = mask;
 	}
 
-	public final void visualize(BlockVisualizeMode mode) {
+	public final void visualize(VisualizeMode mode) {
 		removeGlowIf();
 
 		switch (mode) {

@@ -314,12 +314,12 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getMaterial(path);
 	}
 
-	protected static final <E extends Enum<E>> E getEnum(String path, Class<E> typeOf) {
-		return TEMPORARY_INSTANCE.getEnum(path, typeOf);
-	}
-
 	protected static final BoxedMessage getBoxedMessage(String path) {
 		return TEMPORARY_INSTANCE.getBoxedMessage(path);
+	}
+
+	protected static final <E> E get(String path, Class<E> typeOf) {
+		return TEMPORARY_INSTANCE.get(path, typeOf);
 	}
 
 	protected static final Object getObject(String path) {

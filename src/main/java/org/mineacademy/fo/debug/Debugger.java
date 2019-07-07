@@ -239,11 +239,14 @@ public final class Debugger {
 	 * @param values
 	 */
 	public static void printValues(Object[] values) {
-		print(Common.consoleLine());
-		print("Enumeration of " + Common.plural(values.length, values.getClass().getSimpleName().toLowerCase().replace("[]", "")));
+		if (values != null) {
+			print(Common.consoleLine());
+			print("Enumeration of " + Common.plural(values.length, values.getClass().getSimpleName().toLowerCase().replace("[]", "")));
 
-		for (int i = 0; i < values.length; i++)
-			print("&8[" + i + "] &7" + values[i]);
+			for (int i = 0; i < values.length; i++)
+				print("&8[" + i + "] &7" + values[i]);
+		} else
+			print("Value are null");
 	}
 
 	/**

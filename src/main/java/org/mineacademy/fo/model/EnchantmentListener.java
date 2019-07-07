@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -52,21 +53,10 @@ public final class EnchantmentListener implements Listener {
 		}
 	}
 
-	private void execute(LivingEntity source, EnchantmentExecuter executer) {
+	private void execute(LivingEntity source, BiConsumer<SimpleEnchantment, Integer> executer) {
 		final ItemStack hand = source.getEquipment().getItemInHand();
 
 		for (final Entry<SimpleEnchantment, Integer> e : SimpleEnchantment.findEnchantments(hand).entrySet())
-			executer.execute(e.getKey(), e.getValue());
-	}
-
-	private interface EnchantmentExecuter {
-
-		/**
-		 * Execute this code for the given enchant with a level
-		 *
-		 * @param enchant
-		 * @param level
-		 */
-		void execute(SimpleEnchantment enchant, int level);
+			executer.accept(e.getKey(), e.getValue());
 	}
 }

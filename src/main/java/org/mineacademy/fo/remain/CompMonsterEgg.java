@@ -58,6 +58,7 @@ public final class CompMonsterEgg {
 	 * @return the finished egg
 	 */
 	public static ItemStack makeEgg(EntityType type, int count) {
+		Valid.checkNotNull(type, "Entity type cannot be null!");
 		ItemStack is = new ItemStack(CompMaterial.makeMonsterEgg(type).getMaterial(), count);
 
 		// For older MC

@@ -312,9 +312,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 					try {
 						clazz = SimplePlugin.class.getClassLoader().loadClass(className);
 					} catch (final NoClassDefFoundError | ClassNotFoundException error) {
-						if (Debugger.isDebugModeEnabled())
-							System.out.println("### Failed to find class '" + className + "'");
-
 						continue;
 					}
 

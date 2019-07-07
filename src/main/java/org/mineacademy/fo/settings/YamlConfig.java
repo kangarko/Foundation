@@ -5,10 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -156,6 +160,11 @@ public class YamlConfig {
 	@Setter
 	private boolean usingDefaults = true;
 
+	/**
+	 * Internal flag to indicate whether you are calling this from {@link #loadConfiguration(String, String)}
+	 */
+	private boolean loading = false;
+
 	protected YamlConfig() {
 	}
 
@@ -177,32 +186,39 @@ public class YamlConfig {
 	protected final void loadLocalization(String localePrefix) throws Exception {
 		Valid.checkNotNull(localePrefix, "locale cannot be null!");
 
-		final String localePath = "localization/messages_" + localePrefix + ".yml";
-		final InputStream is = FileUtil.getInternalResource(localePath);
+		try {
+			loading = true;
 
-		if (is == null)
-			throw new FoException(SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
+			final String localePath = "localization/messages_" + localePrefix + ".yml";
+			final InputStream is = FileUtil.getInternalResource(localePath);
 
-		final File file = new File(SimplePlugin.getData(), localePath);
-		ConfigInstance instance = findInstance(file.getName());
+			if (is == null)
+				throw new FoException(SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
 
-		if (instance == null) {
+			final File file = new File(SimplePlugin.getData(), localePath);
+			ConfigInstance instance = findInstance(file.getName());
 
-			if (!file.exists())
-				FileUtil.extract(localePath, (line) -> replaceVariables(line, localePath));
+			if (instance == null) {
 
-			final YamlConfiguration config = FileUtil.loadConfigurationStrict(file);
-			final YamlConfiguration defaultsConfig = Remain.loadConfiguration(is);
+				if (!file.exists())
+					FileUtil.extract(localePath, (line) -> replaceVariables(line, localePath));
 
-			Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
+				final YamlConfiguration config = FileUtil.loadConfigurationStrict(file);
+				final YamlConfiguration defaultsConfig = Remain.loadConfiguration(is);
 
-			instance = new ConfigInstance(file, config, defaultsConfig);
-			addConfig(instance, this);
+				Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
+
+				instance = new ConfigInstance(file, config, defaultsConfig);
+				addConfig(instance, this);
+			}
+
+			this.instance = instance;
+
+			onLoadFinish();
+		} finally {
+			loading = false;
 		}
 
-		this.instance = instance;
-
-		onLoadFinish();
 		saveIfNecessary0();
 	}
 
@@ -231,45 +247,51 @@ public class YamlConfig {
 	protected final void loadConfiguration(String from, String to) {
 		Valid.checkNotNull(to, "File to path cannot be null!");
 
-		ConfigInstance instance = findInstance(to);
+		try {
+			loading = true;
 
-		if (instance == null) {
-			File file;
-			YamlConfiguration config, defaultsConfig = null;
+			ConfigInstance instance = findInstance(to);
 
-			// We will have the default file to return to
-			// This enables auto config update
-			if (from != null) {
-				final InputStream is = FileUtil.getInternalResource(from);
-				Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
+			if (instance == null) {
+				File file;
+				YamlConfiguration config, defaultsConfig = null;
 
-				defaultsConfig = Remain.loadConfiguration(is);
-				file = FileUtil.extract(false, from, to, (line) -> replaceVariables(line, to));
+				// We will have the default file to return to
+				// This enables auto config update
+				if (from != null) {
+					final InputStream is = FileUtil.getInternalResource(from);
+					Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
+
+					defaultsConfig = Remain.loadConfiguration(is);
+					file = FileUtil.extract(false, from, to, (line) -> replaceVariables(line, to));
+				}
+
+				else
+					file = FileUtil.getOrMakeFile(to);
+
+				Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
+
+				config = FileUtil.loadConfigurationStrict(file);
+				instance = new ConfigInstance(file, config, defaultsConfig);
+
+				addConfig(instance, this);
 			}
 
-			else
-				file = FileUtil.getOrMakeFile(to);
+			this.instance = instance;
 
-			Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
+			try {
+				onLoadFinish();
 
-			config = FileUtil.loadConfigurationStrict(file);
-			instance = new ConfigInstance(file, config, defaultsConfig);
+			} catch (final Exception ex) {
+				Common.logFramed(true,
+						"Error loading configuration in " + getFileName() + "!",
+						"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
+						"Problem: " + ex + " (see below for more)");
 
-			addConfig(instance, this);
-		}
-
-		this.instance = instance;
-
-		try {
-			onLoadFinish();
-
-		} catch (final Exception ex) {
-			Common.logFramed(true,
-					"Error loading configuration in " + getFileName() + "!",
-					"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
-					"Problem: " + ex + " (see below for more)");
-
-			Remain.sneaky(ex);
+				Remain.sneaky(ex);
+			}
+		} finally {
+			loading = false;
 		}
 
 		saveIfNecessary0();
@@ -369,6 +391,14 @@ public class YamlConfig {
 	 * Saves the content of this config into the file
 	 */
 	public final void save() {
+		if (loading) {
+			// If we are loading only set the flag to save to save it later together
+			if (!save)
+				save = true;
+
+			return;
+		}
+
 		final String file = getFileName();
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
@@ -426,6 +456,7 @@ public class YamlConfig {
 		Valid.checkBoolean(!path.endsWith("."), "Path must not end with '.': " + path);
 
 		// Copy defaults if not set
+		// Also logs out the console message about when we save this change
 		addDefaultIfNotExist(path, type);
 
 		Object raw = getConfig().get(path);
@@ -445,6 +476,43 @@ public class YamlConfig {
 		}
 
 		return (T) raw;
+	}
+
+	/**
+	 * Attempts to find the "public static T deserialize(SerializedMap) " method in the class type to return the given
+	 * path as the given class type,
+	 *
+	 * if that fails then we try to look for "public static T getByName(String)" method in the given type class,
+	 *
+	 * if that fails than we attempt to deserialize it using {@link SerializeUtil#deserialize(Class, Object)} method
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @return
+	 */
+	protected final <T> T get(String path, Class<T> type) {
+		return get(path, type, null);
+	}
+
+	/**
+	 * Attempts to find the "public static T deserialize(SerializedMap) " method in the class type to return the given
+	 * path as the given class type,
+	 *
+	 * if that fails then we try to look for "public static T getByName(String)" method in the given type class,
+	 *
+	 * if that fails than we attempt to deserialize it using {@link SerializeUtil#deserialize(Class, Object)} method
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @param def
+	 * @return
+	 */
+	protected final <T> T get(String path, Class<T> type, T def) {
+		final Object object = getT(path, Object.class);
+
+		return object != null ? SerializeUtil.deserialize(type, object) : def;
 	}
 
 	/**
@@ -469,6 +537,20 @@ public class YamlConfig {
 	 */
 	protected final Object getObject(String path) {
 		return getT(path, Object.class);
+	}
+
+	/**
+	 * Return an enum at this location
+	 *
+	 * @param path
+	 * @param type
+	 * @param <T>
+	 * @return
+	 * @deprecated use {@link #get(String, Class)}
+	 */
+	@Deprecated
+	protected final <T> T getEnum(String path, Class<T> type) {
+		return get(path, type);
 	}
 
 	/**
@@ -661,33 +743,84 @@ public class YamlConfig {
 		return getT(path, List.class);
 	}
 
-	@Deprecated
-	protected final void test() {
-
-	}
-
 	/**
 	 * Return a list of hash maps at the given location
 	 *
 	 * @param path
-	 * @return list of maps, null if not set
+	 * @return list of maps, or empty map if not set
 	 */
 	protected final List<SerializedMap> getMapList(String path) {
-		final List<Object> baseList = getList(path);
+		return getListSafe(path, SerializedMap.class);
+	}
 
-		if (baseList != null) {
-			final List<SerializedMap> mapList = new ArrayList<>();
+	/**
+	 * @see #getList(String, Class), except that this method
+	 * never returns null, instead, if the key is not present,
+	 * we return an empty set instead of null
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> Set<T> getSetSafe(String key, Class<T> type) {
+		final Set<T> list = getSet(key, type);
 
-			for (final Object object : baseList) {
-				final SerializedMap map = SerializedMap.of(Common.getMapFromSection(object));
+		return Common.getOrDefault(list, new HashSet<>());
+	}
 
-				mapList.add(map);
-			}
+	/**
+	 * @see #getList(String, Class)
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> Set<T> getSet(String key, Class<T> type) {
+		final List<T> list = getList(key, type);
 
-			return mapList;
-		}
+		return list == null ? null : new HashSet<>(list);
+	}
 
-		return null;
+	/**
+	 * @see #getList(String, Class), except that this method
+	 * never returns null, instead, if the key is not present,
+	 * we return an empty set instead of null
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @return
+	 */
+	public <T> List<T> getListSafe(String key, Class<T> type) {
+		final List<T> list = getList(key, type);
+
+		return Common.getOrDefault(list, new ArrayList<>());
+	}
+
+	/**
+	 * Return a list of objects of the given type
+	 *
+	 * If the type is your own class make sure to put public static deserialize(SerializedMap)
+	 * method into it that returns the class object from the map!
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @return
+	 */
+	protected final <T> List<T> getList(String path, Class<T> type) {
+		if (!isSet(path))
+			return null;
+
+		final List<Object> objects = getList(path);
+		final List<T> list = new ArrayList<>();
+
+		for (final Object object : objects)
+			list.add(SerializeUtil.deserialize(type, object));
+
+		return list;
 	}
 
 	/**
@@ -815,18 +948,6 @@ public class YamlConfig {
 			}
 
 		return list;
-	}
-
-	/**
-	 * Get an enumeration
-	 *
-	 * @param <E>
-	 * @param path
-	 * @param typeOf
-	 * @return
-	 */
-	protected final <E extends Enum<E>> E getEnum(String path, Class<E> typeOf) {
-		return ReflectionUtil.lookupEnum(typeOf, getString(path));
 	}
 
 	/**
@@ -985,6 +1106,71 @@ public class YamlConfig {
 		Common.log("&7Update " + getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
 
 		pathPrefix = oldPathPrefix; // and reset back to whatever it was
+	}
+
+	/**
+	 * A special method that converts a section within a SerializedMap to a different type.
+	 *
+	 * Automatically saves the config at the end
+	 *
+	 * @param <O>
+	 * @param <N>
+	 * @param path
+	 * @param mapSection
+	 * @param from
+	 * @param to
+	 * @param converter
+	 */
+	protected final <O, N> void convertMapList(String path, String mapSection, Class<O> from, Class<N> to, Function<O, N> converter) {
+		final List<SerializedMap> list = new ArrayList<>();
+
+		for (final SerializedMap classMap : getMapList(path)) {
+			classMap.convert(mapSection, from, to, converter);
+
+			list.add(classMap);
+		}
+
+		save(path, list);
+	}
+
+	/**
+	 * Convert the given config section to an alternative type
+	 *
+	 * Automatically saves the config at the end
+	 *
+	 * @param <O>
+	 * @param <N>
+	 * @param path
+	 * @param from
+	 * @param to
+	 * @param converter
+	 */
+	protected final <O, N> void convert(String path, Class<O> from, Class<N> to, Function<O, N> converter) {
+		final Object old = getObject(path);
+
+		if (old != null) {
+			// If the old is a collection check if the first value is old, assume the rest is old as well
+			if (old instanceof Collection) {
+				final Collection<?> collection = (Collection) old;
+
+				if (collection.isEmpty() || !from.isAssignableFrom(collection.iterator().next().getClass()))
+					return;
+
+				final List<N> newCollection = new ArrayList<>();
+
+				for (final O oldItem : (Collection<O>) collection)
+					newCollection.add(converter.apply(oldItem));
+
+				save(path, newCollection);
+
+				Common.log("&7Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
+
+			} else if (from.isAssignableFrom(old.getClass())) {
+				save(path, converter.apply((O) old));
+
+				Common.log("&7Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
+			}
+		}
 	}
 
 	/**

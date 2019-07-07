@@ -969,12 +969,12 @@ public final class Remain {
 	}
 
 	/**
-	 * Attempts to respawn the player, either via native method or reflection
+	 * Attempts to respawn the player after 2 ticks, either via native method or reflection
 	 *
 	 * @param player
 	 */
-	public static void respawnNow(Player player) {
-		respawn(player, 0);
+	public static void respawn(Player player) {
+		respawn(player, 2);
 	}
 
 	/**

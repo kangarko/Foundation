@@ -124,6 +124,28 @@ public final class MathUtil {
 	}
 
 	/**
+	 * Return the given value if above min, or min
+	 *
+	 * @param value
+	 * @param min
+	 * @return
+	 */
+	public static double atLeast(double value, double min) {
+		return value > min ? value : min;
+	}
+
+	/**
+	 * Return the given value if above min, or min
+	 *
+	 * @param value
+	 * @param min
+	 * @return
+	 */
+	public static double atLeast(int value, int min) {
+		return value > min ? value : min;
+	}
+
+	/**
 	 * Increase the given number by given percents (from 0 to 100)
 	 *
 	 * @param number

@@ -246,6 +246,9 @@ public abstract class SimpleCommandGroup {
 
 			// Let everyone view credits of this command when they run it without any sublabels
 			setPermission(null);
+
+			// We handle help ourselves
+			setAutoHandleHelp(false);
 		}
 
 		/**

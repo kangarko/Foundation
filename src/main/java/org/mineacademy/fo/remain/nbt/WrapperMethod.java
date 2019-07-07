@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
 
@@ -111,7 +112,7 @@ enum WrapperMethod {
 	WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, MinecraftVersion.V removedAfter, Since... methodnames) {
 		this.removedAfter = removedAfter;
 
-		if (MinecraftVersion.olderThan(addedSince) || this.removedAfter != null && MinecraftVersion.newerThan(this.removedAfter))
+		if (MinecraftVersion.olderThan(addedSince) || removedAfter != null && MinecraftVersion.newerThan(removedAfter))
 			return;
 
 		compatible = true;
@@ -126,7 +127,10 @@ enum WrapperMethod {
 		if (targetClass != null)
 			try {
 				method = targetClass.getMethod(targetVersion.name, args);
+				Valid.checkNotNull(method, "Method null in " + this);
+
 				method.setAccessible(true);
+
 				loaded = true;
 				methodName = targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
