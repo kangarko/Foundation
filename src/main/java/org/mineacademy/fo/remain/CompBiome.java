@@ -7,7 +7,10 @@ import org.mineacademy.fo.collection.StrictMap;
 
 /**
  * A simple class for getting biome ID for legacy biomes.
+ *
+ * @deprecated We stopped storing new biomes since 1.13 due to major changes and less usage cases.
  */
+@Deprecated
 public final class CompBiome {
 
 	/**
