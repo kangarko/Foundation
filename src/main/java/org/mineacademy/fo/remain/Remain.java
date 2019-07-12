@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain;
 
 import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
-import static org.mineacademy.fo.ReflectionUtil.getOFCClass;
+import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -89,7 +89,6 @@ import org.mineacademy.fo.remain.internal.ParticleInternals;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import lombok.NonNull;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -204,6 +203,7 @@ public final class Remain {
 	 * Initialize all fields and methods automatically when we set the plugin
 	 */
 	static {
+		Valid.checkBoolean(MinecraftVersion.getCurrent().isTested(), "Your Minecraft version " + MinecraftVersion.getCurrent() + " is unsupported by " + SimplePlugin.getNamed());
 
 		// Check compatibility
 		try {
@@ -239,7 +239,7 @@ public final class Remain {
 
 			// Load optional parts
 			try {
-				getHandle = getOFCClass("entity.CraftPlayer").getMethod("getHandle");
+				getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
 				fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
 				sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
 
@@ -423,6 +423,27 @@ public final class Remain {
 	}
 
 	/**
+	 * Spawn a falling block at the given block location
+	 *
+	 * @param block
+	 * @return
+	 */
+	public static FallingBlock spawnFallingBlock(Block block) {
+		return spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5) /* fix alignment */, block.getType(), block.getData());
+	}
+
+	/**
+	 * Spawns a falling block at that location
+	 *
+	 * @param loc
+	 * @param block
+	 * @return
+	 */
+	public static FallingBlock spawnFallingBlock(Location loc, Block block) {
+		return spawnFallingBlock(loc, block.getType(), block.getData());
+	}
+
+	/**
 	 * Spawns a falling block
 	 *
 	 * @param loc
@@ -476,12 +497,12 @@ public final class Remain {
 			final Constructor<?> entityConstructor = nmsItemClass.getConstructor(nmsWorldClass, double.class, double.class, double.class, nmsStackClass);
 
 			final Object nmsWorld = location.getWorld().getClass().getMethod("getHandle").invoke(location.getWorld());
-			final Method asNmsCopy = getOFCClass("inventory.CraftItemStack").getMethod("asNMSCopy", ItemStack.class);
+			final Method asNmsCopy = getOBCClass("inventory.CraftItemStack").getMethod("asNMSCopy", ItemStack.class);
 
 			final Object nmsEntity = entityConstructor.newInstance(nmsWorld, location.getX(), location.getY(), location.getZ(), asNmsCopy.invoke(null, item));
 
-			final Class<?> craftItemClass = getOFCClass("entity.CraftItem");
-			final Class<?> craftServerClass = getOFCClass("CraftServer");
+			final Class<?> craftItemClass = getOBCClass("entity.CraftItem");
+			final Class<?> craftServerClass = getOBCClass("CraftServer");
 
 			final Object bukkitItem = craftItemClass.getConstructor(craftServerClass, nmsItemClass).newInstance(Bukkit.getServer(), nmsEntity);
 			Valid.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
@@ -636,6 +657,31 @@ public final class Remain {
 	}
 
 	/**
+	* Converts an {@link org.bukkit.inventory.ItemStack} to a Json string
+	* for sending with {@link net.md_5.bungee.api.chat.BaseComponent}'s.
+	*
+	* @param item the item to convert
+	* @return the Json string representation of the item
+	*/
+	public static String toJson(ItemStack item) {
+		// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
+		final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
+		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
+
+		// NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
+		final Class<?> nmsItemStack = ReflectionUtil.getNMSClass("ItemStack");
+		final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound");
+		final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, "save", nbtTagCompound);
+
+		final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
+		final Object nmsItemStackObj = ReflectionUtil.invoke(asNMSCopyMethod, null, item);
+		final Object itemAsJsonObject = ReflectionUtil.invoke(saveItemstackMethod, nmsItemStackObj, nmsNbtTagCompoundObj);
+
+		// Return a string representation of the serialized object
+		return itemAsJsonObject.toString();
+	}
+
+	/**
 	 * Converts json into base component array
 	 *
 	 * @param json
@@ -673,9 +719,23 @@ public final class Remain {
 	}
 
 	/**
+	 * Sends a title to the player (1.8+) for three seconds
+	 *
+	 * @param player
+	 * @param title
+	 * @param subtitle
+	 */
+	public static void sendTitle(final Player player, String title, String subtitle) {
+		sendTitle(player, 20, 3 * 20, 20, title, subtitle);
+	}
+
+	/**
 	 * Sends a title to the player (1.8+) Texts will be colorized.
 	 *
 	 * @param player   the player
+	 * @param fadeIn   how long to fade in the title (in ticks)
+	 * @param stay     how long to make the title stay (in ticks)
+	 * @param fadeOut  how long to fade out (in ticks)
 	 * @param title    the title, will be colorized
 	 * @param subtitle the subtitle, will be colorized
 	 */
@@ -882,7 +942,7 @@ public final class Remain {
 	// Return servers command map
 	private static SimpleCommandMap getCommandMap() {
 		try {
-			return (SimpleCommandMap) getOFCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
+			return (SimpleCommandMap) getOBCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Unable to get the command map");
@@ -940,6 +1000,30 @@ public final class Remain {
 	}
 
 	/**
+	 * Return the language of the player's Minecraft client
+	 *
+	 * See {@link Player#getLocale()}
+	 *
+	 * Returns null if not available for your MC version
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static String getLocale(Player player) {
+		try {
+			return player.getLocale();
+
+		} catch (final Throwable t) {
+			try {
+				return player.spigot().getLocale();
+
+			} catch (final Throwable tt) {
+				return null;
+			}
+		}
+	}
+
+	/**
 	 * Return the NMS statistic name for the given statistic
 	 *
 	 * @param stat
@@ -948,7 +1032,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static String getNMSStatisticName(Statistic stat, @Nullable Material mat, @Nullable EntityType en) {
-		final Class<?> craftStatistic = getOFCClass("CraftStatistic");
+		final Class<?> craftStatistic = getOBCClass("CraftStatistic");
 		Object nmsStatistic = null;
 
 		try {
@@ -1075,7 +1159,7 @@ public final class Remain {
 	 * @param loc        the location
 	 * @param material   the material
 	 */
-	public static void animateBlockChange(final int delayTicks, final Player player, final Location loc, final CompMaterial material) {
+	public static void sendBlockChange(final int delayTicks, final Player player, final Location loc, final CompMaterial material) {
 		// Force to run sync
 		Common.runLater(() -> {
 			try {
@@ -1325,15 +1409,23 @@ public final class Remain {
 	 * @param message
 	 */
 	public static void sendToast(Player receiver, String message) {
+		sendToast(receiver, message, CompMaterial.BOOK);
+	}
+
+	/**
+	 * Send a "toast" notification. This is an advancement notification that cannot
+	 * be modified that much. It imposes a slight performance penalty.
+	 *
+	 * @param receiver
+	 * @param message
+	 * @param icon
+	 */
+	public static void sendToast(Player receiver, String message, CompMaterial icon) {
 		if (hasAdvancements && message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
 			if (!colorized.isEmpty())
-				new AdvancementAccessor(
-						"" + System.nanoTime(),
-						colorized,
-						"book")
-								.show(receiver);
+				new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
 		}
 	}
 
@@ -1853,57 +1945,29 @@ class AdvancementAccessor {
 
 	private final NamespacedKey key;
 	private final String icon;
-	private final String title;
+	private final String message;
 
-	AdvancementAccessor(@NonNull final String namespacedKey, final String title, final String icon) {
-		this(new NamespacedKey(SimplePlugin.getInstance(), namespacedKey), title, icon);
-	}
-
-	AdvancementAccessor(final NamespacedKey namespacedKey, final String title, final String icon) {
-		key = namespacedKey;
-		this.title = title;
+	AdvancementAccessor(final String message, final String icon) {
+		this.key = new NamespacedKey(SimplePlugin.getInstance(), "" + System.nanoTime() / 1000);
+		this.message = message;
 		this.icon = icon;
 	}
 
 	public void show(final Player player) {
-		add();
-		grant(player);
+		loadAdvancement();
+		grantAdvancement(player);
 
 		Common.runLater(10, () -> {
-			revoke(player);
-			remove();
+			revokeAdvancement(player);
+			removeAdvancement();
 		});
 	}
 
-	private void grant(final Player pl) {
-		final Advancement adv = getAdvancement();
-		final AdvancementProgress progress = pl.getAdvancementProgress(adv);
-
-		if (!progress.isDone())
-			progress.getRemainingCriteria().forEach((crit) -> progress.awardCriteria(crit));
+	private void loadAdvancement() {
+		Bukkit.getUnsafe().loadAdvancement(key, compileJson0());
 	}
 
-	private void revoke(final Player pl) {
-		final Advancement adv = getAdvancement();
-		final AdvancementProgress prog = pl.getAdvancementProgress(adv);
-
-		if (prog.isDone())
-			prog.getAwardedCriteria().forEach((crit) -> prog.revokeCriteria(crit));
-	}
-
-	private void add() {
-		Bukkit.getUnsafe().loadAdvancement(key, getJson());
-	}
-
-	private void remove() {
-		Bukkit.getUnsafe().removeAdvancement(key);
-	}
-
-	private Advancement getAdvancement() {
-		return Bukkit.getAdvancement(key);
-	}
-
-	public String getJson() {
+	private String compileJson0() {
 		final JsonObject json = new JsonObject();
 
 		final JsonObject icon = new JsonObject();
@@ -1911,7 +1975,7 @@ class AdvancementAccessor {
 
 		final JsonObject display = new JsonObject();
 		display.add("icon", icon);
-		display.addProperty("title", title);
+		display.addProperty("title", message);
 		display.addProperty("description", "");
 		display.addProperty("background", "minecraft:textures/gui/advancements/backgrounds/adventure.png");
 		display.addProperty("frame", "goal");
@@ -1930,5 +1994,29 @@ class AdvancementAccessor {
 		json.add("display", display);
 
 		return new Gson().toJson(json);
+	}
+
+	private void grantAdvancement(final Player plazer) {
+		final Advancement adv = getAdvancement();
+		final AdvancementProgress progress = plazer.getAdvancementProgress(adv);
+
+		if (!progress.isDone())
+			progress.getRemainingCriteria().forEach((crit) -> progress.awardCriteria(crit));
+	}
+
+	private void revokeAdvancement(final Player plazer) {
+		final Advancement adv = getAdvancement();
+		final AdvancementProgress prog = plazer.getAdvancementProgress(adv);
+
+		if (prog.isDone())
+			prog.getAwardedCriteria().forEach((crit) -> prog.revokeCriteria(crit));
+	}
+
+	private void removeAdvancement() {
+		Bukkit.getUnsafe().removeAdvancement(key);
+	}
+
+	private Advancement getAdvancement() {
+		return Bukkit.getAdvancement(key);
 	}
 }

@@ -96,7 +96,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 		if (source instanceof Conversation) {
 			final Conversation convo = (Conversation) source;
-			final Prompt currentPrompt = ReflectionUtil.getField(convo, "currentPrompt", Prompt.class);
+			final Prompt currentPrompt = ReflectionUtil.getFieldContent(convo.getClass(), "currentPrompt", convo);
 
 			if (currentPrompt != null && currentPrompt instanceof SimplePrompt)
 				((SimplePrompt) currentPrompt).onConversationEnd(this, event);

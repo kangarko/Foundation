@@ -11,6 +11,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This class caches method reflections, keeps track of method name changes between versions and allows early checking for problems
@@ -18,6 +19,7 @@ import lombok.Getter;
  * @author tr7zw
  *
  */
+@Getter
 enum WrapperMethod {
 
 	COMPOUND_SET_FLOAT(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, float.class }, V.v1_7, new Since(V.v1_7, "setFloat")),
@@ -101,28 +103,22 @@ enum WrapperMethod {
 
 	;
 
-	private MinecraftVersion.V removedAfter;
-	private Since targetVersion;
-	@Getter
 	private Method method;
 	private boolean loaded = false;
 	private boolean compatible = false;
 	private String methodName = null;
 
-	WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, MinecraftVersion.V removedAfter, Since... methodnames) {
-		this.removedAfter = removedAfter;
+	private WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, MinecraftVersion.V removedAfter, Since... methodnames) {
 
 		if (MinecraftVersion.olderThan(addedSince) || removedAfter != null && MinecraftVersion.newerThan(removedAfter))
 			return;
 
 		compatible = true;
-		Since target = methodnames[0];
+		Since targetVersion = methodnames[0];
 
 		for (final Since since : methodnames)
 			if (MinecraftVersion.atLeast(since.version))
-				target = since;
-
-		targetVersion = target;
+				targetVersion = since;
 
 		if (targetClass != null)
 			try {
@@ -130,15 +126,16 @@ enum WrapperMethod {
 				Valid.checkNotNull(method, "Method null in " + this);
 
 				method.setAccessible(true);
+				methodName = targetVersion.name;
 
 				loaded = true;
-				methodName = targetVersion.name;
+
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
 				Common.error(ex, this + " could not find method '" + (targetVersion == null ? "" : targetVersion.name) + "' in '" + targetClass + "'");
 			}
 	}
 
-	WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, Since... methodnames) {
+	private WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, Since... methodnames) {
 		this(targetClass, args, addedSince, null, methodnames);
 	}
 
@@ -149,7 +146,7 @@ enum WrapperMethod {
 	 * @param args
 	 * @return Value returned by the method
 	 */
-	public Object run(Object target, Object... args) {
+	public final Object run(Object target, Object... args) {
 		try {
 			return method.invoke(target, args);
 		} catch (final Exception ex) {
@@ -157,35 +154,10 @@ enum WrapperMethod {
 		}
 	}
 
-	/**
-	 * @return The MethodName, used in this Minecraft Version
-	 */
-	public String getMethodName() {
-		return methodName;
-	}
-
-	/**
-	 * @return Has this method been linked
-	 */
-	public boolean isLoaded() {
-		return loaded;
-	}
-
-	/**
-	 * @return Is this method available in this Minecraft Version
-	 */
-	public boolean isCompatible() {
-		return compatible;
-	}
-
+	@RequiredArgsConstructor
 	protected static class Since {
 		public final MinecraftVersion.V version;
 		public final String name;
-
-		public Since(MinecraftVersion.V version, String name) {
-			this.version = version;
-			this.name = name;
-		}
 	}
 
 }

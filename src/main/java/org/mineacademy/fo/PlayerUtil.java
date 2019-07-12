@@ -84,6 +84,18 @@ public final class PlayerUtil {
 	}
 
 	/**
+	 * Return the player's connection delay, ping, in milliseconds
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static int getPing(Player player) {
+		final Object entityPlayer = Remain.getHandleEntity(player);
+
+		return (int) ReflectionUtil.getFieldContent(entityPlayer, "ping");
+	}
+
+	/**
 	 * Return statistics of ALL offline players ever played
 	 *
 	 * @param statistic

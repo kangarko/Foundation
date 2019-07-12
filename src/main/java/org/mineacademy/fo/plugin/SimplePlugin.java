@@ -58,7 +58,7 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
-import org.mineacademy.fo.update.SpigotUpdateCheck;
+import org.mineacademy.fo.update.SpigotUpdater;
 import org.mineacademy.fo.visualize.VisualizerListener;
 
 import lombok.Getter;
@@ -199,8 +199,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			return;
 
 		// Before all, check if necessary libraries and the minimum required MC version
-		if (!checkLibraries0() || !checkMinimumVersion0())
+		if (!checkLibraries0() || !checkServerVersions0()) {
+			isEnabled = false;
+			setEnabled(false);
+
 			return;
+		}
 
 		// Load debug mode early
 		Debugger.detectDebugMode();
@@ -276,8 +280,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			FoundationPacketListener.addPacketListener();
 
 			// Load variables if enabled
-			if (isVariablesEnabled())
-				Variables.loadVariables();
+			if (areScriptVariablesEnabled())
+				Variables.loadScriptVariables();
 
 			// Set the logging and tell prefix
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
@@ -463,13 +467,40 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	private final boolean checkMinimumVersion0() {
+	private final boolean checkServerVersions0() {
+
+		// Call the static block to test compatibility early
+		if (!MinecraftVersion.getCurrent().isTested()) {
+			System.out.println(Common.consoleLine());
+			System.out.println("** Your Minecraft version " + MinecraftVersion.getCurrent() + " has not yet");
+			System.out.println("been officialy tested with the Foundation");
+			System.out.println("library that powers the " + SimplePlugin.getNamed() + " plugin.");
+			System.out.println(" ");
+			System.out.println("For your safety, the plugin is now disabled.");
+			System.out.println(Common.consoleLine());
+
+			return false;
+		}
+
+		// Check min version
 		final V minimumVersion = getMinimumVersion();
 
 		if (minimumVersion != null && MinecraftVersion.olderThan(minimumVersion)) {
 			Common.logFramed(false,
 					getName() + " requires Minecraft " + minimumVersion + " or newer to run.",
 					"Please upgrade your server.");
+
+			return false;
+		}
+
+		// Check max version
+		final V maximumVersion = getMaximumVersion();
+
+		if (maximumVersion != null && MinecraftVersion.newerThan(maximumVersion)) {
+			Common.logFramed(false,
+					getName() + " requires Minecraft " + maximumVersion + " or older to run.",
+					"Please downgrade your server or",
+					"wait for the new version.");
 
 			return false;
 		}
@@ -641,8 +672,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (getSettings() != null)
 				YamlStaticConfig.load(getSettings());
 
-			if (isVariablesEnabled())
-				Variables.reload();
+			if (areScriptVariablesEnabled())
+				Variables.reloadScriptVariables();
 
 			if (getMainCommand() != null)
 				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
@@ -798,11 +829,26 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * The minimum MC version to run
+	 * The the minimum MC version to run
+	 *
+	 * We will prevent loading it automatically if the server's version is
+	 * below the given one
 	 *
 	 * @return
 	 */
 	public MinecraftVersion.V getMinimumVersion() {
+		return null;
+	}
+
+	/**
+	 * The maximum MC version for this plugin to load
+	 *
+	 * We will prevent loading it automatically if the server's version is
+	 * above the given one
+	 *
+	 * @return
+	 */
+	public MinecraftVersion.V getMaximumVersion() {
 		return null;
 	}
 
@@ -840,7 +886,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	public SpigotUpdateCheck getUpdateCheck() {
+	public SpigotUpdater getUpdateCheck() {
 		return null;
 	}
 
@@ -873,10 +919,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Returns whenever this plugin utilizes {@link Variables} class. You need to
-	 *          call {@link Variables#init()} first.
+	 * Return if the JavaScript variables are enabled?
+	 *
+	 * Will load them from variables/javascript.txt file from your plugins folder.
+	 *
+	 * See https://github.com/kangarko/chatcontrol-pro/wiki/JavaScript-in-Bukkit for help
+	 *
+	 * @return
 	 */
-	public boolean isVariablesEnabled() {
+	public boolean areScriptVariablesEnabled() {
 		return false;
 	}
 

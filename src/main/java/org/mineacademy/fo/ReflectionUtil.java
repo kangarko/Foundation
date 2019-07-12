@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -23,12 +24,23 @@ import org.mineacademy.fo.exception.FoException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for various reflection methods
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtil {
+
+	/**
+	 * The full package name for NMS
+	 */
+	public static final String NMS = "net.minecraft.server";
+
+	/**
+	 * The package name for Craftbukkit
+	 */
+	public static final String CRAFTBUKKIT = "org.bukkit.craftbukkit";
 
 	/**
 	 * Find a class in net.minecraft.server package, adding the version
@@ -38,7 +50,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getNMSClass(String name) {
-		return ReflectionUtil.lookupClass("net.minecraft.server." + MinecraftVersion.getServerVersion() + "." + name);
+		return ReflectionUtil.lookupClass(NMS + "." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
 	/**
@@ -48,8 +60,8 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return
 	 */
-	public static Class<?> getOFCClass(String name) {
-		return ReflectionUtil.lookupClass("org.bukkit.craftbukkit." + MinecraftVersion.getServerVersion() + "." + name);
+	public static Class<?> getOBCClass(String name) {
+		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
 	/**
@@ -59,7 +71,7 @@ public final class ReflectionUtil {
 	 * @param fieldName
 	 * @param fieldValue
 	 */
-	public static void setStaticField(Class<?> clazz, String fieldName, Object fieldValue) {
+	public static void setStaticField(@NonNull Class<?> clazz, String fieldName, Object fieldValue) {
 		try {
 			final Field field = getDeclaredField(clazz, fieldName);
 
@@ -71,18 +83,6 @@ public final class ReflectionUtil {
 	}
 
 	/**
-	 * Get the field content
-	 *
-	 * @param instance
-	 * @param field
-	 * @param type
-	 * @return
-	 */
-	public static <T> T getField(Object instance, String field, Class<T> type) {
-		return getFieldContent(instance.getClass(), field, instance);
-	}
-
-	/**
 	 * Convenience method for getting a static field content.
 	 *
 	 * @param <T>
@@ -91,8 +91,60 @@ public final class ReflectionUtil {
 	 * @param type
 	 * @return
 	 */
-	public static <T> T getStaticFieldContent(Class<?> clazz, String field) {
+	public static <T> T getStaticFieldContent(@NonNull Class<?> clazz, String field) {
 		return getFieldContent(clazz, field, null);
+	}
+
+	/**
+	 * Return a constructor for the given NMS class. We prepend the class name
+	 * with the {@link #NMS} so you only have to give in the name of the class.
+	 *
+	 * @param nmsClass
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getNMSConstructor(@NonNull String nmsClass, Class<?>... params) {
+		return getConstructor(getNMSClass(nmsClass), params);
+	}
+
+	/**
+	 * Return a constructor for the given OBC class. We prepend the class name
+	 * with the {@link #OBC} so you only have to give in the name of the class.
+	 *
+	 * @param obcClass
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getOBCConstructor(@NonNull String obcClass, Class<?>... params) {
+		return getConstructor(getOBCClass(obcClass), params);
+	}
+
+	/**
+	 * Return a constructor for the given class
+	 *
+	 * @param clazz
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getConstructor(@NonNull Class<?> clazz, Class<?>... params) {
+		try {
+			return clazz.getConstructor(params);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException(ex, "Could not get constructor of " + clazz + " with parameters " + Common.joinToString(params));
+		}
+	}
+
+	/**
+	 * Get the field content
+	 *
+	 * @param instance
+	 * @param field
+	 * @return
+	 *
+	 */
+	public static <T> T getFieldContent(Object instance, String field) {
+		return getFieldContent(instance.getClass(), field, instance);
 	}
 
 	/**
@@ -308,7 +360,7 @@ public final class ReflectionUtil {
 	 * @param clazz
 	 * @return
 	 */
-	public static <T> T instatiate(Class<T> clazz) {
+	public static <T> T instantiate(Class<T> clazz) {
 		try {
 			final Constructor<T> c = clazz.getDeclaredConstructor();
 			c.setAccessible(true);
@@ -324,26 +376,44 @@ public final class ReflectionUtil {
 	 * Makes a new instance of a class with arguments
 	 *
 	 * @param clazz
-	 * @param args
+	 * @param params
 	 * @return
 	 */
-	public static <T> T instatiate(Class<T> clazz, Object... args) {
+	public static <T> T instantiate(Class<T> clazz, Object... params) {
 		try {
 			final List<Class<?>> classes = new ArrayList<>();
 
-			for (final Object o : args) {
-				Valid.checkNotNull(o, "Argument cannot be null when instatiating " + clazz);
+			for (final Object param : params) {
+				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
+				final Class<?> paramClass = param.getClass();
 
-				classes.add(o.getClass());
+				classes.add(paramClass.isPrimitive() ? ClassUtils.wrapperToPrimitive(paramClass) : paramClass);
 			}
 
 			final Constructor<T> c = clazz.getDeclaredConstructor(classes.toArray(new Class[classes.size()]));
 			c.setAccessible(true);
 
-			return c.newInstance(args);
+			return c.newInstance(params);
 
 		} catch (final ReflectiveOperationException e) {
 			throw new ReflectionException("Could not make instance of: " + clazz, e);
+		}
+	}
+
+	/**
+	 * Attempts to create a new instance from the given constructor and parameters
+	 *
+	 * @param <T>
+	 * @param constructor
+	 * @param params
+	 * @return
+	 */
+	public static <T> T instantiate(Constructor<T> constructor, Object... params) {
+		try {
+			return constructor.newInstance(params);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException(ex, "Could not make new instance of " + constructor + " with params: " + Common.joinToString(params));
 		}
 	}
 

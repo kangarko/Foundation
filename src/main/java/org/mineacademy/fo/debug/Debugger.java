@@ -171,22 +171,25 @@ public final class Debugger {
 			fill(lines, messages);
 		}
 
-		// Write the error header
-		fill(lines, t == null ? "Unknown error" : t.getClass().getSimpleName() + " " + Common.getOrDefault(t.getMessage(), Common.getOrDefault(t.getLocalizedMessage(), "(Unknown cause)")));
-
 		{ // Write the stack trace
-			int count = 0;
 
-			for (final StackTraceElement el : t.getStackTrace()) {
-				count++;
+			do {
+				// Write the error header
+				fill(lines, t == null ? "Unknown error" : t.getClass().getSimpleName() + " " + Common.getOrDefault(t.getMessage(), Common.getOrDefault(t.getLocalizedMessage(), "(Unknown cause)")));
 
-				final String trace = el.toString();
+				int count = 0;
 
-				if (count > 6 && trace.startsWith("net.minecraft.server"))
-					break;
+				for (final StackTraceElement el : t.getStackTrace()) {
+					count++;
 
-				fill(lines, "\t at " + el.toString());
-			}
+					final String trace = el.toString();
+
+					if (count > 6 && trace.startsWith("net.minecraft.server"))
+						break;
+
+					fill(lines, "\t at " + el.toString());
+				}
+			} while ((t = t.getCause()) != null);
 		}
 
 		fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());

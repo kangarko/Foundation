@@ -13,6 +13,10 @@ import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
 
+// Internal class for spawning entities, used by Boss to
+// tag them before they appear in the world
+//
+// Not intended for public use
 public final class NmsEntity {
 
 	private final World bukkitWorld;
@@ -85,7 +89,7 @@ final class NmsAccessor {
 	static {
 		try {
 			final Class<?> nmsEntity = ReflectionUtil.getNMSClass("Entity");
-			final Class<?> ofcWorld = ReflectionUtil.getOFCClass("CraftWorld");
+			final Class<?> ofcWorld = ReflectionUtil.getOBCClass("CraftWorld");
 
 			createEntity = MinecraftVersion.newerThan(V.v1_7) ? ofcWorld.getDeclaredMethod("createEntity", Location.class, Class.class) : null;
 			bukkitEntity = nmsEntity.getMethod("getBukkitEntity");

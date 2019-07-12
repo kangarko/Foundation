@@ -38,8 +38,8 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
-import org.mineacademy.fo.model.VariablesReplacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -587,6 +587,29 @@ public class YamlConfig {
 		forceSingleDefaults(path, def);
 
 		return isSet(path) ? getString(path) : def;
+	}
+
+	/**
+	 * Return a replacer for localizable messages
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final Replacer getReplacer(String path) {
+		return getReplacer(path, "");
+	}
+
+	/**
+	 * Return a replacer for localizable messages
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final Replacer getReplacer(String path, String def) {
+		final String message = getString(path);
+
+		return Replacer.of(Common.getOrDefault(message, def));
 	}
 
 	/**
@@ -1193,6 +1216,17 @@ public class YamlConfig {
 		return getConfig().isSet(path);
 	}
 
+	/**
+	 * Return whether the default config exist in your plugins jar and contains the
+	 * given absolute path
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final boolean isSetDefaultAbsolute(String path) {
+		return getDefaults() != null && getDefaults().isSet(path);
+	}
+
 	// ------------------------------------------------------------------------------------
 	// Lazy helpers
 	// ------------------------------------------------------------------------------------
@@ -1384,19 +1418,19 @@ public class YamlConfig {
 		/**
 		 * Duration: 4 seconds + 2 second fade in
 		 */
-		public void playLong(Player pl, VariablesReplacer r) {
-			play(pl, 5, 4 * 20, 15, r);
+		public void playLong(Player player, Function<String, String> replacer) {
+			play(player, 5, 4 * 20, 15, replacer);
 		}
 
 		/**
 		 * Duration: 2 seconds + 1 second fade in
 		 */
-		public void playShort(Player pl, VariablesReplacer r) {
-			play(pl, 3, 2 * 20, 5, r);
+		public void playShort(Player player, Function<String, String> replacer) {
+			play(player, 3, 2 * 20, 5, replacer);
 		}
 
-		public void play(Player pl, int fadeIn, int stay, int fadeOut, VariablesReplacer r) {
-			Remain.sendTitle(pl, fadeIn, stay, fadeOut, r.replace(title), r.replace(subtitle));
+		public void play(Player player, int fadeIn, int stay, int fadeOut, Function<String, String> replacer) {
+			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer.apply(title), replacer.apply(subtitle));
 		}
 	}
 

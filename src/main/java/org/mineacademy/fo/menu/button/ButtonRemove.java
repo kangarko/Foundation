@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
-import org.mineacademy.fo.remain.CompDye;
+import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -66,7 +66,7 @@ public class ButtonRemove extends Button {
 	public ItemStack getRemoveConfirmItem() {
 		return ItemCreator
 
-				.ofWool(CompDye.RED)
+				.ofWool(CompColor.RED)
 				.name("&6&lRemove " + toRemoveName)
 
 				.lores(Arrays.asList(

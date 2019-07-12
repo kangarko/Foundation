@@ -6,6 +6,7 @@ import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -91,6 +92,8 @@ public class CompMetadata {
 				de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).setString(key, value);
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to set NBT tag for " + entity.getType() + ". Tag: " + key + ", value: " + value);
+
+				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
 			}
 		}
 	}
@@ -183,8 +186,11 @@ public class CompMetadata {
 			try {
 				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
 				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).getString(key);
+
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
+
+				return entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
 			}
 		}
 
@@ -276,6 +282,8 @@ public class CompMetadata {
 				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).hasKey(key);
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
+
+				return entity.hasMetadata(key);
 			}
 		}
 

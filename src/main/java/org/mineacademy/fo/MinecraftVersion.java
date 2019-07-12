@@ -48,6 +48,7 @@ public final class MinecraftVersion {
 		/**
 		 * Is this library tested with this Minecraft version?
 		 */
+		@Getter
 		private final boolean tested;
 
 		/**
@@ -179,15 +180,8 @@ public final class MinecraftVersion {
 
 				current = V.parse(Integer.parseInt(numericVersion.split("\\.")[1]));
 
-			} else {
+			} else
 				current = V.v1_3_AND_BELOW;
-			}
-
-			if (!getCurrent().tested) {
-				System.out.println("** Your Minecraft version " + getCurrent() + " has not");
-				System.out.println("yet been officialy tested for this plugin.");
-				System.out.println("Please proceed with caution.");
-			}
 
 		} catch (final Throwable t) {
 			Common.error(t, "Error detecting your Minecraft version. Check your server compatibility.");

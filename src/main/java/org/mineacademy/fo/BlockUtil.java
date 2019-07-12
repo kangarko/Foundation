@@ -19,6 +19,7 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.util.Vector;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -50,6 +51,20 @@ public final class BlockUtil {
 			"BRICK", "BOOKSHELF", "SOIL", "ORE", "ICE", "CLAY", "PUMPKIN",
 			"NETHERRACK", "OBSIDIAN", "GLASS", "FENCE", "REDSTONE_LAMP",
 			"TERRACOTTA", "PRISMARINE", "SEA_LANTERN");
+
+	/**
+	 * The block faces we use while searching for all parts of the given
+	 * tree upwards
+	 */
+	private static final BlockFace[] TREE_TRUNK_FACES = {
+			BlockFace.UP, /*BlockFace.DOWN,*/ BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH
+	};
+
+	/**
+	 * A list of safe blocks upon which a tree naturally grows
+	 */
+	private final static Set<String> TREE_GROUND_BLOCKS = Sets.newHashSet(
+			"GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
 
 	/**
 	 * The vertical gaps when creating locations for a bounding box,
@@ -381,6 +396,13 @@ public final class BlockUtil {
 		return blocks;
 	}
 
+	/**
+	 * Return chunks around the given location
+	 *
+	 * @param location
+	 * @param radius
+	 * @return
+	 */
 	public static List<Chunk> getChunks(Location location, int radius) {
 		final HashSet<Chunk> addedChunks = new HashSet<>();
 		final World world = location.getWorld();
@@ -394,6 +416,54 @@ public final class BlockUtil {
 					addedChunks.add(world.getChunkAt(x, z));
 
 		return new ArrayList<>(addedChunks);
+	}
+
+	/**
+	 * Return all leaves/logs upwards connected to that given tree block
+	 *
+	 * Parts are sorted according to their Y coordinate from lowest to highest
+	 *
+	 * @param block
+	 * @param includeLeaves
+	 * @return
+	 */
+	public static List<Block> getTreePartsUp(Block treeBase) {
+		final Material baseMaterial = treeBase.getState().getType();
+
+		final String logType = MinecraftVersion.atLeast(V.v1_13) ? baseMaterial.toString() : "LOG";
+		final String leaveType = MinecraftVersion.atLeast(V.v1_13) ? logType.replace("_LOG", "") + "_LEAVES" : "LEAVES";
+
+		final Set<Block> treeParts = new HashSet<>();
+		final Set<Block> toSearch = new HashSet<>();
+		final Set<Block> searched = new HashSet<>();
+
+		toSearch.add(treeBase.getRelative(BlockFace.UP));
+		searched.add(treeBase);
+
+		int cycle;
+
+		for (cycle = 0; cycle < 1000 && !toSearch.isEmpty(); cycle++) {
+			final Block block = toSearch.iterator().next();
+
+			toSearch.remove(block);
+			searched.add(block);
+
+			if (block.getType().toString().equals(logType) || block.getType().toString().equals(leaveType)) {
+				treeParts.add(block);
+
+				for (final BlockFace face : TREE_TRUNK_FACES) {
+					final Block relative = block.getRelative(face);
+
+					if (!searched.contains(relative))
+						toSearch.add(relative);
+
+				}
+
+			} else if (!block.getType().isTransparent())
+				return new ArrayList<>();
+		}
+
+		return new ArrayList<>(treeParts);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -411,6 +481,22 @@ public final class BlockUtil {
 	 */
 	public static boolean canSetup(Block clicked, Action action) {
 		return (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK) && isForBlockSelection(clicked.getType());
+	}
+
+	/**
+	 * Returns true whether the given block is a "LOG" type and we perform a search
+	 * down to the bottom most connected block to find if that stands onto {@link #TREE_GROUND_BLOCKS}
+	 *
+	 * @param treeBaseBlock
+	 * @return if the bottom most connected block to the given block stays on {@link #TREE_GROUND_BLOCKS}
+	 */
+	public static boolean isLogOnGround(Block treeBaseBlock) {
+
+		// Reach for the bottom most tree-like block
+		while (CompMaterial.isLog(treeBaseBlock.getType()))
+			treeBaseBlock = treeBaseBlock.getRelative(BlockFace.DOWN);
+
+		return TREE_GROUND_BLOCKS.contains(CompMaterial.fromMaterial(treeBaseBlock.getType()).toString());
 	}
 
 	/**

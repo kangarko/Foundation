@@ -295,7 +295,7 @@ public final class SerializedMap extends StrictCollection {
 				try {
 					final Map<String, Object> metaMap = (Map<String, Object>) raw;
 
-					final Class<?> cl = ReflectionUtil.getOFCClass("inventory." + (metaMap.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
+					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (metaMap.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
 					final Constructor<?> c = cl.getDeclaredConstructor(Map.class);
 					c.setAccessible(true);
 

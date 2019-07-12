@@ -151,7 +151,7 @@ public final class CompMonsterEgg {
 	private static EntityType getTypeByNbt(@NonNull final ItemStack item) {
 		try {
 			final Class<?> NMSItemStackClass = ReflectionUtil.getNMSClass("ItemStack");
-			final Class<?> craftItemStackClass = ReflectionUtil.getOFCClass("inventory.CraftItemStack");
+			final Class<?> craftItemStackClass = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
 			final Method asNMSCopyMethod = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class);
 			final Object stack = asNMSCopyMethod.invoke(null, item);
 			final Object tagCompound = NMSItemStackClass.getMethod("getTag").invoke(stack);

@@ -13,6 +13,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -214,6 +215,10 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.isSet(path);
 	}
 
+	protected static final boolean isSetDefaultAbsolute(String path) {
+		return TEMPORARY_INSTANCE.isSetDefaultAbsolute(path);
+	}
+
 	protected static final void move(String fromRelative, String toAbsolute) {
 		TEMPORARY_INSTANCE.move(fromRelative, toAbsolute);
 	}
@@ -280,6 +285,10 @@ public abstract class YamlStaticConfig {
 
 	protected static final String getString(String path) {
 		return TEMPORARY_INSTANCE.getString(path);
+	}
+
+	protected static final Replacer getReplacer(String path) {
+		return TEMPORARY_INSTANCE.getReplacer(path);
 	}
 
 	protected static final int getInteger(String path) {

@@ -2,6 +2,7 @@ package org.mineacademy.fo.settings;
 
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -76,9 +77,8 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	// Shared values
 	// --------------------------------------------------------------------
 
-	// --------------------------------------------------------------------
-	// Sections - you must write them into your locale file
-	// --------------------------------------------------------------------
+	// NB: Those keys are optional - you do not have to write them into your messages_X.yml files
+	// but if you do, we will use your values instead of the default ones!
 
 	/**
 	 * Locale keys related to your plugin commands
@@ -145,7 +145,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown when there is a fatal error running this command
 		 */
-		public static String ERROR = "&4&lOups! &cThe command failed :( Check the console and report the error.";
+		public static Replacer ERROR = Replacer.of("&4&lOups! &cThe command failed :( Check the console and report the error.");
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -153,34 +153,38 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			pathPrefix("Commands");
 
-			NO_CONSOLE = getString("No_Console");
+			if (isSetDefaultAbsolute("No_Console"))
+				NO_CONSOLE = getString("No_Console");
 
-			if (isSet("Cooldown_Wait"))
+			if (isSetDefaultAbsolute("Cooldown_Wait"))
 				COOLDOWN_WAIT = getString("Cooldown_Wait");
 
-			if (isSet("Invalid_Argument"))
+			if (isSetDefaultAbsolute("Invalid_Argument"))
 				INVALID_ARGUMENT = getString("Invalid_Argument");
 
-			if (isSet("Invalid_Sub_Argument"))
+			if (isSetDefaultAbsolute("Invalid_Sub_Argument"))
 				INVALID_SUB_ARGUMENT = getString("Invalid_Sub_Argument");
 
-			if (isSet("Invalid_Argument_Multiline"))
+			if (isSetDefaultAbsolute("Invalid_Argument_Multiline"))
 				INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
 
-			if (isSet("Label_Description"))
+			if (isSetDefaultAbsolute("Label_Description"))
 				LABEL_DESCRIPTION = getString("Label_Description");
 
-			if (isSet("Label_Usage"))
+			if (isSetDefaultAbsolute("Label_Usage"))
 				LABEL_USAGE = getString("Label_Usage");
 
-			if (isSet("Label_Usages"))
+			if (isSetDefaultAbsolute("Label_Usages"))
 				LABEL_USAGES = getString("Label_Usages");
 
-			RELOAD_SUCCESS = getString("Reload_Success");
-			RELOAD_FAIL = getString("Reload_Fail");
+			if (isSetDefaultAbsolute("Reload_Success"))
+				RELOAD_SUCCESS = getString("Reload_Success");
 
-			if (isSet("Error"))
-				ERROR = getString("Error");
+			if (isSetDefaultAbsolute("Reload_Fail"))
+				RELOAD_FAIL = getString("Reload_Fail");
+
+			if (isSetDefaultAbsolute("Error"))
+				ERROR = getReplacer("Error");
 		}
 	}
 
@@ -200,16 +204,13 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			pathPrefix("Player");
 
-			NOT_ONLINE = getString("Not_Online");
+			if (isSetDefaultAbsolute("Not_Online"))
+				NOT_ONLINE = getString("Not_Online");
 		}
 	}
 
-	// --------------------------------------------------------------------
-	// Main localized keys, you must write them into your locale file
-	// --------------------------------------------------------------------
-
 	/**
-	 * Key related to players
+	 * Key related to the GUI system
 	 */
 	public static class Menu {
 
@@ -224,25 +225,55 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			pathPrefix("Menu");
 
-			ITEM_DELETED = isSet("Item_Deleted") ? getString("Item_Deleted") : ITEM_DELETED;
+			if (isSetDefaultAbsolute("Item_Deleted"))
+				ITEM_DELETED = getString("Item_Deleted");
 		}
 	}
 
 	/**
-	 * The "Update_Available" key you need to put in your locale file.
+	 * Keys related to updating the plugin
 	 */
-	public static String UPDATE_AVAILABLE = "&2A new version of &3{plugin.name}&2 is available.\n"
-			+ "&2Current version: &f{current}&2; New version: &f{new}\n"
-			+ "&2URL: &7https://www.spigotmc.org/resources/10258/.";
+	public static class Update {
+
+		/**
+		 * The message if a new version is found but not downloaded
+		 */
+		public static String AVAILABLE = "&2A new version of &3{plugin.name}&2 is available.\n"
+				+ "&2Current version: &f{current}&2; New version: &f{new}\n"
+				+ "&2URL: &7https://www.spigotmc.org/resources/10258/.";
+
+		/**
+		 * The message if a new version is found and downloaded
+		 */
+		public static String DOWNLOADED = "&3{plugin.name}&2 has been upgraded from {current} to {new}.\n"
+				+ "&2Visit &7https://www.spigotmc.org/resources/10258 &2for more information.\n"
+				+ "&2Please restart the server to load the new version.";
+
+		/**
+		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
+		 */
+		private static void init() {
+			// Upgrade from old path
+			if (isSetAbsolute("Update_Available")) {
+				pathPrefix(null);
+
+				move("Update_Available", "Update.Available");
+			}
+
+			pathPrefix("Update");
+
+			if (isSetDefaultAbsolute("Available"))
+				AVAILABLE = getString("Available");
+
+			if (isSetDefaultAbsolute("Downloaded"))
+				DOWNLOADED = getString("Downloaded");
+		}
+	}
 
 	/**
 	 * The message for player if they lack a permission.
 	 */
 	public static String NO_PERMISSION = "&cInsufficient permission ({permission}).";
-
-	// --------------------------------------------------------------------
-	// Optional localized keys, no need to write them, defaults can be used
-	// --------------------------------------------------------------------
 
 	/**
 	 * The server prefix. Example: you have to use it manually if you are sending messages
@@ -273,13 +304,20 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		pathPrefix(null);
 		Valid.checkBoolean(!localizationClassCalled, "Localization class already loaded!");
 
-		UPDATE_AVAILABLE = getString("Update_Available");
-		NO_PERMISSION = getString("No_Permission");
+		if (isSetDefaultAbsolute("No_Permission"))
+			NO_PERMISSION = getString("No_Permission");
 
-		SERVER_PREFIX = isSet("Server_Prefix") ? getString("Server_Prefix") : SERVER_PREFIX;
-		CONSOLE_NAME = isSet("Console_Name") ? getString("Console_Name") : CONSOLE_NAME;
-		DATA_MISSING = isSet("Data_Missing") ? getString("Data_Missing") : DATA_MISSING;
-		CONVERSATION_REQUIRES_PLAYER = isSet("Conversation_Requires_Player") ? getString("Conversation_Requires_Player") : CONVERSATION_REQUIRES_PLAYER;
+		if (isSetDefaultAbsolute("Server_Prefix"))
+			SERVER_PREFIX = getString("Server_Prefix");
+
+		if (isSetDefaultAbsolute("Console_Name"))
+			CONSOLE_NAME = getString("Console_Name");
+
+		if (isSetDefaultAbsolute("Data_Missing"))
+			DATA_MISSING = getString("Data_Missing");
+
+		if (isSetDefaultAbsolute("Conversation_Requires_Player"))
+			CONVERSATION_REQUIRES_PLAYER = getString("Conversation_Requires_Player");
 
 		localizationClassCalled = true;
 	}

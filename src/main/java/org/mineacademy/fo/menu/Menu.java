@@ -303,13 +303,13 @@ public abstract class Menu {
 	 */
 	public Menu newInstance() {
 		try {
-			return ReflectionUtil.instatiate(getClass());
+			return ReflectionUtil.instantiate(getClass());
 		} catch (final Throwable t) {
 			try {
 				final Object parent = getClass().getMethod("getParent").invoke(getClass());
 
 				if (parent != null)
-					return ReflectionUtil.instatiate(getClass(), parent);
+					return ReflectionUtil.instantiate(getClass(), parent);
 			} catch (final Throwable tt) {
 			}
 
