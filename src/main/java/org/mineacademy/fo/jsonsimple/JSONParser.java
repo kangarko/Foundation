@@ -229,7 +229,7 @@ public class JSONParser {
 	// ====
 
 	@Getter
-	public static final JSONParser instance = new JSONParser();
+	private static final JSONParser instance = new JSONParser();
 
 	private static final int S_INIT = 0;
 	private static final int S_IN_FINISHED_VALUE = 1;

@@ -43,6 +43,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.LocalCommandSender;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -332,6 +333,17 @@ public final class Common {
 	}
 
 	/**
+	 * Sends sender a message with {} variables replaced and colors supported
+	 * without the {@link #getTellPrefix()}
+	 *
+	 * @param sender
+	 * @param messages
+	 */
+	public static void tellNoPrefix(CommandSender sender, Replacer replacer) {
+		tellNoPrefix(sender, replacer.getReplacedMessage());
+	}
+
+	/**
 	 * Sends the sender a bunch of messages, colors & are supported
 	 * without {@link #getTellPrefix()} prefix
 	 *
@@ -344,6 +356,16 @@ public final class Common {
 		ADD_TELL_PREFIX = false;
 		tell(sender, messages);
 		ADD_TELL_PREFIX = was;
+	}
+
+	/**
+	 * Sends sender a message with {} variables replaced and colors supported
+	 *
+	 * @param sender
+	 * @param messages
+	 */
+	public static void tell(CommandSender sender, Replacer replacer) {
+		tell(sender, replacer.getReplacedMessage());
 	}
 
 	/**
@@ -389,6 +411,7 @@ public final class Common {
 
 		// Add colors and replace player
 		message = colorize(message.replace("{player}", resolveSenderName(sender)));
+		message = Replacer.of(message).find("plugin_name", "plugin.name", "plugin_version", "plugin.version").replace(SimplePlugin.getNamed(), SimplePlugin.getNamed(), SimplePlugin.getVersion(), SimplePlugin.getVersion()).getReplacedMessageJoined();
 
 		// Send [JSON] prefixed messages as json component
 		if (message.startsWith("[JSON]")) {
@@ -716,7 +739,7 @@ public final class Common {
 		Valid.checkBoolean(ofWhat.length() > 0, "String cannot be empty");
 		final List<String> syllables = Arrays.asList("a", "e", "i", "o", "u", "y");
 
-		return (syllables.contains(ofWhat.trim().substring(0, 1)) ? "an" : "a") + " " + ofWhat;
+		return (syllables.contains(ofWhat.toLowerCase().trim().substring(0, 1)) ? "an" : "a") + " " + ofWhat;
 	}
 
 	/**
@@ -1273,7 +1296,7 @@ public final class Common {
 	 * @return
 	 */
 	public static <T> String joinToString(T[] array) {
-		return joinToString(Arrays.asList(array));
+		return array == null ? "null" : joinToString(Arrays.asList(array));
 	}
 
 	/**
@@ -1285,7 +1308,7 @@ public final class Common {
 	 * @return
 	 */
 	public static <T> String joinToString(Iterable<T> array) {
-		return joinToString(array, ", ");
+		return array == null ? "null" : joinToString(array, ", ");
 	}
 
 	/**
@@ -1993,7 +2016,7 @@ public final class Common {
 	 * @return
 	 */
 	public static Map<String, Object> getMapFromSection(@NonNull Object mapOrSection) {
-		final Map<String, Object> map = mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection : mapOrSection instanceof MemorySection ? ReflectionUtil.getField(mapOrSection, "map", Map.class) : null;
+		final Map<String, Object> map = mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection : mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
 		return map;

@@ -31,8 +31,8 @@
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
 		</repository>
 		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
+			<id>citizens-repo</id>
+			<url>http://repo.citizensnpcs.co/</url>
 		</repository>
 	</repositories>
 
@@ -54,13 +54,18 @@
 			<artifactId>PaperSpigot</artifactId>
 			<version>1.14.3-SNAPSHOT-114</version>
 		</dependency>
-		<!-- Item-NBT-API -->
+		<!-- Plugins from their own repo with documentation and sources -->
 		<dependency>
-			<groupId>com.github.tr7zw</groupId>
-			<artifactId>Item-NBT-API</artifactId>
-			<version>master-SNAPSHOT</version>
+			<groupId>net.citizensnpcs</groupId>
+			<artifactId>citizensapi</artifactId>
+			<version>2.0.25-SNAPSHOT</version>
 		</dependency>
-		<!-- Plugins -->
+		<dependency>
+			<groupId>net.citizensnpcs</groupId>
+			<artifactId>citizens</artifactId>
+			<version>2.0.25-SNAPSHOT</version>
+		</dependency>
+		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>AuthMe</artifactId>
@@ -81,11 +86,8 @@
 			<artifactId>ChestShop</artifactId>
 			<version>3.10-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>Citizens</artifactId>
-			<version>2.0.25-b1669</version>
-		</dependency>
+		<!-- <dependency> <groupId>org.mineacademy.plugin</groupId> <artifactId>CitizensAPI</artifactId> 
+			<version>2.0.25-b612</version> </dependency> -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CMI</artifactId>
@@ -168,6 +170,16 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>NBTAPI</artifactId>
+			<version>2.0.0-b66</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>NBTInjector</artifactId>
+			<version>2.0.0-b66</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Nicky</artifactId>
 			<version>0.7</version>
 		</dependency>
@@ -194,7 +206,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>4.4.0</version>
+			<version>4.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>

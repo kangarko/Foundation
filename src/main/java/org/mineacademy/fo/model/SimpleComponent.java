@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -15,7 +17,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * A very simple way of sending interactive chat messages
  */
-public final class ChatComponent {
+public final class SimpleComponent {
 
 	/**
 	 * The past components having different hover/click events
@@ -32,7 +34,7 @@ public final class ChatComponent {
 	 *
 	 * @param text
 	 */
-	public ChatComponent(String... text) {
+	private SimpleComponent(String... text) {
 		this.currentComponent = new TextComponent(String.join("\n", Common.colorize(text)));
 	}
 
@@ -46,18 +48,20 @@ public final class ChatComponent {
 	 * @param text
 	 * @return
 	 */
-	public ChatComponent onHover(String... text) {
-		return onHover(String.join("\n", text));
+	public SimpleComponent onHover(String... text) {
+		return onHover(HoverEvent.Action.SHOW_TEXT, String.join("\n", text));
 	}
 
 	/**
-	 * Add a show text hover event for the {@link #currentComponent}
+	 * Shows the item on hover if it is not air.
 	 *
-	 * @param text
+	 * NB: Some colors from lore may get lost as a result of Minecraft/Spigot bug.
+	 *
+	 * @param item
 	 * @return
 	 */
-	public ChatComponent onHover(String text) {
-		return onHover(HoverEvent.Action.SHOW_TEXT, text);
+	public SimpleComponent onHover(ItemStack item) {
+		return CompMaterial.isAir(item.getType()) ? onHover("Air") : onHover(HoverEvent.Action.SHOW_ITEM, Remain.toJson(item));
 	}
 
 	/**
@@ -67,7 +71,7 @@ public final class ChatComponent {
 	 * @param text
 	 * @return
 	 */
-	public ChatComponent onHover(HoverEvent.Action action, String text) {
+	public SimpleComponent onHover(HoverEvent.Action action, String text) {
 		currentComponent.setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
 
 		return this;
@@ -79,7 +83,7 @@ public final class ChatComponent {
 	 * @param text
 	 * @return
 	 */
-	public ChatComponent onClickRunCmd(String text) {
+	public SimpleComponent onClickRunCmd(String text) {
 		return onClick(Action.RUN_COMMAND, text);
 	}
 
@@ -89,8 +93,18 @@ public final class ChatComponent {
 	 * @param text
 	 * @return
 	 */
-	public ChatComponent onClickSuggestCmd(String text) {
+	public SimpleComponent onClickSuggestCmd(String text) {
 		return onClick(Action.SUGGEST_COMMAND, text);
+	}
+
+	/**
+	 * Open the given URL for the {@link #currentComponent}
+	 *
+	 * @param url
+	 * @return
+	 */
+	public SimpleComponent onClickOpenUrl(String url) {
+		return onClick(Action.OPEN_URL, url);
 	}
 
 	/**
@@ -100,7 +114,7 @@ public final class ChatComponent {
 	 * @param text
 	 * @return
 	 */
-	public ChatComponent onClick(Action action, String text) {
+	public SimpleComponent onClick(Action action, String text) {
 		currentComponent.setClickEvent(new ClickEvent(action, Common.colorize(text)));
 
 		return this;
@@ -118,7 +132,7 @@ public final class ChatComponent {
 	 * @param text
 	 * @return
 	 */
-	public ChatComponent append(String text) {
+	public SimpleComponent append(String text) {
 		pastComponents.add(currentComponent);
 		currentComponent = new TextComponent(Common.colorize(text));
 
@@ -146,7 +160,7 @@ public final class ChatComponent {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Attempts to send the complete {@link ChatComponent} to the given
+	 * Attempts to send the complete {@link SimpleComponent} to the given
 	 * command senders. If they are players, we send them interactive elements.
 	 *
 	 * If they are console, they receive a plain text message.
@@ -158,5 +172,20 @@ public final class ChatComponent {
 
 		for (final CommandSender sender : senders)
 			Remain.sendComponent(sender, mainComponent);
+	}
+
+	// --------------------------------------------------------------------
+	// Static
+	// --------------------------------------------------------------------
+
+	/**
+	 * Create a new interactive chat component
+	 * You can then build upon your text to add interactive elements
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static SimpleComponent of(String... text) {
+		return new SimpleComponent(text);
 	}
 }

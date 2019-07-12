@@ -10,12 +10,15 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Wrapper for {@link Attribute}
+ *
+ * See https://minecraft.gamepedia.com/Attribute for more information
  */
 @RequiredArgsConstructor
 public enum CompAttribute {
@@ -37,6 +40,8 @@ public enum CompAttribute {
 
 	/**
 	 * Movement speed of an Entity.
+	 *
+	 * For default values see https://minecraft.gamepedia.com/Attribute
 	 */
 	GENERIC_MOVEMENT_SPEED("generic.movementSpeed", "MOVEMENT_SPEED"),
 
@@ -47,6 +52,8 @@ public enum CompAttribute {
 
 	/**
 	 * Attack damage of an Entity.
+	 *
+	 * This attribute is not found on passive mobs and golems.
 	 */
 	GENERIC_ATTACK_DAMAGE("generic.attackDamage", "ATTACK_DAMAGE"),
 
@@ -147,20 +154,24 @@ public enum CompAttribute {
 	 * @param value
 	 */
 	public final void set(LivingEntity entity, double value) {
-		try {
-			Valid.checkNotNull(entity, "Entity cannot be null");
-			Valid.checkNotNull(entity, "Attribute cannot be null");
+		Valid.checkNotNull(entity, "Entity cannot be null");
+		Valid.checkNotNull(entity, "Attribute cannot be null");
 
+		try {
 			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(toString()));
 
 			instance.setBaseValue(value);
-		} catch (NoSuchMethodError | NoClassDefFoundError ex) {
+		} catch (NullPointerException | NoSuchMethodError | NoClassDefFoundError ex) {
 			try {
 				if (hasLegacy())
 					setLegacy(entity, value);
+
 			} catch (final Throwable t) {
 				if (MinecraftVersion.olderThan(V.v1_9))
 					t.printStackTrace();
+
+				if (t instanceof NullPointerException)
+					throw new FoException("Attribute " + this + " cannot be set for " + entity);
 			}
 		}
 	}

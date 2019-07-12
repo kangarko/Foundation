@@ -2,10 +2,13 @@ package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,27 +42,35 @@ public final class Variables {
 	/**
 	 * The pattern to find simple {} placeholders
 	 */
-	public static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
+	protected static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
 
 	/**
 	 * The patter to find simple {} placeholders starting with {rel_ (used for PlaceholderAPI)
 	 */
-	public static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[{](rel_)([^}]+)[}]");
+	protected static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[{](rel_)([^}]+)[}]");
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Changing variables for loading
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * The loaded variables
+	 * The loaded variables from variables/javascript.txt
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
-	private static final List<ScriptVariable> variables = new ArrayList<>();
+	private static final List<ScriptVariable> scriptVariables = new ArrayList<>();
+
+	/**
+	 * Variables added to Foundation by you or other plugins
+	 *
+	 * You take in a command sender (may/may not be a player) and output a replaced string.
+	 * The variable name (the key) is automatically surrounded by {} brackets
+	 */
+	private static final StrictMap<String, Function<CommandSender, String>> customVariables = new StrictMap<>();
 
 	/**
 	 * The file loader for variables
 	 */
-	private static FileReader<ScriptVariable> variableFileReader;
+	private static FileReader<ScriptVariable> scriptFileReader;
 
 	/**
 	 * Player, Their Cached Variables
@@ -78,10 +89,12 @@ public final class Variables {
 	/**
 	 * Loads variables from the variables/javascript.txt file, if it exists
 	 * within your plugin. Used in ChatControl Pro
+	 *
+	 * @deprecated internal use only
 	 */
-	public static void loadVariables() {
-
-		variableFileReader = new FileReader<ScriptVariable>("define") {
+	@Deprecated
+	public static void loadScriptVariables() {
+		scriptFileReader = new FileReader<ScriptVariable>("define") {
 
 			@Override
 			public boolean canFinish() {
@@ -130,17 +143,69 @@ public final class Variables {
 
 		};
 
-		reload();
+		reloadScriptVariables();
 	}
 
 	/**
-	 * Clears current variables and loads new only if they were initially called with {@link #loadVariables()}
+	 * Clears current variables and loads new only if they were initially called with {@link #loadScriptVariables()}
+	 *
+	 * @deprecated internal use only
 	 */
-	public static void reload() {
-		variables.clear();
+	@Deprecated
+	public static void reloadScriptVariables() {
+		scriptVariables.clear();
 
-		if (variableFileReader != null)
-			variables.addAll(variableFileReader.load("variables/javascript.txt"));
+		if (scriptFileReader != null)
+			scriptVariables.addAll(scriptFileReader.load("variables/javascript.txt"));
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Custom variables
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * As a developer you can add or remove custom variables. Return an unmodifiable
+	 * set of all added custom variables
+	 *
+	 * @return
+	 */
+	public static Set<String> getVariables() {
+		return Collections.unmodifiableSet(customVariables.keySet());
+	}
+
+	/**
+	 * Register a new variable. The variable will be found inside {} block so if you give the variable
+	 * name player_health it will be {player_health}. The function takes in a command sender (can be player)
+	 * and outputs the variable value.
+	 *
+	 * Please keep in mind we replace your variables AFTER PlaceholderAPI and Javascript variables
+	 *
+	 * @param variable
+	 * @param replacer
+	 */
+	public static void addVariable(String variable, Function<CommandSender, String> replacer) {
+		customVariables.put(variable, replacer);
+	}
+
+	/**
+	 * Removes an existing variable, only put the name here without brackets, e.g. player_name not {player_name}
+	 * This fails when the variables does not exist
+	 *
+	 * @param variable
+	 */
+	public static void removeVariable(String variable) {
+		customVariables.remove(variable);
+	}
+
+	/**
+	 * Checks if the given variable exist. Warning: only put the name here without brackets,
+	 * e.g. player_name not {player_name}
+	 *
+	 * @param variable
+	 * @return
+	 */
+	public static boolean hasVariable(String variable) {
+		return customVariables.contains(variable);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -165,9 +230,13 @@ public final class Variables {
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI.
+	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
-	 * @param replaceCustom should we use variables/javascript.txt file? If exists
+	 * @param replaceCustom should we use variables/javascript.txt file? Fails safely if the file
+	 * 		  does not exists. See https://github.com/kangarko/chatcontrol-pro/wiki/JavaScript-in-Bukkit
+	 * 		  for tutorial on using this file and writing variables to it.
+	 *   	  Custom variables are only replaced when the sender is a player!
+	 *
 	 * @param message
 	 * @param sender
 	 * @return
@@ -177,28 +246,30 @@ public final class Variables {
 			return "";
 
 		final String original = message;
-		final boolean living = sender instanceof Player;
+		final boolean senderIsPlayer = sender instanceof Player;
 
-		if (living) {
+		if (senderIsPlayer) {
 			// Already cached ? Return.
 			final Map<String, String> cached = customCache.get(sender.getName());
 
 			if (cached != null && cached.containsKey(message))
 				return cached.get(message);
 
-			// Custom
-			if (SimplePlugin.getInstance().isVariablesEnabled() && replaceCustom && !variables.isEmpty())
+			// Javascript
+			if (SimplePlugin.getInstance().areScriptVariablesEnabled() && replaceCustom && !scriptVariables.isEmpty())
 				message = replaceJavascriptVariables0(message, sender);
 
-			// PlaceholderAPI.
+			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
 		}
 
 		// Default
 		message = replaceHardVariables0(sender, message);
+
+		// Support the & color system
 		message = Common.colorize(message);
 
-		if (living) {
+		if (senderIsPlayer) {
 			final Map<String, String> map = customCache.get(sender.getName());
 
 			if (map != null)
@@ -218,7 +289,7 @@ public final class Variables {
 	 * @return
 	 */
 	private static String replaceJavascriptVariables0(String message, CommandSender cast) {
-		for (final ScriptVariable var : variables)
+		for (final ScriptVariable var : scriptVariables)
 			try {
 				message = var.replace(message, cast);
 
@@ -254,15 +325,14 @@ public final class Variables {
 
 			// Player is cached
 			if (isSenderCached) {
-				final Map<String, String> speciCache = cache.get(sender.getName());
-				final String storedVariable = speciCache.get(variable);
+				final Map<String, String> senderCache = cache.get(sender.getName());
+				final String storedVariable = senderCache.get(variable);
 
 				// This specific variable is cached
 				if (storedVariable != null) {
 					value = storedVariable;
 					makeCache = false;
 				}
-
 			}
 
 			if (makeCache) {
@@ -316,6 +386,13 @@ public final class Variables {
 
 		if (player != null && Arrays.asList("country_code", "country_name", "region_name", "isp").contains(variable))
 			geoResponse = GeoAPI.getCountry(player.getAddress());
+
+		{ // Replace custom variables
+			final Function<CommandSender, String> customReplacer = customVariables.get(variable);
+
+			if (customReplacer != null)
+				return customReplacer.apply(console);
+		}
 
 		switch (variable) {
 			case "server_name":
@@ -401,14 +478,14 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Create a new expiring map with 5 millisecond expiration
+	 * Create a new expiring map with 10 millisecond expiration
 	 *
 	 * @return
 	 */
 	private static Map<String, Map<String, String>> makeNewFastCache() {
 		return ExpiringMap.builder()
 				.maxSize(300)
-				.expiration(5, TimeUnit.MILLISECONDS)
+				.expiration(10, TimeUnit.MILLISECONDS)
 				.build();
 	}
 
@@ -482,7 +559,7 @@ class ScriptVariable {
 			if (SimplePlugin.getInstance().replaceScriptVariablesInCustom() && sender instanceof Player) {
 				Debugger.debug("variables", "# Replacing own variables in script " + script);
 
-				for (final ScriptVariable var : Variables.getVariables()) {
+				for (final ScriptVariable var : Variables.getScriptVariables()) {
 					if (var.variable.equals(variable)) {
 						Debugger.debug("variables", "Ignoring " + var.variable);
 

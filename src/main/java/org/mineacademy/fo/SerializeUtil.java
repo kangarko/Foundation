@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
@@ -103,17 +104,27 @@ public final class SerializeUtil {
 		else if (obj instanceof Enum<?>)
 			return obj.toString();
 
+		else if (obj instanceof CommandSender)
+			return ((CommandSender) obj).getName();
+
+		else if (obj instanceof World)
+			return ((World) obj).getName();
+
 		else if (obj instanceof ItemCreator.ItemCreatorBuilder)
 			return ((ItemCreator.ItemCreatorBuilder) obj).build().make();
 
 		else if (obj instanceof ItemCreator)
 			return ((ItemCreator) obj).make();
 
-		else if (obj instanceof Iterable) {
+		else if (obj instanceof Iterable || obj.getClass().isArray()) {
 			final List<Object> serialized = new ArrayList<>();
 
-			for (final Object element : (Iterable<?>) obj)
-				serialized.add(serialize(element));
+			if (obj instanceof Iterable)
+				for (final Object element : (Iterable<?>) obj)
+					serialized.add(serialize(element));
+			else
+				for (final Object element : (Object[]) obj)
+					serialized.add(serialize(element));
 
 			return serialized;
 		}

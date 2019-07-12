@@ -941,7 +941,8 @@ public enum CompMaterial {
 	DIORITE_WALL("COBBLESTONE_WALL"),
 	SKULL_BANNER_PATTERN("STONE"),
 	SUSPICIOUS_STEW("MUSHROOM_SOUP"),
-	SWEET_BERRIES("SWEET_BERRIES");
+	SWEET_BERRIES("SWEET_BERRIES"),
+	LEATHER_HORSE_ARMOR("IRON_BARDING", "IRON_HORSE_ARMOR", 0);
 
 	// Safety compatibility check
 	public static boolean COMPATIBLE = true;
@@ -1233,6 +1234,17 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Return true for all kinds of wood pressure plates
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static final boolean isWoodPressurePlate(Material mat) {
+		return nameEquals(mat, "WOOD_PLATE", "ACACIA_PRESSURE_PLATE", "BIRCH_PRESSURE_PLATE", "DARK_OAK_PRESSURE_PLATE",
+				"JUNGLE_PRESSURE_PLATE", "OAK_PRESSURE_PLATE", "SPRUCE_PRESSURE_PLATE");
+	}
+
+	/**
 	 * Returns true if the given material is a firework.
 	 *
 	 * @param mat
@@ -1249,7 +1261,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static final boolean isLog(Material mat) {
-		return nameEquals(mat, "LOG", "LOG_2", "_LOG");
+		return nameEquals(mat, "LOG", "LOG_2") || mat.toString().endsWith("_LOG");
 	}
 
 	/**
@@ -1388,7 +1400,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static ItemStack makeWool(byte color, int amount) {
-		return makeWool(CompDye.fromWoolData(color), amount);
+		return makeWool(CompColor.fromWoolData(color), amount);
 	}
 
 	/**
@@ -1398,7 +1410,7 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(CompDye color, int amount) {
+	public static ItemStack makeWool(CompColor color, int amount) {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return new ItemStack(Material.valueOf(color.name() + "_WOOL"), amount);
 

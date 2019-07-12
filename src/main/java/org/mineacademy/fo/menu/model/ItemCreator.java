@@ -23,7 +23,7 @@ import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.CompDye;
+import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMonsterEgg;
@@ -95,7 +95,7 @@ public final class ItemCreator {
 	/**
 	 * The dye color in case your item is compatible
 	 */
-	private final CompDye color;
+	private final CompColor color;
 
 	/**
 	 * Should we hide all tags from the item (enchants, etc.)?
@@ -384,7 +384,7 @@ public final class ItemCreator {
 	 * @param color the wool color
 	 * @return the new item creator
 	 */
-	public static ItemCreatorBuilder ofWool(CompDye color) {
+	public static ItemCreatorBuilder ofWool(CompColor color) {
 		return of(CompMaterial.makeWool(color, 1)).color(color);
 	}
 

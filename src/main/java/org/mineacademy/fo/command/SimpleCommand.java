@@ -28,9 +28,10 @@ import org.mineacademy.fo.command.placeholder.PositionPlaceholder;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
-import org.mineacademy.fo.model.ChatComponent;
 import org.mineacademy.fo.model.Replacer;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -314,7 +315,7 @@ public abstract class SimpleCommand extends Command {
 				tell(ex.getMessages());
 
 		} catch (final Throwable t) {
-			tell(SimpleLocalization.Commands.ERROR);
+			tellNoPrefix(SimpleLocalization.Commands.ERROR.find("error").replace(t.toString()));
 
 			Common.error(t, "Failed to execute command /" + getLabel() + " " + String.join(" ", args));
 
@@ -455,6 +456,24 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Attempts to parse the given name into a CompMaterial, will work for both modern
+	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
+	 *
+	 * You can use the {enum} or {item} variable to replace with the given name
+	 *
+	 * @param name
+	 * @param falseMessage
+	 * @return
+	 * @throws CommandException
+	 */
+	protected final CompMaterial findMaterial(String name, String falseMessage) throws CommandException {
+		final CompMaterial found = CompMaterial.fromString(name);
+
+		checkNotNull(found, falseMessage.replace("{enum}", name).replace("{item}", name));
+		return found;
+	}
+
+	/**
 	 * Finds an enumeration of a certain type, if it fails it prints a false message to the player
 	 * You can use the {enum} variable in the false message for the name parameter
 	 *
@@ -539,6 +558,17 @@ public abstract class SimpleCommand extends Command {
 	// ----------------------------------------------------------------------
 
 	/**
+	 * Sends a interactive chat component to the sender, not replacing any special
+	 * variables just executing the {@link SimpleComponent#send(CommandSender...)} method
+	 * as a shortcut
+	 *
+	 * @param component
+	 */
+	protected final void tell(SimpleComponent component) {
+		component.send(sender);
+	}
+
+	/**
 	 * Send the player a Replacer message
 	 *
 	 * @param replacer
@@ -554,6 +584,15 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void tell(Collection<String> messages) {
 		tell(messages.toArray(new String[messages.size()]));
+	}
+
+	/**
+	 * Send the player a Replacer message
+	 *
+	 * @param replacer
+	 */
+	protected final void tellNoPrefix(Replacer replacer) {
+		tellNoPrefix(replacer.getReplacedMessage());
 	}
 
 	/**
@@ -596,14 +635,11 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Sends a interactive chat component to the sender, not replacing any special
-	 * variables just executing the {@link ChatComponent#send(CommandSender...)} method
-	 * as a shortcut
-	 *
-	 * @param component
+	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_ARGUMENT}
+	 * message for player
 	 */
-	protected final void tell(ChatComponent component) {
-		component.send(sender);
+	protected final void returnInvalidArgs() {
+		returnTell(SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", getLabel()));
 	}
 
 	/**
@@ -617,11 +653,13 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_ARGUMENT}
-	 * message for player
+	 * Sends a message to the player and throws a message error, preventing further execution
+	 *
+	 * @param replacer
+	 * @throws CommandException
 	 */
-	protected final void returnInvalidArgs() {
-		returnTell(SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", getLabel()));
+	protected final void returnTell(Replacer replacer) throws CommandException {
+		returnTell(replacer.getReplacedMessage());
 	}
 
 	/**
@@ -729,6 +767,57 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final String getLastArg() {
 		return args.length > 0 ? args[args.length - 1] : "";
+	}
+
+	/**
+	 * Copies and returns the arguments {@link #args} from the given range
+	 * to their end
+	 *
+	 * @param from
+	 * @return
+	 */
+	protected final String[] rangeArgs(int from) {
+		return rangeArgs(from, args.length);
+	}
+
+	/**
+	 * Copies and returns the arguments {@link #args} from the given range
+	 * to the given end
+	 *
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	protected final String[] rangeArgs(int from, int to) {
+		return Arrays.copyOfRange(args, from, to);
+	}
+
+	/**
+	 * Copies and returns the arguments {@link #args} from the given range
+	 * to their end joined by spaces
+	 *
+	 * @param from
+	 * @return
+	 */
+	protected final String joinArgs(int from) {
+		return joinArgs(from, args.length);
+	}
+
+	/**
+	 * Copies and returns the arguments {@link #args} from the given range
+	 * to the given end joined by spaces
+	 *
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	protected final String joinArgs(int from, int to) {
+		String message = "";
+
+		for (int i = from; i < args.length && i < to; i++)
+			message += args[i] + (i + 1 == args.length ? "" : " ");
+
+		return message;
 	}
 
 	// ----------------------------------------------------------------------

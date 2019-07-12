@@ -10,7 +10,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.update.SpigotUpdateCheck;
+import org.mineacademy.fo.update.SpigotUpdater;
 
 /**
  * A simple implementation of a typical main plugin settings
@@ -74,14 +74,9 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	protected abstract int getConfigVersion();
 
 	// --------------------------------------------------------------------
-	// Shared values
+	// Settings we offer by default for your main config file
+	// Specify those you need to modify
 	// --------------------------------------------------------------------
-
-	// Unless specified in the init() method, you must write the values
-	// below to your settings.yml for this class to function!
-
-	// Values here are defined below so that plugins not definiting their settings.yml still can function,
-	// however if your plugin has a settings.yml file you MUST specify all of them in that file.
 
 	/**
 	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
@@ -108,11 +103,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Log_Lag_Over_Milis: 100
 	 */
-	public static Integer LAG_THRESHOLD_MILLIS = -1; // Only defined here so we can log lag before settings are loaded, but you still need to write it
-
-	// --------------------------------------------------------------------
-	// Shared non-mandatory values
-	// --------------------------------------------------------------------
+	public static Integer LAG_THRESHOLD_MILLIS = 100;
 
 	/**
 	 * When processing regular expressions, limit executing to the specified time.
@@ -164,7 +155,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	/**
 	 * Should we check for updates from SpigotMC and notify the console and users with permission?
 	 *
-	 * See {@link SimplePlugin#getUpdateCheck()} that you can make to return {@link SpigotUpdateCheck} with your Spigot plugin ID.
+	 * See {@link SimplePlugin#getUpdateCheck()} that you can make to return {@link SpigotUpdater} with your Spigot plugin ID.
 	 *
 	 * Typically for ChatControl:
 	 *
@@ -197,50 +188,63 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 		pathPrefix(null);
 		upgradeOldSettings();
 
-		PLUGIN_PREFIX = getString("Prefix");
-		LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
-		Valid.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Millis must be either -1 to disable, 0 to log all or greater!");
+		if (isSetDefaultAbsolute("Prefix"))
+			PLUGIN_PREFIX = getString("Prefix");
 
-		DEBUG_SECTIONS = new StrictList<>(getStringList("Debug"));
+		if (isSetDefaultAbsolute("Log_Lag_Over_Milis")) {
+			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
+
+			Valid.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Millis must be either -1 to disable, 0 to log all or greater!");
+		}
+
+		if (isSetDefaultAbsolute("Debug"))
+			DEBUG_SECTIONS = new StrictList<>(getStringList("Debug"));
+
+		if (isSetDefaultAbsolute("Regex_Timeout_Milis"))
+			REGEX_TIMEOUT = getInteger("Regex_Timeout_Milis");
+
+		if (isSetDefaultAbsolute("Server_Name"))
+			SERVER_NAME = Common.colorize(getString("Server_Name"));
+
+		if (isSetDefaultAbsolute("Notify_Promotions"))
+			NOTIFY_PROMOTIONS = getBoolean("Notify_Promotions");
+
+		if (isSetDefaultAbsolute("Serialization"))
+			SECRET_KEY = getString("Serialization");
 
 		// -------------------------------------------------------------------
-		// Load non mandatory values
+		// Load maybe-mandatory values
 		// -------------------------------------------------------------------
 
 		{ // Load localization
 			final boolean hasLocalization = hasLocalization();
-			final boolean keySet = isSet("Locale");
+			final boolean keySet = isSetDefaultAbsolute("Locale");
 
 			if (hasLocalization && !keySet)
-				throw new FoException("Since you have a localization class you must set the Locale key in your " + getFileName());
+				throw new FoException("Since you have your Localization class you must set the 'Locale' key in " + getFileName());
 
 			LOCALE_PREFIX = keySet ? getString("Locale") : LOCALE_PREFIX;
 		}
 
 		{ // Load main command alias
 
-			final boolean keySet = isSet("Command_Aliases");
+			final boolean keySet = isSetDefaultAbsolute("Command_Aliases");
 
 			if (SimplePlugin.getInstance().getMainCommand() != null && !keySet)
-				throw new FoException("Since you have main plugin command you must set the Command_Aliases key in your " + getFileName());
+				throw new FoException("Since you override getMainCommand in your main plugin class you must set the 'Command_Aliases' key in " + getFileName());
 
 			MAIN_COMMAND_ALIASES = keySet ? getCommandList("Command_Aliases") : MAIN_COMMAND_ALIASES;
 		}
 
 		{ // Load updates notifier
 
-			final boolean keySet = isSet("Notify_Updates");
+			final boolean keySet = isSetDefaultAbsolute("Notify_Updates");
 
 			if (SimplePlugin.getInstance().getUpdateCheck() != null && !keySet)
-				throw new FoException("Since you have update check you must set the Notify_Updates key in your " + getFileName());
+				throw new FoException("Since you override getUpdateCheck in your main plugin class you must set the 'Notify_Updates' key in " + getFileName());
 
 			NOTIFY_UPDATES = keySet ? getBoolean("Notify_Updates") : NOTIFY_UPDATES;
 		}
-
-		REGEX_TIMEOUT = isSet("Regex_Timeout_Milis") ? getInteger("Regex_Timeout_Milis") : REGEX_TIMEOUT;
-		SERVER_NAME = isSet("Server_Name") ? Common.colorize(getString("Server_Name")) : "Server Name Undefined";
-		NOTIFY_PROMOTIONS = isSet("Notify_Promotions") ? getBoolean("Notify_Promotions") : NOTIFY_PROMOTIONS;
-		SECRET_KEY = isSet("Serialization") ? getString("Serialization") : SECRET_KEY;
 
 		settingsClassCalled = true;
 	}

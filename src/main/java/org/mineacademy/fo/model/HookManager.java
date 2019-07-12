@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +45,7 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
@@ -1029,7 +1031,7 @@ public final class HookManager {
 	 * @param adapter
 	 */
 	public static void addPacketListener(/*Uses object to prevent errors if plugin is not installed*/Object adapter) {
-		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot add packet listeners if ProtocolLib isnt installed");
+		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot add packet listeners if ProtocolLib isn't installed");
 
 		protocolLibHook.addPacketListener(adapter);
 	}
@@ -1038,10 +1040,25 @@ public final class HookManager {
 	 * Removes packet listeners from ProtocolLib for a plugin
 	 *
 	 * @param plugin
+	 * @deprecated no need to call this manually as we call this in {@link SimplePlugin} when
+	 * you restart or reload your plugin automatically
 	 */
+	@Deprecated
 	public static void removePacketListeners(Plugin plugin) {
 		if (isProtocolLibLoaded())
 			protocolLibHook.removePacketListeners(plugin);
+	}
+
+	/**
+	 * Send a {@link PacketContainer} to the given player
+	 *
+	 * @param player
+	 * @param packetContainer
+	 */
+	public static void sendPacket(Player player, Object packetContainer) {
+		Valid.checkBoolean(isProtocolLibLoaded(), "Sending packets requires ProtocolLib installed and loaded");
+
+		protocolLibHook.sendPacket(player, packetContainer);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1552,6 +1569,23 @@ class ProtocolLibHook {
 	final void removePacketListeners(Plugin plugin) {
 		manager.removePacketListeners(plugin);
 	}
+
+	final void sendPacket(PacketContainer packet) {
+		for (final Player player : Remain.getOnlinePlayers())
+			sendPacket(player, packet);
+	}
+
+	final void sendPacket(Player player, Object packet) {
+		Valid.checkNotNull(player);
+		Valid.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
+
+		try {
+			manager.sendServerPacket(player, (PacketContainer) packet);
+
+		} catch (final InvocationTargetException e) {
+			Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
+		}
+	}
 }
 
 class VaultHook {
@@ -1708,7 +1742,7 @@ class PlaceholderAPIHook {
 		}
 	}
 
-	private final String setPlaceholders(OfflinePlayer player, String text) {
+	private final String setPlaceholders(Player player, String text) {
 		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
 		if (hooks.isEmpty())
@@ -1727,7 +1761,7 @@ class PlaceholderAPIHook {
 			final String params = format.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
-				final String value = hooks.get(identifier).onRequest(player, params);
+				final String value = hooks.get(identifier).onPlaceholderRequest(player, params);
 
 				if (value != null)
 					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));

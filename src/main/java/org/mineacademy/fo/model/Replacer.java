@@ -5,13 +5,18 @@ import java.util.Objects;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * An elegant way to find {variables} and replace them.
+ *
+ * Use {@link #find(String...)} method to find {} variables such as find("health") and then
+ * replace them with {@link #replace(Object...)} with the objects such as replace(20)
  *
  * Something like {@link String#format(String, Object...)} but more useful for Minecraft
  */
@@ -92,7 +97,17 @@ public final class Replacer {
 
 			final Object rep = i < replacements.length ? replacements[i] : null;
 
-			message = message.replace(find, rep != null ? Objects.toString(rep) : "");
+			// Convert it into a human readable string
+			String serialized;
+
+			try {
+				serialized = Objects.toString(SerializeUtil.serialize(rep));
+
+			} catch (final FoException ex) {
+				serialized = Objects.toString(rep);
+			}
+
+			message = message.replace(find, rep != null ? serialized : "");
 		}
 
 		this.replacedMessage = message.split(DELIMITER);

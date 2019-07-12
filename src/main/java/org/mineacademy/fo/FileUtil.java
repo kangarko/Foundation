@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -31,7 +32,6 @@ import javax.annotation.Nullable;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.VariablesReplacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
@@ -133,6 +133,50 @@ public final class FileUtil {
 		final String finalExtension = extension;
 
 		return dir.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+	}
+
+	/**
+	 * Checks if the file in the path exists and creates a new one if it does not
+	 *
+	 * NB: THIS PATH IS ABSOLUTE, I.E. NOT IN YOUR PLUGINS FOLDER
+	 *
+	 * @param path
+	 * @return
+	 */
+	public static File getOrMakeAbs(String path) {
+		return getOrMakeAbs(new File(path));
+	}
+
+	/**
+	 * Checks if the file in the parent and child path exists and creates a new one if it does not
+	 *
+	 * NB: THIS PATH IS ABSOLUTE, I.E. NOT IN YOUR PLUGINS FOLDER
+	 *
+	 * @param parent
+	 * @param child
+	 * @return
+	 */
+	public static File getOrMakeAbs(File parent, String child) {
+		return getOrMakeAbs(new File(parent, child));
+	}
+
+	/**
+	 * Checks if the file exists and creates a new one if it does not
+	 *
+	 * NB: THIS PATH IS ABSOLUTE, I.E. NOT IN YOUR PLUGINS FOLDER
+	 *
+	 * @param file
+	 * @return
+	 */
+	public static File getOrMakeAbs(File file) {
+		if (!file.exists())
+			try {
+				file.createNewFile();
+			} catch (final Throwable t) {
+				Common.throwError(t, "Could not create new " + file + " due to " + t);
+			}
+
+		return file;
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -299,11 +343,12 @@ public final class FileUtil {
 	 * No action is done if the file already exists.
 	 *
 	 * @param path the path to the file inside the plugin
-	 * @param replacer the variables replacer
+	 * @param replacer the variables replacer, takes in a variable (you must put brackets around it) and outputs
+	 * the desired string
 	 *
 	 * @return the extracted file
 	 */
-	public static File extract(String path, VariablesReplacer replacer) {
+	public static File extract(String path, Function<String, String> replacer) {
 		return extract(false, path, path, replacer);
 	}
 
@@ -344,7 +389,7 @@ public final class FileUtil {
 	 *
 	 * @return the extracted file
 	 */
-	public static File extract(boolean override, String from, String to, @Nullable VariablesReplacer replacer) {
+	public static File extract(boolean override, String from, String to, @Nullable Function<String, String> replacer) {
 		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
 
 		final InputStream is = FileUtil.getInternalResource("/" + from);
@@ -364,7 +409,7 @@ public final class FileUtil {
 				String line;
 
 				while ((line = br.readLine()) != null) {
-					line = replacer != null ? replacer.replace(line) : line;
+					line = replacer != null ? replacer.apply(line) : line;
 
 					lines.add(line);
 				}
