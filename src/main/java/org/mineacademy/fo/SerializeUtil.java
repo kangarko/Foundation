@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -91,6 +92,9 @@ public final class SerializeUtil {
 
 		else if (obj instanceof StrictCollection)
 			return serialize(((StrictCollection) obj).serialize());
+
+		else if (obj instanceof ChatColor)
+			return ((ChatColor) obj).name();
 
 		else if (obj instanceof CompMaterial)
 			return obj.toString();

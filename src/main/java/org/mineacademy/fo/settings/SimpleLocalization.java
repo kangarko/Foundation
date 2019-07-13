@@ -93,7 +93,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown when there is a fatal error running this command
 		 */
-		public static String COOLDOWN_WAIT = "Wait {duration} second(s) before using this command again.";
+		public static String COOLDOWN_WAIT = "&cWait {duration} second(s) before using this command again.";
 
 		/**
 		 * The message shown when the player tries a command but inputs an
@@ -135,7 +135,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message at "Reload_Success" key shown when the plugin has been reloaded successfully.
 		 */
-		public static String RELOAD_SUCCESS = "{plugin_name} {plugin_version} has been reloaded.";
+		public static String RELOAD_SUCCESS = "&6{plugin_name} {plugin_version} has been reloaded.";
 
 		/**
 		 * The message at "Reload_Fail" key shown when the plugin has failed to reload.
@@ -153,37 +153,37 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			pathPrefix("Commands");
 
-			if (isSetDefaultAbsolute("No_Console"))
+			if (isSetDefault("No_Console"))
 				NO_CONSOLE = getString("No_Console");
 
-			if (isSetDefaultAbsolute("Cooldown_Wait"))
+			if (isSetDefault("Cooldown_Wait"))
 				COOLDOWN_WAIT = getString("Cooldown_Wait");
 
-			if (isSetDefaultAbsolute("Invalid_Argument"))
+			if (isSetDefault("Invalid_Argument"))
 				INVALID_ARGUMENT = getString("Invalid_Argument");
 
-			if (isSetDefaultAbsolute("Invalid_Sub_Argument"))
+			if (isSetDefault("Invalid_Sub_Argument"))
 				INVALID_SUB_ARGUMENT = getString("Invalid_Sub_Argument");
 
-			if (isSetDefaultAbsolute("Invalid_Argument_Multiline"))
+			if (isSetDefault("Invalid_Argument_Multiline"))
 				INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
 
-			if (isSetDefaultAbsolute("Label_Description"))
+			if (isSetDefault("Label_Description"))
 				LABEL_DESCRIPTION = getString("Label_Description");
 
-			if (isSetDefaultAbsolute("Label_Usage"))
+			if (isSetDefault("Label_Usage"))
 				LABEL_USAGE = getString("Label_Usage");
 
-			if (isSetDefaultAbsolute("Label_Usages"))
+			if (isSetDefault("Label_Usages"))
 				LABEL_USAGES = getString("Label_Usages");
 
-			if (isSetDefaultAbsolute("Reload_Success"))
+			if (isSetDefault("Reload_Success"))
 				RELOAD_SUCCESS = getString("Reload_Success");
 
-			if (isSetDefaultAbsolute("Reload_Fail"))
+			if (isSetDefault("Reload_Fail"))
 				RELOAD_FAIL = getString("Reload_Fail");
 
-			if (isSetDefaultAbsolute("Error"))
+			if (isSetDefault("Error"))
 				ERROR = getReplacer("Error");
 		}
 	}
@@ -204,7 +204,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			pathPrefix("Player");
 
-			if (isSetDefaultAbsolute("Not_Online"))
+			if (isSetDefault("Not_Online"))
 				NOT_ONLINE = getString("Not_Online");
 		}
 	}
@@ -225,7 +225,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			pathPrefix("Menu");
 
-			if (isSetDefaultAbsolute("Item_Deleted"))
+			if (isSetDefault("Item_Deleted"))
 				ITEM_DELETED = getString("Item_Deleted");
 		}
 	}
@@ -262,10 +262,10 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			pathPrefix("Update");
 
-			if (isSetDefaultAbsolute("Available"))
+			if (isSetDefault("Available"))
 				AVAILABLE = getString("Available");
 
-			if (isSetDefaultAbsolute("Downloaded"))
+			if (isSetDefault("Downloaded"))
 				DOWNLOADED = getString("Downloaded");
 		}
 	}
@@ -304,19 +304,19 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		pathPrefix(null);
 		Valid.checkBoolean(!localizationClassCalled, "Localization class already loaded!");
 
-		if (isSetDefaultAbsolute("No_Permission"))
+		if (isSetDefault("No_Permission"))
 			NO_PERMISSION = getString("No_Permission");
 
-		if (isSetDefaultAbsolute("Server_Prefix"))
+		if (isSetDefault("Server_Prefix"))
 			SERVER_PREFIX = getString("Server_Prefix");
 
-		if (isSetDefaultAbsolute("Console_Name"))
+		if (isSetDefault("Console_Name"))
 			CONSOLE_NAME = getString("Console_Name");
 
-		if (isSetDefaultAbsolute("Data_Missing"))
+		if (isSetDefault("Data_Missing"))
 			DATA_MISSING = getString("Data_Missing");
 
-		if (isSetDefaultAbsolute("Conversation_Requires_Player"))
+		if (isSetDefault("Conversation_Requires_Player"))
 			CONVERSATION_REQUIRES_PLAYER = getString("Conversation_Requires_Player");
 
 		localizationClassCalled = true;

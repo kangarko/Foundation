@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -172,8 +174,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * For your convenience, event listeners and timed tasks may be set here to stop/unregister
 	 * them automatically on reload
 	 */
-	@Getter
 	private final Reloadables reloadables = new Reloadables();
+
+	/**
+	 * An internal flag to indicate whether we are calling the {@link #onReloadablesStart()}
+	 * block. We register things using {@link #reloadables} during this block
+	 */
+	private boolean startingReloadables = false;
 
 	// ----------------------------------------------------------------------------------------
 	// Main methods
@@ -209,8 +216,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Load debug mode early
 		Debugger.detectDebugMode();
 
-		// Add the logging prefix
-		Common.ADD_LOG_PREFIX = true;
+		// Disable logging prefix if logo is set
+		if (getStartupLogo() != null)
+			Common.ADD_LOG_PREFIX = false;
 
 		// --------------------------------------------
 		// Call the main pre start method
@@ -224,7 +232,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (getStartupLogo() != null) {
 			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
-
 			Common.ADD_LOG_PREFIX = false;
 			Common.log(getStartupLogo());
 			Common.ADD_LOG_PREFIX = hadLogPrefix;
@@ -257,6 +264,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
+			startingReloadables = true;
+			onReloadablesStart();
+			startingReloadables = false;
+
 			onPluginStart();
 			// --------------------------------------------
 
@@ -289,9 +300,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Finish off by starting metrics (currently bStats)
 			new Metrics(this);
 
-		} catch (
-
-		final Throwable t) {
+		} catch (final Throwable t) {
 			displayError0(t);
 		}
 	}
@@ -509,7 +518,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Handles various statup problems
+	 * Handles various startup problems
 	 *
 	 * @param throwable
 	 */
@@ -582,7 +591,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				SimpleScoreboard.clearBoardsFor(online);
 
 		} catch (final Throwable t) {
-			System.out.println("Error clearing scoreboards for players..");
+			Common.log("Error clearing scoreboards for players..");
 
 			t.printStackTrace();
 		}
@@ -595,7 +604,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 					online.closeInventory();
 			}
 		} catch (final Throwable t) {
-			System.out.println("Error closing menu inventories for players..");
+			Common.log("Error closing menu inventories for players..");
 
 			t.printStackTrace();
 		}
@@ -643,6 +652,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected void onPluginReload() {
 	}
 
+	/**
+	 * Register your commands, events, tasks and files here.
+	 *
+	 * This is invoked when you start the plugin, call /reload, or the {@link #reload()}
+	 * method.
+	 */
+	protected void onReloadablesStart() {
+	}
+
 	// ----------------------------------------------------------------------------------------
 	// Reload
 	// ----------------------------------------------------------------------------------------
@@ -651,7 +669,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Attempts to reload the plugin
 	 */
 	public final void reload() {
+		final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
 		Common.ADD_LOG_PREFIX = false;
+
 		Common.log(Common.consoleLineSmooth());
 		Common.log(" ");
 		Common.log("Reloading plugin " + this.getName() + " v" + getVersion());
@@ -683,13 +703,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
 
+			startingReloadables = true;
+			onReloadablesStart();
+			startingReloadables = false;
+
 		} catch (final Throwable t) {
 			Common.throwError(t, "Error reloading " + getName() + " " + getVersion());
 
 		} finally {
 			Common.log(Common.consoleLineSmooth());
 
-			Common.ADD_LOG_PREFIX = true;
+			Common.ADD_LOG_PREFIX = hadLogPrefix;
 			reloading = false;
 		}
 	}
@@ -753,7 +777,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	protected final void registerEventsIf(Listener listener, boolean condition) {
 		if (condition)
-			registerEvents(listener);
+			if (startingReloadables)
+				reloadables.registerEvents(listener);
+			else
+				registerEvents(listener);
 	}
 
 	/**
@@ -762,7 +789,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param listener
 	 */
 	protected final void registerEvents(Listener listener) {
-		getServer().getPluginManager().registerEvents(listener, this);
+		if (startingReloadables)
+			reloadables.registerEvents(listener);
+		else
+			getServer().getPluginManager().registerEvents(listener, this);
 	}
 
 	/**
@@ -773,7 +803,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	protected final void registerEventsIf(SimpleListener<? extends Event> listener, boolean condition) {
 		if (condition)
-			registerEvents(listener);
+			if (startingReloadables)
+				reloadables.registerEvents(listener);
+			else
+				registerEvents(listener);
 	}
 
 	/**
@@ -782,7 +815,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param listener
 	 */
 	protected final void registerEvents(SimpleListener<? extends Event> listener) {
-		listener.register();
+		if (startingReloadables)
+			reloadables.registerEvents(listener);
+		else
+			listener.register();
 	}
 
 	/**
@@ -803,15 +839,42 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		command.register();
 	}
 
+	/**
+	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
+	 *
+	 * @param label
+	 * @param group
+	 */
 	protected final void registerCommands(String label, SimpleCommandGroup group) {
 		registerCommands(label, null, group);
 	}
 
+	/**
+	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
+	 *
+	 * @param label
+	 * @param aliases
+	 * @param group
+	 */
 	protected final void registerCommands(String label, List<String> aliases, SimpleCommandGroup group) {
+		if (getMainCommand() != null && getMainCommand().getLabel().equals(label))
+			throw new FoException("Your main command group is registered automatically!");
+
 		group.register(label, aliases);
 	}
 
+	/**
+	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
+	 *
+	 * @param labelAndAliases
+	 * @param group
+	 */
 	protected final void registerCommands(StrictList<String> labelAndAliases, SimpleCommandGroup group) {
+		Valid.checkBoolean(!labelAndAliases.isEmpty(), "Must specify at least label for command group: " + group);
+
+		if (getMainCommand() != null && getMainCommand().getLabel().equals(labelAndAliases.get(0)))
+			throw new FoException("Your main command group is registered automatically!");
+
 		group.register(labelAndAliases);
 	}
 
@@ -982,34 +1045,86 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// Prevention
 	// ----------------------------------------------------------------------------------------
 
+	/**
+	 * Get the plugins jar file
+	 */
+	@Override
+	protected final File getFile() {
+		return super.getFile();
+	}
+
+	/**
+	 * @deprecated 	DO NOT USE
+	 * 				Use Common#log instead
+	 */
+	@Deprecated
+	@Override
+	public Logger getLogger() {
+		return super.getLogger();
+	}
+
+	/**
+	 * @deprecated 	DO NOT USE
+	 * 				Use {@link SimpleCommand#register()} instead for your commands
+	 */
+	@Deprecated
+	@Override
+	public final PluginCommand getCommand(String name) {
+		return super.getCommand(name);
+	}
+
+	/**
+	 * @deprecated do not use
+	 */
+	@Deprecated
 	@Override
 	public final boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		throw unsupported("onCommand");
 	}
 
+	/**
+	 * @deprecated do not use
+	 */
+	@Deprecated
 	@Override
 	public final List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 		throw unsupported("onTabComplete");
 	}
 
+	/**
+	 * @deprecated do not use
+	 */
+	@Deprecated
 	@Override
 	public final FileConfiguration getConfig() {
 		throw unsupported("getConfig");
 	}
 
+	/**
+	 * @deprecated do not use
+	 */
+	@Deprecated
 	@Override
 	public final void saveConfig() {
 		throw unsupported("saveConfig");
 	}
 
+	/**
+	 * @deprecated do not use
+	 */
+	@Deprecated
 	@Override
 	public final void saveDefaultConfig() {
 		throw unsupported("saveDefaultConfig");
 	}
 
+	/**
+	 * @deprecated do not use
+	 */
+	@Deprecated
 	@Override
 	public final void reloadConfig() {
-		throw unsupported("reloadConfig");
+		throw new FoException("Cannot call reloadConfig in " + getName() + ", use reload()!");
 	}
 
 	private final FoException unsupported(String method) {

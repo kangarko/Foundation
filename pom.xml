@@ -33,6 +33,12 @@
 		<repository>
 			<id>citizens-repo</id>
 			<url>http://repo.citizensnpcs.co/</url>
+			<releases>
+				<updatePolicy>interval:1440</updatePolicy>
+			</releases>
+			<snapshots>
+				<updatePolicy>interval:1440</updatePolicy>
+			</snapshots>
 		</repository>
 	</repositories>
 
@@ -86,8 +92,6 @@
 			<artifactId>ChestShop</artifactId>
 			<version>3.10-SNAPSHOT</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.mineacademy.plugin</groupId> <artifactId>CitizensAPI</artifactId> 
-			<version>2.0.25-b612</version> </dependency> -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CMI</artifactId>
@@ -106,7 +110,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Factions</artifactId>
-			<version>2.14.0</version>
+			<version>3.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -141,7 +145,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>MassiveCore</artifactId>
-			<version>2.14.0</version>
+			<version>3.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>

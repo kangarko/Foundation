@@ -106,9 +106,9 @@ public final class Common {
 	/**
 	 * Should we add a prefix to the messages we send to the console?
 	 *
-	 * This is enabled automatically when a {@link SimplePlugin} starts
+	 * True by default
 	 */
-	public static boolean ADD_LOG_PREFIX = false;
+	public static boolean ADD_LOG_PREFIX = true;
 
 	/**
 	 * Should we send tellX methods even if the player is conversing?
@@ -410,8 +410,10 @@ public final class Common {
 		final boolean hasPrefix = message.contains("{prefix}");
 
 		// Add colors and replace player
-		message = colorize(message.replace("{player}", resolveSenderName(sender)));
-		message = Replacer.of(message).find("plugin_name", "plugin.name", "plugin_version", "plugin.version").replace(SimplePlugin.getNamed(), SimplePlugin.getNamed(), SimplePlugin.getVersion(), SimplePlugin.getVersion()).getReplacedMessageJoined();
+		message = Replacer.of(message)
+				.find("player", "plugin_name", "plugin.name", "plugin_version", "plugin.version")
+				.replace(resolveSenderName(sender), SimplePlugin.getNamed(), SimplePlugin.getNamed(), SimplePlugin.getVersion(), SimplePlugin.getVersion()).getReplacedMessageJoined();
+		message = colorize(message);
 
 		// Send [JSON] prefixed messages as json component
 		if (message.startsWith("[JSON]")) {
@@ -501,7 +503,7 @@ public final class Common {
 	public static String colorize(String message) {
 		return message == null || message.isEmpty() ? ""
 				: ChatColor.translateAlternateColorCodes('&', message
-						.replace("{prefix}", removeSurroundingSpaces(tellPrefix.trim()))
+						.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
 						.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 						.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
@@ -968,6 +970,7 @@ public final class Common {
 			if (message.isEmpty() || message.equals("none"))
 				continue;
 
+			message = Replacer.of(message).find("plugin_name", "plugin.name", "plugin_version", "plugin.version").replace(SimplePlugin.getNamed(), SimplePlugin.getNamed(), SimplePlugin.getVersion(), SimplePlugin.getVersion()).getReplacedMessageJoined();
 			message = colorize(message);
 
 			if (message.startsWith("[JSON]")) {
@@ -1905,6 +1908,18 @@ public final class Common {
 	/**
 	 * Runs the task async even if the plugin is disabled for some reason.
 	 *
+	 * Schedules the run on the next tick.
+	 *
+	 * @param task
+	 * @return
+	 */
+	public static BukkitTask runLaterAsync(Runnable task) {
+		return runLaterAsync(0, task);
+	}
+
+	/**
+	 * Runs the task async even if the plugin is disabled for some reason.
+	 *
 	 * @param delayTicks
 	 * @param task
 	 * @return the task or null
@@ -1989,10 +2004,11 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Call an event in Bukkit and return whether it was NOT cancelled
+	 * Call an event in Bukkit and return whether it was fired
+	 * successfully through the pipeline (NOT cancelled)
 	 *
 	 * @param event the event
-	 * @return true if the event was not cancelled
+	 * @return true if the event was NOT cancelled
 	 */
 	public static boolean callEvent(Event event) {
 		Bukkit.getPluginManager().callEvent(event);

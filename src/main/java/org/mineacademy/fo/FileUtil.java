@@ -36,6 +36,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for managing files.
@@ -119,20 +120,20 @@ public final class FileUtil {
 	 * @param extension
 	 * @return
 	 */
-	public static File[] getFiles(String directory, String extension) {
+	public static File[] getFiles(@NonNull String directory, @NonNull String extension) {
 
 		// Remove initial dot, if any
 		if (extension.startsWith("."))
 			extension = extension.substring(1);
 
-		final File dir = new File(SimplePlugin.getInstance().getDataFolder(), directory);
+		final File dataFolder = new File(SimplePlugin.getData(), directory);
 
-		if (!dir.exists())
-			dir.mkdirs();
+		if (!dataFolder.exists())
+			dataFolder.mkdirs();
 
 		final String finalExtension = extension;
 
-		return dir.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+		return dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
 	}
 
 	/**

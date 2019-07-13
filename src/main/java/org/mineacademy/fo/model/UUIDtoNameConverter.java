@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
  * Utility class for connecting to Mojang servers to get the players name from a given UUID
  */
 @RequiredArgsConstructor
-public class UidtoNameConverter implements Callable<String> {
+public class UUIDtoNameConverter implements Callable<String> {
 
 	/**
 	 * The URL to connect to

@@ -23,12 +23,19 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
 
+import com.google.gson.Gson;
+
 /**
  * Serialized map enables you to save and retain values from your
  * configuration easily, such as locations, other maps or lists and
  * much more.
  */
 public final class SerializedMap extends StrictCollection {
+
+	/**
+	 * The Google Json instance
+	 */
+	private final static Gson gson = new Gson();
 
 	/**
 	 * The internal map with values
@@ -596,10 +603,23 @@ public final class SerializedMap extends StrictCollection {
 		}
 	}
 
+	/**
+	 * Converts this map into a JSON string
+	 *
+	 * @return
+	 */
+	public String toJson() {
+		return gson.toJson(serialize());
+	}
+
 	@Override
 	public String toString() {
 		return serialize().toString();
 	}
+
+	// ----------------------------------------------------------------------------------------------------
+	// Static
+	// ----------------------------------------------------------------------------------------------------
 
 	/**
 	 * Parses the given object into Serialized map
@@ -628,5 +648,23 @@ public final class SerializedMap extends StrictCollection {
 
 		serialized.map.setAll(map);
 		return serialized;
+	}
+
+	/**
+	 * Attempts to parse the given JSON into a serialized map
+	 *
+	 * Values are not deserialized right away, they are converted
+	 * when you call get() functions
+	 *
+	 * @param json
+	 * @return
+	 */
+	public static SerializedMap fromJson(String json) {
+		final SerializedMap serializedMap = new SerializedMap();
+		final Map<String, Object> map = gson.fromJson(json, Map.class);
+
+		serializedMap.map.putAll(map);
+
+		return serializedMap;
 	}
 }

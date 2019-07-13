@@ -188,28 +188,28 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 		pathPrefix(null);
 		upgradeOldSettings();
 
-		if (isSetDefaultAbsolute("Prefix"))
+		if (isSetDefault("Prefix"))
 			PLUGIN_PREFIX = getString("Prefix");
 
-		if (isSetDefaultAbsolute("Log_Lag_Over_Milis")) {
+		if (isSetDefault("Log_Lag_Over_Milis")) {
 			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
 
 			Valid.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Millis must be either -1 to disable, 0 to log all or greater!");
 		}
 
-		if (isSetDefaultAbsolute("Debug"))
+		if (isSetDefault("Debug"))
 			DEBUG_SECTIONS = new StrictList<>(getStringList("Debug"));
 
-		if (isSetDefaultAbsolute("Regex_Timeout_Milis"))
+		if (isSetDefault("Regex_Timeout_Milis"))
 			REGEX_TIMEOUT = getInteger("Regex_Timeout_Milis");
 
-		if (isSetDefaultAbsolute("Server_Name"))
+		if (isSetDefault("Server_Name"))
 			SERVER_NAME = Common.colorize(getString("Server_Name"));
 
-		if (isSetDefaultAbsolute("Notify_Promotions"))
+		if (isSetDefault("Notify_Promotions"))
 			NOTIFY_PROMOTIONS = getBoolean("Notify_Promotions");
 
-		if (isSetDefaultAbsolute("Serialization"))
+		if (isSetDefault("Serialization"))
 			SECRET_KEY = getString("Serialization");
 
 		// -------------------------------------------------------------------
@@ -218,7 +218,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		{ // Load localization
 			final boolean hasLocalization = hasLocalization();
-			final boolean keySet = isSetDefaultAbsolute("Locale");
+			final boolean keySet = isSetDefault("Locale");
 
 			if (hasLocalization && !keySet)
 				throw new FoException("Since you have your Localization class you must set the 'Locale' key in " + getFileName());
@@ -228,7 +228,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		{ // Load main command alias
 
-			final boolean keySet = isSetDefaultAbsolute("Command_Aliases");
+			final boolean keySet = isSetDefault("Command_Aliases");
 
 			if (SimplePlugin.getInstance().getMainCommand() != null && !keySet)
 				throw new FoException("Since you override getMainCommand in your main plugin class you must set the 'Command_Aliases' key in " + getFileName());
@@ -238,7 +238,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		{ // Load updates notifier
 
-			final boolean keySet = isSetDefaultAbsolute("Notify_Updates");
+			final boolean keySet = isSetDefault("Notify_Updates");
 
 			if (SimplePlugin.getInstance().getUpdateCheck() != null && !keySet)
 				throw new FoException("Since you override getUpdateCheck in your main plugin class you must set the 'Notify_Updates' key in " + getFileName());
