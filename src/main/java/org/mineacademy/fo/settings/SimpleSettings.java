@@ -193,8 +193,10 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		if (isSetDefault("Log_Lag_Over_Milis")) {
 			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
+			Valid.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Milis must be either -1 to disable, 0 to log all or greater!");
 
-			Valid.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Millis must be either -1 to disable, 0 to log all or greater!");
+			if (LAG_THRESHOLD_MILLIS == 0)
+				Common.log("&eLog_Lag_Over_Milis is 0, all performance is logged. Set to -1 to disable.");
 		}
 
 		if (isSetDefault("Debug"))

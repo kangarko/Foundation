@@ -257,13 +257,14 @@ public abstract class SimpleEnchantment extends Enchantment {
 	public static Map<SimpleEnchantment, Integer> findEnchantments(ItemStack item) {
 		final Map<SimpleEnchantment, Integer> map = new HashMap<>();
 
-		for (final Entry<Enchantment, Integer> e : item.getEnchantments().entrySet()) {
-			final Enchantment enchantment = e.getKey();
-			final int level = e.getValue();
+		if (item != null && item.getEnchantments() != null)
+			for (final Entry<Enchantment, Integer> e : item.getEnchantments().entrySet()) {
+				final Enchantment enchantment = e.getKey();
+				final int level = e.getValue();
 
-			if (enchantment instanceof SimpleEnchantment)
-				map.put((SimpleEnchantment) enchantment, level);
-		}
+				if (enchantment instanceof SimpleEnchantment)
+					map.put((SimpleEnchantment) enchantment, level);
+			}
 
 		return map;
 	}
