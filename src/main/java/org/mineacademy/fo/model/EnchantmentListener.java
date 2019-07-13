@@ -56,7 +56,8 @@ public final class EnchantmentListener implements Listener {
 	private void execute(LivingEntity source, BiConsumer<SimpleEnchantment, Integer> executer) {
 		final ItemStack hand = source.getEquipment().getItemInHand();
 
-		for (final Entry<SimpleEnchantment, Integer> e : SimpleEnchantment.findEnchantments(hand).entrySet())
-			executer.accept(e.getKey(), e.getValue());
+		if (hand != null)
+			for (final Entry<SimpleEnchantment, Integer> e : SimpleEnchantment.findEnchantments(hand).entrySet())
+				executer.accept(e.getKey(), e.getValue());
 	}
 }

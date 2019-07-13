@@ -95,6 +95,8 @@ public final class Common {
 
 	/**
 	 * Should we add a prefix to the messages we send to players using tell() methods?
+	 *
+	 * False by default
 	 */
 	public static boolean ADD_TELL_PREFIX = false;
 
