@@ -66,14 +66,45 @@ public final class LagCatcher {
 	 * @param thresholdMs
 	 */
 	public static void end(String section, int thresholdMs) {
+		end(section, thresholdMs, "{section} took {time} ms");
+	}
+
+	/**
+	 * Stops measuring time in a code section and print a custom console message
+	 * when it took over the given threshold
+	 *
+	 * Use {section} and {time} to replace the debugged section and how long it took
+	 *
+	 * @param section
+	 * @param thresholdMs
+	 * @param message
+	 */
+	public static void end(String section, int thresholdMs, String message) {
 		final double lag = finishAndCalculate(section);
 
 		if (lag > thresholdMs) {
+			message = message.replace("{section}", section);
+			message = message.replace("{time}", MathUtil.formatTwoDigits(lag));
+
 			if (SimplePlugin.hasInstance())
-				Common.logNoPrefix("&3[&f" + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + "&3] &7" + section + " took &f" + MathUtil.formatTwoDigits(lag) + " ms");
+				Common.logNoPrefix("[{plugin_name} {plugin_version}] " + message);
 			else
-				System.out.println("[LagCatcher] " + section + " took " + MathUtil.formatTwoDigits(lag) + " ms");
+				System.out.println("[LagCatcher] " + message);
 		}
+	}
+
+	/**
+	 * Returns the time in milliseconds how long a measured section section took.
+	 *
+	 * This does NOT stop the section from being measured.
+	 *
+	 * @param section
+	 * @return the time in 00.000 format, in milliseconds, or 0 if not measured
+	 */
+	public static double endTook(String section) {
+		final Long nanoTime = timings.get(section);
+
+		return calculate(nanoTime);
 	}
 
 	/**
@@ -108,6 +139,10 @@ public final class LagCatcher {
 	private static double finishAndCalculate(String section) {
 		final Long nanoTime = timings.remove(section);
 
+		return calculate(nanoTime);
+	}
+
+	private static double calculate(Long nanoTime) {
 		return nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D;
 	}
 }

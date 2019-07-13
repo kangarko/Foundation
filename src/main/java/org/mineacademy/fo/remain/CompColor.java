@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain;
 
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
@@ -136,7 +137,7 @@ public enum CompColor {
 	private CompColor(DyeColor dye, ChatColor chatColor, String legacyName) {
 		this.dye = dye;
 		this.chatColor = chatColor == null ? ChatColor.valueOf(toString()) : chatColor;
-		this.legacyName = legacyName;
+		this.legacyName = Common.getOrEmpty(legacyName);
 	}
 
 	// ----------------------------------------------------------------------------------------------------

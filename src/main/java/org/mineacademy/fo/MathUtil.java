@@ -141,7 +141,7 @@ public final class MathUtil {
 	 * @param min
 	 * @return
 	 */
-	public static double atLeast(int value, int min) {
+	public static int atLeast(int value, int min) {
 		return value > min ? value : min;
 	}
 

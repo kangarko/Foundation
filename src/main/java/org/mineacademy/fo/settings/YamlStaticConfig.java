@@ -215,6 +215,10 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.isSet(path);
 	}
 
+	protected static final boolean isSetDefault(String path) {
+		return TEMPORARY_INSTANCE.isSetDefault(path);
+	}
+
 	protected static final boolean isSetDefaultAbsolute(String path) {
 		return TEMPORARY_INSTANCE.isSetDefaultAbsolute(path);
 	}

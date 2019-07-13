@@ -1218,6 +1218,17 @@ public class YamlConfig {
 
 	/**
 	 * Return whether the default config exist in your plugins jar and contains the
+	 * given relative path using {@link #getPathPrefix()} feature
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final boolean isSetDefault(String path) {
+		return isSetDefaultAbsolute(formPathPrefix(path));
+	}
+
+	/**
+	 * Return whether the default config exist in your plugins jar and contains the
 	 * given absolute path
 	 *
 	 * @param path

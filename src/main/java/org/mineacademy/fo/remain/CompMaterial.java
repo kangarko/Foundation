@@ -1412,7 +1412,7 @@ public enum CompMaterial {
 	 */
 	public static ItemStack makeWool(CompColor color, int amount) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return new ItemStack(Material.valueOf(color.name() + "_WOOL"), amount);
+			return new ItemStack(Material.valueOf(color.getDye() + "_WOOL"), amount);
 
 		else
 			return new ItemStack(Material.valueOf("WOOL"), amount, color.getDye().getWoolData());

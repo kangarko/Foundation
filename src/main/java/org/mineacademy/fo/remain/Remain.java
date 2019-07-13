@@ -79,7 +79,7 @@ import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.UidtoNameConverter;
+import org.mineacademy.fo.model.UUIDtoNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
@@ -1271,7 +1271,7 @@ public final class Remain {
 			return Bukkit.getOfflinePlayer(id);
 
 		} catch (final NoSuchMethodError err) {
-			final UidtoNameConverter f = new UidtoNameConverter(id);
+			final UUIDtoNameConverter f = new UUIDtoNameConverter(id);
 
 			try {
 				final String name = f.call();
