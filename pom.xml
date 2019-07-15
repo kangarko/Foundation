@@ -30,16 +30,6 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
 		</repository>
-		<repository>
-			<id>citizens-repo</id>
-			<url>http://repo.citizensnpcs.co/</url>
-			<releases>
-				<updatePolicy>interval:1440</updatePolicy>
-			</releases>
-			<snapshots>
-				<updatePolicy>interval:1440</updatePolicy>
-			</snapshots>
-		</repository>
 	</repositories>
 
 	<dependencies>
@@ -62,36 +52,16 @@
 		</dependency>
 		<!-- Plugins from their own repo with documentation and sources -->
 		<dependency>
-			<groupId>net.citizensnpcs</groupId>
-			<artifactId>citizensapi</artifactId>
-			<version>2.0.25-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>net.citizensnpcs</groupId>
-			<artifactId>citizens</artifactId>
-			<version>2.0.25-SNAPSHOT</version>
+			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>CitizensAPI</artifactId>
+			<version>2.0.25-b612</version>
 		</dependency>
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>AuthMe</artifactId>
 			<version>5.5.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>BlueShop</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>BossShop</artifactId>
-			<version>2.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>ChestShop</artifactId>
-			<version>3.10-SNAPSHOT</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CMI</artifactId>
@@ -119,18 +89,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>Heroes</artifactId>
-			<version>1.9.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Jobs</artifactId>
 			<version>4.10.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>Kingdoms</artifactId>
-			<version>14.2.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -184,11 +144,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>Nicky</artifactId>
-			<version>0.7</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>NuVotifier</artifactId>
 			<version>2.5.0</version>
 		</dependency>
@@ -204,11 +159,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>PowerNBT</artifactId>
-			<version>0.8.9.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>ProtocolLib</artifactId>
 			<version>4.5.0</version>
 		</dependency>
@@ -216,27 +166,7 @@
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Residence</artifactId>
 			<version>4.8.4.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>Shop</artifactId>
-			<version>1.7.3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>ShopGUIPlus</artifactId>
-			<version>1.19.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>SignShop</artifactId>
-			<version>2.11.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>StackMob</artifactId>
-			<version>3.3.3</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Towny</artifactId>
@@ -255,7 +185,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.0.0-SNAPSHOT-4415</version>
+			<version>7.0.0-SNAPSHOT-4486</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
