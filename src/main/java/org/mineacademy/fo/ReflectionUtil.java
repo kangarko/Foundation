@@ -120,6 +120,20 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Return a constructor for the given fully qualified class path such as
+	 * org.mineacademy.boss.BossPlugin
+	 *
+	 * @param classPath
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getConstructor(@NonNull String classPath, Class<?>... params) {
+		final Class<?> clazz = lookupClass(classPath);
+
+		return getConstructor(clazz, params);
+	}
+
+	/**
 	 * Return a constructor for the given class
 	 *
 	 * @param clazz
@@ -128,7 +142,10 @@ public final class ReflectionUtil {
 	 */
 	public static Constructor<?> getConstructor(@NonNull Class<?> clazz, Class<?>... params) {
 		try {
-			return clazz.getConstructor(params);
+			final Constructor<?> constructor = clazz.getConstructor(params);
+			constructor.setAccessible(true);
+
+			return constructor;
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Could not get constructor of " + clazz + " with parameters " + Common.joinToString(params));
