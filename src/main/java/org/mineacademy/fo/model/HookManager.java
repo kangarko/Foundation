@@ -30,6 +30,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -71,7 +72,6 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import fr.xephi.authme.data.auth.PlayerCache;
-import io.loyloy.nicky.Nick;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -95,7 +95,7 @@ import net.milkbowl.vault.permission.Permission;
 public final class HookManager {
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Store hook classes separatelz for below, avoiding no such method/field errors
+	// Store hook classes separately for below, avoiding no such method/field errors
 	// ------------------------------------------------------------------------------------------------------------
 
 	private static AuthMeHook authMe;
@@ -209,9 +209,9 @@ public final class HookManager {
 				if (MinecraftVersion.newerThan(V.v1_6))
 					Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
 			} catch (final Throwable t) {
-				Common.error(t, "You are running an old and unsupported version of ProtocolLib, please update it.");
-
 				protocolLibHook = null;
+
+				Common.throwError(t, "You are running an old and unsupported version of ProtocolLib, please update it.");
 			}
 		}
 
@@ -555,6 +555,32 @@ public final class HookManager {
 	}
 
 	/**
+	 * Set EssentialsX and CMI ignored player
+	 *
+	 * @param player
+	 * @param who
+	 * @param ignore
+	 */
+	public static void setIgnore(String player, String who, boolean ignore) {
+		if (isEssentialsXLoaded())
+			essentialsxHook.setIgnore(player, who, ignore);
+
+		if (isCMILoaded())
+			CMIHook.setIgnore(player, who, ignore);
+	}
+
+	/**
+	 * Return true if the player is ignoring another player in EssentialsX
+	 *
+	 * @param player
+	 * @param who
+	 * @return
+	 */
+	public static boolean isIgnoring(String player, String who) {
+		return isEssentialsXLoaded() ? essentialsxHook.isIgnoring(player, who) : isCMILoaded() ? CMIHook.isIgnoring(player, who) : false;
+	}
+
+	/**
 	 * Returns the nick for the given recipient from Essentials or Nicky, or if it's a console, their name
 	 *
 	 * @param sender
@@ -578,29 +604,6 @@ public final class HookManager {
 	 */
 	public static Player getReplyTo(Player player) {
 		return isEssentialsXLoaded() ? essentialsxHook.getReplyTo(player.getName()) : null;
-	}
-
-	/**
-	 * Set EssentialsX ignored player
-	 *
-	 * @param player
-	 * @param who
-	 * @param ignore
-	 */
-	public static void setIgnore(String player, String who, boolean ignore) {
-		if (isEssentialsXLoaded())
-			essentialsxHook.setIgnore(player, who, ignore);
-	}
-
-	/**
-	 * Return true if the player is ignoring another player in EssentialsX
-	 *
-	 * @param player
-	 * @param who
-	 * @return
-	 */
-	public static boolean isIgnoring(String player, String who) {
-		return isEssentialsXLoaded() ? essentialsxHook.isIgnoring(player, who) : false;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1928,11 +1931,15 @@ class NickyHook {
 	}
 
 	String getNick(Player player) {
-		final Nick nick = new Nick(player);
-		String nickname = nick.get();
+		final Constructor<?> nickConstructor = ReflectionUtil.getConstructor("io.loyloy.nicky.Nick", Player.class);
+		final Object nick = ReflectionUtil.instantiate(nickConstructor, player);
+		String nickname = ReflectionUtil.invoke("get", nick);
 
-		if (nickname != null)
-			nickname = nick.format(nickname);
+		if (nickname != null) {
+			final Method formatMethod = ReflectionUtil.getMethod(nick.getClass(), "format", String.class);
+
+			nickname = ReflectionUtil.invoke(formatMethod, nick, nickname);
+		}
 
 		return nickname != null && !nickname.isEmpty() ? nickname : player.getName();
 	}
@@ -2421,6 +2428,23 @@ class CMIHook {
 		final CMIUser user = getUser(player);
 
 		user.setLastTeleportLocation(location);
+	}
+
+	void setIgnore(String player, String who, boolean ignore) {
+		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
+		final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
+
+		if (ignore)
+			user.addIgnore(ignoredPlayer.getUniqueId(), true /* save now (?) */);
+		else
+			user.removeIgnore(ignoredPlayer.getUniqueId());
+	}
+
+	boolean isIgnoring(String player, String who) {
+		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
+		final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
+
+		return user.isIgnoring(ignoredPlayer.getUniqueId());
 	}
 
 	CMIUser getUser(Player player) {

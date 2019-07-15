@@ -5,12 +5,11 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTItem;
-
-import com.herocraftonline.items.api.item.attribute.attributes.trigger.triggerables.effects.PotionEffect;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
