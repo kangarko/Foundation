@@ -1,5 +1,7 @@
 package org.mineacademy.fo.bungee;
 
+import java.util.Arrays;
+
 import lombok.Getter;
 
 /**
@@ -92,7 +94,7 @@ public enum FoBungeeAction implements BungeeAction {
 	 * in the error message when the length of data does not match
 	 */
 	@Getter
-	private String[] validValues;
+	private Class<?>[] content;
 
 	/**
 	 * Constructs a new bungee action
@@ -100,6 +102,9 @@ public enum FoBungeeAction implements BungeeAction {
 	 * @param validValues
 	 */
 	private FoBungeeAction(String... validValues) {
-		this.validValues = validValues;
+		final Class<?>[] classes = new Class<?>[validValues.length];
+
+		Arrays.fill(classes, String.class);
+		this.content = classes;
 	}
 }

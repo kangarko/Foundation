@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.mineacademy.fo.Common.Stringer;
 import org.mineacademy.fo.bungee.BungeeAction;
-import org.mineacademy.fo.bungee.BungeeChannel;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -14,6 +13,7 @@ import org.mineacademy.fo.settings.SimpleSettings;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Primitives;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -25,6 +25,14 @@ import lombok.NoArgsConstructor;
 public final class BungeeUtil {
 
 	/**
+	 * The current position of writing the data based on the
+	 * {@link BungeeAction#getContent()}
+	 *
+	 * Reset in tell methods
+	 */
+	private static int actionHead = 0;
+
+	/**
 	 * See {@link #tellBungee(BungeeChannel, Player, Object...)}
 	 *
 	 * NB: This one uses the default channel name specified in {@link SimplePlugin}. By
@@ -32,7 +40,7 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(BungeeAction action, T... datas) {
-		tellBungee(SimplePlugin.getInstance().getDefaultBungeeChannel(), action, datas);
+		tellBungee(SimplePlugin.getBungee().getChannel(), action, datas);
 	}
 
 	/**
@@ -49,15 +57,16 @@ public final class BungeeUtil {
 	 * @param datas   the data
 	 */
 	@SafeVarargs
-	public static <T> void tellBungee(BungeeChannel channel, BungeeAction action, T... datas) {
-		Valid.checkBoolean(datas.length == action.getValidValues().length, "Data count != valid values count in " + action + "! Data: " + datas.length + " vs " + action.getValidValues().length);
+	public static <T> void tellBungee(String channel, BungeeAction action, T... datas) {
+		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Data: " + datas.length + " vs " + action.getContent().length);
 
+		Debugger.put("bungee", "Server '" + SimpleSettings.BUNGEE_SERVER_NAME + "' sent bungee message [" + channel + ", " + action + "]: ");
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-		Debugger.put("bungee", "Sending bungee message [" + channel + ", " + action + "]: ");
-
-		out.writeUTF(SimpleSettings.SERVER_NAME);
+		out.writeUTF(SimpleSettings.BUNGEE_SERVER_NAME);
 		out.writeUTF(action.toString());
+
+		actionHead = 0;
 
 		for (final Object data : datas) {
 			Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
@@ -65,23 +74,34 @@ public final class BungeeUtil {
 			if (data instanceof Integer) {
 				Debugger.put("bungee", data.toString() + ", ");
 
+				moveHead(action, Integer.class);
 				out.writeInt((Integer) data);
 
 			} else if (data instanceof Double) {
 				Debugger.put("bungee", data.toString() + ", ");
 
+				moveHead(action, Double.class);
 				out.writeDouble((Double) data);
+			}
+
+			else if (data instanceof Long) {
+				Debugger.put("bungee", data.toString() + ", ");
+
+				moveHead(action, Long.class);
+				out.writeLong((Long) data);
 			}
 
 			else if (data instanceof Boolean) {
 				Debugger.put("bungee", data.toString() + ", ");
 
+				moveHead(action, Boolean.class);
 				out.writeBoolean((Boolean) data);
 			}
 
 			else if (data instanceof String) {
 				Debugger.put("bungee", data.toString() + ", ");
 
+				moveHead(action, String.class);
 				out.writeUTF((String) data);
 			}
 
@@ -90,7 +110,9 @@ public final class BungeeUtil {
 		}
 
 		Debugger.push("bungee");
-		getThroughWhomSendMessage().sendPluginMessage(SimplePlugin.getInstance(), channel.getName(), out.toByteArray());
+		getThroughWhomSendMessage().sendPluginMessage(SimplePlugin.getInstance(), channel, out.toByteArray());
+
+		actionHead = 0;
 	}
 
 	/**
@@ -139,5 +161,24 @@ public final class BungeeUtil {
 	 */
 	private static PluginMessageRecipient getThroughWhomSendMessage() {
 		return Remain.getOnlinePlayers().isEmpty() ? Bukkit.getServer() : Remain.getOnlinePlayers().iterator().next();
+	}
+
+	/**
+	 * Ensures we are reading in the correct order as the given {@link BungeeAction}
+	 * specifies in its {@link BungeeAction#getContent()} getter.
+	 *
+	 * This also ensures we are reading the correct data type (both primitives and wrappers
+	 * are supported).
+	 *
+	 * @param typeOf
+	 */
+	private static void moveHead(BungeeAction action, Class<?> typeOf) {
+		Valid.checkNotNull(action, "Action not set!");
+
+		final Class<?>[] content = action.getContent();
+		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length);
+		Valid.checkBoolean(Primitives.wrap(content[actionHead]) == typeOf, "Unexpected data type " + typeOf + ", expected " + content[actionHead] + " for " + action.name());
+
+		actionHead++;
 	}
 }
