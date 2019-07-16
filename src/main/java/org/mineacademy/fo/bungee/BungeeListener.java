@@ -1,19 +1,23 @@
-package org.mineacademy.fo.model;
+package org.mineacademy.fo.bungee;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
  * Represents a bungeecords listener using a {@link BungeeChannel} channel
  * on which you can listen to receiving messages
+ *
+ * This class is also a Listener for Bukkit events for your convenience
  */
-public abstract class BungeeListener implements PluginMessageListener {
+public abstract class BungeeListener implements Listener, PluginMessageListener {
 
 	/**
 	 * The channel name
 	 */
-	private final String channelName;
+	private final BungeeChannel channelName;
 
 	/**
 	 * Create a new bungee listener using {@link SimplePlugin#getDefaultBungeeChannel()}
@@ -28,7 +32,9 @@ public abstract class BungeeListener implements PluginMessageListener {
 	 * @param channel
 	 */
 	protected BungeeListener(BungeeChannel channel) {
-		this.channelName = channel.getName();
+		this.channelName = channel;
+
+		Common.registerEvents(this);
 	}
 
 	/**
@@ -36,7 +42,7 @@ public abstract class BungeeListener implements PluginMessageListener {
 	 *
 	 * @return
 	 */
-	public final String getChannel() {
+	public final BungeeChannel getChannel() {
 		return channelName;
 	}
 
@@ -45,7 +51,7 @@ public abstract class BungeeListener implements PluginMessageListener {
 	 */
 	@Override
 	public final void onPluginMessageReceived(String tag, Player player, byte[] data) {
-		if (tag.equals(channelName))
+		if (tag.equals(channelName.getName()))
 			onMessageReceived(player, data);
 	}
 
