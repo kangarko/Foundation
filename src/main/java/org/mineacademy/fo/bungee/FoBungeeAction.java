@@ -1,10 +1,10 @@
-package org.mineacademy.fo.model;
+package org.mineacademy.fo.bungee;
 
 import lombok.Getter;
 
 /**
- * Currently holds proprietary protocol for some of our premium plugins
- * handled by BungeeControl
+ * Proprietary implementation of BungeeAction for some of our
+ * premium plugins handled by BungeeControl
  *
  * The bungee protocol always begins with
  * 1) The sender server name
@@ -12,7 +12,7 @@ import lombok.Getter;
  *
  * and the rest is the actual data within this enum
  */
-public enum BungeeAction {
+public enum FoBungeeAction implements BungeeAction {
 
 	// ----------------------------------------------------------------------------------------------------
 	// Stay on BungeeCord using BungeeControl plugin
@@ -99,7 +99,7 @@ public enum BungeeAction {
 	 *
 	 * @param validValues
 	 */
-	private BungeeAction(String... validValues) {
+	private FoBungeeAction(String... validValues) {
 		this.validValues = validValues;
 	}
 }

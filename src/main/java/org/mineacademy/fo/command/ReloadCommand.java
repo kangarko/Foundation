@@ -13,7 +13,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 	public ReloadCommand() {
 		super("reload|rl");
 
-		setDescription("Reload the configuration (unsafe).");
+		setDescription("Reload the configuration.");
 	}
 
 	@Override

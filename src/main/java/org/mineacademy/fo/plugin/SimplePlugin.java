@@ -32,10 +32,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
+import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.bungee.BungeeChannel;
+import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
@@ -48,8 +51,6 @@ import org.mineacademy.fo.menu.tool.Rocket;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
-import org.mineacademy.fo.model.BungeeChannel;
-import org.mineacademy.fo.model.BungeeListener;
 import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleEnchantment;
@@ -252,7 +253,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			HookManager.loadDependencies();
 
 			// Register bungee channel just in case we use it later
-			registerOutgoingPluginChannel(BungeeChannel.BUNGEECORD);
+			registerOutgoingPluginChannel(BungeeChannel.DEFAULT_CHANNEL);
+
+			// Register default outgoing channel if set
+			if (getDefaultBungeeChannel() != null && getDefaultBungeeChannel() != BungeeChannel.DEFAULT_CHANNEL)
+				registerOutgoingPluginChannel(getDefaultBungeeChannel());
 
 			// Register main command if it is set
 			if (getMainCommand() != null) {
@@ -741,15 +746,20 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Convenience method for registering outgoing channel to bungeecords,
-	 * by default uses {@link #getDefaultBungeeChannel()}
+	 * Convenience method for register incoming and outgoing Bungeecords
+	 * channels for the given listener. You can then use {@link BungeeUtil}
+	 * to send plugin messages (outgoing)
+	 *
+	 * @param listener
 	 */
-	protected final void registerOutgoingPluginChannel() {
-		registerOutgoingPluginChannel(getDefaultBungeeChannel());
+	protected final void registerPluginChannel(BungeeListener listener) {
+		registerOutgoingPluginChannel(listener.getChannel());
+		registerIncomingPluginChannel(listener);
 	}
 
 	/**
 	 * Convenience method for registering outgoing channel to bungeecords
+	 * You can then use {@link BungeeUtil} to send plugin messages (outgoing)
 	 *
 	 * @param channel
 	 */
@@ -766,7 +776,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param listener
 	 */
 	protected final void registerIncomingPluginChannel(BungeeListener listener) {
-		getServer().getMessenger().registerIncomingPluginChannel(this, listener.getChannel(), listener);
+		getServer().getMessenger().registerIncomingPluginChannel(this, listener.getChannel().getName(), listener);
 	}
 
 	/**
@@ -974,6 +984,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * The default channel this plugin is communication bungee with.
+	 *
+	 * This is registered as outgoing channel automatically. If you
+	 * want to listen to incoming messages use {@link #registerIncomingPluginChannel(BungeeListener)}
 	 *
 	 * @return the channel name in an enum object.
 	 */
