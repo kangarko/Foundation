@@ -32,13 +32,11 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeChannel;
-import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.SimpleBungee;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
@@ -153,6 +151,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Return the BungeeCord setup or null if not present
+	 *
+	 * @return
+	 */
+	public static final SimpleBungee getBungee() {
+		return getInstance().getBungeeCord();
+	}
+
+	/**
 	 * Get if the instance that is used across the library has been set. Normally it
 	 * is always set, except for testing.
 	 *
@@ -252,12 +259,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load our dependency system
 			HookManager.loadDependencies();
 
-			// Register bungee channel just in case we use it later
-			registerOutgoingPluginChannel(BungeeChannel.DEFAULT_CHANNEL);
-
-			// Register default outgoing channel if set
-			if (getDefaultBungeeChannel() != null && getDefaultBungeeChannel() != BungeeChannel.DEFAULT_CHANNEL)
-				registerOutgoingPluginChannel(getDefaultBungeeChannel());
+			// Register bungee when used
+			registerBungeeCord();
 
 			// Register main command if it is set
 			if (getMainCommand() != null) {
@@ -307,6 +310,24 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		} catch (final Throwable t) {
 			displayError0(t);
+		}
+	}
+
+	/**
+	 * Convenience method for registering channels to BungeeCord
+	 *
+	 * @param channel
+	 */
+	private final void registerBungeeCord() {
+		final Messenger messenger = getServer().getMessenger();
+		final SimpleBungee bungee = getBungeeCord();
+
+		if (bungee != null) {
+			messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee.getListener());
+			messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
+
+			reloadables.registerEvents(bungee.getListener());
+			Debugger.debug("bungee", "Registered BungeeCord listener for " + bungee.getChannel());
 		}
 	}
 
@@ -705,6 +726,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			FoundationPacketListener.addPacketListener();
 
+			registerBungeeCord();
+
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
 
@@ -744,40 +767,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 	// Methods
 	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * Convenience method for register incoming and outgoing Bungeecords
-	 * channels for the given listener. You can then use {@link BungeeUtil}
-	 * to send plugin messages (outgoing)
-	 *
-	 * @param listener
-	 */
-	protected final void registerPluginChannel(BungeeListener listener) {
-		registerOutgoingPluginChannel(listener.getChannel());
-		registerIncomingPluginChannel(listener);
-	}
-
-	/**
-	 * Convenience method for registering outgoing channel to bungeecords
-	 * You can then use {@link BungeeUtil} to send plugin messages (outgoing)
-	 *
-	 * @param channel
-	 */
-	protected final void registerOutgoingPluginChannel(BungeeChannel channel) {
-		final Messenger messenger = getServer().getMessenger();
-
-		if (!messenger.isOutgoingChannelRegistered(this, channel.getName()))
-			messenger.registerOutgoingPluginChannel(this, channel.getName());
-	}
-
-	/**
-	 * Convenience method for registering incoming channel from bungeecords
-	 *
-	 * @param listener
-	 */
-	protected final void registerIncomingPluginChannel(BungeeListener listener) {
-		getServer().getMessenger().registerIncomingPluginChannel(this, listener.getChannel().getName(), listener);
-	}
 
 	/**
 	 * Convenience method for quickly registering events if the condition is met
@@ -983,15 +972,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * The default channel this plugin is communication bungee with.
+	 * Return the bungee suite if you want this plugin
+	 * to send and receive messages from BungeeCord
 	 *
-	 * This is registered as outgoing channel automatically. If you
-	 * want to listen to incoming messages use {@link #registerIncomingPluginChannel(BungeeListener)}
-	 *
-	 * @return the channel name in an enum object.
+	 * @return
 	 */
-	public BungeeChannel getDefaultBungeeChannel() {
-		throw new FoException("Must override getDefaultBungeeChannel()");
+	public SimpleBungee getBungeeCord() {
+		return null;
 	}
 
 	/**

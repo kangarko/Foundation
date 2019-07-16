@@ -135,7 +135,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	public static String LOCALE_PREFIX = "en";
 
 	/**
-	 * The server name used in {server_name} variable or Bungeecords, if your plugin supports either of those.
+	 * The server name used in {server_name} variable or BungeeCord, if your plugin supports either of those.
 	 *
 	 * Typically for ChatControl:
 	 *
@@ -144,6 +144,13 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 * // NOT MANDATORY //
 	 */
 	public static String SERVER_NAME = "Server";
+
+	/**
+	 * The server name identifier
+	 *
+	 * Mandatory if using BungeeCord
+	 */
+	public static String BUNGEE_SERVER_NAME = "Undefined";
 
 	/**
 	 * Antipiracy stuff for our protected software, leave empty to Serialization: ""
@@ -217,6 +224,16 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 		// -------------------------------------------------------------------
 		// Load maybe-mandatory values
 		// -------------------------------------------------------------------
+
+		{ // Load Bungee server name
+
+			final boolean keySet = isSetDefault("Bungee_Server_Name");
+
+			if (SimplePlugin.getInstance().getBungeeCord() != null && !keySet)
+				throw new FoException("Since you override getBungeeCord in your main plugin class you must set the 'Bungee_Server_Name' key in " + getFileName());
+
+			BUNGEE_SERVER_NAME = keySet ? getString("Bungee_Server_Name") : BUNGEE_SERVER_NAME;
+		}
 
 		{ // Load localization
 			final boolean hasLocalization = hasLocalization();
