@@ -969,8 +969,14 @@ public final class Common {
 	 */
 	public static void log(boolean addLogPrefix, String... messages) {
 		for (String message : messages) {
-			if (message.isEmpty() || message.equals("none"))
+			if (message.equals("none"))
 				continue;
+
+			if (stripColors(message).replace(" ", "").isEmpty()) {
+				CONSOLE_SENDER.sendMessage("  ");
+
+				continue;
+			}
 
 			message = Replacer.of(message).find("plugin_name", "plugin.name", "plugin_version", "plugin.version").replace(SimplePlugin.getNamed(), SimplePlugin.getNamed(), SimplePlugin.getVersion(), SimplePlugin.getVersion()).getReplacedMessageJoined();
 			message = colorize(message);
@@ -985,6 +991,7 @@ public final class Common {
 				for (final String part : splitNewline(message))
 					CONSOLE_SENDER.sendMessage(((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + part.replace("\n", colorize("\n&r"))).trim());
 		}
+
 	}
 
 	/**
