@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -253,21 +252,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
 			}
 
+			if (!isEnabled || !isEnabled())
+				return;
+
 			// Register classes
 			checkSingletons();
 
 			// Load our dependency system
 			HookManager.loadDependencies();
 
-			// Register bungee when used
-			registerBungeeCord();
-
-			// Register main command if it is set
-			if (getMainCommand() != null) {
-				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
-
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
-			}
+			if (!isEnabled || !isEnabled())
+				return;
 
 			// --------------------------------------------
 			// Call the main start method
@@ -279,13 +274,23 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			onPluginStart();
 			// --------------------------------------------
 
-			// Start update check
-			if (getUpdateCheck() != null)
-				getUpdateCheck().run();
-
 			// Return if plugin start indicated a fatal problem
 			if (!isEnabled || !isEnabled())
 				return;
+
+			// Register main command if it is set
+			if (getMainCommand() != null) {
+				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
+
+				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+			}
+
+			// Register bungee when used
+			registerBungeeCord();
+
+			// Start update check
+			if (getUpdateCheck() != null)
+				getUpdateCheck().run();
 
 			// Register our listeners
 			registerEvents(this); // For convenience
@@ -721,12 +726,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (areScriptVariablesEnabled())
 				Variables.reloadScriptVariables();
 
-			if (getMainCommand() != null)
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
-
 			FoundationPacketListener.addPacketListener();
-
-			registerBungeeCord();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
@@ -734,6 +734,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			startingReloadables = true;
 			onReloadablesStart();
 			startingReloadables = false;
+
+			if (getMainCommand() != null)
+				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+
+			registerBungeeCord();
 
 		} catch (final Throwable t) {
 			Common.throwError(t, "Error reloading " + getName() + " " + getVersion());
@@ -1051,16 +1056,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	protected final File getFile() {
 		return super.getFile();
-	}
-
-	/**
-	 * @deprecated 	DO NOT USE
-	 * 				Use Common#log instead
-	 */
-	@Deprecated
-	@Override
-	public Logger getLogger() {
-		return super.getLogger();
 	}
 
 	/**
