@@ -618,8 +618,17 @@ public final class Remain {
 
 				text += comp.toLegacyText();
 			}
+
 		} catch (final Throwable t) {
-			Common.log("Unable to parse JSON message. Got " + t.getMessage());
+
+			// Do not catch our own exception
+			if (t instanceof InteractiveTextFoundException)
+				throw t;
+
+			Common.error(t,
+					"Unable to parse JSON message.",
+					"JSON: " + json,
+					"Error: %error");
 		}
 
 		return text;
