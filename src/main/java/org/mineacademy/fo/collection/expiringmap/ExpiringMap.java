@@ -277,6 +277,10 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	private final EntryMap<K, V> entries;
 	private final boolean variableExpiration;
 
+	public interface ExpirationListener<K, V> {
+		void expired(K var1, V var2);
+	}
+
 	/**
 	 * Sets the {@link ThreadFactory} that is used to create expiration and listener
 	 * callback threads for all ExpiringMap instances.
