@@ -1951,9 +1951,27 @@ class MVdWPlaceholderHook {
 	}
 
 	String replacePlaceholders(Player player, String message) {
-		final String replaced = be.maximvdw.placeholderapi.PlaceholderAPI.replacePlaceholders(player, message);
+		try {
+			final String replaced = be.maximvdw.placeholderapi.PlaceholderAPI.replacePlaceholders(player, message);
 
-		return replaced == null ? "" : replaced;
+			return replaced == null ? "" : replaced;
+
+		} catch (final IllegalArgumentException ex) {
+			if (!Common.getOrEmpty(ex.getMessage()).contains("Illegal group reference"))
+				ex.printStackTrace();
+
+		} catch (final Throwable t) {
+			Common.error(t,
+					"MvdWPlaceholders placeholders failed!",
+					"Player: " + player.getName(),
+					"Message: '" + message + "'",
+					"Consider writing to developer of that library",
+					"first as this may be a bug we cannot handle!",
+					"",
+					"Your chat message will appear without replacements.");
+		}
+
+		return message;
 	}
 }
 
