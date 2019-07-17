@@ -15,6 +15,7 @@ import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig.CasusHelper;
@@ -149,6 +150,10 @@ public abstract class YamlStaticConfig {
 	 */
 	private final void invokeMethodsIn(Class<?> clazz) throws Exception {
 		for (final Method m : clazz.getDeclaredMethods()) {
+
+			if (!SimplePlugin.getInstance().isEnabled()) // Disable if plugin got shutdown for an error
+				return;
+
 			final int mod = m.getModifiers();
 
 			if (m.getName().equals("init")) {
