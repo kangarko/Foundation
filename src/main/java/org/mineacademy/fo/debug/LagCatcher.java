@@ -82,7 +82,7 @@ public final class LagCatcher {
 	public static void end(String section, int thresholdMs, String message) {
 		final double lag = finishAndCalculate(section);
 
-		if (lag > thresholdMs) {
+		if (lag > thresholdMs && SimpleSettings.LAG_THRESHOLD_MILLIS != -1) {
 			message = message.replace("{section}", section);
 			message = message.replace("{time}", MathUtil.formatTwoDigits(lag));
 
