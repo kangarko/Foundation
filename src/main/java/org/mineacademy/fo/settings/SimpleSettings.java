@@ -150,7 +150,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Mandatory if using BungeeCord
 	 */
-	public static String BUNGEE_SERVER_NAME = "Undefined";
+	public static String BUNGEE_SERVER_NAME = "null";
 
 	/**
 	 * Antipiracy stuff for our protected software, leave empty to Serialization: ""
@@ -233,6 +233,13 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 				throw new FoException("Since you override getBungeeCord in your main plugin class you must set the 'Bungee_Server_Name' key in " + getFileName());
 
 			BUNGEE_SERVER_NAME = keySet ? getString("Bungee_Server_Name") : BUNGEE_SERVER_NAME;
+
+			if (SimplePlugin.getInstance().getBungeeCord() != null && BUNGEE_SERVER_NAME.equals("undefined")) {
+				Common.logFramed(true,
+						"Please change your Bungee_Server_Name in",
+						"settings.yml to the exact name of this server",
+						"as you have in config.yml of your BungeeCord.");
+			}
 		}
 
 		{ // Load localization
