@@ -11,14 +11,13 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Represents a Discord command sender for discord integration
- *
- * Special use only in our plugins
+ * Represents a Discord command sender for Discord integration
  */
 @RequiredArgsConstructor
 public final class DiscordSender implements CommandSender {
@@ -43,13 +42,13 @@ public final class DiscordSender implements CommandSender {
 	}
 
 	@Override
-	public boolean isPermissionSet(String p0) {
-		return false;
+	public boolean isPermissionSet(String permission) {
+		throw unsupported("isPermissionSet");
 	}
 
 	@Override
-	public boolean isPermissionSet(Permission p0) {
-		return false;
+	public boolean isPermissionSet(Permission permission) {
+		throw unsupported("isPermissionSet");
 	}
 
 	@Override
@@ -63,38 +62,38 @@ public final class DiscordSender implements CommandSender {
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin p0, String p1, boolean p2) {
-		return null;
+	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
+		throw unsupported("addAttachment");
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin p0) {
-		return null;
+	public PermissionAttachment addAttachment(Plugin plugin) {
+		throw unsupported("addAttachment");
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin p0, String p1, boolean p2, int p3) {
-		return null;
+	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
+		throw unsupported("addAttachment");
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin p0, int p1) {
-		return null;
+	public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
+		throw unsupported("addAttachment");
 	}
 
 	@Override
-	public void removeAttachment(PermissionAttachment p0) {
-
+	public void removeAttachment(PermissionAttachment attachment) {
+		throw unsupported("removeAttachment");
 	}
 
 	@Override
 	public void recalculatePermissions() {
-
+		throw unsupported("recalculatePermissions");
 	}
 
 	@Override
 	public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-		return null;
+		throw unsupported("getEffectivePermissions");
 	}
 
 	@Override
@@ -105,17 +104,18 @@ public final class DiscordSender implements CommandSender {
 	}
 
 	@Override
-	public void setOp(boolean p0) {
+	public void setOp(boolean op) {
+		throw unsupported("setOp");
 	}
 
 	@Override
-	public void sendMessage(String p0) {
-		Common.log(p0);
+	public void sendMessage(String message) {
+		Common.log(message);
 	}
 
 	@Override
-	public void sendMessage(String[] p0) {
-		Common.log(p0);
+	public void sendMessage(String[] message) {
+		Common.log(message);
 	}
 
 	@Override
@@ -125,6 +125,10 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public Spigot spigot() {
-		return null;
+		throw unsupported("spigot");
+	}
+
+	private FoException unsupported(String method) {
+		return new FoException("DiscordSender cannot invoke " + method + "()");
 	}
 }

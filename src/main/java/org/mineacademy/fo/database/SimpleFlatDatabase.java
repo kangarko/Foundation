@@ -43,12 +43,14 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 	/**
 	 * An internal flag to prevent dead lock so that we do not call any
-	 * more queries withinthe {@link #load(UUID, Object)} or {@link #save(UUID, Object)} methods
+	 * more queries within the {@link #load(UUID, Object)} or {@link #save(UUID, Object)} methods
 	 */
 	private boolean isQuerying = false;
 
 	/**
 	 * Creates the table if it does not exist
+	 *
+	 * To override this override {@link #onConnectFinish()}
 	 */
 	@Override
 	protected final void onConnected() {
@@ -58,6 +60,16 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 		// Remove entries that have not been updated in the last X days
 		removeOldEntries();
+
+		// Call any hooks
+		onConnectFinish();
+	}
+
+	/**
+	 * You can override this to run code after the connection was made and
+	 * the table created as well as purged ({@link #removeOldEntries()})
+	 */
+	protected void onConnectFinish() {
 	}
 
 	/**

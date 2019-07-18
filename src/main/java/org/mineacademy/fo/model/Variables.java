@@ -395,6 +395,8 @@ public final class Variables {
 		}
 
 		switch (variable) {
+			case "bungee_server_name":
+				return SimpleSettings.BUNGEE_SERVER_NAME;
 			case "server_name":
 				return SimpleSettings.SERVER_NAME;
 			case "nms_version":

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.exception.FoException;
@@ -102,6 +103,26 @@ public final class Valid {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks if the code calling this method is run from the main thread,
+	 * failing with the error message if otherwise
+	 *
+	 * @param syncErrorMessage
+	 */
+	public static void checkSync(String asyncErrorMessage) {
+		checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
+	}
+
+	/**
+	 * Checks if the code calling this method is run from a different than main thread,
+	 * failing with the error message if otherwise
+	 *
+	 * @param syncErrorMessage
+	 */
+	public static void checkAsync(String syncErrorMessage) {
+		checkBoolean(!Bukkit.isPrimaryThread(), syncErrorMessage);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -130,6 +131,19 @@ public final class ItemCreator {
 	 * The item meta, overriden by other fields
 	 */
 	private final ItemMeta meta;
+
+	// ----------------------------------------------------------------------------------------
+	// Convenience give methods
+	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Convenience method for quickly adding this item into a players inventory
+	 *
+	 * @param player
+	 */
+	public void give(Player player) {
+		player.getInventory().addItem(makeSurvival());
+	}
 
 	// ----------------------------------------------------------------------------------------
 	// Constructing items

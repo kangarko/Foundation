@@ -5,9 +5,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map.Entry;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 
 import lombok.RequiredArgsConstructor;
@@ -34,12 +36,31 @@ public class SimpleDatabase {
 	 */
 	private LastCredentials lastCredentials;
 
+	/**
+	 * Map of variables you can use with the {} syntax in SQL
+	 */
+	private final StrictMap<String, String> sqlVariables = new StrictMap<>();
+
 	// --------------------------------------------------------------------
 	// Connecting
 	// --------------------------------------------------------------------
 
 	/**
 	 * Attempts to establish a new database connection
+	 *
+	 * @param host
+	 * @param port
+	 * @param database
+	 * @param user
+	 * @param password
+	 */
+	public final void connect(String host, int port, String database, String user, String password) {
+		connect(host, port, database, user, password, null);
+	}
+
+	/**
+	 * Attempts to establish a new database connection,
+	 * you can then use {table} in SQL to replace with your table name
 	 *
 	 * @param host
 	 * @param port
@@ -54,6 +75,7 @@ public class SimpleDatabase {
 
 	/**
 	 * Attempts to establish a new database connection
+	 * you can then use {table} in SQL to replace with your table name
 	 *
 	 * @param host
 	 * @param port
@@ -69,6 +91,18 @@ public class SimpleDatabase {
 
 	/**
 	 * Connects to the database
+	 *
+	 * @param url
+	 * @param user
+	 * @param password
+	 */
+	public final void connect(String url, String user, String password) {
+		connect(url, user, password, null);
+	}
+
+	/**
+	 * Connects to the database
+	 * you can then use {table} in SQL to replace with your table name*
 	 *
 	 * @param url
 	 * @param user
@@ -146,7 +180,8 @@ public class SimpleDatabase {
 			if (!isConnected())
 				connectUsingLastCredentials();
 
-			sql = sql.replace("{table}", getTable());
+			sql = replaceVariables(sql);
+
 			Debugger.debug("mysql", "Updating MySQL with: " + sql);
 
 			try {
@@ -166,27 +201,28 @@ public class SimpleDatabase {
 	 *
 	 * Make sure you called connect() first otherwise an error will be thrown
 	 *
-	 * @param query
+	 * @param sql
 	 * @return
 	 */
-	protected final ResultSet query(String query) {
+	protected final ResultSet query(String sql) {
 		checkEstablished();
 
 		synchronized (connection) {
 			if (!isConnected())
 				connectUsingLastCredentials();
 
-			query = query.replace("{table}", getTable());
-			Debugger.debug("mysql", "Querying MySQL with: " + query);
+			sql = replaceVariables(sql);
+
+			Debugger.debug("mysql", "Querying MySQL with: " + sql);
 
 			try {
 				final Statement statement = connection.createStatement();
-				final ResultSet resultSet = statement.executeQuery(query);
+				final ResultSet resultSet = statement.executeQuery(sql);
 
 				return resultSet;
 
 			} catch (final SQLException e) {
-				Common.error(e, "Error on querying MySQL with: " + query);
+				Common.error(e, "Error on querying MySQL with: " + sql);
 			}
 		}
 
@@ -206,7 +242,8 @@ public class SimpleDatabase {
 		checkEstablished();
 
 		synchronized (connection) {
-			sql = sql.replace("{table}", getTable());
+			sql = replaceVariables(sql);
+
 			Debugger.debug("mysql", "Preparing statement: " + sql);
 
 			return connection.prepareStatement(sql);
@@ -245,7 +282,7 @@ public class SimpleDatabase {
 	protected final String getTable() {
 		checkEstablished();
 
-		return lastCredentials.table;
+		return Common.getOrEmpty(lastCredentials.table);
 	}
 
 	/**
@@ -262,6 +299,35 @@ public class SimpleDatabase {
 	 */
 	public final boolean isLoaded() {
 		return connection != null;
+	}
+
+	// --------------------------------------------------------------------
+	// Variables
+	// --------------------------------------------------------------------
+
+	/**
+	 * Adds a new variable you can then use in your queries.
+	 * The variable name will be added {} brackets automatically.
+	 *
+	 * @param name
+	 * @param value
+	 */
+	protected final void addVariable(String name, String value) {
+		sqlVariables.put(name, value);
+	}
+
+	/**
+	 * Replace the {table} and {@link #sqlVariables} in the sql query
+	 *
+	 * @param sql
+	 * @return
+	 */
+	private final String replaceVariables(String sql) {
+
+		for (final Entry<String, String> entry : sqlVariables.entrySet())
+			sql = sql.replace("{" + entry.getKey() + "}", entry.getValue());
+
+		return sql.replace("{table}", getTable());
 	}
 
 	/**

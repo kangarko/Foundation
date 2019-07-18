@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -811,7 +812,7 @@ public enum CompMaterial {
 	TNT("TNT"),
 	TNT_MINECART("EXPLOSIVE_MINECART"),
 	TORCH("TORCH"),
-	TOTEM_OF_UNDYING("TOTEM"),
+	TOTEM_OF_UNDYING("TOTEM", "STRING", 0),
 	TRAPPED_CHEST("TRAPPED_CHEST"),
 	TRIDENT("STONE"),
 	TRIPWIRE("TRIPWIRE"),
@@ -1030,6 +1031,25 @@ public enum CompMaterial {
 				}
 
 		throw new FoException("[REPORT] CompMaterial could not parse " + this + ". Tried: " + String.join(", ", names));
+	}
+
+	/**
+	 * Convenience method for giving 1 piece of this material into a players inventory
+	 *
+	 * @param player
+	 */
+	public final void give(Player player) {
+		give(player, 1);
+	}
+
+	/**
+	 * Convenience method for giving this material into a players inventory
+	 *
+	 * @param player
+	 * @param amount
+	 */
+	public final void give(Player player, int amount) {
+		player.getInventory().addItem(toItem(amount));
 	}
 
 	/**

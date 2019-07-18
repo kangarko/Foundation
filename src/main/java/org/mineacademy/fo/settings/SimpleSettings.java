@@ -150,7 +150,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * Mandatory if using BungeeCord
 	 */
-	public static String BUNGEE_SERVER_NAME = "null";
+	public static String BUNGEE_SERVER_NAME = "Server";
 
 	/**
 	 * Antipiracy stuff for our protected software, leave empty to Serialization: ""
