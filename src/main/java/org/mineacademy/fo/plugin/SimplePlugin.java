@@ -48,6 +48,7 @@ import org.mineacademy.fo.menu.tool.Rocket;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
+import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleEnchantment;
@@ -285,7 +286,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
 			}
 
-			// Register bungee when used
+			// Register BungeeCord when used
 			registerBungeeCord();
 
 			// Start update check
@@ -302,6 +303,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Register our packet listener
 			FoundationPacketListener.addPacketListener();
+
+			// Register DiscordSRV listener
+			if (HookManager.isDiscordSRVLoaded())
+				new DiscordListener.DiscordListenerImpl();
 
 			// Load variables if enabled
 			if (areScriptVariablesEnabled())

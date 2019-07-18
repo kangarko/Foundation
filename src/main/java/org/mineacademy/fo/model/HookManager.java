@@ -22,8 +22,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.mineacademy.fo.Common;
@@ -33,11 +35,13 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
@@ -48,9 +52,9 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
-import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
+import com.earth2me.essentials.User;
 import com.github.intellectualsites.plotsquared.plot.object.Plot;
 import com.github.intellectualsites.plotsquared.plot.object.PlotPlayer;
 import com.gmail.nossr50.datatypes.chat.ChatMode;
@@ -72,6 +76,9 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import fr.xephi.authme.data.auth.PlayerCache;
+import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.dependencies.jda.core.entities.TextChannel;
+import github.scarsz.discordsrv.util.DiscordUtil;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -117,9 +124,9 @@ public final class HookManager {
 	private static PlotSquaredHook plotSquaredHook;
 	private static CMIHook CMIHook;
 	private static CitizensHook citizensHook;
-	// Only register if DiscordSRV is present
-	private static boolean discordSRVDummyHook = false;
+	private static DiscordSRVHook discordSRVHook;
 	private static boolean nbtAPIDummyHook = false;
+	private static boolean nuVotifierDummyHook = false;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Main loading method
@@ -171,14 +178,26 @@ public final class HookManager {
 		if (Common.doesPluginExistSilently("CMI"))
 			CMIHook = new CMIHook();
 
-		if (Common.doesPluginExistSilently("DiscordSRV"))
-			discordSRVDummyHook = true;
-
 		if (Common.doesPluginExistSilently("Citizens"))
 			citizensHook = new CitizensHook();
 
 		if (Common.doesPluginExistSilently("NBTAPI"))
 			nbtAPIDummyHook = true;
+
+		if (Common.doesPluginExistSilently("Votifier"))
+			nuVotifierDummyHook = true;
+
+		// DiscordSRV
+		if (Common.doesPluginExistSilently("DiscordSRV")) {
+			try {
+				Class.forName("github.scarsz.discordsrv.dependencies.jda.core.entities.TextChannel");
+
+				discordSRVHook = new DiscordSRVHook();
+
+			} catch (final ClassNotFoundException ex) {
+				Common.throwError(ex, "&c" + SimplePlugin.getNamed() + " could not integrate to DiscordSRV because the plugin is outdated!");
+			}
+		}
 
 		// EssentialsX
 		if (Common.doesPluginExistSilently("Essentials")) {
@@ -437,7 +456,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isDiscordSRVLoaded() {
-		return discordSRVDummyHook;
+		return discordSRVHook != null;
 	}
 
 	/**
@@ -447,6 +466,15 @@ public final class HookManager {
 	 */
 	public static boolean isNbtAPILoaded() {
 		return nbtAPIDummyHook;
+	}
+
+	/**
+	 * Is nuVotifier loaded as a plugin?
+	 *
+	 * @return
+	 */
+	public static boolean isNuVotifierLoaded() {
+		return nuVotifierDummyHook;
 	}
 
 	/**
@@ -1201,6 +1229,60 @@ public final class HookManager {
 		return isCitizensLoaded() ? citizensHook.isNPC(entity) : false;
 	}
 
+	// ------------------------------------------------------------------------------------------------------------
+	// DiscordSRV
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return all linked Discord channels. You can link those in DiscordSRV config.yml file
+	 *
+	 * @return the linked channels or an empty set when DiscordSRV is not loaded
+	 */
+	public static Set<String> getDiscordChannels() {
+		return isDiscordSRVLoaded() ? discordSRVHook.getChannels() : new HashSet<>();
+	}
+
+	/**
+	 * Sends a message from the given sender to a certain channel on DiscordSRV
+	 *
+	 * @param senderName
+	 * @param channel
+	 * @param message
+	 */
+	public static void sendDiscordMessage(String senderName, String channel, String message) {
+		if (isDiscordSRVLoaded())
+			discordSRVHook.sendMessage(senderName, channel, message);
+	}
+
+	/**
+	 * Sends a message from the given sender to a certain channel on Discord using DiscordSRV
+	 *
+	 * Enhanced functionality is available if the sender is a player
+	 *
+	 * @param sender
+	 * @param channel
+	 * @param message
+	 */
+	public static void sendDiscordMessage(CommandSender sender, String channel, String message) {
+		if (isDiscordSRVLoaded())
+			discordSRVHook.sendMessage(sender, channel, message);
+	}
+
+	/**
+	 * Send a message to a Discord channel if DiscordSRV is installed
+	 *
+	 * @param channel
+	 * @param message
+	 */
+	public static void sendDiscordMessage(String channel, String message) {
+		if (isDiscordSRVLoaded())
+			discordSRVHook.sendMessage(channel, message);
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Class helpers
+	// ------------------------------------------------------------------------------------------------------------
+
 	/**
 	 * Represents a PlaceholderAPI placeholder replacer with the given
 	 * variable (will be prepended with the name of your plugin, such as
@@ -1257,14 +1339,10 @@ class EssentialsHook {
 	}
 
 	void setGodMode(Player player, boolean godMode) {
-		final IUser user = getUser(player.getName());
+		final User user = getUser(player.getName());
 
 		if (user != null)
-			try {
-				user.getClass().getMethod("setGodModeEnabled", boolean.class).invoke(user, godMode);
-			} catch (final ReflectiveOperationException e) {
-				e.printStackTrace();
-			}
+			user.setGodModeEnabled(godMode);
 	}
 
 	void setIgnore(String player, String toIgnore, boolean ignore) {
@@ -1306,49 +1384,32 @@ class EssentialsHook {
 	}
 
 	boolean isMuted(String pl) {
-		final com.earth2me.essentials.User user = (com.earth2me.essentials.User) getUser(pl);
+		final com.earth2me.essentials.User user = getUser(pl);
 
 		return user != null ? user.isMuted() : false;
 	}
 
-	Player getReplyTo(String pl) {
-		final IUser user = getUser(pl);
+	Player getReplyTo(String recipient) {
+		final User user = getUser(recipient);
 
 		if (user == null)
 			return null;
 
 		try {
-			final Object recipient = user.getClass().getMethod("getReplyRecipient").invoke(user);
+			final String replyPlayer = user.getReplyRecipient().getName();
+			final Player bukkitPlayer = Bukkit.getPlayer(replyPlayer);
 
-			if (recipient != null) {
-				final String replyPlayer = (String) recipient.getClass().getMethod("getName").invoke(recipient);
-				final Player bukkitPlayer = Bukkit.getPlayer(replyPlayer);
-
-				if (bukkitPlayer != null && bukkitPlayer.isOnline())
-					return bukkitPlayer;
-			}
+			if (bukkitPlayer != null && bukkitPlayer.isOnline())
+				return bukkitPlayer;
 
 		} catch (final Throwable ex) {
-			// fallback
-			try {
-				final CommandSource source = (CommandSource) user.getClass().getMethod("getReplyTo").invoke(user);
-
-				if (source != null && source.isPlayer()) {
-					final Player player = source.getPlayer();
-
-					if (player != null && player.isOnline())
-						return player;
-				}
-			} catch (final ReflectiveOperationException ex2) {
-				ex2.printStackTrace();
-			}
 		}
 
 		return null;
 	}
 
 	String getNick(String player) {
-		final IUser user = getUser(player);
+		final User user = getUser(player);
 
 		if (user == null) {
 			Common.log("&cMalfunction getting Essentials user. Have you reloaded?");
@@ -1356,41 +1417,34 @@ class EssentialsHook {
 			return player;
 		}
 
-		String nick = null;
-
-		try {
-			nick = (String) user.getClass().getMethod("getNickname").invoke(user);
-		} catch (final ReflectiveOperationException | NullPointerException e) {
-		}
-
-		return nick != null && !nick.isEmpty() ? nick : player;
+		return Common.getOrEmpty(user.getNickname());
 	}
 
 	void setBackLocation(String player, Location loc) {
-		final IUser user = getUser(player);
+		final User user = getUser(player);
 
 		if (user != null)
 			try {
-				((com.earth2me.essentials.User) user).setLastLocation(loc);
+				user.setLastLocation(loc);
 
 			} catch (final Throwable t) {
 			}
 	}
 
-	private IUser getUser(String pl) {
+	private User getUser(String name) {
 		if (ess.getUserMap() == null)
 			return null;
 
-		IUser user = null;
+		User user = null;
 
 		try {
-			user = ess.getUserMap().getUser(pl);
+			user = ess.getUserMap().getUser(name);
 		} catch (final Throwable t) {
 		}
 
 		if (user == null)
 			try {
-				user = ess.getUserMap().getUserFromBukkit(pl);
+				user = ess.getUserMap().getUserFromBukkit(name);
 			} catch (final Throwable ex) {
 			}
 		return user;
@@ -2476,5 +2530,62 @@ class CitizensHook {
 		final NPCRegistry reg = CitizensAPI.getNPCRegistry();
 
 		return reg != null ? reg.isNPC(entity) : false;
+	}
+}
+
+class DiscordSRVHook implements Listener {
+
+	Set<String> getChannels() {
+		return DiscordSRV.getPlugin().getChannels().keySet();
+	}
+
+	boolean sendMessage(String sender, String channel, String message) {
+		final DiscordSender discordSender = new DiscordSender(sender);
+
+		return sendMessage(discordSender, channel, message);
+	}
+
+	boolean sendMessage(String channel, String message) {
+		return sendMessage((CommandSender) null, channel, message);
+	}
+
+	boolean sendMessage(CommandSender sender, String channel, String message) {
+		LagCatcher.start("Minecraft to Discord");
+
+		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
+
+		// Channel not configured in DiscordSRV config.yml, ignore
+		if (textChannel == null) {
+			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", getChannels()) + ". Not sending: " + message);
+
+			LagCatcher.end("Minecraft to Discord", Debugger.isDebugged("discord") ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS, "Minecraft > Discord sending ended due to no channel. Took {time} ms");
+			return false;
+		}
+
+		if (sender instanceof Player) {
+			Debugger.debug("discord", "[MC->Discord] " + sender.getName() + " send message to '" + channel + "' channel. Message: '" + message + "'");
+
+			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage
+			// method to function
+			final FileConfiguration discordConfig = DiscordSRV.config();
+			final String outMessageKey = "DiscordChatChannelMinecraftToDiscord";
+			final boolean outMessageOldValue = discordConfig.getBoolean(outMessageKey);
+
+			discordConfig.set(outMessageKey, true);
+
+			try {
+				DiscordSRV.getPlugin().processChatMessage((Player) sender, message, channel, false);
+			} finally {
+				discordConfig.set(outMessageKey, outMessageOldValue);
+			}
+
+		} else {
+			Debugger.debug("discord", "[MC->Discord] " + (sender == null ? "No given sender " : sender.getName() + " (generic)") + "sent message to '" + channel + "' channel. Message: '" + message + "'");
+
+			DiscordUtil.sendMessage(textChannel, message);
+		}
+
+		LagCatcher.end("Minecraft to Discord", Debugger.isDebugged("discord") ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS, "Minecraft > Discord sending took {time} ms");
+		return true;
 	}
 }
