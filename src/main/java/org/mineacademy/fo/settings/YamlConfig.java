@@ -400,11 +400,18 @@ public class YamlConfig {
 		}
 
 		final String file = getFileName();
+		onSave();
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
 
 		Debugger.debug("config", "&eSaved updated file: " + file + " (# Comments removed)");
+	}
+
+	/**
+	 * Called automatically when the file is saved
+	 */
+	protected void onSave() {
 	}
 
 	/**
@@ -620,6 +627,29 @@ public class YamlConfig {
 	 */
 	protected final String getString(String path) {
 		return getT(path, String.class);
+	}
+
+	/**
+	 * Get a long with a default value
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final Long getLong(String path, Long def) {
+		forceSingleDefaults(path, def);
+
+		return isSet(path) ? getLong(path) : def;
+	}
+
+	/**
+	 * Get a long
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final Long getLong(String path) {
+		return getT(path, Long.class);
 	}
 
 	/**
@@ -850,17 +880,17 @@ public class YamlConfig {
 	 * Get a simple string array
 	 *
 	 * @param path
-	 * @return
+	 * @return the given array, or an empty array
 	 */
 	protected final String[] getStringArray(String path) {
-		return String.join("\n", getObject(path).toString()).split("\n");
+		return isSet(path) ? String.join("\n", getObject(path).toString()).split("\n") : new String[0];
 	}
 
 	/**
 	 * Get a string list
 	 *
 	 * @param path
-	 * @return
+	 * @return the found list, or an empty list
 	 */
 	protected final List<String> getStringList(String path) {
 		final List<Object> list = getList(path);
