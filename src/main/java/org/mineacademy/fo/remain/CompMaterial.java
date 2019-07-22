@@ -1497,6 +1497,24 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Return a {@link CompMaterial} from the given block, also comparing the data value
+	 *
+	 * @param block
+	 * @return
+	 */
+	public static final CompMaterial fromBlock(Block block) {
+		try {
+			return CompMaterial.valueOf(block.getType().toString());
+
+		} catch (final IllegalArgumentException e) {
+			for (final CompMaterial compMat : CompMaterial.values())
+				if (compMat.legacyName.equals(block.getType().toString()) && compMat.getData() == block.getData())
+					return compMat;
+		}
+		return null;
+	}
+
+	/**
 	 * Creates {@link CompMaterial} class from a given {@link Material}.
 	 *
 	 * @param mat
