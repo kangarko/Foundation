@@ -616,8 +616,9 @@ public final class HookManager {
 	 */
 	public static String getNick(CommandSender sender) {
 		final Player player = sender instanceof Player ? (Player) sender : null;
+		final String nick = player != null ? isNickyLoaded() ? nickyHook.getNick(player) : isEssentialsXLoaded() ? essentialsxHook.getNick(player.getName()) : null : null;
 
-		return player != null ? isNickyLoaded() ? nickyHook.getNick(player) : isEssentialsXLoaded() ? essentialsxHook.getNick(player.getName()) : player.getName() : sender.getName();
+		return Common.getOrSupply(nick, sender.getName());
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1805,10 +1806,10 @@ class PlaceholderAPIHook {
 		if (hooks.isEmpty())
 			return text;
 
-		final Matcher m = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(text);
+		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(text);
 
-		while (m.find()) {
-			final String format = m.group(1);
+		while (matcher.find()) {
+			final String format = matcher.group(1);
 			final int index = format.indexOf("_");
 
 			if (index <= 0 || index >= format.length())
@@ -1818,10 +1819,10 @@ class PlaceholderAPIHook {
 			final String params = format.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
-				final String value = hooks.get(identifier).onPlaceholderRequest(player, params);
+				final String value = hooks.get(identifier).onRequest(player, params);
 
 				if (value != null)
-					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
+					text = text.replaceAll(Pattern.quote(matcher.group()), Matcher.quoteReplacement(Common.colorize(value)));
 			}
 		}
 
