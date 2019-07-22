@@ -11,10 +11,12 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.Menu;
 
+import lombok.SneakyThrows;
+
 /**
  * Represents one question for the player during a server conversation
  */
-public abstract class SimplePrompt extends ValidatingPrompt {
+public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable {
 
 	/**
 	 * Open the players menu back if any?
@@ -190,5 +192,11 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 		conversation.start(player);
 
 		return conversation;
+	}
+
+	@SneakyThrows
+	@Override
+	public SimplePrompt clone() {
+		return (SimplePrompt) super.clone();
 	}
 }
