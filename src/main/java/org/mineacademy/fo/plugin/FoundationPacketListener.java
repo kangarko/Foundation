@@ -13,12 +13,12 @@ import com.comphenix.protocol.reflect.StructureModifier;
 /**
  * Listens to and intercepts packets using Foundation inbuilt features
  */
-public final class FoundationPacketListener {
+final class FoundationPacketListener {
 
 	/**
 	 * Registers our packet listener for some of the more advanced features of Foundation
 	 */
-	public static void addPacketListener() {
+	static void addPacketListener() {
 		if (HookManager.isProtocolLibLoaded())
 
 			// Auto placement of our lore when items are custom enchanted

@@ -26,12 +26,8 @@ final class Reloadables {
 	 * Remove all listeners and cancel all running tasks
 	 */
 	void reload() {
-		listeners.forEach((l) -> {
-			if (l instanceof ReloadableListener)
-				((ReloadableListener) l).reload();
-
-			HandlerList.unregisterAll(l);
-		});
+		for (final Listener listener : listeners)
+			HandlerList.unregisterAll(listener);
 
 		listeners.clear();
 	}

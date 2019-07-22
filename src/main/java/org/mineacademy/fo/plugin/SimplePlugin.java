@@ -54,6 +54,7 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -264,6 +265,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			if (!isEnabled || !isEnabled())
 				return;
+
+			// Load legacy permanent metadata store
+			CompMetadata.MetadataFile.getInstance();
 
 			// --------------------------------------------
 			// Call the main start method

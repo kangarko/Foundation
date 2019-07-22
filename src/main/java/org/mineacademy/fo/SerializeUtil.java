@@ -77,10 +77,7 @@ public final class SerializeUtil {
 		if (obj == null)
 			return null;
 
-		if (obj instanceof SerializedMap)
-			return serialize(((SerializedMap) obj).serialize());
-
-		else if (obj instanceof ConfigSerializable)
+		if (obj instanceof ConfigSerializable)
 			return serialize(((ConfigSerializable) obj).serialize().serialize());
 
 		else if (gameAPIserializeClass != null && gameAPIserializeClass.isAssignableFrom(obj.getClass()))
