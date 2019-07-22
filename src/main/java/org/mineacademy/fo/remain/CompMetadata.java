@@ -1,22 +1,37 @@
 package org.mineacademy.fo.remain;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.Metadatable;
 import org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
-import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
+import org.mineacademy.fo.settings.YamlSectionConfig;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for persistent metadata manipulation
@@ -80,22 +95,13 @@ public class CompMetadata {
 
 		final String tag = format(key, value);
 
-		try {
+		if (Remain.hasScoreboardTags())
 			if (!entity.getScoreboardTags().contains(tag))
 				entity.addScoreboardTag(tag);
 
-		} catch (NoSuchMethodError | NoSuchFieldError ex) {
-			checkNBTAPI();
+		entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
 
-			try {
-				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
-				de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).setString(key, value);
-			} catch (final Throwable t) {
-				Common.error(t, "Failed to set NBT tag for " + entity.getType() + ". Tag: " + key + ", value: " + value);
-
-				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
-			}
-		}
+		MetadataFile.getInstance().addMetadata(entity, key, value);
 	}
 
 	// Format the syntax of stored tags
@@ -118,21 +124,13 @@ public class CompMetadata {
 		if (MinecraftVersion.atLeast(V.v1_14)) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
-			final TileState tile = (TileState) tileEntity;
-			setNamedspaced(tile, key, value);
+			setNamedspaced((TileState) tileEntity, key, value);
 		}
 
-		else {
-			checkNBTAPI();
-
-			try {
-				de.tr7zw.nbtinjector.NBTInjector.getNbtData(tileEntity).setString(key, value);
-			} catch (final Throwable t) {
-				Common.error(t, "Failed to set NBT tag for " + tileEntity.getType() + ". Tag: " + key + ", value: " + value);
-			}
-		}
-
+		tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
 		tileEntity.update();
+
+		MetadataFile.getInstance().addMetadata(tileEntity, key, value);
 	}
 
 	private static final void setNamedspaced(TileState tile, String key, String value) {
@@ -156,9 +154,8 @@ public class CompMetadata {
 
 		final String compoundTag = FoConstants.NBT.TAG;
 		final NBTItem nbt = new NBTItem(item);
-		final String name = nbt.hasKey(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
 
-		return name;
+		return nbt.hasKey(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
 	}
 
 	/**
@@ -172,7 +169,7 @@ public class CompMetadata {
 	public static final String getMetadata(Entity entity, String key) {
 		Valid.checkNotNull(entity);
 
-		try {
+		if (Remain.hasScoreboardTags())
 			for (final String line : entity.getScoreboardTags()) {
 				final String tag = getTag(line, key);
 
@@ -180,21 +177,7 @@ public class CompMetadata {
 					return tag;
 			}
 
-		} catch (NoSuchMethodError | NoSuchFieldError ex) {
-			checkNBTAPI();
-
-			try {
-				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
-				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).getString(key);
-
-			} catch (final Throwable t) {
-				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
-
-				return entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
-			}
-		}
-
-		return null;
+		return entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
 	}
 
 	// Parses the tag and gets its value
@@ -208,7 +191,7 @@ public class CompMetadata {
 	 * Return saved tile entity metadata, or null if none
 	 *
 	 * @param tileEntity
-	 * @param key
+	 * @param key, or null if none
 	 * @return
 	 */
 	public static final String getMetadata(BlockState tileEntity, String key) {
@@ -218,19 +201,10 @@ public class CompMetadata {
 		if (MinecraftVersion.atLeast(V.v1_14)) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
-			final TileState tile = (TileState) tileEntity;
-			return getNamedspaced(tile, key);
+			return getNamedspaced((TileState) tileEntity, key);
 		}
 
-		checkNBTAPI();
-
-		try {
-			return de.tr7zw.nbtinjector.NBTInjector.getNbtData(tileEntity).getString(key);
-		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to get NBT tag for " + tileEntity.getType() + ". Tag: " + key);
-
-			return null;
-		}
+		return tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : null;
 	}
 
 	private static final String getNamedspaced(TileState tile, String key) {
@@ -269,25 +243,12 @@ public class CompMetadata {
 	public static final boolean hasMetadata(Entity entity, String key) {
 		Valid.checkNotNull(entity);
 
-		try {
+		if (Remain.hasScoreboardTags())
 			for (final String line : entity.getScoreboardTags())
 				if (hasTag(line, key))
 					return true;
 
-		} catch (NoSuchMethodError | NoSuchFieldError ex) {
-			checkNBTAPI();
-
-			try {
-				de.tr7zw.nbtinjector.NBTInjector.patchEntity(entity);
-				return de.tr7zw.nbtinjector.NBTInjector.getNbtData(entity).hasKey(key);
-			} catch (final Throwable t) {
-				Common.error(t, "Failed to get NBT tag for " + entity.getType() + ". Tag: " + key);
-
-				return entity.hasMetadata(key);
-			}
-		}
-
-		return false;
+		return entity.hasMetadata(key);
 	}
 
 	/**
@@ -305,19 +266,10 @@ public class CompMetadata {
 		if (MinecraftVersion.atLeast(V.v1_14)) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
-			final TileState tile = (TileState) tileEntity;
-			return hasNamedspaced(tile, key);
+			return hasNamedspaced((TileState) tileEntity, key);
 		}
 
-		checkNBTAPI();
-
-		try {
-			return de.tr7zw.nbtinjector.NBTInjector.getNbtData(tileEntity).hasKey(key);
-		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to get NBT tag for " + tileEntity.getType() + ". Tag: " + key);
-
-			return false;
-		}
+		return tileEntity.hasMetadata(key);
 	}
 
 	private static final boolean hasNamedspaced(TileState tile, String key) {
@@ -331,9 +283,153 @@ public class CompMetadata {
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
 	}
 
-	private static final void checkNBTAPI() {
-		System.out.println("**** DO NOT REPORT THE FOLLOWING ERROR, YOU NEED TO INSTALL AN ADDITIONAL LIBRARY FOR THIS PLUGIN TO WORK");
-		Valid.checkBoolean(HookManager.isNbtAPILoaded(), "Storing persistent NBT tags on Entities/Blocks requries MC 1.14+ or NBTAPI plugin. Please download the 800kb+ plugin file from https://ci.codemc.org/job/Tr7zw/job/Item-NBT-API");
+	/**
+	 * Due to lack of persistent metadata implementation until Minecraft 1.14.x,
+	 * we simply store them in a file during server restart and then apply
+	 * as a temporary metadata for the Bukkit entities.
+	 *
+	 * internal use only
+	 */
+	//@Deprecated
+	public static final class MetadataFile extends YamlSectionConfig {
 
+		@Getter
+		private static final MetadataFile instance = new MetadataFile();
+
+		private final StrictMap<UUID, List<String>> entityMetadataMap = new StrictMap<>();
+		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
+
+		private MetadataFile() {
+			super("Metadata");
+
+			loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
+		}
+
+		@Override
+		protected void onLoadFinish() {
+			loadEntities();
+			loadBlockStates();
+
+			save();
+		}
+
+		private void loadEntities() {
+			entityMetadataMap.clear();
+
+			for (final String uuidName : getMap("Entity").keySet()) {
+				final UUID uuid = UUID.fromString(uuidName);
+
+				// Remove broken key
+				if (!(getObject("Entity." + uuidName) instanceof List)) {
+					setNoSave("Entity." + uuidName, null);
+
+					continue;
+				}
+
+				final List<String> metadata = getStringList("Entity." + uuidName);
+				final Entity entity = Remain.getEntity(uuid);
+
+				// Check if the entity is still real
+				if (!metadata.isEmpty() && entity != null && entity.isValid() && !entity.isDead()) {
+					entityMetadataMap.put(uuid, metadata);
+
+					applySavedMetadata(metadata, entity);
+				}
+			}
+
+			setNoSave("Entity", entityMetadataMap);
+		}
+
+		private void loadBlockStates() {
+			blockMetadataMap.clear();
+
+			for (final String locationRaw : getMap("Block").keySet()) {
+				final Location location = SerializeUtil.deserializeLocation(locationRaw);
+				final BlockCache blockCache = get("Block." + locationRaw, BlockCache.class);
+
+				final Block block = location.getBlock();
+
+				// Check if the block remained the same
+				if (!CompMaterial.isAir(block) && CompMaterial.fromBlock(block) == blockCache.getType()) {
+					blockMetadataMap.put(location, blockCache);
+
+					applySavedMetadata(blockCache.getMetadata(), block);
+				}
+			}
+
+			setNoSave("Block", blockMetadataMap);
+		}
+
+		private void applySavedMetadata(List<String> metadata, Metadatable entity) {
+			for (final String metadataLine : metadata) {
+				final String[] lines = metadataLine.split(DELIMITER);
+				Valid.checkBoolean(lines.length == 3, "Malformed metadata line. Expected length 3, got " + lines.length + " for " + metadataLine);
+
+				final String key = lines[1];
+				final String value = lines[2];
+
+				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+			}
+		}
+
+		protected void addMetadata(Entity entity, String key, String value) {
+			final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
+			final String formatted = format(key, value);
+
+			for (final Iterator i = metadata.iterator(); i.hasNext();) {
+				final String meta = (String) i.next();
+
+				if (getTag(meta, key) != null)
+					i.remove();
+			}
+
+			metadata.add(formatted);
+			save("Entity", entityMetadataMap);
+		}
+
+		protected void addMetadata(BlockState blockState, String key, String value) {
+			final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
+			final String formatted = format(key, value);
+
+			for (final Iterator i = blockCache.getMetadata().iterator(); i.hasNext();) {
+				final String meta = (String) i.next();
+
+				if (getTag(meta, key) != null)
+					i.remove();
+			}
+
+			blockCache.getMetadata().add(formatted);
+
+			{ // Save
+				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
+					setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+
+				save();
+			}
+		}
+
+		@Getter
+		@RequiredArgsConstructor
+		public static final class BlockCache implements ConfigSerializable {
+			private final CompMaterial type;
+			private final List<String> metadata;
+
+			@Override
+			public SerializedMap serialize() {
+				final SerializedMap map = new SerializedMap();
+
+				map.put("Type", type.toString());
+				map.put("Metadata", metadata);
+
+				return map;
+			}
+
+			public static BlockCache deserialize(SerializedMap map) {
+				final CompMaterial type = map.getMaterial("Type");
+				final List<String> metadata = map.getStringList("Metadata");
+
+				return new BlockCache(type, metadata);
+			}
+		}
 	}
 }
