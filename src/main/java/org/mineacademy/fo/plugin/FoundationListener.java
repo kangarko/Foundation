@@ -16,7 +16,7 @@ import org.mineacademy.fo.update.SpigotUpdater;
 /**
  * Listens for some events we handle for you automatically
  */
-public final class FoundationListener implements Listener {
+final class FoundationListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void onJoin(PlayerJoinEvent e) {

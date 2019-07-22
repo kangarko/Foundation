@@ -145,7 +145,7 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public TextComponent build() {
-		final TextComponent mainComponent = new TextComponent();
+		final TextComponent mainComponent = new TextComponent("");
 
 		for (final TextComponent pastComponent : pastComponents)
 			mainComponent.addExtra(pastComponent);
