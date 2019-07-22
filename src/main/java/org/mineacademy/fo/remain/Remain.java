@@ -208,7 +208,10 @@ public final class Remain {
 		// Check compatibility
 		try {
 			ChatInternals.callStatic();
-			NBTInternals.checkCompatible();
+
+			if (MinecraftVersion.newerThan(V.v1_7))
+				NBTInternals.checkCompatible();
+
 			ParticleInternals.ANGRY_VILLAGER.getClass();
 
 			for (final Material bukkitMaterial : Material.values())
@@ -1398,14 +1401,14 @@ public final class Remain {
 	 */
 	public static Block getTargetBlock(LivingEntity en, int radius) {
 		try {
-			return (Block) en.getClass().getMethod("getTargetBlock", Set.class, int.class).invoke(en, (HashSet<Material>) null, radius);
+			return en.getTargetBlock((Set<Material>) null, radius);
 
-		} catch (final ReflectiveOperationException ex) {
+		} catch (final Throwable t) {
 			try {
 				return (Block) en.getClass().getMethod("getTargetBlock", HashSet.class, int.class).invoke(en, (HashSet<Byte>) null, radius);
 
 			} catch (final ReflectiveOperationException ex2) {
-				throw new FoException(ex, "Unable to get target block for " + en);
+				throw new FoException(t, "Unable to get target block for " + en);
 			}
 		}
 	}
@@ -1935,15 +1938,10 @@ class BungeeChatProvider {
 		if (msg.isEmpty() || "none".equals(msg))
 			return;
 
-		if (msg.startsWith("[JSON]")) {
-			final String stripped = msg.replaceFirst("\\[JSON\\]", "").trim();
+		final String stripped = msg.startsWith("[JSON]") ? msg.replaceFirst("\\[JSON\\]", "").trim() : msg;
 
-			if (!stripped.isEmpty())
-				Remain.sendJson(sender, stripped);
-
-		} else
-			for (final String part : msg.split("\n"))
-				sender.sendMessage(part);
+		for (final String part : stripped.split("\n"))
+			sender.sendMessage(part);
 	}
 }
 
