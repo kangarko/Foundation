@@ -973,7 +973,10 @@ public final class Common {
 				continue;
 
 			if (stripColors(message).replace(" ", "").isEmpty()) {
-				CONSOLE_SENDER.sendMessage("  ");
+				if (CONSOLE_SENDER == null)
+					System.out.println(" ");
+				else
+					CONSOLE_SENDER.sendMessage("  ");
 
 				continue;
 			}
@@ -988,8 +991,14 @@ public final class Common {
 					log(Remain.toLegacyText(stripped, false));
 
 			} else
-				for (final String part : splitNewline(message))
-					CONSOLE_SENDER.sendMessage(((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + part.replace("\n", colorize("\n&r"))).trim());
+				for (final String part : splitNewline(message)) {
+					final String log = ((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + Common.getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
+
+					if (CONSOLE_SENDER != null)
+						CONSOLE_SENDER.sendMessage(log);
+					else
+						System.out.println("[" + SimplePlugin.getNamed() + "] " + stripColors(log));
+				}
 		}
 
 	}
