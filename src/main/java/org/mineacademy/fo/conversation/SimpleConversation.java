@@ -12,13 +12,15 @@ import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
+
+import lombok.AccessLevel;
+import lombok.Getter;
 
 /**
  * A simple way to communicate with the player
@@ -68,7 +70,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		// Setup
 		final CustomConversation conversation = new CustomConversation(player);
 
-		final InactivityConversationCanceller inactivityCanceller = new InactivityConversationCanceller(SimplePlugin.getInstance(), 5);
+		final InactivityConversationCanceller inactivityCanceller = new InactivityConversationCanceller(SimplePlugin.getInstance(), 45);
 		inactivityCanceller.setConversation(conversation);
 
 		conversation.getCancellers().add(inactivityCanceller);
@@ -94,12 +96,11 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		final Conversable conversing = event.getContext().getForWhom();
 		final Object source = event.getSource();
 
-		if (source instanceof Conversation) {
-			final Conversation convo = (Conversation) source;
-			final Prompt currentPrompt = ReflectionUtil.getFieldContent(convo.getClass(), "currentPrompt", convo);
+		if (source instanceof CustomConversation) {
+			final SimplePrompt lastPrompt = ((CustomConversation) source).getLastSimplePrompt();
 
-			if (currentPrompt != null && currentPrompt instanceof SimplePrompt)
-				((SimplePrompt) currentPrompt).onConversationEnd(this, event);
+			if (lastPrompt != null)
+				lastPrompt.onConversationEnd(this, event);
 		}
 
 		onConversationEnd(event);
@@ -133,7 +134,11 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @return
 	 */
 	protected ConversationPrefix getPrefix() {
-		return new SimplePrefix(Common.ADD_TELL_PREFIX && Common.ADD_TELL_PREFIX_IN_CONVERSATION ? Common.getTellPrefix() : "");
+		return new SimplePrefix(Common.ADD_TELL_PREFIX && Common.ADD_TELL_PREFIX_IN_CONVERSATION ? addLastSpace(Common.getTellPrefix()) : "");
+	}
+
+	private final String addLastSpace(String prefix) {
+		return prefix.endsWith(" ") ? prefix : prefix + " ";
 	}
 
 	/**
@@ -233,7 +238,13 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 */
 	private final class CustomConversation extends Conversation {
 
-		public CustomConversation(Conversable forWhom) {
+		/**
+		 * Holds the information about the last prompt, used to invoke onConversationEnd
+		 */
+		@Getter(value = AccessLevel.PRIVATE)
+		private SimplePrompt lastSimplePrompt;
+
+		private CustomConversation(Conversable forWhom) {
 			super(SimplePlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
 
 			localEchoEnabled = false;
@@ -249,6 +260,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 			} else {
 				// Edit start
+
+				// Edit 1 - save the time when we showed the question to the player
+				// so that we only show it once per the given threshold
 				final String promptClass = currentPrompt.getClass().getSimpleName();
 
 				final String question = currentPrompt.getPromptText(context);
@@ -261,6 +275,11 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 					context.setSessionData("Asked_" + promptClass, askedQuestions);
 					context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
 				}
+
+				// Edit 2 - Save last prompt if it is our class
+				if (currentPrompt instanceof SimplePrompt)
+					lastSimplePrompt = ((SimplePrompt) currentPrompt).clone();
+
 				// Edit end
 
 				if (!currentPrompt.blocksForInput(context)) {
