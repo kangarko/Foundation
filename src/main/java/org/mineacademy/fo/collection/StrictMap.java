@@ -164,13 +164,13 @@ public final class StrictMap<E, T> extends StrictCollection {
 	@Override
 	public Object serialize() {
 		if (!map.isEmpty()) {
-			final Map<E, Object> copy = new HashMap<>();
+			final Map<Object, Object> copy = new HashMap<>();
 
 			for (final Entry<E, T> e : entrySet()) {
 				final T val = e.getValue();
 
 				if (val != null)
-					copy.put(e.getKey(), SerializeUtil.serialize(val));
+					copy.put(SerializeUtil.serialize(e.getKey()), SerializeUtil.serialize(val));
 			}
 
 			return copy;
