@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.util.Vector;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -175,6 +176,17 @@ public final class Valid {
 	 */
 	public static boolean isNullOrEmpty(String message) {
 		return message == null || message.isEmpty();
+	}
+
+	/**
+	 * Return true if all x-y-z coordinates of the given vector are finite valid numbers
+	 * (see {@link Double#isFinite(double)})
+	 *
+	 * @param vector
+	 * @return
+	 */
+	public static boolean isFinite(Vector vector) {
+		return Double.isFinite(vector.getX()) && Double.isFinite(vector.getY()) && Double.isFinite(vector.getZ());
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
