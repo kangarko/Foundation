@@ -605,6 +605,9 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isIgnoring(String player, String who) {
+		Valid.checkBoolean(player != null && !player.isEmpty(), "Player to check ignore from cannot be null/empty");
+		Valid.checkBoolean(who != null && !who.isEmpty(), "Player to check ignore to cannot be null/empty");
+
 		return isEssentialsXLoaded() ? essentialsxHook.isIgnoring(player, who) : isCMILoaded() ? CMIHook.isIgnoring(player, who) : false;
 	}
 
