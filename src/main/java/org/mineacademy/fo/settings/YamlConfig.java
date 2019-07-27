@@ -241,11 +241,17 @@ public class YamlConfig {
 	 * If the file does not exist, we create a new file.
 	 * If you set "from" to null, no defaults will be used.
 	 *
+	 * Both paths must include file extension
+	 *
 	 * @param from, the origin path within the plugin jar, if null, no defaults are used
 	 * @param to, the destination path in plugins/ThisPlugin/
 	 */
 	protected final void loadConfiguration(String from, String to) {
 		Valid.checkNotNull(to, "File to path cannot be null!");
+		Valid.checkBoolean(to.contains("."), "To path must contain file extension: " + to);
+
+		if (from != null)
+			Valid.checkBoolean(from.contains("."), "From path must contain file extension: " + from);
 
 		try {
 			loading = true;
@@ -253,8 +259,9 @@ public class YamlConfig {
 			ConfigInstance instance = findInstance(to);
 
 			if (instance == null) {
-				File file;
-				YamlConfiguration config, defaultsConfig = null;
+				final File file;
+				final YamlConfiguration config;
+				YamlConfiguration defaultsConfig = null;
 
 				// We will have the default file to return to
 				// This enables auto config update
