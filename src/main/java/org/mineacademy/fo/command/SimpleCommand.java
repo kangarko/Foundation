@@ -215,7 +215,7 @@ public abstract class SimpleCommand extends Command {
 			final String owningPlugin = oldCommand.getPlugin().getName();
 
 			if (!owningPlugin.equals(SimplePlugin.getNamed()))
-				Common.log("&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", unregistering...");
+				Common.log("&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
 
 			Remain.unregisterCommand(oldCommand.getLabel());
 		}
