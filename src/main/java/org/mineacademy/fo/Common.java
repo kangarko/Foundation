@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -858,27 +860,27 @@ public final class Common {
 	/**
 	 * Runs the given command (without /) as the console, replacing {player} with sender
 	 *
-	 * @param sender
+	 * @param playerReplacement
 	 * @param command
 	 */
-	public static void dispatchCommand(@NonNull final CommandSender sender, @NonNull final String command) {
+	public static void dispatchCommand(@Nullable final CommandSender playerReplacement, @NonNull final String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		Common.runLater(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Common.colorize(command.replace("{player}", Common.resolveSenderName(sender)))));
+		Common.runLater(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), Common.colorize(command.replace("{player}", playerReplacement == null ? "" : Common.resolveSenderName(playerReplacement)))));
 	}
 
 	/**
 	 * Runs the given command (without /) as if the sender would type it, replacing {player} with his name
 	 *
-	 * @param sender
+	 * @param playerSender
 	 * @param command
 	 */
-	public static void dispatchCommandAsPlayer(@NonNull final Player sender, @NonNull final String command) {
+	public static void dispatchCommandAsPlayer(@NonNull final Player playerSender, @NonNull final String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		Common.runLater(() -> sender.performCommand(Common.colorize(command.replace("{player}", Common.resolveSenderName(sender)))));
+		Common.runLater(() -> playerSender.performCommand(Common.colorize(command.replace("{player}", Common.resolveSenderName(playerSender)))));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1207,7 +1209,7 @@ public final class Common {
 		Pattern pattern = null;
 
 		try {
-			pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+			pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 		} catch (final PatternSyntaxException ex) {
 			throwError(ex, "Malformed regex: \'" + regex + "\'", "Use online services (like &fregex101.com&f) for fixing errors");
 
