@@ -7,11 +7,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.NonNull;
@@ -36,7 +34,15 @@ public final class JavaScriptExecutor {
 		final ScriptEngineManager engineManager = new ScriptEngineManager();
 		engine = engineManager.getEngineByName("Nashorn");
 
-		Valid.checkNotNull(engine, "ScriptEngine not found. Detected: " + StringUtils.join(engineManager.getEngineFactories(), ", "));
+		if (engine == null)
+			Common.logFramed(true,
+					"JavaScript placeholders will not function!",
+					"",
+					"Your Java version/distribution lacks",
+					"the Nashorn library for JavaScript",
+					"placeholders. Unfortunately this plugin",
+					"relies heavily on Nashorn and cannot",
+					"continue. Please install Oracle Java 8.");
 	}
 
 	/**
