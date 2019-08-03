@@ -257,14 +257,25 @@ public abstract class SimpleEnchantment extends Enchantment {
 	public static Map<SimpleEnchantment, Integer> findEnchantments(ItemStack item) {
 		final Map<SimpleEnchantment, Integer> map = new HashMap<>();
 
-		if (item != null && item.getEnchantments() != null)
-			for (final Entry<Enchantment, Integer> e : item.getEnchantments().entrySet()) {
-				final Enchantment enchantment = e.getKey();
-				final int level = e.getValue();
+		if (item == null)
+			return map;
 
-				if (enchantment instanceof SimpleEnchantment)
-					map.put((SimpleEnchantment) enchantment, level);
-			}
+		final Map<Enchantment, Integer> vanilla;
+
+		try {
+			vanilla = item.hasItemMeta() ? item.getItemMeta().getEnchants() : new HashMap<>();
+		} catch (final NullPointerException ex) {
+			// Caused if any associated enchant is null, probably by a third party plugin
+			return map;
+		}
+
+		for (final Entry<Enchantment, Integer> e : vanilla.entrySet()) {
+			final Enchantment enchantment = e.getKey();
+			final int level = e.getValue();
+
+			if (enchantment instanceof SimpleEnchantment)
+				map.put((SimpleEnchantment) enchantment, level);
+		}
 
 		return map;
 	}

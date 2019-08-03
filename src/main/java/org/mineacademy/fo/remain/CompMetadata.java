@@ -95,13 +95,15 @@ public class CompMetadata {
 
 		final String tag = format(key, value);
 
-		if (Remain.hasScoreboardTags())
+		if (Remain.hasScoreboardTags()) {
 			if (!entity.getScoreboardTags().contains(tag))
 				entity.addScoreboardTag(tag);
 
-		entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+		} else {
+			entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
 
-		MetadataFile.getInstance().addMetadata(entity, key, value);
+			MetadataFile.getInstance().addMetadata(entity, key, value);
+		}
 	}
 
 	// Format the syntax of stored tags
@@ -125,12 +127,14 @@ public class CompMetadata {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
 			setNamedspaced((TileState) tileEntity, key, value);
+			tileEntity.update();
+
+		} else {
+			tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+			tileEntity.update();
+
+			MetadataFile.getInstance().addMetadata(tileEntity, key, value);
 		}
-
-		tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
-		tileEntity.update();
-
-		MetadataFile.getInstance().addMetadata(tileEntity, key, value);
 	}
 
 	private static final void setNamedspaced(TileState tile, String key, String value) {
