@@ -123,10 +123,22 @@ public final class ChatUtil {
 		return builder.toString() + " " + message + " " + builder.toString();
 	}
 
+	/**
+	 * Moves the given messages to the center of the chat screen
+	 *
+	 * @param messages
+	 * @return
+	 */
 	public static String[] verticalCenter(String... messages) {
 		return verticalCenter(Arrays.asList(messages));
 	}
 
+	/**
+	 * Moves the given messages to the center of the chat screen
+	 *
+	 * @param messages
+	 * @return
+	 */
 	public static String[] verticalCenter(Collection<String> messages) {
 		final List<String> lines = new ArrayList<>();
 		final long padding = MathUtil.ceiling((VISIBLE_CHAT_LINES - messages.size()) / 2);
