@@ -619,6 +619,13 @@ public final class HookManager {
 	 */
 	public static String getNick(CommandSender sender) {
 		final Player player = sender instanceof Player ? (Player) sender : null;
+
+		if (player != null && isNPC(player)) {
+			Common.log("&eWarn: Called getNick for NPC! Notify the developers to add an ignore check at " + Debugger.traceRoute(true));
+
+			return player.getName();
+		}
+
 		final String nick = player != null ? isNickyLoaded() ? nickyHook.getNick(player) : isEssentialsXLoaded() ? essentialsxHook.getNick(player.getName()) : null : null;
 
 		return Common.getOrSupply(nick, sender.getName());
