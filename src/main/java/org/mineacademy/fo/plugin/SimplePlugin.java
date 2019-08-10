@@ -986,6 +986,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Shall we apply Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+	 * flags when compiling regex? May impose a slight performancy penaulty
+	 * but increases catches.
+	 *
+	 * @return
+	 */
+	public boolean regexCaseInsensitive() {
+		return true;
+	}
+
+	/**
 	 * Return the bungee suite if you want this plugin
 	 * to send and receive messages from BungeeCord
 	 *
