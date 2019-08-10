@@ -1204,12 +1204,14 @@ public final class Common {
 	 * @return
 	 */
 	public static Pattern compilePattern(String regex) {
-		regex = SimplePlugin.getInstance().regexStripColors() ? stripColors(regex) : regex;
-
+		final SimplePlugin instance = SimplePlugin.getInstance();
 		Pattern pattern = null;
 
+		regex = SimplePlugin.getInstance().regexStripColors() ? stripColors(regex) : regex;
+
 		try {
-			pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+			pattern = instance.regexCaseInsensitive() ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE) : Pattern.compile(regex);
+
 		} catch (final PatternSyntaxException ex) {
 			throwError(ex, "Malformed regex: \'" + regex + "\'", "Use online services (like &fregex101.com&f) for fixing errors");
 
