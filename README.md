@@ -30,3 +30,8 @@ in your software.
 
 For both parties, do not sell or claim any part of this library as your own.
 All infringements will be prosecuted.
+
+No guarantee - this software is provided AS IS, without any guarantee on its
+functionality. We made our best efforts to make Foundation an enterprise-level
+solution for anyone looking to accelerate their coding however we are not
+taking any responsibility for the success or failure you achieve using it.
