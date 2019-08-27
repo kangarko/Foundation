@@ -75,7 +75,7 @@ import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
-import fr.xephi.authme.data.auth.PlayerCache;
+import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.core.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
@@ -1324,24 +1324,13 @@ public final class HookManager {
 
 class AuthMeHook {
 
-	boolean isLogged(Player pl) {
+	boolean isLogged(Player player) {
 		try {
-			// Latest
-			return fr.xephi.authme.api.v3.AuthMeApi.getInstance().isAuthenticated(pl);
+			final AuthMeApi instance = AuthMeApi.getInstance();
 
+			return instance.isAuthenticated(player);
 		} catch (final Throwable t) {
-			try {
-				return ((PlayerCache) fr.xephi.authme.data.auth.PlayerCache.class.getMethod("getInstance").invoke(null)).isAuthenticated(pl.getName());
-
-			} catch (final Throwable tt) {
-				try {
-					// Very old
-					return (Boolean) Class.forName("fr.xephi.authme.cache.auth.PlayerCache").getMethod("isAuthenticated", String.class).invoke(Class.forName("fr.xephi.authme.cache.auth.PlayerCache").getMethod("getInstance").invoke(null), pl.getName());
-
-				} catch (final Throwable ttt) {
-					return true;
-				}
-			}
+			return false;
 		}
 	}
 }
