@@ -58,6 +58,11 @@ import lombok.Setter;
  */
 public class YamlConfig {
 
+	/**
+	 * Should we treat empty strings as null in "get object" methods?
+	 */
+	public static boolean THREAT_EMPTY_AS_NULL = false;
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Only allow one instance of file to be loaded for safety.
 	// ------------------------------------------------------------------------------------------------------------
@@ -524,7 +529,10 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <T> T get(String path, Class<T> type, T def) {
-		final Object object = getT(path, Object.class);
+		Object object = getT(path, Object.class);
+
+		if (THREAT_EMPTY_AS_NULL && "".equals(object))
+			object = null;
 
 		return object != null ? SerializeUtil.deserialize(type, object) : def;
 	}
@@ -1032,6 +1040,7 @@ public class YamlConfig {
 	 */
 	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType) {
 		Valid.checkNotNull(path, "Path cannot be null");
+
 		if (pathPrefix != null)
 			if (!path.startsWith(pathPrefix))
 				path = formPathPrefix(path);
@@ -1046,7 +1055,7 @@ public class YamlConfig {
 
 		final LinkedHashMap<Key, Value> keys = new LinkedHashMap<>();
 
-		Valid.checkBoolean(getConfig().isConfigurationSection(path), "Must be section at: " + path);
+		Valid.checkBoolean(getConfig().isConfigurationSection(path), "Must be section at '" + path + "', got " + getConfig().get(path));
 
 		for (final Map.Entry<String, Object> entry : getConfig().getConfigurationSection(path).getValues(false).entrySet()) {
 			final Object key = entry.getKey();
@@ -1388,8 +1397,10 @@ public class YamlConfig {
 	 * @param pathPrefix
 	 */
 	protected void pathPrefix(String pathPrefix) {
-		if (pathPrefix != null)
+		if (pathPrefix != null) {
 			Valid.checkBoolean(!pathPrefix.endsWith("."), "Path prefix must not end with a dot: " + pathPrefix);
+			Valid.checkBoolean(!pathPrefix.endsWith(".yml"), "Path prefix must not end with .yml!");
+		}
 
 		this.pathPrefix = pathPrefix != null && !pathPrefix.isEmpty() ? pathPrefix : null;
 	}
