@@ -320,11 +320,11 @@ public final class ChatUtil {
 	 * Replace special accented letters with their non-accented alternatives
 	 * such as á is replaced by a
 	 *
-	 * @param msg
+	 * @param message
 	 * @return
 	 */
-	public static String replaceDiacritic(String msg) {
-		return Normalizer.normalize(msg, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+	public static String replaceDiacritic(String message) {
+		return Normalizer.normalize(message, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
 	// --------------------------------------------------------------------------------
