@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
@@ -157,7 +158,7 @@ public abstract class SimpleCommandGroup {
 		final List<String> messages = new ArrayList<>();
 
 		messages.add("&8" + Common.chatLine());
-		messages.add("&6&l  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion());
+		messages.add(getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion());
 		messages.add(" ");
 
 		{
@@ -181,7 +182,7 @@ public abstract class SimpleCommandGroup {
 
 	// Return the TM symbol in case we have it for kangarko's plugins
 	private final String getTrademark() {
-		return SimplePlugin.getInstance().getDescription().getAuthors().contains("kangarko") ? "&6\u2122" : "";
+		return SimplePlugin.getInstance().getDescription().getAuthors().contains("kangarko") ? getHeaderPrefix() + "&8\u2122" : "";
 	}
 
 	/**
@@ -219,12 +220,22 @@ public abstract class SimpleCommandGroup {
 		return new String[] {
 				"&8",
 				"&8" + Common.chatLine(),
-				"&6&l  " + SimplePlugin.getNamed() + "&6\u2122 &7" + SimplePlugin.getVersion(),
+				getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion(),
 				" ",
 				"&2  [] &f= optional arguments",
 				"&6  <> &f= required arguments",
 				" "
 		};
+	}
+
+	/**
+	 * Return the default color in the {@link #getHelpHeader()},
+	 * GOLD + BOLD colors by default
+	 *
+	 * @return
+	 */
+	protected String getHeaderPrefix() {
+		return "" + ChatColor.GOLD + ChatColor.BOLD;
 	}
 
 	// ----------------------------------------------------------------------
