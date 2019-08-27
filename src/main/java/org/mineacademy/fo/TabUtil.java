@@ -1,7 +1,6 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -77,23 +76,11 @@ public final class TabUtil {
 	 * @return
 	 */
 	public static List<String> complete(String partialName, Iterable<String> all) {
-		final List<String> clone = new ArrayList<>();
+		final ArrayList<String> tab = new ArrayList<>();
 
 		for (final String s : all)
-			clone.add(s);
+			tab.add(s);
 
-		return complete(partialName, clone);
-	}
-
-	/**
-	 * Returns valid tab completions for the given collection
-	 *
-	 * @param partialName
-	 * @param all
-	 * @return
-	 */
-	public static List<String> complete(String partialName, Collection<String> all) {
-		final ArrayList<String> tab = new ArrayList<>(all);
 		partialName = partialName.toLowerCase();
 
 		for (final Iterator<String> iterator = tab.iterator(); iterator.hasNext();) {

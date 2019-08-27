@@ -907,34 +907,26 @@ public abstract class SimpleCommand extends Command {
 	 * @param suggestions
 	 * @return
 	 */
-	protected final <T> List<String> completeLastWord(List<String> suggestions) {
-		return TabUtil.complete(getLastArg(), suggestions);
-	}
-
-	/**
-	 * Convenience method for automatically completing the last word
-	 * with the given suggestions. We sort them and only select ones
-	 * that the last word starts with.
-	 *
-	 * @param <T>
-	 * @param suggestions
-	 * @return
-	 */
-	protected final <T> List<String> completeLastWord(Iterable<String> suggestions) {
-		return TabUtil.complete(getLastArg(), suggestions);
-	}
-
-	/**
-	 * Convenience method for automatically completing the last word
-	 * with the given suggestions. We sort them and only select ones
-	 * that the last word starts with.
-	 *
-	 * @param <T>
-	 * @param suggestions
-	 * @return
-	 */
 	protected final <T> List<String> completeLastWord(T... suggestions) {
 		return TabUtil.complete(getLastArg(), suggestions);
+	}
+
+	/**
+	 * Convenience method for automatically completing the last word
+	 * with the given suggestions. We sort them and only select ones
+	 * that the last word starts with.
+	 *
+	 * @param <T>
+	 * @param suggestions
+	 * @return
+	 */
+	protected final <T> List<String> completeLastWord(Iterable<T> suggestions) {
+		final List<T> list = new ArrayList<>();
+
+		for (final T suggestion : suggestions)
+			list.add(suggestion);
+
+		return TabUtil.complete(getLastArg(), list.toArray());
 	}
 
 	/**
