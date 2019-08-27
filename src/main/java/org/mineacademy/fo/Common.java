@@ -701,6 +701,39 @@ public final class Common {
 	}
 
 	/**
+	 * Return a formated list as a string separated by gray and white colors evenly
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static String formatList(Collection<String> list) {
+		return formatList(list, ChatColor.GRAY, ChatColor.WHITE);
+	}
+
+	/**
+	 * Return a formated list as a string separated by comma and colors
+	 *
+	 * @param list
+	 * @param primary
+	 * @param secondary
+	 * @return
+	 */
+	public static String formatList(Collection<String> list, ChatColor primary, ChatColor secondary) {
+		String formatted = "";
+		boolean toggle = true;
+
+		// Add all types and add variated color separation
+		for (final String type : list) {
+			formatted += (toggle ? primary : secondary) + type + "&8, ";
+
+			toggle = !toggle;
+		}
+
+		// Remove the last color + ", " from the string
+		return primary + "(" + list.size() + ") " + formatted.substring(0, formatted.length() - 4);
+	}
+
+	/**
 	 * If the count is 0 or over 1, adds an "s" to the given string
 	 *
 	 * @param count
