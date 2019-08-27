@@ -1210,7 +1210,7 @@ public final class Common {
 		regex = SimplePlugin.getInstance().regexStripColors() ? stripColors(regex) : regex;
 
 		try {
-			pattern = instance.regexCaseInsensitive() ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE) : Pattern.compile(regex);
+			pattern = instance.regexCaseInsensitive() ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE) : Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 
 		} catch (final PatternSyntaxException ex) {
 			throwError(ex, "Malformed regex: \'" + regex + "\'", "Use online services (like &fregex101.com&f) for fixing errors");
