@@ -13,6 +13,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
 import org.mineacademy.fo.exception.FoException;
@@ -111,6 +113,9 @@ public final class SerializeUtil {
 		else if (obj instanceof World)
 			return ((World) obj).getName();
 
+		else if (obj instanceof PotionEffect)
+			return serializePotionEffect((PotionEffect) obj);
+
 		else if (obj instanceof ItemCreator.ItemCreatorBuilder)
 			return ((ItemCreator.ItemCreatorBuilder) obj).build().make();
 
@@ -150,6 +155,16 @@ public final class SerializeUtil {
 	 */
 	public static String serializeLoc(Location loc) {
 		return loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + (loc.getPitch() != 0F || loc.getYaw() != 0F ? " " + loc.getYaw() + " " + loc.getPitch() : "");
+	}
+
+	/**
+	 * Converts a {@link PotionEffect} into a "type duration amplifier" string
+	 *
+	 * @param effect
+	 * @return
+	 */
+	private static String serializePotionEffect(PotionEffect effect) {
+		return effect.getType().getName() + " " + effect.getDuration() + " " + effect.getAmplifier();
 	}
 
 	/**
@@ -263,6 +278,9 @@ public final class SerializeUtil {
 			else if (classOf == Location.class)
 				object = deserializeLocation(object);
 
+			else if (classOf == PotionEffect.class)
+				object = deserializePotionEffect(object);
+
 			else if (classOf == CompMaterial.class)
 				object = CompMaterial.fromString(object.toString());
 
@@ -304,6 +322,31 @@ public final class SerializeUtil {
 		final float yaw = Float.parseFloat(parts.length == 6 ? parts[4] : "0"), pitch = Float.parseFloat(parts.length == 6 ? parts[5] : "0");
 
 		return new Location(bukkitWorld, x, y, z, yaw, pitch);
+	}
+
+	/**
+	 * Convert a raw object back to {@link PotionEffect}
+	 *
+	 * @param raw
+	 * @return
+	 */
+	private static PotionEffect deserializePotionEffect(Object raw) {
+		if (raw == null)
+			return null;
+
+		if (raw instanceof PotionEffect)
+			return (PotionEffect) raw;
+
+		final String[] parts = raw.toString().split(" ");
+		Valid.checkBoolean(parts.length == 3, "Expected PotionEffect (String) but got " + raw.getClass().getSimpleName() + ": " + raw);
+
+		final String typeRaw = parts[0];
+		final PotionEffectType type = PotionEffectType.getByName(typeRaw);
+
+		final int duration = Integer.parseInt(parts[1]);
+		final int amplifier = Integer.parseInt(parts[2]);
+
+		return new PotionEffect(type, duration, amplifier);
 	}
 
 	/**
