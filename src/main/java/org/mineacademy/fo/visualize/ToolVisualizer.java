@@ -20,12 +20,14 @@ import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.model.BlockClick;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+@Deprecated // Poor code quality, subject to removal/rewrite
 public abstract class ToolVisualizer extends Tool {
 
 	@Getter
@@ -144,7 +146,7 @@ public abstract class ToolVisualizer extends Tool {
 				.lore("&r")
 				.lore("&7Break it to remove.")
 				.unbreakable(true)
-				.nbt("Edit Item")
+				.tag(new Tuple("Game", "Edit Item"))
 				.build().make();
 	}
 

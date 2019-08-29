@@ -2,6 +2,7 @@ package org.mineacademy.fo.menu.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -23,13 +24,13 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.model.SimpleEnchantment;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
-import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -118,14 +119,10 @@ public final class ItemCreator {
 	private final String skullOwner;
 
 	/**
-	 * The internal NBT tag, permanent
-	 *
-	 * This will be stored at the key "Your plugin name + _Item"
-	 *
-	 * @deprecated use NBTItem static methods
+	 * The list of NBT tags with their key-value pairs
 	 */
-	@Deprecated
-	private String nbt;
+	@Singular
+	private final List<Tuple<String, String>> tags;
 
 	/**
 	 * The item meta, overriden by other fields
@@ -358,20 +355,23 @@ public final class ItemCreator {
 			} catch (final Throwable t) {
 			}
 
+		// Apply Bukkit metadata
 		is.setItemMeta(itemMeta);
 
+		//
+		// From now on we have to re-set the item
+		//
+
+		// Apply custom enchantment lores
 		final ItemStack enchantedIs = SimpleEnchantment.addEnchantmentLores(is);
 
 		if (enchantedIs != null)
 			is = enchantedIs;
 
-		if (nbt != null) {
-			final NBTItem nbtItem = new NBTItem(is);
-			nbtItem.setString(SimplePlugin.getNamed() + "_Item", nbt);
-
-			nbt = null;
-			is = nbtItem.getItem();
-		}
+		// Apply NBT tags
+		if (tags != null)
+			for (final Tuple<String, String> tag : tags)
+				is = CompMetadata.setMetadata(is, tag.getKey(), tag.getValue());
 
 		return is;
 	}
@@ -379,6 +379,18 @@ public final class ItemCreator {
 	// ----------------------------------------------------------------------------------------
 	// Static access
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Convenience method to get a new item creator with material, name and lore set
+	 *
+	 * @param material
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder of(CompMaterial material, String name, @NonNull Collection<String> lore) {
+		return of(material, name, lore.toArray(new String[lore.size()]));
+	}
 
 	/**
 	 * Convenience method to get a new item creator with material, name and lore set
