@@ -80,7 +80,7 @@ public class CompMetadata {
 	 * @param tag
 	 */
 	public static final void setMetadata(Entity entity, String tag) {
-		setMetadata(entity, tag, "null");
+		setMetadata(entity, tag, tag);
 	}
 
 	/**
