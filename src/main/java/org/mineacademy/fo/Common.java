@@ -730,7 +730,7 @@ public final class Common {
 		}
 
 		// Remove the last color + ", " from the string
-		return primary + "(" + list.size() + ") " + formatted.substring(0, formatted.length() - 4);
+		return primary + "(" + list.size() + ") " + (formatted.length() > 3 ? formatted.substring(0, formatted.length() - 4) : formatted);
 	}
 
 	/**
@@ -1841,7 +1841,7 @@ public final class Common {
 	}
 
 	/**
-	 * Converts a string array into a list of strings
+	 * Creates a new modifiable array list from string array
 	 *
 	 * @param array
 	 * @return
