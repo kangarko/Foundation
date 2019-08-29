@@ -3,10 +3,10 @@ package org.mineacademy.fo.model;
 import org.mineacademy.fo.collection.SerializedMap;
 
 /**
- * Classes implementing this can be stored/loaded from a settings file
+ * <p>Classes implementing this can be stored/loaded from a settings file</p>
  *
- * All classes must also implement the following:
- * public static T deserialize(SerializedMap map)
+ * <p>** All classes must also implement the following: **</p>
+ * <p>public static T deserialize(SerializedMap map)</p>
  */
 public interface ConfigSerializable {
 
