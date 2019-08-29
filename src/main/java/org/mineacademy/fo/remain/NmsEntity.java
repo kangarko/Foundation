@@ -2,9 +2,12 @@ package org.mineacademy.fo.remain;
 
 import java.lang.reflect.Method;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -13,47 +16,83 @@ import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
 
-// Internal class for spawning entities, used by Boss to
-// tag them before they appear in the world
-//
-// Not intended for public use
+/**
+ * Advanced spawning of entities, enables manipulation of
+ * an entity before it's added to the world.
+ */
 public final class NmsEntity {
 
+	/**
+	 * The world to add the entity to
+	 */
 	private final World bukkitWorld;
 
+	/**
+	 * The NMS entity class
+	 */
 	@Getter
 	private final Object nmsEntity;
 
-	public NmsEntity(Location loc, Class<?> cl) {
+	/**
+	 * Create an entity at X:0 Y:0 Z:0 in the first existing world
+	 * You can use {@link EntityType#getEntityClass()} to get the class
+	 *
+	 * @param entityClass
+	 */
+	public NmsEntity(Class<?> entityClass) {
+		this(new Location(Bukkit.getWorlds().get(0), 0, 0, 0), entityClass);
+	}
+
+	/**
+	 * Create an entity at the given location
+	 * You can use {@link EntityType#getEntityClass()} to get the class
+	 *
+	 * @param location
+	 * @param entityClass
+	 */
+	public NmsEntity(Location location, Class<?> entityClass) {
 		try {
 			NmsAccessor.call();
 		} catch (final Throwable t) {
 			throw new FoException(t, "Failed to setup entity reflection! MC version: " + MinecraftVersion.getCurrent());
 		}
 
-		this.bukkitWorld = loc.getWorld();
-		this.nmsEntity = MinecraftVersion.equals(V.v1_7) ? handle(loc, cl) : createEntity(loc, cl);
+		this.bukkitWorld = location.getWorld();
+		this.nmsEntity = MinecraftVersion.equals(V.v1_7) ? getHandle(location, entityClass) : createEntity(location, entityClass);
 	}
 
-	private static Object handle(Location loc, Class<?> cl) {
-		final Entity en = new Location(loc.getWorld(), -1, 0, -1).getWorld().spawn(loc, (Class<? extends Entity>) cl);
+	//
+	// Return the entity handle, used for MC 1.7.10 to add entity
+	//
+	private static Object getHandle(Location location, Class<?> entityClass) {
+		final Entity entity = new Location(location.getWorld(), -1, 0, -1).getWorld().spawn(location, (Class<? extends Entity>) entityClass);
 
 		try {
-			return en.getClass().getMethod("getHandle").invoke(en);
+			return entity.getClass().getMethod("getHandle").invoke(entity);
 		} catch (final ReflectiveOperationException ex) {
 			throw new Error(ex);
 		}
 	}
 
-	private Object createEntity(Location loc, Class<?> cl) {
+	//
+	// Creates the entity and registers in the NMS server
+	//
+	private Object createEntity(Location location, Class<?> entityClass) {
 		try {
-			return NmsAccessor.createEntity.invoke(bukkitWorld, loc, cl);
+			return NmsAccessor.createEntity.invoke(bukkitWorld, location, entityClass);
 
 		} catch (final ReflectiveOperationException e) {
-			throw new FoException(e, "Error creating entity " + cl + " at " + loc);
+			throw new FoException(e, "Error creating entity " + entityClass + " at " + location);
 		}
 	}
 
+	/**
+	 * Adds the entity to the world for the given spawn reason, calls Bukkit {@link CreatureSpawnEvent}
+	 *
+	 * @param <T>
+	 * @param reason
+	 * @return
+	 */
 	public <T extends Entity> T addEntity(SpawnReason reason) {
 		try {
 
@@ -64,9 +103,14 @@ public final class NmsEntity {
 		}
 	}
 
+	/**
+	 * Get the Bukkit entity
+	 *
+	 * @return
+	 */
 	public Entity getBukkitEntity() {
 		try {
-			return (Entity) NmsAccessor.bukkitEntity.invoke(nmsEntity);
+			return (Entity) NmsAccessor.getBukkitEntity.invoke(nmsEntity);
 
 		} catch (final ReflectiveOperationException e) {
 			throw new FoException(e, "Error getting bukkit entity from " + nmsEntity);
@@ -74,48 +118,84 @@ public final class NmsEntity {
 	}
 }
 
+/**
+ * A helper class accessing NMS internals
+ */
 final class NmsAccessor {
 
+	/**
+	 * The create entity method
+	 */
 	static final Method createEntity;
-	static final Method bukkitEntity;
+
+	/**
+	 * The get bukkit entity method
+	 */
+	static final Method getBukkitEntity;
+
+	/**
+	 * The add entity method
+	 */
 	static final Method addEntity;
 
-	private static volatile boolean addEntityConsumer = false;
-	private static volatile boolean olderThen18;
+	/**
+	 * Does the {@link #addEntity} field have consumer function input?
+	 */
+	private static volatile boolean hasEntityConsumer = false;
 
+	/**
+	 * Is the current Minecraft version older than 1.8.8 ?
+	 */
+	private static volatile boolean olderThan18;
+
+	/**
+	 * Static block initializer
+	 */
 	static void call() {
 	}
 
+	/**
+	 * Load this class
+	 */
 	static {
 		try {
 			final Class<?> nmsEntity = ReflectionUtil.getNMSClass("Entity");
 			final Class<?> ofcWorld = ReflectionUtil.getOBCClass("CraftWorld");
 
 			createEntity = MinecraftVersion.newerThan(V.v1_7) ? ofcWorld.getDeclaredMethod("createEntity", Location.class, Class.class) : null;
-			bukkitEntity = nmsEntity.getMethod("getBukkitEntity");
+			getBukkitEntity = nmsEntity.getMethod("getBukkitEntity");
 
 			if (MinecraftVersion.newerThan(V.v1_10)) {
-				addEntityConsumer = true;
+				hasEntityConsumer = true;
 				addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class, Class.forName("org.bukkit.util.Consumer"));
 
 			} else
 				addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
 
-			olderThen18 = MinecraftVersion.olderThan(V.v1_8);
+			olderThan18 = MinecraftVersion.olderThan(V.v1_8);
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Error setting up nms entity accessor!");
 		}
 	}
 
+	/**
+	 * Adds an entity to the given world
+	 *
+	 * @param bukkitWorld
+	 * @param nmsEntity
+	 * @param reason
+	 * @return
+	 * @throws ReflectiveOperationException
+	 */
 	static Object addEntity(World bukkitWorld, Object nmsEntity, SpawnReason reason) throws ReflectiveOperationException {
-		if (olderThen18) {
+		if (olderThan18) {
 			addEntity.invoke(bukkitWorld, nmsEntity, reason);
 
-			return bukkitEntity.invoke(nmsEntity);
+			return getBukkitEntity.invoke(nmsEntity);
 		}
 
-		if (addEntityConsumer)
+		if (hasEntityConsumer)
 			return addEntity.invoke(bukkitWorld, nmsEntity, reason, null);
 
 		return addEntity.invoke(bukkitWorld, nmsEntity, reason);
