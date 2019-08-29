@@ -38,6 +38,7 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -59,9 +60,12 @@ import lombok.Setter;
 public class YamlConfig {
 
 	/**
-	 * Should we treat empty strings as null in "get object" methods?
+	 * When you attempt to use {@link #get(String, Class)} or {@link #get(String, Class, Object)}
+	 * for a null value, should we insert an empty {@link SerializedMap} to the deserialize method so that it is called?
+	 *
+	 * Defaults to false, which means if the value is not set, no deserialize is called, we just return null
 	 */
-	public static boolean THREAT_EMPTY_AS_NULL = false;
+	public static boolean DESERIALIZE_NULL = false;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Only allow one instance of file to be loaded for safety.
@@ -529,12 +533,36 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <T> T get(String path, Class<T> type, T def) {
-		Object object = getT(path, Object.class);
-
-		if (THREAT_EMPTY_AS_NULL && "".equals(object))
-			object = null;
+		final Object object = convertIfNull(type, getT(path, Object.class));
 
 		return object != null ? SerializeUtil.deserialize(type, object) : def;
+	}
+
+	/**
+	 * Basically the same as {@link #get(String, Class)} however you can pass your own deserialize arguments here,
+	 * see {@link SerializeUtil#deserialize(Class, Object, Object...)}
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @param deserializeArguments
+	 * @return
+	 */
+	protected final <T> T getWithData(String path, Class<T> type, Object... deserializeArguments) {
+		final Object object = convertIfNull(type, getT(path, Object.class));
+
+		return object != null ? SerializeUtil.deserialize(type, object, deserializeArguments) : null;
+	}
+
+	//
+	// If there is no object set at a path, we convert it into an empty map, allowing
+	// you to invoke deserialize for empty map to use default values instead
+	//
+	private final Object convertIfNull(Class<?> type, Object object) {
+		if (object == null && DESERIALIZE_NULL && ConfigSerializable.class.isAssignableFrom(type))
+			object = new SerializedMap();
+
+		return object;
 	}
 
 	/**
@@ -1039,6 +1067,21 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType) {
+		return getMap(path, keyType, valueType, null);
+	}
+
+	/**
+	 * Get a map of values and keys
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param valueType
+	 * @param def
+	 * @return
+	 */
+	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType, Map<Key, Value> def) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
 		if (pathPrefix != null)
@@ -1055,7 +1098,16 @@ public class YamlConfig {
 
 		final LinkedHashMap<Key, Value> keys = new LinkedHashMap<>();
 
-		Valid.checkBoolean(getConfig().isConfigurationSection(path), "Must be section at '" + path + "', got " + getConfig().get(path));
+		final Object pathObject = getConfig().get(path);
+
+		if (pathObject == null)
+			if (def != null)
+				return new LinkedHashMap<>(def);
+
+			else
+				throw new FoException("Map not found at " + path + " in " + getFileName());
+
+		Valid.checkBoolean(getConfig().isConfigurationSection(path), "Must be section at '" + path + "', got " + pathObject);
 
 		for (final Map.Entry<String, Object> entry : getConfig().getConfigurationSection(path).getValues(false).entrySet()) {
 			final Object key = entry.getKey();
@@ -1124,6 +1176,17 @@ public class YamlConfig {
 		setNoSave(path, value);
 
 		save();
+	}
+
+	/**
+	 * Set a default key-value pair to the used file (not the default one) if it does not exist
+	 *
+	 * @param path
+	 * @param value
+	 */
+	protected final void setIfNotExist(String path, Object value) {
+		if (!isSet(path))
+			setNoSave(path, value);
 	}
 
 	/**
