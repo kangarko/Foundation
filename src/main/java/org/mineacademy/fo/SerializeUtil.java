@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -135,6 +137,26 @@ public final class SerializeUtil {
 			return serialized;
 		}
 
+		else if (obj instanceof StrictMap) {
+			final StrictMap<Object, Object> oldMap = (StrictMap<Object, Object>) obj;
+			final StrictMap<Object, Object> newMap = new StrictMap<>();
+
+			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
+				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
+
+			return newMap;
+		}
+
+		else if (obj instanceof Map) {
+			final Map<Object, Object> oldMap = (Map<Object, Object>) obj;
+			final Map<Object, Object> newMap = new HashMap<>();
+
+			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
+				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
+
+			return newMap;
+		}
+
 		else if (obj instanceof YamlConfig)
 			throw new FoException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
 
@@ -204,12 +226,13 @@ public final class SerializeUtil {
 	}
 
 	/**
-	 * Please see {@link #deserialize(Class, Object)}
+	 * Please see {@link #deserialize(Class, Object)}, plus that this method
+	 * allows you to parse through more arguments to the static deserialize method
 	 *
 	 * @param <T>
 	 * @param classOf
 	 * @param object
-	 * @param deserializeParameters, special case for some of our plugins
+	 * @param deserializeParameters, use more variables in the deserialize method
 	 * @return
 	 */
 	public static <T> T deserialize(@NonNull Class<T> classOf, @NonNull Object object, Object... deserializeParameters) {
@@ -225,22 +248,29 @@ public final class SerializeUtil {
 		if (deserializeParameters != null) {
 			final List<Class<?>> joinedClasses = new ArrayList<>();
 
-			for (final Object param : deserializeParameters)
-				joinedClasses.add(param.getClass());
+			{ // Build parameters
+				joinedClasses.add(SerializedMap.class);
 
-			joinedClasses.add(SerializedMap.class);
+				for (final Object param : deserializeParameters)
+					joinedClasses.add(param.getClass());
+			}
 
 			deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", joinedClasses.toArray(new Class[joinedClasses.size()]));
 
 			final List<Object> joinedParams = new ArrayList<>();
 
-			for (final Object param : deserializeParameters)
-				joinedParams.add(param);
+			{ // Build parameter instances
+				joinedParams.add(map);
 
-			joinedParams.add(map);
+				for (final Object param : deserializeParameters)
+					joinedParams.add(param);
+			}
 
-			if (deserializeMethod != null)
-				return ReflectionUtil.invokeStatic(deserializeMethod, joinedParams);
+			if (deserializeMethod != null) {
+				Valid.checkBoolean(joinedClasses.size() == joinedParams.size(), "static deserialize method arguments length " + joinedClasses.size() + " != given params " + joinedParams.size());
+
+				return ReflectionUtil.invokeStatic(deserializeMethod, joinedParams.toArray());
+			}
 		}
 
 		// Step 3 - Search for "getByName" method used by us or some Bukkit classes such as Enchantment
