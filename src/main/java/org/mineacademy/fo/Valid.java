@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
@@ -187,6 +188,41 @@ public final class Valid {
 	 */
 	public static boolean isFinite(Vector vector) {
 		return Double.isFinite(vector.getX()) && Double.isFinite(vector.getY()) && Double.isFinite(vector.getZ());
+	}
+
+	/**
+	 * Return true if the given value is between bounds
+	 *
+	 * @param value
+	 * @param ranged
+	 * @return
+	 */
+	public static boolean isInRange(long value, RangedValue ranged) {
+		return value >= ranged.getMinLong() && value <= ranged.getMaxLong();
+	}
+
+	/**
+	 * Return true if the given value is between bounds
+	 *
+	 * @param value
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public static boolean isInRange(double value, double min, double max) {
+		return value >= min && value <= max;
+	}
+
+	/**
+	 * Return true if the given value is between bounds
+	 *
+	 * @param value
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public static boolean isInRange(long value, long min, long max) {
+		return value >= min && value <= max;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
