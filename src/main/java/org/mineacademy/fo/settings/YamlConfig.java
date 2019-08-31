@@ -559,8 +559,13 @@ public class YamlConfig {
 	// you to invoke deserialize for empty map to use default values instead
 	//
 	private final Object convertIfNull(Class<?> type, Object object) {
-		if (object == null && DESERIALIZE_NULL && ConfigSerializable.class.isAssignableFrom(type))
-			object = new SerializedMap();
+		if (DESERIALIZE_NULL) {
+			if (object == null && ConfigSerializable.class.isAssignableFrom(type))
+				object = new SerializedMap();
+
+			if ("".equals(object) && Enum.class.isAssignableFrom(type))
+				object = null;
+		}
 
 		return object;
 	}
@@ -1066,7 +1071,7 @@ public class YamlConfig {
 	 * @param valueType
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType) {
+	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Class<Value> valueType) {
 		return getMap(path, keyType, valueType, null);
 	}
 
@@ -1081,7 +1086,7 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType, Map<Key, Value> def) {
+	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Class<Value> valueType, Map<Key, Value> def) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
 		if (pathPrefix != null)
@@ -1093,7 +1098,7 @@ public class YamlConfig {
 			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
 
 			for (final String key : getDefaults().getConfigurationSection(path).getKeys(false))
-				addDefaultIfNotExist(path + "." + key, valueType.getClass());
+				addDefaultIfNotExist(path + "." + key, valueType);
 		}
 
 		final LinkedHashMap<Key, Value> keys = new LinkedHashMap<>();
@@ -1115,10 +1120,12 @@ public class YamlConfig {
 
 			Valid.checkBoolean(!keys.containsKey(key), "Duplicate key " + key + " in " + path);
 
-			checkAssignable(false, path, val, valueType.getClass());
-			final Key parsed = (Key) (keyType == Integer.class && key instanceof String ? Integer.parseInt(key.toString()) : key);
+			checkAssignable(false, path, val, valueType);
 
-			keys.put(parsed, (Value) val);
+			final Key parsed = SerializeUtil.deserialize(keyType, key); //(Key) (keyType == Integer.class && key instanceof String ? Integer.parseInt(key.toString()) : key);
+			final Value parsedValue = SerializeUtil.deserialize(valueType, val);
+
+			keys.put(parsed, parsedValue);
 		}
 
 		return keys;
@@ -1154,7 +1161,7 @@ public class YamlConfig {
 
 		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
 			// type, value (UNPARSED)
-			final LinkedHashMap<String, Object> valuesRaw = getMap(path + "." + name, String.class, new Object());
+			final LinkedHashMap<String, Object> valuesRaw = getMap(path + "." + name, String.class, Object.class);
 
 			groups.put(name, valuesRaw);
 		}

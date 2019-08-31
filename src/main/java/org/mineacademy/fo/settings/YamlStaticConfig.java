@@ -344,7 +344,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getObject(path);
 	}
 
-	protected static final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Value valueType) {
+	protected static final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Class<Value> valueType) {
 		return TEMPORARY_INSTANCE.getMap(path, keyType, valueType);
 	}
 

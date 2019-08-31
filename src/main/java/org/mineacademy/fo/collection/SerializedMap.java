@@ -23,6 +23,7 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.YamlConfig;
 
 import com.google.gson.Gson;
 
@@ -49,7 +50,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public SerializedMap(String key, Object value) {
+	private SerializedMap(String key, Object value) {
 		this();
 
 		put(key, value);
@@ -496,6 +497,9 @@ public final class SerializedMap extends StrictCollection {
 		if (raw == null)
 			raw = getValueIgnoreCase(key);
 
+		if (YamlConfig.DESERIALIZE_NULL && "".equals(raw) && Enum.class.isAssignableFrom(type))
+			return def;
+
 		return raw == null ? def : SerializeUtil.deserialize(type, raw, key);
 	}
 
@@ -621,6 +625,17 @@ public final class SerializedMap extends StrictCollection {
 	// ----------------------------------------------------------------------------------------------------
 	// Static
 	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Create a new map with the first key-value pair
+	 *
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public static SerializedMap of(String key, Object value) {
+		return new SerializedMap(key, value);
+	}
 
 	/**
 	 * Parses the given object into Serialized map
