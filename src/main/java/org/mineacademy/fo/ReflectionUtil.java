@@ -435,6 +435,23 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Return true if the given absolute class path is available,
+	 * useful for checking for older MC versions for classes such as org.bukkit.entity.Phantom
+	 *
+	 * @param path
+	 * @return
+	 */
+	public static boolean isClassAvailable(String path) {
+		try {
+			Class.forName(path);
+			return true;
+
+		} catch (final Throwable t) {
+			return false;
+		}
+	}
+
+	/**
 	 * Wrapper for Class.forName
 	 *
 	 * @param path
