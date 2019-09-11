@@ -52,7 +52,7 @@ public final class ToolsListener implements Listener {
 	 *
 	 * @param event
 	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onToolClick(PlayerInteractEvent event) {
 		if (!Remain.isInteractEventPrimaryHand(event))
 			return;
