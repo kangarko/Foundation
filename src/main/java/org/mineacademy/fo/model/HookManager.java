@@ -2520,17 +2520,22 @@ class CMIHook {
 		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
 		final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
 
-		if (ignore)
-			user.addIgnore(ignoredPlayer.getUniqueId(), true /* save now (?) */);
-		else
-			user.removeIgnore(ignoredPlayer.getUniqueId());
+		if (ignoredPlayer != null)
+			if (ignore)
+				user.addIgnore(ignoredPlayer.getUniqueId(), true /* save now (?) */);
+			else
+				user.removeIgnore(ignoredPlayer.getUniqueId());
 	}
 
 	boolean isIgnoring(String player, String who) {
-		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
-		final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
+		try {
+			final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
+			final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
 
-		return user.isIgnoring(ignoredPlayer.getUniqueId());
+			return user.isIgnoring(ignoredPlayer.getUniqueId());
+		} catch (final NullPointerException ex) {
+			return false;
+		}
 	}
 
 	private CMIUser getUser(Player player) {
@@ -2579,16 +2584,18 @@ class DiscordSRVHook implements Listener {
 		if (sender instanceof Player) {
 			Debugger.debug("discord", "[MC->Discord] " + sender.getName() + " send message to '" + channel + "' channel. Message: '" + message + "'");
 
+			final DiscordSRV instance = DiscordSRV.getPlugin(DiscordSRV.class);
+
 			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage
 			// method to function
-			final FileConfiguration discordConfig = DiscordSRV.config();
+			final FileConfiguration discordConfig = instance.getConfig();
 			final String outMessageKey = "DiscordChatChannelMinecraftToDiscord";
 			final boolean outMessageOldValue = discordConfig.getBoolean(outMessageKey);
 
 			discordConfig.set(outMessageKey, true);
 
 			try {
-				DiscordSRV.getPlugin().processChatMessage((Player) sender, message, channel, false);
+				instance.processChatMessage((Player) sender, message, channel, false);
 			} finally {
 				discordConfig.set(outMessageKey, outMessageOldValue);
 			}
