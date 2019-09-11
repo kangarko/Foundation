@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.Metadatable;
 import org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
@@ -31,6 +32,7 @@ import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlSectionConfig;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -159,7 +161,9 @@ public class CompMetadata {
 		final String compoundTag = FoConstants.NBT.TAG;
 		final NBTItem nbt = new NBTItem(item);
 
-		return nbt.hasKey(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
+		final String value = nbt.hasKey(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
+
+		return Common.getOrNull(value);
 	}
 
 	/**
@@ -177,11 +181,13 @@ public class CompMetadata {
 			for (final String line : entity.getScoreboardTags()) {
 				final String tag = getTag(line, key);
 
-				if (tag != null)
+				if (tag != null && !tag.isEmpty())
 					return tag;
 			}
 
-		return entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
+		final String value = entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
+
+		return Common.getOrNull(value);
 	}
 
 	// Parses the tag and gets its value
@@ -208,11 +214,15 @@ public class CompMetadata {
 			return getNamedspaced((TileState) tileEntity, key);
 		}
 
-		return tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : null;
+		final String value = tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : null;
+
+		return Common.getOrNull(value);
 	}
 
 	private static final String getNamedspaced(TileState tile, String key) {
-		return tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
+		final String value = tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
+
+		return Common.getOrNull(value);
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -366,8 +376,11 @@ public class CompMetadata {
 
 		private void applySavedMetadata(List<String> metadata, Metadatable entity) {
 			for (final String metadataLine : metadata) {
+				if (metadataLine.isEmpty())
+					continue;
+
 				final String[] lines = metadataLine.split(DELIMITER);
-				Valid.checkBoolean(lines.length == 3, "Malformed metadata line. Expected length 3, got " + lines.length + " for " + metadataLine);
+				Valid.checkBoolean(lines.length == 3, "Malformed metadata line for " + entity + ". Length 3 != " + lines.length + ". Data: " + metadataLine);
 
 				final String key = lines[1];
 				final String value = lines[2];
@@ -376,9 +389,8 @@ public class CompMetadata {
 			}
 		}
 
-		protected void addMetadata(Entity entity, String key, String value) {
+		protected void addMetadata(Entity entity, @NonNull String key, String value) {
 			final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
-			final String formatted = format(key, value);
 
 			for (final Iterator i = metadata.iterator(); i.hasNext();) {
 				final String meta = (String) i.next();
@@ -387,13 +399,17 @@ public class CompMetadata {
 					i.remove();
 			}
 
-			metadata.add(formatted);
+			if (value != null && !value.isEmpty()) {
+				final String formatted = format(key, value);
+
+				metadata.add(formatted);
+			}
+
 			save("Entity", entityMetadataMap);
 		}
 
 		protected void addMetadata(BlockState blockState, String key, String value) {
 			final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
-			final String formatted = format(key, value);
 
 			for (final Iterator i = blockCache.getMetadata().iterator(); i.hasNext();) {
 				final String meta = (String) i.next();
@@ -402,7 +418,11 @@ public class CompMetadata {
 					i.remove();
 			}
 
-			blockCache.getMetadata().add(formatted);
+			if (value != null && !value.isEmpty()) {
+				final String formatted = format(key, value);
+
+				blockCache.getMetadata().add(formatted);
+			}
 
 			{ // Save
 				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
