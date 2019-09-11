@@ -52,12 +52,22 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static Enchantment findEnchantment(String name) {
-		name = EnchantmentWrapper.toBukkit(name);
+		Enchantment enchant = Enchantment.getByName(name.toLowerCase());
 
-		final Enchantment e = Enchantment.getByName(name);
-		Valid.checkNotNull(e, "Invalid enchantment '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html");
+		if (enchant == null)
+			enchant = Enchantment.getByName(name);
 
-		return e;
+		if (enchant == null) {
+			name = EnchantmentWrapper.toBukkit(name);
+			enchant = Enchantment.getByName(name.toLowerCase());
+
+			if (enchant == null)
+				enchant = Enchantment.getByName(name);
+		}
+
+		Valid.checkNotNull(enchant, "Invalid enchantment '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html");
+
+		return enchant;
 	}
 
 	// ----------------------------------------------------------------------------------------------------
