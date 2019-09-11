@@ -1807,6 +1807,16 @@ public final class Common {
 	}
 
 	/**
+	 * If the String equals to none or is empty, return null
+	 *
+	 * @param input
+	 * @return
+	 */
+	public static String getOrNull(String input) {
+		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? null : input;
+	}
+
+	/**
 	 * Returns the value or its default counterpart in case it is null
 	 *
 	 * @param value the primary value
