@@ -238,15 +238,15 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message if a new version is found but not downloaded
 		 */
-		public static String AVAILABLE = "&2A new version of &3{plugin.name}&2 is available.\n"
+		public static String AVAILABLE = "&2A new version of &3{plugin_name}&2 is available.\n"
 				+ "&2Current version: &f{current}&2; New version: &f{new}\n"
-				+ "&2URL: &7https://www.spigotmc.org/resources/10258/.";
+				+ "&2URL: &7https://www.spigotmc.org/resources/{resource_id}/.";
 
 		/**
 		 * The message if a new version is found and downloaded
 		 */
-		public static String DOWNLOADED = "&3{plugin.name}&2 has been upgraded from {current} to {new}.\n"
-				+ "&2Visit &7https://www.spigotmc.org/resources/10258 &2for more information.\n"
+		public static String DOWNLOADED = "&3{plugin_name}&2 has been upgraded from {current} to {new}.\n"
+				+ "&2Visit &7https://www.spigotmc.org/resources/{resource_id} &2for more information.\n"
 				+ "&2Please restart the server to load the new version.";
 
 		/**

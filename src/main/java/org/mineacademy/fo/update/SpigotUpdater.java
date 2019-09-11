@@ -234,8 +234,10 @@ public class SpigotUpdater implements Runnable {
 	 */
 	protected String replaceVariables(String message) {
 		return message
-				.replace("{resourceId}", resourceId + "")
-				.replace("{plugin.name}", SimplePlugin.getNamed())
+				.replace("{resourceId}", resourceId + "") // DEPRECATED
+				.replace("{resource_id}", resourceId + "")
+				.replace("{plugin.name}", SimplePlugin.getNamed()) // DEPRECATED
+				.replace("{plugin_name}", SimplePlugin.getNamed())
 				.replace("{new}", newVersion)
 				.replace("{curr}", SimplePlugin.getVersion()) // DEPRECATED
 				.replace("{current}", SimplePlugin.getVersion())
