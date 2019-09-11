@@ -42,17 +42,6 @@ public final class BlockUtil {
 	private static final Pattern SLAB_PATTERN = Pattern.compile("(?!DOUBLE).*STEP");
 
 	/**
-	 * A list of safe blocks which can be selected as a region point, cornerstone,
-	 * monster spawner etc.
-	 */
-	private static final Set<String> SELECTION_BLOCKS = Sets.newHashSet(
-			"STONE", "GRASS", "DIRT", "WOOD", "SAND", "GRAVEL", "BEDROCK",
-			"LOG", "LEAVES", "BLOCK", "WOOL", "DOUBLE", "SLAB", "STEP",
-			"BRICK", "BOOKSHELF", "SOIL", "ORE", "ICE", "CLAY", "PUMPKIN",
-			"NETHERRACK", "OBSIDIAN", "GLASS", "FENCE", "REDSTONE_LAMP",
-			"TERRACOTTA", "PRISMARINE", "SEA_LANTERN");
-
-	/**
 	 * The block faces we use while searching for all parts of the given
 	 * tree upwards
 	 */
@@ -562,13 +551,17 @@ public final class BlockUtil {
 		if (!material.isBlock() || material == Material.AIR)
 			return false;
 
-		final String name = material.toString().toUpperCase();
+		try {
+			if (material.isInteractable()) // Ignore chests etc.
+				return false;
 
-		for (final String allowed : SELECTION_BLOCKS)
-			if (name.contains(allowed))
-				return true;
+			if (material.hasGravity()) // Ignore falling blocks
+				return false;
+		} catch (final Throwable t) {
+			// Old MC version
+		}
 
-		return false;
+		return material.isSolid();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
