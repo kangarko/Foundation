@@ -317,7 +317,13 @@ public final class SerializeUtil {
 			else if (Enum.class.isAssignableFrom(classOf))
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
 
-			else if (classOf == Object.class) {
+			else if (List.class.isAssignableFrom(classOf) && object instanceof List) {
+				// Good
+
+			} else if (Map.class.isAssignableFrom(classOf) && object instanceof Map) {
+				// Good
+
+			} else if (classOf == Object.class) {
 				// pass through
 
 			} else
