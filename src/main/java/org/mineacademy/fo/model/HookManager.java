@@ -1,5 +1,6 @@
 package org.mineacademy.fo.model;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,6 +24,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -2588,16 +2590,23 @@ class DiscordSRVHook implements Listener {
 
 			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage
 			// method to function
-			final FileConfiguration discordConfig = instance.getConfig();
-			final String outMessageKey = "DiscordChatChannelMinecraftToDiscord";
-			final boolean outMessageOldValue = discordConfig.getBoolean(outMessageKey);
+			final File file = new File(SimplePlugin.getData().getParent(), "DiscordSRV/config.yml");
 
-			discordConfig.set(outMessageKey, true);
+			if (file.exists()) {
+				final FileConfiguration discordConfig = YamlConfiguration.loadConfiguration(file);
 
-			try {
-				instance.processChatMessage((Player) sender, message, channel, false);
-			} finally {
-				discordConfig.set(outMessageKey, outMessageOldValue);
+				if (discordConfig != null) {
+					final String outMessageKey = "DiscordChatChannelMinecraftToDiscord";
+					final boolean outMessageOldValue = discordConfig.getBoolean(outMessageKey);
+
+					discordConfig.set(outMessageKey, true);
+
+					try {
+						instance.processChatMessage((Player) sender, message, channel, false);
+					} finally {
+						discordConfig.set(outMessageKey, outMessageOldValue);
+					}
+				}
 			}
 
 		} else {
