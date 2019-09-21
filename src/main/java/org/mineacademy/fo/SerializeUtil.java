@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -165,6 +166,9 @@ public final class SerializeUtil {
 				|| obj instanceof ItemStack
 		/*|| obj instanceof MemorySection*/)
 			return obj;
+
+		else if (obj instanceof ConfigurationSerializable)
+			return ((ConfigurationSerializable) obj).serialize();
 
 		throw new FoException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
 	}
