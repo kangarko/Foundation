@@ -92,6 +92,15 @@ public class RangedValue {
 	}
 
 	/**
+	 * Return a saveable representation (assuming saving in ticks) of this value
+	 *
+	 * @return
+	 */
+	public final String toLine() {
+		return min + " - " + max;
+	}
+
+	/**
 	 * Create a {@link RangedValue} from a line
 	 * Example: 1-10
 	 *          5 - 60
