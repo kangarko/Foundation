@@ -61,6 +61,23 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Put key-value pairs from another map into this map
+	 *
+	 * If the key already exist, it is ignored
+	 *
+	 * @param map
+	 */
+	public void merge(SerializedMap map) {
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+
+			if (key != null && value != null && !map.containsKey(key))
+				map.put(key, value);
+		}
+	}
+
+	/**
 	 * @see Map#containsKey(Object)
 	 */
 	public boolean containsKey(String key) {
@@ -586,7 +603,7 @@ public final class SerializedMap extends StrictCollection {
 		if (old != null) {
 			// If the old is a collection check if the first value is old, assume the rest is old as well
 			if (old instanceof Collection) {
-				final Collection<?> collection = (Collection) old;
+				final Collection<?> collection = (Collection<?>) old;
 
 				if (collection.isEmpty() || !from.isAssignableFrom(collection.iterator().next().getClass()))
 					return;
