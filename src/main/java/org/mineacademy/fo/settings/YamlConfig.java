@@ -166,7 +166,7 @@ public class YamlConfig {
 	/**
 	 * Internal flag that can be toggled to disable working with default files.
 	 */
-	@Setter(value = AccessLevel.PROTECTED)
+	@Setter
 	private boolean usingDefaults = true;
 
 	/**
