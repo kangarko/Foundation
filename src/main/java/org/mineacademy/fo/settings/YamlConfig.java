@@ -166,7 +166,7 @@ public class YamlConfig {
 	/**
 	 * Internal flag that can be toggled to disable working with default files.
 	 */
-	@Setter
+	@Setter(value = AccessLevel.PROTECTED)
 	private boolean usingDefaults = true;
 
 	/**
@@ -864,7 +864,7 @@ public class YamlConfig {
 	 * @param type
 	 * @return
 	 */
-	public <T> Set<T> getSetSafe(String key, Class<T> type) {
+	protected final <T> Set<T> getSetSafe(String key, Class<T> type) {
 		final Set<T> list = getSet(key, type);
 
 		return Common.getOrDefault(list, new HashSet<>());
@@ -878,7 +878,7 @@ public class YamlConfig {
 	 * @param type
 	 * @return
 	 */
-	public <T> Set<T> getSet(String key, Class<T> type) {
+	protected final <T> Set<T> getSet(String key, Class<T> type) {
 		final List<T> list = getList(key, type);
 
 		return list == null ? null : new HashSet<>(list);
@@ -894,7 +894,7 @@ public class YamlConfig {
 	 * @param type
 	 * @return
 	 */
-	public <T> List<T> getListSafe(String key, Class<T> type) {
+	protected final <T> List<T> getListSafe(String key, Class<T> type) {
 		final List<T> list = getList(key, type);
 
 		return Common.getOrDefault(list, new ArrayList<>());
