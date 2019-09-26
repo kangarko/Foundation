@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
@@ -55,6 +56,8 @@ public abstract class YamlStaticConfig {
 				YamlStaticConfig.this.loadViaReflection();
 			}
 		};
+
+		TEMPORARY_INSTANCE.setHeader(getHeader());
 	}
 
 	// -----------------------------------------------------------------------------------------------------
@@ -78,6 +81,21 @@ public abstract class YamlStaticConfig {
 
 			TEMPORARY_INSTANCE = null;
 		}
+	}
+
+	/**
+	 * Return the default header used when the file is being written to and saved.
+	 * YAML files do not remember # comments. All of them will be lost and the file
+	 * will be "crunched" together when you save it, with the only exception being
+	 * the header. Use the header to display important information such as where
+	 * your users can find the documented version of your file (such as on GitHub).
+	 *
+	 * Set to null to disable, defaults to {@link FoConstants.Header#UPDATED_FILE}
+	 *
+	 * @return the header
+	 */
+	protected String[] getHeader() {
+		return FoConstants.Header.UPDATED_FILE;
 	}
 
 	/**
