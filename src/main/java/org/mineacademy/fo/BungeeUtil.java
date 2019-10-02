@@ -1,5 +1,8 @@
 package org.mineacademy.fo;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
@@ -17,6 +20,7 @@ import com.google.common.primitives.Primitives;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for sending messages to BungeeCord.
@@ -151,6 +155,29 @@ public final class BungeeUtil {
 		}
 
 		sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", out.toByteArray());
+	}
+
+	/**
+	 * Sends a plugin message that will re-connect the player to another server on Bungee
+	 *
+	 * @param player the living non-dead player
+	 * @param serverName the server name as you have in config.yml of your BungeeCord
+	 */
+	public static void connect(@NonNull Player player, @NonNull String serverName) {
+		final ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+		final DataOutputStream out = new DataOutputStream(byteArray);
+
+		try {
+			out.writeUTF("Connect");
+			out.writeUTF(serverName);
+
+		} catch (final Throwable t) {
+			Common.error(t,
+					"Unable to connect " + player.getName() + " to server " + serverName,
+					"Error: %error");
+		}
+
+		player.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", byteArray.toByteArray());
 	}
 
 	/**
