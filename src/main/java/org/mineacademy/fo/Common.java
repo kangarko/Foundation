@@ -1342,6 +1342,8 @@ public final class Common {
 	 * @return
 	 */
 	public static <T> String join(T[] array, String delimiter, Stringer<T> stringer) {
+		Valid.checkNotNull(array, "Cannot join null array!");
+
 		return join(Arrays.asList(array), delimiter, stringer);
 	}
 
