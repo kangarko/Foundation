@@ -36,4 +36,4 @@ functionality. We made our best efforts to make Foundation an enterprise-level
 solution for anyone looking to accelerate their coding however we are not
 taking any responsibility for the success or failure you achieve using it.
 
-**Tutorial on how to use this library is a part of our Project Orion training available now at https://mineacademy.org**
+**A tutorial on how to use this library is a part of our Project Orion training available now at https://mineacademy.org**
