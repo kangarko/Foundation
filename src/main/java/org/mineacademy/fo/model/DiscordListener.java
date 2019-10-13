@@ -201,7 +201,7 @@ public abstract class DiscordListener implements Listener {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	public static final class DiscordListenerImpl {
+	public static final class DiscordListenerImpl implements Listener {
 
 		private static boolean registered = false;
 
@@ -211,6 +211,13 @@ public abstract class DiscordListener implements Listener {
 			registered = true;
 
 			DiscordSRV.api.subscribe(this);
+		}
+
+		/**
+		 * Remove this listener
+		 */
+		public void unsubscribe() {
+			DiscordSRV.api.unsubscribe(this);
 		}
 
 		/**

@@ -310,7 +310,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Register DiscordSRV listener
 			if (HookManager.isDiscordSRVLoaded())
-				new DiscordListener.DiscordListenerImpl();
+				reloadables.registerEvents(new DiscordListener.DiscordListenerImpl());
 
 			// Load variables if enabled
 			if (areScriptVariablesEnabled())
