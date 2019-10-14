@@ -1404,6 +1404,9 @@ public final class Remain {
 			return en.getTargetBlock((Set<Material>) null, radius);
 
 		} catch (final Throwable t) {
+			if (t instanceof IllegalStateException)
+				return null;
+
 			try {
 				return (Block) en.getClass().getMethod("getTargetBlock", HashSet.class, int.class).invoke(en, (HashSet<Byte>) null, radius);
 
