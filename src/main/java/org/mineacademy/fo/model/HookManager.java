@@ -986,10 +986,13 @@ public final class HookManager {
 	 *
 	 * @param variable
 	 * @param value
+	 *
+	 * @deprecated does not register the variable in PlaceholderAPI
 	 */
+	@Deprecated
 	public static void addPlaceholder(String variable, BiFunction<Player, String, String> value) {
 		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value));
+			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value), null);
 	}
 
 	/**
@@ -1012,7 +1015,7 @@ public final class HookManager {
 	 */
 	public static void addPlaceholder(String variable, Function<Player, String> value) {
 		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)));
+			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)), value);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1789,8 +1792,20 @@ class PlaceholderAPIHook {
 		new VariablesInjector().register();
 	}
 
-	final void addPlaceholder(PAPIPlaceholder placeholder) {
+	final void addPlaceholder(PAPIPlaceholder placeholder, Function<Player, String> replacer) {
 		placeholders.add(placeholder);
+
+		if (replacer != null)
+			PlaceholderAPI.registerPlaceholderHook(SimplePlugin.getNamed().toLowerCase(), new PlaceholderHook() {
+				@Override
+				public String onPlaceholderRequest(Player player, String params) {
+
+					if (params.equals(placeholder.getVariable()))
+						return replacer.apply(player);
+
+					return null;
+				}
+			});
 	}
 
 	final String replacePlaceholders(Player pl, String msg) {
