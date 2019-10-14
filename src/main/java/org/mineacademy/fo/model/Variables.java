@@ -40,6 +40,11 @@ import lombok.Getter;
 public final class Variables {
 
 	/**
+	 * A static flag indicating whether we should replace & color codes in the replace() methods below
+	 */
+	public static boolean REPLACE_COLORS = true;
+
+	/**
 	 * The pattern to find simple {} placeholders
 	 */
 	protected static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
@@ -267,7 +272,8 @@ public final class Variables {
 		message = replaceHardVariables0(sender, message);
 
 		// Support the & color system
-		message = Common.colorize(message);
+		if (REPLACE_COLORS)
+			message = Common.colorize(message);
 
 		if (senderIsPlayer) {
 			final Map<String, String> map = customCache.get(sender.getName());
