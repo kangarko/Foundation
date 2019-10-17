@@ -1792,6 +1792,27 @@ public final class Remain {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return if the server is running Paper, formerly PaperSpigot software.
+	 *
+	 * Paper is a fork of Spigot compatible with most Bukkit plugins.
+	 *
+	 * We use the method getTPS to determine if Paper is installed.
+	 *
+	 * @return true if the server is running Paper(Spigot)
+	 */
+	public static boolean isPaper() {
+
+		try {
+			Bukkit.class.getMethod("getTPS");
+
+			return true;
+
+		} catch (final NoSuchMethodException e) {
+			return false;
+		}
+	}
+
+	/**
 	 * Is 'net.md_5.bungee.api.chat' package present? Spigot 1.7.10 and never.
 	 *
 	 * @return if the bungee chat API is present
