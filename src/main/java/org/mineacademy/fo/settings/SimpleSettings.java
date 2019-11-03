@@ -36,7 +36,16 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 	@Override
 	protected final void load() throws Exception {
-		createFileAndLoad(FoConstants.File.SETTINGS);
+		createFileAndLoad(getSettingsFileName());
+	}
+
+	/**
+	 * Get the file name for these settings, by default settings.yml
+	 *
+	 * @return
+	 */
+	protected String getSettingsFileName() {
+		return FoConstants.File.SETTINGS;
 	}
 
 	// --------------------------------------------------------------------
