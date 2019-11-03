@@ -26,6 +26,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.EntityUtil.HitListener;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -50,7 +51,7 @@ public final class EntityUtil {
 	public static Player getTargetPlayer(Entity entity) {
 		final LivingEntity target = getTarget(entity);
 
-		return target instanceof Player ? (Player) target : null;
+		return target instanceof Player && !HookManager.isNPC(target) ? (Player) target : null;
 	}
 
 	/**
