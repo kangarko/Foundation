@@ -1631,6 +1631,9 @@ public enum CompMaterial {
 		try {
 			final CompMaterial modern = valueOf(name);
 
+			if (modern.legacyName == name)
+				return null;
+
 			return fromLegacy(modern.legacyName, data);
 
 		} catch (final IllegalArgumentException ex) {
