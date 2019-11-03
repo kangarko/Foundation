@@ -206,6 +206,21 @@ public abstract class SimpleCommand extends Command {
 	 * Throws an error if the command {@link #isRegistered()} already.
 	 */
 	public final void register() {
+		register(true);
+	}
+
+	/**
+	 * Registers this command into Bukkit.
+	 *
+	 * Throws an error if the command {@link #isRegistered()} already.
+	 *
+	 * @param unregisterOldAliases If a command with the same label is already present, should
+	 * 							   we remove associated aliases with the old command? This solves a problem
+	 * 							   in ChatControl where unregistering /tell from the Essentials plugin would also
+	 * 							   unregister /t from Towny, which is undesired.
+	 *
+	 */
+	public final void register(boolean unregisterOldAliases) {
 		Valid.checkBoolean(!(this instanceof SimpleSubCommand), "Sub commands cannot be registered!");
 		Valid.checkBoolean(!registered, "The command /" + getLabel() + " has already been registered!");
 
@@ -217,7 +232,7 @@ public abstract class SimpleCommand extends Command {
 			if (!owningPlugin.equals(SimplePlugin.getNamed()))
 				Common.log("&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
 
-			Remain.unregisterCommand(oldCommand.getLabel());
+			Remain.unregisterCommand(oldCommand.getLabel(), unregisterOldAliases);
 		}
 
 		Remain.registerCommand(this);
