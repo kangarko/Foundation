@@ -210,7 +210,7 @@ public class YamlConfig {
 			if (instance == null) {
 
 				if (!file.exists())
-					FileUtil.extract(localePath, (line) -> replaceVariables(line, localePath));
+					FileUtil.extract(localePath, (line) -> replaceVariables(line, FileUtil.getFileName(localePath)));
 
 				final YamlConfiguration config = FileUtil.loadConfigurationStrict(file);
 				final YamlConfiguration defaultsConfig = Remain.loadConfiguration(is);
@@ -279,7 +279,7 @@ public class YamlConfig {
 					Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
 
 					defaultsConfig = Remain.loadConfiguration(is);
-					file = FileUtil.extract(false, from, to, (line) -> replaceVariables(line, to));
+					file = FileUtil.extract(false, from, to, (line) -> replaceVariables(line, FileUtil.getFileName(to)));
 				}
 
 				else
@@ -331,11 +331,12 @@ public class YamlConfig {
 	 */
 	private final void rewriteVariablesIn(File file) {
 		final List<String> lines = FileUtil.readLines(file);
+		final String fileName = FileUtil.getFileName(file.getName()).toLowerCase();
 
 		for (int i = 0; i < lines.size(); i++) {
 			final String line = lines.get(i);
 
-			lines.set(i, replaceVariables(line, file.getName()));
+			lines.set(i, replaceVariables(line, fileName));
 		}
 
 		FileUtil.write(file, lines, StandardOpenOption.TRUNCATE_EXISTING);
@@ -351,7 +352,7 @@ public class YamlConfig {
 	private final String replaceVariables(String line, String fileName) {
 		line = line.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
 		line = line.replace("{file}", fileName);
-		line = line.replace("{file.lowercase}", fileName.toLowerCase());
+		line = line.replace("{file.lowercase}", fileName);
 
 		return line;
 	}
