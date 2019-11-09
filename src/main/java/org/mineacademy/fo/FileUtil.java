@@ -44,6 +44,31 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtil {
 
+	/**
+	 * Return the name of the file from the given path, stripping
+	 * any extension and folders.
+	 *
+	 * Example: classes/Archer.yml will only return Archer
+	 *
+	 * @param path
+	 * @return
+	 */
+	public static String getFileName(String path) {
+		Valid.checkBoolean(path != null && !path.isEmpty(), "The given path must not be empty!");
+
+		int pos = path.lastIndexOf("/");
+
+		if (pos > 0)
+			path = path.substring(pos + 1, path.length());
+
+		pos = path.lastIndexOf(".");
+
+		if (pos > 0)
+			path = path.substring(0, pos);
+
+		return path;
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Getting files
 	// ----------------------------------------------------------------------------------------------------
