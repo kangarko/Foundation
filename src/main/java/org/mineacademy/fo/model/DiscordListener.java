@@ -14,10 +14,10 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
 import github.scarsz.discordsrv.api.Subscribe;
 import github.scarsz.discordsrv.api.events.DiscordGuildMessagePreProcessEvent;
-import github.scarsz.discordsrv.dependencies.jda.core.entities.Member;
-import github.scarsz.discordsrv.dependencies.jda.core.entities.Message;
-import github.scarsz.discordsrv.dependencies.jda.core.entities.MessageChannel;
-import github.scarsz.discordsrv.dependencies.jda.core.entities.Role;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Message;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
