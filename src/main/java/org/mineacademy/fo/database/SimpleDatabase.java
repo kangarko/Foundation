@@ -242,6 +242,9 @@ public class SimpleDatabase {
 		checkEstablished();
 
 		synchronized (connection) {
+			if (!isConnected())
+				connectUsingLastCredentials();
+
 			sql = replaceVariables(sql);
 
 			Debugger.debug("mysql", "Preparing statement: " + sql);
