@@ -79,7 +79,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
-import github.scarsz.discordsrv.dependencies.jda.core.entities.TextChannel;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import lombok.AccessLevel;
 import lombok.Data;
