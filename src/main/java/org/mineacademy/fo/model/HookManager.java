@@ -192,12 +192,12 @@ public final class HookManager {
 		// DiscordSRV
 		if (Common.doesPluginExistSilently("DiscordSRV")) {
 			try {
-				Class.forName("github.scarsz.discordsrv.dependencies.jda.core.entities.TextChannel");
+				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
 
 				discordSRVHook = new DiscordSRVHook();
 
 			} catch (final ClassNotFoundException ex) {
-				Common.throwError(ex, "&c" + SimplePlugin.getNamed() + " could not integrate to DiscordSRV because the plugin is outdated!");
+				Common.error(ex, "&c" + SimplePlugin.getNamed() + " failed to hook DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 		}
 
