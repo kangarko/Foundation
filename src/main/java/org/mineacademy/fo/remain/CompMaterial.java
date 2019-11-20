@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import com.google.common.collect.Sets;
-import lombok.Getter;
+import java.util.HashMap;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -14,11 +14,13 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.exception.FoException;
 
-import java.util.HashMap;
+import com.google.common.collect.Sets;
+
+import lombok.Getter;
 
 /**
  * Heavily inspired by a library made by Hex_27.
- * <p>
+ *
  * Source:
  * https://www.spigotmc.org/threads/1-8-to-1-13-itemstack-material-version-support.329630/
  */
@@ -217,6 +219,11 @@ public enum CompMaterial {
     CYAN_WOOL("WOOL", 9),
     DAMAGED_ANVIL("ANVIL", 2),
     DANDELION("YELLOW_FLOWER"),
+    /**
+     * @deprecated Use yellow dye
+     */
+    @Deprecated
+    DANDELION_YELLOW("INK_SACK", "YELLOW_DYE", 11),
     YELLOW_DYE("INK_SACK", "DANDELION_YELLOW", 11),
     DARK_OAK_BOAT("BOAT_DARK_OAK"),
     DARK_OAK_BUTTON("WOOD_BUTTON"),
@@ -948,7 +955,7 @@ public enum CompMaterial {
     /**
      * The name of the material in Minecraft 1.12 and older (may or may not be the
      * same).
-     * <p>
+     *
      * Returns the closest alternative in case such material was non-existing in
      * that old version.
      */
@@ -963,7 +970,7 @@ public enum CompMaterial {
 
     /**
      * Holds data value for legacy material name.
-     * <p>
+     *
      * For Minecraft 1.12 and older, some materials could only be obtained by their
      * data value (for example WOOL with data value 4 represents YELLOW_WOOL in
      * 1.13+).
@@ -1015,7 +1022,7 @@ public enum CompMaterial {
 
     // Handles Minecraft below 1.12 and replaces non-existing Materials to STONE.
     private Material findName() {
-        final String[] names = {name(), legacyName, alternativeName, "STONE"};
+        final String[] names = { name(), legacyName, alternativeName, "STONE" };
 
         for (final String legacy : names)
             if (legacy != null)
@@ -1077,15 +1084,13 @@ public enum CompMaterial {
      */
     public final Material toMaterial() {
         final Material mat = Material.matchMaterial(toString());
-        final Material altMat = Material.matchMaterial(alternativeName + "");
-        final Material legacyMat = Material.matchMaterial(legacyName);
 
-        return mat != null ? mat : (altMat != null ? altMat : legacyMat);
+        return mat != null ? mat : Material.matchMaterial(legacyName);
     }
 
     /**
      * Return true if the {@link #getMaterial()} and the given Material matches.
-     * <p>
+     *
      * NOT cross-version compatible. For this, use {@link #is(ItemStack)}
      *
      * @param comp
@@ -1437,7 +1442,7 @@ public enum CompMaterial {
     /**
      * Attempts to convert an {@link EntityType} into a valid {@link CompMaterial}
      * representing a spawnable Monster Egg.
-     * <p>
+     *
      * In case the entity given is not a valid entity or does not have an egg, we
      * return Sheep Monster Egg instead.
      *
@@ -1543,15 +1548,16 @@ public enum CompMaterial {
     }
 
     /**
+     *
      * A special method for some of our plugins that by default include
      * materials in their config files that do not exist in older MC versions.
-     * <p>
+     *
      * For these materials, we simply return null and do not add them to settings
      * instead of throwing an error.
      *
+     * @deprecated special usage only
      * @param name
      * @return
-     * @deprecated special usage only
      */
     @Deprecated
     public static CompMaterial fromStringCompat(String name) {
@@ -1611,7 +1617,9 @@ public enum CompMaterial {
                 cachedSearch.put(mat.legacyName + "," + data, mat);
 
                 return mat;
-            } else if (mat.alternativeName != null && mat.alternativeName.equals(name)) {
+            }
+
+            else if (mat.alternativeName != null && mat.alternativeName.equals(name)) {
                 cachedSearch.put(mat.alternativeName + "," + data, mat);
 
                 return mat;
@@ -1654,7 +1662,7 @@ public enum CompMaterial {
 /**
  * A special class for some of our plugins that by default include
  * materials in their config files that do not exist in older MC versions.
- * <p>
+ *
  * For these materials, we simply return null and do not add them to settings
  * instead of throwing an error.
  *
