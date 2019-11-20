@@ -1084,8 +1084,10 @@ public enum CompMaterial {
      */
     public final Material toMaterial() {
         final Material mat = Material.matchMaterial(toString());
+        final Material altMat = Material.matchMaterial(alternativeName + "");
+        final Material legacyMat = Material.matchMaterial(legacyName);
 
-        return mat != null ? mat : Material.matchMaterial(legacyName);
+        return mat != null ? mat : (altMat != null ? altMat : legacyMat);
     }
 
     /**
