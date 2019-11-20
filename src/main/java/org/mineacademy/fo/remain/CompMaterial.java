@@ -714,6 +714,7 @@ public enum CompMaterial {
 	REPEATING_COMMAND_BLOCK("COMMAND_REPEATING"),
 	ROSE_BUSH("DOUBLE_PLANT", 4),
 	RED_DYE("INK_SACK", "ROSE_RED", 1),
+	ROSE_RED("INK_SACK", "RED_DYE", 1),
 	ROTTEN_FLESH("ROTTEN_FLESH"),
 	SADDLE("SADDLE"),
 	SALMON("RAW_FISH", 1),
@@ -927,6 +928,7 @@ public enum CompMaterial {
 	BRICK_WALL("COBBLESTONE_WALL"),
 	BROWN_DYE("INK_SACK", "GRAY_DYE", 8),
 	GREEN_DYE("INK_SACK", "CACTUS_GREEN", 2),
+	CACTUS_GREEN("INK_SACK", "GREEN_DYE", 2),
 	CAMPFIRE("FIRE"),
 	CARTOGRAPHY_TABLE("MAP"),
 	CAT_SPAWN_EGG("OCELOT_SPAWN_EGG", "MONSTER_EGG", 98),
@@ -1084,7 +1086,7 @@ public enum CompMaterial {
 	 */
 	public final Material toMaterial() {
 		final Material mat = Material.matchMaterial(toString());
-		final Material altMat = Material.matchMaterial(alternativeName + "");
+		final Material altMat = Material.matchMaterial(alternativeName);
 		final Material legacyMat = Material.matchMaterial(legacyName);
 
 		return mat != null ? mat : (altMat != null ? altMat : legacyMat);
