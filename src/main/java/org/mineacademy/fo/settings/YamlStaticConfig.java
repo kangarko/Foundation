@@ -223,6 +223,8 @@ public abstract class YamlStaticConfig {
 	/**
 	 * This set method sets the path-value pair and also saves the file
 	 *
+	 * Pathprefix is added
+	 *
 	 * @param path
 	 * @param value
 	 */
