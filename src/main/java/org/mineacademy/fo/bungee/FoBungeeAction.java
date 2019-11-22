@@ -73,7 +73,7 @@ public enum FoBungeeAction implements BungeeAction {
 	 * Attempts to find a private message recipient, reports back to bungee
 	 * whether we found him or not
 	 */
-	PM_LOOKUP("sender", "receiver", "senderRawMessage", "receiverMessage"),
+	PM_LOOKUP("sender", "receiver", "senderRawMessage", "receiverMessage", "hasBypassPermission"),
 
 	/**
 	 * This message is forwarded after PM_LOOKUP to the sender server
