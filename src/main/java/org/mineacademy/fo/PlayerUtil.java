@@ -313,12 +313,30 @@ public final class PlayerUtil {
 	 *
 	 * Typical usage: Minigame plugins - call this before joining the player to an arena
 	 *
-	 * Even disables Essentials god mode.
+	 * Even disables Essentials god mode and removes vanish (most vanish plugins are supported).
 	 *
 	 * @param player
 	 * @param cleanInventory
 	 */
 	public static void normalize(Player player, boolean cleanInventory) {
+		normalize(player, cleanInventory, true);
+	}
+
+	/**
+	 * Sets pretty much every flag the player can have such as
+	 * flying etc, back to normal
+	 *
+	 * Also sets gamemode to survival
+	 *
+	 * Typical usage: Minigame plugins - call this before joining the player to an arena
+	 *
+	 * Even disables Essentials god mode.
+	 *
+	 * @param player
+	 * @param cleanInventory
+	 * @param removeVanish should we remove vanish from players? most vanish plugins are supported
+	 */
+	public static void normalize(Player player, boolean cleanInventory, boolean removeVanish) {
 		synchronized (titleRestoreTasks) {
 			HookManager.setGodMode(player, false);
 
@@ -371,23 +389,24 @@ public final class PlayerUtil {
 			} catch (final NoSuchMethodError err) {
 				/* old MC */}
 
-			try {
-				if (player.hasMetadata("vanished")) {
-					final Plugin plugin = player.getMetadata("vanished").get(0).getOwningPlugin();
+			if (removeVanish)
+				try {
+					if (player.hasMetadata("vanished")) {
+						final Plugin plugin = player.getMetadata("vanished").get(0).getOwningPlugin();
 
-					player.removeMetadata("vanished", plugin);
+						player.removeMetadata("vanished", plugin);
+					}
+
+					for (final Player other : Remain.getOnlinePlayers())
+						if (!other.getName().equals(player.getName()) && !other.canSee(player))
+							other.showPlayer(player);
+
+				} catch (final NoSuchMethodError err) {
+					/* old MC */
+
+				} catch (final Exception ex) {
+					ex.printStackTrace();
 				}
-
-				for (final Player other : Remain.getOnlinePlayers())
-					if (!other.getName().equals(player.getName()) && !other.canSee(player))
-						other.showPlayer(player);
-
-			} catch (final NoSuchMethodError err) {
-				/* old MC */
-
-			} catch (final Exception ex) {
-				ex.printStackTrace();
-			}
 		}
 	}
 
