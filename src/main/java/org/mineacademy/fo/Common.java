@@ -826,10 +826,11 @@ public final class Common {
 	 * @return
 	 */
 	public static String shortLocation(Location loc) {
-		Valid.checkNotNull(loc, "Cannot shorten a null location!");
+		if (loc == null)
+			return "Location(null)";
 
 		if (loc.equals(new Location(null, 0, 0, 0)))
-			return "Null location";
+			return "Location(null, 0, 0, 0)";
 
 		Valid.checkNotNull(loc.getWorld(), "Cannot shorten a location with null world!");
 
