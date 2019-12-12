@@ -1390,7 +1390,7 @@ public class YamlConfig {
 	 * Throws an error if using default settings AND defining the def parameter at the same time.
 	 *
 	 * We do not allow that, please call methods without the def parameter when using default config
-	 * as the default key will be fetchd directly from the default config.
+	 * as the default key will be fetched directly from the default config.
 	 *
 	 * @param path
 	 * @param def
