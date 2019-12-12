@@ -287,6 +287,8 @@ public abstract class SimpleCommand extends Command {
 			if (args.length < getMinArguments() ||
 					autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 
+				checkPerm(replaceBasicPlaceholders0("{plugin.name}.command.help"));
+
 				// Enforce setUsage being used
 				if (Common.getOrEmpty(getUsage()).isEmpty())
 					throw new FoException("If you set getMinArguments you must also call setUsage for /" + getLabel() + " command!");

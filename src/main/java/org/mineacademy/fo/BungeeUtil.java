@@ -62,7 +62,7 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(String channel, BungeeAction action, T... datas) {
-		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Data: " + datas.length + " vs " + action.getContent().length);
+		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs " + action.getContent().length);
 
 		Debugger.put("bungee", "Server '" + SimpleSettings.BUNGEE_SERVER_NAME + "' sent bungee message [" + channel + ", " + action + "]: ");
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
