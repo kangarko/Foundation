@@ -53,6 +53,19 @@ public final class FileUtil {
 	 * @param path
 	 * @return
 	 */
+	public static String getFileName(File file) {
+		return getFileName(file.getName());
+	}
+
+	/**
+	 * Return the name of the file from the given path, stripping
+	 * any extension and folders.
+	 *
+	 * Example: classes/Archer.yml will only return Archer
+	 *
+	 * @param path
+	 * @return
+	 */
 	public static String getFileName(String path) {
 		Valid.checkBoolean(path != null && !path.isEmpty(), "The given path must not be empty!");
 
