@@ -1,7 +1,5 @@
 package org.mineacademy.fo.bungee;
 
-import java.util.Arrays;
-
 import lombok.Getter;
 
 /**
@@ -73,7 +71,7 @@ public enum FoBungeeAction implements BungeeAction {
 	 * Attempts to find a private message recipient, reports back to bungee
 	 * whether we found him or not
 	 */
-	PM_LOOKUP("sender", "receiver", "senderRawMessage", "receiverMessage", "hasBypassPermission"),
+	PM_LOOKUP("sender", "receiver", "senderRawMessage", "receiverMessage", true /*hasBypassPermission*/, true /*hasPMVanishedPermission*/),
 
 	/**
 	 * This message is forwarded after PM_LOOKUP to the sender server
@@ -101,10 +99,15 @@ public enum FoBungeeAction implements BungeeAction {
 	 *
 	 * @param validValues
 	 */
-	private FoBungeeAction(String... validValues) {
+	private FoBungeeAction(Object... validValues) {
 		final Class<?>[] classes = new Class<?>[validValues.length];
 
-		Arrays.fill(classes, String.class);
+		for (int i = 0; i < classes.length; i++) {
+			final Object value = validValues[i];
+
+			classes[i] = value.getClass();
+		}
+
 		this.content = classes;
 	}
 }
