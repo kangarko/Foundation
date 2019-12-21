@@ -534,6 +534,13 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <T> T get(String path, Class<T> type, T def) {
+
+		// Special case: If there is no key at your config and neither at the default config,
+		// and we should deserialize non-existing values, we just return false instead of throwing
+		// an error at the below getT method
+		if (!isSet(path) && !isSetDefault(path) && usingDefaults && def == null && DESERIALIZE_NULL)
+			return def;
+
 		final Object object = convertIfNull(type, getT(path, Object.class));
 
 		return object != null ? SerializeUtil.deserialize(type, object) : def;
@@ -766,7 +773,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Location getLocation(String path) {
-		return SerializeUtil.deserializeLocation(getObject(path));
+		return get(path, Location.class);
 	}
 
 	/**
