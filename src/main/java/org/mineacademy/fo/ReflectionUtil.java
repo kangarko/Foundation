@@ -667,6 +667,25 @@ public final class ReflectionUtil {
 	// ------------------------------------------------------------------------------------------
 
 	/**
+	 * Return a tree set of classes from the plugin that extend the given class
+	 * @param <T>
+	 *
+	 * @param <T>
+	 * @param plugin
+	 * @param extendingClass
+	 * @return
+	 */
+	public static <T> List<Class<? extends T>> getClasses(Plugin plugin, @NonNull Class<T> extendingClass) {
+		final List<Class<? extends T>> found = new ArrayList<>();
+
+		for (final Class<?> clazz : getClasses(plugin))
+			if (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass)
+				found.add((Class<? extends T>) clazz);
+
+		return found;
+	}
+
+	/**
 	 * Get all classes in the java plugin
 	 *
 	 * @param plugin
