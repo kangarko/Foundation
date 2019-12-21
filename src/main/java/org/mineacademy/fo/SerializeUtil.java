@@ -164,7 +164,7 @@ public final class SerializeUtil {
 		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
 				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
 				|| obj instanceof ItemStack
-		/*|| obj instanceof MemorySection*/)
+				/*|| obj instanceof MemorySection*/)
 			return obj;
 
 		else if (obj instanceof ConfigurationSerializable)

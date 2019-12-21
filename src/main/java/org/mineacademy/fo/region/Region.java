@@ -220,8 +220,8 @@ public class Region implements ConfigSerializable {
 		final SerializedMap map = new SerializedMap();
 
 		map.putIfExist("Name", name);
-		map.put("Primary", primary);
-		map.put("Secondary", secondary);
+		map.putIfExist("Primary", primary);
+		map.putIfExist("Secondary", secondary);
 
 		return map;
 	}

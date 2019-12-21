@@ -11,11 +11,13 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.model.SimpleEnchant;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompItemFlag;
 
 /**
@@ -58,6 +60,33 @@ public abstract class MenuTools extends Menu {
 	 * @return the array of items in this menu
 	 */
 	protected abstract Object[] compileTools();
+
+	/**
+	 * Helper method you can use directly in your {@link #compileTools()} method
+	 * that will automatically scan all classes in your plugin that extend
+	 * the given class and return those who contain the given field:
+	 *
+	 * public static Tool instance = new X() (X = the class)
+	 *
+	 * @param extendingClass
+	 * @return
+	 */
+	protected Object[] lookupTools(Class<? extends Tool> extendingClass) {
+		final List<Object> instances = new ArrayList<>();
+
+		for (final Class<?> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), extendingClass)) {
+			try {
+				final Object instance = ReflectionUtil.getFieldContent(clazz, "instance", null);
+
+				instances.add(instance);
+
+			} catch (final Throwable ex) {
+				// continue, unsupported tool. It must have an "instance" static field with its instance
+			}
+		}
+
+		return instances.toArray();
+	}
 
 	// Compiles the given tools from makeTools()
 	private final List<ToggleableTool> compile0(Object... tools) {
@@ -146,7 +175,7 @@ final class ToggleableTool {
 				this.item = new ItemStack(Material.AIR);
 
 			else
-				throw new FoException("Unknown tool: " + unparsed + " (we only accept ItemStack, Tool or 0 for air)");
+				throw new FoException("Unknown tool: " + unparsed + " (we only accept ItemStack, Tool's instance or 0 for air)");
 
 		} else
 			this.item = new ItemStack(Material.AIR);
