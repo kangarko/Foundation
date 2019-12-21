@@ -944,13 +944,29 @@ public final class Common {
 	}
 
 	/**
-	 * Works similarily to {@link String#format(String, Object...)} however
+	 * Works similarly to {@link String#format(String, Object...)} however
 	 * all arguments are explored, so player names are properly given, location is shortened etc.
 	 *
 	 * @param format
 	 * @param args
 	 */
 	public static void logF(String format, @NonNull Object... args) {
+		final String formatted = format(format, args);
+
+		log(false, formatted);
+	}
+
+	/**
+	 * Replace boring CraftPlayer{name=noob} into a proper player name,
+	 * works fine with entities, worlds, and locations
+	 *
+	 * Example use: format("Hello %s from world %s", player, player.getWorld())
+	 *
+	 * @param format
+	 * @param args
+	 * @return
+	 */
+	public static String format(String format, @NonNull Object... args) {
 		for (int i = 0; i < args.length; i++) {
 			final Object arg = args[i];
 
@@ -963,9 +979,14 @@ public final class Common {
 					args[i] = ((World) arg).getName();
 				else if (arg instanceof Location)
 					args[i] = shortLocation((Location) arg);
+				else if (arg instanceof Collection) {
+					final String string = arg.toString();
+
+					args[i] = string.substring(1, string.length() - 1);
+				}
 		}
 
-		log(false, String.format(format, args));
+		return String.format(format, args);
 	}
 
 	/**
