@@ -424,7 +424,7 @@ public final class ItemCreator {
 	 * @return the new item creator
 	 */
 	public static ItemCreatorBuilder of(ItemStack item) {
-		return ItemCreator.builder().item(item);
+		return ItemCreator.builder().item(item).lores(item.getItemMeta().getLore());
 	}
 
 	/**
