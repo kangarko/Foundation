@@ -90,7 +90,7 @@ public class NBTInternals {
 		lcomp.setInteger("int1", 42);
 		lcomp.setString("test1", "test1");
 		lcomp.setString("test2", "test2");
-		lcomp.remove("test1");
+		lcomp.removeKey("test1");
 
 		item = nbtItem.getItem();
 		nbtItem = null;

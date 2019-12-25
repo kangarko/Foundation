@@ -7,16 +7,14 @@ import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 
-import lombok.Getter;
-
 /**
  * Wraps NMS and CRAFT classes
  *
  * @author tr7zw
  *
  */
-@Getter
-enum WrapperClass {
+@SuppressWarnings("javadoc")
+public enum WrapperClass {
 	CRAFT_ITEMSTACK(CRAFTBUKKIT, "inventory.CraftItemStack"),
 	CRAFT_ENTITY(CRAFTBUKKIT, "entity.CraftEntity"),
 	CRAFT_WORLD(CRAFTBUKKIT, "CraftWorld"),
@@ -66,4 +64,19 @@ enum WrapperClass {
 			Common.error(ex, "Error while trying to resolve the class '" + suffix + "'!");
 		}
 	}
+
+	/**
+	 * @return The wrapped class
+	 */
+	public Class<?> getClazz(){
+		return clazz;
+	}
+
+	/**
+	 * @return Is this class available in this Version
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
 }
