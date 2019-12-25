@@ -336,7 +336,10 @@ public final class ItemCreator {
 
 			if (MinecraftVersion.olderThan(V.v1_12))
 				try {
-					itemMeta.spigot().setUnbreakable(true);
+					final Object spigot = itemMeta.getClass().getMethod("spigot").invoke(itemMeta);
+
+					spigot.getClass().getMethod("setUnbreakable", boolean.class).invoke(spigot, true);
+
 				} catch (final Throwable t) {
 					// Probably 1.7.10, tough luck
 				}

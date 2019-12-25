@@ -22,7 +22,6 @@ import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.event.RegionScanCompleteEvent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
-import org.spigotmc.WatchdogThread;
 
 /**
  * A class that has ability to scan saved regions on the disk and execute
@@ -79,13 +78,13 @@ public abstract class OfflineRegionScanner {
 		Thread watchdog = null;
 
 		try {
-
 			// Disable to prevent lag warnings since we scan chunks on the main thread
+			final Field f = Class.forName("org.spigotmc.WatchdogThread").getDeclaredField("instance");
+
 			try {
-				final Field f = WatchdogThread.class.getDeclaredField("instance");
 				f.setAccessible(true);
 
-				watchdog = (WatchdogThread) f.get(null);
+				watchdog = (Thread) f.get(null);
 				watchdog.suspend();
 
 			} catch (final Throwable t) {
@@ -95,8 +94,8 @@ public abstract class OfflineRegionScanner {
 				t.printStackTrace();
 				return;
 			}
-		} catch (final NoClassDefFoundError err) {
-			//
+		} catch (final ReflectiveOperationException err) {
+			// pass through
 		}
 
 		System.out.println(Common.consoleLine());
