@@ -364,7 +364,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 					try {
 						clazz = SimplePlugin.class.getClassLoader().loadClass(className);
-					} catch (final NoClassDefFoundError | ClassNotFoundException error) {
+					} catch (final NoClassDefFoundError | ClassNotFoundException | IllegalAccessError error) {
 						continue;
 					}
 
