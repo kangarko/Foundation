@@ -5,12 +5,14 @@ import java.lang.reflect.Constructor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 
+
 /**
  * This Enum wraps Constructors for NMS classes
  *
  * @author tr7zw
  *
  */
+@SuppressWarnings("javadoc")
 public enum WrapperObject {
 	NMS_NBTTAGCOMPOUND(null, null, WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_BLOCKPOSITION(null, null, WrapperClass.NMS_BLOCKPOSITION.getClazz(), int.class, int.class, int.class),
@@ -41,10 +43,10 @@ public enum WrapperObject {
 	 * @param args
 	 * @return Object created
 	 */
-	public Object getInstance(Object... args) {
-		try {
+	public Object getInstance(Object... args){
+		try{
 			return construct.newInstance(args);
-		} catch (final Exception ex) {
+		}catch(final Exception ex){
 			throw new NbtApiException("Exception while creating a new instance of '" + targetClass + "'", ex);
 		}
 	}

@@ -31,6 +31,20 @@ public abstract class NBTList<T> implements List<T> {
 		this.listObject = list;
 	}
 
+	/**
+	 * @return Name of this list-compound
+	 */
+	public String getName(){
+		return listName;
+	}
+
+	/**
+	 * @return The Compound's parent Object
+	 */
+	public NBTCompound getParent() {
+		return parent;
+	}
+
 	protected void save() {
 		parent.set(listName, listObject);
 	}
@@ -294,6 +308,7 @@ public abstract class NBTList<T> implements List<T> {
 		return ar;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <E> E[] toArray(E[] a) {
 		final E[] ar = Arrays.copyOf(a, size());

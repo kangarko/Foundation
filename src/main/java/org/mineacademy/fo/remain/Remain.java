@@ -280,7 +280,7 @@ public final class Remain {
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
 								" &cinclude &elibraries required&c for this plugin to\n" +
 								" &crun. Install the following plugin for compatibility:\n" +
-								" &fhttps://www.spigotmc.org/resources/38379");
+						" &fhttps://www.spigotmc.org/resources/38379");
 			}
 
 			try {
@@ -669,12 +669,12 @@ public final class Remain {
 	}
 
 	/**
-	* Converts an {@link org.bukkit.inventory.ItemStack} to a Json string
-	* for sending with {@link net.md_5.bungee.api.chat.BaseComponent}'s.
-	*
-	* @param item the item to convert
-	* @return the Json string representation of the item
-	*/
+	 * Converts an {@link org.bukkit.inventory.ItemStack} to a Json string
+	 * for sending with {@link net.md_5.bungee.api.chat.BaseComponent}'s.
+	 *
+	 * @param item the item to convert
+	 * @return the Json string representation of the item
+	 */
 	public static String toJson(ItemStack item) {
 		// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
 		final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
@@ -1027,7 +1027,10 @@ public final class Remain {
 
 		} catch (final Throwable t) {
 			try {
-				return player.spigot().getLocale();
+				final Player.Spigot spigot = player.spigot();
+				final Method method = ReflectionUtil.getMethod(spigot.getClass(), "getLocale");
+
+				return (String) ReflectionUtil.invoke(method, spigot);
 
 			} catch (final Throwable tt) {
 				return null;
