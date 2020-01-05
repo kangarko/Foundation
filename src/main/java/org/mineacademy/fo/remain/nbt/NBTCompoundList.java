@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 
 /**
@@ -24,13 +23,12 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	public NBTListCompound addCompound() {
 		try {
 			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-
-			if (MinecraftVersion.atLeast(V.v1_14))
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
 				WrapperMethod.LIST_ADD.run(listObject, size(), compound);
-
-			else
+			} else {
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, compound);
-
+			}
+			getParent().saveCompound();
 			return new NBTListCompound(this, compound);
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
@@ -50,13 +48,12 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 		}
 		try {
 			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
 				WrapperMethod.LIST_ADD.run(listObject, 0, compound);
-
-			else
+			} else {
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, compound);
-
+			}
+			super.getParent().saveCompound();
 			return true;
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
@@ -70,13 +67,12 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 		}
 		try {
 			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
 				WrapperMethod.LIST_ADD.run(listObject, index, compound);
-
-			else
+			} else {
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, compound);
-
+			}
+			super.getParent().saveCompound();
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}

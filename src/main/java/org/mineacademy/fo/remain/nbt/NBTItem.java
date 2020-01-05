@@ -1,13 +1,11 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.remain.CompMaterial;
 
 /**
  * NBT class to access vanilla/custom tags on ItemStacks. This class doesn't
  * autosave to the Itemstack, use getItem to get the changed ItemStack
- *
+ * 
  * @author tr7zw
  *
  */
@@ -17,7 +15,7 @@ public class NBTItem extends NBTCompound {
 
 	/**
 	 * Constructor for NBTItems. The ItemStack will be cloned!
-	 *
+	 * 
 	 * @param item
 	 */
 	public NBTItem(ItemStack item) {
@@ -30,19 +28,12 @@ public class NBTItem extends NBTCompound {
 
 	@Override
 	public Object getCompound() {
-		Valid.checkNotNull(bukkitItem, "Bukkit item cannot be null!");
-
-		if (CompMaterial.isAir(bukkitItem.getType()))
-			return null;
-
-		final Object nmsItem = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
-
-		return NBTReflectionUtil.getItemRootNBTTagCompound(nmsItem);
+		return NBTReflectionUtil.getItemRootNBTTagCompound(WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		final Object stack = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+		Object stack = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
 		WrapperMethod.ITEMSTACK_SET_TAG.run(stack, compound);
 		bukkitItem = (ItemStack) WrapperMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
 	}
@@ -60,7 +51,7 @@ public class NBTItem extends NBTCompound {
 
 	/**
 	 * This may return true even when the NBT is empty.
-	 *
+	 * 
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
 	public boolean hasNBTData() {
@@ -70,7 +61,7 @@ public class NBTItem extends NBTCompound {
 	/**
 	 * Helper method that converts {@link ItemStack} to {@link NBTContainer} with
 	 * all it's data like Material, Damage, Amount and Tags.
-	 *
+	 * 
 	 * @param item
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
@@ -81,7 +72,7 @@ public class NBTItem extends NBTCompound {
 	/**
 	 * Helper method to do the inverse to "convertItemtoNBT". Creates an
 	 * {@link ItemStack} using the {@link NBTCompound}
-	 *
+	 * 
 	 * @param comp
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */
@@ -89,4 +80,5 @@ public class NBTItem extends NBTCompound {
 		return (ItemStack) WrapperMethod.ITEMSTACK_BUKKITMIRROR.run(null,
 				NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
 	}
+
 }
