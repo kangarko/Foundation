@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -318,7 +319,10 @@ public final class ItemCreator {
 
 		if (enchants != null)
 			for (final SimpleEnchant ench : enchants)
-				itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
+				if (itemMeta instanceof EnchantmentStorageMeta)
+					((EnchantmentStorageMeta) itemMeta).addStoredEnchant(ench.getEnchant(), ench.getLevel(), true);
+				else
+					itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
 
 		if (name != null)
 			itemMeta.setDisplayName(Common.colorize("&r" + name));
