@@ -424,8 +424,12 @@ public final class ItemCreator {
 	 * @return the new item creator
 	 */
 	public static ItemCreatorBuilder of(ItemStack item) {
-		return ItemCreator.builder().item(item).lores(item.getItemMeta().getLore());
+		ItemCreatorBuilder builder = ItemCreator.builder().item(item);
+		if (item.getItemMeta().hasLore())
+			builder.lores(item.getItemMeta().getLore());
+		return builder;
 	}
+
 
 	/**
 	 * Get a new item creator from material
