@@ -324,10 +324,10 @@ public final class ItemCreator {
 				else
 					itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
 
-		if (name != null)
+		if (name != null && !"".equals(name))
 			itemMeta.setDisplayName(Common.colorize("&r" + name));
 
-		if (lores != null) {
+		if (lores != null && !lores.isEmpty()) {
 			final List<String> coloredLores = new ArrayList<>();
 
 			lores.forEach((line) -> coloredLores.add(Common.colorize("&7" + line)));
@@ -431,7 +431,13 @@ public final class ItemCreator {
 	 * @return the new item creator
 	 */
 	public static ItemCreatorBuilder of(ItemStack item) {
-		return ItemCreator.builder().item(item);
+		final ItemCreatorBuilder builder = ItemCreator.builder();
+		final ItemMeta meta = item.getItemMeta();
+
+		if (meta != null && meta.getLore() != null)
+			builder.lores(meta.getLore());
+
+		return builder.item(item);
 	}
 
 	/**
