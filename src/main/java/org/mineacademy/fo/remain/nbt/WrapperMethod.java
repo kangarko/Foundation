@@ -1,20 +1,19 @@
 package org.mineacademy.fo.remain.nbt;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+
 /**
  * This class caches method reflections, keeps track of method name changes between versions and allows early checking for problems
  *
  * @author tr7zw
- *
  */
 @SuppressWarnings("javadoc")
 public enum WrapperMethod {
@@ -46,9 +45,9 @@ public enum WrapperMethod {
 	COMPOUND_GET_BOOLEAN(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[]{String.class}, V.v1_7, new Since(V.v1_7, "getBoolean")),
 	COMPOUND_GET_COMPOUND(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[]{String.class}, V.v1_7, new Since(V.v1_7, "getCompound")),
 
-	NMSITEM_GETTAG(WrapperClass.NMS_ITEMSTACK.getClazz(), new Class[] {}, V.v1_7, new Since(V.v1_7, "getTag")),
-	NMSITEM_SAVE(WrapperClass.NMS_ITEMSTACK.getClazz(), new Class[] {WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_7, new Since(V.v1_7, "save")),
-	NMSITEM_CREATESTACK(WrapperClass.NMS_ITEMSTACK.getClazz(), new Class[] {WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_7, V.v1_10, new Since(V.v1_7, "createStack")),
+	NMSITEM_GETTAG(WrapperClass.NMS_ITEMSTACK.getClazz(), new Class[]{}, V.v1_7, new Since(V.v1_7, "getTag")),
+	NMSITEM_SAVE(WrapperClass.NMS_ITEMSTACK.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_7, new Since(V.v1_7, "save")),
+	NMSITEM_CREATESTACK(WrapperClass.NMS_ITEMSTACK.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_7, V.v1_10, new Since(V.v1_7, "createStack")),
 
 	COMPOUND_REMOVE_KEY(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[]{String.class}, V.v1_7, new Since(V.v1_7, "remove")),
 	COMPOUND_HAS_KEY(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[]{String.class}, V.v1_7, new Since(V.v1_7, "hasKey")),
@@ -72,9 +71,9 @@ public enum WrapperMethod {
 	CRAFT_WORLD_GET_HANDLE(WrapperClass.CRAFT_WORLD.getClazz(), new Class[]{}, V.v1_7, new Since(V.v1_7, "getHandle")),
 	NMS_WORLD_GET_TILEENTITY(WrapperClass.NMS_WORLDSERVER.getClazz(), new Class[]{WrapperClass.NMS_BLOCKPOSITION.getClazz()}, V.v1_7, new Since(V.v1_7, "getTileEntity")),
 	NMS_WORLD_SET_TILEENTITY(WrapperClass.NMS_WORLDSERVER.getClazz(), new Class[]{WrapperClass.NMS_BLOCKPOSITION.getClazz(), WrapperClass.NMS_TILEENTITY.getClazz()}, V.v1_7, new Since(V.v1_7, "setTileEntity")),
-	NMS_WORLD_REMOVE_TILEENTITY(WrapperClass.NMS_WORLDSERVER.getClazz(), new Class[]{WrapperClass.NMS_BLOCKPOSITION.getClazz()}, V.v1_7, new Since(V.v1_7, "t"), new Since(V.v1_9, "s"), new Since(V.v1_13, "n"),  new Since(V.v1_14, "removeTileEntity")),
+	NMS_WORLD_REMOVE_TILEENTITY(WrapperClass.NMS_WORLDSERVER.getClazz(), new Class[]{WrapperClass.NMS_BLOCKPOSITION.getClazz()}, V.v1_7, new Since(V.v1_7, "t"), new Since(V.v1_9, "s"), new Since(V.v1_13, "n"), new Since(V.v1_14, "removeTileEntity")),
 
-//	TILEENTITY_LOAD_LEGACY191(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_MINECRAFTSERVER.getClazz(), WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_9, V.v1_9, new Since(V.v1_9, "a")), //FIXME: No Spigot mapping!
+	//	TILEENTITY_LOAD_LEGACY191(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_MINECRAFTSERVER.getClazz(), WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_9, V.v1_9, new Since(V.v1_9, "a")), //FIXME: No Spigot mapping!
 	TILEENTITY_LOAD_LEGACY183(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_8, V.v1_9, new Since(V.v1_8, "c"), new Since(V.v1_9, "a"), new Since(V.v1_9, "c")), //FIXME: No Spigot mapping!
 	TILEENTITY_LOAD_LEGACY1121(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_WORLD.getClazz(), WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_10, V.v1_12, new Since(V.v1_10, "a"), new Since(V.v1_12, "create")),
 	TILEENTITY_LOAD(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_13, new Since(V.v1_12, "create")),
@@ -85,19 +84,19 @@ public enum WrapperMethod {
 	CRAFT_ENTITY_GET_HANDLE(WrapperClass.CRAFT_ENTITY.getClazz(), new Class[]{}, V.v1_7, new Since(V.v1_7, "getHandle")),
 	NMS_ENTITY_SET_NBT(WrapperClass.NMS_ENTITY.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_8, new Since(V.v1_8, "f")), //FIXME: No Spigot mapping!
 	NMS_ENTITY_GET_NBT(WrapperClass.NMS_ENTITY.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_8, new Since(V.v1_8, "e"), new Since(V.v1_12, "save")),
-	NMS_ENTITY_GETSAVEID(WrapperClass.NMS_ENTITY.getClazz(), new Class[]{}, V.v1_14,new Since(V.v1_14, "getSaveID")),
+	NMS_ENTITY_GETSAVEID(WrapperClass.NMS_ENTITY.getClazz(), new Class[]{}, V.v1_14, new Since(V.v1_14, "getSaveID")),
 
 	NBTFILE_READ(WrapperClass.NMS_NBTCOMPRESSEDSTREAMTOOLS.getClazz(), new Class[]{InputStream.class}, V.v1_7, new Since(V.v1_7, "a")), //FIXME: No Spigot mapping!
 	NBTFILE_WRITE(WrapperClass.NMS_NBTCOMPRESSEDSTREAMTOOLS.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), OutputStream.class}, V.v1_7, new Since(V.v1_7, "a")), //FIXME: No Spigot mapping!
 
 
 	PARSE_NBT(WrapperClass.NMS_MOJANGSONPARSER.getClazz(), new Class[]{String.class}, V.v1_7, new Since(V.v1_7, "parse")),
-	REGISTRY_KEYSET (WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[]{}, V.v1_11, V.v1_13, new Since(V.v1_11, "keySet")),
-	REGISTRY_GET (WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[]{Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "get")),
-	REGISTRY_SET (WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[]{Object.class, Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "a")), //FIXME: No Spigot mapping!
-	REGISTRY_GET_INVERSE (WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "b")), //FIXME: No Spigot mapping!
-	REGISTRYMATERIALS_KEYSET (WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{}, V.v1_13, new Since(V.v1_13, "keySet")),
-	REGISTRYMATERIALS_GET (WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{WrapperClass.NMS_MINECRAFTKEY.getClazz()}, V.v1_13, new Since(V.v1_13, "get")),
+	REGISTRY_KEYSET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[]{}, V.v1_11, V.v1_13, new Since(V.v1_11, "keySet")),
+	REGISTRY_GET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[]{Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "get")),
+	REGISTRY_SET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[]{Object.class, Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "a")), //FIXME: No Spigot mapping!
+	REGISTRY_GET_INVERSE(WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "b")), //FIXME: No Spigot mapping!
+	REGISTRYMATERIALS_KEYSET(WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{}, V.v1_13, new Since(V.v1_13, "keySet")),
+	REGISTRYMATERIALS_GET(WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{WrapperClass.NMS_MINECRAFTKEY.getClazz()}, V.v1_13, new Since(V.v1_13, "get")),
 
 
 	;
@@ -134,7 +133,7 @@ public enum WrapperMethod {
 			}
 	}
 
-	private WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, Since... methodnames) {
+	WrapperMethod(Class<?> targetClass, Class<?>[] args, MinecraftVersion.V addedSince, Since... methodnames) {
 		this(targetClass, args, addedSince, null, methodnames);
 	}
 
@@ -145,12 +144,12 @@ public enum WrapperMethod {
 	 * @param args
 	 * @return Value returned by the method
 	 */
-	public Object run(Object target, Object... args){
-		if(method == null)
+	public Object run(Object target, Object... args) {
+		if (method == null)
 			throw new NbtApiException("Method not loaded! '" + this + "'");
-		try{
+		try {
 			return method.invoke(target, args);
-		}catch(final Exception ex){
+		} catch (final Exception ex) {
 			throw new NbtApiException("Error while calling the method '" + methodName + "', loaded: " + loaded + ", Enum: " + this, ex);
 		}
 	}
@@ -176,9 +175,10 @@ public enum WrapperMethod {
 		return compatible;
 	}
 
-	protected static class Since{
+	protected static class Since {
 		public final org.mineacademy.fo.MinecraftVersion.V version;
 		public final String name;
+
 		public Since(MinecraftVersion.V version, String name) {
 			this.version = version;
 			this.name = name;
