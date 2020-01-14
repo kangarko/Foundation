@@ -240,7 +240,7 @@ public final class ItemCreator {
 
 		// If using legacy MC version
 		else {
-			int dataValue = is.getData().getData();
+			int dataValue = material != null ? material.getData() : is.getData().getData();
 
 			if (!is.getType().toString().contains("LEATHER") && color != null)
 				dataValue = color.getDye().getWoolData();
@@ -249,6 +249,10 @@ public final class ItemCreator {
 				dataValue = 0;
 
 			is.setData(new MaterialData(is.getType(), (byte) dataValue));
+
+			if (MinecraftVersion.olderThan(V.v1_13))
+				is.setDurability((short) dataValue);
+
 		}
 
 		// Fix monster eggs
