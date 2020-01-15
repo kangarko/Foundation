@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * NBT class to access vanilla/custom tags on ItemStacks. This class doesn't
  * autosave to the Itemstack, use getItem to get the changed ItemStack
- * 
+ *
  * @author tr7zw
  *
  */
@@ -15,25 +15,31 @@ public class NBTItem extends NBTCompound {
 
 	/**
 	 * Constructor for NBTItems. The ItemStack will be cloned!
-	 * 
+	 *
 	 * @param item
 	 */
 	public NBTItem(ItemStack item) {
 		super(null, null);
-		if (item == null) {
+		if (item == null)
 			throw new NullPointerException("ItemStack can't be null!");
-		}
+
 		bukkitItem = item.clone();
 	}
 
 	@Override
 	public Object getCompound() {
+		if (bukkitItem.getType().toString().contains("AIR"))
+			return null;
+
 		return NBTReflectionUtil.getItemRootNBTTagCompound(WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		Object stack = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+		if (bukkitItem.getType().toString().contains("AIR"))
+			return;
+
+		final Object stack = WrapperMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
 		WrapperMethod.ITEMSTACK_SET_TAG.run(stack, compound);
 		bukkitItem = (ItemStack) WrapperMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
 	}
@@ -51,7 +57,7 @@ public class NBTItem extends NBTCompound {
 
 	/**
 	 * This may return true even when the NBT is empty.
-	 * 
+	 *
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
 	public boolean hasNBTData() {
@@ -61,7 +67,7 @@ public class NBTItem extends NBTCompound {
 	/**
 	 * Helper method that converts {@link ItemStack} to {@link NBTContainer} with
 	 * all it's data like Material, Damage, Amount and Tags.
-	 * 
+	 *
 	 * @param item
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
@@ -72,7 +78,7 @@ public class NBTItem extends NBTCompound {
 	/**
 	 * Helper method to do the inverse to "convertItemtoNBT". Creates an
 	 * {@link ItemStack} using the {@link NBTCompound}
-	 * 
+	 *
 	 * @param comp
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */

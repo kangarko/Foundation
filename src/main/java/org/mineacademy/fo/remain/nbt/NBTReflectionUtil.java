@@ -10,6 +10,7 @@ import java.util.Set;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 import com.google.gson.Gson;
 
@@ -82,12 +83,10 @@ public class NBTReflectionUtil {
 	 * @return NMS Compound
 	 */
 	public static Object getItemRootNBTTagCompound(Object nmsitem) {
-		try {
-			final Object answer = WrapperMethod.NMSITEM_GETTAG.run(nmsitem);
-			return answer != null ? answer : WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
-		} catch (final Exception e) {
-			throw new NbtApiException("Exception while getting an Itemstack's NBTCompound!", e);
-		}
+		Valid.checkNotNull(nmsitem, "Cannot get root nbt tag of a null item!");
+		final Object answer = WrapperMethod.NMSITEM_GETTAG.run(nmsitem);
+
+		return answer != null ? answer : WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
 	}
 
 	/**
