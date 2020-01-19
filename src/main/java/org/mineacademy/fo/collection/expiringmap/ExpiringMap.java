@@ -775,7 +775,7 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 
 		@Override
 		public String toString() {
-			return value.toString();
+			return value != null ? value.toString() : "";
 		}
 
 		/**
