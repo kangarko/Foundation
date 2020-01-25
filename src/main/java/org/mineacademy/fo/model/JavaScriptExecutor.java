@@ -35,18 +35,26 @@ public final class JavaScriptExecutor {
 		engine = engineManager.getEngineByName("Nashorn");
 
 		if (engine == null)
-			Common.logFramed(true,
+			Common.logFramed(false,
 					"JavaScript placeholders will not function!",
 					"",
 					"Your Java version/distribution lacks",
 					"the Nashorn library for JavaScript",
-					"placeholders. Unfortunately this plugin",
-					"relies heavily on Nashorn and cannot",
-					"continue. Please install Oracle Java 8.");
+					"placeholders. Ensure you have Oracle",
+					"Java 8.");
 	}
 
 	/**
-	 * Compiles and executes the given Javascript code
+	 * Return true if the JavaScript library is loaded successfuly and may be used
+	 *
+	 * @return
+	 */
+	public static boolean isEngineLoaded() {
+		return engine != null;
+	}
+
+	/**
+	 * Compiles and executes the given JavaScript code
 	 *
 	 * @param javascript
 	 * @return
@@ -77,6 +85,9 @@ public final class JavaScriptExecutor {
 	 * @return
 	 */
 	public static Object run(@NonNull String javascript, Player player, Event event) {
+
+		if (!isEngineLoaded())
+			return null;
 
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
@@ -111,6 +122,9 @@ public final class JavaScriptExecutor {
 	 * @throws ScriptException
 	 */
 	public static Object run(String javascript, Map<String, Object> replacements) throws ScriptException {
+		if (!isEngineLoaded())
+			return null;
+
 		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
 		if (replacements != null)
