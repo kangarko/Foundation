@@ -276,7 +276,7 @@ public abstract class SimpleCommandGroup {
 				return;
 			}
 
-			final String argument = args[0].toLowerCase();
+			final String argument = args[0];
 			final SimpleSubCommand command = findSubcommand(argument);
 
 			// Handle subcommands
@@ -341,7 +341,7 @@ public abstract class SimpleCommandGroup {
 					continue;
 
 				for (final String alias : command.getSublabels())
-					if (alias.equals(label))
+					if (alias.equalsIgnoreCase(label))
 						return command;
 			}
 
