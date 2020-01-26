@@ -10,7 +10,7 @@
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>5.1.8</version>
+	<version>5.1.9</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
