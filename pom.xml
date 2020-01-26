@@ -37,18 +37,18 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.8</version>
+			<version>1.18.10</version>
 		</dependency>
 		<!-- The Spigot API and PaperSpigot server -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.15.1-R0.1-SNAPSHOT</version>
+			<version>1.15.2-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.server</groupId>
 			<artifactId>PaperSpigot</artifactId>
-			<version>1.15.1-SNAPSHOT-29</version>
+			<version>1.15.2-SNAPSHOT-77</version>
 		</dependency>
 		<!-- Plugins from their own repo with documentation and sources -->
 		<dependency>
