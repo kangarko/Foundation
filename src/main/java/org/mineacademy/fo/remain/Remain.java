@@ -280,7 +280,7 @@ public final class Remain {
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
 								" &cinclude &elibraries required&c for this plugin to\n" +
 								" &crun. Install the following plugin for compatibility:\n" +
-						" &fhttps://www.spigotmc.org/resources/38379");
+								" &fhttps://www.spigotmc.org/resources/38379");
 			}
 
 			try {
@@ -1442,8 +1442,11 @@ public final class Remain {
 		if (hasAdvancements && message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
-			if (!colorized.isEmpty())
+			if (!colorized.isEmpty()) {
+				Valid.checkSync("Toasts may only be sent from the main thread");
+
 				new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
+			}
 		}
 	}
 
