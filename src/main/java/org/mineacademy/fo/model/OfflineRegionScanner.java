@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -119,7 +120,7 @@ public abstract class OfflineRegionScanner {
 		this.world = world;
 
 		// Start the schedule
-		schedule(queue);
+		schedule(world.getName(), queue);
 
 		if (watchdog != null)
 			watchdog.resume();
@@ -133,7 +134,7 @@ public abstract class OfflineRegionScanner {
 	 *
 	 * @param queue
 	 */
-	private final void schedule(Queue<File> queue) {
+	private final void schedule(String worldName, Queue<File> queue) {
 		new BukkitRunnable() {
 
 			@Override
@@ -153,9 +154,9 @@ public abstract class OfflineRegionScanner {
 					return;
 				}
 
-				scanFile(file);
+				scanFile(worldName, file);
 
-				Common.runLater(20 * OPERATION_WAIT_SECONDS, () -> schedule(queue));
+				Common.runLater(20 * OPERATION_WAIT_SECONDS, () -> schedule(worldName, queue));
 			}
 		}.runTask(SimplePlugin.getInstance());
 	}
@@ -165,7 +166,7 @@ public abstract class OfflineRegionScanner {
 	 *
 	 * @param file
 	 */
-	private final void scanFile(File file) {
+	private final void scanFile(String worldName, File file) {
 		final Matcher matcher = FILE_PATTERN.matcher(file.getName());
 
 		if (!matcher.matches())
@@ -196,7 +197,7 @@ public abstract class OfflineRegionScanner {
 		System.out.println();
 
 		// Load the file
-		final Object region = RegionAccessor.getRegionFile(file);
+		final Object region = RegionAccessor.getRegionFile(worldName, file);
 
 		// Load each chunk within that file
 		for (int x = 0; x < 32; x++)
@@ -289,26 +290,33 @@ class RegionAccessor {
 	private static Constructor<?> regionFileConstructor;
 	private static Method isChunkSaved;
 
+	private static boolean is1_13, is1_14, is1_15;
 	private static final String saveMethodName;
 
 	static {
-		saveMethodName = MinecraftVersion.atLeast(V.v1_13) ? "close" : "c";
+		is1_13 = MinecraftVersion.atLeast(V.v1_13);
+		is1_14 = MinecraftVersion.atLeast(V.v1_14);
+		is1_15 = MinecraftVersion.atLeast(V.v1_15);
+
+		saveMethodName = is1_13 ? "close" : "c";
 
 		try {
 			final Class<?> regionFileClass = ReflectionUtil.getNMSClass("RegionFile");
-			regionFileConstructor = regionFileClass.getConstructor(File.class);
-			isChunkSaved = MinecraftVersion.newerThan(V.v1_13) ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair")) : regionFileClass.getMethod(MinecraftVersion.atLeast(V.v1_13) ? "b" : "c", int.class, int.class);
+			regionFileConstructor = is1_15 ? regionFileClass.getConstructor(File.class, File.class) : regionFileClass.getConstructor(File.class);
+			isChunkSaved = is1_14 ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair")) : regionFileClass.getMethod(is1_13 ? "b" : "c", int.class, int.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			Remain.sneaky(ex);
 		}
 	}
 
-	static Object getRegionFile(File file) {
+	static Object getRegionFile(String worldName, File file) {
 		try {
-			return regionFileConstructor.newInstance(file);
-		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Could not create region file from " + file, ex);
+			final File container = new File(Bukkit.getWorldContainer(), worldName);
+
+			return is1_15 ? regionFileConstructor.newInstance(file, container) : regionFileConstructor.newInstance(file);
+		} catch (final Throwable ex) {
+			throw new RuntimeException("Could not create region file from " + file, ex);
 		}
 	}
 
