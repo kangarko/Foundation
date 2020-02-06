@@ -104,6 +104,15 @@ public abstract class Tool {
 	}
 
 	/**
+	 * Convenience method for quickly setting this tool to a specific slot of players inventory
+	 *
+	 * @param player
+	 */
+	public final void give(Player player, int slot) {
+		player.getInventory().setItem(slot, getItem());
+	}
+
+	/**
 	 * Convenience method for quickly adding this tool into a players inventory
 	 *
 	 * @param player
