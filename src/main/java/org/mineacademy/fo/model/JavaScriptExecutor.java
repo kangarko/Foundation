@@ -31,26 +31,17 @@ public final class JavaScriptExecutor {
 	static {
 		Thread.currentThread().setContextClassLoader(SimplePlugin.class.getClassLoader());
 
-		final ScriptEngineManager engineManager = new ScriptEngineManager();
+		final ScriptEngineManager engineManager = new ScriptEngineManager(null);
 		engine = engineManager.getEngineByName("Nashorn");
 
 		if (engine == null)
-			Common.logFramed(false,
+			Common.logFramed(true,
 					"JavaScript placeholders will not function!",
 					"",
 					"Your Java version/distribution lacks",
 					"the Nashorn library for JavaScript",
 					"placeholders. Ensure you have Oracle",
 					"Java 8.");
-	}
-
-	/**
-	 * Return true if the JavaScript library is loaded successfuly and may be used
-	 *
-	 * @return
-	 */
-	public static boolean isEngineLoaded() {
-		return engine != null;
 	}
 
 	/**
@@ -86,9 +77,6 @@ public final class JavaScriptExecutor {
 	 */
 	public static Object run(@NonNull String javascript, Player player, Event event) {
 
-		if (!isEngineLoaded())
-			return null;
-
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
@@ -122,9 +110,6 @@ public final class JavaScriptExecutor {
 	 * @throws ScriptException
 	 */
 	public static Object run(String javascript, Map<String, Object> replacements) throws ScriptException {
-		if (!isEngineLoaded())
-			return null;
-
 		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
 		if (replacements != null)
