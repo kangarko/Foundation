@@ -16,6 +16,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
@@ -48,6 +49,12 @@ public abstract class SimpleCommand extends Command {
 	 * The default permission syntax for this command.
 	 */
 	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin.name}.command.{label}";
+
+	/**
+	 * If this flag is true, we will use {@link Messenger} to send
+	 * messages (no prefix supported)
+	 */
+	public static boolean USE_MESSENGER = false;
 
 	/**
 	 * You can set the cooldown time before executing the command again. This map
@@ -323,19 +330,19 @@ public abstract class SimpleCommand extends Command {
 
 		} catch (final InvalidCommandArgException ex) {
 			if (getMultilineUsageMessage() == null)
-				tellNoPrefix(ex.getMessage() != null ? ex.getMessage() : SimpleLocalization.Commands.INVALID_SUB_ARGUMENT);
+				dynamicTellError(ex.getMessage() != null ? ex.getMessage() : SimpleLocalization.Commands.INVALID_SUB_ARGUMENT);
 
 			else {
-				tellNoPrefix(SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
+				dynamicTellError(SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
 				tellNoPrefix(getMultilineUsageMessage());
 			}
 
 		} catch (final CommandException ex) {
 			if (ex.getMessages() != null)
-				tell(ex.getMessages());
+				dynamicTellError(ex.getMessages());
 
 		} catch (final Throwable t) {
-			tellNoPrefix(SimpleLocalization.Commands.ERROR.find("error").replace(t.toString()));
+			dynamicTellError(SimpleLocalization.Commands.ERROR.find("error").replace(t.toString()).getReplacedMessage());
 
 			Common.error(t, "Failed to execute command /" + getLabel() + " " + String.join(" ", args));
 
@@ -344,6 +351,14 @@ public abstract class SimpleCommand extends Command {
 		}
 
 		return true;
+	}
+
+	private void dynamicTellError(String... messages) {
+		if (USE_MESSENGER)
+			for (final String message : messages)
+				tellError(message);
+		else
+			tellNoPrefix(messages);
 	}
 
 	/**
@@ -421,7 +436,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void checkArgs(int minimumLength, String falseMessage) throws CommandException {
 		if (args.length < minimumLength)
-			returnTell("&c" + falseMessage);
+			returnTell((USE_MESSENGER ? "" : "&c") + falseMessage);
 	}
 
 	/**
@@ -433,7 +448,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void checkBoolean(boolean value, String falseMessage) throws CommandException {
 		if (!value)
-			returnTell("&c" + falseMessage);
+			returnTell((USE_MESSENGER ? "" : "&c") + falseMessage);
 	}
 
 	/**
@@ -445,7 +460,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void checkNotNull(Object value, String messageIfNull) throws CommandException {
 		if (value == null)
-			returnTell("&c" + messageIfNull);
+			returnTell((USE_MESSENGER ? "" : "&c") + messageIfNull);
 	}
 
 	/**
@@ -642,15 +657,90 @@ public abstract class SimpleCommand extends Command {
 		if (messages != null) {
 			messages = replacePlaceholders(messages);
 
-			if (!addTellPrefix || messages.length > 2)
-				Common.tellNoPrefix(sender, messages);
-			else {
+			if ((!addTellPrefix || USE_MESSENGER) || messages.length > 2) {
+
+				if (USE_MESSENGER && addTellPrefix) {
+					tellInfo(messages[0]);
+
+					if (messages.length > 1)
+						for (int i = 1; i < messages.length; i++)
+							Common.tellNoPrefix(sender, messages[i]);
+
+				} else
+					Common.tellNoPrefix(sender, messages);
+
+			} else {
 				if (tellPrefix.isEmpty())
 					Common.tell(sender, messages);
 				else
 					for (final String message : messages)
 						Common.tellNoPrefix(sender, tellPrefix + " " + message);
 			}
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
+	 * @param messages
+	 */
+	protected final void tellSuccess(String message) {
+		if (message != null) {
+			message = replacePlaceholders(message);
+
+			Messenger.success(sender, message);
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
+	 * @param messages
+	 */
+	protected final void tellInfo(String message) {
+		if (message != null) {
+			message = replacePlaceholders(message);
+
+			Messenger.info(sender, message);
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
+	 * @param messages
+	 */
+	protected final void tellWarn(String message) {
+		if (message != null) {
+			message = replacePlaceholders(message);
+
+			Messenger.warn(sender, message);
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
+	 * @param messages
+	 */
+	protected final void tellError(String message) {
+		if (message != null) {
+			message = replacePlaceholders(message);
+
+			Messenger.error(sender, message);
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
+	 * @param messages
+	 */
+	protected final void tellQuestion(String message) {
+		if (message != null) {
+			message = replacePlaceholders(message);
+
+			Messenger.question(sender, message);
 		}
 	}
 

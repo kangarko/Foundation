@@ -23,7 +23,6 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.settings.YamlConfig;
 
 import com.google.gson.Gson;
 
@@ -68,9 +67,9 @@ public final class SerializedMap extends StrictCollection {
 	 * @param map
 	 */
 	public void merge(SerializedMap map) {
-		for (Map.Entry<String, Object> entry : map.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
+		for (final Map.Entry<String, Object> entry : map.entrySet()) {
+			final String key = entry.getKey();
+			final Object value = entry.getValue();
 
 			if (key != null && value != null && !map.containsKey(key))
 				map.put(key, value);
@@ -82,6 +81,28 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public boolean containsKey(String key) {
 		return map.contains(key);
+	}
+
+	/**
+	 * Puts a key:value pair into the map only if the values are not null
+	 *
+	 * @param associativeArray
+	 */
+	public void putArray(Object... associativeArray) {
+		boolean string = true;
+		String lastKey = null;
+
+		for (final Object obj : associativeArray) {
+			if (string) {
+				Valid.checkBoolean(obj instanceof String, "Expected String at " + obj + ", got " + obj.getClass().getSimpleName());
+
+				lastKey = (String) obj;
+
+			} else
+				putIfExist(lastKey, obj);
+
+			string = !string;
+		}
 	}
 
 	/**
@@ -514,7 +535,8 @@ public final class SerializedMap extends StrictCollection {
 		if (raw == null)
 			raw = getValueIgnoreCase(key);
 
-		if (YamlConfig.DESERIALIZE_NULL && "".equals(raw) && Enum.class.isAssignableFrom(type))
+		// Assume empty means default for enumerations
+		if ("".equals(raw) && Enum.class.isAssignableFrom(type))
 			return def;
 
 		return raw == null ? def : SerializeUtil.deserialize(type, raw, key);
@@ -652,6 +674,26 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public static SerializedMap of(String key, Object value) {
 		return new SerializedMap(key, value);
+	}
+
+	/**
+	 * Create new serialized map from key-value pairs like you would in PHP:
+	 *
+	 * array(
+	 * 	"name" => value,
+	 * 	"name2" => value2,
+	 * )
+	 *
+	 * Except now you just use commas instead of =>'s
+	 *
+	 * @param array
+	 * @return
+	 */
+	public static SerializedMap ofArray(Object... array) {
+		final SerializedMap map = new SerializedMap();
+		map.putArray(array);
+
+		return map;
 	}
 
 	/**

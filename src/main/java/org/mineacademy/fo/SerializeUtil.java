@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -26,6 +27,7 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -36,6 +38,11 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SerializeUtil {
+
+	/**
+	 * When serializing unknown objects throw an error if strict mode is enabled
+	 */
+	public static boolean STRICT_MODE = true;
 
 	/**
 	 * Special case: Support for GameAPI's ConfigSerializable interface
@@ -125,6 +132,9 @@ public final class SerializeUtil {
 		else if (obj instanceof ItemCreator)
 			return ((ItemCreator) obj).make();
 
+		else if (obj instanceof TimeHelper)
+			return ((TimeHelper) obj).getRaw();
+
 		else if (obj instanceof Iterable || obj.getClass().isArray()) {
 			final List<Object> serialized = new ArrayList<>();
 
@@ -164,13 +174,16 @@ public final class SerializeUtil {
 		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
 				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
 				|| obj instanceof ItemStack
-				/*|| obj instanceof MemorySection*/)
+		/*|| obj instanceof MemorySection*/)
 			return obj;
 
 		else if (obj instanceof ConfigurationSerializable)
 			return ((ConfigurationSerializable) obj).serialize();
 
-		throw new FoException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
+		if (STRICT_MODE)
+			throw new FoException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
+		else
+			return Objects.toString(obj);
 	}
 
 	/**
@@ -180,7 +193,7 @@ public final class SerializeUtil {
 	 * @return
 	 */
 	public static String serializeLoc(Location loc) {
-		return loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + (loc.getPitch() != 0F || loc.getYaw() != 0F ? " " + loc.getYaw() + " " + loc.getPitch() : "");
+		return loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + (loc.getPitch() != 0F || loc.getYaw() != 0F ? " " + Math.round(loc.getYaw()) + " " + Math.round(loc.getPitch()) : "");
 	}
 
 	/**

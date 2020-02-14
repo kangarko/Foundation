@@ -863,6 +863,17 @@ public final class Remain {
 	}
 
 	/**
+	 * Attempts to remove a boss bar from player.
+	 *
+	 * Only works if you rendered it through methods in this class!
+	 *
+	 * @param player
+	 */
+	public static void removeBar(Player player) {
+		BossBarInternals.removeBar(player);
+	}
+
+	/**
 	 * Creates new plugin command from given label
 	 *
 	 * @param label

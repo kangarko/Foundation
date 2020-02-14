@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -58,14 +59,6 @@ import lombok.Setter;
  * @author kangarko
  */
 public class YamlConfig {
-
-	/**
-	 * When you attempt to use {@link #get(String, Class)} or {@link #get(String, Class, Object)}
-	 * for a null value, should we insert an empty {@link SerializedMap} to the deserialize method so that it is called?
-	 *
-	 * Defaults to false, which means if the value is not set, no deserialize is called, we just return null
-	 */
-	public static boolean DESERIALIZE_NULL = false;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Only allow one instance of file to be loaded for safety.
@@ -139,6 +132,9 @@ public class YamlConfig {
 
 	/**
 	 * A null flag indicating there is no default 'to' config file
+	 *
+	 * When you call methods with the "def" parameter, we enforce this flag
+	 * and will NOT auto update the config with the specified default value
 	 */
 	public static final String NO_DEFAULT = null;
 
@@ -417,7 +413,17 @@ public class YamlConfig {
 		}
 
 		final String file = getFileName();
+
 		onSave();
+
+		// Automatically serialize on save
+		if (this instanceof ConfigSerializable) {
+			final Map<Object, Object> map = (Map<Object, Object>) ((ConfigSerializable) this).serialize().serialize();
+			final Configuration config = getConfig();
+
+			for (final Map.Entry<Object, Object> entry : map.entrySet())
+				config.set(entry.getKey().toString(), entry.getValue());
+		}
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
@@ -538,8 +544,8 @@ public class YamlConfig {
 		// Special case: If there is no key at your config and neither at the default config,
 		// and we should deserialize non-existing values, we just return false instead of throwing
 		// an error at the below getT method
-		if (!isSet(path) && !isSetDefault(path) && usingDefaults && def == null && DESERIALIZE_NULL)
-			return def;
+		//if (usingDefaults && !isSet(path) && !isSetDefault(path) && def == null)
+		//	return null;
 
 		final Object object = convertIfNull(type, getT(path, Object.class));
 
@@ -567,13 +573,13 @@ public class YamlConfig {
 	// you to invoke deserialize for empty map to use default values instead
 	//
 	private final Object convertIfNull(Class<?> type, Object object) {
-		if (DESERIALIZE_NULL) {
+		/*if (ALLOW_NULL_IN_DEFAULTS) {
 			if (object == null && ConfigSerializable.class.isAssignableFrom(type))
 				object = new SerializedMap();
-
+		
 			if ("".equals(object) && Enum.class.isAssignableFrom(type))
 				object = null;
-		}
+		}*/
 
 		return object;
 	}
@@ -586,10 +592,9 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Object getObject(String path, Object def) {
-		final Object result = getObject(path);
-		forceSingleDefaults(path, def);
+		forceSingleDefaults(path);
 
-		return Common.getOrDefault(result, def);
+		return isSet(path) ? getObject(path) : def;
 	}
 
 	/**
@@ -624,7 +629,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Boolean getBoolean(String path, boolean def) {
-		forceSingleDefaults(path, def);
+		forceSingleDefaults(path);
 
 		return isSet(path) ? getBoolean(path) : def;
 	}
@@ -647,32 +652,9 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final String getString(String path, String def) {
-		forceSingleDefaults(path, def);
+		forceSingleDefaults(path);
 
 		return isSet(path) ? getString(path) : def;
-	}
-
-	/**
-	 * Return a replacer for localizable messages
-	 *
-	 * @param path
-	 * @return
-	 */
-	protected final Replacer getReplacer(String path) {
-		return getReplacer(path, "");
-	}
-
-	/**
-	 * Return a replacer for localizable messages
-	 *
-	 * @param path
-	 * @param def
-	 * @return
-	 */
-	protected final Replacer getReplacer(String path, String def) {
-		final String message = getString(path);
-
-		return Replacer.of(Common.getOrDefault(message, def));
 	}
 
 	/**
@@ -693,7 +675,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Long getLong(String path, Long def) {
-		forceSingleDefaults(path, def);
+		forceSingleDefaults(path);
 
 		return isSet(path) ? getLong(path) : def;
 	}
@@ -716,7 +698,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Integer getInteger(String path, Integer def) {
-		forceSingleDefaults(path, def);
+		forceSingleDefaults(path);
 
 		return isSet(path) ? getInteger(path) : def;
 	}
@@ -738,9 +720,9 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Double getDoubleSafe(String path) {
-		final String raw = getObject(path).toString();
+		final Object raw = getObject(path);
 
-		return raw != null ? Double.parseDouble(raw) : null;
+		return raw != null ? Double.parseDouble(raw.toString()) : null;
 	}
 
 	/**
@@ -751,7 +733,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final Double getDouble(String path, Double def) {
-		forceSingleDefaults(path, def);
+		forceSingleDefaults(path);
 
 		return isSet(path) ? getDouble(path) : def;
 	}
@@ -764,6 +746,42 @@ public class YamlConfig {
 	 */
 	protected final Double getDouble(String path) {
 		return getT(path, Double.class);
+	}
+
+	/**
+	 * Return a replacer for localizable messages
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final Replacer getReplacer(String path, String def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getReplacer(path) : Replacer.of(def);
+	}
+
+	/**
+	 * Return a replacer for localizable messages
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final Replacer getReplacer(String path) {
+		return Replacer.of(getString(path));
+	}
+
+	/**
+	 * Get a Bukkit location, using our serialization method
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final Location getLocation(String path, Location def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getLocation(path) : def;
 	}
 
 	/**
@@ -780,6 +798,19 @@ public class YamlConfig {
 	 * Get a sound with volume and a pitch
 	 *
 	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final SimpleSound getSound(String path, SimpleSound def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getSound(path) : def;
+	}
+
+	/**
+	 * Get a sound with volume and a pitch
+	 *
+	 * @param path
 	 * @return
 	 */
 	protected final SimpleSound getSound(String path) {
@@ -787,13 +818,40 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Get a casus for those human languages who support it, mainly used for numbers
+	 * Get a casus for those human languages that support it, mainly used for numbers
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final CasusHelper getCasus(String path, CasusHelper def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getCasus(path) : def;
+	}
+
+	/**
+	 * Get a casus for those human languages that support it, mainly used for numbers
 	 *
 	 * @param path
 	 * @return
 	 */
 	protected final CasusHelper getCasus(String path) {
 		return new CasusHelper(getString(path));
+	}
+
+	/**
+	 * Get a title message, having title and a subtitle
+	 *
+	 * @param path
+	 * @param defTitle
+	 * @param defSubtitle
+	 * @return
+	 */
+	protected final TitleHelper getTitle(String path, String defTitle, String defSubtitle) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getTitle(path) : new TitleHelper(defTitle, defSubtitle);
 	}
 
 	/**
@@ -810,10 +868,39 @@ public class YamlConfig {
 	 * Get a time value in human readable format, eg. "20 minutes" or "45 ticks"
 	 *
 	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final TimeHelper getTime(String path, String def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getTime(path) : new TimeHelper(def);
+	}
+
+	/**
+	 * Get a time value in human readable format, eg. "20 minutes" or "45 ticks"
+	 *
+	 * @param path
 	 * @return
 	 */
 	protected final TimeHelper getTime(String path) {
-		return new TimeHelper(path);
+		final Object obj = getObject(path);
+		Valid.checkNotNull(obj, "No time specified at the path '" + path + "' in " + getFileName());
+
+		return new TimeHelper(obj);
+	}
+
+	/**
+	 * Get a boxed message having full-width top and bottom lines in chat
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final BoxedMessage getBoxedMessage(String path, String def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getBoxedMessage(path) : new BoxedMessage(def);
 	}
 
 	/**
@@ -824,6 +911,19 @@ public class YamlConfig {
 	 */
 	protected final BoxedMessage getBoxedMessage(String path) {
 		return new BoxedMessage(getString(path));
+	}
+
+	/**
+	 * Get a CompMaterial which is our cross-version compatible material class
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	protected final CompMaterial getMaterial(String path, CompMaterial def) {
+		forceSingleDefaults(path);
+
+		return isSet(path) ? getMaterial(path) : def;
 	}
 
 	/**
@@ -920,14 +1020,12 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <T> List<T> getList(String path, Class<T> type) {
-		if (!isSet(path))
-			return null;
-
-		final List<Object> objects = getList(path);
 		final List<T> list = new ArrayList<>();
+		final List<Object> objects = getList(path);
 
-		for (final Object object : objects)
-			list.add(SerializeUtil.deserialize(type, object));
+		if (objects != null)
+			for (final Object object : objects)
+				list.add(SerializeUtil.deserialize(type, object));
 
 		return list;
 	}
@@ -939,7 +1037,9 @@ public class YamlConfig {
 	 * @return the given array, or an empty array
 	 */
 	protected final String[] getStringArray(String path) {
-		return isSet(path) ? String.join("\n", getObject(path).toString()).split("\n") : new String[0];
+		final Object array = getObject(path);
+
+		return array != null ? String.join("\n", array.toString()).split("\n") : new String[0];
 	}
 
 	/**
@@ -1400,10 +1500,9 @@ public class YamlConfig {
 	 * as the default key will be fetched directly from the default config.
 	 *
 	 * @param path
-	 * @param def
 	 */
-	private final void forceSingleDefaults(String path, Object def) {
-		if (def != null && getDefaults() != null)
+	private final void forceSingleDefaults(String path) {
+		if (getDefaults() != null)
 			throw new FoException("Cannot use get method with default when getting " + formPathPrefix(path) + " and using a default config for " + getFileName());
 	}
 
@@ -1548,8 +1647,12 @@ public class YamlConfig {
 		private final String title, subtitle;
 
 		private TitleHelper(String path) {
-			title = Common.colorize(getString(path + ".Title"));
-			subtitle = Common.colorize(getString(path + ".Subtitle"));
+			this(getString(path + ".Title"), getString(path + ".Subtitle"));
+		}
+
+		private TitleHelper(String title, String subtitle) {
+			this.title = Common.colorize(title);
+			this.subtitle = Common.colorize(subtitle);
 		}
 
 		/**
@@ -1575,20 +1678,59 @@ public class YamlConfig {
 	 * A simple helper class for storing time
 	 */
 	@Getter
-	public final class TimeHelper {
+	public static final class TimeHelper {
 		private final String raw;
 		private final int timeTicks;
 
-		private TimeHelper(String path) {
-			final String str = getObject(path).toString().equals("0") ? "0" : getString(path);
+		private TimeHelper(Object obj) {
+			final String str = obj.toString().equals("0") ? "0" : obj.toString();
 
-			raw = str;
-			timeTicks = (int) TimeUtil.toTicks(raw);
+			this.raw = str;
+			this.timeTicks = (int) TimeUtil.toTicks(this.raw);
+		}
+
+		private TimeHelper(String time) {
+			this.raw = time;
+			this.timeTicks = (int) TimeUtil.toTicks(time);
+		}
+
+		/**
+		 * Get the time specified in seconds (ticks / 20)
+		 *
+		 * @return
+		 */
+		public int getTimeSeconds() {
+			return timeTicks / 20;
 		}
 
 		@Override
 		public String toString() {
 			return raw;
+		}
+
+		/**
+		 * Generate new time from the given seconds
+		 *
+		 * @param seconds
+		 * @return
+		 */
+		public static TimeHelper fromSeconds(int seconds) {
+			return from(seconds + " seconds");
+		}
+
+		/**
+		 * Generate new time. Valid examples:
+		 * 15 ticks
+		 * 1 second
+		 * 25 minutes
+		 * 3 hours
+		 * etc.
+		 *
+		 * @param time
+		 * @return
+		 */
+		public static TimeHelper from(String time) {
+			return new TimeHelper(time);
 		}
 	}
 }
