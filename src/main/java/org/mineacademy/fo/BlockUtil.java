@@ -1,7 +1,6 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -137,7 +136,7 @@ public final class BlockUtil {
 	 * @param secondary
 	 * @return
 	 */
-	public static Collection<Location> getBoundingBox(Location primary, Location secondary) {
+	public static List<Location> getBoundingBox(Location primary, Location secondary) {
 		final List<VectorHelper> ShapeVectors = new ArrayList<>();
 
 		final VectorHelper min = getMinimumPoint(primary, secondary);
