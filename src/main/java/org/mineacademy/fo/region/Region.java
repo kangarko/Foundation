@@ -23,12 +23,12 @@ import lombok.Setter;
  * Represents a cuboid region
  */
 @Getter
-@Setter
 public class Region implements ConfigSerializable {
 
 	/**
 	 * The name of the region, or null if not given
 	 */
+	@Setter
 	@Nullable
 	private String name;
 
@@ -74,24 +74,32 @@ public class Region implements ConfigSerializable {
 			this.secondary = secondary;
 		}
 
-		if (primary != null && secondary != null) {
-			Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Points must be in one world! Primary: " + primary + " != secondary: " + secondary);
+		calculateMinimumPoint();
+	}
 
-			final int x1 = primary.getBlockX(), x2 = secondary.getBlockX(),
-					y1 = primary.getBlockY(), y2 = secondary.getBlockY(),
-					z1 = primary.getBlockZ(), z2 = secondary.getBlockZ();
+	/*
+	 * Change primary/secondary around to make secondary always the lowest point
+	 */
+	private void calculateMinimumPoint() {
+		if (primary == null || secondary == null)
+			return;
 
-			this.primary = primary.clone();
-			this.secondary = secondary.clone();
+		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Points must be in one world! Primary: " + primary + " != secondary: " + secondary);
 
-			this.primary.setX(Math.min(x1, x2));
-			this.primary.setY(Math.min(y1, y2));
-			this.primary.setZ(Math.min(z1, z2));
+		final int x1 = primary.getBlockX(), x2 = secondary.getBlockX(),
+				y1 = primary.getBlockY(), y2 = secondary.getBlockY(),
+				z1 = primary.getBlockZ(), z2 = secondary.getBlockZ();
 
-			this.secondary.setX(Math.max(x1, x2));
-			this.secondary.setY(Math.max(y1, y2));
-			this.secondary.setZ(Math.max(z1, z2));
-		}
+		this.primary = primary.clone();
+		this.secondary = secondary.clone();
+
+		this.primary.setX(Math.min(x1, x2));
+		this.primary.setY(Math.min(y1, y2));
+		this.primary.setZ(Math.min(z1, z2));
+
+		this.secondary.setX(Math.max(x1, x2));
+		this.secondary.setY(Math.max(y1, y2));
+		this.secondary.setZ(Math.max(z1, z2));
 	}
 
 	/**
@@ -117,6 +125,18 @@ public class Region implements ConfigSerializable {
 		Valid.checkBoolean(isWhole(), "Cannot perform getBlocks on a non-complete region: " + toString());
 
 		return BlockUtil.getBlocks(primary, secondary);
+	}
+
+	/**
+	 * Return locations representing the bounding box of a cuboid region,
+	 * used when rendering particle effects
+	 *
+	 * @return
+	 */
+	public final List<Location> getBoundingBox() {
+		Valid.checkBoolean(isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + toString());
+
+		return BlockUtil.getBoundingBox(primary, secondary);
 	}
 
 	/**
@@ -193,6 +213,28 @@ public class Region implements ConfigSerializable {
 	}
 
 	/**
+	 * Set the primary region point
+	 *
+	 * @param primary
+	 */
+	public final void setPrimary(Location primary) {
+		this.primary = primary;
+
+		calculateMinimumPoint();
+	}
+
+	/**
+	 * Set the secondary region point
+	 *
+	 * @param primary
+	 */
+	public final void setSecondary(Location primary) {
+		this.primary = primary;
+
+		calculateMinimumPoint();
+	}
+
+	/**
 	 * Sets a new primary and secondary locations,
 	 * preserving old keys if the new are not given
 	 *
@@ -205,6 +247,8 @@ public class Region implements ConfigSerializable {
 
 		if (secondary != null)
 			this.secondary = secondary;
+
+		calculateMinimumPoint();
 	}
 
 	@Override
