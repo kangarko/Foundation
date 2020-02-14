@@ -1020,12 +1020,28 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <T> List<T> getList(String path, Class<T> type) {
+		return getList(path, type, (Object[]) null);
+	}
+
+	/**
+	 * Return a list of objects of the given type
+	 *
+	 * If the type is your own class make sure to put public static deserialize(SerializedMap, deserializedParameters)
+	 * method into it that returns the class object from the map!
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @param deserializeParameters
+	 * @return
+	 */
+	protected final <T> List<T> getList(String path, Class<T> type, Object... deserializeParameters) {
 		final List<T> list = new ArrayList<>();
 		final List<Object> objects = getList(path);
 
 		if (objects != null)
 			for (final Object object : objects)
-				list.add(SerializeUtil.deserialize(type, object));
+				list.add(SerializeUtil.deserialize(type, object, deserializeParameters));
 
 		return list;
 	}
