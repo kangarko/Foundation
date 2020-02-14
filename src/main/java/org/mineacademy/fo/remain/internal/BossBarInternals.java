@@ -264,7 +264,7 @@ public class BossBarInternals implements Listener {
 		sendDragon(dragon, player);
 	}
 
-	private static void removeBar(Player player) {
+	public static void removeBar(Player player) {
 		if (!hasBar(player))
 			return;
 

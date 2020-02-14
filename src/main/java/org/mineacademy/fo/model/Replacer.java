@@ -1,5 +1,8 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
@@ -7,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.collection.SerializedMap;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -70,6 +73,31 @@ public final class Replacer {
 	}
 
 	/**
+	 * Attempts to replace key:value pairs automatically
+	 *
+	 * See {@link SerializedMap#ofArray(Object...)}
+	 *
+	 * @param associativeArray
+	 * @return
+	 */
+	public String replaceAll(Object... associativeArray) {
+		final SerializedMap map = SerializedMap.ofArray(associativeArray);
+
+		final List<String> find = new ArrayList<>();
+		final List<Object> replaced = new ArrayList<>();
+
+		for (final Map.Entry<String, Object> entry : map.entrySet()) {
+			find.add(entry.getKey());
+			replaced.add(entry.getValue());
+		}
+
+		find(find.toArray(new String[find.size()]));
+		replace(replaced.toArray(new Object[replaced.size()]));
+
+		return getReplacedMessageJoined();
+	}
+
+	/**
 	 * Replaces stored variables with their counterparts
 	 *
 	 * Call this after {@link #find(String...)}!
@@ -100,12 +128,9 @@ public final class Replacer {
 			// Convert it into a human readable string
 			String serialized;
 
-			try {
-				serialized = Objects.toString(SerializeUtil.serialize(rep));
-
-			} catch (final FoException ex) {
-				serialized = Objects.toString(rep);
-			}
+			SerializeUtil.STRICT_MODE = false;
+			serialized = Objects.toString(SerializeUtil.serialize(rep));
+			SerializeUtil.STRICT_MODE = true;
 
 			message = message.replace(find, rep != null ? serialized : "");
 		}

@@ -1418,6 +1418,29 @@ public final class Common {
 	}
 
 	/**
+	 * A convenience method for converting array of command senders into array of their names
+	 * except the given player
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param nameToIgnore
+	 * @return
+	 */
+	public static <T extends CommandSender> String joinPlayersExcept(Iterable<T> array, String nameToIgnore) {
+		final Iterator<T> it = array.iterator();
+		String message = "";
+
+		while (it.hasNext()) {
+			final T next = it.next();
+
+			if (!next.getName().equals(nameToIgnore))
+				message += next.getName() + (it.hasNext() ? ", " : "");
+		}
+
+		return message.endsWith(", ") ? message.substring(0, message.length() - 2) : message;
+	}
+
+	/**
 	 * Joins a list of a given type using the given delimiter and a helper interface
 	 * to convert each element in the array into string
 	 *

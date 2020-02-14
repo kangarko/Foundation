@@ -5,6 +5,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,6 +46,20 @@ public abstract class Countdown implements Runnable {
 	 */
 	private int taskId = -1;
 
+	/**
+	 * Create new countdown from the given time
+	 *
+	 * @param time
+	 */
+	protected Countdown(TimeHelper time) {
+		this(time.getTimeSeconds());
+	}
+
+	/**
+	 * Create new countdown
+	 *
+	 * @param countdownSeconds
+	 */
 	protected Countdown(int countdownSeconds) {
 		this.countdownSeconds = countdownSeconds;
 	}
@@ -70,6 +85,12 @@ public abstract class Countdown implements Runnable {
 			cancel();
 			onEnd();
 		}
+	}
+
+	/**
+	 * Called when this countdown is launched
+	 */
+	protected void onStart() {
 	}
 
 	/**
@@ -99,6 +120,8 @@ public abstract class Countdown implements Runnable {
 
 		final BukkitTask task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), this, START_DELAY, TICK_PERIOD);
 		taskId = task.getTaskId();
+
+		onStart();
 	}
 
 	/**
