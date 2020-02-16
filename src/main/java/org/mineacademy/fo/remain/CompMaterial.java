@@ -1294,6 +1294,16 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Returns true if the given material is a bloat (that's right) (any variation).
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static final boolean isBoat(Material mat) {
+		return nameContains(mat, "BOAT");
+	}
+
+	/**
 	 * Returns true if the given material is a wood button (any variation).
 	 *
 	 * @param mat
