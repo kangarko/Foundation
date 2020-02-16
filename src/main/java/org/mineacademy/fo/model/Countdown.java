@@ -74,6 +74,12 @@ public abstract class Countdown implements Runnable {
 				onTick();
 
 			} catch (final Throwable t) {
+				try {
+					onTickError(t);
+				} catch (final Throwable tt) {
+					Common.log("Unable to handle onTickError, got " + t + ": " + tt.getMessage());
+				}
+
 				Common.error(t,
 						"Error in countdown!",
 						"Seconds since start: " + secondsSinceStart,
@@ -102,6 +108,14 @@ public abstract class Countdown implements Runnable {
 	 * Called when the clock hits the final 0 and stops.
 	 */
 	protected abstract void onEnd();
+
+	/**
+	 * Called when the {@link #onTick()} method throws an error (we already log the error)
+	 *
+	 * @param t
+	 */
+	protected void onTickError(Throwable t) {
+	}
 
 	/**
 	 * Return the time left in seconds

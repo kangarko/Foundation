@@ -15,6 +15,7 @@ import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.Metadatable;
 import org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType;
 import org.mineacademy.fo.Common;
@@ -41,7 +42,7 @@ import lombok.RequiredArgsConstructor;
  * We apply scoreboard tags to ensure permanent metadata storage
  * if supported, otherwise it is lost on reload
  */
-public class CompMetadata {
+public final class CompMetadata {
 
 	/**
 	 * The tag delimiter
@@ -81,7 +82,7 @@ public class CompMetadata {
 	 * @param entity
 	 * @param tag
 	 */
-	public static final void setMetadata(Entity entity, String tag) {
+	public static void setMetadata(Entity entity, String tag) {
 		setMetadata(entity, tag, tag);
 	}
 
@@ -92,7 +93,7 @@ public class CompMetadata {
 	 * @param key
 	 * @param value
 	 */
-	public static final void setMetadata(Entity entity, String key, String value) {
+	public static void setMetadata(Entity entity, String key, String value) {
 		Valid.checkNotNull(entity);
 
 		final String tag = format(key, value);
@@ -109,7 +110,7 @@ public class CompMetadata {
 	}
 
 	// Format the syntax of stored tags
-	private static final String format(String key, String value) {
+	private static String format(String key, String value) {
 		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
 	}
 
@@ -120,7 +121,7 @@ public class CompMetadata {
 	 * @param key
 	 * @param value
 	 */
-	public static final void setMetadata(BlockState tileEntity, String key, String value) {
+	public static void setMetadata(BlockState tileEntity, String key, String value) {
 		Valid.checkNotNull(tileEntity);
 		Valid.checkNotNull(key);
 		Valid.checkNotNull(value);
@@ -139,7 +140,7 @@ public class CompMetadata {
 		}
 	}
 
-	private static final void setNamedspaced(TileState tile, String key, String value) {
+	private static void setNamedspaced(TileState tile, String key, String value) {
 		tile.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING, value);
 	}
 
@@ -174,7 +175,7 @@ public class CompMetadata {
 	 * @param key
 	 * @return the tag, or null
 	 */
-	public static final String getMetadata(Entity entity, String key) {
+	public static String getMetadata(Entity entity, String key) {
 		Valid.checkNotNull(entity);
 
 		if (Remain.hasScoreboardTags())
@@ -191,7 +192,7 @@ public class CompMetadata {
 	}
 
 	// Parses the tag and gets its value
-	private static final String getTag(String raw, String key) {
+	private static String getTag(String raw, String key) {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
@@ -204,7 +205,7 @@ public class CompMetadata {
 	 * @param key, or null if none
 	 * @return
 	 */
-	public static final String getMetadata(BlockState tileEntity, String key) {
+	public static String getMetadata(BlockState tileEntity, String key) {
 		Valid.checkNotNull(tileEntity);
 		Valid.checkNotNull(key);
 
@@ -219,7 +220,7 @@ public class CompMetadata {
 		return Common.getOrNull(value);
 	}
 
-	private static final String getNamedspaced(TileState tile, String key) {
+	private static String getNamedspaced(TileState tile, String key) {
 		final String value = tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
 
 		return Common.getOrNull(value);
@@ -237,7 +238,7 @@ public class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static final boolean hasMetadata(ItemStack item, String key) {
+	public static boolean hasMetadata(ItemStack item, String key) {
 		Valid.checkNotNull(item);
 
 		final NBTItem nbt = new NBTItem(item);
@@ -254,7 +255,7 @@ public class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static final boolean hasMetadata(Entity entity, String key) {
+	public static boolean hasMetadata(Entity entity, String key) {
 		Valid.checkNotNull(entity);
 
 		if (Remain.hasScoreboardTags())
@@ -273,7 +274,7 @@ public class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static final boolean hasMetadata(BlockState tileEntity, String key) {
+	public static boolean hasMetadata(BlockState tileEntity, String key) {
 		Valid.checkNotNull(tileEntity);
 		Valid.checkNotNull(key);
 
@@ -286,15 +287,82 @@ public class CompMetadata {
 		return tileEntity.hasMetadata(key);
 	}
 
-	private static final boolean hasNamedspaced(TileState tile, String key) {
+	private static boolean hasNamedspaced(TileState tile, String key) {
 		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
 	}
 
 	// Parses the tag and gets its value
-	private static final boolean hasTag(String raw, String tag) {
+	private static boolean hasTag(String raw, String tag) {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
+	}
+
+	/**
+	 * Sets a temporary metadata to entity. This metadata is NOT persistent
+	 * and is removed on server stop, restart or reload.
+	 *
+	 * Use {@link #setMetadata(Entity, String)} to set persistent custom tags for entities.
+	 *
+	 * @param entity
+	 * @param tag
+	 */
+	public static void setTempMetadata(Entity entity, String tag) {
+		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), tag));
+	}
+
+	/**
+	 * Sets a temporary metadata to entity. This metadata is NOT persistent
+	 * and is removed on server stop, restart or reload.
+	 *
+	 * Use {@link #setMetadata(Entity, String)} to set persistent custom tags for entities.
+	 *
+	 * @param entity
+	 * @param tag
+	 * @param key
+	 */
+	public static void setTempMetadata(Entity entity, String tag, Object key) {
+		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), key));
+	}
+
+	/**
+	 * Return entity metadata value or null if has none
+	 *
+	 * Only usable if you set it using the {@link #setTempMetadata(Entity, String, Object)} with the key parameter
+	 * because otherwise the tag is the same as the value we return
+	 *
+	 * @param entity
+	 * @param tag
+	 * @return
+	 */
+	public static MetadataValue getTempMetadata(Entity entity, String tag) {
+		final String key = createTempMetadataKey(tag);
+
+		return entity.hasMetadata(key) ? entity.getMetadata(key).get(0) : null;
+	}
+
+	public static boolean hasTempMetadata(Entity player, String tag) {
+		return player.hasMetadata(createTempMetadataKey(tag));
+	}
+
+	/**
+	 * Remove temporary metadata from the entity
+	 *
+	 * @param player
+	 * @param tag
+	 */
+	public static void removeTempMetadata(Entity player, String tag) {
+		final String key = createTempMetadataKey(tag);
+
+		if (player.hasMetadata(key))
+			player.removeMetadata(key, SimplePlugin.getInstance());
+	}
+
+	/*
+	 * Create a new temporary metadata key
+	 */
+	private static String createTempMetadataKey(String tag) {
+		return SimplePlugin.getNamed() + "_" + tag;
 	}
 
 	/**
@@ -392,8 +460,8 @@ public class CompMetadata {
 		protected void addMetadata(Entity entity, @NonNull String key, String value) {
 			final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
-			for (final Iterator i = metadata.iterator(); i.hasNext();) {
-				final String meta = (String) i.next();
+			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
+				final String meta = i.next();
 
 				if (getTag(meta, key) != null)
 					i.remove();
@@ -411,8 +479,8 @@ public class CompMetadata {
 		protected void addMetadata(BlockState blockState, String key, String value) {
 			final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
-			for (final Iterator i = blockCache.getMetadata().iterator(); i.hasNext();) {
-				final String meta = (String) i.next();
+			for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
+				final String meta = i.next();
 
 				if (getTag(meta, key) != null)
 					i.remove();
