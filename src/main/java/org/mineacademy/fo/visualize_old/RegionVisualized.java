@@ -1,4 +1,4 @@
-package org.mineacademy.fo.visualize;
+package org.mineacademy.fo.visualize_old;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,10 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompParticle;
 
+/**
+ *  @deprecated use classes in the new "visual" package
+ */
+@Deprecated
 public final class RegionVisualized extends Region {
 
 	private final static CompParticle DEFAULT_PARTICLE = CompParticle.VILLAGER_HAPPY;
@@ -27,11 +31,11 @@ public final class RegionVisualized extends Region {
 	 */
 	private BukkitTask particleTask;
 
-	public RegionVisualized(String name, Location primary, Location secondary) {
+	public RegionVisualized(final String name, final Location primary, final Location secondary) {
 		super(name, primary, secondary);
 	}
 
-	public void show(int durationTicks) {
+	public void show(final int durationTicks) {
 		show(durationTicks, DEFAULT_PARTICLE);
 	}
 
@@ -40,13 +44,13 @@ public final class RegionVisualized extends Region {
 	 *
 	 * @param durationTicks
 	 */
-	public void show(int durationTicks, CompParticle particle) {
+	public void show(final int durationTicks, final CompParticle particle) {
 		start(particle);
 
 		Common.runLater(durationTicks, () -> stop());
 	}
 
-	private void start(CompParticle particle) {
+	private void start(final CompParticle particle) {
 		if (particleTask != null)
 			particleTask.cancel();
 
@@ -69,11 +73,11 @@ public final class RegionVisualized extends Region {
 
 	}
 
-	public void restart(int durationTicks) {
+	public void restart(final int durationTicks) {
 		restart(durationTicks, DEFAULT_PARTICLE);
 	}
 
-	public void restart(int durationTicks, CompParticle particle) {
+	public void restart(final int durationTicks, final CompParticle particle) {
 		stop();
 
 		show(durationTicks, particle);
@@ -92,7 +96,7 @@ public final class RegionVisualized extends Region {
 	 * @param map
 	 * @return
 	 */
-	public static RegionVisualized deserialize(SerializedMap map) {
+	public static RegionVisualized deserialize(final SerializedMap map) {
 		Valid.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
 
 		final String name = map.getString("Name");

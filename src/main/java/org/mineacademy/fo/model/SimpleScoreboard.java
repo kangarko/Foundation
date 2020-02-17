@@ -58,7 +58,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param player
 	 */
-	public static final void clearBoardsFor(Player player) {
+	public static final void clearBoardsFor(final Player player) {
 		for (final SimpleScoreboard scoreboard : registeredBoards)
 			if (scoreboard.isViewing(player))
 				scoreboard.hide(player);
@@ -139,7 +139,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param entries
 	 */
-	public final void addRows(String... entries) {
+	public final void addRows(final String... entries) {
 		addRows(Arrays.asList(entries));
 	}
 
@@ -148,7 +148,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param entries
 	 */
-	public final void addRows(List<String> entries) {
+	public final void addRows(final List<String> entries) {
 		rows.addAll(entries);
 	}
 
@@ -164,7 +164,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param index
 	 */
-	public final void removeRow(int index) {
+	public final void removeRow(final int index) {
 		rows.remove(index);
 	}
 
@@ -173,7 +173,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param thatContains
 	 */
-	public final void removeRow(String thatContains) {
+	public final void removeRow(final String thatContains) {
 		for (final Iterator<String> it = rows.iterator(); it.hasNext();) {
 			final String row = it.next();
 
@@ -261,15 +261,16 @@ public class SimpleScoreboard {
 	 * @param row
 	 * @return
 	 */
-	private final String replaceTheme(String row) {
+	private final String replaceTheme(final String row) {
 		if (theme != null && row.contains(":")) {
 			if (theme.length == 1)
 				return theme[0] + row;
 
-			else {
+			else if (theme[0] != null) {
 				final String[] split = row.split("\\:");
 
-				return theme[0] + split[0] + ":" + theme[1] + split[1];
+				if (split.length > 1)
+					return theme[0] + split[0] + ":" + theme[1] + split[1];
 			}
 		}
 
@@ -286,7 +287,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param theme the theme to set
 	 */
-	public final void setTheme(@NonNull ChatColor primary, @Nullable ChatColor secondary) {
+	public final void setTheme(@NonNull final ChatColor primary, @Nullable final ChatColor secondary) {
 		if (secondary != null) {
 			this.theme[0] = "&" + primary.getChar();
 			this.theme[1] = "&" + secondary.getChar();
@@ -301,7 +302,7 @@ public class SimpleScoreboard {
 	 * @param message
 	 * @return
 	 */
-	private final String fixDuplicates(StrictList<String> duplicates, String message) {
+	private final String fixDuplicates(final StrictList<String> duplicates, String message) {
 		message = StringUtils.substring(message, 0, 40);
 
 		final boolean cut = MinecraftVersion.olderThan(V.v1_8);
@@ -326,7 +327,7 @@ public class SimpleScoreboard {
 	 * @param message
 	 * @return
 	 */
-	protected String replaceVariables(String message) {
+	protected String replaceVariables(final String message) {
 		return message;
 	}
 
@@ -380,7 +381,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param player
 	 */
-	public final void show(Player player) {
+	public final void show(final Player player) {
 		Valid.checkBoolean(!isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + getTitle());
 
 		if (updateTask == null)
@@ -395,7 +396,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param player
 	 */
-	public final void hide(Player player) {
+	public final void hide(final Player player) {
 		Valid.checkBoolean(isViewing(player), "Player " + player.getName() + " is not viewing scoreboard: " + getTitle());
 
 		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
@@ -411,7 +412,7 @@ public class SimpleScoreboard {
 	 * @param player
 	 * @return
 	 */
-	public final boolean isViewing(Player player) {
+	public final boolean isViewing(final Player player) {
 		return viewingPlayers.contains(player.getName());
 	}
 

@@ -1,4 +1,4 @@
-package org.mineacademy.fo.visualize;
+package org.mineacademy.fo.visualize_old;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -11,7 +11,10 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 /**
  * Visualize a single block by either replacing its type with for example
  * Glowstone or invoking setGlowing method in later MC versions
+ *
+ * @deprecated use classes in the new "visual" package
  */
+@Deprecated
 public abstract class BlockVisualizer {
 
 	private final Object LOCK = new Object();
@@ -26,7 +29,7 @@ public abstract class BlockVisualizer {
 	 */
 	private final ToolVisualizer tool;
 
-	public BlockVisualizer(ToolVisualizer tool) {
+	public BlockVisualizer(final ToolVisualizer tool) {
 		this.tool = tool;
 
 		VisualizerListener.register(this);
@@ -37,7 +40,7 @@ public abstract class BlockVisualizer {
 	 * @param location
 	 * @param mode
 	 */
-	public final void show(Location location, VisualizeMode mode) {
+	public final void show(final Location location, final VisualizeMode mode) {
 		synchronized (LOCK) {
 			Valid.checkNotNull(location, "Location == null");
 			Valid.checkNotNull(location.getWorld(), "Location.World == null");
@@ -47,7 +50,7 @@ public abstract class BlockVisualizer {
 			final VisualizedBlock v = new VisualizedBlock(location.getBlock(), tool.getMask()) {
 
 				@Override
-				public String getBlockName(Block block) {
+				public String getBlockName(final Block block) {
 					tool.setCalledLocation(block.getLocation());
 
 					return BlockVisualizer.this.getBlockName(block);
@@ -64,7 +67,7 @@ public abstract class BlockVisualizer {
 	 *
 	 * @param block the block
 	 */
-	public final void hide(Location location) {
+	public final void hide(final Location location) {
 		synchronized (LOCK) {
 			if (!stored.contains(location))
 				return;
@@ -87,7 +90,7 @@ public abstract class BlockVisualizer {
 	 * @param block the block
 	 * @return whether or not the block is visualized
 	 */
-	public final boolean isStored(Block block) {
+	public final boolean isStored(final Block block) {
 		synchronized (LOCK) {
 			Valid.checkNotNull(block, "Null block!");
 
@@ -100,7 +103,7 @@ public abstract class BlockVisualizer {
 	 *
 	 * @param mode the new mode
 	 */
-	public final void updateStored(VisualizeMode mode) {
+	public final void updateStored(final VisualizeMode mode) {
 		synchronized (LOCK) {
 			for (final VisualizedBlock v : stored.values())
 				v.visualize(mode);

@@ -76,7 +76,7 @@ public final class BlockUtil {
 	 * @param player
 	 * @param block
 	 */
-	public static void destroyBlockSurvival(Player player, Block block) {
+	public static void destroyBlockSurvival(final Player player, final Block block) {
 		if (player.getGameMode() != GameMode.CREATIVE)
 			block.breakNaturally();
 		else
@@ -95,7 +95,7 @@ public final class BlockUtil {
 	 * @param secondary
 	 * @return
 	 */
-	public static boolean isWithinCuboid(Location location, Location primary, Location secondary) {
+	public static boolean isWithinCuboid(final Location location, final Location primary, final Location secondary) {
 		return isWithinCuboid(location, primary.toVector(), secondary.toVector());
 	}
 
@@ -107,7 +107,7 @@ public final class BlockUtil {
 	 * @param secondary
 	 * @return
 	 */
-	public static boolean isWithinCuboid(Location location, Vector primary, Vector secondary) {
+	public static boolean isWithinCuboid(final Location location, final Vector primary, final Vector secondary) {
 		final double locX = location.getX();
 		final double locY = location.getY();
 		final double locZ = location.getZ();
@@ -136,8 +136,8 @@ public final class BlockUtil {
 	 * @param secondary
 	 * @return
 	 */
-	public static List<Location> getBoundingBox(Location primary, Location secondary) {
-		final List<VectorHelper> ShapeVectors = new ArrayList<>();
+	public static Set<Location> getBoundingBox(final Location primary, final Location secondary) {
+		final List<VectorHelper> shape = new ArrayList<>();
 
 		final VectorHelper min = getMinimumPoint(primary, secondary);
 		final VectorHelper max = getMaximumPoint(primary, secondary).add(1, 0, 1);
@@ -157,26 +157,26 @@ public final class BlockUtil {
 
 			final VectorHelper p3 = p1.add(0, height, 0);
 			final VectorHelper p4 = p2.add(0, height, 0);
-			ShapeVectors.addAll(plotLine(p1, p2));
-			ShapeVectors.addAll(plotLine(p3, p4));
-			ShapeVectors.addAll(plotLine(p1, p3));
+			shape.addAll(plotLine(p1, p2));
+			shape.addAll(plotLine(p3, p4));
+			shape.addAll(plotLine(p1, p3));
 
 			for (double offset = BOUNDING_VERTICAL_GAP; offset < height; offset += BOUNDING_VERTICAL_GAP) {
 				final VectorHelper p5 = p1.add(0.0D, offset, 0.0D);
 				final VectorHelper p6 = p2.add(0.0D, offset, 0.0D);
-				ShapeVectors.addAll(plotLine(p5, p6));
+				shape.addAll(plotLine(p5, p6));
 			}
 		}
 
-		final List<Location> locations = new ArrayList<>();
+		final Set<Location> locations = new HashSet<>();
 
-		for (final VectorHelper ShapeVector : ShapeVectors)
-			locations.add(new Location(primary.getWorld(), ShapeVector.getX(), ShapeVector.getY(), ShapeVector.getZ()));
+		for (final VectorHelper vector : shape)
+			locations.add(new Location(primary.getWorld(), vector.getX(), vector.getY(), vector.getZ()));
 
 		return locations;
 	}
 
-	private static List<VectorHelper> plotLine(VectorHelper p1, VectorHelper p2) {
+	private static List<VectorHelper> plotLine(final VectorHelper p1, final VectorHelper p2) {
 		final List<VectorHelper> ShapeVectors = new ArrayList<>();
 
 		final int points = (int) (p1.distance(p2) / BOUNDING_HORIZONTAL_GAP) + 1;
@@ -208,7 +208,7 @@ public final class BlockUtil {
 	 * @param hollow
 	 * @return
 	 */
-	public static Set<Location> getSphere(Location location, int radius, boolean hollow) {
+	public static Set<Location> getSphere(final Location location, final int radius, final boolean hollow) {
 		final Set<Location> blocks = new HashSet<>();
 		final World world = location.getWorld();
 		final int X = location.getBlockX();
@@ -245,7 +245,7 @@ public final class BlockUtil {
 	 * @param hollow
 	 * @return
 	 */
-	public static Set<Location> getCircle(Location location, int radius, boolean hollow) {
+	public static Set<Location> getCircle(final Location location, final int radius, final boolean hollow) {
 		final Set<Location> blocks = new HashSet<>();
 		final World world = location.getWorld();
 
@@ -278,7 +278,7 @@ public final class BlockUtil {
 	 * @param sphere
 	 * @return
 	 */
-	private static Set<Location> makeHollow(Set<Location> blocks, boolean sphere) {
+	private static Set<Location> makeHollow(final Set<Location> blocks, final boolean sphere) {
 		final Set<Location> edge = new HashSet<>();
 
 		if (!sphere) {
@@ -370,7 +370,7 @@ public final class BlockUtil {
 	 *
 	 * @return all the Block with the given Type in the specified radius
 	 */
-	public static List<Block> getBlocks(Location loc, int height, int radius) {
+	public static List<Block> getBlocks(final Location loc, final int height, final int radius) {
 		final List<Block> blocks = new ArrayList<>();
 
 		for (int y = 0; y < height; y++)
@@ -391,7 +391,7 @@ public final class BlockUtil {
 	 * @param radius
 	 * @return
 	 */
-	public static List<Chunk> getChunks(Location location, int radius) {
+	public static List<Chunk> getChunks(final Location location, final int radius) {
 		final HashSet<Chunk> addedChunks = new HashSet<>();
 		final World world = location.getWorld();
 
@@ -415,7 +415,7 @@ public final class BlockUtil {
 	 * @param includeLeaves
 	 * @return
 	 */
-	public static List<Block> getTreePartsUp(Block treeBase) {
+	public static List<Block> getTreePartsUp(final Block treeBase) {
 		final Material baseMaterial = treeBase.getState().getType();
 
 		final String logType = MinecraftVersion.atLeast(V.v1_13) ? baseMaterial.toString() : "LOG";
@@ -467,7 +467,7 @@ public final class BlockUtil {
 	 * @param action
 	 * @return
 	 */
-	public static boolean canSetup(Block clicked, Action action) {
+	public static boolean canSetup(final Block clicked, final Action action) {
 		return (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK) && isForBlockSelection(clicked.getType());
 	}
 
@@ -495,7 +495,7 @@ public final class BlockUtil {
 	 *
 	 * @return boolean
 	 */
-	public static boolean isBreakingFallingBlock(Material material) {
+	public static boolean isBreakingFallingBlock(final Material material) {
 		return material.isTransparent() &&
 				material != CompMaterial.NETHER_PORTAL.getMaterial() &&
 				material != CompMaterial.END_PORTAL.getMaterial() ||
@@ -514,7 +514,7 @@ public final class BlockUtil {
 	 * @param material
 	 * @return
 	 */
-	public static boolean isTool(Material material) {
+	public static boolean isTool(final Material material) {
 		return material.name().endsWith("AXE") // axe & pickaxe
 				|| material.name().endsWith("SPADE")
 				|| material.name().endsWith("SWORD")
@@ -533,7 +533,7 @@ public final class BlockUtil {
 	 * @param material
 	 * @return
 	 */
-	public static boolean isArmor(Material material) {
+	public static boolean isArmor(final Material material) {
 		return material.name().endsWith("HELMET")
 				|| material.name().endsWith("CHESTPLATE")
 				|| material.name().endsWith("LEGGINGS")
@@ -546,7 +546,7 @@ public final class BlockUtil {
 	 * @param material the material
 	 * @return if block contains the partial name of {@link #SELECTION_BLOCKS}
 	 */
-	public static boolean isForBlockSelection(Material material) {
+	public static boolean isForBlockSelection(final Material material) {
 		if (!material.isBlock() || material == Material.AIR)
 			return false;
 
@@ -574,7 +574,7 @@ public final class BlockUtil {
 	 * @param location
 	 * @return the y coordinate, or -1 if not found
 	 */
-	public static int findHighestBlockNoSnow(Location location) {
+	public static int findHighestBlockNoSnow(final Location location) {
 		return findHighestBlockNoSnow(location.getWorld(), location.getBlockX(), location.getBlockZ());
 	}
 
@@ -587,7 +587,7 @@ public final class BlockUtil {
 	 * @param z
 	 * @return the y coordinate, or -1 if not found
 	 */
-	public static int findHighestBlockNoSnow(World world, int x, int z) {
+	public static int findHighestBlockNoSnow(final World world, final int x, final int z) {
 		for (int y = world.getMaxHeight(); y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
@@ -606,7 +606,7 @@ public final class BlockUtil {
 	 * @param predicate
 	 * @return the y coordinate, or -1 if not found
 	 */
-	public static int findHighestBlock(Location location, Predicate<Material> predicate) {
+	public static int findHighestBlock(final Location location, final Predicate<Material> predicate) {
 		return findHighestBlock(location.getWorld(), location.getBlockX(), location.getBlockZ(), predicate);
 	}
 
@@ -620,7 +620,7 @@ public final class BlockUtil {
 	 * @param predicate
 	 * @return the y coordinate, or -1 if not found
 	 */
-	public static int findHighestBlock(World world, int x, int z, Predicate<Material> predicate) {
+	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
 		for (int y = world.getMaxHeight(); y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
@@ -644,7 +644,7 @@ public final class BlockUtil {
 	 * @param velocity
 	 * @return
 	 */
-	public static FallingBlock shootBlock(Block block, Vector velocity) {
+	public static FallingBlock shootBlock(final Block block, final Vector velocity) {
 		return shootBlock(block, velocity, 0D);
 	}
 
@@ -657,7 +657,7 @@ public final class BlockUtil {
 	 * @param burnOnFallChance from 0.0 to 1.0
 	 * @return
 	 */
-	public static FallingBlock shootBlock(Block block, Vector velocity, double burnOnFallChance) {
+	public static FallingBlock shootBlock(final Block block, final Vector velocity, final double burnOnFallChance) {
 		if (!canShootBlock(block))
 			return null;
 
@@ -689,7 +689,7 @@ public final class BlockUtil {
 	 * @param block
 	 * @return
 	 */
-	private static boolean canShootBlock(Block block) {
+	private static boolean canShootBlock(final Block block) {
 		final Material material = block.getType();
 
 		return !CompMaterial.isAir(material) && (material.toString().contains("STEP") || material.toString().contains("SLAB") || BlockUtil.isForBlockSelection(material));
@@ -700,7 +700,7 @@ public final class BlockUtil {
 	 *
 	 * @param block
 	 */
-	private static void scheduleBurnOnFall(FallingBlock block) {
+	private static void scheduleBurnOnFall(final FallingBlock block) {
 		EntityUtil.trackFalling(block, () -> {
 			final Block upperBlock = block.getLocation().getBlock().getRelative(BlockFace.UP);
 
@@ -713,15 +713,15 @@ public final class BlockUtil {
 	// Helper classes
 	// ------------------------------------------------------------------------------------------------------------
 
-	private static VectorHelper getMinimumPoint(Location pos1, Location pos2) {
+	private static VectorHelper getMinimumPoint(final Location pos1, final Location pos2) {
 		return new VectorHelper(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()), Math.min(pos1.getZ(), pos2.getZ()));
 	}
 
-	private static VectorHelper getMaximumPoint(Location pos1, Location pos2) {
+	private static VectorHelper getMaximumPoint(final Location pos1, final Location pos2) {
 		return new VectorHelper(Math.max(pos1.getX(), pos2.getX()), Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()));
 	}
 
-	private static int getHeight(Location pos1, Location pos2) {
+	private static int getHeight(final Location pos1, final Location pos2) {
 		final VectorHelper min = getMinimumPoint(pos1, pos2);
 		final VectorHelper max = getMaximumPoint(pos1, pos2);
 
@@ -734,27 +734,27 @@ public final class BlockUtil {
 		@Getter
 		protected final double x, y, z;
 
-		public VectorHelper add(VectorHelper other) {
+		public VectorHelper add(final VectorHelper other) {
 			return add(other.x, other.y, other.z);
 		}
 
-		public VectorHelper add(double x, double y, double z) {
+		public VectorHelper add(final double x, final double y, final double z) {
 			return new VectorHelper(this.x + x, this.y + y, this.z + z);
 		}
 
-		public VectorHelper subtract(VectorHelper other) {
+		public VectorHelper subtract(final VectorHelper other) {
 			return subtract(other.x, other.y, other.z);
 		}
 
-		public VectorHelper subtract(double x, double y, double z) {
+		public VectorHelper subtract(final double x, final double y, final double z) {
 			return new VectorHelper(this.x - x, this.y - y, this.z - z);
 		}
 
-		public VectorHelper multiply(double n) {
+		public VectorHelper multiply(final double n) {
 			return new VectorHelper(this.x * n, this.y * n, this.z * n);
 		}
 
-		public VectorHelper divide(double n) {
+		public VectorHelper divide(final double n) {
 			return new VectorHelper(x / n, y / n, z / n);
 		}
 
@@ -762,7 +762,7 @@ public final class BlockUtil {
 			return Math.sqrt(x * x + y * y + z * z);
 		}
 
-		public double distance(VectorHelper other) {
+		public double distance(final VectorHelper other) {
 			return Math.sqrt(Math.pow(other.x - x, 2) +
 					Math.pow(other.y - y, 2) +
 					Math.pow(other.z - z, 2));
@@ -773,7 +773,7 @@ public final class BlockUtil {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(final Object obj) {
 			if (!(obj instanceof VectorHelper))
 				return false;
 

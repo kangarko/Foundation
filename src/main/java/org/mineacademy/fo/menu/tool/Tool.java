@@ -43,8 +43,18 @@ public abstract class Tool {
 	 * @param item the itemstack
 	 * @return true if this tool is the given itemstack
 	 */
-	public boolean isTool(ItemStack item) {
+	public boolean isTool(final ItemStack item) {
 		return ItemUtil.isSimilar(getItem(), item);
+	}
+
+	/**
+	 * Return true if the given player holds this tool in his main hand
+	 *
+	 * @param player
+	 * @return
+	 */
+	public boolean hasToolInHand(final Player player) {
+		return isTool(player.getItemInHand());
 	}
 
 	/**
@@ -69,7 +79,7 @@ public abstract class Tool {
 	 *
 	 * @param player the player
 	 */
-	protected void onHotbarFocused(Player player) {
+	protected void onHotbarFocused(final Player player) {
 	}
 
 	/**
@@ -77,7 +87,7 @@ public abstract class Tool {
 	 *
 	 * @param player the player
 	 */
-	protected void onHotbarDefocused(Player player) {
+	protected void onHotbarDefocused(final Player player) {
 	}
 
 	/**
@@ -108,7 +118,7 @@ public abstract class Tool {
 	 *
 	 * @param player
 	 */
-	public final void give(Player player, int slot) {
+	public final void give(final Player player, final int slot) {
 		player.getInventory().setItem(slot, getItem());
 	}
 
@@ -117,7 +127,7 @@ public abstract class Tool {
 	 *
 	 * @param player
 	 */
-	public final void give(Player player) {
+	public final void give(final Player player) {
 		player.getInventory().addItem(getItem());
 	}
 
@@ -128,7 +138,7 @@ public abstract class Tool {
 	 * @return
 	 */
 	@Override
-	public final boolean equals(Object obj) {
+	public final boolean equals(final Object obj) {
 		return obj instanceof Tool && ((Tool) obj).getItem().equals(getItem());
 	}
 }

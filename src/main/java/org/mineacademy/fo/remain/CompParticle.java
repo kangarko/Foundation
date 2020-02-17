@@ -89,7 +89,7 @@ public enum CompParticle {
 	 * @deprecated use {@link #spawnWithData(Location, CompMaterial)} instead
 	 */
 	@Deprecated
-	public CompParticle setWoolData(int data) {
+	public CompParticle setWoolData(final int data) {
 		this.data = new MaterialData(CompMaterial.WHITE_WOOL.getMaterial(), (byte) data);
 
 		return this;
@@ -98,14 +98,14 @@ public enum CompParticle {
 	/**
 	 * Internal use
 	 *
-	 * @param mat
+	 * @param material
 	 * @param data
 	 * @return
 	 * @deprecated use {@link #spawnWithData(Location, CompMaterial)} instead
 	 */
 	@Deprecated
-	public CompParticle setData(Material mat, int data) {
-		this.data = new MaterialData(mat, (byte) data);
+	public CompParticle setData(final Material material, final int data) {
+		this.data = new MaterialData(material, (byte) data);
 
 		return this;
 	}
@@ -113,99 +113,99 @@ public enum CompParticle {
 	/**
 	 * Spawns the particle at the given location
 	 *
-	 * @param loc the location where to spawn
+	 * @param location the location where to spawn
 	 */
-	public final void spawn(Location loc) {
-		spawn(loc, null);
+	public final void spawn(final Location location) {
+		spawn(location, null);
 	}
 
 	/**
 	 * Spawns the particle at the given location with extra data
 	 *
-	 * @param loc
+	 * @param location
 	 * @param extra
 	 */
-	public final void spawn(Location loc, Double extra) {
+	public final void spawn(final Location location, final Double extra) {
 		if (Remain.hasParticleAPI()) {
-			final org.bukkit.Particle p = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
+			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
 
-			if (p != null) {
+			if (particle != null) {
 				if (MinecraftVersion.atLeast(V.v1_13)) {
-					if (p.getDataType() == org.bukkit.block.data.BlockData.class) {
+					if (particle.getDataType() == org.bukkit.block.data.BlockData.class) {
 						org.bukkit.block.data.BlockData opt = org.bukkit.Material.END_ROD.createBlockData(); // GRAVEL
 
 						if (data != null)
 							opt = Bukkit.getUnsafe().fromLegacy(data.getItemType(), data.getData());
 
-						loc.getWorld().spawnParticle(p, loc, 1, 0D, 0D, 0D, extra != null ? extra : 0D, opt);
+						location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D, opt);
 						return;
 					}
 				}
 
-				loc.getWorld().spawnParticle(p, loc, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
+				location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
 			}
 		} else {
-			final ParticleInternals p = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
+			final ParticleInternals particle = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
 
-			if (p != null)
-				p.send(loc, extra != null ? extra.floatValue() : 0F);
+			if (particle != null)
+				particle.send(location, extra != null ? extra.floatValue() : 0F);
 		}
 	}
 
 	/**
 	 * Spawns the particle at the given location with extra material data
 	 *
-	 * @param loc
+	 * @param location
 	 * @param data
 	 */
-	public final void spawnWithData(Location loc, CompMaterial data) {
+	public final void spawnWithData(final Location location, final CompMaterial data) {
 		if (Remain.hasParticleAPI()) {
-			final org.bukkit.Particle p = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
+			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
 
-			if (p != null)
+			if (particle != null)
 				if (hasNewMaterials)
-					loc.getWorld().spawnParticle(p, loc, 1, data.getMaterial().createBlockData());
+					location.getWorld().spawnParticle(particle, location, 1, data.getMaterial().createBlockData());
 				else
-					loc.getWorld().spawnParticle(p, loc, 1, data.getMaterial().getNewData((byte) data.getData()));
+					location.getWorld().spawnParticle(particle, location, 1, data.getMaterial().getNewData((byte) data.getData()));
 
 		} else {
-			final ParticleInternals p = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
+			final ParticleInternals particle = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
 
-			if (p != null)
-				p.sendColor(loc, DyeColor.getByWoolData((byte) data.getData()).getColor());
+			if (particle != null)
+				particle.sendColor(location, DyeColor.getByWoolData((byte) data.getData()).getColor());
 		}
 	}
 
 	/**
 	 * Spawns the particle at the given location only visible for the given player
 	 *
-	 * @param pl
-	 * @param loc
+	 * @param player
+	 * @param location
 	 */
-	public final void spawnFor(Player pl, Location loc) {
-		spawnFor(pl, loc, null);
+	public final void spawnFor(final Player player, final Location location) {
+		spawnFor(player, location, null);
 	}
 
 	/**
 	 * Spawns the particle at the given location only visible for the given player
 	 * adding additional extra data
 	 *
-	 * @param pl
-	 * @param loc
+	 * @param player
+	 * @param location
 	 * @param extra
 	 */
-	public final void spawnFor(Player pl, Location loc, Double extra) {
+	public final void spawnFor(final Player player, final Location location, final Double extra) {
 		if (Remain.hasParticleAPI()) {
-			final org.bukkit.Particle p = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
+			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
 
-			if (p != null)
-				pl.spawnParticle(p, loc, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
+			if (particle != null)
+				player.spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
 
 		} else {
 			final ParticleInternals p = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
 
 			if (p != null)
-				p.send(pl, loc, extra != null ? extra.floatValue() : 0F);
+				p.send(player, location, extra != null ? extra.floatValue() : 0F);
 		}
 	}
 }

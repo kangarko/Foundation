@@ -61,7 +61,7 @@ import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.update.SpigotUpdater;
-import org.mineacademy.fo.visualize.VisualizerListener;
+import org.mineacademy.fo.visualize_old.VisualizerListener;
 
 import lombok.Getter;
 

@@ -1,8 +1,11 @@
-package org.mineacademy.fo.visualize;
+package org.mineacademy.fo.visualize_old;
 
 /**
  * How should the block be visualized?
+ *
+ * @deprecated use classes in the new "visual" package
  */
+@Deprecated
 public enum VisualizeMode {
 
 	/**
