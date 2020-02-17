@@ -336,7 +336,7 @@ public final class Remain {
 	 * @param world
 	 * @return
 	 */
-	public static Object getHandleWorld(World world) {
+	public static Object getHandleWorld(final World world) {
 		Object nms = null;
 		final Method handle = ReflectionUtil.getMethod(world.getClass(), "getHandle");
 		try {
@@ -353,7 +353,7 @@ public final class Remain {
 	 * @param entity
 	 * @return
 	 */
-	public static Object getHandleEntity(Entity entity) {
+	public static Object getHandleEntity(final Entity entity) {
 		Object nms_entity = null;
 		final Method handle = ReflectionUtil.getMethod(entity.getClass(), "getHandle");
 		try {
@@ -385,7 +385,7 @@ public final class Remain {
 	 * @param player the player
 	 * @param packet the packet
 	 */
-	public static void sendPacket(Player player, Object packet) {
+	public static void sendPacket(final Player player, final Object packet) {
 		if (getHandle == null || fieldPlayerConnection == null || sendPacket == null) {
 			System.out.println("Cannot send packet " + packet.getClass().getSimpleName() + " on your server sofware (known to be broken on Cauldron).");
 			return;
@@ -412,7 +412,7 @@ public final class Remain {
 	 * @param entity the entity
 	 * @return the health
 	 */
-	public static int getHealth(LivingEntity entity) {
+	public static int getHealth(final LivingEntity entity) {
 		return isGetHealthDouble ? (int) entity.getHealth() : getHealhLegacy(entity);
 	}
 
@@ -431,7 +431,7 @@ public final class Remain {
 	 * @param block
 	 * @return
 	 */
-	public static FallingBlock spawnFallingBlock(Block block) {
+	public static FallingBlock spawnFallingBlock(final Block block) {
 		return spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5) /* fix alignment */, block.getType(), block.getData());
 	}
 
@@ -442,8 +442,19 @@ public final class Remain {
 	 * @param block
 	 * @return
 	 */
-	public static FallingBlock spawnFallingBlock(Location loc, Block block) {
-		return spawnFallingBlock(loc, block.getType(), block.getData());
+	public static FallingBlock spawnFallingBlock(final Location loc, final Block block) {
+		if (MinecraftVersion.atLeast(V.v1_13))
+			return loc.getWorld().spawnFallingBlock(loc, block.getBlockData());
+
+		else {
+			try {
+				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, block.getType(), block.getData());
+			} catch (final ReflectiveOperationException ex) {
+				ex.printStackTrace();
+
+				return null;
+			}
+		}
 	}
 
 	/**
@@ -453,7 +464,7 @@ public final class Remain {
 	 * @param material
 	 * @return
 	 */
-	public static FallingBlock spawnFallingBlock(Location loc, Material material) {
+	public static FallingBlock spawnFallingBlock(final Location loc, final Material material) {
 		return spawnFallingBlock(loc, material, (byte) 0);
 	}
 
@@ -465,9 +476,9 @@ public final class Remain {
 	 * @param data
 	 * @return
 	 */
-	public static FallingBlock spawnFallingBlock(Location loc, Material material, byte data) {
+	public static FallingBlock spawnFallingBlock(final Location loc, final Material material, final byte data) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return loc.getWorld().spawnFallingBlock(loc, Bukkit.getUnsafe().fromLegacy(material, data));
+			return loc.getWorld().spawnFallingBlock(loc, material, data);
 		else {
 			try {
 				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, material.getId(), data);
@@ -490,7 +501,7 @@ public final class Remain {
 	 * @deprecated use {@link EntityUtil#dropItem(Location, ItemStack, Consumer)}
 	 */
 	@Deprecated
-	public static Item spawnItem(Location location, ItemStack item, Consumer<Item> modifier) {
+	public static Item spawnItem(final Location location, final ItemStack item, final Consumer<Item> modifier) {
 		try {
 			final Class<?> nmsWorldClass = getNMSClass("World");
 			final Class<?> nmsStackClass = getNMSClass("ItemStack");
@@ -532,7 +543,7 @@ public final class Remain {
 	 * @param block
 	 * @param data
 	 */
-	public static void setData(Block block, int data) {
+	public static void setData(final Block block, final int data) {
 		try {
 			Block.class.getMethod("setData", byte.class).invoke(block, (byte) data);
 		} catch (final NoSuchMethodException ex) {
@@ -550,7 +561,7 @@ public final class Remain {
 	 * @param material
 	 * @param data
 	 */
-	public static void setTypeAndData(Block block, CompMaterial material, byte data) {
+	public static void setTypeAndData(final Block block, final CompMaterial material, final byte data) {
 		setTypeAndData(block, material.getMaterial(), data);
 	}
 
@@ -561,7 +572,7 @@ public final class Remain {
 	 * @param material
 	 * @param data
 	 */
-	public static void setTypeAndData(Block block, Material material, byte data) {
+	public static void setTypeAndData(final Block block, final Material material, final byte data) {
 		setTypeAndData(block, material, data, true);
 	}
 
@@ -572,7 +583,7 @@ public final class Remain {
 	 * @param material
 	 * @param data
 	 */
-	public static void setTypeAndData(Block block, Material material, byte data, boolean physics) {
+	public static void setTypeAndData(final Block block, final Material material, final byte data, final boolean physics) {
 		if (MinecraftVersion.atLeast(V.v1_13)) {
 			block.setType(material);
 			block.setBlockData(Bukkit.getUnsafe().fromLegacy(material, data), physics);
@@ -593,7 +604,7 @@ public final class Remain {
 	 * @return
 	 * @throws InteractiveTextFoundException
 	 */
-	public static String toLegacyText(String json) throws InteractiveTextFoundException {
+	public static String toLegacyText(final String json) throws InteractiveTextFoundException {
 		return toLegacyText(json, true);
 	}
 
@@ -610,7 +621,7 @@ public final class Remain {
 	 * @param denyEvents if an exception should be thrown if hover/click event is
 	 *                   found.
 	 */
-	public static String toLegacyText(String json, boolean denyEvents) throws InteractiveTextFoundException {
+	public static String toLegacyText(final String json, final boolean denyEvents) throws InteractiveTextFoundException {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 		String text = "";
 
@@ -641,7 +652,7 @@ public final class Remain {
 	 * Converts chat message with color codes to Json chat components e.g. &6Hello
 	 * world converts to {text:"Hello world",color="gold"}
 	 */
-	public static String toJson(String message) {
+	public static String toJson(final String message) {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		return toJson(TextComponent.fromLegacyText(message));
@@ -653,7 +664,7 @@ public final class Remain {
 	 * @param comps
 	 * @return
 	 */
-	public static String toJson(BaseComponent... comps) {
+	public static String toJson(final BaseComponent... comps) {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		String json;
@@ -675,7 +686,7 @@ public final class Remain {
 	 * @param item the item to convert
 	 * @return the Json string representation of the item
 	 */
-	public static String toJson(ItemStack item) {
+	public static String toJson(final ItemStack item) {
 		// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
 		final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
 		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
@@ -699,7 +710,7 @@ public final class Remain {
 	 * @param json
 	 * @return
 	 */
-	public static BaseComponent[] toComponent(String json) {
+	public static BaseComponent[] toComponent(final String json) {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		return ComponentSerializer.parse(json);
@@ -711,7 +722,7 @@ public final class Remain {
 	 * @param sender
 	 * @param json
 	 */
-	public static void sendJson(CommandSender sender, String json) {
+	public static void sendJson(final CommandSender sender, final String json) {
 		try {
 			sendComponent(sender, ComponentSerializer.parse(json));
 
@@ -726,7 +737,7 @@ public final class Remain {
 	 * @param sender
 	 * @param comps
 	 */
-	public static void sendComponent(CommandSender sender, Object comps) {
+	public static void sendComponent(final CommandSender sender, final Object comps) {
 		BungeeChatProvider.sendComponent(sender, comps);
 	}
 
@@ -737,7 +748,7 @@ public final class Remain {
 	 * @param title
 	 * @param subtitle
 	 */
-	public static void sendTitle(final Player player, String title, String subtitle) {
+	public static void sendTitle(final Player player, final String title, final String subtitle) {
 		sendTitle(player, 20, 3 * 20, 20, title, subtitle);
 	}
 
@@ -751,7 +762,7 @@ public final class Remain {
 	 * @param title    the title, will be colorized
 	 * @param subtitle the subtitle, will be colorized
 	 */
-	public static void sendTitle(final Player player, int fadeIn, int stay, int fadeOut, String title, String subtitle) {
+	public static void sendTitle(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
 		if (MinecraftVersion.newerThan(V.v1_7)) {
 			if (hasExtendedPlayerTitleAPI)
 				player.sendTitle(Common.colorize(title), Common.colorize(subtitle), fadeIn, stay, fadeOut);
@@ -769,7 +780,7 @@ public final class Remain {
 	 *
 	 * @param player the player
 	 */
-	public static void resetTitle(Player player) {
+	public static void resetTitle(final Player player) {
 		if (hasExtendedPlayerTitleAPI)
 			player.resetTitle();
 		else
@@ -784,7 +795,7 @@ public final class Remain {
 	 * @param header the header
 	 * @param footer the footer
 	 */
-	public static void sendTablist(Player player, String header, String footer) {
+	public static void sendTablist(final Player player, final String header, final String footer) {
 		Valid.checkBoolean(MinecraftVersion.newerThan(V.v1_7), "Sending tab list requires Minecraft 1.8x or newer!");
 
 		if (MinecraftVersion.atLeast(V.v1_13))
@@ -800,7 +811,7 @@ public final class Remain {
 	 * @param player the player
 	 * @param text   the text
 	 */
-	public static void sendActionBar(Player player, String text) {
+	public static void sendActionBar(final Player player, final String text) {
 		if (!MinecraftVersion.newerThan(V.v1_7)) {
 			Common.tell(player, text);
 			return;
@@ -821,7 +832,7 @@ public final class Remain {
 	 * @param message
 	 * @param percent
 	 */
-	public static void sendBossbarPercent(Player player, String message, float percent) {
+	public static void sendBossbarPercent(final Player player, final String message, final float percent) {
 		sendBossbarPercent(player, message, percent, null, null);
 	}
 
@@ -834,7 +845,7 @@ public final class Remain {
 	 * @param color
 	 * @param style
 	 */
-	public static void sendBossbarPercent(Player player, String message, float percent, CompBarColor color, CompBarStyle style) {
+	public static void sendBossbarPercent(final Player player, final String message, final float percent, final CompBarColor color, final CompBarStyle style) {
 		BossBarInternals.setMessage(player, message, percent, color, style);
 	}
 
@@ -845,7 +856,7 @@ public final class Remain {
 	 * @param message
 	 * @param seconds
 	 */
-	public static void sendBossbarTimed(Player player, String message, int seconds) {
+	public static void sendBossbarTimed(final Player player, final String message, final int seconds) {
 		sendBossbarTimed(player, message, seconds, null, null);
 	}
 
@@ -858,7 +869,7 @@ public final class Remain {
 	 * @param color
 	 * @param style
 	 */
-	public static void sendBossbarTimed(Player player, String message, int seconds, CompBarColor color, CompBarStyle style) {
+	public static void sendBossbarTimed(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {
 		BossBarInternals.setMessage(player, message, seconds, color, style);
 	}
 
@@ -869,7 +880,7 @@ public final class Remain {
 	 *
 	 * @param player
 	 */
-	public static void removeBar(Player player) {
+	public static void removeBar(final Player player) {
 		BossBarInternals.removeBar(player);
 	}
 
@@ -879,7 +890,7 @@ public final class Remain {
 	 * @param label
 	 * @return
 	 */
-	public static PluginCommand newCommand(String label) {
+	public static PluginCommand newCommand(final String label) {
 		try {
 			final Constructor<PluginCommand> con = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			con.setAccessible(true);
@@ -897,7 +908,7 @@ public final class Remain {
 	 * @param command
 	 * @param name
 	 */
-	public static void setCommandName(PluginCommand command, String name) {
+	public static void setCommandName(final PluginCommand command, final String name) {
 		try {
 			command.setName(name);
 		} catch (final NoSuchMethodError ex) {
@@ -909,7 +920,7 @@ public final class Remain {
 	 *
 	 * @param command
 	 */
-	public static void registerCommand(Command command) {
+	public static void registerCommand(final Command command) {
 		final CommandMap commandMap = getCommandMap();
 		commandMap.register(command.getLabel(), command);
 
@@ -921,7 +932,7 @@ public final class Remain {
 	 *
 	 * @param label the label
 	 */
-	public static void unregisterCommand(String label) {
+	public static void unregisterCommand(final String label) {
 		unregisterCommand(label, true);
 	}
 
@@ -932,7 +943,7 @@ public final class Remain {
 	 * @param label          the label
 	 * @param removeAliases, also remove aliases?
 	 */
-	public static void unregisterCommand(String label, boolean removeAliases) {
+	public static void unregisterCommand(final String label, final boolean removeAliases) {
 		try {
 			// Unregister the commandMap from the command itself.
 			final PluginCommand command = Bukkit.getPluginCommand(label);
@@ -977,7 +988,7 @@ public final class Remain {
 	 *
 	 * @param enchantment
 	 */
-	public static void registerEnchantment(Enchantment enchantment) {
+	public static void registerEnchantment(final Enchantment enchantment) {
 		unregisterEnchantment(enchantment);
 
 		ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
@@ -990,7 +1001,7 @@ public final class Remain {
 	 *
 	 * @param enchantment
 	 */
-	public static void unregisterEnchantment(Enchantment enchantment) {
+	public static void unregisterEnchantment(final Enchantment enchantment) {
 		{ // Unregister by key
 			final Map<NamespacedKey, Enchantment> byKey = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byKey");
 
@@ -1010,7 +1021,7 @@ public final class Remain {
 	 * @param inv the inventory
 	 * @return the location
 	 */
-	public static Location getLocation(Inventory inv) {
+	public static Location getLocation(final Inventory inv) {
 		if (hasInventoryLocation)
 			try {
 				return inv.getLocation();
@@ -1032,7 +1043,7 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static String getLocale(Player player) {
+	public static String getLocale(final Player player) {
 		try {
 			return player.getLocale();
 
@@ -1057,7 +1068,7 @@ public final class Remain {
 	 * @param en
 	 * @return
 	 */
-	public static String getNMSStatisticName(Statistic stat, @Nullable Material mat, @Nullable EntityType en) {
+	public static String getNMSStatisticName(final Statistic stat, @Nullable final Material mat, @Nullable final EntityType en) {
 		final Class<?> craftStatistic = getOBCClass("CraftStatistic");
 		Object nmsStatistic = null;
 
@@ -1083,7 +1094,7 @@ public final class Remain {
 	 *
 	 * @param player
 	 */
-	public static void respawn(Player player) {
+	public static void respawn(final Player player) {
 		respawn(player, 2);
 	}
 
@@ -1093,7 +1104,7 @@ public final class Remain {
 	 * @param player
 	 * @param delayTicks how long to way before respawning, minimum 1 tick
 	 */
-	public static void respawn(Player player, int delayTicks) {
+	public static void respawn(final Player player, final int delayTicks) {
 		Common.runLater(delayTicks, () -> {
 			try {
 				player.spigot().respawn();
@@ -1128,7 +1139,7 @@ public final class Remain {
 	 * @param title  the new title
 	 */
 	@Deprecated
-	public static void updateInventoryTitle(Player player, String title) {
+	public static void updateInventoryTitle(final Player player, String title) {
 		try {
 			if (MinecraftVersion.olderThan(V.v1_8))
 				return;
@@ -1182,27 +1193,46 @@ public final class Remain {
 	 *
 	 * @param delayTicks the pause between reverting back
 	 * @param player     the player
-	 * @param loc        the location
+	 * @param location        the location
 	 * @param material   the material
 	 */
-	public static void sendBlockChange(final int delayTicks, final Player player, final Location loc, final CompMaterial material) {
-		// Force to run sync
-		Common.runLater(() -> {
-			try {
-				player.sendBlockChange(loc, material.getMaterial().createBlockData());
-			} catch (final NoSuchMethodError ex) {
-				player.sendBlockChange(loc, material.getMaterial(), (byte) material.getData());
-			}
-		});
+	public static void sendBlockChange(final int delayTicks, final Player player, final Location location, final CompMaterial material) {
+		if (delayTicks > 0)
+			Common.runLater(delayTicks, () -> sendBlockChange0(player, location, material));
+		else
+			sendBlockChange0(player, location, material);
+	}
 
-		// Rest
-		Common.runLater(delayTicks, () -> {
-			try {
-				player.sendBlockChange(loc, loc.getBlock().getBlockData());
-			} catch (final NoSuchMethodError ex) {
-				player.sendBlockChange(loc, material.getMaterial(), (byte) material.getData());
-			}
-		});
+	private static void sendBlockChange0(final Player player, final Location location, final CompMaterial material) {
+		try {
+			player.sendBlockChange(location, material.getMaterial().createBlockData());
+		} catch (final NoSuchMethodError ex) {
+			player.sendBlockChange(location, material.getMaterial(), (byte) material.getData());
+		}
+	}
+
+	/**
+	 * Sends to the player the block update packet of the given block, typically
+	 * to reset it back to the real state
+	 *
+	 * @param delayTicks
+	 * @param player
+	 * @param loc
+	 * @param block
+	 */
+	public static void sendBlockChange(final int delayTicks, final Player player, final Block block) {
+		if (delayTicks > 0)
+			Common.runLater(delayTicks, () -> sendBlockChange0(player, block));
+		else
+			sendBlockChange0(player, block);
+	}
+
+	private static void sendBlockChange0(final Player player, final Block block) {
+		try {
+			player.sendBlockChange(block.getLocation(), block.getBlockData());
+		} catch (final NoSuchMethodError ex) {
+			player.sendBlockChange(block.getLocation(), block.getType(), block.getData());
+		}
 	}
 
 	/**
@@ -1212,7 +1242,7 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static int getPlaytimeMinutes(Player player) {
+	public static int getPlaytimeMinutes(final Player player) {
 		return player.getStatistic(getPlayTimeStatisticName()) / (isPlaytimeStatisticTicks() ? 20 : 1);
 	}
 
@@ -1243,7 +1273,7 @@ public final class Remain {
 	 * @param e, the event
 	 * @return if the event was fired for main hand only
 	 */
-	public static boolean isInteractEventPrimaryHand(PlayerInteractEvent e) {
+	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent e) {
 		try {
 			return e.getHand() != null && e.getHand() == EquipmentSlot.HAND;
 
@@ -1258,7 +1288,7 @@ public final class Remain {
 	 * @param e
 	 * @return
 	 */
-	public static boolean isInteractEventPrimaryHand(PlayerInteractEntityEvent e) {
+	public static boolean isInteractEventPrimaryHand(final PlayerInteractEntityEvent e) {
 		try {
 			return e.getHand() != null && e.getHand() == EquipmentSlot.HAND;
 		} catch (final NoSuchMethodError err) {
@@ -1273,7 +1303,7 @@ public final class Remain {
 	 * @param entry
 	 * @return
 	 */
-	public static Score getScore(Objective obj, String entry) {
+	public static Score getScore(final Objective obj, String entry) {
 		entry = Common.colorize(entry);
 
 		try {
@@ -1292,7 +1322,7 @@ public final class Remain {
 	 * @param id
 	 * @return
 	 */
-	public static OfflinePlayer getOfflinePlayerByUUID(UUID id) {
+	public static OfflinePlayer getOfflinePlayerByUUID(final UUID id) {
 		try {
 			return Bukkit.getOfflinePlayer(id);
 
@@ -1315,7 +1345,7 @@ public final class Remain {
 	 * @param id
 	 * @return
 	 */
-	public static Player getPlayerByUUID(UUID id) {
+	public static Player getPlayerByUUID(final UUID id) {
 		try {
 			return Bukkit.getPlayer(id);
 
@@ -1334,7 +1364,7 @@ public final class Remain {
 	 * @param e
 	 * @return
 	 */
-	public static double getFinalDamage(EntityDamageEvent e) {
+	public static double getFinalDamage(final EntityDamageEvent e) {
 		try {
 			return e.getFinalDamage();
 
@@ -1351,7 +1381,7 @@ public final class Remain {
 	 * @return the actual inventory clicked, either bottom or top, or null if
 	 *         clicked outside
 	 */
-	public static Inventory getClickedInventory(InventoryClickEvent e) {
+	public static Inventory getClickedInventory(final InventoryClickEvent e) {
 		final int slot = e.getRawSlot();
 		final InventoryView view = e.getView();
 
@@ -1364,7 +1394,7 @@ public final class Remain {
 	 * @param en
 	 * @param name
 	 */
-	public static void setCustomName(Entity en, String name) {
+	public static void setCustomName(final Entity en, final String name) {
 		try {
 			en.setCustomNameVisible(true);
 			en.setCustomName(Common.colorize(name));
@@ -1379,7 +1409,7 @@ public final class Remain {
 	 * @param fallback
 	 * @return
 	 */
-	public static CompMaterial getMaterial(String material, CompMaterial fallback) {
+	public static CompMaterial getMaterial(final String material, final CompMaterial fallback) {
 		Material mat = null;
 
 		try {
@@ -1397,7 +1427,7 @@ public final class Remain {
 	 * @param oldMaterial
 	 * @return
 	 */
-	public static Material getMaterial(String newMaterial, String oldMaterial) {
+	public static Material getMaterial(final String newMaterial, final String oldMaterial) {
 		try {
 			return Material.getMaterial(newMaterial);
 
@@ -1413,7 +1443,7 @@ public final class Remain {
 	 * @param radius
 	 * @return
 	 */
-	public static Block getTargetBlock(LivingEntity en, int radius) {
+	public static Block getTargetBlock(final LivingEntity en, final int radius) {
 		try {
 			return en.getTargetBlock((Set<Material>) null, radius);
 
@@ -1437,7 +1467,7 @@ public final class Remain {
 	 * @param receiver
 	 * @param message
 	 */
-	public static void sendToast(Player receiver, String message) {
+	public static void sendToast(final Player receiver, final String message) {
 		sendToast(receiver, message, CompMaterial.BOOK);
 	}
 
@@ -1449,7 +1479,7 @@ public final class Remain {
 	 * @param message
 	 * @param icon
 	 */
-	public static void sendToast(Player receiver, String message, CompMaterial icon) {
+	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
 		if (hasAdvancements && message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
@@ -1472,7 +1502,7 @@ public final class Remain {
 	 * @param material
 	 * @param cooldownTicks
 	 */
-	public static void setCooldown(Player player, Material material, int cooldownTicks) {
+	public static void setCooldown(final Player player, final Material material, final int cooldownTicks) {
 		try {
 			player.setCooldown(material, cooldownTicks);
 
@@ -1494,7 +1524,7 @@ public final class Remain {
 	 * @param material
 	 * @return
 	 */
-	public static boolean hasCooldown(Player player, Material material) {
+	public static boolean hasCooldown(final Player player, final Material material) {
 		try {
 			return player.hasCooldown(material);
 
@@ -1515,7 +1545,7 @@ public final class Remain {
 	 * @param material
 	 * @return
 	 */
-	public static int getCooldown(Player player, Material material) {
+	public static int getCooldown(final Player player, final Material material) {
 		try {
 			return player.getCooldown(material);
 
@@ -1527,7 +1557,7 @@ public final class Remain {
 	}
 
 	// Internal method to get a players cooldown map
-	private static StrictMap<Material, Integer> getCooldown(Player player) {
+	private static StrictMap<Material, Integer> getCooldown(final Player player) {
 		return cooldowns.getOrDefault(player.getUniqueId(), new StrictMap<>());
 	}
 
@@ -1537,7 +1567,7 @@ public final class Remain {
 	 * @param uuid
 	 * @return
 	 */
-	public static Entity getEntity(UUID uuid) {
+	public static Entity getEntity(final UUID uuid) {
 		catchAsync("iterating through entities [CMN]");
 
 		for (final World world : Bukkit.getWorlds())
@@ -1555,7 +1585,7 @@ public final class Remain {
 	 * @param radius
 	 * @return
 	 */
-	public static Collection<Entity> getNearbyEntities(Location location, double radius) {
+	public static Collection<Entity> getNearbyEntities(final Location location, final double radius) {
 		try {
 			return location.getWorld().getNearbyEntities(location, radius, radius, radius);
 
@@ -1575,7 +1605,7 @@ public final class Remain {
 	 *
 	 * @param player
 	 */
-	public static void takeHandItem(Player player) {
+	public static void takeHandItem(final Player player) {
 		takeItemAndSetAsHand(player, player.getItemInHand());
 	}
 
@@ -1585,7 +1615,7 @@ public final class Remain {
 	 * @param player
 	 * @param item
 	 */
-	public static void takeItemAndSetAsHand(Player player, ItemStack item) {
+	public static void takeItemAndSetAsHand(final Player player, final ItemStack item) {
 		if (item.getAmount() > 1) {
 			item.setAmount(item.getAmount() - 1);
 			player.getInventory().setItemInHand(item);
@@ -1602,7 +1632,7 @@ public final class Remain {
 	 * @param player
 	 * @param item
 	 */
-	public static void takeItemOnePiece(Player player, ItemStack item) {
+	public static void takeItemOnePiece(final Player player, final ItemStack item) {
 		Common.runLater(() -> {
 			if (item.getAmount() > 1) {
 				item.setAmount(item.getAmount() - 1);
@@ -1640,7 +1670,7 @@ public final class Remain {
 	 * @param type
 	 * @param level
 	 */
-	public static void setPotion(ItemStack item, PotionEffectType type, int level) {
+	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
 		final PotionType wrapped = PotionType.getByEffect(type);
 		final PotionMeta meta = (PotionMeta) item.getItemMeta();
 
@@ -1669,7 +1699,7 @@ public final class Remain {
 	 * @param item the {@link ItemStack} to get I18N name from
 	 * @return the I18N localized name or Material name
 	 */
-	public static String getI18NDisplayName(ItemStack item) {
+	public static String getI18NDisplayName(final ItemStack item) {
 		try {
 			return (String) item.getClass().getDeclaredMethod("getI18NDisplayName").invoke(item);
 
@@ -1684,7 +1714,7 @@ public final class Remain {
 	 * @param is the input stream
 	 * @return the configuration
 	 */
-	public static YamlConfiguration loadConfiguration(InputStream is) {
+	public static YamlConfiguration loadConfiguration(final InputStream is) {
 		YamlConfiguration conf = null;
 
 		try {
@@ -1705,7 +1735,7 @@ public final class Remain {
 	 * @return the configuration
 	 * @throws Throwable when any error occurs
 	 */
-	public static YamlConfiguration loadConfigurationStrict(InputStream is) throws Throwable {
+	public static YamlConfiguration loadConfigurationStrict(final InputStream is) throws Throwable {
 		final YamlConfiguration conf = new YamlConfiguration();
 
 		try {
@@ -1719,7 +1749,7 @@ public final class Remain {
 	}
 
 	// Load the YAML configuration from stream
-	private static void loadFromString(InputStream stream, YamlConfiguration conf) throws IOException, InvalidConfigurationException {
+	private static void loadFromString(final InputStream stream, final YamlConfiguration conf) throws IOException, InvalidConfigurationException {
 		Valid.checkNotNull(stream, "Stream cannot be null");
 
 		final StringBuilder builder = new StringBuilder();
@@ -1782,7 +1812,7 @@ public final class Remain {
 	 *
 	 * @param message
 	 */
-	public static void catchAsync(String message) {
+	public static void catchAsync(final String message) {
 		try {
 			Class.forName("org.spigotmc.AsyncCatcher").getMethod("catchOp", String.class).invoke(null, message);
 		} catch (final Throwable t) {
@@ -1795,7 +1825,7 @@ public final class Remain {
 	 *
 	 * @param throwable
 	 */
-	public static void sneaky(Throwable throwable) {
+	public static void sneaky(final Throwable throwable) {
 		try {
 			SneakyThrow.sneaky(throwable);
 
@@ -1895,7 +1925,7 @@ public final class Remain {
 	}
 
 	// return the legacy get health int method
-	private static int getHealhLegacy(LivingEntity pl) {
+	private static int getHealhLegacy(final LivingEntity pl) {
 		try {
 			return (int) getHealthMethod.invoke(pl);
 		} catch (final ReflectiveOperationException ex) {
@@ -1924,11 +1954,11 @@ public final class Remain {
  */
 class SneakyThrow {
 
-	public static void sneaky(Throwable t) {
+	public static void sneaky(final Throwable t) {
 		throw SneakyThrow.<RuntimeException>superSneaky(t);
 	}
 
-	private static <T extends Throwable> T superSneaky(Throwable t) throws T {
+	private static <T extends Throwable> T superSneaky(final Throwable t) throws T {
 		throw (T) t;
 	}
 }
@@ -1938,7 +1968,7 @@ class SneakyThrow {
  */
 class BungeeChatProvider {
 
-	static void sendComponent(CommandSender sender, Object comps) {
+	static void sendComponent(final CommandSender sender, final Object comps) {
 
 		if (comps instanceof TextComponent)
 			sendComponent0(sender, (TextComponent) comps);
@@ -1947,7 +1977,7 @@ class BungeeChatProvider {
 			sendComponent0(sender, (BaseComponent[]) comps);
 	}
 
-	private static void sendComponent0(CommandSender sender, BaseComponent... comps) {
+	private static void sendComponent0(final CommandSender sender, final BaseComponent... comps) {
 		String plainMessage = "";
 
 		for (final BaseComponent comp : comps)
@@ -1973,7 +2003,7 @@ class BungeeChatProvider {
 		}
 	}
 
-	private static void tell0(CommandSender sender, String msg) {
+	private static void tell0(final CommandSender sender, final String msg) {
 		Valid.checkNotNull(sender, "Sender cannot be null");
 
 		if (msg.isEmpty() || "none".equals(msg))

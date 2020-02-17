@@ -735,7 +735,7 @@ public enum CompMaterial {
 	SHEARS("SHEARS"),
 	SHEEP_SPAWN_EGG("MONSTER_EGG", 91),
 	SHIELD("SHIELD"),
-	SHULKER_BOX("PURPLE_SHULKER_BOX"),
+	SHULKER_BOX("PURPLE_SHULKER_BOX", "BARRIER", 0),
 	SHULKER_SHELL("SHULKER_SHELL"),
 	SHULKER_SPAWN_EGG("MONSTER_EGG", 69),
 	SIGN("SIGN"),
@@ -998,7 +998,7 @@ public enum CompMaterial {
 	 *
 	 * @param legacyName
 	 */
-	private CompMaterial(String legacyName) {
+	private CompMaterial(final String legacyName) {
 		this(legacyName, null, 0);
 	}
 
@@ -1008,7 +1008,7 @@ public enum CompMaterial {
 	 * @param legacyName
 	 * @param data
 	 */
-	private CompMaterial(String legacyName, int data) {
+	private CompMaterial(final String legacyName, final int data) {
 		this(legacyName, null, data);
 	}
 
@@ -1019,7 +1019,7 @@ public enum CompMaterial {
 	 * @param alternativeName alternative name or null if none
 	 * @param data
 	 */
-	private CompMaterial(String legacyName, String alternativeName, int data) {
+	private CompMaterial(final String legacyName, final String alternativeName, final int data) {
 		this.legacyName = legacyName;
 		this.alternativeName = alternativeName;
 		this.data = data;
@@ -1045,7 +1045,7 @@ public enum CompMaterial {
 	 *
 	 * @param player
 	 */
-	public final void give(Player player) {
+	public final void give(final Player player) {
 		give(player, 1);
 	}
 
@@ -1055,7 +1055,7 @@ public enum CompMaterial {
 	 * @param player
 	 * @param amount
 	 */
-	public final void give(Player player, int amount) {
+	public final void give(final Player player, final int amount) {
 		player.getInventory().addItem(toItem(amount));
 	}
 
@@ -1077,7 +1077,7 @@ public enum CompMaterial {
 	 * @param amount the amount
 	 * @return the itemstack
 	 */
-	public final ItemStack toItem(int amount) {
+	public final ItemStack toItem(final int amount) {
 		final Material mat = toMaterial();
 
 		return MinecraftVersion.atLeast(V.v1_13) ? new ItemStack(mat, amount) : new ItemStack(mat, amount, (byte) data);
@@ -1104,7 +1104,7 @@ public enum CompMaterial {
 	 * @param comp
 	 * @return
 	 */
-	public final boolean is(Material mat) {
+	public final boolean is(final Material mat) {
 		return material == mat;
 	}
 
@@ -1115,7 +1115,7 @@ public enum CompMaterial {
 	 * @param comp the itemstack
 	 * @return -see above-
 	 */
-	public final boolean is(ItemStack comp) {
+	public final boolean is(final ItemStack comp) {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return comp.getType() == toMaterial();
 
@@ -1146,7 +1146,7 @@ public enum CompMaterial {
 	 * @param type
 	 * @return
 	 */
-	public static final boolean isDamageable(CompMaterial type) {
+	public static final boolean isDamageable(final CompMaterial type) {
 		switch (type.toString()) {
 			case "HELMET":
 				return true;
@@ -1187,7 +1187,7 @@ public enum CompMaterial {
 	 * @param block
 	 * @return
 	 */
-	public static final boolean isAir(Block block) {
+	public static final boolean isAir(final Block block) {
 		return block == null || isAir(block.getType());
 	}
 
@@ -1197,7 +1197,7 @@ public enum CompMaterial {
 	 * @param material
 	 * @return
 	 */
-	public static final boolean isAir(Material material) {
+	public static final boolean isAir(final Material material) {
 		return material == null || nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR");
 	}
 
@@ -1207,7 +1207,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isHorseArmor(Material mat) {
+	public static final boolean isHorseArmor(final Material mat) {
 		return nameEquals(mat, "BARDING", "HORSE_ARMOR");
 	}
 
@@ -1217,7 +1217,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isCarpet(Material mat) {
+	public static final boolean isCarpet(final Material mat) {
 		return nameContains(mat, "CARPET");
 	}
 
@@ -1227,7 +1227,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLeaves(Material mat) {
+	public static final boolean isLeaves(final Material mat) {
 		return mat.toString().endsWith("_LEAVES") || nameEquals(mat, "LEAVES", "LEAVES_2");
 	}
 
@@ -1238,7 +1238,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isHardClay(Material mat) {
+	public static final boolean isHardClay(final Material mat) {
 		return nameContains(mat, "STAINED_CLAY", "HARD_CLAY", "TERRACOTTA");
 	}
 
@@ -1248,7 +1248,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLeash(Material mat) {
+	public static final boolean isLeash(final Material mat) {
 		return nameEquals(mat, "LEASH", "LEAD");
 	}
 
@@ -1258,7 +1258,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isHeavyPressurePlate(Material mat) {
+	public static final boolean isHeavyPressurePlate(final Material mat) {
 		return nameContains(mat, "IRON_PLATE", "GOLD_PLATE", "WEIGHTED_PRESSURE_PLATE");
 	}
 
@@ -1268,7 +1268,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isWoodPressurePlate(Material mat) {
+	public static final boolean isWoodPressurePlate(final Material mat) {
 		return nameEquals(mat, "WOOD_PLATE", "ACACIA_PRESSURE_PLATE", "BIRCH_PRESSURE_PLATE", "DARK_OAK_PRESSURE_PLATE",
 				"JUNGLE_PRESSURE_PLATE", "OAK_PRESSURE_PLATE", "SPRUCE_PRESSURE_PLATE");
 	}
@@ -1279,7 +1279,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isFirework(Material mat) {
+	public static final boolean isFirework(final Material mat) {
 		return nameContains(mat, "FIREWORK");
 	}
 
@@ -1289,7 +1289,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLog(Material mat) {
+	public static final boolean isLog(final Material mat) {
 		return nameEquals(mat, "LOG", "LOG_2") || mat.toString().endsWith("_LOG");
 	}
 
@@ -1299,7 +1299,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isBoat(Material mat) {
+	public static final boolean isBoat(final Material mat) {
 		return nameContains(mat, "BOAT");
 	}
 
@@ -1309,7 +1309,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isWoodButton(Material mat) {
+	public static final boolean isWoodButton(final Material mat) {
 		final String n = mat.toString();
 
 		return n.endsWith("_BUTTON") && !n.equals("STONE_BUTTON");
@@ -1321,7 +1321,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isRedstoneLamp(Material mat) {
+	public static final boolean isRedstoneLamp(final Material mat) {
 		return nameContains(mat, "REDSTONE_LAMP");
 	}
 
@@ -1331,7 +1331,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isMonsterEgg(Material mat) {
+	public static final boolean isMonsterEgg(final Material mat) {
 		return nameContains(mat, "MONSTER_EGG", "_SPAWN_EGG");
 	}
 
@@ -1341,7 +1341,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSapling(Material mat) {
+	public static final boolean isSapling(final Material mat) {
 		return nameContains(mat, "SAPLING") && !mat.toString().startsWith("POTTED");
 	}
 
@@ -1351,7 +1351,7 @@ public enum CompMaterial {
 	 * @param mat the material
 	 * @return
 	 */
-	public static final boolean isWallSign(Material mat) {
+	public static final boolean isWallSign(final Material mat) {
 		return nameContains(mat, "WALL_SIGN");
 	}
 
@@ -1361,7 +1361,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLongGrass(Material mat) {
+	public static final boolean isLongGrass(final Material mat) {
 		return nameEquals(mat, "LONG_GRASS", "TALL_GRASS", "FERN", "DEAD_BUSH") && !mat.toString().startsWith("POTTED");
 	}
 
@@ -1371,7 +1371,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isDoublePlant(Material mat) {
+	public static final boolean isDoublePlant(final Material mat) {
 		return nameEquals(mat, "DOUBLE_PLANT", "SUNFLOWER", "LILAC", "TALL_GRASS", "LARGE_FERN", "ROSE_BUSH", "PEONY", "TALL_SEAGRASS");
 	}
 
@@ -1381,7 +1381,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSkull(CompMaterial mat) {
+	public static final boolean isSkull(final CompMaterial mat) {
 		return isSkull(mat.getMaterial());
 	}
 
@@ -1391,7 +1391,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSkull(Material mat) {
+	public static final boolean isSkull(final Material mat) {
 		final String name = mat.toString();
 
 		return (name.endsWith("_HEAD") || name.endsWith("_SKULL")) && !name.contains("WALL");
@@ -1403,14 +1403,14 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static boolean isTrapDoor(Material mat) {
+	public static boolean isTrapDoor(final Material mat) {
 		final String name = mat.toString();
 
 		return name.contains("TRAP_DOOR") || name.contains("TRAPDOOR");
 	}
 
 	// Utility method for evaluating matches.
-	private static final boolean nameContains(Material mat, String... names) {
+	private static final boolean nameContains(final Material mat, final String... names) {
 		final String matName = mat.toString();
 
 		for (final String name : names)
@@ -1421,7 +1421,7 @@ public enum CompMaterial {
 	}
 
 	// Utility method for evaluating matches.
-	private static final boolean nameEquals(Material mat, String... names) {
+	private static final boolean nameEquals(final Material mat, final String... names) {
 		final String matName = mat.toString();
 
 		for (final String name : names)
@@ -1438,7 +1438,7 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(byte color, int amount) {
+	public static ItemStack makeWool(final byte color, final int amount) {
 		return makeWool(CompColor.fromWoolData(color), amount);
 	}
 
@@ -1449,7 +1449,7 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(CompColor color, int amount) {
+	public static ItemStack makeWool(final CompColor color, final int amount) {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return new ItemStack(Material.valueOf(color.getDye() + "_WOOL"), amount);
 
@@ -1467,7 +1467,7 @@ public enum CompMaterial {
 	 * @param type
 	 * @return the corresponding egg, or Sheep Monster Egg if does not exist
 	 */
-	public static CompMaterial makeMonsterEgg(EntityType type) {
+	public static CompMaterial makeMonsterEgg(final EntityType type) {
 		if (!COMPATIBLE)
 			return null;
 
@@ -1492,7 +1492,7 @@ public enum CompMaterial {
 	 * @param monsterEgg the monster egg
 	 * @return the egg, or null if does not exist in the current MC version
 	 */
-	public static EntityType makeEntityType(CompMaterial monsterEgg) {
+	public static EntityType makeEntityType(final CompMaterial monsterEgg) {
 		Valid.checkBoolean(monsterEgg.toString().endsWith("_SPAWN_EGG"), "Material " + monsterEgg + " is not a valid monster egg! (Must end with _SPAWN_EGG)");
 
 		final String name = monsterEgg.toString().replace("_SPAWN_EGG", "");
@@ -1521,7 +1521,7 @@ public enum CompMaterial {
 	 * @param block
 	 * @return
 	 */
-	public static final CompMaterial fromBlock(Block block) {
+	public static final CompMaterial fromBlock(final Block block) {
 		try {
 			return CompMaterial.valueOf(block.getType().toString());
 
@@ -1539,7 +1539,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final CompMaterial fromMaterial(Material mat) {
+	public static final CompMaterial fromMaterial(final Material mat) {
 		try {
 			return CompMaterial.valueOf(mat.toString());
 
@@ -1558,7 +1558,7 @@ public enum CompMaterial {
 	 * @param key
 	 * @return
 	 */
-	public static CompMaterial fromStringStrict(String key) {
+	public static CompMaterial fromStringStrict(final String key) {
 		final CompMaterial material = fromString(key);
 
 		Valid.checkNotNull(material, "Invalid material '" + key + "'! For valid names, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html (Note that names change across MC versions!)");
@@ -1578,7 +1578,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	@Deprecated
-	public static CompMaterial fromStringCompat(String name) {
+	public static CompMaterial fromStringCompat(final String name) {
 		final CompMaterial lookup = CompMaterial.fromString(name);
 
 		if (lookup == null && SoftMaterials.MATERIALS.contains(name))
@@ -1622,7 +1622,7 @@ public enum CompMaterial {
 	 * @param data
 	 * @return
 	 */
-	public static CompMaterial fromLegacy(String name, int data) {
+	public static CompMaterial fromLegacy(String name, final int data) {
 		// try to resolve common pitfalls and emulate the material enum writing style
 		name = name.replace(" ", "_").toUpperCase();
 
@@ -1665,7 +1665,7 @@ public enum CompMaterial {
 	 * @param id
 	 * @return
 	 */
-	public static Material fromId(int id) {
+	public static Material fromId(final int id) {
 		for (final Material mat : Material.values())
 			if (MinecraftVersion.atLeast(V.v1_13)) {
 				if (mat.toString().startsWith("LEGACY_") && mat.getId() == id)

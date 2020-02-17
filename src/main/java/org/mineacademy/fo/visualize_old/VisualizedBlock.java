@@ -1,4 +1,4 @@
-package org.mineacademy.fo.visualize;
+package org.mineacademy.fo.visualize_old;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,6 +19,10 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
+/**
+ *  @deprecated use classes in the new "visual" package
+ */
+@Deprecated
 public abstract class VisualizedBlock {
 
 	private final static boolean CAN_VISUALIZE = MinecraftVersion.atLeast(V.v1_9);
@@ -47,12 +51,12 @@ public abstract class VisualizedBlock {
 	/** The block under the falling block to prevent it from falling */
 	private BlockState underground = null;
 
-	public VisualizedBlock(Block block, CompMaterial mask) {
+	public VisualizedBlock(final Block block, final CompMaterial mask) {
 		this.state = block.getState();
 		this.mask = mask;
 	}
 
-	public final void visualize(VisualizeMode mode) {
+	public final void visualize(final VisualizeMode mode) {
 		removeGlowIf();
 
 		switch (mode) {
@@ -123,7 +127,7 @@ public abstract class VisualizedBlock {
 		this.fallingBlock = falling;
 	}
 
-	private final void paintFallingBlock(FallingBlock falling) {
+	private final void paintFallingBlock(final FallingBlock falling) {
 		try {
 			Remain.setCustomName(falling, Common.colorize("&8[" + getBlockName(falling.getLocation().getBlock()) + "&r&8]"));
 		} catch (final Exception ex) {

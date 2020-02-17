@@ -2,6 +2,7 @@ package org.mineacademy.fo.region;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -48,7 +49,7 @@ public class Region implements ConfigSerializable {
 	 * @param primary
 	 * @param secondary
 	 */
-	public Region(@Nullable Location primary, @Nullable Location secondary) {
+	public Region(@Nullable final Location primary, @Nullable final Location secondary) {
 		this(null, primary, secondary);
 	}
 
@@ -59,7 +60,7 @@ public class Region implements ConfigSerializable {
 	 * @param primary
 	 * @param secondary
 	 */
-	public Region(@Nullable String name, @Nullable Location primary, @Nullable Location secondary) {
+	public Region(@Nullable final String name, @Nullable final Location primary, @Nullable final Location secondary) {
 		this.name = name;
 
 		if (primary != null) {
@@ -73,16 +74,14 @@ public class Region implements ConfigSerializable {
 
 			this.secondary = secondary;
 		}
-
-		calculateMinimumPoint();
 	}
 
 	/*
 	 * Change primary/secondary around to make secondary always the lowest point
 	 */
-	private void calculateMinimumPoint() {
+	private Location[] getCorrectedPoints() {
 		if (primary == null || secondary == null)
-			return;
+			return null;
 
 		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Points must be in one world! Primary: " + primary + " != secondary: " + secondary);
 
@@ -90,16 +89,18 @@ public class Region implements ConfigSerializable {
 				y1 = primary.getBlockY(), y2 = secondary.getBlockY(),
 				z1 = primary.getBlockZ(), z2 = secondary.getBlockZ();
 
-		this.primary = primary.clone();
-		this.secondary = secondary.clone();
+		final Location primary = this.primary.clone();
+		final Location secondary = this.secondary.clone();
 
-		this.primary.setX(Math.min(x1, x2));
-		this.primary.setY(Math.min(y1, y2));
-		this.primary.setZ(Math.min(z1, z2));
+		primary.setX(Math.min(x1, x2));
+		primary.setY(Math.min(y1, y2));
+		primary.setZ(Math.min(z1, z2));
 
-		this.secondary.setX(Math.max(x1, x2));
-		this.secondary.setY(Math.max(y1, y2));
-		this.secondary.setZ(Math.max(z1, z2));
+		secondary.setX(Math.max(x1, x2));
+		secondary.setY(Math.max(y1, y2));
+		secondary.setZ(Math.max(z1, z2));
+
+		return new Location[] { primary, secondary };
 	}
 
 	/**
@@ -109,6 +110,10 @@ public class Region implements ConfigSerializable {
 	 */
 	public final Location getCenter() {
 		Valid.checkBoolean(isWhole(), "Cannot perform getCenter on a non-complete region: " + toString());
+
+		final Location[] centered = getCorrectedPoints();
+		final Location primary = centered[0];
+		final Location secondary = centered[1];
 
 		return new Location(primary.getWorld(),
 				(primary.getX() + secondary.getX()) / 2,
@@ -123,8 +128,9 @@ public class Region implements ConfigSerializable {
 	 */
 	public final List<Block> getBlocks() {
 		Valid.checkBoolean(isWhole(), "Cannot perform getBlocks on a non-complete region: " + toString());
+		final Location[] centered = getCorrectedPoints();
 
-		return BlockUtil.getBlocks(primary, secondary);
+		return BlockUtil.getBlocks(centered[0], centered[1]);
 	}
 
 	/**
@@ -133,8 +139,9 @@ public class Region implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	public final List<Location> getBoundingBox() {
+	public final Set<Location> getBoundingBox() {
 		Valid.checkBoolean(isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + toString());
+		//Location[] centered = getMinimumPoint();
 
 		return BlockUtil.getBoundingBox(primary, secondary);
 	}
@@ -149,6 +156,10 @@ public class Region implements ConfigSerializable {
 
 		final List<Entity> found = new LinkedList<>();
 
+		final Location[] centered = getCorrectedPoints();
+		final Location primary = centered[0];
+		final Location secondary = centered[1];
+
 		final int xMin = (int) primary.getX() >> 4;
 		final int xMax = (int) secondary.getX() >> 4;
 		final int zMin = (int) primary.getZ() >> 4;
@@ -156,9 +167,9 @@ public class Region implements ConfigSerializable {
 
 		for (int cx = xMin; cx <= xMax; ++cx)
 			for (int cz = zMin; cz <= zMax; ++cz)
-				for (final Entity en : getWorld().getChunkAt(cx, cz).getEntities())
-					if (en.isValid() && en.getLocation() != null && isWithin(en.getLocation()))
-						found.add(en);
+				for (final Entity entity : getWorld().getChunkAt(cx, cz).getEntities())
+					if (entity.isValid() && entity.getLocation() != null && isWithin(entity.getLocation()))
+						found.add(entity);
 
 		return found;
 	}
@@ -185,18 +196,22 @@ public class Region implements ConfigSerializable {
 	/**
 	 * Return true if the given point is within this region
 	 *
-	 * @param loc
+	 * @param location
 	 * @return
 	 */
-	public final boolean isWithin(@NonNull Location loc) {
+	public final boolean isWithin(@NonNull final Location location) {
 		Valid.checkBoolean(isWhole(), "Cannot perform isWithin on a non-complete region: " + toString());
 
-		if (!loc.getWorld().equals(primary.getWorld()))
+		if (!location.getWorld().equals(primary.getWorld()))
 			return false;
 
-		final int x = (int) loc.getX();
-		final int y = (int) loc.getY();
-		final int z = (int) loc.getZ();
+		final Location[] centered = getCorrectedPoints();
+		final Location primary = centered[0];
+		final Location secondary = centered[1];
+
+		final int x = (int) location.getX();
+		final int y = (int) location.getY();
+		final int z = (int) location.getZ();
 
 		return x >= primary.getX() && x <= secondary.getX()
 				&& y >= primary.getY() && y <= secondary.getY()
@@ -217,10 +232,8 @@ public class Region implements ConfigSerializable {
 	 *
 	 * @param primary
 	 */
-	public final void setPrimary(Location primary) {
+	public final void setPrimary(final Location primary) {
 		this.primary = primary;
-
-		calculateMinimumPoint();
 	}
 
 	/**
@@ -228,10 +241,8 @@ public class Region implements ConfigSerializable {
 	 *
 	 * @param primary
 	 */
-	public final void setSecondary(Location primary) {
+	public final void setSecondary(final Location primary) {
 		this.primary = primary;
-
-		calculateMinimumPoint();
 	}
 
 	/**
@@ -241,14 +252,12 @@ public class Region implements ConfigSerializable {
 	 * @param primary
 	 * @param secondary
 	 */
-	public final void updateLocationsWeak(Location primary, Location secondary) {
+	public final void updateLocationsWeak(final Location primary, final Location secondary) {
 		if (primary != null)
 			this.primary = primary;
 
 		if (secondary != null)
 			this.secondary = secondary;
-
-		calculateMinimumPoint();
 	}
 
 	@Override
@@ -276,7 +285,7 @@ public class Region implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static Region deserialize(SerializedMap map) {
+	public static Region deserialize(final SerializedMap map) {
 		Valid.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
 
 		final String name = map.getString("Name");

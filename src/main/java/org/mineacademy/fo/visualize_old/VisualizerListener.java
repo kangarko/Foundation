@@ -1,4 +1,4 @@
-package org.mineacademy.fo.visualize;
+package org.mineacademy.fo.visualize_old;
 
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -13,6 +13,10 @@ import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.remain.Remain;
 
+/**
+ *  @deprecated use classes in the new "visual" package
+ */
+@Deprecated
 public final class VisualizerListener implements Listener {
 
 	// -------------------------------------------------------------------------------
@@ -21,11 +25,11 @@ public final class VisualizerListener implements Listener {
 
 	private static final StrictList<BlockVisualizer> registered = new StrictList<>();
 
-	public static void register(BlockVisualizer v) {
+	public static void register(final BlockVisualizer v) {
 		registered.add(v);
 	}
 
-	public static boolean isBlockTakenByOthers(final Block block, BlockVisualizer whoAsks) {
+	public static boolean isBlockTakenByOthers(final Block block, final BlockVisualizer whoAsks) {
 		for (final BlockVisualizer other : registered)
 			if (other != whoAsks && other.isStored(block))
 				return true;
@@ -38,7 +42,7 @@ public final class VisualizerListener implements Listener {
 	// -------------------------------------------------------------------------------
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onBlockBreak(BlockBreakEvent e) {
+	public void onBlockBreak(final BlockBreakEvent e) {
 		final BlockVisualizer visualizer = findVisualizer(e.getBlock());
 
 		if (visualizer != null) {
@@ -49,7 +53,7 @@ public final class VisualizerListener implements Listener {
 	}
 
 	@EventHandler
-	public void onMiddleClick(InventoryClickEvent e) {
+	public void onMiddleClick(final InventoryClickEvent e) {
 		if (e.getAction() != InventoryAction.PLACE_ALL || e.getView().getType() != InventoryType.CREATIVE || e.getClick() != ClickType.CREATIVE || e.getCursor() == null)
 			return;
 
@@ -63,11 +67,11 @@ public final class VisualizerListener implements Listener {
 	// Helpers
 	// -------------------------------------------------------------------------------
 
-	private BlockVisualizer findVisualizer(Block block) {
+	private BlockVisualizer findVisualizer(final Block block) {
 		return block != null && canVisualize(block) ? findVisualizer0(block) : null;
 	}
 
-	private BlockVisualizer findVisualizer0(Block block) {
+	private BlockVisualizer findVisualizer0(final Block block) {
 		for (final BlockVisualizer visualizer : registered)
 			if (visualizer.isStored(block))
 				return visualizer;
@@ -75,7 +79,7 @@ public final class VisualizerListener implements Listener {
 		return null;
 	}
 
-	private boolean canVisualize(Block block) {
+	private boolean canVisualize(final Block block) {
 		return BlockUtil.isForBlockSelection(block.getType());
 	}
 }

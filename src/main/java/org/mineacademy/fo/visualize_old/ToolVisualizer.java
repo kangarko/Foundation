@@ -1,4 +1,4 @@
-package org.mineacademy.fo.visualize;
+package org.mineacademy.fo.visualize_old;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +27,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-@Deprecated // Poor code quality, subject to removal/rewrite
+/**
+ *  @deprecated use classes in the new "visual" package
+ */
+@Deprecated
 public abstract class ToolVisualizer extends Tool {
 
 	@Getter
@@ -46,12 +49,12 @@ public abstract class ToolVisualizer extends Tool {
 		this.visualizer = new BlockVisualizer(this) {
 
 			@Override
-			public String getBlockName(Block block) {
+			public String getBlockName(final Block block) {
 				return ToolVisualizer.this.getBlockTitle(block);
 			}
 
 			@Override
-			public void onRemove(Player player, Block block) {
+			public void onRemove(final Player player, final Block block) {
 				ToolVisualizer.this.onRemove(player, block);
 			}
 		};
@@ -62,7 +65,7 @@ public abstract class ToolVisualizer extends Tool {
 	// --------------------------------------------------------------------------------
 
 	@Override
-	public final void onBlockClick(PlayerInteractEvent e) {
+	public final void onBlockClick(final PlayerInteractEvent e) {
 		final Player player = e.getPlayer();
 
 		if (!e.hasBlock() || e.getAction().toString().contains("AIR")) {
@@ -93,7 +96,7 @@ public abstract class ToolVisualizer extends Tool {
 			onRemove(player, block);
 	}
 
-	public final void onRemove(Player player, Block block) {
+	public final void onRemove(final Player player, final Block block) {
 		handleDataLoad(player, block);
 
 		visualizer.hide(block.getLocation());
@@ -106,7 +109,7 @@ public abstract class ToolVisualizer extends Tool {
 	private final StrictList<Player> cache = new StrictList<>();
 
 	@Override
-	public void onHotbarFocused(@NonNull Player pl) {
+	public void onHotbarFocused(@NonNull final Player pl) {
 		if (cache.contains(pl))
 			return;
 
@@ -118,7 +121,7 @@ public abstract class ToolVisualizer extends Tool {
 	}
 
 	@Override
-	public void onHotbarDefocused(@NonNull Player pl) {
+	public void onHotbarDefocused(@NonNull final Player pl) {
 		if (cache.contains(pl))
 			return;
 
@@ -177,27 +180,27 @@ public abstract class ToolVisualizer extends Tool {
 		return makeActionMessage("&4removed");
 	}
 
-	protected String makeActionMessage(String action) {
+	protected String makeActionMessage(final String action) {
 		return "&9Setup > &7" + StringUtils.capitalize(getName().toLowerCase() + " &7has been " + action + "&7.");
 	}
 
-	protected String getBlockTitle(Block block) {
+	protected String getBlockTitle(final Block block) {
 		return getColoredName();
 	}
 
-	protected final void visualize(Location loc) {
+	protected final void visualize(final Location loc) {
 		visualizer.show(loc, getDefaultMode());
 	}
 
-	protected final void visualizeMask(Location loc) {
+	protected final void visualizeMask(final Location loc) {
 		visualizer.show(loc, VisualizeMode.MASK);
 	}
 
-	protected final void visualizeGlow(Location loc) {
+	protected final void visualizeGlow(final Location loc) {
 		visualizer.show(loc, VisualizeMode.MASK);
 	}
 
-	protected final void hide(Location loc) {
+	protected final void hide(final Location loc) {
 		visualizer.hide(loc);
 	}
 
@@ -205,7 +208,7 @@ public abstract class ToolVisualizer extends Tool {
 	// Handle
 	// --------------------------------------------------------------------------------
 
-	protected void handleAirClick(Player pl, ItemStack item, ClickType click) {
+	protected void handleAirClick(final Player pl, final ItemStack item, final ClickType click) {
 	}
 
 	protected abstract void handleDataLoad(Player pl, Block block);

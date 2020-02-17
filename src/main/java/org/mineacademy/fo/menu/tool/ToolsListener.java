@@ -53,7 +53,7 @@ public final class ToolsListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGH)
-	public void onToolClick(PlayerInteractEvent event) {
+	public void onToolClick(final PlayerInteractEvent event) {
 		if (!Remain.isInteractEventPrimaryHand(event))
 			return;
 
@@ -91,29 +91,29 @@ public final class ToolsListener implements Listener {
 	 * Handles hotbar focus/defocus for tools
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onHeltItem(PlayerItemHeldEvent e) {
-		final Player pl = e.getPlayer();
+	public void onHeltItem(final PlayerItemHeldEvent event) {
+		final Player player = event.getPlayer();
 
-		final Tool curr = ToolRegistry.getTool(pl.getInventory().getItem(e.getNewSlot()));
-		final Tool prev = ToolRegistry.getTool(pl.getInventory().getItem(e.getPreviousSlot()));
+		final Tool current = ToolRegistry.getTool(player.getInventory().getItem(event.getNewSlot()));
+		final Tool previous = ToolRegistry.getTool(player.getInventory().getItem(event.getPreviousSlot()));
 
 		// Player has attained focus
-		if (curr != null) {
+		if (current != null) {
 
-			if (prev != null) {
+			if (previous != null) {
 
 				// Not really
-				if (prev.equals(curr))
+				if (previous.equals(current))
 					return;
 
-				prev.onHotbarDefocused(pl);
+				previous.onHotbarDefocused(player);
 			}
 
-			curr.onHotbarFocused(pl);
+			current.onHotbarFocused(player);
 		}
 		// Player lost focus
-		else if (prev != null)
-			prev.onHotbarDefocused(pl);
+		else if (previous != null)
+			previous.onHotbarDefocused(player);
 	}
 
 	// -------------------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ public final class ToolsListener implements Listener {
 	 * @param event the event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onRocketShoot(ProjectileLaunchEvent event) {
+	public void onRocketShoot(final ProjectileLaunchEvent event) {
 		final Projectile shot = event.getEntity();
 		final Object /* 1.6.4 Comp */ shooter = shot.getShooter();
 
@@ -205,7 +205,7 @@ public final class ToolsListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onRocketHit(ProjectileHitEvent event) {
+	public void onRocketHit(final ProjectileHitEvent event) {
 		final Projectile projectile = event.getEntity();
 		final ShotRocket shot = shotRockets.remove(projectile.getUniqueId());
 
