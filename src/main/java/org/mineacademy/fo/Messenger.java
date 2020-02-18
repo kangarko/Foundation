@@ -36,12 +36,17 @@ public class Messenger {
 	public String QUESTION_PREFIX = "&8&l[&a&l?&l&8] &7";
 
 	/**
+	 * The prefix send while sending announcements
+	 */
+	public String ANNOUNCE_PREFIX = "&8&l[&5&l!&l&8] &d";
+
+	/**
 	 * Send a message prepended with the {@link #INFO_PREFIX}
 	 *
 	 * @param player
 	 * @param message
 	 */
-	public void info(CommandSender player, String message) {
+	public void info(final CommandSender player, final String message) {
 		tell(player, INFO_PREFIX, message);
 	}
 
@@ -51,7 +56,7 @@ public class Messenger {
 	 * @param player
 	 * @param message
 	 */
-	public void success(CommandSender player, String message) {
+	public void success(final CommandSender player, final String message) {
 		tell(player, SUCCESS_PREFIX, message);
 	}
 
@@ -61,7 +66,7 @@ public class Messenger {
 	 * @param player
 	 * @param message
 	 */
-	public void warn(CommandSender player, String message) {
+	public void warn(final CommandSender player, final String message) {
 		tell(player, WARN_PREFIX, message);
 	}
 
@@ -71,7 +76,7 @@ public class Messenger {
 	 * @param player
 	 * @param message
 	 */
-	public void error(CommandSender player, String message) {
+	public void error(final CommandSender player, final String message) {
 		tell(player, ERROR_PREFIX, message);
 	}
 
@@ -81,14 +86,24 @@ public class Messenger {
 	 * @param player
 	 * @param message
 	 */
-	public void question(CommandSender player, String message) {
+	public void question(final CommandSender player, final String message) {
 		tell(player, QUESTION_PREFIX, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #ANNOUNCE_PREFIX}
+	 *
+	 * @param player
+	 * @param message
+	 */
+	public void announce(final CommandSender player, final String message) {
+		tell(player, ANNOUNCE_PREFIX, message);
 	}
 
 	/*
 	 * Internal method to perform the sending
 	 */
-	private void tell(CommandSender player, String prefix, String message) {
+	private void tell(final CommandSender player, final String prefix, final String message) {
 		Common.tellNoPrefix(player, prefix + message);
 	}
 }

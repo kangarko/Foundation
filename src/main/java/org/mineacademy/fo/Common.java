@@ -784,7 +784,7 @@ public final class Common {
 	 * Return the plural word from the exception list or null if none
 	 */
 	private static String getException(final long count, final String ofWhat) {
-		return count == 0 || count > 1 ? PLURAL_EXCEPTIONS.getString(ofWhat) : null;
+		return PLURAL_EXCEPTIONS.containsKey(ofWhat) ? count + " " + (count == 0 || count > 1 ? PLURAL_EXCEPTIONS.getString(ofWhat) : ofWhat) : null;
 	}
 
 	/**
