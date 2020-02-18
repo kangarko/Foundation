@@ -49,7 +49,7 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return
 	 */
-	public static Class<?> getNMSClass(String name) {
+	public static Class<?> getNMSClass(final String name) {
 		return ReflectionUtil.lookupClass(NMS + "." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
@@ -60,7 +60,7 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return
 	 */
-	public static Class<?> getOBCClass(String name) {
+	public static Class<?> getOBCClass(final String name) {
 		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
@@ -71,7 +71,7 @@ public final class ReflectionUtil {
 	 * @param fieldName
 	 * @param fieldValue
 	 */
-	public static void setStaticField(@NonNull Class<?> clazz, String fieldName, Object fieldValue) {
+	public static void setStaticField(@NonNull final Class<?> clazz, final String fieldName, final Object fieldValue) {
 		try {
 			final Field field = getDeclaredField(clazz, fieldName);
 
@@ -91,7 +91,7 @@ public final class ReflectionUtil {
 	 * @param type
 	 * @return
 	 */
-	public static <T> T getStaticFieldContent(@NonNull Class<?> clazz, String field) {
+	public static <T> T getStaticFieldContent(@NonNull final Class<?> clazz, final String field) {
 		return getFieldContent(clazz, field, null);
 	}
 
@@ -103,7 +103,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static Constructor<?> getNMSConstructor(@NonNull String nmsClass, Class<?>... params) {
+	public static Constructor<?> getNMSConstructor(@NonNull final String nmsClass, final Class<?>... params) {
 		return getConstructor(getNMSClass(nmsClass), params);
 	}
 
@@ -115,7 +115,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static Constructor<?> getOBCConstructor(@NonNull String obcClass, Class<?>... params) {
+	public static Constructor<?> getOBCConstructor(@NonNull final String obcClass, final Class<?>... params) {
 		return getConstructor(getOBCClass(obcClass), params);
 	}
 
@@ -127,7 +127,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static Constructor<?> getConstructor(@NonNull String classPath, Class<?>... params) {
+	public static Constructor<?> getConstructor(@NonNull final String classPath, final Class<?>... params) {
 		final Class<?> clazz = lookupClass(classPath);
 
 		return getConstructor(clazz, params);
@@ -140,7 +140,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static Constructor<?> getConstructor(@NonNull Class<?> clazz, Class<?>... params) {
+	public static Constructor<?> getConstructor(@NonNull final Class<?> clazz, final Class<?>... params) {
 		try {
 			final Constructor<?> constructor = clazz.getConstructor(params);
 			constructor.setAccessible(true);
@@ -160,7 +160,7 @@ public final class ReflectionUtil {
 	 * @return
 	 *
 	 */
-	public static <T> T getFieldContent(Object instance, String field) {
+	public static <T> T getFieldContent(final Object instance, final String field) {
 		return getFieldContent(instance.getClass(), field, instance);
 	}
 
@@ -174,7 +174,7 @@ public final class ReflectionUtil {
 	 * @param type
 	 * @return
 	 */
-	public static <T> T getFieldContent(Class<?> clazz, String field, Object instance) {
+	public static <T> T getFieldContent(Class<?> clazz, final String field, final Object instance) {
 		final String originalClassName = clazz.getSimpleName();
 
 		do {
@@ -195,7 +195,7 @@ public final class ReflectionUtil {
 	 * @param instance
 	 * @return
 	 */
-	public static Object getFieldContent(Field field, Object instance) {
+	public static Object getFieldContent(final Field field, final Object instance) {
 		try {
 			field.setAccessible(true);
 
@@ -229,7 +229,7 @@ public final class ReflectionUtil {
 	 * @param fieldName
 	 * @return
 	 */
-	public static Field getDeclaredField(Class<?> clazz, String fieldName) {
+	public static Field getDeclaredField(final Class<?> clazz, final String fieldName) {
 		try {
 			final Field field = clazz.getDeclaredField(fieldName);
 			field.setAccessible(true);
@@ -250,7 +250,7 @@ public final class ReflectionUtil {
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, String methodName, Class<?>... args) {
+	public static Method getMethod(final Class<?> clazz, final String methodName, final Class<?>... args) {
 		for (final Method method : clazz.getMethods())
 			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes())) {
 				method.setAccessible(true);
@@ -262,7 +262,7 @@ public final class ReflectionUtil {
 	}
 
 	// Compares class lists
-	private static boolean isClassListEqual(Class<?>[] first, Class<?>[] second) {
+	private static boolean isClassListEqual(final Class<?>[] first, final Class<?>[] second) {
 		if (first.length != second.length)
 			return false;
 
@@ -281,7 +281,7 @@ public final class ReflectionUtil {
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, String methodName, Integer args) {
+	public static Method getMethod(final Class<?> clazz, final String methodName, final Integer args) {
 		for (final Method method : clazz.getMethods())
 			if (method.getName().equals(methodName) && args.equals(new Integer(method.getParameterTypes().length))) {
 				method.setAccessible(true);
@@ -299,7 +299,7 @@ public final class ReflectionUtil {
 	 * @param methodName
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, String methodName) {
+	public static Method getMethod(final Class<?> clazz, final String methodName) {
 		for (final Method method : clazz.getMethods())
 			if (method.getName().equals(methodName)) {
 				method.setAccessible(true);
@@ -317,7 +317,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invokeStatic(Class<?> cl, String methodName, Object... params) {
+	public static <T> T invokeStatic(final Class<?> cl, final String methodName, final Object... params) {
 		return invokeStatic(getMethod(cl, methodName), params);
 	}
 
@@ -329,7 +329,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invokeStatic(Method method, Object... params) {
+	public static <T> T invokeStatic(final Method method, final Object... params) {
 		try {
 			return (T) method.invoke(null, params);
 
@@ -347,7 +347,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invoke(String methodName, Object instance, Object... params) {
+	public static <T> T invoke(final String methodName, final Object instance, final Object... params) {
 		return invoke(getMethod(instance.getClass(), methodName), instance, params);
 	}
 
@@ -360,7 +360,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invoke(Method method, Object instance, Object... params) {
+	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
 		try {
 			Valid.checkNotNull(method, "Method cannot be null for " + instance);
 
@@ -377,7 +377,7 @@ public final class ReflectionUtil {
 	 * @param clazz
 	 * @return
 	 */
-	public static <T> T instantiate(Class<T> clazz) {
+	public static <T> T instantiate(final Class<T> clazz) {
 		try {
 			final Constructor<T> c = clazz.getDeclaredConstructor();
 			c.setAccessible(true);
@@ -396,7 +396,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T instantiate(Class<T> clazz, Object... params) {
+	public static <T> T instantiate(final Class<T> clazz, final Object... params) {
 		try {
 			final List<Class<?>> classes = new ArrayList<>();
 
@@ -425,7 +425,7 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T instantiate(Constructor<T> constructor, Object... params) {
+	public static <T> T instantiate(final Constructor<T> constructor, final Object... params) {
 		try {
 			return constructor.newInstance(params);
 
@@ -441,7 +441,7 @@ public final class ReflectionUtil {
 	 * @param path
 	 * @return
 	 */
-	public static boolean isClassAvailable(String path) {
+	public static boolean isClassAvailable(final String path) {
 		try {
 			Class.forName(path);
 			return true;
@@ -458,7 +458,7 @@ public final class ReflectionUtil {
 	 * @param type
 	 * @return
 	 */
-	public static <T> Class<T> lookupClass(String path, Class<T> type) {
+	public static <T> Class<T> lookupClass(final String path, final Class<T> type) {
 		return (Class<T>) lookupClass(path);
 	}
 
@@ -468,7 +468,7 @@ public final class ReflectionUtil {
 	 * @param path
 	 * @return
 	 */
-	public static Class<?> lookupClass(String path) {
+	public static Class<?> lookupClass(final String path) {
 		try {
 			return Class.forName(path);
 
@@ -488,7 +488,7 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return the enum or error
 	 */
-	public static <E extends Enum<E>> E lookupEnum(Class<E> enumType, String name) {
+	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, final String name) {
 		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + MinecraftVersion.getServerVersion() + "! Available values: {available}");
 	}
 
@@ -504,7 +504,7 @@ public final class ReflectionUtil {
 	 * @param errMessage
 	 * @return
 	 */
-	public static <E extends Enum<E>> E lookupEnum(Class<E> enumType, String name, String errMessage) {
+	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, String name, final String errMessage) {
 		Valid.checkNotNull(enumType, "Type missing for " + name);
 		Valid.checkNotNull(name, "Name missing for " + enumType);
 
@@ -567,7 +567,7 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return the enum, or null if not exists
 	 */
-	public static <E extends Enum<E>> E lookupEnumSilent(Class<E> enumType, String name) {
+	public static <E extends Enum<E>> E lookupEnumSilent(final Class<E> enumType, final String name) {
 		try {
 			return Enum.valueOf(enumType, name);
 		} catch (final IllegalArgumentException ex) {
@@ -584,7 +584,7 @@ public final class ReflectionUtil {
 	 * @param clazz
 	 * @return
 	 */
-	public static <T extends Enum<T>> T getEnum(String newName, String oldName, Class<T> clazz) {
+	public static <T extends Enum<T>> T getEnum(final String newName, final String oldName, final Class<T> clazz) {
 		T en = ReflectionUtil.lookupEnumSilent(clazz, newName);
 
 		if (en == null)
@@ -599,6 +599,7 @@ public final class ReflectionUtil {
 	 * @param enumFullName
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public static Enum<?> getEnum(final String enumFullName) {
 		final String[] x = enumFullName.split("\\.(?=[^\\.]+$)");
 		if (x.length == 2) {
@@ -622,7 +623,7 @@ public final class ReflectionUtil {
 	 * @param count
 	 * @return
 	 */
-	public static String getCallerMethods(int skipMethods, int count) {
+	public static String getCallerMethods(final int skipMethods, final int count) {
 		final StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 
 		String methods = "";
@@ -649,7 +650,7 @@ public final class ReflectionUtil {
 	 * @param skipMethods
 	 * @return
 	 */
-	public static String getCallerMethod(int skipMethods) {
+	public static String getCallerMethod(final int skipMethods) {
 		final StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 
 		for (int i = 2 + skipMethods; i < elements.length; i++) {
@@ -675,7 +676,7 @@ public final class ReflectionUtil {
 	 * @param extendingClass
 	 * @return
 	 */
-	public static <T> List<Class<? extends T>> getClasses(Plugin plugin, @NonNull Class<T> extendingClass) {
+	public static <T> List<Class<? extends T>> getClasses(final Plugin plugin, @NonNull final Class<T> extendingClass) {
 		final List<Class<? extends T>> found = new ArrayList<>();
 
 		for (final Class<?> clazz : getClasses(plugin))
@@ -691,7 +692,7 @@ public final class ReflectionUtil {
 	 * @param plugin
 	 * @return
 	 */
-	public static TreeSet<Class<?>> getClasses(Plugin plugin) {
+	public static TreeSet<Class<?>> getClasses(final Plugin plugin) {
 		try {
 			return getClasses0(plugin);
 
@@ -701,7 +702,7 @@ public final class ReflectionUtil {
 	}
 
 	// Attempts to search for classes inside of the plugin's jar
-	private static TreeSet<Class<?>> getClasses0(Plugin plugin) throws ReflectiveOperationException, IOException {
+	private static TreeSet<Class<?>> getClasses0(final Plugin plugin) throws ReflectiveOperationException, IOException {
 		Valid.checkNotNull(plugin, "Plugin is null!");
 		Valid.checkBoolean(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
 
@@ -743,11 +744,11 @@ public final class ReflectionUtil {
 	public static final class ReflectionException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 
-		public ReflectionException(String msg) {
+		public ReflectionException(final String msg) {
 			super(msg);
 		}
 
-		public ReflectionException(String msg, Exception ex) {
+		public ReflectionException(final String msg, final Exception ex) {
 			super(msg, ex);
 		}
 	}
@@ -761,13 +762,13 @@ public final class ReflectionUtil {
 
 		private final String enumName;
 
-		public MissingEnumException(String enumName, String msg) {
+		public MissingEnumException(final String enumName, final String msg) {
 			super(msg);
 
 			this.enumName = enumName;
 		}
 
-		public MissingEnumException(String enumName, String msg, Exception ex) {
+		public MissingEnumException(final String enumName, final String msg, final Exception ex) {
 			super(msg, ex);
 
 			this.enumName = enumName;

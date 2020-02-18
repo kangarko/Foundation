@@ -85,7 +85,7 @@ public final class SerializeUtil {
 	 * @param obj
 	 * @return
 	 */
-	public static Object serialize(Object obj) {
+	public static Object serialize(final Object obj) {
 		if (obj == null)
 			return null;
 
@@ -192,7 +192,7 @@ public final class SerializeUtil {
 	 * @param loc
 	 * @return
 	 */
-	public static String serializeLoc(Location loc) {
+	public static String serializeLoc(final Location loc) {
 		return loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + (loc.getPitch() != 0F || loc.getYaw() != 0F ? " " + Math.round(loc.getYaw()) + " " + Math.round(loc.getPitch()) : "");
 	}
 
@@ -202,7 +202,7 @@ public final class SerializeUtil {
 	 * @param effect
 	 * @return
 	 */
-	private static String serializePotionEffect(PotionEffect effect) {
+	private static String serializePotionEffect(final PotionEffect effect) {
 		return effect.getType().getName() + " " + effect.getDuration() + " " + effect.getAmplifier();
 	}
 
@@ -215,7 +215,7 @@ public final class SerializeUtil {
 	 * @param array
 	 * @return
 	 */
-	public static List<Object> serializeList(Iterable<?> array) {
+	public static List<Object> serializeList(final Iterable<?> array) {
 		final List<Object> list = new ArrayList<>();
 
 		for (final Object t : array)
@@ -238,7 +238,7 @@ public final class SerializeUtil {
 	 * @param object
 	 * @return
 	 */
-	public static <T> T deserialize(@NonNull Class<T> classOf, @NonNull Object object) {
+	public static <T> T deserialize(@NonNull final Class<T> classOf, @NonNull final Object object) {
 		return deserialize(classOf, object, (Object[]) null);
 	}
 
@@ -252,7 +252,8 @@ public final class SerializeUtil {
 	 * @param deserializeParameters, use more variables in the deserialize method
 	 * @return
 	 */
-	public static <T> T deserialize(@NonNull Class<T> classOf, @NonNull Object object, Object... deserializeParameters) {
+	@SuppressWarnings("rawtypes")
+	public static <T> T deserialize(@NonNull final Class<T> classOf, @NonNull Object object, final Object... deserializeParameters) {
 		final SerializedMap map = SerializedMap.of(object);
 
 		// Step 1 - Search for basic deserialize(SerializedMap) method
@@ -356,7 +357,7 @@ public final class SerializeUtil {
 	 * @param raw
 	 * @return
 	 */
-	public static Location deserializeLocation(Object raw) {
+	public static Location deserializeLocation(final Object raw) {
 		if (raw == null)
 			return null;
 
@@ -383,7 +384,7 @@ public final class SerializeUtil {
 	 * @param raw
 	 * @return
 	 */
-	private static PotionEffect deserializePotionEffect(Object raw) {
+	private static PotionEffect deserializePotionEffect(final Object raw) {
 		if (raw == null)
 			return null;
 
@@ -410,7 +411,7 @@ public final class SerializeUtil {
 	 * @param asWhat
 	 * @return
 	 */
-	public static <T extends ConfigSerializable> List<T> deserializeMapList(Object listOfObjects, Class<T> asWhat) {
+	public static <T extends ConfigSerializable> List<T> deserializeMapList(final Object listOfObjects, final Class<T> asWhat) {
 		if (listOfObjects == null)
 			return null;
 
@@ -435,7 +436,7 @@ public final class SerializeUtil {
 	 * @param asWhat
 	 * @return
 	 */
-	public static <T extends ConfigSerializable> T deserializeMap(Object rawMap, Class<T> asWhat) {
+	public static <T extends ConfigSerializable> T deserializeMap(final Object rawMap, final Class<T> asWhat) {
 		if (rawMap == null)
 			return null;
 

@@ -62,7 +62,7 @@ public final class RandomUtil {
 	 * @param percent the percent, from 0 to 100
 	 * @return
 	 */
-	public static boolean chance(int percent) {
+	public static boolean chance(final int percent) {
 		return random.nextDouble() * 100D < percent;
 	}
 
@@ -72,7 +72,7 @@ public final class RandomUtil {
 	 * @param percent the percent, from 0.00 to 1.00
 	 * @return
 	 */
-	public static boolean chanceD(double percent) {
+	public static boolean chanceD(final double percent) {
 		return random.nextDouble() < percent;
 	}
 
@@ -84,7 +84,7 @@ public final class RandomUtil {
 	 * @param maxLength
 	 * @return
 	 */
-	public static String nextString(int minLength, int maxLength) {
+	public static String nextString(final int minLength, final int maxLength) {
 		String message = "";
 
 		for (int i = 0; i < minLength + random.nextInt(maxLength); i++)
@@ -119,7 +119,7 @@ public final class RandomUtil {
 	 * @param max
 	 * @return
 	 */
-	public static int nextBetween(int min, int max) {
+	public static int nextBetween(final int min, final int max) {
 		Valid.checkBoolean(min <= max, "Min !< max");
 
 		return min + nextInt(max - min + 1);
@@ -131,7 +131,7 @@ public final class RandomUtil {
 	 * @param boundExclusive
 	 * @return
 	 */
-	public static int nextInt(int boundExclusive) {
+	public static int nextInt(final int boundExclusive) {
 		return random.nextInt(boundExclusive);
 	}
 
@@ -151,7 +151,7 @@ public final class RandomUtil {
 	 * @param items
 	 * @return
 	 */
-	public static <T> T nextItem(T... items) {
+	public static <T> T nextItem(final T... items) {
 		return items[nextInt(items.length)];
 	}
 
@@ -162,7 +162,7 @@ public final class RandomUtil {
 	 * @param items
 	 * @return
 	 */
-	public static <T> T nextItem(Collection<T> items) {
+	public static <T> T nextItem(final Collection<T> items) {
 		return nextItem(items, null);
 	}
 
@@ -174,13 +174,13 @@ public final class RandomUtil {
 	 * @param condition the condition applying when selecting
 	 * @return
 	 */
-	public static <T> T nextItem(Collection<T> items, Predicate<T> condition) {
+	public static <T> T nextItem(final Collection<T> items, final Predicate<T> condition) {
 		final List<T> list = items instanceof List ? (List<T>) items : new ArrayList<>(items);
 
 		// Remove values failing the condition
 		if (condition != null)
-			for (final Iterator it = list.iterator(); it.hasNext();) {
-				final T item = (T) it.next();
+			for (final Iterator<T> it = list.iterator(); it.hasNext();) {
+				final T item = it.next();
 
 				if (!condition.test(item))
 					it.remove();
@@ -197,7 +197,7 @@ public final class RandomUtil {
 	 * @param is3D, true for sphere, false for cylinder search
 	 * @return
 	 */
-	public static Location nextLocation(Location origin, double radius, boolean is3D) {
+	public static Location nextLocation(final Location origin, final double radius, final boolean is3D) {
 		final double randomRadius = random.nextDouble() * radius;
 		final double theta = Math.toRadians(random.nextDouble() * 360);
 		final double phi = Math.toRadians(random.nextDouble() * 180 - 90);
@@ -215,7 +215,7 @@ public final class RandomUtil {
 	 * @param chunk
 	 * @return
 	 */
-	public static int nextChunkX(Chunk chunk) {
+	public static int nextChunkX(final Chunk chunk) {
 		return RandomUtil.nextInt(16) + (chunk.getX() << 4) - 16;
 	}
 
@@ -225,7 +225,7 @@ public final class RandomUtil {
 	 * @param chunk
 	 * @return
 	 */
-	public static int nextChunkZ(Chunk chunk) {
+	public static int nextChunkZ(final Chunk chunk) {
 		return RandomUtil.nextInt(16) + (chunk.getZ() << 4) - 16;
 	}
 }

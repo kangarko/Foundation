@@ -6,6 +6,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -29,7 +31,7 @@ public final class SimpleEquipment {
 	 *
 	 * @param entity
 	 */
-	public SimpleEquipment(LivingEntity entity) {
+	public SimpleEquipment(final LivingEntity entity) {
 		this(entity.getEquipment());
 	}
 
@@ -38,7 +40,7 @@ public final class SimpleEquipment {
 	 *
 	 * @param equipment
 	 */
-	public SimpleEquipment(EntityEquipment equipment) {
+	public SimpleEquipment(final EntityEquipment equipment) {
 		this.equipment = equipment;
 	}
 
@@ -52,7 +54,7 @@ public final class SimpleEquipment {
 	 * @param slot
 	 * @param material
 	 */
-	public void set(EquipmentSlot slot, CompMaterial material) {
+	public void set(final EquipmentSlot slot, final CompMaterial material) {
 		set(slot, material.toItem());
 	}
 
@@ -62,7 +64,7 @@ public final class SimpleEquipment {
 	 * @param slot
 	 * @param builder
 	 */
-	public void set(EquipmentSlot slot, ItemCreator.ItemCreatorBuilder builder) {
+	public void set(final EquipmentSlot slot, final ItemCreator.ItemCreatorBuilder builder) {
 		set(slot, builder.build().make());
 	}
 
@@ -72,7 +74,7 @@ public final class SimpleEquipment {
 	 * @param slot
 	 * @param item
 	 */
-	public void set(EquipmentSlot slot, ItemStack item) {
+	public void set(final EquipmentSlot slot, final ItemStack item) {
 		Valid.checkNotNull(item, "Equipment item cannot be null");
 
 		set(slot, item, null);
@@ -84,7 +86,7 @@ public final class SimpleEquipment {
 	 * @param slot
 	 * @param dropChance
 	 */
-	public void set(EquipmentSlot slot, float dropChance) {
+	public void set(final EquipmentSlot slot, final float dropChance) {
 		set(slot, (ItemStack) null, dropChance);
 	}
 
@@ -95,7 +97,7 @@ public final class SimpleEquipment {
 	 * @param material
 	 * @param dropChance
 	 */
-	public void set(EquipmentSlot slot, @Nullable CompMaterial material, @Nullable Float dropChance) {
+	public void set(final EquipmentSlot slot, @Nullable final CompMaterial material, @Nullable final Float dropChance) {
 		set(slot, material.toItem(), dropChance);
 	}
 
@@ -106,7 +108,7 @@ public final class SimpleEquipment {
 	 * @param builder
 	 * @param dropChance
 	 */
-	public void set(EquipmentSlot slot, @Nullable ItemCreator.ItemCreatorBuilder builder, @Nullable Float dropChance) {
+	public void set(final EquipmentSlot slot, @Nullable final ItemCreator.ItemCreatorBuilder builder, @Nullable final Float dropChance) {
 		set(slot, builder.build().make(), dropChance);
 	}
 
@@ -117,8 +119,11 @@ public final class SimpleEquipment {
 	 * @param item
 	 * @param dropChance
 	 */
-	public void set(EquipmentSlot slot, @Nullable ItemStack item, @Nullable Float dropChance) {
+	public void set(EquipmentSlot slot, @Nullable final ItemStack item, @Nullable final Float dropChance) {
 		Valid.checkBoolean(item != null || dropChance != null, "Either item or drop chance must be given!");
+
+		if (slot.toString().equals("OFF_HAND") && MinecraftVersion.olderThan(V.v1_9))
+			slot = EquipmentSlot.HAND;
 
 		if (slot == EquipmentSlot.HEAD) {
 			if (item != null)
@@ -189,7 +194,7 @@ public final class SimpleEquipment {
 	 * @param leggings
 	 * @param boots
 	 */
-	public void setContent(ItemCreator.ItemCreatorBuilder helmet, ItemCreator.ItemCreatorBuilder chest, ItemCreator.ItemCreatorBuilder leggings, ItemCreator.ItemCreatorBuilder boots) {
+	public void setContent(final ItemCreator.ItemCreatorBuilder helmet, final ItemCreator.ItemCreatorBuilder chest, final ItemCreator.ItemCreatorBuilder leggings, final ItemCreator.ItemCreatorBuilder boots) {
 		setContent(helmet.build().make(), chest.build().make(), leggings.build().make(), boots.build().make());
 	}
 
@@ -201,7 +206,7 @@ public final class SimpleEquipment {
 	 * @param leggings
 	 * @param boots
 	 */
-	public void setContent(CompMaterial helmet, CompMaterial chest, CompMaterial leggings, CompMaterial boots) {
+	public void setContent(final CompMaterial helmet, final CompMaterial chest, final CompMaterial leggings, final CompMaterial boots) {
 		setContent(helmet.toItem(), chest.toItem(), leggings.toItem(), boots.toItem());
 	}
 
@@ -213,7 +218,7 @@ public final class SimpleEquipment {
 	 * @param leggings
 	 * @param boots
 	 */
-	public void setContent(ItemStack helmet, ItemStack chest, ItemStack leggings, ItemStack boots) {
+	public void setContent(final ItemStack helmet, final ItemStack chest, final ItemStack leggings, final ItemStack boots) {
 		set(EquipmentSlot.HEAD, helmet);
 		set(EquipmentSlot.CHEST, chest);
 		set(EquipmentSlot.FEET, leggings);
@@ -225,7 +230,7 @@ public final class SimpleEquipment {
 	 *
 	 * @param content
 	 */
-	public void setContent(ArmorContent content) {
+	public void setContent(final ArmorContent content) {
 		set(EquipmentSlot.HEAD, content.getHelmet());
 		set(EquipmentSlot.CHEST, content.getChestplate());
 		set(EquipmentSlot.FEET, content.getLeggings());

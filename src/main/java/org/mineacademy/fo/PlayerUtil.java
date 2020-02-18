@@ -38,6 +38,7 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -89,7 +90,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static int getPing(Player player) {
+	public static int getPing(final Player player) {
 		final Object entityPlayer = Remain.getHandleEntity(player);
 
 		return (int) ReflectionUtil.getFieldContent(entityPlayer, "ping");
@@ -101,7 +102,7 @@ public final class PlayerUtil {
 	 * @param statistic
 	 * @return
 	 */
-	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic) {
+	public static TreeMap<Long, OfflinePlayer> getStatistics(final Statistic statistic) {
 		return getStatistics(statistic, null, null);
 	}
 
@@ -112,7 +113,7 @@ public final class PlayerUtil {
 	 * @param material
 	 * @return
 	 */
-	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic, Material material) {
+	public static TreeMap<Long, OfflinePlayer> getStatistics(final Statistic statistic, final Material material) {
 		return getStatistics(statistic, material, null);
 	}
 
@@ -123,7 +124,7 @@ public final class PlayerUtil {
 	 * @param entityType
 	 * @return
 	 */
-	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic, EntityType entityType) {
+	public static TreeMap<Long, OfflinePlayer> getStatistics(final Statistic statistic, final EntityType entityType) {
 		return getStatistics(statistic, null, entityType);
 	}
 
@@ -135,7 +136,7 @@ public final class PlayerUtil {
 	 * @param entityType
 	 * @return
 	 */
-	public static TreeMap<Long, OfflinePlayer> getStatistics(Statistic statistic, Material material, EntityType entityType) {
+	public static TreeMap<Long, OfflinePlayer> getStatistics(final Statistic statistic, final Material material, final EntityType entityType) {
 		final TreeMap<Long, OfflinePlayer> statistics = new TreeMap<>(Collections.reverseOrder());
 
 		for (final OfflinePlayer offline : Bukkit.getOfflinePlayers()) {
@@ -154,7 +155,7 @@ public final class PlayerUtil {
 	 * @param statistic
 	 * @return
 	 */
-	public static long getStatistic(OfflinePlayer player, Statistic statistic) {
+	public static long getStatistic(final OfflinePlayer player, final Statistic statistic) {
 		return getStatistic(player, statistic, null, null);
 	}
 
@@ -166,7 +167,7 @@ public final class PlayerUtil {
 	 * @param material
 	 * @return
 	 */
-	public static long getStatistic(OfflinePlayer player, Statistic statistic, Material material) {
+	public static long getStatistic(final OfflinePlayer player, final Statistic statistic, final Material material) {
 		return getStatistic(player, statistic, material, null);
 	}
 
@@ -178,7 +179,7 @@ public final class PlayerUtil {
 	 * @param entityType
 	 * @return
 	 */
-	public static long getStatistic(OfflinePlayer player, Statistic statistic, EntityType entityType) {
+	public static long getStatistic(final OfflinePlayer player, final Statistic statistic, final EntityType entityType) {
 		return getStatistic(player, statistic, null, entityType);
 	}
 
@@ -189,7 +190,7 @@ public final class PlayerUtil {
 	 * @param statistic
 	 * @return
 	 */
-	private static long getStatistic(OfflinePlayer player, Statistic statistic, Material material, EntityType entityType) {
+	private static long getStatistic(final OfflinePlayer player, final Statistic statistic, final Material material, final EntityType entityType) {
 		// Return live statistic for up to date data and best performance if possible
 		if (player.isOnline()) {
 			final Player online = player.getPlayer();
@@ -208,7 +209,7 @@ public final class PlayerUtil {
 	}
 
 	// Read json file for the statistic
-	private static long getStatisticFile(OfflinePlayer player, Statistic statistic, Material material, EntityType entityType) {
+	private static long getStatisticFile(final OfflinePlayer player, final Statistic statistic, final Material material, final EntityType entityType) {
 		final File worldFolder = new File(Bukkit.getServer().getWorlds().get(0).getWorldFolder(), "stats");
 		final File statFile = new File(worldFolder, player.getUniqueId().toString() + ".json");
 
@@ -258,7 +259,7 @@ public final class PlayerUtil {
 	 * @deprecated returns false if failed for whatever reason
 	 */
 	@Deprecated
-	public static boolean hasPermUnsafe(UUID id, String permission) {
+	public static boolean hasPermUnsafe(final UUID id, final String permission) {
 		return HookManager.hasPermissionUnsafe(id, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
@@ -271,7 +272,7 @@ public final class PlayerUtil {
 	 * @deprecated returns false if failed for whatever reason, also can connect to the internet for UUID lookup on the main thread
 	 */
 	@Deprecated
-	public static boolean hasPermUnsafe(String playerName, String permission) {
+	public static boolean hasPermUnsafe(final String playerName, final String permission) {
 		return HookManager.hasPermissionUnsafe(playerName, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
@@ -285,7 +286,7 @@ public final class PlayerUtil {
 	 * dataset, so this should not be relied on.
 	 */
 	@Deprecated
-	public static boolean hasPermVault(Player player, String permission) {
+	public static boolean hasPermVault(final Player player, final String permission) {
 		return permission == null || HookManager.hasPermissionVault(player, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
@@ -297,7 +298,7 @@ public final class PlayerUtil {
 	 * @param permission
 	 * @return
 	 */
-	public static boolean hasPerm(@NonNull Permissible sender, String permission) {
+	public static boolean hasPerm(@NonNull final Permissible sender, final String permission) {
 		return permission == null || sender.hasPermission(permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
@@ -318,7 +319,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param cleanInventory
 	 */
-	public static void normalize(Player player, boolean cleanInventory) {
+	public static void normalize(final Player player, final boolean cleanInventory) {
 		normalize(player, cleanInventory, true);
 	}
 
@@ -336,7 +337,7 @@ public final class PlayerUtil {
 	 * @param cleanInventory
 	 * @param removeVanish should we remove vanish from players? most vanish plugins are supported
 	 */
-	public static void normalize(Player player, boolean cleanInventory, boolean removeVanish) {
+	public static void normalize(final Player player, final boolean cleanInventory, final boolean removeVanish) {
 		synchronized (titleRestoreTasks) {
 			HookManager.setGodMode(player, false);
 
@@ -362,12 +363,13 @@ public final class PlayerUtil {
 
 			player.setFallDistance(0);
 
+			CompProperty.INVULNERABLE.apply(player, false);
+
 			try {
 				player.setGlowing(false);
-				player.setInvulnerable(false);
 				player.setSilent(false);
 			} catch (final NoSuchMethodError err) {
-				/* old MC */}
+			}
 
 			player.setAllowFlight(false);
 			player.setFlying(false);
@@ -415,7 +417,7 @@ public final class PlayerUtil {
 	 *
 	 * @param player
 	 */
-	public static void cleanInventoryAndFood(Player player) {
+	public static void cleanInventoryAndFood(final Player player) {
 		player.getInventory().setArmorContents(null);
 		player.getInventory().setContents(new ItemStack[player.getInventory().getContents().length]);
 		try {
@@ -437,7 +439,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static boolean hasEmptyInventory(Player player) {
+	public static boolean hasEmptyInventory(final Player player) {
 		final ItemStack[] inv = player.getInventory().getContents();
 		final ItemStack[] armor = player.getInventory().getArmorContents();
 
@@ -461,7 +463,7 @@ public final class PlayerUtil {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static boolean isVanished(Player player, Player otherPlayer) {
+	public static boolean isVanished(final Player player, final Player otherPlayer) {
 		return isVanished(player) || !otherPlayer.canSee(player);
 	}
 
@@ -472,7 +474,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static boolean isVanished(Player player) {
+	public static boolean isVanished(final Player player) {
 		if (HookManager.isVanished(player))
 			return true;
 
@@ -496,7 +498,7 @@ public final class PlayerUtil {
 	 * @param name
 	 * @return
 	 */
-	public static Player getNickedNonVanishedPlayer(String name) {
+	public static Player getNickedNonVanishedPlayer(final String name) {
 		return getNickedPlayer(name, false);
 	}
 
@@ -507,7 +509,7 @@ public final class PlayerUtil {
 	 * @param ignoreVanished
 	 * @return
 	 */
-	public static Player getNickedPlayer(String name, boolean ignoreVanished) {
+	public static Player getNickedPlayer(final String name, final boolean ignoreVanished) {
 		Player found = Bukkit.getPlayer(name);
 
 		if (found == null)
@@ -519,7 +521,7 @@ public final class PlayerUtil {
 		return found;
 	}
 
-	private static Player lookupNickedPlayer0(String name) {
+	private static Player lookupNickedPlayer0(final String name) {
 		Player found = null;
 		int delta = Integer.MAX_VALUE;
 
@@ -554,7 +556,7 @@ public final class PlayerUtil {
 	 * @param temporaryTitle the animated title
 	 * @param oldTitle the old title
 	 */
-	public static void updateInventoryTitle(Menu menu, Player player, String temporaryTitle, String oldTitle) {
+	public static void updateInventoryTitle(final Menu menu, final Player player, final String temporaryTitle, final String oldTitle) {
 		updateInventoryTitle(menu, player, temporaryTitle, oldTitle, ANIMATION_DURATION_TICKS);
 	}
 
@@ -567,7 +569,7 @@ public final class PlayerUtil {
 	 * @param oldTitle the old title to revert to
 	 * @param duration the duration in ticks
 	 */
-	public static void updateInventoryTitle(Menu menu, Player player, String temporaryTitle, String oldTitle, int duration) {
+	public static void updateInventoryTitle(final Menu menu, final Player player, final String temporaryTitle, final String oldTitle, final int duration) {
 		Valid.checkNotNull(menu, "Menu == null");
 		Valid.checkNotNull(player, "Player == null");
 		Valid.checkNotNull(temporaryTitle, "Title == null");
@@ -606,7 +608,7 @@ public final class PlayerUtil {
 	 * @param player the player
 	 * @param title  the new title
 	 */
-	public static void updateInventoryTitle(Player player, String title) {
+	public static void updateInventoryTitle(final Player player, final String title) {
 		Remain.updateInventoryTitle(player, title);
 	}
 
@@ -622,7 +624,7 @@ public final class PlayerUtil {
 	 * @param item the found item or null if none
 	 * @return
 	 */
-	public static ItemStack getFirstItem(Player player, ItemStack item) {
+	public static ItemStack getFirstItem(final Player player, final ItemStack item) {
 		for (final ItemStack otherItem : player.getInventory().getContents())
 			if (otherItem != null && ItemUtil.isSimilar(otherItem, item))
 				return otherItem;
@@ -640,7 +642,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param item
 	 */
-	public static void takeOnePiece(Player player, ItemStack item) {
+	public static void takeOnePiece(final Player player, final ItemStack item) {
 		Remain.takeItemOnePiece(player, item);
 	}
 
@@ -651,7 +653,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param material
 	 */
-	public static void takeFirstOnePiece(Player player, CompMaterial material) {
+	public static void takeFirstOnePiece(final Player player, final CompMaterial material) {
 		for (final ItemStack item : player.getInventory().getContents())
 			if (item != null && item.getType() == material.getMaterial()) {
 				takeOnePiece(player, item);
@@ -668,7 +670,7 @@ public final class PlayerUtil {
 	 * @param replaceWith
 	 * @return true if the replace was successful
 	 */
-	public static boolean updateInvSlot(Inventory inv, ItemStack search, ItemStack replaceWith) {
+	public static boolean updateInvSlot(final Inventory inv, final ItemStack search, final ItemStack replaceWith) {
 		Valid.checkNotNull(inv, "Inv = null");
 
 		for (int i = 0; i < inv.getSize(); i++) {
@@ -820,7 +822,7 @@ public final class PlayerUtil {
 	 * @param playerInventory
 	 * @return
 	 */
-	private static Inventory makeTruncatedInv(PlayerInventory playerInventory) {
+	private static Inventory makeTruncatedInv(final PlayerInventory playerInventory) {
 		final Inventory fake = Bukkit.createInventory(null, USABLE_PLAYER_INV_SIZE);
 		fake.setContents(Arrays.copyOf(playerInventory.getContents(), fake.getSize()));
 
@@ -833,7 +835,7 @@ public final class PlayerUtil {
 	 * @param inventory
 	 * @return
 	 */
-	private static boolean isCombinedInv(Inventory inventory) {
+	private static boolean isCombinedInv(final Inventory inventory) {
 		return inventory instanceof PlayerInventory && inventory.getContents().length > USABLE_PLAYER_INV_SIZE;
 	}
 }
