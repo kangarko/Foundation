@@ -1,9 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import org.bukkit.boss.BarStyle;
-
 /**
- * A wrapper for {@link BarStyle}
+ * A wrapper for BarStyle from bukkit
  */
 public enum CompBarStyle {
 

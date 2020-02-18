@@ -553,11 +553,13 @@ public final class BlockUtil {
 		try {
 			if (material.isInteractable()) // Ignore chests etc.
 				return false;
+		} catch (final Throwable t) {
+		}
 
+		try {
 			if (material.hasGravity()) // Ignore falling blocks
 				return false;
 		} catch (final Throwable t) {
-			// Old MC version
 		}
 
 		return material.isSolid();

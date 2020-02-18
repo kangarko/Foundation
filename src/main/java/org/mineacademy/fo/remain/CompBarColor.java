@@ -1,9 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import org.bukkit.boss.BarColor;
-
 /**
- * A wrapper for {@link BarColor}
+ * A wrapper for BarColor from bukkit
  */
 public enum CompBarColor {
 	PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE;
