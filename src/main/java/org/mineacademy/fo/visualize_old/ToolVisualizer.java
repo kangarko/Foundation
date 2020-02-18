@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -76,7 +75,7 @@ public abstract class ToolVisualizer extends Tool {
 		if (e.isCancelled())
 			return;
 
-		if (!BlockUtil.canSetup(e.getClickedBlock(), e.getAction()) && e.getClickedBlock().getType() != Material.BARRIER)
+		if (!BlockUtil.canSetup(e.getClickedBlock(), e.getAction()) && e.getClickedBlock().getType() != CompMaterial.BARRIER.getMaterial())
 			return;
 
 		final Block block = e.getClickedBlock();

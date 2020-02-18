@@ -118,7 +118,7 @@ public abstract class VisualizedBlock {
 		final Block under = spawnLoc.getBlock().getRelative(BlockFace.DOWN);
 		if (under.getType() == Material.AIR) {
 			underground = under.getState();
-			under.setType(Material.BARRIER);
+			under.setType(CompMaterial.BARRIER.getMaterial());
 		}
 
 		final FallingBlock falling = spawnLoc.getWorld().spawnFallingBlock(spawnLoc, mask.getMaterial(), (byte) mask.getData());
