@@ -56,7 +56,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -414,6 +413,16 @@ public final class Remain {
 	 */
 	public static int getHealth(final LivingEntity entity) {
 		return isGetHealthDouble ? (int) entity.getHealth() : getHealhLegacy(entity);
+	}
+
+	/**
+	 * Return the max health of an entity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static int getMaxHealth(final LivingEntity entity) {
+		return isGetHealthDouble ? (int) entity.getMaxHealth() : getMaxHealhLegacy(entity);
 	}
 
 	/**
@@ -1275,7 +1284,7 @@ public final class Remain {
 	 */
 	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent e) {
 		try {
-			return e.getHand() != null && e.getHand() == EquipmentSlot.HAND;
+			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
 
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
@@ -1290,7 +1299,7 @@ public final class Remain {
 	 */
 	public static boolean isInteractEventPrimaryHand(final PlayerInteractEntityEvent e) {
 		try {
-			return e.getHand() != null && e.getHand() == EquipmentSlot.HAND;
+			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
 		}
@@ -1386,6 +1395,21 @@ public final class Remain {
 		final InventoryView view = e.getView();
 
 		return slot < 0 ? null : view.getTopInventory() != null && slot < view.getTopInventory().getSize() ? view.getTopInventory() : view.getBottomInventory();
+	}
+
+	/**
+	 * Return the name of the entity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static String getName(final Entity entity) {
+		try {
+			return entity.getName();
+
+		} catch (final NoSuchMethodError t) {
+			return entity instanceof Player ? ((Player) entity).getName() : ItemUtil.bountifyCapitalized(entity.getType());
+		}
 	}
 
 	/**
@@ -1925,9 +1949,19 @@ public final class Remain {
 	}
 
 	// return the legacy get health int method
-	private static int getHealhLegacy(final LivingEntity pl) {
+	private static int getHealhLegacy(final LivingEntity entity) {
 		try {
-			return (int) getHealthMethod.invoke(pl);
+			return (int) getHealthMethod.invoke(entity);
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException(ex, "Reflection malfunction");
+		}
+	}
+
+	// return the legacy get health int method
+	private static int getMaxHealhLegacy(final LivingEntity entity) {
+		try {
+			return (int) LivingEntity.class.getMethod("getMaxHealth").invoke(entity);
+
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Reflection malfunction");
 		}

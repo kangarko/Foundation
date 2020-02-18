@@ -26,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
+import org.mineacademy.fo.remain.Remain;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -78,7 +79,7 @@ public class Metrics {
 	 *
 	 * @param plugin The plugin which stats should be submitted.
 	 */
-	public Metrics(Plugin plugin) {
+	public Metrics(final Plugin plugin) {
 		if (plugin == null) {
 			throw new IllegalArgumentException("Plugin cannot be null!");
 		}
@@ -197,7 +198,7 @@ public class Metrics {
 					? ((Collection<?>) onlinePlayersMethod.invoke(Bukkit.getServer())).size()
 					: ((Player[]) onlinePlayersMethod.invoke(Bukkit.getServer())).length;
 		} catch (final Exception e) {
-			playerAmount = Bukkit.getOnlinePlayers().size(); // Just use the new method if the Reflection failed
+			playerAmount = Remain.getOnlinePlayers().size(); // Just use the new method if the Reflection failed
 		}
 		final int onlineMode = Bukkit.getOnlineMode() ? 1 : 0;
 		final String bukkitVersion = Bukkit.getVersion();
@@ -291,7 +292,7 @@ public class Metrics {
 	 * @param data The data to send.
 	 * @throws Exception If the request failed.
 	 */
-	private static void sendData(Plugin plugin, JsonObject data) throws Exception {
+	private static void sendData(final Plugin plugin, final JsonObject data) throws Exception {
 		if (data == null) {
 			throw new IllegalArgumentException("Data cannot be null!");
 		}

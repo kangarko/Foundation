@@ -993,7 +993,7 @@ public final class Common {
 
 			if (arg != null)
 				if (arg instanceof Entity)
-					args[i] = ((Entity) arg).getName();
+					args[i] = Remain.getName((Entity) arg);
 				else if (arg instanceof CommandSender)
 					args[i] = ((CommandSender) arg).getName();
 				else if (arg instanceof World)

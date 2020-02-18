@@ -6,6 +6,7 @@ import static org.mineacademy.fo.ReflectionUtil.NMS;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 
 /**
  * Wraps NMS and CRAFT classes
@@ -43,11 +44,11 @@ public enum WrapperClass {
 	private Class<?> clazz;
 	private boolean enabled = false;
 
-	WrapperClass(String packageId, String suffix) {
+	WrapperClass(final String packageId, final String suffix) {
 		this(packageId, suffix, null, null);
 	}
 
-	WrapperClass(String packageId, String suffix, MinecraftVersion.V from, MinecraftVersion.V to) {
+	WrapperClass(final String packageId, final String suffix, final MinecraftVersion.V from, final MinecraftVersion.V to) {
 		if (from != null && MinecraftVersion.olderThan(from))
 			return;
 
@@ -61,14 +62,16 @@ public enum WrapperClass {
 			clazz = Class.forName(packageId + "." + version + "." + suffix);
 
 		} catch (final Exception ex) {
-			Common.error(ex, "Error while trying to resolve the class '" + suffix + "'!");
+			if (MinecraftVersion.atLeast(V.v1_8))
+				Common.error(ex, "Error while trying to resolve the class '" + suffix + "'!");
+
 		}
 	}
 
 	/**
 	 * @return The wrapped class
 	 */
-	public Class<?> getClazz(){
+	public Class<?> getClazz() {
 		return clazz;
 	}
 
