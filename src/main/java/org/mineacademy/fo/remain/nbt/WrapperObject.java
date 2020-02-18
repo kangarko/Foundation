@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
-
+import org.mineacademy.fo.MinecraftVersion.V;
 
 /**
  * This Enum wraps Constructors for NMS classes
@@ -22,7 +22,7 @@ public enum WrapperObject {
 	private Constructor<?> construct;
 	private Class<?> targetClass;
 
-	WrapperObject(MinecraftVersion.V from, MinecraftVersion.V to, Class<?> clazz, Class<?>... args) {
+	WrapperObject(final MinecraftVersion.V from, final MinecraftVersion.V to, final Class<?> clazz, final Class<?>... args) {
 		if (from != null && MinecraftVersion.olderThan(from))
 			return;
 		if (to != null && MinecraftVersion.newerThan(to))
@@ -33,7 +33,8 @@ public enum WrapperObject {
 			construct.setAccessible(true);
 
 		} catch (final Exception ex) {
-			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
+			if (MinecraftVersion.atLeast(V.v1_8))
+				Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
 	}
 
@@ -43,10 +44,10 @@ public enum WrapperObject {
 	 * @param args
 	 * @return Object created
 	 */
-	public Object getInstance(Object... args){
-		try{
+	public Object getInstance(final Object... args) {
+		try {
 			return construct.newInstance(args);
-		}catch(final Exception ex){
+		} catch (final Exception ex) {
 			throw new NbtApiException("Exception while creating a new instance of '" + targetClass + "'", ex);
 		}
 	}
