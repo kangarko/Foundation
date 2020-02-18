@@ -37,6 +37,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
@@ -91,6 +92,13 @@ public final class Common {
 	 */
 	private static final Map<String, Long> TIMED_LOG_CACHE = new HashMap<>();
 
+	/**
+	 * Holds words that differ in their plural form (nominative case only)
+	 */
+	private static final SerializedMap PLURAL_EXCEPTIONS = SerializedMap.ofArray(
+			"life", "lives",
+			"wolf", "wolves");
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Tell prefix
 	// ------------------------------------------------------------------------------------------------------------
@@ -139,7 +147,7 @@ public final class Common {
 	 *
 	 * @param prefix
 	 */
-	public static void setTellPrefix(String prefix) {
+	public static void setTellPrefix(final String prefix) {
 		tellPrefix = colorize(prefix);
 	}
 
@@ -150,7 +158,7 @@ public final class Common {
 	 *
 	 * @param prefix
 	 */
-	public static void setLogPrefix(String prefix) {
+	public static void setLogPrefix(final String prefix) {
 		logPrefix = colorize(prefix);
 	}
 
@@ -164,7 +172,7 @@ public final class Common {
 	 * @param message
 	 * @param sender
 	 */
-	public static void broadcastWithPlayer(String message, CommandSender sender) {
+	public static void broadcastWithPlayer(final String message, final CommandSender sender) {
 		broadcastWithPlayer(message, resolveSenderName(sender));
 	}
 
@@ -174,7 +182,7 @@ public final class Common {
 	 * @param message
 	 * @param playerReplacement
 	 */
-	public static void broadcastWithPlayer(String message, String playerReplacement) {
+	public static void broadcastWithPlayer(final String message, final String playerReplacement) {
 		broadcast(message.replace("{player}", playerReplacement));
 	}
 
@@ -183,7 +191,7 @@ public final class Common {
 	 *
 	 * @param message
 	 */
-	public static void broadcast(String message) {
+	public static void broadcast(final String message) {
 		broadcast(message, true);
 	}
 
@@ -193,7 +201,7 @@ public final class Common {
 	 * @param message
 	 * @param log
 	 */
-	public static void broadcast(String message, boolean log) {
+	public static void broadcast(final String message, final boolean log) {
 		if (message != null && !message.equals("none")) {
 			for (final Player online : Remain.getOnlinePlayers())
 				tellJson(online, message);
@@ -210,7 +218,7 @@ public final class Common {
 	 * @param message
 	 * @param log
 	 */
-	public static void broadcastWithPerm(String permission, String message, boolean log) {
+	public static void broadcastWithPerm(final String permission, final String message, final boolean log) {
 		if (message != null && !message.equals("none")) {
 			for (final Player online : Remain.getOnlinePlayers())
 				if (PlayerUtil.hasPerm(online, permission))
@@ -227,7 +235,7 @@ public final class Common {
 	 * @param permission
 	 * @param message
 	 */
-	public static void broadcastWithPerm(String permission, @NonNull TextComponent message) {
+	public static void broadcastWithPerm(final String permission, @NonNull final TextComponent message) {
 		final String legacy = message.toLegacyText();
 
 		if (!legacy.equals("none")) {
@@ -245,7 +253,7 @@ public final class Common {
 	 * @param recipients
 	 * @param messages
 	 */
-	public static void broadcastTo(Iterable<? extends CommandSender> recipients, String... messages) {
+	public static void broadcastTo(final Iterable<? extends CommandSender> recipients, final String... messages) {
 		for (final CommandSender sender : recipients)
 			tell(sender, messages);
 	}
@@ -267,7 +275,7 @@ public final class Common {
 	 * @param sender
 	 * @param message
 	 */
-	public static void tellTimedNoPrefix(int delaySeconds, CommandSender sender, String message) {
+	public static void tellTimedNoPrefix(final int delaySeconds, final CommandSender sender, final String message) {
 		final boolean hadPrefix = ADD_TELL_PREFIX;
 		ADD_TELL_PREFIX = false;
 
@@ -287,7 +295,7 @@ public final class Common {
 	 * @param sender
 	 * @param message
 	 */
-	public static void tellTimed(int delaySeconds, CommandSender sender, String message) {
+	public static void tellTimed(final int delaySeconds, final CommandSender sender, final String message) {
 
 		// No previous message stored, just tell the player now
 		if (!TIMED_TELL_CACHE.containsKey(message)) {
@@ -311,7 +319,7 @@ public final class Common {
 	 * @param conversable
 	 * @param message
 	 */
-	public static void tellLaterConversing(int delayTicks, Conversable conversable, String message) {
+	public static void tellLaterConversing(final int delayTicks, final Conversable conversable, final String message) {
 		Common.runLater(delayTicks, () -> tellConversing(conversable, message));
 	}
 
@@ -321,7 +329,7 @@ public final class Common {
 	 * @param conversable
 	 * @param message
 	 */
-	public static void tellConversing(Conversable conversable, String message) {
+	public static void tellConversing(final Conversable conversable, final String message) {
 		conversable.sendRawMessage(Common.colorize((ADD_TELL_PREFIX && ADD_TELL_PREFIX_IN_CONVERSATION ? tellPrefix : "") + removeFirstSpaces(message)).trim());
 	}
 
@@ -343,7 +351,7 @@ public final class Common {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tellNoPrefix(CommandSender sender, Replacer replacer) {
+	public static void tellNoPrefix(final CommandSender sender, final Replacer replacer) {
 		tellNoPrefix(sender, replacer.getReplacedMessage());
 	}
 
@@ -354,7 +362,7 @@ public final class Common {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tellNoPrefix(CommandSender sender, String... messages) {
+	public static void tellNoPrefix(final CommandSender sender, final String... messages) {
 		final boolean was = ADD_TELL_PREFIX;
 
 		ADD_TELL_PREFIX = false;
@@ -368,7 +376,7 @@ public final class Common {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tell(CommandSender sender, Replacer replacer) {
+	public static void tell(final CommandSender sender, final Replacer replacer) {
 		tell(sender, replacer.getReplacedMessage());
 	}
 
@@ -378,7 +386,7 @@ public final class Common {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tell(CommandSender sender, Collection<String> messages) {
+	public static void tell(final CommandSender sender, final Collection<String> messages) {
 		tell(sender, toArray(messages));
 	}
 
@@ -389,7 +397,7 @@ public final class Common {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tell(CommandSender sender, String... messages) {
+	public static void tell(final CommandSender sender, final String... messages) {
 		for (final String message : messages)
 			if (message != null && !"none".equals(message))
 				tellJson(sender, message);
@@ -406,7 +414,7 @@ public final class Common {
 	 * @param sender
 	 * @param message
 	 */
-	public static void tellJson(@NonNull CommandSender sender, String message) {
+	public static void tellJson(@NonNull final CommandSender sender, String message) {
 		if (message.isEmpty() || "none".equals(message))
 			return;
 
@@ -447,7 +455,7 @@ public final class Common {
 	 * @param sender
 	 * @return
 	 */
-	public static String resolveSenderName(CommandSender sender) {
+	public static String resolveSenderName(final CommandSender sender) {
 		return sender instanceof Player || sender instanceof DiscordSender ? sender.getName() : SimpleLocalization.CONSOLE_NAME;
 	}
 
@@ -472,7 +480,7 @@ public final class Common {
 	 * @param list
 	 * @return
 	 */
-	public static List<String> colorize(List<String> list) {
+	public static List<String> colorize(final List<String> list) {
 		final List<String> copy = new ArrayList<>();
 		copy.addAll(list);
 
@@ -492,7 +500,7 @@ public final class Common {
 	 * @param messages the messages to replace color codes with '&'
 	 * @return the colored message
 	 */
-	public static String colorize(String... messages) {
+	public static String colorize(final String... messages) {
 		return colorize(StringUtils.join(messages, "\n"));
 	}
 
@@ -504,7 +512,7 @@ public final class Common {
 	 * @param message the message to replace color codes with '&'
 	 * @return the colored message
 	 */
-	public static String colorize(String message) {
+	public static String colorize(final String message) {
 		return message == null || message.isEmpty() ? ""
 				: ChatColor.translateAlternateColorCodes('&', message
 						.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
@@ -528,7 +536,7 @@ public final class Common {
 	 * @param messages
 	 * @return
 	 */
-	public static String[] revertColorizing(String[] messages) {
+	public static String[] revertColorizing(final String[] messages) {
 		for (int i = 0; i < messages.length; i++)
 			messages[i] = revertColorizing(messages[i]);
 
@@ -541,7 +549,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static String revertColorizing(String message) {
+	public static String revertColorizing(final String message) {
 		return message.replaceAll("(?i)" + ChatColor.COLOR_CHAR + "([0-9a-fk-or])", "&$1");
 	}
 
@@ -551,7 +559,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static String stripColors(String message) {
+	public static String stripColors(final String message) {
 		return message == null ? "" : message.replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-or])", "");
 	}
 
@@ -561,7 +569,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static boolean hasColors(String message) {
+	public static boolean hasColors(final String message) {
 		return COLOR_REGEX.matcher(message).find();
 	}
 
@@ -571,7 +579,7 @@ public final class Common {
 	 * @param message, or empty if none
 	 * @return
 	 */
-	public static String lastColor(String message) {
+	public static String lastColor(final String message) {
 		final String andLetter = lastColorLetter(message);
 		final String colorChat = lastColorChar(message);
 
@@ -584,7 +592,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static String lastColorLetter(String message) {
+	public static String lastColorLetter(final String message) {
 		return lastColor(message, '&');
 	}
 
@@ -594,11 +602,11 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static String lastColorChar(String message) {
+	public static String lastColorChar(final String message) {
 		return lastColor(message, ChatColor.COLOR_CHAR);
 	}
 
-	private static String lastColor(String msg, char colorChar) {
+	private static String lastColor(final String msg, final char colorChar) {
 		final int c = msg.lastIndexOf(colorChar);
 
 		// Contains our character
@@ -673,7 +681,7 @@ public final class Common {
 	 * @param length
 	 * @return
 	 */
-	public static String scoreboardLine(int length) {
+	public static String scoreboardLine(final int length) {
 		String fill = "";
 
 		for (int i = 0; i < length; i++)
@@ -687,7 +695,7 @@ public final class Common {
 	 *
 	 * If JSON, unpacks it and display [json] prefix.
 	 */
-	public static String formatStringHover(String msg) {
+	public static String formatStringHover(final String msg) {
 		String finalText = msg;
 
 		if (msg.startsWith("[JSON]")) {
@@ -706,7 +714,7 @@ public final class Common {
 	 * @param list
 	 * @return
 	 */
-	public static String formatList(Collection<String> list) {
+	public static String formatList(final Collection<String> list) {
 		return formatList(list, ChatColor.GRAY, ChatColor.WHITE);
 	}
 
@@ -718,7 +726,7 @@ public final class Common {
 	 * @param secondary
 	 * @return
 	 */
-	public static String formatList(Collection<String> list, ChatColor primary, ChatColor secondary) {
+	public static String formatList(final Collection<String> list, final ChatColor primary, final ChatColor secondary) {
 		String formatted = "";
 		boolean toggle = true;
 
@@ -740,8 +748,10 @@ public final class Common {
 	 * @param ofWhat
 	 * @return
 	 */
-	public static String plural(long count, String ofWhat) {
-		return count + " " + ofWhat + (count == 0 || count > 1 && !ofWhat.endsWith("s") ? "s" : "");
+	public static String plural(final long count, final String ofWhat) {
+		final String exception = getException(count, ofWhat);
+
+		return exception != null ? exception : (count + " " + ofWhat + (count == 0 || count > 1 && !ofWhat.endsWith("s") ? "s" : ""));
 	}
 
 	/**
@@ -751,8 +761,10 @@ public final class Common {
 	 * @param ofWhat
 	 * @return
 	 */
-	public static String pluralEs(long count, String ofWhat) {
-		return count + " " + ofWhat + (count == 0 || count > 1 && !ofWhat.endsWith("es") ? "es" : "");
+	public static String pluralEs(final long count, final String ofWhat) {
+		final String exception = getException(count, ofWhat);
+
+		return exception != null ? exception : (count + " " + ofWhat + (count == 0 || count > 1 && !ofWhat.endsWith("es") ? "es" : ""));
 	}
 
 	/**
@@ -762,8 +774,17 @@ public final class Common {
 	 * @param ofWhat
 	 * @return
 	 */
-	public static String pluralIes(long count, String ofWhat) {
-		return count + " " + (count == 0 || count > 1 && !ofWhat.endsWith("ies") ? ofWhat.substring(0, ofWhat.length() - 1) + "ies" : ofWhat);
+	public static String pluralIes(final long count, final String ofWhat) {
+		final String exception = getException(count, ofWhat);
+
+		return exception != null ? exception : (count + " " + (count == 0 || count > 1 && !ofWhat.endsWith("ies") ? ofWhat.substring(0, ofWhat.length() - 1) + "ies" : ofWhat));
+	}
+
+	/*
+	 * Return the plural word from the exception list or null if none
+	 */
+	private static String getException(final long count, final String ofWhat) {
+		return count == 0 || count > 1 ? PLURAL_EXCEPTIONS.getString(ofWhat) : null;
 	}
 
 	/**
@@ -774,7 +795,7 @@ public final class Common {
 	 * @deprecated only a dummy syllable check, e.g. returns a hour
 	 */
 	@Deprecated
-	public static String article(String ofWhat) {
+	public static String article(final String ofWhat) {
 		Valid.checkBoolean(ofWhat.length() > 0, "String cannot be empty");
 		final List<String> syllables = Arrays.asList("a", "e", "i", "o", "u", "y");
 
@@ -795,7 +816,7 @@ public final class Common {
 	 * @param delimiterColor
 	 * @return
 	 */
-	public static String fancyBar(int min, char minChar, int max, char maxChar, ChatColor delimiterColor) {
+	public static String fancyBar(final int min, final char minChar, final int max, final char maxChar, final ChatColor delimiterColor) {
 		String formatted = "";
 
 		for (int i = 0; i < min; i++)
@@ -815,7 +836,7 @@ public final class Common {
 	 * @param vec
 	 * @return
 	 */
-	public static String shortLocation(Vector vec) {
+	public static String shortLocation(final Vector vec) {
 		return " [" + MathUtil.formatOneDigit(vec.getX()) + ", " + MathUtil.formatOneDigit(vec.getY()) + ", " + MathUtil.formatOneDigit(vec.getZ()) + "]";
 	}
 
@@ -825,7 +846,7 @@ public final class Common {
 	 * @param loc
 	 * @return
 	 */
-	public static String shortLocation(Location loc) {
+	public static String shortLocation(final Location loc) {
 		if (loc == null)
 			return "Location(null)";
 
@@ -848,7 +869,7 @@ public final class Common {
 	 * @param plugin
 	 * @return
 	 */
-	public static boolean doesPluginExist(String plugin) {
+	public static boolean doesPluginExist(final String plugin) {
 		final boolean hooked = doesPluginExistSilently(plugin);
 
 		if (hooked)
@@ -930,7 +951,7 @@ public final class Common {
 	 * @param delaySec
 	 * @param msg
 	 */
-	public static void logTimed(int delaySec, String msg) {
+	public static void logTimed(final int delaySec, final String msg) {
 		if (!TIMED_LOG_CACHE.containsKey(msg)) {
 			log(msg);
 			TIMED_LOG_CACHE.put(msg, TimeUtil.currentTimeSeconds());
@@ -950,7 +971,7 @@ public final class Common {
 	 * @param format
 	 * @param args
 	 */
-	public static void logF(String format, @NonNull Object... args) {
+	public static void logF(final String format, @NonNull final Object... args) {
 		final String formatted = format(format, args);
 
 		log(false, formatted);
@@ -966,7 +987,7 @@ public final class Common {
 	 * @param args
 	 * @return
 	 */
-	public static String format(String format, @NonNull Object... args) {
+	public static String format(final String format, @NonNull final Object... args) {
 		for (int i = 0; i < args.length; i++) {
 			final Object arg = args[i];
 
@@ -994,7 +1015,7 @@ public final class Common {
 	 *
 	 * @param messages
 	 */
-	public static void log(List<String> messages) {
+	public static void log(final List<String> messages) {
 		log(toArray(messages));
 	}
 
@@ -1003,7 +1024,7 @@ public final class Common {
 	 *
 	 * @param messages
 	 */
-	public static void log(String... messages) {
+	public static void log(final String... messages) {
 		log(true, messages);
 	}
 
@@ -1014,7 +1035,7 @@ public final class Common {
 	 *
 	 * @param messages
 	 */
-	public static void logNoPrefix(String... messages) {
+	public static void logNoPrefix(final String... messages) {
 		log(false, messages);
 	}
 
@@ -1024,7 +1045,7 @@ public final class Common {
 	 * @param addLogPrefix should we add {@link #getLogPrefix()} ?
 	 * @param messages
 	 */
-	public static void log(boolean addLogPrefix, String... messages) {
+	public static void log(final boolean addLogPrefix, final String... messages) {
 		for (String message : messages) {
 			if (message.equals("none"))
 				continue;
@@ -1065,7 +1086,7 @@ public final class Common {
 	 *
 	 * @param messages
 	 */
-	public static void logFramed(String... messages) {
+	public static void logFramed(final String... messages) {
 		logFramed(false, messages);
 	}
 
@@ -1077,7 +1098,7 @@ public final class Common {
 	 * @param disablePlugin
 	 * @param messages
 	 */
-	public static void logFramed(boolean disablePlugin, String... messages) {
+	public static void logFramed(final boolean disablePlugin, final String... messages) {
 		if (messages != null && !Valid.isNullOrEmpty(messages)) {
 			log("&7" + consoleLine());
 			for (final String msg : messages)
@@ -1100,7 +1121,7 @@ public final class Common {
 	 * @param t
 	 * @param messages
 	 */
-	public static void error(Throwable t, String... messages) {
+	public static void error(final Throwable t, final String... messages) {
 		error(false, t, messages);
 	}
 
@@ -1112,7 +1133,7 @@ public final class Common {
 	 * @param t
 	 * @param messages
 	 */
-	public static void error(boolean disablePlugin, Throwable t, String... messages) {
+	public static void error(final boolean disablePlugin, final Throwable t, final String... messages) {
 		if (!(t instanceof FoException))
 			Debugger.saveError(t, messages);
 
@@ -1129,7 +1150,7 @@ public final class Common {
 	 * @param throwable
 	 * @param messages
 	 */
-	public static void throwError(Throwable throwable, String... messages) {
+	public static void throwError(Throwable throwable, final String... messages) {
 		if (throwable.getCause() != null)
 			throwable = throwable.getCause();
 
@@ -1149,7 +1170,7 @@ public final class Common {
 	 * @param msgs
 	 * @return
 	 */
-	private static String[] replaceErrorVariable(Throwable throwable, String... msgs) {
+	private static String[] replaceErrorVariable(Throwable throwable, final String... msgs) {
 		while (throwable.getCause() != null)
 			throwable = throwable.getCause();
 
@@ -1173,7 +1194,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static boolean regExMatch(String regex, String message) {
+	public static boolean regExMatch(final String regex, final String message) {
 		return regExMatch(compilePattern(regex), message);
 	}
 
@@ -1184,7 +1205,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static boolean regExMatch(Pattern regex, String message) {
+	public static boolean regExMatch(final Pattern regex, final String message) {
 		return regExMatch(compileMatcher(regex, message));
 	}
 
@@ -1196,7 +1217,7 @@ public final class Common {
 	 * @param matcher
 	 * @return
 	 */
-	public static boolean regExMatch(Matcher matcher) {
+	public static boolean regExMatch(final Matcher matcher) {
 		try {
 			return matcher != null ? matcher.find() : false;
 
@@ -1222,7 +1243,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static Matcher compileMatcher(@NonNull Pattern pattern, String message) {
+	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
 		try {
 			final String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
 			final int timeout = SimpleSettings.REGEX_TIMEOUT;
@@ -1247,7 +1268,7 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static Matcher compileMatcher(String regex, String message) {
+	public static Matcher compileMatcher(final String regex, final String message) {
 		return compileMatcher(compilePattern(regex), message);
 	}
 
@@ -1287,7 +1308,7 @@ public final class Common {
 	 * @param arrays
 	 * @return
 	 */
-	public static <T> List<T> joinArrays(Collection<T>... arrays) {
+	public static <T> List<T> joinArrays(final Collection<T>... arrays) {
 		final List<T> all = new ArrayList<>();
 
 		for (final Collection<T> array : arrays)
@@ -1303,7 +1324,7 @@ public final class Common {
 	 * @param lists
 	 * @return
 	 */
-	public static <T> StrictList<T> join(StrictList<T>... lists) {
+	public static <T> StrictList<T> join(final StrictList<T>... lists) {
 		final StrictList<T> joined = new StrictList<>();
 
 		for (final StrictList<T> list : lists)
@@ -1319,7 +1340,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static String joinRange(int startIndex, String[] array) {
+	public static String joinRange(final int startIndex, final String[] array) {
 		return joinRange(startIndex, array.length, array);
 	}
 
@@ -1331,7 +1352,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static String joinRange(int startIndex, int stopIndex, String[] array) {
+	public static String joinRange(final int startIndex, final int stopIndex, final String[] array) {
 		return joinRange(startIndex, stopIndex, array, " ");
 	}
 
@@ -1344,7 +1365,7 @@ public final class Common {
 	 * @param delimiter
 	 * @return
 	 */
-	public static String joinRange(int start, int stop, String[] array, String delimiter) {
+	public static String joinRange(final int start, final int stop, final String[] array, final String delimiter) {
 		String joined = "";
 
 		for (int i = start; i < MathUtil.range(stop, 0, array.length); i++)
@@ -1363,7 +1384,7 @@ public final class Common {
 	 * @param stringer
 	 * @return
 	 */
-	public static <T> String join(T[] array, String delimiter, Stringer<T> stringer) {
+	public static <T> String join(final T[] array, final String delimiter, final Stringer<T> stringer) {
 		Valid.checkNotNull(array, "Cannot join null array!");
 
 		return join(Arrays.asList(array), delimiter, stringer);
@@ -1377,7 +1398,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static <T> String joinToString(T[] array) {
+	public static <T> String joinToString(final T[] array) {
 		return array == null ? "null" : joinToString(Arrays.asList(array));
 	}
 
@@ -1389,7 +1410,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static <T> String joinToString(Iterable<T> array) {
+	public static <T> String joinToString(final Iterable<T> array) {
 		return array == null ? "null" : joinToString(array, ", ");
 	}
 
@@ -1402,7 +1423,7 @@ public final class Common {
 	 * @param delimiter
 	 * @return
 	 */
-	public static <T> String joinToString(Iterable<T> array, String delimiter) {
+	public static <T> String joinToString(final Iterable<T> array, final String delimiter) {
 		return join(array, delimiter, (object) -> object == null ? "" : object.toString());
 	}
 
@@ -1413,7 +1434,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static <T extends CommandSender> String joinPlayers(Iterable<T> array) {
+	public static <T extends CommandSender> String joinPlayers(final Iterable<T> array) {
 		return join(array, ", ", (Stringer<T>) object -> object.getName());
 	}
 
@@ -1426,7 +1447,7 @@ public final class Common {
 	 * @param nameToIgnore
 	 * @return
 	 */
-	public static <T extends CommandSender> String joinPlayersExcept(Iterable<T> array, String nameToIgnore) {
+	public static <T extends CommandSender> String joinPlayersExcept(final Iterable<T> array, final String nameToIgnore) {
 		final Iterator<T> it = array.iterator();
 		String message = "";
 
@@ -1450,7 +1471,7 @@ public final class Common {
 	 * @param stringer
 	 * @return
 	 */
-	public static <T> String join(Iterable<T> array, String delimiter, Stringer<T> stringer) {
+	public static <T> String join(final Iterable<T> array, final String delimiter, final Stringer<T> stringer) {
 		final Iterator<T> it = array.iterator();
 		String message = "";
 
@@ -1507,7 +1528,7 @@ public final class Common {
 	 * @param includeVanished
 	 * @return
 	 */
-	public static List<String> getPlayerNames(boolean includeVanished) {
+	public static List<String> getPlayerNames(final boolean includeVanished) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -1527,7 +1548,7 @@ public final class Common {
 	 * @param sender
 	 * @return
 	 */
-	public static List<String> getPlayerNames(Player sender) {
+	public static List<String> getPlayerNames(final Player sender) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers())
@@ -1544,7 +1565,7 @@ public final class Common {
 	 * @param converter the converter;
 	 * @return the new list
 	 */
-	public static <OLD, NEW> List<NEW> convert(Iterable<OLD> list, TypeConverter<OLD, NEW> converter) {
+	public static <OLD, NEW> List<NEW> convert(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
 		final List<NEW> copy = new ArrayList<>();
 
 		for (final OLD old : list)
@@ -1560,7 +1581,7 @@ public final class Common {
 	 * @param converter the converter
 	 * @return the new list
 	 */
-	public static <OLD, NEW> StrictList<NEW> convertStrict(Iterable<OLD> list, TypeConverter<OLD, NEW> converter) {
+	public static <OLD, NEW> StrictList<NEW> convertStrict(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
 		final StrictList<NEW> copy = new StrictList<>();
 
 		for (final OLD old : list)
@@ -1580,7 +1601,7 @@ public final class Common {
 	 * @param converter
 	 * @return
 	 */
-	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> Map<NEW_KEY, NEW_VALUE> convert(Map<OLD_KEY, OLD_VALUE> oldMap, MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
+	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> Map<NEW_KEY, NEW_VALUE> convert(final Map<OLD_KEY, OLD_VALUE> oldMap, final MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
 		final Map<NEW_KEY, NEW_VALUE> newMap = new HashMap<>();
 		oldMap.entrySet().forEach((e) -> newMap.put(converter.convertKey(e.getKey()), converter.convertValue(e.getValue())));
 
@@ -1598,7 +1619,7 @@ public final class Common {
 	 * @param converter
 	 * @return
 	 */
-	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> StrictMap<NEW_KEY, NEW_VALUE> convertStrict(Map<OLD_KEY, OLD_VALUE> oldMap, MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
+	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> StrictMap<NEW_KEY, NEW_VALUE> convertStrict(final Map<OLD_KEY, OLD_VALUE> oldMap, final MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
 		final StrictMap<NEW_KEY, NEW_VALUE> newMap = new StrictMap<>();
 		oldMap.entrySet().forEach((e) -> newMap.put(converter.convertKey(e.getKey()), converter.convertValue(e.getValue())));
 
@@ -1615,7 +1636,7 @@ public final class Common {
 	 * @param converter
 	 * @return
 	 */
-	public static <LIST_KEY, OLD_KEY, OLD_VALUE> StrictList<LIST_KEY> convertToList(Map<OLD_KEY, OLD_VALUE> map, MapToListConverter<LIST_KEY, OLD_KEY, OLD_VALUE> converter) {
+	public static <LIST_KEY, OLD_KEY, OLD_VALUE> StrictList<LIST_KEY> convertToList(final Map<OLD_KEY, OLD_VALUE> map, final MapToListConverter<LIST_KEY, OLD_KEY, OLD_VALUE> converter) {
 		final StrictList<LIST_KEY> list = new StrictList<>();
 
 		for (final Entry<OLD_KEY, OLD_VALUE> e : map.entrySet())
@@ -1633,7 +1654,7 @@ public final class Common {
 	 * @param converter
 	 * @return
 	 */
-	public static <OLD_TYPE, NEW_TYPE> List<NEW_TYPE> convert(OLD_TYPE[] oldArray, TypeConverter<OLD_TYPE, NEW_TYPE> converter) {
+	public static <OLD_TYPE, NEW_TYPE> List<NEW_TYPE> convert(final OLD_TYPE[] oldArray, final TypeConverter<OLD_TYPE, NEW_TYPE> converter) {
 		final List<NEW_TYPE> newList = new ArrayList<>();
 
 		for (final OLD_TYPE old : oldArray)
@@ -1719,7 +1740,7 @@ public final class Common {
 	 * @deprecated usage specific, also some operating systems seems to handle this poorly
 	 */
 	@Deprecated
-	public static String[] splitNewline(String message) {
+	public static String[] splitNewline(final String message) {
 		if (!SimplePlugin.getInstance().enforeNewLine())
 			return message.split("\n");
 
@@ -1753,7 +1774,7 @@ public final class Common {
 	 * @param messages
 	 * @return
 	 */
-	public static String[] replace(String what, String byWhat, String... messages) {
+	public static String[] replace(final String what, final String byWhat, final String... messages) {
 		for (int i = 0; i < messages.length; i++)
 			messages[i] = messages[i].replace(what, byWhat);
 
@@ -1768,7 +1789,7 @@ public final class Common {
 	 * @param messages
 	 * @return
 	 */
-	public static List<String> replace(String what, String byWhat, List<String> messages) {
+	public static List<String> replace(final String what, final String byWhat, final List<String> messages) {
 		for (int i = 0; i < messages.size(); i++)
 			messages.set(i, messages.get(i).replace(what, byWhat));
 
@@ -1781,7 +1802,7 @@ public final class Common {
 	 * @param list
 	 * @return
 	 */
-	public static String[] replaceNuls(String[] list) {
+	public static String[] replaceNuls(final String[] list) {
 		for (int i = 0; i < list.length; i++)
 			if (list[i] == null)
 				list[i] = "";
@@ -1796,7 +1817,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static <T> List<T> removeNulsAndEmpties(T[] array) {
+	public static <T> List<T> removeNulsAndEmpties(final T[] array) {
 		return array != null ? removeNulsAndEmpties(Arrays.asList(array)) : new ArrayList<>();
 	}
 
@@ -1807,7 +1828,7 @@ public final class Common {
 	 * @param list
 	 * @return
 	 */
-	public static <T> List<T> removeNulsAndEmpties(List<T> list) {
+	public static <T> List<T> removeNulsAndEmpties(final List<T> list) {
 		final List<T> copy = new ArrayList<>();
 
 		for (int i = 0; i < list.size(); i++) {
@@ -1833,7 +1854,7 @@ public final class Common {
 	 * @param obj
 	 * @return
 	 */
-	public static String[] getListOrString(Object obj) {
+	public static String[] getListOrString(final Object obj) {
 		if (obj instanceof List) {
 			final List<String> cast = (List<String>) obj;
 
@@ -1849,7 +1870,7 @@ public final class Common {
 	 * @param input
 	 * @return
 	 */
-	public static String getOrEmpty(String input) {
+	public static String getOrEmpty(final String input) {
 		return input == null || "none".equalsIgnoreCase(input) ? "" : input;
 	}
 
@@ -1859,7 +1880,7 @@ public final class Common {
 	 * @param input
 	 * @return
 	 */
-	public static String getOrNull(String input) {
+	public static String getOrNull(final String input) {
 		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? null : input;
 	}
 
@@ -1870,7 +1891,7 @@ public final class Common {
 	 * @param def the default value
 	 * @return the value, or default it the value is null
 	 */
-	public static <T> T getOrDefault(T value, T def) {
+	public static <T> T getOrDefault(final T value, final T def) {
 		Valid.checkNotNull(def, "The default value must not be null!");
 
 		return value != null ? value : def;
@@ -1883,7 +1904,7 @@ public final class Common {
 	 * @param def
 	 * @return
 	 */
-	public static String getOrSupply(String input, String def) {
+	public static String getOrSupply(final String input, final String def) {
 		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? def : input;
 	}
 
@@ -1893,7 +1914,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static String[] toArray(Collection<String> array) {
+	public static String[] toArray(final Collection<String> array) {
 		return array.toArray(new String[array.size()]);
 	}
 
@@ -1903,7 +1924,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static ArrayList<String> toList(String... array) {
+	public static ArrayList<String> toList(final String... array) {
 		return new ArrayList<>(Arrays.asList(array));
 	}
 
@@ -1913,7 +1934,7 @@ public final class Common {
 	 * @param it the iterable
 	 * @return the new list
 	 */
-	public static <T> List<T> toList(Iterable<T> it) {
+	public static <T> List<T> toList(final Iterable<T> it) {
 		final List<T> list = new ArrayList<>();
 		it.forEach((el) -> list.add(el));
 
@@ -1927,7 +1948,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static <T> T[] reverse(T[] array) {
+	public static <T> T[] reverse(final T[] array) {
 		if (array == null)
 			return null;
 
@@ -1951,7 +1972,7 @@ public final class Common {
 	 * @param list
 	 * @return
 	 */
-	public static String[] toLowerCase(String... list) {
+	public static String[] toLowerCase(final String... list) {
 		for (int i = 0; i < list.length; i++)
 			list[i] = list[i].toLowerCase();
 
@@ -1967,7 +1988,7 @@ public final class Common {
 	 * @param firstValue
 	 * @return
 	 */
-	public static <A, B> Map<A, B> newHashMap(A firstKey, B firstValue) {
+	public static <A, B> Map<A, B> newHashMap(final A firstKey, final B firstValue) {
 		final Map<A, B> map = new HashMap<>();
 		map.put(firstKey, firstValue);
 
@@ -1984,7 +2005,7 @@ public final class Common {
 	 * @param condition
 	 * @param task
 	 */
-	public static void runLaterIf(boolean condition, Runnable task) {
+	public static void runLaterIf(final boolean condition, final Runnable task) {
 		if (condition)
 			runLater(1, task);
 		else
@@ -1997,7 +2018,7 @@ public final class Common {
 	 * @param task the task
 	 * @return the task or null
 	 */
-	public static <T extends Runnable> BukkitTask runLater(T task) {
+	public static <T extends Runnable> BukkitTask runLater(final T task) {
 		return runLater(1, task);
 	}
 
@@ -2008,7 +2029,7 @@ public final class Common {
 	 * @param task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLater(int delayTicks, Runnable task) {
+	public static BukkitTask runLater(final int delayTicks, final Runnable task) {
 		final BukkitScheduler scheduler = Bukkit.getScheduler();
 		final JavaPlugin instance = SimplePlugin.getInstance();
 
@@ -2025,7 +2046,7 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runLaterAsync(Runnable task) {
+	public static BukkitTask runLaterAsync(final Runnable task) {
 		return runLaterAsync(0, task);
 	}
 
@@ -2036,7 +2057,7 @@ public final class Common {
 	 * @param task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLaterAsync(int delayTicks, Runnable task) {
+	public static BukkitTask runLaterAsync(final int delayTicks, final Runnable task) {
 		final BukkitScheduler scheduler = Bukkit.getScheduler();
 		final JavaPlugin instance = SimplePlugin.getInstance();
 
@@ -2054,7 +2075,7 @@ public final class Common {
 	 * @param task the task
 	 * @return the bukkit task or null
 	 */
-	public static BukkitTask runTimer(int repeatTicks, Runnable task) {
+	public static BukkitTask runTimer(final int repeatTicks, final Runnable task) {
 		return runTimer(0, repeatTicks, task);
 	}
 
@@ -2066,7 +2087,7 @@ public final class Common {
 	 * @param task the task
 	 * @return the bukkit task or null if error
 	 */
-	public static BukkitTask runTimer(int delayTicks, int repeatTicks, Runnable task) {
+	public static BukkitTask runTimer(final int delayTicks, final int repeatTicks, final Runnable task) {
 		return runIfDisabled(task) ? null
 				: task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks)
 						: Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
@@ -2079,7 +2100,7 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runTimerAsync(int repeatTicks, Runnable task) {
+	public static BukkitTask runTimerAsync(final int repeatTicks, final Runnable task) {
 		return runTimerAsync(0, repeatTicks, task);
 	}
 
@@ -2091,7 +2112,7 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runTimerAsync(int delayTicks, int repeatTicks, Runnable task) {
+	public static BukkitTask runTimerAsync(final int delayTicks, final int repeatTicks, final Runnable task) {
 		return runIfDisabled(task) ? null
 				: task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks)
 						: Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
@@ -2101,7 +2122,7 @@ public final class Common {
 	// In case it is disabled, just runs the task and returns true
 	// Otherwise we return false and the task will be run correctly in Bukkit scheduler
 	// This is fail-safe to critical save-on-exit operations in case our plugin is improperly reloaded (PlugMan) or malfunctions
-	private static boolean runIfDisabled(Runnable run) {
+	private static boolean runIfDisabled(final Runnable run) {
 		if (!SimplePlugin.getInstance().isEnabled()) {
 			run.run();
 
@@ -2122,7 +2143,7 @@ public final class Common {
 	 * @param event the event
 	 * @return true if the event was NOT cancelled
 	 */
-	public static boolean callEvent(Event event) {
+	public static boolean callEvent(final Event event) {
 		Bukkit.getPluginManager().callEvent(event);
 
 		return event instanceof Cancellable ? !((Cancellable) event).isCancelled() : true;
@@ -2133,7 +2154,7 @@ public final class Common {
 	 *
 	 * @param listener
 	 */
-	public static void registerEvents(Listener listener) {
+	public static void registerEvents(final Listener listener) {
 		Bukkit.getPluginManager().registerEvents(listener, SimplePlugin.getInstance());
 	}
 
@@ -2143,7 +2164,7 @@ public final class Common {
 	 * @param mapOrSection
 	 * @return
 	 */
-	public static Map<String, Object> getMapFromSection(@NonNull Object mapOrSection) {
+	public static Map<String, Object> getMapFromSection(@NonNull final Object mapOrSection) {
 		final Map<String, Object> map = mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection : mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
@@ -2161,7 +2182,7 @@ public final class Common {
 	 * @param timeout
 	 * @return
 	 */
-	public static boolean isDomainReachable(String url, int timeout) {
+	public static boolean isDomainReachable(String url, final int timeout) {
 		url = url.replaceFirst("^https", "http");
 
 		try {
@@ -2188,7 +2209,7 @@ public final class Common {
 	 *
 	 * @param millis
 	 */
-	public static void sleep(int millis) {
+	public static void sleep(final int millis) {
 		try {
 			Thread.sleep(millis);
 
@@ -2221,7 +2242,7 @@ final class TimedCharSequence implements CharSequence {
 	 * @param message
 	 * @param timeoutLimit
 	 */
-	public TimedCharSequence(CharSequence message, Integer timeoutLimit) {
+	public TimedCharSequence(final CharSequence message, final Integer timeoutLimit) {
 		Valid.checkNotNull(message, "msg = null");
 		Valid.checkNotNull(timeoutLimit, "timeout = null");
 
@@ -2234,7 +2255,7 @@ final class TimedCharSequence implements CharSequence {
 	 * this is called too late after the constructor, see {@link #timeoutLimit}
 	 */
 	@Override
-	public char charAt(int index) {
+	public char charAt(final int index) {
 		if (System.currentTimeMillis() > System.currentTimeMillis() + timeoutLimit)
 			throw new RegexTimeoutException(message, timeoutLimit);
 
@@ -2247,7 +2268,7 @@ final class TimedCharSequence implements CharSequence {
 	}
 
 	@Override
-	public CharSequence subSequence(int start, int end) {
+	public CharSequence subSequence(final int start, final int end) {
 		return new TimedCharSequence(message.subSequence(start, end), timeoutLimit);
 	}
 
