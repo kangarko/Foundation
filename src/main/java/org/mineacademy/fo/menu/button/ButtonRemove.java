@@ -87,7 +87,7 @@ public class ButtonRemove extends Button {
 	 * Open the confirm dialog when clicked
 	 */
 	@Override
-	public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
+	public void onClickedInMenu(final Player pl, final Menu menu, final ClickType click) {
 		new MenuDialogRemove(parentMenu, new RemoveConfirmButton()).displayTo(pl);
 	}
 
@@ -106,7 +106,7 @@ public class ButtonRemove extends Button {
 		 * Remove the object using {@link ButtonRemove#removeAction}
 		 */
 		@Override
-		public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+		public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 			player.closeInventory();
 			removeAction.remove(toRemoveName);
 
@@ -117,6 +117,8 @@ public class ButtonRemove extends Button {
 	/**
 	 * Fires the action to remove the object
 	 */
+
+	@FunctionalInterface
 	public interface ButtonRemoveAction {
 
 		/**
@@ -148,7 +150,7 @@ public class ButtonRemove extends Button {
 		 * @param parentMenu the parent menu
 		 * @param confirmButton the remove button
 		 */
-		public MenuDialogRemove(Menu parentMenu, RemoveConfirmButton confirmButton) {
+		public MenuDialogRemove(final Menu parentMenu, final RemoveConfirmButton confirmButton) {
 			super(parentMenu);
 
 			this.confirmButton = confirmButton;
@@ -165,7 +167,7 @@ public class ButtonRemove extends Button {
 		 * @return the item or null
 		 */
 		@Override
-		public ItemStack getItemAt(int slot) {
+		public ItemStack getItemAt(final int slot) {
 			if (slot == 9 + 3)
 				return confirmButton.getItem();
 
@@ -173,6 +175,16 @@ public class ButtonRemove extends Button {
 				return returnButton.getItem();
 
 			return null;
+		}
+
+		/**
+		 * Do not add twice return buttons
+		 *
+		 * @see org.mineacademy.fo.menu.Menu#addReturnButton()
+		 */
+		@Override
+		protected boolean addReturnButton() {
+			return false;
 		}
 
 		@Override
