@@ -25,6 +25,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
+import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
@@ -135,13 +136,13 @@ public final class SerializeUtil {
 		else if (obj instanceof TimeHelper)
 			return ((TimeHelper) obj).getRaw();
 
-		else if (obj instanceof Iterable || obj.getClass().isArray()) {
+		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
 
-			if (obj instanceof Iterable)
-				for (final Object element : (Iterable<?>) obj)
+			if (obj instanceof Iterable || obj instanceof IsInList) {
+				for (final Object element : obj instanceof IsInList ? ((IsInList<?>) obj).getList() : (Iterable<?>) obj)
 					serialized.add(serialize(element));
-			else
+			} else
 				for (final Object element : (Object[]) obj)
 					serialized.add(serialize(element));
 
@@ -341,6 +342,9 @@ public final class SerializeUtil {
 			} else if (Map.class.isAssignableFrom(classOf) && object instanceof Map) {
 				// Good
 
+			} else if (ConfigurationSerializable.class.isAssignableFrom(classOf) && object instanceof ConfigurationSerializable) {
+				// Good
+
 			} else if (classOf == Object.class) {
 				// pass through
 
@@ -349,6 +353,7 @@ public final class SerializeUtil {
 		}
 
 		return (T) object;
+
 	}
 
 	/**

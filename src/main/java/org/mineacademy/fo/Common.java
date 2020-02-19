@@ -1478,7 +1478,8 @@ public final class Common {
 		while (it.hasNext()) {
 			final T next = it.next();
 
-			message += stringer.toString(next) + (it.hasNext() ? delimiter : "");
+			if (next != null)
+				message += stringer.toString(next) + (it.hasNext() ? delimiter : "");
 		}
 
 		return message;

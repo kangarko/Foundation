@@ -15,6 +15,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.Common;
@@ -83,7 +84,7 @@ public abstract class Menu {
 	 * @param player the player
 	 * @return the menu, or null if none
 	 */
-	public static final Menu getMenu(Player player) {
+	public static final Menu getMenu(final Player player) {
 		return getMenu0(player, TAG_CURRENT);
 	}
 
@@ -93,12 +94,12 @@ public abstract class Menu {
 	 * @param player the player
 	 * @return the menu, or none
 	 */
-	public static final Menu getPreviousMenu(Player player) {
+	public static final Menu getPreviousMenu(final Player player) {
 		return getMenu0(player, TAG_PREVIOUS);
 	}
 
 	// Returns the menu associated with the players metadata, or null
-	private static Menu getMenu0(Player player, String tag) {
+	private static Menu getMenu0(final Player player, final String tag) {
 		if (player.hasMetadata(tag)) {
 			final Menu menu = (Menu) player.getMetadata(tag).get(0).value();
 			Valid.checkNotNull(menu, "Menu missing from " + player.getName() + "'s metadata '" + tag + "' tag!");
@@ -184,7 +185,7 @@ public abstract class Menu {
 	 *
 	 * @param parent the parent menu
 	 */
-	protected Menu(Menu parent) {
+	protected Menu(final Menu parent) {
 		this(parent, false);
 	}
 
@@ -200,7 +201,7 @@ public abstract class Menu {
 	 * @param returnMakesNewInstance should we re-instatiate the parent menu when
 	 *                               returning to it?
 	 */
-	protected Menu(Menu parent, boolean returnMakesNewInstance) {
+	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
 		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
 		this.buttonsRegistrator = new OneTimeRunnable(() -> registerButtons());
@@ -237,7 +238,7 @@ public abstract class Menu {
 	}
 
 	// Scans the class and register fields that extend Button class
-	private final void registerButton0(Field field) {
+	private final void registerButton0(final Field field) {
 		field.setAccessible(true);
 
 		final Class<?> type = field.getType();
@@ -276,7 +277,7 @@ public abstract class Menu {
 	 * @param fromItem the itemstack to compare to
 	 * @return the buttor or null if not found
 	 */
-	final Button getButton(ItemStack fromItem) {
+	final Button getButton(final ItemStack fromItem) {
 		buttonsRegistrator.runIfHasnt();
 
 		if (fromItem != null) {
@@ -330,7 +331,7 @@ public abstract class Menu {
 	 *
 	 * @param player the player
 	 */
-	public final void displayTo(Player player) {
+	public final void displayTo(final Player player) {
 		displayTo(player, false);
 	}
 
@@ -341,7 +342,7 @@ public abstract class Menu {
 	 * @param ignoreServerConversation display menu even if the player is having
 	 *                                 server conversation?
 	 */
-	public final void displayTo(Player player, boolean ignoreServerConversation) {
+	public final void displayTo(final Player player, final boolean ignoreServerConversation) {
 		Valid.checkNotNull(size, "Size not set in " + this + " (call setSize in your constructor)");
 		Valid.checkNotNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
 
@@ -404,7 +405,7 @@ public abstract class Menu {
 	 *
 	 * @param drawer
 	 */
-	private void debugSlotNumbers(InventoryDrawer drawer) {
+	private void debugSlotNumbers(final InventoryDrawer drawer) {
 		if (slotNumbersVisible)
 			for (int slot = 0; slot < drawer.getSize(); slot++) {
 				final ItemStack item = drawer.getItem(slot);
@@ -422,7 +423,7 @@ public abstract class Menu {
 	 *
 	 * @param drawer the drawer
 	 */
-	protected void onDisplay(InventoryDrawer drawer) {
+	protected void onDisplay(final InventoryDrawer drawer) {
 	}
 
 	/**
@@ -438,7 +439,7 @@ public abstract class Menu {
 	 *
 	 * @param animatedTitle the animated title
 	 */
-	public final void restartMenu(String animatedTitle) {
+	public final void restartMenu(final String animatedTitle) {
 		registerButtons();
 		redraw();
 
@@ -472,7 +473,7 @@ public abstract class Menu {
 	private final Map<Integer, ItemStack> compileBottomBar0() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
 
-		if (getInfo() != null)
+		if (addInfoButton() && getInfo() != null)
 			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
 
 		if (addReturnButton() && !(returnButton instanceof DummyButton))
@@ -488,7 +489,7 @@ public abstract class Menu {
 	 *
 	 * @param title the title to animate
 	 */
-	public final void animateTitle(String title) {
+	public final void animateTitle(final String title) {
 		PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
 	}
 
@@ -502,7 +503,7 @@ public abstract class Menu {
 	 * @param slot the slow
 	 * @return the item, or null if no icon at the given slot (default)
 	 */
-	public ItemStack getItemAt(int slot) {
+	public ItemStack getItemAt(final int slot) {
 		return null;
 	}
 
@@ -535,6 +536,15 @@ public abstract class Menu {
 	}
 
 	/**
+	 * Should we automatically add an info button {@link #getInfo()} at the {@link #getInfoButtonPosition()} ?
+	 *
+	 * @return
+	 */
+	protected boolean addInfoButton() {
+		return true;
+	}
+
+	/**
 	 * Get the return button position
 	 *
 	 * @return the slot which return buttons is located on
@@ -551,7 +561,9 @@ public abstract class Menu {
 	 * @return the estimated center slot
 	 */
 	protected final int getCenterSlot() {
-		return size / 2 + (size / 9 % 2 > 0 ? 1 : 5);
+		final int pos = size / 2;
+
+		return size % 2 == 1 ? pos : pos - 5;
 	}
 
 	/**
@@ -567,7 +579,7 @@ public abstract class Menu {
 	 *         by default
 	 */
 	@Deprecated
-	protected boolean isActionAllowed(MenuClickLocation location, int slot, ItemStack clicked, ItemStack cursor) {
+	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
 		return false;
 	}
 
@@ -586,7 +598,7 @@ public abstract class Menu {
 	 *
 	 * @param title the new title
 	 */
-	protected final void setTitle(String title) {
+	protected final void setTitle(final String title) {
 		this.title = title;
 	}
 
@@ -614,7 +626,7 @@ public abstract class Menu {
 	 *
 	 * @param size
 	 */
-	protected final void setSize(Integer size) {
+	protected final void setSize(final Integer size) {
 		this.size = size;
 	}
 
@@ -632,7 +644,7 @@ public abstract class Menu {
 	 *
 	 * @param viewer
 	 */
-	protected final void setViewer(Player viewer) {
+	protected final void setViewer(final Player viewer) {
 		this.viewer = viewer;
 	}
 
@@ -667,8 +679,20 @@ public abstract class Menu {
 	 * @param clicked   the item clicked
 	 * @param cancelled is the event cancelled?
 	 */
-	protected void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
+	protected void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
+		final InventoryView openedInventory = player.getOpenInventory();
+
 		onMenuClick(player, slot, clicked);
+
+		// Delay by 1 tick to get the accurate item in slot
+		Common.runLater(() -> {
+			if (openedInventory.equals(player.getOpenInventory())) {
+				final Inventory topInventory = openedInventory.getTopInventory();
+
+				if (action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR"))
+					onItemPlace(player, slot, topInventory.getItem(slot));
+			}
+		});
 	}
 
 	/**
@@ -678,7 +702,17 @@ public abstract class Menu {
 	 * @param slot    the slot
 	 * @param clicked the item clicked
 	 */
-	protected void onMenuClick(Player player, int slot, ItemStack clicked) {
+	protected void onMenuClick(final Player player, final int slot, final ItemStack clicked) {
+	}
+
+	/**
+	 * Called automatically when an item is placed to the menu
+	 *
+	 * @param player
+	 * @param slot
+	 * @param placed
+	 */
+	protected void onItemPlace(final Player player, final int slot, final ItemStack placed) {
 	}
 
 	/**
@@ -693,7 +727,7 @@ public abstract class Menu {
 	 * @param click  the click
 	 * @param button the button
 	 */
-	protected void onButtonClick(Player player, int slot, InventoryAction action, ClickType click, Button button) {
+	protected void onButtonClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final Button button) {
 		button.onClickedInMenu(player, this, click);
 	}
 
@@ -703,11 +737,11 @@ public abstract class Menu {
 	 * @param player    the player
 	 * @param inventory the menu inventory that is being closed
 	 */
-	protected void onMenuClose(Player player, Inventory inventory) {
+	protected void onMenuClose(final Player player, final Inventory inventory) {
 	}
 
 	@Override
-	public final boolean equals(Object obj) {
+	public final boolean equals(final Object obj) {
 		return super.equals(obj);
 	}
 

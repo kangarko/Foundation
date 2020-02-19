@@ -5,6 +5,8 @@ import java.util.Collection;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
 
+import lombok.Getter;
+
 /**
  * A simple class allowing you to match if something is in that list.
  *
@@ -20,6 +22,7 @@ public final class IsInList<T> {
 	/**
 	 * The internal set for matching
 	 */
+	@Getter
 	private final StrictSet<T> list;
 
 	/**
@@ -32,7 +35,7 @@ public final class IsInList<T> {
 	 *
 	 * @param list
 	 */
-	public IsInList(StrictSet<T> list) {
+	public IsInList(final StrictSet<T> list) {
 		this(list.getSource());
 	}
 
@@ -41,7 +44,7 @@ public final class IsInList<T> {
 	 *
 	 * @param list
 	 */
-	public IsInList(StrictList<T> list) {
+	public IsInList(final StrictList<T> list) {
 		this(list.getSource());
 	}
 
@@ -50,7 +53,7 @@ public final class IsInList<T> {
 	 *
 	 * @param list
 	 */
-	public IsInList(Collection<T> list) {
+	public IsInList(final Collection<T> list) {
 		this.list = new StrictSet<>(list);
 
 		if (list.isEmpty())
@@ -69,7 +72,7 @@ public final class IsInList<T> {
 	 * @param toEvaluateAgainst
 	 * @return
 	 */
-	public boolean contains(T toEvaluateAgainst) {
+	public boolean contains(final T toEvaluateAgainst) {
 		return matchAll || list.contains(toEvaluateAgainst);
 	}
 }

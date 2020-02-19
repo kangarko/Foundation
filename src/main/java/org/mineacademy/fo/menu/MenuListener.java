@@ -28,7 +28,7 @@ public final class MenuListener implements Listener {
 	 * @param event the event
 	 */
 	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-	public void onMenuClose(InventoryCloseEvent event) {
+	public void onMenuClose(final InventoryCloseEvent event) {
 		if (!(event.getPlayer() instanceof Player))
 			return;
 
@@ -48,7 +48,7 @@ public final class MenuListener implements Listener {
 	 * @param event the event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onMenuClick(InventoryClickEvent event) {
+	public void onMenuClick(final InventoryClickEvent event) {
 		if (!(event.getWhoClicked() instanceof Player))
 			return;
 
@@ -65,7 +65,7 @@ public final class MenuListener implements Listener {
 
 			final boolean allowed = menu.isActionAllowed(whereClicked, event.getSlot(), slotItem, cursor);
 
-			if (action.toString().contains("PICKUP") || action.toString().contains("PLACE") || action == InventoryAction.CLONE_STACK) {
+			if (action.toString().contains("PICKUP") || action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR") || action == InventoryAction.CLONE_STACK) {
 				if (whereClicked == MenuClickLocation.MENU) {
 					try {
 						final Button button = menu.getButton(slotItem);

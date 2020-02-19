@@ -66,7 +66,10 @@ public final class MathUtil {
 	 * @param number
 	 * @return
 	 */
-	public static String toRoman(int number) {
+	public static String toRoman(final int number) {
+		if (number == 0)
+			return "0"; // Actually, Romans did not know zero lol
+
 		final int literal = romanNumbers.floorKey(number);
 
 		if (number == literal)
@@ -81,7 +84,7 @@ public final class MathUtil {
 	 * @param d1
 	 * @return
 	 */
-	public static int floor(double d1) {
+	public static int floor(final double d1) {
 		final int i = (int) d1;
 
 		return d1 >= i ? i : i - 1;
@@ -93,7 +96,7 @@ public final class MathUtil {
 	 * @param f1
 	 * @return
 	 */
-	public static int ceiling(double f1) {
+	public static int ceiling(final double f1) {
 		final int i = (int) f1;
 
 		return f1 >= i ? i : i - 1;
@@ -107,7 +110,7 @@ public final class MathUtil {
 	 * @param max the max limit
 	 * @return the value in range
 	 */
-	public static double range(double value, double min, double max) {
+	public static double range(final double value, final double min, final double max) {
 		return Math.min(Math.max(value, min), max);
 	}
 
@@ -119,7 +122,7 @@ public final class MathUtil {
 	 * @param max the max limit
 	 * @return the value in range
 	 */
-	public static int range(int value, int min, int max) {
+	public static int range(final int value, final int min, final int max) {
 		return Math.min(Math.max(value, min), max);
 	}
 
@@ -130,7 +133,7 @@ public final class MathUtil {
 	 * @param min
 	 * @return
 	 */
-	public static double atLeast(double value, double min) {
+	public static double atLeast(final double value, final double min) {
 		return value > min ? value : min;
 	}
 
@@ -141,7 +144,7 @@ public final class MathUtil {
 	 * @param min
 	 * @return
 	 */
-	public static int atLeast(int value, int min) {
+	public static int atLeast(final int value, final int min) {
 		return value > min ? value : min;
 	}
 
@@ -152,7 +155,7 @@ public final class MathUtil {
 	 * @param percent
 	 * @return
 	 */
-	public static int increase(int number, double percent) {
+	public static int increase(final int number, final double percent) {
 		final double myNumber = number;
 		final double percentage = myNumber / 100 * percent;
 
@@ -166,7 +169,7 @@ public final class MathUtil {
 	 * @param percent
 	 * @return
 	 */
-	public static double increase(double number, double percent) {
+	public static double increase(final double number, final double percent) {
 		final double percentage = number / 100 * percent;
 
 		return number + percentage;
@@ -180,7 +183,7 @@ public final class MathUtil {
 	 * @param maximum
 	 * @return 0 to 100 of the given number portion of the maximum
 	 */
-	public static int percent(double number, double maximum) {
+	public static int percent(final double number, final double maximum) {
 		return (int) (number / maximum * 100);
 	}
 
@@ -190,7 +193,7 @@ public final class MathUtil {
 	 * @param values
 	 * @return
 	 */
-	public static double average(Collection<Double> values) {
+	public static double average(final Collection<Double> values) {
 		return average(values.toArray(new Double[values.size()]));
 	}
 
@@ -200,7 +203,7 @@ public final class MathUtil {
 	 * @param values
 	 * @return
 	 */
-	public static double average(Double... values) {
+	public static double average(final Double... values) {
 		double sum = 0;
 
 		for (final double val : values)
@@ -219,7 +222,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static String formatOneDigit(double value) {
+	public static String formatOneDigit(final double value) {
 		return oneDigitFormat.format(value).replace(",", ".");
 	}
 
@@ -229,7 +232,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static double formatOneDigitD(double value) {
+	public static double formatOneDigitD(final double value) {
 		Valid.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
 		return Double.parseDouble(oneDigitFormat.format(value).replace(",", "."));
@@ -241,7 +244,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static String formatTwoDigits(double value) {
+	public static String formatTwoDigits(final double value) {
 		return twoDigitsFormat.format(value).replace(",", ".");
 	}
 
@@ -251,7 +254,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static double formatTwoDigitsD(double value) {
+	public static double formatTwoDigitsD(final double value) {
 		Valid.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
 		return Double.parseDouble(twoDigitsFormat.format(value).replace(",", "."));
@@ -263,7 +266,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static String formatThreeDigits(double value) {
+	public static String formatThreeDigits(final double value) {
 		return threeDigitsFormat.format(value).replace(",", ".");
 	}
 
@@ -273,7 +276,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static double formatThreeDigitsD(double value) {
+	public static double formatThreeDigitsD(final double value) {
 		Valid.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
 		return Double.parseDouble(threeDigitsFormat.format(value).replace(",", "."));
@@ -285,7 +288,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static String formatFiveDigits(double value) {
+	public static String formatFiveDigits(final double value) {
 		return fiveDigitsFormat.format(value).replace(",", ".");
 	}
 
@@ -295,7 +298,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static double formatFiveDigitsD(double value) {
+	public static double formatFiveDigitsD(final double value) {
 		Valid.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
 		return Double.parseDouble(fiveDigitsFormat.format(value).replace(",", "."));
@@ -428,7 +431,7 @@ public final class MathUtil {
 	public static final class CalculatorException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 
-		public CalculatorException(String message) {
+		public CalculatorException(final String message) {
 			super(message);
 		}
 	}

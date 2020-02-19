@@ -49,7 +49,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	private SerializedMap(String key, Object value) {
+	private SerializedMap(final String key, final Object value) {
 		this();
 
 		put(key, value);
@@ -66,7 +66,7 @@ public final class SerializedMap extends StrictCollection {
 	 *
 	 * @param map
 	 */
-	public void merge(SerializedMap map) {
+	public void merge(final SerializedMap map) {
 		for (final Map.Entry<String, Object> entry : map.entrySet()) {
 			final String key = entry.getKey();
 			final Object value = entry.getValue();
@@ -79,7 +79,7 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * @see Map#containsKey(Object)
 	 */
-	public boolean containsKey(String key) {
+	public boolean containsKey(final String key) {
 		return map.contains(key);
 	}
 
@@ -88,7 +88,7 @@ public final class SerializedMap extends StrictCollection {
 	 *
 	 * @param associativeArray
 	 */
-	public void putArray(Object... associativeArray) {
+	public void putArray(final Object... associativeArray) {
 		boolean string = true;
 		String lastKey = null;
 
@@ -111,7 +111,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void putIfExist(String key, @Nullable Object value) {
+	public void putIfExist(final String key, @Nullable final Object value) {
 		if (value != null)
 			put(key, value);
 	}
@@ -123,7 +123,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void put(String key, Object value) {
+	public void put(final String key, final Object value) {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
 
 		map.put(key, value);
@@ -136,7 +136,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void override(String key, Object value) {
+	public void override(final String key, final Object value) {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
 
 		map.override(key, value);
@@ -148,7 +148,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public String getString(String key) {
+	public String getString(final String key) {
 		return getString(key, null);
 	}
 
@@ -159,7 +159,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public String getString(String key, String def) {
+	public String getString(final String key, final String def) {
 		return get(key, String.class, def);
 	}
 
@@ -169,7 +169,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Location getLocation(String key) {
+	public Location getLocation(final String key) {
 		return get(key, org.bukkit.Location.class, null);
 	}
 
@@ -179,7 +179,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Long getLong(String key) {
+	public Long getLong(final String key) {
 		return getLong(key, null);
 	}
 
@@ -190,7 +190,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public Long getLong(String key, Long def) {
+	public Long getLong(final String key, final Long def) {
 		final Number n = get(key, Long.class, def);
 
 		return n != null ? n.longValue() : null;
@@ -202,7 +202,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Integer getInteger(String key) {
+	public Integer getInteger(final String key) {
 		return getInteger(key, null);
 	}
 
@@ -213,7 +213,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public Integer getInteger(String key, Integer def) {
+	public Integer getInteger(final String key, final Integer def) {
 		return get(key, Integer.class, def);
 	}
 
@@ -223,7 +223,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Double getDouble(String key) {
+	public Double getDouble(final String key) {
 		return getDouble(key, null);
 	}
 
@@ -234,7 +234,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public Double getDouble(String key, Double def) {
+	public Double getDouble(final String key, final Double def) {
 		return get(key, Double.class, def);
 	}
 
@@ -244,7 +244,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Float getFloat(String key) {
+	public Float getFloat(final String key) {
 		return getFloat(key, null);
 	}
 
@@ -255,7 +255,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public Float getFloat(String key, Float def) {
+	public Float getFloat(final String key, final Float def) {
 		return get(key, Float.class, def);
 	}
 
@@ -265,7 +265,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Boolean getBoolean(String key) {
+	public Boolean getBoolean(final String key) {
 		return getBoolean(key, null);
 	}
 
@@ -276,7 +276,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public Boolean getBoolean(String key, Boolean def) {
+	public Boolean getBoolean(final String key, final Boolean def) {
 		return get(key, Boolean.class, def);
 	}
 
@@ -286,7 +286,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public CompMaterial getMaterial(String key) {
+	public CompMaterial getMaterial(final String key) {
 		return getMaterial(key, null);
 	}
 
@@ -297,7 +297,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public CompMaterial getMaterial(String key, CompMaterial def) {
+	public CompMaterial getMaterial(final String key, final CompMaterial def) {
 		final String raw = getString(key);
 
 		return raw != null ? CompMaterial.fromString(raw) : def;
@@ -309,7 +309,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public ItemStack getItem(String key) {
+	public ItemStack getItem(final String key) {
 		return getItem(key, null);
 	}
 
@@ -320,7 +320,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public ItemStack getItem(String key, ItemStack def) {
+	public ItemStack getItem(final String key, final ItemStack def) {
 		final Object obj = get(key, Object.class, null);
 
 		if (obj == null)
@@ -366,7 +366,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public List<String> getStringList(String key) {
+	public List<String> getStringList(final String key) {
 		return getStringList(key, null);
 	}
 
@@ -377,7 +377,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public List<String> getStringList(String key, List<String> def) {
+	public List<String> getStringList(final String key, final List<String> def) {
 		final List<String> list = getList(key, String.class);
 
 		return list == null ? def : list;
@@ -389,7 +389,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public List<SerializedMap> getMapList(String key) {
+	public List<SerializedMap> getMapList(final String key) {
 		return getList(key, SerializedMap.class);
 	}
 
@@ -403,7 +403,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param type
 	 * @return
 	 */
-	public <T> List<T> getListSafe(String key, Class<T> type) {
+	public <T> List<T> getListSafe(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
 
 		return Common.getOrDefault(list, new ArrayList<>());
@@ -419,7 +419,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param type
 	 * @return
 	 */
-	public <T> Set<T> getSetSafe(String key, Class<T> type) {
+	public <T> Set<T> getSetSafe(final String key, final Class<T> type) {
 		final Set<T> list = getSet(key, type);
 
 		return Common.getOrDefault(list, new HashSet<>());
@@ -433,7 +433,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param type
 	 * @return
 	 */
-	public <T> Set<T> getSet(String key, Class<T> type) {
+	public <T> Set<T> getSet(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
 
 		return list == null ? null : new HashSet<>(list);
@@ -450,27 +450,18 @@ public final class SerializedMap extends StrictCollection {
 	 * @param type
 	 * @return
 	 */
-	public <T> List<T> getList(String key, Class<T> type) {
-		if (!map.contains(key))
-			return null;
-
-		final List<Object> objects = (List<Object>) map.get(key);
+	public <T> List<T> getList(final String key, final Class<T> type) {
 		final List<T> list = new ArrayList<>();
 
+		if (!map.contains(key))
+			return list;
+
+		final List<Object> objects = (List<Object>) map.get(key);
+
 		for (final Object object : objects)
-			list.add(SerializeUtil.deserialize(type, object));
+			list.add(object == null ? null : SerializeUtil.deserialize(type, object));
 
 		return list;
-	}
-
-	/**
-	 * Return a serialized map or an empty one if it does not exist
-	 *
-	 * @param key
-	 * @return
-	 */
-	public SerializedMap getMapSafe(String key) {
-		return Common.getOrDefault(getMap(key), new SerializedMap());
 	}
 
 	/**
@@ -479,10 +470,10 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public SerializedMap getMap(String key) {
+	public SerializedMap getMap(final String key) {
 		final Object raw = get(key, Object.class);
 
-		return raw != null ? SerializedMap.of(Common.getMapFromSection(raw)) : null;
+		return raw != null ? SerializedMap.of(Common.getMapFromSection(raw)) : new SerializedMap();
 	}
 
 	/**
@@ -491,7 +482,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Object getObject(String key) {
+	public Object getObject(final String key) {
 		return get(key, Object.class);
 	}
 
@@ -502,7 +493,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public Object getObject(String key, Object def) {
+	public Object getObject(final String key, final Object def) {
 		return get(key, Object.class, def);
 	}
 
@@ -514,7 +505,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param type
 	 * @return
 	 */
-	public <T> T get(String key, Class<T> type) {
+	public <T> T get(final String key, final Class<T> type) {
 		return get(key, type, null);
 	}
 
@@ -528,7 +519,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	private <T> T get(String key, Class<T> type, T def) {
+	private <T> T get(final String key, final Class<T> type, final T def) {
 		Object raw = map.get(key);
 
 		// Try to get the value by key with ignoring case
@@ -548,7 +539,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public Object getValueIgnoreCase(String key) {
+	public Object getValueIgnoreCase(final String key) {
 		for (final Entry<String, Object> e : map.entrySet())
 			if (e.getKey().equalsIgnoreCase(key))
 				return e.getValue();
@@ -559,7 +550,7 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * @see Map#forEach(BiConsumer)
 	 */
-	public void forEach(BiConsumer<String, Object> consumer) {
+	public void forEach(final BiConsumer<String, Object> consumer) {
 		for (final Entry<String, Object> e : map.entrySet())
 			consumer.accept(e.getKey(), e.getValue());
 	}
@@ -619,7 +610,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param to
 	 * @param converter
 	 */
-	public <O, N> void convert(String path, Class<O> from, Class<N> to, Function<O, N> converter) {
+	public <O, N> void convert(final String path, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
 		final Object old = getObject(path);
 
 		if (old != null) {
@@ -672,7 +663,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public static SerializedMap of(String key, Object value) {
+	public static SerializedMap of(final String key, final Object value) {
 		return new SerializedMap(key, value);
 	}
 
@@ -689,7 +680,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param array
 	 * @return
 	 */
-	public static SerializedMap ofArray(Object... array) {
+	public static SerializedMap ofArray(final Object... array) {
 		final SerializedMap map = new SerializedMap();
 		map.putArray(array);
 
@@ -702,7 +693,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param object
 	 * @return the serialized map, or an empty map if object could not be parsed
 	 */
-	public static SerializedMap of(Object object) {
+	public static SerializedMap of(final Object object) {
 		if (object instanceof SerializedMap)
 			return (SerializedMap) object;
 
@@ -718,7 +709,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param map
 	 * @return
 	 */
-	public static SerializedMap of(Map<String, Object> map) {
+	public static SerializedMap of(final Map<String, Object> map) {
 		final SerializedMap serialized = new SerializedMap();
 
 		serialized.map.setAll(map);
@@ -734,7 +725,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param json
 	 * @return
 	 */
-	public static SerializedMap fromJson(String json) {
+	public static SerializedMap fromJson(final String json) {
 		final SerializedMap serializedMap = new SerializedMap();
 		final Map<String, Object> map = gson.fromJson(json, Map.class);
 

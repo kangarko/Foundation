@@ -66,7 +66,7 @@ public final class TimeUtil {
 	 * @param time
 	 * @return
 	 */
-	public static String getFormattedDate(long time) {
+	public static String getFormattedDate(final long time) {
 		return DATE_FORMAT.format(time);
 	}
 
@@ -86,7 +86,7 @@ public final class TimeUtil {
 	 * @param time
 	 * @return
 	 */
-	public static String getFormattedDateShort(long time) {
+	public static String getFormattedDateShort(final long time) {
 		return DATE_FORMAT_SHORT.format(time);
 	}
 
@@ -103,7 +103,7 @@ public final class TimeUtil {
 	 *
 	 * @return the converted human time to seconds
 	 */
-	public static long toTicks(String humanReadableTime) {
+	public static long toTicks(final String humanReadableTime) {
 		Valid.checkNotNull(humanReadableTime, "Time is null");
 
 		long seconds = 0L;
@@ -163,7 +163,7 @@ public final class TimeUtil {
 	 * @param seconds
 	 * @return
 	 */
-	public static String formatTimeGeneric(long seconds) {
+	public static String formatTimeGeneric(final long seconds) {
 		final long second = seconds % 60;
 		long minute = seconds / 60;
 		String hourMsg = "";
@@ -175,7 +175,8 @@ public final class TimeUtil {
 			hourMsg = (hour == 1 ? "hour" : "hours") + " ";
 		}
 
-		return hourMsg + minute + (minute > 0 ? (minute == 1 ? " minute" : " minutes") + " " : "") + second + (second == 1 ? " second" : " seconds");
+		return hourMsg + (minute != 0 ? minute : "") + (minute > 0 ? (minute == 1 ? " minute" : " minutes") + " " : "") + Long.parseLong(String.valueOf(second)) + (Long.parseLong(String.valueOf(second)) == 1 ? " second" : " seconds");
+
 	}
 
 	/**
@@ -184,7 +185,7 @@ public final class TimeUtil {
 	 * @param seconds
 	 * @return
 	 */
-	public static String formatTimeDays(long seconds) {
+	public static String formatTimeDays(final long seconds) {
 		final long minutes = seconds / 60;
 		final long hours = minutes / 60;
 		final long days = hours / 24;

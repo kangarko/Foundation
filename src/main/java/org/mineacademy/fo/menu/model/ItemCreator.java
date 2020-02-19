@@ -139,7 +139,7 @@ public final class ItemCreator {
 	 *
 	 * @param player
 	 */
-	public void give(Player player) {
+	public void give(final Player player) {
 		player.getInventory().addItem(makeSurvival());
 	}
 
@@ -399,7 +399,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreatorBuilder of(CompMaterial material, String name, @NonNull Collection<String> lore) {
+	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final Collection<String> lore) {
 		return of(material, name, lore.toArray(new String[lore.size()]));
 	}
 
@@ -411,10 +411,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return new item creator
 	 */
-	public static ItemCreatorBuilder of(CompMaterial material, String name, @NonNull String... lore) {
-		for (int i = 0; i < lore.length; i++)
-			lore[i] = "&7" + lore[i];
-
+	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final String... lore) {
 		return ItemCreator.builder().material(material).name("&r" + name).lores(Arrays.asList(lore)).hideTags(true);
 	}
 
@@ -424,7 +421,7 @@ public final class ItemCreator {
 	 * @param color the wool color
 	 * @return the new item creator
 	 */
-	public static ItemCreatorBuilder ofWool(CompColor color) {
+	public static ItemCreatorBuilder ofWool(final CompColor color) {
 		return of(CompMaterial.makeWool(color, 1)).color(color);
 	}
 
@@ -434,7 +431,7 @@ public final class ItemCreator {
 	 * @param item existing itemstack
 	 * @return the new item creator
 	 */
-	public static ItemCreatorBuilder of(ItemStack item) {
+	public static ItemCreatorBuilder of(final ItemStack item) {
 		final ItemCreatorBuilder builder = ItemCreator.builder();
 		final ItemMeta meta = item.getItemMeta();
 
@@ -450,7 +447,7 @@ public final class ItemCreator {
 	 * @param material existing material
 	 * @return the new item creator
 	 */
-	public static ItemCreatorBuilder of(CompMaterial mat) {
+	public static ItemCreatorBuilder of(final CompMaterial mat) {
 		Valid.checkNotNull(mat, "Material cannot be null!");
 
 		return ItemCreator.builder().material(mat);

@@ -31,7 +31,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 *
 	 * @param openMenu
 	 */
-	protected SimplePrompt(boolean openMenu) {
+	protected SimplePrompt(final boolean openMenu) {
 		this.openMenu = openMenu;
 	}
 
@@ -52,7 +52,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @return
 	 */
 	@Override
-	public final String getPromptText(ConversationContext ctx) {
+	public final String getPromptText(final ConversationContext ctx) {
 		return Common.colorize(getPrompt(ctx));
 	}
 
@@ -73,7 +73,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @return
 	 */
 	@Override
-	protected boolean isInputValid(ConversationContext context, String input) {
+	protected boolean isInputValid(final ConversationContext context, final String input) {
 		return true;
 	}
 
@@ -81,7 +81,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * Return the failed error message when {@link #isInputValid(ConversationContext, String)} returns false
 	 */
 	@Override
-	protected String getFailedValidationText(ConversationContext context, String invalidInput) {
+	protected String getFailedValidationText(final ConversationContext context, final String invalidInput) {
 		return null;
 	}
 
@@ -92,7 +92,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param ctx
 	 * @return
 	 */
-	protected Player getPlayer(ConversationContext ctx) {
+	protected Player getPlayer(final ConversationContext ctx) {
 		Valid.checkBoolean(ctx.getForWhom() instanceof Player, "Conversable is not a player but: " + ctx.getForWhom());
 
 		return (Player) ctx.getForWhom();
@@ -104,7 +104,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param ctx
 	 * @param message
 	 */
-	protected void tell(ConversationContext ctx, String message) {
+	protected void tell(final ConversationContext ctx, final String message) {
 		tell(getPlayer(ctx), message);
 	}
 
@@ -114,7 +114,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param conversable
 	 * @param message
 	 */
-	protected void tell(Conversable conversable, String message) {
+	protected void tell(final Conversable conversable, final String message) {
 		Common.tellConversing(conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
 	}
 
@@ -125,7 +125,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param conversable
 	 * @param message
 	 */
-	protected void tellLater(int delayTicks, Conversable conversable, String message) {
+	protected void tellLater(final int delayTicks, final Conversable conversable, final String message) {
 		Common.tellLaterConversing(delayTicks, conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
 	}
 
@@ -135,12 +135,12 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param conversation
 	 * @param event
 	 */
-	public void onConversationEnd(SimpleConversation conversation, ConversationAbandonedEvent event) {
+	public void onConversationEnd(final SimpleConversation conversation, final ConversationAbandonedEvent event) {
 	}
 
-	// Do not allow superclasses to modify this since we hve isInputValid here
+	// Do not allow superclasses to modify this since we have isInputValid here
 	@Override
-	public final Prompt acceptInput(ConversationContext context, String input) {
+	public final Prompt acceptInput(final ConversationContext context, final String input) {
 		if (isInputValid(context, input))
 			return acceptValidatedInput(context, input);
 
@@ -164,7 +164,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 *
 	 * @param player
 	 */
-	public final SimpleConversation show(Player player) {
+	public final SimpleConversation show(final Player player) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + getClass().getSimpleName() + " instead!");
 
 		final SimpleConversation conversation = new SimpleConversation() {
