@@ -1,22 +1,20 @@
 package org.mineacademy.fo.model;
 
-import java.util.Map;
-
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
+import lombok.NonNull;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
-import lombok.NonNull;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.util.Map;
 
 /**
  * An engine that compiles and executes code on the fly.
- *
+ * <p>
  * The code is based off JavaScript with new Java methods, see:
  * https://winterbe.com/posts/2014/04/05/java8-nashorn-tutorial/
  */
@@ -102,11 +100,8 @@ public final class JavaScriptExecutor {
 	 * Executes the Javascript code with the given variables - you have to handle the error yourself
 	 *
 	 * @param javascript
-	 * @param cast
 	 * @param replacements
-	 *
 	 * @return
-	 *
 	 * @throws ScriptException
 	 */
 	public static Object run(String javascript, Map<String, Object> replacements) throws ScriptException {
