@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -18,7 +19,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -418,11 +418,10 @@ public class YamlConfig {
 
 		// Automatically serialize on save
 		if (this instanceof ConfigSerializable) {
-			final Map<Object, Object> map = (Map<Object, Object>) ((ConfigSerializable) this).serialize().serialize();
-			final Configuration config = getConfig();
+			final SerializedMap map = ((ConfigSerializable) this).serialize();
 
-			for (final Map.Entry<Object, Object> entry : map.entrySet())
-				config.set(entry.getKey().toString(), entry.getValue());
+			for (final Entry<String, Object> entry : map.entrySet())
+				setNoSave(entry.getKey().toString(), entry.getValue());
 		}
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
@@ -576,7 +575,7 @@ public class YamlConfig {
 		/*if (ALLOW_NULL_IN_DEFAULTS) {
 			if (object == null && ConfigSerializable.class.isAssignableFrom(type))
 				object = new SerializedMap();
-		
+
 			if ("".equals(object) && Enum.class.isAssignableFrom(type))
 				object = null;
 		}*/
