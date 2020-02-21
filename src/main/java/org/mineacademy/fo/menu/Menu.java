@@ -649,6 +649,40 @@ public abstract class Menu {
 	}
 
 	/**
+	 * Return the top opened inventory if viewer exists
+	 *
+	 * @return
+	 */
+	protected final Inventory getInventory() {
+		Valid.checkNotNull(viewer, "Cannot get inventory when there is no viewer!");
+
+		final Inventory topInventory = viewer.getOpenInventory().getTopInventory();
+		Valid.checkNotNull(topInventory, "Top inventory is null!");
+
+		return topInventory;
+	}
+
+	/**
+	 * Get the open inventory content to match the array length, cloning items preventing ID mismatch in yaml files
+	 *
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	protected final ItemStack[] getContent(final int from, final int to) {
+		final ItemStack[] content = getInventory().getContents();
+		final ItemStack[] copy = new ItemStack[content.length];
+
+		for (int i = from; i < copy.length; i++) {
+			final ItemStack item = content[i];
+
+			copy[i] = item != null ? item.clone() : null;
+		}
+
+		return Arrays.copyOfRange(copy, from, to);
+	}
+
+	/**
 	 * If you wonder what slot numbers does each empty slot in your menu
 	 * has then set this to true in your constructor
 	 *
