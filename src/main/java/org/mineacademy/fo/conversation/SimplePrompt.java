@@ -23,6 +23,11 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 */
 	private boolean openMenu = true;
 
+	/**
+	 * The player who sees the input
+	 */
+	private Player player = null;
+
 	protected SimplePrompt() {
 	}
 
@@ -104,6 +109,18 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param ctx
 	 * @param message
 	 */
+	protected void tell(final String message) {
+		Valid.checkNotNull(player, "Cannot use tell() when player not yet set!");
+
+		tell(player, message);
+	}
+
+	/**
+	 * Send the player (in case any) the given message
+	 *
+	 * @param ctx
+	 * @param message
+	 */
 	protected void tell(final ConversationContext ctx, final String message) {
 		tell(getPlayer(ctx), message);
 	}
@@ -167,6 +184,8 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	public final SimpleConversation show(final Player player) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + getClass().getSimpleName() + " instead!");
 
+		this.player = player;
+
 		final SimpleConversation conversation = new SimpleConversation() {
 
 			@Override
@@ -198,5 +217,15 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	@Override
 	public SimplePrompt clone() {
 		return (SimplePrompt) super.clone();
+	}
+
+	/**
+	 * Show the given prompt to the player
+	 *
+	 * @param player
+	 * @param prompt
+	 */
+	public static final void show(final Player player, final SimplePrompt prompt) {
+		prompt.show(player);
 	}
 }
