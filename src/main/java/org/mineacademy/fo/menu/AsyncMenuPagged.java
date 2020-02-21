@@ -8,9 +8,10 @@ package org.mineacademy.fo.menu;
  *
  * @param <T> the item that each page consists of
  */
-
 public final class AsyncMenuPagged<T> extends Menu {
-	@Override protected String[] getInfo() {
+
+	@Override
+	protected String[] getInfo() {
 		return new String[0];
 	}
 }
