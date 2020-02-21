@@ -58,7 +58,7 @@ import lombok.Setter;
  * @version 5.0 (of the previous ConfHelper)
  * @author kangarko
  */
-public class YamlConfig {
+public class YamlConfig implements ConfigSerializable {
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Only allow one instance of file to be loaded for safety.
@@ -313,7 +313,9 @@ public class YamlConfig {
 	 * Saves the file if changes have been made
 	 */
 	private final void saveIfNecessary0() {
-		if (save) {
+
+		// We want to save the file if the save is pending or if there are no defaults
+		if (save || getDefaults() == null) {
 			save();
 
 			save = false;
@@ -417,12 +419,8 @@ public class YamlConfig {
 		onSave();
 
 		// Automatically serialize on save
-		if (this instanceof ConfigSerializable) {
-			final SerializedMap map = ((ConfigSerializable) this).serialize();
-
-			for (final Entry<String, Object> entry : map.entrySet())
-				setNoSave(entry.getKey().toString(), entry.getValue());
-		}
+		for (final Entry<String, Object> entry : serialize().entrySet())
+			setNoSave(entry.getKey().toString(), entry.getValue());
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
@@ -456,6 +454,17 @@ public class YamlConfig {
 		} catch (final Exception e) {
 			Common.error(e, "Failed to reload " + getFileName());
 		}
+	}
+
+	/**
+	 * Return the serialized map with all values you want to save to your config
+	 * By default we return an empty map
+	 *
+	 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
+	 */
+	@Override
+	public SerializedMap serialize() {
+		return new SerializedMap();
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1040,7 +1049,7 @@ public class YamlConfig {
 
 		if (objects != null)
 			for (final Object object : objects)
-				list.add(SerializeUtil.deserialize(type, object, deserializeParameters));
+				list.add(object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null);
 
 		return list;
 	}
