@@ -54,7 +54,7 @@ public class SimpleDatabase {
 	 * @param user
 	 * @param password
 	 */
-	public final void connect(String host, int port, String database, String user, String password) {
+	public final void connect(final String host, final int port, final String database, final String user, final String password) {
 		connect(host, port, database, user, password, null);
 	}
 
@@ -69,7 +69,7 @@ public class SimpleDatabase {
 	 * @param password
 	 * @param table
 	 */
-	public final void connect(String host, int port, String database, String user, String password, String table) {
+	public final void connect(final String host, final int port, final String database, final String user, final String password, final String table) {
 		connect(host, port, database, user, password, table, true);
 	}
 
@@ -85,7 +85,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param autoReconnect
 	 */
-	public final void connect(String host, int port, String database, String user, String password, String table, boolean autoReconnect) {
+	public final void connect(final String host, final int port, final String database, final String user, final String password, final String table, final boolean autoReconnect) {
 		connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=" + autoReconnect, user, password, table);
 	}
 
@@ -96,7 +96,7 @@ public class SimpleDatabase {
 	 * @param user
 	 * @param password
 	 */
-	public final void connect(String url, String user, String password) {
+	public final void connect(final String url, final String user, final String password) {
 		connect(url, user, password, null);
 	}
 
@@ -109,7 +109,7 @@ public class SimpleDatabase {
 	 * @param password
 	 * @param table
 	 */
-	public final void connect(String url, String user, String password, String table) {
+	public final void connect(final String url, final String user, final String password, final String table) {
 		this.lastCredentials = new LastCredentials(url, user, password, table);
 
 		try {
@@ -181,6 +181,7 @@ public class SimpleDatabase {
 				connectUsingLastCredentials();
 
 			sql = replaceVariables(sql);
+			Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
 
 			Debugger.debug("mysql", "Updating MySQL with: " + sql);
 
@@ -315,7 +316,7 @@ public class SimpleDatabase {
 	 * @param name
 	 * @param value
 	 */
-	protected final void addVariable(String name, String value) {
+	protected final void addVariable(final String name, final String value) {
 		sqlVariables.put(name, value);
 	}
 
