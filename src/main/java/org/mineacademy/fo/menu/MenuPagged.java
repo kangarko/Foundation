@@ -55,7 +55,28 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param pages the pages
 	 */
 	protected MenuPagged(final Iterable<T> pages) {
-		this(9 * 3, pages);
+		this(null, pages);
+	}
+
+	/**
+	 * Create a new paged menu
+	 *
+	 * @param parent the parent menu
+	 * @param pages the pages the pages
+	 */
+	protected MenuPagged(final Menu parent, final Iterable<T> pages) {
+		this(null, parent, pages, false);
+	}
+
+	/**
+	 * Create a new paged menu
+	 *
+	 * @param parent
+	 * @param pages
+	 * @param returnMakesNewInstance
+	 */
+	protected MenuPagged(final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
+		this(null, parent, pages, returnMakesNewInstance);
 	}
 
 	/**
@@ -63,7 +84,10 @@ public abstract class MenuPagged<T> extends Menu {
 	 *
 	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
 	 * @param pages the pages
+	 *
+	 * @deprecated we recommend you don't set the page size for the menu to autocalculate
 	 */
+	@Deprecated
 	protected MenuPagged(final int pageSize, final Iterable<T> pages) {
 		this(pageSize, null, pages);
 	}
@@ -74,9 +98,25 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add 1 row there)
 	 * @param parent the parent menu
 	 * @param pages the pages the pages
+	 * @deprecated we recommend you don't set the page size for the menu to autocalculate
 	 */
+	@Deprecated
 	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> pages) {
 		this(pageSize, parent, pages, false);
+	}
+
+	/**
+	 * Create a new paged menu
+	 *
+	 * @param pageSize
+	 * @param parent
+	 * @param pages
+	 * @param returnMakesNewInstance	 *
+	 * @deprecated we recommend you don't set the page size for the menu to autocalculate
+	 */
+	@Deprecated
+	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
+		this((Integer) pageSize, parent, pages, returnMakesNewInstance);
 	}
 
 	/**
@@ -88,14 +128,27 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param returnMakesNewInstance should we re-instatiate the parent menu when
 	 *                               returning to it?
 	 */
-	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
+	private MenuPagged(final Integer pageSize, final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
 		super(parent, returnMakesNewInstance);
 
-		this.currentPage = 1;
-		this.pages = PageManager.populate(pageSize, pages);
+		final int items = getItemAmount(pages);
+		final int autoPageSize = pageSize != null ? pageSize : items <= 9 ? 9 * 1 : items <= 9 * 2 ? 9 * 2 : items <= 9 * 3 ? 9 * 3 : items <= 9 * 4 ? 9 * 4 : 9 * 5;
 
-		setSize(9 + pageSize);
+		this.currentPage = 1;
+		this.pages = PageManager.populate(autoPageSize, pages);
+
+		setSize(9 + autoPageSize);
 		setButtons();
+	}
+
+	@SuppressWarnings("unused")
+	private final int getItemAmount(final Iterable<T> pages) {
+		int amount = 0;
+
+		for (final T t : pages)
+			amount++;
+
+		return amount;
 	}
 
 	// Render the next/prev buttons
