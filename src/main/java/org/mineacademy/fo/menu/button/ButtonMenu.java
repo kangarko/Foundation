@@ -50,7 +50,7 @@ public final class ButtonMenu extends Button {
 	 * @param name
 	 * @param lore
 	 */
-	public ButtonMenu(Class<? extends Menu> menuClass, CompMaterial material, String name, String... lore) {
+	public ButtonMenu(final Class<? extends Menu> menuClass, final CompMaterial material, final String name, final String... lore) {
 		this(null, () -> ReflectionUtil.instantiate(menuClass), ItemCreator.of(material, name, lore).hideTags(true).build().make(), false);
 	}
 
@@ -60,7 +60,7 @@ public final class ButtonMenu extends Button {
 	 * @param menuLateBind
 	 * @param item
 	 */
-	public ButtonMenu(Callable menuLateBind, ItemCreator.ItemCreatorBuilder item) {
+	public ButtonMenu(final Callable<Menu> menuLateBind, final ItemCreator.ItemCreatorBuilder item) {
 		this(null, menuLateBind, item.hideTags(true).build().make(), false);
 	}
 
@@ -70,7 +70,7 @@ public final class ButtonMenu extends Button {
 	 * @param menuLateBind
 	 * @param item
 	 */
-	public ButtonMenu(Callable menuLateBind, ItemStack item) {
+	public ButtonMenu(final Callable<Menu> menuLateBind, final ItemStack item) {
 		this(null, menuLateBind, item, false);
 	}
 
@@ -82,7 +82,7 @@ public final class ButtonMenu extends Button {
 	 * @param name
 	 * @param lore
 	 */
-	public ButtonMenu(Menu menu, CompMaterial material, String name, String... lore) {
+	public ButtonMenu(final Menu menu, final CompMaterial material, final String name, final String... lore) {
 		this(menu, ItemCreator.of(material, name, lore));
 	}
 
@@ -92,7 +92,7 @@ public final class ButtonMenu extends Button {
 	 * @param menu
 	 * @param item
 	 */
-	public ButtonMenu(Menu menu, ItemCreator.ItemCreatorBuilder item) {
+	public ButtonMenu(final Menu menu, final ItemCreator.ItemCreatorBuilder item) {
 		this(menu, null, item.hideTags(true).build().make(), false);
 	}
 
@@ -102,16 +102,16 @@ public final class ButtonMenu extends Button {
 	 * @param menu
 	 * @param item
 	 */
-	public ButtonMenu(Menu menu, ItemStack item) {
+	public ButtonMenu(final Menu menu, final ItemStack item) {
 		this(menu, null, item, false);
 	}
 
-	public ButtonMenu(Menu menu, ItemStack item, boolean newInstance) {
+	public ButtonMenu(final Menu menu, final ItemStack item, final boolean newInstance) {
 		this(menu, null, item, newInstance);
 	}
 
 	// Private constructor
-	private ButtonMenu(Menu menuToOpen, Callable<Menu> menuLateBind, ItemStack item, boolean newInstance) {
+	private ButtonMenu(final Menu menuToOpen, final Callable<Menu> menuLateBind, final ItemStack item, final boolean newInstance) {
 		this.menuToOpen = menuToOpen;
 		this.menuLateBind = menuLateBind;
 		this.item = item;
@@ -122,7 +122,7 @@ public final class ButtonMenu extends Button {
 	 * Automatically display another menu when the button is clicked
 	 */
 	@Override
-	public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
+	public void onClickedInMenu(final Player pl, final Menu menu, final ClickType click) {
 		if (menuLateBind != null) {
 			Menu menuToOpen = null;
 

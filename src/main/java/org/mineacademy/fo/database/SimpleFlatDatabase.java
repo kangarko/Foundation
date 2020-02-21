@@ -101,7 +101,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * @param uuid
 	 * @param cache
 	 */
-	public final void load(UUID uuid, T cache) {
+	public final void load(final UUID uuid, final T cache) {
 		if (!isLoaded() || isQuerying)
 			return;
 
@@ -140,8 +140,10 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	/**
 	 * Your method to load the data for the given unique ID and his cache
 	 *
-	 * @param map
-	 * @param data
+	 * @param map the map that is automatically converted from the JSON array
+	 * 			  stored in the database
+	 *
+	 * @param data the data you want to fill out to
 	 */
 	protected abstract void onLoad(SerializedMap map, T data);
 
@@ -154,7 +156,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * @param uuid
 	 * @param cache
 	 */
-	public final void save(String name, UUID uuid, T cache) {
+	public final void save(final String name, final UUID uuid, final T cache) {
 		if (!isLoaded() || isQuerying)
 			return;
 
@@ -203,7 +205,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 *
 	 * @param operation
 	 */
-	private void logPerformance(String operation) {
+	private void logPerformance(final String operation) {
 		final double took = LagCatcher.endTook("mysql");
 		final boolean isMainThread = Bukkit.isPrimaryThread();
 
@@ -218,7 +220,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * @return
 	 * @throws SQLException
 	 */
-	private boolean isStored(@NonNull UUID uuid) throws SQLException {
+	private boolean isStored(@NonNull final UUID uuid) throws SQLException {
 		final ResultSet resultSet = query("SELECT * FROM {table} WHERE UUID= '" + uuid.toString() + "'");
 
 		if (resultSet == null)
