@@ -2,10 +2,13 @@ package org.mineacademy.fo.menu.button;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.conversation.SimpleDecimalPrompt;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -69,7 +72,7 @@ public abstract class Button {
 	 * @param description the description of the button
 	 * @return the button
 	 */
-	public static final DummyButton makeInfo(String... description) {
+	public static final DummyButton makeInfo(final String... description) {
 		final List<String> lores = new ArrayList<>();
 		lores.add(" ");
 
@@ -94,7 +97,7 @@ public abstract class Button {
 	 * @param builder the icon builder
 	 * @return the button
 	 */
-	public static final DummyButton makeDummy(ItemCreator.ItemCreatorBuilder builder) {
+	public static final DummyButton makeDummy(final ItemCreator.ItemCreatorBuilder builder) {
 		return makeDummy(builder.build());
 	}
 
@@ -104,8 +107,79 @@ public abstract class Button {
 	 * @param creator the icon creator
 	 * @return the buttpn
 	 */
-	public static final DummyButton makeDummy(ItemCreator creator) {
+	public static final DummyButton makeDummy(final ItemCreator creator) {
 		return new DummyButton(creator.makeMenuTool());
+	}
+
+	/**
+	 * Creates a lazy button having the given icon, title, label (the second lore row) and the click function
+	 * taking in the player who damn clicked
+	 *
+	 * @param icon
+	 * @param title
+	 * @param label
+	 * @param onClickFunction
+	 * @return
+	 */
+	public static final Button makeSimple(final CompMaterial icon, final String title, final String label, final Consumer<Player> onClickFunction) {
+		return new Button() {
+
+			@Override
+			public ItemStack getItem() {
+				return ItemCreator.of(icon, title, "", label).build().makeMenuTool();
+			}
+
+			@Override
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+				onClickFunction.accept(player);
+			}
+		};
+	}
+
+	/**
+	 * Creates a lazy button having the given icon, title, label (the second lore row) and the click function
+	 * taking in the player and the click type
+	 *
+	 * @param icon
+	 * @param title
+	 * @param label
+	 * @param onClickFunction
+	 * @return
+	 */
+	public static final Button makeSimple(final CompMaterial icon, final String title, final String label, final BiConsumer<Player, ClickType> onClickFunction) {
+		return new Button() {
+
+			@Override
+			public ItemStack getItem() {
+				return ItemCreator.of(icon, title, "", label).build().makeMenuTool();
+			}
+
+			@Override
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+				onClickFunction.accept(player, click);
+			}
+		};
+	}
+
+	/**
+	 * Create a button that shows the decimal prompt to the player when clicked
+	 *
+	 * @param question
+	 * @param successAction
+	 */
+	public static Button makeDecimalPrompt(final ItemCreator.ItemCreatorBuilder builder, final String question, final Consumer<Double> successAction) {
+		return new Button() {
+
+			@Override
+			public ItemStack getItem() {
+				return builder.build().make();
+			}
+
+			@Override
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+				SimpleDecimalPrompt.show(player, question, successAction);
+			}
+		};
 	}
 
 	@Override
@@ -133,7 +207,7 @@ public abstract class Button {
 		 * Do nothing when clicked
 		 */
 		@Override
-		public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+		public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 		}
 	}
 }
