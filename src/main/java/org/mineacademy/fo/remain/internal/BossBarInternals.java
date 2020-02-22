@@ -86,65 +86,69 @@ public class BossBarInternals implements Listener {
 				entityClass = v1_9Native.class;
 		}
 
-		Valid.checkNotNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
+		if (!MinecraftVersion.olderThan(V.v1_6)) {
+			Valid.checkNotNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
 
-		if (singleton == null && SimplePlugin.getInstance().isEnabled()) {
-			singleton = new BossBarInternals();
+			if (singleton == null && SimplePlugin.getInstance().isEnabled()) {
+				singleton = new BossBarInternals();
 
-			Bukkit.getPluginManager().registerEvents(singleton, SimplePlugin.getInstance());
+				Bukkit.getPluginManager().registerEvents(singleton, SimplePlugin.getInstance());
 
-			if (Remain.isProtocol18Hack())
-				Common.runTimer(5, () -> {
-					for (final UUID uuid : players.keySet()) {
-						final Player player = Remain.getPlayerByUUID(uuid);
+				if (Remain.isProtocol18Hack())
+					Common.runTimer(5, () -> {
+						for (final UUID uuid : players.keySet()) {
+							final Player player = Remain.getPlayerByUUID(uuid);
 
-						Remain.sendPacket(player, players.get(uuid).getTeleportPacket(getDragonLocation(player.getLocation())));
-					}
-				});
+							Remain.sendPacket(player, players.get(uuid).getTeleportPacket(getDragonLocation(player.getLocation())));
+						}
+					});
+			}
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onPluginDisable(PluginDisableEvent e) {
-		if (e.getPlugin().equals(SimplePlugin.getInstance()) && singleton != null)
+	public void onPluginDisable(final PluginDisableEvent e) {
+		if (!MinecraftVersion.olderThan(V.v1_6) && e.getPlugin().equals(SimplePlugin.getInstance()) && singleton != null)
 			singleton.stop();
 	}
 
 	// Removes bars from all players
 	private void stop() {
-		for (final Player player : Remain.getOnlinePlayers())
-			removeBar(player);
+		if (!MinecraftVersion.olderThan(V.v1_6)) {
+			for (final Player player : Remain.getOnlinePlayers())
+				removeBar(player);
 
-		players.clear();
+			players.clear();
 
-		for (final int timerID : timers.values())
-			Bukkit.getScheduler().cancelTask(timerID);
-		timers.clear();
+			for (final int timerID : timers.values())
+				Bukkit.getScheduler().cancelTask(timerID);
+			timers.clear();
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onPlayerQuit(PlayerQuitEvent event) {
+	public void onPlayerQuit(final PlayerQuitEvent event) {
 		removeBar(event.getPlayer());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onPlayerKick(PlayerKickEvent event) {
+	public void onPlayerKick(final PlayerKickEvent event) {
 		removeBar(event.getPlayer());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onPlayerTeleport(PlayerTeleportEvent event) {
+	public void onPlayerTeleport(final PlayerTeleportEvent event) {
 		handleTeleport(event.getPlayer(), event.getTo().clone());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onPlayerTeleport(PlayerRespawnEvent event) {
+	public void onPlayerTeleport(final PlayerRespawnEvent event) {
 		handleTeleport(event.getPlayer(), event.getRespawnLocation().clone());
 	}
 
 	// Fixes bar disappearing on teleport
 	private void handleTeleport(final Player player, final Location loc) {
-		if (!hasBar(player))
+		if (MinecraftVersion.olderThan(V.v1_6) || !hasBar(player))
 			return;
 
 		final EnderDragonEntity oldDragon = getDragon(player, "");
@@ -189,8 +193,11 @@ public class BossBarInternals implements Listener {
 	 * @throws IllegalArgumentException If the percentage is not within valid
 	 *                                  bounds.
 	 */
-	public static void setMessage(Player player, String message, float percent, CompBarColor color, CompBarStyle style) {
+	public static void setMessage(final Player player, final String message, final float percent, final CompBarColor color, final CompBarStyle style) {
 		Valid.checkBoolean(0F <= percent && percent <= 100F, "Percent must be between 0F and 100F, but was: " + percent);
+
+		if (MinecraftVersion.olderThan(V.v1_6))
+			return;
 
 		if (hasBar(player))
 			removeBar(player);
@@ -229,8 +236,11 @@ public class BossBarInternals implements Listener {
 	 *
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
-	public static void setMessage(final Player player, String message, int seconds, CompBarColor color, CompBarStyle style) {
+	public static void setMessage(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {
 		Valid.checkBoolean(seconds > 0, "Seconds must be > 1 ");
+
+		if (MinecraftVersion.olderThan(V.v1_6))
+			return;
 
 		if (hasBar(player))
 			removeBar(player);
@@ -264,8 +274,11 @@ public class BossBarInternals implements Listener {
 		sendDragon(dragon, player);
 	}
 
-	public static void removeBar(Player player) {
+	public static void removeBar(final Player player) {
 		if (!hasBar(player))
+			return;
+
+		if (MinecraftVersion.olderThan(V.v1_6))
 			return;
 
 		final EnderDragonEntity dragon = getDragon(player, "");
@@ -280,7 +293,7 @@ public class BossBarInternals implements Listener {
 		cancelTimer(player);
 	}
 
-	private static boolean hasBar(Player player) {
+	private static boolean hasBar(final Player player) {
 		return players.containsKey(player.getUniqueId());
 	}
 
@@ -291,7 +304,7 @@ public class BossBarInternals implements Listener {
 		return message;
 	}
 
-	private static void cancelTimer(Player player) {
+	private static void cancelTimer(final Player player) {
 		final Integer timerID = timers.remove(player.getUniqueId());
 
 		if (timerID != null) {
@@ -299,7 +312,7 @@ public class BossBarInternals implements Listener {
 		}
 	}
 
-	private static void sendDragon(EnderDragonEntity dragon, Player player) {
+	private static void sendDragon(final EnderDragonEntity dragon, final Player player) {
 		if (dragon instanceof v1_9Native) {
 			final v1_9Native bar = (v1_9Native) dragon;
 
@@ -311,14 +324,14 @@ public class BossBarInternals implements Listener {
 		}
 	}
 
-	private static EnderDragonEntity getDragon(Player player, String message) {
+	private static EnderDragonEntity getDragon(final Player player, final String message) {
 		if (hasBar(player))
 			return players.get(player.getUniqueId());
 
 		return addDragon(player, cleanMessage(message));
 	}
 
-	private static EnderDragonEntity addDragon(Player player, String message) {
+	private static EnderDragonEntity addDragon(final Player player, final String message) {
 		final EnderDragonEntity dragon = newDragon(message, getDragonLocation(player.getLocation()));
 
 		if (dragon instanceof v1_9Native)
@@ -332,7 +345,7 @@ public class BossBarInternals implements Listener {
 		return dragon;
 	}
 
-	private static EnderDragonEntity addDragon(Player player, Location loc, String message) {
+	private static EnderDragonEntity addDragon(final Player player, final Location loc, final String message) {
 		final EnderDragonEntity dragon = newDragon(message, getDragonLocation(loc));
 
 		if (dragon instanceof v1_9Native)
@@ -364,7 +377,7 @@ public class BossBarInternals implements Listener {
 		return loc;
 	}
 
-	private static BlockFace getDirection(Location loc) {
+	private static BlockFace getDirection(final Location loc) {
 		final float dir = Math.round(loc.getYaw() / 90);
 		if (dir == -4 || dir == 0 || dir == 4)
 			return BlockFace.SOUTH;
@@ -377,7 +390,7 @@ public class BossBarInternals implements Listener {
 		return null;
 	}
 
-	private static EnderDragonEntity newDragon(String message, Location loc) {
+	private static EnderDragonEntity newDragon(final String message, final Location loc) {
 		EnderDragonEntity fakeDragon = null;
 
 		try {

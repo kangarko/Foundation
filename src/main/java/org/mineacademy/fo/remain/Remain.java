@@ -59,7 +59,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
@@ -1696,7 +1695,7 @@ public final class Remain {
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
 		final PotionType wrapped = PotionType.getByEffect(type);
-		final PotionMeta meta = (PotionMeta) item.getItemMeta();
+		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
 
 		try {
 			final org.bukkit.potion.PotionData data = new org.bukkit.potion.PotionData(level > 0 && wrapped != null ? wrapped : PotionType.WATER);

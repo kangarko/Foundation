@@ -61,6 +61,7 @@ import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.update.SpigotUpdater;
+import org.mineacademy.fo.visual.BlockVisualizer;
 import org.mineacademy.fo.visualize_old.VisualizerListener;
 
 import lombok.Getter;
@@ -147,7 +148,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param label
 	 * @return
 	 */
-	public static final boolean isMainCommand(String label) {
+	public static final boolean isMainCommand(final String label) {
 		return getInstance().getMainCommand() != null && getInstance().getMainCommand().getLabel().equals(label);
 	}
 
@@ -199,7 +200,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	public final void onLoad() {
 
 		// Set the instance
-		getInstance();
+		try {
+			getInstance();
+
+		} catch (final Throwable ex) {
+			if (MinecraftVersion.olderThan(V.v1_7))
+				instance = this; // Workaround
+			else
+				throw ex;
+		}
 
 		// Call parent
 		onPluginLoad();
@@ -495,7 +504,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 
 		if (!md_5 || !gson) {
-			System.out.println(Common.consoleLine());
+			System.out.println("==================================================");
 			System.out.println("Your Minecraft version (" + MinecraftVersion.getCurrent() + ")");
 			System.out.println("lacks libraries " + getName() + " needs:");
 			System.out.println("JSON Chat (by md_5) found: " + md_5);
@@ -503,8 +512,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			System.out.println(" ");
 			System.out.println("To fix that, please install BungeeChatAPI:");
 			System.out.println("https://www.spigotmc.org/resources/38379/");
-			System.out.println(Common.consoleLine());
-
+			System.out.println("==================================================");
 			return false;
 		}
 
@@ -764,6 +772,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		SimpleSettings.resetSettingsCall();
 		SimpleLocalization.resetLocalizationCall();
 
+		BlockVisualizer.stopAll();
+
 		if (getMainCommand() != null && getMainCommand().isRegistered())
 			getMainCommand().unregister();
 
@@ -788,7 +798,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param listener
 	 * @param condition
 	 */
-	protected final void registerEventsIf(Listener listener, boolean condition) {
+	protected final void registerEventsIf(final Listener listener, final boolean condition) {
 		if (condition)
 			if (startingReloadables)
 				reloadables.registerEvents(listener);
@@ -801,7 +811,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @param listener
 	 */
-	protected final void registerEvents(Listener listener) {
+	protected final void registerEvents(final Listener listener) {
 		if (startingReloadables)
 			reloadables.registerEvents(listener);
 		else
@@ -814,7 +824,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param listener
 	 * @param condition
 	 */
-	protected final void registerEventsIf(SimpleListener<? extends Event> listener, boolean condition) {
+	protected final void registerEventsIf(final SimpleListener<? extends Event> listener, final boolean condition) {
 		if (condition)
 			if (startingReloadables)
 				reloadables.registerEvents(listener);
@@ -827,7 +837,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @param listener
 	 */
-	protected final void registerEvents(SimpleListener<? extends Event> listener) {
+	protected final void registerEvents(final SimpleListener<? extends Event> listener) {
 		if (startingReloadables)
 			reloadables.registerEvents(listener);
 		else
@@ -839,7 +849,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @param command
 	 */
-	protected final void registerCommand(Command command) {
+	protected final void registerCommand(final Command command) {
 		Remain.registerCommand(command);
 	}
 
@@ -848,7 +858,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @param command
 	 */
-	protected final void registerCommand(SimpleCommand command) {
+	protected final void registerCommand(final SimpleCommand command) {
 		command.register();
 	}
 
@@ -858,7 +868,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param label
 	 * @param group
 	 */
-	protected final void registerCommands(String label, SimpleCommandGroup group) {
+	protected final void registerCommands(final String label, final SimpleCommandGroup group) {
 		registerCommands(label, null, group);
 	}
 
@@ -869,7 +879,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param aliases
 	 * @param group
 	 */
-	protected final void registerCommands(String label, List<String> aliases, SimpleCommandGroup group) {
+	protected final void registerCommands(final String label, final List<String> aliases, final SimpleCommandGroup group) {
 		if (getMainCommand() != null && getMainCommand().getLabel().equals(label))
 			throw new FoException("Your main command group is registered automatically!");
 
@@ -882,7 +892,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param labelAndAliases
 	 * @param group
 	 */
-	protected final void registerCommands(StrictList<String> labelAndAliases, SimpleCommandGroup group) {
+	protected final void registerCommands(final StrictList<String> labelAndAliases, final SimpleCommandGroup group) {
 		Valid.checkBoolean(!labelAndAliases.isEmpty(), "Must specify at least label for command group: " + group);
 
 		if (getMainCommand() != null && getMainCommand().getLabel().equals(labelAndAliases.get(0)))
@@ -1084,7 +1094,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	@Deprecated
 	@Override
-	public final PluginCommand getCommand(String name) {
+	public final PluginCommand getCommand(final String name) {
 		return super.getCommand(name);
 	}
 
@@ -1093,7 +1103,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	@Deprecated
 	@Override
-	public final boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	public final boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
 		throw unsupported("onCommand");
 	}
 
@@ -1102,7 +1112,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	@Deprecated
 	@Override
-	public final List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+	public final List<String> onTabComplete(final CommandSender sender, final Command command, final String alias, final String[] args) {
 		throw unsupported("onTabComplete");
 	}
 
@@ -1142,7 +1152,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		throw new FoException("Cannot call reloadConfig in " + getName() + ", use reload()!");
 	}
 
-	private final FoException unsupported(String method) {
+	private final FoException unsupported(final String method) {
 		return new FoException("Cannot call " + method + " in " + getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
 	}
 }
