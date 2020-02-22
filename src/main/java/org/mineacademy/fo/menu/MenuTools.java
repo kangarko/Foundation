@@ -43,7 +43,7 @@ public abstract class MenuTools extends Menu {
 	 *
 	 * @param parent
 	 */
-	protected MenuTools(Menu parent) {
+	protected MenuTools(final Menu parent) {
 		super(parent);
 
 		setSize(9 * 1);
@@ -71,7 +71,7 @@ public abstract class MenuTools extends Menu {
 	 * @param extendingClass
 	 * @return
 	 */
-	protected Object[] lookupTools(Class<? extends Tool> extendingClass) {
+	protected Object[] lookupTools(final Class<? extends Tool> extendingClass) {
 		final List<Object> instances = new ArrayList<>();
 
 		for (final Class<?> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), extendingClass)) {
@@ -89,7 +89,7 @@ public abstract class MenuTools extends Menu {
 	}
 
 	// Compiles the given tools from makeTools()
-	private final List<ToggleableTool> compile0(Object... tools) {
+	private final List<ToggleableTool> compile0(final Object... tools) {
 		final List<ToggleableTool> list = new ArrayList<>();
 
 		if (tools != null)
@@ -106,7 +106,7 @@ public abstract class MenuTools extends Menu {
 	 * @return the tool or null
 	 */
 	@Override
-	public final ItemStack getItemAt(int slot) {
+	public final ItemStack getItemAt(final int slot) {
 		return slot < tools.size() ? tools.get(slot).get(getViewer()) : null;
 	}
 
@@ -114,7 +114,7 @@ public abstract class MenuTools extends Menu {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void onMenuClick(Player pl, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack item, boolean cancelled) {
+	public final void onMenuClick(final Player pl, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack item, final boolean cancelled) {
 		final ItemStack it = getItemAt(slot);
 		final ToggleableTool tool = it != null ? findTool(it) : null;
 
@@ -126,7 +126,7 @@ public abstract class MenuTools extends Menu {
 	}
 
 	// Converts the clicked item into a toggleable tool
-	private final ToggleableTool findTool(ItemStack item) {
+	private final ToggleableTool findTool(final ItemStack item) {
 		for (final ToggleableTool h : tools)
 			if (h.equals(item))
 				return h;
@@ -146,7 +146,7 @@ public abstract class MenuTools extends Menu {
 	 * @param description the menu description
 	 * @return
 	 */
-	public static final MenuTools of(Class<? extends Tool> pluginToolClasses, String... description) {
+	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
 		return new MenuTools() {
 
 			@Override
@@ -158,7 +158,6 @@ public abstract class MenuTools extends Menu {
 			protected String[] getInfo() {
 				return description;
 			}
-
 		};
 	}
 }
@@ -186,7 +185,7 @@ final class ToggleableTool {
 	 *
 	 * @param unparsed the object to parse, see {@link MenuTools#compileTools()}
 	 */
-	ToggleableTool(Object unparsed) {
+	ToggleableTool(final Object unparsed) {
 		if (unparsed != null) {
 			if (unparsed instanceof ItemStack)
 				this.item = (ItemStack) unparsed;
@@ -210,13 +209,13 @@ final class ToggleableTool {
 	 * @param player
 	 * @return the item
 	 */
-	ItemStack get(Player player) {
+	ItemStack get(final Player player) {
 		update(player);
 
 		return playerHasTool ? getToolWhenHas() : getToolWhenHasnt();
 	}
 
-	private void update(Player pl) {
+	private void update(final Player pl) {
 		playerHasTool = pl.getOpenInventory().getBottomInventory().containsAtLeast(item, 1);
 	}
 
@@ -240,7 +239,7 @@ final class ToggleableTool {
 	 *
 	 * @param player the player
 	 */
-	void giveOrTake(Player player) {
+	void giveOrTake(final Player player) {
 		final PlayerInventory inv = player.getInventory();
 
 		if (playerHasTool = !playerHasTool)
@@ -250,7 +249,7 @@ final class ToggleableTool {
 			inv.removeItem(item);
 	}
 
-	boolean equals(ItemStack item) {
+	boolean equals(final ItemStack item) {
 		return getToolWhenHas().isSimilar(item) || getToolWhenHasnt().isSimilar(item);
 	}
 }
