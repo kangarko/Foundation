@@ -83,7 +83,7 @@ public enum ParticleInternals {
 	private static Class<?> nmsEnumParticle;
 
 	static {
-		nmsPacketPlayOutParticle = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles");
+		nmsPacketPlayOutParticle = MinecraftVersion.atLeast(V.v1_7) ? ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles") : null;
 	}
 
 	//
@@ -145,6 +145,9 @@ public enum ParticleInternals {
 	 * @param extra
 	 */
 	public void send(final Player player, final Location location, final float offsetX, final float offsetY, final float offsetZ, final float speed, final int count, int... extra) {
+		if (MinecraftVersion.olderThan(V.v1_7))
+			return;
+
 		final Object packet;
 
 		if (MinecraftVersion.equals(V.v1_8)) {

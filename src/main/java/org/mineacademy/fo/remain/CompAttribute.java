@@ -105,7 +105,7 @@ public enum CompAttribute {
 	 * @param name              the generic name
 	 * @param genericFieldName, see {@link #genericFieldName}
 	 */
-	private CompAttribute(String name, String genericFieldName) {
+	private CompAttribute(final String name, final String genericFieldName) {
 		this.minecraftName = name;
 		this.genericFieldName = genericFieldName;
 	}
@@ -125,7 +125,7 @@ public enum CompAttribute {
 	 * @param entity
 	 * @return the attribute, or null if not supported by the server
 	 */
-	public final Double get(LivingEntity entity) {
+	public final Double get(final LivingEntity entity) {
 		try {
 			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(toString()));
 
@@ -139,7 +139,7 @@ public enum CompAttribute {
 				return null;
 
 			} catch (final Throwable t) {
-				if (MinecraftVersion.olderThan(V.v1_9))
+				if (MinecraftVersion.olderThan(V.v1_9) && MinecraftVersion.atLeast(V.v1_8))
 					t.printStackTrace();
 
 				return null;
@@ -153,7 +153,7 @@ public enum CompAttribute {
 	 * @param entity
 	 * @param value
 	 */
-	public final void set(LivingEntity entity, double value) {
+	public final void set(final LivingEntity entity, final double value) {
 		Valid.checkNotNull(entity, "Entity cannot be null");
 		Valid.checkNotNull(entity, "Attribute cannot be null");
 
@@ -167,7 +167,7 @@ public enum CompAttribute {
 					setLegacy(entity, value);
 
 			} catch (final Throwable t) {
-				if (MinecraftVersion.olderThan(V.v1_9))
+				if (MinecraftVersion.olderThan(V.v1_9) && MinecraftVersion.atLeast(V.v1_8))
 					t.printStackTrace();
 
 				if (t instanceof NullPointerException)
@@ -177,23 +177,29 @@ public enum CompAttribute {
 	}
 
 	// MC 1.8.9
-	private double getLegacy(Entity entity) {
+	private double getLegacy(final Entity entity) {
 		return (double) ReflectionUtil.invoke("getValue", getLegacyAttributeInstance(entity));
 	}
 
 	// MC 1.8.9
-	private void setLegacy(Entity entity, double value) {
+	private void setLegacy(final Entity entity, final double value) {
 		final Object instance = getLegacyAttributeInstance(entity);
 
 		ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
 	}
 
 	// MC 1.8.9
-	private Object getLegacyAttributeInstance(Entity entity) {
+	private Object getLegacyAttributeInstance(final Entity entity) {
 		final Object nmsEntity = ReflectionUtil.invoke("getHandle", entity);
 
 		final Class<?> genericAttribute = ReflectionUtil.getNMSClass("GenericAttributes");
-		final Object iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.genericFieldName);
+		Object iAttribute;
+
+		try {
+			iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.genericFieldName);
+		} catch (final Throwable t) {
+			iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.minecraftName);
+		}
 
 		final Class<?> nmsLiving = ReflectionUtil.getNMSClass("EntityLiving");
 		final Method method = ReflectionUtil.getMethod(nmsLiving, "getAttributeInstance", ReflectionUtil.getNMSClass("IAttribute"));

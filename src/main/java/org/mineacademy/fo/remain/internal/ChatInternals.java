@@ -45,7 +45,7 @@ public class ChatInternals {
 
 	static {
 		// New MC versions have native API's
-		if (MinecraftVersion.olderThan(V.v1_12))
+		if (MinecraftVersion.olderThan(V.v1_12) && MinecraftVersion.newerThan(V.v1_6))
 			try {
 
 				final Class<?> chatBaseComponent = ReflectionUtil.getNMSClass("IChatBaseComponent");
@@ -99,7 +99,7 @@ public class ChatInternals {
 	 * @param title
 	 * @param subtitle
 	 */
-	public static void sendTitleLegacy(Player player, int fadeIn, int stay, int fadeOut, String title, String subtitle) {
+	public static void sendTitleLegacy(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
 		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		try {
@@ -137,7 +137,7 @@ public class ChatInternals {
 	 *
 	 * @param player
 	 */
-	public static void resetTitleLegacy(Player player) {
+	public static void resetTitleLegacy(final Player player) {
 		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		try {
@@ -159,7 +159,7 @@ public class ChatInternals {
 	 * @param headerRaw
 	 * @param footerRaw
 	 */
-	public static void sendTablistLegacy(Player player, String headerRaw, String footerRaw) {
+	public static void sendTablistLegacy(final Player player, final String headerRaw, final String footerRaw) {
 		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		try {
@@ -190,14 +190,14 @@ public class ChatInternals {
 	 * @param player
 	 * @param message
 	 */
-	public static void sendActionBarLegacy(Player player, String message) {
+	public static void sendActionBarLegacy(final Player player, final String message) {
 		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
 
 		sendChat(player, message, (byte) 2);
 	}
 
 	// http://wiki.vg/Protocol#Chat_Message
-	private static void sendChat(Player pl, String text, byte type) {
+	private static void sendChat(final Player pl, final String text, final byte type) {
 		try {
 			final Object message = serializeText(text);
 			Valid.checkNotNull(message, "Message cannot be null!");

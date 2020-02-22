@@ -52,7 +52,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @param menuToReturnTo
 	 */
-	protected SimpleConversation(Menu menuToReturnTo) {
+	protected SimpleConversation(final Menu menuToReturnTo) {
 		this.menuToReturnTo = menuToReturnTo;
 	}
 
@@ -61,7 +61,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @param player
 	 */
-	public final void start(Player player) {
+	public final void start(final Player player) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing!");
 
 		// Do not allow open inventory since they cannot type anyways
@@ -92,7 +92,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * Listen for and handle existing the conversation
 	 */
 	@Override
-	public final void conversationAbandoned(ConversationAbandonedEvent event) {
+	public final void conversationAbandoned(final ConversationAbandonedEvent event) {
 		final Conversable conversing = event.getContext().getForWhom();
 		final Object source = event.getSource();
 
@@ -121,7 +121,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @param event
 	 */
-	protected void onConversationEnd(ConversationAbandonedEvent event) {
+	protected void onConversationEnd(final ConversationAbandonedEvent event) {
 	}
 
 	/**
@@ -137,7 +137,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		return new SimplePrefix(Common.ADD_TELL_PREFIX && Common.ADD_TELL_PREFIX_IN_CONVERSATION ? addLastSpace(Common.getTellPrefix()) : "");
 	}
 
-	private final String addLastSpace(String prefix) {
+	private final String addLastSpace(final String prefix) {
 		return prefix.endsWith(" ") ? prefix : prefix + " ";
 	}
 
@@ -183,7 +183,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @param menu
 	 */
-	public void setMenuToReturnTo(Menu menu) {
+	public void setMenuToReturnTo(final Menu menu) {
 		this.menuToReturnTo = menu;
 	}
 	// ------------------------------------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param messages
 	 */
-	protected static final void tellBoxed(int delayTicks, Conversable conversable, String... messages) {
+	protected static final void tellBoxed(final int delayTicks, final Conversable conversable, final String... messages) {
 		Common.runLater(delayTicks, () -> tellBoxed(conversable, messages));
 	}
 
@@ -207,7 +207,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param messages
 	 */
-	protected static final void tellBoxed(Conversable conversable, String... messages) {
+	protected static final void tellBoxed(final Conversable conversable, final String... messages) {
 		BoxedMessage.tell((Player) conversable, messages);
 	}
 
@@ -217,7 +217,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param message
 	 */
-	protected static final void tell(Conversable conversable, String message) {
+	protected static final void tell(final Conversable conversable, final String message) {
 		Common.tellConversing(conversable, message);
 	}
 
@@ -228,7 +228,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param message
 	 */
-	protected static final void tellLater(int delayTicks, Conversable conversable, String message) {
+	protected static final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
 		Common.tellLaterConversing(delayTicks, conversable, message);
 	}
 
@@ -244,7 +244,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		@Getter(value = AccessLevel.PRIVATE)
 		private SimplePrompt lastSimplePrompt;
 
-		private CustomConversation(Conversable forWhom) {
+		private CustomConversation(final Conversable forWhom) {
 			super(SimplePlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
 
 			localEchoEnabled = false;
@@ -266,14 +266,19 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				final String promptClass = currentPrompt.getClass().getSimpleName();
 
 				final String question = currentPrompt.getPromptText(context);
-				final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData()
-						.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(QUESTION_SHOW_THRESHOLD, TimeUnit.SECONDS).build());
 
-				if (!askedQuestions.containsKey(question)) {
-					askedQuestions.put(question, null);
+				try {
+					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData()
+							.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(QUESTION_SHOW_THRESHOLD, TimeUnit.SECONDS).build());
 
-					context.setSessionData("Asked_" + promptClass, askedQuestions);
-					context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
+					if (!askedQuestions.containsKey(question)) {
+						askedQuestions.put(question, null);
+
+						context.setSessionData("Asked_" + promptClass, askedQuestions);
+						context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
+					}
+				} catch (final NoSuchMethodError ex) {
+					// Unfortunatelly old MC version detected
 				}
 
 				// Edit 2 - Save last prompt if it is our class
