@@ -1,5 +1,7 @@
 package org.mineacademy.fo.visual;
 
+import java.util.HashSet;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.FallingBlock;
@@ -84,6 +86,18 @@ public final class BlockVisualizer {
 		// Then restore the client's block back to normal
 		for (final Player player : block.getWorld().getPlayers())
 			Remain.sendBlockChange(1, player, block);
+	}
+
+	/**
+	 * Stop all blocks from being visualized
+	 */
+	public void stopAll() {
+		for (final Location location : new HashSet<>(visualizedBlocks.keySet())) {
+			final Block block = location.getBlock();
+
+			if (isVisualized(block))
+				stopVisualizing(block);
+		}
 	}
 
 	/**
