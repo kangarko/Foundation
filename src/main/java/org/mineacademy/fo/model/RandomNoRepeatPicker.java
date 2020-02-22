@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.RandomUtil;
@@ -21,23 +22,35 @@ public abstract class RandomNoRepeatPicker<T> {
 	private final List<T> list = new ArrayList<>();
 
 	/**
+	 * The the items we want to pick from
+	 *
+	 * @param list
+	 */
+	public void setItems(final List<T> list) {
+		this.list.clear();
+		this.list.addAll(list);
+	}
+
+	/**
 	 * Randomly picks 1 item from the given list
+	 * NB: This also loads up the list
 	 *
 	 * @param items
 	 * @return
 	 */
-	public T pickFrom(Iterable<T> items) {
+	public T pickFrom(final Iterable<T> items) {
 		return pickFromFor(items, null);
 	}
 
 	/**
 	 * Randomly picks 1 item for the player using {@link #canObtain(Player, Object)} method
+	 * NB: This also loads up the list
 	 *
 	 * @param items
 	 * @param player
 	 * @return
 	 */
-	public T pickFromFor(Iterable<T> items, Player player) {
+	public T pickFromFor(final Iterable<T> items, final Player player) {
 		for (final T item : items)
 			list.add(item);
 
@@ -51,7 +64,7 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * @param player
 	 * @return
 	 */
-	private T pickRandom(Player player) {
+	public T pickRandom(final Player player) {
 		if (list.isEmpty())
 			return null;
 
@@ -78,4 +91,35 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * @return
 	 */
 	protected abstract boolean canObtain(Player player, T picked);
+
+	/**
+	 * Creates a new random no repeat picker of the given class type
+	 * All players may always obtain it
+	 *
+	 * @param <T>
+	 * @param pickedType
+	 * @return
+	 */
+	public static final <T> RandomNoRepeatPicker<T> newPicker(final Class<T> pickedType) {
+		return newPicker((player, type) -> true);
+	}
+
+	/**
+	 * Creates a new random no repeat picker with function
+	 * to check if the player can obtain the class
+	 *
+	 * @param <T>
+	 * @param pickedType
+	 * @param canObtain
+	 * @return
+	 */
+	public static final <T> RandomNoRepeatPicker<T> newPicker(final BiFunction<Player, T, Boolean> canObtain) {
+		return new RandomNoRepeatPicker<T>() {
+
+			@Override
+			protected boolean canObtain(final Player player, final T picked) {
+				return canObtain.apply(player, picked);
+			}
+		};
+	}
 }
