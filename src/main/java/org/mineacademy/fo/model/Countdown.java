@@ -51,7 +51,7 @@ public abstract class Countdown implements Runnable {
 	 *
 	 * @param time
 	 */
-	protected Countdown(TimeHelper time) {
+	protected Countdown(final TimeHelper time) {
 		this(time.getTimeSeconds());
 	}
 
@@ -60,7 +60,7 @@ public abstract class Countdown implements Runnable {
 	 *
 	 * @param countdownSeconds
 	 */
-	protected Countdown(int countdownSeconds) {
+	protected Countdown(final int countdownSeconds) {
 		this.countdownSeconds = countdownSeconds;
 	}
 
@@ -114,7 +114,7 @@ public abstract class Countdown implements Runnable {
 	 *
 	 * @param t
 	 */
-	protected void onTickError(Throwable t) {
+	protected void onTickError(final Throwable t) {
 	}
 
 	/**
@@ -162,7 +162,7 @@ public abstract class Countdown implements Runnable {
 	 *
 	 * @return
 	 */
-	private final int getTaskId() {
+	public final int getTaskId() {
 		Valid.checkBoolean(isRunning(), "Task " + this + " not scheduled yet");
 
 		return taskId;
