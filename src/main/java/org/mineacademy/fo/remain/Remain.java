@@ -1312,6 +1312,8 @@ public final class Remain {
 	 * @return
 	 */
 	public static Score getScore(final Objective obj, String entry) {
+		Valid.checkNotNull(obj, "Objective cannot be noul");
+
 		entry = Common.colorize(entry);
 
 		try {
