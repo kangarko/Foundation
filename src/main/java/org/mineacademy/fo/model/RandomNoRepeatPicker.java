@@ -68,19 +68,14 @@ public abstract class RandomNoRepeatPicker<T> {
 		if (list.isEmpty())
 			return null;
 
-		T picked = null;
-
-		while (!list.isEmpty() || picked == null) {
-			picked = list.remove(RandomUtil.nextInt(list.size()));
-
-			if (player == null)
-				return picked;
+		while (!list.isEmpty()) {
+			final T picked = list.remove(RandomUtil.nextInt(list.size()));
 
 			if (picked != null && canObtain(player, picked))
 				return picked;
 		}
 
-		return picked;
+		return null;
 	}
 
 	/**
