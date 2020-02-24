@@ -21,7 +21,7 @@ public abstract class BlockTool extends Tool {
 	private PlayerInteractEvent event;
 
 	@Override
-	protected final void onBlockClick(PlayerInteractEvent event) {
+	protected final void onBlockClick(final PlayerInteractEvent event) {
 		this.event = event;
 
 		final Player player = event.getPlayer();
@@ -34,6 +34,12 @@ public abstract class BlockTool extends Tool {
 
 		else if (action == Action.LEFT_CLICK_BLOCK)
 			onBlockClick(player, ClickType.LEFT, block);
+
+		else if (action == Action.RIGHT_CLICK_AIR)
+			onAirClick(player, ClickType.RIGHT);
+
+		else if (action == Action.LEFT_CLICK_AIR)
+			onAirClick(player, ClickType.LEFT);
 	}
 
 	/**
@@ -45,4 +51,23 @@ public abstract class BlockTool extends Tool {
 	 * @param block
 	 */
 	protected abstract void onBlockClick(Player player, ClickType click, Block block);
+
+	/**
+	 * Called automatically when a player clicks the air
+	 *
+	 * @param player
+	 * @param click
+	 */
+	protected void onAirClick(final Player player, final ClickType click) {
+	}
+
+	/**
+	 * Listen for air clicking to invoike {@link #onAirClick(Player, ClickType, Block)}
+	 *
+	 * @see org.mineacademy.fo.menu.tool.Tool#ignoreCancelled()
+	 */
+	@Override
+	protected final boolean ignoreCancelled() {
+		return false;
+	}
 }
