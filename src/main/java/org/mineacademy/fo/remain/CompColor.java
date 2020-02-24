@@ -232,6 +232,18 @@ public enum CompColor {
 	}
 
 	/**
+	 * Return a colored concrete (or wool if the current MC does not support it
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static final CompMaterial toConcrete(final ChatColor color) {
+		final CompMaterial wool = toWool(color);
+
+		return CompMaterial.fromString(wool.toString().replace("_WOOL", "_CONCRETE"));
+	}
+
+	/**
 	 * Create colored wool from the given chat color
 	 *
 	 * @param color
