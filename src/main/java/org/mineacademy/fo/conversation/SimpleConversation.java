@@ -274,7 +274,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 					if (!askedQuestions.containsKey(question)) {
 						askedQuestions.put(question, null);
 
-						context.setSessionData("Asked_" + promptClass, askedQuestions);
+						//context.setSessionData("Asked_" + promptClass, askedQuestions);
 						context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
 					}
 				} catch (final NoSuchMethodError ex) {
