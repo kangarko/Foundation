@@ -148,7 +148,7 @@ public abstract class ToolVisualizer extends Tool {
 				.lore("&r")
 				.lore("&7Break it to remove.")
 				.unbreakable(true)
-				.tag(new Tuple("Game", "Edit Item"))
+				.tag(new Tuple<>("Game", "Edit Item"))
 				.build().make();
 	}
 

@@ -584,7 +584,7 @@ public class YamlConfig implements ConfigSerializable {
 		/*if (ALLOW_NULL_IN_DEFAULTS) {
 			if (object == null && ConfigSerializable.class.isAssignableFrom(type))
 				object = new SerializedMap();
-
+		
 			if ("".equals(object) && Enum.class.isAssignableFrom(type))
 				object = null;
 		}*/
@@ -1416,6 +1416,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param to
 	 * @param converter
 	 */
+	@SuppressWarnings("rawtypes")
 	protected final <O, N> void convert(final String path, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
 		final Object old = getObject(path);
 

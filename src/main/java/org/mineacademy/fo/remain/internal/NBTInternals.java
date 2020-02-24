@@ -51,6 +51,7 @@ public class NBTInternals {
 	/**
 	 * Checks if the NBT library is working properly
 	 */
+	@SuppressWarnings("rawtypes")
 	public static boolean checkCompatible() {
 		boolean compatible = true;
 		final boolean jsonCompatible = true;

@@ -38,7 +38,7 @@ public class NBTReflectionUtil {
 	 * @param entity Bukkit Entity
 	 * @return NMS Entity
 	 */
-	public static Object getNMSEntity(Entity entity) {
+	public static Object getNMSEntity(final Entity entity) {
 		try {
 			return WrapperMethod.CRAFT_ENTITY_GET_HANDLE.run(WrapperClass.CRAFT_ENTITY.getClazz().cast(entity));
 		} catch (final Exception e) {
@@ -52,7 +52,7 @@ public class NBTReflectionUtil {
 	 * @param stream InputStream of any NBT file
 	 * @return NMS Compound
 	 */
-	public static Object readNBTFile(FileInputStream stream) {
+	public static Object readNBTFile(final FileInputStream stream) {
 		try {
 			return WrapperMethod.NBTFILE_READ.run(null, stream);
 		} catch (final Exception e) {
@@ -67,7 +67,7 @@ public class NBTReflectionUtil {
 	 * @param stream Stream to write to
 	 * @return ???
 	 */
-	public static Object saveNBTFile(Object nbt, FileOutputStream stream) {
+	public static Object saveNBTFile(final Object nbt, final FileOutputStream stream) {
 		try {
 			return WrapperMethod.NBTFILE_WRITE.run(null, nbt, stream);
 		} catch (final Exception e) {
@@ -82,7 +82,7 @@ public class NBTReflectionUtil {
 	 * @param nmsitem
 	 * @return NMS Compound
 	 */
-	public static Object getItemRootNBTTagCompound(Object nmsitem) {
+	public static Object getItemRootNBTTagCompound(final Object nmsitem) {
 		Valid.checkNotNull(nmsitem, "Cannot get root nbt tag of a null item!");
 		final Object answer = WrapperMethod.NMSITEM_GETTAG.run(nmsitem);
 
@@ -95,7 +95,7 @@ public class NBTReflectionUtil {
 	 * @param nbtcompound Any valid {@link NBTCompound}
 	 * @return NMS ItemStack
 	 */
-	public static Object convertNBTCompoundtoNMSItem(NBTCompound nbtcompound) {
+	public static Object convertNBTCompoundtoNMSItem(final NBTCompound nbtcompound) {
 		try {
 			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_11)) {
 				return WrapperObject.NMS_COMPOUNDFROMITEM.getInstance(nbtcompound.getCompound());
@@ -113,7 +113,7 @@ public class NBTReflectionUtil {
 	 * @param nmsitem NMS ItemStack
 	 * @return {@link NBTContainer} with all the data
 	 */
-	public static NBTContainer convertNMSItemtoNBTCompound(Object nmsitem) {
+	public static NBTContainer convertNMSItemtoNBTCompound(final Object nmsitem) {
 		try {
 			final Object answer = WrapperMethod.NMSITEM_SAVE.run(nmsitem, WrapperObject.NMS_NBTTAGCOMPOUND.getInstance());
 			return new NBTContainer(answer);
@@ -128,7 +128,7 @@ public class NBTReflectionUtil {
 	 * @param nmsEntity
 	 * @return NMS NBT Compound
 	 */
-	public static Object getEntityNBTTagCompound(Object nmsEntity) {
+	public static Object getEntityNBTTagCompound(final Object nmsEntity) {
 		try {
 			final Object nbt = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
 			Object answer = WrapperMethod.NMS_ENTITY_GET_NBT.run(nmsEntity, nbt);
@@ -147,7 +147,7 @@ public class NBTReflectionUtil {
 	 * @param nmsEntity
 	 * @return The NMS Entity
 	 */
-	public static Object setEntityNBTTag(Object nbtTag, Object nmsEntity) {
+	public static Object setEntityNBTTag(final Object nbtTag, final Object nmsEntity) {
 		try {
 			WrapperMethod.NMS_ENTITY_SET_NBT.run(nmsEntity, nbtTag);
 			return nmsEntity;
@@ -162,7 +162,7 @@ public class NBTReflectionUtil {
 	 * @param tile
 	 * @return NMS Compound with the Vanilla data
 	 */
-	public static Object getTileEntityNBTTagCompound(BlockState tile) {
+	public static Object getTileEntityNBTTagCompound(final BlockState tile) {
 		try {
 			final Object pos = WrapperObject.NMS_BLOCKPOSITION.getInstance(tile.getX(), tile.getY(), tile.getZ());
 			final Object cworld = WrapperClass.CRAFT_WORLD.getClazz().cast(tile.getWorld());
@@ -184,7 +184,7 @@ public class NBTReflectionUtil {
 	 * @param tile
 	 * @param comp
 	 */
-	public static void setTileEntityNBTTagCompound(BlockState tile, Object comp) {
+	public static void setTileEntityNBTTagCompound(final BlockState tile, final Object comp) {
 		try {
 			final Object pos = WrapperObject.NMS_BLOCKPOSITION.getInstance(tile.getX(), tile.getY(), tile.getZ());
 			final Object cworld = WrapperClass.CRAFT_WORLD.getClazz().cast(tile.getWorld());
@@ -203,7 +203,7 @@ public class NBTReflectionUtil {
 	 * @param name
 	 * @return NMS Compound or null
 	 */
-	public static Object getSubNBTTagCompound(Object compound, String name) {
+	public static Object getSubNBTTagCompound(final Object compound, final String name) {
 		try {
 			if ((boolean) WrapperMethod.COMPOUND_HAS_KEY.run(compound, name)) {
 				return WrapperMethod.COMPOUND_GET_COMPOUND.run(compound, name);
@@ -221,7 +221,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @param name
 	 */
-	public static void addNBTTagCompound(NBTCompound comp, String name) {
+	public static void addNBTTagCompound(final NBTCompound comp, final String name) {
 		if (name == null) {
 			remove(comp, name);
 			return;
@@ -248,7 +248,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return true if this is a valide Compound, else false
 	 */
-	public static Boolean valideCompound(NBTCompound comp) {
+	public static Boolean valideCompound(final NBTCompound comp) {
 		Object root = comp.getCompound();
 		if (root == null) {
 			root = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
@@ -278,7 +278,7 @@ public class NBTReflectionUtil {
 	 * @param comp        Target for the merge
 	 * @param nbtcompound Data to merge
 	 */
-	public static void mergeOtherNBTCompound(NBTCompound comp, NBTCompound nbtcompound) {
+	public static void mergeOtherNBTCompound(final NBTCompound comp, final NBTCompound nbtcompound) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
 			rootnbttag = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
@@ -301,7 +301,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @return Content saved under this key
 	 */
-	public static String getContent(NBTCompound comp, String key) {
+	public static String getContent(final NBTCompound comp, final String key) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
 			rootnbttag = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
@@ -323,7 +323,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @param val
 	 */
-	public static void set(NBTCompound comp, String key, Object val) {
+	public static void set(final NBTCompound comp, final String key, final Object val) {
 		if (val == null) {
 			remove(comp, key);
 			return;
@@ -353,8 +353,7 @@ public class NBTReflectionUtil {
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalide type
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
+	public static <T> NBTList<T> getList(final NBTCompound comp, final String key, final NBTType type, final Class<T> clazz) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
 			rootnbttag = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
@@ -385,7 +384,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @param value
 	 */
-	public static void setObject(NBTCompound comp, String key, Object value) {
+	public static void setObject(final NBTCompound comp, final String key, final Object value) {
 		try {
 			final String json = gson.toJson(value);
 			setData(comp, WrapperMethod.COMPOUND_SET_STRING, key, json);
@@ -402,7 +401,7 @@ public class NBTReflectionUtil {
 	 * @param type
 	 * @return The loaded Object or null, if not found
 	 */
-	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
+	public static <T> T getObject(final NBTCompound comp, final String key, final Class<T> type) {
 		final String json = (String) getData(comp, WrapperMethod.COMPOUND_GET_STRING, key);
 		if (json == null)
 			return null;
@@ -410,7 +409,7 @@ public class NBTReflectionUtil {
 		return deserializeJson(json, type);
 	}
 
-	private static <T> T deserializeJson(String json, Class<T> type) {
+	private static <T> T deserializeJson(final String json, final Class<T> type) {
 		try {
 			if (json == null) {
 				return null;
@@ -429,7 +428,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @param key
 	 */
-	public static void remove(NBTCompound comp, String key) {
+	public static void remove(final NBTCompound comp, final String key) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
 			rootnbttag = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
@@ -447,8 +446,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
-	@SuppressWarnings("unchecked")
-	public static Set<String> getKeys(NBTCompound comp) {
+	public static Set<String> getKeys(final NBTCompound comp) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
 			rootnbttag = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
@@ -467,7 +465,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @param data
 	 */
-	public static void setData(NBTCompound comp, WrapperMethod type, String key, Object data) {
+	public static void setData(final NBTCompound comp, final WrapperMethod type, final String key, final Object data) {
 		if (data == null) {
 			remove(comp, key);
 			return;
@@ -491,7 +489,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @return The value or default fallback from NMS
 	 */
-	public static Object getData(NBTCompound comp, WrapperMethod type, String key) {
+	public static Object getData(final NBTCompound comp, final WrapperMethod type, final String key) {
 		final Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
 			return null;

@@ -14,7 +14,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
  * @author tr7zw
  *
  */
-@SuppressWarnings("javadoc")
 public enum WrapperClass {
 	CRAFT_ITEMSTACK(CRAFTBUKKIT, "inventory.CraftItemStack"),
 	CRAFT_ENTITY(CRAFTBUKKIT, "entity.CraftEntity"),

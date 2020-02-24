@@ -15,7 +15,6 @@ import org.mineacademy.fo.Valid;
  *
  * @author tr7zw
  */
-@SuppressWarnings("javadoc")
 public enum WrapperMethod {
 
 	COMPOUND_SET_FLOAT(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, float.class }, V.v1_7, new Since(V.v1_7, "setFloat")),
