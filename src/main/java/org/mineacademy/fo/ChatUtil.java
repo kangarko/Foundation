@@ -34,7 +34,7 @@ public final class ChatUtil {
 	 * @param message
 	 * @return
 	 */
-	public static String center(String message) {
+	public static String center(final String message) {
 		return center(message, ' ', ChatColor.WHITE);
 	}
 
@@ -45,7 +45,7 @@ public final class ChatUtil {
 	 * @param centerPx
 	 * @return
 	 */
-	public static String center(String message, int centerPx) {
+	public static String center(final String message, final int centerPx) {
 		return center(message, ' ', ChatColor.WHITE, centerPx);
 	}
 
@@ -60,7 +60,7 @@ public final class ChatUtil {
 	 * @param spaceColor
 	 * @return
 	 */
-	public static String center(String message, char space, ChatColor spaceColor) {
+	public static String center(final String message, final char space, final ChatColor spaceColor) {
 		return center(message, space, spaceColor, CENTER_PX);
 	}
 
@@ -73,7 +73,7 @@ public final class ChatUtil {
 	 * @param centerPx
 	 * @return
 	 */
-	public static String center(String message, char space, ChatColor spaceColor, int centerPx) {
+	public static String center(final String message, final char space, final ChatColor spaceColor, final int centerPx) {
 		if (message == null || message.equals(""))
 			return "";
 
@@ -129,7 +129,7 @@ public final class ChatUtil {
 	 * @param messages
 	 * @return
 	 */
-	public static String[] verticalCenter(String... messages) {
+	public static String[] verticalCenter(final String... messages) {
 		return verticalCenter(Arrays.asList(messages));
 	}
 
@@ -139,18 +139,18 @@ public final class ChatUtil {
 	 * @param messages
 	 * @return
 	 */
-	public static String[] verticalCenter(Collection<String> messages) {
+	public static String[] verticalCenter(final Collection<String> messages) {
 		final List<String> lines = new ArrayList<>();
 		final long padding = MathUtil.ceiling((VISIBLE_CHAT_LINES - messages.size()) / 2);
 
 		for (int i = 0; i < padding; i++)
-			lines.add(RandomUtil.nextChatColor());
+			lines.add(RandomUtil.nextColorOrDecoration());
 
 		for (final String message : messages)
 			lines.add(message);
 
 		for (int i = 0; i < padding; i++)
-			lines.add(RandomUtil.nextChatColor());
+			lines.add(RandomUtil.nextColorOrDecoration());
 
 		return lines.toArray(new String[lines.size()]);
 	}
@@ -182,7 +182,7 @@ public final class ChatUtil {
 	 * @param message the message to check
 	 * @return capitalized message
 	 */
-	public static String capitalize(String message) {
+	public static String capitalize(final String message) {
 		if (message.isEmpty())
 			return "";
 
@@ -206,7 +206,7 @@ public final class ChatUtil {
 	 * @param message
 	 * @return
 	 */
-	public static String lowercaseSecondChar(String message) {
+	public static String lowercaseSecondChar(final String message) {
 		if (message.isEmpty())
 			return "";
 
@@ -232,7 +232,7 @@ public final class ChatUtil {
 	 * @param message the message to check
 	 * @return how much percent of the message is big letters (from 0 to 100)
 	 */
-	public static double getCapsPercentage(String message) {
+	public static double getCapsPercentage(final String message) {
 		if (message.isEmpty())
 			return 0;
 
@@ -258,7 +258,7 @@ public final class ChatUtil {
 	 * @param ignored the list of strings to ignore (whitelist)
 	 * @return how many big letters are in message
 	 */
-	public static int getCapsInRow(String message, List<String> ignored) {
+	public static int getCapsInRow(final String message, final List<String> ignored) {
 		if (message.isEmpty())
 			return 0;
 
@@ -284,7 +284,7 @@ public final class ChatUtil {
 	 * @param second
 	 * @return
 	 */
-	public static double percentageSimilarity(String first, String second) {
+	public static double percentageSimilarity(final String first, final String second) {
 		if (first.isEmpty() && second.isEmpty())
 			return 1D;
 
@@ -312,7 +312,7 @@ public final class ChatUtil {
 	 * @param message
 	 * @return
 	 */
-	public static boolean isDomain(String message) {
+	public static boolean isDomain(final String message) {
 		return Common.regExMatch("(https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s]{2,}|www\\.[^\\s]+\\.[^\\s]{2,})", message);
 	}
 
@@ -323,7 +323,7 @@ public final class ChatUtil {
 	 * @param message
 	 * @return
 	 */
-	public static String replaceDiacritic(String message) {
+	public static String replaceDiacritic(final String message) {
 		return Normalizer.normalize(message, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
@@ -356,7 +356,7 @@ public final class ChatUtil {
 		return costs[second.length()];
 	}
 
-	private static int[] splitCaps(String message, List<String> ignored) {
+	private static int[] splitCaps(final String message, final List<String> ignored) {
 		final int[] editedMsg = new int[message.length()];
 		final String[] parts = message.split(" ");
 
@@ -483,7 +483,7 @@ enum DefaultFontInfo {
 	private final char character;
 	private final int length;
 
-	DefaultFontInfo(char character, int length) {
+	DefaultFontInfo(final char character, final int length) {
 		this.character = character;
 		this.length = length;
 	}
@@ -502,7 +502,7 @@ enum DefaultFontInfo {
 		return this.length + 1;
 	}
 
-	public static DefaultFontInfo getDefaultFontInfo(char c) {
+	public static DefaultFontInfo getDefaultFontInfo(final char c) {
 		for (final DefaultFontInfo dFI : DefaultFontInfo.values())
 			if (dFI.getCharacter() == c)
 				return dFI;
