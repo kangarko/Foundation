@@ -24,7 +24,7 @@ public abstract class NBTList<T> implements List<T> {
 	private final NBTType type;
 	protected Object listObject;
 
-	protected NBTList(NBTCompound owner, String name, NBTType type, Object list) {
+	protected NBTList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
 		parent = owner;
 		listName = name;
 		this.type = type;
@@ -34,7 +34,7 @@ public abstract class NBTList<T> implements List<T> {
 	/**
 	 * @return Name of this list-compound
 	 */
-	public String getName(){
+	public String getName() {
 		return listName;
 	}
 
@@ -52,7 +52,7 @@ public abstract class NBTList<T> implements List<T> {
 	protected abstract Object asTag(T object);
 
 	@Override
-	public boolean add(T element) {
+	public boolean add(final T element) {
 		try {
 			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
 				WrapperMethod.LIST_ADD.run(listObject, size(), asTag(element));
@@ -67,7 +67,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public void add(int index, T element) {
+	public void add(final int index, final T element) {
 		try {
 			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
 				WrapperMethod.LIST_ADD.run(listObject, index, asTag(element));
@@ -81,7 +81,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public T set(int index, T element) {
+	public T set(final int index, final T element) {
 		try {
 			final T prev = get(index);
 			WrapperMethod.LIST_SET.run(listObject, index, asTag(element));
@@ -93,7 +93,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public T remove(int i) {
+	public T remove(final int i) {
 		try {
 			final T old = get(i);
 			WrapperMethod.LIST_REMOVE_KEY.run(listObject, i);
@@ -133,7 +133,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean contains(Object o) {
+	public boolean contains(final Object o) {
 		for (int i = 0; i < size(); i++) {
 			if (o.equals(get(i)))
 				return true;
@@ -142,7 +142,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public int indexOf(Object o) {
+	public int indexOf(final Object o) {
 		for (int i = 0; i < size(); i++) {
 			if (o.equals(get(i)))
 				return i;
@@ -151,7 +151,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends T> c) {
+	public boolean addAll(final Collection<? extends T> c) {
 		final int size = size();
 		for (final T ele : c) {
 			add(ele);
@@ -160,7 +160,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean addAll(int index, Collection<? extends T> c) {
+	public boolean addAll(int index, final Collection<? extends T> c) {
 		final int size = size();
 		for (final T ele : c) {
 			add(index++, ele);
@@ -169,7 +169,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean containsAll(Collection<?> c) {
+	public boolean containsAll(final Collection<?> c) {
 		for (final Object ele : c) {
 			if (!contains(ele))
 				return false;
@@ -178,7 +178,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public int lastIndexOf(Object o) {
+	public int lastIndexOf(final Object o) {
 		int index = -1;
 		for (int i = 0; i < size(); i++) {
 			if (o.equals(get(i)))
@@ -188,7 +188,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean removeAll(Collection<?> c) {
+	public boolean removeAll(final Collection<?> c) {
 		final int size = size();
 		for (final Object obj : c) {
 			remove(obj);
@@ -197,7 +197,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> c) {
+	public boolean retainAll(final Collection<?> c) {
 		final int size = size();
 		for (final Object obj : c) {
 			for (int i = 0; i < size(); i++) {
@@ -210,7 +210,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean remove(Object o) {
+	public boolean remove(final Object o) {
 		final int size = size();
 		int id = -1;
 		while ((id = indexOf(o)) != -1) {
@@ -245,14 +245,14 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public ListIterator<T> listIterator(int startIndex) {
+	public ListIterator<T> listIterator(final int startIndex) {
 		final NBTList<T> list = this;
 		return new ListIterator<T>() {
 
 			int index = startIndex;
 
 			@Override
-			public void add(T e) {
+			public void add(final T e) {
 				list.add(index, e);
 			}
 
@@ -294,7 +294,7 @@ public abstract class NBTList<T> implements List<T> {
 			}
 
 			@Override
-			public void set(T e) {
+			public void set(final T e) {
 				list.set(index, e);
 			}
 		};
@@ -308,9 +308,8 @@ public abstract class NBTList<T> implements List<T> {
 		return ar;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <E> E[] toArray(E[] a) {
+	public <E> E[] toArray(final E[] a) {
 		final E[] ar = Arrays.copyOf(a, size());
 		Arrays.fill(ar, null);
 		final Class<?> arrayclass = a.getClass().getComponentType();
@@ -326,7 +325,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public List<T> subList(int fromIndex, int toIndex) {
+	public List<T> subList(final int fromIndex, final int toIndex) {
 		final ArrayList<T> list = new ArrayList<>();
 		for (int i = fromIndex; i < toIndex; i++)
 			list.add(get(i));

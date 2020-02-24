@@ -12,7 +12,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
  * @author tr7zw
  *
  */
-@SuppressWarnings("javadoc")
 public enum WrapperObject {
 	NMS_NBTTAGCOMPOUND(null, null, WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_BLOCKPOSITION(null, null, WrapperClass.NMS_BLOCKPOSITION.getClazz(), int.class, int.class, int.class),
