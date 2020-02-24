@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
@@ -38,13 +39,23 @@ public final class RandomUtil {
 	};
 
 	/**
-	 * Symbols for chat colors using the & character
+	 * Symbols for chat colors using the & character including decorations like bold italics etc
+	 */
+	private static final char[] COLORS_AND_DECORATION = new char[] {
+			'0', '1', '2', '3', '4',
+			'5', '6', '7', '8', '9',
+			'a', 'b', 'c', 'd', 'e',
+			'f', 'k', 'l', 'n', 'o'
+	};
+
+	/**
+	 * Only valid chat colors without decorations
 	 */
 	private static final char[] CHAT_COLORS = new char[] {
 			'0', '1', '2', '3', '4',
 			'5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e',
-			'f', 'k', 'l', 'n', 'o'
+			'f'
 	};
 
 	/**
@@ -106,10 +117,22 @@ public final class RandomUtil {
 	 * Returns a random chat color in this format: & + the color character
 	 * Example: &e for yellow
 	 *
+	 * Will also return decorations
 	 * @return
 	 */
-	public static String nextChatColor() {
-		return "&" + CHAT_COLORS[RandomUtil.getRandom().nextInt(CHAT_COLORS.length)];
+	public static String nextColorOrDecoration() {
+		return "&" + COLORS_AND_DECORATION[nextInt(COLORS_AND_DECORATION.length)];
+	}
+
+	/**
+	 * Return a random chat color
+	 *
+	 * @return
+	 */
+	public static ChatColor nextChatColor() {
+		final char letter = CHAT_COLORS[nextInt(CHAT_COLORS.length)];
+
+		return ChatColor.getByChar(letter);
 	}
 
 	/**
