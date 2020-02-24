@@ -143,6 +143,25 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Remove a given key
+	 *
+	 * @param key
+	 * @return
+	 */
+	public Object remove(final String key) {
+		return map.remove(key);
+	}
+
+	/**
+	 * Remove a given key by value
+	 *
+	 * @param value
+	 */
+	public void removeByValue(final Object value) {
+		map.removeByValue(value);
+	}
+
+	/**
 	 * Returns a string from the map, or null if does not exist
 	 *
 	 * @param key
