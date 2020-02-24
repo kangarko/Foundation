@@ -2,6 +2,7 @@
 package org.mineacademy.fo;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -1907,6 +1908,64 @@ public final class Common {
 	 */
 	public static String getOrSupply(final String input, final String def) {
 		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? def : input;
+	}
+
+	/**
+	 * Get next element in the list increasing the index by 1 if forward is true,
+	 * or decreasing it by 1 if it is false
+	 *
+	 * @param <T>
+	 * @param given
+	 * @param list
+	 * @param forward
+	 * @return
+	 */
+	public static <T> T getNext(final T given, final List<T> list, final boolean forward) {
+		if (given == null && list.isEmpty())
+			return null;
+
+		final T[] array = (T[]) Array.newInstance((given != null ? given : list.get(0)).getClass(), list.size());
+
+		for (int i = 0; i < list.size(); i++)
+			Array.set(array, i, list.get(i));
+
+		return getNext(given, array, forward);
+	}
+
+	/**
+	 * Get next element in the list increasing the index by 1 if forward is true,
+	 * or decreasing it by 1 if it is false
+	 *
+	 * @param <T>
+	 * @param given
+	 * @param array
+	 * @param forward
+	 * @return
+	 */
+	public static <T> T getNext(final T given, final T[] array, final boolean forward) {
+		if (array.length == 0)
+			return null;
+
+		int index = 0;
+
+		for (int i = 0; i < array.length; i++) {
+			final T element = array[i];
+
+			if (element.equals(given)) {
+				index = i;
+
+				break;
+			}
+		}
+
+		if (index != -1) {
+			final int nextIndex = index + (forward ? 1 : -1);
+
+			// Return the first slot if reached the end, or the last if vice versa
+			return nextIndex >= array.length ? array[0] : nextIndex < 0 ? array[array.length - 1] : array[nextIndex];
+		}
+
+		return null;
 	}
 
 	/**
