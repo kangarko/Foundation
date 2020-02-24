@@ -212,6 +212,29 @@ public final class Common {
 	}
 
 	/**
+	 * Broadcast the message to everyone and logs it
+	 *
+	 * @param messages
+	 */
+	public static void broadcast(final Collection<String> messages) {
+		for (String message : messages) {
+			broadcast(message, true);
+		}
+	}
+
+	/**
+	 * Broadcast the messages and also may log it into the console
+	 *
+	 * @param messages
+	 * @param log
+	 */
+	public static void broadcast(final Collection<String> messages, final boolean log) {
+		for (String message : messages) {
+			broadcast(message, log);
+		}
+	}
+
+	/**
 	 * Broadcast the message to everyone with permission
 	 *
 	 * @param permission
