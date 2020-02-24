@@ -25,6 +25,8 @@ import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -34,11 +36,6 @@ public class SimpleScoreboard {
 	// ------------------------------------------------------------------------------------------------------------
 	// Static
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * The name of our objective
-	 */
-	private final static String OBJECTIVE_NAME = "FoundationBoard";
 
 	/**
 	 * List of all active scoreboard (added upon creating a new instance)
@@ -74,11 +71,8 @@ public class SimpleScoreboard {
 	@Getter
 	private final List<String> rows = new ArrayList<>();
 
-	/**
-	 * Players viewing the scoreboard
-	 */
 	@Getter
-	private final StrictList<String> viewingPlayers = new StrictList<>();
+	private final StrictList<ViewedScoreboard> scoreboards = new StrictList<>();
 
 	/**
 	 * The color theme for key: value pairs such as
@@ -103,18 +97,41 @@ public class SimpleScoreboard {
 	private int updateDelayTicks;
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Private entries
+	// Classes
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * The bukkit scoreboard
+	 * Stores a viewed scoreboard per player
 	 */
-	private final Scoreboard scoreboard;
+	@Getter
+	@Setter
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	private class ViewedScoreboard {
 
-	/**
-	 * The bukkit objective
-	 */
-	private Objective objective;
+		/**
+		 * The scoreboard
+		 */
+		private final Scoreboard scoreboard;
+
+		/**
+		 * The objective
+		 */
+		private Objective objective;
+
+		/**
+		 * The viewer
+		 */
+		private final Player viewer;
+
+		@Override
+		public boolean equals(final Object obj) {
+			return obj instanceof ViewedScoreboard && ((ViewedScoreboard) obj).getViewer().equals(this.viewer);
+		}
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Private entries
+	// ------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * The running update task
@@ -125,8 +142,6 @@ public class SimpleScoreboard {
 	 * Create a new scoreboard
 	 */
 	public SimpleScoreboard() {
-		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-
 		registeredBoards.add(this);
 	}
 
@@ -219,32 +234,45 @@ public class SimpleScoreboard {
 	 */
 	private final void update() {
 		onUpdate();
-		resetObjective();
-		reloadEntries();
+
+		for (final ViewedScoreboard viewedScoreboard : scoreboards) {
+			resetObjective(viewedScoreboard);
+			reloadEntries(viewedScoreboard);
+		}
 	}
 
 	/**
 	 * Resets the objective
+	 *
+	 * @param viewedScoreboard
 	 */
-	private final void resetObjective() {
+	private final void resetObjective(final ViewedScoreboard viewedScoreboard) {
+		final Scoreboard scoreboard = viewedScoreboard.getScoreboard();
+		Objective objective = viewedScoreboard.getObjective();
+
 		if (objective != null)
 			objective.unregister();
 
-		objective = scoreboard.registerNewObjective(OBJECTIVE_NAME, "dummy");
+		objective = scoreboard.registerNewObjective(viewedScoreboard.getViewer().getName(), "dummy");
 
 		objective.setDisplayName(Common.colorize(title));
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+		viewedScoreboard.setObjective(objective);
 	}
 
 	/**
-	 * Reload all entries
+	 * Reload entries for the given player
+	 *
+	 * @param viewedScoreboard
 	 */
-	private final void reloadEntries() {
+	private final void reloadEntries(final ViewedScoreboard viewedScoreboard) {
+		final Objective objective = viewedScoreboard.getObjective();
 		final StrictList<String> duplicates = new StrictList<>();
 
 		for (int i = rows.size(); i > 0; i--) {
 			final String sidebarEntry = rows.get(rows.size() - i);
-			final String entry = replaceVariables(replaceTheme(sidebarEntry));
+			final String entry = replaceVariables(viewedScoreboard.getViewer(), replaceTheme(sidebarEntry));
 
 			String line = fixDuplicates(duplicates, entry);
 
@@ -285,7 +313,8 @@ public class SimpleScoreboard {
 	 *
 	 * To use simply put color codes
 	 *
-	 * @param theme the theme to set
+	 * @param primary
+	 * @param secondary
 	 */
 	public final void setTheme(@NonNull final ChatColor primary, @Nullable final ChatColor secondary) {
 		if (secondary != null) {
@@ -312,7 +341,7 @@ public class SimpleScoreboard {
 
 		if (duplicates.contains(message))
 			for (int i = 0; i < duplicates.size() && message.length() < 40; i++)
-				message += RandomUtil.nextChatColor();
+				message += RandomUtil.nextColorOrDecoration();
 
 		if (cut && message.length() > 16)
 			message = message.substring(0, 16);
@@ -322,12 +351,13 @@ public class SimpleScoreboard {
 	}
 
 	/**
-	 * Replaces variables in the message
+	 * Replaces variables in the message for the given player
 	 *
+	 * @param player
 	 * @param message
 	 * @return
 	 */
-	protected String replaceVariables(final String message) {
+	protected String replaceVariables(final Player player, final String message) {
 		return message;
 	}
 
@@ -341,11 +371,10 @@ public class SimpleScoreboard {
 	 * Stops this scoreboard and removes it from all viewers
 	 */
 	public final void stop() {
-		for (final Iterator<String> iterator = viewingPlayers.iterator(); iterator.hasNext();) {
-			final String name = iterator.next();
-			final Player player = Bukkit.getPlayer(name);
+		for (final Iterator<ViewedScoreboard> iterator = scoreboards.iterator(); iterator.hasNext();) {
+			final ViewedScoreboard score = iterator.next();
 
-			player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+			score.getViewer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 			iterator.remove();
 		}
 
@@ -387,8 +416,10 @@ public class SimpleScoreboard {
 		if (updateTask == null)
 			start();
 
+		final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+
+		scoreboards.add(new ViewedScoreboard(scoreboard, null, player));
 		player.setScoreboard(scoreboard);
-		viewingPlayers.add(player.getName());
 	}
 
 	/**
@@ -400,9 +431,14 @@ public class SimpleScoreboard {
 		Valid.checkBoolean(isViewing(player), "Player " + player.getName() + " is not viewing scoreboard: " + getTitle());
 
 		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-		viewingPlayers.remove(player.getName());
 
-		if (viewingPlayers.isEmpty())
+		for (final ViewedScoreboard viewed : scoreboards)
+			if (viewed.getViewer().equals(player)) {
+				scoreboards.remove(viewed);
+				break;
+			}
+
+		if (scoreboards.isEmpty())
 			cancelUpdateTask();
 	}
 
@@ -413,7 +449,11 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	public final boolean isViewing(final Player player) {
-		return viewingPlayers.contains(player.getName());
+		for (final ViewedScoreboard viewed : scoreboards)
+			if (viewed.getViewer().equals(player))
+				return true;
+
+		return false;
 	}
 
 	@Override
