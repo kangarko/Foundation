@@ -6,6 +6,8 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
@@ -240,7 +242,7 @@ public enum CompColor {
 	public static final CompMaterial toConcrete(final ChatColor color) {
 		final CompMaterial wool = toWool(color);
 
-		return CompMaterial.fromString(wool.toString().replace("_WOOL", "_CONCRETE"));
+		return CompMaterial.fromString(wool.toString().replace("_WOOL", MinecraftVersion.olderThan(V.v1_12) ? "_STAINED_GLASS" : "_CONCRETE"));
 	}
 
 	/**
