@@ -241,8 +241,8 @@ public class Region implements ConfigSerializable {
 	 *
 	 * @param primary
 	 */
-	public final void setSecondary(final Location primary) {
-		this.primary = primary;
+	public final void setSecondary(final Location secondary) {
+		this.secondary = secondary;
 	}
 
 	/**
