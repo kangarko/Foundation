@@ -122,7 +122,9 @@ public final class VisualizedRegion extends Region {
 
 				for (final Location location : blocks)
 					for (final Player viewer : viewers)
-						particle.spawnFor(viewer, location);
+						if (viewer.getLocation().distance(location) < 100)
+							particle.spawnFor(viewer, location);
+
 			}
 		});
 	}
