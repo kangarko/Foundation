@@ -374,7 +374,7 @@ public final class SerializeUtil {
 
 		final String world = parts[0];
 		final World bukkitWorld = Bukkit.getWorld(world);
-		if (Bukkit.getWorld(world) == null)
+		if (bukkitWorld == null)
 			throw new InvalidWorldException("Location with invalid world '" + world + "': " + raw + " (Doesn't exist)");
 
 		final int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]), z = Integer.parseInt(parts[3]);
