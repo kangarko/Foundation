@@ -188,6 +188,9 @@ public final class EntityUtil {
 
 				// Cancel when invalid
 				if (entity == null || entity.isDead() || !entity.isValid()) {
+					if (entity instanceof FallingBlock && !isProjectile && hitGroundListener != null)
+						hitGroundListener.run();
+
 					cancel();
 
 					return;
