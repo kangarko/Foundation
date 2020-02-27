@@ -3,22 +3,26 @@ package org.mineacademy.fo.model;
 import org.mineacademy.fo.Common;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Splits manipulating with large about of items in a list
  * into smaller pieces
  */
+@RequiredArgsConstructor
 public abstract class ChunkedTask {
-
-	/**
-	 * How many items should we process at once?
-	 */
-	private static final int BULK_AMOUNT = 100_000;
 
 	/**
 	 * How many ticks should we wait before processing the next bulk amount?
 	 */
-	private static final int WAIT_PERIOD_TICKS = 20;
+	@Setter
+	private int waitPeriodTicks = 20;
+
+	/**
+	 * How many items should we process at once?
+	 */
+	private final int processAmount;
 
 	/*
 	 * The current index where we are processing at, right now
@@ -36,7 +40,7 @@ public abstract class ChunkedTask {
 			boolean finished = false;
 			int processed = 0;
 
-			for (int i = currentIndex; i < currentIndex + BULK_AMOUNT; i++) {
+			for (int i = currentIndex; i < currentIndex + processAmount; i++) {
 				if (!canContinue(i)) {
 					finished = true;
 
@@ -50,9 +54,9 @@ public abstract class ChunkedTask {
 			Common.log(getProcessMessage(now, processed));
 
 			if (!finished) {
-				currentIndex += BULK_AMOUNT;
+				currentIndex += processAmount;
 
-				Common.runLaterAsync(WAIT_PERIOD_TICKS, () -> startChain());
+				Common.runLaterAsync(waitPeriodTicks, () -> startChain());
 
 			} else
 				onFinish();
