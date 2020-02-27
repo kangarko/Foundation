@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -141,7 +142,6 @@ public class Region implements ConfigSerializable {
 	 */
 	public final Set<Location> getBoundingBox() {
 		Valid.checkBoolean(isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + toString());
-		//Location[] centered = getMinimumPoint();
 
 		return BlockUtil.getBoundingBox(primary, secondary);
 	}
@@ -184,13 +184,13 @@ public class Region implements ConfigSerializable {
 			return null;
 
 		if (primary != null && secondary == null)
-			return primary.getWorld();
+			return Bukkit.getWorld(primary.getWorld().getName());
 
 		if (secondary != null && primary == null)
-			return secondary.getWorld();
+			return Bukkit.getWorld(secondary.getWorld().getName());
 
-		Valid.checkBoolean(primary.getWorld().equals(secondary.getWorld()), "Worlds of this region not the same: " + primary.getWorld() + " != " + secondary.getWorld());
-		return primary.getWorld();
+		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Worlds of this region not the same: " + primary.getWorld() + " != " + secondary.getWorld());
+		return Bukkit.getWorld(primary.getWorld().getName());
 	}
 
 	/**
@@ -202,7 +202,7 @@ public class Region implements ConfigSerializable {
 	public final boolean isWithin(@NonNull final Location location) {
 		Valid.checkBoolean(isWhole(), "Cannot perform isWithin on a non-complete region: " + toString());
 
-		if (!location.getWorld().equals(primary.getWorld()))
+		if (!location.getWorld().getName().equals(primary.getWorld().getName()))
 			return false;
 
 		final Location[] centered = getCorrectedPoints();
