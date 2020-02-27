@@ -267,6 +267,8 @@ public final class FileUtil {
 		final YamlConfiguration conf = new YamlConfiguration();
 
 		try {
+			checkFileForKnownErrors(file);
+
 			conf.load(file);
 
 		} catch (final FileNotFoundException ex) {
@@ -284,6 +286,20 @@ public final class FileUtil {
 
 		Valid.checkNotNull(conf, "Could not load: " + file.getName());
 		return conf;
+	}
+
+	/*
+	 * Check file for known errors
+	 */
+	private static void checkFileForKnownErrors(File file) throws IOException {
+		for (final String line : Files.readAllLines(file.toPath()))
+			if (line.contains("[*]"))
+				throw new FoException("Found [*] in your yaml file " + file + ". Please replace it with ['*'] instead.");
+		//else
+		//	if (line.replaceAll(/*REGEX na zaciatocne a konecne medzery*/)
+		// if (line.contains("-") && line.contains("*") && !line.contains("\"") && !contains '
+		// else
+		// if (Common.hasColor(message) && !contains " '
 	}
 
 	// ----------------------------------------------------------------------------------------------------
