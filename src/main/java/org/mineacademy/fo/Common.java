@@ -218,7 +218,7 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void broadcast(final Collection<String> messages) {
-		for (String message : messages) {
+		for (final String message : messages) {
 			broadcast(message, true);
 		}
 	}
@@ -230,7 +230,7 @@ public final class Common {
 	 * @param log
 	 */
 	public static void broadcast(final Collection<String> messages, final boolean log) {
-		for (String message : messages) {
+		for (final String message : messages) {
 			broadcast(message, log);
 		}
 	}
@@ -1070,6 +1070,9 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void log(final boolean addLogPrefix, final String... messages) {
+		if (messages == null)
+			return;
+
 		for (String message : messages) {
 			if (message.equals("none"))
 				continue;
