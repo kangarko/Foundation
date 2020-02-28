@@ -93,7 +93,7 @@ public class TaskChain<T> {
 	 * @param msg
 	 * @return
 	 */
-	public TaskChain<T> abortIfNull(Player player, String msg) {
+	public TaskChain<T> abortIfNull(final Player player, final String msg) {
 		return current((obj) -> {
 			if (obj == null) {
 				if (msg != null && player != null) {
@@ -138,7 +138,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> syncFirstCallback(AsyncExecutingFirstTask<R> task) {
+	public <R> TaskChain<R> syncFirstCallback(final AsyncExecutingFirstTask<R> task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
@@ -148,7 +148,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> asyncFirstCallback(AsyncExecutingFirstTask<R> task) {
+	public <R> TaskChain<R> asyncFirstCallback(final AsyncExecutingFirstTask<R> task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -158,7 +158,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> currentFirstCallback(AsyncExecutingFirstTask<R> task) {
+	public <R> TaskChain<R> currentFirstCallback(final AsyncExecutingFirstTask<R> task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -178,11 +178,11 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> syncCallback(AsyncExecutingTask<R, T> task) {
+	public <R> TaskChain<R> syncCallback(final AsyncExecutingTask<R, T> task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
-	public TaskChain<?> syncCallback(AsyncExecutingGenericTask task) {
+	public TaskChain<?> syncCallback(final AsyncExecutingGenericTask task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
@@ -192,7 +192,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> asyncCallback(AsyncExecutingTask<R, T> task) {
+	public <R> TaskChain<R> asyncCallback(final AsyncExecutingTask<R, T> task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -201,7 +201,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> asyncCallback(AsyncExecutingGenericTask task) {
+	public TaskChain<?> asyncCallback(final AsyncExecutingGenericTask task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -211,7 +211,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> currentCallback(AsyncExecutingTask<R, T> task) {
+	public <R> TaskChain<R> currentCallback(final AsyncExecutingTask<R, T> task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -220,7 +220,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> currentCallback(AsyncExecutingGenericTask task) {
+	public TaskChain<?> currentCallback(final AsyncExecutingGenericTask task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -230,7 +230,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> syncFirst(FirstTask<R> task) {
+	public <R> TaskChain<R> syncFirst(final FirstTask<R> task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
@@ -240,7 +240,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> asyncFirst(FirstTask<R> task) {
+	public <R> TaskChain<R> asyncFirst(final FirstTask<R> task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -250,7 +250,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> currentFirst(FirstTask<R> task) {
+	public <R> TaskChain<R> currentFirst(final FirstTask<R> task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -260,7 +260,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> sync(Task<R, T> task) {
+	public <R> TaskChain<R> sync(final Task<R, T> task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
@@ -269,7 +269,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> sync(GenericTask task) {
+	public TaskChain<?> sync(final GenericTask task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
@@ -279,7 +279,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> async(Task<R, T> task) {
+	public <R> TaskChain<R> async(final Task<R, T> task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -288,7 +288,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> async(GenericTask task) {
+	public TaskChain<?> async(final GenericTask task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -298,7 +298,7 @@ public class TaskChain<T> {
 	 * @param <R>
 	 * @return
 	 */
-	public <R> TaskChain<R> current(Task<R, T> task) {
+	public <R> TaskChain<R> current(final Task<R, T> task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -307,7 +307,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> current(GenericTask task) {
+	public TaskChain<?> current(final GenericTask task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -316,7 +316,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> syncLast(LastTask<T> task) {
+	public TaskChain<?> syncLast(final LastTask<T> task) {
 		return add0(new TaskHolder<>(this, false, task));
 	}
 
@@ -325,7 +325,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> asyncLast(LastTask<T> task) {
+	public TaskChain<?> asyncLast(final LastTask<T> task) {
 		return add0(new TaskHolder<>(this, true, task));
 	}
 
@@ -334,7 +334,7 @@ public class TaskChain<T> {
 	 * @param task
 	 * @return
 	 */
-	public TaskChain<?> currentLast(LastTask<T> task) {
+	public TaskChain<?> currentLast(final LastTask<T> task) {
 		return add0(new TaskHolder<>(this, null, task));
 	}
 
@@ -354,17 +354,17 @@ public class TaskChain<T> {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), this::execute, 1);
 	}
 
-	public void execute(Runnable done) {
+	public void execute(final Runnable done) {
 		this.doneCallback = done;
 		execute();
 	}
 
-	public void execute(BiConsumer<Exception, Task<?, ?>> errorHandler) {
+	public void execute(final BiConsumer<Exception, Task<?, ?>> errorHandler) {
 		this.errorHandler = errorHandler;
 		execute();
 	}
 
-	public void execute(Runnable done, BiConsumer<Exception, Task<?, ?>> errorHandler) {
+	public void execute(final Runnable done, final BiConsumer<Exception, Task<?, ?>> errorHandler) {
 		this.doneCallback = done;
 		this.errorHandler = errorHandler;
 		execute();
@@ -375,7 +375,8 @@ public class TaskChain<T> {
 			this.doneCallback.run();
 	}
 
-	protected TaskChain add0(TaskHolder<?, ?> task) {
+	@SuppressWarnings("rawtypes")
+	protected TaskChain add0(final TaskHolder<?, ?> task) {
 		this.chainQueue.add(task);
 		return this;
 	}
@@ -435,7 +436,7 @@ public class TaskChain<T> {
 		private boolean executed = false;
 		private boolean aborted = false;
 
-		private TaskHolder(TaskChain<?> chain, Boolean async, Task<R, A> task) {
+		private TaskHolder(final TaskChain<?> chain, final Boolean async, final Task<R, A> task) {
 			this.task = task;
 			this.chain = chain;
 			this.async = async;
@@ -483,7 +484,7 @@ public class TaskChain<T> {
 		/**
 		 * Accepts result of previous task and executes the next
 		 */
-		private void next(Object resp) {
+		private void next(final Object resp) {
 			synchronized (this) {
 				if (this.aborted) {
 					this.chain.done();
@@ -539,7 +540,7 @@ public class TaskChain<T> {
 		}
 
 		@Override
-		default R run(A input) throws AbortChainException {
+		default R run(final A input) throws AbortChainException {
 			// unused
 			return null;
 		}
@@ -549,7 +550,7 @@ public class TaskChain<T> {
 
 	public interface FirstTask<R> extends Task<R, Object> {
 		@Override
-		default R run(Object input) throws AbortChainException {
+		default R run(final Object input) throws AbortChainException {
 			return run();
 		}
 
@@ -558,13 +559,13 @@ public class TaskChain<T> {
 
 	public interface AsyncExecutingFirstTask<R> extends AsyncExecutingTask<R, Object> {
 		@Override
-		default R run(Object input) throws AbortChainException {
+		default R run(final Object input) throws AbortChainException {
 			// Unused
 			return null;
 		}
 
 		@Override
-		default void runAsync(Object input, Consumer<R> next) throws AbortChainException {
+		default void runAsync(final Object input, final Consumer<R> next) throws AbortChainException {
 			run(next);
 		}
 
@@ -573,7 +574,7 @@ public class TaskChain<T> {
 
 	public interface LastTask<A> extends Task<Object, A> {
 		@Override
-		default Object run(A input) throws AbortChainException {
+		default Object run(final A input) throws AbortChainException {
 			runLast(input);
 			return null;
 		}
@@ -583,7 +584,7 @@ public class TaskChain<T> {
 
 	public interface GenericTask extends Task<Object, Object> {
 		@Override
-		default Object run(Object input) throws AbortChainException {
+		default Object run(final Object input) throws AbortChainException {
 			runGeneric();
 			return null;
 		}
@@ -593,12 +594,12 @@ public class TaskChain<T> {
 
 	public interface AsyncExecutingGenericTask extends AsyncExecutingTask<Object, Object> {
 		@Override
-		default Object run(Object input) throws AbortChainException {
+		default Object run(final Object input) throws AbortChainException {
 			return null;
 		}
 
 		@Override
-		default void runAsync(Object input, Consumer<Object> next) throws AbortChainException {
+		default void runAsync(final Object input, final Consumer<Object> next) throws AbortChainException {
 			run(() -> next.accept(null));
 		}
 
@@ -608,7 +609,7 @@ public class TaskChain<T> {
 	private static class SharedTaskChain<R> extends TaskChain<R> {
 		private final TaskChain<R> backingChain;
 
-		private SharedTaskChain(TaskChain<R> backingChain) {
+		private SharedTaskChain(final TaskChain<R> backingChain) {
 			this.backingChain = backingChain;
 		}
 
@@ -626,7 +627,7 @@ public class TaskChain<T> {
 		}
 
 		@Override
-		public void execute(Runnable done) {
+		public void execute(final Runnable done) {
 			this.doneCallback = done;
 			execute0();
 		}

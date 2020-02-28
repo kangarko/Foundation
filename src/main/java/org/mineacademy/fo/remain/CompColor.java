@@ -1,8 +1,13 @@
 package org.mineacademy.fo.remain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
@@ -126,15 +131,15 @@ public enum CompColor {
 	 */
 	private final String legacyName;
 
-	private CompColor(DyeColor dye) {
+	private CompColor(final DyeColor dye) {
 		this(dye, null);
 	}
 
-	private CompColor(DyeColor dye, ChatColor chatColor) {
+	private CompColor(final DyeColor dye, final ChatColor chatColor) {
 		this(dye, chatColor, null);
 	}
 
-	private CompColor(DyeColor dye, ChatColor chatColor, String legacyName) {
+	private CompColor(final DyeColor dye, final ChatColor chatColor, final String legacyName) {
 		this.dye = dye;
 		this.chatColor = chatColor == null ? ChatColor.valueOf(toString()) : chatColor;
 		this.legacyName = Common.getOrEmpty(legacyName);
@@ -150,7 +155,7 @@ public enum CompColor {
 	 * @param data
 	 * @return
 	 */
-	public static final CompColor fromWoolData(byte data) {
+	public static final CompColor fromWoolData(final byte data) {
 		return fromDye(DyeColor.getByWoolData(data));
 	}
 
@@ -176,7 +181,7 @@ public enum CompColor {
 	 * @param dye
 	 * @return
 	 */
-	public static final CompColor fromDye(DyeColor dye) {
+	public static final CompColor fromDye(final DyeColor dye) {
 		for (final CompColor comp : values())
 			if (comp.dye == dye || comp.legacyName.equals(dye.toString()))
 				return comp;
@@ -190,12 +195,12 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final CompColor fromChatColor(ChatColor color) {
+	public static final CompColor fromChatColor(final ChatColor color) {
 		for (final CompColor comp : values())
 			if (comp.chatColor == color || comp.legacyName.equals(color.toString()))
 				return comp;
 
-		throw new FoException("Could not get CompColor from ChatColor." + color.toString());
+		throw new FoException("Could not get CompColor from ChatColor." + color.name());
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -208,7 +213,7 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final DyeColor toDye(ChatColor color) {
+	public static final DyeColor toDye(final ChatColor color) {
 		final CompColor c = ReflectionUtil.lookupEnumSilent(CompColor.class, color.name());
 
 		return c != null ? c.getDye() : DyeColor.WHITE;
@@ -220,11 +225,110 @@ public enum CompColor {
 	 * @param dye
 	 * @return
 	 */
-	public static final ChatColor toColor(DyeColor dye) {
+	public static final ChatColor toColor(final DyeColor dye) {
 		for (final CompColor c : CompColor.values())
 			if (c.getDye() == dye)
 				return c.getChatColor();
 
 		return ChatColor.WHITE;
+	}
+
+	/**
+	 * Return a colored concrete (or wool if the current MC does not support it
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static final CompMaterial toConcrete(final ChatColor color) {
+		final CompMaterial wool = toWool(color);
+
+		return CompMaterial.fromString(wool.toString().replace("_WOOL", MinecraftVersion.olderThan(V.v1_12) ? "_STAINED_GLASS" : "_CONCRETE"));
+	}
+
+	/**
+	 * Create colored wool from the given chat color
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static final CompMaterial toWool(final ChatColor color) {
+		final CompColor comp = fromChatColor(color);
+
+		switch (comp) {
+			case AQUA:
+				return CompMaterial.LIGHT_BLUE_WOOL;
+
+			case BLACK:
+				return CompMaterial.BLACK_WOOL;
+
+			case BLUE:
+				return CompMaterial.BLUE_WOOL;
+
+			case BROWN:
+				return CompMaterial.BROWN_WOOL;
+
+			case DARK_AQUA:
+				return CompMaterial.CYAN_WOOL;
+
+			case DARK_BLUE:
+				return CompMaterial.BLUE_WOOL;
+
+			case DARK_GRAY:
+				return CompMaterial.GRAY_WOOL;
+
+			case DARK_GREEN:
+				return CompMaterial.GREEN_WOOL;
+
+			case DARK_PURPLE:
+				return CompMaterial.PURPLE_WOOL;
+
+			case DARK_RED:
+				return CompMaterial.RED_WOOL;
+
+			case GOLD:
+				return CompMaterial.ORANGE_WOOL;
+
+			case GRAY:
+				return CompMaterial.LIGHT_GRAY_WOOL;
+
+			case GREEN:
+				return CompMaterial.LIME_WOOL;
+
+			case LIGHT_PURPLE:
+				return CompMaterial.MAGENTA_WOOL;
+
+			case PINK:
+				return CompMaterial.PINK_WOOL;
+
+			case RED:
+				return CompMaterial.RED_WOOL;
+
+			case WHITE:
+				return CompMaterial.WHITE_WOOL;
+
+			case YELLOW:
+				return CompMaterial.YELLOW_WOOL;
+		}
+
+		return CompMaterial.WHITE_WOOL;
+	}
+
+	// ----------------------------------------------------------------------------------------------------
+	// Utils
+	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Get a list of all chat colors (only colors, NO formats like bold, reset etc.)
+	 *
+	 * @return
+	 */
+	public static final List<ChatColor> getChatColors() {
+		final List<ChatColor> list = new ArrayList<>();
+
+		for (final ChatColor color : ChatColor.values())
+			if (color.isColor() && !color.isFormat())
+				list.add(color);
+
+		return list;
 	}
 }
