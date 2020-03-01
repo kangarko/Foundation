@@ -36,6 +36,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -152,6 +153,12 @@ public abstract class Menu {
 	 * The inventory title of the menu, colors & are supported
 	 */
 	private String title = "&0Menu";
+
+	/**
+	 * The description of the menu
+	 */
+	@Getter(value = AccessLevel.PROTECTED)
+	private String[] info = null;
 
 	/**
 	 * The viewer of this menu, is null until {@link #displayTo(Player)} is called
@@ -508,16 +515,6 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Get the information about this menu.
-	 *
-	 * Used to create an info bottom in bottom left corner, see
-	 * {@link Button#makeInfo(String...)}
-	 *
-	 * @return the description of this menu, or null
-	 */
-	protected abstract String[] getInfo();
-
-	/**
 	 * Get the info button position
 	 *
 	 * @return the slot which info buttons is located on
@@ -628,6 +625,18 @@ public abstract class Menu {
 	 */
 	protected final void setSize(final Integer size) {
 		this.size = size;
+	}
+
+	/**
+	 * Set the menu's description
+	 *
+	 * Used to create an info bottom in bottom left corner, see
+	 * {@link Button#makeInfo(String...)}
+	 *
+	 * @param info the info to set
+	 */
+	protected final void setInfo(String... info) {
+		this.info = info;
 	}
 
 	/**
