@@ -1,6 +1,7 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -566,7 +567,7 @@ public final class BlockUtil {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Finding highest blocks
+	// Finding blocks and locations
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -632,6 +633,21 @@ public final class BlockUtil {
 
 		return -1;
 
+	}
+
+	/**
+	 * Returns the closest location to the given one of the given locations
+	 *
+	 * @param location
+	 * @param locations
+	 * @return
+	 */
+	public static Location findClosestLocation(Location location, List<Location> locations) {
+		locations = new ArrayList<>(locations);
+		final Location playerLocation = location;
+
+		Collections.sort(locations, (f, s) -> Double.compare(f.distance(playerLocation), s.distance(playerLocation)));
+		return locations.get(0);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
