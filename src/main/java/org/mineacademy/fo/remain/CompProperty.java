@@ -8,6 +8,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.remain.nbt.NBTEntity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -88,6 +89,20 @@ public enum CompProperty {
 		} catch (final ReflectiveOperationException e) {
 			if (e instanceof NoSuchMethodException && MinecraftVersion.olderThan(V.values()[0])) {
 				// Pass through
+
+				if (instance instanceof Entity) {
+					final NBTEntity nbtEntity = new NBTEntity((Entity) instance);
+					final boolean has = Boolean.parseBoolean(key.toString());
+
+					if (this == CompProperty.INVULNERABLE)
+						nbtEntity.setInteger("Invulnerable", has ? 1 : 0);
+
+					else if (this == AI)
+						nbtEntity.setInteger("NoAI", has ? 0 : 1);
+
+					else if (this == CompProperty.GRAVITY)
+						nbtEntity.setInteger("NoGravity", has ? 0 : 1);
+				}
 
 			} else
 				e.printStackTrace();
