@@ -1,7 +1,5 @@
 package org.mineacademy.fo;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -185,7 +183,7 @@ public final class RandomUtil {
 	 * @param items
 	 * @return
 	 */
-	public static <T> T nextItem(final Collection<T> items) {
+	public static <T> T nextItem(final Iterable<T> items) {
 		return nextItem(items, null);
 	}
 
@@ -197,8 +195,8 @@ public final class RandomUtil {
 	 * @param condition the condition applying when selecting
 	 * @return
 	 */
-	public static <T> T nextItem(final Collection<T> items, final Predicate<T> condition) {
-		final List<T> list = items instanceof List ? (List<T>) items : new ArrayList<>(items);
+	public static <T> T nextItem(final Iterable<T> items, final Predicate<T> condition) {
+		final List<T> list = items instanceof List ? (List<T>) items : Common.toList(items);
 
 		// Remove values failing the condition
 		if (condition != null)
