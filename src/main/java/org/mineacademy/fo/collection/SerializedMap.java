@@ -21,6 +21,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
@@ -377,6 +378,29 @@ public final class SerializedMap extends StrictCollection {
 		}
 
 		return item;
+	}
+
+	/**
+	 * Return a tuple
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param key
+	 * @return
+	 */
+	public <K, V> Tuple<K, V> getTuple(final String key) {
+		return getTuple(key, null);
+	}
+
+	/**
+	 * Return a tuple or default
+	 *
+	 * @param key
+	 * @param def
+	 * @return
+	 */
+	public <K, V> Tuple<K, V> getTuple(String key, final Tuple<K, V> def) {
+		return get(key, Tuple.class, def);
 	}
 
 	/**
