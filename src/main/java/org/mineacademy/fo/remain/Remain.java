@@ -456,7 +456,7 @@ public final class Remain {
 
 		else {
 			try {
-				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, block.getType(), block.getData());
+				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, ReflectionUtil.invoke("getTypeId", block), block.getData());
 			} catch (final ReflectiveOperationException ex) {
 				ex.printStackTrace();
 
