@@ -6,6 +6,7 @@ import java.util.function.BiFunction;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.Valid;
 
 /**
  * A pretty specific class for picking up items for the player randomly,
@@ -27,8 +28,19 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * @param list
 	 */
 	public void setItems(final List<T> list) {
+		Valid.checkBoolean(list != null && !list.isEmpty(), "Cannot set items to an empty list!");
+
 		this.list.clear();
 		this.list.addAll(list);
+	}
+
+	/**
+	 * Return if there are no more items to pick from
+	 *
+	 * @return
+	 */
+	public boolean isEmpty() {
+		return list.isEmpty();
 	}
 
 	/**
@@ -55,6 +67,16 @@ public abstract class RandomNoRepeatPicker<T> {
 			list.add(item);
 
 		return pickRandom(player);
+	}
+
+	/**
+	 * Picks and removes 1 item randomly from the list until we
+	 * run out of items
+	 *
+	 * @return
+	 */
+	public T pickRandom() {
+		return pickRandom(null);
 	}
 
 	/**
