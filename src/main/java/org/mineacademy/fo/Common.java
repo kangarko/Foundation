@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -1595,6 +1597,24 @@ public final class Common {
 	 */
 	public static <OLD, NEW> List<NEW> convert(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
 		final List<NEW> copy = new ArrayList<>();
+
+		for (final OLD old : list)
+			copy.add(converter.convert(old));
+
+		return copy;
+	}
+
+	/**
+	 * Converts a set from one type to another
+	 *
+	 * @param <OLD>
+	 * @param <NEW>
+	 * @param list
+	 * @param converter
+	 * @return
+	 */
+	public static <OLD, NEW> Set<NEW> convertSet(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
+		final Set<NEW> copy = new HashSet<>();
 
 		for (final OLD old : list)
 			copy.add(converter.convert(old));
