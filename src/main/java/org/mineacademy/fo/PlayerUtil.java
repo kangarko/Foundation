@@ -633,6 +633,43 @@ public final class PlayerUtil {
 	}
 
 	/**
+	 * Take the given material in the given size, return true if the player
+	 * had enough to be taken from him (otherwise no action is done)
+	 *
+	 * @param player
+	 * @param material
+	 * @param amount
+	 * @return
+	 */
+	public static boolean take(Player player, CompMaterial material, int amount) {
+		if (!containsAtLeast(player, amount, material))
+			return false;
+
+		for (int i = 0; i < amount; i++)
+			takeFirstOnePiece(player, material);
+
+		return true;
+	}
+
+	/**
+	 * Scans the inventory and removes one piece of the first found item
+	 * matching the given material
+	 *
+	 * @param player
+	 * @param material
+	 */
+	public static boolean takeFirstOnePiece(final Player player, final CompMaterial material) {
+		for (final ItemStack item : player.getInventory().getContents())
+			if (item != null && item.getType() == material.getMaterial()) {
+				takeOnePiece(player, item);
+
+				return true;
+			}
+
+		return false;
+	}
+
+	/**
 	 * Removes one piece of the given item stack, setting the slot to air
 	 * if the item is only 1 amount
 	 *
@@ -647,19 +684,21 @@ public final class PlayerUtil {
 	}
 
 	/**
-	 * Scans the inventory and removes one piece of the first found item
-	 * matching the given material
+	 * Return if the player has enough of the given material
 	 *
 	 * @param player
+	 * @param atLeastSize
 	 * @param material
+	 * @return
 	 */
-	public static void takeFirstOnePiece(final Player player, final CompMaterial material) {
-		for (final ItemStack item : player.getInventory().getContents())
-			if (item != null && item.getType() == material.getMaterial()) {
-				takeOnePiece(player, item);
+	public static boolean containsAtLeast(Player player, int atLeastSize, CompMaterial material) {
+		int foundSize = 0;
 
-				break;
-			}
+		for (final ItemStack item : player.getInventory().getContents())
+			if (item != null && item.getType() == material.getMaterial())
+				foundSize += item.getAmount();
+
+		return foundSize >= atLeastSize;
 	}
 
 	/**
