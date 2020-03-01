@@ -1337,11 +1337,12 @@ public final class Common {
 	 * @param arrays
 	 * @return
 	 */
-	public static <T> List<T> joinArrays(final Collection<T>... arrays) {
+	public static <T> List<T> joinArrays(final Iterable<T>... arrays) {
 		final List<T> all = new ArrayList<>();
 
-		for (final Collection<T> array : arrays)
-			all.addAll(array);
+		for (final Iterable<T> array : arrays)
+			for (final T element : array)
+				all.add(element);
 
 		return all;
 	}

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
 
@@ -27,11 +28,11 @@ public abstract class RandomNoRepeatPicker<T> {
 	 *
 	 * @param list
 	 */
-	public void setItems(final List<T> list) {
-		Valid.checkBoolean(list != null && !list.isEmpty(), "Cannot set items to an empty list!");
+	public void setItems(final Iterable<T> list) {
+		Valid.checkBoolean(list != null && list.iterator().hasNext(), "Cannot set items to an empty list!");
 
 		this.list.clear();
-		this.list.addAll(list);
+		this.list.addAll(Common.toList(list));
 	}
 
 	/**
