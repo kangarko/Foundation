@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -778,6 +780,16 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	protected final Replacer getReplacer(final String path) {
 		return Replacer.of(getString(path));
+	}
+
+	/**
+	 * Get location list at the given config path
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final LocationList getLocations(String path) {
+		return new LocationList(this, getList(path, Location.class));
 	}
 
 	/**
@@ -1793,6 +1805,135 @@ public class YamlConfig implements ConfigSerializable {
 			return new TimeHelper(time);
 		}
 	}
+
+	/**
+	 * Represents a list of locations in the config
+	 */
+	public static final class LocationList implements Iterable<Location> {
+
+		/**
+		 * The settings where we have these points
+		 */
+		private final YamlConfig settings;
+
+		/**
+		 * The list of locations
+		 */
+		private final List<Location> points;
+
+		/**
+		 * Create a new location list
+		 *
+		 * @param settings
+		 * @param points
+		 */
+		private LocationList(YamlConfig settings, List<Location> points) {
+			this.settings = settings;
+			this.points = points;
+		}
+
+		/**
+		 * Shortcut for adding/removing locations. Returns true if the given
+		 * location not existed and it was removed or returns false if it was
+		 * found and removed.
+		 *
+		 * @param location
+		 * @return
+		 */
+		public boolean toggle(final Location location) {
+			for (final Location point : points)
+				if (Valid.locationEquals(point, location)) {
+					points.remove(point);
+
+					settings.save();
+					return false;
+				}
+
+			points.add(location);
+			settings.save();
+
+			return true;
+		}
+
+		/**
+		 * Add a new location
+		 *
+		 * @param location
+		 */
+		public void add(final Location location) {
+			Valid.checkBoolean(!hasLocation(location), "Location at " + location + " already exists!");
+
+			points.add(location);
+			settings.save();
+		}
+
+		/**
+		 * Remove an existing location
+		 *
+		 * @param location
+		 */
+		public void remove(final Location location) {
+			final Location point = find(location);
+			Valid.checkNotNull(point, "Location at " + location + " does not exist!");
+
+			points.remove(point);
+			settings.save();
+		}
+
+		/**
+		 * Return true if the given location exists
+		 *
+		 * @param location
+		 * @return
+		 */
+		public boolean hasLocation(final Location location) {
+			return find(location) != null;
+		}
+
+		/**
+		 * Return a validated location from the given location
+		 * Pretty much the same but no yaw/pitch
+		 *
+		 * @param location
+		 * @return
+		 */
+		public Location find(final Location location) {
+			for (final Location entrance : points)
+				if (Valid.locationEquals(entrance, location))
+					return entrance;
+
+			return null;
+		}
+
+		/**
+		 * Return locations
+		 *
+		 * @return all locations
+		 */
+		public List<Location> getLocations() {
+			return Collections.unmodifiableList(points);
+		}
+
+		/**
+		 * Return iterator for this
+		 *
+		 * @see java.lang.Iterable#iterator()
+		 */
+		@Override
+		public Iterator<Location> iterator() {
+			return points.iterator();
+		}
+
+		/**
+		 * Get how many points were set
+		 *
+		 * @return
+		 */
+		public int size() {
+			return points.size();
+		}
+	}
+
 }
 
 /**
