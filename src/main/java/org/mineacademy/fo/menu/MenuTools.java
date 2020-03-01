@@ -46,10 +46,13 @@ public abstract class MenuTools extends Menu {
 	protected MenuTools(final Menu parent) {
 		super(parent);
 
-		setSize(9 * 1);
-		setTitle("Tools Menu");
-
 		this.tools = compile0(compileTools());
+
+		final int items = tools.size();
+		final int pages = items < 9 ? 9 * 1 : items < 9 * 2 ? 9 * 2 : items < 9 * 3 ? 9 * 3 : items < 9 * 4 ? 9 * 4 : 9 * 5;
+
+		setSize(pages);
+		setTitle("Tools Menu");
 	}
 
 	/**
@@ -136,7 +139,7 @@ public abstract class MenuTools extends Menu {
 
 	@Override
 	protected int getInfoButtonPosition() {
-		return 9 - 1;
+		return getSize() - 1;
 	}
 
 	/**
@@ -251,5 +254,13 @@ final class ToggleableTool {
 
 	boolean equals(final ItemStack item) {
 		return getToolWhenHas().isSimilar(item) || getToolWhenHasnt().isSimilar(item);
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Toggleable{" + item.getType() + "}";
 	}
 }
