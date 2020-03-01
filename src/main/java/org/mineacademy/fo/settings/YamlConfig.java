@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -1204,7 +1205,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(final String path, final Class<Key> keyType, final Class<Value> valueType) {
-		return getMap(path, keyType, valueType, null);
+		return getMap(path, keyType, valueType, null, null);
 	}
 
 	/**
@@ -1219,6 +1220,36 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, final Map<Key, Value> def) {
+		return getMap(path, keyType, valueType, def);
+	}
+
+	/**
+	 * Get a map of values and keys
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param valueType
+	 * @param deserializaValParameter
+	 * @return
+	 */
+	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, Object deserializaValParameter) {
+		return getMap(path, keyType, valueType, null, deserializaValParameter);
+	}
+
+	/**
+	 * Get a map of values and keys
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param valueType
+	 * @param def
+	 * @return
+	 */
+	private final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, final Map<Key, Value> def, Object deserializaValParameter) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
 		if (pathPrefix != null)
@@ -1241,6 +1272,9 @@ public class YamlConfig implements ConfigSerializable {
 			if (def != null)
 				return new LinkedHashMap<>(def);
 
+			else if (deserializaValParameter != null)
+				return null;
+
 			else
 				throw new FoException("Map not found at " + path + " in " + getFileName());
 
@@ -1252,10 +1286,11 @@ public class YamlConfig implements ConfigSerializable {
 
 			Valid.checkBoolean(!keys.containsKey(key), "Duplicate key " + key + " in " + path);
 
-			checkAssignable(false, path, val, valueType);
+			if (!(val instanceof MemorySection))
+				checkAssignable(false, path, val, valueType);
 
-			final Key parsed = SerializeUtil.deserialize(keyType, key); //(Key) (keyType == Integer.class && key instanceof String ? Integer.parseInt(key.toString()) : key);
-			final Value parsedValue = SerializeUtil.deserialize(valueType, val);
+			final Key parsed = SerializeUtil.deserialize(keyType, key);
+			final Value parsedValue = SerializeUtil.deserialize(valueType, val, deserializaValParameter);
 
 			keys.put(parsed, parsedValue);
 		}
