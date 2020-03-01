@@ -1088,7 +1088,7 @@ public enum CompMaterial {
 	 *
 	 * @return the material
 	 */
-	public final Material toMaterial() {
+	private final Material toMaterial() {
 		final Material mat = Material.matchMaterial(toString());
 		final Material altMat = alternativeName != null ? Material.matchMaterial(alternativeName) : null;
 		final Material legacyMat = legacyName != null ? Material.matchMaterial(legacyName) : null;
@@ -1116,15 +1116,36 @@ public enum CompMaterial {
 	 * @return -see above-
 	 */
 	public final boolean is(final ItemStack comp) {
-		if (MinecraftVersion.atLeast(V.v1_13))
-			return comp.getType() == toMaterial();
+		return is(comp.getType(), comp.getData().getData());
+	}
 
-		if (comp.getType() == toMaterial() && comp.getData().getData() == data)
+	/**
+	 * Evaluates whether the given block equals this material
+	 *
+	 * @param block
+	 * @return
+	 */
+	public final boolean is(final Block block) {
+		return block == null ? false : is(block.getType(), block.getData());
+	}
+
+	/**
+	 * Evaluates whether the given type/data equals this material
+	 *
+	 * @param type
+	 * @param data
+	 * @return
+	 */
+	public final boolean is(Material type, int data) {
+		if (MinecraftVersion.atLeast(V.v1_13))
+			return type == toMaterial();
+
+		if (type == toMaterial() && data == this.data)
 			return true;
 
-		final CompMaterial compMat = fromMaterial(comp.getType());
+		final CompMaterial compMat = fromMaterial(type);
 
-		if (isDamageable(compMat) && toMaterial() == comp.getType())
+		if (isDamageable(compMat) && toMaterial() == type)
 			return true;
 
 		return false;
