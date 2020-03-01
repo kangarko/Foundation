@@ -51,7 +51,8 @@ public abstract class ChunkedTask {
 				processed++;
 			}
 
-			Common.log(getProcessMessage(now, processed));
+			if (processed > 0 || !finished)
+				Common.log(getProcessMessage(now, processed));
 
 			if (!finished) {
 				currentIndex += processAmount;
@@ -86,12 +87,22 @@ public abstract class ChunkedTask {
 	 * @return
 	 */
 	protected String getProcessMessage(long initialTime, int processed) {
-		return "Processed " + String.format("%,d", processed) + " blocks. Took " + (System.currentTimeMillis() - initialTime) + " ms";
+		return "Processed " + String.format("%,d", processed) + " " + getLabel() + ". Took " + (System.currentTimeMillis() - initialTime) + " ms";
 	}
 
 	/**
 	 * Called when the processing is finished
 	 */
 	protected void onFinish() {
+	}
+
+	/**
+	 * Get the label for the process message
+	 * "blocks" by default
+	 *
+	 * @return
+	 */
+	protected String getLabel() {
+		return "blocks";
 	}
 }
