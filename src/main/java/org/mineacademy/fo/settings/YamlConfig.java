@@ -1975,6 +1975,30 @@ class ConfigInstance {
 		try {
 			config.save(file);
 
+		} catch (final NullPointerException ex) {
+			if (ex.getMessage() != null && ex.getMessage().contains("Nodes must be provided")) {
+				final Map<String, Object> dump = config.getValues(true);
+
+				FileUtil.write("error_yaml.log",
+						Common.configLine(),
+						"Got null nodes error when saving " + file,
+						"Please report this to plugin developers!",
+						Common.configLine(),
+						"Raw dump:",
+						dump.toString());
+
+				// Split in case of an error there as well, at least we get the top part
+				FileUtil.write("error_yaml.log",
+						"",
+						"Serialized: ",
+						SerializeUtil.serialize(dump).toString());
+
+				Common.error(ex, "Failed to save " + file + ", please see error_yaml.log in your plugin folder and report this to plugin developers!");
+			}
+
+			else
+				throw ex;
+
 		} catch (final IOException e) {
 			Common.error(e, "Failed to save " + file.getName());
 		}
