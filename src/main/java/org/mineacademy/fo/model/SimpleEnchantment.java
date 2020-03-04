@@ -149,7 +149,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 * @param level
 	 * @return
 	 */
-	public final ItemStack applyTo(ItemStack item, int level) {
+	public ItemStack applyTo(ItemStack item, int level) {
 		final ItemMeta meta = item.getItemMeta();
 
 		meta.addEnchant(this, level, true);
@@ -163,64 +163,64 @@ public abstract class SimpleEnchantment extends Enchantment {
 	// ------------------------------------------------------------------------------------------
 
 	/**
-	 * Custom enchants can be applied on all items
+	 * What items may this be applied to? Defaults to ALL
 	 *
 	 * @return
 	 */
 	@Override
-	public final EnchantmentTarget getItemTarget() {
+	public EnchantmentTarget getItemTarget() {
 		return EnchantmentTarget.ALL;
 	}
 
 	/**
-	 * Custom enchantments do not conflict with anything
+	 * What other enchants this one conflicts with? Defaults to false for all
 	 *
 	 * @param
 	 * @return
 	 */
 	@Override
-	public final boolean conflictsWith(Enchantment other) {
+	public boolean conflictsWith(Enchantment other) {
 		return false;
 	}
 
 	/**
-	 * Custom enchantments can enchant anything
+	 * What items can be enchanted? Defaults to true for all
 	 *
 	 * @param
 	 * @return
 	 */
 	@Override
-	public final boolean canEnchantItem(ItemStack item) {
+	public boolean canEnchantItem(ItemStack item) {
 		return true;
 	}
 
 	/**
-	 * Startup level is always 1
+	 * Get the startup level, 1 by default
 	 *
 	 * @return
 	 */
 	@Override
-	public final int getStartLevel() {
+	public int getStartLevel() {
 		return 1;
 	}
 
 	/**
-	 * Custom enchantments are not treasures
+	 * Get if this enchant is a treasure, default false
 	 *
 	 * @return
 	 */
 	@Override
-	public final boolean isTreasure() {
+	public boolean isTreasure() {
 		return false;
 	}
 
 	/**
-	 * Custom enchantments are not cursed
+	 * Get if this enchant is cursed, default false
 	 *
 	 * @return
 	 */
 	@Override
-	public final boolean isCursed() {
+	public boolean isCursed() {
 		return false;
 	}
 
