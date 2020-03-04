@@ -85,6 +85,10 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import me.angeschossen.lands.api.integration.LandsIntegration;
+import me.angeschossen.lands.api.land.Land;
+import me.angeschossen.lands.api.land.LandArea;
+import me.angeschossen.lands.api.land.enums.LandSetting;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -2632,5 +2636,22 @@ class DiscordSRVHook implements Listener {
 
 		LagCatcher.end("Minecraft to Discord", Debugger.isDebugged("discord") ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS, "Minecraft > Discord sending took {time} ms");
 		return true;
+	}
+}
+
+class LandsHook {
+
+	private static LandsIntegration landsAddon;
+
+	private LandsHook() {
+		landsAddon = new LandsIntegration(SimplePlugin.getInstance(), true);
+	}
+
+	public static boolean hasMonsterSpawn(Location location) {
+		final LandArea landArea = landsAddon.getArea(location);
+		final Land land = landsAddon.getLand(location);
+
+		return (land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN))
+				|| (landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN));
 	}
 }
