@@ -1216,8 +1216,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param valueType
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(final String path, final Class<Key> keyType, final Class<Value> valueType) {
-		return getMap(path, keyType, valueType, null, null);
+	public final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType) {
+		return getMap(path, keyType, valueType, null);
 	}
 
 	/**
@@ -1231,37 +1231,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param def
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, final Map<Key, Value> def) {
-		return getMap(path, keyType, valueType, def);
-	}
-
-	/**
-	 * Get a map of values and keys
-	 *
-	 * @param <Key>
-	 * @param <Value>
-	 * @param path
-	 * @param keyType
-	 * @param valueType
-	 * @param deserializaValParameter
-	 * @return
-	 */
-	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, Object deserializaValParameter) {
-		return getMap(path, keyType, valueType, null, deserializaValParameter);
-	}
-
-	/**
-	 * Get a map of values and keys
-	 *
-	 * @param <Key>
-	 * @param <Value>
-	 * @param path
-	 * @param keyType
-	 * @param valueType
-	 * @param def
-	 * @return
-	 */
-	private final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, final Map<Key, Value> def, Object deserializaValParameter) {
+	public final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, final Class<Key> keyType, final Class<Value> valueType, final Map<Key, Value> def) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
 		if (pathPrefix != null)
@@ -1284,9 +1254,6 @@ public class YamlConfig implements ConfigSerializable {
 			if (def != null)
 				return new LinkedHashMap<>(def);
 
-			else if (deserializaValParameter != null)
-				return null;
-
 			else
 				throw new FoException("Map not found at " + path + " in " + getFileName());
 
@@ -1302,7 +1269,7 @@ public class YamlConfig implements ConfigSerializable {
 				checkAssignable(false, path, val, valueType);
 
 			final Key parsed = SerializeUtil.deserialize(keyType, key);
-			final Value parsedValue = SerializeUtil.deserialize(valueType, val, deserializaValParameter);
+			final Value parsedValue = SerializeUtil.deserialize(valueType, val);
 
 			keys.put(parsed, parsedValue);
 		}
