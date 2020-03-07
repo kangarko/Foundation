@@ -367,75 +367,81 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				final JarEntry jar = entry.nextElement();
 				final String name = jar.getName().replace("/", ".");
 
-				if (name.endsWith(".class")) {
-					final String className = name.substring(0, name.length() - 6);
-					Class<?> clazz = null;
+				try {
 
-					try {
-						clazz = SimplePlugin.class.getClassLoader().loadClass(className);
-					} catch (final NoClassDefFoundError | ClassNotFoundException | IllegalAccessError error) {
-						continue;
-					}
+					if (name.endsWith(".class")) {
+						final String className = name.substring(0, name.length() - 6);
+						Class<?> clazz = null;
 
-					final boolean isTool = Tool.class.isAssignableFrom(clazz) && !Tool.class.equals(clazz) && !Rocket.class.equals(clazz);
-					final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz) && !SimpleEnchantment.class.equals(clazz);
-
-					if (isTool || isEnchant) {
-
-						if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
-							System.out.println("**** WARNING ****");
-							System.out.println("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
-
+						try {
+							clazz = SimplePlugin.class.getClassLoader().loadClass(className);
+						} catch (final NoClassDefFoundError | ClassNotFoundException | IncompatibleClassChangeError error) {
 							continue;
 						}
 
-						try {
-							Field instanceField = null;
+						final boolean isTool = Tool.class.isAssignableFrom(clazz) && !Tool.class.equals(clazz) && !Rocket.class.equals(clazz);
+						final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz) && !SimpleEnchantment.class.equals(clazz);
 
-							for (final Field field : clazz.getDeclaredFields()) {
-								if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
-										&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
-									instanceField = field;
-							}
+						if (isTool || isEnchant) {
 
-							if (SimpleEnchantment.class.isAssignableFrom(clazz))
-								Valid.checkNotNull(instanceField, "Your enchant class " + clazz.getSimpleName() + " must be a singleton and have static 'instance' field and private constructors!");
-
-							if (instanceField != null) {
-								instanceField.setAccessible(true);
-
-								final Object instance = instanceField.get(null);
-
-								// Enforce private constructors
-								for (final Constructor<?> con : instance.getClass().getDeclaredConstructors())
-									Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your tools class?");
-
-								// Finally register events
-								if (instance instanceof Listener)
-									Common.registerEvents((Listener) instance);
-							}
-
-						} catch (final NoSuchFieldError ex) {
-							// Ignore if no field is present
-
-						} catch (final Throwable t) {
-							final String error = Common.getOrEmpty(t.getMessage());
-
-							if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
+							if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
 								System.out.println("**** WARNING ****");
+								System.out.println("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
 
-								if (error.contains("DragonFireball"))
-									System.out.println("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
-								else
-									System.out.println("Your Minecraft version does not have " + error + " class you call in: " + clazz);
-							} else
-								Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
+								continue;
+							}
+
+							try {
+								Field instanceField = null;
+
+								for (final Field field : clazz.getDeclaredFields()) {
+									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
+											&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
+										instanceField = field;
+								}
+
+								if (SimpleEnchantment.class.isAssignableFrom(clazz))
+									Valid.checkNotNull(instanceField, "Your enchant class " + clazz.getSimpleName() + " must be a singleton and have static 'instance' field and private constructors!");
+
+								if (instanceField != null) {
+									instanceField.setAccessible(true);
+
+									final Object instance = instanceField.get(null);
+
+									// Enforce private constructors
+									for (final Constructor<?> con : instance.getClass().getDeclaredConstructors())
+										Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your tools class?");
+
+									// Finally register events
+									if (instance instanceof Listener)
+										Common.registerEvents((Listener) instance);
+								}
+
+							} catch (final NoSuchFieldError ex) {
+								// Ignore if no field is present
+
+							} catch (final Throwable t) {
+								final String error = Common.getOrEmpty(t.getMessage());
+
+								if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
+									System.out.println("**** WARNING ****");
+
+									if (error.contains("DragonFireball"))
+										System.out.println("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
+									else
+										System.out.println("Your Minecraft version does not have " + error + " class you call in: " + clazz);
+								} else
+									Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
+							}
 						}
 					}
+
+				} catch (final Throwable t) {
+					Common.error(t, "Failed to scan class '" + name + "' using Foundation!");
 				}
 			}
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to auto register events using Foundation!");
+			Common.error(t, "Failed to scan classes using Foundation!");
 		}
 	}
 
