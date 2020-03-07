@@ -169,10 +169,10 @@ public final class TimeUtil {
 		String hourMsg = "";
 
 		if (minute >= 60) {
-			final long hour = seconds / 60;
+			final long hour = seconds / 60 / 60;
 			minute %= 60;
 
-			hourMsg = (hour == 1 ? "hour" : "hours") + " ";
+			hourMsg = hour + (hour == 1 ? " hour" : " hours") + " ";
 		}
 
 		return hourMsg + (minute != 0 ? minute : "") + (minute > 0 ? (minute == 1 ? " minute" : " minutes") + " " : "") + Long.parseLong(String.valueOf(second)) + (Long.parseLong(String.valueOf(second)) == 1 ? " second" : " seconds");
