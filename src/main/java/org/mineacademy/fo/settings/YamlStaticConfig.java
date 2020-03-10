@@ -1,5 +1,12 @@
 package org.mineacademy.fo.settings;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -15,13 +22,6 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig.CasusHelper;
 import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
 import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * A special case {@link YamlConfig} that allows static access to this config.
@@ -371,7 +371,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getObject(path);
 	}
 
-	protected <T> T getOrSetDefault(final String path, final T defaultValue) {
+	protected static final <T> T getOrSetDefault(final String path, final T defaultValue) {
 		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
 	}
 
