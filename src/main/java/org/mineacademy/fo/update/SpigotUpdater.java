@@ -49,13 +49,22 @@ public class SpigotUpdater implements Runnable {
 	private final boolean download;
 
 	/**
+	 * Initializes the new instance to check but not to download updates
+	 *
+	 * @param resourceId the id of the plugin at Spigot's page
+	 */
+	public SpigotUpdater(int resourceId) {
+		this(resourceId, false);
+	}
+
+	/**
 	 * Initializes a new instance.
 	 *
 	 * @param resourceId the id of the plugin at Spigot's page.
 	 * @param download should we attempt to download new versions automatically?
 	 * 		  PLEASE NOTE YOU CAN ONLY DOWNLOAD FREE RESOURCES FROM SPIGOT NOT PREMIUM
 	 */
-	protected SpigotUpdater(int resourceId, boolean download) {
+	public SpigotUpdater(int resourceId, boolean download) {
 		this.resourceId = resourceId;
 		this.download = download;
 	}
