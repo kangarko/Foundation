@@ -159,6 +159,24 @@ public abstract class SimpleEnchantment extends Enchantment {
 	}
 
 	// ------------------------------------------------------------------------------------------
+	// Our own methods
+	// ------------------------------------------------------------------------------------------
+
+	/**
+	 * Return the lore shown on items having this enchant
+	 * Return null to hide the lore
+	 *
+	 * We have to add item lore manually since Minecraft does not really support custom
+	 * enchantments
+	 *
+	 * @param level
+	 * @return
+	 */
+	public String getLore(int level) {
+		return name + " " + MathUtil.toRoman(level);
+	}
+
+	// ------------------------------------------------------------------------------------------
 	// Bukkit methods
 	// ------------------------------------------------------------------------------------------
 
@@ -295,8 +313,12 @@ public abstract class SimpleEnchantment extends Enchantment {
 
 		// Fill in our enchants
 		for (final Map.Entry<Enchantment, Integer> e : item.getEnchantments().entrySet())
-			if (e.getKey() instanceof SimpleEnchantment)
-				customEnchants.add(Common.colorize("&r&7" + e.getKey().getName() + " " + MathUtil.toRoman(e.getValue())));
+			if (e.getKey() instanceof SimpleEnchantment) {
+				final String lore = ((SimpleEnchantment) e.getKey()).getLore(e.getValue());
+
+				if (lore != null && !lore.isEmpty())
+					customEnchants.add(Common.colorize("&r&7" + lore));
+			}
 
 		if (!customEnchants.isEmpty()) {
 			final ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
