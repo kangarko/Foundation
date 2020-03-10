@@ -437,6 +437,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 					}
 
 				} catch (final Throwable t) {
+					if (t instanceof VerifyError) // Exception in other class we loaded
+						continue;
+
 					Common.error(t, "Failed to scan class '" + name + "' using Foundation!");
 				}
 			}
