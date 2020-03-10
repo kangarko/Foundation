@@ -131,6 +131,7 @@ public final class HookManager {
 	private static CMIHook CMIHook;
 	private static CitizensHook citizensHook;
 	private static DiscordSRVHook discordSRVHook;
+	private static LandsHook landsHook;
 	private static boolean nbtAPIDummyHook = false;
 	private static boolean nuVotifierDummyHook = false;
 
@@ -165,6 +166,9 @@ public final class HookManager {
 
 		if (Common.doesPluginExistSilently("LWC"))
 			lwcHook = new LWCHook();
+
+		if (Common.doesPluginExistSilently("Lands"))
+			landsHook = new LandsHook();
 
 		if (Common.doesPluginExistSilently("Lockette"))
 			locketteProHook = new LocketteProHook();
@@ -463,6 +467,15 @@ public final class HookManager {
 	 */
 	public static boolean isDiscordSRVLoaded() {
 		return discordSRVHook != null;
+	}
+
+	/**
+	 * Is the Lands plugin found and loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isLandsLoaded() {
+		return landsHook != null;
 	}
 
 	/**
@@ -1302,6 +1315,20 @@ public final class HookManager {
 	public static void sendDiscordMessage(final String channel, final String message) {
 		if (isDiscordSRVLoaded())
 			discordSRVHook.sendMessage(channel, message);
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Lands
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return true if the given location is within a land/land arena with monster spawn enabled
+	 *
+	 * @param location
+	 * @return see above, or true if lands plugin not installed
+	 */
+	public static boolean hasLandsMonsterSpawn(Location location) {
+		return isLandsLoaded() ? landsHook.hasMonsterSpawn(location) : true;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -2641,17 +2668,16 @@ class DiscordSRVHook implements Listener {
 
 class LandsHook {
 
-	private static LandsIntegration landsAddon;
+	private final LandsIntegration api;
 
-	private LandsHook() {
-		landsAddon = new LandsIntegration(SimplePlugin.getInstance(), true);
+	public LandsHook() {
+		this.api = new LandsIntegration(SimplePlugin.getInstance(), true);
 	}
 
-	public static boolean hasMonsterSpawn(Location location) {
-		final LandArea landArea = landsAddon.getArea(location);
-		final Land land = landsAddon.getLand(location);
+	public boolean hasMonsterSpawn(Location location) {
+		final LandArea landArea = api.getArea(location);
+		final Land land = api.getLand(location);
 
-		return (land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN))
-				|| (landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN));
+		return (land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN)) || (landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN));
 	}
 }
