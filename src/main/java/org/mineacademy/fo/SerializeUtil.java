@@ -302,7 +302,6 @@ public final class SerializeUtil {
 
 		// Step 4 - If there is no deserialize method, just deserialize the given object
 		if (object != null) {
-
 			if (classOf == String.class)
 				object = object.toString();
 
@@ -332,6 +331,9 @@ public final class SerializeUtil {
 
 			else if (classOf == CompMaterial.class)
 				object = CompMaterial.fromString(object.toString());
+
+			else if (classOf == UUID.class)
+				object = UUID.fromString(object.toString());
 
 			else if (Enum.class.isAssignableFrom(classOf))
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
