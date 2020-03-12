@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
@@ -30,6 +31,13 @@ public final class SimpleComponent {
 	private TextComponent currentComponent;
 
 	/**
+	 * Create a new empty component
+	 */
+	public SimpleComponent() {
+		this("");
+	}
+
+	/**
 	 * Create a new interactive chat component
 	 *
 	 * @param text
@@ -41,6 +49,16 @@ public final class SimpleComponent {
 	// --------------------------------------------------------------------
 	// Events
 	// --------------------------------------------------------------------
+
+	/**
+	 * Add a show text hover event for the {@link #currentComponent}
+	 *
+	 * @param texts
+	 * @return
+	 */
+	public SimpleComponent onHover(Collection<String> texts) {
+		return onHover(texts.toArray(new String[texts.size()]));
+	}
 
 	/**
 	 * Add a show text hover event for the {@link #currentComponent}
@@ -155,6 +173,16 @@ public final class SimpleComponent {
 		return mainComponent;
 	}
 
+	/**
+	 * Return the plain colorized message combining all components into one
+	 * without click/hover events
+	 *
+	 * @return
+	 */
+	public String getPlainMessage() {
+		return build().toLegacyText();
+	}
+
 	// --------------------------------------------------------------------
 	// Sending
 	// --------------------------------------------------------------------
@@ -165,9 +193,25 @@ public final class SimpleComponent {
 	 *
 	 * If they are console, they receive a plain text message.
 	 *
+	 * @param <T>
 	 * @param senders
 	 */
-	public void send(CommandSender... senders) {
+	public <T extends CommandSender> void send(Iterable<T> senders) {
+		final TextComponent mainComponent = build();
+
+		for (final CommandSender sender : senders)
+			Remain.sendComponent(sender, mainComponent);
+	}
+
+	/**
+	 * Attempts to send the complete {@link SimpleComponent} to the given
+	 * command senders. If they are players, we send them interactive elements.
+	 *
+	 * If they are console, they receive a plain text message.
+	 *
+	 * @param senders
+	 */
+	public <T extends CommandSender> void send(T... senders) {
 		final TextComponent mainComponent = build();
 
 		for (final CommandSender sender : senders)
