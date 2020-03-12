@@ -1155,14 +1155,75 @@ public class YamlConfig implements ConfigSerializable {
 	}
 
 	/**
+	 * Get a serialized map
+	 *
+	 * @param path
+	 * @return map, or empty map
+	 */
+	protected final SerializedMap getMap(final String path) {
+		return isSet(path) ? SerializedMap.of(Common.getMapFromSection(getT(path, Object.class))) : new SerializedMap();
+	}
+
+	/**
+	 * Load a map with preserved order from the given path. Each key in the map
+	 * must match the given key/value type and will be deserialized
+	 *
+	 * We will add defaults if applicable
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param valueType
+	 * @param valueParameter
+	 *
+	 * @return
+	 */
+	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, Class<Key> keyType, Class<Value> valueType) {
+		// The map we are creating, preserve order
+		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
+
+		final YamlConfiguration config = getConfig();
+		final YamlConfiguration defaults = getDefaults();
+
+		// Add path prefix right away
+		path = formPathPrefix(path);
+
+		// Add defaults
+		if (defaults != null && !config.isSet(path)) {
+			Valid.checkBoolean(defaults.isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
+
+			for (final String key : defaults.getConfigurationSection(path).getKeys(false))
+				addDefaultIfNotExist(path + "." + key, valueType);
+		}
+
+		// Load key-value pairs from config to our map
+		for (final Map.Entry<String, Object> entry : config.getConfigurationSection(path).getValues(false).entrySet()) {
+			final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+			final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
+
+			// Ensure the pair values are valid for the given paramenters
+			checkAssignable(false, path, key, keyType);
+			checkAssignable(false, path, value, valueType);
+
+			map.put(key, value);
+		}
+
+		return map;
+	}
+
+	/**
 	 * Get a list of enumerations
 	 *
 	 * @param <E>
 	 * @param path
 	 * @param listType
 	 * @return
+	 *
+	 * @deprecated platform-specific code
 	 */
-	protected final <E extends Enum<E>> StrictList<E> getEnumList(final String path, final Class<E> listType) {
+	@Deprecated
+	protected final <E extends Enum<E>> StrictList<E> getEnumList_OLD(final String path, final Class<E> listType) {
 		final StrictList<E> list = new StrictList<>();
 
 		for (final String item : getStringList(path))
@@ -1197,16 +1258,6 @@ public class YamlConfig implements ConfigSerializable {
 	}
 
 	/**
-	 * Get a serialized map
-	 *
-	 * @param path
-	 * @return map, or empty map
-	 */
-	protected final SerializedMap getMap(final String path) {
-		return isSet(path) ? SerializedMap.of(Common.getMapFromSection(getT(path, Object.class))) : new SerializedMap();
-	}
-
-	/**
 	 * Get a map of values and keys
 	 *
 	 * @param <Key>
@@ -1215,9 +1266,12 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param keyType
 	 * @param valueType
 	 * @return
+	 *
+	 * @deprecated target for removal
 	 */
-	public final <Key, Value> LinkedHashMap<Key, Value> getMap(final String path, final Class<Key> keyType, final Class<Value> valueType) {
-		return getMap(path, keyType, valueType, null);
+	@Deprecated
+	public final <Key, Value> LinkedHashMap<Key, Value> getMap_OLD(final String path, final Class<Key> keyType, final Class<Value> valueType) {
+		return getMap_OLD(path, keyType, valueType, null);
 	}
 
 	/**
@@ -1230,8 +1284,11 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param valueType
 	 * @param def
 	 * @return
+	 *
+	 * @deprecated target for removal
 	 */
-	public final <Key, Value> LinkedHashMap<Key, Value> getMap(String path, Class<Key> keyType, Class<Value> valueType, Map<Key, Value> def) {
+	@Deprecated
+	private final <Key, Value> LinkedHashMap<Key, Value> getMap_OLD(String path, Class<Key> keyType, Class<Value> valueType, Map<Key, Value> def) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
 		if (pathPrefix != null)
@@ -1280,10 +1337,11 @@ public class YamlConfig implements ConfigSerializable {
 	 *
 	 * @param path
 	 * @return
-	 * @deprecated special case in few plugins only
+	 *
+	 * @deprecated target for removal
 	 */
 	@Deprecated
-	protected final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(String path) {
+	protected final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys_OLD(String path) {
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
 
@@ -1303,7 +1361,7 @@ public class YamlConfig implements ConfigSerializable {
 
 		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
 			// type, value (UNPARSED)
-			final LinkedHashMap<String, Object> valuesRaw = getMap(path + "." + name, String.class, Object.class);
+			final LinkedHashMap<String, Object> valuesRaw = getMap_OLD(path + "." + name, String.class, Object.class);
 
 			groups.put(name, valuesRaw);
 		}

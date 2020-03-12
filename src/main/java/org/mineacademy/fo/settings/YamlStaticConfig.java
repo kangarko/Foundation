@@ -308,7 +308,7 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final <E extends Enum<E>> StrictList<E> getEnumList(final String path, final Class<E> listType) {
-		return TEMPORARY_INSTANCE.getEnumList(path, listType);
+		return TEMPORARY_INSTANCE.getEnumList_OLD(path, listType);
 	}
 
 	protected static final boolean getBoolean(final String path) {
@@ -375,11 +375,19 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
 	}
 
+	/**
+	 * @deprecated target for removal, do not use
+	 */
+	@Deprecated
 	protected static final <Key, Value> LinkedHashMap<Key, Value> getMap(final String path, final Class<Key> keyType, final Class<Value> valueType) {
-		return TEMPORARY_INSTANCE.getMap(path, keyType, valueType);
+		return TEMPORARY_INSTANCE.getMap_OLD(path, keyType, valueType);
 	}
 
+	/**
+	 * @deprecated target for removal, do not use
+	 */
+	@Deprecated
 	protected static final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(final String path) {
-		return TEMPORARY_INSTANCE.getValuesAndKeys(path);
+		return TEMPORARY_INSTANCE.getValuesAndKeys_OLD(path);
 	}
 }
