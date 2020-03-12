@@ -1914,6 +1914,19 @@ public final class Common {
 	}
 
 	/**
+	 * Return a value at the given index or the default if the index does not exist in array
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param index
+	 * @param def
+	 * @return
+	 */
+	public static <T> T getOrDefault(T[] array, int index, T def) {
+		return index < array.length ? array[index] : def;
+	}
+
+	/**
 	 * Return an empty String if the String is null or equals to none.
 	 *
 	 * @param input
