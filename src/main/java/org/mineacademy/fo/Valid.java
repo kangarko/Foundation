@@ -157,14 +157,25 @@ public final class Valid {
 	 * @param array
 	 * @return
 	 */
-	public static boolean isNullOrEmpty(Object[] array) {
-		for (final Object object : array)
-			if (object instanceof String) {
-				if (!((String) object).isEmpty())
-					return false;
+	public static boolean isNullOrEmpty(Collection<?> array) {
+		return array == null ? true : isNullOrEmpty(array.toArray());
+	}
 
-			} else if (object != null)
-				return false;
+	/**
+	 * Return true if the array consists of null or empty string values only
+	 *
+	 * @param array
+	 * @return
+	 */
+	public static boolean isNullOrEmpty(Object[] array) {
+		if (array != null)
+			for (final Object object : array)
+				if (object instanceof String) {
+					if (!((String) object).isEmpty())
+						return false;
+
+				} else if (object != null)
+					return false;
 
 		return true;
 	}
