@@ -1,16 +1,22 @@
 package org.mineacademy.fo.model;
 
-import lombok.NonNull;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.util.Map;
+
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.plugin.SimplePlugin;
+
+import lombok.NonNull;
 
 /**
  * An engine that compiles and executes code on the fly.
@@ -24,6 +30,13 @@ public final class JavaScriptExecutor {
 	 * The engine singleton
 	 */
 	private static final ScriptEngine engine;
+
+	/**
+	 * Cache scripts for 1 second per player for highest performance
+	 *
+	 * Player -> Map of scripts and their results
+	 */
+	private static final Map<UUID, Map<String, Object>> resultCache = ExpiringMap.builder().expiration(1, TimeUnit.SECONDS).build();
 
 	// Load the engine
 	static {
@@ -75,6 +88,16 @@ public final class JavaScriptExecutor {
 	 */
 	public static Object run(@NonNull String javascript, Player player, Event event) {
 
+		// Cache for highest performance
+		Map<String, Object> cached = resultCache.get(player.getUniqueId());
+
+		if (cached != null) {
+			final Object result = cached.get(javascript);
+
+			if (result != null)
+				return result;
+		}
+
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
@@ -84,7 +107,17 @@ public final class JavaScriptExecutor {
 			if (event != null)
 				engine.put("event", event);
 
-			return engine.eval(javascript);
+			final Object result = engine.eval(javascript);
+
+			if (player != null) {
+				if (cached == null)
+					cached = new HashMap<>();
+
+				cached.put(javascript, result);
+				resultCache.put(player.getUniqueId(), cached);
+			}
+
+			return result;
 
 		} catch (final ScriptException ex) {
 			Common.error(ex,
