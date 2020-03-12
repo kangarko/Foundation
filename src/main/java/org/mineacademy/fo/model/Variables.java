@@ -218,6 +218,26 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * @see #replace(boolean, String, CommandSender)
+	 *
+	 * @param replaceCustom
+	 * @param messages
+	 * @param sender
+	 * @return
+	 */
+	public static List<String> replaceAll(boolean replaceCustom, List<String> messages, CommandSender sender) {
+		final List<String> replaced = new ArrayList<>(messages); // Make a copy to ensure writeable
+
+		for (int i = 0; i < replaced.size(); i++) {
+			final String message = replaced.get(i);
+
+			replaced.set(i, Variables.replace(replaceCustom, message, sender));
+		}
+
+		return replaced;
+	}
+
+	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
@@ -423,6 +443,7 @@ public final class Variables {
 				return player == null ? "" : formatHealth0(player) + ChatColor.RESET;
 
 			case "player":
+			case "player_name":
 				return player == null ? Common.resolveSenderName(console) : player.getName();
 			case "tab_name":
 				return player == null ? Common.resolveSenderName(console) : player.getPlayerListName();
@@ -431,14 +452,19 @@ public final class Variables {
 			case "nick":
 				return player == null ? Common.resolveSenderName(console) : HookManager.getNick(player);
 
+			case "player_prefix":
 			case "pl_prefix":
 				return player == null ? "" : HookManager.getPlayerPrefix(player);
+			case "player_suffix":
 			case "pl_suffix":
 				return player == null ? "" : HookManager.getPlayerSuffix(player);
+			case "player_group":
 			case "pl_group":
 				return player == null ? "" : HookManager.getPlayerPermissionGroup(player);
+			case "player_primary_group":
 			case "pl_primary_group":
 				return player == null ? "" : HookManager.getPlayerPrimaryGroup(player);
+			case "ip_address":
 			case "pl_address":
 				return player == null ? "" : formatIp0(player);
 
