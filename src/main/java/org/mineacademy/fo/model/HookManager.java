@@ -1,50 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.debug.LagCatcher;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.region.Region;
-import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.SimpleSettings;
-
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.bekvon.bukkit.residence.Residence;
@@ -76,7 +31,6 @@ import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
@@ -99,6 +53,40 @@ import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.mineacademy.fo.*;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.debug.LagCatcher;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
+import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.region.Region;
+import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Our main class hooking into different plugins, providing you
@@ -143,59 +131,77 @@ public final class HookManager {
 	 * Detect various plugins and load their methods into this library so you can use it later
 	 */
 	public static void loadDependencies() {
-		if (Common.doesPluginExistSilently("AuthMe"))
+		if (Common.doesPluginExistSilently("AuthMe")) {
 			authMe = new AuthMeHook();
+		}
 
-		if (Common.doesPluginExistSilently("Multiverse-Core"))
+		if (Common.doesPluginExistSilently("Multiverse-Core")) {
 			multiverseHook = new MultiverseHook();
+		}
 
-		if (Common.doesPluginExistSilently("Towny"))
+		if (Common.doesPluginExistSilently("Towny")) {
 			townyHook = new TownyHook();
+		}
 
-		if (Common.doesPluginExistSilently("Vault"))
+		if (Common.doesPluginExistSilently("Vault")) {
 			vaultHook = new VaultHook();
+		}
 
-		if (Common.doesPluginExistSilently("PlaceholderAPI"))
+		if (Common.doesPluginExistSilently("PlaceholderAPI")) {
 			placeholderAPIHook = new PlaceholderAPIHook();
+		}
 
-		if (Common.doesPluginExistSilently("Nicky"))
+		if (Common.doesPluginExistSilently("Nicky")) {
 			nickyHook = new NickyHook();
+		}
 
-		if (Common.doesPluginExistSilently("MVdWPlaceholderAPI"))
+		if (Common.doesPluginExistSilently("MVdWPlaceholderAPI")) {
 			MVdWPlaceholderHook = new MVdWPlaceholderHook();
+		}
 
-		if (Common.doesPluginExistSilently("LWC"))
+		if (Common.doesPluginExistSilently("LWC")) {
 			lwcHook = new LWCHook();
+		}
 
-		if (Common.doesPluginExistSilently("Lands"))
+		if (Common.doesPluginExistSilently("Lands")) {
 			landsHook = new LandsHook();
+		}
 
-		if (Common.doesPluginExistSilently("Lockette"))
+		if (Common.doesPluginExistSilently("Lockette")) {
 			locketteProHook = new LocketteProHook();
+		}
 
-		if (Common.doesPluginExistSilently("Residence"))
+		if (Common.doesPluginExistSilently("Residence")) {
 			residenceHook = new ResidenceHook();
+		}
 
-		if (Common.doesPluginExistSilently("WorldEdit"))
+		if (Common.doesPluginExistSilently("WorldEdit")) {
 			worldeditHook = new WorldEditHook();
+		}
 
-		if (Common.doesPluginExistSilently("WorldGuard"))
+		if (Common.doesPluginExistSilently("WorldGuard")) {
 			worldguardHook = new WorldGuardHook(worldeditHook);
+		}
 
-		if (Common.doesPluginExistSilently("mcMMO"))
+		if (Common.doesPluginExistSilently("mcMMO")) {
 			mcmmoHook = new McMMOHook();
+		}
 
-		if (Common.doesPluginExistSilently("CMI"))
+		if (Common.doesPluginExistSilently("CMI")) {
 			CMIHook = new CMIHook();
+		}
 
-		if (Common.doesPluginExistSilently("Citizens"))
+		if (Common.doesPluginExistSilently("Citizens")) {
 			citizensHook = new CitizensHook();
+		}
 
-		if (Common.doesPluginExistSilently("NBTAPI"))
+		if (Common.doesPluginExistSilently("NBTAPI")) {
 			nbtAPIDummyHook = true;
+		}
 
-		if (Common.doesPluginExistSilently("Votifier"))
+		if (Common.doesPluginExistSilently("Votifier")) {
 			nuVotifierDummyHook = true;
+		}
 
 		// DiscordSRV
 		if (Common.doesPluginExistSilently("DiscordSRV")) {
@@ -213,20 +219,22 @@ public final class HookManager {
 		if (Common.doesPluginExistSilently("Essentials")) {
 			final boolean isEssentialsX = Bukkit.getPluginManager().getPlugin("Essentials").getDescription().getAuthors().contains("drtshock");
 
-			if (isEssentialsX)
+			if (isEssentialsX) {
 				essentialsxHook = new EssentialsHook();
-			else
+			} else {
 				Common.log("Detected old Essentials. We only support EssentialsX, see https://spigotmc.org/resources/9089");
+			}
 		}
 
 		// Plotsquared
 		if (Common.doesPluginExistSilently("PlotSquared")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
 
-			if (ver.startsWith("4."))
+			if (ver.startsWith("4.")) {
 				plotSquaredHook = new PlotSquaredHook();
-			else
+			} else {
 				Common.log("&eCould not hook into PlotSquared, version 4.x required, you have " + ver);
+			}
 		}
 
 		// ProtocolLib
@@ -235,8 +243,9 @@ public final class HookManager {
 
 			// Also check if the library is loaded properly
 			try {
-				if (MinecraftVersion.newerThan(V.v1_6))
+				if (MinecraftVersion.newerThan(V.v1_6)) {
 					Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
+				}
 			} catch (final Throwable t) {
 				protocolLibHook = null;
 
@@ -265,8 +274,9 @@ public final class HookManager {
 					Common.log("Recognized and hooked MCore Factions...");
 
 					factionsHook = new FactionsMassive();
-				} else
+				} else {
 					Common.log("&cRecognized MCore Factions, but not hooked! Check if you have the latest version!");
+				}
 
 			}
 		}
@@ -322,7 +332,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Is ProtocolLib loaded?
+	 * Is ProtocolLib loaded?¡
 	 *
 	 * This will not only check if the plugin is in plugins folder, but also if it's
 	 * correctly loaded and working. (*Should* detect plugin's malfunction when
@@ -580,11 +590,13 @@ public final class HookManager {
 	 * @param godMode
 	 */
 	public static void setGodMode(final Player player, final boolean godMode) {
-		if (isEssentialsXLoaded())
+		if (isEssentialsXLoaded()) {
 			essentialsxHook.setGodMode(player, godMode);
+		}
 
-		if (isCMILoaded())
+		if (isCMILoaded()) {
 			CMIHook.setGodMode(player, godMode);
+		}
 	}
 
 	/**
@@ -594,11 +606,13 @@ public final class HookManager {
 	 * @param location
 	 */
 	public static void setBackLocation(final Player player, final Location location) {
-		if (isEssentialsXLoaded())
+		if (isEssentialsXLoaded()) {
 			essentialsxHook.setBackLocation(player.getName(), location);
+		}
 
-		if (isCMILoaded())
+		if (isCMILoaded()) {
 			CMIHook.setLastTeleportLocation(player, location);
+		}
 	}
 
 	/**
@@ -609,11 +623,13 @@ public final class HookManager {
 	 * @param ignore
 	 */
 	public static void setIgnore(final String player, final String who, final boolean ignore) {
-		if (isEssentialsXLoaded())
+		if (isEssentialsXLoaded()) {
 			essentialsxHook.setIgnore(player, who, ignore);
+		}
 
-		if (isCMILoaded())
+		if (isCMILoaded()) {
 			CMIHook.setIgnore(player, who, ignore);
+		}
 	}
 
 	/**
@@ -645,8 +661,9 @@ public final class HookManager {
 			return player.getName();
 		}
 
-		if (player == null)
+		if (player == null) {
 			return sender.getName();
+		}
 
 		final String nickyNick = isNickyLoaded() ? nickyHook.getNick_(player) : null;
 		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNick_(player.getName()) : null;
@@ -835,8 +852,9 @@ public final class HookManager {
 	 * @param amount
 	 */
 	public static void withdraw(final Player player, final double amount) {
-		if (isVaultLoaded())
+		if (isVaultLoaded()) {
 			vaultHook.withdraw(player, amount);
+		}
 	}
 
 	/**
@@ -846,8 +864,9 @@ public final class HookManager {
 	 * @param amount
 	 */
 	public static void deposit(final Player player, final double amount) {
-		if (isVaultLoaded())
+		if (isVaultLoaded()) {
 			vaultHook.deposit(player, amount);
+		}
 	}
 
 	/**
@@ -902,8 +921,9 @@ public final class HookManager {
 
 	private static boolean hasPerm0(final OfflinePlayer player, final Boolean has) {
 		if (has != null) {
-			if (!has && player != null)
+			if (!has && player != null) {
 				return player.isOp();
+			}
 
 			return has;
 		}
@@ -946,8 +966,9 @@ public final class HookManager {
 	 */
 	@Deprecated
 	public static void updateVaultIntegration() {
-		if (isVaultLoaded())
+		if (isVaultLoaded()) {
 			vaultHook.setIntegration();
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -962,8 +983,9 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String replacePlaceholders(final Player player, String message) {
-		if (message == null || "".equals(message.trim()))
+		if (message == null || "".equals(message.trim())) {
 			return message;
+		}
 
 		message = isPlaceholderAPILoaded() ? placeholderAPIHook.replacePlaceholders(player, message) : message;
 		message = isMVdWPlaceholderAPILoaded() ? MVdWPlaceholderHook.replacePlaceholders(player, message) : message;
@@ -980,8 +1002,9 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String replaceRelationPlaceholders(final Player one, final Player two, final String msg) {
-		if (msg == null || "".equals(msg.trim()))
+		if (msg == null || "".equals(msg.trim())) {
 			return msg;
+		}
 
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
 	}
@@ -1008,8 +1031,9 @@ public final class HookManager {
 	 */
 	@Deprecated
 	public static void addPlaceholder(final String variable, final BiFunction<Player, String, String> value) {
-		if (isPlaceholderAPILoaded())
+		if (isPlaceholderAPILoaded()) {
 			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value), null);
+		}
 	}
 
 	/**
@@ -1031,8 +1055,9 @@ public final class HookManager {
 	 * @param value
 	 */
 	public static void addPlaceholder(final String variable, final Function<Player, String> value) {
-		if (isPlaceholderAPILoaded())
+		if (isPlaceholderAPILoaded()) {
 			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)), value);
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1114,8 +1139,9 @@ public final class HookManager {
 	 */
 	@Deprecated
 	public static void removePacketListeners(final Plugin plugin) {
-		if (isProtocolLibLoaded())
+		if (isProtocolLibLoaded()) {
 			protocolLibHook.removePacketListeners(plugin);
+		}
 	}
 
 	/**
@@ -1288,8 +1314,9 @@ public final class HookManager {
 	 * @param message
 	 */
 	public static void sendDiscordMessage(final String senderName, final String channel, final String message) {
-		if (isDiscordSRVLoaded())
+		if (isDiscordSRVLoaded()) {
 			discordSRVHook.sendMessage(senderName, channel, message);
+		}
 	}
 
 	/**
@@ -1302,8 +1329,9 @@ public final class HookManager {
 	 * @param message
 	 */
 	public static void sendDiscordMessage(final CommandSender sender, final String channel, final String message) {
-		if (isDiscordSRVLoaded())
+		if (isDiscordSRVLoaded()) {
 			discordSRVHook.sendMessage(sender, channel, message);
+		}
 	}
 
 	/**
@@ -1313,8 +1341,9 @@ public final class HookManager {
 	 * @param message
 	 */
 	public static void sendDiscordMessage(final String channel, final String message) {
-		if (isDiscordSRVLoaded())
+		if (isDiscordSRVLoaded()) {
 			discordSRVHook.sendMessage(channel, message);
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1327,7 +1356,7 @@ public final class HookManager {
 	 * @param location
 	 * @return see above, or true if lands plugin not installed
 	 */
-	public static boolean hasLandsMonsterSpawn(Location location) {
+	public static boolean hasLandsMonsterSpawn(final Location location) {
 		return isLandsLoaded() ? landsHook.hasMonsterSpawn(location) : true;
 	}
 
@@ -1382,8 +1411,9 @@ class EssentialsHook {
 	void setGodMode(final Player player, final boolean godMode) {
 		final User user = getUser(player.getName());
 
-		if (user != null)
+		if (user != null) {
 			user.setGodModeEnabled(godMode);
+		}
 	}
 
 	void setIgnore(final String player, final String toIgnore, final boolean ignore) {
@@ -1391,8 +1421,9 @@ class EssentialsHook {
 			final com.earth2me.essentials.User user = ess.getUser(player);
 			final com.earth2me.essentials.User toIgnoreUser = ess.getUser(toIgnore);
 
-			if (ignore && user.isIgnoredPlayer(toIgnoreUser))
+			if (ignore && user.isIgnoredPlayer(toIgnoreUser)) {
 				return;
+			}
 
 			user.setIgnoredPlayer(toIgnoreUser, ignore);
 
@@ -1433,15 +1464,17 @@ class EssentialsHook {
 	Player getReplyTo(final String recipient) {
 		final User user = getUser(recipient);
 
-		if (user == null)
+		if (user == null) {
 			return null;
+		}
 
 		try {
 			final String replyPlayer = user.getReplyRecipient().getName();
 			final Player bukkitPlayer = Bukkit.getPlayer(replyPlayer);
 
-			if (bukkitPlayer != null && bukkitPlayer.isOnline())
+			if (bukkitPlayer != null && bukkitPlayer.isOnline()) {
 				return bukkitPlayer;
+			}
 
 		} catch (final Throwable ex) {
 		}
@@ -1466,17 +1499,19 @@ class EssentialsHook {
 	void setBackLocation(final String player, final Location loc) {
 		final User user = getUser(player);
 
-		if (user != null)
+		if (user != null) {
 			try {
 				user.setLastLocation(loc);
 
 			} catch (final Throwable t) {
 			}
+		}
 	}
 
 	private User getUser(final String name) {
-		if (ess.getUserMap() == null)
+		if (ess.getUserMap() == null) {
 			return null;
+		}
 
 		User user = null;
 
@@ -1485,11 +1520,12 @@ class EssentialsHook {
 		} catch (final Throwable t) {
 		}
 
-		if (user == null)
+		if (user == null) {
 			try {
 				user = ess.getUserMap().getUserFromBukkit(name);
 			} catch (final Throwable ex) {
 			}
+		}
 		return user;
 	}
 
@@ -1506,15 +1542,16 @@ class MultiverseHook {
 	String getWorldAlias(final String world) {
 		final MultiverseWorld mvWorld = multiVerse.getMVWorldManager().getMVWorld(world);
 
-		if (mvWorld != null)
+		if (mvWorld != null) {
 			return mvWorld.getColoredWorldString();
+		}
 
 		return world;
 	}
 }
 
 class TownyHook {
-	private boolean hasChat;
+	private final boolean hasChat;
 	com.palmergames.bukkit.TownyChat.Chat townyChat = null;
 
 	TownyHook() {
@@ -1530,10 +1567,13 @@ class TownyHook {
 		final List<Player> recipients = new ArrayList<>();
 		final String playersTown = getTownName(pl);
 
-		if (!playersTown.isEmpty())
-			for (final Player online : Remain.getOnlinePlayers())
-				if (playersTown.equals(getTownName(online)))
+		if (!playersTown.isEmpty()) {
+			for (final Player online : Remain.getOnlinePlayers()) {
+				if (playersTown.equals(getTownName(online))) {
 					recipients.add(online);
+				}
+			}
+		}
 
 		return recipients;
 	}
@@ -1542,10 +1582,13 @@ class TownyHook {
 		final List<Player> recipients = new ArrayList<>();
 		final String playerNation = getNationName(pl);
 
-		if (!playerNation.isEmpty())
-			for (final Player online : Remain.getOnlinePlayers())
-				if (playerNation.equals(getNationName(online)))
+		if (!playerNation.isEmpty()) {
+			for (final Player online : Remain.getOnlinePlayers()) {
+				if (playerNation.equals(getNationName(online))) {
 					recipients.add(online);
+				}
+			}
+		}
 
 		Debugger.debug("towny", "Players in " + pl.getName() + "'s nation '" + playerNation + "': " + recipients);
 		return recipients;
@@ -1671,8 +1714,9 @@ class ProtocolLibHook {
 	}
 
 	final void sendPacket(final PacketContainer packet) {
-		for (final Player player : Remain.getOnlinePlayers())
+		for (final Player player : Remain.getOnlinePlayers()) {
 			sendPacket(player, packet);
+		}
 	}
 
 	final void sendPacket(final Player player, final Object packet) {
@@ -1703,14 +1747,17 @@ class VaultHook {
 		final RegisteredServiceProvider<Chat> chatProvider = Bukkit.getServicesManager().getRegistration(Chat.class);
 		final RegisteredServiceProvider<Permission> permProvider = Bukkit.getServicesManager().getRegistration(Permission.class);
 
-		if (economyProvider != null)
+		if (economyProvider != null) {
 			economy = economyProvider.getProvider();
+		}
 
-		if (chatProvider != null)
+		if (chatProvider != null) {
 			chat = chatProvider.getProvider();
+		}
 
-		if (permProvider != null)
+		if (permProvider != null) {
 			permissions = permProvider.getProvider();
+		}
 	}
 
 	boolean isChatIntegrated() {
@@ -1738,13 +1785,15 @@ class VaultHook {
 	}
 
 	void withdraw(final Player player, final double amount) {
-		if (economy != null)
+		if (economy != null) {
 			economy.withdrawPlayer(player.getName(), amount);
+		}
 	}
 
 	void deposit(final Player player, final double amount) {
-		if (economy != null)
+		if (economy != null) {
 			economy.depositPlayer(player.getName(), amount);
+		}
 	}
 
 	// ------------------------------------------------------------------------------
@@ -1767,12 +1816,6 @@ class VaultHook {
 	// Prefix / Suffix
 	// ------------------------------------------------------------------------------
 
-	enum Chcem {
-		PREFIX,
-		SUFFIX,
-		GROUP,
-	}
-
 	String getPlayerPrefix(final Player pl) {
 		return lookupVault(pl, Chcem.PREFIX);
 	}
@@ -1786,32 +1829,44 @@ class VaultHook {
 	}
 
 	private String lookupVault(final Player pl, final Chcem co) {
-		if (chat == null)
+		if (chat == null) {
 			return "";
+		}
 
 		final String[] skupiny = chat.getPlayerGroups(pl);
 		String fallback = co == Chcem.PREFIX ? chat.getPlayerPrefix(pl) : co == Chcem.SUFFIX ? chat.getPlayerSuffix(pl) : skupiny != null && skupiny.length > 0 ? skupiny[0] : "";
 
-		if (fallback == null)
+		if (fallback == null) {
 			fallback = "";
+		}
 
-		if (co == Chcem.PREFIX && !SimplePlugin.getInstance().vaultMultiPrefix() || co == Chcem.SUFFIX && !SimplePlugin.getInstance().vaultMultiSuffix())
+		if (co == Chcem.PREFIX && !SimplePlugin.getInstance().vaultMultiPrefix() || co == Chcem.SUFFIX && !SimplePlugin.getInstance().vaultMultiSuffix()) {
 			return fallback;
+		}
 
 		final List<String> list = new ArrayList<>();
 
-		if (!fallback.isEmpty())
+		if (!fallback.isEmpty()) {
 			list.add(fallback);
+		}
 
-		if (skupiny != null)
+		if (skupiny != null) {
 			for (final String group : skupiny) {
 				final String part = co == Chcem.PREFIX ? chat.getGroupPrefix(pl.getWorld(), group) : co == Chcem.SUFFIX ? chat.getGroupSuffix(pl.getWorld(), group) : group;
 
-				if (part != null && !part.isEmpty() && !list.contains(part))
+				if (part != null && !part.isEmpty() && !list.contains(part)) {
 					list.add(part);
+				}
 			}
+		}
 
 		return StringUtils.join(list, co == Chcem.GROUP ? ", " : "");
+	}
+
+	enum Chcem {
+		PREFIX,
+		SUFFIX,
+		GROUP,
 	}
 }
 
@@ -1826,17 +1881,19 @@ class PlaceholderAPIHook {
 	final void addPlaceholder(final PAPIPlaceholder placeholder, final Function<Player, String> replacer) {
 		placeholders.add(placeholder);
 
-		if (replacer != null)
+		if (replacer != null) {
 			PlaceholderAPI.registerPlaceholderHook(SimplePlugin.getNamed().toLowerCase(), new PlaceholderHook() {
 				@Override
 				public String onPlaceholderRequest(final Player player, final String params) {
 
-					if (params.equals(placeholder.getVariable()))
+					if (params.equals(placeholder.getVariable())) {
 						return replacer.apply(player);
+					}
 
 					return null;
 				}
 			});
+		}
 	}
 
 	final String replacePlaceholders(final Player pl, final String msg) {
@@ -1854,11 +1911,12 @@ class PlaceholderAPIHook {
 		}
 	}
 
-	private final String setPlaceholders(final Player player, String text) {
+	private String setPlaceholders(final Player player, String text) {
 		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
-		if (hooks.isEmpty())
+		if (hooks.isEmpty()) {
 			return text;
+		}
 
 		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(text);
 
@@ -1866,8 +1924,9 @@ class PlaceholderAPIHook {
 			final String format = matcher.group(1);
 			final int index = format.indexOf("_");
 
-			if (index <= 0 || index >= format.length())
+			if (index <= 0 || index >= format.length()) {
 				continue;
+			}
 
 			final String identifier = format.substring(0, index).toLowerCase();
 			final String params = format.substring(index + 1);
@@ -1875,8 +1934,9 @@ class PlaceholderAPIHook {
 			if (hooks.containsKey(identifier)) {
 				final String value = hooks.get(identifier).onRequest(player, params);
 
-				if (value != null)
+				if (value != null) {
 					text = text.replaceAll(Pattern.quote(matcher.group()), Matcher.quoteReplacement(Common.colorize(value)));
+				}
 			}
 		}
 
@@ -1899,11 +1959,12 @@ class PlaceholderAPIHook {
 		}
 	}
 
-	private final String setRelationalPlaceholders(final Player one, final Player two, String text) {
+	private String setRelationalPlaceholders(final Player one, final Player two, String text) {
 		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
-		if (hooks.isEmpty())
+		if (hooks.isEmpty()) {
 			return text;
+		}
 
 		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
 
@@ -1911,21 +1972,24 @@ class PlaceholderAPIHook {
 			final String format = m.group(2);
 			final int index = format.indexOf("_");
 
-			if (index <= 0 || index >= format.length())
+			if (index <= 0 || index >= format.length()) {
 				continue;
+			}
 
 			final String identifier = format.substring(0, index).toLowerCase();
 			final String params = format.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
-				if (!(hooks.get(identifier) instanceof Relational))
+				if (!(hooks.get(identifier) instanceof Relational)) {
 					continue;
+				}
 
 				final Relational rel = (Relational) hooks.get(identifier);
 				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
 
-				if (value != null)
+				if (value != null) {
 					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
+				}
 			}
 		}
 
@@ -2011,14 +2075,15 @@ class PlaceholderAPIHook {
 		@Override
 		public String onPlaceholderRequest(final Player player, String identifier) {
 
-			if (player == null)
+			if (player == null) {
 				return "";
+			}
 
 			final boolean insertSpace = identifier.endsWith("+");
 			identifier = insertSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
 
-			for (final PAPIPlaceholder replacer : placeholders)
-				if (identifier.equalsIgnoreCase(replacer.getVariable()))
+			for (final PAPIPlaceholder replacer : placeholders) {
+				if (identifier.equalsIgnoreCase(replacer.getVariable())) {
 					try {
 						final String value = Common.getOrEmpty(replacer.getValue().apply(player, identifier));
 
@@ -2027,6 +2092,8 @@ class PlaceholderAPIHook {
 					} catch (final Exception e) {
 						Common.error(e, "Failed to replace your '" + identifier + "' variable for " + player.getName());
 					}
+				}
+			}
 
 			// We return null if an invalid placeholder (f.e. %someplugin_placeholder3%) was provided
 			return null;
@@ -2066,8 +2133,9 @@ class MVdWPlaceholderHook {
 			return replaced == null ? "" : replaced;
 
 		} catch (final IllegalArgumentException ex) {
-			if (!Common.getOrEmpty(ex.getMessage()).contains("Illegal group reference"))
+			if (!Common.getOrEmpty(ex.getMessage()).contains("Illegal group reference")) {
 				ex.printStackTrace();
+			}
 
 		} catch (final Throwable t) {
 			Common.error(t,
@@ -2087,8 +2155,9 @@ class MVdWPlaceholderHook {
 class LWCHook {
 
 	String getOwner(final Block block) {
-		if (!LWC.ENABLED)
+		if (!LWC.ENABLED) {
 			return null;
+		}
 
 		final Protection protection = LWC.getInstance().findProtection(block);
 
@@ -2098,8 +2167,9 @@ class LWCHook {
 			if (uuid != null) {
 				final OfflinePlayer opl = Remain.getOfflinePlayerByUUID(UUID.fromString(uuid));
 
-				if (opl != null)
+				if (opl != null) {
 					return opl.getName();
+				}
 			}
 		}
 
@@ -2123,8 +2193,9 @@ class ResidenceHook {
 	public String getResidence(final Location loc) {
 		final ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(loc);
 
-		if (res != null)
+		if (res != null) {
 			return res.getName();
+		}
 
 		return null;
 	}
@@ -2132,8 +2203,9 @@ class ResidenceHook {
 	public String getResidenceOwner(final Location loc) {
 		final ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(loc);
 
-		if (res != null)
+		if (res != null) {
 			return res.getOwner();
+		}
 
 		return null;
 	}
@@ -2171,8 +2243,9 @@ class WorldGuardHook {
 		getApplicableRegions(loc).forEach((reg) -> {
 			final String name = Common.stripColors(reg.getId());
 
-			if (!name.startsWith("__"))
+			if (!name.startsWith("__")) {
 				list.add(name);
+			}
 		});
 
 		return list;
@@ -2186,12 +2259,13 @@ class WorldGuardHook {
 
 					final Map<?, ?> regionMap = (Map<?, ?>) rm.getClass().getMethod("getRegions").invoke(rm);
 					for (final Object regObj : regionMap.values()) {
-						if (regObj == null)
+						if (regObj == null) {
 							continue;
+						}
 
 						if (Common.stripColors(((ProtectedRegion) regObj).getId()).equals(name)) {
 
-							final Class<? extends Object> clazz = regObj.getClass();
+							final Class<?> clazz = regObj.getClass();
 							final Method getMax = clazz.getMethod("getMaximumPoint");
 							final Method getMin = clazz.getMethod("getMinimumPoint");
 
@@ -2203,7 +2277,8 @@ class WorldGuardHook {
 							final Method getY = vectorClass.getMethod("getY");
 							final Method getZ = vectorClass.getMethod("getZ");
 
-							Location locMax, locMin;
+							final Location locMax;
+							final Location locMin;
 							locMax = new Location(w, (Double) getX.invoke(regMax), (Double) getY.invoke(regMax), (Double) getZ.invoke(regMax));
 							locMin = new Location(w, (Double) getX.invoke(regMin), (Double) getY.invoke(regMin), (Double) getZ.invoke(regMin));
 
@@ -2221,7 +2296,8 @@ class WorldGuardHook {
 					if (reg != null && reg.getId() != null && Common.stripColors(reg.getId()).equals(name)) {
 						//if(reg instanceof com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion) {
 						// just going to pretend that everything is a cuboid..
-						Location locMax, locMin;
+						final Location locMax;
+						final Location locMin;
 						final com.sk89q.worldedit.math.BlockVector3 regMax = reg.getMaximumPoint();
 						final com.sk89q.worldedit.math.BlockVector3 regMin = reg.getMinimumPoint();
 
@@ -2246,32 +2322,38 @@ class WorldGuardHook {
 					final Map<?, ?> regionMap = (Map<?, ?>) rm.getClass().getMethod("getRegions").invoke(rm);
 					Method getId = null;
 					for (final Object regObj : regionMap.values()) {
-						if (regObj == null)
+						if (regObj == null) {
 							continue;
-						if (getId == null)
+						}
+						if (getId == null) {
 							getId = regObj.getClass().getMethod("getId");
+						}
 
 						final String name = Common.stripColors(getId.invoke(regObj).toString());
 
-						if (!name.startsWith("__"))
+						if (!name.startsWith("__")) {
 							list.add(name);
+						}
 					}
 				} catch (final Throwable t) {
 					t.printStackTrace();
 
 					throw new FoException("Failed WorldEdit 6 legacy hook, see above & report");
 				}
-			} else
+			} else {
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
 						.getRegions().values().forEach((reg) -> {
-							if (reg == null || reg.getId() == null)
+							if (reg == null || reg.getId() == null) {
 								return;
+							}
 
 							final String name = Common.stripColors(reg.getId());
 
-							if (!name.startsWith("__"))
+							if (!name.startsWith("__")) {
 								list.add(name);
+							}
 						});
+			}
 		}
 
 		return list;
@@ -2280,7 +2362,7 @@ class WorldGuardHook {
 	private Iterable<ProtectedRegion> getApplicableRegions(final Location loc) {
 		final Object rm = getRegionManager(loc.getWorld());
 
-		if (legacy)
+		if (legacy) {
 			try {
 				return (Iterable<ProtectedRegion>) rm.getClass().getMethod("getApplicableRegions", Location.class).invoke(rm, loc);
 
@@ -2289,13 +2371,14 @@ class WorldGuardHook {
 
 				throw new FoException("Failed WorldEdit 6 legacy hook, see above & report");
 			}
+		}
 
 		return ((com.sk89q.worldguard.protection.managers.RegionManager) rm)
 				.getApplicableRegions(com.sk89q.worldedit.math.BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
 	}
 
 	private Object getRegionManager(final World w) {
-		if (legacy)
+		if (legacy) {
 			try {
 				return Class.forName("com.sk89q.worldguard.bukkit.WGBukkit").getMethod("getRegionManager", World.class).invoke(null, w);
 
@@ -2304,6 +2387,7 @@ class WorldGuardHook {
 
 				throw new FoException("Failed WorldGuard 6 legacy hook, see above & report");
 			}
+		}
 
 		// causes class errors..
 		//return com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(new com.sk89q.worldedit.bukkit.BukkitWorld(w));
@@ -2345,11 +2429,13 @@ abstract class FactionsHook {
 		final List<Player> recipients = new ArrayList<>();
 		final String playerFaction = getFaction(pl);
 
-		if (playerFaction != null && !"".equals(playerFaction))
+		if (playerFaction != null && !"".equals(playerFaction)) {
 			Remain.getOnlinePlayers().forEach((online) -> {
-				if (playerFaction.equals(getFaction(online)))
+				if (playerFaction.equals(getFaction(online))) {
 					recipients.add(online);
+				}
 			});
+		}
 
 		return recipients;
 	}
@@ -2378,8 +2464,9 @@ final class FactionsMassive extends FactionsHook {
 	public String getFaction(final Location loc) {
 		final Faction f = BoardColl.get().getFactionAt(PS.valueOf(loc));
 
-		if (f != null)
+		if (f != null) {
 			return f.getName();
+		}
 
 		return null;
 	}
@@ -2388,8 +2475,9 @@ final class FactionsMassive extends FactionsHook {
 	public String getFactionOwner(final Location loc) {
 		final Faction f = BoardColl.get().getFactionAt(PS.valueOf(loc));
 
-		if (f != null)
+		if (f != null) {
 			return f.getLeader() != null ? f.getLeader().getName() : null;
+		}
 
 		return null;
 	}
@@ -2492,8 +2580,9 @@ class McMMOHook {
 	String getActivePartyChat(final Player player) {
 		final McMMOPlayer mcplayer = UserManager.getPlayer(player);
 
-		if (mcplayer == null)
+		if (mcplayer == null) {
 			return null;
+		}
 
 		final Party party = mcplayer.getParty();
 
@@ -2511,15 +2600,18 @@ class PlotSquaredHook {
 
 		final Plot currentPlot = plotPlayer.getCurrentPlot();
 
-		if (currentPlot != null)
+		if (currentPlot != null) {
 			for (final PlotPlayer playerInPlot : currentPlot.getPlayersInPlot()) {
 				final UUID id = playerInPlot.getUUID();
 
 				final Player online = Bukkit.getPlayer(id);
 
 				if (online != null && online.isOnline()) // PlotSquared sometimes returns offline players as well, so just ignore them
+				{
 					players.add(online);
+				}
 			}
+		}
 
 		return players;
 	}
@@ -2568,11 +2660,13 @@ class CMIHook {
 		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
 		final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
 
-		if (ignoredPlayer != null)
-			if (ignore)
+		if (ignoredPlayer != null) {
+			if (ignore) {
 				user.addIgnore(ignoredPlayer.getUniqueId(), true /* save now (?) */);
-			else
+			} else {
 				user.removeIgnore(ignoredPlayer.getUniqueId());
+			}
+		}
 	}
 
 	boolean isIgnoring(final String player, final String who) {
@@ -2671,10 +2765,10 @@ class LandsHook {
 	private final LandsIntegration api;
 
 	public LandsHook() {
-		this.api = new LandsIntegration(SimplePlugin.getInstance(), true);
+		api = new LandsIntegration(SimplePlugin.getInstance(), true);
 	}
 
-	public boolean hasMonsterSpawn(Location location) {
+	public boolean hasMonsterSpawn(final Location location) {
 		final LandArea landArea = api.getArea(location);
 		final Land land = api.getLand(location);
 

@@ -13,7 +13,7 @@ public final class RangedRandomValue extends RangedValue {
 	 *
 	 * @param value the fixed range
 	 */
-	public RangedRandomValue(int value) {
+	public RangedRandomValue(final int value) {
 		this(value, value);
 	}
 
@@ -23,8 +23,8 @@ public final class RangedRandomValue extends RangedValue {
 	 * @param min the ceiling
 	 * @param max the floor
 	 */
-	public RangedRandomValue(int min, int max) {
-		super(Integer.valueOf(min), Integer.valueOf(max));
+	public RangedRandomValue(final int min, final int max) {
+		super(min, max);
 
 		Valid.checkBoolean(min >= 0 && max >= 0, "Values may not be negative");
 		Valid.checkBoolean(min <= max, "Minimum must be lower or equal maximum");
@@ -45,7 +45,7 @@ public final class RangedRandomValue extends RangedValue {
 	 * @param value the value
 	 * @return whether or not the value is in range
 	 */
-	public boolean isInRange(int value) {
+	public boolean isInRange(final int value) {
 		return value >= getMinInt() && value <= getMaxInt();
 	}
 
@@ -55,7 +55,7 @@ public final class RangedRandomValue extends RangedValue {
 	 *          5 - 60
 	 *          4
 	 */
-	public static RangedRandomValue parse(String line) {
+	public static RangedRandomValue parse(final String line) {
 		final RangedValue r = RangedValue.parse(line);
 
 		return new RangedRandomValue(r.getMinInt(), r.getMaxInt());
