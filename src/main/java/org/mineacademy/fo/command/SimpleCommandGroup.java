@@ -180,6 +180,15 @@ public abstract class SimpleCommandGroup {
 		return messages.toArray(new String[messages.size()]);
 	}
 
+	/**
+	 * Should we send command helps instead of no-param header?
+	 * @return
+	 */
+
+	protected boolean sendHelpIfNoArgs() {
+		return false;
+	}
+
 	// Return the TM symbol in case we have it for kangarko's plugins
 	private final String getTrademark() {
 		return SimplePlugin.getInstance().getDescription().getAuthors().contains("kangarko") ? getHeaderPrefix() + "&8\u2122" : "";
@@ -271,8 +280,10 @@ public abstract class SimpleCommandGroup {
 
 			// Print a special message on no arguments
 			if (args.length == 0) {
-				tell(getNoParamsHeader());
-
+				if (sendHelpIfNoArgs())
+					tellSubcommandsHelp();
+				else
+					tell(getNoParamsHeader());
 				return;
 			}
 
