@@ -1,18 +1,8 @@
 package org.mineacademy.fo;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -22,9 +12,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Utility class for various reflection methods
@@ -83,12 +78,31 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Set the static field to the given value
+	 *
+	 * @param object
+	 * @param fieldName
+	 * @param fieldValue
+	 */
+	public static void setStaticField(@NonNull final Object object, final String fieldName, final Object fieldValue) {
+		try {
+			final Field field = object.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+
+			field.set(object, fieldValue);
+
+		} catch (final Throwable t) {
+			throw new FoException(t, "Could not set " + fieldName + " in " + object + " to " + fieldValue);
+		}
+	}
+
+
+	/**
 	 * Convenience method for getting a static field content.
 	 *
 	 * @param <T>
 	 * @param clazz
 	 * @param field
-	 * @param type
 	 * @return
 	 */
 	public static <T> T getStaticFieldContent(@NonNull final Class<?> clazz, final String field) {
@@ -158,7 +172,6 @@ public final class ReflectionUtil {
 	 * @param instance
 	 * @param field
 	 * @return
-	 *
 	 */
 	public static <T> T getFieldContent(final Object instance, final String field) {
 		return getFieldContent(instance.getClass(), field, instance);
@@ -480,7 +493,7 @@ public final class ReflectionUtil {
 	/**
 	 * Attempts to find an enum, throwing formatted error showing all available
 	 * values if not found
-	 *
+	 * <p>
 	 * The field name is uppercased, spaces are replaced with underscores and even
 	 * plural S is added in attempts to detect the correct enum
 	 *
@@ -495,7 +508,7 @@ public final class ReflectionUtil {
 	/**
 	 * Attempts to find an enum, throwing formatted error showing all available
 	 * values if not found Use {available} in errMessage to get all enum values.
-	 *
+	 * <p>
 	 * The field name is uppercased, spaces are replaced with underscores and even
 	 * plural S is added in attempts to detect the correct enum
 	 *
@@ -616,6 +629,18 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Gets Enum (Basic)
+	 *
+	 * @param object
+	 * @param value
+	 * @param <T>
+	 * @return
+	 */
+	public static <T extends Enum<T>> T getEnumBasic(Object object, String value) {
+		return Enum.valueOf((Class<T>) object, value);
+	}
+
+	/**
 	 * Gets the caller stack trace methods if you call this method Useful for
 	 * debugging
 	 *
@@ -669,8 +694,8 @@ public final class ReflectionUtil {
 
 	/**
 	 * Return a tree set of classes from the plugin that extend the given class
-	 * @param <T>
 	 *
+	 * @param <T>
 	 * @param <T>
 	 * @param plugin
 	 * @param extendingClass
