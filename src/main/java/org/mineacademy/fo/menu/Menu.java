@@ -43,14 +43,16 @@ import lombok.Setter;
 /**
  * The core class of Menu. Represents a simple menu.
  *
+ * <p>
  * This is the recommended menu class for all plugins having menus. It offers
- * having a parent menu, a return button and an info button explaining the purpose
- * of the menu to the user.
+ * having a parent menu, a return button and an info button explaining the
+ * purpose of the menu to the user.
  *
- * HOW TO GET STARTED: Place final {@link Button} fields in your menu class and make
- * a instatiate when in constructor. Those will be registered as clickable automatically.
- * To render them, override {@link #getItemAt(int)} and make them return at your desired
- * positions.
+ * <p>
+ * HOW TO GET STARTED: Place final {@link Button} fields in your menu class and
+ * make a instatiate when in constructor. Those will be registered as clickable
+ * automatically. To render them, override {@link #getItemAt(int)} and make them
+ * return at your desired positions.
  */
 public abstract class Menu {
 
@@ -59,30 +61,143 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
+	 * An internal metadata tag the player gets when he opens the menu
+	 *
+	 * <p>
+	 * Used in {@link #getMenu(Player)}
+	 */
+	static final String TAG_CURRENT = "KaMenu_" + SimplePlugin.getNamed();
+	/**
+	 * An internal metadata tag the player gets when he opens another menu
+	 *
+	 * <p>
+	 * Used in {@link #getPreviousMenu(Player)}
+	 */
+	static final String TAG_PREVIOUS = "KaMenu_Previous_"
+			+ SimplePlugin.getNamed();
+	/**
 	 * The default sound when switching between menus.
 	 */
 	@Getter
 	@Setter
-	private static SimpleSound sound = new SimpleSound(CompSound.NOTE_STICKS.getSound(), .4F, 1F, true);
+	private static SimpleSound sound = new SimpleSound(
+			CompSound.NOTE_STICKS.getSound(), .4F, 1F, true);
+	/**
+	 * Automatically registered Buttons in this menu (using reflection)
+	 */
+	private final List<Button> registeredButtons = new ArrayList<>();
+	/**
+	 * The registrator responsible for scanning the class and making buttons
+	 * function
+	 */
+	private final OneTimeRunnable buttonsRegistrator;
+	/**
+	 * Parent menu
+	 */
+	private final Menu parent;
+
+	// --------------------------------------------------------------------------------
+	// Actual class
+	// --------------------------------------------------------------------------------
+
+	// --------------------------------------------------------------------------------
+	// Buttons that are registered automatically (we scan fields in your menu
+	// class)
+	// --------------------------------------------------------------------------------
+	/**
+	 * The return button to the previous menu, null if none
+	 */
+	private final Button returnButton;
+	/**
+	 * The size of the menu
+	 */
+	private Integer size = 9 * 3;
+
+	// --------------------------------------------------------------------------------
+	// Other constructors
+	// --------------------------------------------------------------------------------
+	/**
+	 * The inventory title of the menu, colors & are supported
+	 */
+	private String title = "&0Menu";
+	/**
+	 * The description of the menu
+	 */
+	@Getter(value = AccessLevel.PROTECTED)
+	private String[] info = null;
+	/**
+	 * The viewer of this menu, is null until {@link #displayTo(Player)} is
+	 * called
+	 */
+	private Player viewer;
+	/**
+	 * Debug option to render empty spaces as glass panel having the slot id
+	 * visible
+	 */
+	private boolean slotNumbersVisible;
 
 	/**
-	 * An internal metadata tag the player gets when he opens the menu
+	 * Create a new menu without parent menu with the size of 9*3
 	 *
-	 * Used in {@link #getMenu(Player)}
+	 * <p>
+	 * You are encouraged to change the size and title of this menu in your
+	 * constructor by calling {@link #setTitle(String)} and
+	 * {@link #setSize(Integer)}
+	 *
+	 * <p>
+	 * NB: The {@link #getViewer()} of this menu is yet null!
 	 */
-	static final String TAG_CURRENT = "KaMenu_" + SimplePlugin.getNamed();
+	protected Menu() {
+		this(null);
+	}
 
 	/**
-	 * An internal metadata tag the player gets when he opens another menu
+	 * Create a new menu with parent menu with the size of 9*3
 	 *
-	 * Used in {@link #getPreviousMenu(Player)}
+	 * <p>
+	 * You are encouraged to change the size and title of this menu in your
+	 * constructor by calling {@link #setTitle(String)} and
+	 * {@link #setSize(Integer)}
+	 *
+	 * <p>
+	 * NB: The {@link #getViewer()} of this menu is yet null!
+	 *
+	 * @param parent
+	 *            the parent menu
 	 */
-	static final String TAG_PREVIOUS = "KaMenu_Previous_" + SimplePlugin.getNamed();
+	protected Menu(final Menu parent) {
+		this(parent, false);
+	}
+
+	/**
+	 * Create a new menu with parent menu with the size of 9*3
+	 *
+	 * <p>
+	 * You are encouraged to change the size and title of this menu in your
+	 * constructor by calling {@link #setTitle(String)} and
+	 * {@link #setSize(Integer)}
+	 *
+	 * <p>
+	 * NB: The {@link #getViewer()} of this menu is yet null!
+	 *
+	 * @param parent
+	 *            the parent
+	 * @param returnMakesNewInstance
+	 *            should we re-instatiate the parent menu when returning to it?
+	 */
+	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
+		this.parent = parent;
+		returnButton = parent != null
+				? new ButtonReturnBack(parent, returnMakesNewInstance)
+				: Button.makeEmpty();
+		buttonsRegistrator = new OneTimeRunnable(() -> registerButtons());
+	}
 
 	/**
 	 * Returns the current menu for player
 	 *
-	 * @param player the player
+	 * @param player
+	 *            the player
 	 * @return the menu, or null if none
 	 */
 	public static final Menu getMenu(final Player player) {
@@ -92,7 +207,8 @@ public abstract class Menu {
 	/**
 	 * Returns the previous menu for player
 	 *
-	 * @param player the player
+	 * @param player
+	 *            the player
 	 * @return the menu, or none
 	 */
 	public static final Menu getPreviousMenu(final Player player) {
@@ -103,115 +219,13 @@ public abstract class Menu {
 	private static Menu getMenu0(final Player player, final String tag) {
 		if (player.hasMetadata(tag)) {
 			final Menu menu = (Menu) player.getMetadata(tag).get(0).value();
-			Valid.checkNotNull(menu, "Menu missing from " + player.getName() + "'s metadata '" + tag + "' tag!");
+			Valid.checkNotNull(menu, "Menu missing from " + player.getName()
+					+ "'s metadata '" + tag + "' tag!");
 
 			return menu;
 		}
 
 		return null;
-	}
-
-	// --------------------------------------------------------------------------------
-	// Actual class
-	// --------------------------------------------------------------------------------
-
-	// --------------------------------------------------------------------------------
-	// Buttons that are registered automatically (we scan fields in your menu class)
-	// --------------------------------------------------------------------------------
-
-	/**
-	 * Automatically registered Buttons in this menu (using reflection)
-	 */
-	private final List<Button> registeredButtons = new ArrayList<>();
-
-	/**
-	 * The registrator responsible for scanning the class and making buttons
-	 * function
-	 */
-	private final OneTimeRunnable buttonsRegistrator;
-
-	// --------------------------------------------------------------------------------
-	// Other constructors
-	// --------------------------------------------------------------------------------
-
-	/**
-	 * Parent menu
-	 */
-	private final Menu parent;
-
-	/**
-	 * The return button to the previous menu, null if none
-	 */
-	private final Button returnButton;
-
-	/**
-	 * The size of the menu
-	 */
-	private Integer size = 9 * 3;
-
-	/**
-	 * The inventory title of the menu, colors & are supported
-	 */
-	private String title = "&0Menu";
-
-	/**
-	 * The description of the menu
-	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private String[] info = null;
-
-	/**
-	 * The viewer of this menu, is null until {@link #displayTo(Player)} is called
-	 */
-	private Player viewer;
-
-	/**
-	 * Debug option to render empty spaces as glass panel having the slot id visible
-	 */
-	private boolean slotNumbersVisible;
-
-	/**
-	 * Create a new menu without parent menu with the size of 9*3
-	 *
-	 * You are encouraged to change the size and title of this menu in your constructor
-	 * by calling {@link #setTitle(String)} and {@link #setSize(Integer)}
-	 *
-	 * NB: The {@link #getViewer()} of this menu is yet null!
-	 */
-	protected Menu() {
-		this(null);
-	}
-
-	/**
-	 * Create a new menu with parent menu with the size of 9*3
-	 *
-	 * You are encouraged to change the size and title of this menu in your constructor
-	 * by calling {@link #setTitle(String)} and {@link #setSize(Integer)}
-	 *
-	 * NB: The {@link #getViewer()} of this menu is yet null!
-	 *
-	 * @param parent the parent menu
-	 */
-	protected Menu(final Menu parent) {
-		this(parent, false);
-	}
-
-	/**
-	 * Create a new menu with parent menu with the size of 9*3
-	 *
-	 * You are encouraged to change the size and title of this menu in your constructor
-	 * by calling {@link #setTitle(String)} and {@link #setSize(Integer)}
-	 *
-	 * NB: The {@link #getViewer()} of this menu is yet null!
-	 *
-	 * @param parent                 the parent
-	 * @param returnMakesNewInstance should we re-instatiate the parent menu when
-	 *                               returning to it?
-	 */
-	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
-		this.parent = parent;
-		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
-		this.buttonsRegistrator = new OneTimeRunnable(() -> registerButtons());
 	}
 
 	// --------------------------------------------------------------------------------
@@ -221,7 +235,7 @@ public abstract class Menu {
 	/**
 	 * Scans the menu class this menu extends and registers buttons
 	 */
-	final void registerButtons() {
+	protected final void registerButtons() {
 		registeredButtons.clear();
 
 		// Register buttons explicitly given
@@ -236,32 +250,35 @@ public abstract class Menu {
 		{
 			Class<?> lookup = getClass();
 
-			do {
+			do
 				for (final Field f : lookup.getDeclaredFields())
 					registerButton0(f);
-
-			} while (Menu.class.isAssignableFrom(lookup = lookup.getSuperclass()));
+			while (Menu.class
+					.isAssignableFrom(lookup = lookup.getSuperclass()));
 		}
 	}
 
 	// Scans the class and register fields that extend Button class
-	private final void registerButton0(final Field field) {
+	private void registerButton0(final Field field) {
 		field.setAccessible(true);
 
 		final Class<?> type = field.getType();
 
 		if (Button.class.isAssignableFrom(type)) {
-			final Button button = (Button) ReflectionUtil.getFieldContent(field, this);
+			final Button button = (Button) ReflectionUtil.getFieldContent(field,
+					this);
 
-			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
+			Valid.checkNotNull(button, "Null button field named "
+					+ field.getName() + " in " + this);
 			registeredButtons.add(button);
-		}
+		} else if (Button[].class.isAssignableFrom(type)) {
+			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()),
+					"Report / Button[] field must be final: " + field);
+			final Button[] buttons = (Button[]) ReflectionUtil
+					.getFieldContent(field, this);
 
-		else if (Button[].class.isAssignableFrom(type)) {
-			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
-			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
-
-			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
+			Valid.checkBoolean(buttons != null && buttons.length > 0,
+					"Null " + field.getName() + "[] in " + this);
 			registeredButtons.addAll(Arrays.asList(buttons));
 		}
 	}
@@ -269,7 +286,9 @@ public abstract class Menu {
 	/**
 	 * Returns a list of buttons that should be registered manually.
 	 *
-	 * NOTICE: Button fields in your class are registered automatically, do not add them here
+	 * <p>
+	 * NOTICE: Button fields in your class are registered automatically, do not
+	 * add them here
 	 *
 	 * @return button list, null by default
 	 */
@@ -278,24 +297,27 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Attempts to find a clickable registered button in this menu having the same
-	 * icon as the given item stack
+	 * Attempts to find a clickable registered button in this menu having the
+	 * same icon as the given item stack
 	 *
-	 * @param fromItem the itemstack to compare to
+	 * @param fromItem
+	 *            the itemstack to compare to
 	 * @return the buttor or null if not found
 	 */
 	final Button getButton(final ItemStack fromItem) {
 		buttonsRegistrator.runIfHasnt();
 
-		if (fromItem != null) {
+		if (fromItem != null)
 			for (final Button button : registeredButtons) {
-				Valid.checkNotNull(button, "Menu button is null at " + getClass().getSimpleName());
-				Valid.checkNotNull(button.getItem(), "Itemstack cannot be null at " + button.getClass().getSimpleName());
+				Valid.checkNotNull(button,
+						"Menu button is null at " + getClass().getSimpleName());
+				Valid.checkNotNull(button.getItem(),
+						"Itemstack cannot be null at "
+								+ button.getClass().getSimpleName());
 
 				if (button.getItem().equals(fromItem))
 					return button;
 			}
-		}
 
 		return null;
 	}
@@ -303,18 +325,21 @@ public abstract class Menu {
 	/**
 	 * Return a new instance of this menu
 	 *
+	 * <p>
 	 * You must override this in certain cases
 	 *
-	 * @throws if new instance could not be made, for example when the menu is
-	 *         taking constructor params
 	 * @return the new instance, of null
+	 * @throws if
+	 *             new instance could not be made, for example when the menu is
+	 *             taking constructor params
 	 */
 	public Menu newInstance() {
 		try {
 			return ReflectionUtil.instantiate(getClass());
 		} catch (final Throwable t) {
 			try {
-				final Object parent = getClass().getMethod("getParent").invoke(getClass());
+				final Object parent = getClass().getMethod("getParent")
+						.invoke(getClass());
 
 				if (parent != null)
 					return ReflectionUtil.instantiate(getClass(), parent);
@@ -324,7 +349,8 @@ public abstract class Menu {
 			t.printStackTrace();
 		}
 
-		throw new FoException("Could not instatiate menu of " + getClass() + ", override 'newInstance' and ensure constructor is public!");
+		throw new FoException("Could not instatiate menu of " + getClass()
+				+ ", override 'newInstance' and ensure constructor is public!");
 	}
 
 	// --------------------------------------------------------------------------------
@@ -334,9 +360,12 @@ public abstract class Menu {
 	/**
 	 * Displays this menu to the player
 	 *
-	 * The menu will not be displayed when the player is having server conversation
+	 * <p>
+	 * The menu will not be displayed when the player is having server
+	 * conversation
 	 *
-	 * @param player the player
+	 * @param player
+	 *            the player
 	 */
 	public final void displayTo(final Player player) {
 		displayTo(player, false);
@@ -345,16 +374,20 @@ public abstract class Menu {
 	/**
 	 * Display this menu to the player
 	 *
-	 * @param player                   the player
-	 * @param ignoreServerConversation display menu even if the player is having
-	 *                                 server conversation?
+	 * @param player
+	 *            the player
+	 * @param ignoreServerConversation
+	 *            display menu even if the player is having server conversation?
 	 */
-	public final void displayTo(final Player player, final boolean ignoreServerConversation) {
-		Valid.checkNotNull(size, "Size not set in " + this + " (call setSize in your constructor)");
-		Valid.checkNotNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
+	public final void displayTo(final Player player,
+			final boolean ignoreServerConversation) {
+		Valid.checkNotNull(size, "Size not set in " + this
+				+ " (call setSize in your constructor)");
+		Valid.checkNotNull(title, "Title not set in " + this
+				+ " (call setTitle in your constructor)");
 
-		this.viewer = player;
-		this.buttonsRegistrator.runIfHasnt();
+		viewer = player;
+		buttonsRegistrator.runIfHasnt();
 
 		// Draw the menu
 		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
@@ -382,7 +415,8 @@ public abstract class Menu {
 
 		// Prevent menu in conversation
 		if (!ignoreServerConversation && player.isConversing()) {
-			player.sendRawMessage(ChatColor.RED + "Type 'exit' to quit your conversation before opening menu.");
+			player.sendRawMessage(ChatColor.RED
+					+ "Type 'exit' to quit your conversation before opening menu.");
 
 			return;
 		}
@@ -395,20 +429,22 @@ public abstract class Menu {
 			final Menu previous = getMenu(player);
 
 			if (previous != null)
-				player.setMetadata(TAG_PREVIOUS, new FixedMetadataValue(SimplePlugin.getInstance(), previous));
+				player.setMetadata(TAG_PREVIOUS, new FixedMetadataValue(
+						SimplePlugin.getInstance(), previous));
 		}
 
 		// Register current menu
 		Common.runLater(1, () -> {
 			drawer.display(player);
 
-			player.setMetadata(TAG_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
+			player.setMetadata(TAG_CURRENT, new FixedMetadataValue(
+					SimplePlugin.getInstance(), Menu.this));
 		});
 	}
 
 	/**
-	 * Sets all empty slots to light gray pane or adds a slot number to existing items lores
-	 * if {@link #slotNumbersVisible} is true
+	 * Sets all empty slots to light gray pane or adds a slot number to existing
+	 * items lores if {@link #slotNumbersVisible} is true
 	 *
 	 * @param drawer
 	 */
@@ -418,17 +454,22 @@ public abstract class Menu {
 				final ItemStack item = drawer.getItem(slot);
 
 				if (item == null)
-					drawer.setItem(slot, ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "Slot " + slot).build().make());
+					drawer.setItem(slot,
+							ItemCreator.of(
+									CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE,
+									"Slot " + slot).build().make());
 			}
 	}
 
 	/**
-	 * Called automatically before the menu is displayed but after all
-	 * items have been drawed
+	 * Called automatically before the menu is displayed but after all items
+	 * have been drawed
 	 *
+	 * <p>
 	 * Override for custom last-minute modifications
 	 *
-	 * @param drawer the drawer
+	 * @param drawer
+	 *            the drawer
 	 */
 	protected void onDisplay(final InventoryDrawer drawer) {
 	}
@@ -441,10 +482,11 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Redraws and re-register all buttons while sending a title animation to the
-	 * player
+	 * Redraws and re-register all buttons while sending a title animation to
+	 * the player
 	 *
-	 * @param animatedTitle the animated title
+	 * @param animatedTitle
+	 *            the animated title
 	 */
 	public final void restartMenu(final String animatedTitle) {
 		registerButtons();
@@ -457,14 +499,20 @@ public abstract class Menu {
 	/**
 	 * Redraws the bottom bar and updates inventory
 	 */
-	final void redraw() {
+	protected final void redraw() {
 		final Inventory inv = getViewer().getOpenInventory().getTopInventory();
-		Valid.checkBoolean(inv.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
+		Valid.checkBoolean(inv.getType() == InventoryType.CHEST,
+				getViewer().getName()
+						+ "'s inventory closed in the meanwhile (now == "
+						+ inv.getType() + ").");
 
 		for (int i = 0; i < size; i++) {
 			final ItemStack item = getItemAt(i);
 
-			Valid.checkBoolean(i < inv.getSize(), "Item (" + (item != null ? item.getType() : "null") + ") position (" + i + ") > inv size (" + inv.getSize() + ")");
+			Valid.checkBoolean(i < inv.getSize(),
+					"Item (" + (item != null ? item.getType() : "null")
+							+ ") position (" + i + ") > inv size ("
+							+ inv.getSize() + ")");
 			inv.setItem(i, item);
 		}
 
@@ -477,11 +525,12 @@ public abstract class Menu {
 	 *
 	 * @return
 	 */
-	private final Map<Integer, ItemStack> compileBottomBar0() {
+	private Map<Integer, ItemStack> compileBottomBar0() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
 
 		if (addInfoButton() && getInfo() != null)
-			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
+			items.put(getInfoButtonPosition(),
+					Button.makeInfo(getInfo()).getItem());
 
 		if (addReturnButton() && !(returnButton instanceof DummyButton))
 			items.put(getReturnButtonPosition(), returnButton.getItem());
@@ -492,9 +541,11 @@ public abstract class Menu {
 	/**
 	 * Animate the title of this menu
 	 *
+	 * <p>
 	 * Automatically reverts back to the old title after 1 second
 	 *
-	 * @param title the title to animate
+	 * @param title
+	 *            the title to animate
 	 */
 	public final void animateTitle(final String title) {
 		PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
@@ -507,7 +558,8 @@ public abstract class Menu {
 	/**
 	 * Returns the item at a certain slot
 	 *
-	 * @param slot the slow
+	 * @param slot
+	 *            the slow
 	 * @return the item, or null if no icon at the given slot (default)
 	 */
 	public ItemStack getItemAt(final int slot) {
@@ -533,7 +585,8 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Should we automatically add an info button {@link #getInfo()} at the {@link #getInfoButtonPosition()} ?
+	 * Should we automatically add an info button {@link #getInfo()} at the
+	 * {@link #getInfoButtonPosition()} ?
 	 *
 	 * @return
 	 */
@@ -553,7 +606,9 @@ public abstract class Menu {
 	/**
 	 * Calculates the center slot of this menu
 	 *
-	 * Credits to Gober at https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/
+	 * <p>
+	 * Credits to Gober at
+	 * https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/
 	 *
 	 * @return the estimated center slot
 	 */
@@ -566,17 +621,22 @@ public abstract class Menu {
 	/**
 	 * Should we prevent the click or drag?
 	 *
-	 * @param location the click location
-	 * @param slot     the slot
-	 * @param clicked  the clicked item
-	 * @param cursor   the cursor
+	 * @param location
+	 *            the click location
+	 * @param slot
+	 *            the slot
+	 * @param clicked
+	 *            the clicked item
+	 * @param cursor
+	 *            the cursor
+	 * @return if the action is cancelled in the {@link InventoryClickEvent},
+	 *         false by default
 	 * @deprecated sometimes does not work correctly due to flaws in server to
 	 *             client packet communication do not rely on this
-	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
-	 *         by default
 	 */
 	@Deprecated
-	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	protected boolean isActionAllowed(final MenuClickLocation location,
+			final int slot, final ItemStack clicked, final ItemStack cursor) {
 		return false;
 	}
 
@@ -590,10 +650,11 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Sets the title of this inventory, this change is not reflected in client, you must
-	 * call {@link #restartMenu()} to take change
+	 * Sets the title of this inventory, this change is not reflected in client,
+	 * you must call {@link #restartMenu()} to take change
 	 *
-	 * @param title the new title
+	 * @param title
+	 *            the new title
 	 */
 	protected final void setTitle(final String title) {
 		this.title = title;
@@ -618,8 +679,8 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Sets the size of this menu (without updating the player
-	 * container - if you want to update it call {@link #restartMenu()})
+	 * Sets the size of this menu (without updating the player container - if
+	 * you want to update it call {@link #restartMenu()})
 	 *
 	 * @param size
 	 */
@@ -630,12 +691,14 @@ public abstract class Menu {
 	/**
 	 * Set the menu's description
 	 *
+	 * <p>
 	 * Used to create an info bottom in bottom left corner, see
 	 * {@link Button#makeInfo(String...)}
 	 *
-	 * @param info the info to set
+	 * @param info
+	 *            the info to set
 	 */
-	protected final void setInfo(String... info) {
+	protected final void setInfo(final String... info) {
 		this.info = info;
 	}
 
@@ -663,16 +726,19 @@ public abstract class Menu {
 	 * @return
 	 */
 	protected final Inventory getInventory() {
-		Valid.checkNotNull(viewer, "Cannot get inventory when there is no viewer!");
+		Valid.checkNotNull(viewer,
+				"Cannot get inventory when there is no viewer!");
 
-		final Inventory topInventory = viewer.getOpenInventory().getTopInventory();
+		final Inventory topInventory = viewer.getOpenInventory()
+				.getTopInventory();
 		Valid.checkNotNull(topInventory, "Top inventory is null!");
 
 		return topInventory;
 	}
 
 	/**
-	 * Get the open inventory content to match the array length, cloning items preventing ID mismatch in yaml files
+	 * Get the open inventory content to match the array length, cloning items
+	 * preventing ID mismatch in yaml files
 	 *
 	 * @param from
 	 * @param to
@@ -692,16 +758,18 @@ public abstract class Menu {
 	}
 
 	/**
-	 * If you wonder what slot numbers does each empty slot in your menu
-	 * has then set this to true in your constructor
+	 * If you wonder what slot numbers does each empty slot in your menu has
+	 * then set this to true in your constructor
 	 *
-	 * Only takes change when used in constructor or before calling {@link #displayTo(Player)}
-	 * and cannot be updated in {@link #restartMenu()}
+	 * <p>
+	 * Only takes change when used in constructor or before calling
+	 * {@link #displayTo(Player)} and cannot be updated in
+	 * {@link #restartMenu()}
 	 *
 	 * @param visible
 	 */
 	protected void setSlotNumbersVisible() {
-		this.slotNumbersVisible = true;
+		slotNumbersVisible = true;
 	}
 
 	// --------------------------------------------------------------------------------
@@ -711,18 +779,29 @@ public abstract class Menu {
 	/**
 	 * Called automatically when the menu is clicked.
 	 *
-	 * By default we call the shorter {@link #onMenuClick(Player, int, ItemStack)}
-	 * method.
+	 * <p>
+	 * By default we call the shorter
+	 * {@link #onMenuClick(Player, int, ItemStack)} method.
 	 *
-	 * @param player    the player
-	 * @param slot      the slot
-	 * @param action    the action
-	 * @param click     the click
-	 * @param cursor    the cursor
-	 * @param clicked   the item clicked
-	 * @param cancelled is the event cancelled?
+	 * @param player
+	 *            the player
+	 * @param slot
+	 *            the slot
+	 * @param action
+	 *            the action
+	 * @param click
+	 *            the click
+	 * @param cursor
+	 *            the cursor
+	 * @param clicked
+	 *            the item clicked
+	 * @param cancelled
+	 *            is the event cancelled?
 	 */
-	protected void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
+	protected void onMenuClick(final Player player, final int slot,
+			final InventoryAction action, final ClickType click,
+			final ItemStack cursor, final ItemStack clicked,
+			final boolean cancelled) {
 		final InventoryView openedInventory = player.getOpenInventory();
 
 		onMenuClick(player, slot, clicked);
@@ -730,9 +809,11 @@ public abstract class Menu {
 		// Delay by 1 tick to get the accurate item in slot
 		Common.runLater(() -> {
 			if (openedInventory.equals(player.getOpenInventory())) {
-				final Inventory topInventory = openedInventory.getTopInventory();
+				final Inventory topInventory = openedInventory
+						.getTopInventory();
 
-				if (action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR"))
+				if (action.toString().contains("PLACE")
+						|| action.toString().equals("SWAP_WITH_CURSOR"))
 					onItemPlace(player, slot, topInventory.getItem(slot));
 			}
 		});
@@ -741,11 +822,15 @@ public abstract class Menu {
 	/**
 	 * Called automatically when the menu is clicked
 	 *
-	 * @param player  the player
-	 * @param slot    the slot
-	 * @param clicked the item clicked
+	 * @param player
+	 *            the player
+	 * @param slot
+	 *            the slot
+	 * @param clicked
+	 *            the item clicked
 	 */
-	protected void onMenuClick(final Player player, final int slot, final ItemStack clicked) {
+	protected void onMenuClick(final Player player, final int slot,
+			final ItemStack clicked) {
 	}
 
 	/**
@@ -755,30 +840,41 @@ public abstract class Menu {
 	 * @param slot
 	 * @param placed
 	 */
-	protected void onItemPlace(final Player player, final int slot, final ItemStack placed) {
+	protected void onItemPlace(final Player player, final int slot,
+			final ItemStack placed) {
 	}
 
 	/**
 	 * Called automatically when a registered button is clicked
 	 *
+	 * <p>
 	 * By default this method parses the click into
 	 * {@link Button#onClickedInMenu(Player, Menu, ClickType)}
 	 *
-	 * @param player the player
-	 * @param slot   the slot
-	 * @param action the action
-	 * @param click  the click
-	 * @param button the button
+	 * @param player
+	 *            the player
+	 * @param slot
+	 *            the slot
+	 * @param action
+	 *            the action
+	 * @param click
+	 *            the click
+	 * @param button
+	 *            the button
 	 */
-	protected void onButtonClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final Button button) {
+	protected void onButtonClick(final Player player, final int slot,
+			final InventoryAction action, final ClickType click,
+			final Button button) {
 		button.onClickedInMenu(player, this, click);
 	}
 
 	/**
 	 * Called automatically when the menu is closed
 	 *
-	 * @param player    the player
-	 * @param inventory the menu inventory that is being closed
+	 * @param player
+	 *            the player
+	 * @param inventory
+	 *            the menu inventory that is being closed
 	 */
 	protected void onMenuClose(final Player player, final Inventory inventory) {
 	}
