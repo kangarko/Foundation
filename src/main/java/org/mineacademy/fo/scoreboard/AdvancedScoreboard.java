@@ -1,0 +1,474 @@
+package org.mineacademy.fo.scoreboard;
+
+import com.google.common.collect.Lists;
+import lombok.Getter;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.remain.Remain;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+
+/**
+ * This is AdvancedScoreboard made with packets. - Use me with love :)
+ *
+ * <p>
+ * Made by Ladislav Proc 2020
+ * </p>
+ */
+public class AdvancedScoreboard {
+
+	/**
+	 * List of all active scoreboard (added upon creating a new instance)
+	 */
+	@Getter
+	private final static List<AdvancedScoreboard> registeredBoards = new ArrayList<>();
+
+	/**
+	 * Clears registered boards, usually called on reload
+	 */
+	public static void clearBoards() {
+		registeredBoards.clear();
+	}
+
+	/**
+	 * Player to display scoreboard to
+	 */
+	private final Player target;
+
+	/**
+	 * Teams
+	 */
+	private final Boolean[] teams;
+
+
+	/**
+	 * Create new scoreboard
+	 *
+	 * @param target
+	 */
+	public AdvancedScoreboard(Player target) {
+		this.target = target;
+		teams = new Boolean[16];
+
+		try {
+
+			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+				final Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+
+				ReflectionUtil.setStaticField(pposo, "b", toICBC("Objective"));
+				ReflectionUtil.setStaticField(pposo, "a", target.getName());
+				ReflectionUtil.setStaticField(pposo, "c", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("IScoreboardCriteria$EnumScoreboardHealthDisplay"), "INTEGER"));
+				ReflectionUtil.setStaticField(pposo, "d", 0);
+
+				final Object pposdo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardDisplayObjective").newInstance();
+
+				ReflectionUtil.setStaticField(pposdo, "a", 1);
+				ReflectionUtil.setStaticField(pposdo, "b", target.getName());
+
+				Remain.sendPacket(target, pposo);
+				Remain.sendPacket(target, pposdo);
+			} else {
+				Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+				ReflectionUtil.setStaticField(pposo, "b", "Objective");
+				ReflectionUtil.setStaticField(pposo, "a", target.getName());
+				ReflectionUtil.setStaticField(pposo, "c", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("IScoreboardCriteria$EnumScoreboardHealthDisplay"), "INTEGER"));
+				ReflectionUtil.setStaticField(pposo, "d", 0);
+
+				Object pposdo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardDisplayObjective").newInstance();
+
+				ReflectionUtil.setStaticField(pposdo, "a", 1);
+				ReflectionUtil.setStaticField(pposdo, "b", target.getName());
+
+				Remain.sendPacket(target, pposo);
+				Remain.sendPacket(target, pposdo);
+			}
+			registeredBoards.add(this);
+
+		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+			Common.throwError(e, "An error occurred while sending scoreboard to " + target.getName(), "Search above.");
+		}
+	}
+
+	/**
+	 * Sets a new title for scoreboard
+	 *
+	 * @param title
+	 */
+	public void setTitle(final String title) {
+		try {
+			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+
+				final Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+
+				ReflectionUtil.setStaticField(pposo, "a", target.getName());
+				ReflectionUtil.setStaticField(pposo, "b", toICBC(title));
+				ReflectionUtil.setStaticField(pposo, "c", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("IScoreboardCriteria$EnumScoreboardHealthDisplay"), "INTEGER"));
+				ReflectionUtil.setStaticField(pposo, "d", 2);
+
+				Remain.sendPacket(target, pposo);
+			} else {
+				Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+				ReflectionUtil.setStaticField(pposo, "a", target.getName());
+				ReflectionUtil.setStaticField(pposo, "b", title);
+				ReflectionUtil.setStaticField(pposo, "c", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("IScoreboardCriteria$EnumScoreboardHealthDisplay"), "INTEGER"));
+				ReflectionUtil.setStaticField(pposo, "d", 2);
+
+				Remain.sendPacket(target, pposo);
+			}
+
+		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Sets line in scoreboard
+	 * <p>
+	 * NOTE: Limit is 32 characters
+	 *
+	 * @param line
+	 * @param value
+	 */
+	public void setLine(Integer line, String value) {
+		if (line > 0 && line < 16) {
+			Object team = getOrRegisterTeam(line);
+			String prefix = "";
+			String suffix = "";
+
+			if (value.length() <= 16) {
+				prefix = value;
+				suffix = "";
+			} else {
+
+				prefix = value.substring(0, 16);
+				String lastColor = ChatColor.getLastColors(prefix);
+				if (lastColor.isEmpty() ||
+						lastColor.equals(" ")) {
+					lastColor = "§f";
+				}
+				if (prefix.endsWith("§")) {
+					prefix = prefix.substring(0, 15);
+					suffix = lastColor + value.substring(15);
+				} else {
+					suffix = lastColor + value.substring(16);
+				}
+				if (suffix.length() <= 16) {
+					suffix = (suffix);
+				} else {
+					suffix = suffix.substring(0, 16);
+				}
+			}
+
+			try {
+				if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+					ReflectionUtil.setStaticField(team, "c", toICBC(prefix));
+					ReflectionUtil.setStaticField(team, "d", toICBC(suffix));
+				} else {
+					ReflectionUtil.setStaticField(team, "c", prefix);
+					ReflectionUtil.setStaticField(team, "d", suffix);
+				}
+			} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+				Common.throwError(e, "An error occurred while setting line " + line + " with value: \"" + value + "\"");
+			}
+
+			Remain.sendPacket(target, team);
+		}
+	}
+
+	/**
+	 * Clears line (Removes everything from it)
+	 *
+	 * @param line
+	 */
+	public void clear(Integer line) {
+		if (line > 0 && line < 16) {
+			try {
+				if (teams[line] != null && teams[line]) {
+
+					if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").newInstance();
+						final Object ppost = getOrRegisterTeam(line);
+
+						ReflectionUtil.setStaticField(ppost, "h", 1);
+						ReflectionUtil.setStaticField(pposs, "a", getEntry(line));
+						ReflectionUtil.setStaticField(pposs, "b", target.getName());
+						ReflectionUtil.setStaticField(pposs, "c", line);
+						ReflectionUtil.setStaticField(pposs, "d", getEnumLegacy("ScoreboardServer", "REMOVE"));
+
+						teams[line] = false;
+
+						Remain.sendPacket(target, pposs);
+						Remain.sendPacket(target, ppost);
+					} else {
+						Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").getConstructor(String.class).newInstance(getEntry(line));
+						Object ppost = getOrRegisterTeam(line);
+
+						ReflectionUtil.setStaticField(ppost, "h", 1);
+						ReflectionUtil.setStaticField(pposs, "b", target.getName());
+						ReflectionUtil.setStaticField(pposs, "c", line);
+						ReflectionUtil.setStaticField(pposs, "d", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore$EnumScoreboardAction"), "REMOVE"));
+
+						teams[line] = false;
+
+						Remain.sendPacket(target, pposs);
+						Remain.sendPacket(target, ppost);
+					}
+				}
+
+			} catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+				Common.throwError(e, "An error occurred while clearing line " + line, "Search above");
+			}
+		}
+	}
+
+	/**
+	 * Completely removes scoreboard.
+	 */
+	public void remove() {
+
+
+		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+			for (int line = 1; line < 15; line++) {
+				if (teams[line] != null && teams[line]) {
+					try {
+						final Object team = getOrRegisterTeam(line);
+
+						ReflectionUtil.setStaticField(team, "h", 1);
+
+						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").newInstance();
+
+						ReflectionUtil.setStaticField(pposs, "a", getEntry(line));
+						ReflectionUtil.setStaticField(pposs, "b", target.getName());
+						ReflectionUtil.setStaticField(pposs, "c", line);
+						ReflectionUtil.setStaticField(pposs, "d", getEnumLegacy("ScoreboardServer", "REMOVE"));
+
+						teams[line] = false;
+
+						Remain.sendPacket(target, pposs);
+						Remain.sendPacket(target, team);
+
+						registeredBoards.remove(this);
+
+					} catch (IllegalAccessException | InstantiationException e) {
+						Common.throwError(e, "An error occurred while removing scoreboard.");
+					}
+				}
+			}
+		} else {
+			for (int line = 1; line < 15; line++) {
+				if (teams[line] != null && teams[line]) {
+					try {
+						Object team = getOrRegisterTeam(line);
+						ReflectionUtil.setStaticField(team, "h", 1);
+
+						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").newInstance();
+
+						ReflectionUtil.setStaticField(pposs, "b", target.getName());
+						ReflectionUtil.setStaticField(pposs, "c", line);
+						ReflectionUtil.setStaticField(pposs, "d", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore$EnumScoreboardAction"), "REMOVE"));
+
+						teams[line] = false;
+
+						Remain.sendPacket(target, pposs);
+						Remain.sendPacket(target, team);
+					} catch (IllegalAccessException | InstantiationException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	// DO NOT TOUCH
+	//------------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Gets entry for line
+	 *
+	 * @param line
+	 * @return
+	 */
+	private String getEntry(Integer line) {
+		if (line > 0 && line < 16) {
+			if (line <= 10) {
+				return "§" + (line - 1) + "§f";
+			} else {
+				String values = "a,b,c,d,e,f";
+				String[] next = values.split(",");
+				return "§" + next[line - 11] + "§f";
+			}
+		}
+		return "";
+	}
+
+	/**
+	 * Create "fake" taem
+	 * <p>
+	 * DO NOT TOUCH IF YOU DO NOT KNOW WHAT ARE YOU DOING!!!
+	 *
+	 * @param line
+	 * @return
+	 */
+	private Object getOrRegisterTeam(Integer line) {
+
+		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+			if (line > 0 && line < 16) {
+				try {
+					if (teams[line] != null && teams[line]) {
+						final Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
+						Collection<String> ff = Lists.newArrayList("");
+
+						ff.add(getEntry(line));
+
+						ReflectionUtil.setStaticField(ppost, "a", "-sb" + line);
+						ReflectionUtil.setStaticField(ppost, "h", ff);
+						ReflectionUtil.setStaticField(ppost, "b", toICBC(""));
+						ReflectionUtil.setStaticField(ppost, "c", toICBC(""));
+						ReflectionUtil.setStaticField(ppost, "d", toICBC(""));
+						ReflectionUtil.setStaticField(ppost, "i", 0);
+						ReflectionUtil.setStaticField(ppost, "e", "always");
+						ReflectionUtil.setStaticField(ppost, "f", "");
+						ReflectionUtil.setStaticField(ppost, "g", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("EnumChatFormat"), "WHITE"));
+
+						return ppost;
+					} else {
+						teams[line] = true;
+						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").newInstance();
+
+						ReflectionUtil.setStaticField(pposs, "a", getEntry(line));
+						ReflectionUtil.setStaticField(pposs, "b", target.getName());
+						ReflectionUtil.setStaticField(pposs, "c", line);
+						ReflectionUtil.setStaticField(pposs, "d", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("ScoreboardServer$Action"), "CHANGE"));
+
+						final Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
+						Collection<String> ff = Lists.newArrayList("");
+
+						ff.add(getEntry(line));
+
+						ReflectionUtil.setStaticField(ppost, "a", "-sb" + line);
+						ReflectionUtil.setStaticField(ppost, "h", ff);
+						ReflectionUtil.setStaticField(ppost, "b", toICBC(""));
+						ReflectionUtil.setStaticField(ppost, "c", toICBC(""));
+						ReflectionUtil.setStaticField(ppost, "d", toICBC(""));
+						ReflectionUtil.setStaticField(ppost, "i", 0);
+						ReflectionUtil.setStaticField(ppost, "e", "always");
+						ReflectionUtil.setStaticField(ppost, "f", "");
+						ReflectionUtil.setStaticField(ppost, "g", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("EnumChatFormat"), "WHITE"));
+
+						Remain.sendPacket(target, pposs);
+
+						return ppost;
+					}
+				} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+					Common.throwError(e, "An error occurred while registering scoreboard team.", "Search above");
+				}
+			}
+
+		} else {
+			if (line > 0 && line < 16) {
+				try {
+					if (teams[line] != null && teams[line]) {
+						Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
+						ReflectionUtil.setStaticField(ppost, "a", "-sb" + line);
+						ReflectionUtil.setStaticField(ppost, "b", "");
+						ReflectionUtil.setStaticField(ppost, "c", "");
+						ReflectionUtil.setStaticField(ppost, "d", "");
+						ReflectionUtil.setStaticField(ppost, "i", 0);
+						ReflectionUtil.setStaticField(ppost, "e", "always");
+						if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_9)) {
+							ReflectionUtil.setStaticField(ppost, "f", "");
+							ReflectionUtil.setStaticField(ppost, "g", 2);
+
+						} else {
+
+							ReflectionUtil.setStaticField(ppost, "f", 0);
+							ReflectionUtil.setStaticField(ppost, "h", 2);
+						}
+						return ppost;
+					} else {
+						teams[line] = true;
+
+						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").getConstructor(String.class).newInstance(getEntry(line));
+
+						ReflectionUtil.setStaticField(pposs, "b", target.getName());
+						ReflectionUtil.setStaticField(pposs, "c", line);
+						ReflectionUtil.setStaticField(pposs, "d", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore$EnumScoreboardAction"), "CHANGE"));
+
+						final Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
+
+						ReflectionUtil.setStaticField(ppost, "a", "-sb" + line);
+						ReflectionUtil.setStaticField(ppost, "b", "");
+						ReflectionUtil.setStaticField(ppost, "c", "");
+						ReflectionUtil.setStaticField(ppost, "d", "");
+						ReflectionUtil.setStaticField(ppost, "i", 0);
+						ReflectionUtil.setStaticField(ppost, "e", "always");
+
+						if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_9)) {
+							Collection<String> ff = Lists.newArrayList("");
+							ff.add(getEntry(line));
+
+							ReflectionUtil.setStaticField(ppost, "f", "");
+							ReflectionUtil.setStaticField(ppost, "g", 0);
+							ReflectionUtil.setStaticField(ppost, "h", ff);
+
+						} else {
+							ReflectionUtil.setStaticField(ppost, "f", 0);
+							ReflectionUtil.setStaticField(ppost, "h", 0);
+
+							try {
+								final Field f = ppost.getClass().getDeclaredField("g");
+								f.setAccessible(true);
+
+								((List<String>) f.get(ppost)).add(getEntry(line));
+							} catch (NoSuchFieldException | IllegalAccessException e) {
+								Common.throwError(e, "An error occurred while creating new fake team");
+							}
+						}
+
+						Remain.sendPacket(target, pposs);
+
+						return ppost;
+					}
+				} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+					Common.throwError(e, "An error occurred while creating new fake team");
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get enum for IScoreboardCriteria
+	 *
+	 * @param clazz
+	 * @param enm
+	 * @return
+	 */
+	private Object getEnumLegacy(String clazz, String enm) {
+		Object isc = ReflectionUtil.getNMSClass(clazz);
+		return ReflectionUtil.getEnumBasic(isc.getClass().getClasses()[0], enm);
+	}
+
+	/**
+	 * Convert to IChatBaseComponent
+	 *
+	 * @param text
+	 * @return
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 * @throws InstantiationException
+	 */
+	private Object toICBC(String text) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+		return ReflectionUtil.getNMSClass("ChatComponentText").getConstructors()[0].newInstance(text);
+	}
+}
