@@ -31,6 +31,18 @@ public final class RangedRandomValue extends RangedValue {
 	}
 
 	/**
+	 * Create a {@link RangedValue} from a line
+	 * Example: 1-10
+	 *          5 - 60
+	 *          4
+	 */
+	public static RangedRandomValue parse(final String line) {
+		final RangedValue random = RangedValue.parse(line);
+
+		return new RangedRandomValue(random.getMinInt(), random.getMaxInt());
+	}
+
+	/**
 	 * Get a value in range between {@link #min} and {@link #max}
 	 *
 	 * @return a random value
@@ -47,17 +59,5 @@ public final class RangedRandomValue extends RangedValue {
 	 */
 	public boolean isInRange(final int value) {
 		return value >= getMinInt() && value <= getMaxInt();
-	}
-
-	/**
-	 * Create a {@link RangedValue} from a line
-	 * Example: 1-10
-	 *          5 - 60
-	 *          4
-	 */
-	public static RangedRandomValue parse(final String line) {
-		final RangedValue r = RangedValue.parse(line);
-
-		return new RangedRandomValue(r.getMinInt(), r.getMaxInt());
 	}
 }
