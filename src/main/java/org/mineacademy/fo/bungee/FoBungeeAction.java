@@ -92,14 +92,14 @@ public enum FoBungeeAction implements BungeeAction {
 	 * in the error message when the length of data does not match
 	 */
 	@Getter
-	private Class<?>[] content;
+	private final Class<?>[] content;
 
 	/**
 	 * Constructs a new bungee action
 	 *
 	 * @param validValues
 	 */
-	private FoBungeeAction(Object... validValues) {
+	FoBungeeAction(final Object... validValues) {
 		final Class<?>[] classes = new Class<?>[validValues.length];
 
 		for (int i = 0; i < classes.length; i++) {
@@ -108,6 +108,6 @@ public enum FoBungeeAction implements BungeeAction {
 			classes[i] = value.getClass();
 		}
 
-		this.content = classes;
+		content = classes;
 	}
 }

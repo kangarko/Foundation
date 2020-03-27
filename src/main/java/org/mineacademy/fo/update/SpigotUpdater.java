@@ -1,16 +1,6 @@
 package org.mineacademy.fo.update;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -18,7 +8,12 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.Getter;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * A simple class performing an update check for Spigot free and premium resources
@@ -30,13 +25,15 @@ public class SpigotUpdater implements Runnable {
 	 */
 	@Getter
 	private final int resourceId;
-
+	/**
+	 * Should we automatically download newer versions to the {@link Bukkit#getUpdateFolder()}?
+	 */
+	private final boolean download;
 	/**
 	 * Did we found that a newer version is available?
 	 */
 	@Getter
 	private boolean newVersionAvailable = false;
-
 	/**
 	 * The newer version
 	 */
@@ -44,16 +41,12 @@ public class SpigotUpdater implements Runnable {
 	private String newVersion = "";
 
 	/**
-	 * Should we automatically download newer versions to the {@link Bukkit#getUpdateFolder()}?
-	 */
-	private final boolean download;
-
-	/**
 	 * Initializes the new instance to check but not to download updates
 	 *
 	 * @param resourceId the id of the plugin at Spigot's page
 	 */
-	public SpigotUpdater(int resourceId) {
+
+	public SpigotUpdater(final int resourceId) {
 		this(resourceId, false);
 	}
 
@@ -64,7 +57,7 @@ public class SpigotUpdater implements Runnable {
 	 * @param download should we attempt to download new versions automatically?
 	 * 		  PLEASE NOTE YOU CAN ONLY DOWNLOAD FREE RESOURCES FROM SPIGOT NOT PREMIUM
 	 */
-	public SpigotUpdater(int resourceId, boolean download) {
+	public SpigotUpdater(final int resourceId, final boolean download) {
 		this.resourceId = resourceId;
 		this.download = download;
 	}
@@ -74,32 +67,35 @@ public class SpigotUpdater implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if (resourceId == -1)
+		if (resourceId == -1) {
 			return;
+		}
 
 		final String currentVersion = SimplePlugin.getVersion();
 
-		if (!(canUpdateFrom(currentVersion)))
+		if (!(canUpdateFrom(currentVersion))) {
 			return;
+		}
 
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId).openConnection();
 			connection.setRequestMethod("GET");
 
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+			try (final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 				final String line = reader.readLine();
 
 				newVersion = line;
 			}
 
-			if (newVersion.isEmpty())
+			if (newVersion.isEmpty()) {
 				return;
+			}
 
 			if (isNewerVersion(currentVersion, newVersion) && canUpdateTo(newVersion)) {
 				newVersionAvailable = true;
 
 				if (download) {
-					ReadableByteChannel channel;
+					final ReadableByteChannel channel;
 
 					connection = (HttpURLConnection) new URL("https://api.spiget.org/v2/resources/" + resourceId + "/download").openConnection();
 					connection.setRequestProperty("User-Agent", SimplePlugin.getNamed());
@@ -118,8 +114,9 @@ public class SpigotUpdater implements Runnable {
 					Common.log(getDownloadMessage());
 				}
 
-				else
+				else {
 					Common.log(getNotifyMessage());
+				}
 			}
 
 		} catch (final UnknownHostException ex) {
@@ -128,11 +125,11 @@ public class SpigotUpdater implements Runnable {
 		} catch (final IOException ex) {
 			if (ex.getMessage().startsWith("Server returned HTTP response code: 403")) {
 				// no permission
-			} else if (ex.getMessage().startsWith("Server returned HTTP response code:"))
+			} else if (ex.getMessage().startsWith("Server returned HTTP response code:")) {
 				Common.log("Could not check for update, SpigotMC site appears to be down (or unaccessible): " + ex.getMessage());
-
-			else
+			} else {
 				Common.error(ex, "IOException performing update from SpigotMC.org check for " + SimplePlugin.getNamed());
+			}
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Unknown error performing update from SpigotMC.org check for " + SimplePlugin.getNamed());
@@ -147,7 +144,7 @@ public class SpigotUpdater implements Runnable {
 	 * @param currentVersion
 	 * @return
 	 */
-	protected boolean canUpdateFrom(String currentVersion) {
+	protected boolean canUpdateFrom(final String currentVersion) {
 		return !currentVersion.contains("SNAPSHOT") && !currentVersion.contains("DEV");
 	}
 
@@ -159,7 +156,7 @@ public class SpigotUpdater implements Runnable {
 	 * @param newVersion
 	 * @return
 	 */
-	protected boolean canUpdateTo(String newVersion) {
+	protected boolean canUpdateTo(final String newVersion) {
 		return !newVersion.contains("SNAPSHOT") && !newVersion.contains("DEV");
 	}
 
@@ -170,9 +167,10 @@ public class SpigotUpdater implements Runnable {
 	 * @param remote
 	 * @return
 	 */
-	private boolean isNewerVersion(String current, String remote) {
-		if (remote.contains("-LEGACY"))
+	private boolean isNewerVersion(final String current, final String remote) {
+		if (remote.contains("-LEGACY")) {
 			return false;
+		}
 
 		String[] currParts = removeTagsInNumber(current).split("\\.");
 		String[] remoteParts = removeTagsInNumber(remote).split("\\.");
@@ -181,21 +179,25 @@ public class SpigotUpdater implements Runnable {
 			final boolean olderIsLonger = currParts.length > remoteParts.length;
 			final String[] modifiedParts = new String[olderIsLonger ? currParts.length : remoteParts.length];
 
-			for (int i = 0; i < (olderIsLonger ? currParts.length : remoteParts.length); i++)
+			for (int i = 0; i < (olderIsLonger ? currParts.length : remoteParts.length); i++) {
 				modifiedParts[i] = olderIsLonger ? remoteParts.length > i ? remoteParts[i] : "0" : currParts.length > i ? currParts[i] : "0";
+			}
 
-			if (olderIsLonger)
+			if (olderIsLonger) {
 				remoteParts = modifiedParts;
-			else
+			} else {
 				currParts = modifiedParts;
+			}
 		}
 
 		for (int i = 0; i < currParts.length; i++) {
-			if (Integer.parseInt(currParts[i]) > Integer.parseInt(remoteParts[i]))
+			if (Integer.parseInt(currParts[i]) > Integer.parseInt(remoteParts[i])) {
 				return false;
+			}
 
-			if (Integer.parseInt(remoteParts[i]) > Integer.parseInt(currParts[i]))
+			if (Integer.parseInt(remoteParts[i]) > Integer.parseInt(currParts[i])) {
 				return true;
+			}
 		}
 
 		return false;
@@ -208,7 +210,7 @@ public class SpigotUpdater implements Runnable {
 	 * @param raw
 	 * @return
 	 */
-	protected String removeTagsInNumber(String raw) {
+	protected String removeTagsInNumber(final String raw) {
 		return raw.split("\\-")[0];
 	}
 
@@ -241,7 +243,7 @@ public class SpigotUpdater implements Runnable {
 	 * @param message
 	 * @return
 	 */
-	protected String replaceVariables(String message) {
+	protected String replaceVariables(final String message) {
 		return message
 				.replace("{resourceId}", resourceId + "") // DEPRECATED
 				.replace("{resource_id}", resourceId + "")

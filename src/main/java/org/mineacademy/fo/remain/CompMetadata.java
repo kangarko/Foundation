@@ -1,11 +1,8 @@
 package org.mineacademy.fo.remain;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -32,9 +29,7 @@ import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlSectionConfig;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.*;
 
 /**
  * Utility class for persistent metadata manipulation
@@ -66,7 +61,7 @@ public final class CompMetadata {
 	 * @param value
 	 * @return
 	 */
-	public static ItemStack setMetadata(ItemStack item, String key, String value) {
+	public static ItemStack setMetadata(final ItemStack item, final String key, final String value) {
 		Valid.checkNotNull(item, "Setting NBT tag got null item");
 
 		final NBTItem nbt = new NBTItem(item);
@@ -82,7 +77,7 @@ public final class CompMetadata {
 	 * @param entity
 	 * @param tag
 	 */
-	public static void setMetadata(Entity entity, String tag) {
+	public static void setMetadata(final Entity entity, final String tag) {
 		setMetadata(entity, tag, tag);
 	}
 
@@ -93,14 +88,15 @@ public final class CompMetadata {
 	 * @param key
 	 * @param value
 	 */
-	public static void setMetadata(Entity entity, String key, String value) {
+	public static void setMetadata(final Entity entity, final String key, final String value) {
 		Valid.checkNotNull(entity);
 
 		final String tag = format(key, value);
 
 		if (Remain.hasScoreboardTags()) {
-			if (!entity.getScoreboardTags().contains(tag))
+			if (!entity.getScoreboardTags().contains(tag)) {
 				entity.addScoreboardTag(tag);
+			}
 
 		} else {
 			entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
@@ -110,7 +106,7 @@ public final class CompMetadata {
 	}
 
 	// Format the syntax of stored tags
-	private static String format(String key, String value) {
+	private static String format(final String key, final String value) {
 		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
 	}
 
@@ -121,7 +117,7 @@ public final class CompMetadata {
 	 * @param key
 	 * @param value
 	 */
-	public static void setMetadata(BlockState tileEntity, String key, String value) {
+	public static void setMetadata(final BlockState tileEntity, final String key, final String value) {
 		Valid.checkNotNull(tileEntity);
 		Valid.checkNotNull(key);
 		Valid.checkNotNull(value);
@@ -140,7 +136,7 @@ public final class CompMetadata {
 		}
 	}
 
-	private static void setNamedspaced(TileState tile, String key, String value) {
+	private static void setNamedspaced(final TileState tile, final String key, final String value) {
 		tile.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING, value);
 	}
 
@@ -156,7 +152,7 @@ public final class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static String getMetadata(ItemStack item, String key) {
+	public static String getMetadata(final ItemStack item, final String key) {
 		Valid.checkNotNull(item, "Reading NBT tag got null item");
 
 		final String compoundTag = FoConstants.NBT.TAG;
@@ -175,16 +171,18 @@ public final class CompMetadata {
 	 * @param key
 	 * @return the tag, or null
 	 */
-	public static String getMetadata(Entity entity, String key) {
+	public static String getMetadata(final Entity entity, final String key) {
 		Valid.checkNotNull(entity);
 
-		if (Remain.hasScoreboardTags())
+		if (Remain.hasScoreboardTags()) {
 			for (final String line : entity.getScoreboardTags()) {
 				final String tag = getTag(line, key);
 
-				if (tag != null && !tag.isEmpty())
+				if (tag != null && !tag.isEmpty()) {
 					return tag;
+				}
 			}
+		}
 
 		final String value = entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
 
@@ -192,7 +190,7 @@ public final class CompMetadata {
 	}
 
 	// Parses the tag and gets its value
-	private static String getTag(String raw, String key) {
+	private static String getTag(final String raw, final String key) {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
@@ -205,7 +203,7 @@ public final class CompMetadata {
 	 * @param key, or null if none
 	 * @return
 	 */
-	public static String getMetadata(BlockState tileEntity, String key) {
+	public static String getMetadata(final BlockState tileEntity, final String key) {
 		Valid.checkNotNull(tileEntity);
 		Valid.checkNotNull(key);
 
@@ -220,7 +218,7 @@ public final class CompMetadata {
 		return Common.getOrNull(value);
 	}
 
-	private static String getNamedspaced(TileState tile, String key) {
+	private static String getNamedspaced(final TileState tile, final String key) {
 		final String value = tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
 
 		return Common.getOrNull(value);
@@ -238,7 +236,7 @@ public final class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static boolean hasMetadata(ItemStack item, String key) {
+	public static boolean hasMetadata(final ItemStack item, final String key) {
 		Valid.checkNotNull(item);
 
 		final NBTItem nbt = new NBTItem(item);
@@ -255,13 +253,16 @@ public final class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static boolean hasMetadata(Entity entity, String key) {
+	public static boolean hasMetadata(final Entity entity, final String key) {
 		Valid.checkNotNull(entity);
 
-		if (Remain.hasScoreboardTags())
-			for (final String line : entity.getScoreboardTags())
-				if (hasTag(line, key))
+		if (Remain.hasScoreboardTags()) {
+			for (final String line : entity.getScoreboardTags()) {
+				if (hasTag(line, key)) {
 					return true;
+				}
+			}
+		}
 
 		return entity.hasMetadata(key);
 	}
@@ -274,7 +275,7 @@ public final class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static boolean hasMetadata(BlockState tileEntity, String key) {
+	public static boolean hasMetadata(final BlockState tileEntity, final String key) {
 		Valid.checkNotNull(tileEntity);
 		Valid.checkNotNull(key);
 
@@ -287,12 +288,12 @@ public final class CompMetadata {
 		return tileEntity.hasMetadata(key);
 	}
 
-	private static boolean hasNamedspaced(TileState tile, String key) {
+	private static boolean hasNamedspaced(final TileState tile, final String key) {
 		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
 	}
 
 	// Parses the tag and gets its value
-	private static boolean hasTag(String raw, String tag) {
+	private static boolean hasTag(final String raw, final String tag) {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
@@ -307,7 +308,7 @@ public final class CompMetadata {
 	 * @param entity
 	 * @param tag
 	 */
-	public static void setTempMetadata(Entity entity, String tag) {
+	public static void setTempMetadata(final Entity entity, final String tag) {
 		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), tag));
 	}
 
@@ -321,7 +322,7 @@ public final class CompMetadata {
 	 * @param tag
 	 * @param key
 	 */
-	public static void setTempMetadata(Entity entity, String tag, Object key) {
+	public static void setTempMetadata(final Entity entity, final String tag, final Object key) {
 		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), key));
 	}
 
@@ -335,13 +336,13 @@ public final class CompMetadata {
 	 * @param tag
 	 * @return
 	 */
-	public static MetadataValue getTempMetadata(Entity entity, String tag) {
+	public static MetadataValue getTempMetadata(final Entity entity, final String tag) {
 		final String key = createTempMetadataKey(tag);
 
 		return entity.hasMetadata(key) ? entity.getMetadata(key).get(0) : null;
 	}
 
-	public static boolean hasTempMetadata(Entity player, String tag) {
+	public static boolean hasTempMetadata(final Entity player, final String tag) {
 		return player.hasMetadata(createTempMetadataKey(tag));
 	}
 
@@ -351,17 +352,18 @@ public final class CompMetadata {
 	 * @param player
 	 * @param tag
 	 */
-	public static void removeTempMetadata(Entity player, String tag) {
+	public static void removeTempMetadata(final Entity player, final String tag) {
 		final String key = createTempMetadataKey(tag);
 
-		if (player.hasMetadata(key))
+		if (player.hasMetadata(key)) {
 			player.removeMetadata(key, SimplePlugin.getInstance());
+		}
 	}
 
 	/*
 	 * Create a new temporary metadata key
 	 */
-	private static String createTempMetadataKey(String tag) {
+	private static String createTempMetadataKey(final String tag) {
 		return SimplePlugin.getNamed() + "_" + tag;
 	}
 
@@ -442,10 +444,11 @@ public final class CompMetadata {
 			setNoSave("Block", blockMetadataMap);
 		}
 
-		private void applySavedMetadata(List<String> metadata, Metadatable entity) {
+		private void applySavedMetadata(final List<String> metadata, final Metadatable entity) {
 			for (final String metadataLine : metadata) {
-				if (metadataLine.isEmpty())
+				if (metadataLine.isEmpty()) {
 					continue;
+				}
 
 				final String[] lines = metadataLine.split(DELIMITER);
 				Valid.checkBoolean(lines.length == 3, "Malformed metadata line for " + entity + ". Length 3 != " + lines.length + ". Data: " + metadataLine);
@@ -457,14 +460,15 @@ public final class CompMetadata {
 			}
 		}
 
-		protected void addMetadata(Entity entity, @NonNull String key, String value) {
+		protected void addMetadata(final Entity entity, @NonNull final String key, final String value) {
 			final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
 			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
 				final String meta = i.next();
 
-				if (getTag(meta, key) != null)
+				if (getTag(meta, key) != null) {
 					i.remove();
+				}
 			}
 
 			if (value != null && !value.isEmpty()) {
@@ -476,14 +480,15 @@ public final class CompMetadata {
 			save("Entity", entityMetadataMap);
 		}
 
-		protected void addMetadata(BlockState blockState, String key, String value) {
+		protected void addMetadata(final BlockState blockState, final String key, final String value) {
 			final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
 			for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
 				final String meta = i.next();
 
-				if (getTag(meta, key) != null)
+				if (getTag(meta, key) != null) {
 					i.remove();
+				}
 			}
 
 			if (value != null && !value.isEmpty()) {
@@ -493,8 +498,9 @@ public final class CompMetadata {
 			}
 
 			{ // Save
-				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
+				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet()) {
 					setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+				}
 
 				save();
 			}
@@ -506,6 +512,13 @@ public final class CompMetadata {
 			private final CompMaterial type;
 			private final List<String> metadata;
 
+			public static BlockCache deserialize(final SerializedMap map) {
+				final CompMaterial type = map.getMaterial("Type");
+				final List<String> metadata = map.getStringList("Metadata");
+
+				return new BlockCache(type, metadata);
+			}
+
 			@Override
 			public SerializedMap serialize() {
 				final SerializedMap map = new SerializedMap();
@@ -514,13 +527,6 @@ public final class CompMetadata {
 				map.put("Metadata", metadata);
 
 				return map;
-			}
-
-			public static BlockCache deserialize(SerializedMap map) {
-				final CompMaterial type = map.getMaterial("Type");
-				final List<String> metadata = map.getStringList("Metadata");
-
-				return new BlockCache(type, metadata);
 			}
 		}
 	}
