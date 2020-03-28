@@ -182,6 +182,11 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param player
 	 */
 	public final SimpleConversation show(final Player player) {
+		return this.show(player, (Integer) null);
+	}
+
+
+	public final SimpleConversation show(final Player player, Integer timeout) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + getClass().getSimpleName() + " instead!");
 
 		this.player = player;
@@ -191,6 +196,11 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 			@Override
 			protected Prompt getFirstPrompt() {
 				return SimplePrompt.this;
+			}
+
+			@Override
+			protected int getTimeout() {
+				return timeout == null ? super.getTimeout() : timeout;
 			}
 
 			@Override
