@@ -10,6 +10,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
@@ -70,11 +71,11 @@ public final class JavaScriptExecutor {
 	 * making the "player" variable in the code usable
 	 *
 	 * @param javascript
-	 * @param player
+	 * @param sender
 	 * @return
 	 */
-	public static Object run(String javascript, Player player) {
-		return run(javascript, player, null);
+	public static Object run(String javascript, CommandSender sender) {
+		return run(javascript, sender, null);
 	}
 
 	/**
@@ -82,14 +83,14 @@ public final class JavaScriptExecutor {
 	 * as well as the bukkit event (use "event" variable there)
 	 *
 	 * @param javascript
-	 * @param player
+	 * @param sender
 	 * @param event
 	 * @return
 	 */
-	public static Object run(@NonNull String javascript, Player player, Event event) {
+	public static Object run(@NonNull String javascript, CommandSender sender, Event event) {
 
 		// Cache for highest performance
-		Map<String, Object> cached = resultCache.get(player.getUniqueId());
+		Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
 
 		if (cached != null) {
 			final Object result = cached.get(javascript);
@@ -101,20 +102,20 @@ public final class JavaScriptExecutor {
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-			if (player != null)
-				engine.put("player", player);
+			if (sender != null)
+				engine.put("player", sender);
 
 			if (event != null)
 				engine.put("event", event);
 
 			final Object result = engine.eval(javascript);
 
-			if (player != null) {
+			if (sender instanceof Player) {
 				if (cached == null)
 					cached = new HashMap<>();
 
 				cached.put(javascript, result);
-				resultCache.put(player.getUniqueId(), cached);
+				resultCache.put(((Player) sender).getUniqueId(), cached);
 			}
 
 			return result;
