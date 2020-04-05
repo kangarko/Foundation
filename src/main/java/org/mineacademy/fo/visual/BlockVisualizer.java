@@ -22,7 +22,7 @@ import lombok.experimental.UtilityClass;
  * A utility class for displaying glowing block corners
  */
 @UtilityClass
-public final class BlockVisualizer {
+public class BlockVisualizer {
 
 	/**
 	 * Stores a map of currently visualized blocks
