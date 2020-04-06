@@ -11,9 +11,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -29,7 +27,7 @@ public class AdvancedScoreboard {
 	 * List of all active scoreboard (added upon creating a new instance)
 	 */
 	@Getter
-	private final static List<AdvancedScoreboard> registeredBoards = new ArrayList<>();
+	public final static HashMap<AdvancedScoreboard, UUID> registeredBoards = new HashMap<>();
 
 	/**
 	 * Clears registered boards, usually called on reload
@@ -59,7 +57,6 @@ public class AdvancedScoreboard {
 		teams = new Boolean[16];
 
 		try {
-
 			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
 				final Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
 
@@ -90,7 +87,7 @@ public class AdvancedScoreboard {
 				Remain.sendPacket(target, pposo);
 				Remain.sendPacket(target, pposdo);
 			}
-			registeredBoards.add(this);
+			registeredBoards.put(this, target.getUniqueId());
 
 		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
 			Common.throwError(e, "An error occurred while sending scoreboard to " + target.getName(), "Search above.");
@@ -130,56 +127,15 @@ public class AdvancedScoreboard {
 	}
 
 	/**
-	 * Sets line in scoreboard
-	 * <p>
-	 * NOTE: Limit is 32 characters
+	 * Sets lines to scoreboard
 	 *
-	 * @param line
-	 * @param value
+	 * @param lines
 	 */
-	public void setLine(Integer line, String value) {
-		if (line > 0 && line < 16) {
-			Object team = getOrRegisterTeam(line);
-			String prefix = "";
-			String suffix = "";
-
-			if (value.length() <= 16) {
-				prefix = value;
-				suffix = "";
-			} else {
-
-				prefix = value.substring(0, 16);
-				String lastColor = ChatColor.getLastColors(prefix);
-				if (lastColor.isEmpty() ||
-						lastColor.equals(" ")) {
-					lastColor = "§f";
-				}
-				if (prefix.endsWith("§")) {
-					prefix = prefix.substring(0, 15);
-					suffix = lastColor + value.substring(15);
-				} else {
-					suffix = lastColor + value.substring(16);
-				}
-				if (suffix.length() <= 16) {
-					suffix = (suffix);
-				} else {
-					suffix = suffix.substring(0, 16);
-				}
-			}
-
-			try {
-				if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
-					ReflectionUtil.setStaticField(team, "c", toICBC(prefix));
-					ReflectionUtil.setStaticField(team, "d", toICBC(suffix));
-				} else {
-					ReflectionUtil.setStaticField(team, "c", prefix);
-					ReflectionUtil.setStaticField(team, "d", suffix);
-				}
-			} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-				Common.throwError(e, "An error occurred while setting line " + line + " with value: \"" + value + "\"");
-			}
-
-			Remain.sendPacket(target, team);
+	public void setLines(final ArrayList<String> lines) {
+		int j = 1;
+		for (int i = lines.size() - 1; i >= 0; --i) {
+			this.setLine(Integer.valueOf(j), lines.get(i).replaceAll("&", "§"));
+			++j;
 		}
 	}
 
@@ -233,8 +189,6 @@ public class AdvancedScoreboard {
 	 * Completely removes scoreboard.
 	 */
 	public void remove() {
-
-
 		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
 			for (int line = 1; line < 15; line++) {
 				if (teams[line] != null && teams[line]) {
@@ -287,10 +241,10 @@ public class AdvancedScoreboard {
 		}
 	}
 
+
 	//------------------------------------------------------------------------------------------------------------------
 	// DO NOT TOUCH
 	//------------------------------------------------------------------------------------------------------------------
-
 	/**
 	 * Gets entry for line
 	 *
@@ -308,6 +262,60 @@ public class AdvancedScoreboard {
 			}
 		}
 		return "";
+	}
+
+	/**
+	 * Sets line in scoreboard
+	 * <p>
+	 * NOTE: Limit is 32 characters
+	 *
+	 * @param line
+	 * @param value
+	 */
+	private void setLine(Integer line, String value) {
+		if (line > 0 && line < 16) {
+			Object team = getOrRegisterTeam(line);
+			String prefix = "";
+			String suffix = "";
+
+			if (value.length() <= 16) {
+				prefix = value;
+				suffix = "";
+			} else {
+
+				prefix = value.substring(0, 16);
+				String lastColor = ChatColor.getLastColors(prefix);
+				if (lastColor.isEmpty() ||
+						lastColor.equals(" ")) {
+					lastColor = "§f";
+				}
+				if (prefix.endsWith("§")) {
+					prefix = prefix.substring(0, 15);
+					suffix = lastColor + value.substring(15);
+				} else {
+					suffix = lastColor + value.substring(16);
+				}
+				if (suffix.length() <= 16) {
+					suffix = (suffix);
+				} else {
+					suffix = suffix.substring(0, 16);
+				}
+			}
+
+			try {
+				if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
+					ReflectionUtil.setStaticField(team, "c", toICBC(prefix));
+					ReflectionUtil.setStaticField(team, "d", toICBC(suffix));
+				} else {
+					ReflectionUtil.setStaticField(team, "c", prefix);
+					ReflectionUtil.setStaticField(team, "d", suffix);
+				}
+			} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+				Common.throwError(e, "An error occurred while setting line " + line + " with value: \"" + value + "\"");
+			}
+
+			Remain.sendPacket(target, team);
+		}
 	}
 
 	/**
@@ -471,4 +479,5 @@ public class AdvancedScoreboard {
 	private Object toICBC(String text) throws IllegalAccessException, InvocationTargetException, InstantiationException {
 		return ReflectionUtil.getNMSClass("ChatComponentText").getConstructors()[0].newInstance(text);
 	}
+
 }
