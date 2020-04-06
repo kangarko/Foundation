@@ -73,13 +73,14 @@ public class AdvancedScoreboard {
 				Remain.sendPacket(target, pposo);
 				Remain.sendPacket(target, pposdo);
 			} else {
-				Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+				final Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+
 				ReflectionUtil.setStaticField(pposo, "b", "Objective");
 				ReflectionUtil.setStaticField(pposo, "a", target.getName());
 				ReflectionUtil.setStaticField(pposo, "c", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("IScoreboardCriteria$EnumScoreboardHealthDisplay"), "INTEGER"));
 				ReflectionUtil.setStaticField(pposo, "d", 0);
 
-				Object pposdo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardDisplayObjective").newInstance();
+				final Object pposdo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardDisplayObjective").newInstance();
 
 				ReflectionUtil.setStaticField(pposdo, "a", 1);
 				ReflectionUtil.setStaticField(pposdo, "b", target.getName());
@@ -99,7 +100,9 @@ public class AdvancedScoreboard {
 	 *
 	 * @param title
 	 */
-	public void setTitle(final String title) {
+	public void setTitle(String title) {
+		title = title.replaceAll("&", "§");
+
 		try {
 			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13)) {
 
@@ -122,19 +125,19 @@ public class AdvancedScoreboard {
 			}
 
 		} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-			e.printStackTrace();
+			Common.throwError(e, "An error occurred while changing scoreboard title to " + title + " for " + target.getName(), "Search above.");
 		}
 	}
 
 	/**
-	 * Sets lines to scoreboard
+	 * Sets lines to scoreboard (flips the list)
 	 *
 	 * @param lines
 	 */
 	public void setLines(final ArrayList<String> lines) {
 		int j = 1;
 		for (int i = lines.size() - 1; i >= 0; --i) {
-			this.setLine(Integer.valueOf(j), lines.get(i).replaceAll("&", "§"));
+			this.setLine(j, lines.get(i).replaceAll("&", "§"));
 			++j;
 		}
 	}
@@ -164,8 +167,8 @@ public class AdvancedScoreboard {
 						Remain.sendPacket(target, pposs);
 						Remain.sendPacket(target, ppost);
 					} else {
-						Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").getConstructor(String.class).newInstance(getEntry(line));
-						Object ppost = getOrRegisterTeam(line);
+						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").getConstructor(String.class).newInstance(getEntry(line));
+						final Object ppost = getOrRegisterTeam(line);
 
 						ReflectionUtil.setStaticField(ppost, "h", 1);
 						ReflectionUtil.setStaticField(pposs, "b", target.getName());
@@ -234,7 +237,7 @@ public class AdvancedScoreboard {
 						Remain.sendPacket(target, pposs);
 						Remain.sendPacket(target, team);
 					} catch (IllegalAccessException | InstantiationException e) {
-						e.printStackTrace();
+						Common.throwError(e, "An error occurred while removing scoreboard.");
 					}
 				}
 			}
