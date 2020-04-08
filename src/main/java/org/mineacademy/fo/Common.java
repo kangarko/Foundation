@@ -700,7 +700,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String chatLineSmooth() {
-		return ChatColor.STRIKETHROUGH + "――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――";
+		return ChatColor.STRIKETHROUGH + "                                                                ";
 	}
 
 	/**
