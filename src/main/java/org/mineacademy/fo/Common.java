@@ -703,6 +703,21 @@ public final class Common {
 		return ChatColor.STRIKETHROUGH + "                                                                ";
 	}
 
+	public static final String emptyLine() {
+		return "\n ";
+	}
+
+	/**
+	 * Creates a long -------- chat line using {@link #chatLineSmooth()}
+	 * @param addEmptyLine Whether an empty line should be added.
+	 * @param below If true, the empty line will be added below the chatLine,
+	 *              false it will be added above.
+	 * @return Returns a long chat line with an empty line either above or below the chatline.
+	 */
+	public static String chatLineSmooth(boolean addEmptyLine, boolean below) {
+		return addEmptyLine ? below ? chatLineSmooth() + emptyLine() : emptyLine() + chatLineSmooth() : chatLineSmooth();
+	}
+
 	/**
 	 * Returns a very long -------- config line
 	 *
