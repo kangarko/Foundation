@@ -1,6 +1,27 @@
 package org.mineacademy.fo.settings;
 
-import lombok.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Function;
+import javax.annotation.Nullable;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -8,8 +29,15 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.mineacademy.fo.*;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
@@ -23,15 +51,6 @@ import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Function;
 
 /**
  * The core configuration class. Manages all settings files.
@@ -1523,7 +1542,7 @@ public class YamlConfig implements ConfigSerializable {
 	}
 
 	protected final <T> T getOrSetDefault(final String path, final T defaultValue) {
-		if (isSet(formPathPrefix(path))) {
+		if (isSet(path)) {
 			if (defaultValue instanceof Replacer) {
 				return (T) Replacer.of(getString(path));
 			}
