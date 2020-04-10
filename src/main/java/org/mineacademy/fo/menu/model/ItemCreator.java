@@ -1,9 +1,11 @@
 package org.mineacademy.fo.menu.model;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -32,6 +34,9 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
+
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -390,6 +395,37 @@ public final class ItemCreator {
 	// ----------------------------------------------------------------------------------------
 	// Static access
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Creates an ItemBuilder from a skull-texture
+	 *
+	 * @param hash Base64-String representation of a skull-texture
+	 *
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofSkullHash(final String hash) {
+		Valid.checkNotNull(hash, "Hash mustn't be null");
+
+		final ItemStack head = new ItemStack(CompMaterial.PLAYER_HEAD.getMaterial(), 1, (short) 3);
+		final SkullMeta meta = (SkullMeta) head.getItemMeta();
+		final GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+
+		profile.getProperties().put("textures", new Property("textures", hash));
+		Field profileField = null;
+
+		try {
+			profileField = meta.getClass().getDeclaredField("profile");
+			profileField.setAccessible(true);
+			profileField.set(meta, profile);
+
+		} catch (final IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			Common.throwError(e);
+		}
+
+		head.setItemMeta(meta);
+
+		return of(head);
+	}
 
 	/**
 	 * Convenience method to get a new item creator with material, name and lore set
