@@ -1,7 +1,13 @@
 package org.mineacademy.fo.scoreboard;
 
-import com.google.common.collect.Lists;
-import lombok.Getter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
@@ -9,10 +15,9 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.remain.Remain;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import com.google.common.collect.Lists;
 
+import lombok.Getter;
 
 /**
  * This is AdvancedScoreboard made with packets. - Use me with love :)
@@ -27,7 +32,7 @@ public class AdvancedScoreboard {
 	 * List of all active scoreboard (added upon creating a new instance)
 	 */
 	@Getter
-	public final static HashMap<AdvancedScoreboard, UUID> registeredBoards = new HashMap<>();
+	private final static HashMap<AdvancedScoreboard, UUID> registeredBoards = new HashMap<>();
 
 	/**
 	 * Clears registered boards, usually called on reload
@@ -45,7 +50,6 @@ public class AdvancedScoreboard {
 	 * Teams
 	 */
 	private final Boolean[] teams;
-
 
 	/**
 	 * Create new scoreboard
@@ -115,7 +119,7 @@ public class AdvancedScoreboard {
 
 				Remain.sendPacket(target, pposo);
 			} else {
-				Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
+				final Object pposo = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardObjective").newInstance();
 				ReflectionUtil.setStaticField(pposo, "a", target.getName());
 				ReflectionUtil.setStaticField(pposo, "b", title);
 				ReflectionUtil.setStaticField(pposo, "c", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("IScoreboardCriteria$EnumScoreboardHealthDisplay"), "INTEGER"));
@@ -223,7 +227,7 @@ public class AdvancedScoreboard {
 			for (int line = 1; line < 15; line++) {
 				if (teams[line] != null && teams[line]) {
 					try {
-						Object team = getOrRegisterTeam(line);
+						final Object team = getOrRegisterTeam(line);
 						ReflectionUtil.setStaticField(team, "h", 1);
 
 						final Object pposs = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardScore").newInstance();
@@ -244,7 +248,6 @@ public class AdvancedScoreboard {
 		}
 	}
 
-
 	//------------------------------------------------------------------------------------------------------------------
 	// DO NOT TOUCH
 	//------------------------------------------------------------------------------------------------------------------
@@ -259,8 +262,8 @@ public class AdvancedScoreboard {
 			if (line <= 10) {
 				return "§" + (line - 1) + "§f";
 			} else {
-				String values = "a,b,c,d,e,f";
-				String[] next = values.split(",");
+				final String values = "a,b,c,d,e,f";
+				final String[] next = values.split(",");
 				return "§" + next[line - 11] + "§f";
 			}
 		}
@@ -277,7 +280,7 @@ public class AdvancedScoreboard {
 	 */
 	private void setLine(Integer line, String value) {
 		if (line > 0 && line < 16) {
-			Object team = getOrRegisterTeam(line);
+			final Object team = getOrRegisterTeam(line);
 			String prefix = "";
 			String suffix = "";
 
@@ -290,19 +293,16 @@ public class AdvancedScoreboard {
 				String lastColor = ChatColor.getLastColors(prefix);
 				if (lastColor.isEmpty() ||
 						lastColor.equals(" ")) {
-					lastColor = "§f";
+					lastColor = ChatColor.COLOR_CHAR + "f";
 				}
-				if (prefix.endsWith("§")) {
+				if (prefix.endsWith(ChatColor.COLOR_CHAR + "")) {
 					prefix = prefix.substring(0, 15);
 					suffix = lastColor + value.substring(15);
 				} else {
 					suffix = lastColor + value.substring(16);
 				}
-				if (suffix.length() <= 16) {
-					suffix = (suffix);
-				} else {
-					suffix = suffix.substring(0, 16);
-				}
+
+				suffix = suffix.substring(0, 16);
 			}
 
 			try {
@@ -336,7 +336,7 @@ public class AdvancedScoreboard {
 				try {
 					if (teams[line] != null && teams[line]) {
 						final Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
-						Collection<String> ff = Lists.newArrayList("");
+						final Collection<String> ff = Lists.newArrayList("");
 
 						ff.add(getEntry(line));
 
@@ -361,7 +361,7 @@ public class AdvancedScoreboard {
 						ReflectionUtil.setStaticField(pposs, "d", ReflectionUtil.getEnumBasic(ReflectionUtil.getNMSClass("ScoreboardServer$Action"), "CHANGE"));
 
 						final Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
-						Collection<String> ff = Lists.newArrayList("");
+						final Collection<String> ff = Lists.newArrayList("");
 
 						ff.add(getEntry(line));
 
@@ -388,7 +388,7 @@ public class AdvancedScoreboard {
 			if (line > 0 && line < 16) {
 				try {
 					if (teams[line] != null && teams[line]) {
-						Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
+						final Object ppost = ReflectionUtil.getNMSClass("PacketPlayOutScoreboardTeam").newInstance();
 						ReflectionUtil.setStaticField(ppost, "a", "-sb" + line);
 						ReflectionUtil.setStaticField(ppost, "b", "");
 						ReflectionUtil.setStaticField(ppost, "c", "");
@@ -424,7 +424,7 @@ public class AdvancedScoreboard {
 						ReflectionUtil.setStaticField(ppost, "e", "always");
 
 						if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_9)) {
-							Collection<String> ff = Lists.newArrayList("");
+							final Collection<String> ff = Lists.newArrayList("");
 							ff.add(getEntry(line));
 
 							ReflectionUtil.setStaticField(ppost, "f", "");
@@ -466,7 +466,7 @@ public class AdvancedScoreboard {
 	 * @return
 	 */
 	private Object getEnumLegacy(String clazz, String enm) {
-		Object isc = ReflectionUtil.getNMSClass(clazz);
+		final Object isc = ReflectionUtil.getNMSClass(clazz);
 		return ReflectionUtil.getEnumBasic(isc.getClass().getClasses()[0], enm);
 	}
 
