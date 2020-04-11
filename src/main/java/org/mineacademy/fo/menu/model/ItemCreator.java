@@ -1,12 +1,16 @@
 package org.mineacademy.fo.menu.model;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -34,13 +38,6 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
-
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 
 /**
  * Our core class for easy and comfortable item creation.
@@ -186,8 +183,9 @@ public final class ItemCreator {
 		final ItemCreatorBuilder builder = ItemCreator.builder();
 		final ItemMeta meta = item.getItemMeta();
 
-		if (meta != null && meta.getLore() != null)
+		if (meta != null && meta.getLore() != null) {
 			builder.lores(meta.getLore());
+		}
 
 		return builder.item(item);
 	}
@@ -286,9 +284,11 @@ public final class ItemCreator {
 	 * Attempts to remove all enchants, used to remove glow
 	 */
 	public ItemCreator removeEnchants() {
-		if (item != null)
-			for (final Enchantment enchant : item.getEnchantments().keySet())
+		if (item != null) {
+			for (final Enchantment enchant : item.getEnchantments().keySet()) {
 				item.removeEnchantment(enchant);
+			}
+		}
 
 		return this;
 	}
@@ -314,15 +314,18 @@ public final class ItemCreator {
 				: is.getItemMeta();
 
 		// Skip if air
-		if (CompMaterial.isAir(is.getType()))
+		if (CompMaterial.isAir(is.getType())) {
 			return is;
+		}
 
 		// Override with given material
-		if (material != null)
+		if (material != null) {
 			is.setType(material.getMaterial());
+		}
 
 		if (MinecraftVersion.atLeast(V.v1_13))
 			// Apply specific material color if possible
+		{
 			color : if (color != null
 					&& !is.getType().toString().contains("LEATHER")) {
 				final String dye = color.getDye().toString();
@@ -349,19 +352,23 @@ public final class ItemCreator {
 						: is.getData().getData();
 
 				if (!is.getType().toString().contains("LEATHER")
-						&& color != null)
+						&& color != null) {
 					dataValue = color.getDye().getWoolData();
+				}
 
 				if (MinecraftVersion.newerThan(V.v1_8)
-						&& CompMaterial.isMonsterEgg(is.getType()))
+						&& CompMaterial.isMonsterEgg(is.getType())) {
 					dataValue = 0;
+				}
 
 				is.setData(new MaterialData(is.getType(), (byte) dataValue));
 
-				if (MinecraftVersion.olderThan(V.v1_13))
+				if (MinecraftVersion.olderThan(V.v1_13)) {
 					is.setDurability((short) dataValue);
+				}
 
 			}
+		}
 
 		// Fix monster eggs
 		if (is.getType().toString().endsWith("SPAWN_EGG")) {
@@ -374,8 +381,9 @@ public final class ItemCreator {
 				final EntityType pre = CompMonsterEgg.getEntity(is);
 				CompMonsterEgg.acceptUnsafeEggs = false;
 
-				if (pre != null && pre != EntityType.UNKNOWN)
+				if (pre != null && pre != EntityType.UNKNOWN) {
 					entity = pre;
+				}
 			}
 
 			if (entity == null) {
@@ -383,10 +391,11 @@ public final class ItemCreator {
 
 				String entityRaw = itemName.replace("_SPAWN_EGG", "");
 
-				if ("MOOSHROOM".equals(entityRaw))
+				if ("MOOSHROOM".equals(entityRaw)) {
 					entityRaw = "MUSHROOM_COW";
-				else if ("ZOMBIE_PIGMAN".equals(entityRaw))
+				} else if ("ZOMBIE_PIGMAN".equals(entityRaw)) {
 					entityRaw = "PIG_ZOMBIE";
+				}
 
 				try {
 					entity = EntityType.valueOf(entityRaw);
@@ -400,8 +409,9 @@ public final class ItemCreator {
 				}
 			}
 
-			if (entity != null)
+			if (entity != null) {
 				is = CompMonsterEgg.setEntity(is, entity);
+			}
 		}
 
 		flags = new ArrayList<>(Common.getOrDefault(flags, new ArrayList<>()));
@@ -413,35 +423,42 @@ public final class ItemCreator {
 			}
 
 			try {
-				if (itemMeta instanceof Damageable)
+				if (itemMeta instanceof Damageable) {
 					((Damageable) itemMeta).setDamage(damage);
+				}
 			} catch (final Throwable t) {
 			}
 		}
 
-		if (color != null && is.getType().toString().contains("LEATHER"))
+		if (color != null && is.getType().toString().contains("LEATHER")) {
 			((LeatherArmorMeta) itemMeta).setColor(color.getDye().getColor());
+		}
 
-		if (skullOwner != null && itemMeta instanceof SkullMeta)
+		if (skullOwner != null && itemMeta instanceof SkullMeta) {
 			((SkullMeta) itemMeta).setOwner(skullOwner);
+		}
 
 		if (glow) {
-			itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+			itemMeta.addEnchant(Enchantment.ARROW_FIRE, 1, true);
 
 			flags.add(CompItemFlag.HIDE_ENCHANTS);
 		}
 
-		if (enchants != null)
-			for (final SimpleEnchant ench : enchants)
-				if (itemMeta instanceof EnchantmentStorageMeta)
+		if (enchants != null) {
+			for (final SimpleEnchant ench : enchants) {
+				if (itemMeta instanceof EnchantmentStorageMeta) {
 					((EnchantmentStorageMeta) itemMeta).addStoredEnchant(
 							ench.getEnchant(), ench.getLevel(), true);
-				else
+				} else {
 					itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(),
 							true);
+				}
+			}
+		}
 
-		if (name != null && !"".equals(name))
+		if (name != null && !"".equals(name)) {
 			itemMeta.setDisplayName(Common.colorize("&r" + name));
+		}
 
 		if (lores != null && !lores.isEmpty()) {
 			final List<String> coloredLores = new ArrayList<>();
@@ -455,7 +472,7 @@ public final class ItemCreator {
 			flags.add(CompItemFlag.HIDE_ATTRIBUTES);
 			flags.add(CompItemFlag.HIDE_UNBREAKABLE);
 
-			if (MinecraftVersion.olderThan(V.v1_12))
+			if (MinecraftVersion.olderThan(V.v1_12)) {
 				try {
 					final Object spigot = itemMeta.getClass()
 							.getMethod("spigot").invoke(itemMeta);
@@ -466,20 +483,25 @@ public final class ItemCreator {
 				} catch (final Throwable t) {
 					// Probably 1.7.10, tough luck
 				}
-			else
+			} else {
 				CompProperty.UNBREAKABLE.apply(itemMeta, true);
+			}
 		}
 
-		if (hideTags)
-			for (final CompItemFlag f : CompItemFlag.values())
-				if (!flags.contains(f))
+		if (hideTags) {
+			for (final CompItemFlag f : CompItemFlag.values()) {
+				if (!flags.contains(f)) {
 					flags.add(f);
+				}
+			}
+		}
 
-		for (final CompItemFlag flag : flags)
+		for (final CompItemFlag flag : flags) {
 			try {
 				itemMeta.addItemFlags(ItemFlag.valueOf(flag.toString()));
 			} catch (final Throwable t) {
 			}
+		}
 
 		// Apply Bukkit metadata
 		is.setItemMeta(itemMeta);
@@ -491,13 +513,16 @@ public final class ItemCreator {
 		// Apply custom enchantment lores
 		final ItemStack enchantedIs = SimpleEnchantment.addEnchantmentLores(is);
 
-		if (enchantedIs != null)
+		if (enchantedIs != null) {
 			is = enchantedIs;
+		}
 
 		// Apply NBT tags
-		if (tags != null)
-			for (final Tuple<String, String> tag : tags)
+		if (tags != null) {
+			for (final Tuple<String, String> tag : tags) {
 				is = CompMetadata.setMetadata(is, tag.getKey(), tag.getValue());
+			}
+		}
 
 		return is;
 	}
