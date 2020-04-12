@@ -139,8 +139,8 @@ public abstract class Menu {
    *
    * <p>
    * You are encouraged to change the size and title of this menu in your
-   * constructor by calling {@link #setTitle(String)} and {@link
-   * #setSize(Integer)}
+   * constructor by calling {@link #setTitle(String)} and
+   * {@link #setSize(Integer)}
    *
    * <p>
    * NB: The {@link #getViewer()} of this menu is yet null!
@@ -154,13 +154,14 @@ public abstract class Menu {
    *
    * <p>
    * You are encouraged to change the size and title of this menu in your
-   * constructor by calling {@link #setTitle(String)} and {@link
-   * #setSize(Integer)}
+   * constructor by calling {@link #setTitle(String)} and
+   * {@link #setSize(Integer)}
    *
    * <p>
    * NB: The {@link #getViewer()} of this menu is yet null!
    *
-   * @param parent the parent menu
+   * @param parent
+   *            the parent menu
    */
   protected Menu(final Menu parent) {
     this(parent, false);
@@ -171,15 +172,16 @@ public abstract class Menu {
    *
    * <p>
    * You are encouraged to change the size and title of this menu in your
-   * constructor by calling {@link #setTitle(String)} and {@link
-   * #setSize(Integer)}
+   * constructor by calling {@link #setTitle(String)} and
+   * {@link #setSize(Integer)}
    *
    * <p>
    * NB: The {@link #getViewer()} of this menu is yet null!
    *
-   * @param parent                 the parent
-   * @param returnMakesNewInstance should we re-instatiate the parent menu when
-   *                               returning to it?
+   * @param parent
+   *            the parent
+   * @param returnMakesNewInstance
+   *            should we re-instatiate the parent menu when returning to it?
    */
   protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
     this.parent = parent;
@@ -192,7 +194,8 @@ public abstract class Menu {
   /**
    * Returns the current menu for player
    *
-   * @param player the player
+   * @param player
+   *            the player
    * @return the menu, or null if none
    */
   public static final Menu getMenu(final Player player) {
@@ -202,7 +205,8 @@ public abstract class Menu {
   /**
    * Returns the previous menu for player
    *
-   * @param player the player
+   * @param player
+   *            the player
    * @return the menu, or none
    */
   public static final Menu getPreviousMenu(final Player player) {
@@ -265,11 +269,8 @@ public abstract class Menu {
       final Button button = (Button) ReflectionUtil.getFieldContent(field,
           this);
 
-      if (button == null) {
-        return;
-      }
-//			Valid.checkNotNull(button, "Null button field named "
-//					+ field.getName() + " in " + this);
+      Valid.checkNotNull(button, "Null button field named "
+          + field.getName() + " in " + this);
       registeredButtons.add(button);
     } else if (Button[].class.isAssignableFrom(type)) {
       Valid.checkBoolean(Modifier.isFinal(field.getModifiers()),
@@ -297,10 +298,11 @@ public abstract class Menu {
   }
 
   /**
-   * Attempts to find a clickable registered button in this menu having the same
-   * icon as the given item stack
+   * Attempts to find a clickable registered button in this menu having the
+   * same icon as the given item stack
    *
-   * @param fromItem the itemstack to compare to
+   * @param fromItem
+   *            the itemstack to compare to
    * @return the buttor or null if not found
    */
   final Button getButton(final ItemStack fromItem) {
@@ -310,11 +312,8 @@ public abstract class Menu {
       for (final Button button : registeredButtons) {
         Valid.checkNotNull(button,
             "Menu button is null at " + getClass().getSimpleName());
-        Valid.checkNotNull(button.getItem(),
-            "Itemstack cannot be null at "
-                + button.getClass().getSimpleName());
 
-        if (button.getItem().equals(fromItem)) {
+        if (fromItem.equals(button.getItem())) {
           return button;
         }
       }
@@ -330,8 +329,9 @@ public abstract class Menu {
    * You must override this in certain cases
    *
    * @return the new instance, of null
-   * @throws if new instance could not be made, for example when the menu is
-   *            taking constructor params
+   * @throws if
+   *             new instance could not be made, for example when the menu is
+   *             taking constructor params
    */
   public Menu newInstance() {
     try {
@@ -365,7 +365,8 @@ public abstract class Menu {
    * The menu will not be displayed when the player is having server
    * conversation
    *
-   * @param player the player
+   * @param player
+   *            the player
    */
   public final void displayTo(final Player player) {
     displayTo(player, false);
@@ -374,9 +375,10 @@ public abstract class Menu {
   /**
    * Display this menu to the player
    *
-   * @param player                   the player
-   * @param ignoreServerConversation display menu even if the player is having
-   *                                 server conversation?
+   * @param player
+   *            the player
+   * @param ignoreServerConversation
+   *            display menu even if the player is having server conversation?
    */
   public final void displayTo(final Player player,
       final boolean ignoreServerConversation) {
@@ -466,13 +468,14 @@ public abstract class Menu {
   }
 
   /**
-   * Called automatically before the menu is displayed but after all items have
-   * been drawed
+   * Called automatically before the menu is displayed but after all items
+   * have been drawed
    *
    * <p>
    * Override for custom last-minute modifications
    *
-   * @param drawer the drawer
+   * @param drawer
+   *            the drawer
    */
   protected void onDisplay(final InventoryDrawer drawer) {
   }
@@ -485,10 +488,11 @@ public abstract class Menu {
   }
 
   /**
-   * Redraws and re-register all buttons while sending a title animation to the
-   * player
+   * Redraws and re-register all buttons while sending a title animation to
+   * the player
    *
-   * @param animatedTitle the animated title
+   * @param animatedTitle
+   *            the animated title
    */
   public final void restartMenu(final String animatedTitle) {
     registerButtons();
@@ -549,7 +553,8 @@ public abstract class Menu {
    * <p>
    * Automatically reverts back to the old title after 1 second
    *
-   * @param title the title to animate
+   * @param title
+   *            the title to animate
    */
   public final void animateTitle(final String title) {
     PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
@@ -562,7 +567,8 @@ public abstract class Menu {
   /**
    * Returns the item at a certain slot
    *
-   * @param slot the slow
+   * @param slot
+   *            the slow
    * @return the item, or null if no icon at the given slot (default)
    */
   public ItemStack getItemAt(final int slot) {
@@ -588,8 +594,8 @@ public abstract class Menu {
   }
 
   /**
-   * Should we automatically add an info button {@link #getInfo()} at the {@link
-   * #getInfoButtonPosition()} ?
+   * Should we automatically add an info button {@link #getInfo()} at the
+   * {@link #getInfoButtonPosition()} ?
    *
    * @return
    */
@@ -610,7 +616,8 @@ public abstract class Menu {
    * Calculates the center slot of this menu
    *
    * <p>
-   * Credits to Gober at https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/
+   * Credits to Gober at
+   * https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/
    *
    * @return the estimated center slot
    */
@@ -623,14 +630,18 @@ public abstract class Menu {
   /**
    * Should we prevent the click or drag?
    *
-   * @param location the click location
-   * @param slot     the slot
-   * @param clicked  the clicked item
-   * @param cursor   the cursor
+   * @param location
+   *            the click location
+   * @param slot
+   *            the slot
+   * @param clicked
+   *            the clicked item
+   * @param cursor
+   *            the cursor
    * @return if the action is cancelled in the {@link InventoryClickEvent},
-   * false by default
+   *         false by default
    * @deprecated sometimes does not work correctly due to flaws in server to
-   * client packet communication do not rely on this
+   *             client packet communication do not rely on this
    */
   @Deprecated
   protected boolean isActionAllowed(final MenuClickLocation location,
@@ -651,7 +662,8 @@ public abstract class Menu {
    * Sets the title of this inventory, this change is not reflected in client,
    * you must call {@link #restartMenu()} to take change
    *
-   * @param title the new title
+   * @param title
+   *            the new title
    */
   protected final void setTitle(final String title) {
     this.title = title;
@@ -676,8 +688,8 @@ public abstract class Menu {
   }
 
   /**
-   * Sets the size of this menu (without updating the player container - if you
-   * want to update it call {@link #restartMenu()})
+   * Sets the size of this menu (without updating the player container - if
+   * you want to update it call {@link #restartMenu()})
    *
    * @param size
    */
@@ -689,10 +701,11 @@ public abstract class Menu {
    * Set the menu's description
    *
    * <p>
-   * Used to create an info bottom in bottom left corner, see {@link
-   * Button#makeInfo(String...)}
+   * Used to create an info bottom in bottom left corner, see
+   * {@link Button#makeInfo(String...)}
    *
-   * @param info the info to set
+   * @param info
+   *            the info to set
    */
   protected final void setInfo(final String... info) {
     this.info = info;
@@ -754,12 +767,13 @@ public abstract class Menu {
   }
 
   /**
-   * If you wonder what slot numbers does each empty slot in your menu has then
-   * set this to true in your constructor
+   * If you wonder what slot numbers does each empty slot in your menu has
+   * then set this to true in your constructor
    *
    * <p>
-   * Only takes change when used in constructor or before calling {@link
-   * #displayTo(Player)} and cannot be updated in {@link #restartMenu()}
+   * Only takes change when used in constructor or before calling
+   * {@link #displayTo(Player)} and cannot be updated in
+   * {@link #restartMenu()}
    *
    * @param visible
    */
@@ -775,16 +789,23 @@ public abstract class Menu {
    * Called automatically when the menu is clicked.
    *
    * <p>
-   * By default we call the shorter {@link #onMenuClick(Player, int, ItemStack)}
-   * method.
+   * By default we call the shorter
+   * {@link #onMenuClick(Player, int, ItemStack)} method.
    *
-   * @param player    the player
-   * @param slot      the slot
-   * @param action    the action
-   * @param click     the click
-   * @param cursor    the cursor
-   * @param clicked   the item clicked
-   * @param cancelled is the event cancelled?
+   * @param player
+   *            the player
+   * @param slot
+   *            the slot
+   * @param action
+   *            the action
+   * @param click
+   *            the click
+   * @param cursor
+   *            the cursor
+   * @param clicked
+   *            the item clicked
+   * @param cancelled
+   *            is the event cancelled?
    */
   protected void onMenuClick(final Player player, final int slot,
       final InventoryAction action, final ClickType click,
@@ -811,9 +832,12 @@ public abstract class Menu {
   /**
    * Called automatically when the menu is clicked
    *
-   * @param player  the player
-   * @param slot    the slot
-   * @param clicked the item clicked
+   * @param player
+   *            the player
+   * @param slot
+   *            the slot
+   * @param clicked
+   *            the item clicked
    */
   protected void onMenuClick(final Player player, final int slot,
       final ItemStack clicked) {
@@ -834,14 +858,19 @@ public abstract class Menu {
    * Called automatically when a registered button is clicked
    *
    * <p>
-   * By default this method parses the click into {@link
-   * Button#onClickedInMenu(Player, Menu, ClickType)}
+   * By default this method parses the click into
+   * {@link Button#onClickedInMenu(Player, Menu, ClickType)}
    *
-   * @param player the player
-   * @param slot   the slot
-   * @param action the action
-   * @param click  the click
-   * @param button the button
+   * @param player
+   *            the player
+   * @param slot
+   *            the slot
+   * @param action
+   *            the action
+   * @param click
+   *            the click
+   * @param button
+   *            the button
    */
   protected void onButtonClick(final Player player, final int slot,
       final InventoryAction action, final ClickType click,
@@ -852,8 +881,10 @@ public abstract class Menu {
   /**
    * Called automatically when the menu is closed
    *
-   * @param player    the player
-   * @param inventory the menu inventory that is being closed
+   * @param player
+   *            the player
+   * @param inventory
+   *            the menu inventory that is being closed
    */
   protected void onMenuClose(final Player player, final Inventory inventory) {
   }
