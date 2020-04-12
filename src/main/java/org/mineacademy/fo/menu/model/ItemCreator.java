@@ -209,7 +209,7 @@ public final class ItemCreator {
 	 * @param hash
 	 *            Base64-String representation of a skull-texture
 	 */
-	public static ItemCreatorBuilder fromCustomHash(final String hash) {
+	public static ItemCreatorBuilder ofCustomHash(final String hash) {
 		Valid.checkNotNull(hash, "Hash mustn't be null");
 
 		final ItemStack head = new ItemStack(
