@@ -1,16 +1,12 @@
 package org.mineacademy.fo.menu.model;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -38,6 +34,13 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
+
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Our core class for easy and comfortable item creation.
@@ -85,10 +88,29 @@ public final class ItemCreator {
 	 */
 	@Singular
 	private final List<SimpleEnchant> enchants;
+
+	/**
+	 * The item flags
+	 */
+	@Singular
+	private List<CompItemFlag> flags;
+
+	/**
+	 * Is the item unbreakable?
+	 */
+	private Boolean unbreakable;
+
 	/**
 	 * The dye color in case your item is compatible
 	 */
 	private final CompColor color;
+
+	/**
+	 * Should we hide all tags from the item (enchants, etc.)?
+	 */
+	@Builder.Default
+	private boolean hideTags = false;
+
 	/**
 	 * Should we add glow to the item? (adds a fake enchant and uses
 	 * {@link ItemFlag} to hide it)
@@ -96,143 +118,25 @@ public final class ItemCreator {
 	 * The enchant is visible on older MC versions.
 	 */
 	private final boolean glow;
+
 	/**
 	 * The skull owner, in case it applies
 	 */
 	private final String skullOwner;
+
 	/**
 	 * The list of NBT tags with their key-value pairs
 	 */
 	@Singular
 	private final List<Tuple<String, String>> tags;
+
 	/**
 	 * The item meta, overriden by other fields
 	 */
 	private final ItemMeta meta;
-	/**
-	 * The item flags
-	 */
-	@Singular
-	private List<CompItemFlag> flags;
-	/**
-	 * Is the item unbreakable?
-	 */
-	private Boolean unbreakable;
-	/**
-	 * Should we hide all tags from the item (enchants, etc.)?
-	 */
-	@Builder.Default
-	private boolean hideTags = false;
 
 	// ----------------------------------------------------------------------------------------
 	// Convenience give methods
-	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * Convenience method to get a new item creator with material, name and lore
-	 * set
-	 *
-	 * @param material
-	 * @param name
-	 * @param lore
-	 * @return
-	 */
-	public static ItemCreatorBuilder of(final CompMaterial material,
-			final String name, @NonNull final Collection<String> lore) {
-		return of(material, name, lore.toArray(new String[0]));
-	}
-
-	// ----------------------------------------------------------------------------------------
-	// Constructing items
-	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * Convenience method to get a new item creator with material, name and lore
-	 * set
-	 *
-	 * @param material
-	 * @param name
-	 * @param lore
-	 * @return new item creator
-	 */
-	public static ItemCreatorBuilder of(final CompMaterial material,
-			final String name, @NonNull final String... lore) {
-		return ItemCreator.builder().material(material).name("&r" + name)
-				.lores(Arrays.asList(lore)).hideTags(true);
-	}
-
-	/**
-	 * Convenience method to get a wool
-	 *
-	 * @param color
-	 *            the wool color
-	 * @return the new item creator
-	 */
-	public static ItemCreatorBuilder ofWool(final CompColor color) {
-		return of(CompMaterial.makeWool(color, 1)).color(color);
-	}
-
-	/**
-	 * Convenience method to get the creator of an existing itemstack
-	 *
-	 * @param item
-	 *            existing itemstack
-	 * @return the new item creator
-	 */
-	public static ItemCreatorBuilder of(final ItemStack item) {
-		final ItemCreatorBuilder builder = ItemCreator.builder();
-		final ItemMeta meta = item.getItemMeta();
-
-		if (meta != null && meta.getLore() != null) {
-			builder.lores(meta.getLore());
-		}
-
-		return builder.item(item);
-	}
-
-	/**
-	 * Get a new item creator from material
-	 *
-	 * @param mat
-	 *            existing material
-	 * @return the new item creator
-	 */
-	public static ItemCreatorBuilder of(final CompMaterial mat) {
-		Valid.checkNotNull(mat, "Material cannot be null!");
-
-		return ItemCreator.builder().material(mat);
-	}
-
-	/**
-	 * Creates an ItemBuilder from a skull-texture
-	 *
-	 * @param hash
-	 *            Base64-String representation of a skull-texture
-	 */
-	public static ItemCreatorBuilder ofCustomHash(final String hash) {
-		Valid.checkNotNull(hash, "Hash mustn't be null");
-
-		final ItemStack head = new ItemStack(
-				CompMaterial.PLAYER_HEAD.getMaterial(), 1, (short) 3);
-		final SkullMeta meta = (SkullMeta) head.getItemMeta();
-		final GameProfile profile = new GameProfile(UUID.randomUUID(), "");
-		profile.getProperties().put("textures", new Property("textures", hash));
-		Field profileField = null;
-		try {
-			profileField = meta.getClass().getDeclaredField("profile");
-			profileField.setAccessible(true);
-			profileField.set(meta, profile);
-		} catch (final IllegalArgumentException | IllegalAccessException
-				| NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		}
-		head.setItemMeta(meta);
-
-		return of(head);
-	}
-
-	// ----------------------------------------------------------------------------------------
-	// Static access
 	// ----------------------------------------------------------------------------------------
 
 	/**
@@ -244,6 +148,10 @@ public final class ItemCreator {
 		player.getInventory().addItem(makeSurvival());
 	}
 
+	// ----------------------------------------------------------------------------------------
+	// Constructing items
+	// ----------------------------------------------------------------------------------------
+
 	/**
 	 * Constructs a new {@link DummyButton} from this item
 	 *
@@ -254,8 +162,7 @@ public final class ItemCreator {
 	}
 
 	/**
-	 * Make an unbreakable item with all attributes hidden, suitable for menu
-	 * use.
+	 * Make an unbreakable item with all attributes hidden, suitable for menu use.
 	 *
 	 * @return the new menu tool, unbreakable with all attributes hidden
 	 */
@@ -267,10 +174,9 @@ public final class ItemCreator {
 	}
 
 	/**
-	 * Make an item suitable for survival where we remove the "hideFlag" that is
-	 * automatically put in
-	 * {@link ItemCreator#of(CompMaterial, String, String...)} to hide enchants,
-	 * attributes etc.
+	 * Make an item suitable for survival where we remove the "hideFlag"
+	 * that is automatically put in {@link ItemCreator#of(CompMaterial, String, String...)}
+	 * to hide enchants, attributes etc.
 	 *
 	 * @return
 	 */
@@ -284,11 +190,9 @@ public final class ItemCreator {
 	 * Attempts to remove all enchants, used to remove glow
 	 */
 	public ItemCreator removeEnchants() {
-		if (item != null) {
-			for (final Enchantment enchant : item.getEnchantments().keySet()) {
+		if (item != null)
+			for (final Enchantment enchant : item.getEnchantments().keySet())
 				item.removeEnchantment(enchant);
-			}
-		}
 
 		return this;
 	}
@@ -300,39 +204,29 @@ public final class ItemCreator {
 	 */
 	public ItemStack make() {
 		//
-		// First, make sure the ItemStack is not null (it can be null if you
-		// create this class only using material)
+		// First, make sure the ItemStack is not null (it can be null if you create this class only using material)
 		//
 
-		Valid.checkBoolean(material != null || item != null,
-				"Material or item must be set!");
-		ItemStack is = item != null
-				? item.clone()
-				: new ItemStack(material.getMaterial(), amount);
-		final ItemMeta itemMeta = meta != null
-				? meta.clone()
-				: is.getItemMeta();
+		Valid.checkBoolean(material != null || item != null, "Material or item must be set!");
+		ItemStack is = item != null ? item.clone() : new ItemStack(material.getMaterial(), amount);
+		final ItemMeta itemMeta = meta != null ? meta.clone() : is.getItemMeta();
 
 		// Skip if air
-		if (CompMaterial.isAir(is.getType())) {
+		if (CompMaterial.isAir(is.getType()))
 			return is;
-		}
 
 		// Override with given material
-		if (material != null) {
-			is.setType(material.getMaterial());
-		}
+		if (this.material != null)
+			is.setType(this.material.getMaterial());
 
-		if (MinecraftVersion.atLeast(V.v1_13))
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+
 			// Apply specific material color if possible
-		{
-			color : if (color != null
-					&& !is.getType().toString().contains("LEATHER")) {
+			color: if (color != null && !is.getType().toString().contains("LEATHER")) {
 				final String dye = color.getDye().toString();
-				final List<String> colorableMaterials = Arrays.asList("BANNER",
-						"BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA",
-						"SHULKER_BOX", "STAINED_GLASS", "STAINED_GLASS_PANE",
-						"TERRACOTTA", "WALL_BANNER", "WOOL");
+				final List<String> colorableMaterials = Arrays.asList(
+						"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
+						"STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
 
 				for (final String colorable : colorableMaterials) {
 					final String suffix = "_" + colorable;
@@ -346,28 +240,24 @@ public final class ItemCreator {
 
 				// If not revert to wool
 				is.setType(Material.valueOf(dye + "_WOOL"));
-			} else {
-				int dataValue = material != null
-						? material.getData()
-						: is.getData().getData();
-
-				if (!is.getType().toString().contains("LEATHER")
-						&& color != null) {
-					dataValue = color.getDye().getWoolData();
-				}
-
-				if (MinecraftVersion.newerThan(V.v1_8)
-						&& CompMaterial.isMonsterEgg(is.getType())) {
-					dataValue = 0;
-				}
-
-				is.setData(new MaterialData(is.getType(), (byte) dataValue));
-
-				if (MinecraftVersion.olderThan(V.v1_13)) {
-					is.setDurability((short) dataValue);
-				}
-
 			}
+		}
+
+		// If using legacy MC version
+		else {
+			int dataValue = material != null ? material.getData() : is.getData().getData();
+
+			if (!is.getType().toString().contains("LEATHER") && color != null)
+				dataValue = color.getDye().getWoolData();
+
+			if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
+				dataValue = 0;
+
+			is.setData(new MaterialData(is.getType(), (byte) dataValue));
+
+			if (MinecraftVersion.olderThan(V.v1_13))
+				is.setDurability((short) dataValue);
+
 		}
 
 		// Fix monster eggs
@@ -375,15 +265,13 @@ public final class ItemCreator {
 
 			EntityType entity = null;
 
-			if (MinecraftVersion.olderThan(V.v1_13)) { // Try to find it if
-														// already exists
+			if (MinecraftVersion.olderThan(V.v1_13)) { // Try to find it if already exists
 				CompMonsterEgg.acceptUnsafeEggs = true;
 				final EntityType pre = CompMonsterEgg.getEntity(is);
 				CompMonsterEgg.acceptUnsafeEggs = false;
 
-				if (pre != null && pre != EntityType.UNKNOWN) {
+				if (pre != null && pre != EntityType.UNKNOWN)
 					entity = pre;
-				}
 			}
 
 			if (entity == null) {
@@ -391,11 +279,11 @@ public final class ItemCreator {
 
 				String entityRaw = itemName.replace("_SPAWN_EGG", "");
 
-				if ("MOOSHROOM".equals(entityRaw)) {
+				if ("MOOSHROOM".equals(entityRaw))
 					entityRaw = "MUSHROOM_COW";
-				} else if ("ZOMBIE_PIGMAN".equals(entityRaw)) {
+
+				else if ("ZOMBIE_PIGMAN".equals(entityRaw))
 					entityRaw = "PIG_ZOMBIE";
-				}
 
 				try {
 					entity = EntityType.valueOf(entityRaw);
@@ -403,15 +291,12 @@ public final class ItemCreator {
 				} catch (final Throwable t) {
 
 					// Probably version incompatible
-					Common.log(
-							"The following item could not be transformed into "
-									+ entityRaw + " egg, item: " + is);
+					Common.log("The following item could not be transformed into " + entityRaw + " egg, item: " + is);
 				}
 			}
 
-			if (entity != null) {
+			if (entity != null)
 				is = CompMonsterEgg.setEntity(is, entity);
-			}
 		}
 
 		flags = new ArrayList<>(Common.getOrDefault(flags, new ArrayList<>()));
@@ -423,48 +308,38 @@ public final class ItemCreator {
 			}
 
 			try {
-				if (itemMeta instanceof Damageable) {
+				if (itemMeta instanceof Damageable)
 					((Damageable) itemMeta).setDamage(damage);
-				}
 			} catch (final Throwable t) {
 			}
 		}
 
-		if (color != null && is.getType().toString().contains("LEATHER")) {
+		if (color != null && is.getType().toString().contains("LEATHER"))
 			((LeatherArmorMeta) itemMeta).setColor(color.getDye().getColor());
-		}
 
-		if (skullOwner != null && itemMeta instanceof SkullMeta) {
+		if (skullOwner != null && itemMeta instanceof SkullMeta)
 			((SkullMeta) itemMeta).setOwner(skullOwner);
-		}
 
 		if (glow) {
-			itemMeta.addEnchant(Enchantment.ARROW_FIRE, 1, true);
+			itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
 
 			flags.add(CompItemFlag.HIDE_ENCHANTS);
 		}
 
-		if (enchants != null) {
-			for (final SimpleEnchant ench : enchants) {
-				if (itemMeta instanceof EnchantmentStorageMeta) {
-					((EnchantmentStorageMeta) itemMeta).addStoredEnchant(
-							ench.getEnchant(), ench.getLevel(), true);
-				} else {
-					itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(),
-							true);
-				}
-			}
-		}
+		if (enchants != null)
+			for (final SimpleEnchant ench : enchants)
+				if (itemMeta instanceof EnchantmentStorageMeta)
+					((EnchantmentStorageMeta) itemMeta).addStoredEnchant(ench.getEnchant(), ench.getLevel(), true);
+				else
+					itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
 
-		if (name != null && !"".equals(name)) {
+		if (name != null && !"".equals(name))
 			itemMeta.setDisplayName(Common.colorize("&r" + name));
-		}
 
 		if (lores != null && !lores.isEmpty()) {
 			final List<String> coloredLores = new ArrayList<>();
 
-			lores.forEach(
-					(line) -> coloredLores.add(Common.colorize("&7" + line)));
+			lores.forEach((line) -> coloredLores.add(Common.colorize("&7" + line)));
 			itemMeta.setLore(coloredLores);
 		}
 
@@ -472,36 +347,29 @@ public final class ItemCreator {
 			flags.add(CompItemFlag.HIDE_ATTRIBUTES);
 			flags.add(CompItemFlag.HIDE_UNBREAKABLE);
 
-			if (MinecraftVersion.olderThan(V.v1_12)) {
+			if (MinecraftVersion.olderThan(V.v1_12))
 				try {
-					final Object spigot = itemMeta.getClass()
-							.getMethod("spigot").invoke(itemMeta);
+					final Object spigot = itemMeta.getClass().getMethod("spigot").invoke(itemMeta);
 
-					spigot.getClass().getMethod("setUnbreakable", boolean.class)
-							.invoke(spigot, true);
+					spigot.getClass().getMethod("setUnbreakable", boolean.class).invoke(spigot, true);
 
 				} catch (final Throwable t) {
 					// Probably 1.7.10, tough luck
 				}
-			} else {
+			else
 				CompProperty.UNBREAKABLE.apply(itemMeta, true);
-			}
 		}
 
-		if (hideTags) {
-			for (final CompItemFlag f : CompItemFlag.values()) {
-				if (!flags.contains(f)) {
+		if (hideTags)
+			for (final CompItemFlag f : CompItemFlag.values())
+				if (!flags.contains(f))
 					flags.add(f);
-				}
-			}
-		}
 
-		for (final CompItemFlag flag : flags) {
+		for (final CompItemFlag flag : flags)
 			try {
-				itemMeta.addItemFlags(ItemFlag.valueOf(flag.toString()));
+				itemMeta.addItemFlags(org.bukkit.inventory.ItemFlag.valueOf(flag.toString()));
 			} catch (final Throwable t) {
 			}
-		}
 
 		// Apply Bukkit metadata
 		is.setItemMeta(itemMeta);
@@ -513,17 +381,111 @@ public final class ItemCreator {
 		// Apply custom enchantment lores
 		final ItemStack enchantedIs = SimpleEnchantment.addEnchantmentLores(is);
 
-		if (enchantedIs != null) {
+		if (enchantedIs != null)
 			is = enchantedIs;
-		}
 
 		// Apply NBT tags
-		if (tags != null) {
-			for (final Tuple<String, String> tag : tags) {
+		if (tags != null)
+			for (final Tuple<String, String> tag : tags)
 				is = CompMetadata.setMetadata(is, tag.getKey(), tag.getValue());
-			}
-		}
 
 		return is;
+	}
+
+	// ----------------------------------------------------------------------------------------
+	// Static access
+	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Creates an ItemBuilder from a skull-texture
+	 *
+	 * @param hash Base64-String representation of a skull-texture
+	 *
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofSkullHash(final String hash) {
+		Valid.checkNotNull(hash, "Hash mustn't be null");
+
+		final ItemStack head = new ItemStack(CompMaterial.PLAYER_HEAD.getMaterial(), 1, (short) 3);
+		final SkullMeta meta = (SkullMeta) head.getItemMeta();
+		final GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+
+		profile.getProperties().put("textures", new Property("textures", hash));
+		Field profileField = null;
+
+		try {
+			profileField = meta.getClass().getDeclaredField("profile");
+			profileField.setAccessible(true);
+			profileField.set(meta, profile);
+
+		} catch (final IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			Common.throwError(e);
+		}
+
+		head.setItemMeta(meta);
+
+		return of(head);
+	}
+
+	/**
+	 * Convenience method to get a new item creator with material, name and lore set
+	 *
+	 * @param material
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final Collection<String> lore) {
+		return of(material, name, lore.toArray(new String[lore.size()]));
+	}
+
+	/**
+	 * Convenience method to get a new item creator with material, name and lore set
+	 *
+	 * @param material
+	 * @param name
+	 * @param lore
+	 * @return new item creator
+	 */
+	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final String... lore) {
+		return ItemCreator.builder().material(material).name("&r" + name).lores(Arrays.asList(lore)).hideTags(true);
+	}
+
+	/**
+	 * Convenience method to get a wool
+	 *
+	 * @param color the wool color
+	 * @return the new item creator
+	 */
+	public static ItemCreatorBuilder ofWool(final CompColor color) {
+		return of(CompMaterial.makeWool(color, 1)).color(color);
+	}
+
+	/**
+	 * Convenience method to get the creator of an existing itemstack
+	 *
+	 * @param item existing itemstack
+	 * @return the new item creator
+	 */
+	public static ItemCreatorBuilder of(final ItemStack item) {
+		final ItemCreatorBuilder builder = ItemCreator.builder();
+		final ItemMeta meta = item.getItemMeta();
+
+		if (meta != null && meta.getLore() != null)
+			builder.lores(meta.getLore());
+
+		return builder.item(item);
+	}
+
+	/**
+	 * Get a new item creator from material
+	 *
+	 * @param material existing material
+	 * @return the new item creator
+	 */
+	public static ItemCreatorBuilder of(final CompMaterial mat) {
+		Valid.checkNotNull(mat, "Material cannot be null!");
+
+		return ItemCreator.builder().material(mat);
 	}
 }
