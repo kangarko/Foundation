@@ -1,17 +1,33 @@
 
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import net.md_5.bungee.api.chat.TextComponent;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.entity.Entity;
@@ -40,16 +56,11 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * Our main utility class hosting a large variety of different convenience
@@ -649,7 +660,7 @@ public final class Common {
 			// Contains a character after color character
 			if (msg.length() > c + 1)
 
-				// The after character is a valid color
+			// The after character is a valid color
 			{
 				if (msg.substring(c + 1, c + 2).matches("([0-9a-fk-or])")) {
 					return msg.substring(c, c + 2).trim();
@@ -985,6 +996,19 @@ public final class Common {
 		}
 
 		Common.runLater(() -> playerSender.performCommand(Common.colorize(command.replace("{player}", Common.resolveSenderName(playerSender)))));
+	}
+
+	/**
+	 * Return true if the command label is registered
+	 *
+	 * @param label
+	 * @return
+	 */
+	public boolean isRegistered(final String label) {
+		final String[] split = label.split(" ");
+		final PluginCommand command = Bukkit.getServer().getPluginCommand(split[0]);
+
+		return command != null && command.isRegistered();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
