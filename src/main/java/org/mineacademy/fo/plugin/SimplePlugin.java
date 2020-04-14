@@ -97,7 +97,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public static SimplePlugin getInstance() {
 		if (instance == null) {
-			instance = SimplePlugin.getPlugin(SimplePlugin.class);
+			instance = JavaPlugin.getPlugin(SimplePlugin.class);
 
 			Objects.requireNonNull(instance, "Cannot get a new instance! Have you reloaded?");
 		}
@@ -394,11 +394,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 							try {
 								Field instanceField = null;
 
-								for (final Field field : clazz.getDeclaredFields()) {
+								for (final Field field : clazz.getDeclaredFields())
 									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
 											&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
 										instanceField = field;
-								}
 
 								if (SimpleEnchantment.class.isAssignableFrom(clazz))
 									Valid.checkNotNull(instanceField, "Your enchant class " + clazz.getSimpleName() + " must be a singleton and have static 'instance' field and private constructors!");

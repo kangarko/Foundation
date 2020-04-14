@@ -165,7 +165,7 @@ public abstract class SimpleCommandGroup {
 			final String authors = String.join(", ", SimplePlugin.getInstance().getDescription().getAuthors());
 
 			if (!authors.isEmpty())
-				messages.add("   &7Made by &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " + yearNow: "") : ""));
+				messages.add("   &7Made by &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " + yearNow : "") : ""));
 		}
 
 		{

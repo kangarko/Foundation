@@ -7,7 +7,7 @@ import org.bukkit.block.BlockState;
  * support custom tags. Use the NBTInjector for custom tags. Changes will be
  * instantly applied to the Tile, use the merge method to do many things at
  * once.
- * 
+ *
  * @author tr7zw
  *
  */

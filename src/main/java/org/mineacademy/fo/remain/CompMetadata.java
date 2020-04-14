@@ -1,8 +1,11 @@
 package org.mineacademy.fo.remain;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -14,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.Metadatable;
-import org.bukkit.persistence.PersistentDataType.PrimitivePersistentDataType;
+import org.bukkit.persistence.PersistentDataType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -29,7 +32,9 @@ import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlSectionConfig;
 
-import java.util.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for persistent metadata manipulation
@@ -94,9 +99,8 @@ public final class CompMetadata {
 		final String tag = format(key, value);
 
 		if (Remain.hasScoreboardTags()) {
-			if (!entity.getScoreboardTags().contains(tag)) {
+			if (!entity.getScoreboardTags().contains(tag))
 				entity.addScoreboardTag(tag);
-			}
 
 		} else {
 			entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
@@ -137,7 +141,7 @@ public final class CompMetadata {
 	}
 
 	private static void setNamedspaced(final TileState tile, final String key, final String value) {
-		tile.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING, value);
+		tile.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING, value);
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -174,15 +178,13 @@ public final class CompMetadata {
 	public static String getMetadata(final Entity entity, final String key) {
 		Valid.checkNotNull(entity);
 
-		if (Remain.hasScoreboardTags()) {
+		if (Remain.hasScoreboardTags())
 			for (final String line : entity.getScoreboardTags()) {
 				final String tag = getTag(line, key);
 
-				if (tag != null && !tag.isEmpty()) {
+				if (tag != null && !tag.isEmpty())
 					return tag;
-				}
 			}
-		}
 
 		final String value = entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
 
@@ -219,7 +221,7 @@ public final class CompMetadata {
 	}
 
 	private static String getNamedspaced(final TileState tile, final String key) {
-		final String value = tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
+		final String value = tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING);
 
 		return Common.getOrNull(value);
 	}
@@ -256,13 +258,10 @@ public final class CompMetadata {
 	public static boolean hasMetadata(final Entity entity, final String key) {
 		Valid.checkNotNull(entity);
 
-		if (Remain.hasScoreboardTags()) {
-			for (final String line : entity.getScoreboardTags()) {
-				if (hasTag(line, key)) {
+		if (Remain.hasScoreboardTags())
+			for (final String line : entity.getScoreboardTags())
+				if (hasTag(line, key))
 					return true;
-				}
-			}
-		}
 
 		return entity.hasMetadata(key);
 	}
@@ -289,7 +288,7 @@ public final class CompMetadata {
 	}
 
 	private static boolean hasNamedspaced(final TileState tile, final String key) {
-		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PrimitivePersistentDataType.STRING);
+		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING);
 	}
 
 	// Parses the tag and gets its value
@@ -355,9 +354,8 @@ public final class CompMetadata {
 	public static void removeTempMetadata(final Entity player, final String tag) {
 		final String key = createTempMetadataKey(tag);
 
-		if (player.hasMetadata(key)) {
+		if (player.hasMetadata(key))
 			player.removeMetadata(key, SimplePlugin.getInstance());
-		}
 	}
 
 	/*
@@ -446,9 +444,8 @@ public final class CompMetadata {
 
 		private void applySavedMetadata(final List<String> metadata, final Metadatable entity) {
 			for (final String metadataLine : metadata) {
-				if (metadataLine.isEmpty()) {
+				if (metadataLine.isEmpty())
 					continue;
-				}
 
 				final String[] lines = metadataLine.split(DELIMITER);
 				Valid.checkBoolean(lines.length == 3, "Malformed metadata line for " + entity + ". Length 3 != " + lines.length + ". Data: " + metadataLine);
@@ -466,9 +463,8 @@ public final class CompMetadata {
 			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
 				final String meta = i.next();
 
-				if (getTag(meta, key) != null) {
+				if (getTag(meta, key) != null)
 					i.remove();
-				}
 			}
 
 			if (value != null && !value.isEmpty()) {
@@ -486,9 +482,8 @@ public final class CompMetadata {
 			for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
 				final String meta = i.next();
 
-				if (getTag(meta, key) != null) {
+				if (getTag(meta, key) != null)
 					i.remove();
-				}
 			}
 
 			if (value != null && !value.isEmpty()) {
@@ -498,9 +493,8 @@ public final class CompMetadata {
 			}
 
 			{ // Save
-				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet()) {
+				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
 					setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
-				}
 
 				save();
 			}

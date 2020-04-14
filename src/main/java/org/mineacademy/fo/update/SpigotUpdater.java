@@ -1,6 +1,16 @@
 package org.mineacademy.fo.update;
 
-import lombok.Getter;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -8,12 +18,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import lombok.Getter;
 
 /**
  * A simple class performing an update check for Spigot free and premium resources
@@ -67,15 +72,13 @@ public class SpigotUpdater implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if (resourceId == -1) {
+		if (resourceId == -1)
 			return;
-		}
 
 		final String currentVersion = SimplePlugin.getVersion();
 
-		if (!(canUpdateFrom(currentVersion))) {
+		if (!canUpdateFrom(currentVersion))
 			return;
-		}
 
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId).openConnection();
@@ -87,9 +90,8 @@ public class SpigotUpdater implements Runnable {
 				newVersion = line;
 			}
 
-			if (newVersion.isEmpty()) {
+			if (newVersion.isEmpty())
 				return;
-			}
 
 			if (isNewerVersion(currentVersion, newVersion) && canUpdateTo(newVersion)) {
 				newVersionAvailable = true;
@@ -112,11 +114,8 @@ public class SpigotUpdater implements Runnable {
 					output.close();
 
 					Common.log(getDownloadMessage());
-				}
-
-				else {
+				} else
 					Common.log(getNotifyMessage());
-				}
 			}
 
 		} catch (final UnknownHostException ex) {
@@ -125,11 +124,10 @@ public class SpigotUpdater implements Runnable {
 		} catch (final IOException ex) {
 			if (ex.getMessage().startsWith("Server returned HTTP response code: 403")) {
 				// no permission
-			} else if (ex.getMessage().startsWith("Server returned HTTP response code:")) {
+			} else if (ex.getMessage().startsWith("Server returned HTTP response code:"))
 				Common.log("Could not check for update, SpigotMC site appears to be down (or unaccessible): " + ex.getMessage());
-			} else {
+			else
 				Common.error(ex, "IOException performing update from SpigotMC.org check for " + SimplePlugin.getNamed());
-			}
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Unknown error performing update from SpigotMC.org check for " + SimplePlugin.getNamed());
@@ -168,9 +166,8 @@ public class SpigotUpdater implements Runnable {
 	 * @return
 	 */
 	private boolean isNewerVersion(final String current, final String remote) {
-		if (remote.contains("-LEGACY")) {
+		if (remote.contains("-LEGACY"))
 			return false;
-		}
 
 		String[] currParts = removeTagsInNumber(current).split("\\.");
 		String[] remoteParts = removeTagsInNumber(remote).split("\\.");
@@ -179,25 +176,21 @@ public class SpigotUpdater implements Runnable {
 			final boolean olderIsLonger = currParts.length > remoteParts.length;
 			final String[] modifiedParts = new String[olderIsLonger ? currParts.length : remoteParts.length];
 
-			for (int i = 0; i < (olderIsLonger ? currParts.length : remoteParts.length); i++) {
+			for (int i = 0; i < (olderIsLonger ? currParts.length : remoteParts.length); i++)
 				modifiedParts[i] = olderIsLonger ? remoteParts.length > i ? remoteParts[i] : "0" : currParts.length > i ? currParts[i] : "0";
-			}
 
-			if (olderIsLonger) {
+			if (olderIsLonger)
 				remoteParts = modifiedParts;
-			} else {
+			else
 				currParts = modifiedParts;
-			}
 		}
 
 		for (int i = 0; i < currParts.length; i++) {
-			if (Integer.parseInt(currParts[i]) > Integer.parseInt(remoteParts[i])) {
+			if (Integer.parseInt(currParts[i]) > Integer.parseInt(remoteParts[i]))
 				return false;
-			}
 
-			if (Integer.parseInt(remoteParts[i]) > Integer.parseInt(currParts[i])) {
+			if (Integer.parseInt(remoteParts[i]) > Integer.parseInt(currParts[i]))
 				return true;
-			}
 		}
 
 		return false;

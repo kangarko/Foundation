@@ -3,7 +3,7 @@ package org.mineacademy.fo.remain.nbt;
 /**
  * A Standalone {@link NBTCompound} implementation. All data is just kept inside
  * this Object.
- * 
+ *
  * @author tr7zw
  *
  */
@@ -21,7 +21,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Takes in any NMS Compound to wrap it
-	 * 
+	 *
 	 * @param nbt
 	 */
 	public NBTContainer(Object nbt) {
@@ -32,14 +32,14 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
 	 * {@link NbtApiException} in case something goes wrong.
-	 * 
+	 *
 	 * @param nbtString
 	 */
 	public NBTContainer(String nbtString) {
 		super(null, null);
 		try {
 			nbt = WrapperMethod.PARSE_NBT.run(null, nbtString);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException("Unable to parse Malformed Json!", ex);
 		}
 	}

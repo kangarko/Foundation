@@ -49,9 +49,8 @@ public final class ExpiringValue<V> {
 	 */
 	public ExpiringValue(V value, long duration, TimeUnit timeUnit) {
 		this(value, duration, timeUnit, null);
-		if (timeUnit == null) {
+		if (timeUnit == null)
 			throw new NullPointerException();
-		}
 	}
 
 	/**
@@ -66,9 +65,8 @@ public final class ExpiringValue<V> {
 	 */
 	public ExpiringValue(V value, ExpirationPolicy expirationPolicy, long duration, TimeUnit timeUnit) {
 		this(value, duration, timeUnit, expirationPolicy);
-		if (timeUnit == null) {
+		if (timeUnit == null)
 			throw new NullPointerException();
-		}
 	}
 
 	private ExpiringValue(V value, long duration, TimeUnit timeUnit, ExpirationPolicy expirationPolicy) {
@@ -101,12 +99,10 @@ public final class ExpiringValue<V> {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
+		if (o == null || getClass() != o.getClass())
 			return false;
-		}
 
 		final ExpiringValue<?> that = (ExpiringValue<?>) o;
 		return !(value != null ? !value.equals(that.value) : that.value != null)

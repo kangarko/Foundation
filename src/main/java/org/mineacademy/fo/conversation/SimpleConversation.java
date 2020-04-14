@@ -255,10 +255,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 		@Override
 		public void outputNextPrompt() {
-			if (currentPrompt == null) {
+			if (currentPrompt == null)
 				abandon(new ConversationAbandonedEvent(this));
-
-			} else {
+			else {
 				// Edit start
 
 				// Edit 1 - save the time when we showed the question to the player

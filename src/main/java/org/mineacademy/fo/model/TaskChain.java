@@ -94,11 +94,10 @@ public class TaskChain<T> {
 	 * @return
 	 */
 	public TaskChain<T> abortIfNull(final Player player, final String msg) {
-		return current((obj) -> {
+		return current(obj -> {
 			if (obj == null) {
-				if (msg != null && player != null) {
+				if (msg != null && player != null)
 					player.sendMessage(ChatColor.translateAlternateColorCodes('&', msg));
-				}
 				abort();
 				return null;
 			}
@@ -397,29 +396,24 @@ public class TaskChain<T> {
 		}
 
 		Boolean isNextAsync = this.currentHolder.async;
-		if (isNextAsync == null) {
+		if (isNextAsync == null)
 			isNextAsync = this.async;
-		}
 
 		if (isNextAsync) {
-			if (this.async) {
+			if (this.async)
 				this.currentHolder.run();
-			} else {
+			else
 				Bukkit.getScheduler().runTaskAsynchronously(SimplePlugin.getInstance(), () -> {
 					this.async = true;
 					this.currentHolder.run();
 				});
-			}
-		} else {
-			if (this.async) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), () -> {
-					this.async = false;
-					this.currentHolder.run();
-				});
-			} else {
+		} else if (this.async)
+			Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), () -> {
+				this.async = false;
 				this.currentHolder.run();
-			}
-		}
+			});
+		else
+			this.currentHolder.run();
 	}
 
 	/**
@@ -451,17 +445,16 @@ public class TaskChain<T> {
 
 			try {
 				currentChain.set(this.chain);
-				if (this.task instanceof AsyncExecutingTask) {
+				if (this.task instanceof AsyncExecutingTask)
 					((AsyncExecutingTask<R, A>) this.task).runAsync((A) arg, this::next);
-				} else {
+				else
 					next(this.task.run((A) arg));
-				}
 			} catch (final AbortChainException ignored) {
 				this.abort();
 			} catch (final Exception e) {
-				if (this.chain.errorHandler != null) {
+				if (this.chain.errorHandler != null)
 					this.chain.errorHandler.accept(e, this.task);
-				} else {
+				else {
 					Common.log("TaskChain Exception on " + this.task.getClass().getName());
 					Common.log(ExceptionUtils.getFullStackTrace(e));
 				}

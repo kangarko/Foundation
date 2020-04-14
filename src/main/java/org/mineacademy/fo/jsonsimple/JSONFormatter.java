@@ -246,13 +246,9 @@ public class JSONFormatter {
 
 	private final void writeIndent(int level, Writer writer) throws IOException {
 
-		for (int currentLevel = 0; currentLevel < level; currentLevel++) {
-
-			for (int indent = 0; indent < this.indent; indent++) {
-
+		for (int currentLevel = 0; currentLevel < level; currentLevel++)
+			for (int indent = 0; indent < this.indent; indent++)
 				writer.write(this.indentCharacter);
-			}
-		}
 	}
 
 	/**
@@ -303,13 +299,10 @@ public class JSONFormatter {
 
 			final char character = (char) read;
 
-			if (character == '"') {
-
+			if (character == '"')
 				inString = !(inString && lastChar != '\\');
-			}
 
-			if (!inString) {
-
+			if (!inString)
 				if (character == '{' || character == '[') {
 
 					writer.write(character);
@@ -339,7 +332,6 @@ public class JSONFormatter {
 					writer.write(' ');
 					continue;
 				}
-			}
 
 			writer.write(character);
 			lastChar = character;
@@ -401,15 +393,11 @@ public class JSONFormatter {
 					character != '\0' &&
 					character != '\f') {
 
-				if (character == '"') {
-
+				if (character == '"')
 					inString = !(inString && lastChar != '\\');
-				}
 
-				if (!(character == ' ' && !inString)) {
-
+				if (!(character == ' ' && !inString))
 					writer.write(character);
-				}
 			}
 
 			lastChar = character;

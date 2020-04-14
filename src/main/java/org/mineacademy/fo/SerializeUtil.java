@@ -139,10 +139,10 @@ public final class SerializeUtil {
 		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
 
-			if (obj instanceof Iterable || obj instanceof IsInList) {
+			if (obj instanceof Iterable || obj instanceof IsInList)
 				for (final Object element : obj instanceof IsInList ? ((IsInList<?>) obj).getList() : (Iterable<?>) obj)
 					serialized.add(serialize(element));
-			} else
+			else
 				for (final Object element : (Object[]) obj)
 					serialized.add(serialize(element));
 
@@ -301,7 +301,7 @@ public final class SerializeUtil {
 		}
 
 		// Step 4 - If there is no deserialize method, just deserialize the given object
-		if (object != null) {
+		if (object != null)
 			if (classOf == String.class)
 				object = object.toString();
 
@@ -352,7 +352,6 @@ public final class SerializeUtil {
 
 			} else
 				throw new FoException("Unable to deserialize " + classOf.getSimpleName() + ", lacking static deserialize method! Data: " + object);
-		}
 
 		return (T) object;
 

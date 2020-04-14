@@ -354,11 +354,11 @@ public final class SerializedMap extends StrictCollection {
 
 		final Object raw = map.get("meta");
 
-		if (raw != null) {
+		if (raw != null)
 			if (raw instanceof ItemMeta)
 				item.setItemMeta((ItemMeta) raw);
 
-			else if (raw instanceof Map) {
+			else if (raw instanceof Map)
 				try {
 					final Map<String, Object> metaMap = (Map<String, Object>) raw;
 
@@ -374,8 +374,6 @@ public final class SerializedMap extends StrictCollection {
 				} catch (final Throwable t) {
 					t.printStackTrace();
 				}
-			}
-		}
 
 		return item;
 	}
@@ -656,7 +654,7 @@ public final class SerializedMap extends StrictCollection {
 	public <O, N> void convert(final String path, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
 		final Object old = getObject(path);
 
-		if (old != null) {
+		if (old != null)
 			// If the old is a collection check if the first value is old, assume the rest is old as well
 			if (old instanceof Collection) {
 				final Collection<?> collection = (Collection<?>) old;
@@ -678,7 +676,6 @@ public final class SerializedMap extends StrictCollection {
 
 				Common.logNoPrefix("[" + SimplePlugin.getNamed() + "] Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
 			}
-		}
 	}
 
 	/**

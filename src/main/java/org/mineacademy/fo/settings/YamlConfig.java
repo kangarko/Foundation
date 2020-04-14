@@ -16,12 +16,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
+
 import javax.annotation.Nullable;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -51,6 +48,12 @@ import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * The core configuration class. Manages all settings files.
@@ -112,13 +115,12 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param file
 	 */
 	public static final void unregisterLoadedFile(final File file) {
-		for (final ConfigInstance instance : loadedFiles.keySet()) {
+		for (final ConfigInstance instance : loadedFiles.keySet())
 			if (instance.equals(file)) {
 				loadedFiles.remove(instance);
 
 				break;
 			}
-		}
 	}
 
 	/**
@@ -128,13 +130,12 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected static final ConfigInstance findInstance(final String fileName) {
-		for (final ConfigInstance instance : loadedFiles.keySet()) {
+		for (final ConfigInstance instance : loadedFiles.keySet())
 			if (instance.equals(fileName)) {
 				Debugger.debug("config", "> Reusing instance of " + fileName + " = " + instance.getFile());
 
 				return instance;
 			}
-		}
 
 		Debugger.debug("config", "> Creating new instance for " + fileName);
 		return null;
@@ -149,9 +150,8 @@ public class YamlConfig implements ConfigSerializable {
 	private static void addConfig(final ConfigInstance instance, final YamlConfig config) {
 		List<YamlConfig> existing = loadedFiles.get(instance);
 
-		if (existing == null) {
+		if (existing == null)
 			existing = new ArrayList<>();
-		}
 
 		existing.add(config);
 		loadedFiles.put(instance, existing);
@@ -189,9 +189,8 @@ public class YamlConfig implements ConfigSerializable {
 
 			if (instance == null) {
 
-				if (!file.exists()) {
-					FileUtil.extract(localePath, (line) -> replaceVariables(line, FileUtil.getFileName(localePath)));
-				}
+				if (!file.exists())
+					FileUtil.extract(localePath, line -> replaceVariables(line, FileUtil.getFileName(localePath)));
 
 				final YamlConfiguration config = FileUtil.loadConfigurationStrict(file);
 				final YamlConfiguration defaultsConfig = Remain.loadConfiguration(is);
@@ -245,9 +244,8 @@ public class YamlConfig implements ConfigSerializable {
 		Valid.checkNotNull(to, "File to path cannot be null!");
 		Valid.checkBoolean(to.contains("."), "To path must contain file extension: " + to);
 
-		if (from != null) {
+		if (from != null)
 			Valid.checkBoolean(from.contains("."), "From path must contain file extension: " + from);
-		}
 
 		try {
 			loading = true;
@@ -266,11 +264,10 @@ public class YamlConfig implements ConfigSerializable {
 					Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
 
 					defaultsConfig = Remain.loadConfiguration(is);
-					file = FileUtil.extract(false, from, to, (line) -> replaceVariables(line, FileUtil.getFileName(to)));
+					file = FileUtil.extract(false, from, to, line -> replaceVariables(line, FileUtil.getFileName(to)));
 
-				} else {
+				} else
 					file = FileUtil.getOrMakeFile(to);
-				}
 
 				Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
 
@@ -395,9 +392,8 @@ public class YamlConfig implements ConfigSerializable {
 	public final void save() {
 		if (loading) {
 			// If we are loading only set the flag to save to save it later together
-			if (!save) {
+			if (!save)
 				save = true;
-			}
 
 			return;
 		}
@@ -407,9 +403,8 @@ public class YamlConfig implements ConfigSerializable {
 		onSave();
 
 		// Automatically serialize on save
-		for (final Entry<String, Object> entry : serialize().entrySet()) {
+		for (final Entry<String, Object> entry : serialize().entrySet())
 			setNoSave(entry.getKey(), entry.getValue());
-		}
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
@@ -488,17 +483,15 @@ public class YamlConfig implements ConfigSerializable {
 		Object raw = getConfig().get(path);
 
 		// Ensure that the default config actually did have the value, if used
-		if (getDefaults() != null) {
+		if (getDefaults() != null)
 			Valid.checkNotNull(raw, "Failed to insert value at '" + path + "' from default config");
-		}
 
 		// Ensure the value is of the given type
 		if (raw != null) {
 
 			// Workaround for empty lists
-			if (raw.equals("[]") && type == List.class) {
+			if (raw.equals("[]") && type == List.class)
 				raw = new ArrayList<>();
-			}
 
 			checkAssignable(false, path, raw, type);
 		}
@@ -1059,11 +1052,9 @@ public class YamlConfig implements ConfigSerializable {
 		final List<T> list = new ArrayList<>();
 		final List<Object> objects = getList(path);
 
-		if (objects != null) {
-			for (final Object object : objects) {
+		if (objects != null)
+			for (final Object object : objects)
 				list.add(object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null);
-			}
-		}
 
 		return list;
 	}
@@ -1102,11 +1093,9 @@ public class YamlConfig implements ConfigSerializable {
 	private List<String> fixYamlBooleansInList(@NonNull final Iterable<Object> list) {
 		final List<String> newList = new ArrayList<>();
 
-		for (final Object obj : list) {
-			if (obj != null) {
+		for (final Object obj : list)
+			if (obj != null)
 				newList.add(obj.toString());
-			}
-		}
 
 		return newList;
 	}
@@ -1136,9 +1125,8 @@ public class YamlConfig implements ConfigSerializable {
 		for (final String raw : getStringList(path)) {
 			final CompMaterial mat = CompMaterial.fromStringCompat(raw);
 
-			if (mat != null) {
+			if (mat != null)
 				list.add(mat.getMaterial());
-			}
 		}
 
 		return list;
@@ -1153,9 +1141,8 @@ public class YamlConfig implements ConfigSerializable {
 	protected final StrictList<Enchantment> getEnchants(final String path) {
 		final StrictList<Enchantment> list = new StrictList<>();
 
-		for (final String name : getStringList(path)) {
+		for (final String name : getStringList(path))
 			list.add(ItemUtil.findEnchantment(name));
-		}
 
 		return list;
 	}
@@ -1199,9 +1186,8 @@ public class YamlConfig implements ConfigSerializable {
 		if (defaults != null && !config.isSet(path)) {
 			Valid.checkBoolean(defaults.isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
 
-			for (final String key : defaults.getConfigurationSection(path).getKeys(false)) {
+			for (final String key : defaults.getConfigurationSection(path).getKeys(false))
 				addDefaultIfNotExist(path + "." + key, valueType);
-			}
 		}
 
 		// Load key-value pairs from config to our map
@@ -1234,34 +1220,27 @@ public class YamlConfig implements ConfigSerializable {
 		final StrictList<E> list = new StrictList<>();
 
 		for (final String item : getStringList(path))
-
-		// Infinite list, return empty
-		{
-			if (item.equals("*")) {
+			if (item.equals("*"))
 				return new StrictList<>();
-			} else if (listType == Material.class) {
+			else if (listType == Material.class) {
 				final Material mat = CompMaterial.fromStringCompat(item).getMaterial();
 
-				if (mat != null) {
+				if (mat != null)
 					list.add((E) mat);
-				}
 
 			} else if (listType == CompMaterial.class) {
 				final CompMaterial mat = CompMaterial.fromStringCompat(item);
 
-				if (mat != null) {
+				if (mat != null)
 					list.add((E) mat);
-				}
 
 			} else {
 				// Compatibility workaround because we have DROWNED in our default config but it does not exist in old MC
-				if (listType == SpawnReason.class && "DROWNED".equals(item) && MinecraftVersion.olderThan(V.v1_13)) {
+				if (listType == SpawnReason.class && "DROWNED".equals(item) && MinecraftVersion.olderThan(V.v1_13))
 					continue;
-				}
 
 				list.add(ReflectionUtil.lookupEnum(listType, item));
 			}
-		}
 
 		return list;
 	}
@@ -1300,31 +1279,26 @@ public class YamlConfig implements ConfigSerializable {
 	private <Key, Value> LinkedHashMap<Key, Value> getMap_OLD(String path, final Class<Key> keyType, final Class<Value> valueType, final Map<Key, Value> def) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
-		if (pathPrefix != null) {
-			if (!path.startsWith(pathPrefix)) {
+		if (pathPrefix != null)
+			if (!path.startsWith(pathPrefix))
 				path = formPathPrefix(path);
-			}
-		}
 
 		// add default
 		if (getDefaults() != null && !getConfig().isSet(path)) {
 			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
 
-			for (final String key : getDefaults().getConfigurationSection(path).getKeys(false)) {
+			for (final String key : getDefaults().getConfigurationSection(path).getKeys(false))
 				addDefaultIfNotExist(path + "." + key, valueType);
-			}
 		}
 
 		final LinkedHashMap<Key, Value> keys = new LinkedHashMap<>();
 		final Object pathObject = getConfig().get(path);
 
-		if (pathObject == null) {
-			if (def != null) {
+		if (pathObject == null)
+			if (def != null)
 				return new LinkedHashMap<>(def);
-			} else {
+			else
 				throw new FoException("Map not found at " + path + " in " + getFileName());
-			}
-		}
 
 		Valid.checkBoolean(getConfig().isConfigurationSection(path), "Must be section at '" + path + "', got " + pathObject);
 
@@ -1334,9 +1308,8 @@ public class YamlConfig implements ConfigSerializable {
 
 			Valid.checkBoolean(!keys.containsKey(key), "Duplicate key " + key + " in " + path);
 
-			if (!(val instanceof MemorySection)) {
+			if (!(val instanceof MemorySection))
 				checkAssignable(false, path, val, valueType);
-			}
 
 			final Key parsed = SerializeUtil.deserialize(keyType, key);
 			final Value parsedValue = SerializeUtil.deserialize(valueType, val);
@@ -1364,11 +1337,9 @@ public class YamlConfig implements ConfigSerializable {
 		if (getDefaults() != null && !getConfig().isSet(path)) {
 			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a section at " + path);
 
-			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false)) {
-				for (final String setting : getDefaults().getConfigurationSection(path + "." + name).getKeys(false)) {
+			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
+				for (final String setting : getDefaults().getConfigurationSection(path + "." + name).getKeys(false))
 					addDefaultIfNotExist(path + "." + name + "." + setting, Object.class);
-				}
-			}
 		}
 
 		Valid.checkBoolean(getConfig().isSet(path), "Malfunction copying default section to " + path);
@@ -1410,9 +1381,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param value
 	 */
 	protected final void setIfNotExist(final String path, final Object value) {
-		if (!isSet(path)) {
+		if (!isSet(path))
 			setNoSave(path, value);
-		}
 
 	}
 
@@ -1513,21 +1483,19 @@ public class YamlConfig implements ConfigSerializable {
 	protected final <O, N> void convert(final String path, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
 		final Object old = getObject(path);
 
-		if (old != null) {
+		if (old != null)
 			// If the old is a collection check if the first value is old, assume the rest
 			// is old as well
 			if (old instanceof Collection) {
 				final Collection<?> collection = (Collection) old;
 
-				if (collection.isEmpty() || !from.isAssignableFrom(collection.iterator().next().getClass())) {
+				if (collection.isEmpty() || !from.isAssignableFrom(collection.iterator().next().getClass()))
 					return;
-				}
 
 				final List<N> newCollection = new ArrayList<>();
 
-				for (final O oldItem : (Collection<O>) collection) {
+				for (final O oldItem : (Collection<O>) collection)
 					newCollection.add(converter.apply(oldItem));
-				}
 
 				save(path, newCollection);
 
@@ -1538,14 +1506,12 @@ public class YamlConfig implements ConfigSerializable {
 
 				Common.log("&7Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
 			}
-		}
 	}
 
 	protected final <T> T getOrSetDefault(final String path, final T defaultValue) {
 		if (isSet(path)) {
-			if (defaultValue instanceof Replacer) {
+			if (defaultValue instanceof Replacer)
 				return (T) Replacer.of(getString(path));
-			}
 
 			return (T) get(path, defaultValue.getClass());
 		}
@@ -1639,9 +1605,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 */
 	private void forceSingleDefaults(final String path) {
-		if (getDefaults() != null) {
+		if (getDefaults() != null)
 			throw new FoException("Cannot use get method with default when getting " + formPathPrefix(path) + " and using a default config for " + getFileName());
-		}
 	}
 
 	/**
@@ -1668,13 +1633,11 @@ public class YamlConfig implements ConfigSerializable {
 	private <T> void checkAndFlagForSave(final String path, final T def, final boolean logUpdate) {
 		Valid.checkBoolean(instance.getFile() != null && instance.getFile().exists() && instance.getConfig() != null, "Inbuilt file or config is null! File: " + instance.getFile() + ", config: " + instance.getConfig());
 
-		if (getDefaults() != null) {
+		if (getDefaults() != null)
 			Valid.checkNotNull(def, "Inbuilt config " + getFileName() + " lacks " + (def == null ? "key" : def.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
-		}
 
-		if (logUpdate) {
+		if (logUpdate)
 			Common.log("&7Update " + getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
-		}
 
 		save = true;
 	}
@@ -1688,9 +1651,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param clazz
 	 */
 	private void checkAssignable(final boolean fromDefault, final String path, final Object value, final Class<?> clazz) {
-		if (!clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName())) {
+		if (!clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName()))
 			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + getFileName() + " must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
-		}
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1817,14 +1779,13 @@ public class YamlConfig implements ConfigSerializable {
 		 * @return
 		 */
 		public boolean toggle(final Location location) {
-			for (final Location point : points) {
+			for (final Location point : points)
 				if (Valid.locationEquals(point, location)) {
 					points.remove(point);
 
 					settings.save();
 					return false;
 				}
-			}
 
 			points.add(location);
 			settings.save();
@@ -1875,11 +1836,9 @@ public class YamlConfig implements ConfigSerializable {
 		 * @return
 		 */
 		public Location find(final Location location) {
-			for (final Location entrance : points) {
-				if (Valid.locationEquals(entrance, location)) {
+			for (final Location entrance : points)
+				if (Valid.locationEquals(entrance, location))
 					return entrance;
-				}
-			}
 
 			return null;
 		}
@@ -1932,10 +1891,9 @@ public class YamlConfig implements ConfigSerializable {
 				return;
 			}
 
-			if (values.length != 3) {
+			if (values.length != 3)
 				throw new FoException(
 						"Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
-			}
 
 			akuzativSg = values[0];
 			akuzativPl = values[1];
@@ -1951,13 +1909,11 @@ public class YamlConfig implements ConfigSerializable {
 		}
 
 		public String formatWithoutCount(final long count) {
-			if (count == 1) {
+			if (count == 1)
 				return akuzativSg;
-			}
 
-			if (count > 1 && count < 5) {
+			if (count > 1 && count < 5)
 				return akuzativPl;
-			}
 
 			return genitivPl;
 		}
@@ -2036,9 +1992,8 @@ class ConfigInstance {
 				FileUtil.write("error_yaml.log", "", "Serialized: ", SerializeUtil.serialize(dump).toString());
 
 				Common.error(ex, "Failed to save " + file + ", please see error_yaml.log in your plugin folder and report this to plugin developers!");
-			} else {
+			} else
 				throw ex;
-			}
 
 		} catch (final IOException e) {
 			Common.error(e, "Failed to save " + file.getName());

@@ -213,7 +213,7 @@ public final class PlayerUtil {
 		final File worldFolder = new File(Bukkit.getServer().getWorlds().get(0).getWorldFolder(), "stats");
 		final File statFile = new File(worldFolder, player.getUniqueId().toString() + ".json");
 
-		if (statFile.exists()) {
+		if (statFile.exists())
 			try {
 				final JSONObject json = (JSONObject) JSONParser.getInstance().parse(new FileReader(statFile));
 				final String name = Remain.getNMSStatisticName(statistic, material, entityType);
@@ -241,7 +241,6 @@ public final class PlayerUtil {
 			} catch (final Throwable t) {
 				throw new FoException(t);
 			}
-		}
 
 		return 0;
 	}

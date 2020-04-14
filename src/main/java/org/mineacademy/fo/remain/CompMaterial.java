@@ -1102,7 +1102,7 @@ public enum CompMaterial {
 		final Material altMat = alternativeName != null ? Material.matchMaterial(alternativeName) : null;
 		final Material legacyMat = legacyName != null ? Material.matchMaterial(legacyName) : null;
 
-		return mat != null ? mat : (altMat != null ? altMat : legacyMat);
+		return mat != null ? mat : altMat != null ? altMat : legacyMat;
 	}
 
 	/**

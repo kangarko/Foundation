@@ -213,7 +213,7 @@ public final class ChatUtil {
 		final String[] sentences = message.split("(?<=[!?\\.])\\s");
 		String tempMessage = "";
 
-		for (String sentence : sentences) {
+		for (String sentence : sentences)
 			try {
 				if (sentence.length() > 2)
 					if (!isDomain(message.split("\\s")[0]) && sentence.length() > 2 && Character.isUpperCase(sentence.charAt(0)) && Character.isLowerCase(sentence.charAt(2)))
@@ -222,7 +222,6 @@ public final class ChatUtil {
 				tempMessage = tempMessage + sentence + " ";
 			} catch (final NullPointerException ex) {
 			}
-		}
 		return tempMessage.trim();
 	}
 
@@ -360,11 +359,10 @@ public final class ChatUtil {
 		final int[] editedMsg = new int[message.length()];
 		final String[] parts = message.split(" ");
 
-		for (int i = 0; i < parts.length; i++) {
+		for (int i = 0; i < parts.length; i++)
 			for (final String whitelisted : ignored)
 				if (whitelisted.equalsIgnoreCase(parts[i]))
 					parts[i] = parts[i].toLowerCase();
-		}
 
 		for (int i = 0; i < parts.length; i++)
 			if (isDomain(parts[i]))

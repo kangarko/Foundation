@@ -240,15 +240,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(byte[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -273,15 +269,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(short[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -306,15 +298,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(int[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -339,15 +327,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(long[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -372,15 +356,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(float[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -405,15 +385,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(double[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -438,15 +414,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(boolean[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -471,15 +443,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static void write(char[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			writer.write("" + array[0]);
@@ -505,15 +473,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static <T> void write(T[] array, Writer writer) throws IOException {
 
-		if (array == null) {
-
+		if (array == null)
 			writer.write("null");
-
-		} else if (array.length == 0) {
-
+		else if (array.length == 0)
 			writer.write("[]");
-
-		} else {
+		else {
 
 			writer.write("[");
 			JsonSimpleUtil.write(array[0], writer);
@@ -545,33 +509,23 @@ public final class JsonSimpleUtil {
 
 			while (iterator.hasNext()) {
 
-				if (first) {
-
+				if (first)
 					first = false;
-
-				} else {
-
+				else
 					writer.write(',');
-				}
 
 				final Object value = iterator.next();
 
-				if (value == null) {
-
+				if (value == null)
 					writer.write("null");
-
-				} else {
-
+				else
 					JsonSimpleUtil.write(value, writer);
-				}
 			}
 
 			writer.write(']');
 
-		} else {
-
+		} else
 			writer.write("null");
-		}
 	}
 
 	/**
@@ -590,14 +544,10 @@ public final class JsonSimpleUtil {
 
 			for (final Map.Entry<?, ?> entry : map.entrySet()) {
 
-				if (first) {
-
+				if (first)
 					first = false;
-
-				} else {
-
+				else
 					writer.write(',');
-				}
 
 				writer.write('\"');
 				writer.write(JSONUtil.escape(String.valueOf(entry.getKey())));
@@ -609,10 +559,8 @@ public final class JsonSimpleUtil {
 
 			writer.write('}');
 
-		} else {
-
+		} else
 			writer.write("null");
-		}
 	}
 
 	/**
@@ -628,51 +576,49 @@ public final class JsonSimpleUtil {
 		// -	Made this method final
 		// ====
 
-		if (value == null) {
-
+		if (value == null)
 			writer.write("null");
-
-		} else if (value instanceof String) {
+		else if (value instanceof String) {
 
 			writer.write('\"');
 			writer.write(JSONUtil.escape((String) value));
 			writer.write('\"');
 
-		} else if (value instanceof Double) {
+		} else if (value instanceof Double)
 			writer.write(((Double) value).isInfinite() || ((Double) value).isNaN() ? "null" : value.toString());
-		} else if (value instanceof Float) {
+		else if (value instanceof Float)
 			writer.write(((Float) value).isInfinite() || ((Float) value).isNaN() ? "null" : value.toString());
-		} else if (value instanceof Number) {
+		else if (value instanceof Number)
 			writer.write(value.toString());
-		} else if (value instanceof Boolean) {
+		else if (value instanceof Boolean)
 			writer.write(value.toString());
-		} else if (value instanceof JSONObject) {
+		else if (value instanceof JSONObject)
 			((JSONObject) value).write(writer);
-		} else if (value instanceof JSONArray) {
+		else if (value instanceof JSONArray)
 			((JSONArray) value).write(writer);
-		} else if (value instanceof Map) {
+		else if (value instanceof Map)
 			JsonSimpleUtil.write((Map<Object, Object>) value, writer);
-		} else if (value instanceof Collection) {
+		else if (value instanceof Collection)
 			JsonSimpleUtil.write((Collection<Object>) value, writer);
-		} else if (value instanceof byte[]) {
+		else if (value instanceof byte[])
 			JsonSimpleUtil.write((byte[]) value, writer);
-		} else if (value instanceof short[]) {
+		else if (value instanceof short[])
 			JsonSimpleUtil.write((short[]) value, writer);
-		} else if (value instanceof int[]) {
+		else if (value instanceof int[])
 			JsonSimpleUtil.write((int[]) value, writer);
-		} else if (value instanceof long[]) {
+		else if (value instanceof long[])
 			JsonSimpleUtil.write((long[]) value, writer);
-		} else if (value instanceof float[]) {
+		else if (value instanceof float[])
 			JsonSimpleUtil.write((float[]) value, writer);
-		} else if (value instanceof double[]) {
+		else if (value instanceof double[])
 			JsonSimpleUtil.write((double[]) value, writer);
-		} else if (value instanceof boolean[]) {
+		else if (value instanceof boolean[])
 			JsonSimpleUtil.write((boolean[]) value, writer);
-		} else if (value instanceof char[]) {
+		else if (value instanceof char[])
 			JsonSimpleUtil.write((char[]) value, writer);
-		} else if (value.getClass().isArray()) {
+		else if (value.getClass().isArray())
 			JsonSimpleUtil.write((Object[]) value, writer);
-		} else {
+		else {
 
 			writer.write('"');
 			writer.write(JSONUtil.escape(value.toString()));
@@ -688,14 +634,11 @@ public final class JsonSimpleUtil {
 	 */
 	public static JSONObject getObject(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof JSONObject) {
+		if (value != null)
+			if (value instanceof JSONObject)
 				return (JSONObject) value;
-			} else if (value instanceof Map) {
+			else if (value instanceof Map)
 				return new JSONObject((Map<?, ?>) value);
-			}
-		}
 
 		return null;
 	}
@@ -708,32 +651,29 @@ public final class JsonSimpleUtil {
 	 */
 	public static JSONArray getArray(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof JSONArray) {
+		if (value != null)
+			if (value instanceof JSONArray)
 				return (JSONArray) value;
-			} else if (value instanceof boolean[]) {
+			else if (value instanceof boolean[])
 				return new JSONArray((boolean[]) value);
-			} else if (value instanceof byte[]) {
+			else if (value instanceof byte[])
 				return new JSONArray((byte[]) value);
-			} else if (value instanceof char[]) {
+			else if (value instanceof char[])
 				return new JSONArray((char[]) value);
-			} else if (value instanceof short[]) {
+			else if (value instanceof short[])
 				return new JSONArray((short[]) value);
-			} else if (value instanceof int[]) {
+			else if (value instanceof int[])
 				return new JSONArray((int[]) value);
-			} else if (value instanceof long[]) {
+			else if (value instanceof long[])
 				return new JSONArray((long[]) value);
-			} else if (value instanceof float[]) {
+			else if (value instanceof float[])
 				return new JSONArray((float[]) value);
-			} else if (value instanceof double[]) {
+			else if (value instanceof double[])
 				return new JSONArray((double[]) value);
-			} else if (value instanceof Collection) {
+			else if (value instanceof Collection)
 				return new JSONArray((Collection<?>) value);
-			} else if (value.getClass().isArray()) {
+			else if (value.getClass().isArray())
 				return new JSONArray(value);
-			}
-		}
 
 		return null;
 	}
@@ -746,16 +686,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Boolean getBoolean(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Boolean) {
+		if (value != null)
+			if (value instanceof Boolean)
 				return (boolean) value;
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Boolean.parseBoolean((String) value);
-			} else if (value instanceof Number) {
+			else if (value instanceof Number)
 				return ((Number) value).longValue() == 1L;
-			}
-		}
 
 		return null;
 	}
@@ -768,16 +705,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Byte getByte(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Number) {
+		if (value != null)
+			if (value instanceof Number)
 				return ((Number) value).byteValue();
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Byte.parseByte((String) value);
-			} else if (value instanceof Boolean) {
+			else if (value instanceof Boolean)
 				return (boolean) value ? (byte) 1 : (byte) 0;
-			}
-		}
 
 		return null;
 	}
@@ -790,16 +724,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Short getShort(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Number) {
+		if (value != null)
+			if (value instanceof Number)
 				return ((Number) value).shortValue();
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Short.parseShort((String) value);
-			} else if (value instanceof Boolean) {
+			else if (value instanceof Boolean)
 				return (boolean) value ? (short) 1 : (short) 0;
-			}
-		}
 
 		return null;
 	}
@@ -812,16 +743,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Integer getInteger(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Number) {
+		if (value != null)
+			if (value instanceof Number)
 				return ((Number) value).intValue();
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Integer.parseInt((String) value);
-			} else if (value instanceof Boolean) {
+			else if (value instanceof Boolean)
 				return (boolean) value ? 1 : 0;
-			}
-		}
 
 		return null;
 	}
@@ -834,16 +762,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Long getLong(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Number) {
+		if (value != null)
+			if (value instanceof Number)
 				return ((Number) value).longValue();
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Long.parseLong((String) value);
-			} else if (value instanceof Boolean) {
+			else if (value instanceof Boolean)
 				return (boolean) value ? 1L : 0L;
-			}
-		}
 
 		return null;
 	}
@@ -856,16 +781,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Float getFloat(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Number) {
+		if (value != null)
+			if (value instanceof Number)
 				return ((Number) value).floatValue();
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Float.parseFloat((String) value);
-			} else if (value instanceof Boolean) {
+			else if (value instanceof Boolean)
 				return (boolean) value ? 1F : 0F;
-			}
-		}
 
 		return null;
 	}
@@ -878,16 +800,13 @@ public final class JsonSimpleUtil {
 	 */
 	public static Double getDouble(Object value) {
 
-		if (value != null) {
-
-			if (value instanceof Number) {
+		if (value != null)
+			if (value instanceof Number)
 				return ((Number) value).doubleValue();
-			} else if (value instanceof String) {
+			else if (value instanceof String)
 				return Double.parseDouble((String) value);
-			} else if (value instanceof Boolean) {
+			else if (value instanceof Boolean)
 				return (boolean) value ? 1D : 0D;
-			}
-		}
 
 		return null;
 	}
@@ -900,10 +819,8 @@ public final class JsonSimpleUtil {
 	 */
 	public static String getString(Object value) {
 
-		if (value != null) {
-
+		if (value != null)
 			return value.toString();
-		}
 
 		return null;
 	}
@@ -918,10 +835,8 @@ public final class JsonSimpleUtil {
 	 */
 	public static Date getDate(Object value, DateFormat format) throws ParseException {
 
-		if (value != null) {
-
+		if (value != null)
 			return value instanceof Date ? (Date) value : format.parse(value.toString());
-		}
 
 		return null;
 	}
@@ -936,16 +851,10 @@ public final class JsonSimpleUtil {
 	 */
 	public static <T extends Enum<T>> T getEnum(Object value, Class<T> type) {
 
-		if (value != null) {
-
-			for (final Object enumConstant : type.getEnumConstants()) {
-
-				if (((T) enumConstant).name().equals(value.toString())) {
-
+		if (value != null)
+			for (final Object enumConstant : type.getEnumConstants())
+				if (((T) enumConstant).name().equals(value.toString()))
 					return (T) enumConstant;
-				}
-			}
-		}
 
 		return null;
 	}
@@ -963,43 +872,36 @@ public final class JsonSimpleUtil {
 			final char character = string.charAt(index);
 
 			// If is faster than Switch
-			if (character == '"') {
+			if (character == '"')
 				builder.append("\\\"");
-			} else if (character == '\\') {
+			else if (character == '\\')
 				builder.append("\\\\");
-			} else if (character == '\b') {
+			else if (character == '\b')
 				builder.append("\\b");
-			} else if (character == '\f') {
+			else if (character == '\f')
 				builder.append("\\f");
-			} else if (character == '\n') {
+			else if (character == '\n')
 				builder.append("\\n");
-			} else if (character == '\r') {
+			else if (character == '\r')
 				builder.append("\\r");
-			} else if (character == '\t') {
+			else if (character == '\t')
 				builder.append("\\t");
-			} else if (character == '/') {
+			else if (character == '/')
 				builder.append("\\/");
-			} else {
+			else if (character >= '\u0000' && character <= '\u001F' ||
+					character >= '\u007F' && character <= '\u009F' ||
+					character >= '\u2000' && character <= '\u20FF') {
 
-				if (character >= '\u0000' && character <= '\u001F' ||
-						character >= '\u007F' && character <= '\u009F' ||
-						character >= '\u2000' && character <= '\u20FF') {
+				final String hex = Integer.toHexString(character);
+				builder.append("\\u");
 
-					final String hex = Integer.toHexString(character);
-					builder.append("\\u");
+				for (int k = 0; k < 4 - hex.length(); k++)
+					builder.append('0');
 
-					for (int k = 0; k < 4 - hex.length(); k++) {
+				builder.append(hex.toUpperCase());
 
-						builder.append('0');
-					}
-
-					builder.append(hex.toUpperCase());
-
-				} else {
-
-					builder.append(character);
-				}
-			}
+			} else
+				builder.append(character);
 		}
 	}
 }
