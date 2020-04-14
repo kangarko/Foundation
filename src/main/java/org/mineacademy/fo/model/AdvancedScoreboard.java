@@ -1,4 +1,4 @@
-package org.mineacademy.fo.scoreboard;
+package org.mineacademy.fo.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
