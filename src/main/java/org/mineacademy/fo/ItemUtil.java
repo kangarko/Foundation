@@ -156,9 +156,8 @@ public final class ItemUtil {
 		boolean dataMatch = LEGACY_MATERIALS ? first.getData().getData() == second.getData().getData() : true;
 		final boolean metaMatch = first.hasItemMeta() == second.hasItemMeta();
 
-		if (!idMatch || !metaMatch || !(dataMatch || (dataMatch = first.getType() == Material.BOW))) {
+		if (!idMatch || !metaMatch || !(dataMatch || (dataMatch = first.getType() == Material.BOW)))
 			return false;
-		}
 
 		// ItemMeta
 		{

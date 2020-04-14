@@ -259,10 +259,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public <T> JSONArray(T[] array) {
 
-		for (final T element : array) {
-
+		for (final T element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -272,10 +270,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(byte[] array) {
 
-		for (final byte element : array) {
-
+		for (final byte element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -285,10 +281,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(boolean[] array) {
 
-		for (final boolean element : array) {
-
+		for (final boolean element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -298,10 +292,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(char[] array) {
 
-		for (final char element : array) {
-
+		for (final char element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -311,10 +303,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(short[] array) {
 
-		for (final short element : array) {
-
+		for (final short element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -324,10 +314,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(int[] array) {
 
-		for (final int element : array) {
-
+		for (final int element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -337,10 +325,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(long[] array) {
 
-		for (final long element : array) {
-
+		for (final long element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -350,10 +336,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(float[] array) {
 
-		for (final float element : array) {
-
+		for (final float element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -363,10 +347,8 @@ public class JSONArray extends ArrayList<Object> {
 	 */
 	public JSONArray(double[] array) {
 
-		for (final double element : array) {
-
+		for (final double element : array)
 			this.add(element);
-		}
 	}
 
 	/**
@@ -386,10 +368,8 @@ public class JSONArray extends ArrayList<Object> {
 
 			final int length = Array.getLength(array);
 
-			for (int index = 0; index < length; index++) {
-
+			for (int index = 0; index < length; index++)
 				this.add(Array.get(array, index));
-			}
 		}
 	}
 
@@ -452,8 +432,7 @@ public class JSONArray extends ArrayList<Object> {
 	@Override
 	public boolean equals(Object object) {
 
-		if (object != null) {
-
+		if (object != null)
 			if (object instanceof Collection) {
 
 				final Collection<?> collection = (Collection<?>) object;
@@ -464,10 +443,8 @@ public class JSONArray extends ArrayList<Object> {
 
 					for (final Object element : collection) {
 
-						if (!(element == null && this.get(index) == null || this.get(index).equals(element))) {
-
+						if (!(element == null && this.get(index) == null || this.get(index).equals(element)))
 							return false;
-						}
 
 						index++;
 					}
@@ -485,16 +462,13 @@ public class JSONArray extends ArrayList<Object> {
 
 						final Object element = Array.get(object, index);
 
-						if (!(element == null && this.get(index) == null || element.equals(this.get(index)))) {
-
+						if (!(element == null && this.get(index) == null || element.equals(this.get(index))))
 							return false;
-						}
 					}
 
 					return true;
 				}
 			}
-		}
 
 		return false;
 	}
@@ -677,10 +651,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Boolean[] array = new Boolean[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getBoolean(index);
-		}
 
 		return array;
 	}
@@ -694,10 +666,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Byte[] array = new Byte[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getByte(index);
-		}
 
 		return array;
 	}
@@ -711,10 +681,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Short[] array = new Short[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getShort(index);
-		}
 
 		return array;
 	}
@@ -728,10 +696,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Integer[] array = new Integer[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getInteger(index);
-		}
 
 		return array;
 	}
@@ -745,10 +711,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Long[] array = new Long[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getLong(index);
-		}
 
 		return array;
 	}
@@ -762,10 +726,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Float[] array = new Float[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getFloat(index);
-		}
 
 		return array;
 	}
@@ -779,10 +741,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final Double[] array = new Double[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getDouble(index);
-		}
 
 		return array;
 	}
@@ -796,10 +756,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final String[] array = new String[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getString(index);
-		}
 
 		return array;
 	}
@@ -813,10 +771,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final JSONObject[] array = new JSONObject[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getObject(index);
-		}
 
 		return array;
 	}
@@ -830,10 +786,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final JSONArray[] array = new JSONArray[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getArray(index);
-		}
 
 		return array;
 	}
@@ -847,10 +801,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final byte[] array = new byte[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getByte(index);
-		}
 
 		return array;
 	}
@@ -864,10 +816,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final short[] array = new short[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getShort(index);
-		}
 
 		return array;
 	}
@@ -881,10 +831,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final int[] array = new int[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getInteger(index);
-		}
 
 		return array;
 	}
@@ -898,10 +846,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final long[] array = new long[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getLong(index);
-		}
 
 		return array;
 	}
@@ -915,10 +861,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final float[] array = new float[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getFloat(index);
-		}
 
 		return array;
 	}
@@ -932,10 +876,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final double[] array = new double[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getDouble(index);
-		}
 
 		return array;
 	}
@@ -949,10 +891,8 @@ public class JSONArray extends ArrayList<Object> {
 
 		final boolean[] array = new boolean[this.size()];
 
-		for (int index = 0; index < array.length; index++) {
-
+		for (int index = 0; index < array.length; index++)
 			array[index] = this.getBoolean(index);
-		}
 
 		return array;
 	}
@@ -972,24 +912,20 @@ public class JSONArray extends ArrayList<Object> {
 		builder.append(this.size());
 		builder.append('>');
 
-		for (final Object element : this) {
-
-			if (element instanceof JSONObject) {
+		for (final Object element : this)
+			if (element instanceof JSONObject)
 				builder.append(((JSONObject) element).toXML("item"));
-			} else if (element instanceof JSONArray) {
+			else if (element instanceof JSONArray)
 				builder.append(((JSONArray) element).toXML("item"));
-			} else {
+			else {
 
 				builder.append("<item>");
 
-				if (element != null) {
-
+				if (element != null)
 					builder.append(String.valueOf(element));
-				}
 
 				builder.append("</item>");
 			}
-		}
 
 		builder.append("</");
 		builder.append(rootName);

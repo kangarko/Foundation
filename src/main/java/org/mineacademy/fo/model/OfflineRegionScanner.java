@@ -175,7 +175,7 @@ public abstract class OfflineRegionScanner {
 		final int regionX = Integer.parseInt(matcher.group(1));
 		final int regionZ = Integer.parseInt(matcher.group(2));
 
-		System.out.print("[" + Math.round(Double.valueOf((double) done++ / (double) totalFiles * 100)) + "%] Processing " + file);
+		System.out.print("[" + Math.round((double) done++ / (double) totalFiles * 100) + "%] Processing " + file);
 
 		// Calculate time, collect memory and increase pauses in between if running out of memory
 		if (System.currentTimeMillis() - lastTick > 4000) {

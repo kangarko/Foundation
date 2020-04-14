@@ -219,10 +219,10 @@ public final class ItemCreator {
 		if (this.material != null)
 			is.setType(this.material.getMaterial());
 
-		if (MinecraftVersion.atLeast(V.v1_13)) {
-
+		if (MinecraftVersion.atLeast(V.v1_13))
 			// Apply specific material color if possible
-			color: if (color != null && !is.getType().toString().contains("LEATHER")) {
+			color:
+			if (color != null && !is.getType().toString().contains("LEATHER")) {
 				final String dye = color.getDye().toString();
 				final List<String> colorableMaterials = Arrays.asList(
 						"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
@@ -240,25 +240,21 @@ public final class ItemCreator {
 
 				// If not revert to wool
 				is.setType(Material.valueOf(dye + "_WOOL"));
+			} else {
+				int dataValue = material != null ? material.getData() : is.getData().getData();
+
+				if (!is.getType().toString().contains("LEATHER") && color != null)
+					dataValue = color.getDye().getWoolData();
+
+				if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
+					dataValue = 0;
+
+				is.setData(new MaterialData(is.getType(), (byte) dataValue));
+
+				if (MinecraftVersion.olderThan(V.v1_13))
+					is.setDurability((short) dataValue);
+
 			}
-		}
-
-		// If using legacy MC version
-		else {
-			int dataValue = material != null ? material.getData() : is.getData().getData();
-
-			if (!is.getType().toString().contains("LEATHER") && color != null)
-				dataValue = color.getDye().getWoolData();
-
-			if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
-				dataValue = 0;
-
-			is.setData(new MaterialData(is.getType(), (byte) dataValue));
-
-			if (MinecraftVersion.olderThan(V.v1_13))
-				is.setDurability((short) dataValue);
-
-		}
 
 		// Fix monster eggs
 		if (is.getType().toString().endsWith("SPAWN_EGG")) {
@@ -339,7 +335,7 @@ public final class ItemCreator {
 		if (lores != null && !lores.isEmpty()) {
 			final List<String> coloredLores = new ArrayList<>();
 
-			lores.forEach((line) -> coloredLores.add(Common.colorize("&7" + line)));
+			lores.forEach(line -> coloredLores.add(Common.colorize("&7" + line)));
 			itemMeta.setLore(coloredLores);
 		}
 

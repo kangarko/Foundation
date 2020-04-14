@@ -126,9 +126,8 @@ public enum WrapperMethod {
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
 				if (MinecraftVersion.atLeast(V.v1_8))
 					Common.error(ex, this + " could not find method '" + (targetVersion == null ? "" : targetVersion.name) + "' in '" + targetClass + "'");
-				else {
+				else
 					System.out.println("NBT library is unsupported for 1.7.10");
-				}
 			}
 
 	}

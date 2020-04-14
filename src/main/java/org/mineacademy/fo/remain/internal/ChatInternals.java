@@ -60,10 +60,9 @@ public class ChatInternals {
 
 				final Class<?> chatPacket = ReflectionUtil.getNMSClass("PacketPlayOutChat");
 
-				if (MinecraftVersion.newerThan(V.v1_11)) {
+				if (MinecraftVersion.newerThan(V.v1_11))
 					chatMessageConstructor = chatPacket.getConstructor(chatBaseComponent, ReflectionUtil.getNMSClass("ChatMessageType"));
-
-				} else
+				else
 					chatMessageConstructor = MinecraftVersion.newerThan(V.v1_7) ? chatPacket.getConstructor(chatBaseComponent, byte.class) : chatPacket.getConstructor(chatBaseComponent);
 
 				if (MinecraftVersion.newerThan(V.v1_7)) {

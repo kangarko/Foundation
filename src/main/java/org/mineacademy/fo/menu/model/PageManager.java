@@ -56,7 +56,7 @@ public final class PageManager<T> {
 			final int down = cellSize * i;
 			final int up = down + cellSize;
 
-			for (int valueIndex = down; valueIndex < up; valueIndex++) {
+			for (int valueIndex = down; valueIndex < up; valueIndex++)
 				if (valueIndex < allItems.size()) {
 					final T page = allItems.get(valueIndex);
 
@@ -65,7 +65,6 @@ public final class PageManager<T> {
 
 				else
 					break;
-			}
 
 			pages.put(i, pageItems);
 		}

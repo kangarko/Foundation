@@ -5,13 +5,13 @@ package org.mineacademy.fo.remain.nbt;
  * {@link NBTCompoundList} This Compound implementation is missing the ability
  * for further subCompounds and Lists. This class probably will change in the
  * future
- * 
+ *
  * @author tr7zw
  *
  */
 public class NBTListCompound extends NBTCompound {
 
-	private NBTList<?> owner;
+	private final NBTList<?> owner;
 	private Object compound;
 
 	protected NBTListCompound(NBTList<?> parent, Object obj) {
@@ -19,7 +19,7 @@ public class NBTListCompound extends NBTCompound {
 		owner = parent;
 		compound = obj;
 	}
-	
+
 	public NBTList<?> getListParent() {
 		return owner;
 	}

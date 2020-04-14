@@ -249,10 +249,8 @@ public class JSONParser {
 
 		this.token = this.lexer.yylex();
 
-		if (this.token == null) {
-
+		if (this.token == null)
 			this.token = new Yytoken(Yytoken.TYPE_EOF, null);
-		}
 	}
 
 	private final void init(Stack<Object> statusStack, Stack<Object> valueStack) {
@@ -275,22 +273,16 @@ public class JSONParser {
 			statusStack.push(this.status);
 			valueStack.push(new JSONArray());
 
-		} else {
-
+		} else
 			this.status = JSONParser.S_IN_ERROR;
-		}
 	}
 
 	private final Object inFinishedValue(Stack<Object> valueStack) throws JSONParseException {
 
-		if (this.token.type == Yytoken.TYPE_EOF) {
-
+		if (this.token.type == Yytoken.TYPE_EOF)
 			return valueStack.pop();
-
-		} else {
-
+		else
 			throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
-		}
 	}
 
 	private final void inObject(Stack<Object> statusStack, Stack<Object> valueStack) {
@@ -304,10 +296,8 @@ public class JSONParser {
 				this.status = JSONParser.S_PASSED_PAIR_KEY;
 				statusStack.push(this.status);
 
-			} else {
-
+			} else
 				this.status = S_IN_ERROR;
-			}
 
 		} else if (this.token.type == Yytoken.TYPE_RIGHT_BRACE) {
 
@@ -317,15 +307,11 @@ public class JSONParser {
 				valueStack.pop();
 				this.status = (int) statusStack.peek();
 
-			} else {
-
+			} else
 				this.status = JSONParser.S_IN_FINISHED_VALUE;
-			}
 
-		} else if (this.token.type != Yytoken.TYPE_COMMA) {
-
+		} else if (this.token.type != Yytoken.TYPE_COMMA)
 			this.status = JSONParser.S_IN_ERROR;
-		}
 	}
 
 	private final void inPassedPairKey(Stack<Object> statusStack, Stack<Object> valueStack) {
@@ -360,10 +346,8 @@ public class JSONParser {
 			statusStack.push(this.status);
 			valueStack.push(newObject);
 
-		} else if (this.token.type != Yytoken.TYPE_COLON) {
-
+		} else if (this.token.type != Yytoken.TYPE_COLON)
 			this.status = JSONParser.S_IN_ERROR;
-		}
 	}
 
 	private final void inArray(Stack<Object> statusStack, Stack<Object> valueStack) {
@@ -381,10 +365,8 @@ public class JSONParser {
 				valueStack.pop();
 				this.status = (int) statusStack.peek();
 
-			} else {
-
+			} else
 				this.status = JSONParser.S_IN_FINISHED_VALUE;
-			}
 
 		} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
 
@@ -404,10 +386,8 @@ public class JSONParser {
 			statusStack.push(this.status);
 			valueStack.push(newArray);
 
-		} else if (this.token.type != Yytoken.TYPE_COMMA) {
-
+		} else if (this.token.type != Yytoken.TYPE_COMMA)
 			this.status = JSONParser.S_IN_ERROR;
-		}
 	}
 
 	/**
@@ -499,22 +479,19 @@ public class JSONParser {
 
 			this.nextToken();
 
-			if (this.status == JSONParser.S_INIT) {
+			if (this.status == JSONParser.S_INIT)
 				this.init(statusStack, valueStack);
-			} else if (this.status == JSONParser.S_IN_FINISHED_VALUE) {
+			else if (this.status == JSONParser.S_IN_FINISHED_VALUE)
 				return this.inFinishedValue(valueStack);
-			} else if (this.status == JSONParser.S_IN_OBJECT) {
+			else if (this.status == JSONParser.S_IN_OBJECT)
 				this.inObject(statusStack, valueStack);
-			} else if (this.status == JSONParser.S_PASSED_PAIR_KEY) {
+			else if (this.status == JSONParser.S_PASSED_PAIR_KEY)
 				this.inPassedPairKey(statusStack, valueStack);
-			} else if (this.status == JSONParser.S_IN_ARRAY) {
+			else if (this.status == JSONParser.S_IN_ARRAY)
 				this.inArray(statusStack, valueStack);
-			}
 
-			if (this.status == JSONParser.S_IN_ERROR) {
-
+			if (this.status == JSONParser.S_IN_ERROR)
 				throw new JSONParseException(getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, token);
-			}
 
 		} while (this.token.type != Yytoken.TYPE_EOF);
 
@@ -605,35 +582,27 @@ public class JSONParser {
 						this.status = JSONParser.S_IN_FINISHED_VALUE;
 						statusStack.push(this.status);
 
-						if (!contentHandler.primitive(this.token.value)) {
-
+						if (!contentHandler.primitive(this.token.value))
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
 
 						this.status = JSONParser.S_IN_OBJECT;
 						statusStack.push(this.status);
 
-						if (!contentHandler.startObject()) {
-
+						if (!contentHandler.startObject())
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
 
 						this.status = JSONParser.S_IN_ARRAY;
 						statusStack.push(this.status);
 
-						if (!contentHandler.startArray()) {
-
+						if (!contentHandler.startArray())
 							return;
-						}
 
-					} else {
-
+					} else
 						this.status = JSONParser.S_IN_ERROR;
-					}
 
 				} else if (this.status == JSONParser.S_IN_FINISHED_VALUE) {
 
@@ -645,10 +614,8 @@ public class JSONParser {
 						status = JSONParser.S_END;
 						return;
 
-					} else {
-
+					} else
 						this.status = JSONParser.S_IN_ERROR;
-					}
 
 				} else if (this.status == JSONParser.S_IN_OBJECT) {
 
@@ -662,15 +629,11 @@ public class JSONParser {
 							this.status = JSONParser.S_PASSED_PAIR_KEY;
 							statusStack.push(this.status);
 
-							if (!contentHandler.startObjectEntry(key)) {
-
+							if (!contentHandler.startObjectEntry(key))
 								return;
-							}
 
-						} else {
-
+						} else
 							this.status = JSONParser.S_IN_ERROR;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_RIGHT_BRACE) {
 
@@ -679,20 +642,14 @@ public class JSONParser {
 							statusStack.pop();
 							this.status = (int) statusStack.peek();
 
-						} else {
-
+						} else
 							this.status = JSONParser.S_IN_FINISHED_VALUE;
-						}
 
-						if (!contentHandler.endObject()) {
-
+						if (!contentHandler.endObject())
 							return;
-						}
 
-					} else if (this.token.type != Yytoken.TYPE_COMMA) {
-
+					} else if (this.token.type != Yytoken.TYPE_COMMA)
 						this.status = JSONParser.S_IN_ERROR;
-					}
 
 				} else if (this.status == JSONParser.S_PASSED_PAIR_KEY) {
 
@@ -703,10 +660,8 @@ public class JSONParser {
 						statusStack.pop();
 						this.status = (int) statusStack.peek();
 
-						if (!contentHandler.primitive(this.token.value) || !contentHandler.endObjectEntry()) {
-
+						if (!contentHandler.primitive(this.token.value) || !contentHandler.endObjectEntry())
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
 
@@ -715,10 +670,8 @@ public class JSONParser {
 						this.status = JSONParser.S_IN_ARRAY;
 						statusStack.push(this.status);
 
-						if (!contentHandler.startArray()) {
-
+						if (!contentHandler.startArray())
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
 
@@ -727,25 +680,19 @@ public class JSONParser {
 						this.status = JSONParser.S_IN_OBJECT;
 						statusStack.push(this.status);
 
-						if (!contentHandler.startObject()) {
-
+						if (!contentHandler.startObject())
 							return;
-						}
 
-					} else if (this.token.type != Yytoken.TYPE_COLON) {
-
+					} else if (this.token.type != Yytoken.TYPE_COLON)
 						this.status = JSONParser.S_IN_ERROR;
-					}
 
 				} else if (this.status == JSONParser.S_IN_PAIR_VALUE) {
 
 					statusStack.pop();
 					this.status = (int) statusStack.peek();
 
-					if (!contentHandler.endObjectEntry()) {
-
+					if (!contentHandler.endObjectEntry())
 						return;
-					}
 
 				} else if (this.status == JSONParser.S_IN_ARRAY) {
 
@@ -753,10 +700,8 @@ public class JSONParser {
 
 					if (this.token.type == Yytoken.TYPE_VALUE) {
 
-						if (!contentHandler.primitive(this.token.value)) {
-
+						if (!contentHandler.primitive(this.token.value))
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_RIGHT_SQUARE) {
 
@@ -765,50 +710,36 @@ public class JSONParser {
 							statusStack.pop();
 							this.status = (int) statusStack.peek();
 
-						} else {
-
+						} else
 							this.status = JSONParser.S_IN_FINISHED_VALUE;
-						}
 
-						if (!contentHandler.endArray()) {
-
+						if (!contentHandler.endArray())
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
 
 						this.status = JSONParser.S_IN_OBJECT;
 						statusStack.push(this.status);
 
-						if (!contentHandler.startObject()) {
-
+						if (!contentHandler.startObject())
 							return;
-						}
 
 					} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
 
 						this.status = JSONParser.S_IN_ARRAY;
 						statusStack.push(this.status);
 
-						if (!contentHandler.startArray()) {
-
+						if (!contentHandler.startArray())
 							return;
-						}
 
-					} else if (this.token.type != Yytoken.TYPE_COMMA) {
-
+					} else if (this.token.type != Yytoken.TYPE_COMMA)
 						this.status = JSONParser.S_IN_ERROR;
-					}
 
-				} else if (this.status == JSONParser.S_END) {
-
+				} else if (this.status == JSONParser.S_END)
 					return;
-				}
 
-				if (this.status == JSONParser.S_IN_ERROR) {
-
+				if (this.status == JSONParser.S_IN_ERROR)
 					throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
-				}
 
 			} while (this.token.type != Yytoken.TYPE_EOF);
 

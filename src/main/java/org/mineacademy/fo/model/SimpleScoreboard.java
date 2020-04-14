@@ -290,7 +290,7 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	private final String replaceTheme(final String row) {
-		if (theme != null && row.contains(":")) {
+		if (theme != null && row.contains(":"))
 			if (theme.length == 1)
 				return theme[0] + row;
 
@@ -300,7 +300,6 @@ public class SimpleScoreboard {
 				if (split.length > 1)
 					return theme[0] + split[0] + ":" + theme[1] + split[1];
 			}
-		}
 
 		return row;
 	}

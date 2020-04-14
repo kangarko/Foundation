@@ -292,10 +292,8 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 
 		this.forEach((key, value) -> {
 
-			if (value != null) {
-
+			if (value != null)
 				object.put(key, value);
-			}
 		});
 
 		return object;
@@ -539,20 +537,18 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 
 		this.forEach((key, value) -> {
 
-			if (value instanceof JSONObject) {
+			if (value instanceof JSONObject)
 				builder.append(((JSONObject) value).toXML(key.toString()));
-			} else if (value instanceof JSONArray) {
+			else if (value instanceof JSONArray)
 				builder.append(((JSONArray) value).toXML(key.toString()));
-			} else {
+			else {
 
 				builder.append('<');
 				builder.append(key);
 				builder.append('>');
 
-				if (value != null) {
-
+				if (value != null)
 					builder.append(String.valueOf(value));
-				}
 
 				builder.append("</");
 				builder.append(key);

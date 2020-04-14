@@ -1,8 +1,18 @@
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -12,14 +22,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for various reflection methods
@@ -95,7 +100,6 @@ public final class ReflectionUtil {
 			throw new FoException(t, "Could not set " + fieldName + " in " + object + " to " + fieldValue);
 		}
 	}
-
 
 	/**
 	 * Convenience method for getting a static field content.
@@ -190,13 +194,12 @@ public final class ReflectionUtil {
 	public static <T> T getFieldContent(Class<?> clazz, final String field, final Object instance) {
 		final String originalClassName = clazz.getSimpleName();
 
-		do {
+		do
 			// note: getDeclaredFields() fails if any of the fields are classes that cannot be loaded
 			for (final Field f : clazz.getDeclaredFields())
 				if (f.getName().equals(field))
 					return (T) getFieldContent(f, instance);
-
-		} while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
+		while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
 
 		throw new ReflectionException("No such field " + field + " in " + originalClassName + " or its superclasses");
 	}
@@ -228,9 +231,9 @@ public final class ReflectionUtil {
 	public static Field[] getAllFields(Class<?> clazz) {
 		final List<Field> list = new ArrayList<>();
 
-		do {
+		do
 			list.addAll(Arrays.asList(clazz.getDeclaredFields()));
-		} while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
+		while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
 
 		return list.toArray(new Field[list.size()]);
 	}
@@ -539,11 +542,10 @@ public final class ReflectionUtil {
 					name = "SNOWY_TAIGA";
 		}
 
-		if (MinecraftVersion.atLeast(V.v1_14)) {
+		if (MinecraftVersion.atLeast(V.v1_14))
 			if (enumType == EntityType.class)
 				if (rawName.equals("TIPPED_ARROW"))
 					name = "ARROW";
-		}
 
 		final String oldName = name;
 

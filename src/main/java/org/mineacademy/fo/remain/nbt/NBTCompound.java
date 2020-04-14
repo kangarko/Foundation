@@ -22,8 +22,8 @@ public class NBTCompound {
 		this.parent = owner;
 	}
 
-	protected void saveCompound(){
-		if(parent != null)
+	protected void saveCompound() {
+		if (parent != null)
 			parent.saveCompound();
 	}
 
@@ -341,7 +341,7 @@ public class NBTCompound {
 			return getCompound(name);
 		NBTReflectionUtil.addNBTTagCompound(this, name);
 		final NBTCompound comp = getCompound(name);
-		if(comp == null)
+		if (comp == null)
 			throw new NbtApiException("Error while adding Compound, got null!");
 		saveCompound();
 		return comp;
@@ -406,9 +406,8 @@ public class NBTCompound {
 	@Override
 	public String toString() {
 		final StringBuilder result = new StringBuilder();
-		for (final String key : getKeys()) {
+		for (final String key : getKeys())
 			result.append(toString(key));
-		}
 		return result.toString();
 	}
 
@@ -423,11 +422,10 @@ public class NBTCompound {
 			result.append("   ");
 			compound = compound.getParent();
 		}
-		if (this.getType(key) == NBTType.NBTTagCompound) {
+		if (this.getType(key) == NBTType.NBTTagCompound)
 			return this.getCompound(key).toString();
-		} else {
+		else
 			return result + "-" + key + ": " + getContent(key) + System.lineSeparator();
-		}
 	}
 
 	/**

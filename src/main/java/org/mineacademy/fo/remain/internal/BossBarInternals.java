@@ -71,20 +71,18 @@ public class BossBarInternals implements Listener {
 			entityClass = v1_8Hack.class;
 			isBelowGround = false;
 
-		} else {
-			if (MinecraftVersion.equals(V.v1_6))
-				entityClass = v1_6.class;
+		} else if (MinecraftVersion.equals(V.v1_6))
+			entityClass = v1_6.class;
 
-			else if (MinecraftVersion.equals(V.v1_7))
-				entityClass = v1_7.class;
+		else if (MinecraftVersion.equals(V.v1_7))
+			entityClass = v1_7.class;
 
-			else if (MinecraftVersion.equals(V.v1_8)) {
-				entityClass = v1_8.class;
-				isBelowGround = false;
+		else if (MinecraftVersion.equals(V.v1_8)) {
+			entityClass = v1_8.class;
+			isBelowGround = false;
 
-			} else if (MinecraftVersion.newerThan(V.v1_8))
-				entityClass = v1_9Native.class;
-		}
+		} else if (MinecraftVersion.newerThan(V.v1_8))
+			entityClass = v1_9Native.class;
 
 		if (!MinecraftVersion.olderThan(V.v1_6)) {
 			Valid.checkNotNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
@@ -266,9 +264,8 @@ public class BossBarInternals implements Listener {
 			if (drag.health <= 1) {
 				removeBar(player);
 				cancelTimer(player);
-			} else {
+			} else
 				sendDragon(drag, player);
-			}
 		}).getTaskId());
 
 		sendDragon(dragon, player);
@@ -283,9 +280,9 @@ public class BossBarInternals implements Listener {
 
 		final EnderDragonEntity dragon = getDragon(player, "");
 
-		if (dragon instanceof v1_9Native) {
+		if (dragon instanceof v1_9Native)
 			((v1_9Native) dragon).removePlayer(player);
-		} else
+		else
 			Remain.sendPacket(player, getDragon(player, "").getDestroyPacket());
 
 		players.remove(player.getUniqueId());
@@ -307,9 +304,8 @@ public class BossBarInternals implements Listener {
 	private static void cancelTimer(final Player player) {
 		final Integer timerID = timers.remove(player.getUniqueId());
 
-		if (timerID != null) {
+		if (timerID != null)
 			Bukkit.getScheduler().cancelTask(timerID);
-		}
 	}
 
 	private static void sendDragon(final EnderDragonEntity dragon, final Player player) {

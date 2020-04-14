@@ -23,11 +23,10 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	public NBTListCompound addCompound() {
 		try {
 			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
 				WrapperMethod.LIST_ADD.run(listObject, size(), compound);
-			} else {
+			else
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, compound);
-			}
 			getParent().saveCompound();
 			return new NBTListCompound(this, compound);
 		} catch (final Exception ex) {
@@ -43,16 +42,14 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	 */
 	@Override
 	public boolean add(NBTListCompound empty) {
-		if (empty != null) {
+		if (empty != null)
 			throw new NotImplementedException("You need to pass null! ListCompounds from other lists won't work.");
-		}
 		try {
 			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
 				WrapperMethod.LIST_ADD.run(listObject, 0, compound);
-			} else {
+			else
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, compound);
-			}
 			super.getParent().saveCompound();
 			return true;
 		} catch (final Exception ex) {
@@ -62,16 +59,14 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 
 	@Override
 	public void add(int index, NBTListCompound element) {
-		if (element != null) {
+		if (element != null)
 			throw new NotImplementedException("You need to pass null! ListCompounds from other lists won't work.");
-		}
 		try {
 			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
 				WrapperMethod.LIST_ADD.run(listObject, index, compound);
-			} else {
+			else
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, compound);
-			}
 			super.getParent().saveCompound();
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);

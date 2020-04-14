@@ -148,7 +148,7 @@ class v1_6 extends EnderDragonEntity {
 		try {
 			watcher = watcher_class.newInstance();
 
-			final Method a = ReflectionUtil.getMethod(watcher_class, "a", new Class<?>[] { int.class, Object.class });
+			final Method a = ReflectionUtil.getMethod(watcher_class, "a", int.class, Object.class);
 			a.setAccessible(true);
 
 			a.invoke(watcher, 0, isVisible() ? (byte) 0 : (byte) 0x20);

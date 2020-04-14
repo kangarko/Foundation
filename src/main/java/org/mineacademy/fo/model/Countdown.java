@@ -68,8 +68,7 @@ public abstract class Countdown implements Runnable {
 	public final void run() {
 		secondsSinceStart++;
 
-		if (secondsSinceStart < countdownSeconds) {
-
+		if (secondsSinceStart < countdownSeconds)
 			try {
 				onTick();
 
@@ -86,8 +85,7 @@ public abstract class Countdown implements Runnable {
 						"Counting till: " + countdownSeconds,
 						"%error");
 			}
-
-		} else {
+		else {
 			cancel();
 			onEnd();
 		}

@@ -171,12 +171,10 @@ final class NmsAccessor {
 				hasEntityConsumer = true;
 				addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class, Class.forName("org.bukkit.util.Consumer"));
 
-			} else {
-				if (MinecraftVersion.newerThan(V.v1_7))
-					addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
-				else
-					addEntity = ReflectionUtil.getNMSClass("World").getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
-			}
+			} else if (MinecraftVersion.newerThan(V.v1_7))
+				addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
+			else
+				addEntity = ReflectionUtil.getNMSClass("World").getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Error setting up nms entity accessor!");

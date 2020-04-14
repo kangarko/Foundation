@@ -294,10 +294,10 @@ public final class Debugger {
 		Throwable cause = throwable.getCause();
 
 		if (cause != null)
-			do {
+			do
 				if (cause != null)
 					printStackTrace(cause);
-			} while ((cause = cause.getCause()) != null);
+			while ((cause = cause.getCause()) != null);
 	}
 
 	/**
