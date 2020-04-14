@@ -3,10 +3,12 @@ package org.mineacademy.fo.command;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
+import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -36,14 +38,17 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.Getter;
-import lombok.NonNull;
-
 /**
  * A simple command used to replace all Bukkit/Spigot command functionality
  * across any plugin that utilizes this.
  */
 public abstract class SimpleCommand extends Command {
+
+	private static final List<SimpleCommand> registeredCommands = new ArrayList<>();
+
+	public static List<SimpleCommand> getRegisteredCommands(){
+		return Collections.unmodifiableList(registeredCommands);
+	}
 
 	/**
 	 * The default permission syntax for this command.
@@ -152,7 +157,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param label
 	 */
-	protected SimpleCommand(String label) {
+	protected SimpleCommand(final String label) {
 		this(parseLabel0(label), parseAliases0(label));
 	}
 
@@ -160,7 +165,7 @@ public abstract class SimpleCommand extends Command {
 	 * Create a new simple command from the list. The first
 	 * item in the list is the main label and the other ones are the aliases.
 	 */
-	protected SimpleCommand(StrictList<String> labels) {
+	protected SimpleCommand(final StrictList<String> labels) {
 		this(labels.get(0), labels.size() > 1 ? labels.range(1).getSource() : null);
 	}
 
@@ -170,7 +175,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param label
 	 * @param aliases
 	 */
-	protected SimpleCommand(String label, List<String> aliases) {
+	protected SimpleCommand(final String label, final List<String> aliases) {
 		super(label);
 
 		Valid.checkBoolean(!(this instanceof CommandExecutor), "Please do not write 'implements CommandExecutor' for /" + super.getLabel() + " cmd, we already have a listener there");
@@ -178,17 +183,19 @@ public abstract class SimpleCommand extends Command {
 
 		setLabel(label);
 
-		if (aliases != null)
+		if (aliases != null) {
 			setAliases(aliases);
+		}
 
 		// Set a default permission for this command
 		setPermission(DEFAULT_PERMISSION_SYNTAX);
+		registeredCommands.add(this);
 	}
 
 	/*
 	 * Split the given label by | and get the first part, used as the main label
 	 */
-	private final static String parseLabel0(String label) {
+	private static String parseLabel0(final String label) {
 		Valid.checkNotNull(label, "Label must not be null!");
 
 		return label.split("\\|")[0];
@@ -197,7 +204,7 @@ public abstract class SimpleCommand extends Command {
 	/*
 	 * Split the given label by | and use the second and further parts as aliases
 	 */
-	private final static List<String> parseAliases0(String label) {
+	private static List<String> parseAliases0(final String label) {
 		final String[] aliases = label.split("\\|");
 
 		return aliases.length > 0 ? Arrays.asList(Arrays.copyOfRange(aliases, 1, aliases.length)) : new ArrayList<>();
@@ -227,7 +234,7 @@ public abstract class SimpleCommand extends Command {
 	 * 							   unregister /t from Towny, which is undesired.
 	 *
 	 */
-	public final void register(boolean unregisterOldAliases) {
+	public final void register(final boolean unregisterOldAliases) {
 		Valid.checkBoolean(!(this instanceof SimpleSubCommand), "Sub commands cannot be registered!");
 		Valid.checkBoolean(!registered, "The command /" + getLabel() + " has already been registered!");
 
@@ -236,8 +243,9 @@ public abstract class SimpleCommand extends Command {
 		if (oldCommand != null) {
 			final String owningPlugin = oldCommand.getPlugin().getName();
 
-			if (!owningPlugin.equals(SimplePlugin.getNamed()))
+			if (!owningPlugin.equals(SimplePlugin.getNamed())) {
 				Common.log("&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
+			}
 
 			Remain.unregisterCommand(oldCommand.getLabel(), unregisterOldAliases);
 		}
@@ -271,7 +279,7 @@ public abstract class SimpleCommand extends Command {
 	 * Also contains various error handling scenarios
 	 */
 	@Override
-	public final boolean execute(CommandSender sender, String label, String[] args) {
+	public final boolean execute(final CommandSender sender, final String label, final String[] args) {
 
 		// Set variables to re-use later
 		this.sender = sender;
@@ -280,15 +288,17 @@ public abstract class SimpleCommand extends Command {
 
 		// Set tell prefix only if the parent setting was on
 		final boolean hadTellPrefix = Common.ADD_TELL_PREFIX;
-		if (hadTellPrefix)
+		if (hadTellPrefix) {
 			Common.ADD_TELL_PREFIX = addTellPrefix;
+		}
 
 		// Catch "errors" that contain a message to send to the player
 		try {
 
 			// Check if sender has the proper permission
-			if (getPermission() != null)
+			if (getPermission() != null) {
 				checkPerm(getPermission());
+			}
 
 			// Check for minimum required arguments and print help
 			if (args.length < getMinArguments() ||
@@ -297,11 +307,13 @@ public abstract class SimpleCommand extends Command {
 				checkPerm(replaceBasicPlaceholders0("{plugin.name}.command.help"));
 
 				// Enforce setUsage being used
-				if (Common.getOrEmpty(getUsage()).isEmpty())
+				if (Common.getOrEmpty(getUsage()).isEmpty()) {
 					throw new FoException("If you set getMinArguments you must also call setUsage for /" + getLabel() + " command!");
+				}
 
-				if (!Common.getOrEmpty(getDescription()).isEmpty())
+				if (!Common.getOrEmpty(getDescription()).isEmpty()) {
 					tellNoPrefix(SimpleLocalization.Commands.LABEL_DESCRIPTION.replace("{description}", getDescription()));
+				}
 
 				if (getMultilineUsageMessage() != null) {
 					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES);
@@ -323,23 +335,24 @@ public abstract class SimpleCommand extends Command {
 			}
 
 			// Check if we can run this command in time
-			if (cooldownSeconds > 0)
+			if (cooldownSeconds > 0) {
 				handleCooldown();
+			}
 
 			onCommand();
 
 		} catch (final InvalidCommandArgException ex) {
-			if (getMultilineUsageMessage() == null)
+			if (getMultilineUsageMessage() == null) {
 				dynamicTellError(ex.getMessage() != null ? ex.getMessage() : SimpleLocalization.Commands.INVALID_SUB_ARGUMENT);
-
-			else {
+			} else {
 				dynamicTellError(SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
 				tellNoPrefix(getMultilineUsageMessage());
 			}
 
 		} catch (final CommandException ex) {
-			if (ex.getMessages() != null)
+			if (ex.getMessages() != null) {
 				dynamicTellError(ex.getMessages());
+			}
 
 		} catch (final Throwable t) {
 			dynamicTellError(SimpleLocalization.Commands.ERROR.find("error").replace(t.toString()).getReplacedMessage());
@@ -353,19 +366,21 @@ public abstract class SimpleCommand extends Command {
 		return true;
 	}
 
-	private void dynamicTellError(String... messages) {
-		if (USE_MESSENGER)
-			for (final String message : messages)
+	private void dynamicTellError(final String... messages) {
+		if (USE_MESSENGER) {
+			for (final String message : messages) {
 				tellError(message);
-		else
+			}
+		} else {
 			tellNoPrefix(messages);
+		}
 	}
 
 	/**
 	 * Check if the command cooldown is active and if the command
 	 * is run within the given limit, we stop it and inform the player
 	 */
-	private final void handleCooldown() {
+	private void handleCooldown() {
 		if (isPlayer()) {
 			final Player player = getPlayer();
 
@@ -412,8 +427,9 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final void checkConsole() throws CommandException {
-		if (!isPlayer())
+		if (!isPlayer()) {
 			throw new CommandException("&c" + SimpleLocalization.Commands.NO_CONSOLE);
+		}
 	}
 
 	/**
@@ -422,9 +438,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param perm
 	 * @throws CommandException
 	 */
-	public final void checkPerm(@NonNull String perm) throws CommandException {
-		if (isPlayer() && !PlayerUtil.hasPerm(sender, perm))
+	public final void checkPerm(@NonNull final String perm) throws CommandException {
+		if (isPlayer() && !PlayerUtil.hasPerm(sender, perm)) {
 			throw new CommandException(getPermissionMessage().replace("{permission}", perm));
+		}
 	}
 
 	/**
@@ -434,9 +451,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @throws CommandException
 	 */
-	protected final void checkArgs(int minimumLength, String falseMessage) throws CommandException {
-		if (args.length < minimumLength)
+	protected final void checkArgs(final int minimumLength, final String falseMessage) throws CommandException {
+		if (args.length < minimumLength) {
 			returnTell((USE_MESSENGER ? "" : "&c") + falseMessage);
+		}
 	}
 
 	/**
@@ -446,9 +464,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @throws CommandException
 	 */
-	protected final void checkBoolean(boolean value, String falseMessage) throws CommandException {
-		if (!value)
+	protected final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
+		if (!value) {
 			returnTell((USE_MESSENGER ? "" : "&c") + falseMessage);
+		}
 	}
 
 	/**
@@ -458,9 +477,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param messageIfNull
 	 * @throws CommandException
 	 */
-	protected final void checkNotNull(Object value, String messageIfNull) throws CommandException {
-		if (value == null)
+	protected final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
+		if (value == null) {
 			returnTell((USE_MESSENGER ? "" : "&c") + messageIfNull);
+		}
 	}
 
 	/**
@@ -471,7 +491,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final Player findPlayer(String name) throws CommandException {
+	protected final Player findPlayer(final String name) throws CommandException {
 		return findPlayer(name, SimpleLocalization.Player.NOT_ONLINE);
 	}
 
@@ -483,7 +503,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final Player findPlayer(String name, String falseMessage) throws CommandException {
+	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
 		final Player player = PlayerUtil.getNickedNonVanishedPlayer(name);
 		checkBoolean(player != null && player.isOnline(), falseMessage.replace("{player}", name));
 
@@ -501,7 +521,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final CompMaterial findMaterial(String name, String falseMessage) throws CommandException {
+	protected final CompMaterial findMaterial(final String name, final String falseMessage) throws CommandException {
 		final CompMaterial found = CompMaterial.fromString(name);
 
 		checkNotNull(found, falseMessage.replace("{enum}", name).replace("{item}", name));
@@ -519,7 +539,8 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(Class<T> enumType, String name, String falseMessage) throws CommandException {
+	protected final <T extends Enum<T>> T findEnum(
+			final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
 		T found = null;
 
 		try {
@@ -541,7 +562,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final int findNumber(int index, int min, int max, String falseMessage) {
+	protected final int findNumber(final int index, final int min, final int max, final String falseMessage) {
 		final int number = findNumber(index, falseMessage);
 		checkBoolean(number >= min && number <= max, falseMessage.replace("{min}", min + "").replace("{max}", max + ""));
 
@@ -555,7 +576,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final int findNumber(int index, String falseMessage) {
+	protected final int findNumber(final int index, final String falseMessage) {
 		checkBoolean(index < args.length, falseMessage);
 
 		Integer parsed = null;
@@ -584,7 +605,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(String permission) {
+	protected final boolean hasPerm(final String permission) {
 		return PlayerUtil.hasPerm(sender, permission);
 	}
 
@@ -599,7 +620,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param component
 	 */
-	protected final void tell(SimpleComponent component) {
+	protected final void tell(final SimpleComponent component) {
 		component.send(sender);
 	}
 
@@ -608,7 +629,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param replacer
 	 */
-	protected final void tell(Replacer replacer) {
+	protected final void tell(final Replacer replacer) {
 		tell(replacer.getReplacedMessage());
 	}
 
@@ -617,7 +638,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tell(Collection<String> messages) {
+	protected final void tell(final Collection<String> messages) {
 		tell(messages.toArray(new String[messages.size()]));
 	}
 
@@ -626,7 +647,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param replacer
 	 */
-	protected final void tellNoPrefix(Replacer replacer) {
+	protected final void tellNoPrefix(final Replacer replacer) {
 		tellNoPrefix(replacer.getReplacedMessage());
 	}
 
@@ -635,7 +656,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tellNoPrefix(String... messages) {
+	protected final void tellNoPrefix(final String... messages) {
 		final boolean tellPrefix = Common.ADD_TELL_PREFIX;
 		final boolean localPrefix = addTellPrefix;
 
@@ -662,19 +683,24 @@ public abstract class SimpleCommand extends Command {
 				if (USE_MESSENGER && addTellPrefix) {
 					tellInfo(messages[0]);
 
-					if (messages.length > 1)
-						for (int i = 1; i < messages.length; i++)
+					if (messages.length > 1) {
+						for (int i = 1; i < messages.length; i++) {
 							Common.tellNoPrefix(sender, messages[i]);
+						}
+					}
 
-				} else
+				} else {
 					Common.tellNoPrefix(sender, messages);
+				}
 
 			} else {
-				if (tellPrefix.isEmpty())
+				if (tellPrefix.isEmpty()) {
 					Common.tell(sender, messages);
-				else
-					for (final String message : messages)
+				} else {
+					for (final String message : messages) {
 						Common.tellNoPrefix(sender, tellPrefix + " " + message);
+					}
+				}
 			}
 		}
 	}
@@ -758,7 +784,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 * @throws CommandException
 	 */
-	protected final void returnTell(Collection<String> messages) throws CommandException {
+	protected final void returnTell(final Collection<String> messages) throws CommandException {
 		returnTell(messages.toArray(new String[messages.size()]));
 	}
 
@@ -768,7 +794,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param replacer
 	 * @throws CommandException
 	 */
-	protected final void returnTell(Replacer replacer) throws CommandException {
+	protected final void returnTell(final Replacer replacer) throws CommandException {
 		returnTell(replacer.getReplacedMessage());
 	}
 
@@ -778,7 +804,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 * @throws CommandException
 	 */
-	protected final void returnTell(String... messages) throws CommandException {
+	protected final void returnTell(final String... messages) throws CommandException {
 		throw new CommandException(replacePlaceholders(messages));
 	}
 
@@ -791,7 +817,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param placeholder
 	 */
-	protected final void addPlaceholder(Placeholder placeholder) {
+	protected final void addPlaceholder(final Placeholder placeholder) {
 		placeholders.add(placeholder);
 	}
 
@@ -802,9 +828,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 * @return
 	 */
-	protected final String[] replacePlaceholders(String[] messages) {
-		for (int i = 0; i < messages.length; i++)
+	protected final String[] replacePlaceholders(final String[] messages) {
+		for (int i = 0; i < messages.length; i++) {
 			messages[i] = replacePlaceholders(messages[i]).replace("{prefix}", Common.getTellPrefix());
+		}
 
 		return messages;
 	}
@@ -820,8 +847,9 @@ public abstract class SimpleCommand extends Command {
 		message = replaceBasicPlaceholders0(message);
 
 		// Replace {X} with arguments
-		for (int i = 0; i < args.length; i++)
+		for (int i = 0; i < args.length; i++) {
 			message = message.replace("{" + i + "}", Common.getOrEmpty(args[i]));
+		}
 
 		// Replace saved placeholders
 		for (final Placeholder placeholder : placeholders) {
@@ -830,10 +858,11 @@ public abstract class SimpleCommand extends Command {
 			if (placeholder instanceof PositionPlaceholder) {
 				final PositionPlaceholder arguedPlaceholder = (PositionPlaceholder) placeholder;
 
-				if (args.length > arguedPlaceholder.getPosition())
+				if (args.length > arguedPlaceholder.getPosition()) {
 					toReplace = args[arguedPlaceholder.getPosition()];
-				else
+				} else {
 					continue;
+				}
 			}
 
 			message = message.replace("{" + placeholder.getIdentifier() + "}", placeholder.replace(toReplace));
@@ -848,7 +877,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param message
 	 * @return
 	 */
-	private final String replaceBasicPlaceholders0(String message) {
+	private String replaceBasicPlaceholders0(final String message) {
 		return message
 				.replace("{label}", getLabel())
 				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
@@ -863,9 +892,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param position
 	 * @param value
 	 */
-	protected final void setArg(int position, String value) {
-		if (args.length <= position)
+	protected final void setArg(final int position, final String value) {
+		if (args.length <= position) {
 			args = Arrays.copyOf(args, position + 1);
+		}
 
 		args[position] = value;
 	}
@@ -886,7 +916,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param from
 	 * @return
 	 */
-	protected final String[] rangeArgs(int from) {
+	protected final String[] rangeArgs(final int from) {
 		return rangeArgs(from, args.length);
 	}
 
@@ -898,7 +928,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param to
 	 * @return
 	 */
-	protected final String[] rangeArgs(int from, int to) {
+	protected final String[] rangeArgs(final int from, final int to) {
 		return Arrays.copyOfRange(args, from, to);
 	}
 
@@ -909,7 +939,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param from
 	 * @return
 	 */
-	protected final String joinArgs(int from) {
+	protected final String joinArgs(final int from) {
 		return joinArgs(from, args.length);
 	}
 
@@ -921,11 +951,12 @@ public abstract class SimpleCommand extends Command {
 	 * @param to
 	 * @return
 	 */
-	protected final String joinArgs(int from, int to) {
+	protected final String joinArgs(final int from, final int to) {
 		String message = "";
 
-		for (int i = from; i < args.length && i < to; i++)
+		for (int i = from; i < args.length && i < to; i++) {
 			message += args[i] + (i + 1 == args.length ? "" : " ");
+		}
 
 		return message;
 	}
@@ -951,7 +982,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	@Deprecated
 	@Override
-	public final List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
+	public final List<String> tabComplete(final CommandSender sender, final String alias, final String[] args, final Location location) throws IllegalArgumentException {
 		return tabComplete(sender, alias, args);
 	}
 
@@ -968,17 +999,18 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 */
 	@Override
-	public final List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+	public final List<String> tabComplete(final CommandSender sender, final String alias, final String[] args) throws IllegalArgumentException {
 		this.sender = sender;
-		this.label = alias;
+		label = alias;
 		this.args = args;
 
 		if (hasPerm(getPermission())) {
 			List<String> suggestions = tabComplete();
 
 			// Return online player names when suggestions are null - simulate Bukkit behaviour
-			if (suggestions == null)
+			if (suggestions == null) {
 				suggestions = completeLastWordPlayerNames();
+			}
 
 			return suggestions;
 		}
@@ -1014,7 +1046,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param suggestions
 	 * @return
 	 */
-	protected final <T> List<String> completeLastWord(T... suggestions) {
+	protected final <T> List<String> completeLastWord(final T... suggestions) {
 		return TabUtil.complete(getLastArg(), suggestions);
 	}
 
@@ -1027,11 +1059,12 @@ public abstract class SimpleCommand extends Command {
 	 * @param suggestions
 	 * @return
 	 */
-	protected final <T> List<String> completeLastWord(Iterable<T> suggestions) {
+	protected final <T> List<String> completeLastWord(final Iterable<T> suggestions) {
 		final List<T> list = new ArrayList<>();
 
-		for (final T suggestion : suggestions)
+		for (final T suggestion : suggestions) {
 			list.add(suggestion);
+		}
 
 		return TabUtil.complete(getLastArg(), list.toArray());
 	}
@@ -1077,7 +1110,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param addTellPrefix
 	 */
-	protected final void addTellPrefix(boolean addTellPrefix) {
+	protected final void addTellPrefix(final boolean addTellPrefix) {
 		this.addTellPrefix = addTellPrefix;
 	}
 
@@ -1088,7 +1121,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param tellPrefix
 	 */
-	protected final void setTellPrefix(String tellPrefix) {
+	protected final void setTellPrefix(final String tellPrefix) {
 		this.tellPrefix = tellPrefix;
 	}
 
@@ -1097,7 +1130,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param minArguments
 	 */
-	protected final void setMinArguments(int minArguments) {
+	protected final void setMinArguments(final int minArguments) {
 		Valid.checkBoolean(minArguments >= 0, "Minimum arguments must be 0 or greater");
 
 		this.minArguments = minArguments;
@@ -1109,10 +1142,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param cooldown
 	 * @param unit
 	 */
-	protected final void setCooldown(int cooldown, TimeUnit unit) {
+	protected final void setCooldown(final int cooldown, final TimeUnit unit) {
 		Valid.checkBoolean(cooldown >= 0, "Cooldown must be >= 0 for /" + getLabel());
 
-		this.cooldownSeconds = (int) unit.toSeconds(cooldown);
+		cooldownSeconds = (int) unit.toSeconds(cooldown);
 	}
 
 	/**
@@ -1122,7 +1155,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param cooldownMessage
 	 */
-	protected final void setCooldownMessage(String cooldownMessage) {
+	protected final void setCooldownMessage(final String cooldownMessage) {
 		this.cooldownMessage = cooldownMessage;
 	}
 
@@ -1169,7 +1202,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param
 	 */
 	@Override
-	public final void setPermission(String permission) {
+	public final void setPermission(final String permission) {
 		super.setPermission(permission);
 	}
 
@@ -1237,8 +1270,8 @@ public abstract class SimpleCommand extends Command {
 	 * Updates the label of this command
 	 */
 	@Override
-	public final boolean setLabel(String name) {
-		this.label = name;
+	public final boolean setLabel(final String name) {
+		label = name;
 
 		return super.setLabel(name);
 	}
@@ -1251,13 +1284,14 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param autoHandleHelp
 	 */
-	protected final void setAutoHandleHelp(boolean autoHandleHelp) {
+	protected final void setAutoHandleHelp(final boolean autoHandleHelp) {
 		this.autoHandleHelp = autoHandleHelp;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof SimpleCommand ? ((SimpleCommand) obj).getLabel().equals(this.getLabel()) && ((SimpleCommand) obj).getAliases().equals(this.getAliases()) : false;
+	public boolean equals(final Object obj) {
+		return obj instanceof SimpleCommand ? ((SimpleCommand) obj).getLabel().equals(
+				getLabel()) && ((SimpleCommand) obj).getAliases().equals(getAliases()) : false;
 	}
 
 	@Override
