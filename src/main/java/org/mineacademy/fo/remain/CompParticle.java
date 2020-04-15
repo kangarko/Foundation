@@ -130,7 +130,7 @@ public enum CompParticle {
 			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
 
 			if (particle != null) {
-				if (MinecraftVersion.atLeast(V.v1_13)) {
+				if (MinecraftVersion.atLeast(V.v1_13))
 					if (particle.getDataType() == org.bukkit.block.data.BlockData.class) {
 						org.bukkit.block.data.BlockData opt = org.bukkit.Material.END_ROD.createBlockData(); // GRAVEL
 
@@ -140,7 +140,6 @@ public enum CompParticle {
 						location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D, opt);
 						return;
 					}
-				}
 
 				location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
 			}

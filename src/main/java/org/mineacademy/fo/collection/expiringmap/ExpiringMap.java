@@ -298,23 +298,19 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	 * @param builder The map builder
 	 */
 	private ExpiringMap(final Builder<K, V> builder) {
-		if (EXPIRER == null) {
+		if (EXPIRER == null)
 			synchronized (ExpiringMap.class) {
-				if (EXPIRER == null) {
+				if (EXPIRER == null)
 					EXPIRER = Executors.newSingleThreadScheduledExecutor(
 							THREAD_FACTORY == null ? new NamedThreadFactory("ExpiringMap-Expirer") : THREAD_FACTORY);
-				}
 			}
-		}
 
-		if (LISTENER_SERVICE == null && builder.asyncExpirationListeners != null) {
+		if (LISTENER_SERVICE == null && builder.asyncExpirationListeners != null)
 			synchronized (ExpiringMap.class) {
-				if (LISTENER_SERVICE == null) {
+				if (LISTENER_SERVICE == null)
 					LISTENER_SERVICE = (ThreadPoolExecutor) Executors.newCachedThreadPool(
 							THREAD_FACTORY == null ? new NamedThreadFactory("ExpiringMap-Listener-%s") : THREAD_FACTORY);
-				}
 			}
-		}
 
 		variableExpiration = builder.variableExpiration;
 		entries = variableExpiration ? new EntryTreeHashMap<>() : new EntryLinkedHashMap<>();
@@ -943,9 +939,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	public V get(Object key) {
 		final ExpiringEntry<K, V> entry = getEntry(key);
 
-		if (entry == null) {
+		if (entry == null)
 			return load((K) key);
-		} else if (ExpirationPolicy.ACCESSED.equals(entry.expirationPolicy.get()))
+		else if (ExpirationPolicy.ACCESSED.equals(entry.expirationPolicy.get()))
 			resetEntry(entry, false);
 
 		return entry.getValue();
@@ -1223,9 +1219,9 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		Valid.checkNotNull(key, "key");
 		writeLock.lock();
 		try {
-			if (entries.containsKey(key)) {
+			if (entries.containsKey(key))
 				return putInternal(key, value, expirationPolicy.get(), expirationNanos.get());
-			} else
+			else
 				return null;
 		} finally {
 			writeLock.unlock();
@@ -1256,12 +1252,11 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	 */
 	public void removeExpirationListener(ExpirationListener<K, V> listener) {
 		Valid.checkNotNull(listener, "listener");
-		for (int i = 0; i < expirationListeners.size(); i++) {
+		for (int i = 0; i < expirationListeners.size(); i++)
 			if (expirationListeners.get(i).equals(listener)) {
 				expirationListeners.remove(i);
 				return;
 			}
-		}
 	}
 
 	/**
@@ -1272,12 +1267,11 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	 */
 	public void removeAsyncExpirationListener(ExpirationListener<K, V> listener) {
 		Valid.checkNotNull(listener, "listener");
-		for (int i = 0; i < asyncExpirationListeners.size(); i++) {
+		for (int i = 0; i < asyncExpirationListeners.size(); i++)
 			if (asyncExpirationListeners.get(i).equals(listener)) {
 				asyncExpirationListeners.remove(i);
 				return;
 			}
-		}
 	}
 
 	/**
@@ -1433,22 +1427,20 @@ public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	 */
 	void notifyListeners(final ExpiringEntry<K, V> entry) {
 		if (asyncExpirationListeners != null)
-			for (final ExpirationListener<K, V> listener : asyncExpirationListeners) {
+			for (final ExpirationListener<K, V> listener : asyncExpirationListeners)
 				LISTENER_SERVICE.execute(() -> {
 					try {
 						listener.expired(entry.key, entry.getValue());
 					} catch (final Exception ignoreUserExceptions) {
 					}
 				});
-			}
 
 		if (expirationListeners != null)
-			for (final ExpirationListener<K, V> listener : expirationListeners) {
+			for (final ExpirationListener<K, V> listener : expirationListeners)
 				try {
 					listener.expired(entry.key, entry.getValue());
 				} catch (final Exception ignoreUserExceptions) {
 				}
-			}
 	}
 
 	/**

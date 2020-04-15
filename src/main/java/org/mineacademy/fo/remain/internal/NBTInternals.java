@@ -44,7 +44,7 @@ public class NBTInternals {
 	private static final short SHORT_VALUE = 64;
 	private static final byte BYTE_VALUE = 7;
 	private static final float FLOAT_VALUE = 13.37f;
-	private static final long LONG_VALUE = Integer.MAX_VALUE + 42l;
+	private static final long LONG_VALUE = Integer.MAX_VALUE + 42L;
 	private static final int[] INTARRAY_VALUE = new int[] { 1337, 42, 69 };
 	private static final byte[] BYTEARRAY_VALUE = new byte[] { 8, 7, 3, 2 };
 
@@ -151,9 +151,8 @@ public class NBTInternals {
 
 			compatible = false;
 		}
-		if (!list.get(1).equals("test42") || list.size() != 3) {
+		if (!list.get(1).equals("test42") || list.size() != 3)
 			System.out.println("The List support got an error, and may not work!");
-		}
 		taglist = comp.getCompoundList("complist");
 		if (taglist.size() == 1) {
 			lcomp = taglist.get(0);
@@ -161,15 +160,13 @@ public class NBTInternals {
 				System.out.println("Wrong key amount in Taglist (" + lcomp.getKeys().size() + ")!");
 
 				compatible = false;
+			} else if (lcomp.getDouble("double1") == 0.3333 && lcomp.getInteger("int1") == 42 && lcomp.getString("test2").equals("test2")
+					&& !lcomp.hasKey("test1")) {
+				//ok
 			} else {
-				if (lcomp.getDouble("double1") == 0.3333 && lcomp.getInteger("int1") == 42 && lcomp.getString("test2").equals("test2")
-						&& !lcomp.hasKey("test1")) {
-					//ok
-				} else {
-					System.out.println("One key in the Taglist changed!");
+				System.out.println("One key in the Taglist changed!");
 
-					compatible = false;
-				}
+				compatible = false;
 			}
 		} else {
 			System.out.println("Taglist is empty!");

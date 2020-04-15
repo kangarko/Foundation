@@ -343,11 +343,9 @@ public class Yylex {
 			int count = packed.charAt(i++);
 			final int value = packed.charAt(i++);
 
-			do {
-
+			do
 				result[j++] = value;
-
-			} while (--count > 0);
+			while (--count > 0);
 		}
 
 		return j;
@@ -395,11 +393,9 @@ public class Yylex {
 			int count = packed.charAt(i++);
 			final int value = packed.charAt(i++);
 
-			do {
-
+			do
 				result[j++] = value;
-
-			} while (--count > 0);
+			while (--count > 0);
 		}
 
 		return j;
@@ -431,11 +427,9 @@ public class Yylex {
 			int count = packed.charAt(i++);
 			final char value = packed.charAt(i++);
 
-			do {
-
+			do
 				map[j++] = value;
-
-			} while (--count > 0);
+			while (--count > 0);
 		}
 
 		return map;
@@ -472,11 +466,9 @@ public class Yylex {
 
 			final int c = this.zzReader.read();
 
-			if (c == -1) {
-
+			if (c == -1)
 				return true;
-
-			} else {
+			else {
 
 				this.zzBuffer[this.zzEndRead++] = (char) c;
 				return false;
@@ -491,10 +483,8 @@ public class Yylex {
 		this.zzAtEOF = true; // indicate end of file
 		this.zzEndRead = this.zzStartRead; // invalidate buffer
 
-		if (this.zzReader != null) {
-
+		if (this.zzReader != null)
 			this.zzReader.close();
-		}
 	}
 
 	public final void yyreset(Reader reader) {
@@ -555,10 +545,8 @@ public class Yylex {
 
 	public void yypushback(int number) {
 
-		if (number > yylength()) {
-
+		if (number > yylength())
 			this.zzScanError(Yylex.ZZ_PUSHBACK_2BIG);
-		}
 
 		this.zzMarkedPos -= number;
 	}
@@ -584,15 +572,14 @@ public class Yylex {
 			zzCurrentPosL = this.zzCurrentPos = this.zzStartRead = zzMarkedPosL;
 			int zzState = Yylex.ZZ_LEXSTATE[this.zzLexicalState];
 
-			zzForAction: {
+			zzForAction:
+			{
 
 				while (true) {
 
-					if (zzCurrentPosL < zzEndReadL) {
-
+					if (zzCurrentPosL < zzEndReadL)
 						zzInput = zzBufferL[zzCurrentPosL++];
-
-					} else if (this.zzAtEOF) {
+					else if (this.zzAtEOF) {
 
 						zzInput = Yylex.YYEOF;
 						break zzForAction;
@@ -615,18 +602,14 @@ public class Yylex {
 							zzInput = Yylex.YYEOF;
 							break zzForAction;
 
-						} else {
-
+						} else
 							zzInput = zzBufferL[zzCurrentPosL++];
-						}
 					}
 
 					final int zzNext = zzTransL[zzRowMapL[zzState] + zzCMapL[zzInput]];
 
-					if (zzNext == -1) {
-
+					if (zzNext == -1)
 						break zzForAction;
-					}
 
 					zzState = zzNext;
 
@@ -637,10 +620,8 @@ public class Yylex {
 						zzAction = zzState;
 						zzMarkedPosL = zzCurrentPosL;
 
-						if ((zzAttributes & 8) == 8) {
-
+						if ((zzAttributes & 8) == 8)
 							break zzForAction;
-						}
 					}
 				}
 			}
@@ -649,80 +630,48 @@ public class Yylex {
 			this.zzMarkedPos = zzMarkedPosL;
 			final int value = zzAction < 0 ? zzAction : ZZ_ACTION[zzAction];
 
-			if (value < 25 || value > 48) {
-
-				if (value == 11) {
-
+			if (value < 25 || value > 48)
+				if (value == 11)
 					this.sb.append(this.yytext());
-
-				} else if (value == 4) {
+				else if (value == 4) {
 
 					this.sb = new StringBuffer();
 					this.yybegin(Yylex.STRING_BEGIN);
 
-				} else if (value == 16) {
-
+				} else if (value == 16)
 					this.sb.append('\b');
-
-				} else if (value == 6) {
-
+				else if (value == 6)
 					return new Yytoken(Yytoken.TYPE_RIGHT_BRACE, null);
-
-				} else if (value == 23) {
-
+				else if (value == 23)
 					return new Yytoken(Yytoken.TYPE_VALUE, Boolean.valueOf(this.yytext()));
-
-				} else if (value == 22) {
-
+				else if (value == 22)
 					return new Yytoken(Yytoken.TYPE_VALUE, null);
-
-				} else if (value == 13) {
+				else if (value == 13) {
 
 					this.yybegin(Yylex.YYINITIAL);
 					return new Yytoken(Yytoken.TYPE_VALUE, this.sb.toString());
 
-				} else if (value == 12) {
-
+				} else if (value == 12)
 					this.sb.append('\\');
-
-				} else if (value == 21) {
-
+				else if (value == 21)
 					return new Yytoken(Yytoken.TYPE_VALUE, Double.valueOf(yytext()));
-
-				} else if (value == 1) {
-
+				else if (value == 1)
 					throw new JSONParseException(this.yychar, JSONParseException.ERROR_UNEXPECTED_CHAR, this.yycharat(0));
-
-				} else if (value == 8) {
-
+				else if (value == 8)
 					return new Yytoken(Yytoken.TYPE_RIGHT_SQUARE, null);
-
-				} else if (value == 19) {
-
+				else if (value == 19)
 					this.sb.append('\r');
-
-				} else if (value == 15) {
-
+				else if (value == 15)
 					this.sb.append('/');
-
-				} else if (value == 10) {
-
+				else if (value == 10)
 					return new Yytoken(Yytoken.TYPE_COLON, null);
-
-				} else if (value == 14) {
-
+				else if (value == 14)
 					this.sb.append('"');
-
-				} else if (value == 5) {
-
+				else if (value == 5)
 					return new Yytoken(Yytoken.TYPE_LEFT_BRACE, null);
-
-				} else if (value == 17) {
-
+				else if (value == 17)
 					this.sb.append('\f');
-
-				} else if (value == 24) {
-
+				else if (value == 24)
 					try {
 
 						final int ch = Integer.parseInt(this.yytext().substring(2), 16);
@@ -732,28 +681,17 @@ public class Yylex {
 
 						throw new JSONParseException(this.yychar, JSONParseException.ERROR_UNEXPECTED_EXCEPTION, exception);
 					}
-
-				} else if (value == 20) {
-
+				else if (value == 20)
 					this.sb.append('\t');
-
-				} else if (value == 7) {
-
+				else if (value == 7)
 					return new Yytoken(Yytoken.TYPE_LEFT_SQUARE, null);
-
-				} else if (value == 2) {
-
+				else if (value == 2)
 					return new Yytoken(Yytoken.TYPE_VALUE, Long.valueOf(this.yytext()));
-
-				} else if (value == 18) {
-
+				else if (value == 18)
 					this.sb.append('\n');
-
-				} else if (value == 9) {
-
+				else if (value == 9)
 					return new Yytoken(Yytoken.TYPE_COMMA, null);
-
-				} else if (value == 3) {
+				else if (value == 3) {
 
 					// TODO
 					// ==== 11.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
@@ -761,19 +699,13 @@ public class Yylex {
 					// Please find out why.
 					// ====
 
-				} else {
+				} else if (zzInput == Yylex.YYEOF && this.zzStartRead == this.zzCurrentPos) {
 
-					if (zzInput == Yylex.YYEOF && this.zzStartRead == this.zzCurrentPos) {
+					this.zzAtEOF = true;
+					return null;
 
-						this.zzAtEOF = true;
-						return null;
-
-					} else {
-
-						this.zzScanError(Yylex.ZZ_NO_MATCH);
-					}
-				}
-			}
+				} else
+					this.zzScanError(Yylex.ZZ_NO_MATCH);
 		}
 	}
 }

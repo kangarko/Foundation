@@ -178,12 +178,10 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 				if (Debugger.isDebugged("mysql"))
 					Debugger.debug("mysql", "Data was empty, row has been removed.");
 
-			} else {
-				if (isStored(uuid))
-					update("UPDATE {table} SET Data='" + data.toJson() + "', Updated='" + System.currentTimeMillis() + "' WHERE UUID='" + uuid + "';");
-				else
-					update("INSERT INTO {table}(UUID, Name, Data, Updated) VALUES ('" + uuid + "', '" + name + "', '" + data.toJson() + "', '" + System.currentTimeMillis() + "');");
-			}
+			} else if (isStored(uuid))
+				update("UPDATE {table} SET Data='" + data.toJson() + "', Updated='" + System.currentTimeMillis() + "' WHERE UUID='" + uuid + "';");
+			else
+				update("INSERT INTO {table}(UUID, Name, Data, Updated) VALUES ('" + uuid + "', '" + name + "', '" + data.toJson() + "', '" + System.currentTimeMillis() + "');");
 
 		} catch (final Throwable ex) {
 			Common.error(ex,

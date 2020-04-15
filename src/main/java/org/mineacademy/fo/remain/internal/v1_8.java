@@ -27,16 +27,16 @@ class v1_8 extends EnderDragonEntity {
 		try {
 			dragon = EntityEnderDragon.getConstructor(ReflectionUtil.getNMSClass("World")).newInstance(getWorld());
 
-			final Method setLocation = ReflectionUtil.getMethod(EntityEnderDragon, "setLocation", new Class<?>[] { double.class, double.class, double.class, float.class, float.class });
+			final Method setLocation = ReflectionUtil.getMethod(EntityEnderDragon, "setLocation", double.class, double.class, double.class, float.class, float.class);
 			setLocation.invoke(dragon, getX(), getY(), getZ(), getPitch(), getYaw());
 
-			final Method setInvisible = ReflectionUtil.getMethod(EntityEnderDragon, "setInvisible", new Class<?>[] { boolean.class });
+			final Method setInvisible = ReflectionUtil.getMethod(EntityEnderDragon, "setInvisible", boolean.class);
 			setInvisible.invoke(dragon, true);
 
-			final Method setCustomName = ReflectionUtil.getMethod(EntityEnderDragon, "setCustomName", new Class<?>[] { String.class });
+			final Method setCustomName = ReflectionUtil.getMethod(EntityEnderDragon, "setCustomName", String.class);
 			setCustomName.invoke(dragon, name);
 
-			final Method setHealth = ReflectionUtil.getMethod(EntityEnderDragon, "setHealth", new Class<?>[] { float.class });
+			final Method setHealth = ReflectionUtil.getMethod(EntityEnderDragon, "setHealth", float.class);
 			setHealth.invoke(dragon, health);
 
 			final Field motX = ReflectionUtil.getDeclaredField(Entity, "motX");
@@ -48,12 +48,12 @@ class v1_8 extends EnderDragonEntity {
 			final Field motZ = ReflectionUtil.getDeclaredField(Entity, "motZ");
 			motZ.set(dragon, getZvel());
 
-			final Method getId = ReflectionUtil.getMethod(EntityEnderDragon, "getId", new Class<?>[] {});
+			final Method getId = ReflectionUtil.getMethod(EntityEnderDragon, "getId");
 			this.id = (Integer) getId.invoke(dragon);
 
 			final Class<?> PacketPlayOutSpawnEntityLiving = ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving");
 
-			packet = PacketPlayOutSpawnEntityLiving.getConstructor(new Class<?>[] { EntityLiving }).newInstance(dragon);
+			packet = PacketPlayOutSpawnEntityLiving.getConstructor(EntityLiving).newInstance(dragon);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -86,7 +86,7 @@ class v1_8 extends EnderDragonEntity {
 
 		Object packet = null;
 		try {
-			packet = PacketPlayOutEntityMetadata.getConstructor(new Class<?>[] { int.class, DataWatcher, boolean.class }).newInstance(id, watcher, true);
+			packet = PacketPlayOutEntityMetadata.getConstructor(int.class, DataWatcher, boolean.class).newInstance(id, watcher, true);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -100,7 +100,7 @@ class v1_8 extends EnderDragonEntity {
 		Object packet = null;
 
 		try {
-			packet = PacketPlayOutEntityTeleport.getConstructor(new Class<?>[] { int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class }).newInstance(this.id, loc.getBlockX() * 32, loc.getBlockY() * 32, loc.getBlockZ() * 32, (byte) ((int) loc.getYaw() * 256 / 360), (byte) ((int) loc.getPitch() * 256 / 360), false);
+			packet = PacketPlayOutEntityTeleport.getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class).newInstance(this.id, loc.getBlockX() * 32, loc.getBlockY() * 32, loc.getBlockZ() * 32, (byte) ((int) loc.getYaw() * 256 / 360), (byte) ((int) loc.getPitch() * 256 / 360), false);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -115,8 +115,8 @@ class v1_8 extends EnderDragonEntity {
 
 		Object watcher = null;
 		try {
-			watcher = DataWatcher.getConstructor(new Class<?>[] { Entity }).newInstance(dragon);
-			final Method a = ReflectionUtil.getMethod(DataWatcher, "a", new Class<?>[] { int.class, Object.class });
+			watcher = DataWatcher.getConstructor(Entity).newInstance(dragon);
+			final Method a = ReflectionUtil.getMethod(DataWatcher, "a", int.class, Object.class);
 
 			a.invoke(watcher, 5, isVisible() ? (byte) 0 : (byte) 0x20);
 			a.invoke(watcher, 6, health);

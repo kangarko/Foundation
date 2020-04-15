@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
@@ -311,15 +312,27 @@ public abstract class Menu {
 			for (final Button button : registeredButtons) {
 				Valid.checkNotNull(button,
 						"Menu button is null at " + getClass().getSimpleName());
-				Valid.checkNotNull(button.getItem(),
-						"Itemstack cannot be null at "
-								+ button.getClass().getSimpleName());
+				if (button.getItem() == null)
+					return null;
 
-				if (button.getItem().equals(fromItem))
+				if (equals(fromItem, button.getItem()))
 					return button;
 			}
 
 		return null;
+	}
+
+	private boolean equals(final ItemStack stack1, final ItemStack stack2) {
+		final ItemMeta meta1 = stack1.getItemMeta();
+		final ItemMeta meta2 = stack2.getItemMeta();
+
+		if (stack1.getType() != stack2.getType())
+			return false;
+
+		if (meta1 != null)
+			return meta1.equals(meta2);
+
+		return stack1.getAmount() == stack2.getAmount();
 	}
 
 	/**

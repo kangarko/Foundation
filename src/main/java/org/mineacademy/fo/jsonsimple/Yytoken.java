@@ -265,7 +265,7 @@ public class Yytoken {
 		} else if(this.type == Yytoken.TYPE_COLON) {builder.append("COLON(:)");
 		} else if(this.type == Yytoken.TYPE_EOF) {builder.append("END OF FILE");
 		}
-
+	
 		return builder.toString();
 	}*/
 }

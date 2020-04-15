@@ -10,7 +10,7 @@ public final class ForwardingPlaceholder extends PositionPlaceholder {
 	}
 
 	@Override
-	public final String replace(String raw) {
+	public String replace(String raw) {
 		return raw;
 	}
 }

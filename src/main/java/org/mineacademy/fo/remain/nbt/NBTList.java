@@ -54,11 +54,10 @@ public abstract class NBTList<T> implements List<T> {
 	@Override
 	public boolean add(final T element) {
 		try {
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
 				WrapperMethod.LIST_ADD.run(listObject, size(), asTag(element));
-			} else {
+			else
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, asTag(element));
-			}
 			save();
 			return true;
 		} catch (final Exception ex) {
@@ -69,11 +68,10 @@ public abstract class NBTList<T> implements List<T> {
 	@Override
 	public void add(final int index, final T element) {
 		try {
-			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14)) {
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14))
 				WrapperMethod.LIST_ADD.run(listObject, index, asTag(element));
-			} else {
+			else
 				WrapperMethod.LEGACY_LIST_ADD.run(listObject, asTag(element));
-			}
 			save();
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
@@ -127,85 +125,74 @@ public abstract class NBTList<T> implements List<T> {
 
 	@Override
 	public void clear() {
-		while (!isEmpty()) {
+		while (!isEmpty())
 			remove(0);
-		}
 	}
 
 	@Override
 	public boolean contains(final Object o) {
-		for (int i = 0; i < size(); i++) {
+		for (int i = 0; i < size(); i++)
 			if (o.equals(get(i)))
 				return true;
-		}
 		return false;
 	}
 
 	@Override
 	public int indexOf(final Object o) {
-		for (int i = 0; i < size(); i++) {
+		for (int i = 0; i < size(); i++)
 			if (o.equals(get(i)))
 				return i;
-		}
 		return -1;
 	}
 
 	@Override
 	public boolean addAll(final Collection<? extends T> c) {
 		final int size = size();
-		for (final T ele : c) {
+		for (final T ele : c)
 			add(ele);
-		}
 		return size != size();
 	}
 
 	@Override
 	public boolean addAll(int index, final Collection<? extends T> c) {
 		final int size = size();
-		for (final T ele : c) {
+		for (final T ele : c)
 			add(index++, ele);
-		}
 		return size != size();
 	}
 
 	@Override
 	public boolean containsAll(final Collection<?> c) {
-		for (final Object ele : c) {
+		for (final Object ele : c)
 			if (!contains(ele))
 				return false;
-		}
 		return true;
 	}
 
 	@Override
 	public int lastIndexOf(final Object o) {
 		int index = -1;
-		for (int i = 0; i < size(); i++) {
+		for (int i = 0; i < size(); i++)
 			if (o.equals(get(i)))
 				index = i;
-		}
 		return index;
 	}
 
 	@Override
 	public boolean removeAll(final Collection<?> c) {
 		final int size = size();
-		for (final Object obj : c) {
+		for (final Object obj : c)
 			remove(obj);
-		}
 		return size != size();
 	}
 
 	@Override
 	public boolean retainAll(final Collection<?> c) {
 		final int size = size();
-		for (final Object obj : c) {
-			for (int i = 0; i < size(); i++) {
-				if (!obj.equals(get(i))) {
+		for (final Object obj : c)
+			for (int i = 0; i < size(); i++)
+				if (!obj.equals(get(i)))
 					remove(i--);
-				}
-			}
-		}
 		return size != size();
 	}
 
@@ -213,9 +200,8 @@ public abstract class NBTList<T> implements List<T> {
 	public boolean remove(final Object o) {
 		final int size = size();
 		int id = -1;
-		while ((id = indexOf(o)) != -1) {
+		while ((id = indexOf(o)) != -1)
 			remove(id);
-		}
 		return size != size();
 	}
 
@@ -315,11 +301,10 @@ public abstract class NBTList<T> implements List<T> {
 		final Class<?> arrayclass = a.getClass().getComponentType();
 		for (int i = 0; i < size(); i++) {
 			final T obj = get(i);
-			if (arrayclass.isInstance(obj)) {
+			if (arrayclass.isInstance(obj))
 				ar[i] = (E) get(i);
-			} else {
+			else
 				throw new ArrayStoreException("The array does not match the objects stored in the List.");
-			}
 		}
 		return ar;
 	}

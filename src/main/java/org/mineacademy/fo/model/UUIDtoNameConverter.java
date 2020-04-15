@@ -12,7 +12,8 @@ import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Utility class for connecting to Mojang servers to get the players name from a given UUID
+ * Utility class for connecting to Mojang servers to get the players name from a
+ * given UUID
  */
 @RequiredArgsConstructor
 public class UUIDtoNameConverter implements Callable<String> {
@@ -33,15 +34,19 @@ public class UUIDtoNameConverter implements Callable<String> {
 	private final UUID uuid;
 
 	/**
-	 * Attempts to connect to Mojangs servers to retrieve the current player username from his unique id
-	 *
+	 * Attempts to connect to Mojangs servers to retrieve the current player
+	 * username from his unique id
+	 * <p>
 	 * Runs on the main thread
 	 */
 	@Override
 	public String call() throws Exception {
 
-		final HttpURLConnection connection = (HttpURLConnection) new URL(PROFILE_URL + uuid.toString().replace("-", "")).openConnection();
-		final JsonObject response = gson.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+		final HttpURLConnection connection = (HttpURLConnection) new URL(
+				PROFILE_URL + uuid.toString().replace("-", "")).openConnection();
+		final JsonObject response = gson
+				.fromJson(new InputStreamReader(connection.getInputStream()),
+						JsonObject.class);
 		final String name = response.get("name").getAsString();
 
 		if (name == null)

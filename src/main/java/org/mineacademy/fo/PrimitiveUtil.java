@@ -58,7 +58,7 @@ public final class PrimitiveUtil {
 	public static <T> Class<T> wrap(@NonNull final Class<T> type) {
 		final Class<T> wrapped = (Class<T>) PRIMITIVE_TO_WRAPPER_TYPE.get(type);
 
-		return (wrapped == null) ? type : wrapped;
+		return wrapped == null ? type : wrapped;
 	}
 
 	/**
@@ -74,7 +74,7 @@ public final class PrimitiveUtil {
 	public static <T> Class<T> unwrap(@NonNull final Class<T> type) {
 		final Class<T> unwrapped = (Class<T>) WRAPPER_TO_PRIMITIVE_TYPE.get(type);
 
-		return (unwrapped == null) ? type : unwrapped;
+		return unwrapped == null ? type : unwrapped;
 	}
 
 	private static void add(final Map<Class<?>, Class<?>> forward, final Map<Class<?>, Class<?>> backward, final Class<?> key, final Class<?> value) {
