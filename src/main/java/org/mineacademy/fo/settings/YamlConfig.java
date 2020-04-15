@@ -1764,6 +1764,15 @@ public class YamlConfig implements ConfigSerializable {
 			return timeTicks / 20;
 		}
 
+		/**
+		 * Get the time specified in ticks
+		 *
+		 * @return
+		 */
+		public int getTimeTicks() {
+			return timeTicks;
+		}
+
 		@Override
 		public String toString() {
 			return raw;
