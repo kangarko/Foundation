@@ -369,7 +369,7 @@ public final class Remain {
 	 */
 	public static boolean isProtocol18Hack() {
 		try {
-			getNMSClass("PacketPlayOutEntityTeleport").getConstructor(new Class<?>[] { int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class });
+			getNMSClass("PacketPlayOutEntityTeleport").getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class);
 		} catch (final Throwable t) {
 			return false;
 		}
@@ -453,8 +453,7 @@ public final class Remain {
 	public static FallingBlock spawnFallingBlock(final Location loc, final Block block) {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return loc.getWorld().spawnFallingBlock(loc, block.getBlockData());
-
-		else {
+		else
 			try {
 				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, ReflectionUtil.invoke("getTypeId", block), block.getData());
 			} catch (final ReflectiveOperationException ex) {
@@ -462,7 +461,6 @@ public final class Remain {
 
 				return null;
 			}
-		}
 	}
 
 	/**
@@ -487,7 +485,7 @@ public final class Remain {
 	public static FallingBlock spawnFallingBlock(final Location loc, final Material material, final byte data) {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return loc.getWorld().spawnFallingBlock(loc, material, data);
-		else {
+		else
 			try {
 				return (FallingBlock) loc.getWorld().getClass().getMethod("spawnFallingBlock", Location.class, int.class, byte.class).invoke(loc.getWorld(), loc, material.getId(), data);
 			} catch (final ReflectiveOperationException ex) {
@@ -495,7 +493,6 @@ public final class Remain {
 
 				return null;
 			}
-		}
 	}
 
 	/**
@@ -596,13 +593,12 @@ public final class Remain {
 			block.setType(material);
 			block.setBlockData(Bukkit.getUnsafe().fromLegacy(material, data), physics);
 
-		} else {
+		} else
 			try {
 				block.getClass().getMethod("setTypeIdAndData", int.class, byte.class, boolean.class).invoke(block, material.getId(), data, physics);
 			} catch (final ReflectiveOperationException ex) {
 				ex.printStackTrace();
 			}
-		}
 	}
 
 	/**
@@ -1665,27 +1661,24 @@ public final class Remain {
 			Common.runLater(() -> {
 				if (item.getAmount() > 1)
 					item.setAmount(item.getAmount() - 1);
+				else if (MinecraftVersion.atLeast(V.v1_9))
+					item.setAmount(0);
 
+				// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
 				else {
-					if (MinecraftVersion.atLeast(V.v1_9))
-						item.setAmount(0);
+					final ItemStack[] content = player.getInventory().getContents();
 
-					// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
-					else {
-						final ItemStack[] content = player.getInventory().getContents();
+					for (int i = 0; i < content.length; i++) {
+						final ItemStack c = content[i];
 
-						for (int i = 0; i < content.length; i++) {
-							final ItemStack c = content[i];
+						if (c != null && c.equals(item)) {
+							content[i] = null;
 
-							if (c != null && c.equals(item)) {
-								content[i] = null;
-
-								break;
-							}
+							break;
 						}
-
-						player.getInventory().setContents(content);
 					}
+
+					player.getInventory().setContents(content);
 				}
 
 				player.updateInventory();
@@ -2118,7 +2111,7 @@ class AdvancementAccessor {
 		final AdvancementProgress progress = plazer.getAdvancementProgress(adv);
 
 		if (!progress.isDone())
-			progress.getRemainingCriteria().forEach((crit) -> progress.awardCriteria(crit));
+			progress.getRemainingCriteria().forEach(crit -> progress.awardCriteria(crit));
 	}
 
 	private void revokeAdvancement(final Player plazer) {
@@ -2126,7 +2119,7 @@ class AdvancementAccessor {
 		final AdvancementProgress prog = plazer.getAdvancementProgress(adv);
 
 		if (prog.isDone())
-			prog.getAwardedCriteria().forEach((crit) -> prog.revokeCriteria(crit));
+			prog.getAwardedCriteria().forEach(crit -> prog.revokeCriteria(crit));
 	}
 
 	private void removeAdvancement() {

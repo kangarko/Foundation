@@ -63,7 +63,7 @@ public abstract class FileReader<T> {
 		for (int i = 0; i < lines.size(); i++) {
 			final String line = lines.get(i).trim();
 
-			if (!line.isEmpty() && !line.startsWith("#")) {
+			if (!line.isEmpty() && !line.startsWith("#"))
 				// If a line starts with matcher then assume a new rule is found and start creating it. This makes a new instance of the object.
 				if (line.startsWith(matcher + " ")) {
 					if (object != null) { // Found another match, assuming previous rule is finished creating.
@@ -89,7 +89,6 @@ public abstract class FileReader<T> {
 					// If something is being created then attempt to parse operators.
 					onLineParse(line);
 				}
-			}
 
 			if (i + 1 == lines.size() && object != null) { // Reached end of the file but something is still being created, finish it
 				onObjectPreSave();

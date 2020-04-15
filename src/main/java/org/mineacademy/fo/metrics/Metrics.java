@@ -47,9 +47,8 @@ public class Metrics {
 					new byte[] { 'o', 'r', 'g', '.', 'b', 's', 't', 'a', 't', 's', '.', 'b', 'u', 'k', 'k', 'i', 't' });
 			final String examplePackage = new String(new byte[] { 'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e' });
 			// We want to make sure nobody just copy & pastes the example and use the wrong package names
-			if (Metrics.class.getPackage().getName().equals(defaultPackage) || Metrics.class.getPackage().getName().equals(examplePackage)) {
+			if (Metrics.class.getPackage().getName().equals(defaultPackage) || Metrics.class.getPackage().getName().equals(examplePackage))
 				throw new IllegalStateException("bStats Metrics class has not been relocated correctly!");
-			}
 		}
 	}
 
@@ -80,9 +79,8 @@ public class Metrics {
 	 * @param plugin The plugin which stats should be submitted.
 	 */
 	public Metrics(final Plugin plugin) {
-		if (plugin == null) {
+		if (plugin == null)
 			throw new IllegalArgumentException("Plugin cannot be null!");
-		}
 		this.plugin = plugin;
 
 		// Get the config file
@@ -125,20 +123,18 @@ public class Metrics {
 
 		boolean found = false;
 		// Search for all other bStats Metrics classes to see if we are the first one
-		for (final Class<?> service : Bukkit.getServicesManager().getKnownServices()) {
+		for (final Class<?> service : Bukkit.getServicesManager().getKnownServices())
 			try {
 				service.getField("B_STATS_VERSION"); // Our identifier :)
 				found = true; // We aren't the first
 				break;
 			} catch (final NoSuchFieldException ignored) {
 			}
-		}
 		// Register our service
 		Bukkit.getServicesManager().register(Metrics.class, this, plugin, ServicePriority.Normal);
-		if (!found) {
+		if (!found)
 			// We are the first!
 			startSubmitting();
-		}
 	}
 
 	/**
@@ -235,16 +231,16 @@ public class Metrics {
 
 		final JsonArray pluginData = new JsonArray();
 		// Search for all other bStats Metrics classes to get their plugin data
-		for (final Class<?> service : Bukkit.getServicesManager().getKnownServices()) {
+		for (final Class<?> service : Bukkit.getServicesManager().getKnownServices())
 			try {
 				service.getField("B_STATS_VERSION"); // Our identifier :)
 
-				for (final RegisteredServiceProvider<?> provider : Bukkit.getServicesManager().getRegistrations(service)) {
+				for (final RegisteredServiceProvider<?> provider : Bukkit.getServicesManager().getRegistrations(service))
 					try {
 						final Object plugin = provider.getService().getMethod("getPluginData").invoke(provider.getProvider());
-						if (plugin instanceof JsonObject) {
+						if (plugin instanceof JsonObject)
 							pluginData.add((JsonObject) plugin);
-						} else { // old bstats version compatibility
+						else
 							try {
 								final Class<?> jsonObjectJsonSimple = Class.forName("org.json.simple.JSONObject");
 								if (plugin.getClass().isAssignableFrom(jsonObjectJsonSimple)) {
@@ -256,18 +252,14 @@ public class Metrics {
 								}
 							} catch (final ClassNotFoundException e) {
 								// minecraft version 1.14+
-								if (logFailedRequests) {
+								if (logFailedRequests)
 									this.plugin.getLogger().log(Level.SEVERE, "Encountered unexpected exception ", e);
-								}
 								continue; // continue looping since we cannot do any other thing.
 							}
-						}
 					} catch (NullPointerException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
 					}
-				}
 			} catch (final NoSuchFieldException ignored) {
 			}
-		}
 
 		data.add("plugins", pluginData);
 
@@ -278,9 +270,8 @@ public class Metrics {
 				sendData(plugin, data);
 			} catch (final Exception e) {
 				// Something went wrong! :(
-				if (logFailedRequests) {
+				if (logFailedRequests)
 					plugin.getLogger().log(Level.WARNING, "Could not submit plugin stats of " + plugin.getName(), e);
-				}
 			}
 		}).start();
 	}
@@ -293,15 +284,12 @@ public class Metrics {
 	 * @throws Exception If the request failed.
 	 */
 	private static void sendData(final Plugin plugin, final JsonObject data) throws Exception {
-		if (data == null) {
+		if (data == null)
 			throw new IllegalArgumentException("Data cannot be null!");
-		}
-		if (Bukkit.isPrimaryThread()) {
+		if (Bukkit.isPrimaryThread())
 			throw new IllegalAccessException("This method must not be called from the main thread!");
-		}
-		if (logSentData) {
+		if (logSentData)
 			plugin.getLogger().info("Sending data to bStats: " + data.toString());
-		}
 		final HttpsURLConnection connection = (HttpsURLConnection) new URL(URL).openConnection();
 
 		// Compress the data to save bandwidth
@@ -328,13 +316,11 @@ public class Metrics {
 
 		final StringBuilder builder = new StringBuilder();
 		String line;
-		while ((line = bufferedReader.readLine()) != null) {
+		while ((line = bufferedReader.readLine()) != null)
 			builder.append(line);
-		}
 		bufferedReader.close();
-		if (logResponseStatusText) {
+		if (logResponseStatusText)
 			plugin.getLogger().info("Sent data to bStats and received response: " + builder.toString());
-		}
 	}
 
 	/**
@@ -345,9 +331,8 @@ public class Metrics {
 	 * @throws IOException If the compression failed.
 	 */
 	private static byte[] compress(final String str) throws IOException {
-		if (str == null) {
+		if (str == null)
 			return null;
-		}
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		final GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
 		gzip.write(str.getBytes(StandardCharsets.UTF_8));

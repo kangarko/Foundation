@@ -49,7 +49,7 @@ public final class EnchantmentListener implements Listener {
 			final LivingEntity shooter = (LivingEntity) projectileSource;
 
 			execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
-			EntityUtil.trackHit(event.getEntity(), (hitEvent) -> execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
+			EntityUtil.trackHit(event.getEntity(), hitEvent -> execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
 		}
 	}
 

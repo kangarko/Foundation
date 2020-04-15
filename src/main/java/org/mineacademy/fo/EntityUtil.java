@@ -170,7 +170,7 @@ public final class EntityUtil {
 		final boolean isProjectile = entity instanceof Projectile;
 
 		if (isProjectile && hitGroundListener != null)
-			HitTracking.addFlyingProjectile((Projectile) entity, (event) -> hitGroundListener.run());
+			HitTracking.addFlyingProjectile((Projectile) entity, event -> hitGroundListener.run());
 
 		Common.runTimer(1, new BukkitRunnable() {
 
@@ -203,10 +203,8 @@ public final class EntityUtil {
 
 					cancel();
 
-				} else {
-					if (flyListener != null)
-						flyListener.run();
-				}
+				} else if (flyListener != null)
+					flyListener.run();
 			}
 		});
 	}
