@@ -81,7 +81,17 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static String bountifyCapitalized(Enum<?> enumeration) {
-		return bountifyCapitalized(enumeration.toString());
+		return bountifyCapitalizedEnum(enumeration.toString());
+	}
+
+	/**
+	 * Lowercases everything and finally capitalizes it
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static String bountifyCapitalizedEnum(String name) {
+		return WordUtils.capitalizeFully(name.toLowerCase());
 	}
 
 	/**
@@ -153,7 +163,7 @@ public final class ItemUtil {
 			return false;
 
 		final boolean idMatch = first.getType() == second.getType();
-		boolean dataMatch = LEGACY_MATERIALS ? first.getData().getData() == second.getData().getData() : true;
+		boolean dataMatch = !LEGACY_MATERIALS || first.getData().getData() == second.getData().getData();
 		final boolean metaMatch = first.hasItemMeta() == second.hasItemMeta();
 
 		if (!idMatch || !metaMatch || !(dataMatch || (dataMatch = first.getType() == Material.BOW)))
