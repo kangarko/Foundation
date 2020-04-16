@@ -91,7 +91,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * It is recommended to override this in your own {@link SimplePlugin}
 	 * implementation so you will get the instance of that, directly.
-	 * @param <T>
 	 *
 	 * @return this instance
 	 */
@@ -338,8 +337,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Convenience method for registering channels to BungeeCord
-	 *
-	 * @param channel
 	 */
 	private final void registerBungeeCord() {
 		final Messenger messenger = getServer().getMessenger();
@@ -363,7 +360,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private static void checkSingletons() {
 
 		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements(); ) {
 				final JarEntry jar = entry.nextElement();
 				final String name = jar.getName().replace("/", ".");
 
@@ -1097,7 +1094,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * @deprecated 	DO NOT USE
+	 * @deprecated DO NOT USE
 	 * 				Use {@link SimpleCommand#register()} instead for your commands
 	 */
 	@Deprecated
