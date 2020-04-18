@@ -58,8 +58,6 @@ import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
 import com.earth2me.essentials.User;
-import com.github.intellectualsites.plotsquared.plot.object.Plot;
-import com.github.intellectualsites.plotsquared.plot.object.PlotPlayer;
 import com.gmail.nossr50.datatypes.chat.ChatMode;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -76,6 +74,8 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
+import com.plotsquared.core.player.PlotPlayer;
+import com.plotsquared.core.plot.Plot;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import fr.xephi.authme.api.v3.AuthMeApi;
@@ -527,7 +527,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isLogged(final Player player) {
-		return isAuthMeLoaded() ? authMe.isLogged(player) : true;
+		return !isAuthMeLoaded() || authMe.isLogged(player);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -537,12 +537,12 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is afk in EssentialsX or CMI, or false if neither plugin is present
 	 *
-	 * @param playerName
+	 * @param player
 	 * @return
 	 */
 	public static boolean isAfk(final Player player) {
-		final boolean essAFK = isEssentialsXLoaded() ? essentialsxHook.isAfk(player.getName()) : false;
-		final boolean cmiAFK = isCMILoaded() ? CMIHook.isAfk(player) : false;
+		final boolean essAFK = isEssentialsXLoaded() && essentialsxHook.isAfk(player.getName());
+		final boolean cmiAFK = isCMILoaded() && CMIHook.isAfk(player);
 
 		return essAFK || cmiAFK;
 	}
@@ -1998,7 +1998,7 @@ class PlaceholderAPIHook {
 		 * <br>Since version 2.9.1 can you use OfflinePlayers in your requests.
 		 *
 		 * @param  player
-		 *         A {@link org.bukkit.Player Player}.
+		 *         A {@link org.bukkit.OfflinePlayer Player}.
 		 * @param  identifier
 		 *         A String containing the identifier/value.
 		 *
@@ -2260,14 +2260,14 @@ class WorldGuardHook {
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
 						.getRegions().values().forEach(reg -> {
-							if (reg == null || reg.getId() == null)
-								return;
+					if (reg == null || reg.getId() == null)
+						return;
 
-							final String name = Common.stripColors(reg.getId());
+					final String name = Common.stripColors(reg.getId());
 
-							if (!name.startsWith("__"))
-								list.add(name);
-						});
+					if (!name.startsWith("__"))
+						list.add(name);
+				});
 		}
 
 		return list;
@@ -2526,19 +2526,19 @@ class CMIHook {
 	boolean isVanished(final Player player) {
 		final CMIUser user = getUser(player);
 
-		return user == null ? false : user.isVanished();
+		return user != null && user.isVanished();
 	}
 
 	boolean isAfk(final Player player) {
 		final CMIUser user = getUser(player);
 
-		return user == null ? false : user.isAfk();
+		return user != null && user.isAfk();
 	}
 
 	boolean isMuted(final Player player) {
 		final CMIUser user = getUser(player);
 
-		return user == null ? false : user.isMuted();
+		return user != null && user.isMuted();
 	}
 
 	String getNick_(final Player player) {
