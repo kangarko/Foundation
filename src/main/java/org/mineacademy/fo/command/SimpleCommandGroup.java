@@ -133,7 +133,7 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	public final String getLabel() {
-		Valid.checkBoolean(isRegistered(), "Main command not yet registered!");
+		Valid.checkBoolean(isRegistered(), "Main command has not yet been set!");
 
 		return mainCommand.getMainLabel();
 	}
