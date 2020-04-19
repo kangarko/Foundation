@@ -223,10 +223,10 @@ public final class HookManager {
 		if (Common.doesPluginExistSilently("PlotSquared")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
 
-			if (ver.startsWith("4."))
+			if (ver.startsWith("5."))
 				plotSquaredHook = new PlotSquaredHook();
 			else
-				Common.log("&eCould not hook into PlotSquared, version 4.x required, you have " + ver);
+				Common.log("&eCould not hook into PlotSquared, version 5.x required, you have " + ver);
 		}
 
 		// ProtocolLib
@@ -2510,7 +2510,6 @@ class PlotSquaredHook {
 		if (currentPlot != null)
 			for (final PlotPlayer playerInPlot : currentPlot.getPlayersInPlot()) {
 				final UUID id = playerInPlot.getUUID();
-
 				final Player online = Bukkit.getPlayer(id);
 
 				if (online != null && online.isOnline())
