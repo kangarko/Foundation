@@ -73,16 +73,19 @@ public class Metrics {
 	// The plugin
 	private final Plugin plugin;
 
+	// The plugin id
+	private final int pluginId;
+
 	/**
 	 * Class constructor.
 	 *
 	 * @param plugin The plugin which stats should be submitted.
 	 */
-	public Metrics(final Plugin plugin) {
+	public Metrics(final Plugin plugin, int pluginId) {
 		if (plugin == null)
 			throw new IllegalArgumentException("Plugin cannot be null!");
 		this.plugin = plugin;
-
+		this.pluginId = pluginId;
 		// Get the config file
 		final File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
 		final File configFile = new File(bStatsFolder, "config.yml");
@@ -172,6 +175,7 @@ public class Metrics {
 		final String pluginVersion = plugin.getDescription().getVersion();
 
 		data.addProperty("pluginName", pluginName); // Append the name of the plugin
+		data.addProperty("id", pluginId); // Append the id of the plugin
 		data.addProperty("pluginVersion", pluginVersion); // Append the version of the plugin
 		data.add("customCharts", new JsonArray());
 
