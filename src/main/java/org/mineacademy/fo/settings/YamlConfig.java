@@ -75,26 +75,43 @@ public class YamlConfig implements ConfigSerializable {
 	 * NOT auto update the config with the specified default value
 	 */
 	public static final String NO_DEFAULT = null;
-	/** All files that are currently loaded */
+
+	/**
+	 * All files that are currently loaded
+	 */
 	private static final StrictMap<ConfigInstance, List<YamlConfig>> loadedFiles = new StrictMap<>();
-	/** The config file instance this config belongs to. */
+
+	/**
+	 * The config file instance this config belongs to.
+	 */
 	private ConfigInstance instance;
-	/** The config header */
+
+	/**
+	 * The config header
+	 */
 	private String[] header;
-	/** The local path prefix to make things easier. */
+
+	/**
+	 * The local path prefix to make things easier.
+	 */
 	private String pathPrefix = null;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Static end /
 	// ------------------------------------------------------------------------------------------------------------
+
 	/**
 	 * Internal flag whether to save the file after loading, set to true
 	 * automatically when we edit it
 	 */
 	private boolean save = false;
-	/** Internal flag that can be toggled to disable working with default files. */
+
+	/**
+	 * Internal flag that can be toggled to disable working with default files.
+	 */
 	@Setter
 	private boolean usingDefaults = true;
+
 	/**
 	 * Internal flag to indicate whether you are calling this from
 	 * {@link #loadConfiguration(String, String)}
