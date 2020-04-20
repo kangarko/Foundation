@@ -482,6 +482,17 @@ public final class FileUtil {
 	}
 
 	/**
+	 * @deprecated TODO NEEDS TESTING ON 1.8.8 through 1.15.2
+	 *
+	 * @param path
+	 * @return
+	 */
+	@Deprecated
+	public static File getInternalResourceAsFile(String path) {
+		return new File(SimplePlugin.class.getResource(path).getFile());
+	}
+
+	/**
 	 * Return an internal resource within our plugin's jar file
 	 *
 	 * @param path
