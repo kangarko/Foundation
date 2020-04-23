@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +13,6 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.settings.YamlConfig;
 
-import javassist.Modifier;
 import lombok.NonNull;
 
 /**
@@ -68,11 +68,22 @@ public final class ConfigItems<T extends YamlConfig> {
 		Valid.checkBoolean(!isItemLoaded(name), WordUtils.capitalize(type) + name + " is already loaded: " + getItemNames());
 
 		try {
-			final Constructor<T> constructor = prototypeClass.getDeclaredConstructor();
-			Valid.checkBoolean(constructor.getParameterCount() == 0 && Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor without parameters!");
+			Constructor<T> constructor;
+			boolean nameConstructor = true;
+
+			try {
+				constructor = prototypeClass.getDeclaredConstructor(String.class);
+
+			} catch (final Exception e) {
+				constructor = prototypeClass.getDeclaredConstructor();
+				nameConstructor = false;
+			}
+
+			Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor taking a String or nothing!");
+			constructor.setAccessible(true);
 
 			// Create a new instance of our item
-			final T item = constructor.newInstance();
+			final T item = nameConstructor ? constructor.newInstance(name) : constructor.newInstance();
 
 			// Automatically load configuration and paste prototype
 			item.loadConfiguration("prototype/" + type + ".yml", folder + "/" + name + ".yml");
