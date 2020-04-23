@@ -257,7 +257,7 @@ public class YamlConfig implements ConfigSerializable {
 	 *              used
 	 * @param to,   the destination path in plugins/ThisPlugin/
 	 */
-	protected final void loadConfiguration(final String from, final String to) {
+	public final void loadConfiguration(final String from, final String to) {
 		Valid.checkNotNull(to, "File to path cannot be null!");
 		Valid.checkBoolean(to.contains("."), "To path must contain file extension: " + to);
 
@@ -399,6 +399,16 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	protected final void setHeader(final String... header) {
 		this.header = header;
+	}
+
+	/**
+	 * Return the name of this file without the extension
+	 *
+	 * @return
+	 */
+	// TODO In the future we'll make this final
+	public String getName() {
+		return FileUtil.getFileName(instance.getFile());
 	}
 
 	// ------------------------------------------------------------------------------------
