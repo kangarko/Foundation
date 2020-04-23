@@ -1,3 +1,4 @@
+
 package org.mineacademy.fo;
 
 import org.apache.commons.lang.WordUtils;
