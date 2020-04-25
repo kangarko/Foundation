@@ -1,7 +1,7 @@
-<!-- (c) 2013 - 2019 - All rights reserved. Do not share, copy, reproduce 
-	or sell any part of this library unless you have written permission from 
-	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
-	owner of the MineAcademy.org End User License then you may use it for your 
+<!-- (c) 2013 - 2019 - All rights reserved. Do not share, copy, reproduce
+	or sell any part of this library unless you have written permission from
+	MineAcademy.org. All infringements will be prosecuted. If you are the personal
+	owner of the MineAcademy.org End User License then you may use it for your
 	own use in plugins but not for any other purpose. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -150,7 +150,7 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>PlotSquared</artifactId>
-            <version>4.453</version>
+            <version>5.4</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>

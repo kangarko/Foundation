@@ -10,16 +10,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
@@ -43,6 +51,11 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtil {
+
+	/**
+	 * File system manipulating with your JAR plugin file, only created once
+	 */
+	private static FileSystem fileSystem = null;
 
 	/**
 	 * Return the name of the file from the given path, stripping
@@ -479,6 +492,55 @@ public final class FileUtil {
 		}
 
 		return file;
+	}
+
+	/**
+	 * Extracts the folder and all of its content from the JAR file to
+	 * the given path in your plugin folder
+	 *
+	 * @param source the source folder in your JAR plugin file
+	 * @param destination the destination folder name in your plugin folder
+	 */
+	public static void extraFolderFromJar(String source, final String destination) {
+		try {
+			final Path target = getFile(destination).toPath();
+			final URI resource = SimplePlugin.class.getResource("").toURI();
+
+			final FileSystem fileSystem;
+
+			if (FileUtil.fileSystem == null) {
+				fileSystem = FileSystems.newFileSystem(resource, Collections.emptyMap());
+
+				FileUtil.fileSystem = fileSystem;
+
+			} else
+				fileSystem = FileSystems.getFileSystem(resource);
+
+			final Path jarPath = fileSystem.getPath(source);
+
+			Files.walkFileTree(jarPath, new SimpleFileVisitor<Path>() {
+
+				private Path currentTarget;
+
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					currentTarget = target.resolve(jarPath.relativize(dir).toString());
+					Files.createDirectories(currentTarget);
+
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					Files.copy(file, target.resolve(jarPath.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+
+					return FileVisitResult.CONTINUE;
+				}
+			});
+
+		} catch (final Throwable t) {
+			Common.throwError(t, "Failed to copy " + source + " to " + destination);
+		}
 	}
 
 	/**
