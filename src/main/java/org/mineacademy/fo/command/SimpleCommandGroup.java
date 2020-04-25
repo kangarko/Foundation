@@ -133,7 +133,7 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	public final String getLabel() {
-		Valid.checkBoolean(isRegistered(), "Main command not yet registered!");
+		Valid.checkBoolean(isRegistered(), "Main command has not yet been set!");
 
 		return mainCommand.getMainLabel();
 	}
@@ -149,9 +149,12 @@ public abstract class SimpleCommandGroup {
 	 * If you specify "author" in your plugin.yml we display author information
 	 * If you override {@link SimplePlugin#getFoundedYear()} we display copyright
 	 *
+	 * @param sender the command sender that requested this to be shown to him
+	 * 				 may be null
+	 *
 	 * @return
 	 */
-	protected String[] getNoParamsHeader() {
+	protected String[] getNoParamsHeader(CommandSender sender) {
 		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -283,7 +286,7 @@ public abstract class SimpleCommandGroup {
 				if (sendHelpIfNoArgs())
 					tellSubcommandsHelp();
 				else
-					tell(getNoParamsHeader());
+					tell(getNoParamsHeader(sender));
 				return;
 			}
 
