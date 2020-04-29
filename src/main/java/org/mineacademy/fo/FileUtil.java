@@ -501,7 +501,7 @@ public final class FileUtil {
 	 * @param source the source folder in your JAR plugin file
 	 * @param destination the destination folder name in your plugin folder
 	 */
-	public static void extraFolderFromJar(String source, final String destination) {
+	public static void extractFolderFromJar(String source, final String destination) {
 		try {
 			final Path target = getFile(destination).toPath();
 			final URI resource = SimplePlugin.class.getResource("").toURI();
