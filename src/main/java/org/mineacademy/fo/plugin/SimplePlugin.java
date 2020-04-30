@@ -259,6 +259,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load our main static settings classes
 			if (getSettings() != null) {
 				YamlStaticConfig.load(getSettings());
+
 				Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
 			}
 
@@ -360,7 +361,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private static void checkSingletons() {
 
 		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements(); ) {
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
 				final JarEntry jar = entry.nextElement();
 				final String name = jar.getName().replace("/", ".");
 
