@@ -350,7 +350,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * include {plugin.name} (lowercase), {file} and {file.lowercase} as well as
 	 * custom variables from {@link #replaceVariables(String)} method
 	 *
-	 * @param file
+	 * @param line
+	 * @param fileName
 	 */
 	private String replaceVariables(String line, final String fileName) {
 		line = line.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());

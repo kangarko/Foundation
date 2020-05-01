@@ -1221,7 +1221,6 @@ public final class Remain {
 	 *
 	 * @param delayTicks
 	 * @param player
-	 * @param loc
 	 * @param block
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Block block) {
