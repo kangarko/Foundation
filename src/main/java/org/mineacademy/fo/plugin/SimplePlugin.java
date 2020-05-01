@@ -277,6 +277,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load legacy permanent metadata store
 			CompMetadata.MetadataFile.getInstance();
 
+			// Register main command if it is set
+			if (getMainCommand() != null) {
+				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
+
+				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+			}
+
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
@@ -290,13 +297,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Return if plugin start indicated a fatal problem
 			if (!isEnabled || !isEnabled())
 				return;
-
-			// Register main command if it is set
-			if (getMainCommand() != null) {
-				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
-
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
-			}
 
 			// Register BungeeCord when used
 			registerBungeeCord();
@@ -753,12 +753,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
 
+			if (getMainCommand() != null)
+				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+
 			startingReloadables = true;
 			onReloadablesStart();
 			startingReloadables = false;
-
-			if (getMainCommand() != null)
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
 
 			registerBungeeCord();
 
