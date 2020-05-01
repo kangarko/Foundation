@@ -348,8 +348,9 @@ public abstract class SimpleCommand extends Command {
 
 		} catch (final Throwable t) {
 			dynamicTellError(SimpleLocalization.Commands.ERROR.find("error").replace(t.toString()).getReplacedMessage());
+			final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
-			Common.error(t, "Failed to execute command /" + getLabel() + " " + String.join(" ", args));
+			Common.error(t, "Failed to execute command /" + getLabel() + sublabel + " " + String.join(" ", args));
 
 		} finally {
 			Common.ADD_TELL_PREFIX = hadTellPrefix;
@@ -1186,6 +1187,12 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkNotNull(sender, "Sender cannot be null");
 
 		return sender;
+	}
+
+	protected final String getUsageError() {
+		final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
+
+		return SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : "");
 	}
 
 	/**
