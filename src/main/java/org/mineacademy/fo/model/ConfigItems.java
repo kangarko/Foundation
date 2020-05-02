@@ -65,7 +65,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	}
 
 	public T loadOrCreateItem(final String name) {
-		Valid.checkBoolean(!isItemLoaded(name), " " + WordUtils.capitalize(type) + name + " is already loaded: " + getItemNames());
+		Valid.checkBoolean(!isItemLoaded(name), WordUtils.capitalize(type) + name + " is already loaded: " + getItemNames());
 
 		try {
 			Constructor<T> constructor;
