@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -40,6 +41,12 @@ public final class Variable extends YamlConfig implements Actionable {
 	 */
 	private String value;
 
+	/**
+	 * What permission player needs to be able to use this variable
+	 */
+	@Nullable
+	private String permission;
+
 	// ----------------------------------------------------------------------------------
 	// Actionable
 	// ----------------------------------------------------------------------------------
@@ -72,6 +79,13 @@ public final class Variable extends YamlConfig implements Actionable {
 	@Nullable
 	private String suggestCommand;
 
+	/**
+	 * What command should be run on click? Null if none
+	 */
+	@Getter
+	@Nullable
+	private String runCommand;
+
 	// ----------------------------------------------------------------------------------
 	// Loading
 	// ----------------------------------------------------------------------------------
@@ -88,6 +102,8 @@ public final class Variable extends YamlConfig implements Actionable {
 		this.hoverItem = isSet("Hover_Item") ? getString("Hover_Item") : null;
 		this.openUrl = isSet("Open_Url") ? getString("Open_Url") : null;
 		this.suggestCommand = isSet("Suggest_Command") ? getString("Suggest_Command") : null;
+		this.runCommand = isSet("Run_Command") ? getString("Run_Command") : null;
+		this.permission = isSet("Permission") ? getString("Permission") : null;
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -102,6 +118,9 @@ public final class Variable extends YamlConfig implements Actionable {
 	 * @return
 	 */
 	public String getValue(CommandSender player) {
+
+		if (permission != null && !PlayerUtil.hasPerm(player, permission))
+			return value;
 
 		// Replace variables in script
 		final String script = Variables.replace(scope, this.value, player);
@@ -196,6 +215,19 @@ public final class Variable extends YamlConfig implements Actionable {
 		save();
 	}
 
+	@Override
+	public void setRunCommand(String runCommand) {
+		this.runCommand = runCommand;
+
+		save();
+	}
+
+	public void setPermission(String permission) {
+		this.permission = permission;
+
+		save();
+	}
+
 	// ----------------------------------------------------------------------------------
 	// Serialize
 	// ----------------------------------------------------------------------------------
@@ -213,7 +245,9 @@ public final class Variable extends YamlConfig implements Actionable {
 				"Hover", hoverText,
 				"Hover_Item", hoverItem,
 				"Open_Url", openUrl,
-				"Suggest_Command", suggestCommand);
+				"Suggest_Command", suggestCommand,
+				"Run_Command", runCommand,
+				"Permission", permission);
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
