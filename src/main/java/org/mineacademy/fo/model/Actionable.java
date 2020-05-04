@@ -44,4 +44,13 @@ public interface Actionable extends ConfigSerializable {
 	String getSuggestCommand();
 
 	void setSuggestCommand(String suggestCommand);
+
+	/**
+	 * What command should be run on click? Null if none
+	 *
+	 * @return
+	 */
+	String getRunCommand();
+
+	void setRunCommand(String runCommand);
 }
