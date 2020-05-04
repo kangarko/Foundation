@@ -53,7 +53,6 @@ import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -320,10 +319,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Register DiscordSRV listener
 			if (HookManager.isDiscordSRVLoaded())
 				reloadables.registerEvents(new DiscordListener.DiscordListenerImpl());
-
-			// Load variables if enabled
-			if (areScriptVariablesEnabled())
-				Variables.loadScriptVariables();
 
 			// Set the logging and tell prefix
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
@@ -746,9 +741,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (getSettings() != null)
 				YamlStaticConfig.load(getSettings());
 
-			if (areScriptVariablesEnabled())
-				Variables.reloadScriptVariables();
-
 			FoundationPacketListener.addPacketListener();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
@@ -1023,62 +1015,23 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Return if the JavaScript variables are enabled?
-	 *
-	 * Will load them from variables/javascript.txt file from your plugins folder.
-	 *
-	 * See https://github.com/kangarko/chatcontrol-pro/wiki/JavaScript-in-Bukkit for help
-	 *
-	 * @return
-	 */
-	public boolean areScriptVariablesEnabled() {
-		return false;
-	}
-
-	/**
-	 * Should we replace variables in {@link Variables} also in the javascript code?
-	 *
-	 * @return
-	 */
-	public boolean replaceVariablesInCustom() {
-		return false;
-	}
-
-	/**
-	 * Should we replace script variables in {@link Variables} also in the
-	 * javascript code?
-	 *
-	 * @return
-	 */
-	public boolean replaceScriptVariablesInCustom() {
-		return false;
-	}
-
-	/**
-	 * If vault is enabled, it will return player's prefix from each of their group
-	 *
-	 * @return
-	 */
-	public boolean vaultMultiPrefix() {
-		return false;
-	}
-
-	/**
-	 * If vault is enabled, it will return player's suffix from each of their group
-	 *
-	 * @return
-	 */
-	public boolean vaultMultiSuffix() {
-		return false;
-	}
-
-	/**
 	 * Should every message be divided by \n by an own method (tends to work more
 	 * then split("\n"))
 	 *
 	 * @return
 	 */
 	public boolean enforeNewLine() {
+		return false;
+	}
+
+	/**
+	 * Use JavaScript variables/javascript.txt file
+	 *
+	 * @deprecated this feature has been removed
+	 * @return
+	 */
+	@Deprecated
+	public boolean areScriptVariablesEnabled() {
 		return false;
 	}
 
