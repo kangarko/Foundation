@@ -118,6 +118,11 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	private boolean loading = false;
 
+	/**
+	 * Should we check for validity of the config key-value pair?
+	 */
+	private boolean checkAssignables = true;
+
 	protected YamlConfig() {
 	}
 
@@ -1312,11 +1317,17 @@ public class YamlConfig implements ConfigSerializable {
 				path = formPathPrefix(path);
 
 		// add default
-		if (getDefaults() != null && !getConfig().isSet(path)) {
-			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
+		try {
+			checkAssignables = false;
 
-			for (final String key : getDefaults().getConfigurationSection(path).getKeys(false))
-				addDefaultIfNotExist(path + "." + key, valueType);
+			if (getDefaults() != null && !getConfig().isSet(path)) {
+				Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
+
+				for (final String key : getDefaults().getConfigurationSection(path).getKeys(false))
+					addDefaultIfNotExist(path + "." + key, valueType);
+			}
+		} finally {
+			checkAssignables = true;
 		}
 
 		final LinkedHashMap<Key, Value> keys = new LinkedHashMap<>();
@@ -1679,7 +1690,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param clazz
 	 */
 	private void checkAssignable(final boolean fromDefault, final String path, final Object value, final Class<?> clazz) {
-		if (!clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName()))
+		if (checkAssignables && !clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName()))
 			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + getFileName() + " must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
 	}
 
