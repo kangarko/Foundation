@@ -136,7 +136,7 @@ public final class LagCatcher {
 	 * @param section
 	 * @return
 	 */
-	private static double finishAndCalculate(String section) {
+	public static double finishAndCalculate(String section) {
 		final Long nanoTime = timings.remove(section);
 
 		return calculate(nanoTime);
