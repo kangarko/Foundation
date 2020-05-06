@@ -299,8 +299,7 @@ public abstract class SimpleCommand extends Command {
 				checkPerm(getPermission());
 
 			// Check for minimum required arguments and print help
-			if (args.length < getMinArguments() ||
-					autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
+			if (args.length < getMinArguments() || autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 
 				checkPerm(replaceBasicPlaceholders0("{plugin.name}.command.help"));
 
