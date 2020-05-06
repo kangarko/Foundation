@@ -994,13 +994,24 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Shall we apply Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-	 * flags when compiling regex? May impose a slight performancy penaulty
-	 * but increases catches.
+	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
+	 *
+	 * May impose a slight performance penalty but increases catches.
 	 *
 	 * @return
 	 */
 	public boolean regexCaseInsensitive() {
+		return true;
+	}
+
+	/**
+	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
+	 *
+	 * May impose a slight performance penalty but useful for non-English servers.
+	 *
+	 * @return
+	 */
+	public boolean regexUnicode() {
 		return true;
 	}
 
