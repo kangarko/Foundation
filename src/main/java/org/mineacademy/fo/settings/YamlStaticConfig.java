@@ -115,7 +115,7 @@ public abstract class YamlStaticConfig {
 	 * Loads the class via reflection, scanning for "private static void init()"
 	 * methods to run
 	 */
-	protected final void loadViaReflection() {
+	private final void loadViaReflection() {
 		Valid.checkNotNull(TEMPORARY_INSTANCE, "Instance cannot be null " + getFileName());
 		Valid.checkNotNull(TEMPORARY_INSTANCE.getConfig(), "Config cannot be null for " + getFileName());
 		Valid.checkNotNull(TEMPORARY_INSTANCE.getDefaults(), "Default config cannot be null for " + getFileName());
