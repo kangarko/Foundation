@@ -53,8 +53,14 @@ public final class ConfigItems<T extends YamlConfig> {
 	}
 
 	public void loadItems() {
+		// Clear old items
 		loadedItems.clear();
 
+		// Try copy items from our JAR
+		if (!FileUtil.getFile(folder).exists())
+			FileUtil.extractFolderFromJar("/" + folder, folder);
+
+		// Load items on our disk
 		final File[] files = FileUtil.getFiles(folder, "yml");
 
 		for (final File file : files) {
