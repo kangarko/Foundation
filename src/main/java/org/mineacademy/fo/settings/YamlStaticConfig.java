@@ -50,6 +50,10 @@ public abstract class YamlStaticConfig {
 	protected YamlStaticConfig() {
 		TEMPORARY_INSTANCE = new YamlConfig() {
 
+			{
+				beforeLoad();
+			}
+
 			@Override
 			protected void onLoadFinish() {
 				loadViaReflection();
@@ -98,9 +102,18 @@ public abstract class YamlStaticConfig {
 	}
 
 	/**
-	 * Invoke code before this class is being scanned and invoked using reflection
+	 * Call this method if you need to make and changes to the settings file
+	 * BEFORE it is actually loaded.
 	 */
 	protected void beforeLoad() {
+	}
+
+	/**
+	 * Invoke code before this class is being scanned and invoked using reflection
+	 *
+	 * This method if called AFTER we load our file
+	 */
+	protected void preLoad() {
 	}
 
 	/**
@@ -121,7 +134,7 @@ public abstract class YamlStaticConfig {
 		Valid.checkNotNull(TEMPORARY_INSTANCE.getDefaults(), "Default config cannot be null for " + getFileName());
 
 		try {
-			beforeLoad();
+			preLoad();
 
 			// Parent class if applicable.
 			if (YamlStaticConfig.class.isAssignableFrom(getClass().getSuperclass())) {
