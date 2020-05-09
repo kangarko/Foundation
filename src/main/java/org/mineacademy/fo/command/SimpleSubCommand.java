@@ -84,7 +84,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 * See {@link SimpleCommand#replacePlaceholders(String)}
 	 */
 	@Override
-	protected final String replacePlaceholders(String message) {
+	protected String replacePlaceholders(String message) {
 		return super.replacePlaceholders(message).replace("{sublabel}", getSublabel());
 	}
 

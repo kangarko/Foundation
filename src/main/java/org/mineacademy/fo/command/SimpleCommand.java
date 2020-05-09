@@ -25,8 +25,6 @@ import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
-import org.mineacademy.fo.command.placeholder.Placeholder;
-import org.mineacademy.fo.command.placeholder.PositionPlaceholder;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
@@ -68,13 +66,6 @@ public abstract class SimpleCommand extends Command {
 	 * stores the player uuid and his last execution of the command.
 	 */
 	private final ExpiringMap<UUID, Long> cooldownMap = ExpiringMap.builder().expiration(30, TimeUnit.MINUTES).build();
-
-	/**
-	 * A list of placeholders to replace in this command, see {@link Placeholder}
-	 *
-	 * These are used when sending player messages
-	 */
-	private final StrictList<Placeholder> placeholders = new StrictList<>();
 
 	/**
 	 * The command label, eg. boss for /boss
@@ -791,15 +782,6 @@ public abstract class SimpleCommand extends Command {
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Registers a new placeholder to be used when sending messages to the player
-	 *
-	 * @param placeholder
-	 */
-	protected final void addPlaceholder(final Placeholder placeholder) {
-		placeholders.add(placeholder);
-	}
-
-	/**
 	 * Replaces placeholders in all messages
 	 * To change them override {@link #replacePlaceholders(String)}
 	 *
@@ -826,22 +808,6 @@ public abstract class SimpleCommand extends Command {
 		// Replace {X} with arguments
 		for (int i = 0; i < args.length; i++)
 			message = message.replace("{" + i + "}", Common.getOrEmpty(args[i]));
-
-		// Replace saved placeholders
-		for (final Placeholder placeholder : placeholders) {
-			String toReplace = message;
-
-			if (placeholder instanceof PositionPlaceholder) {
-				final PositionPlaceholder arguedPlaceholder = (PositionPlaceholder) placeholder;
-
-				if (args.length > arguedPlaceholder.getPosition())
-					toReplace = args[arguedPlaceholder.getPosition()];
-				else
-					continue;
-			}
-
-			message = message.replace("{" + placeholder.getIdentifier() + "}", placeholder.replace(toReplace));
-		}
 
 		return message;
 	}
