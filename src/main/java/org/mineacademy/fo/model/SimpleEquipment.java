@@ -225,18 +225,6 @@ public final class SimpleEquipment {
 		set(CompEquipmentSlot.LEGS, boots);
 	}
 
-	/**
-	 * Set the armor content for this entity
-	 *
-	 * @param content
-	 */
-	public void setContent(final ArmorContent content) {
-		set(CompEquipmentSlot.HEAD, content.getHelmet());
-		set(CompEquipmentSlot.CHEST, content.getChestplate());
-		set(CompEquipmentSlot.FEET, content.getLeggings());
-		set(CompEquipmentSlot.LEGS, content.getLeggings());
-	}
-
 	// ------------------------------------------------------------------------------------------
 	// Misc
 	// ------------------------------------------------------------------------------------------
