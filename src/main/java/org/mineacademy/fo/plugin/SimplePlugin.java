@@ -61,7 +61,6 @@ import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.update.SpigotUpdater;
 import org.mineacademy.fo.visual.BlockVisualizer;
-import org.mineacademy.fo.visualize_old.VisualizerListener;
 
 import lombok.Getter;
 
@@ -310,7 +309,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
 			registerEvents(new ToolsListener());
-			registerEvents(new VisualizerListener());
 			registerEvents(new EnchantmentListener());
 
 			// Register our packet listener
