@@ -115,4 +115,13 @@ public final class FoConstants {
 		 */
 		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
 	}
+
+	/**
+	 * Used to store basic library permissions
+	 */
+	public static final class Permissions {
+
+		// Permission to receive alerts on join when a new version is available.
+		public static final String NOTIFY_UPDATE = "{plugin.name}.notify.update";
+	}
 }
