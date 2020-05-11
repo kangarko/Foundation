@@ -322,7 +322,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 
 			// Finish off by starting metrics (currently bStats)
-			new Metrics(this);
+			final int pluginId = getMetricsPluginId();
+
+			if (pluginId != -1)
+				new Metrics(this, pluginId);
 
 		} catch (final Throwable t) {
 			displayError0(t);
@@ -970,6 +973,19 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public SpigotUpdater getUpdateCheck() {
 		return null;
+	}
+
+	/**
+	 * If you want to use bStats.org metrics system,
+	 * simply return the plugin ID (https://bstats.org/what-is-my-plugin-id)
+	 * here and we will automatically start tracking it.
+	 *
+	 * Defaults to -1 which means disabled
+	 *
+	 * @return
+	 */
+	public int getMetricsPluginId() {
+		return -1;
 	}
 
 	/**
