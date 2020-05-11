@@ -27,7 +27,7 @@ public enum WrapperMethod {
 	COMPOUND_SET_BYTE(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, byte.class }, V.v1_7, new Since(V.v1_7, "setByte")),
 	COMPOUND_SET_DOUBLE(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, double.class }, V.v1_7, new Since(V.v1_7, "setDouble")),
 	COMPOUND_SET_BOOLEAN(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, boolean.class }, V.v1_7, new Since(V.v1_7, "setBoolean")),
-	COMPOUND_MERGE(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_7, new Since(V.v1_7, "a")), //FIXME: No Spigot mapping!
+	COMPOUND_MERGE(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_7, new Since(V.v1_7, "a")),
 	COMPOUND_SET(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, WrapperClass.NMS_NBTBASE.getClazz() }, V.v1_7, new Since(V.v1_7, "set")),
 	COMPOUND_GET(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class }, V.v1_7, new Since(V.v1_7, "get")),
 	COMPOUND_GET_LIST(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class, int.class }, V.v1_7, new Since(V.v1_7, "getList")),
@@ -50,7 +50,7 @@ public enum WrapperMethod {
 
 	COMPOUND_REMOVE_KEY(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class }, V.v1_7, new Since(V.v1_7, "remove")),
 	COMPOUND_HAS_KEY(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class }, V.v1_7, new Since(V.v1_7, "hasKey")),
-	COMPOUND_GET_TYPE(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class }, V.v1_8, new Since(V.v1_8, "b"), new Since(V.v1_9, "d"), new Since(V.v1_15, "e")), //FIXME: No Spigot mapping!
+	COMPOUND_GET_TYPE(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] { String.class }, V.v1_8, new Since(V.v1_8, "b"), new Since(V.v1_9, "d"), new Since(V.v1_15, "e")),
 	COMPOUND_GET_KEYS(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] {}, V.v1_7, new Since(V.v1_7, "c"), new Since(V.v1_13, "getKeys")),
 
 	LISTCOMPOUND_GET_KEYS(WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), new Class[] {}, V.v1_7, new Since(V.v1_7, "c"), new Since(V.v1_13, "getKeys")),
@@ -72,8 +72,8 @@ public enum WrapperMethod {
 	NMS_WORLD_SET_TILEENTITY(WrapperClass.NMS_WORLDSERVER.getClazz(), new Class[] { WrapperClass.NMS_BLOCKPOSITION.getClazz(), WrapperClass.NMS_TILEENTITY.getClazz() }, V.v1_7, new Since(V.v1_7, "setTileEntity")),
 	NMS_WORLD_REMOVE_TILEENTITY(WrapperClass.NMS_WORLDSERVER.getClazz(), new Class[] { WrapperClass.NMS_BLOCKPOSITION.getClazz() }, V.v1_7, new Since(V.v1_7, "t"), new Since(V.v1_9, "s"), new Since(V.v1_13, "n"), new Since(V.v1_14, "removeTileEntity")),
 
-	//TILEENTITY_LOAD_LEGACY191(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_MINECRAFTSERVER.getClazz(), WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_9, V.v1_9, new Since(V.v1_9, "a")), //FIXME: No Spigot mapping!
-	//TILEENTITY_LOAD_LEGACY183(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_8, V.v1_9, new Since(V.v1_8, "c"), new Since(V.v1_9, "a"), new Since(V.v1_9, "c")), //FIXME: No Spigot mapping!
+	//TILEENTITY_LOAD_LEGACY191(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_MINECRAFTSERVER.getClazz(), WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_9, V.v1_9, new Since(V.v1_9, "a")),
+	//TILEENTITY_LOAD_LEGACY183(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[]{WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()}, V.v1_8, V.v1_9, new Since(V.v1_8, "c"), new Since(V.v1_9, "a"), new Since(V.v1_9, "c")),
 	TILEENTITY_LOAD_LEGACY1121(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[] { WrapperClass.NMS_WORLD.getClazz(), WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_10, V.v1_12, new Since(V.v1_10, "a"), new Since(V.v1_12, "create")),
 	TILEENTITY_LOAD(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_13, new Since(V.v1_12, "create")),
 
@@ -81,18 +81,17 @@ public enum WrapperMethod {
 	TILEENTITY_SET_NBT(WrapperClass.NMS_TILEENTITY.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_8, new Since(V.v1_8, "a"), new Since(V.v1_12, "load")),
 
 	CRAFT_ENTITY_GET_HANDLE(WrapperClass.CRAFT_ENTITY.getClazz(), new Class[] {}, V.v1_7, new Since(V.v1_7, "getHandle")),
-	NMS_ENTITY_SET_NBT(WrapperClass.NMS_ENTITY.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_8, new Since(V.v1_8, "f")), //FIXME: No Spigot mapping!
+	NMS_ENTITY_SET_NBT(WrapperClass.NMS_ENTITY.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_8, new Since(V.v1_8, "f")),
 	NMS_ENTITY_GET_NBT(WrapperClass.NMS_ENTITY.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz() }, V.v1_8, new Since(V.v1_8, "e"), new Since(V.v1_12, "save")),
 	NMS_ENTITY_GETSAVEID(WrapperClass.NMS_ENTITY.getClazz(), new Class[] {}, V.v1_14, new Since(V.v1_14, "getSaveID")),
 
-	NBTFILE_READ(WrapperClass.NMS_NBTCOMPRESSEDSTREAMTOOLS.getClazz(), new Class[] { InputStream.class }, V.v1_7, new Since(V.v1_7, "a")), //FIXME: No Spigot mapping!
-	NBTFILE_WRITE(WrapperClass.NMS_NBTCOMPRESSEDSTREAMTOOLS.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), OutputStream.class }, V.v1_7, new Since(V.v1_7, "a")), //FIXME: No Spigot mapping!
+	NBTFILE_READ(WrapperClass.NMS_NBTCOMPRESSEDSTREAMTOOLS.getClazz(), new Class[] { InputStream.class }, V.v1_7, new Since(V.v1_7, "a")),
+	NBTFILE_WRITE(WrapperClass.NMS_NBTCOMPRESSEDSTREAMTOOLS.getClazz(), new Class[] { WrapperClass.NMS_NBTTAGCOMPOUND.getClazz(), OutputStream.class }, V.v1_7, new Since(V.v1_7, "a")),
 
 	PARSE_NBT(WrapperClass.NMS_MOJANGSONPARSER.getClazz(), new Class[] { String.class }, V.v1_7, new Since(V.v1_7, "parse")),
 	REGISTRY_KEYSET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[] {}, V.v1_11, V.v1_13, new Since(V.v1_11, "keySet")),
 	REGISTRY_GET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[] { Object.class }, V.v1_11, V.v1_13, new Since(V.v1_11, "get")),
-	REGISTRY_SET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[] { Object.class, Object.class }, V.v1_11, V.v1_13, new Since(V.v1_11, "a")), //FIXME: No Spigot mapping!
-	//FIXME:  REGISTRY_GET_INVERSE(WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[]{Object.class}, V.v1_11, V.v1_13, new Since(V.v1_11, "b")), //FIXME: No Spigot mapping!
+	REGISTRY_SET(WrapperClass.NMS_REGISTRYSIMPLE.getClazz(), new Class[] { Object.class, Object.class }, V.v1_11, V.v1_13, new Since(V.v1_11, "a")),
 	REGISTRYMATERIALS_KEYSET(WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[] {}, V.v1_13, new Since(V.v1_13, "keySet")),
 	REGISTRYMATERIALS_GET(WrapperClass.NMS_REGISTRYMATERIALS.getClazz(), new Class[] { WrapperClass.NMS_MINECRAFTKEY.getClazz() }, V.v1_13, new Since(V.v1_13, "get"));
 

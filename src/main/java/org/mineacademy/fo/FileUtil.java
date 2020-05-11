@@ -309,7 +309,7 @@ public final class FileUtil {
 			if (line.contains("[*]"))
 				throw new FoException("Found [*] in your yaml file " + file + ". Please replace it with ['*'] instead.");
 		//else
-		//	if (line.replaceAll(/*REGEX na zaciatocne a konecne medzery*/)
+		//	if (line.replaceAll(/* TODO REGEX na zaciatocne a konecne medzery */)
 		// if (line.contains("-") && line.contains("*") && !line.contains("\"") && !contains '
 		// else
 		// if (Common.hasColor(message) && !contains " '
@@ -501,11 +501,11 @@ public final class FileUtil {
 	 * @param source the source folder in your JAR plugin file
 	 * @param destination the destination folder name in your plugin folder
 	 */
-	public static void extraFolderFromJar(String source, final String destination) {
+	public static void extractFolderFromJar(String source, final String destination) {
 		try {
 			final Path target = getFile(destination).toPath();
-			final URI resource = SimplePlugin.class.getResource("").toURI();
 
+			final URI resource = SimplePlugin.class.getResource(source).toURI();
 			final FileSystem fileSystem;
 
 			if (FileUtil.fileSystem == null) {
@@ -515,6 +515,8 @@ public final class FileUtil {
 
 			} else
 				fileSystem = FileSystems.getFileSystem(resource);
+
+			getInternalResource(source);
 
 			final Path jarPath = fileSystem.getPath(source);
 
@@ -559,11 +561,11 @@ public final class FileUtil {
 
 		// The hard way - go in the jar file
 		if (is == null)
-			try (JarFile f = new JarFile(SimplePlugin.getSource())) {
-				final JarEntry e = f.getJarEntry(path);
+			try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
+				final JarEntry jarEntry = jarFile.getJarEntry(path);
 
-				if (e != null)
-					is = f.getInputStream(e);
+				if (jarEntry != null)
+					is = jarFile.getInputStream(jarEntry);
 
 			} catch (final IOException ex) {
 				ex.printStackTrace();

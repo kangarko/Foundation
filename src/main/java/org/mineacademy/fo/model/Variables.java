@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,16 +19,11 @@ import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.model.Variable.VariableScope;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
-
-import lombok.AccessLevel;
-import lombok.Getter;
 
 /**
  * A simple engine that replaces lots of variables in a message.
@@ -59,23 +52,12 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * The loaded variables from variables/javascript.txt
-	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private static final List<ScriptVariable> scriptVariables = new ArrayList<>();
-
-	/**
 	 * Variables added to Foundation by you or other plugins
 	 *
 	 * You take in a command sender (may/may not be a player) and output a replaced string.
 	 * The variable name (the key) is automatically surrounded by {} brackets
 	 */
 	private static final StrictMap<String, Function<CommandSender, String>> customVariables = new StrictMap<>();
-
-	/**
-	 * The file loader for variables
-	 */
-	private static FileReader<ScriptVariable> scriptFileReader;
 
 	/**
 	 * Player, Their Cached Variables
@@ -86,83 +68,6 @@ public final class Variables {
 	 * Player, Original Message, Translated Message
 	 */
 	private static final Map<String, Map<String, String>> customCache = makeNewFastCache();
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Loading
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Loads variables from the variables/javascript.txt file, if it exists
-	 * within your plugin. Used in ChatControl Pro
-	 *
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	public static void loadScriptVariables() {
-		scriptFileReader = new FileReader<ScriptVariable>("define") {
-
-			@Override
-			public boolean canFinish() {
-				Valid.checkBoolean(getObject().hasScript(), "Script must be set!");
-
-				return true;
-			}
-
-			@Override
-			public ScriptVariable newInstance(String line) {
-				return new ScriptVariable(line.replaceFirst("define ", ""));
-			}
-
-			private final List<String> scriptLines = new ArrayList<>();
-
-			private boolean creatingScript = false;
-
-			@Override
-			public void onObjectPreSave() {
-				if (creatingScript) {
-					getObject().setScript(scriptLines);
-
-					scriptLines.clear();
-					creatingScript = false;
-				}
-			}
-
-			@Override
-			public void onLineParse(String line) {
-				if (creatingScript) {
-					scriptLines.add(line);
-
-					return;
-				}
-
-				if (line.startsWith("return ") || line.startsWith("local script:")) {
-					Common.logFramed(false, "Warning! Reflections and local scrips", "has been removed!", "Please only use 'script:' now.", " Please upgrade: ", line);
-					return;
-				}
-
-				Valid.checkBoolean(line.startsWith("script:"), "Invalid operator: " + line);
-				Valid.checkBoolean(!creatingScript, "Already creating script!");
-
-				creatingScript = true;
-			}
-
-		};
-
-		reloadScriptVariables();
-	}
-
-	/**
-	 * Clears current variables and loads new only if they were initially called with {@link #loadScriptVariables()}
-	 *
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	public static void reloadScriptVariables() {
-		scriptVariables.clear();
-
-		if (scriptFileReader != null)
-			scriptVariables.addAll(scriptFileReader.load("variables/javascript.txt"));
-	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Custom variables
@@ -218,20 +123,31 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * @see #replace(boolean, String, CommandSender)
+	 * @see #replace(VariableScope, String, CommandSender)
 	 *
-	 * @param replaceCustom
 	 * @param messages
 	 * @param sender
 	 * @return
 	 */
-	public static List<String> replaceAll(boolean replaceCustom, List<String> messages, CommandSender sender) {
+	public static List<String> replaceAll(List<String> messages, CommandSender sender) {
+		return replaceAll(VariableScope.FORMAT, messages, sender);
+	}
+
+	/**
+	 * @see #replace(VariableScope, String, CommandSender)
+	 *
+	 * @param scope
+	 * @param messages
+	 * @param sender
+	 * @return
+	 */
+	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender) {
 		final List<String> replaced = new ArrayList<>(messages); // Make a copy to ensure writeable
 
 		for (int i = 0; i < replaced.size(); i++) {
 			final String message = replaced.get(i);
 
-			replaced.set(i, Variables.replace(replaceCustom, message, sender));
+			replaced.set(i, Variables.replace(scope, message, sender));
 		}
 
 		return replaced;
@@ -248,7 +164,20 @@ public final class Variables {
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender) {
-		return replace(false, message, sender);
+		return replace(VariableScope.FORMAT, message, sender);
+	}
+
+	/**
+	 *
+	 * @deprecated replacing custom variables has been removed
+	 * @param replaceCustom
+	 * @param message
+	 * @param sender
+	 * @return
+	 */
+	@Deprecated
+	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
+		return replace(message, sender);
 	}
 
 	/**
@@ -257,16 +186,12 @@ public final class Variables {
 	 *
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
-	 * @param replaceCustom should we use variables/javascript.txt file? Fails safely if the file
-	 * 		  does not exists. See https://github.com/kangarko/chatcontrol-pro/wiki/JavaScript-in-Bukkit
-	 * 		  for tutorial on using this file and writing variables to it.
-	 *   	  Custom variables are only replaced when the sender is a player!
-	 *
+	 * @param scope
 	 * @param message
 	 * @param sender
 	 * @return
 	 */
-	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
+	public static String replace(VariableScope scope, String message, CommandSender sender) {
 		if (message == null || message.isEmpty())
 			return "";
 
@@ -280,9 +205,8 @@ public final class Variables {
 			if (cached != null && cached.containsKey(message))
 				return cached.get(message);
 
-			// Javascript
-			if (SimplePlugin.getInstance().areScriptVariablesEnabled() && replaceCustom && !scriptVariables.isEmpty())
-				message = replaceJavascriptVariables0(message, sender);
+			// Custom placeholders
+			message = replaceJavascriptVariables0(scope, message, sender);
 
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
@@ -310,24 +234,34 @@ public final class Variables {
 	/**
 	 * Replaces javascript variables in the message
 	 *
+	 * @param scope
 	 * @param message
-	 * @param cast
+	 * @param sender
 	 * @return
 	 */
-	private static String replaceJavascriptVariables0(String message, CommandSender cast) {
-		for (final ScriptVariable var : scriptVariables)
-			try {
-				message = var.replace(message, cast);
+	private static String replaceJavascriptVariables0(VariableScope scope, String message, CommandSender sender) {
+		for (final Variable variable : Variable.getVariables()) {
+			final String key = variable.getKey();
 
-			} catch (final Throwable t) {
-				Common.throwError(t,
-						"Failed to replace a custom variable!",
-						"Message: " + message,
-						"Variable: " + var.getVariable(),
-						"%error");
+			if (variable.getScope() != scope)
+				continue;
+
+			if (message.contains(key)) {
+				try {
+					message = message.replace(key, variable.getValue(sender));
+
+				} catch (final Throwable t) {
+					Common.throwError(t,
+							"Failed to replace a custom variable!",
+							"Message: " + message,
+							"Variable: " + key,
+							"%error");
+				}
 			}
+		}
 
 		return message;
+
 	}
 
 	/**
@@ -534,96 +468,5 @@ public final class Variables {
 				.maxSize(300)
 				.expiration(1, TimeUnit.SECONDS)
 				.build();
-	}
-}
-
-/**
- * Represents a Javascript variable
- */
-class ScriptVariable {
-
-	/**
-	 * The placeholder we are looking for
-	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private final String variable;
-
-	/**
-	 * The script
-	 */
-	private String script;
-
-	ScriptVariable(String variable) {
-		this.variable = variable;
-	}
-
-	protected void setScript(List<String> lines) {
-		Valid.checkBoolean(this.script == null, "Script already set ");
-
-		this.script = StringUtils.join(lines.toArray(), "\n");
-	}
-
-	protected boolean hasScript() {
-		return script != null;
-	}
-
-	/**
-	 * Replaces this Javascript variable in the given message for the given sender
-	 *
-	 * @param message
-	 * @param sender
-	 * @return
-	 * @throws Exception
-	 */
-	protected String replace(String message, CommandSender sender) throws Exception {
-		if (message.contains(variable)) {
-
-			final Map<String, Object> variables = new HashMap<>();
-
-			if (sender instanceof Player)
-				variables.put("player", sender);
-			else
-				variables.put("cast", sender);
-
-			String script = this.script;
-
-			if (SimplePlugin.getInstance().replaceVariablesInCustom() && sender instanceof CommandSender)
-				script = Variables.replace(false, script, sender);
-
-			if (SimplePlugin.getInstance().replaceScriptVariablesInCustom() && sender instanceof Player) {
-				Debugger.debug("variables", "# Replacing own variables in script " + script);
-
-				for (final ScriptVariable var : Variables.getScriptVariables()) {
-					if (var.variable.equals(variable)) {
-						Debugger.debug("variables", "Ignoring " + var.variable);
-
-						continue;
-					}
-
-					try {
-						Debugger.debug("variables", "Replacing variable " + var.variable + " with " + variables);
-
-						variables.put(var.variable, JavaScriptExecutor.run(var.script, variables));
-					} catch (final Throwable t) {
-						Common.throwError(t,
-								"Failed to replace " + var.variable + " in script! ",
-								"Script: " + script,
-								"%error");
-					}
-				}
-			}
-
-			return message.replace(variable, Common.colorize(JavaScriptExecutor.run(script, variables).toString()));
-		}
-
-		return message;
-	}
-
-	@Override
-	public String toString() {
-		return "Variable {\n"
-				+ "  Placeholder: '" + variable + "'\n"
-				+ "  Script: <<\n    " + script + "\n  >>"
-				+ "\n}";
 	}
 }

@@ -53,7 +53,6 @@ import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -62,7 +61,6 @@ import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.update.SpigotUpdater;
 import org.mineacademy.fo.visual.BlockVisualizer;
-import org.mineacademy.fo.visualize_old.VisualizerListener;
 
 import lombok.Getter;
 
@@ -259,6 +257,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load our main static settings classes
 			if (getSettings() != null) {
 				YamlStaticConfig.load(getSettings());
+
 				Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
 			}
 
@@ -277,6 +276,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load legacy permanent metadata store
 			CompMetadata.MetadataFile.getInstance();
 
+			// Register main command if it is set
+			if (getMainCommand() != null) {
+				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
+
+				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+			}
+
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
@@ -291,13 +297,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (!isEnabled || !isEnabled())
 				return;
 
-			// Register main command if it is set
-			if (getMainCommand() != null) {
-				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
-
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
-			}
-
 			// Register BungeeCord when used
 			registerBungeeCord();
 
@@ -310,7 +309,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
 			registerEvents(new ToolsListener());
-			registerEvents(new VisualizerListener());
 			registerEvents(new EnchantmentListener());
 
 			// Register our packet listener
@@ -320,15 +318,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (HookManager.isDiscordSRVLoaded())
 				reloadables.registerEvents(new DiscordListener.DiscordListenerImpl());
 
-			// Load variables if enabled
-			if (areScriptVariablesEnabled())
-				Variables.loadScriptVariables();
-
 			// Set the logging and tell prefix
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 
 			// Finish off by starting metrics (currently bStats)
-			new Metrics(this);
+			final int pluginId = getMetricsPluginId();
+
+			if (pluginId != -1)
+				new Metrics(this, pluginId);
 
 		} catch (final Throwable t) {
 			displayError0(t);
@@ -360,7 +357,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private static void checkSingletons() {
 
 		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements(); ) {
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
 				final JarEntry jar = entry.nextElement();
 				final String name = jar.getName().replace("/", ".");
 
@@ -745,20 +742,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (getSettings() != null)
 				YamlStaticConfig.load(getSettings());
 
-			if (areScriptVariablesEnabled())
-				Variables.reloadScriptVariables();
-
 			FoundationPacketListener.addPacketListener();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
 
+			if (getMainCommand() != null)
+				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+
 			startingReloadables = true;
 			onReloadablesStart();
 			startingReloadables = false;
-
-			if (getMainCommand() != null)
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
 
 			registerBungeeCord();
 
@@ -982,6 +976,19 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * If you want to use bStats.org metrics system,
+	 * simply return the plugin ID (https://bstats.org/what-is-my-plugin-id)
+	 * here and we will automatically start tracking it.
+	 *
+	 * Defaults to -1 which means disabled
+	 *
+	 * @return
+	 */
+	public int getMetricsPluginId() {
+		return -1;
+	}
+
+	/**
 	 * When processing regular expressions, limit executing to the specified time.
 	 * This prevents server freeze/crash on malformed regex (loops).
 	 *
@@ -1001,13 +1008,24 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Shall we apply Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-	 * flags when compiling regex? May impose a slight performancy penaulty
-	 * but increases catches.
+	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
+	 *
+	 * May impose a slight performance penalty but increases catches.
 	 *
 	 * @return
 	 */
 	public boolean regexCaseInsensitive() {
+		return true;
+	}
+
+	/**
+	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
+	 *
+	 * May impose a slight performance penalty but useful for non-English servers.
+	 *
+	 * @return
+	 */
+	public boolean regexUnicode() {
 		return true;
 	}
 
@@ -1022,62 +1040,23 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Return if the JavaScript variables are enabled?
-	 *
-	 * Will load them from variables/javascript.txt file from your plugins folder.
-	 *
-	 * See https://github.com/kangarko/chatcontrol-pro/wiki/JavaScript-in-Bukkit for help
-	 *
-	 * @return
-	 */
-	public boolean areScriptVariablesEnabled() {
-		return false;
-	}
-
-	/**
-	 * Should we replace variables in {@link Variables} also in the javascript code?
-	 *
-	 * @return
-	 */
-	public boolean replaceVariablesInCustom() {
-		return false;
-	}
-
-	/**
-	 * Should we replace script variables in {@link Variables} also in the
-	 * javascript code?
-	 *
-	 * @return
-	 */
-	public boolean replaceScriptVariablesInCustom() {
-		return false;
-	}
-
-	/**
-	 * If vault is enabled, it will return player's prefix from each of their group
-	 *
-	 * @return
-	 */
-	public boolean vaultMultiPrefix() {
-		return false;
-	}
-
-	/**
-	 * If vault is enabled, it will return player's suffix from each of their group
-	 *
-	 * @return
-	 */
-	public boolean vaultMultiSuffix() {
-		return false;
-	}
-
-	/**
 	 * Should every message be divided by \n by an own method (tends to work more
 	 * then split("\n"))
 	 *
 	 * @return
 	 */
 	public boolean enforeNewLine() {
+		return false;
+	}
+
+	/**
+	 * Use JavaScript variables/javascript.txt file
+	 *
+	 * @deprecated this feature has been removed
+	 * @return
+	 */
+	@Deprecated
+	public boolean areScriptVariablesEnabled() {
 		return false;
 	}
 

@@ -26,6 +26,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.remain.Remain;
 
 import com.google.gson.JsonArray;
@@ -73,15 +74,34 @@ public class Metrics {
 	// The plugin
 	private final Plugin plugin;
 
+	// The plugin id
+	private final int pluginId;
+
 	/**
 	 * Class constructor.
 	 *
 	 * @param plugin The plugin which stats should be submitted.
+	 * @deprecated API has changed and this constructor no longer works, please use
+	 * 			   the one with pluginId instead
 	 */
+	@Deprecated
 	public Metrics(final Plugin plugin) {
+		throw new FoException("Initializing Metrics without pluginId is no longer functional! Please use new Metrics(plugin, pluginId) instead.");
+	}
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param plugin The plugin which stats should be submitted.
+	 * @param pluginId The id of the plugin.
+	 *                 It can be found at <a href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
+	 */
+	public Metrics(final Plugin plugin, int pluginId) {
 		if (plugin == null)
 			throw new IllegalArgumentException("Plugin cannot be null!");
+
 		this.plugin = plugin;
+		this.pluginId = pluginId;
 
 		// Get the config file
 		final File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
@@ -172,6 +192,7 @@ public class Metrics {
 		final String pluginVersion = plugin.getDescription().getVersion();
 
 		data.addProperty("pluginName", pluginName); // Append the name of the plugin
+		data.addProperty("id", pluginId); // Append the id of the plugin
 		data.addProperty("pluginVersion", pluginVersion); // Append the version of the plugin
 		data.add("customCharts", new JsonArray());
 

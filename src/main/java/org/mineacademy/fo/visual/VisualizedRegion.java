@@ -64,6 +64,22 @@ public final class VisualizedRegion extends Region {
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
 
 	/**
+	 * Shows the region to the given player for the given duration,
+	 * the hides it
+	 *
+	 * @param player
+	 * @param durationTicks
+	 */
+	public void showParticles(Player player, int durationTicks) {
+		showParticles(player);
+
+		Common.runLater(durationTicks, () -> {
+			if (canSeeParticles(player))
+				hideParticles(player);
+		});
+	}
+
+	/**
 	 * Shows the region to the given player
 	 *
 	 * @param player

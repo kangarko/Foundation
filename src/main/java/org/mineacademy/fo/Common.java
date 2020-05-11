@@ -1373,7 +1373,11 @@ public final class Common {
 		regex = SimplePlugin.getInstance().regexStripColors() ? stripColors(regex) : regex;
 
 		try {
-			pattern = instance.regexCaseInsensitive() ? Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE) : Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+			if (instance.regexCaseInsensitive())
+				pattern = Pattern.compile(regex, instance.regexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
+
+			else
+				pattern = instance.regexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
 
 		} catch (final PatternSyntaxException ex) {
 			throwError(ex, "Malformed regex: \'" + regex + "\'", "Use online services (like &fregex101.com&f) for fixing errors");
