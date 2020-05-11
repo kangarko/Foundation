@@ -159,7 +159,15 @@ public abstract class SimpleCommand extends Command {
 	 * item in the list is the main label and the other ones are the aliases.
 	 */
 	protected SimpleCommand(final StrictList<String> labels) {
-		this(labels.get(0), labels.size() > 1 ? labels.range(1).getSource() : null);
+		this(labels.getSource());
+	}
+
+	/**
+	 * Create a new simple command from the list. The first
+	 * item in the list is the main label and the other ones are the aliases.
+	 */
+	protected SimpleCommand(final List<String> labels) {
+		this(labels.get(0), labels.size() > 1 ? labels.subList(1, labels.size()) : null);
 	}
 
 	/**
