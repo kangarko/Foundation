@@ -994,7 +994,9 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final List<Object> getList(final String path) {
-		return getT(path, List.class);
+		final List<Object> list = getT(path, List.class);
+
+		return Common.getOrDefault(list, new ArrayList<>());
 	}
 
 	/**
