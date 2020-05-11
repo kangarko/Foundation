@@ -1004,7 +1004,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return list of maps, or empty map if not set
 	 */
 	protected final List<SerializedMap> getMapList(final String path) {
-		return getListSafe(path, SerializedMap.class);
+		return getList(path, SerializedMap.class);
 	}
 
 	/**
@@ -1015,11 +1015,12 @@ public class YamlConfig implements ConfigSerializable {
 	 * @see #getList(String, Class), except that this method never returns null,
 	 *      instead, if the key is not present, we return an empty set instead of
 	 *      null
+	 *
+	 * @deprecated use {@link #getSet(String, Class)} for the same behavior
 	 */
+	@Deprecated
 	protected final <T> Set<T> getSetSafe(final String key, final Class<T> type) {
-		final Set<T> list = getSet(key, type);
-
-		return Common.getOrDefault(list, new HashSet<>());
+		return getSet(key, type);
 	}
 
 	/**
@@ -1032,22 +1033,7 @@ public class YamlConfig implements ConfigSerializable {
 	protected final <T> Set<T> getSet(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
 
-		return list == null ? null : new HashSet<>(list);
-	}
-
-	/**
-	 * @param <T>
-	 * @param key
-	 * @param type
-	 * @return
-	 * @see #getList(String, Class), except that this method never returns null,
-	 *      instead, if the key is not present, we return an empty set instead of
-	 *      null
-	 */
-	protected final <T> List<T> getListSafe(final String key, final Class<T> type) {
-		final List<T> list = getList(key, type);
-
-		return Common.getOrDefault(list, new ArrayList<>());
+		return list == null ? new HashSet<>() : new HashSet<>(list);
 	}
 
 	/**
