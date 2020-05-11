@@ -1,5 +1,7 @@
 package org.mineacademy.fo.menu;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
@@ -14,7 +17,6 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
-import org.mineacademy.fo.menu.model.PageManager;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.Getter;
@@ -149,26 +151,51 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param returnMakesNewInstance
 	 *            should we re-instatiate the parent menu when returning to it?
 	 */
-	private MenuPagged(final Integer pageSize, final Menu parent,
-			final Iterable<T> pages, final boolean returnMakesNewInstance) {
+	private MenuPagged(final Integer pageSize, final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
 		super(parent, returnMakesNewInstance);
 
 		final int items = getItemAmount(pages);
-		final int autoPageSize = pageSize != null
-				? pageSize
-				: items <= 9
-						? 9 * 1
-						: items <= 9 * 2
-								? 9 * 2
-								: items <= 9 * 3
-										? 9 * 3
-										: items <= 9 * 4 ? 9 * 4 : 9 * 5;
+		final int autoPageSize = pageSize != null ? pageSize : items <= 9 ? 9 * 1 : items <= 9 * 2 ? 9 * 2 : items <= 9 * 3 ? 9 * 3 : items <= 9 * 4 ? 9 * 4 : 9 * 5;
 
-		currentPage = 1;
-		this.pages = PageManager.populate(autoPageSize, pages);
+		this.currentPage = 1;
+		this.pages = fillPages(autoPageSize, pages);
 
 		setSize(9 + autoPageSize);
 		setButtons();
+	}
+
+	/**
+	 * Dynamically populates the pages
+	 *
+	 * @param allItems all items that will be split
+	 * @return the map containing pages and their items
+	 */
+	private Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
+		final List<T> allItems = Common.toList(items);
+
+		final Map<Integer, List<T>> pages = new HashMap<>();
+		final int pageCount = allItems.size() == cellSize ? 0 : allItems.size() / cellSize;
+
+		for (int i = 0; i <= pageCount; i++) {
+			final List<T> pageItems = new ArrayList<>();
+
+			final int down = cellSize * i;
+			final int up = down + cellSize;
+
+			for (int valueIndex = down; valueIndex < up; valueIndex++)
+				if (valueIndex < allItems.size()) {
+					final T page = allItems.get(valueIndex);
+
+					pageItems.add(page);
+				}
+
+				else
+					break;
+
+			pages.put(i, pageItems);
+		}
+
+		return pages;
 	}
 
 	@SuppressWarnings("unused")
@@ -262,10 +289,14 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * Automatically prepend the title with page numbers
 	 *
+	 * Override for a custom last-minute implementation, but
+	 * ensure to call the super method otherwise no title will
+	 * be set in {@link InventoryDrawer}
+	 *
 	 * @param
 	 */
 	@Override
-	protected final void onDisplay(final InventoryDrawer drawer) {
+	protected void onDisplay(final InventoryDrawer drawer) {
 		drawer.setTitle(compileTitle0());
 	}
 

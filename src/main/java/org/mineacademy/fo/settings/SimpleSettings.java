@@ -65,7 +65,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 * Please call this as a super method when overloading this!
 	 */
 	@Override
-	protected void beforeLoad() {
+	protected void preLoad() {
 		// Load version first so we can use it later
 		pathPrefix(null);
 

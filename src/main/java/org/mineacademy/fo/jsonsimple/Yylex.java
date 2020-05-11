@@ -693,12 +693,6 @@ public class Yylex {
 					return new Yytoken(Yytoken.TYPE_COMMA, null);
 				else if (value == 3) {
 
-					// TODO
-					// ==== 11.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-					// For some reason this is empty.
-					// Please find out why.
-					// ====
-
 				} else if (zzInput == Yylex.YYEOF && this.zzStartRead == this.zzCurrentPos) {
 
 					this.zzAtEOF = true;
