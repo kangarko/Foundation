@@ -10,6 +10,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -28,7 +29,7 @@ public final class SimpleComponent {
 	/**
 	 * The current component that is being modified
 	 */
-	private TextComponent currentComponent;
+	private BaseComponent[] currentComponent;
 
 	/**
 	 * Create a new empty component
@@ -43,7 +44,7 @@ public final class SimpleComponent {
 	 * @param text
 	 */
 	private SimpleComponent(String... text) {
-		this.currentComponent = new TextComponent(String.join("\n", Common.colorize(text)));
+		this.currentComponent = TextComponent.fromLegacyText(String.join("\n", Common.colorize(text)));
 	}
 
 	// --------------------------------------------------------------------
@@ -90,7 +91,8 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		currentComponent.setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
+		for (final BaseComponent component : currentComponent)
+			component.setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
 
 		return this;
 	}
@@ -133,7 +135,8 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onClick(Action action, String text) {
-		currentComponent.setClickEvent(new ClickEvent(action, Common.colorize(text)));
+		for (final BaseComponent component : currentComponent)
+			component.setClickEvent(new ClickEvent(action, Common.colorize(text)));
 
 		return this;
 	}
@@ -151,8 +154,8 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent append(String text) {
-		pastComponents.add(currentComponent);
-		currentComponent = new TextComponent(Common.colorize(text));
+		pastComponents.add(new TextComponent(currentComponent));
+		currentComponent = TextComponent.fromLegacyText(Common.colorize(text));
 
 		return this;
 	}
@@ -168,7 +171,7 @@ public final class SimpleComponent {
 		for (final TextComponent pastComponent : pastComponents)
 			mainComponent.addExtra(pastComponent);
 
-		mainComponent.addExtra(currentComponent);
+		mainComponent.addExtra(new TextComponent(currentComponent));
 
 		return mainComponent;
 	}
