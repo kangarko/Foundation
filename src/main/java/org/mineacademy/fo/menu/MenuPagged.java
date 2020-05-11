@@ -289,10 +289,14 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * Automatically prepend the title with page numbers
 	 *
+	 * Override for a custom last-minute implementation, but
+	 * ensure to call the super method otherwise no title will
+	 * be set in {@link InventoryDrawer}
+	 *
 	 * @param
 	 */
 	@Override
-	protected final void onDisplay(final InventoryDrawer drawer) {
+	protected void onDisplay(final InventoryDrawer drawer) {
 		drawer.setTitle(compileTitle0());
 	}
 
