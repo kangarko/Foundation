@@ -161,7 +161,6 @@ public class YamlConfig implements ConfigSerializable {
 				return instance;
 			}
 
-		Debugger.debug("config", "> Creating new instance for " + fileName);
 		return null;
 	}
 
