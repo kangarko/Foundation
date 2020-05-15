@@ -136,18 +136,41 @@ public final class Variables {
 	/**
 	 * @see #replace(VariableScope, String, CommandSender)
 	 *
+	 * @param messages
+	 * @param sender
+	 * @return
+	 */
+	public static List<String> replaceAll(List<String> messages, CommandSender sender, Map<String, Object> replacements) {
+		return replaceAll(VariableScope.FORMAT, messages, sender, replacements);
+	}
+
+	/**
+	 * @see #replace(VariableScope, String, CommandSender)
+	 *
 	 * @param scope
 	 * @param messages
 	 * @param sender
 	 * @return
 	 */
 	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender) {
+		return Variables.replaceAll(scope, messages, sender, null);
+	}
+
+	/**
+	 * @see #replace(VariableScope, String, CommandSender)
+	 *
+	 * @param scope
+	 * @param messages
+	 * @param sender
+	 * @return
+	 */
+	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender, Map<String, Object> replacements) {
 		final List<String> replaced = new ArrayList<>(messages); // Make a copy to ensure writeable
 
 		for (int i = 0; i < replaced.size(); i++) {
 			final String message = replaced.get(i);
 
-			replaced.set(i, Variables.replace(scope, message, sender));
+			replaced.set(i, Variables.replace(scope, message, sender, replacements));
 		}
 
 		return replaced;
@@ -165,6 +188,20 @@ public final class Variables {
 	 */
 	public static String replace(String message, CommandSender sender) {
 		return replace(VariableScope.FORMAT, message, sender);
+	}
+
+	/**
+	 * Replaces variables in the message using the message sender as an object to replace
+	 * player-related placeholders. We also replace custom replacements from the Map
+	 *
+	 * We also support PlaceholderAPI and MvdvPlaceholderAPI.
+	 *
+	 * @param message
+	 * @param sender
+	 * @return
+	 */
+	public static String replace(String message, CommandSender sender, Map<String, Object> replacements) {
+		return replace(VariableScope.FORMAT, message, sender, replacements);
 	}
 
 	/**
@@ -192,6 +229,21 @@ public final class Variables {
 	 * @return
 	 */
 	public static String replace(VariableScope scope, String message, CommandSender sender) {
+		return replace(scope, message, sender, null);
+	}
+
+	/**
+	 * Replaces variables in the message using the message sender as an object to replace
+	 * player-related placeholders.
+	 *
+	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 *
+	 * @param scope
+	 * @param message
+	 * @param sender
+	 * @return
+	 */
+	public static String replace(VariableScope scope, String message, CommandSender sender, Map<String, Object> replacements) {
 		if (message == null || message.isEmpty())
 			return "";
 
@@ -210,8 +262,20 @@ public final class Variables {
 
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
-		}
 
+			if (replacements != null && !replacements.isEmpty())
+				for (String replacement : replacements.keySet()) {
+					if (message.contains(replacement) && !replacement.isEmpty()) {
+						// get the replacement
+						String toReplace = (String) replacements.get(replacement);
+
+						// add the brackets
+						replacement = "{" + replacement + "}";
+
+						message = message.replace(replacement, toReplace);
+					}
+				}
+		}
 		// Default
 		message = replaceHardVariables0(sender, message);
 
