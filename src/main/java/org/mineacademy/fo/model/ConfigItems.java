@@ -14,6 +14,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * A special class that can store loaded {@link YamlConfig} files
@@ -45,6 +46,12 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * *MUST* have a private constructor without any arguments
 	 */
 	private final Class<T> prototypeClass;
+
+	/**
+	 * Shall we log each item loaded? True by default
+	 */
+	@Setter
+	private boolean verbose = true;
 
 	public ConfigItems(String type, String folder, Class<T> prototypeClass) {
 		this.type = type;
@@ -96,7 +103,9 @@ public final class ConfigItems<T extends YamlConfig> {
 
 			// Register
 			loadedItems.add(item);
-			Common.log("[+] Loaded " + type + " " + item.getName());
+
+			if (verbose)
+				Common.log("[+] Loaded " + type + " " + item.getName());
 
 			return item;
 
