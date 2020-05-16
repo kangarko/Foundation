@@ -19,12 +19,13 @@ import org.mineacademy.fo.update.SpigotUpdater;
  * Typically we use this class for settings.yml main plugin config.
  */
 // Use for settings.yml
+@SuppressWarnings("unused")
 public abstract class SimpleSettings extends YamlStaticConfig {
 
 	/**
 	 * A flag indicating that this class has been loaded
 	 *
-	 * You can place this class to {@link org.mineacademy.fo.plugin.SimplePlugin#getSettings()} to make
+	 * You can place this class to {@link SimplePlugin#getSettingsClasses()} to make
 	 * it load automatically
 	 */
 	private static boolean settingsClassCalled;
@@ -195,16 +196,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	public static Boolean NOTIFY_PROMOTIONS = true;
 
 	/**
-	 * Should we load the plugin silently? Do not log useless messages
-	 *
-	 * Typically for ChatControl:
-	 *
-	 * Silent_Startup: false
-	 *
-	 */
-	public static Boolean SILENT_STARTUP = false;
-
-	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
@@ -238,9 +229,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		if (isSetDefault("Serialization"))
 			SECRET_KEY = getString("Serialization");
-
-		if (isSetDefault("Silent_Startup"))
-			SILENT_STARTUP = getBoolean("Silent_Startup");
 
 		// -------------------------------------------------------------------
 		// Load maybe-mandatory values
