@@ -53,23 +53,35 @@ public interface MenuQuantitable {
 	 * Get the button that is responsible for setting the quantity edit
 	 * Implemented by default.
 	 *
-	 * @param menu
-	 *            the menu
+	 * @param menu the menu
 	 * @return the button that is responsible for setting the quantity edit
 	 */
 	default Button getEditQuantityButton(Menu menu) {
+		return getEditQuantityButton(menu, true);
+	}
+
+	/**
+	 * Get the button that is responsible for setting the quantity edit
+	 * Implemented by default.
+	 *
+	 * @param menu the menu
+	 * @param animate should we animate the menu title on quantity change?
+	 * @return the button that is responsible for setting the quantity edit
+	 */
+	default Button getEditQuantityButton(Menu menu, boolean animate) {
 		return new Button() {
 
 			@Override
 			public final void onClickedInMenu(Player pl, Menu clickedMenu,
-					ClickType click) {
+											  ClickType click) {
 				setQuantity(click == ClickType.LEFT
 						? getQuantity().previous()
 						: getQuantity().next());
 				menu.redraw();
 
-				menu.animateTitle("&9Editing quantity set to "
-						+ getQuantity().getAmount());
+				if (!animate)
+					menu.animateTitle("&9Editing quantity set to "
+							+ getQuantity().getAmount());
 			}
 
 			@Override
