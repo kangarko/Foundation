@@ -11,6 +11,7 @@ import org.apache.commons.lang.WordUtils;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.NonNull;
@@ -96,7 +97,9 @@ public final class ConfigItems<T extends YamlConfig> {
 
 			// Register
 			loadedItems.add(item);
-			Common.log("[+] Loaded " + type + " " + item.getName());
+
+			if (!SimpleSettings.SILENT_STARTUP)
+				Common.log("[+] Loaded " + type + " " + item.getName());
 
 			return item;
 
