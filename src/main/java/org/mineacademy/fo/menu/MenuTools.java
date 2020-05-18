@@ -49,19 +49,16 @@ public abstract class MenuTools extends Menu {
 		this.tools = compile0(compileTools());
 
 		final int items = tools.size();
-		final int pages = items < 9
-				? 9 * 1
-				: items < 9 * 2
-						? 9 * 2
-						: items < 9 * 3 ? 9 * 3 : items < 9 * 4 ? 9 * 4 : 9 * 5;
+		final int pages = items < 9 ? 9 * 1
+				: items < 9 * 2 ? 9 * 2 : items < 9 * 3 ? 9 * 3 : items < 9 * 4 ? 9 * 4 : 9 * 5;
 
 		setSize(pages);
 		setTitle("Tools Menu");
 	}
 
 	/**
-	 * Attempts to automatically compile a set of tools Accepts an array
-	 * containing {@link Button}, {@link ItemStack} or enter 0 for air.
+	 * Attempts to automatically compile a set of tools Accepts an array containing
+	 * {@link Button}, {@link ItemStack} or enter 0 for air.
 	 *
 	 * @return the array of items in this menu
 	 */
@@ -69,8 +66,8 @@ public abstract class MenuTools extends Menu {
 
 	/**
 	 * Helper method you can use directly in your {@link #compileTools()} method
-	 * that will automatically scan all classes in your plugin that extend the
-	 * given class and return those who contain the given field:
+	 * that will automatically scan all classes in your plugin that extend the given
+	 * class and return those who contain the given field:
 	 *
 	 * public static Tool instance = new X() (X = the class)
 	 *
@@ -80,11 +77,9 @@ public abstract class MenuTools extends Menu {
 	protected Object[] lookupTools(final Class<? extends Tool> extendingClass) {
 		final List<Object> instances = new ArrayList<>();
 
-		for (final Class<?> clazz : ReflectionUtil
-				.getClasses(SimplePlugin.getInstance(), extendingClass))
+		for (final Class<?> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), extendingClass))
 			try {
-				final Object instance = ReflectionUtil.getFieldContent(clazz,
-						"instance", null);
+				final Object instance = ReflectionUtil.getFieldContent(clazz, "instance", null);
 
 				instances.add(instance);
 
@@ -108,11 +103,10 @@ public abstract class MenuTools extends Menu {
 	}
 
 	/**
-	 * Returns the {@link #compileTools()} at their respective positions for
-	 * each slot
+	 * Returns the {@link #compileTools()} at their respective positions for each
+	 * slot
 	 *
-	 * @param slot
-	 *            the slot
+	 * @param slot the slot
 	 * @return the tool or null
 	 */
 	@Override
@@ -124,10 +118,8 @@ public abstract class MenuTools extends Menu {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void onMenuClick(final Player pl, final int slot,
-			final InventoryAction action, final ClickType click,
-			final ItemStack cursor, final ItemStack item,
-			final boolean cancelled) {
+	public final void onMenuClick(final Player pl, final int slot, final InventoryAction action, final ClickType click,
+			final ItemStack cursor, final ItemStack item, final boolean cancelled) {
 		final ItemStack it = getItemAt(slot);
 		final ToggleableTool tool = it != null ? findTool(it) : null;
 
@@ -155,16 +147,13 @@ public abstract class MenuTools extends Menu {
 	/**
 	 * Compiles an automated tools menu.
 	 *
-	 * @param pluginToolClasses
-	 *            We will scan your plugin for this kind of class and all
-	 *            classes extending it will be loaded into the menu
-	 * @param description
-	 *            the menu description
+	 * @param pluginToolClasses We will scan your plugin for this kind of class and
+	 *                          all classes extending it will be loaded into the
+	 *                          menu
+	 * @param description       the menu description
 	 * @return
 	 */
-	public static final MenuTools of(
-			final Class<? extends Tool> pluginToolClasses,
-			final String... description) {
+	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
 		return new MenuTools() {
 
 			@Override
@@ -192,16 +181,14 @@ final class ToggleableTool {
 	private final ItemStack item;
 
 	/**
-	 * Internal flag representing if the player had the tool, since we last
-	 * checked
+	 * Internal flag representing if the player had the tool, since we last checked
 	 */
 	private boolean playerHasTool = false;
 
 	/**
 	 * Create a new tool
 	 *
-	 * @param unparsed
-	 *            the object to parse, see {@link MenuTools#compileTools()}
+	 * @param unparsed the object to parse, see {@link MenuTools#compileTools()}
 	 */
 	ToggleableTool(final Object unparsed) {
 		if (unparsed != null) {
@@ -211,21 +198,20 @@ final class ToggleableTool {
 			else if (unparsed instanceof Tool)
 				this.item = ((Tool) unparsed).getItem();
 
-			else if (unparsed instanceof Number
-					&& ((Number) unparsed).intValue() == 0)
+			else if (unparsed instanceof Number && ((Number) unparsed).intValue() == 0)
 				this.item = new ItemStack(Material.AIR);
 
 			else
-				throw new FoException("Unknown tool: " + unparsed
-						+ " (we only accept ItemStack, Tool's instance or 0 for air)");
+				throw new FoException(
+						"Unknown tool: " + unparsed + " (we only accept ItemStack, Tool's instance or 0 for air)");
 
 		} else
 			this.item = new ItemStack(Material.AIR);
 	}
 
 	/**
-	 * Returns the itemstack automatically, different if the player has or does
-	 * not have it already
+	 * Returns the itemstack automatically, different if the player has or does not
+	 * have it already
 	 *
 	 * @param player
 	 * @return the item
@@ -237,18 +223,14 @@ final class ToggleableTool {
 	}
 
 	private void update(final Player pl) {
-		playerHasTool = pl.getOpenInventory().getBottomInventory()
-				.containsAtLeast(item, 1);
+		playerHasTool = pl.getOpenInventory().getBottomInventory().containsAtLeast(item, 1);
 	}
 
 	// Return the dummy placeholder tool when the player already has it
 	private ItemStack getToolWhenHas() {
-		return ItemCreator.of(item)
-				.enchant(new SimpleEnchant(Enchantment.ARROW_INFINITE, 1))
+		return ItemCreator.of(item).enchant(new SimpleEnchant(Enchantment.ARROW_INFINITE, 1))
 				.flag(CompItemFlag.HIDE_ENCHANTS)
-				.lores(Arrays.asList("", "&cYou already have this item.",
-						"&7Click to take it away."))
-				.build().make();
+				.lores(Arrays.asList("", "&cYou already have this item.", "&7Click to take it away.")).build().make();
 	}
 
 	// Return the actual working tool in case player does not have it yet
@@ -257,11 +239,9 @@ final class ToggleableTool {
 	}
 
 	/**
-	 * Gives or takes the tool for the player depending on
-	 * {@link #playerHasTool}
+	 * Gives or takes the tool for the player depending on {@link #playerHasTool}
 	 *
-	 * @param player
-	 *            the player
+	 * @param player the player
 	 */
 	void giveOrTake(final Player player) {
 		final PlayerInventory inv = player.getInventory();
@@ -274,8 +254,7 @@ final class ToggleableTool {
 	}
 
 	boolean equals(final ItemStack item) {
-		return getToolWhenHas().isSimilar(item)
-				|| getToolWhenHasnt().isSimilar(item);
+		return getToolWhenHas().isSimilar(item) || getToolWhenHasnt().isSimilar(item);
 	}
 
 	/**
