@@ -159,7 +159,15 @@ public abstract class SimpleCommand extends Command {
 	 * item in the list is the main label and the other ones are the aliases.
 	 */
 	protected SimpleCommand(final StrictList<String> labels) {
-		this(labels.get(0), labels.size() > 1 ? labels.range(1).getSource() : null);
+		this(labels.getSource());
+	}
+
+	/**
+	 * Create a new simple command from the list. The first
+	 * item in the list is the main label and the other ones are the aliases.
+	 */
+	protected SimpleCommand(final List<String> labels) {
+		this(parseLabelList0(labels), labels.size() > 1 ? labels.subList(1, labels.size()) : null);
 	}
 
 	/**
@@ -200,6 +208,15 @@ public abstract class SimpleCommand extends Command {
 		final String[] aliases = label.split("\\|");
 
 		return aliases.length > 0 ? Arrays.asList(Arrays.copyOfRange(aliases, 1, aliases.length)) : new ArrayList<>();
+	}
+
+	/*
+	 * Return the first index from the list or thrown an error if list empty
+	 */
+	private static String parseLabelList0(List<String> labels) {
+		Valid.checkBoolean(!labels.isEmpty(), "Command label must not be empty!");
+
+		return labels.get(0);
 	}
 
 	// ----------------------------------------------------------------------
@@ -291,8 +308,6 @@ public abstract class SimpleCommand extends Command {
 
 			// Check for minimum required arguments and print help
 			if (args.length < getMinArguments() || autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
-
-				checkPerm(replaceBasicPlaceholders0("{plugin.name}.command.help"));
 
 				// Enforce setUsage being used
 				if (Common.getOrEmpty(getUsage()).isEmpty())
