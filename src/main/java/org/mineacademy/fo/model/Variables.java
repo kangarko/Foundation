@@ -269,8 +269,8 @@ public final class Variables {
 						// get the replacement
 						String toReplace = (String) replacements.get(replacement);
 
-						// add the brackets
-						replacement = "{" + replacement + "}";
+						replacement = replacement.indexOf(0) != '{' ? "{" + replacement : replacement;
+						replacement = replacement.indexOf(replacement.length() - 1) != '}' ? "}" + replacement : replacement;
 
 						message = message.replace(replacement, toReplace);
 					}
