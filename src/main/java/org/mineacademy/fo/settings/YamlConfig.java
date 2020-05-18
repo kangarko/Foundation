@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
@@ -159,7 +161,6 @@ public class YamlConfig implements ConfigSerializable {
 				return instance;
 			}
 
-		Debugger.debug("config", "> Creating new instance for " + fileName);
 		return null;
 	}
 
@@ -994,7 +995,9 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final List<Object> getList(final String path) {
-		return getT(path, List.class);
+		final List<Object> list = getT(path, List.class);
+
+		return Common.getOrDefault(list, new ArrayList<>());
 	}
 
 	/**
@@ -1004,7 +1007,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return list of maps, or empty map if not set
 	 */
 	protected final List<SerializedMap> getMapList(final String path) {
-		return getListSafe(path, SerializedMap.class);
+		return getList(path, SerializedMap.class);
 	}
 
 	/**
@@ -1015,11 +1018,12 @@ public class YamlConfig implements ConfigSerializable {
 	 * @see #getList(String, Class), except that this method never returns null,
 	 *      instead, if the key is not present, we return an empty set instead of
 	 *      null
+	 *
+	 * @deprecated use {@link #getSet(String, Class)} for the same behavior
 	 */
+	@Deprecated
 	protected final <T> Set<T> getSetSafe(final String key, final Class<T> type) {
-		final Set<T> list = getSet(key, type);
-
-		return Common.getOrDefault(list, new HashSet<>());
+		return getSet(key, type);
 	}
 
 	/**
@@ -1032,22 +1036,7 @@ public class YamlConfig implements ConfigSerializable {
 	protected final <T> Set<T> getSet(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
 
-		return list == null ? null : new HashSet<>(list);
-	}
-
-	/**
-	 * @param <T>
-	 * @param key
-	 * @param type
-	 * @return
-	 * @see #getList(String, Class), except that this method never returns null,
-	 *      instead, if the key is not present, we return an empty set instead of
-	 *      null
-	 */
-	protected final <T> List<T> getListSafe(final String key, final Class<T> type) {
-		final List<T> list = getList(key, type);
-
-		return Common.getOrDefault(list, new ArrayList<>());
+		return list == null ? new HashSet<>() : new HashSet<>(list);
 	}
 
 	/**
@@ -1090,6 +1079,41 @@ public class YamlConfig implements ConfigSerializable {
 				list.add(object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null);
 
 		return list;
+	}
+
+	/**
+	 * Return a list of enumerations that are checked for some special values
+	 * we use in our plugins that will break on older Minecraft versions, so we
+	 * just ignore them and do not throw any error.
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @return
+	 */
+	protected final <T extends Enum<T>> List<T> getCompatibleEnumList(final String path, final Class<T> type) {
+		final StrictList<T> list = new StrictList<>();
+		final List<String> enumNames = getStringList(path);
+
+		if (enumNames != null)
+			for (final String enumName : enumNames) {
+				T parsedEnum = null;
+
+				try {
+					parsedEnum = ReflectionUtil.lookupEnumSilent(type, enumName);
+
+				} catch (final MissingEnumException ex) {
+
+					// Only throw an exception if the user has put in malformed value
+					if (!LegacyEnum.isIncompatible(type, enumName))
+						throw ex;
+				}
+
+				if (parsedEnum != null)
+					list.add(parsedEnum);
+			}
+
+		return list.getSource();
 	}
 
 	/**
@@ -2094,5 +2118,41 @@ class ConfigInstance {
 	@Override
 	public boolean equals(final Object obj) {
 		return obj instanceof ConfigInstance ? ((ConfigInstance) obj).file.getName().equals(file.getName()) : obj instanceof File ? ((File) obj).getName().equals(file.getName()) : obj instanceof String ? ((String) obj).equals(file.getName()) : false;
+	}
+}
+
+/**
+ * A special class holding what enum values we have in our configuration
+ * that are incompatible with older Minecraft version.
+ *
+ * If those are loaded we just forgive them and do not throw an error.
+ */
+final class LegacyEnum {
+
+	/**
+	 * The map list of backward-incompatible types
+	 */
+	private static final StrictMap<Class<? extends Enum<?>>, List<String>> INCOMPATIBLE_TYPES = new StrictMap<>();
+
+	/**
+	 * Load incompatible values to map
+	 */
+	static {
+		INCOMPATIBLE_TYPES.put(SpawnReason.class, Arrays.asList("DROWNED"));
+	}
+
+	/**
+	 * Return true if the given enum class and name type is known to be
+	 * backward incompatible.
+	 *
+	 * @param <T>
+	 * @param type
+	 * @param enumName
+	 * @return
+	 */
+	public static <T extends Enum<T>> boolean isIncompatible(Class<T> type, String enumName) {
+		final List<String> types = INCOMPATIBLE_TYPES.get(type);
+
+		return types != null && types.contains(enumName.toUpperCase().replace(" ", "_"));
 	}
 }

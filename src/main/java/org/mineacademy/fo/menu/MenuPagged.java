@@ -133,8 +133,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *             autocalculate
 	 */
 	@Deprecated
-	protected MenuPagged(final int pageSize, final Menu parent,
-			final Iterable<T> pages, final boolean returnMakesNewInstance) {
+	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
 		this((Integer) pageSize, parent, pages, returnMakesNewInstance);
 	}
 

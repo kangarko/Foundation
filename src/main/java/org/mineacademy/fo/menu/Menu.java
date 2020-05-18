@@ -126,11 +126,13 @@ public abstract class Menu {
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
 	private String[] info = null;
+
 	/**
 	 * The viewer of this menu, is null until {@link #displayTo(Player)} is
 	 * called
 	 */
 	private Player viewer;
+
 	/**
 	 * Debug option to render empty spaces as glass panel having the slot id
 	 * visible
