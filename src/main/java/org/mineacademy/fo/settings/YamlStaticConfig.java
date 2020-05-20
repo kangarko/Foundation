@@ -378,6 +378,10 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.get(path, typeOf);
 	}
 
+	protected static final <E> E getWithData(final String path, final Class<E> typeOf, Object... deserializeArguments) {
+		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
+	}
+
 	protected static final Object getObject(final String path) {
 		return TEMPORARY_INSTANCE.getObject(path);
 	}
