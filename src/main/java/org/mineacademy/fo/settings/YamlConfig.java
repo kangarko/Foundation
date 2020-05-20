@@ -41,7 +41,6 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -155,11 +154,8 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	protected static final ConfigInstance findInstance(final String fileName) {
 		for (final ConfigInstance instance : loadedFiles.keySet())
-			if (instance.equals(fileName)) {
-				Debugger.debug("config", "> Reusing instance of " + fileName + " = " + instance.getFile());
-
+			if (instance.equals(fileName))
 				return instance;
-			}
 
 		return null;
 	}
@@ -306,13 +302,12 @@ public class YamlConfig implements ConfigSerializable {
 				onLoadFinish();
 
 			} catch (final Exception ex) {
-				Common.logFramed(
-						true,
+				Common.throwError(ex,
 						"Error loading configuration in " + getFileName() + "!",
 						"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
 						"Problem: " + ex + " (see below for more)");
 
-				Remain.sneaky(ex);
+				//Remain.sneaky(ex);
 			}
 		} finally {
 			loading = false;
@@ -442,8 +437,6 @@ public class YamlConfig implements ConfigSerializable {
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
-
-		Debugger.debug("config", "&eSaved updated file: " + file + " (# Comments removed)");
 	}
 
 	/** Called automatically when the file is saved */

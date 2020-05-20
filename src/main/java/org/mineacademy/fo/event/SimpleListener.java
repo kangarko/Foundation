@@ -67,7 +67,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 
 	@Override
 	public final void execute(Listener listener, Event event) throws EventException {
-		final String logName = listener.getClass().getSimpleName() + " with event " + event.getEventName() + " at " + priority + "(ignore cancelled = " + ignoreCancelled + ")";
+		final String logName = listener.getClass().getSimpleName() + " listening to " + event.getEventName() + " at " + priority + " priority";
 
 		LagCatcher.start(logName);
 
