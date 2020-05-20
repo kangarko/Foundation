@@ -1595,11 +1595,11 @@ class TownyHook {
 
 	String getTownyChannel(final Player pl) {
 		try {
-			// towny chat doesn't have a nice channel manager
-
+			// Towny chat doesn't have a nice channel manager
 			// this is used for sending directly to a channel, and it calls the async chat event
 			if (townyChat.getTownyPlayerListener().directedChat.containsKey(pl)) {
 				final com.palmergames.bukkit.TownyChat.channels.Channel channel = townyChat.getChannelsHandler().getChannel(pl, townyChat.getTownyPlayerListener().directedChat.get(pl));
+
 				if (channel != null)
 					return channel.getName();
 			}
@@ -1614,6 +1614,7 @@ class TownyHook {
 
 		} catch (final Throwable ex) {
 		}
+
 		return null;
 	}
 
