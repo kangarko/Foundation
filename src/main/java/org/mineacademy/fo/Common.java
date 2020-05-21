@@ -2049,12 +2049,12 @@ public final class Common {
 	}
 
 	/**
-	 * Creates a new modifiable array list from string array
+	 * Creates a new modifiable array list from array
 	 *
 	 * @param array
 	 * @return
 	 */
-	public static ArrayList<String> toList(final String... array) {
+	public static <T> ArrayList<T> toList(final T... array) {
 		return new ArrayList<>(Arrays.asList(array));
 	}
 
