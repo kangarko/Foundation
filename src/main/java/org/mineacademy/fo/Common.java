@@ -18,12 +18,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import javax.annotation.Nullable;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import net.md_5.bungee.api.chat.TextComponent;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -58,6 +55,12 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * Our main utility class hosting a large variety of different convenience
@@ -1233,17 +1236,14 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void throwError(Throwable throwable, final String... messages) {
-		if (throwable.getCause() != null) {
+		if (throwable.getCause() != null)
 			throwable = throwable.getCause();
-		}
 
-		if (messages != null) {
+		if (messages != null)
 			logFramed(false, replaceErrorVariable(throwable, messages));
-		}
 
-		if (!(throwable instanceof FoException)) {
+		if (!(throwable instanceof FoException))
 			Debugger.saveError(throwable, messages);
-		}
 
 		Remain.sneaky(throwable);
 	}
@@ -1263,9 +1263,8 @@ public final class Common {
 		final String throwableName = throwable == null ? "Unknown error." : throwable.getClass().getSimpleName();
 		final String throwableMessage = throwable == null || throwable.getMessage() == null || throwable.getMessage().isEmpty() ? "" : ": " + throwable.getMessage();
 
-		for (int i = 0; i < msgs.length; i++) {
+		for (int i = 0; i < msgs.length; i++)
 			msgs[i] = msgs[i].replace("%error", throwableName + throwableMessage);
-		}
 
 		return msgs;
 	}
@@ -1654,9 +1653,9 @@ public final class Common {
 	public static <OLD, NEW> List<NEW> convert(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
 		final List<NEW> copy = new ArrayList<>();
 
-		for (final OLD old : list){
+		for (final OLD old : list) {
 			final NEW result = converter.convert(old);
-			if(result != null) {
+			if (result != null) {
 				copy.add(converter.convert(old));
 			}
 		}
@@ -2050,12 +2049,12 @@ public final class Common {
 	}
 
 	/**
-	 * Creates a new modifiable array list from string array
+	 * Creates a new modifiable array list from array
 	 *
 	 * @param array
 	 * @return
 	 */
-	public static ArrayList<String> toList(final String... array) {
+	public static <T> ArrayList<T> toList(final T... array) {
 		return new ArrayList<>(Arrays.asList(array));
 	}
 
