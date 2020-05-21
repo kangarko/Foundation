@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -42,10 +41,18 @@ public final class Variable extends YamlConfig implements Actionable {
 	private String value;
 
 	/**
-	 * What permission player needs to be able to use this variable
+	 * The permission the sender must have to show the part
 	 */
 	@Nullable
-	private String permission;
+	@Getter
+	private String senderPermission;
+
+	/**
+	 * The permission receiver must have to see the part
+	 */
+	@Nullable
+	@Getter
+	private String receiverPermission;
 
 	// ----------------------------------------------------------------------------------
 	// Actionable
@@ -103,7 +110,8 @@ public final class Variable extends YamlConfig implements Actionable {
 		this.openUrl = isSet("Open_Url") ? getString("Open_Url") : null;
 		this.suggestCommand = isSet("Suggest_Command") ? getString("Suggest_Command") : null;
 		this.runCommand = isSet("Run_Command") ? getString("Run_Command") : null;
-		this.permission = isSet("Permission") ? getString("Permission") : null;
+		this.senderPermission = isSet("Sender_Permission") ? getString("Sender_Permission") : null;
+		this.receiverPermission = isSet("Receiver_Permission") ? getString("Receiver_Permission") : null;
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -118,10 +126,6 @@ public final class Variable extends YamlConfig implements Actionable {
 	 * @return
 	 */
 	public String getValue(CommandSender player) {
-
-		if (permission != null && !PlayerUtil.hasPerm(player, permission))
-			return value;
-
 		// Replace variables in script
 		final String script = Variables.replace(scope, this.value, player);
 
@@ -222,8 +226,16 @@ public final class Variable extends YamlConfig implements Actionable {
 		save();
 	}
 
-	public void setPermission(String permission) {
-		this.permission = permission;
+	@Override
+	public void setSenderPermission(String senderPermission) {
+		this.senderPermission = senderPermission;
+
+		save();
+	}
+
+	@Override
+	public void setReceiverPermission(String receiverPermission) {
+		this.receiverPermission = receiverPermission;
 
 		save();
 	}
@@ -247,7 +259,8 @@ public final class Variable extends YamlConfig implements Actionable {
 				"Open_Url", openUrl,
 				"Suggest_Command", suggestCommand,
 				"Run_Command", runCommand,
-				"Permission", permission);
+				"Sender_Permission", senderPermission,
+				"Receiver_Permission", receiverPermission);
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
