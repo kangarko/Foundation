@@ -2671,9 +2671,14 @@ class LandsHook {
 	}
 
 	public boolean hasMonsterSpawn(final Location location) {
-		final LandArea landArea = api.getArea(location);
-		final Land land = api.getLand(location);
+		try {
+			final LandArea landArea = api.getArea(location);
+			final Land land = api.getLand(location);
 
-		return land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN) || landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN);
+			return land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN) || landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN);
+		} catch (final Throwable throwable) {
+			Common.log("[Warn] couldn't hook into Lands!");
+		}
+		return false;
 	}
 }
