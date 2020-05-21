@@ -1,8 +1,13 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
@@ -10,6 +15,9 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.Data;
+import lombok.NonNull;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
@@ -19,32 +27,53 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * A very simple way of sending interactive chat messages
  */
-public final class SimpleComponent {
+public class SimpleComponent {
+
+	/**
+	 * The pattern to match URL addresses when parsing text
+	 */
+	private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
 
 	/**
 	 * The past components having different hover/click events
 	 */
-	private final List<TextComponent> pastComponents = new ArrayList<>();
+	private final List<PermissibleComponent> pastComponents = new ArrayList<>();
+
+	/**
+	 * Shall we automatically translate & into colors? True by default
+	 *
+	 * Hover/Click events will always be colorized
+	 */
+	private final boolean colorize;
 
 	/**
 	 * The current component that is being modified
 	 */
-	private BaseComponent[] currentComponent;
+	private PermissibleComponent[] currentComponents;
 
 	/**
 	 * Create a new empty component
 	 */
-	public SimpleComponent() {
-		this("");
+	protected SimpleComponent() {
+		this(true, "");
 	}
 
 	/**
 	 * Create a new interactive chat component
 	 *
+	 * @param colorize
 	 * @param text
 	 */
-	private SimpleComponent(String... text) {
-		this.currentComponent = TextComponent.fromLegacyText(String.join("\n", Common.colorize(text)));
+	protected SimpleComponent(boolean colorize, String... text) {
+		this.colorize = colorize;
+		this.currentComponents = fromLegacyText(colorize ? String.join("\n", Common.colorize(text)) : String.join("\n", text), null, null);
+	}
+
+	@Data
+	public class PermissibleComponent {
+
+		private final BaseComponent component;
+		private final String permission;
 	}
 
 	// --------------------------------------------------------------------
@@ -52,7 +81,7 @@ public final class SimpleComponent {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Add a show text hover event for the {@link #currentComponent}
+	 * Add a show text hover event for the {@link #currentComponents}
 	 *
 	 * @param texts
 	 * @return
@@ -62,7 +91,7 @@ public final class SimpleComponent {
 	}
 
 	/**
-	 * Add a show text hover event for the {@link #currentComponent}
+	 * Add a show text hover event for the {@link #currentComponents}
 	 *
 	 * @param text
 	 * @return
@@ -84,21 +113,21 @@ public final class SimpleComponent {
 	}
 
 	/**
-	 * Add a hover event for the {@link #currentComponent}
+	 * Add a hover event for the {@link #currentComponents}
 	 *
 	 * @param action
 	 * @param text
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		for (final BaseComponent component : currentComponent)
-			component.setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
+		for (final PermissibleComponent component : currentComponents)
+			component.getComponent().setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
 
 		return this;
 	}
 
 	/**
-	 * Add a run command event for the {@link #currentComponent}
+	 * Add a run command event for the {@link #currentComponents}
 	 *
 	 * @param text
 	 * @return
@@ -108,7 +137,7 @@ public final class SimpleComponent {
 	}
 
 	/**
-	 * Add a suggest command event for the {@link #currentComponent}
+	 * Add a suggest command event for the {@link #currentComponents}
 	 *
 	 * @param text
 	 * @return
@@ -118,7 +147,7 @@ public final class SimpleComponent {
 	}
 
 	/**
-	 * Open the given URL for the {@link #currentComponent}
+	 * Open the given URL for the {@link #currentComponents}
 	 *
 	 * @param url
 	 * @return
@@ -128,15 +157,15 @@ public final class SimpleComponent {
 	}
 
 	/**
-	 * Add a command event for the {@link #currentComponent}
+	 * Add a command event for the {@link #currentComponents}
 	 *
 	 * @param action
 	 * @param text
 	 * @return
 	 */
 	public SimpleComponent onClick(Action action, String text) {
-		for (final BaseComponent component : currentComponent)
-			component.setClickEvent(new ClickEvent(action, Common.colorize(text)));
+		for (final PermissibleComponent component : currentComponents)
+			component.getComponent().setClickEvent(new ClickEvent(action, Common.colorize(text)));
 
 		return this;
 	}
@@ -144,6 +173,10 @@ public final class SimpleComponent {
 	// --------------------------------------------------------------------
 	// Building
 	// --------------------------------------------------------------------
+
+	public SimpleComponent append(String text) {
+		return append(text, null);
+	}
 
 	/**
 	 * Create another component. The current is put in a list of past components
@@ -153,9 +186,18 @@ public final class SimpleComponent {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent append(String text) {
-		pastComponents.add(new TextComponent(currentComponent));
-		currentComponent = TextComponent.fromLegacyText(Common.colorize(text));
+	public SimpleComponent append(String text, String viewPermission) {
+
+		// Copy the last color to reuse in the next component
+		ChatColor lastcolor = null;
+
+		for (final PermissibleComponent baseComponent : currentComponents) {
+			pastComponents.add(baseComponent);
+
+			lastcolor = baseComponent.getComponent().getColor();
+		}
+
+		currentComponents = fromLegacyText(colorize ? Common.colorize(text) : text, lastcolor, viewPermission);
 
 		return this;
 	}
@@ -168,12 +210,22 @@ public final class SimpleComponent {
 	public TextComponent build() {
 		final TextComponent mainComponent = new TextComponent("");
 
-		for (final TextComponent pastComponent : pastComponents)
-			mainComponent.addExtra(pastComponent);
+		for (final PermissibleComponent pastComponent : pastComponents)
+			mainComponent.addExtra(pastComponent.getComponent());
 
-		mainComponent.addExtra(new TextComponent(currentComponent));
+		for (final PermissibleComponent currentComponent : currentComponents)
+			mainComponent.addExtra(currentComponent.getComponent());
 
 		return mainComponent;
+	}
+
+	/**
+	 * Return all components that we have created
+	 *
+	 * @return
+	 */
+	public List<PermissibleComponent> getComponents() {
+		return Common.joinArrays(pastComponents, Arrays.asList(currentComponents));
 	}
 
 	/**
@@ -184,6 +236,114 @@ public final class SimpleComponent {
 	 */
 	public String getPlainMessage() {
 		return build().toLegacyText();
+	}
+
+	/*
+	 * Compile the message into a component, creating a new BaseComponent
+	 * each time the message has a new & color/formatting, preserving
+	 * the last color
+	 */
+	private PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable ChatColor lastColor, @Nullable String viewPermission) {
+		final ArrayList<PermissibleComponent> components = new ArrayList<>();
+		final Matcher matcher = URL_PATTERN.matcher(message);
+
+		StringBuilder builder = new StringBuilder();
+		TextComponent component = new TextComponent();
+
+		for (int i = 0; i < message.length(); i++) {
+			char c = message.charAt(i);
+
+			if (c == ChatColor.COLOR_CHAR) {
+				if (++i >= message.length())
+					break;
+
+				c = message.charAt(i);
+
+				if (c >= 'A' && c <= 'Z')
+					c += 32;
+
+				ChatColor format = ChatColor.getByChar(c);
+
+				if (format == null)
+					continue;
+
+				if (builder.length() > 0) {
+					final TextComponent old = component;
+
+					component = new TextComponent(old);
+					old.setText(builder.toString());
+
+					builder = new StringBuilder();
+					components.add(new PermissibleComponent(old, viewPermission));
+				}
+
+				switch (format) {
+					case BOLD:
+						component.setBold(true);
+						break;
+					case ITALIC:
+						component.setItalic(true);
+						break;
+					case UNDERLINE:
+						component.setUnderlined(true);
+						break;
+					case STRIKETHROUGH:
+						component.setStrikethrough(true);
+						break;
+					case MAGIC:
+						component.setObfuscated(true);
+						break;
+					case RESET:
+						format = ChatColor.WHITE;
+					default:
+						component = new TextComponent();
+						component.setColor(format);
+						break;
+				}
+
+				lastColor = format;
+				continue;
+			}
+
+			int pos = message.indexOf(' ', i);
+
+			if (pos == -1)
+				pos = message.length();
+
+			// Web link handling
+			if (matcher.region(i, pos).find()) {
+				if (builder.length() > 0) {
+					final TextComponent old = component;
+
+					component = new TextComponent(old);
+					old.setText(builder.toString());
+					builder = new StringBuilder();
+					components.add(new PermissibleComponent(old, viewPermission));
+				}
+
+				final TextComponent old = component;
+				component = new TextComponent(old);
+
+				final String urlString = message.substring(i, pos);
+				component.setText(urlString);
+				component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
+				components.add(new PermissibleComponent(component, viewPermission));
+
+				i += pos - i - 1;
+				component = old;
+
+				continue;
+			}
+
+			builder.append(c);
+		}
+
+		component.setText(builder.toString());
+		component.setColor(lastColor);
+
+		components.add(new PermissibleComponent(component, viewPermission));
+
+		return components.stream().toArray(PermissibleComponent[]::new);
 	}
 
 	// --------------------------------------------------------------------
@@ -233,6 +393,18 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public static SimpleComponent of(String... text) {
-		return new SimpleComponent(text);
+		return of(true, text);
+	}
+
+	/**
+	 * Create a new interactive chat component
+	 * You can then build upon your text to add interactive elements
+	 *
+	 * @param colorize
+	 * @param text
+	 * @return
+	 */
+	public static SimpleComponent of(boolean colorize, String... text) {
+		return new SimpleComponent(colorize, text);
 	}
 }
