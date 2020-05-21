@@ -11,7 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
@@ -379,10 +378,6 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.get(path, typeOf);
 	}
 
-	protected static final <E> E getWithData(final String path, final Class<E> typeOf, Object... deserializeArguments) {
-		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
-	}
-
 	protected static final Object getObject(final String path) {
 		return TEMPORARY_INSTANCE.getObject(path);
 	}
@@ -391,11 +386,19 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
 	}
 
-	protected static final SerializedMap getMap(final String path) {
-		return TEMPORARY_INSTANCE.getMap(path);
+	/**
+	 * @deprecated target for removal, do not use
+	 */
+	@Deprecated
+	protected static final <Key, Value> LinkedHashMap<Key, Value> getMap(final String path, final Class<Key> keyType, final Class<Value> valueType) {
+		return TEMPORARY_INSTANCE.getMap_OLD(path, keyType, valueType);
 	}
 
-	protected static final <Key, Value> LinkedHashMap<Key, Value> getMap(final String path, final Class<Key> keyType, final Class<Value> valueType) {
-		return TEMPORARY_INSTANCE.getMap(path, keyType, valueType);
+	/**
+	 * @deprecated target for removal, do not use
+	 */
+	@Deprecated
+	protected static final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(final String path) {
+		return TEMPORARY_INSTANCE.getValuesAndKeys_OLD(path);
 	}
 }

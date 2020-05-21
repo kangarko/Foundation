@@ -53,13 +53,4 @@ public interface Actionable extends ConfigSerializable {
 	String getRunCommand();
 
 	void setRunCommand(String runCommand);
-
-	String getSenderPermission();
-
-	void setSenderPermission(String senderPermission);
-
-	String getReceiverPermission();
-
-	void setReceiverPermission(String receiverPermission);
-
 }
