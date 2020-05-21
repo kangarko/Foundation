@@ -23,7 +23,8 @@ import lombok.Getter;
  * This is AdvancedScoreboard made with packets. - Use me with love :)
  *
  * <p>
- * Made by Ladislav Proc 2020
+ * @author Ladislav Proc
+ * @since 2020
  * </p>
  */
 public class AdvancedScoreboard {
@@ -141,6 +142,21 @@ public class AdvancedScoreboard {
 	 * @param lines
 	 */
 	public void setLines(final ArrayList<String> lines) {
+		int lineCount = 1;
+
+		for (int i = lines.size() - 1; i >= 0; --i) {
+			setLine(lineCount, Common.colorize(lines.get(i)));
+
+			++lineCount;
+		}
+	}
+
+	/**
+	 * Sets lines to scoreboard (flips the list)
+	 *
+	 * @param lines
+	 */
+	public void setLines(final List<String> lines) {
 		int lineCount = 1;
 
 		for (int i = lines.size() - 1; i >= 0; --i) {
