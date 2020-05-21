@@ -10,8 +10,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -299,7 +297,7 @@ public final class PlayerUtil {
 	 * @param permission
 	 * @return
 	 */
-	public static boolean hasPerm(@NonNull final Permissible sender, @Nullable final String permission) {
+	public static boolean hasPerm(@NonNull final Permissible sender, final String permission) {
 		return permission == null || sender.hasPermission(permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
