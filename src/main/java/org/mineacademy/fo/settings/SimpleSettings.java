@@ -162,13 +162,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	public static String BUNGEE_SERVER_NAME = "Server";
 
 	/**
-	 * Antipiracy stuff for our protected software, leave empty to Serialization: ""
-	 *
-	 * // NOT MANDATORY //
-	 */
-	public static String SECRET_KEY = "";
-
-	/**
 	 * Should we check for updates from SpigotMC and notify the console and users with permission?
 	 *
 	 * See {@link SimplePlugin#getUpdateCheck()} that you can make to return {@link SpigotUpdater} with your Spigot plugin ID.
@@ -180,20 +173,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 * // ONLY MANDATORY IF YOU OVERRIDE {@link SimplePlugin#getUpdateCheck()} //
 	 */
 	public static Boolean NOTIFY_UPDATES = false;
-
-	/**
-	 * Should we enable inbuilt advertisements?
-	 * ** We found out that users really hate this feature, you may want not to use this completelly **
-	 * ** If you want to broadcast important messages regardless of this feature just implement your **
-	 * ** own Runnable that checks for a YAML file on your external server on plugin load. **
-	 *
-	 * Typically for ChatControl:
-	 *
-	 * Notify_Promotions: true
-	 *
-	 * // NOT MANDATORY //
-	 */
-	public static Boolean NOTIFY_PROMOTIONS = true;
 
 	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -223,12 +202,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		if (isSetDefault("Server_Name"))
 			SERVER_NAME = Common.colorize(getString("Server_Name"));
-
-		if (isSetDefault("Notify_Promotions"))
-			NOTIFY_PROMOTIONS = getBoolean("Notify_Promotions");
-
-		if (isSetDefault("Serialization"))
-			SECRET_KEY = getString("Serialization");
 
 		// -------------------------------------------------------------------
 		// Load maybe-mandatory values
