@@ -235,19 +235,19 @@ public final class ChatUtil {
 		if (message.isEmpty())
 			return 0;
 
-		final String[] sentences = message.split(" ");
-		String msgToCheck = "";
+		final String[] sentences = Common.stripColors(message).split(" ");
+		String messageToCheck = "";
 		double upperCount = 0;
 
 		for (final String sentence : sentences)
 			if (!isDomain(sentence))
-				msgToCheck += sentence + " ";
+				messageToCheck += sentence + " ";
 
-		for (final char ch : msgToCheck.toCharArray())
+		for (final char ch : messageToCheck.toCharArray())
 			if (Character.isUpperCase(ch))
 				upperCount++;
 
-		return upperCount / msgToCheck.length();
+		return upperCount / messageToCheck.length();
 	}
 
 	/**
@@ -261,7 +261,7 @@ public final class ChatUtil {
 		if (message.isEmpty())
 			return 0;
 
-		final int[] caps = splitCaps(message, ignored);
+		final int[] caps = splitCaps(Common.stripColors(message), ignored);
 
 		int sum = 0;
 		int sumTemp = 0;
@@ -283,9 +283,12 @@ public final class ChatUtil {
 	 * @param second
 	 * @return
 	 */
-	public static double percentageSimilarity(final String first, final String second) {
+	public static double percentageSimilarity(String first, String second) {
 		if (first.isEmpty() && second.isEmpty())
 			return 1D;
+
+		first = removeSimilarity(first);
+		second = removeSimilarity(second);
 
 		String longer = first, shorter = second;
 
@@ -299,10 +302,22 @@ public final class ChatUtil {
 		if (longerLength == 0)
 			return 0; /* both strings are zero length */
 
-		final double result = (longerLength - editDistance(longer, shorter)) / (double) longerLength;
+		return (longerLength - editDistance(longer, shorter)) / (double) longerLength;
+	}
 
-		return result;
+	/**
+	 * Remove any similarity traits of a message such as removing colors,
+	 * lowercasing it, removing diacritic
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String removeSimilarity(String message) {
+		message = replaceDiacritic(message);
+		message = Common.stripColors(message);
+		message = message.toLowerCase();
 
+		return message;
 	}
 
 	/**
