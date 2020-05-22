@@ -3,6 +3,7 @@ package org.mineacademy.fo.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
@@ -174,5 +175,21 @@ public final class Replacer {
 	 */
 	public static Replacer of(String... messages) {
 		return new Replacer(messages);
+	}
+
+	/**
+	 * Replace all variables in the {@link SerializedMap#ofArray(Object...)} format
+	 *
+	 * @param message
+	 * @param replacements
+	 * @return
+	 */
+	public static String replaceAll(String message, Object... replacements) {
+		final SerializedMap map = SerializedMap.ofArray(replacements);
+
+		for (final Entry<String, Object> entry : map.entrySet())
+			message = message.replace(entry.getKey(), entry.getValue() + "");
+
+		return message;
 	}
 }
