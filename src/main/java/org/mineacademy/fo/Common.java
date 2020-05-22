@@ -30,7 +30,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.conversations.Conversable;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -1061,21 +1060,8 @@ public final class Common {
 		for (int i = 0; i < args.length; i++) {
 			final Object arg = args[i];
 
-			if (arg != null) {
-				if (arg instanceof Entity) {
-					args[i] = Remain.getName((Entity) arg);
-				} else if (arg instanceof CommandSender) {
-					args[i] = ((CommandSender) arg).getName();
-				} else if (arg instanceof World) {
-					args[i] = ((World) arg).getName();
-				} else if (arg instanceof Location) {
-					args[i] = shortLocation((Location) arg);
-				} else if (arg instanceof Collection) {
-					final String string = arg.toString();
-
-					args[i] = string.substring(1, string.length() - 1);
-				}
-			}
+			if (arg != null)
+				args[i] = Replacer.simplify(arg);
 		}
 
 		return String.format(format, args);
@@ -1519,7 +1505,7 @@ public final class Common {
 	 * @return
 	 */
 	public static <T> String joinToString(final Iterable<T> array, final String delimiter) {
-		return join(array, delimiter, object -> object == null ? "" : object.toString());
+		return join(array, delimiter, object -> object == null ? "" : Replacer.simplify(object));
 	}
 
 	/**
@@ -1822,9 +1808,8 @@ public final class Common {
 	 * @return
 	 */
 	public static String[] replace(final String what, final String byWhat, final String... messages) {
-		for (int i = 0; i < messages.length; i++) {
+		for (int i = 0; i < messages.length; i++)
 			messages[i] = messages[i].replace(what, byWhat);
-		}
 
 		return messages;
 	}
@@ -1838,9 +1823,8 @@ public final class Common {
 	 * @return
 	 */
 	public static List<String> replace(final String what, final String byWhat, final List<String> messages) {
-		for (int i = 0; i < messages.size(); i++) {
+		for (int i = 0; i < messages.size(); i++)
 			messages.set(i, messages.get(i).replace(what, byWhat));
-		}
 
 		return messages;
 	}
@@ -1852,11 +1836,9 @@ public final class Common {
 	 * @return
 	 */
 	public static String[] replaceNuls(final String[] list) {
-		for (int i = 0; i < list.length; i++) {
-			if (list[i] == null) {
+		for (int i = 0; i < list.length; i++)
+			if (list[i] == null)
 				list[i] = "";
-			}
-		}
 
 		return list;
 	}
