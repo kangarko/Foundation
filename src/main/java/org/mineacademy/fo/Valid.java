@@ -79,6 +79,17 @@ public final class Valid {
 	}
 
 	/**
+	 * Throws an error with a custom message if the given toCheck string is not a number!
+	 *
+	 * @param toCheck
+	 * @param falseMessage
+	 */
+	public static void checkInteger(String toCheck, String falseMessage) {
+		if (!isInteger(toCheck))
+			throw new FoException(falseMessage);
+	}
+
+	/**
 	 * Throws an error with a custom message if the given collection is null or empty
 	 *
 	 * @param collection
