@@ -564,16 +564,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final <T> T get(final String path, final Class<T> type, final T def) {
-
-		// Special case: If there is no key at your config and neither at the default
-		// config,
-		// and we should deserialize non-existing values, we just return false instead
-		// of throwing
-		// an error at the below getT method
-		// if (usingDefaults && !isSet(path) && !isSetDefault(path) && def == null)
-		// return null;
-
-		final Object object = convertIfNull(type, getT(path, Object.class));
+		final Object object = getT(path, Object.class);
 
 		return object != null ? SerializeUtil.deserialize(type, object) : def;
 	}
@@ -590,26 +581,9 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final <T> T getWithData(final String path, final Class<T> type, final Object... deserializeArguments) {
-		final Object object = convertIfNull(type, getT(path, Object.class));
+		final Object object = getT(path, Object.class);
 
 		return object != null ? SerializeUtil.deserialize(type, object, deserializeArguments) : null;
-	}
-
-	//
-	// If there is no object set at a path, we convert it into an empty map,
-	// allowing
-	// you to invoke deserialize for empty map to use default values instead
-	//
-	private Object convertIfNull(final Class<?> type, final Object object) {
-		/*
-		 * if (ALLOW_NULL_IN_DEFAULTS) { if (object == null &&
-		 * ConfigSerializable.class.isAssignableFrom(type)) object = new
-		 * SerializedMap();
-		 *
-		 * if ("".equals(object) && Enum.class.isAssignableFrom(type)) object = null; }
-		 */
-
-		return object;
 	}
 
 	/**
