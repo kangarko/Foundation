@@ -1,6 +1,7 @@
 package org.mineacademy.fo;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -76,6 +77,16 @@ public final class MathUtil {
 			return romanNumbers.get(number);
 
 		return romanNumbers.get(literal) + toRoman(number - literal);
+	}
+
+	/**
+	 * Return the highest integer in the given number array
+	 *
+	 * @param numbers
+	 * @return
+	 */
+	public static int max(int... numbers) {
+		return Arrays.stream(numbers).max().getAsInt();
 	}
 
 	/**
