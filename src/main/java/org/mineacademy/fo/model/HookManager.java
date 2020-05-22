@@ -608,7 +608,7 @@ public final class HookManager {
 	 * @param who
 	 * @param ignore
 	 */
-	public static void setIgnore(final String player, final String who, final boolean ignore) {
+	public static void setIgnore(final UUID player, final UUID who, final boolean ignore) {
 		if (isEssentialsXLoaded())
 			essentialsxHook.setIgnore(player, who, ignore);
 
@@ -623,9 +623,9 @@ public final class HookManager {
 	 * @param who
 	 * @return
 	 */
-	public static boolean isIgnoring(final String player, final String who) {
-		Valid.checkBoolean(player != null && !player.isEmpty(), "Player to check ignore from cannot be null/empty");
-		Valid.checkBoolean(who != null && !who.isEmpty(), "Player to check ignore to cannot be null/empty");
+	public static boolean isIgnoring(final UUID player, final UUID who) {
+		Valid.checkBoolean(player != null, "Player to check ignore from cannot be null/empty");
+		Valid.checkBoolean(who != null, "Player to check ignore to cannot be null/empty");
 
 		return isEssentialsXLoaded() ? essentialsxHook.isIgnoring(player, who) : isCMILoaded() ? CMIHook.isIgnoring(player, who) : false;
 	}
@@ -1386,7 +1386,7 @@ class EssentialsHook {
 			user.setGodModeEnabled(godMode);
 	}
 
-	void setIgnore(final String player, final String toIgnore, final boolean ignore) {
+	void setIgnore(final UUID player, final UUID toIgnore, final boolean ignore) {
 		try {
 			final com.earth2me.essentials.User user = ess.getUser(player);
 			final com.earth2me.essentials.User toIgnoreUser = ess.getUser(toIgnore);
@@ -1400,7 +1400,7 @@ class EssentialsHook {
 		}
 	}
 
-	boolean isIgnoring(final String player, final String ignoringPlayer) {
+	boolean isIgnoring(final UUID player, final UUID ignoringPlayer) {
 		try {
 			final com.earth2me.essentials.User user = ess.getUser(player);
 			final com.earth2me.essentials.User ignored = ess.getUser(ignoringPlayer);
@@ -2560,23 +2560,21 @@ class CMIHook {
 		user.setLastTeleportLocation(location);
 	}
 
-	void setIgnore(final String player, final String who, final boolean ignore) {
+	void setIgnore(final UUID player, final UUID who, final boolean ignore) {
 		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
-		final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
 
-		if (ignoredPlayer != null)
-			if (ignore)
-				user.addIgnore(ignoredPlayer.getUniqueId(), true /* save now (?) */);
-			else
-				user.removeIgnore(ignoredPlayer.getUniqueId());
+		if (ignore)
+			user.addIgnore(who, true /* save now */);
+		else
+			user.removeIgnore(who);
 	}
 
-	boolean isIgnoring(final String player, final String who) {
+	boolean isIgnoring(final UUID player, final UUID who) {
 		try {
 			final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
-			final OfflinePlayer ignoredPlayer = Bukkit.getOfflinePlayer(who);
 
-			return user.isIgnoring(ignoredPlayer.getUniqueId());
+			return user.isIgnoring(who);
+
 		} catch (final NullPointerException ex) {
 			return false;
 		}
