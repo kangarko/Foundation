@@ -26,9 +26,9 @@ import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
+import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.YamlConfig;
-import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -133,8 +133,8 @@ public final class SerializeUtil {
 		else if (obj instanceof ItemCreator)
 			return ((ItemCreator) obj).make();
 
-		else if (obj instanceof TimeHelper)
-			return ((TimeHelper) obj).getRaw();
+		else if (obj instanceof SimpleTime)
+			return ((SimpleTime) obj).getRaw();
 
 		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
@@ -331,6 +331,9 @@ public final class SerializeUtil {
 
 			else if (classOf == CompMaterial.class)
 				object = CompMaterial.fromString(object.toString());
+
+			else if (classOf == SimpleTime.class)
+				object = SimpleTime.from(object.toString());
 
 			else if (classOf == UUID.class)
 				object = UUID.fromString(object.toString());

@@ -44,7 +44,7 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(BungeeAction action, T... datas) {
-		tellBungee(SimplePlugin.getBungee().getChannel(), action, datas);
+		tellBungee(SimplePlugin.getInstance().getBungeeCord().getChannel(), action, datas);
 	}
 
 	/**

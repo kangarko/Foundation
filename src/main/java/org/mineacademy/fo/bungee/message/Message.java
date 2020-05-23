@@ -58,7 +58,7 @@ abstract class Message {
 	protected final void setAction(String actionName) {
 		final BungeeAction action = BungeeAction.getByName(actionName);
 
-		Valid.checkNotNull(action, "Unknown action named: " + actionName + ". Available: " + Common.joinToString(SimplePlugin.getBungee().getActions()));
+		Valid.checkNotNull(action, "Unknown action named: " + actionName + ". Available: " + Common.joinToString(SimplePlugin.getInstance().getBungeeCord().getActions()));
 		setAction(action);
 	}
 
@@ -106,11 +106,11 @@ abstract class Message {
 
 	/**
 	 * Return the bungee channel, always returns
-	 * {@link SimplePlugin#getBungeeCord()#getChannel()}
+	 * {@link SimplePlugin#getBungee()#getChannel()}
 	 *
 	 * @return
 	 */
 	public final String getChannel() {
-		return SimplePlugin.getBungee().getChannel();
+		return SimplePlugin.getInstance().getBungeeCord().getChannel();
 	}
 }

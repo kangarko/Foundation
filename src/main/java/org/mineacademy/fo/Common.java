@@ -1103,21 +1103,18 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void log(final boolean addLogPrefix, final String... messages) {
-		if (messages == null) {
+		if (messages == null)
 			return;
-		}
 
 		for (String message : messages) {
-			if (message.equals("none")) {
+			if (message.equals("none") || message.isEmpty())
 				continue;
-			}
 
 			if (stripColors(message).replace(" ", "").isEmpty()) {
-				if (CONSOLE_SENDER == null) {
+				if (CONSOLE_SENDER == null)
 					System.out.println(" ");
-				} else {
+				else
 					CONSOLE_SENDER.sendMessage("  ");
-				}
 
 				continue;
 			}
@@ -1128,20 +1125,17 @@ public final class Common {
 			if (message.startsWith("[JSON]")) {
 				final String stripped = message.replaceFirst("\\[JSON\\]", "").trim();
 
-				if (!stripped.isEmpty()) {
+				if (!stripped.isEmpty())
 					log(Remain.toLegacyText(stripped, false));
-				}
 
 			} else {
 				for (final String part : splitNewline(message)) {
 					final String log = ((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + Common.getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
 
-					if (CONSOLE_SENDER != null) {
+					if (CONSOLE_SENDER != null)
 						CONSOLE_SENDER.sendMessage(log);
-					} else {
-						System.out.println(
-								"[" + SimplePlugin.getNamed() + "] " + stripColors(log));
-					}
+					else
+						System.out.println("[" + SimplePlugin.getNamed() + "] " + stripColors(log));
 				}
 			}
 		}

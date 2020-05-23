@@ -5,7 +5,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -51,7 +50,7 @@ public abstract class Countdown implements Runnable {
 	 *
 	 * @param time
 	 */
-	protected Countdown(final TimeHelper time) {
+	protected Countdown(final SimpleTime time) {
 		this(time.getTimeSeconds());
 	}
 

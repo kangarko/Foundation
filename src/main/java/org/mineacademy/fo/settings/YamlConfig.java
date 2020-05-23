@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -33,7 +34,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
@@ -44,6 +44,7 @@ import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
+import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -885,10 +886,10 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param def
 	 * @return
 	 */
-	protected final TimeHelper getTime(final String path, final String def) {
+	protected final SimpleTime getTime(final String path, final String def) {
 		forceSingleDefaults(path);
 
-		return isSet(path) ? getTime(path) : new TimeHelper(def);
+		return isSet(path) ? getTime(path) : SimpleTime.from(def);
 	}
 
 	/**
@@ -897,11 +898,11 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected final TimeHelper getTime(final String path) {
+	protected final SimpleTime getTime(final String path) {
 		final Object obj = getObject(path);
 		Valid.checkNotNull(obj, "No time specified at the path '" + path + "' in " + getFileName());
 
-		return new TimeHelper(obj);
+		return SimpleTime.from(obj.toString());
 	}
 
 	/**
@@ -1213,16 +1214,19 @@ public class YamlConfig implements ConfigSerializable {
 		}
 
 		// Load key-value pairs from config to our map
-		for (final Map.Entry<String, Object> entry : config.getConfigurationSection(path).getValues(false).entrySet()) {
-			final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
-			final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
+		final ConfigurationSection configSection = config.getConfigurationSection(path);
 
-			// Ensure the pair values are valid for the given paramenters
-			checkAssignable(false, path, key, keyType);
-			checkAssignable(false, path, value, valueType);
+		if (configSection != null)
+			for (final Map.Entry<String, Object> entry : configSection.getValues(false).entrySet()) {
+				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+				final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
 
-			map.put(key, value);
-		}
+				// Ensure the pair values are valid for the given paramenters
+				checkAssignable(false, path, key, keyType);
+				checkAssignable(false, path, value, valueType);
+
+				map.put(key, value);
+			}
 
 		return map;
 	}
@@ -1607,68 +1611,6 @@ public class YamlConfig implements ConfigSerializable {
 	// ------------------------------------------------------------------------------------
 	// Classes helpers
 	// ------------------------------------------------------------------------------------
-
-	/** A simple helper class for storing time */
-	@Getter
-	public static final class TimeHelper {
-		private final String raw;
-		private final int timeTicks;
-
-		private TimeHelper(final Object obj) {
-			final String str = obj.toString().equals("0") ? "0" : obj.toString();
-
-			raw = str;
-			timeTicks = (int) TimeUtil.toTicks(raw);
-		}
-
-		private TimeHelper(final String time) {
-			raw = time;
-			timeTicks = (int) TimeUtil.toTicks(time);
-		}
-
-		/**
-		 * Generate new time from the given seconds
-		 *
-		 * @param seconds
-		 * @return
-		 */
-		public static TimeHelper fromSeconds(final int seconds) {
-			return from(seconds + " seconds");
-		}
-
-		/**
-		 * Generate new time. Valid examples: 15 ticks 1 second 25 minutes 3 hours etc.
-		 *
-		 * @param time
-		 * @return
-		 */
-		public static TimeHelper from(final String time) {
-			return new TimeHelper(time);
-		}
-
-		/**
-		 * Get the time specified in seconds (ticks / 20)
-		 *
-		 * @return
-		 */
-		public int getTimeSeconds() {
-			return timeTicks / 20;
-		}
-
-		/**
-		 * Get the time specified in ticks
-		 *
-		 * @return
-		 */
-		public int getTimeTicks() {
-			return timeTicks;
-		}
-
-		@Override
-		public String toString() {
-			return raw;
-		}
-	}
 
 	/** Represents a list of locations in the config */
 	public static final class LocationList implements Iterable<Location> {

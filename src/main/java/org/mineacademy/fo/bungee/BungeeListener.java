@@ -28,7 +28,7 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	 */
 	@Override
 	public final void onPluginMessageReceived(String tag, Player player, byte[] data) {
-		if (tag.equals(SimplePlugin.getBungee().getChannel())) {
+		if (tag.equals(SimplePlugin.getInstance().getBungeeCord().getChannel())) {
 			final IncomingMessage message = new IncomingMessage(data);
 
 			Debugger.debug("bungee", "Channel " + message.getChannel() + " received " + message.getAction() + " message from " + message.getServerName() + " server.");
