@@ -38,6 +38,7 @@ import org.mineacademy.fo.jsonsimple.JSONObject;
 import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
@@ -289,6 +290,19 @@ public final class PlayerUtil {
 	@Deprecated
 	public static boolean hasPermVault(final Player player, final String permission) {
 		return permission == null || HookManager.hasPermissionVault(player, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+	}
+
+	/**
+	 * Return if the given sender has a certain permission
+	 * You can use {plugin.name} to replace with your plugin name (lower-cased)
+	 *
+	 * @param sender
+	 * @param permission
+	 * @param associativeArray
+	 * @return
+	 */
+	public static boolean hasPerm(@NonNull final Permissible sender, @Nullable String permission, Object... associativeArray) {
+		return hasPerm(sender, Replacer.replaceArray(permission, associativeArray));
 	}
 
 	/**
