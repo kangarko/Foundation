@@ -279,13 +279,11 @@ public final class PlayerUtil {
 	}
 
 	/**
-	 * Returns true if the player has a permission using Vault
+	 * Returns true if the player has a permission using Vault. This returns false if the player is OP and
+	 * does not have the permission explicitly set
 	 *
 	 * @param player
 	 * @param permission
-	 * @deprecated Due to vault API Limitations, this will return false if the node is
-	 * false or undefined. Some permissions plugins don't load superperms into their
-	 * dataset, so this should not be relied on.
 	 */
 	@Deprecated
 	public static boolean hasPermVault(final Player player, final String permission) {
