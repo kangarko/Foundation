@@ -17,11 +17,11 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
+import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig.CasusHelper;
-import org.mineacademy.fo.settings.YamlConfig.TimeHelper;
 import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
 
 /**
@@ -363,7 +363,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getTitle(path);
 	}
 
-	protected static final TimeHelper getTime(final String path) {
+	protected static final SimpleTime getTime(final String path) {
 		return TEMPORARY_INSTANCE.getTime(path);
 	}
 

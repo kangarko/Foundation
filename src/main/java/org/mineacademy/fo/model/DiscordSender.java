@@ -3,14 +3,12 @@ package org.mineacademy.fo.model;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
@@ -27,19 +25,6 @@ public final class DiscordSender implements CommandSender {
 	 */
 	@Getter
 	private final String name;
-
-	/**
-	 * ChatControl flag for mute bypass
-	 */
-	private boolean bypassMute; // can still send message from Discord to Bukkit even if the channel is muted? For admins.
-
-	public void setBypassMuted() {
-		bypassMute = true;
-	}
-
-	public boolean canBypassMuted() {
-		return bypassMute;
-	}
 
 	@Override
 	public boolean isPermissionSet(String permission) {
@@ -98,9 +83,7 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public boolean isOp() {
-		final OfflinePlayer player = Bukkit.getOfflinePlayer(name);
-
-		return player != null ? player.isOp() : false;
+		throw unsupported("isOp");
 	}
 
 	@Override
@@ -110,12 +93,12 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public void sendMessage(String message) {
-		Common.log(message);
+		// Silence is golden
 	}
 
 	@Override
 	public void sendMessage(String[] message) {
-		Common.log(message);
+		// Silence is golden
 	}
 
 	@Override

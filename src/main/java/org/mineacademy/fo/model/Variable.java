@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -20,7 +21,7 @@ public final class Variable extends YamlConfig implements Actionable {
 	/**
 	 * A list of all loaded variables
 	 */
-	private static final ConfigItems<Variable> loadedVariables = new ConfigItems<>("variable", "variables", Variable.class);
+	private static final ConfigItems<Variable> loadedVariables = new ConfigItems<>("variable", "variables", Variable.class, false);
 
 	/**
 	 * Where can this variable be used
@@ -102,16 +103,20 @@ public final class Variable extends YamlConfig implements Actionable {
 	 */
 	@Override
 	protected void onLoadFinish() {
-		this.key = isSet("Key") ? getString("Key") : null;
-		this.value = isSet("Value") ? getString("Value") : null;
-		this.scope = isSet("Scope") ? get("Scope", VariableScope.class) : VariableScope.FORMAT;
-		this.hoverText = isSet("Hover") ? getStringList("Hover") : null;
-		this.hoverItem = isSet("Hover_Item") ? getString("Hover_Item") : null;
-		this.openUrl = isSet("Open_Url") ? getString("Open_Url") : null;
-		this.suggestCommand = isSet("Suggest_Command") ? getString("Suggest_Command") : null;
-		this.runCommand = isSet("Run_Command") ? getString("Run_Command") : null;
-		this.senderPermission = isSet("Sender_Permission") ? getString("Sender_Permission") : null;
-		this.receiverPermission = isSet("Receiver_Permission") ? getString("Receiver_Permission") : null;
+		this.key = getString("Key");
+		Valid.checkNotNull(this.key, "Please set the 'Key' variable name in " + getFileName() + " variable file!");
+
+		this.value = getString("Value");
+		Valid.checkNotNull(this.value, "Please set the 'Value' variable output in " + getFileName() + " variable file!");
+
+		this.scope = get("Scope", VariableScope.class, VariableScope.FORMAT);
+		this.hoverText = getStringList("Hover");
+		this.hoverItem = getString("Hover_Item");
+		this.openUrl = getString("Open_Url");
+		this.suggestCommand = getString("Suggest_Command");
+		this.runCommand = getString("Run_Command");
+		this.senderPermission = getString("Sender_Permission");
+		this.receiverPermission = getString("Receiver_Permission");
 	}
 
 	// ----------------------------------------------------------------------------------

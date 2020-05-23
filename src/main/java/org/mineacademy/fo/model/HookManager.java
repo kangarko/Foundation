@@ -38,13 +38,11 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
@@ -2611,15 +2609,12 @@ class DiscordSRVHook implements Listener {
 	}
 
 	boolean sendMessage(final CommandSender sender, final String channel, final String message) {
-		LagCatcher.start("Minecraft to Discord");
-
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// Channel not configured in DiscordSRV config.yml, ignore
 		if (textChannel == null) {
 			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", getChannels()) + ". Not sending: " + message);
 
-			LagCatcher.end("Minecraft to Discord", Debugger.isDebugged("discord") ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS, "Minecraft > Discord sending ended due to no channel. Took {time} ms");
 			return false;
 		}
 
@@ -2628,8 +2623,7 @@ class DiscordSRVHook implements Listener {
 
 			final DiscordSRV instance = JavaPlugin.getPlugin(DiscordSRV.class);
 
-			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage
-			// method to function
+			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage method to function
 			final File file = new File(SimplePlugin.getData().getParent(), "DiscordSRV/config.yml");
 
 			if (file.exists()) {
@@ -2654,8 +2648,6 @@ class DiscordSRVHook implements Listener {
 
 			DiscordUtil.sendMessage(textChannel, message);
 		}
-
-		LagCatcher.end("Minecraft to Discord", Debugger.isDebugged("discord") ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS, "Minecraft > Discord sending took {time} ms");
 		return true;
 	}
 }

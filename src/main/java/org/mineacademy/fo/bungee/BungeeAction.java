@@ -1,6 +1,5 @@
 package org.mineacademy.fo.bungee;
 
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -29,8 +28,7 @@ public interface BungeeAction {
 	 * @return
 	 */
 	static BungeeAction getByName(String name) {
-		final BungeeAction[] actions = SimplePlugin.getBungee().getActions();
-		Valid.checkNotNull(actions, "Cannot get an action by name if getBungeeActions is not implemented in " + SimplePlugin.getNamed());
+		final BungeeAction[] actions = SimplePlugin.getInstance().getBungeeCord().getActions();
 
 		for (final BungeeAction action : actions)
 			if (action.name().equals(name))
