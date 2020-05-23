@@ -320,6 +320,19 @@ public final class FileUtil {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
+	 * Write a line to file
+	 *
+	 * The line will be as follows: [date] msg
+	 *
+	 * @param to
+	 * @param prefix
+	 * @param message
+	 */
+	public static void writeFormatted(String to, String message) {
+		writeFormatted(to, null, message);
+	}
+
+	/**
 	 * Write a line to file with optional prefix which can be null.
 	 *
 	 * The line will be as follows: [date] prefix msg
