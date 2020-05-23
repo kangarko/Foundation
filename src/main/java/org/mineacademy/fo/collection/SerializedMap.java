@@ -100,7 +100,7 @@ public final class SerializedMap extends StrictCollection {
 				lastKey = (String) obj;
 
 			} else
-				putIfExist(lastKey, obj);
+				map.override(lastKey, obj);
 
 			string = !string;
 		}
@@ -722,6 +722,21 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	public static SerializedMap ofArray(final Object... array) {
+
+		// If the first argument is a map already, treat as such
+		if (array != null && array.length == 1) {
+			final Object firstArgument = array[0];
+
+			if (firstArgument instanceof SerializedMap)
+				return (SerializedMap) firstArgument;
+
+			if (firstArgument instanceof Map)
+				return SerializedMap.of((Map<String, Object>) firstArgument);
+
+			if (firstArgument instanceof StrictMap)
+				return SerializedMap.of(((StrictMap<String, Object>) firstArgument).getSource());
+		}
+
 		final SerializedMap map = new SerializedMap();
 		map.putArray(array);
 
