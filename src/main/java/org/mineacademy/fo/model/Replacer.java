@@ -200,7 +200,7 @@ public final class Replacer {
 	 * adding {} to them if they do not contain it already
 	 *
 	 * @param message
-	 * @param replacements
+	 * @param associativeArray
 	 * @return
 	 */
 	public static String replaceArray(String message, Object... replacements) {
@@ -240,11 +240,11 @@ public final class Replacer {
 		else if (arg.getClass() == double.class || arg.getClass() == float.class)
 			return MathUtil.formatTwoDigits((double) arg);
 
-		else if (arg instanceof Collection) {
-			final String string = Common.join((Collection<?>) arg, ", ", Replacer::simplify);
+		else if (arg instanceof Collection)
+			return Common.join((Collection<?>) arg, ", ", Replacer::simplify);
 
-			return string.substring(1, string.length() - 1);
-		}
+		else if (arg instanceof Enum)
+			return ((Enum<?>) arg).name();
 
 		return arg.toString();
 	}

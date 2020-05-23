@@ -55,12 +55,12 @@ public enum FoBungeeAction implements BungeeAction {
 	/**
 	 * Broadcast a json message to every player with permission.
 	 */
-	BROADCAST_JSON_WITH_PERMISSION("permission", "message"),
+	BROADCAST_JSON_WITH_PERMISSION("permission", "json_message"),
 
 	/**
 	 * Broadcast a json message to every player with permission as a sender.
 	 */
-	BROADCAST_JSON_WITH_PERMISSION_AS("sender", "permission", "message"),
+	BROADCAST_JSON_WITH_PERMISSION_AS("sender", "permission", "json_message"),
 
 	/**
 	 * Forwards a spy message to players with permissions
