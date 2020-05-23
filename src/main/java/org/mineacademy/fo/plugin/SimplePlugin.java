@@ -51,6 +51,7 @@ import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -317,6 +318,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			if (pluginId != -1)
 				new Metrics(this, pluginId);
+
+			// Prepare Nashorn engine
+			JavaScriptExecutor.run("");
 
 		} catch (final Throwable t) {
 			displayError0(t);
