@@ -150,15 +150,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Return the BungeeCord setup or null if not present
-	 *
-	 * @return
-	 */
-	public static final SimpleBungee getBungee() {
-		return getInstance().getBungeeCord();
-	}
-
-	/**
 	 * Get if the instance that is used across the library has been set. Normally it
 	 * is always set, except for testing.
 	 *
