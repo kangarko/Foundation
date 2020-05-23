@@ -217,10 +217,12 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 			BUNGEE_SERVER_NAME = keySet ? getString("Bungee_Server_Name") : BUNGEE_SERVER_NAME;
 
 			if (SimplePlugin.getInstance().getBungeeCord() != null && BUNGEE_SERVER_NAME.equals("undefined"))
-				Common.logFramed(true,
-						"Please change your Bungee_Server_Name in",
-						"settings.yml to the exact name of this server",
-						"as you have in config.yml of your BungeeCord.");
+				Common.runLater(() -> {
+					Common.logFramed(true,
+							"Please change your Bungee_Server_Name in settings.yml",
+							"of " + SimplePlugin.getNamed() + " to the exact name of this server",
+							"as you have in config.yml of your BungeeCord.");
+				});
 		}
 
 		{ // Load localization
