@@ -48,15 +48,41 @@ public final class ConfigItems<T extends YamlConfig> {
 	private final Class<T> prototypeClass;
 
 	/**
+	 * Does these items have a default prototype in the prototype/ folder in your JAR?
+	 */
+	private final boolean hasDefaultPrototype;
+
+	/**
 	 * Shall we log each item loaded? True by default
 	 */
 	@Setter
 	private boolean verbose = true;
 
+	/**
+	 * Create a new config items instance with prototype class,
+	 * ensure you make one in prototype/type.yml in your JAR
+	 *
+	 * @param type
+	 * @param folder
+	 * @param prototypeClass
+	 */
 	public ConfigItems(String type, String folder, Class<T> prototypeClass) {
+		this(type, folder, prototypeClass, true);
+	}
+
+	/**
+	 * Create a new config items instance
+	 *
+	 * @param type
+	 * @param folder
+	 * @param prototypeClass
+	 * @param hasDefaultPrototype
+	 */
+	public ConfigItems(String type, String folder, Class<T> prototypeClass, boolean hasDefaultPrototype) {
 		this.type = type;
 		this.folder = folder;
 		this.prototypeClass = prototypeClass;
+		this.hasDefaultPrototype = hasDefaultPrototype;
 	}
 
 	public void loadItems() {
@@ -99,7 +125,7 @@ public final class ConfigItems<T extends YamlConfig> {
 			final T item = nameConstructor ? constructor.newInstance(name) : constructor.newInstance();
 
 			// Automatically load configuration and paste prototype
-			item.loadConfiguration("prototype/" + type + ".yml", folder + "/" + name + ".yml");
+			item.loadConfiguration(hasDefaultPrototype ? "prototype/" + type + ".yml" : YamlConfig.NO_DEFAULT, folder + "/" + name + ".yml");
 
 			// Register
 			loadedItems.add(item);
