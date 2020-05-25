@@ -264,17 +264,7 @@ public final class Variables {
 			message = HookManager.replacePlaceholders((Player) sender, message);
 
 			if (replacements != null && !replacements.isEmpty())
-				for (String replacement : replacements.keySet()) {
-					if (message.contains(replacement) && !replacement.isEmpty()) {
-						// get the replacement
-						String toReplace = (String) replacements.get(replacement);
-
-						replacement = replacement.indexOf(0) != '{' ? "{" + replacement : replacement;
-						replacement = replacement.indexOf(replacement.length() - 1) != '}' ? "}" + replacement : replacement;
-
-						message = message.replace(replacement, toReplace);
-					}
-				}
+				message = Replacer.replaceArray(message, replacements);
 		}
 		// Default
 		message = replaceHardVariables0(sender, message);
