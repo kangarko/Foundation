@@ -68,6 +68,7 @@ public abstract class Menu {
 	 * Used in {@link #getMenu(Player)}
 	 */
 	static final String TAG_CURRENT = "KaMenu_" + SimplePlugin.getNamed();
+
 	/**
 	 * An internal metadata tag the player gets when he opens another menu
 	 *
@@ -75,21 +76,32 @@ public abstract class Menu {
 	 * Used in {@link #getPreviousMenu(Player)}
 	 */
 	static final String TAG_PREVIOUS = "KaMenu_Previous_" + SimplePlugin.getNamed();
+
 	/**
 	 * The default sound when switching between menus.
 	 */
 	@Getter
 	@Setter
 	private static SimpleSound sound = new SimpleSound(CompSound.NOTE_STICKS.getSound(), .4F, 1F, true);
+
+	/**
+	 * Should we animate menu titles?
+	 */
+	@Getter
+	@Setter
+	private static boolean titleAnimationEnabled = true;
+
 	/**
 	 * Automatically registered Buttons in this menu (using reflection)
 	 */
 	private final List<Button> registeredButtons = new ArrayList<>();
+
 	/**
 	 * The registrator responsible for scanning the class and making buttons
 	 * function
 	 */
 	private final OneTimeRunnable buttonsRegistrator;
+
 	/**
 	 * Parent menu
 	 */
@@ -524,7 +536,8 @@ public abstract class Menu {
 	 * @param title the title to animate
 	 */
 	public final void animateTitle(final String title) {
-		PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
+		if (titleAnimationEnabled)
+			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
 	}
 
 	// --------------------------------------------------------------------------------
