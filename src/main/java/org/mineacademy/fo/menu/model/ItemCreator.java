@@ -1,16 +1,12 @@
 package org.mineacademy.fo.menu.model;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -38,6 +34,13 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
+
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Our core class for easy and comfortable item creation.
@@ -220,46 +223,42 @@ public final class ItemCreator {
 			is.setType(material.getMaterial());
 		}
 
-		if (MinecraftVersion.atLeast(V.v1_13))
-			// Apply specific material color if possible
-		{
-			color:
-			if (color != null && !is.getType().toString().contains("LEATHER")) {
-				final String dye = color.getDye().toString();
-				final List<String> colorableMaterials = Arrays.asList(
-						"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
-						"STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
+		// Apply specific material color if possible
+		color:
+		if (MinecraftVersion.atLeast(V.v1_13) && color != null && !is.getType().toString().contains("LEATHER")) {
+			final String dye = color.getDye().toString();
+			final List<String> colorableMaterials = Arrays.asList(
+					"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
+					"STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
 
-				for (final String colorable : colorableMaterials) {
-					final String suffix = "_" + colorable;
+			for (final String colorable : colorableMaterials) {
+				final String suffix = "_" + colorable;
 
-					if (is.getType().toString().endsWith(suffix)) {
-						is.setType(Material.valueOf(dye + suffix));
+				if (is.getType().toString().endsWith(suffix)) {
+					is.setType(Material.valueOf(dye + suffix));
 
-						break color;
-					}
+					break color;
 				}
-
-				// If not revert to wool
-				is.setType(Material.valueOf(dye + "_WOOL"));
-			} else {
-				int dataValue = material != null ? material.getData() : is.getData().getData();
-
-				if (!is.getType().toString().contains("LEATHER") && color != null) {
-					dataValue = color.getDye().getWoolData();
-				}
-
-				if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType())) {
-					dataValue = 0;
-				}
-
-				is.setData(new MaterialData(is.getType(), (byte) dataValue));
-
-				if (MinecraftVersion.olderThan(V.v1_13)) {
-					is.setDurability((short) dataValue);
-				}
-
 			}
+
+			// If not revert to wool
+			is.setType(Material.valueOf(dye + "_WOOL"));
+
+		} else {
+			int dataValue = material != null ? material.getData() : is.getData().getData();
+
+			if (!is.getType().toString().contains("LEATHER") && color != null)
+				dataValue = color.getDye().getWoolData();
+
+			if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
+				dataValue = 0;
+
+			is.setData(new MaterialData(is.getType(), (byte) dataValue));
+
+			if (MinecraftVersion.olderThan(V.v1_13)) {
+				is.setDurability((short) dataValue);
+			}
+
 		}
 
 		// Fix monster eggs
