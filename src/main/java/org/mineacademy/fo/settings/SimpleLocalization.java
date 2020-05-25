@@ -118,9 +118,24 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
 
 		/**
+		 * The authors label
+		 */
+		public static String LABEL_AUTHORS = "Made by";
+
+		/**
 		 * The description label
 		 */
 		public static String LABEL_DESCRIPTION = "&cDescription: {description}";
+
+		/**
+		 * The optional arguments label
+		 */
+		public static String LABEL_OPTIONAL_ARGS = "optional arguments";
+
+		/**
+		 * The required arguments label
+		 */
+		public static String LABEL_REQUIRED_ARGS = "required arguments";
 
 		/**
 		 * The multiline usages label, see {@link SimpleCommand#getMultilineUsageMessage()}
@@ -168,8 +183,17 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 			if (isSetDefault("Invalid_Argument_Multiline"))
 				INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
 
+			if (isSetDefault("Label_Authors"))
+				LABEL_AUTHORS = getString("Label_Authors");
+
 			if (isSetDefault("Label_Description"))
 				LABEL_DESCRIPTION = getString("Label_Description");
+
+			if (isSetDefault("Label_Optional_Args"))
+				LABEL_OPTIONAL_ARGS = getString("Label_Optional_Args");
+
+			if (isSetDefault("Label_Required_Args"))
+				LABEL_REQUIRED_ARGS = getString("Label_Required_Args");
 
 			if (isSetDefault("Label_Usage"))
 				LABEL_USAGE = getString("Label_Usage");
