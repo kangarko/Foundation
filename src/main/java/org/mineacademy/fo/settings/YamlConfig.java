@@ -1612,6 +1612,14 @@ public class YamlConfig implements ConfigSerializable {
 	// Classes helpers
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * @deprecated use {@link SimpleTime} instead
+	 */
+	@Deprecated
+	public static final class TimeHelper {
+		// Dead class
+	}
+
 	/** Represents a list of locations in the config */
 	public static final class LocationList implements Iterable<Location> {
 
