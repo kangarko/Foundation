@@ -263,11 +263,14 @@ public final class Variables {
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
 
-			if (replacements != null && !replacements.isEmpty())
-				message = Replacer.replaceArray(message, replacements);
 		}
+
 		// Default
 		message = replaceHardVariables0(sender, message);
+
+		// replace custom variables
+		if (replacements != null && !replacements.isEmpty())
+			message = Replacer.replaceArray(message, replacements);
 
 		// Support the & color system
 		if (REPLACE_COLORS)
