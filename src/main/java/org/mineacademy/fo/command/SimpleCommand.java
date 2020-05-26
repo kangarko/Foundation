@@ -1,5 +1,6 @@
 package org.mineacademy.fo.command;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -554,10 +555,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 */
 	protected final int findNumber(final int index, final int min, final int max, final String falseMessage) {
-		final int number = findNumber(index, falseMessage);
-		checkBoolean(number >= min && number <= max, falseMessage.replace("{min}", min + "").replace("{max}", max + ""));
-
-		return number;
+		return findNumber(Integer.class, index, min, max, falseMessage);
 	}
 
 	/**
@@ -568,18 +566,73 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 */
 	protected final int findNumber(final int index, final String falseMessage) {
+		return findNumber(Integer.class, index, falseMessage);
+	}
+
+	/**
+	 * A convenience method for parsing any number type that is between two bounds
+	 * Number can be of any type, that supports method valueOf(String)
+	 * You can use {min} and {max} in the message to be automatically replaced
+	 *
+	 * @param <T>
+	 * @param numberType
+	 * @param index
+	 * @param min
+	 * @param max
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final <T extends Number & Comparable<T>> T findNumber(Class<T> numberType, final int index, final T min, final T max, final String falseMessage) {
+		final T number = findNumber(numberType, index, falseMessage);
+		checkBoolean(number.compareTo(min) >= 0 && number.compareTo(max) <= 0, falseMessage.replace("{min}", min + "").replace("{max}", max + ""));
+
+		return number;
+	}
+
+	/**
+	 * A convenience method for parsing any number type at the given args index
+	 * Number can be of any type, that supports method valueOf(String)
+	 *
+	 * @param <T>
+	 * @param numberType
+	 * @param index
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final <T extends Number> T findNumber(Class<T> numberType, final int index, final String falseMessage) {
 		checkBoolean(index < args.length, falseMessage);
 
-		Integer parsed = null;
-
 		try {
-			parsed = Integer.parseInt(args[index]);
-
-		} catch (final NumberFormatException ex) {
+			return (T) numberType.getMethod("valueOf", String.class).invoke(null, args[index]); // Method valueOf is part of all main Number sub classes, eg. Short, Integer, Double, etc.
+		}
+		// Print stack trace for all exceptions, except NumberFormatException
+		// NumberFormatException is expected to happen, in this case we just want to display falseMessage without stack trace
+		catch (final IllegalAccessException | NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (final InvocationTargetException e) {
+			if (!(e.getCause() instanceof NumberFormatException))
+				e.printStackTrace();
 		}
 
-		checkNotNull(parsed, falseMessage);
-		return parsed;
+		throw new CommandException(replacePlaceholders((USE_MESSENGER ? "" : "&c") + falseMessage));
+	}
+
+	/**
+	 * A convenience method for parsing a boolean at the given args index
+	 *
+	 * @param index
+	 * @param invalidMessage
+	 * @return
+	 */
+	protected final boolean findBoolean(final int index, final String invalidMessage) {
+		checkBoolean(index < args.length, invalidMessage);
+
+		if (args[index].equalsIgnoreCase("true"))
+			return true;
+		else if (args[index].equalsIgnoreCase("false"))
+			return false;
+
+		throw new CommandException(replacePlaceholders((USE_MESSENGER ? "" : "&c") + invalidMessage));
 	}
 
 	// ----------------------------------------------------------------------
