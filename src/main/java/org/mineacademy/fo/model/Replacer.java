@@ -187,12 +187,12 @@ public final class Replacer {
 	/**
 	 * Sends a message to the player replacing the given associative array of placeholders in the given message
 	 *
-	 * @param player
+	 * @param recipient
 	 * @param message
 	 * @param replacements
 	 */
-	public static void tell(Player player, String message, Object... replacements) {
-		Common.tell(player, replaceArray(message, replacements));
+	public static void tell(CommandSender recipient, String message, Object... replacements) {
+		Common.tell(recipient, replaceArray(message, replacements));
 	}
 
 	/**
