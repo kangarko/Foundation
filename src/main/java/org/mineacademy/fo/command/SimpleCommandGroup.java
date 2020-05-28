@@ -194,7 +194,7 @@ public abstract class SimpleCommandGroup {
 	}
 
 	// Return the TM symbol in case we have it for kangarko's plugins
-	private final String getTrademark() {
+	private String getTrademark() {
 		return SimplePlugin.getInstance().getDescription().getAuthors().contains("kangarko") ? getHeaderPrefix() + "&8\u2122" : "";
 	}
 
@@ -308,7 +308,7 @@ public abstract class SimpleCommandGroup {
 			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel()))
 				tellSubcommandsHelp();
 
-			// Handle unknown argument
+				// Handle unknown argument
 			else
 				returnInvalidArgs();
 		}
@@ -318,6 +318,8 @@ public abstract class SimpleCommandGroup {
 		 */
 		private void tellSubcommandsHelp() {
 			tell(getHelpHeader());
+
+			Integer shown = 0;
 
 			for (final SimpleSubCommand subcommand : subcommands)
 				if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
@@ -331,7 +333,13 @@ public abstract class SimpleCommandGroup {
 					final String desc = Common.getOrEmpty(subcommand.getDescription());
 
 					tellNoPrefix(" &f/" + getLabel() + " " + subcommand.getSublabels()[0] + (!usage.startsWith("/") ? " " + usage : "") + (!desc.isEmpty() ? " &e- " + desc : ""));
+
+					shown++;
 				}
+
+			if (shown == 0) {
+				tellNoPrefix(SimpleLocalization.Commands.HELP_HEADER_NO_SUBCOMMANDS);
+			}
 		}
 
 		/**
