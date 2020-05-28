@@ -11,13 +11,12 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  * automatically and fill it with values from your localization/messages_LOCALEPREFIX.yml
  * file placed within in your plugins jar file.
  */
-@SuppressWarnings("unused")
 public abstract class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * A flag indicating that this class has been loaded
 	 *
-	 * You can place this class to {@link SimplePlugin#getSettingsClasses()} to make
+	 * You can place this class to {@link SimplePlugin#getSettings()} to make
 	 * it load automatically
 	 */
 	private static boolean localizationClassCalled;
@@ -163,6 +162,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static Replacer ERROR = Replacer.of("&4&lOups! &cThe command failed :( Check the console and report the error.");
 
 		/**
+		 * The message shown when player has no permissions to view ANY subcommands in group command.
+		 */
+		public static String HELP_HEADER_NO_SUBCOMMANDS = "&cYou don't have permissions to view any subcommands.";
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -209,6 +213,10 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Error"))
 				ERROR = getReplacer("Error");
+
+			if (isSetDefault("Header_No_Subcommands"))
+				HELP_HEADER_NO_SUBCOMMANDS = getString("Header_No_Subcommands");
+
 		}
 	}
 
