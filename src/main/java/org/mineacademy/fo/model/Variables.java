@@ -250,6 +250,10 @@ public final class Variables {
 		final String original = message;
 		final boolean senderIsPlayer = sender instanceof Player;
 
+		// Replace custom variables first
+		if (replacements != null && !replacements.isEmpty())
+			message = Replacer.replaceArray(message, replacements);
+
 		if (senderIsPlayer) {
 			// Already cached ? Return.
 			final Map<String, String> cached = customCache.get(sender.getName());
@@ -267,10 +271,6 @@ public final class Variables {
 
 		// Default
 		message = replaceHardVariables0(sender, message);
-
-		// replace custom variables
-		if (replacements != null && !replacements.isEmpty())
-			message = Replacer.replaceArray(message, replacements);
 
 		// Support the & color system
 		if (REPLACE_COLORS)
