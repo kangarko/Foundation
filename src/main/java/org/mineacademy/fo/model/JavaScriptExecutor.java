@@ -88,45 +88,46 @@ public final class JavaScriptExecutor {
 	 * @return
 	 */
 	public static Object run(@NonNull String javascript, CommandSender sender, Event event) {
+		synchronized (engine) {
+			// Cache for highest performance
+			Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
 
-		// Cache for highest performance
-		Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
+			if (cached != null) {
+				final Object result = cached.get(javascript);
 
-		if (cached != null) {
-			final Object result = cached.get(javascript);
-
-			if (result != null)
-				return result;
-		}
-
-		try {
-			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-
-			if (sender != null)
-				engine.put("player", sender);
-
-			if (event != null)
-				engine.put("event", event);
-
-			final Object result = engine.eval(javascript);
-
-			if (sender instanceof Player) {
-				if (cached == null)
-					cached = new HashMap<>();
-
-				cached.put(javascript, result);
-				resultCache.put(((Player) sender).getUniqueId(), cached);
+				if (result != null)
+					return result;
 			}
 
-			return result;
+			try {
+				engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-		} catch (final ScriptException ex) {
-			Common.error(ex,
-					"Script executing failed!",
-					"Script: " + javascript,
-					"%error");
+				if (sender != null)
+					engine.put("player", sender);
 
-			return null;
+				if (event != null)
+					engine.put("event", event);
+
+				final Object result = engine.eval(javascript);
+
+				if (sender instanceof Player) {
+					if (cached == null)
+						cached = new HashMap<>();
+
+					cached.put(javascript, result);
+					resultCache.put(((Player) sender).getUniqueId(), cached);
+				}
+
+				return result;
+
+			} catch (final ScriptException ex) {
+				Common.error(ex,
+						"Script executing failed!",
+						"Script: " + javascript,
+						"%error");
+
+				return null;
+			}
 		}
 	}
 
@@ -139,12 +140,14 @@ public final class JavaScriptExecutor {
 	 * @throws ScriptException
 	 */
 	public static Object run(String javascript, Map<String, Object> replacements) throws ScriptException {
-		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		synchronized (engine) {
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-		if (replacements != null)
-			for (final Map.Entry<String, Object> replacement : replacements.entrySet())
-				engine.put(replacement.getKey(), replacement.getValue());
+			if (replacements != null)
+				for (final Map.Entry<String, Object> replacement : replacements.entrySet())
+					engine.put(replacement.getKey(), replacement.getValue());
 
-		return engine.eval(javascript);
+			return engine.eval(javascript);
+		}
 	}
 }
