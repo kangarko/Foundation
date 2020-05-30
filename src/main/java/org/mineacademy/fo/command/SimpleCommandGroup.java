@@ -308,7 +308,7 @@ public abstract class SimpleCommandGroup {
 			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel()))
 				tellSubcommandsHelp();
 
-				// Handle unknown argument
+			// Handle unknown argument
 			else
 				returnInvalidArgs();
 		}
@@ -321,7 +321,7 @@ public abstract class SimpleCommandGroup {
 
 			Integer shown = 0;
 
-			for (final SimpleSubCommand subcommand : subcommands)
+			for (final SimpleSubCommand subcommand : subcommands) {
 				if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
 					if (subcommand instanceof FillerSubCommand) {
 						tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
@@ -336,10 +336,10 @@ public abstract class SimpleCommandGroup {
 
 					shown++;
 				}
-
-			if (shown == 0) {
-				tellNoPrefix(SimpleLocalization.Commands.HELP_HEADER_NO_SUBCOMMANDS);
 			}
+
+			if (shown == 0)
+				tellNoPrefix(SimpleLocalization.Commands.HELP_HEADER_NO_SUBCOMMANDS);
 		}
 
 		/**
