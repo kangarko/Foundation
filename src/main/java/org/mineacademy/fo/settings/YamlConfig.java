@@ -418,6 +418,7 @@ public class YamlConfig implements ConfigSerializable {
 
 	/** Saves the content of this config into the file */
 	public final void save() {
+
 		if (loading) {
 			// If we are loading only set the flag to save to save it later together
 			if (!save)
