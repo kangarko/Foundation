@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -45,11 +44,8 @@ import lombok.NonNull;
  */
 public abstract class SimpleCommand extends Command {
 
+	@Getter
 	private static final List<SimpleCommand> registeredCommands = new ArrayList<>();
-
-	public static List<SimpleCommand> getRegisteredCommands() {
-		return Collections.unmodifiableList(registeredCommands);
-	}
 
 	/**
 	 * The default permission syntax for this command.
@@ -190,6 +186,7 @@ public abstract class SimpleCommand extends Command {
 
 		// Set a default permission for this command
 		setPermission(DEFAULT_PERMISSION_SYNTAX);
+
 		registeredCommands.add(this);
 	}
 
@@ -289,6 +286,13 @@ public abstract class SimpleCommand extends Command {
 	 */
 	@Override
 	public final boolean execute(final CommandSender sender, final String label, final String[] args) {
+
+		if (SimplePlugin.isReloading() || !SimplePlugin.getInstance().isEnabled()) {
+			// TODO Localization
+			Common.tell(sender, "&cCannot use this command while the plugin is " + (SimplePlugin.isReloading() ? "reloading" : "disabled") + ".");
+
+			return false;
+		}
 
 		// Set variables to re-use later
 		this.sender = sender;
