@@ -372,8 +372,9 @@ public final class CompMetadata {
 	 *
 	 * internal use only
 	 */
-	//@Deprecated
 	public static final class MetadataFile extends YamlSectionConfig {
+
+		private static volatile Object LOCK = new Object();
 
 		@Getter
 		private static final MetadataFile instance = new MetadataFile();
@@ -389,114 +390,126 @@ public final class CompMetadata {
 
 		@Override
 		protected void onLoadFinish() {
-			loadEntities();
-			loadBlockStates();
+			synchronized (LOCK) {
+				loadEntities();
+				loadBlockStates();
 
-			save();
+				save();
+			}
 		}
 
 		private void loadEntities() {
-			entityMetadataMap.clear();
+			synchronized (LOCK) {
+				entityMetadataMap.clear();
 
-			for (final String uuidName : getMap("Entity").keySet()) {
-				final UUID uuid = UUID.fromString(uuidName);
+				for (final String uuidName : getMap("Entity").keySet()) {
+					final UUID uuid = UUID.fromString(uuidName);
 
-				// Remove broken key
-				if (!(getObject("Entity." + uuidName) instanceof List)) {
-					setNoSave("Entity." + uuidName, null);
+					// Remove broken key
+					if (!(getObject("Entity." + uuidName) instanceof List)) {
+						setNoSave("Entity." + uuidName, null);
 
-					continue;
+						continue;
+					}
+
+					final List<String> metadata = getStringList("Entity." + uuidName);
+					final Entity entity = Remain.getEntity(uuid);
+
+					// Check if the entity is still real
+					if (!metadata.isEmpty() && entity != null && entity.isValid() && !entity.isDead()) {
+						entityMetadataMap.put(uuid, metadata);
+
+						applySavedMetadata(metadata, entity);
+					}
 				}
 
-				final List<String> metadata = getStringList("Entity." + uuidName);
-				final Entity entity = Remain.getEntity(uuid);
-
-				// Check if the entity is still real
-				if (!metadata.isEmpty() && entity != null && entity.isValid() && !entity.isDead()) {
-					entityMetadataMap.put(uuid, metadata);
-
-					applySavedMetadata(metadata, entity);
-				}
+				setNoSave("Entity", entityMetadataMap);
 			}
-
-			setNoSave("Entity", entityMetadataMap);
 		}
 
 		private void loadBlockStates() {
-			blockMetadataMap.clear();
+			synchronized (LOCK) {
+				blockMetadataMap.clear();
 
-			for (final String locationRaw : getMap("Block").keySet()) {
-				final Location location = SerializeUtil.deserializeLocation(locationRaw);
-				final BlockCache blockCache = get("Block." + locationRaw, BlockCache.class);
+				for (final String locationRaw : getMap("Block").keySet()) {
+					final Location location = SerializeUtil.deserializeLocation(locationRaw);
+					final BlockCache blockCache = get("Block." + locationRaw, BlockCache.class);
 
-				final Block block = location.getBlock();
+					final Block block = location.getBlock();
 
-				// Check if the block remained the same
-				if (!CompMaterial.isAir(block) && CompMaterial.fromBlock(block) == blockCache.getType()) {
-					blockMetadataMap.put(location, blockCache);
+					// Check if the block remained the same
+					if (!CompMaterial.isAir(block) && CompMaterial.fromBlock(block) == blockCache.getType()) {
+						blockMetadataMap.put(location, blockCache);
 
-					applySavedMetadata(blockCache.getMetadata(), block);
+						applySavedMetadata(blockCache.getMetadata(), block);
+					}
 				}
-			}
 
-			setNoSave("Block", blockMetadataMap);
+				setNoSave("Block", blockMetadataMap);
+			}
 		}
 
 		private void applySavedMetadata(final List<String> metadata, final Metadatable entity) {
-			for (final String metadataLine : metadata) {
-				if (metadataLine.isEmpty())
-					continue;
+			synchronized (LOCK) {
+				for (final String metadataLine : metadata) {
+					if (metadataLine.isEmpty())
+						continue;
 
-				final String[] lines = metadataLine.split(DELIMITER);
-				Valid.checkBoolean(lines.length == 3, "Malformed metadata line for " + entity + ". Length 3 != " + lines.length + ". Data: " + metadataLine);
+					final String[] lines = metadataLine.split(DELIMITER);
+					Valid.checkBoolean(lines.length == 3, "Malformed metadata line for " + entity + ". Length 3 != " + lines.length + ". Data: " + metadataLine);
 
-				final String key = lines[1];
-				final String value = lines[2];
+					final String key = lines[1];
+					final String value = lines[2];
 
-				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+					entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+				}
 			}
 		}
 
 		protected void addMetadata(final Entity entity, @NonNull final String key, final String value) {
-			final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
+			synchronized (LOCK) {
+				final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
-			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
-				final String meta = i.next();
+				for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
+					final String meta = i.next();
 
-				if (getTag(meta, key) != null)
-					i.remove();
+					if (getTag(meta, key) != null)
+						i.remove();
+				}
+
+				if (value != null && !value.isEmpty()) {
+					final String formatted = format(key, value);
+
+					metadata.add(formatted);
+				}
+
+				save("Entity", entityMetadataMap);
 			}
-
-			if (value != null && !value.isEmpty()) {
-				final String formatted = format(key, value);
-
-				metadata.add(formatted);
-			}
-
-			save("Entity", entityMetadataMap);
 		}
 
 		protected void addMetadata(final BlockState blockState, final String key, final String value) {
-			final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
+			synchronized (LOCK) {
+				final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
-			for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
-				final String meta = i.next();
+				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
+					final String meta = i.next();
 
-				if (getTag(meta, key) != null)
-					i.remove();
-			}
+					if (getTag(meta, key) != null)
+						i.remove();
+				}
 
-			if (value != null && !value.isEmpty()) {
-				final String formatted = format(key, value);
+				if (value != null && !value.isEmpty()) {
+					final String formatted = format(key, value);
 
-				blockCache.getMetadata().add(formatted);
-			}
+					blockCache.getMetadata().add(formatted);
+				}
 
-			{ // Save
-				for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
-					setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+				{ // Save
+					for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
+						setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
 
-				save();
+					save();
+				}
 			}
 		}
 
