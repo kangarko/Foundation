@@ -225,7 +225,7 @@ public final class ItemCreator {
 
 		// Apply specific material color if possible
 		color:
-		if (MinecraftVersion.atLeast(V.v1_13) && color != null && !is.getType().toString().contains("LEATHER")) {
+		if (MinecraftVersion.atLeast(V.v1_12) && color != null && !is.getType().toString().contains("LEATHER")) {
 			final String dye = color.getDye().toString();
 			final List<String> colorableMaterials = Arrays.asList(
 					"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
@@ -242,24 +242,12 @@ public final class ItemCreator {
 			}
 
 			// If not revert to wool
-			is.setType(Material.valueOf(dye + "_WOOL"));
-
-		} else {
-			int dataValue = material != null ? material.getData() : is.getData().getData();
-
-			if (!is.getType().toString().contains("LEATHER") && color != null)
-				dataValue = color.getDye().getWoolData();
-
-			if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
-				dataValue = 0;
-
-			is.setData(new MaterialData(is.getType(), (byte) dataValue));
-
-			if (MinecraftVersion.olderThan(V.v1_13)) {
-				is.setDurability((short) dataValue);
-			}
-
-		}
+			if (MinecraftVersion.atLeast(V.v1_13))
+				is.setType(Material.valueOf(dye + "_WOOL"));
+			else if (MinecraftVersion.atLeast(V.v1_8))
+				applyColors0(color, material, is);
+		} else
+			applyColors0(color, material, is);
 
 		// Fix monster eggs
 		if (is.getType().toString().endsWith("SPAWN_EGG")) {
@@ -409,6 +397,29 @@ public final class ItemCreator {
 		}
 
 		return is;
+	}
+
+	/**
+	 * A method to add colors (colorize) item bellow 1.13
+	 *
+	 * @param color color to set
+	 * @param material material used
+	 * @param is ItemStack to apply to
+	 */
+	public static void applyColors0(CompColor color, CompMaterial material, ItemStack is) {
+		int dataValue = material != null ? material.getData() : is.getData().getData();
+
+		if (!is.getType().toString().contains("LEATHER") && color != null)
+			dataValue = color.getDye().getWoolData();
+
+		if (MinecraftVersion.newerThan(V.v1_8) && CompMaterial.isMonsterEgg(is.getType()))
+			dataValue = 0;
+
+		is.setData(new MaterialData(is.getType(), (byte) dataValue));
+
+		if (MinecraftVersion.olderThan(V.v1_13)) {
+			is.setDurability((short) dataValue);
+		}
 	}
 
 	// ----------------------------------------------------------------------------------------
