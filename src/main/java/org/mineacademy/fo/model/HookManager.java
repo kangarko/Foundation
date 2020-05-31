@@ -1326,7 +1326,7 @@ public final class HookManager {
 	 * @return see above, or true if lands plugin not installed
 	 */
 	public static boolean hasLandsMonsterSpawn(final Location location) {
-		return isLandsLoaded() ? landsHook.hasMonsterSpawn(location) : true;
+		return isLandsLoaded() && landsHook.hasMonsterSpawn(location);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
