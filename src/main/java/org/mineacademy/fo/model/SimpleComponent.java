@@ -197,10 +197,6 @@ public class SimpleComponent {
 		for (final PermissibleComponent baseComponent : currentComponents) {
 			pastComponents.add(baseComponent);
 
-			System.out.println("============= " + Common.revertColorizing(baseComponent.getComponent().toLegacyText()));
-			System.out.println("Bold ? " + baseComponent.getComponent().isBoldRaw());
-			System.out.println("Color ? " + baseComponent.getComponent().getColorRaw());
-
 			lastComponentFormatting = baseComponent.getComponent();
 		}
 
