@@ -21,7 +21,6 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
-import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -67,14 +66,12 @@ public class SimpleComponent {
 	 */
 	protected SimpleComponent(boolean colorize, String... text) {
 		this.colorize = colorize;
-		this.currentComponents = fromLegacyText(colorize ? String.join("\n", Common.colorize(text)) : String.join("\n", text), null, null);
+		this.currentComponents = fromLegacyText(colorize ? String.join("\n", Common.colorize(text)) : String.join("\n", text), null, null, null);
 	}
 
-	/**
-	 * Represents a component with viewing permission
-	 */
 	@Data
 	public class PermissibleComponent {
+
 		private final BaseComponent component;
 		private final String permission;
 	}
@@ -192,15 +189,19 @@ public class SimpleComponent {
 	public SimpleComponent append(String text, String viewPermission) {
 
 		// Copy the last color to reuse in the next component
-		BaseComponent lastComponentFormatting = null;
+		ChatColor lastcolor = null;
+		ChatColor lastdecoration = null;
 
 		for (final PermissibleComponent baseComponent : currentComponents) {
 			pastComponents.add(baseComponent);
 
-			lastComponentFormatting = baseComponent.getComponent();
+			final BaseComponent c = baseComponent.getComponent();
+
+			lastcolor = baseComponent.getComponent().getColor();
+			lastdecoration = c.isBoldRaw() ? ChatColor.BOLD : c.isItalicRaw() ? ChatColor.ITALIC : c.isUnderlinedRaw() ? ChatColor.UNDERLINE : c.isObfuscated() ? ChatColor.MAGIC : c.isStrikethroughRaw() ? ChatColor.STRIKETHROUGH : null;
 		}
 
-		currentComponents = fromLegacyText(colorize ? Common.colorize(text) : text, lastComponentFormatting, viewPermission);
+		currentComponents = fromLegacyText(colorize ? Common.colorize(text) : text, lastcolor, lastdecoration, viewPermission);
 
 		return this;
 	}
@@ -246,7 +247,7 @@ public class SimpleComponent {
 	 * each time the message has a new & color/formatting, preserving
 	 * the last color
 	 */
-	private PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
+	private PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable ChatColor lastColor, @Nullable ChatColor lastDecoration, @Nullable String viewPermission) {
 		final ArrayList<PermissibleComponent> components = new ArrayList<>();
 		final Matcher matcher = URL_PATTERN.matcher(message);
 
@@ -304,7 +305,11 @@ public class SimpleComponent {
 						break;
 				}
 
-				lastComponentFormatting = component;
+				if (Arrays.asList(ChatColor.BOLD, ChatColor.STRIKETHROUGH, ChatColor.UNDERLINE, ChatColor.MAGIC, ChatColor.RESET, ChatColor.ITALIC).contains(format))
+					lastDecoration = format;
+				else
+					lastColor = format;
+
 				continue;
 			}
 
@@ -342,9 +347,7 @@ public class SimpleComponent {
 		}
 
 		component.setText(builder.toString());
-
-		if (lastComponentFormatting != null)
-			component.copyFormatting(lastComponentFormatting, FormatRetention.ALL, true);
+		component.setColor(lastColor);
 
 		components.add(new PermissibleComponent(component, viewPermission));
 
