@@ -288,8 +288,7 @@ public abstract class SimpleCommand extends Command {
 	public final boolean execute(final CommandSender sender, final String label, final String[] args) {
 
 		if (SimplePlugin.isReloading() || !SimplePlugin.getInstance().isEnabled()) {
-			// TODO Localization
-			Common.tell(sender, "&cCannot use this command while the plugin is " + (SimplePlugin.isReloading() ? "reloading" : "disabled") + ".");
+			Common.tell(sender, SimpleLocalization.Commands.USE_WHILE_NULL);
 
 			return false;
 		}
@@ -749,7 +748,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Sends a no prefix message to the player
 	 *
-	 * @param messages
+	 * @param message
 	 */
 	protected final void tellSuccess(String message) {
 		if (message != null) {
@@ -762,7 +761,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Sends a no prefix message to the player
 	 *
-	 * @param messages
+	 * @param message
 	 */
 	protected final void tellInfo(String message) {
 		if (message != null) {
@@ -775,7 +774,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Sends a no prefix message to the player
 	 *
-	 * @param messages
+	 * @param message
 	 */
 	protected final void tellWarn(String message) {
 		if (message != null) {
@@ -788,7 +787,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Sends a no prefix message to the player
 	 *
-	 * @param messages
+	 * @param message
 	 */
 	protected final void tellError(String message) {
 		if (message != null) {
@@ -801,7 +800,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Sends a no prefix message to the player
 	 *
-	 * @param messages
+	 * @param message
 	 */
 	protected final void tellQuestion(String message) {
 		if (message != null) {
