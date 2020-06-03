@@ -167,6 +167,21 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String HELP_HEADER_NO_SUBCOMMANDS = "&cYou don't have permissions to view any subcommands.";
 
 		/**
+		 * Key for when plugin is reloading {@link org.mineacademy.fo.plugin.SimplePlugin}
+		 */
+		public static String RELOADING = "reloading";
+
+		/**
+		 * Key for when plugin is disabled {@link org.mineacademy.fo.plugin.SimplePlugin}
+		 */
+
+		public static String DISABLED = "disabled";
+		/**
+		 * The message shown when plugin is reloading or was disabled and player attempts to run command
+		 */
+		public static String USE_WHILE_NULL = "&cCannot use this command while the plugin is {state}.";
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -216,6 +231,15 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Header_No_Subcommands"))
 				HELP_HEADER_NO_SUBCOMMANDS = getString("Header_No_Subcommands");
+
+			if (isSet("Reloading"))
+				RELOADING = getString("Reloading");
+
+			if (isSet("Disabled"))
+				DISABLED = getString("Disabled");
+
+			if (isSet("Use_While_Null"))
+				USE_WHILE_NULL = getString("Use_While_Null").replace("{state}", SimplePlugin.isReloading() ? RELOADING : DISABLED);
 
 		}
 	}
