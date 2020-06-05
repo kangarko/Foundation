@@ -466,9 +466,21 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final Collection<String> lore) {
-		return of(material, name, lore.toArray(new String[lore.size()]));
+		return of(material, name, lore.toArray(new String[0]));
 	}
 
+	/**
+	 * Convenience method to get a new item creator with material, name and lore set
+	 *
+	 * @param material
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder of(final String material, final String name, @NonNull final Collection<String> lore) {
+		return of(CompMaterial.valueOf(material), name, lore.toArray(new String[0]));
+	}
+	
 	/**
 	 * Convenience method to get a new item creator with material, name and lore set
 	 *
@@ -479,6 +491,18 @@ public final class ItemCreator {
 	 */
 	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final String... lore) {
 		return ItemCreator.builder().material(material).name("&r" + name).lores(Arrays.asList(lore)).hideTags(true);
+	}
+
+	/**
+	 * Convenience method to get a new item creator with material, name and lore set
+	 *
+	 * @param material
+	 * @param name
+	 * @param lore
+	 * @return new item creator
+	 */
+	public static ItemCreatorBuilder of(final String material, final String name, @NonNull final String... lore) {
+		return ItemCreator.builder().material(CompMaterial.valueOf(material)).name("&r" + name).lores(Arrays.asList(lore)).hideTags(true);
 	}
 
 	/**
@@ -520,7 +544,7 @@ public final class ItemCreator {
 		return ItemCreator.builder().material(mat);
 	}
 
-	public static ItemCreatorBuilder of(final String material) {
-		return of(CompMaterial.fromString(material));
+	public static ItemCreatorBuilder ofString(final String material) {
+		return of(CompMaterial.valueOf(material));
 	}
 }
