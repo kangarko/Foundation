@@ -2654,14 +2654,21 @@ class DiscordSRVHook implements Listener {
 
 class LandsHook {
 
-	private final LandsIntegration api;
+	private LandsIntegration api;
 
 	public LandsHook() {
-		api = new LandsIntegration(SimplePlugin.getInstance(), true);
+		try {
+			api = new LandsIntegration(SimplePlugin.getInstance(), true);
+		} catch (final Throwable throwable) {
+			api = null;
+		}
 	}
 
 	public boolean hasMonsterSpawn(final Location location) {
 		try {
+			if (api != null)
+				return false;
+
 			final LandArea landArea = api.getArea(location);
 			final Land land = api.getLand(location);
 
