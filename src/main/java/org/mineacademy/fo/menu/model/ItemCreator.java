@@ -519,4 +519,8 @@ public final class ItemCreator {
 
 		return ItemCreator.builder().material(mat);
 	}
+
+	public static ItemCreatorBuilder of(final String material) {
+		return of(CompMaterial.fromString(material));
+	}
 }
