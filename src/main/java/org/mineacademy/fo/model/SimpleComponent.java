@@ -21,7 +21,6 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
-import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -248,6 +247,27 @@ public class SimpleComponent {
 	 */
 	private PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
 		final ArrayList<PermissibleComponent> components = new ArrayList<>();
+
+		// Plot the previous formatting manually before the message to retain it
+		if (lastComponentFormatting != null) {
+			if (lastComponentFormatting.isBold())
+				message = ChatColor.BOLD + message;
+
+			if (lastComponentFormatting.isItalic())
+				message = ChatColor.ITALIC + message;
+
+			if (lastComponentFormatting.isObfuscated())
+				message = ChatColor.MAGIC + message;
+
+			if (lastComponentFormatting.isStrikethrough())
+				message = ChatColor.STRIKETHROUGH + message;
+
+			if (lastComponentFormatting.isUnderlined())
+				message = ChatColor.UNDERLINE + message;
+
+			message = lastComponentFormatting.getColor() + message;
+		}
+
 		final Matcher matcher = URL_PATTERN.matcher(message);
 
 		StringBuilder builder = new StringBuilder();
@@ -304,7 +324,6 @@ public class SimpleComponent {
 						break;
 				}
 
-				lastComponentFormatting = component;
 				continue;
 			}
 
@@ -342,10 +361,6 @@ public class SimpleComponent {
 		}
 
 		component.setText(builder.toString());
-
-		if (lastComponentFormatting != null)
-			component.copyFormatting(lastComponentFormatting, FormatRetention.ALL, true);
-
 		components.add(new PermissibleComponent(component, viewPermission));
 
 		return components.stream().toArray(PermissibleComponent[]::new);
