@@ -11,6 +11,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  * automatically and fill it with values from your localization/messages_LOCALEPREFIX.yml
  * file placed within in your plugins jar file.
  */
+@SuppressWarnings("unused")
 public abstract class SimpleLocalization extends YamlStaticConfig {
 
 	/**
