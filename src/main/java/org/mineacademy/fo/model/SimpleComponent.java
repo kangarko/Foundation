@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -343,7 +345,7 @@ public class SimpleComponent {
 
 		component.setText(builder.toString());
 
-		if (lastComponentFormatting != null)
+		if (lastComponentFormatting != null && MinecraftVersion.newerThan(V.v1_8))
 			component.copyFormatting(lastComponentFormatting, FormatRetention.ALL, true);
 
 		components.add(new PermissibleComponent(component, viewPermission));
