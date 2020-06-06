@@ -65,55 +65,6 @@ public final class ReflectionUtil {
 	}
 
 	/**
-	 * Set the static field to the given value
-	 *
-	 * @param clazz
-	 * @param fieldName
-	 * @param fieldValue
-	 */
-	public static void setStaticField(@NonNull final Class<?> clazz, final String fieldName, final Object fieldValue) {
-		try {
-			final Field field = getDeclaredField(clazz, fieldName);
-
-			field.set(null, fieldValue);
-
-		} catch (final Throwable t) {
-			throw new FoException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
-		}
-	}
-
-	/**
-	 * Set the static field to the given value
-	 *
-	 * @param object
-	 * @param fieldName
-	 * @param fieldValue
-	 */
-	public static void setStaticField(@NonNull final Object object, final String fieldName, final Object fieldValue) {
-		try {
-			final Field field = object.getClass().getDeclaredField(fieldName);
-			field.setAccessible(true);
-
-			field.set(object, fieldValue);
-
-		} catch (final Throwable t) {
-			throw new FoException(t, "Could not set " + fieldName + " in " + object + " to " + fieldValue);
-		}
-	}
-
-	/**
-	 * Convenience method for getting a static field content.
-	 *
-	 * @param <T>
-	 * @param clazz
-	 * @param field
-	 * @return
-	 */
-	public static <T> T getStaticFieldContent(@NonNull final Class<?> clazz, final String field) {
-		return getFieldContent(clazz, field, null);
-	}
-
-	/**
 	 * Return a constructor for the given NMS class. We prepend the class name
 	 * with the {@link #NMS} so you only have to give in the name of the class.
 	 *
@@ -256,6 +207,72 @@ public final class ReflectionUtil {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	/**
+	 * Set a declared field to the given value
+	 *
+	 * @param instance
+	 * @param fieldName
+	 * @param fieldValue
+	 */
+	public static void setDeclaredField(@NonNull Object instance, String fieldName, Object fieldValue) {
+		final Field field = getDeclaredField(instance.getClass(), fieldName);
+
+		try {
+			field.set(instance, fieldValue);
+		} catch (final ReflectiveOperationException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Convenience method for getting a static field content.
+	 *
+	 * @param <T>
+	 * @param clazz
+	 * @param field
+	 * @return
+	 */
+	public static <T> T getStaticFieldContent(@NonNull final Class<?> clazz, final String field) {
+		return getFieldContent(clazz, field, null);
+	}
+
+	/**
+	 * Set the static field to the given value
+	 *
+	 * @param clazz
+	 * @param fieldName
+	 * @param fieldValue
+	 */
+	public static void setStaticField(@NonNull final Class<?> clazz, final String fieldName, final Object fieldValue) {
+		try {
+			final Field field = getDeclaredField(clazz, fieldName);
+
+			field.set(null, fieldValue);
+
+		} catch (final Throwable t) {
+			throw new FoException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
+		}
+	}
+
+	/**
+	 * Set the static field to the given value
+	 *
+	 * @param object
+	 * @param fieldName
+	 * @param fieldValue
+	 */
+	public static void setStaticField(@NonNull final Object object, final String fieldName, final Object fieldValue) {
+		try {
+			final Field field = object.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+
+			field.set(object, fieldValue);
+
+		} catch (final Throwable t) {
+			throw new FoException(t, "Could not set " + fieldName + " in " + object + " to " + fieldValue);
+		}
 	}
 
 	/**
