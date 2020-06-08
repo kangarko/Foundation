@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -131,10 +132,15 @@ public final class Variable extends YamlConfig implements Actionable {
 	 * @return
 	 */
 	public String getValue(CommandSender player) {
-		// Replace variables in script
-		final String script = Variables.replace(scope, this.value, player);
+		if (player instanceof Player) {
+			// Replace variables in script
+			final String script = Variables.replace(scope, this.value, player);
 
-		return String.valueOf(JavaScriptExecutor.run(script, player));
+			return String.valueOf(JavaScriptExecutor.run(script, player));
+		}
+
+		// We do not support replacing variables for the console
+		return "";
 	}
 
 	// ----------------------------------------------------------------------------------
