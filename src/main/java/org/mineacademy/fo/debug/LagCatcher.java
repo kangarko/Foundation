@@ -70,6 +70,32 @@ public final class LagCatcher {
 	}
 
 	/**
+	 * Stops measuring time in a code section and print a console message.
+	 *
+	 * @param section
+	 * @param message
+	 */
+	public static void end(String section, String message) {
+		final double lag = finishAndCalculate(section);
+
+		message = message.replace("{section}", section);
+		message = message.replace("{time}", MathUtil.formatTwoDigits(lag));
+
+		Common.log(message);
+	}
+
+	/**
+	 * Stops measuring time in a code section and print a console message.
+	 *
+	 * @param section section to stop
+	 */
+	public static void endPrint(String section) {
+		final double lag = finishAndCalculate(section);
+
+		Common.log(section + " took " + MathUtil.formatTwoDigits(lag));
+	}
+
+	/**
 	 * Stops measuring time in a code section and print a custom console message
 	 * when it took over the given threshold
 	 *
