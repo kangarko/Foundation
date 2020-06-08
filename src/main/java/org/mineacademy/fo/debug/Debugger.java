@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -41,10 +40,6 @@ public final class Debugger {
 	 */
 	@Getter
 	private static boolean debugModeEnabled = false;
-
-	@Getter
-	@Setter
-	private static boolean debugAll = false;
 
 	/**
 	 * Loads debug mode, called automatically in {@link SimplePlugin}
@@ -142,7 +137,7 @@ public final class Debugger {
 	 * @return
 	 */
 	public static boolean isDebugged(String section) {
-		return SimpleSettings.DEBUG_SECTIONS.contains(section) || SimpleSettings.DEBUG_SECTIONS.contains("*")|| debugAll;
+		return SimpleSettings.DEBUG_SECTIONS.contains(section) || SimpleSettings.DEBUG_SECTIONS.contains("*");
 	}
 
 	// ----------------------------------------------------------------------------------------------------
