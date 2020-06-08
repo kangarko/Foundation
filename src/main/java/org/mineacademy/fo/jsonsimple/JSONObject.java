@@ -507,10 +507,6 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 					final Object value = thisEntry.getValue();
 
 					if (!map.containsKey(key) || !value.equals(map.get(key))) {
-
-						System.out.println(key);
-						System.out.println(map.get(key));
-						System.out.println(value);
 						return false;
 					}
 				}
