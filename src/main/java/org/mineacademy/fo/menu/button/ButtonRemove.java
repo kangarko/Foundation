@@ -1,8 +1,7 @@
 package org.mineacademy.fo.menu.button;
 
 import java.util.Arrays;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +12,9 @@ import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a standardized remove button that opens the remove confirmation dialog.
@@ -166,13 +168,11 @@ public class ButtonRemove extends Button {
 		 */
 		@Override
 		public ItemStack getItemAt(final int slot) {
-			if (slot == 9 + 3) {
+			if (slot == 9 + 3)
 				return confirmButton.getItem();
-			}
 
-			if (slot == 9 + 5) {
+			if (slot == 9 + 5)
 				return returnButton.getItem();
-			}
 
 			return null;
 		}

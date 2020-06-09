@@ -303,7 +303,7 @@ public final class Variables {
 			if (variable.getScope() != scope)
 				continue;
 
-			if (message.contains(key)) {
+			if (message.contains(key))
 				try {
 					message = message.replace(key, variable.getValue(sender));
 
@@ -314,7 +314,6 @@ public final class Variables {
 							"Variable: " + key,
 							"%error");
 				}
-			}
 		}
 
 		return message;
