@@ -2661,9 +2661,12 @@ class LandsHook {
 			api = new LandsIntegration(SimplePlugin.getInstance(), true);
 		} catch (final Throwable throwable) {
 			api = null;
-			// Try it again in 5 seconds, maybe the plugin wasn't yet loaded
-			Common.runLater(20 * 5, () -> {
-				api = new LandsIntegration(SimplePlugin.getInstance(), true);
+			// Try it again in 10 seconds, maybe the plugin wasn't yet loaded
+			Common.runLater(20 * 10, () -> {
+				try {
+					api = new LandsIntegration(SimplePlugin.getInstance(), true);
+				} catch (Throwable ignored) {
+				}
 			});
 		}
 	}
