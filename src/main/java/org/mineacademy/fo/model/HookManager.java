@@ -2661,16 +2661,20 @@ class LandsHook {
 			api = new LandsIntegration(SimplePlugin.getInstance(), true);
 		} catch (final Throwable throwable) {
 			api = null;
+			// Try it again in 5 seconds, maybe the plugin wasn't yet loaded
+			Common.runLater(20 * 5, () -> {
+				api = new LandsIntegration(SimplePlugin.getInstance(), true);
+			});
 		}
 	}
 
 	public boolean hasMonsterSpawn(final Location location) {
 		try {
-			if (api != null)
+			if (api == null)
 				return false;
 
-			final LandArea landArea = api.getArea(location);
 			final Land land = api.getLand(location);
+			final LandArea landArea = api.getArea(location);
 
 			return land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN) || landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN);
 		} catch (final Throwable throwable) {
