@@ -42,7 +42,7 @@ public final class GeoAPI {
 		if (ip.getHostString().equals("127.0.0.1") || ip.getHostString().equals("0.0.0.0"))
 			return new GeoResponse("local", "-", "local", "-");
 
-		if (cache.contains(ip.toString()))
+		if (cache.contains(ip.toString()) || cache.containsValue(response))
 			return cache.get(ip.toString());
 
 		try {
