@@ -288,7 +288,7 @@ public abstract class SimpleCommand extends Command {
 	public final boolean execute(final CommandSender sender, final String label, final String[] args) {
 
 		if (SimplePlugin.isReloading() || !SimplePlugin.getInstance().isEnabled()) {
-			Common.tell(sender, SimpleLocalization.Commands.USE_WHILE_NULL);
+			Common.tell(sender, SimpleLocalization.Commands.USE_WHILE_NULL.replace("{state}", (SimplePlugin.isReloading() ? SimpleLocalization.Commands.RELOADING : SimpleLocalization.Commands.DISABLED)));
 
 			return false;
 		}
