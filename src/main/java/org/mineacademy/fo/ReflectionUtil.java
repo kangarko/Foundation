@@ -770,7 +770,7 @@ public final class ReflectionUtil {
 
 					try {
 						clazz = Class.forName(name);
-					} catch (final NoClassDefFoundError ex) {
+					} catch (final Throwable ex) {
 						continue;
 					}
 
