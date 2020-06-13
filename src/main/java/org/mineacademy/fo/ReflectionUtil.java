@@ -768,9 +768,13 @@ public final class ReflectionUtil {
 
 					Class<?> clazz;
 
+					// Workaround
+					if (name.startsWith("de.exceptionflug.protocolize.api")) {
+						continue;
+					}
 					try {
 						clazz = Class.forName(name);
-					} catch (final Throwable ex) {
+					} catch (final Throwable throwable) {
 						continue;
 					}
 
