@@ -134,11 +134,8 @@ public final class InventoryDrawer {
 
 		inv.setContents(content);
 
-		// Before opening make sure we close his old inventory if exist,
-		// but only if the inventory is NOT a menu. If it is a menu, we can overwrite the contents,
-		// as they will be re-rendered upon calling Menu#displayTo again. This will prevent the annoying
-		// mouse position reset that happens when you move from inventory to inventory.
-		if (player.getOpenInventory() != null && !player.hasMetadata("Ka_Menu"))
+		// Before opening make sure we close his old inventory if exist
+		if (player.getOpenInventory() != null)
 			player.closeInventory();
 
 		player.openInventory(inv);
