@@ -461,7 +461,7 @@ public final class SerializeUtil {
 			Valid.checkBoolean(Modifier.isPublic(deserialize.getModifiers()) && Modifier.isStatic(deserialize.getModifiers()), asWhat + " is missing public 'public static T deserialize()' method");
 
 		} catch (final NoSuchMethodException ex) {
-			Common.throwError(ex, "Triede chyba konecna deserialize(mapa) metoda. Tried: " + asWhat.getSimpleName());
+			Common.throwError(ex, "Class lacks a final method deserialize(SerializedMap) metoda. Tried: " + asWhat.getSimpleName());
 			return null;
 		}
 
@@ -470,7 +470,7 @@ public final class SerializeUtil {
 		try {
 			invoked = deserialize.invoke(null, SerializedMap.of(map));
 		} catch (final ReflectiveOperationException e) {
-			Common.throwError(e, "Chyba pri volani " + deserialize.getName() + " z " + asWhat.getSimpleName() + " z udajmi " + map);
+			Common.throwError(e, "Error calling " + deserialize.getName() + " as " + asWhat.getSimpleName() + " with data " + map);
 			return null;
 		}
 
