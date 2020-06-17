@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -107,12 +108,12 @@ public final class Remain {
 	/**
 	 * The get players method stored here for performance
 	 */
-	private static Method getPlayersMethod;
+	private static final Method getPlayersMethod;
 
 	/**
 	 * The get player health method stored here for performance
 	 */
-	private static Method getHealthMethod;
+	private static final Method getHealthMethod;
 
 	/**
 	 * The CraftPlayer.getHandle method
@@ -644,9 +645,9 @@ public final class Remain {
 				throw t;
 
 			Common.error(t,
-					"Unable to parse JSON message.",
-					"JSON: " + json,
-					"Error: %error");
+						 "Unable to parse JSON message.",
+						 "JSON: " + json,
+						 "Error: %error");
 		}
 
 		return text;
@@ -1663,7 +1664,7 @@ public final class Remain {
 				else if (MinecraftVersion.atLeast(V.v1_9))
 					item.setAmount(0);
 
-				// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
+					// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
 				else {
 					final ItemStack[] content = player.getInventory().getContents();
 
@@ -1852,6 +1853,27 @@ public final class Remain {
 
 		} catch (NoClassDefFoundError | NoSuchFieldError | NoSuchMethodError err) {
 			throw new FoException(throwable);
+		}
+	}
+
+	/**
+	 * Sets a game rule
+	 *
+	 * @param world world to set game rule in
+	 * @param gameRule game rule
+	 * @param value value to set (true/false)
+	 */
+	public static void setGameRule(World world, String gameRule, boolean value) {
+		try {
+			if (MinecraftVersion.newerThan(V.v1_13)) {
+				final GameRule rule = GameRule.getByName(gameRule);
+
+				world.setGameRule(rule, value);
+			} else
+				world.setGameRuleValue(gameRule, "" + value);
+
+		} catch (Throwable t) {
+			Common.error(t, "Game rule " + gameRule + " not found.");
 		}
 	}
 
