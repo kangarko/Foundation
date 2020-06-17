@@ -73,7 +73,7 @@ public class SimpleComponent {
 	 * Represents a component with viewing permission
 	 */
 	@Data
-	public class PermissibleComponent {
+	public static class PermissibleComponent {
 		private final BaseComponent component;
 		private final String permission;
 	}
@@ -122,8 +122,10 @@ public class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
+		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(text, null, null)), (permissibleComponent) -> permissibleComponent.getComponent());
+
 		for (final PermissibleComponent component : currentComponents)
-			component.getComponent().setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(Common.colorize(text))));
+			component.getComponent().setHoverEvent(new HoverEvent(action, baseComponents.toArray(new BaseComponent[baseComponents.size()])));
 
 		return this;
 	}
@@ -240,12 +242,56 @@ public class SimpleComponent {
 		return build().toLegacyText();
 	}
 
-	/*
-	 * Compile the message into a component, creating a new BaseComponent
+	// --------------------------------------------------------------------
+	// Sending
+	// --------------------------------------------------------------------
+
+	/**
+	 * Attempts to send the complete {@link SimpleComponent} to the given
+	 * command senders. If they are players, we send them interactive elements.
+	 *
+	 * If they are console, they receive a plain text message.
+	 *
+	 * @param <T>
+	 * @param senders
+	 */
+	public <T extends CommandSender> void send(Iterable<T> senders) {
+		final TextComponent mainComponent = build();
+
+		for (final CommandSender sender : senders)
+			Remain.sendComponent(sender, mainComponent);
+	}
+
+	/**
+	 * Attempts to send the complete {@link SimpleComponent} to the given
+	 * command senders. If they are players, we send them interactive elements.
+	 *
+	 * If they are console, they receive a plain text message.
+	 *
+	 * @param senders
+	 */
+	public <T extends CommandSender> void send(T... senders) {
+		final TextComponent mainComponent = build();
+
+		for (final CommandSender sender : senders)
+			Remain.sendComponent(sender, mainComponent);
+	}
+
+	// --------------------------------------------------------------------
+	// Static
+	// --------------------------------------------------------------------
+
+	/**
+	 * Compile the message into components, creating a new {@link PermissibleComponent}
 	 * each time the message has a new & color/formatting, preserving
 	 * the last color
+	 *
+	 * @param message
+	 * @param lastComponentFormatting
+	 * @param viewPermission
+	 * @return
 	 */
-	private PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
+	public static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
 		final ArrayList<PermissibleComponent> components = new ArrayList<>();
 
 		// Plot the previous formatting manually before the message to retain it
@@ -317,10 +363,20 @@ public class SimpleComponent {
 						component.setObfuscated(true);
 						break;
 					case RESET:
-						format = ChatColor.WHITE;
+						format = ChatColor.RESET;
+
 					default:
 						component = new TextComponent();
 						component.setColor(format);
+
+						if (format == ChatColor.RESET) {
+							component.setBold(false);
+							component.setItalic(false);
+							component.setUnderlined(false);
+							component.setStrikethrough(false);
+							component.setObfuscated(false);
+						}
+
 						break;
 				}
 
@@ -365,45 +421,6 @@ public class SimpleComponent {
 
 		return components.stream().toArray(PermissibleComponent[]::new);
 	}
-
-	// --------------------------------------------------------------------
-	// Sending
-	// --------------------------------------------------------------------
-
-	/**
-	 * Attempts to send the complete {@link SimpleComponent} to the given
-	 * command senders. If they are players, we send them interactive elements.
-	 *
-	 * If they are console, they receive a plain text message.
-	 *
-	 * @param <T>
-	 * @param senders
-	 */
-	public <T extends CommandSender> void send(Iterable<T> senders) {
-		final TextComponent mainComponent = build();
-
-		for (final CommandSender sender : senders)
-			Remain.sendComponent(sender, mainComponent);
-	}
-
-	/**
-	 * Attempts to send the complete {@link SimpleComponent} to the given
-	 * command senders. If they are players, we send them interactive elements.
-	 *
-	 * If they are console, they receive a plain text message.
-	 *
-	 * @param senders
-	 */
-	public <T extends CommandSender> void send(T... senders) {
-		final TextComponent mainComponent = build();
-
-		for (final CommandSender sender : senders)
-			Remain.sendComponent(sender, mainComponent);
-	}
-
-	// --------------------------------------------------------------------
-	// Static
-	// --------------------------------------------------------------------
 
 	/**
 	 * Create a new interactive chat component
