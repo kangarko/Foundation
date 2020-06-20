@@ -414,9 +414,7 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreatorBuilder ofSkullHash(final String hash) {
-		Valid.checkNotNull(hash, "Hash mustn't be null");
-
-		if (hash.isEmpty()) {
+		if (hash == null || hash.isEmpty()) {
 			return ofSkullHash(STEVE_TEXTURE);
 		}
 
