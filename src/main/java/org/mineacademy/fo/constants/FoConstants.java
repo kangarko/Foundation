@@ -90,7 +90,7 @@ public final class FoConstants {
 		 * The header that is put into the file that has been automatically
 		 * updated and comments were lost
 		 */
-		public static final String[] UPDATED_FILE = new String[] {
+		public static String[] UPDATED_FILE = new String[] {
 				Common.configLine(),
 				"",
 				" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
