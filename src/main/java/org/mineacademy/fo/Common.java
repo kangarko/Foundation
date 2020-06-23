@@ -2083,6 +2083,18 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
+	public static BukkitTask runAsync(final Runnable task) {
+		return runLaterAsync(0, task);
+	}
+
+	/**
+	 * Runs the task async even if the plugin is disabled for some reason.
+	 *
+	 * Schedules the run on the next tick.
+	 *
+	 * @param task
+	 * @return
+	 */
 	public static BukkitTask runLaterAsync(final Runnable task) {
 		return runLaterAsync(0, task);
 	}
