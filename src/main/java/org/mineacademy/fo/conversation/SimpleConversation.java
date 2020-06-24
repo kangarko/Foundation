@@ -268,7 +268,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				try {
 					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData()
-							.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(QUESTION_SHOW_THRESHOLD, TimeUnit.SECONDS).build());
+							.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(getTimeout(), TimeUnit.SECONDS).build());
 
 					if (!askedQuestions.containsKey(question)) {
 						askedQuestions.put(question, null);
