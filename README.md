@@ -1,3 +1,8 @@
+#IMPORTANT
+Foundation now moved to 
+https://git.mineacademy.org/libraries/foundation
+
+
 <p align="center">
   Do you want to code using this library?
   <a href="https://mineacademy.org/gh-join">
