@@ -4,8 +4,8 @@ package org.mineacademy.fo.remain.nbt;
  * Enum of all NBT Types Minecraft contains
  *
  * @author tr7zw
- *
  */
+@SuppressWarnings("javadoc")
 public enum NBTType {
 	NBTTagEnd(0),
 	NBTTagByte(1),

@@ -1,15 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Queue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -24,6 +14,16 @@ import org.mineacademy.fo.event.RegionScanCompleteEvent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * A class that has ability to scan saved regions on the disk and execute
  * actions for each saved chunk.
@@ -33,7 +33,7 @@ public abstract class OfflineRegionScanner {
 	/**
 	 * Folders that will be scanned
 	 */
-	private static final String[] FOLDERS = { "region", "DIM-1/region", "DIM1/region" };
+	private static final String[] FOLDERS = {"region", "DIM-1/region", "DIM1/region"};
 
 	/**
 	 * A valid file pattern

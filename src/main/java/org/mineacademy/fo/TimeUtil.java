@@ -1,12 +1,11 @@
 package org.mineacademy.fo;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import org.mineacademy.fo.exception.FoException;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.mineacademy.fo.exception.FoException;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * Utility class for calculating time from ticks and back.
@@ -99,8 +98,7 @@ public final class TimeUtil {
 	 * to seconds.
 	 *
 	 * @param humanReadableTime the human readable time format: {time} {period}
-	 * 		  	   example: 5 seconds, 10 ticks, 7 minutes, 12 hours etc..
-	 *
+	 *                          example: 5 seconds, 10 ticks, 7 minutes, 12 hours etc..
 	 * @return the converted human time to seconds
 	 */
 	public static long toTicks(final String humanReadableTime) {
@@ -157,7 +155,7 @@ public final class TimeUtil {
 
 	/**
 	 * Formats the given time from seconds into the following format:
-	 *
+	 * <p>
 	 * "1 hour 50 minutes 10 seconds" or similar, or less
 	 *
 	 * @param seconds

@@ -217,7 +217,8 @@ import java.util.Map;
 
 /**
  * Represents a JSON array.
- * @author FangYidong(fangyidong@yahoo.com.cn)
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -236,6 +237,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs an empty {@linkplain JSONArray}.
+	 *
 	 * @since 1.0.0
 	 */
 	public JSONArray() {
@@ -243,6 +245,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given {@linkplain Collection}.
+	 *
 	 * @param collection the {@linkplain Collection}
 	 * @since 1.0.0
 	 */
@@ -253,8 +256,9 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
-	 * @param <T> the array type
+	 * @param <T>   the array type
 	 * @since 1.0.0
 	 */
 	public <T> JSONArray(T[] array) {
@@ -265,6 +269,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -276,6 +281,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -287,6 +293,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -298,6 +305,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -309,6 +317,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -320,6 +329,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -331,6 +341,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -342,6 +353,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -354,6 +366,7 @@ public class JSONArray extends ArrayList<Object> {
 	/**
 	 * Constructs a {@linkplain JSONArray} with the elements of the given array.
 	 * This constructor is a little slower than the others because it uses the Reflection API.
+	 *
 	 * @param array the array
 	 * @since 1.0.0
 	 */
@@ -375,6 +388,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} from a JSON string.
+	 *
 	 * @param json the JSON string
 	 * @throws JSONParseException if the JSON is invalid
 	 * @since 1.0.0
@@ -386,9 +400,10 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONArray} from JSON data read from a {@linkplain Reader}.
+	 *
 	 * @param reader the {@linkplain Reader}
 	 * @throws JSONParseException if the JSON is invalid
-	 * @throws IOException if an I/O error occurred
+	 * @throws IOException        if an I/O error occurred
 	 * @since 1.0.0
 	 */
 	public JSONArray(Reader reader) throws JSONParseException, IOException {
@@ -398,6 +413,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Writes this {@linkplain JSONArray} as a JSON string on the given {@linkplain Writer}.
+	 *
 	 * @param writer the {@linkplain Writer}
 	 * @throws IOException if an I/O error occurred
 	 * @since 1.0.0
@@ -409,6 +425,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a JSON string.
+	 *
 	 * @return this {@linkplain JSONArray} as a JSON string
 	 * @since 1.0.0
 	 */
@@ -477,6 +494,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain JSONObject} already, it will be casted and returned.
 	 * If the value is a {@linkplain Map}, it will be wrapped in a {@linkplain JSONObject}. The wrapped {@linkplain JSONObject} will be returned.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@code JSONObject} or {@code null}
 	 * @since 1.0.0
@@ -491,6 +509,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is an array or {@linkplain Collection}, it will be wrapped in a {@linkplain JSONArray}.
 	 * The {@linkplain JSONArray} will be returned.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain JSONArray} or {@code null}
 	 * @since 1.0.0
@@ -506,6 +525,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain Number}, this method will return {@code true} in case its {@code long} value is {@code 1}.
 	 * It will return {@code false} if it is a number but the {@code long} value is <u>not</u> {@code 1}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Boolean} or {@code null}
 	 * @since 1.0.0
@@ -520,6 +540,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Byte} or {@code null}
 	 * @since 1.0.0
@@ -534,6 +555,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Short} or {@code null}
 	 * @since 1.0.0
@@ -548,6 +570,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Integer} or {@code null}
 	 * @since 1.0.0
@@ -562,6 +585,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Long} or {@code null}
 	 * @since 1.0.0
@@ -576,6 +600,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Float} or {@code null}
 	 * @since 1.0.0
@@ -590,6 +615,7 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain Double} or {@code null}
 	 * @since 1.0.0
@@ -602,6 +628,7 @@ public class JSONArray extends ArrayList<Object> {
 	/**
 	 * Returns the same as the value's {@link Object#toString()} method.
 	 * If the actual value is {@code null}, this method will return {@code null}.
+	 *
 	 * @param index index of the value
 	 * @return a {@linkplain String} or {@code null}
 	 * @since 1.0.0
@@ -616,7 +643,8 @@ public class JSONArray extends ArrayList<Object> {
 	 * Otherwise the result of the value's {@link Object#toString()} will be parsed by the given
 	 * {@linkplain DateFormat}. The result is returned.
 	 * If the actual value is {@code null}, this method will return {@code null}.
-	 * @param index index of the value
+	 *
+	 * @param index  index of the value
 	 * @param format the {@linkplain DateFormat} used to parse the date
 	 * @return a {@linkplain Date} or {@code null}
 	 * @throws ParseException if the date could not be parsed
@@ -631,9 +659,10 @@ public class JSONArray extends ArrayList<Object> {
 	 * If the {@linkplain String} representation of the value equals the name of the enum constant
 	 * in the given enum type, it will return the enum constant.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param index index of the value
-	 * @param type the enum type
-	 * @param <T> the return type
+	 * @param type  the enum type
+	 * @param <T>   the return type
 	 * @return an {@linkplain Enum} or {@code null}
 	 * @since 1.0.0
 	 */
@@ -644,6 +673,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Boolean}s using the {@link #getBoolean(int)} method.
+	 *
 	 * @return an array {@linkplain Boolean}s
 	 * @since 1.0.0
 	 */
@@ -659,6 +689,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Byte}s using the {@link #getByte(int)} method.
+	 *
 	 * @return an array of {@linkplain Byte}s
 	 * @since 1.0.0
 	 */
@@ -674,6 +705,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Short}s using the {@link #getShort(int)} method.
+	 *
 	 * @return an array of {@linkplain Short}s
 	 * @since 1.0.0
 	 */
@@ -689,6 +721,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Integer}s using the {@link #getInteger(int)} method.
+	 *
 	 * @return an array of {@linkplain Integer}s
 	 * @since 1.0.0
 	 */
@@ -704,6 +737,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Long}s using the {@link #getLong(int)} method.
+	 *
 	 * @return an array of {@linkplain Long}s
 	 * @since 1.0.0
 	 */
@@ -719,6 +753,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Float}s using the {@link #getFloat(int)} method.
+	 *
 	 * @return an array of {@linkplain Float}s
 	 * @since 1.0.0
 	 */
@@ -734,6 +769,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain Double}s using the {@link #getDouble(int)} method.
+	 *
 	 * @return an array of {@linkplain Double}s
 	 * @since 1.0.0
 	 */
@@ -749,6 +785,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain String}s using the {@link #getString(int)} method.
+	 *
 	 * @return an array of {@linkplain String}s
 	 * @since 1.0.0
 	 */
@@ -764,6 +801,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain JSONObject}s using the {@link #getObject(int)} method.
+	 *
 	 * @return an array of {@linkplain JSONObject}s
 	 * @since 1.0.0
 	 */
@@ -779,6 +817,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} into an array of {@linkplain JSONArray}s using the {@link #getArray(int)} method.
+	 *
 	 * @return an array of {@linkplain JSONArray}s.
 	 * @since 1.0.0
 	 */
@@ -794,6 +833,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code byte} array.
+	 *
 	 * @return a primitive {@code byte} array
 	 * @since 2.0.0
 	 */
@@ -809,6 +849,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code short} array.
+	 *
 	 * @return a primitive {@code short} array
 	 * @since 2.0.0
 	 */
@@ -824,6 +865,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code int} array.
+	 *
 	 * @return a primitive {@code int} array
 	 * @since 2.0.0
 	 */
@@ -839,6 +881,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code long} array.
+	 *
 	 * @return a primitive {@code long} array
 	 * @since 2.0.0
 	 */
@@ -854,6 +897,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code float} array.
+	 *
 	 * @return a primitive {@code float} array
 	 * @since 2.0.0
 	 */
@@ -869,6 +913,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code double} array.
+	 *
 	 * @return a primitive {@code double} array
 	 * @since 2.0.0
 	 */
@@ -884,6 +929,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a primitive {@code boolean} array.
+	 *
 	 * @return a primitive {@code boolean} array
 	 * @since 2.0.0
 	 */
@@ -899,6 +945,7 @@ public class JSONArray extends ArrayList<Object> {
 
 	/**
 	 * Converts this {@linkplain JSONArray} to a XML string.
+	 *
 	 * @param rootName name of the root element
 	 * @return this JSON array as a XML string
 	 * @since 1.1.0

@@ -33,8 +33,8 @@ public final class RangedRandomValue extends RangedValue {
 	/**
 	 * Create a {@link RangedValue} from a line
 	 * Example: 1-10
-	 *          5 - 60
-	 *          4
+	 * 5 - 60
+	 * 4
 	 */
 	public static RangedRandomValue parse(final String line) {
 		final RangedValue random = RangedValue.parse(line);

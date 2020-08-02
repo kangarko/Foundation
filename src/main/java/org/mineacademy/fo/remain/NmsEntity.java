@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain;
 
-import java.lang.reflect.Method;
-
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -14,7 +13,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
+import java.lang.reflect.Method;
 
 /**
  * Advanced spawning of entities, enables manipulation of

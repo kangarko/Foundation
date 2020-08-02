@@ -1,13 +1,13 @@
 package org.mineacademy.fo;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.TreeMap;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 /**
  * Utility class for mathematical operations.
@@ -117,8 +117,8 @@ public final class MathUtil {
 	 * See {@link #range(int, int, int)}
 	 *
 	 * @param value the real value
-	 * @param min the min limit
-	 * @param max the max limit
+	 * @param min   the min limit
+	 * @param max   the max limit
 	 * @return the value in range
 	 */
 	public static double range(final double value, final double min, final double max) {
@@ -129,8 +129,8 @@ public final class MathUtil {
 	 * Get a value in range. If the value is < min, returns min, if it is > max, returns max.
 	 *
 	 * @param value the real value
-	 * @param min the min limit
-	 * @param max the max limit
+	 * @param min   the min limit
+	 * @param max   the max limit
 	 * @return the value in range
 	 */
 	public static int range(final int value, final int min, final int max) {
@@ -358,7 +358,7 @@ public final class MathUtil {
 			double parseExpression() {
 				double v = parseTerm();
 
-				for (;;) {
+				for (; ; ) {
 					eatSpace();
 
 					if (c == '+') { // addition
@@ -376,7 +376,7 @@ public final class MathUtil {
 			double parseTerm() {
 				double v = parseFactor();
 
-				for (;;) {
+				for (; ; ) {
 					eatSpace();
 
 					if (c == '/') { // division
@@ -436,7 +436,7 @@ public final class MathUtil {
 
 	/**
 	 * An exception thrown when calculating wrong numbers (i.e. 0 division)
-	 *
+	 * <p>
 	 * See {@link MathUtil#calculate(String)}
 	 */
 	public static final class CalculatorException extends RuntimeException {

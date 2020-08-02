@@ -1,17 +1,17 @@
 package org.mineacademy.fo.collection;
 
+import org.apache.commons.lang.StringUtils;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.Valid;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
-
 /**
  * Strict list that only allows to remove elements that are contained within, or add elements that are not.
- *
+ * <p>
  * Failing to do so results in an error, with optional error message.
  */
 public final class StrictList<E> extends StrictCollection implements Iterable<E> {
@@ -248,7 +248,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 
 	/**
 	 * Return true if the list contains the key
-	 *
+	 * <p>
 	 * If the key is a string we return true if it equals your key, case ignored,
 	 * otherwise we just call equals() method normally
 	 *
@@ -340,7 +340,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 
 	/**
 	 * Returns string representation of this list
-	 *
+	 * <p>
 	 * NB: For saving in files call {@link #serialize()}
 	 */
 	@Override

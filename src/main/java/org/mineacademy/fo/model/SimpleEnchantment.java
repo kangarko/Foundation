@@ -1,12 +1,6 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
-
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -19,23 +13,24 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * Represents a simple way of getting your own enchantments into Minecraft
- *
+ * <p>
  * DISCLAIMER: Minecraft is not built for your custom enchants. Removing this enchant
  * from the item later will still preserve the lore saying the item has it.
- *
+ * <p>
  * TIP: If you want to register for custom events you just make this class implemements
  * Listener and we register it automatically! However, you must make sure that the
  * event actually happened when the item was used. Use {@link ItemStack#containsEnchantment(Enchantment)}
@@ -91,7 +86,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	/**
 	 * Triggered automatically when the attacker has this enchantment
 	 *
-	 * @param level the level of this enchant
+	 * @param level   the level of this enchant
 	 * @param damager
 	 * @param event
 	 */
@@ -165,7 +160,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	/**
 	 * Return the lore shown on items having this enchant
 	 * Return null to hide the lore
-	 *
+	 * <p>
 	 * We have to add item lore manually since Minecraft does not really support custom
 	 * enchantments
 	 *
@@ -187,7 +182,8 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 */
 	@Override
 	public EnchantmentTarget getItemTarget() {
-		return EnchantmentTarget.ALL;
+		//return EnchantmentTarget.ALL; TODO
+		return EnchantmentTarget.BREAKABLE;
 	}
 
 	/**
@@ -300,12 +296,12 @@ public abstract class SimpleEnchantment extends Enchantment {
 
 	/**
 	 * Since Minecraft client cannot display custom enchantments we have to add lore manually.
-	 *
+	 * <p>
 	 * This adds the fake enchant lore for the given item in case it does not exist.
 	 *
-	 * @deprecated internal use only
 	 * @param item
 	 * @return the modified item or null if item was not edited (no enchants found)
+	 * @deprecated internal use only
 	 */
 	@Deprecated
 	public static ItemStack addEnchantmentLores(ItemStack item) {

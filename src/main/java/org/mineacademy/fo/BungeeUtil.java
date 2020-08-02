@@ -1,8 +1,11 @@
 package org.mineacademy.fo;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Primitives;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
@@ -14,13 +17,8 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-import com.google.common.primitives.Primitives;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 
 /**
  * Utility class for sending messages to BungeeCord.
@@ -31,14 +29,14 @@ public final class BungeeUtil {
 	/**
 	 * The current position of writing the data based on the
 	 * {@link BungeeAction#getContent()}
-	 *
+	 * <p>
 	 * Reset in tell methods
 	 */
 	private static int actionHead = 0;
 
 	/**
 	 * See {@link #tellBungee(BungeeChannel, Player, Object...)}
-	 *
+	 * <p>
 	 * NB: This one uses the default channel name specified in {@link SimplePlugin}. By
 	 * default, nothing is specified there and so an exception will be thrown.
 	 */
@@ -48,12 +46,11 @@ public final class BungeeUtil {
 	}
 
 	/**
-	 *
 	 * Sends message via a channel to the bungee network (upstreams). You need an
 	 * implementation in bungee to handle it, otherwise nothing will happens.
-	 *
+	 * <p>
 	 * OBS! The data written:
-	 *
+	 * <p>
 	 * 1. This server name specified in {@link SimplePlugin#getServerName()} 2. The
 	 * datas in the data parameter.
 	 *
@@ -62,7 +59,7 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(String channel, BungeeAction action, T... datas) {
-		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs " + action.getContent().length);
+		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs needed: " + action.getContent().length);
 
 		Debugger.put("bungee", "Server '" + SimpleSettings.BUNGEE_SERVER_NAME + "' sent bungee message [" + channel + ", " + action + "]: ");
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -86,30 +83,22 @@ public final class BungeeUtil {
 
 				moveHead(action, Double.class);
 				out.writeDouble((Double) data);
-			}
-
-			else if (data instanceof Long) {
+			} else if (data instanceof Long) {
 				Debugger.put("bungee", data.toString() + ", ");
 
 				moveHead(action, Long.class);
 				out.writeLong((Long) data);
-			}
-
-			else if (data instanceof Boolean) {
+			} else if (data instanceof Boolean) {
 				Debugger.put("bungee", data.toString() + ", ");
 
 				moveHead(action, Boolean.class);
 				out.writeBoolean((Boolean) data);
-			}
-
-			else if (data instanceof String) {
+			} else if (data instanceof String) {
 				Debugger.put("bungee", data.toString() + ", ");
 
 				moveHead(action, String.class);
 				out.writeUTF((String) data);
-			}
-
-			else
+			} else
 				throw new FoException("Unknown type of data: " + data + " (" + data.getClass().getSimpleName() + ")");
 		}
 
@@ -120,12 +109,11 @@ public final class BungeeUtil {
 	}
 
 	/**
-	 *
 	 * Sends message via a channel to the bungee network (upstreams). You need an
 	 * implementation in bungee to handle it, otherwise nothing will happens.
-	 *
+	 * <p>
 	 * OBS! The data written:
-	 *
+	 * <p>
 	 * 1. This server name specified in {@link SimplePlugin#getServerName()} 2. The
 	 * datas in the data parameter.
 	 *
@@ -160,7 +148,7 @@ public final class BungeeUtil {
 	/**
 	 * Sends a plugin message that will re-connect the player to another server on Bungee
 	 *
-	 * @param player the living non-dead player
+	 * @param player     the living non-dead player
 	 * @param serverName the server name as you have in config.yml of your BungeeCord
 	 */
 	public static void connect(@NonNull Player player, @NonNull String serverName) {
@@ -173,8 +161,8 @@ public final class BungeeUtil {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-					"Unable to connect " + player.getName() + " to server " + serverName,
-					"Error: %error");
+				"Unable to connect " + player.getName() + " to server " + serverName,
+				"Error: %error");
 		}
 
 		player.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", byteArray.toByteArray());
@@ -193,7 +181,7 @@ public final class BungeeUtil {
 	/**
 	 * Ensures we are reading in the correct order as the given {@link BungeeAction}
 	 * specifies in its {@link BungeeAction#getContent()} getter.
-	 *
+	 * <p>
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).
 	 *

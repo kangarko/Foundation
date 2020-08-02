@@ -1,20 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.bukkit.command.CommandSender;
-import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.remain.Remain;
-
 import lombok.Data;
 import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
@@ -23,6 +8,19 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A very simple way of sending interactive chat messages
@@ -41,7 +39,7 @@ public class SimpleComponent {
 
 	/**
 	 * Shall we automatically translate & into colors? True by default
-	 *
+	 * <p>
 	 * Hover/Click events will always be colorized
 	 */
 	private final boolean colorize;
@@ -104,7 +102,7 @@ public class SimpleComponent {
 
 	/**
 	 * Shows the item on hover if it is not air.
-	 *
+	 * <p>
 	 * NB: Some colors from lore may get lost as a result of Minecraft/Spigot bug.
 	 *
 	 * @param item
@@ -249,7 +247,7 @@ public class SimpleComponent {
 	/**
 	 * Attempts to send the complete {@link SimpleComponent} to the given
 	 * command senders. If they are players, we send them interactive elements.
-	 *
+	 * <p>
 	 * If they are console, they receive a plain text message.
 	 *
 	 * @param <T>
@@ -265,7 +263,7 @@ public class SimpleComponent {
 	/**
 	 * Attempts to send the complete {@link SimpleComponent} to the given
 	 * command senders. If they are players, we send them interactive elements.
-	 *
+	 * <p>
 	 * If they are console, they receive a plain text message.
 	 *
 	 * @param senders
@@ -292,7 +290,7 @@ public class SimpleComponent {
 	 * @return
 	 */
 	public static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
-		final ArrayList<PermissibleComponent> components = new ArrayList<>();
+		final List<PermissibleComponent> components = new ArrayList<>();
 
 		// Plot the previous formatting manually before the message to retain it
 		if (lastComponentFormatting != null) {
@@ -346,23 +344,26 @@ public class SimpleComponent {
 					components.add(new PermissibleComponent(old, viewPermission));
 				}
 
-				switch (format) {
-					case BOLD:
+				switch (format.getName().toUpperCase()) {
+					case "BOLD":
 						component.setBold(true);
 						break;
-					case ITALIC:
+					case "ITALIC":
 						component.setItalic(true);
 						break;
-					case UNDERLINE:
+					case "UNDERLINE":
 						component.setUnderlined(true);
 						break;
-					case STRIKETHROUGH:
+					case "STRIKETHROUGH":
 						component.setStrikethrough(true);
 						break;
-					case MAGIC:
+					case "OBFUSCATED":
 						component.setObfuscated(true);
 						break;
-					case RESET:
+					case "MAGIC":
+						component.setObfuscated(true);
+						break;
+					case "RESET":
 						format = ChatColor.RESET;
 
 					default:

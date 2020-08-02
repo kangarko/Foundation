@@ -1,10 +1,9 @@
 package org.mineacademy.fo.model;
 
-import org.mineacademy.fo.Common;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.mineacademy.fo.Common;
 
 /**
  * Splits manipulating with large about of items in a list

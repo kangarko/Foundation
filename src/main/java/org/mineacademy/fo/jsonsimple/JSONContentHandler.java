@@ -207,35 +207,39 @@ import java.io.IOException;
 
 /**
  * A simplified and stoppable SAX-like content handler for stream processing of JSON text.
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
+ * @version 1.0.0
  * @see org.xml.sax.ContentHandler
  * @see org.mineacademy.fo.jsonsimple.JSONParser#parse(java.io.Reader, JSONContentHandler, boolean)
- * @author FangYidong(fangyidong@yahoo.com.cn)
- * @version 1.0.0
  * @since 1.0.0
  */
 public interface JSONContentHandler {
 	/**
 	 * Receives a notification when the JSON processing begins.
 	 * The {@linkplain JSONParser} will invoke this method only once.
+	 *
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @since 1.0.0
 	 */
 	void startJSON() throws JSONParseException, IOException;
 
 	/**
 	 * Receives a notification when the JSON processing ends.
+	 *
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @since 1.0.0
 	 */
 	void endJSON() throws JSONParseException, IOException;
 
 	/**
 	 * Receives a notification when a JSON object begins.
+	 *
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @see #endJSON
 	 * @since 1.0.0
 	 */
@@ -243,9 +247,10 @@ public interface JSONContentHandler {
 
 	/**
 	 * Receives a notification when a JSON object ends.
+	 *
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @see #startObject
 	 * @since 1.0.0
 	 */
@@ -253,10 +258,11 @@ public interface JSONContentHandler {
 
 	/**
 	 * Receives a notification when a JSON object entry begins.
+	 *
 	 * @param key name of the object entry
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @see #endObjectEntry
 	 * @since 1.0.0
 	 */
@@ -264,18 +270,20 @@ public interface JSONContentHandler {
 
 	/**
 	 * Receives a notification when a JSON entry ends.
+	 *
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @see #startObjectEntry
 	 */
 	boolean endObjectEntry() throws JSONParseException, IOException;
 
 	/**
 	 * Receives a notification when a JSON array begins.
+	 *
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @see #endArray
 	 * @since 1.0.0
 	 */
@@ -283,9 +291,10 @@ public interface JSONContentHandler {
 
 	/**
 	 * Receives a notification when a JSON array ends.
+	 *
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @see #startArray
 	 * @since 1.0.0
 	 */
@@ -299,10 +308,11 @@ public interface JSONContentHandler {
 	 * <li>{@linkplain Boolean}</li>
 	 * <li>{@code null}</li>
 	 * </ul>
+	 *
 	 * @param value the primitive JSON value
 	 * @return {@code false} if the {@linkplain JSONContentHandler} wants to stop parsing after return
 	 * @throws JSONParseException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
-	 * @throws IOException {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
+	 * @throws IOException        {@linkplain JSONParser} will stop and throw the same {@linkplain Exception} to the caller when receiving this {@linkplain Exception}.
 	 * @since 1.0.0
 	 */
 	boolean primitive(Object value) throws JSONParseException, IOException;

@@ -1,11 +1,8 @@
 package org.mineacademy.fo.remain;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -32,13 +29,11 @@ import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlSectionConfig;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.*;
 
 /**
  * Utility class for persistent metadata manipulation
- *
+ * <p>
  * We apply scoreboard tags to ensure permanent metadata storage
  * if supported, otherwise it is lost on reload
  */
@@ -202,7 +197,7 @@ public final class CompMetadata {
 	 * Return saved tile entity metadata, or null if none
 	 *
 	 * @param tileEntity
-	 * @param key, or null if none
+	 * @param key,       or null if none
 	 * @return
 	 */
 	public static String getMetadata(final BlockState tileEntity, final String key) {
@@ -301,7 +296,7 @@ public final class CompMetadata {
 	/**
 	 * Sets a temporary metadata to entity. This metadata is NOT persistent
 	 * and is removed on server stop, restart or reload.
-	 *
+	 * <p>
 	 * Use {@link #setMetadata(Entity, String)} to set persistent custom tags for entities.
 	 *
 	 * @param entity
@@ -314,7 +309,7 @@ public final class CompMetadata {
 	/**
 	 * Sets a temporary metadata to entity. This metadata is NOT persistent
 	 * and is removed on server stop, restart or reload.
-	 *
+	 * <p>
 	 * Use {@link #setMetadata(Entity, String)} to set persistent custom tags for entities.
 	 *
 	 * @param entity
@@ -327,7 +322,7 @@ public final class CompMetadata {
 
 	/**
 	 * Return entity metadata value or null if has none
-	 *
+	 * <p>
 	 * Only usable if you set it using the {@link #setTempMetadata(Entity, String, Object)} with the key parameter
 	 * because otherwise the tag is the same as the value we return
 	 *
@@ -369,7 +364,7 @@ public final class CompMetadata {
 	 * Due to lack of persistent metadata implementation until Minecraft 1.14.x,
 	 * we simply store them in a file during server restart and then apply
 	 * as a temporary metadata for the Bukkit entities.
-	 *
+	 * <p>
 	 * internal use only
 	 */
 	public static final class MetadataFile extends YamlSectionConfig {
@@ -470,7 +465,7 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
-				for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
+				for (final Iterator<String> i = metadata.iterator(); i.hasNext(); ) {
 					final String meta = i.next();
 
 					if (getTag(meta, key) != null)
@@ -491,7 +486,7 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
-				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
+				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext(); ) {
 					final String meta = i.next();
 
 					if (getTag(meta, key) != null)

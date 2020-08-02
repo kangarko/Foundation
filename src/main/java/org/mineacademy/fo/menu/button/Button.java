@@ -1,10 +1,9 @@
 package org.mineacademy.fo.menu.button;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -13,10 +12,10 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Represents a clickable button in menu
@@ -31,7 +30,7 @@ public abstract class Button {
 
 	/**
 	 * The title of the info button, see {@link #makeInfo(String...)}
-	 *
+	 * <p>
 	 * Colorized automatically.
 	 */
 	@Setter
@@ -64,9 +63,9 @@ public abstract class Button {
 	/**
 	 * Creates a new Nether Star button has no action on clicking
 	 * and it is used purely to display informative text.
-	 *
+	 * <p>
 	 * Each description line starts with gray color by default and has colors replaced.
-	 *
+	 * <p>
 	 * Use {@link #setInfoButtonMaterial(CompMaterial)} and {@link #setInfoButtonTitle(String)} to customize it.
 	 *
 	 * @param description the description of the button

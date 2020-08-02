@@ -1,9 +1,6 @@
 package org.mineacademy.fo.visual;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -15,7 +12,9 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompParticle;
 
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A simply way to visualize two locations in the world

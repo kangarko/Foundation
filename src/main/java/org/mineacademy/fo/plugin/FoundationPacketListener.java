@@ -1,14 +1,13 @@
 package org.mineacademy.fo.plugin;
 
-import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.SimpleEnchantment;
-import org.mineacademy.fo.remain.CompMaterial;
-
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
+import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.SimpleEnchantment;
+import org.mineacademy.fo.remain.CompMaterial;
 
 /**
  * Listens to and intercepts packets using Foundation inbuilt features

@@ -1,14 +1,14 @@
 package org.mineacademy.fo.menu.tool;
 
-import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Valid;
 
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * Represents the tool registry holding all registered items
- *
+ * <p>
  * The items are added here automatically upon calling the constructor of {@link Tool}
  */
 public final class ToolRegistry {
@@ -20,7 +20,7 @@ public final class ToolRegistry {
 
 	/**
 	 * Add a new tool to register.
-	 *
+	 * <p>
 	 * Called automatically.
 	 *
 	 * @param tool the tool

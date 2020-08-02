@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu.model;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -7,12 +8,10 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.Getter;
-
 /**
  * Represents a way to render the inventory to the player
  * using Bukkit/Spigot native methods.
- *
+ * <p>
  * This is also handy if you simply want to show
  * a certain inventory without creating the full menu.
  */
@@ -37,7 +36,7 @@ public final class InventoryDrawer {
 	/**
 	 * Create a new inventory drawer, see {@link #of(int, String)}
 	 *
-	 * @param size the size
+	 * @param size  the size
 	 * @param title the title
 	 */
 	private InventoryDrawer(int size, String title) {
@@ -49,7 +48,7 @@ public final class InventoryDrawer {
 
 	/**
 	 * Adds the item at the first empty slot starting from the 0 slot
-	 *
+	 * <p>
 	 * If the inventory is full, we add it on the last slot replacing existing item
 	 *
 	 * @param item the item
@@ -104,7 +103,7 @@ public final class InventoryDrawer {
 
 	/**
 	 * Set the full content of this inventory
-	 *
+	 * <p>
 	 * If the given content is shorter, all additional inventory slots are replaced with air
 	 *
 	 * @param newContent the new content
@@ -144,7 +143,7 @@ public final class InventoryDrawer {
 	/**
 	 * Make a new inventory drawer
 	 *
-	 * @param size the size
+	 * @param size  the size
 	 * @param title the title, colors will be replaced
 	 * @return the inventory drawer
 	 */

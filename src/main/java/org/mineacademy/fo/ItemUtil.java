@@ -1,6 +1,8 @@
-
 package org.mineacademy.fo;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -11,10 +13,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTItem;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for managing items.
@@ -151,7 +149,7 @@ public final class ItemUtil {
 
 	/**
 	 * Compares two items. Returns true if they are similar.
-	 *
+	 * <p>
 	 * Two items are similar if both are not null and if their type, data, name and lore equals.
 	 * The damage, quantity, item flags enchants and other properties are ignored.
 	 *

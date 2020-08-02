@@ -1,28 +1,13 @@
 package org.mineacademy.fo.command;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
+import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
-import org.mineacademy.fo.TabUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.CommandException;
@@ -35,8 +20,9 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.Getter;
-import lombok.NonNull;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple command used to replace all Bukkit/Spigot command functionality
@@ -66,7 +52,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * The command label, eg. boss for /boss
-	 *
+	 * <p>
 	 * This variable is updated dynamically when the command is run with the
 	 * last known version of the label, e.g. /boss or /b will set it to boss or b
 	 * respectively
@@ -105,7 +91,7 @@ public abstract class SimpleCommand extends Command {
 	 * A custom message when the player attempts to run this command
 	 * within {@link #cooldownSeconds}. By default we use the one found in
 	 * {@link SimpleLocalization.Commands#COOLDOWN_WAIT}
-	 *
+	 * <p>
 	 * TIP: Use {duration} to replace the remaining time till next run
 	 */
 	private String cooldownMessage = null;
@@ -122,7 +108,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * The command sender, or null if does not exist
-	 *
+	 * <p>
 	 * This variable is updated dynamically when the command is run with the
 	 * last known sender
 	 */
@@ -130,7 +116,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * The arguments used when the command was last executed
-	 *
+	 * <p>
 	 * This variable is updated dynamically when the command is run with the
 	 * last known arguments
 	 */
@@ -140,7 +126,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Create a new simple command with the given label.
-	 *
+	 * <p>
 	 * Separate the label with | to split between label and aliases.
 	 * Example: remove|r|rm will create a /remove command that can
 	 * also be run by typing /r and /rm as its aliases.
@@ -223,7 +209,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Registers this command into Bukkit.
-	 *
+	 * <p>
 	 * Throws an error if the command {@link #isRegistered()} already.
 	 */
 	public final void register() {
@@ -232,14 +218,13 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Registers this command into Bukkit.
-	 *
+	 * <p>
 	 * Throws an error if the command {@link #isRegistered()} already.
 	 *
 	 * @param unregisterOldAliases If a command with the same label is already present, should
-	 * 							   we remove associated aliases with the old command? This solves a problem
-	 * 							   in ChatControl where unregistering /tell from the Essentials plugin would also
-	 * 							   unregister /t from Towny, which is undesired.
-	 *
+	 *                             we remove associated aliases with the old command? This solves a problem
+	 *                             in ChatControl where unregistering /tell from the Essentials plugin would also
+	 *                             unregister /t from Towny, which is undesired.
 	 */
 	public final void register(final boolean unregisterOldAliases) {
 		Valid.checkBoolean(!(this instanceof SimpleSubCommand), "Sub commands cannot be registered!");
@@ -262,7 +247,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Removes the command from Bukkit.
-	 *
+	 * <p>
 	 * Throws an error if the command is not {@link #isRegistered()}.
 	 */
 	public final void unregister() {
@@ -281,7 +266,7 @@ public abstract class SimpleCommand extends Command {
 	 * Execute this command, updates the {@link #sender}, {@link #label} and {@link #args} variables,
 	 * checks permission and returns if the sender lacks it,
 	 * checks minimum arguments and finally passes the command to the child class.
-	 *
+	 * <p>
 	 * Also contains various error handling scenarios
 	 */
 	@Override
@@ -508,7 +493,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Attempts to parse the given name into a CompMaterial, will work for both modern
 	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
-	 *
+	 * <p>
 	 * You can use the {enum} or {item} variable to replace with the given name
 	 *
 	 * @param name
@@ -535,7 +520,7 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final <T extends Enum<T>> T findEnum(
-			final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
+		final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
 		T found = null;
 
 		try {
@@ -645,7 +630,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * A convenience check for quickly determining if the sender has a given
 	 * permission.
-	 *
+	 * <p>
 	 * TIP: For a more complete check use {@link #checkPerm(String)} that
 	 * will automatically return your command if they lack the permission.
 	 *
@@ -891,14 +876,14 @@ public abstract class SimpleCommand extends Command {
 	 */
 	private String replaceBasicPlaceholders0(final String message) {
 		return message
-				.replace("{label}", getLabel())
-				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
-				.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
+			.replace("{label}", getLabel())
+			.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
+			.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
 	}
 
 	/**
 	 * Utility method to safely update the args, increasing them if the position is too high
-	 *
+	 * <p>
 	 * Used in placeholders
 	 *
 	 * @param position
@@ -978,16 +963,14 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Show tab completion suggestions when the given sender
 	 * writes the command with the given arguments
-	 *
+	 * <p>
 	 * Tab completion is only shown if the sender has {@link #getPermission()}
 	 *
 	 * @param sender
 	 * @param alias
 	 * @param args
 	 * @param location
-	 *
 	 * @return
-	 *
 	 * @deprecated location is not used
 	 */
 	@Deprecated
@@ -999,13 +982,12 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Show tab completion suggestions when the given sender
 	 * writes the command with the given arguments
-	 *
+	 * <p>
 	 * Tab completion is only shown if the sender has {@link #getPermission()}
 	 *
 	 * @param sender
 	 * @param alias
 	 * @param args
-	 *
 	 * @return
 	 */
 	@Override
@@ -1029,16 +1011,15 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Override this method to support tab completing in your command.
-	 *
+	 * <p>
 	 * You can then use "sender", "label" or "args" fields from {@link SimpleCommand}
 	 * class normally and return a list of tab completion suggestions.
-	 *
+	 * <p>
 	 * We already check for {@link #getPermission()} and only call this method if the
 	 * sender has it.
-	 *
+	 * <p>
 	 * TIP: Use {@link #completeLastWord(Iterable)} and {@link #getLastArg()} methods
-	 * 		in {@link SimpleCommand} for your convenience
-	 *
+	 * in {@link SimpleCommand} for your convenience
 	 *
 	 * @return the list of suggestions to complete, or null to complete player names automatically
 	 */
@@ -1080,7 +1061,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Convenience method for completing all player names that the sender can see
 	 * and that are not vanished
-	 *
+	 * <p>
 	 * TIP: You can simply return null for the same behaviour
 	 *
 	 * @return
@@ -1158,7 +1139,7 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * Set a custom cooldown message, by default we use the one found in {@link SimpleLocalization.Commands#COOLDOWN_WAIT}
-	 *
+	 * <p>
 	 * Use {duration} to dynamically replace the remaining time
 	 *
 	 * @param cooldownMessage
@@ -1177,11 +1158,11 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * By default we check if the player has the permission you set in setPermission.
-	 *
+	 * <p>
 	 * If that is null, we check for the following:
 	 * {yourpluginname}.command.{label} for {@link SimpleCommand}
 	 * {yourpluginname}.command.{label}.{sublabel} for {@link SimpleSubCommand}
-	 *
+	 * <p>
 	 * We handle lacking permissions automatically and return with an no-permission message
 	 * when the player lacks it.
 	 *
@@ -1195,8 +1176,8 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Get the permission without replacing {plugin.name}, {label} or {sublabel}
 	 *
-	 * @deprecated internal use only
 	 * @return
+	 * @deprecated internal use only
 	 */
 	@Deprecated
 	public final String getRawPermission() {
@@ -1293,7 +1274,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Set whether we automatically show usage params in {@link #getMinArguments()}
 	 * and when the first arg == "help" or "?"
-	 *
+	 * <p>
 	 * True by default
 	 *
 	 * @param autoHandleHelp
@@ -1305,7 +1286,7 @@ public abstract class SimpleCommand extends Command {
 	@Override
 	public boolean equals(final Object obj) {
 		return obj instanceof SimpleCommand ? ((SimpleCommand) obj).getLabel().equals(
-				getLabel()) && ((SimpleCommand) obj).getAliases().equals(getAliases()) : false;
+			getLabel()) && ((SimpleCommand) obj).getAliases().equals(getAliases()) : false;
 	}
 
 	@Override

@@ -1,11 +1,11 @@
 package org.mineacademy.fo.collection;
 
+import org.mineacademy.fo.Valid;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.mineacademy.fo.Valid;
 
 /**
  * A map that automatically calls your code when you add/remove values etc.
@@ -69,7 +69,7 @@ public final class AutoUpdateMap<V, K> extends StrictCollection {
 
 	/**
 	 * Puts the key-value pair into the map and updates
-	 *
+	 * <p>
 	 * Calls an exception if the key already exists
 	 *
 	 * @param key
@@ -83,7 +83,7 @@ public final class AutoUpdateMap<V, K> extends StrictCollection {
 
 	/**
 	 * Puts the key-value pair into the map and updates
-	 *
+	 * <p>
 	 * If it already contains the key, it is overriden
 	 *
 	 * @param key

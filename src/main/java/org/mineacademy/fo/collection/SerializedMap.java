@@ -1,18 +1,6 @@
 package org.mineacademy.fo.collection;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
+import com.google.gson.Gson;
 import org.bukkit.Location;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +13,12 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import com.google.gson.Gson;
+import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * Serialized map enables you to save and retain values from your
@@ -62,7 +55,7 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * Put key-value pairs from another map into this map
-	 *
+	 * <p>
 	 * If the key already exist, it is ignored
 	 *
 	 * @param map
@@ -280,7 +273,7 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 *  Returns a boolean from the map, or null if does not exist
+	 * Returns a boolean from the map, or null if does not exist
 	 *
 	 * @param key
 	 * @return
@@ -435,14 +428,13 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 * @see #getList(String, Class), except that this method
-	 * never returns null, instead, if the key is not present,
-	 * we return an empty list instead of null
-	 *
 	 * @param <T>
 	 * @param key
 	 * @param type
 	 * @return
+	 * @see #getList(String, Class), except that this method
+	 * never returns null, instead, if the key is not present,
+	 * we return an empty list instead of null
 	 */
 	public <T> List<T> getListSafe(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
@@ -451,14 +443,13 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 * @see #getList(String, Class), except that this method
-	 * never returns null, instead, if the key is not present,
-	 * we return an empty set instead of null
-	 *
 	 * @param <T>
 	 * @param key
 	 * @param type
 	 * @return
+	 * @see #getList(String, Class), except that this method
+	 * never returns null, instead, if the key is not present,
+	 * we return an empty set instead of null
 	 */
 	public <T> Set<T> getSetSafe(final String key, final Class<T> type) {
 		final Set<T> list = getSet(key, type);
@@ -467,12 +458,11 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 * @see #getList(String, Class)
-	 *
 	 * @param <T>
 	 * @param key
 	 * @param type
 	 * @return
+	 * @see #getList(String, Class)
 	 */
 	public <T> Set<T> getSet(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
@@ -482,7 +472,7 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * Return a list of objects of the given type
-	 *
+	 * <p>
 	 * If the type is your own class make sure to put public static deserialize(SerializedMap)
 	 * method into it that returns the class object from the map!
 	 *
@@ -552,7 +542,6 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 *
 	 * Returns the key and attempts to deserialize it as the given type, with a default value
 	 *
 	 * @param <T>
@@ -710,12 +699,12 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * Create new serialized map from key-value pairs like you would in PHP:
-	 *
+	 * <p>
 	 * array(
-	 * 	"name" => value,
-	 * 	"name2" => value2,
+	 * "name" => value,
+	 * "name2" => value2,
 	 * )
-	 *
+	 * <p>
 	 * Except now you just use commas instead of =>'s
 	 *
 	 * @param array
@@ -774,7 +763,7 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * Attempts to parse the given JSON into a serialized map
-	 *
+	 * <p>
 	 * Values are not deserialized right away, they are converted
 	 * when you call get() functions
 	 *

@@ -214,6 +214,7 @@ import java.util.Map;
 /**
  * Provides static methods which allow you to convert Java objects into {@linkplain JSONObject}s
  * and the other way around.
+ *
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -225,7 +226,8 @@ public final class JSONSerializer {
 
 	/**
 	 * Transfers the data of {@linkplain JSONObject} into a Java object.
-	 * @param json the JSON object containing the data
+	 *
+	 * @param json   the JSON object containing the data
 	 * @param object the body of the Java object that should be filled
 	 * @throws Exception if an error occurs
 	 * @since 1.0.0
@@ -563,6 +565,7 @@ public final class JSONSerializer {
 
 	/**
 	 * Converts a Java object into a {@linkplain JSONObject}.
+	 *
 	 * @param object the Java object you want to convert
 	 * @return the resulting {@linkplain JSONObject}
 	 * @throws Exception if an error occurs

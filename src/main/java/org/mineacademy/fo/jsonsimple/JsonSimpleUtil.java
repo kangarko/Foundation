@@ -214,7 +214,8 @@ import java.util.Map;
 
 /**
  * Contains a few static methods for JSON values.
- * @author FangYidong(fangyidong@yahoo.com.cn)
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -232,10 +233,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see  #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(byte[] array, Writer writer) throws IOException {
@@ -261,10 +263,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(short[] array, Writer writer) throws IOException {
@@ -290,10 +293,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(int[] array, Writer writer) throws IOException {
@@ -319,10 +323,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(long[] array, Writer writer) throws IOException {
@@ -348,10 +353,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(float[] array, Writer writer) throws IOException {
@@ -377,10 +383,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(double[] array, Writer writer) throws IOException {
@@ -406,10 +413,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(boolean[] array, Writer writer) throws IOException {
@@ -435,10 +443,11 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static void write(char[] array, Writer writer) throws IOException {
@@ -464,11 +473,12 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an array into JSON text and write it to a {@linkplain Writer}.
-	 * @see #write(Object, Writer)
-	 * @param array the array which should be written on the {@linkplain Writer}
+	 *
+	 * @param array  the array which should be written on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write to
-	 * @param <T> type of the array
+	 * @param <T>    type of the array
 	 * @throws IOException if an I/O error occurs
+	 * @see #write(Object, Writer)
 	 * @since 1.0.0
 	 */
 	public static <T> void write(T[] array, Writer writer) throws IOException {
@@ -494,8 +504,9 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode a {@linkplain Collection} into JSON text and write it to a {@linkplain Writer}.
+	 *
 	 * @param collection the {@linkplain Collection} which should be written on the {@linkplain Writer}
-	 * @param writer the {@linkplain Writer} to write to
+	 * @param writer     the {@linkplain Writer} to write to
 	 * @throws IOException if an I/O error occurs
 	 * @since 1.0.0
 	 */
@@ -530,7 +541,8 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Convert a {@linkplain Map} to a JSON string and write it on a {@linkplain Writer}. This method will not close or flush the given {@linkplain Writer}!
-	 * @param map the {@linkplain Map} to write
+	 *
+	 * @param map    the {@linkplain Map} to write
 	 * @param writer the {@linkplain Writer} to which the {@linkplain Map} should be written to
 	 * @throws IOException if an I/O error occurs
 	 * @since 1.0.0
@@ -565,7 +577,8 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Encode an {@linkplain Object} into JSON text and write it to a {@linkplain Writer}.
-	 * @param value the {@linkplain Object} to write on the {@linkplain Writer}
+	 *
+	 * @param value  the {@linkplain Object} to write on the {@linkplain Writer}
 	 * @param writer the {@linkplain Writer} to write on.
 	 * @throws IOException if an I/O error occurs
 	 * @since 1.0.0
@@ -628,6 +641,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain JSONObject}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -645,6 +659,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain JSONArray}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -680,6 +695,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Boolean}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -699,6 +715,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Byte}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -718,6 +735,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Short}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -737,6 +755,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Integer}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -756,6 +775,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Long}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -775,6 +795,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Float}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -794,6 +815,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Double}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -813,6 +835,7 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain String}.
+	 *
 	 * @param value the value that should be parsed
 	 * @return the parsed value, or {@code null} if it could not be parsed
 	 * @since 1.0.0
@@ -827,7 +850,8 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an instance of {@linkplain Date}.
-	 * @param value the value that should be parsed
+	 *
+	 * @param value  the value that should be parsed
 	 * @param format the {@linkplain DateFormat} that should be used to parse the value
 	 * @return an instance of {@linkplain Date} or {@code null} if the input value was already {@code null}
 	 * @throws ParseException if the value could not be parsed to an instance of {@linkplain Date}
@@ -843,9 +867,10 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Tries to parse a value to an enum.
+	 *
 	 * @param value the value that should be parsed
-	 * @param type the enum class
-	 * @param <T> the enum type
+	 * @param type  the enum class
+	 * @param <T>   the enum type
 	 * @return the enum or {@code null} if the value could not be parsed
 	 * @since 1.0.0
 	 */
@@ -861,7 +886,8 @@ public final class JsonSimpleUtil {
 
 	/**
 	 * Escapes a string according to the <a href="https://tools.ietf.org/html/rfc7159#section-8.1">JSON specification</a>.
-	 * @param string the string which should be escaped
+	 *
+	 * @param string  the string which should be escaped
 	 * @param builder the {@linkplain StringBuilder} on which the result will be written
 	 * @since 1.0.0
 	 */
@@ -889,8 +915,8 @@ public final class JsonSimpleUtil {
 			else if (character == '/')
 				builder.append("\\/");
 			else if (character >= '\u0000' && character <= '\u001F' ||
-					character >= '\u007F' && character <= '\u009F' ||
-					character >= '\u2000' && character <= '\u20FF') {
+				character >= '\u007F' && character <= '\u009F' ||
+				character >= '\u2000' && character <= '\u20FF') {
 
 				final String hex = Integer.toHexString(character);
 				builder.append("\\u");

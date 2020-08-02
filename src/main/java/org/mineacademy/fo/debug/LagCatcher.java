@@ -1,13 +1,13 @@
 package org.mineacademy.fo.debug;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A simple yet effective way to calculate duration
@@ -98,7 +98,7 @@ public final class LagCatcher {
 	/**
 	 * Stops measuring time in a code section and print a custom console message
 	 * when it took over the given threshold
-	 *
+	 * <p>
 	 * Use {section} and {time} to replace the debugged section and how long it took
 	 *
 	 * @param section
@@ -121,7 +121,7 @@ public final class LagCatcher {
 
 	/**
 	 * Returns the time in milliseconds how long a measured section section took.
-	 *
+	 * <p>
 	 * This does NOT stop the section from being measured.
 	 *
 	 * @param section
@@ -139,7 +139,7 @@ public final class LagCatcher {
 	 * execution takes when it is multiplied
 	 *
 	 * @param cycles
-	 * @param name the lag section name
+	 * @param name   the lag section name
 	 * @param code
 	 */
 	public static void testPerformance(int cycles, String name, Runnable code) {

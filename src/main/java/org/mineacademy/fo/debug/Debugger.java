@@ -1,12 +1,9 @@
 package org.mineacademy.fo.debug;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -17,10 +14,8 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.File;
+import java.util.*;
 
 /**
  * Utility class for solving problems and errors
@@ -56,7 +51,7 @@ public final class Debugger {
 
 	/**
 	 * Prints a debug messages to the console if the given section is being debugged
-	 *
+	 * <p>
 	 * You can set if the section is debugged by setting it in "Debug" key in your settings.yml,
 	 * by default your class extending {@link SimpleSettings}
 	 *
@@ -127,10 +122,10 @@ public final class Debugger {
 
 	/**
 	 * Get if the given section is being debugged
-	 *
+	 * <p>
 	 * You can set if the section is debugged by setting it in "Debug" key in your settings.yml,
 	 * by default your class extending {@link SimpleSettings}
-	 *
+	 * <p>
 	 * If you set Debug to ["*"] this will always return true
 	 *
 	 * @param section
@@ -159,11 +154,11 @@ public final class Debugger {
 
 		// Write out header and server info
 		fill(lines,
-				"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
-				header,
-				"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
-				"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),
-				"----------------------------------------------------------------------------------------------");
+			"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+			header,
+			"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
+			"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),
+			"----------------------------------------------------------------------------------------------");
 
 		// Write additional data
 		if (messages != null && !StringUtils.join(messages, "").isEmpty()) {
@@ -212,7 +207,7 @@ public final class Debugger {
 	/**
 	 * Print out where your method is being called from
 	 * Such as: YourClass > YourMainClass > MinecraftServer > Thread
-	 *
+	 * <p>
 	 * Also can print line numbers YourClass#LineNumber
 	 *
 	 * @param trackLineNumbers
@@ -276,7 +271,7 @@ public final class Debugger {
 
 	/**
 	 * Prints a Throwable's first line and stack traces.
-	 *
+	 * <p>
 	 * Ignores the native Bukkit/Minecraft server.
 	 *
 	 * @param throwable the throwable to print

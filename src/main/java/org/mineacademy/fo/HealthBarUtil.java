@@ -1,13 +1,12 @@
 package org.mineacademy.fo;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.mineacademy.fo.remain.Remain;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 /**
  * Utility class for displaying health bar above mobs.

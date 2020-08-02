@@ -1,5 +1,8 @@
 package org.mineacademy.fo.remain.nbt;
 
+
+import org.mineacademy.fo.remain.nbt.nmsmappings.ObjectCreator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,7 +12,6 @@ import java.io.IOException;
  * {@link NBTCompound} implementation backed by a {@link File}
  *
  * @author tr7zw
- *
  */
 public class NBTFile extends NBTCompound {
 
@@ -23,14 +25,15 @@ public class NBTFile extends NBTCompound {
 	 * @param file
 	 * @throws IOException
 	 */
-	public NBTFile(File file) throws IOException {
+	public NBTFile(final File file) throws IOException {
 		super(null, null);
+		if (file == null) throw new NullPointerException("File can't be null!");
 		this.file = file;
 		if (file.exists()) {
 			final FileInputStream inputsteam = new FileInputStream(file);
-			nbt = NBTReflectionUtil.readNBTFile(inputsteam);
+			nbt = NBTReflectionUtil.readNBT(inputsteam);
 		} else {
-			nbt = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
+			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 			save();
 		}
 	}
@@ -41,13 +44,18 @@ public class NBTFile extends NBTCompound {
 	 * @throws IOException
 	 */
 	public void save() throws IOException {
-		if (!file.exists()) {
-			file.getParentFile().mkdirs();
-			if (!file.createNewFile())
-				throw new IOException("Unable to create file at " + file.getAbsolutePath());
+		try {
+			getWriteLock().lock();
+			if (!file.exists()) {
+				file.getParentFile().mkdirs();
+				if (!file.createNewFile())
+					throw new IOException("Unable to create file at " + file.getAbsolutePath());
+			}
+			final FileOutputStream outStream = new FileOutputStream(file);
+			NBTReflectionUtil.writeNBT(nbt, outStream);
+		} finally {
+			getWriteLock().unlock();
 		}
-		final FileOutputStream outStream = new FileOutputStream(file);
-		NBTReflectionUtil.saveNBTFile(nbt, outStream);
 	}
 
 	/**
@@ -63,7 +71,7 @@ public class NBTFile extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(Object compound) {
+	protected void setCompound(final Object compound) {
 		nbt = compound;
 	}
 

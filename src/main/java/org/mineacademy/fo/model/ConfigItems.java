@@ -1,20 +1,19 @@
 package org.mineacademy.fo.model;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import lombok.NonNull;
+import lombok.Setter;
 import org.apache.commons.lang.WordUtils;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.settings.YamlConfig;
 
-import lombok.NonNull;
-import lombok.Setter;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A special class that can store loaded {@link YamlConfig} files
@@ -42,7 +41,7 @@ public final class ConfigItems<T extends YamlConfig> {
 
 	/**
 	 * The class we are loading in the list
-	 *
+	 * <p>
 	 * *MUST* have a private constructor without any arguments
 	 */
 	private final Class<T> prototypeClass;

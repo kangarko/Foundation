@@ -1,25 +1,16 @@
 /**
- * 	(c) 2013 - 2019 - All rights reserved.
- *
- *	Do not share, copy, reproduce or sell any part of this library
- *	unless you have written permission from MineAcademy.org.
- *	All infringements will be prosecuted.
- *
- *	If you are the personal owner of the MineAcademy.org End User License
- *	then you may use it for your own use in plugins but not for any other purpose.
+ * (c) 2013 - 2019 - All rights reserved.
+ * <p>
+ * Do not share, copy, reproduce or sell any part of this library
+ * unless you have written permission from MineAcademy.org.
+ * All infringements will be prosecuted.
+ * <p>
+ * If you are the personal owner of the MineAcademy.org End User License
+ * then you may use it for your own use in plugins but not for any other purpose.
  */
 package org.mineacademy.fo.plugin;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
+import lombok.Getter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -48,12 +39,7 @@ import org.mineacademy.fo.menu.tool.Rocket;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
-import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.EnchantmentListener;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.JavaScriptExecutor;
-import org.mineacademy.fo.model.SimpleEnchantment;
-import org.mineacademy.fo.model.SimpleScoreboard;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -63,7 +49,15 @@ import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.update.SpigotUpdater;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
-import lombok.Getter;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Represents a basic Java plugin using enhanced library functionality
@@ -87,7 +81,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Returns the instance of {@link SimplePlugin}.
-	 *
+	 * <p>
 	 * It is recommended to override this in your own {@link SimplePlugin}
 	 * implementation so you will get the instance of that, directly.
 	 *
@@ -260,7 +254,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			checkSingletons();
 
 			// Load our dependency system
-			HookManager.loadDependencies();
+			try {
+				HookManager.loadDependencies();
+			} catch (final Throwable throwable) {
+				Debugger.debug("Can't load dependencies");
+			}
 
 			if (!isEnabled || !isEnabled())
 				return;
@@ -320,7 +318,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				new Metrics(this, pluginId);
 
 			// Prepare Nashorn engine
-			JavaScriptExecutor.run("");
+			if (SimpleSettings.USE_JAVA_SCRIPT_ENGINE)
+				JavaScriptExecutor.run("");
 
 		} catch (final Throwable t) {
 			displayError0(t);
@@ -346,13 +345,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Scans your plugin and if your {@link Tool} or {@link SimpleEnchantment} class implements {@link Listener}
 	 * and has "instance" method to be a singleton, your events are registered there automatically
-	 *
+	 * <p>
 	 * If not, we only call the instance constructor in case there is any underlying registration going on
 	 */
 	private static void checkSingletons() {
 
 		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements(); ) {
 				final JarEntry jar = entry.nextElement();
 				final String name = jar.getName().replace("/", ".");
 
@@ -385,7 +384,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 								for (final Field field : clazz.getDeclaredFields())
 									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
-											&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
+										&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
 										instanceField = field;
 
 								if (SimpleEnchantment.class.isAssignableFrom(clazz))
@@ -451,7 +450,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * does not match this class' instance, which is most likely caused by wrong repackaging
 	 * or no repackaging at all (two plugins using Foundation must both have different packages
 	 * for their own Foundation version).
-	 *
+	 * <p>
 	 * Or, this is caused by a PlugMan, and we have no mercy for that.
 	 */
 	private final class ShadingException extends Throwable {
@@ -541,8 +540,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (minimumVersion != null && MinecraftVersion.olderThan(minimumVersion)) {
 			Common.logFramed(false,
-					getName() + " requires Minecraft " + minimumVersion + " or newer to run.",
-					"Please upgrade your server.");
+				getName() + " requires Minecraft " + minimumVersion + " or newer to run.",
+				"Please upgrade your server.");
 
 			return false;
 		}
@@ -552,9 +551,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (maximumVersion != null && MinecraftVersion.newerThan(maximumVersion)) {
 			Common.logFramed(false,
-					getName() + " requires Minecraft " + maximumVersion + " or older to run.",
-					"Please downgrade your server or",
-					"wait for the new version.");
+				getName() + " requires Minecraft " + maximumVersion + " or older to run.",
+				"Please downgrade your server or",
+				"wait for the new version.");
 
 			return false;
 		}
@@ -571,16 +570,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		Debugger.printStackTrace(throwable);
 
 		Common.log(
-				"&c  _   _                       _ ",
-				"&c  | | | | ___   ___  _ __  ___| |",
-				"&c  | |_| |/ _ \\ / _ \\| '_ \\/ __| |",
-				"&c  |  _  | (_) | (_) | |_) \\__ \\_|",
-				"&4  |_| |_|\\___/ \\___/| .__/|___(_)",
-				"&4                    |_|          ",
-				"&4!-----------------------------------------------------!",
-				" &cError loading " + getDescription().getName() + " v" + getDescription().getVersion() + ", plugin is disabled!",
-				" &cRunning on " + getServer().getBukkitVersion() + " (" + MinecraftVersion.getServerVersion() + ") & Java " + System.getProperty("java.version"),
-				"&4!-----------------------------------------------------!");
+			"&c  _   _                       _ ",
+			"&c  | | | | ___   ___  _ __  ___| |",
+			"&c  | |_| |/ _ \\ / _ \\| '_ \\/ __| |",
+			"&c  |  _  | (_) | (_) | |_) \\__ \\_|",
+			"&4  |_| |_|\\___/ \\___/| .__/|___(_)",
+			"&4                    |_|          ",
+			"&4!-----------------------------------------------------!",
+			" &cError loading " + getDescription().getName() + " v" + getDescription().getVersion() + ", plugin is disabled!",
+			" &cRunning on " + getServer().getBukkitVersion() + " (" + MinecraftVersion.getServerVersion() + ") & Java " + System.getProperty("java.version"),
+			"&4!-----------------------------------------------------!");
 
 		if (throwable instanceof InvalidConfigurationException) {
 			Common.log(" &cSeems like your config is not a valid YAML.");
@@ -699,7 +698,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Register your commands, events, tasks and files here.
-	 *
+	 * <p>
 	 * This is invoked when you start the plugin, call /reload, or the {@link #reload()}
 	 * method.
 	 */
@@ -910,7 +909,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * The the minimum MC version to run
-	 *
+	 * <p>
 	 * We will prevent loading it automatically if the server's version is
 	 * below the given one
 	 *
@@ -922,7 +921,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * The maximum MC version for this plugin to load
-	 *
+	 * <p>
 	 * We will prevent loading it automatically if the server's version is
 	 * above the given one
 	 *
@@ -934,7 +933,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Return your main setting classes extending {@link YamlStaticConfig}.
-	 *
+	 * <p>
 	 * TIP: Extend {@link SimpleSettings} and {@link SimpleLocalization}
 	 *
 	 * @return
@@ -974,7 +973,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * If you want to use bStats.org metrics system,
 	 * simply return the plugin ID (https://bstats.org/what-is-my-plugin-id)
 	 * here and we will automatically start tracking it.
-	 *
+	 * <p>
 	 * Defaults to -1 which means disabled
 	 *
 	 * @return
@@ -1004,7 +1003,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
-	 *
+	 * <p>
 	 * May impose a slight performance penalty but increases catches.
 	 *
 	 * @return
@@ -1015,7 +1014,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
-	 *
+	 * <p>
 	 * May impose a slight performance penalty but useful for non-English servers.
 	 *
 	 * @return
@@ -1047,8 +1046,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Use JavaScript variables/javascript.txt file
 	 *
-	 * @deprecated this feature has been removed
 	 * @return
+	 * @deprecated this feature has been removed
 	 */
 	@Deprecated
 	public boolean areScriptVariablesEnabled() {
@@ -1069,7 +1068,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * @deprecated DO NOT USE
-	 * 				Use {@link SimpleCommand#register()} instead for your commands
+	 * Use {@link SimpleCommand#register()} instead for your commands
 	 */
 	@Deprecated
 	@Override

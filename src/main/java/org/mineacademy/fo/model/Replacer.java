@@ -1,12 +1,7 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,15 +14,15 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * An elegant way to find {variables} and replace them.
- *
+ * <p>
  * Use {@link #find(String...)} method to find {} variables such as find("health") and then
  * replace them with {@link #replace(Object...)} with the objects such as replace(20)
- *
+ * <p>
  * Something like {@link String#format(String, Object...)} but more useful for Minecraft
  */
 @AllArgsConstructor
@@ -81,7 +76,7 @@ public final class Replacer {
 
 	/**
 	 * Attempts to replace key:value pairs automatically
-	 *
+	 * <p>
 	 * See {@link SerializedMap#ofArray(Object...)}
 	 *
 	 * @param associativeArray
@@ -106,7 +101,7 @@ public final class Replacer {
 
 	/**
 	 * Replaces stored variables with their counterparts
-	 *
+	 * <p>
 	 * Call this after {@link #find(String...)}!
 	 *
 	 * @param replacements

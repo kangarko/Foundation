@@ -1,8 +1,5 @@
 package org.mineacademy.fo.remain.internal;
 
-import java.util.HashMap;
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -24,14 +21,17 @@ import org.mineacademy.fo.remain.CompBarColor;
 import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 /**
  * The classes handling Boss Bar cross-server compatibility are based off of the
  * code by SoThatsIt.
- *
+ * <p>
  * http://forums.bukkit.org/threads/tutorial-utilizing-the-boss-health-bar.158018/page-2#post-1760928
  *
  * @deprecated internal use only, please use {@link Remain} to set the Boss
- *             bar
+ * bar
  */
 @Deprecated
 public class BossBarInternals implements Listener {
@@ -187,7 +187,6 @@ public class BossBarInternals implements Listener {
 	 * @param percent The percentage of the health bar filled.<br>
 	 *                This value must be between 0F (inclusive) and 100F
 	 *                (inclusive).
-	 *
 	 * @throws IllegalArgumentException If the percentage is not within valid
 	 *                                  bounds.
 	 */
@@ -231,7 +230,6 @@ public class BossBarInternals implements Listener {
 	 *                It will be cut to that size automatically.
 	 * @param seconds The amount of seconds displayed by the timer.<br>
 	 *                Supports values above 1 (inclusive).
-	 *
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
 	public static void setMessage(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {

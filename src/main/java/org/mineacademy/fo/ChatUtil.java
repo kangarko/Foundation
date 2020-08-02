@@ -1,16 +1,15 @@
 package org.mineacademy.fo;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
+
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 /**
  * Utility class for managing in-game chat.
@@ -52,7 +51,7 @@ public final class ChatUtil {
 	/**
 	 * Centers a message for padding {@link #CENTER_PX} with the given space character
 	 * colored by the given chat color, example:
-	 *
+	 * <p>
 	 * ================= My Centered Message ================= (if the space is '=')
 	 *
 	 * @param message

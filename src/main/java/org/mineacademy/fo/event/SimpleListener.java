@@ -1,12 +1,9 @@
 package org.mineacademy.fo.event;
 
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventException;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.plugin.EventExecutor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
@@ -14,8 +11,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.plugin.SimplePlugin;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * A simply way of allowing plugin to change the event listening priority

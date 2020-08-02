@@ -62,14 +62,14 @@ public final class MenuListener implements Listener {
 
 			final InventoryAction action = event.getAction();
 			final MenuClickLocation whereClicked = clickedInv != null
-					? clickedInv.getType() == InventoryType.CHEST ? MenuClickLocation.MENU
-							: MenuClickLocation.PLAYER_INVENTORY
-					: MenuClickLocation.OUTSIDE;
+				? clickedInv.getType() == InventoryType.CHEST ? MenuClickLocation.MENU
+				: MenuClickLocation.PLAYER_INVENTORY
+				: MenuClickLocation.OUTSIDE;
 
 			final boolean allowed = menu.isActionAllowed(whereClicked, event.getSlot(), slotItem, cursor);
 
 			if (action.toString().contains("PICKUP") || action.toString().contains("PLACE")
-					|| action.toString().equals("SWAP_WITH_CURSOR") || action == InventoryAction.CLONE_STACK) {
+				|| action.toString().equals("SWAP_WITH_CURSOR") || action == InventoryAction.CLONE_STACK) {
 				if (whereClicked == MenuClickLocation.MENU)
 					try {
 						final Button button = menu.getButton(slotItem);
@@ -78,11 +78,11 @@ public final class MenuListener implements Listener {
 							menu.onButtonClick(player, event.getSlot(), action, event.getClick(), button);
 						else
 							menu.onMenuClick(player, event.getSlot(), action, event.getClick(), cursor, slotItem,
-									!allowed);
+								!allowed);
 
 					} catch (final Throwable t) {
 						Common.tell(player,
-								"&cOups! There was a problem with this menu! Please contact the administrator to review the console for details.");
+							"&cOups! There was a problem with this menu! Please contact the administrator to review the console for details.");
 						player.closeInventory();
 
 						Common.error(t, "Error clicking in menu " + menu);
@@ -95,7 +95,7 @@ public final class MenuListener implements Listener {
 				}
 
 			} else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY
-					|| whereClicked != MenuClickLocation.PLAYER_INVENTORY) {
+				|| whereClicked != MenuClickLocation.PLAYER_INVENTORY) {
 				event.setResult(Result.DENY);
 
 				player.updateInventory();

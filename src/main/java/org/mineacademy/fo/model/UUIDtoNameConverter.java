@@ -1,15 +1,14 @@
 package org.mineacademy.fo.model;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import lombok.RequiredArgsConstructor;
+
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for connecting to Mojang servers to get the players name from a
@@ -43,10 +42,10 @@ public class UUIDtoNameConverter implements Callable<String> {
 	public String call() throws Exception {
 
 		final HttpURLConnection connection = (HttpURLConnection) new URL(
-				PROFILE_URL + uuid.toString().replace("-", "")).openConnection();
+			PROFILE_URL + uuid.toString().replace("-", "")).openConnection();
 		final JsonObject response = gson
-				.fromJson(new InputStreamReader(connection.getInputStream()),
-						JsonObject.class);
+			.fromJson(new InputStreamReader(connection.getInputStream()),
+				JsonObject.class);
 		final String name = response.get("name").getAsString();
 
 		if (name == null)

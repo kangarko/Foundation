@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import java.lang.reflect.Method;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
@@ -12,12 +12,11 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Method;
 
 /**
  * Wrapper for {@link Attribute}
- *
+ * <p>
  * See https://minecraft.gamepedia.com/Attribute for more information
  */
 @RequiredArgsConstructor
@@ -40,7 +39,7 @@ public enum CompAttribute {
 
 	/**
 	 * Movement speed of an Entity.
-	 *
+	 * <p>
 	 * For default values see https://minecraft.gamepedia.com/Attribute
 	 */
 	GENERIC_MOVEMENT_SPEED("generic.movementSpeed", "MOVEMENT_SPEED"),
@@ -52,7 +51,7 @@ public enum CompAttribute {
 
 	/**
 	 * Attack damage of an Entity.
-	 *
+	 * <p>
 	 * This attribute is not found on passive mobs and golems.
 	 */
 	GENERIC_ATTACK_DAMAGE("generic.attackDamage", "ATTACK_DAMAGE"),

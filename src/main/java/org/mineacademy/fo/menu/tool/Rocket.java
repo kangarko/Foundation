@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu.tool;
 
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -7,15 +8,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 
-import lombok.Getter;
-
 /**
  * A rocket is an extended {@link Tool}
  * that explodes when hit the ground.
- *
+ * <p>
  * Please use {@link #explode(Projectile, Location, float, boolean)} for calling
  * the explosion or call the {@link RocketExplosionEvent} manually.
- *
  */
 @Getter
 public abstract class Rocket extends Tool {
@@ -75,7 +73,7 @@ public abstract class Rocket extends Tool {
 	/**
 	 * Create a new rocket with the given projectile and its speed (1=normal, 5=insane, 10=max,buggy)
 	 * as well as the explosion power (1-30 although it bugs over 15 already) and if it should break blocks
-	 *
+	 * <p>
 	 * For explosion powers see https://minecraft.gamepedia.com/Explosion
 	 *
 	 * @param projectile
@@ -122,7 +120,7 @@ public abstract class Rocket extends Tool {
 	/**
 	 * From when you launch the projectile till the moment it hits the ground
 	 * there is a timer task going on for each server tick calling this method
-	 *
+	 * <p>
 	 * TIP: You can spawn special flying particles here
 	 *
 	 * @param projectile
@@ -144,7 +142,7 @@ public abstract class Rocket extends Tool {
 
 	/**
 	 * Called automatically when this rocket hits the ground.
-	 *
+	 * <p>
 	 * TIP: Call {@link #explode(Projectile, float, boolean)}
 	 *
 	 * @param projectile

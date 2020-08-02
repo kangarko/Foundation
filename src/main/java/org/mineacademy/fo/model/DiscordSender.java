@@ -1,7 +1,7 @@
 package org.mineacademy.fo.model;
 
-import java.util.Set;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -11,8 +11,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
 
 /**
  * Represents a Discord command sender for Discord integration

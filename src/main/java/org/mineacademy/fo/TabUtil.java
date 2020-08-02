@@ -1,15 +1,14 @@
 package org.mineacademy.fo;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Utility class for tab completion.
@@ -83,7 +82,7 @@ public final class TabUtil {
 
 		partialName = partialName.toLowerCase();
 
-		for (final Iterator<String> iterator = tab.iterator(); iterator.hasNext();) {
+		for (final Iterator<String> iterator = tab.iterator(); iterator.hasNext(); ) {
 			final String val = iterator.next();
 
 			if (!val.toLowerCase().startsWith(partialName))

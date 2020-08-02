@@ -1,15 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictSet;
-
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
 import github.scarsz.discordsrv.api.Subscribe;
@@ -20,6 +10,15 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictSet;
+
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public abstract class DiscordListener implements Listener {
 
@@ -78,7 +77,7 @@ public abstract class DiscordListener implements Listener {
 	/**
 	 * Checks if the given value is true, if not then sends a warning
 	 * message to Discord and removes the received message
-	 *
+	 * <p>
 	 * Your code will stop executing below if the boolean is false
 	 *
 	 * @param value
@@ -157,7 +156,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Convenience method for sending a message as the sender to a Discord channel
-	 *
+	 * <p>
 	 * Enhanced functionality is available for the player
 	 *
 	 * @param sender
@@ -236,10 +235,10 @@ public abstract class DiscordListener implements Listener {
 
 				} catch (final Throwable t) {
 					Common.error(t,
-							"Failed to handle DiscordSRV!",
-							"Sender: " + event.getAuthor().getName(),
-							"Channel: " + event.getChannel().getName(),
-							"Message: " + event.getMessage().getContentDisplay());
+						"Failed to handle DiscordSRV!",
+						"Sender: " + event.getAuthor().getName(),
+						"Channel: " + event.getChannel().getName(),
+						"Message: " + event.getMessage().getContentDisplay());
 				}
 		}
 	}

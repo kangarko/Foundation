@@ -1,27 +1,22 @@
 package org.mineacademy.fo.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map.Entry;
-
+import lombok.RequiredArgsConstructor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 
-import lombok.RequiredArgsConstructor;
+import java.sql.*;
+import java.util.Map.Entry;
 
 /**
  * Represents a simple MySQL database
- *
+ * <p>
  * Before running queries make sure to call connect() methods.
- *
+ * <p>
  * You can also override {@link #onConnected()} to run your code after the
  * connection has been established.
- *
+ * <p>
  * To use this class you must know the MySQL command syntax!
  */
 public class SimpleDatabase {
@@ -121,9 +116,9 @@ public class SimpleDatabase {
 			e.printStackTrace();
 
 			Common.logFramed(true,
-					"Failed to connect to MySQL database",
-					"URL: " + url,
-					"Error: " + e.getMessage());
+				"Failed to connect to MySQL database",
+				"URL: " + url,
+				"Error: " + e.getMessage());
 		}
 	}
 
@@ -137,7 +132,6 @@ public class SimpleDatabase {
 	}
 
 	/**
-	 *
 	 * Called automatically after the first connection has been established
 	 */
 	protected void onConnected() {
@@ -168,7 +162,7 @@ public class SimpleDatabase {
 
 	/**
 	 * Attempts to execute a new update query
-	 *
+	 * <p>
 	 * Make sure you called connect() first otherwise an error will be thrown
 	 *
 	 * @param sql
@@ -199,7 +193,7 @@ public class SimpleDatabase {
 
 	/**
 	 * Attempts to execute a new query
-	 *
+	 * <p>
 	 * Make sure you called connect() first otherwise an error will be thrown
 	 *
 	 * @param sql
@@ -232,7 +226,7 @@ public class SimpleDatabase {
 
 	/**
 	 * Attempts to return a prepared statement
-	 *
+	 * <p>
 	 * Make sure you called connect() first otherwise an error will be thrown
 	 *
 	 * @param sql
@@ -342,7 +336,7 @@ public class SimpleDatabase {
 
 		/**
 		 * The connecting URL, for example:
-		 *
+		 * <p>
 		 * jdbc:mysql://host:port/database
 		 */
 		private final String url;

@@ -78,33 +78,33 @@ public final class FoConstants {
 		/**
 		 * The header for data.db file
 		 */
-		public static final String[] DATA_FILE = new String[] {
-				"",
-				"This file stores various data you create via the plugin.",
-				"",
-				" ** THE FILE IS MACHINE GENERATED. PLEASE DO NOT EDIT **",
-				""
+		public static final String[] DATA_FILE = new String[]{
+			"",
+			"This file stores various data you create via the plugin.",
+			"",
+			" ** THE FILE IS MACHINE GENERATED. PLEASE DO NOT EDIT **",
+			""
 		};
 
 		/**
 		 * The header that is put into the file that has been automatically
 		 * updated and comments were lost
 		 */
-		public static String[] UPDATED_FILE = new String[] {
-				Common.configLine(),
-				"",
-				" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
-				" to " + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion(),
-				"",
-				" Unfortunatelly, due to how Bukkit saves all .yml files, it was not possible",
-				" preserve the documentation comments in your file. We apologize.",
-				"",
-				" If you'd like to view the default file, you can either:",
-				" a) Open the " + SimplePlugin.getSource().getName() + " with a WinRar or similar",
-				" b) or, visit: https://github.com/kangarko/" + SimplePlugin.getNamed() + "/wiki",
-				"",
-				Common.configLine(),
-				""
+		public static String[] UPDATED_FILE = new String[]{
+			Common.configLine(),
+			"",
+			" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
+			" to " + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion(),
+			"",
+			" Unfortunatelly, due to how Bukkit saves all .yml files, it was not possible",
+			" preserve the documentation comments in your file. We apologize.",
+			"",
+			" If you'd like to view the default file, you can either:",
+			" a) Open the " + SimplePlugin.getSource().getName() + " with a WinRar or similar",
+			" b) or, visit: https://github.com/kangarko/" + SimplePlugin.getNamed() + "/wiki",
+			"",
+			Common.configLine(),
+			""
 		};
 	}
 

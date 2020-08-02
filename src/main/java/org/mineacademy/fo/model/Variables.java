@@ -1,16 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,9 +14,15 @@ import org.mineacademy.fo.model.Variable.VariableScope;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * A simple engine that replaces lots of variables in a message.
- *
+ * <p>
  * Utilizes {@link FileReader}
  */
 public final class Variables {
@@ -53,7 +48,7 @@ public final class Variables {
 
 	/**
 	 * Variables added to Foundation by you or other plugins
-	 *
+	 * <p>
 	 * You take in a command sender (may/may not be a player) and output a replaced string.
 	 * The variable name (the key) is automatically surrounded by {} brackets
 	 */
@@ -87,7 +82,7 @@ public final class Variables {
 	 * Register a new variable. The variable will be found inside {} block so if you give the variable
 	 * name player_health it will be {player_health}. The function takes in a command sender (can be player)
 	 * and outputs the variable value.
-	 *
+	 * <p>
 	 * Please keep in mind we replace your variables AFTER PlaceholderAPI and Javascript variables
 	 *
 	 * @param variable
@@ -123,46 +118,42 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * @see #replace(VariableScope, String, CommandSender)
-	 *
 	 * @param messages
 	 * @param sender
 	 * @return
+	 * @see #replace(VariableScope, String, CommandSender)
 	 */
 	public static List<String> replaceAll(List<String> messages, CommandSender sender) {
 		return replaceAll(VariableScope.FORMAT, messages, sender);
 	}
 
 	/**
-	 * @see #replace(VariableScope, String, CommandSender)
-	 *
 	 * @param messages
 	 * @param sender
 	 * @return
+	 * @see #replace(VariableScope, String, CommandSender)
 	 */
 	public static List<String> replaceAll(List<String> messages, CommandSender sender, Map<String, Object> replacements) {
 		return replaceAll(VariableScope.FORMAT, messages, sender, replacements);
 	}
 
 	/**
-	 * @see #replace(VariableScope, String, CommandSender)
-	 *
 	 * @param scope
 	 * @param messages
 	 * @param sender
 	 * @return
+	 * @see #replace(VariableScope, String, CommandSender)
 	 */
 	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender) {
 		return Variables.replaceAll(scope, messages, sender, null);
 	}
 
 	/**
-	 * @see #replace(VariableScope, String, CommandSender)
-	 *
 	 * @param scope
 	 * @param messages
 	 * @param sender
 	 * @return
+	 * @see #replace(VariableScope, String, CommandSender)
 	 */
 	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender, Map<String, Object> replacements) {
 		final List<String> replaced = new ArrayList<>(messages); // Make a copy to ensure writeable
@@ -179,7 +170,7 @@ public final class Variables {
 	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
-	 *
+	 * <p>
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI.
 	 *
 	 * @param message
@@ -193,7 +184,7 @@ public final class Variables {
 	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders. We also replace custom replacements from the Map
-	 *
+	 * <p>
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI.
 	 *
 	 * @param message
@@ -205,12 +196,11 @@ public final class Variables {
 	}
 
 	/**
-	 *
-	 * @deprecated replacing custom variables has been removed
 	 * @param replaceCustom
 	 * @param message
 	 * @param sender
 	 * @return
+	 * @deprecated replacing custom variables has been removed
 	 */
 	@Deprecated
 	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
@@ -220,7 +210,7 @@ public final class Variables {
 	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
-	 *
+	 * <p>
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param scope
@@ -235,7 +225,7 @@ public final class Variables {
 	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
-	 *
+	 * <p>
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param scope
@@ -309,10 +299,10 @@ public final class Variables {
 
 				} catch (final Throwable t) {
 					Common.throwError(t,
-							"Failed to replace a custom variable!",
-							"Message: " + message,
-							"Variable: " + key,
-							"%error");
+						"Failed to replace a custom variable!",
+						"Message: " + message,
+						"Variable: " + key,
+						"%error");
 				}
 		}
 
@@ -370,7 +360,7 @@ public final class Variables {
 
 	/**
 	 * Replaces the given variable with a few hardcoded within the plugin, see below
-	 *
+	 * <p>
 	 * Also, if the variable ends with +, we insert a space after it if it is not empty
 	 *
 	 * @param variable
@@ -508,9 +498,9 @@ public final class Variables {
 	 */
 	private static Map<String, Map<String, String>> makeNewFastCache() {
 		return ExpiringMap.builder()
-				.maxSize(300)
-				.expiration(10, TimeUnit.MILLISECONDS)
-				.build();
+			.maxSize(300)
+			.expiration(10, TimeUnit.MILLISECONDS)
+			.build();
 	}
 
 	/**
@@ -521,8 +511,8 @@ public final class Variables {
 	 */
 	private static Map<String, String> makeNewCache() {
 		return ExpiringMap.builder()
-				.maxSize(300)
-				.expiration(1, TimeUnit.SECONDS)
-				.build();
+			.maxSize(300)
+			.expiration(1, TimeUnit.SECONDS)
+			.build();
 	}
 }

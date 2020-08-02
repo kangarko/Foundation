@@ -1,7 +1,6 @@
 package org.mineacademy.fo.menu.button;
 
-import java.util.concurrent.Callable;
-
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +10,7 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.Getter;
+import java.util.concurrent.Callable;
 
 /**
  * A button that opens another menu
@@ -21,7 +20,7 @@ public final class ButtonMenu extends Button {
 	/**
 	 * Sometimes you need to allocate data when you create the button,
 	 * but these data are not yet available when you make new instance of this button
-	 *
+	 * <p>
 	 * Use this helper to set them right before showing the button
 	 */
 	private final Callable<Menu> menuLateBind;
