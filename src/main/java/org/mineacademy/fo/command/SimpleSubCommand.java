@@ -1,13 +1,12 @@
 package org.mineacademy.fo.command;
 
-import java.util.Arrays;
-
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.plugin.SimplePlugin;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.plugin.SimplePlugin;
+
+import java.util.Arrays;
 
 /**
  * A simple subcommand belonging to a {@link SimpleCommandGroup}

@@ -203,14 +203,11 @@
  */
 package org.mineacademy.fo.jsonsimple;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * Can format and minimize JSON data.
+ *
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -235,6 +232,7 @@ public class JSONFormatter {
 	/**
 	 * Constructs a new {@linkplain JSONFormatter}.
 	 * Default indent is {@code 1} and tabulators will be used for the indent.
+	 *
 	 * @since 2.0.0
 	 */
 	public JSONFormatter() {
@@ -253,6 +251,7 @@ public class JSONFormatter {
 
 	/**
 	 * Sets whether a CRLF or a LF line break should be used.
+	 *
 	 * @param crlf {@code true} = CRLF, {@code false} = LF
 	 * @since 2.0.0
 	 */
@@ -263,6 +262,7 @@ public class JSONFormatter {
 
 	/**
 	 * Sets whether a tabulator or space should be used for the indent.
+	 *
 	 * @param tabs {@code true} = tabulator, {@code false} = space
 	 * @since 2.0.0
 	 */
@@ -273,6 +273,7 @@ public class JSONFormatter {
 
 	/**
 	 * Sets the indent.
+	 *
 	 * @param indent the indent
 	 * @since 2.0.0
 	 */
@@ -283,6 +284,7 @@ public class JSONFormatter {
 
 	/**
 	 * Formats minimized JSON data. Do not try to format already formatted JSON. The result does not look good.
+	 *
 	 * @param reader the {@linkplain Reader} with the JSON data
 	 * @param writer the {@linkplain Writer} on which the formatted JSON data should be written
 	 * @throws IOException if an I/O error occurs
@@ -340,6 +342,7 @@ public class JSONFormatter {
 
 	/**
 	 * Formats minimized JSON data. Do not try to format already formatted JSON. The result does not look good.
+	 *
 	 * @param json the JSON data that should be formatted
 	 * @return the formatted JSON data
 	 * @since 1.0.0
@@ -351,7 +354,7 @@ public class JSONFormatter {
 		// ====
 
 		try (StringReader reader = new StringReader(json);
-				StringWriter writer = new StringWriter()) {
+		     StringWriter writer = new StringWriter()) {
 
 			this.format(reader, writer);
 			return writer.toString();
@@ -367,6 +370,7 @@ public class JSONFormatter {
 
 	/**
 	 * Minimizes formatted JSON data.
+	 *
 	 * @param reader the {@linkplain Reader} with the formatted JSON data
 	 * @param writer the {@linkplain Writer} on which the minimized JSON data should be written
 	 * @throws IOException if an I/O error occurs
@@ -387,11 +391,11 @@ public class JSONFormatter {
 			final char character = (char) read;
 
 			if (character != '\n' &&
-					character != '\t' &&
-					character != '\r' &&
-					character != '\b' &&
-					character != '\0' &&
-					character != '\f') {
+				character != '\t' &&
+				character != '\r' &&
+				character != '\b' &&
+				character != '\0' &&
+				character != '\f') {
 
 				if (character == '"')
 					inString = !(inString && lastChar != '\\');
@@ -406,6 +410,7 @@ public class JSONFormatter {
 
 	/**
 	 * Minimizes formatted JSON data.
+	 *
 	 * @param json the formatted JSON data
 	 * @return the minimized JSON data
 	 * @since 1.0.0
@@ -417,7 +422,7 @@ public class JSONFormatter {
 		// ====
 
 		try (StringReader reader = new StringReader(json);
-				StringWriter writer = new StringWriter()) {
+		     StringWriter writer = new StringWriter()) {
 
 			this.minimize(reader, writer);
 			return writer.toString();

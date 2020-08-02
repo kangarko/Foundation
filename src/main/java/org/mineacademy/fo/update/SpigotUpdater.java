@@ -1,16 +1,6 @@
 package org.mineacademy.fo.update;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -18,7 +8,12 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.Getter;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * A simple class performing an update check for Spigot free and premium resources
@@ -59,8 +54,8 @@ public class SpigotUpdater implements Runnable {
 	 * Initializes a new instance.
 	 *
 	 * @param resourceId the id of the plugin at Spigot's page.
-	 * @param download should we attempt to download new versions automatically?
-	 * 		  PLEASE NOTE YOU CAN ONLY DOWNLOAD FREE RESOURCES FROM SPIGOT NOT PREMIUM
+	 * @param download   should we attempt to download new versions automatically?
+	 *                   PLEASE NOTE YOU CAN ONLY DOWNLOAD FREE RESOURCES FROM SPIGOT NOT PREMIUM
 	 */
 	public SpigotUpdater(final int resourceId, final boolean download) {
 		this.resourceId = resourceId;
@@ -136,7 +131,7 @@ public class SpigotUpdater implements Runnable {
 
 	/**
 	 * Return if the current version is suitable for upgrading from.
-	 *
+	 * <p>
 	 * By default we do not update if it contains SNAPSHOT or DEV.
 	 *
 	 * @param currentVersion
@@ -148,7 +143,7 @@ public class SpigotUpdater implements Runnable {
 
 	/**
 	 * Return if the new version is suitable for upgrading to.
-	 *
+	 * <p>
 	 * By default we do not update if it contains SNAPSHOT or DEV.
 	 *
 	 * @param newVersion
@@ -209,7 +204,7 @@ public class SpigotUpdater implements Runnable {
 
 	/**
 	 * Returns the update message, by default {@link SimpleLocalization.Update#AVAILABLE}
-	 *
+	 * <p>
 	 * To change this message change your localization and refer to {@link #replaceVariables(String)} method
 	 *
 	 * @return
@@ -220,7 +215,7 @@ public class SpigotUpdater implements Runnable {
 
 	/**
 	 * Returns the download success message, by default {@link SimpleLocalization.Update#DOWNLOADED}
-	 *
+	 * <p>
 	 * To change this message change your localization and refer to {@link #replaceVariables(String)} method
 	 *
 	 * @return
@@ -238,13 +233,13 @@ public class SpigotUpdater implements Runnable {
 	 */
 	protected String replaceVariables(final String message) {
 		return message
-				.replace("{resourceId}", resourceId + "") // DEPRECATED
-				.replace("{resource_id}", resourceId + "")
-				.replace("{plugin.name}", SimplePlugin.getNamed()) // DEPRECATED
-				.replace("{plugin_name}", SimplePlugin.getNamed())
-				.replace("{new}", newVersion)
-				.replace("{curr}", SimplePlugin.getVersion()) // DEPRECATED
-				.replace("{current}", SimplePlugin.getVersion())
-				.replace("{user_id}", "%%__USER__%%");
+			.replace("{resourceId}", resourceId + "") // DEPRECATED
+			.replace("{resource_id}", resourceId + "")
+			.replace("{plugin.name}", SimplePlugin.getNamed()) // DEPRECATED
+			.replace("{plugin_name}", SimplePlugin.getNamed())
+			.replace("{new}", newVersion)
+			.replace("{curr}", SimplePlugin.getVersion()) // DEPRECATED
+			.replace("{current}", SimplePlugin.getVersion())
+			.replace("{user_id}", "%%__USER__%%");
 	}
 }

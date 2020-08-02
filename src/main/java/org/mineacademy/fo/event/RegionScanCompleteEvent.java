@@ -1,11 +1,10 @@
 package org.mineacademy.fo.event;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.World;
 import org.bukkit.event.HandlerList;
 import org.mineacademy.fo.model.OfflineRegionScanner;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Triggered when {@link OfflineRegionScanner} finishes scanning all offline regions on your disk

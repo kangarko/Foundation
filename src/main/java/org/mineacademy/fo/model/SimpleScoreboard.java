@@ -1,12 +1,6 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import lombok.*;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,11 +19,11 @@ import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 public class SimpleScoreboard {
 
@@ -76,7 +70,7 @@ public class SimpleScoreboard {
 
 	/**
 	 * The color theme for key: value pairs such as
-	 *
+	 * <p>
 	 * Players: 12
 	 * Mode: playing
 	 */
@@ -189,7 +183,7 @@ public class SimpleScoreboard {
 	 * @param thatContains
 	 */
 	public final void removeRow(final String thatContains) {
-		for (final Iterator<String> it = rows.iterator(); it.hasNext();) {
+		for (final Iterator<String> it = rows.iterator(); it.hasNext(); ) {
 			final String row = it.next();
 
 			if (row.contains(thatContains))
@@ -218,10 +212,10 @@ public class SimpleScoreboard {
 					final String lines = String.join(" ", rows);
 
 					Common.error(t,
-							"Error displaying " + SimpleScoreboard.this,
-							"Entries: " + lines,
-							"%error",
-							"Stopping rendering for safety.");
+						"Error displaying " + SimpleScoreboard.this,
+						"Entries: " + lines,
+						"%error",
+						"Stopping rendering for safety.");
 
 					stop();
 				}
@@ -306,10 +300,10 @@ public class SimpleScoreboard {
 
 	/**
 	 * Set the coloring theme for rows having : such as
-	 *
+	 * <p>
 	 * Players: 12
 	 * Mode: playing
-	 *
+	 * <p>
 	 * To use simply put color codes
 	 *
 	 * @param primary
@@ -370,7 +364,7 @@ public class SimpleScoreboard {
 	 * Stops this scoreboard and removes it from all viewers
 	 */
 	public final void stop() {
-		for (final Iterator<ViewedScoreboard> iterator = scoreboards.iterator(); iterator.hasNext();) {
+		for (final Iterator<ViewedScoreboard> iterator = scoreboards.iterator(); iterator.hasNext(); ) {
 			final ViewedScoreboard score = iterator.next();
 
 			score.getViewer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());

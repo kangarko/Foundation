@@ -5,7 +5,7 @@ import org.mineacademy.fo.Valid;
 /**
  * An extension of {@link YamlConfig} useful when you want to separate
  * your settings classes but they all use the same file.
- *
+ * <p>
  * Example: CoreArena plugin uses classes and arenas, both save data in the data.db
  * file but have different section in that file.
  */

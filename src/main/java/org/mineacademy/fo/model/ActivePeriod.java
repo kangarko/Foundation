@@ -1,10 +1,9 @@
 package org.mineacademy.fo.model;
 
-import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.exception.FoException;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.exception.FoException;
 
 /**
  * Represents a period between two points,
@@ -68,7 +67,7 @@ public final class ActivePeriod implements ConfigSerializable {
 
 	/**
 	 * Return the active period formatted, e.g.:
-	 *
+	 * <p>
 	 * "from 5 - 4" or "on 5"
 	 *
 	 * @return
@@ -79,7 +78,7 @@ public final class ActivePeriod implements ConfigSerializable {
 
 	/**
 	 * Return the two points formatted, e.g.:
-	 *
+	 * <p>
 	 * "4 - 5" or only singular: "7"
 	 *
 	 * @return

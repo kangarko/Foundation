@@ -5,7 +5,6 @@ package org.mineacademy.fo.remain.nbt;
  * NBTAPI.
  *
  * @author tr7zw
- *
  */
 public class NbtApiException extends RuntimeException {
 
@@ -27,7 +26,7 @@ public class NbtApiException extends RuntimeException {
 	 * @param enableSuppression
 	 * @param writableStackTrace
 	 */
-	public NbtApiException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	public NbtApiException(final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
@@ -35,21 +34,21 @@ public class NbtApiException extends RuntimeException {
 	 * @param message
 	 * @param cause
 	 */
-	public NbtApiException(String message, Throwable cause) {
+	public NbtApiException(final String message, final Throwable cause) {
 		super(message, cause);
 	}
 
 	/**
 	 * @param message
 	 */
-	public NbtApiException(String message) {
+	public NbtApiException(final String message) {
 		super(message);
 	}
 
 	/**
 	 * @param cause
 	 */
-	public NbtApiException(Throwable cause) {
+	public NbtApiException(final Throwable cause) {
 		super(cause);
 	}
 

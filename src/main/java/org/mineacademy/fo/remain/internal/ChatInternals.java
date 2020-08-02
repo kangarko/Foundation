@@ -1,10 +1,5 @@
 package org.mineacademy.fo.remain.internal;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.regex.Matcher;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
@@ -15,6 +10,11 @@ import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.remain.Remain;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.regex.Matcher;
 
 /**
  * Reflection class for handling chat-related methods

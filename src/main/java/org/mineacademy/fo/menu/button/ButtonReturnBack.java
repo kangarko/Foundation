@@ -1,8 +1,6 @@
 package org.mineacademy.fo.menu.button;
 
-import java.util.Arrays;
-import java.util.List;
-
+import lombok.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -10,11 +8,8 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents a standardized button that will return back to the parent menu
@@ -52,7 +47,7 @@ public final class ButtonReturnBack extends Button {
 
 	/**
 	 * Should we make a new instance of the parent menu?
-	 *
+	 * <p>
 	 * False by default.
 	 */
 	private boolean makeNewInstance = false;

@@ -1,10 +1,10 @@
 package org.mineacademy.fo.remain.internal;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
 import org.bukkit.Location;
 import org.mineacademy.fo.ReflectionUtil;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * Represents a fake dragon entity for Minecraft 1.7.x
@@ -69,7 +69,7 @@ class v1_7 extends EnderDragonEntity {
 			packet = PacketPlayOutEntityDestroy.newInstance();
 			final Field a = PacketPlayOutEntityDestroy.getDeclaredField("a");
 			a.setAccessible(true);
-			a.set(packet, new int[] { id });
+			a.set(packet, new int[]{id});
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}

@@ -1,17 +1,11 @@
 package org.mineacademy.fo.conversation;
 
-import org.bukkit.conversations.Conversable;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.ConversationPrefix;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.ValidatingPrompt;
+import lombok.SneakyThrows;
+import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.Menu;
-
-import lombok.SneakyThrows;
 
 /**
  * Represents one question for the player during a server conversation
@@ -74,7 +68,6 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 *
 	 * @param context
 	 * @param input
-	 *
 	 * @return
 	 */
 	@Override
@@ -174,7 +167,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 
 	/**
 	 * Shows this prompt as a conversation to the player
-	 *
+	 * <p>
 	 * NB: Do not call this as a means to showing this prompt DURING AN EXISTING
 	 * conversation as it will fail! Use {@link #acceptValidatedInput(ConversationContext, String)} instead
 	 * to show the next prompt

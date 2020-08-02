@@ -208,6 +208,7 @@ import java.util.Map;
 
 /**
  * Contains some utility methods for JSON related stuff.
+ *
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 2.0.0
@@ -219,6 +220,7 @@ public final class JSONUtil {
 
 	/**
 	 * Escape quotes, \, /, \r, \n, \b, \f, \t and other control characters (U+0000 through U+001F).
+	 *
 	 * @param string the {@linkplain String} you want to escape
 	 * @return the escaped {@linkplain String}
 	 * @since 1.0.0
@@ -237,6 +239,7 @@ public final class JSONUtil {
 
 	/**
 	 * Checks if a value is a JSON compatible type.
+	 *
 	 * @param value the value that should be checked
 	 * @return {@code true} if the given value is a JSON compatible type, else {@code false}
 	 * @since 2.0.0
@@ -244,11 +247,11 @@ public final class JSONUtil {
 	public static boolean isJSONType(Object value) {
 
 		return value == null ||
-				value instanceof Number ||
-				value instanceof String ||
-				value instanceof Boolean ||
-				value instanceof Collection ||
-				value instanceof Map ||
-				value.getClass().isArray();
+			value instanceof Number ||
+			value instanceof String ||
+			value instanceof Boolean ||
+			value instanceof Collection ||
+			value instanceof Map ||
+			value.getClass().isArray();
 	}
 }

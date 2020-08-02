@@ -1,15 +1,13 @@
 package org.mineacademy.fo.bungee.message;
 
+import com.google.common.primitives.Primitives;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.plugin.SimplePlugin;
-
-import com.google.common.primitives.Primitives;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a in/out message with a given action and server name
@@ -87,7 +85,7 @@ abstract class Message {
 	/**
 	 * Ensures we are reading in the correct order as the given {@link BungeeAction}
 	 * specifies in its {@link BungeeAction#getContent()} getter.
-	 *
+	 * <p>
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).
 	 *

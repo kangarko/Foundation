@@ -1,24 +1,6 @@
 package org.mineacademy.fo.settings;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
+import lombok.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -26,34 +8,27 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
-import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.BoxedMessage;
-import org.mineacademy.fo.model.ConfigSerializable;
-import org.mineacademy.fo.model.Replacer;
-import org.mineacademy.fo.model.SimpleSound;
-import org.mineacademy.fo.model.SimpleTime;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
  * The core configuration class. Manages all settings files.
@@ -126,7 +101,9 @@ public class YamlConfig implements ConfigSerializable {
 	protected YamlConfig() {
 	}
 
-	/** Clear the list of loaded files */
+	/**
+	 * Clear the list of loaded files
+	 */
 	public static final void clearLoadedFiles() {
 		loadedFiles.clear();
 	}
@@ -302,9 +279,9 @@ public class YamlConfig implements ConfigSerializable {
 
 			} catch (final Exception ex) {
 				Common.throwError(ex,
-						"Error loading configuration in " + getFileName() + "!",
-						"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
-						"Problem: " + ex + " (see below for more)");
+					"Error loading configuration in " + getFileName() + "!",
+					"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
+					"Problem: " + ex + " (see below for more)");
 
 				//Remain.sneaky(ex);
 			}
@@ -315,7 +292,9 @@ public class YamlConfig implements ConfigSerializable {
 		saveIfNecessary0();
 	}
 
-	/** Saves the file if changes have been made */
+	/**
+	 * Saves the file if changes have been made
+	 */
 	private void saveIfNecessary0() {
 
 		// We want to save the file if the save is pending or if there are no defaults
@@ -361,7 +340,9 @@ public class YamlConfig implements ConfigSerializable {
 		return line;
 	}
 
-	/** Called after the settings file has been loaded. */
+	/**
+	 * Called after the settings file has been loaded.
+	 */
 	protected void onLoadFinish() {
 	}
 
@@ -416,7 +397,9 @@ public class YamlConfig implements ConfigSerializable {
 	// Main manipulation methods
 	// ------------------------------------------------------------------------------------
 
-	/** Saves the content of this config into the file */
+	/**
+	 * Saves the content of this config into the file
+	 */
 	public final void save() {
 
 		if (loading) {
@@ -439,11 +422,15 @@ public class YamlConfig implements ConfigSerializable {
 		rewriteVariablesIn(instance.getFile());
 	}
 
-	/** Called automatically when the file is saved */
+	/**
+	 * Called automatically when the file is saved
+	 */
 	protected void onSave() {
 	}
 
-	/** Removes the file on the disk */
+	/**
+	 * Removes the file on the disk
+	 */
 	public final void delete() {
 		instance.delete();
 	}
@@ -983,9 +970,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param type
 	 * @return
 	 * @see #getList(String, Class), except that this method never returns null,
-	 *      instead, if the key is not present, we return an empty set instead of
-	 *      null
-	 *
+	 * instead, if the key is not present, we return an empty set instead of
+	 * null
 	 * @deprecated use {@link #getSet(String, Class)} for the same behavior
 	 */
 	@Deprecated
@@ -1184,7 +1170,7 @@ public class YamlConfig implements ConfigSerializable {
 	/**
 	 * Load a map with preserved order from the given path. Each key in the map
 	 * must match the given key/value type and will be deserialized
-	 *
+	 * <p>
 	 * We will add defaults if applicable
 	 *
 	 * @param <Key>
@@ -1193,7 +1179,6 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param keyType
 	 * @param valueType
 	 * @param valueParameter
-	 *
 	 * @return
 	 */
 	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
@@ -1239,7 +1224,6 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @param listType
 	 * @return
-	 *
 	 * @deprecated platform-specific code
 	 */
 	@Deprecated
@@ -1496,11 +1480,18 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param pathAbs
 	 * @param type
 	 */
-	private void addDefaultIfNotExist(final String pathAbs, final Class<?> type) {
+	public void addDefaultIfNotExist(final String pathAbs, final Class<?> type) {
 		if (usingDefaults && getDefaults() != null && !isSetAbsolute(pathAbs)) {
 			final Object object = getDefaults().get(pathAbs);
 
-			Valid.checkNotNull(object, "Default '" + getFileName() + "' lacks " + Common.article(type.getSimpleName()) + " at '" + pathAbs + "'");
+			Valid.checkNotNull(object,
+				"Default '"
+					+ getFileName()
+					+ "' lacks "
+					+ Common.article(type.getSimpleName())
+					+ " at '"
+					+ pathAbs
+					+ "'");
 			checkAssignable(true, pathAbs, object, type);
 
 			checkAndFlagForSave(pathAbs, object);
@@ -1609,6 +1600,45 @@ public class YamlConfig implements ConfigSerializable {
 		return pathPrefix;
 	}
 
+	/**
+	 * Get a map assuming each key contains a map of string and objects
+	 */
+	@Deprecated
+	protected final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys_OLD(String path) {
+		Valid.checkNotNull(path, "Path cannot be null");
+		path = formPathPrefix(path);
+
+		// add default
+		if (getDefaults() != null && !getConfig().isSet(path)) {
+			Valid.checkBoolean(
+				getDefaults().isSet(path),
+				"Default '" + getFileName() + "' lacks a section at " + path);
+
+			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
+				for (final String setting : getDefaults()
+					.getConfigurationSection(path + "." + name)
+					.getKeys(false))
+					addDefaultIfNotExist(path + "." + name + "." + setting, Object.class);
+		}
+
+		Valid.checkBoolean(getConfig().isSet(path), "Malfunction copying default section to " + path);
+
+		// key, values assigned to the key
+		final TreeMap<String, LinkedHashMap<String, Object>> groups = new TreeMap<>();
+
+		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
+			// type, value (UNPARSED)
+			final LinkedHashMap<String, Object> valuesRaw = getMap(
+				path + "." + name,
+				String.class,
+				Object.class);
+
+			groups.put(name, valuesRaw);
+		}
+
+		return new LinkedHashMap<>(groups);
+	}
+
 	// ------------------------------------------------------------------------------------
 	// Classes helpers
 	// ------------------------------------------------------------------------------------
@@ -1621,13 +1651,19 @@ public class YamlConfig implements ConfigSerializable {
 		// Dead class
 	}
 
-	/** Represents a list of locations in the config */
+	/**
+	 * Represents a list of locations in the config
+	 */
 	public static final class LocationList implements Iterable<Location> {
 
-		/** The settings where we have these points */
+		/**
+		 * The settings where we have these points
+		 */
 		private final YamlConfig settings;
 
-		/** The list of locations */
+		/**
+		 * The list of locations
+		 */
 		private final List<Location> points;
 
 		/**
@@ -1763,7 +1799,7 @@ public class YamlConfig implements ConfigSerializable {
 
 			if (values.length != 3)
 				throw new FoException(
-						"Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
+					"Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
 
 			akuzativSg = values[0];
 			akuzativPl = values[1];
@@ -1789,7 +1825,9 @@ public class YamlConfig implements ConfigSerializable {
 		}
 	}
 
-	/** A simple helper class for storing title messages */
+	/**
+	 * A simple helper class for storing title messages
+	 */
 	public final class TitleHelper {
 		private final String title, subtitle;
 
@@ -1802,12 +1840,16 @@ public class YamlConfig implements ConfigSerializable {
 			this.subtitle = Common.colorize(subtitle);
 		}
 
-		/** Duration: 4 seconds + 2 second fade in */
+		/**
+		 * Duration: 4 seconds + 2 second fade in
+		 */
 		public void playLong(final Player player, final Function<String, String> replacer) {
 			play(player, 5, 4 * 20, 15, replacer);
 		}
 
-		/** Duration: 2 seconds + 1 second fade in */
+		/**
+		 * Duration: 2 seconds + 1 second fade in
+		 */
 		public void playShort(final Player player, final Function<String, String> replacer) {
 			play(player, 3, 2 * 20, 5, replacer);
 		}
@@ -1828,13 +1870,19 @@ public class YamlConfig implements ConfigSerializable {
 @RequiredArgsConstructor
 class ConfigInstance {
 
-	/** The file this configuration belongs to. */
+	/**
+	 * The file this configuration belongs to.
+	 */
 	private final File file;
 
-	/** Our config we are manipulating. */
+	/**
+	 * Our config we are manipulating.
+	 */
 	private final YamlConfiguration config;
 
-	/** The default config we reach out to fill values from. */
+	/**
+	 * The default config we reach out to fill values from.
+	 */
 	private final YamlConfiguration defaultConfig;
 
 	/**
@@ -1879,7 +1927,9 @@ class ConfigInstance {
 		config.load(file);
 	}
 
-	/** Removes the config file from the disk */
+	/**
+	 * Removes the config file from the disk
+	 */
 	protected void delete() {
 		YamlConfig.unregisterLoadedFile(file);
 
@@ -1922,7 +1972,7 @@ class ConfigInstance {
 /**
  * A special class holding what enum values we have in our configuration
  * that are incompatible with older Minecraft version.
- *
+ * <p>
  * If those are loaded we just forgive them and do not throw an error.
  */
 final class LegacyEnum {

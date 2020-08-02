@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
-import javax.annotation.Nullable;
-
+import lombok.Getter;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -13,7 +12,7 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompEquipmentSlot;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.Getter;
+import javax.annotation.Nullable;
 
 /**
  * A more robust alternative to the {@link EntityEquipment} class found in Bukkit
@@ -130,37 +129,27 @@ public final class SimpleEquipment {
 				equipment.setHelmet(item);
 			if (dropChance != null)
 				equipment.setHelmetDropChance(dropChance);
-		}
-
-		else if (slot == CompEquipmentSlot.CHEST) {
+		} else if (slot == CompEquipmentSlot.CHEST) {
 			if (item != null)
 				equipment.setChestplate(item);
 			if (dropChance != null)
 				equipment.setChestplateDropChance(dropChance);
-		}
-
-		else if (slot == CompEquipmentSlot.LEGS) {
+		} else if (slot == CompEquipmentSlot.LEGS) {
 			if (item != null)
 				equipment.setLeggings(item);
 			if (dropChance != null)
 				equipment.setLeggingsDropChance(dropChance);
-		}
-
-		else if (slot == CompEquipmentSlot.FEET) {
+		} else if (slot == CompEquipmentSlot.FEET) {
 			if (item != null)
 				equipment.setBoots(item);
 			if (dropChance != null)
 				equipment.setBootsDropChance(dropChance);
-		}
-
-		else if (slot == CompEquipmentSlot.HAND) {
+		} else if (slot == CompEquipmentSlot.HAND) {
 			if (item != null)
 				equipment.setItemInHand(item);
 			if (dropChance != null)
 				equipment.setItemInHandDropChance(dropChance);
-		}
-
-		else if (slot.toString().equals("OFF_HAND"))
+		} else if (slot.toString().equals("OFF_HAND"))
 			try {
 				if (item != null)
 					equipment.setItemInOffHand(item);

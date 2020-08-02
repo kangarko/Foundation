@@ -1,9 +1,8 @@
 package org.mineacademy.fo;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.exception.FoException;
-
-import lombok.Getter;
 
 /**
  * Represents the current Minecraft version the plugin loaded on
@@ -25,7 +24,8 @@ public final class MinecraftVersion {
 	 * The version wrapper
 	 */
 	public enum V {
-		v1_16(16, false),
+		v1_17(17, false),
+		v1_16(16),
 		v1_15(15),
 		v1_14(14),
 		v1_13(13),
@@ -74,9 +74,9 @@ public final class MinecraftVersion {
 		/**
 		 * Attempts to get the version from number
 		 *
-		 * @throws RuntimeException if number not found
 		 * @param number
 		 * @return
+		 * @throws RuntimeException if number not found
 		 */
 		protected static V parse(int number) {
 			for (final V v : values())

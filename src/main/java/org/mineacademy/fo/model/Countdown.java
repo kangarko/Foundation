@@ -1,13 +1,12 @@
 package org.mineacademy.fo.model;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
-
-import lombok.AccessLevel;
-import lombok.Getter;
 
 /**
  * Represents a runnable timer task that counts down to 0 and stops
@@ -16,14 +15,14 @@ public abstract class Countdown implements Runnable {
 
 	/**
 	 * How long to wait before starting this countdown (in ticks)?
-	 *
+	 * <p>
 	 * Set to 1 second.
 	 */
 	private static final int START_DELAY = 20;
 
 	/**
 	 * How long to wait before ticking the next count (in ticks)?
-	 *
+	 * <p>
 	 * Set to 1 second.
 	 */
 	private static final int TICK_PERIOD = 20;
@@ -79,10 +78,10 @@ public abstract class Countdown implements Runnable {
 				}
 
 				Common.error(t,
-						"Error in countdown!",
-						"Seconds since start: " + secondsSinceStart,
-						"Counting till: " + countdownSeconds,
-						"%error");
+					"Error in countdown!",
+					"Seconds since start: " + secondsSinceStart,
+					"Counting till: " + countdownSeconds,
+					"%error");
 			}
 		else {
 			cancel();

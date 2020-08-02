@@ -1,8 +1,6 @@
 package org.mineacademy.fo.remain;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.Common;
@@ -11,7 +9,8 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A utility class enabling you to convert between {@link DyeColor} and {@link ChatColor} with ease
@@ -70,7 +69,7 @@ public enum CompColor {
 
 	/**
 	 * The brown color
-	 *
+	 * <p>
 	 * NB: This color does not have a {@link ChatColor} alternative,
 	 * so we give you GOLD chat color instead
 	 */
@@ -108,7 +107,7 @@ public enum CompColor {
 
 	/**
 	 * The pink color
-	 *
+	 * <p>
 	 * NB: This color does not have a {@link ChatColor} alternative,
 	 * so we give you LIGHT_PURPLE chat color instead
 	 */

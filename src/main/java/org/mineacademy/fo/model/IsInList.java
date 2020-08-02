@@ -1,18 +1,17 @@
 package org.mineacademy.fo.model;
 
-import java.util.Collection;
-
+import lombok.Getter;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
 
-import lombok.Getter;
+import java.util.Collection;
 
 /**
  * A simple class allowing you to match if something is in that list.
- *
+ * <p>
  * Example: The list contains "apple", "red", "car",
  * you call isInList("car") and you get true. Same for any other data type
- *
+ * <p>
  * If you create new IsInList("*") or with an empty list, everything will be matched
  *
  * @param <T>

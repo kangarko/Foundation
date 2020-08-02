@@ -216,7 +216,8 @@ import java.util.Map;
 
 /**
  * Represents a JSON object.
- * @author FangYidong(fangyidong@yahoo.com.cn)
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -232,6 +233,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 
 	/**
 	 * Constructs an empty {@linkplain JSONObject}
+	 *
 	 * @since 1.0.0
 	 */
 	public JSONObject() {
@@ -240,6 +242,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	/**
 	 * Allows creation of a {@linkplain JSONObject} from a {@linkplain Map}. After that, both the
 	 * generated {@linkplain JSONObject} and the {@linkplain Map} can be modified independently.
+	 *
 	 * @param map the {@linkplain Map} from which the {@linkplain JSONObject} should be created
 	 * @since 1.0.0
 	 */
@@ -250,6 +253,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONObject} from JSON data.
+	 *
 	 * @param json the JSON data
 	 * @throws JSONParseException if the JSON data is invalid
 	 * @since 1.0.0
@@ -261,8 +265,9 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 
 	/**
 	 * Constructs a {@linkplain JSONObject} with JSON data from a {@linkplain Reader}.
+	 *
 	 * @param reader the {@linkplain Reader} with the JSON data
-	 * @throws IOException if an I/O error occurred
+	 * @throws IOException        if an I/O error occurred
 	 * @throws JSONParseException if the JSON is invalid
 	 * @since 1.0.0
 	 */
@@ -273,6 +278,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 
 	/**
 	 * Writes this {@linkplain JSONObject} on a given {@linkplain Writer}.
+	 *
 	 * @param writer the {@linkplain Writer}
 	 * @throws IOException if an I/O error occurred
 	 * @since 1.0.0
@@ -303,6 +309,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain JSONObject} already, it will be casted and returned.
 	 * If the value is a {@linkplain Map}, it will be wrapped in a {@linkplain JSONObject}. The wrapped {@linkplain Map} will be returned.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain JSONObject} or {@code null}
 	 * @since 1.0.0
@@ -317,6 +324,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is an array or {@linkplain Collection}, it will be wrapped in a {@linkplain JSONArray}.
 	 * The result is returned.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain JSONArray} or {@code null}
 	 * @since 1.0.0
@@ -331,6 +339,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Number}, this method will return {@code true} in case its {@code long} value is {@code 1}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Boolean} or {@code null}
 	 * @since 1.0.0
@@ -345,6 +354,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Byte} or {@code null}
 	 * @since 1.0.0
@@ -359,6 +369,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Short} or {@code null}
 	 * @since 1.0.0
@@ -373,6 +384,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Integer} or {@code null}
 	 * @since 1.0.0
@@ -387,6 +399,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Long} or {@code null}
 	 * @since 1.0.0
@@ -401,6 +414,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Float} or {@code null}
 	 * @since 1.0.0
@@ -415,6 +429,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
 	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
 	 * In any other case this method returns {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain Double} or {@code null}
 	 * @since 1.0.0
@@ -427,6 +442,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	/**
 	 * Returns the same as the value's {@link Object#toString()} method.
 	 * If the actual value is {@code null}, this method will return {@code null}.
+	 *
 	 * @param key key of the value
 	 * @return a {@linkplain String} or {@code null}
 	 * @since 1.0.0
@@ -441,7 +457,8 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * Otherwise the result of the value's {@link Object#toString()} will be parsed by the given
 	 * {@linkplain DateFormat}. The result is returned.
 	 * If the actual value is {@code null}, this method will return {@code null}.
-	 * @param key key of the value
+	 *
+	 * @param key    key of the value
 	 * @param format the {@linkplain DateFormat} to parse the date with
 	 * @return a {@linkplain Date} or {@code null}
 	 * @throws ParseException if the date could not be parsed
@@ -456,9 +473,10 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 * If the {@linkplain String} representation of the value equals the name of the enum constant
 	 * in the given enum type, it will return the enum constant.
 	 * In any other case this method returns {@code null}.
-	 * @param key key of the value
+	 *
+	 * @param key  key of the value
 	 * @param type the enum type
-	 * @param <T> the generic return type
+	 * @param <T>  the generic return type
 	 * @return an {@linkplain Enum} or {@code null}
 	 * @since 1.0.0
 	 */

@@ -205,35 +205,52 @@ package org.mineacademy.fo.jsonsimple;
 
 /**
  * Represents a token.
- * @author FangYidong(fangyidong@yahoo.com.cn)
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
  */
 public class Yytoken {
 
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_VALUE = 0;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_LEFT_BRACE = 1;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_RIGHT_BRACE = 2;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_LEFT_SQUARE = 3;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_RIGHT_SQUARE = 4;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_COMMA = 5;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_COLON = 6;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int TYPE_EOF = -1;
 
 	public int type;
 	public Object value;
 
 	/**
-	 * @param type the token type
+	 * @param type  the token type
 	 * @param value the value of this token
 	 * @since 1.0.0
 	 */

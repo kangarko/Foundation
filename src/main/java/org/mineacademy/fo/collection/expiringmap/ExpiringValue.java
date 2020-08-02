@@ -29,7 +29,7 @@ public final class ExpiringValue<V> {
 	 * Creates an ExpiringValue to be stored in an {@link ExpiringMap}. The map's default
 	 * {@link ExpiringMap#getExpiration()} expiration} will be used.
 	 *
-	 * @param value the value to store
+	 * @param value            the value to store
 	 * @param expirationPolicy the expiration policy for the value
 	 * @see ExpiringMap#put(Object, Object, ExpirationPolicy)
 	 */
@@ -41,11 +41,11 @@ public final class ExpiringValue<V> {
 	 * Creates an ExpiringValue to be stored in an {@link ExpiringMap}. The map's default {@link ExpirationPolicy
 	 * expiration policy} will be used.
 	 *
-	 * @param value the value to store
+	 * @param value    the value to store
 	 * @param duration the length of time after an entry is created that it should be removed
 	 * @param timeUnit the unit that {@code duration} is expressed in
-	 * @see ExpiringMap#put(Object, Object, long, TimeUnit)
 	 * @throws NullPointerException on null timeUnit
+	 * @see ExpiringMap#put(Object, Object, long, TimeUnit)
 	 */
 	public ExpiringValue(V value, long duration, TimeUnit timeUnit) {
 		this(value, duration, timeUnit, null);
@@ -56,12 +56,12 @@ public final class ExpiringValue<V> {
 	/**
 	 * Creates an ExpiringValue to be stored in an {@link ExpiringMap}.
 	 *
-	 * @param value the value to store
-	 * @param duration the length of time after an entry is created that it should be removed
-	 * @param timeUnit the unit that {@code duration} is expressed in
+	 * @param value            the value to store
+	 * @param duration         the length of time after an entry is created that it should be removed
+	 * @param timeUnit         the unit that {@code duration} is expressed in
 	 * @param expirationPolicy the expiration policy for the value
-	 * @see ExpiringMap#put(Object, Object, ExpirationPolicy, long, TimeUnit)
 	 * @throws NullPointerException on null timeUnit
+	 * @see ExpiringMap#put(Object, Object, ExpirationPolicy, long, TimeUnit)
 	 */
 	public ExpiringValue(V value, ExpirationPolicy expirationPolicy, long duration, TimeUnit timeUnit) {
 		this(value, duration, timeUnit, expirationPolicy);
@@ -106,13 +106,13 @@ public final class ExpiringValue<V> {
 
 		final ExpiringValue<?> that = (ExpiringValue<?>) o;
 		return !(value != null ? !value.equals(that.value) : that.value != null)
-				&& expirationPolicy == that.expirationPolicy && duration == that.duration && timeUnit == that.timeUnit;
+			&& expirationPolicy == that.expirationPolicy && duration == that.duration && timeUnit == that.timeUnit;
 
 	}
 
 	@Override
 	public String toString() {
 		return "ExpiringValue{" + "value=" + value + ", expirationPolicy=" + expirationPolicy + ", duration=" + duration
-				+ ", timeUnit=" + timeUnit + '}';
+			+ ", timeUnit=" + timeUnit + '}';
 	}
 }

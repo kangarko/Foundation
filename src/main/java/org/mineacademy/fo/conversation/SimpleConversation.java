@@ -1,15 +1,8 @@
 package org.mineacademy.fo.conversation;
 
-import java.util.concurrent.TimeUnit;
-
-import org.bukkit.conversations.Conversable;
-import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.conversations.ConversationAbandonedListener;
-import org.bukkit.conversations.ConversationCanceller;
-import org.bukkit.conversations.ConversationPrefix;
-import org.bukkit.conversations.InactivityConversationCanceller;
-import org.bukkit.conversations.Prompt;
+import lombok.AccessLevel;
+import lombok.Getter;
+import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
@@ -19,8 +12,7 @@ import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
 
-import lombok.AccessLevel;
-import lombok.Getter;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple way to communicate with the player
@@ -126,9 +118,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 	/**
 	 * Get conversation prefix before each message
-	 *
+	 * <p>
 	 * By default we use the plugins tell prefix
-	 *
+	 * <p>
 	 * TIP: You can use {@link SimplePrefix}
 	 *
 	 * @return
@@ -234,7 +226,6 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 	/**
 	 * Custom conversation class used for only showing the question once per 20 seconds interval
-	 *
 	 */
 	private final class CustomConversation extends Conversation {
 
@@ -268,7 +259,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				try {
 					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData()
-							.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(getTimeout(), TimeUnit.SECONDS).build());
+						.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(getTimeout(), TimeUnit.SECONDS).build());
 
 					if (!askedQuestions.containsKey(question)) {
 						askedQuestions.put(question, null);

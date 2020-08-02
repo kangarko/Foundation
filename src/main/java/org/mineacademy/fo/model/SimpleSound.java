@@ -1,15 +1,14 @@
 package org.mineacademy.fo.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompSound;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
 
 /**
  * A class holding a sound, volume and a pitch
@@ -54,7 +53,7 @@ public final class SimpleSound {
 	 * Create a new sound from the raw line,
 	 * we accept the plain SOUND name or the following syntax: SOUND VOLUME PITCH
 	 * for example: ENTITY_PLAYER_HURT 1.0F 1.0F
-	 *
+	 * <p>
 	 * Set to 'none' to disable
 	 *
 	 * @param line
@@ -76,8 +75,8 @@ public final class SimpleSound {
 
 		} catch (final IllegalArgumentException ex) {
 			Common.throwError(ex, "Sound '" + values[0] + "' does not exists (in your Minecraft version)!",
-					"Notice: Sound names has changed as per 1.9. See:",
-					"https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html");
+				"Notice: Sound names has changed as per 1.9. See:",
+				"https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html");
 		}
 
 		if (values.length == 1) {

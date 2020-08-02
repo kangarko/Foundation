@@ -16,7 +16,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * A flag indicating that this class has been loaded
-	 *
+	 * <p>
 	 * You can place this class to {@link SimplePlugin#getSettings()} to make
 	 * it load automatically
 	 */
@@ -28,9 +28,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * Create and load the localization/messages_LOCALEPREFIX.yml file.
-	 *
+	 * <p>
 	 * See {@link SimpleSettings#LOCALE_PREFIX} for the locale prefix.
-	 *
+	 * <p>
 	 * The locale file is extracted from your plugins jar to the localization/ folder
 	 * if it does not exists, or updated if it is out of date.
 	 */
@@ -52,7 +52,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * Set and update the config version automatically, however the {@link #VERSION} will
 	 * contain the older version used in the file on the disk so you can use
 	 * it for comparing in the init() methods
-	 *
+	 * <p>
 	 * Please call this as a super method when overloading this!
 	 */
 	@Override
@@ -66,7 +66,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * Return the very latest config version
-	 *
+	 * <p>
 	 * Any changes here must also be made to the "Version" key in your settings file.
 	 *
 	 * @return
@@ -99,21 +99,18 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		 * The message shown when the player tries a command but inputs an
 		 * invalid first argument parameter. We suggest he types /{label} ? for help so make
 		 * sure you implement some help there as well.
-		 *
 		 */
 		public static String INVALID_ARGUMENT = "&cInvalid argument. Run &6/{label} ? &cfor help.";
 
 		/**
 		 * The message shown when the player tries a command but inputs an
 		 * invalid second argument parameter. We so suggest he types /{label} {0} for help
-		 *
 		 */
 		public static String INVALID_SUB_ARGUMENT = "&cInvalid argument. Run '/{label} {0}' for help.";
 
 		/**
 		 * The message shown on the same occasion as {@link #INVALID_ARGUMENT} however
 		 * this is shows when the command overrides {@link SimpleCommand#getMultilineUsageMessage()}
-		 *
 		 */
 		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
 
@@ -296,15 +293,15 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		 * The message if a new version is found but not downloaded
 		 */
 		public static String AVAILABLE = "&2A new version of &3{plugin_name}&2 is available.\n"
-				+ "&2Current version: &f{current}&2; New version: &f{new}\n"
-				+ "&2URL: &7https://www.spigotmc.org/resources/{resource_id}/.";
+			+ "&2Current version: &f{current}&2; New version: &f{new}\n"
+			+ "&2URL: &7https://www.spigotmc.org/resources/{resource_id}/.";
 
 		/**
 		 * The message if a new version is found and downloaded
 		 */
 		public static String DOWNLOADED = "&3{plugin_name}&2 has been upgraded from {current} to {new}.\n"
-				+ "&2Visit &7https://www.spigotmc.org/resources/{resource_id} &2for more information.\n"
-				+ "&2Please restart the server to load the new version.";
+			+ "&2Visit &7https://www.spigotmc.org/resources/{resource_id} &2for more information.\n"
+			+ "&2Please restart the server to load the new version.";
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!

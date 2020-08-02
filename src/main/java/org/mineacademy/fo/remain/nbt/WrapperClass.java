@@ -1,18 +1,17 @@
 package org.mineacademy.fo.remain.nbt;
 
-import static org.mineacademy.fo.ReflectionUtil.CRAFTBUKKIT;
-import static org.mineacademy.fo.ReflectionUtil.NMS;
-
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 
+import static org.mineacademy.fo.ReflectionUtil.CRAFTBUKKIT;
+import static org.mineacademy.fo.ReflectionUtil.NMS;
+
 /**
  * Wraps NMS and CRAFT classes
  *
  * @author tr7zw
- *
  */
 public enum WrapperClass {
 	CRAFT_ITEMSTACK(CRAFTBUKKIT, "inventory.CraftItemStack"),
@@ -38,7 +37,7 @@ public enum WrapperClass {
 	NMS_REGISTRYMATERIALS(NMS, "RegistryMaterials"),
 	NMS_IREGISTRY(NMS, "IRegistry"),
 	NMS_MINECRAFTKEY(NMS, "MinecraftKey"),
-	;
+	NMS_IBLOCKDATA(NMS, "IBlockData");
 
 	private Class<?> clazz;
 	private boolean enabled = false;

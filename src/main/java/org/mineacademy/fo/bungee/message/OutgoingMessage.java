@@ -1,8 +1,7 @@
 package org.mineacademy.fo.bungee.message;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
@@ -11,12 +10,10 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
- *
  * NB: This uses the standardized Foundation model where the first
  * String is the server name and the second String is the
  * {@link BungeeAction} by its name *written automatically*.
@@ -116,7 +113,7 @@ public final class OutgoingMessage extends Message {
 
 	/**
 	 * Write an object of the given type into the message
-	 *
+	 * <p>
 	 * We move the head and ensure writing safety in accordance
 	 * to the {@link BungeeAction#getContent()} length and
 	 * data type at the given position

@@ -21,7 +21,7 @@ public final class OneTimeRunnable {
 
 	/**
 	 * Attempts to run the {@link #runnable}.
-	 *
+	 * <p>
 	 * If it was not run yet, it is run and flagged as run, otherwise nothing happens.
 	 */
 	public void runIfHasnt() {

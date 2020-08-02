@@ -1,18 +1,16 @@
 package org.mineacademy.fo.bungee.message;
 
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
-
-import lombok.Getter;
-
 /**
  * Represents an incoming plugin message.
- *
+ * <p>
  * NB: This uses the standardized Foundation model where the first
  * string is the server name and the second string is the
  * {@link BungeeAction} by its name *read automatically*.
@@ -32,7 +30,7 @@ public final class IncomingMessage extends Message {
 
 	/**
 	 * Create a new incoming message from the given array
-	 *
+	 * <p>
 	 * NB: This uses the standardized Foundation model where the first
 	 * string is the server name and the second string is the
 	 * {@link BungeeAction} by its name *read automatically*.

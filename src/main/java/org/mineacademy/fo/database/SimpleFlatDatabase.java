@@ -1,10 +1,6 @@
 package org.mineacademy.fo.database;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
+import lombok.NonNull;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -14,25 +10,28 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a simple database where values are flattened and stored
  * by {@link UUID} from the given {@link Identifiable} interface.
- *
+ * <p>
  * The table structure is as follows:
- *
+ * <p>
  * UUID varchar(64) | Name text       | Data text      | Updated bigint
  * ------------------------------------------------------------
  * Player's uuid    | Last known name | {json data}    | Date of last save call
- *
+ * <p>
  * We use JSON to flatten those values and provide convenience methods
  * {@link #onLoad(SerializedMap, Identifiable)} and {@link #onSave(Identifiable)}
  * for you to override so that you can easily save/load data to MySQL.
- *
+ * <p>
  * Also see {@link #getExpirationDays()}, by default we remove values not touched
  * within the last 90 days.
- *
+ * <p>
  * For a less-restricting solution see {@link SimpleDatabase} however you will
  * need to run own queries and implement own table structure that requires MySQL
  * command syntax knowledge.
@@ -49,7 +48,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 	/**
 	 * Creates the table if it does not exist
-	 *
+	 * <p>
 	 * To override this override {@link #onConnectFinish()}
 	 */
 	@Override
@@ -86,7 +85,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * When you call the save method, we write the last updated time to the entry.
 	 * On plugin loading we can remove entries that have not been saved/updated
 	 * for the given amount of days.
-	 *
+	 * <p>
 	 * Default: 90 days
 	 *
 	 * @return
@@ -126,9 +125,9 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-					"Failed to load data from MySQL!",
-					"UUID: " + uuid,
-					"Error: %error");
+				"Failed to load data from MySQL!",
+				"UUID: " + uuid,
+				"Error: %error");
 
 		} finally {
 			isQuerying = false;
@@ -140,19 +139,18 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	/**
 	 * Your method to load the data for the given unique ID and his cache
 	 *
-	 * @param map the map that is automatically converted from the JSON array
-	 * 			  stored in the database
-	 *
+	 * @param map  the map that is automatically converted from the JSON array
+	 *             stored in the database
 	 * @param data the data you want to fill out to
 	 */
 	protected abstract void onLoad(SerializedMap map, T data);
 
 	/**
 	 * Save the data for the given name, unique ID and his cache
-	 *
+	 * <p>
 	 * If the onSave returns empty data we delete the row
 	 *
-	 * @param name last known name - players may change those
+	 * @param name  last known name - players may change those
 	 * @param uuid
 	 * @param cache
 	 */
@@ -185,9 +183,9 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 		} catch (final Throwable ex) {
 			Common.error(ex,
-					"Failed to save data to MySQL!",
-					"UUID: " + uuid,
-					"Error: %error");
+				"Failed to save data to MySQL!",
+				"UUID: " + uuid,
+				"Error: %error");
 
 		} finally {
 			isQuerying = false;
@@ -208,7 +206,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 		final boolean isMainThread = Bukkit.isPrimaryThread();
 
 		LagCatcher.end("mysql", isMainThread ? 10 : MathUtil.atLeast(200, SimpleSettings.LAG_THRESHOLD_MILLIS),
-				WordUtils.capitalize(operation) + " data to MySQL took {time} ms" + (took > 10 && isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
+			WordUtils.capitalize(operation) + " data to MySQL took {time} ms" + (took > 10 && isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
 	}
 
 	/**
@@ -232,8 +230,9 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 	/**
 	 * Your method to save the data for the given unique ID and his cache
-	 *
+	 * <p>
 	 * Return an empty data to delete the row
+	 *
 	 * @param data
 	 * @return
 	 */

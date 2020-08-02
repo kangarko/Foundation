@@ -1,7 +1,7 @@
 package org.mineacademy.fo.visual;
 
-import java.util.List;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -9,8 +9,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.menu.tool.BlockTool;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.List;
 
 /**
  * A class that can visualize selection of blocks in the arena

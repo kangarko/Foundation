@@ -203,6 +203,9 @@
  */
 package org.mineacademy.fo.jsonsimple;
 
+import lombok.Getter;
+import org.mineacademy.fo.exception.FoException;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -210,13 +213,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.mineacademy.fo.exception.FoException;
-
-import lombok.Getter;
-
 /**
  * Parses JSON data (<u>not</u> thread-safe).
- * @author FangYidong(fangyidong@yahoo.com.cn)
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -392,6 +392,7 @@ public class JSONParser {
 
 	/**
 	 * Resets the parser to the initial state without resetting the underlying reader.
+	 *
 	 * @since 1.0.0
 	 */
 	public void reset() {
@@ -403,6 +404,7 @@ public class JSONParser {
 
 	/**
 	 * Resets the parser to the initial state with a new character reader.
+	 *
 	 * @param reader the new character reader
 	 * @since 1.0.0
 	 */
@@ -423,6 +425,7 @@ public class JSONParser {
 
 	/**
 	 * Parses JSON data.
+	 *
 	 * @param json the JSON data
 	 * @return An instance of:
 	 * <ul>
@@ -451,6 +454,7 @@ public class JSONParser {
 
 	/**
 	 * Parses JSON data from a {@linkplain Reader}.
+	 *
 	 * @param reader the {@linkplain Reader}
 	 * @return An instance of:
 	 * <ul>
@@ -461,7 +465,7 @@ public class JSONParser {
 	 * <li>{@linkplain Boolean}</li>
 	 * <li>{@code null}</li>
 	 * </ul>
-	 * @throws IOException if an I/O error occurs
+	 * @throws IOException        if an I/O error occurs
 	 * @throws JSONParseException if the JSON is invalid
 	 * @since 1.0.0
 	 */
@@ -500,7 +504,8 @@ public class JSONParser {
 
 	/**
 	 * Goes over a JSON string step by step using a {@linkplain JSONContentHandler}.
-	 * @param string the JSON string
+	 *
+	 * @param string         the JSON string
 	 * @param contentHandler the {@linkplain JSONContentHandler}
 	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
 	 * @since 1.0.0
@@ -512,9 +517,10 @@ public class JSONParser {
 
 	/**
 	 * Goes over a JSON string step by step using a {@linkplain JSONContentHandler}.
-	 * @param string the JSON string
+	 *
+	 * @param string         the JSON string
 	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @param resume Indicates if the previous parsing operation should be continued.
+	 * @param resume         Indicates if the previous parsing operation should be continued.
 	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
 	 * @since 1.0.0
 	 */
@@ -532,9 +538,10 @@ public class JSONParser {
 
 	/**
 	 * Goes over JSON data step by step using a {@linkplain JSONContentHandler}.
-	 * @param reader the {@linkplain Reader}
+	 *
+	 * @param reader         the {@linkplain Reader}
 	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @throws IOException if an I/O error occurs or the {@linkplain JSONContentHandler} throws it
+	 * @throws IOException        if an I/O error occurs or the {@linkplain JSONContentHandler} throws it
 	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
 	 * @since 1.0.0
 	 */
@@ -545,12 +552,13 @@ public class JSONParser {
 
 	/**
 	 * Goes over JSON data step by step using a {@linkplain JSONContentHandler}.
-	 * @see JSONContentHandler
-	 * @param reader the {@linkplain Reader}
+	 *
+	 * @param reader         the {@linkplain Reader}
 	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @param resume Indicates if the previous parsing operation should be continued.
-	 * @throws IOException if an I/O error occurs or the {@linkplain JSONContentHandler} throws it
+	 * @param resume         Indicates if the previous parsing operation should be continued.
+	 * @throws IOException        if an I/O error occurs or the {@linkplain JSONContentHandler} throws it
 	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
+	 * @see JSONContentHandler
 	 * @since 1.0.0
 	 */
 	public void parse(Reader reader, JSONContentHandler contentHandler, boolean resume) throws IOException, JSONParseException {

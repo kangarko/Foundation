@@ -1,10 +1,9 @@
 package org.mineacademy.fo.model;
 
+import lombok.Getter;
 import org.apache.commons.lang.math.NumberUtils;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
-
-import lombok.Getter;
 
 /**
  * A class holding a minimum and a maximum
@@ -85,6 +84,7 @@ public class RangedValue {
 
 	/**
 	 * Return whether {@link #min} equals {@link #max}
+	 *
 	 * @return
 	 */
 	public final boolean isStatic() {
@@ -103,13 +103,12 @@ public class RangedValue {
 	/**
 	 * Create a {@link RangedValue} from a line
 	 * Example: 1-10
-	 *          5 - 60
-	 *          4
-	 *
-	 *          or
-	 *
-	 *          10 seconds - 20 minutes (will be converted to seconds)
-	 *
+	 * 5 - 60
+	 * 4
+	 * <p>
+	 * or
+	 * <p>
+	 * 10 seconds - 20 minutes (will be converted to seconds)
 	 */
 	public static RangedValue parse(String line) {
 		line = line.replace(" ", "");

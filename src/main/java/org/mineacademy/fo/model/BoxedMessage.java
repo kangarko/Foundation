@@ -1,8 +1,6 @@
 package org.mineacademy.fo.model;
 
-import java.util.Arrays;
-import java.util.Objects;
-
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -10,17 +8,17 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Represents a chat message surrounded by chat-wide line on the top and bottom:
- *
+ * <p>
  * -----------------------------------
  * Hello this is a test!
  * -----------------------------------
- *
+ * <p>
  * You can also specify \<center\> in front of the text to center it.
- *
  */
 public final class BoxedMessage {
 
@@ -135,8 +133,7 @@ public final class BoxedMessage {
 		int length = 0;
 
 		for (final String message : messages)
-			for (@SuppressWarnings("unused")
-			final String part : message.split("\n"))
+			for (@SuppressWarnings("unused") final String part : message.split("\n"))
 				length++;
 
 		return length;

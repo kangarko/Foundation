@@ -210,6 +210,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks an class for serialization.
+ *
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0

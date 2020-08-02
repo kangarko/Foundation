@@ -206,7 +206,8 @@ package org.mineacademy.fo.jsonsimple;
 /**
  * Is thrown when an error occurs while parsing JSON data.
  * Explains what the problem is.
- * @author FangYidong(fangyidong@yahoo.com.cn)
+ *
+ * @author FangYidong(fangyidong @ yahoo.com.cn)
  * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
  * @version 2.0.0
  * @since 1.0.0
@@ -219,11 +220,17 @@ public class JSONParseException extends Exception {
 
 	private static final long serialVersionUID = -7880698968187728547L;
 
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int ERROR_UNEXPECTED_CHAR = 0;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int ERROR_UNEXPECTED_TOKEN = 1;
-	/** @since 1.0.0 */
+	/**
+	 * @since 1.0.0
+	 */
 	public static final int ERROR_UNEXPECTED_EXCEPTION = 2;
 
 	private final int errorType;
@@ -240,7 +247,7 @@ public class JSONParseException extends Exception {
 	}
 
 	/**
-	 * @param errorType the error type
+	 * @param errorType        the error type
 	 * @param unexpectedObject the object that represents what was unexpected
 	 * @since 1.0.0
 	 */
@@ -250,8 +257,8 @@ public class JSONParseException extends Exception {
 	}
 
 	/**
-	 * @param position the character position (starting with 0) of the input where the error occurred
-	 * @param errorType the error type
+	 * @param position         the character position (starting with 0) of the input where the error occurred
+	 * @param errorType        the error type
 	 * @param unexpectedObject the object that represents what was unexpected
 	 * @since 1.0.0
 	 */

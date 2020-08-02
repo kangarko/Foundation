@@ -1,9 +1,9 @@
 package org.mineacademy.fo.remain;
 
-import java.util.Map.Entry;
-
 import org.bukkit.block.Biome;
 import org.mineacademy.fo.collection.StrictMap;
+
+import java.util.Map.Entry;
 
 /**
  * A simple class for getting biome ID for legacy biomes.
@@ -24,7 +24,7 @@ public final class CompBiome {
 	/**
 	 * Get the biome by its id, or null if the id is invalid or we don't
 	 * have the biome stored.
-	 *
+	 * <p>
 	 * We stopped storing new biomes since 1.13 due to major changes and less usage cases.
 	 *
 	 * @param id
@@ -40,7 +40,7 @@ public final class CompBiome {
 
 	/**
 	 * Get the biome ID or 0 if not stored
-	 *
+	 * <p>
 	 * We stopped storing new biomes since 1.13 due to major changes and less usage cases.
 	 *
 	 * @param biome

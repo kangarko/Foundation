@@ -1,10 +1,6 @@
 package org.mineacademy.fo.remain;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import lombok.NonNull;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,7 +14,10 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
-import lombok.NonNull;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Utility class for manipulating Monster Eggs
@@ -46,7 +45,7 @@ public final class CompMonsterEgg {
 	 * @param type
 	 * @return the finished monster egg
 	 */
-	public static ItemStack makeEgg(EntityType type) {
+	public static ItemStack makeEgg(final EntityType type) {
 		return makeEgg(type, 1);
 	}
 
@@ -57,15 +56,14 @@ public final class CompMonsterEgg {
 	 * @param count
 	 * @return the finished egg
 	 */
-	public static ItemStack makeEgg(EntityType type, int count) {
+	private static ItemStack makeEgg(final EntityType type, final int count) {
 		Valid.checkNotNull(type, "Entity type cannot be null!");
-		ItemStack is = new ItemStack(CompMaterial.makeMonsterEgg(type).getMaterial(), count);
-
+		ItemStack itemStack = new ItemStack(CompMaterial.makeMonsterEgg(type).getMaterial(), count);
 		// For older MC
-		if (is.getType().toString().equals("MONSTER_EGG"))
-			is = setEntity(is, type);
+		if (itemStack.getType().toString().equals("MONSTER_EGG"))
+			itemStack = setEntity(itemStack, type);
 
-		return is;
+		return itemStack;
 	}
 
 	/**
@@ -73,9 +71,9 @@ public final class CompMonsterEgg {
 	 *
 	 * @param item
 	 * @return the entity type, or unknown or error if not found, see
-	 *         {@link #acceptUnsafeEggs}
+	 * {@link #acceptUnsafeEggs}
 	 */
-	public static EntityType getEntity(ItemStack item) {
+	public static EntityType getEntity(final ItemStack item) {
 		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 		EntityType type = null;
 
@@ -98,7 +96,7 @@ public final class CompMonsterEgg {
 		return type;
 	}
 
-	private static EntityType getTypeFromMaterial(ItemStack item) {
+	private static EntityType getTypeFromMaterial(final ItemStack item) {
 		final String name = item.getType().toString().replace("_SPAWN_EGG", "");
 		EntityType type = null;
 
@@ -119,13 +117,13 @@ public final class CompMonsterEgg {
 		return type;
 	}
 
-	private static EntityType getTypeByMeta(ItemStack item) {
+	private static EntityType getTypeByMeta(final ItemStack item) {
 		final ItemMeta m = item.getItemMeta();
 
 		return item.hasItemMeta() && m instanceof SpawnEggMeta ? ((SpawnEggMeta) m).getSpawnedType() : null;
 	}
 
-	private static EntityType getTypeByData(ItemStack item) {
+	private static EntityType getTypeByData(final ItemStack item) {
 		EntityType type = readEntity0(item);
 
 		if (type == null) {
@@ -139,7 +137,7 @@ public final class CompMonsterEgg {
 		return type;
 	}
 
-	private static EntityType readEntity0(ItemStack item) {
+	private static EntityType readEntity0(final ItemStack item) {
 		Valid.checkNotNull(item, "Reading entity got null item");
 
 		final NBTItem nbt = new NBTItem(item);
@@ -188,7 +186,7 @@ public final class CompMonsterEgg {
 	 * @param type
 	 * @return the itemstack
 	 */
-	public static ItemStack setEntity(ItemStack item, EntityType type) {
+	public static ItemStack setEntity(ItemStack item, final EntityType type) {
 		Valid.checkNotNull(item, "Item == null");
 		Valid.checkBoolean(type.isSpawnable(), type + " cannot be spawned and thus set into a monster egg!");
 
@@ -209,7 +207,7 @@ public final class CompMonsterEgg {
 		return item;
 	}
 
-	private static ItemStack setTypeByMeta(ItemStack item, EntityType type) {
+	private static ItemStack setTypeByMeta(final ItemStack item, final EntityType type) {
 		final SpawnEggMeta m = (SpawnEggMeta) item.getItemMeta();
 
 		m.setSpawnedType(type);
@@ -218,7 +216,7 @@ public final class CompMonsterEgg {
 		return item;
 	}
 
-	private static ItemStack setTypeByData(ItemStack item, EntityType type) {
+	private static ItemStack setTypeByData(final ItemStack item, final EntityType type) {
 		final Number data = DataMap.getData(type);
 
 		if (data.intValue() != -1) {
@@ -234,7 +232,7 @@ public final class CompMonsterEgg {
 		return item;
 	}
 
-	private static ItemStack writeEntity0(ItemStack item, EntityType type) {
+	private static ItemStack writeEntity0(final ItemStack item, final EntityType type) {
 		Valid.checkNotNull(item, "setting nbt got null item");
 		Valid.checkNotNull(type, "setting nbt got null entity");
 
@@ -253,19 +251,19 @@ final class DataMap {
 
 	private static final Map<Integer, String> map = new HashMap<>();
 
-	static EntityType getEntity(int data) {
+	static EntityType getEntity(final int data) {
 		final String name = map.get(data);
 
 		return name != null ? ReflectionUtil.lookupEnumSilent(EntityType.class, name.toUpperCase()) : null;
 	}
 
-	static int getData(EntityType type) {
+	static int getData(final EntityType type) {
 		final Integer data = getKeyFromValue(type.toString());
 
 		return data != null ? data : -1;
 	}
 
-	private static Integer getKeyFromValue(String value) {
+	private static Integer getKeyFromValue(final String value) {
 		for (final Entry<Integer, String> e : map.entrySet())
 			if (e.getValue().equals(value))
 				return e.getKey();

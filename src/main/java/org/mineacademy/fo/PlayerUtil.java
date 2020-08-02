@@ -1,23 +1,10 @@
 package org.mineacademy.fo;
 
-import java.io.File;
-import java.io.FileReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Statistic;
+import org.bukkit.*;
 import org.bukkit.Statistic.Type;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -44,9 +31,11 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileReader;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class for managing players.
@@ -68,7 +57,7 @@ public final class PlayerUtil {
 	/**
 	 * The default duration of the new animated title before
 	 * it is reverted back to the old one
-	 *
+	 * <p>
 	 * Used in {@link #updateInventoryTitle(Menu, Player, String, String)}
 	 */
 	public static int ANIMATION_DURATION_TICKS = 20;
@@ -322,11 +311,11 @@ public final class PlayerUtil {
 	/**
 	 * Sets pretty much every flag the player can have such as
 	 * flying etc, back to normal
-	 *
+	 * <p>
 	 * Also sets gamemode to survival
-	 *
+	 * <p>
 	 * Typical usage: Minigame plugins - call this before joining the player to an arena
-	 *
+	 * <p>
 	 * Even disables Essentials god mode and removes vanish (most vanish plugins are supported).
 	 *
 	 * @param player
@@ -339,16 +328,16 @@ public final class PlayerUtil {
 	/**
 	 * Sets pretty much every flag the player can have such as
 	 * flying etc, back to normal
-	 *
+	 * <p>
 	 * Also sets gamemode to survival
-	 *
+	 * <p>
 	 * Typical usage: Minigame plugins - call this before joining the player to an arena
-	 *
+	 * <p>
 	 * Even disables Essentials god mode.
 	 *
 	 * @param player
 	 * @param cleanInventory
-	 * @param removeVanish should we remove vanish from players? most vanish plugins are supported
+	 * @param removeVanish   should we remove vanish from players? most vanish plugins are supported
 	 */
 	public static void normalize(final Player player, final boolean cleanInventory, final boolean removeVanish) {
 		synchronized (titleRestoreTasks) {
@@ -402,7 +391,8 @@ public final class PlayerUtil {
 				for (final Entity passenger : player.getPassengers())
 					player.removePassenger(passenger);
 			} catch (final NoSuchMethodError err) {
-				/* old MC */}
+				/* old MC */
+			}
 
 			if (removeVanish)
 				try {
@@ -436,7 +426,8 @@ public final class PlayerUtil {
 		try {
 			player.getInventory().setExtraContents(new ItemStack[player.getInventory().getExtraContents().length]);
 		} catch (final NoSuchMethodError err) {
-			/* old MC */}
+			/* old MC */
+		}
 
 		player.setFireTicks(0);
 		player.setFoodLevel(20);
@@ -564,10 +555,10 @@ public final class PlayerUtil {
 	/**
 	 * Sends an animated title to player for the {@link #ANIMATION_DURATION_TICKS} duration. Colors are replaced
 	 *
-	 * @param menu the menu
-	 * @param player the player
+	 * @param menu           the menu
+	 * @param player         the player
 	 * @param temporaryTitle the animated title
-	 * @param oldTitle the old title
+	 * @param oldTitle       the old title
 	 */
 	public static void updateInventoryTitle(final Menu menu, final Player player, final String temporaryTitle, final String oldTitle) {
 		updateInventoryTitle(menu, player, temporaryTitle, oldTitle, ANIMATION_DURATION_TICKS);
@@ -576,11 +567,11 @@ public final class PlayerUtil {
 	/**
 	 * Sends an animated title to player. Colors are replaced.
 	 *
-	 * @param menu the menu
-	 * @param player the player
+	 * @param menu           the menu
+	 * @param player         the player
 	 * @param temporaryTitle the animated title
-	 * @param oldTitle the old title to revert to
-	 * @param duration the duration in ticks
+	 * @param oldTitle       the old title to revert to
+	 * @param duration       the duration in ticks
 	 */
 	public static void updateInventoryTitle(final Menu menu, final Player player, final String temporaryTitle, final String oldTitle, final int duration) {
 		Valid.checkNotNull(menu, "Menu == null");
@@ -634,7 +625,7 @@ public final class PlayerUtil {
 	 * to the given item.
 	 *
 	 * @param player
-	 * @param item the found item or null if none
+	 * @param item   the found item or null if none
 	 * @return
 	 */
 	public static ItemStack getFirstItem(final Player player, final ItemStack item) {
@@ -685,7 +676,7 @@ public final class PlayerUtil {
 	/**
 	 * Removes one piece of the given item stack, setting the slot to air
 	 * if the item is only 1 amount
-	 *
+	 * <p>
 	 * THIS SETS THE AMOUNT OF THE GIVEN ITEMSTACK TO -1 OF ITS CURRENT AMOUNT
 	 * AND DOES NOT AUTOMATICALLY REMOVE ITEMS
 	 *
@@ -753,7 +744,7 @@ public final class PlayerUtil {
 	/**
 	 * Attempts to add items into the inventory,
 	 * returning what it couldn't store
-	 *
+	 * <p>
 	 * Set oversizedStack to below normal stack size to disable oversized stacks
 	 *
 	 * @param inventory

@@ -1,49 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.region.Region;
-import org.mineacademy.fo.remain.Remain;
-
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.bekvon.bukkit.residence.Residence;
@@ -75,11 +31,19 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -91,13 +55,38 @@ import me.angeschossen.lands.api.land.enums.LandSetting;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import me.clip.placeholderapi.expansion.Relational;
 import me.crafter.mc.lockettepro.LocketteProAPI;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.mineacademy.fo.*;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
+import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.region.Region;
+import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
  * Our main class hooking into different plugins, providing you
@@ -321,7 +310,7 @@ public final class HookManager {
 
 	/**
 	 * Is ProtocolLib loaded?¡
-	 *
+	 * <p>
 	 * This will not only check if the plugin is in plugins folder, but also if it's
 	 * correctly loaded and working. (*Should* detect plugin's malfunction when
 	 * out-dated.)
@@ -329,7 +318,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isProtocolLibLoaded() {
-		return protocolLibHook != null;
+		return protocolLibHook != null && SimpleSettings.HOOK_PROTOCOLLIB;
 	}
 
 	/**
@@ -862,8 +851,8 @@ public final class HookManager {
 	@Deprecated
 	public static boolean hasPermissionVault(final Player online, final String perm) {
 		return online != null && online.getUniqueId() != null
-				&& isVaultLoaded()
-				&& vaultHook.hasPerm(online.getWorld().getName(), online.getName(), perm);
+			&& isVaultLoaded()
+			&& vaultHook.hasPerm(online.getWorld().getName(), online.getName(), perm);
 	}
 
 	/**
@@ -978,49 +967,56 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String replaceRelationPlaceholders(final Player one, final Player two, final String msg) {
-		if (msg == null || "".equals(msg.trim()))
-			return msg;
+		try {
+			if (msg == null || "".equals(msg.trim()))
+				return msg;
 
-		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
+			return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
+		} catch (final Throwable ignored) {
+			return msg;
+		}
 	}
 
 	/**
 	 * If PlaceholderAPI is loaded, registers a new placeholder within it
 	 * with the given variable and value.
-	 *
+	 * <p>
 	 * The variable is automatically prepended with your plugin name, lowercased + _,
 	 * such as chatcontrol_ or boss_ + your variable.
-	 *
+	 * <p>
 	 * Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
-	 *
+	 * <p>
 	 * The value will be called against the given player and the variable you set initially
-	 *
+	 * <p>
 	 * NB: In your chat formatting plugin you can append your variable with a "+" sign
 	 * to automatically insert a space after it in case it is not empty (NOT HERE, but in your
 	 * chat control plugin)
 	 *
 	 * @param variable
 	 * @param value
-	 *
 	 * @deprecated does not register the variable in PlaceholderAPI
 	 */
 	@Deprecated
 	public static void addPlaceholder(final String variable, final BiFunction<Player, String, String> value) {
-		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value), null);
+		try {
+			if (isPlaceholderAPILoaded())
+				placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value), null);
+		} catch (final Throwable ignored) {
+
+		}
 	}
 
 	/**
 	 * If PlaceholderAPI is loaded, registers a new placeholder within it
 	 * with the given variable and value.
-	 *
+	 * <p>
 	 * The variable is automatically prepended with your plugin name, lowercased + _,
 	 * such as chatcontrol_ or boss_ + your variable.
-	 *
+	 * <p>
 	 * Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
-	 *
+	 * <p>
 	 * The value will be called against the given player
-	 *
+	 * <p>
 	 * NB: In your chat formatting plugin you can append your variable with a "+" sign
 	 * to automatically insert a space after it in case it is not empty (NOT HERE, but in your
 	 * chat control plugin)
@@ -1029,8 +1025,12 @@ public final class HookManager {
 	 * @param value
 	 */
 	public static void addPlaceholder(final String variable, final Function<Player, String> value) {
-		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)), value);
+		try {
+			if (isPlaceholderAPILoaded())
+				placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)), value);
+		} catch (final Throwable ignored) {
+
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1092,7 +1092,7 @@ public final class HookManager {
 
 	/**
 	 * Adds a {@link PacketAdapter} packet listener to ProtocolLib.
-	 *
+	 * <p>
 	 * If the plugin is missing, an error will be thrown
 	 *
 	 * @param adapter
@@ -1292,7 +1292,7 @@ public final class HookManager {
 
 	/**
 	 * Sends a message from the given sender to a certain channel on Discord using DiscordSRV
-	 *
+	 * <p>
 	 * Enhanced functionality is available if the sender is a player
 	 *
 	 * @param sender
@@ -1336,9 +1336,9 @@ public final class HookManager {
 	/**
 	 * Represents a PlaceholderAPI placeholder replacer with the given
 	 * variable (will be prepended with the name of your plugin, such as
-	 *
+	 * <p>
 	 * chatcontrol_ + this variable
-	 *
+	 * <p>
 	 * and the value that is callable so that you can return updated value each time.
 	 */
 	@Data
@@ -1607,7 +1607,7 @@ class TownyHook {
 					return channel.getName();
 
 			final com.palmergames.bukkit.TownyChat.channels.Channel channel = townyChat.getChannelsHandler().getActiveChannel(pl,
-					com.palmergames.bukkit.TownyChat.channels.channelTypes.GLOBAL);
+				com.palmergames.bukkit.TownyChat.channels.channelTypes.GLOBAL);
 			return channel == null ? null : channel.getName();
 
 		} catch (final Throwable ex) {
@@ -1653,10 +1653,16 @@ class ProtocolLibHook {
 	private final ProtocolManager manager;
 
 	ProtocolLibHook() {
-		manager = ProtocolLibrary.getProtocolManager();
+
+		if (SimpleSettings.HOOK_PROTOCOLLIB)
+			manager = ProtocolLibrary.getProtocolManager();
+		else
+			manager = null;
 	}
 
 	final void addPacketListener(final Object listener) {
+		if (!SimpleSettings.HOOK_PROTOCOLLIB)
+			return;
 		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
 		manager.addPacketListener((PacketListener) listener);
 	}
@@ -1666,11 +1672,15 @@ class ProtocolLibHook {
 	}
 
 	final void sendPacket(final PacketContainer packet) {
+		if (!SimpleSettings.HOOK_PROTOCOLLIB)
+			return;
 		for (final Player player : Remain.getOnlinePlayers())
 			sendPacket(player, packet);
 	}
 
 	final void sendPacket(final Player player, final Object packet) {
+		if (!SimpleSettings.HOOK_PROTOCOLLIB)
+			return;
 		Valid.checkNotNull(player);
 		Valid.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
 
@@ -1815,23 +1825,21 @@ class PlaceholderAPIHook {
 	private final Set<PAPIPlaceholder> placeholders = new HashSet<>();
 
 	PlaceholderAPIHook() {
-		new VariablesInjector().register();
+		try {
+			new VariablesInjector().register();
+		} catch (final Throwable throwable) {
+			if (Debugger.isDebugged("placeholder"))
+				Debugger.saveError(throwable, "Can't inject variables!");
+		}
 	}
 
 	final void addPlaceholder(final PAPIPlaceholder placeholder, final Function<Player, String> replacer) {
 		placeholders.add(placeholder);
 
-		if (replacer != null)
-			PlaceholderAPI.registerPlaceholderHook(SimplePlugin.getNamed().toLowerCase(), new PlaceholderHook() {
-				@Override
-				public String onPlaceholderRequest(final Player player, final String params) {
-
-					if (params.equals(placeholder.getVariable()))
-						return replacer.apply(player);
-
-					return null;
-				}
-			});
+		if (replacer == null) {
+			return;
+		}
+		placeholders.add(placeholder);
 	}
 
 	final String replacePlaceholders(final Player pl, final String msg) {
@@ -1840,10 +1848,10 @@ class PlaceholderAPIHook {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-					"PlaceholderAPI failed to replace variables!",
-					"Player: " + pl.getName(),
-					"Message: " + msg,
-					"Error: %error");
+				"PlaceholderAPI failed to replace variables!",
+				"Player: " + pl.getName(),
+				"Message: " + msg,
+				"Error: %error");
 
 			return msg;
 		}
@@ -1881,48 +1889,49 @@ class PlaceholderAPIHook {
 	final String replaceRelationPlaceholders(final Player one, final Player two, final String msg) {
 		try {
 			return setRelationalPlaceholders(one, two, msg);
-
 		} catch (final Throwable t) {
 			Common.error(t,
-					"PlaceholderAPI failed to replace relation variables!",
-					"Player one: " + one,
-					"Player two: " + two,
-					"Message: " + msg,
-					"Error: %error");
+				"PlaceholderAPI failed to replace relation variables!",
+				"Player one: " + one,
+				"Player two: " + two,
+				"Message: " + msg,
+				"Error: %error");
 
 			return msg;
 		}
 	}
 
 	private String setRelationalPlaceholders(final Player one, final Player two, String text) {
-		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
-		if (hooks.isEmpty())
-			return text;
-
-		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
-
-		while (m.find()) {
-			final String format = m.group(2);
-			final int index = format.indexOf("_");
-
-			if (index <= 0 || index >= format.length())
-				continue;
-
-			final String identifier = format.substring(0, index).toLowerCase();
-			final String params = format.substring(index + 1);
-
-			if (hooks.containsKey(identifier)) {
-				if (!(hooks.get(identifier) instanceof Relational))
-					continue;
-
-				final Relational rel = (Relational) hooks.get(identifier);
-				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
-
-				if (value != null)
-					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
-			}
-		}
+		// TODO!
+		//		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
+//
+//		if (hooks.isEmpty())
+//			return text;
+//
+//		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
+//
+//		while (m.find()) {
+//			final String format = m.group(2);
+//			final int index = format.indexOf("_");
+//
+//			if (index <= 0 || index >= format.length())
+//				continue;
+//
+//			final String identifier = format.substring(0, index).toLowerCase();
+//			final String params = format.substring(index + 1);
+//
+//			if (hooks.containsKey(identifier)) {
+//				if (!(hooks.get(identifier) instanceof Relational))
+//					continue;
+//
+//				final Relational rel = (Relational) hooks.get(identifier);
+//				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
+//
+//				if (value != null)
+//					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
+//			}
+//		}
 
 		return text;
 	}
@@ -1980,7 +1989,7 @@ class PlaceholderAPIHook {
 		/**
 		 * This is the version of the expansion.
 		 * <br>You don't have to use numbers, since it is set as a String.
-		 *
+		 * <p>
 		 * For convenience do we return the version from the plugin.yml
 		 *
 		 * @return The version as a String.
@@ -1990,24 +1999,10 @@ class PlaceholderAPIHook {
 			return SimplePlugin.getInstance().getDescription().getVersion();
 		}
 
-		/**
-		 * This is the method called when a placeholder with our identifier
-		 * is found and needs a value.
-		 * <br>We specify the value identifier in this method.
-		 * <br>Since version 2.9.1 can you use OfflinePlayers in your requests.
-		 *
-		 * @param  player
-		 *         A {@link org.bukkit.OfflinePlayer Player}.
-		 * @param  identifier
-		 *         A String containing the identifier/value.
-		 *
-		 * @return possibly-null String of the requested identifier.
-		 */
 		@Override
-		public String onPlaceholderRequest(final Player player, String identifier) {
-
-			if (player == null)
-				return "";
+		public @Nullable String onRequest(
+				@Nullable OfflinePlayer offlinePlayer,
+				@NotNull String identifier) {
 
 			final boolean insertSpace = identifier.endsWith("+");
 			identifier = insertSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
@@ -2015,12 +2010,18 @@ class PlaceholderAPIHook {
 			for (final PAPIPlaceholder replacer : placeholders)
 				if (identifier.equalsIgnoreCase(replacer.getVariable()))
 					try {
+
+						final Player player = offlinePlayer.getPlayer();
+						if (player == null) {
+							return null;
+						}
+
 						final String value = Common.getOrEmpty(replacer.getValue().apply(player, identifier));
 
 						return value + (!value.isEmpty() && insertSpace ? " " : "");
 
 					} catch (final Exception e) {
-						Common.error(e, "Failed to replace your '" + identifier + "' variable for " + player.getName());
+						Common.error(e, "Failed to replace your '" + identifier + "' variable for " + offlinePlayer.getName());
 					}
 
 			// We return null if an invalid placeholder (f.e. %someplugin_placeholder3%) was provided
@@ -2066,13 +2067,13 @@ class MVdWPlaceholderHook {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-					"MvdWPlaceholders placeholders failed!",
-					"Player: " + player.getName(),
-					"Message: '" + message + "'",
-					"Consider writing to developer of that library",
-					"first as this may be a bug we cannot handle!",
-					"",
-					"Your chat message will appear without replacements.");
+				"MvdWPlaceholders placeholders failed!",
+				"Player: " + player.getName(),
+				"Message: '" + message + "'",
+				"Consider writing to developer of that library",
+				"first as this may be a bug we cannot handle!",
+				"",
+				"Your chat message will appear without replacements.");
 		}
 
 		return message;
@@ -2258,15 +2259,15 @@ class WorldGuardHook {
 				}
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-						.getRegions().values().forEach(reg -> {
-							if (reg == null || reg.getId() == null)
-								return;
+					.getRegions().values().forEach(reg -> {
+					if (reg == null || reg.getId() == null)
+						return;
 
-							final String name = Common.stripColors(reg.getId());
+					final String name = Common.stripColors(reg.getId());
 
-							if (!name.startsWith("__"))
-								list.add(name);
-						});
+					if (!name.startsWith("__"))
+						list.add(name);
+				});
 		}
 
 		return list;
@@ -2286,7 +2287,7 @@ class WorldGuardHook {
 			}
 
 		return ((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-				.getApplicableRegions(com.sk89q.worldedit.math.BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
+			.getApplicableRegions(com.sk89q.worldedit.math.BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
 	}
 
 	private Object getRegionManager(final World w) {
@@ -2323,19 +2324,29 @@ class WorldGuardHook {
 
 abstract class FactionsHook {
 
-	/** Get all loaded factions */
+	/**
+	 * Get all loaded factions
+	 */
 	abstract Collection<String> getFactions();
 
-	/** Get faction of the player */
+	/**
+	 * Get faction of the player
+	 */
 	abstract String getFaction(Player pl);
 
-	/** Get faction in the location */
+	/**
+	 * Get faction in the location
+	 */
 	abstract String getFaction(Location loc);
 
-	/** Get faction owner at the specific location */
+	/**
+	 * Get faction owner at the specific location
+	 */
 	abstract String getFactionOwner(Location loc);
 
-	/** Get all players being in the same faction, used for party chat. */
+	/**
+	 * Get all players being in the same faction, used for party chat.
+	 */
 	final Collection<? extends Player> getSameFactionPlayers(final Player pl) {
 		final List<Player> recipients = new ArrayList<>();
 		final String playerFaction = getFaction(pl);
@@ -2485,14 +2496,17 @@ class McMMOHook {
 	// Empty
 
 	String getActivePartyChat(final Player player) {
-		final McMMOPlayer mcplayer = UserManager.getPlayer(player);
+		try {
 
-		if (mcplayer == null)
+			final McMMOPlayer mcplayer = UserManager.getPlayer(player);
+			if (mcplayer == null)
+				return null;
+			final Party party = mcplayer.getParty();
+			return mcplayer.isChatEnabled(ChatMode.PARTY) && party != null ? party.getName() : null;
+		} catch (final Throwable throwable) {
 			return null;
+		}
 
-		final Party party = mcplayer.getParty();
-
-		return mcplayer.isChatEnabled(ChatMode.PARTY) && party != null ? party.getName() : null;
 	}
 }
 
@@ -2665,7 +2679,7 @@ class LandsHook {
 			Common.runLater(20 * 10, () -> {
 				try {
 					api = new LandsIntegration(SimplePlugin.getInstance(), true);
-				} catch (Throwable ignored) {
+				} catch (final Throwable ignored) {
 				}
 			});
 		}

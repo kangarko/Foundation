@@ -1,11 +1,8 @@
 package org.mineacademy.fo.region;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,9 +14,10 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.ConfigSerializable;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import javax.annotation.Nullable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a cuboid region
@@ -87,8 +85,8 @@ public class Region implements ConfigSerializable {
 		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Points must be in one world! Primary: " + primary + " != secondary: " + secondary);
 
 		final int x1 = primary.getBlockX(), x2 = secondary.getBlockX(),
-				y1 = primary.getBlockY(), y2 = secondary.getBlockY(),
-				z1 = primary.getBlockZ(), z2 = secondary.getBlockZ();
+			y1 = primary.getBlockY(), y2 = secondary.getBlockY(),
+			z1 = primary.getBlockZ(), z2 = secondary.getBlockZ();
 
 		final Location primary = this.primary.clone();
 		final Location secondary = this.secondary.clone();
@@ -101,7 +99,7 @@ public class Region implements ConfigSerializable {
 		secondary.setY(Math.max(y1, y2));
 		secondary.setZ(Math.max(z1, z2));
 
-		return new Location[] { primary, secondary };
+		return new Location[]{primary, secondary};
 	}
 
 	/**
@@ -117,9 +115,9 @@ public class Region implements ConfigSerializable {
 		final Location secondary = centered[1];
 
 		return new Location(primary.getWorld(),
-				(primary.getX() + secondary.getX()) / 2,
-				(primary.getY() + secondary.getY()) / 2,
-				(primary.getZ() + secondary.getZ()) / 2);
+			(primary.getX() + secondary.getX()) / 2,
+			(primary.getY() + secondary.getY()) / 2,
+			(primary.getZ() + secondary.getZ()) / 2);
 	}
 
 	/**
@@ -214,8 +212,8 @@ public class Region implements ConfigSerializable {
 		final int z = (int) location.getZ();
 
 		return x >= primary.getX() && x <= secondary.getX()
-				&& y >= primary.getY() && y <= secondary.getY()
-				&& z >= primary.getZ() && z <= secondary.getZ();
+			&& y >= primary.getY() && y <= secondary.getY()
+			&& z >= primary.getZ() && z <= secondary.getZ();
 	}
 
 	/**

@@ -1,9 +1,6 @@
 package org.mineacademy.fo;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
-
+import lombok.experimental.UtilityClass;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -12,14 +9,16 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.experimental.UtilityClass;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for checking conditions and throwing our safe exception that is
  * logged into file.
  */
 @UtilityClass
-public final class Valid {
+public class Valid {
 
 	/**
 	 * Matching valid integers
@@ -40,7 +39,7 @@ public final class Valid {
 	 *
 	 * @param toCheck
 	 */
-	public void checkNotNull(Object toCheck) {
+	public void checkNotNull(final Object toCheck) {
 		if (toCheck == null)
 			throw new FoException();
 	}
@@ -51,7 +50,7 @@ public final class Valid {
 	 * @param toCheck
 	 * @param falseMessage
 	 */
-	public void checkNotNull(Object toCheck, String falseMessage) {
+	public void checkNotNull(final Object toCheck, final String falseMessage) {
 		if (toCheck == null)
 			throw new FoException(falseMessage);
 	}
@@ -61,7 +60,7 @@ public final class Valid {
 	 *
 	 * @param expression
 	 */
-	public void checkBoolean(boolean expression) {
+	public void checkBoolean(final boolean expression) {
 		if (!expression)
 			throw new FoException();
 	}
@@ -72,7 +71,7 @@ public final class Valid {
 	 * @param expression
 	 * @param falseMessage
 	 */
-	public void checkBoolean(boolean expression, String falseMessage) {
+	public void checkBoolean(final boolean expression, final String falseMessage) {
 		if (!expression)
 			throw new FoException(falseMessage);
 	}
@@ -83,8 +82,8 @@ public final class Valid {
 	 * @param toCheck
 	 * @param falseMessage
 	 */
-	public void checkInteger(String toCheck, String falseMessage) {
-		if (!isInteger(toCheck))
+	public void checkInteger(final String toCheck, final String falseMessage) {
+		if (!Valid.isInteger(toCheck))
 			throw new FoException(falseMessage);
 	}
 
@@ -94,7 +93,7 @@ public final class Valid {
 	 * @param collection
 	 * @param message
 	 */
-	public void checkNotEmpty(Collection<?> collection, String message) {
+	public void checkNotEmpty(final Collection<?> collection, final String message) {
 		if (collection == null || collection.size() == 0)
 			throw new IllegalArgumentException(message);
 	}
@@ -107,7 +106,7 @@ public final class Valid {
 	 * @param permission
 	 * @return
 	 */
-	public boolean checkPermission(CommandSender sender, String permission) {
+	public boolean checkPermission(final CommandSender sender, final String permission) {
 		if (!PlayerUtil.hasPerm(sender, permission)) {
 			Common.tell(sender, SimpleLocalization.NO_PERMISSION.replace("{permission}", permission));
 
@@ -123,8 +122,8 @@ public final class Valid {
 	 *
 	 * @param syncErrorMessage
 	 */
-	public void checkSync(String asyncErrorMessage) {
-		checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
+	public void checkSync(final String asyncErrorMessage) {
+		Valid.checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
 	}
 
 	/**
@@ -133,8 +132,8 @@ public final class Valid {
 	 *
 	 * @param syncErrorMessage
 	 */
-	public void checkAsync(String syncErrorMessage) {
-		checkBoolean(!Bukkit.isPrimaryThread(), syncErrorMessage);
+	public void checkAsync(final String syncErrorMessage) {
+		Valid.checkBoolean(!Bukkit.isPrimaryThread(), syncErrorMessage);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -147,8 +146,8 @@ public final class Valid {
 	 * @param raw
 	 * @return
 	 */
-	public boolean isInteger(String raw) {
-		return PATTERN_INTEGER.matcher(raw).find();
+	public boolean isInteger(final String raw) {
+		return Valid.PATTERN_INTEGER.matcher(raw).find();
 	}
 
 	/**
@@ -157,8 +156,8 @@ public final class Valid {
 	 * @param raw
 	 * @return
 	 */
-	public boolean isDecimal(String raw) {
-		return PATTERN_DECIMAL.matcher(raw).find();
+	public boolean isDecimal(final String raw) {
+		return Valid.PATTERN_DECIMAL.matcher(raw).find();
 	}
 
 	/**
@@ -167,8 +166,8 @@ public final class Valid {
 	 * @param array
 	 * @return
 	 */
-	public boolean isNullOrEmpty(Collection<?> array) {
-		return array == null ? true : isNullOrEmpty(array.toArray());
+	public boolean isNullOrEmpty(final Collection<?> array) {
+		return array == null ? true : Valid.isNullOrEmpty(array.toArray());
 	}
 
 	/**
@@ -177,7 +176,7 @@ public final class Valid {
 	 * @param array
 	 * @return
 	 */
-	public boolean isNullOrEmpty(Object[] array) {
+	public boolean isNullOrEmpty(final Object[] array) {
 		if (array != null)
 			for (final Object object : array)
 				if (object instanceof String) {
@@ -196,7 +195,7 @@ public final class Valid {
 	 * @param message
 	 * @return
 	 */
-	public boolean isNullOrEmpty(String message) {
+	public boolean isNullOrEmpty(final String message) {
 		return message == null || message.isEmpty();
 	}
 
@@ -207,7 +206,7 @@ public final class Valid {
 	 * @param vector
 	 * @return
 	 */
-	public boolean isFinite(Vector vector) {
+	public boolean isFinite(final Vector vector) {
 		return Double.isFinite(vector.getX()) && Double.isFinite(vector.getY()) && Double.isFinite(vector.getZ());
 	}
 
@@ -218,7 +217,7 @@ public final class Valid {
 	 * @param ranged
 	 * @return
 	 */
-	public boolean isInRange(long value, RangedValue ranged) {
+	public boolean isInRange(final long value, final RangedValue ranged) {
 		return value >= ranged.getMinLong() && value <= ranged.getMaxLong();
 	}
 
@@ -230,7 +229,7 @@ public final class Valid {
 	 * @param max
 	 * @return
 	 */
-	public boolean isInRange(double value, double min, double max) {
+	public boolean isInRange(final double value, final double min, final double max) {
 		return value >= min && value <= max;
 	}
 
@@ -242,7 +241,7 @@ public final class Valid {
 	 * @param max
 	 * @return
 	 */
-	public boolean isInRange(long value, long min, long max) {
+	public boolean isInRange(final long value, final long min, final long max) {
 		return value >= min && value <= max;
 	}
 
@@ -257,7 +256,7 @@ public final class Valid {
 	 * @param sec
 	 * @return
 	 */
-	public boolean locationEquals(Location first, Location sec) {
+	public boolean locationEquals(final Location first, final Location sec) {
 		if (!first.getWorld().getName().equals(sec.getWorld().getName()))
 			return false;
 
@@ -268,11 +267,11 @@ public final class Valid {
 	 * Compare two lists. Two lists are considered equal if they are same length and all values are the same.
 	 * Exception: Strings are stripped of colors before comparation.
 	 *
-	 * @param first, first list to compare
+	 * @param first,  first list to compare
 	 * @param second, second list to compare with
 	 * @return true if lists are equal
 	 */
-	public <T> boolean listEquals(List<T> first, List<T> second) {
+	public <T> boolean listEquals(final List<T> first, final List<T> second) {
 		if (first == null && second == null)
 			return true;
 
@@ -312,7 +311,7 @@ public final class Valid {
 	 * @param second
 	 * @return
 	 */
-	public boolean colorlessEquals(String first, String second) {
+	public boolean colorlessEquals(final String first, final String second) {
 		return Common.stripColors(first).equals(Common.stripColors(second));
 	}
 
@@ -323,8 +322,8 @@ public final class Valid {
 	 * @param second
 	 * @return
 	 */
-	public boolean colorlessEquals(List<String> first, List<String> second) {
-		return colorlessEquals(Common.toArray(first), Common.toArray(second));
+	public boolean colorlessEquals(final List<String> first, final List<String> second) {
+		return Valid.colorlessEquals(Common.toArray(first), Common.toArray(second));
 	}
 
 	/**
@@ -334,7 +333,7 @@ public final class Valid {
 	 * @param secondArray
 	 * @return
 	 */
-	public boolean colorlessEquals(String[] firstArray, String[] secondArray) {
+	public boolean colorlessEquals(final String[] firstArray, final String[] secondArray) {
 		for (int i = 0; i < firstArray.length; i++) {
 			final String first = Common.stripColors(firstArray[i]);
 			final String second = i < secondArray.length ? Common.stripColors(secondArray[i]) : "";
@@ -352,7 +351,7 @@ public final class Valid {
 
 	/**
 	 * Returns true if the given is in the given list, depending on the mode
-	 *
+	 * <p>
 	 * If isBlacklist mode is enabled, we return true when element is NOT in the list,
 	 * if it is false, we return true if element is in the list.
 	 *
@@ -361,8 +360,8 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInList(String element, boolean isBlacklist, Iterable<String> list) {
-		return isBlacklist == isInList(element, list);
+	public boolean isInList(final String element, final boolean isBlacklist, final Iterable<String> list) {
+		return isBlacklist == Valid.isInList(element, list);
 	}
 
 	/**
@@ -372,10 +371,10 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInList(String element, Iterable<String> list) {
+	public boolean isInList(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
-				if (normalizeEquals(element).equals(normalizeEquals(matched)))
+				if (Valid.normalizeEquals(element).equals(Valid.normalizeEquals(matched)))
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
@@ -391,10 +390,10 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInListStartsWith(String element, Iterable<String> list) {
+	public boolean isInListStartsWith(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
-				if (normalizeEquals(element).startsWith(normalizeEquals(matched)))
+				if (Valid.normalizeEquals(element).startsWith(Valid.normalizeEquals(matched)))
 					return true;
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
 		}
@@ -409,10 +408,10 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInListContains(String element, Iterable<String> list) {
+	public boolean isInListContains(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
-				if (normalizeEquals(element).contains(normalizeEquals(matched)))
+				if (Valid.normalizeEquals(element).contains(Valid.normalizeEquals(matched)))
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
@@ -423,14 +422,14 @@ public final class Valid {
 
 	/**
 	 * Returns true if any element in the given list matches your given element.
-	 *
+	 * <p>
 	 * A regular expression is compiled from that list element.
 	 *
 	 * @param element
 	 * @param list
 	 * @return
 	 */
-	public boolean isInListRegex(String element, Iterable<String> list) {
+	public boolean isInListRegex(final String element, final Iterable<String> list) {
 		try {
 			for (final String regex : list)
 				if (Common.regExMatch(regex, element))

@@ -1,11 +1,11 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An engine that reads from a file. You need to override most of the methods to
@@ -43,9 +43,9 @@ public abstract class FileReader<T> {
 			return load0(path);
 		} catch (final Throwable t) {
 			Common.throwError(t,
-					"&cError reading " + path,
-					"&cCheck for syntax errors.",
-					"Error: " + t.getMessage());
+				"&cError reading " + path,
+				"&cCheck for syntax errors.",
+				"Error: " + t.getMessage());
 
 			return null;
 		}

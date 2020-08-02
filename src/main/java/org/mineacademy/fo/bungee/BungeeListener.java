@@ -10,7 +10,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 /**
  * Represents a BungeeCord listener using a {@link BungeeChannel} channel
  * on which you can listen to receiving messages
- *
+ * <p>
  * This class is also a Listener for Bukkit events for your convenience
  */
 public abstract class BungeeListener implements Listener, PluginMessageListener {

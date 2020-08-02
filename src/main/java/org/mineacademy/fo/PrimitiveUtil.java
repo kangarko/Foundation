@@ -1,13 +1,12 @@
-
 package org.mineacademy.fo;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PrimitiveUtil {

@@ -1,17 +1,16 @@
 package org.mineacademy.fo.conversation;
 
-import java.util.function.Consumer;
-
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.Valid;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.function.Consumer;
 
 /**
  * A prompt that only accepts whole or decimal numbers
@@ -90,6 +89,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 
 	/**
 	 * Show the question with the action to the player
+	 *
 	 * @param player
 	 * @param question
 	 * @param successAction

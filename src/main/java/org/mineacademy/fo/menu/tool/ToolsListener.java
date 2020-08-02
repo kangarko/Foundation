@@ -1,9 +1,6 @@
 package org.mineacademy.fo.menu.tool;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
+import lombok.Data;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EnderPearl;
@@ -22,7 +19,9 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.Data;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * The event listener class responsible for firing events in tools

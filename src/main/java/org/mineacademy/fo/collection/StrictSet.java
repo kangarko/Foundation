@@ -1,19 +1,15 @@
 package org.mineacademy.fo.collection;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
+import java.util.*;
+
 /**
  * Strict set that only allows to remove elements that are contained within, or add elements that are not.
- *
+ * <p>
  * Failing to do so results in an error, with optional error message.
  */
 public class StrictSet<E> extends StrictCollection implements Iterable<E> {

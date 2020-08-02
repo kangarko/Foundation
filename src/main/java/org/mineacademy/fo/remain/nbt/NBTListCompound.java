@@ -7,14 +7,13 @@ package org.mineacademy.fo.remain.nbt;
  * future
  *
  * @author tr7zw
- *
  */
 public class NBTListCompound extends NBTCompound {
 
-	private final NBTList<?> owner;
+	private NBTList<?> owner;
 	private Object compound;
 
-	protected NBTListCompound(NBTList<?> parent, Object obj) {
+	NBTListCompound(final NBTList<?> parent, final Object obj) {
 		super(null, null);
 		owner = parent;
 		compound = obj;
@@ -30,7 +29,7 @@ public class NBTListCompound extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(Object compound) {
+	protected void setCompound(final Object compound) {
 		this.compound = compound;
 	}
 
