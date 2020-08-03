@@ -26,7 +26,7 @@ public final class DiscordSender implements CommandSender {
 	private final String name;
 
 	@Override
-	public boolean isPermissionSet(String permission) {
+	public boolean isPermissionSet(String permission) {		
 		throw unsupported("isPermissionSet");
 	}
 

@@ -1,5 +1,52 @@
 package org.mineacademy.fo.model;
 
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
+import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.region.Region;
+import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
+
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.bekvon.bukkit.residence.Residence;
@@ -31,27 +78,15 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+
 import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import me.angeschossen.lands.api.integration.LandsIntegration;
-import me.angeschossen.lands.api.land.Land;
-import me.angeschossen.lands.api.land.LandArea;
-import me.angeschossen.lands.api.land.enums.LandSetting;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -61,32 +96,6 @@ import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.mineacademy.fo.*;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.region.Region;
-import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
  * Our main class hooking into different plugins, providing you
@@ -119,7 +128,6 @@ public final class HookManager {
 	private static CMIHook CMIHook;
 	private static CitizensHook citizensHook;
 	private static DiscordSRVHook discordSRVHook;
-	private static LandsHook landsHook;
 	private static boolean nbtAPIDummyHook = false;
 	private static boolean nuVotifierDummyHook = false;
 
@@ -154,9 +162,6 @@ public final class HookManager {
 
 		if (Common.doesPluginExistSilently("LWC"))
 			lwcHook = new LWCHook();
-
-		if (Common.doesPluginExistSilently("Lands"))
-			landsHook = new LandsHook();
 
 		if (Common.doesPluginExistSilently("Lockette"))
 			locketteProHook = new LocketteProHook();
@@ -454,15 +459,6 @@ public final class HookManager {
 	 */
 	public static boolean isDiscordSRVLoaded() {
 		return discordSRVHook != null;
-	}
-
-	/**
-	 * Is the Lands plugin found and loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isLandsLoaded() {
-		return landsHook != null;
 	}
 
 	/**
@@ -851,8 +847,8 @@ public final class HookManager {
 	@Deprecated
 	public static boolean hasPermissionVault(final Player online, final String perm) {
 		return online != null && online.getUniqueId() != null
-			&& isVaultLoaded()
-			&& vaultHook.hasPerm(online.getWorld().getName(), online.getName(), perm);
+				&& isVaultLoaded()
+				&& vaultHook.hasPerm(online.getWorld().getName(), online.getName(), perm);
 	}
 
 	/**
@@ -1316,20 +1312,6 @@ public final class HookManager {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Lands
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Return true if the given location is within a land/land arena with monster spawn enabled
-	 *
-	 * @param location
-	 * @return see above, or true if lands plugin not installed
-	 */
-	public static boolean hasLandsMonsterSpawn(final Location location) {
-		return isLandsLoaded() && landsHook.hasMonsterSpawn(location);
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
 	// Class helpers
 	// ------------------------------------------------------------------------------------------------------------
 
@@ -1607,7 +1589,7 @@ class TownyHook {
 					return channel.getName();
 
 			final com.palmergames.bukkit.TownyChat.channels.Channel channel = townyChat.getChannelsHandler().getActiveChannel(pl,
-				com.palmergames.bukkit.TownyChat.channels.channelTypes.GLOBAL);
+					com.palmergames.bukkit.TownyChat.channels.channelTypes.GLOBAL);
 			return channel == null ? null : channel.getName();
 
 		} catch (final Throwable ex) {
@@ -1848,10 +1830,10 @@ class PlaceholderAPIHook {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-				"PlaceholderAPI failed to replace variables!",
-				"Player: " + pl.getName(),
-				"Message: " + msg,
-				"Error: %error");
+					"PlaceholderAPI failed to replace variables!",
+					"Player: " + pl.getName(),
+					"Message: " + msg,
+					"Error: %error");
 
 			return msg;
 		}
@@ -1891,11 +1873,11 @@ class PlaceholderAPIHook {
 			return setRelationalPlaceholders(one, two, msg);
 		} catch (final Throwable t) {
 			Common.error(t,
-				"PlaceholderAPI failed to replace relation variables!",
-				"Player one: " + one,
-				"Player two: " + two,
-				"Message: " + msg,
-				"Error: %error");
+					"PlaceholderAPI failed to replace relation variables!",
+					"Player one: " + one,
+					"Player two: " + two,
+					"Message: " + msg,
+					"Error: %error");
 
 			return msg;
 		}
@@ -1905,33 +1887,33 @@ class PlaceholderAPIHook {
 
 		// TODO!
 		//		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
-//
-//		if (hooks.isEmpty())
-//			return text;
-//
-//		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
-//
-//		while (m.find()) {
-//			final String format = m.group(2);
-//			final int index = format.indexOf("_");
-//
-//			if (index <= 0 || index >= format.length())
-//				continue;
-//
-//			final String identifier = format.substring(0, index).toLowerCase();
-//			final String params = format.substring(index + 1);
-//
-//			if (hooks.containsKey(identifier)) {
-//				if (!(hooks.get(identifier) instanceof Relational))
-//					continue;
-//
-//				final Relational rel = (Relational) hooks.get(identifier);
-//				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
-//
-//				if (value != null)
-//					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
-//			}
-//		}
+		//
+		//		if (hooks.isEmpty())
+		//			return text;
+		//
+		//		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
+		//
+		//		while (m.find()) {
+		//			final String format = m.group(2);
+		//			final int index = format.indexOf("_");
+		//
+		//			if (index <= 0 || index >= format.length())
+		//				continue;
+		//
+		//			final String identifier = format.substring(0, index).toLowerCase();
+		//			final String params = format.substring(index + 1);
+		//
+		//			if (hooks.containsKey(identifier)) {
+		//				if (!(hooks.get(identifier) instanceof Relational))
+		//					continue;
+		//
+		//				final Relational rel = (Relational) hooks.get(identifier);
+		//				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
+		//
+		//				if (value != null)
+		//					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
+		//			}
+		//		}
 
 		return text;
 	}
@@ -2067,13 +2049,13 @@ class MVdWPlaceholderHook {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-				"MvdWPlaceholders placeholders failed!",
-				"Player: " + player.getName(),
-				"Message: '" + message + "'",
-				"Consider writing to developer of that library",
-				"first as this may be a bug we cannot handle!",
-				"",
-				"Your chat message will appear without replacements.");
+					"MvdWPlaceholders placeholders failed!",
+					"Player: " + player.getName(),
+					"Message: '" + message + "'",
+					"Consider writing to developer of that library",
+					"first as this may be a bug we cannot handle!",
+					"",
+					"Your chat message will appear without replacements.");
 		}
 
 		return message;
@@ -2259,7 +2241,7 @@ class WorldGuardHook {
 				}
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-					.getRegions().values().forEach(reg -> {
+				.getRegions().values().forEach(reg -> {
 					if (reg == null || reg.getId() == null)
 						return;
 
@@ -2287,7 +2269,7 @@ class WorldGuardHook {
 			}
 
 		return ((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-			.getApplicableRegions(com.sk89q.worldedit.math.BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
+				.getApplicableRegions(com.sk89q.worldedit.math.BlockVector3.at(loc.getX(), loc.getY(), loc.getZ()));
 	}
 
 	private Object getRegionManager(final World w) {
@@ -2397,7 +2379,7 @@ final class FactionsMassive extends FactionsHook {
 		if (f != null)
 			return f.getLeader() != null ? f.getLeader().getName() : null;
 
-		return null;
+			return null;
 	}
 }
 
@@ -2550,7 +2532,12 @@ class CMIHook {
 	boolean isMuted(final Player player) {
 		final CMIUser user = getUser(player);
 
-		return user != null && user.isMuted();
+		try {
+			return user != null && user.getMutedUntil() != 0 && user.getMutedUntil() != null;
+
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
 	String getNick_(final Player player) {
@@ -2569,7 +2556,11 @@ class CMIHook {
 	void setLastTeleportLocation(final Player player, final Location location) {
 		final CMIUser user = getUser(player);
 
-		user.setLastTeleportLocation(location);
+		try {
+			user.getClass().getMethod("setLastTeleportLocation", Location.class).invoke(user, location);
+		} catch (Throwable t) {
+			// Silently fail
+		}
 	}
 
 	void setIgnore(final UUID player, final UUID who, final boolean ignore) {
@@ -2663,40 +2654,5 @@ class DiscordSRVHook implements Listener {
 			DiscordUtil.sendMessage(textChannel, message);
 		}
 		return true;
-	}
-}
-
-class LandsHook {
-
-	private LandsIntegration api;
-
-	public LandsHook() {
-		try {
-			api = new LandsIntegration(SimplePlugin.getInstance(), true);
-		} catch (final Throwable throwable) {
-			api = null;
-			// Try it again in 10 seconds, maybe the plugin wasn't yet loaded
-			Common.runLater(20 * 10, () -> {
-				try {
-					api = new LandsIntegration(SimplePlugin.getInstance(), true);
-				} catch (final Throwable ignored) {
-				}
-			});
-		}
-	}
-
-	public boolean hasMonsterSpawn(final Location location) {
-		try {
-			if (api == null)
-				return false;
-
-			final Land land = api.getLand(location);
-			final LandArea landArea = api.getArea(location);
-
-			return land != null && land.hasLandSetting(LandSetting.MONSTER_SPAWN) || landArea != null && landArea.hasLandSetting(LandSetting.MONSTER_SPAWN);
-		} catch (final Throwable throwable) {
-			Common.log("[Warn] couldn't hook into Lands!");
-		}
-		return false;
 	}
 }
