@@ -1997,7 +1997,14 @@ public final class Remain {
 	// return the legacy get health int method
 	private static int getMaxHealhLegacy(final LivingEntity entity) {
 		try {
-			return (int) LivingEntity.class.getMethod("getMaxHealth").invoke(entity);
+			final Object number = LivingEntity.class.getMethod("getMaxHealth").invoke(entity);
+
+			if (number instanceof Double)
+				return ((Double) number).intValue();
+			if (number instanceof Integer)
+				return ((Integer) number);
+
+			return (int) Double.parseDouble(number.toString());
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Reflection malfunction");
