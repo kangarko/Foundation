@@ -27,7 +27,7 @@ To install Foundation with Maven, open your pom.xml, locate the `<repositories>`
 </repository>
 ```
 
-Then locate the `<dependencies>` section of your pom.xml and place the following inside of it. Replace the "REPLACE_WITH_LATEST_VERSION" string with the latest version from: https://github.com/kangarko/Foundation/releases/tag/5.5.1
+Then locate the `<dependencies>` section of your pom.xml and place the following inside of it. Replace the "REPLACE_WITH_LATEST_VERSION" string with the latest version from: https://github.com/kangarko/Foundation/releases
 
 ```xml
 <dependency>
