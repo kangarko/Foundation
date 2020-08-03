@@ -12,6 +12,45 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 
 Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting their ideas out there.
 
+### Compiling and using
+
+We use JitPack to automatically compile and host the latest release of Foundation for you.
+
+#### a) Alternative A: If you don't have Foundation on your computer:
+
+To install Foundation with Maven, open your pom.xml, locate the `<repositories>` section and place this repository within it:
+
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+```
+
+Then locate the `<dependencies>` section of your pom.xml and place the following inside of it. Replace the "REPLACE_WITH_LATEST_VERSION" string with the latest version from: https://github.com/kangarko/Foundation/releases/tag/5.5.1
+
+```xml
+<dependency>
+    <groupId>com.github.kangarko</groupId>
+    <artifactId>Foundation</artifactId>
+    <version>REPLACE_WITH_LATEST_VERSION</version>
+</dependency>
+```
+
+For more information, including how to use Foundation with other tools than Maven, please visit: https://jitpack.io/#kangarko/Foundation/
+
+#### b) Alternative B: If you have Foundation on your computer:
+
+If you downloaded Foundation to your disk, do not place any repository to your pom.xml file, instead, only place the following dependency. Notice the groupId is different. You can use the LATEST keyword to automatically synchronize changes you make to your local copy of Foundation with your plugin source code (now that's fast!).
+
+```xml
+<dependency>
+    <groupId>org.mineacademy</groupId>
+    <artifactId>Foundation</artifactId>
+    <version>LATEST</version>
+</dependency>
+```
+
 ### Important Licencing Information
 
 2013 - 2020 © MineAcademy.org
