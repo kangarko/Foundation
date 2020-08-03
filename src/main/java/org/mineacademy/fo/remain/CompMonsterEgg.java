@@ -1,6 +1,10 @@
 package org.mineacademy.fo.remain;
 
-import lombok.NonNull;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -14,10 +18,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import lombok.NonNull;
 
 /**
  * Utility class for manipulating Monster Eggs
@@ -56,9 +57,10 @@ public final class CompMonsterEgg {
 	 * @param count
 	 * @return the finished egg
 	 */
-	private static ItemStack makeEgg(final EntityType type, final int count) {
+	public static ItemStack makeEgg(final EntityType type, final int count) {
 		Valid.checkNotNull(type, "Entity type cannot be null!");
 		ItemStack itemStack = new ItemStack(CompMaterial.makeMonsterEgg(type).getMaterial(), count);
+
 		// For older MC
 		if (itemStack.getType().toString().equals("MONSTER_EGG"))
 			itemStack = setEntity(itemStack, type);
