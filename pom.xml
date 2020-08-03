@@ -3,12 +3,14 @@
 	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
 	owner of the MineAcademy.org End User License then you may use it for your 
 	own use in plugins but not for any other purpose. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>5.5.1</version>
+	<version>5.5.2</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
@@ -36,6 +38,13 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.12</version>
+		</dependency>
+		<!-- Solves a weird BUILD FAILURE problem, see https://www.spigotmc.org/threads/455923 
+			Apparently this is used somewhere in the other jars and causing issues if not stated explicitly -->
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>19.0.0</version>
 		</dependency>
 		<!-- The Spigot API and PaperSpigot server -->
 		<dependency>
