@@ -1,7 +1,7 @@
 package org.mineacademy.fo.visual;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
