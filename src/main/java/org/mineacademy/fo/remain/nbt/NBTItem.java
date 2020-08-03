@@ -58,30 +58,6 @@ public class NBTItem extends NBTCompound {
 	}
 
 	/**
-	 * Merge all NBT tags to the provided ItemStack.
-	 *
-	 * @param item ItemStack that should get the new NBT data
-	 */
-	private void mergeNBT(final ItemStack item) {
-		final NBTItem nbti = new NBTItem(item);
-		nbti.mergeCompound(this);
-		item.setItemMeta(nbti.getItem().getItemMeta());
-	}
-
-	/**
-	 * Merge only custom (non-vanilla) NBT tags to the provided ItemStack.
-	 *
-	 * @param item ItemStack that should get the new NBT data
-	 */
-	private void mergeCustomNBT(final ItemStack item) {
-		if (item == null || item.getType() == Material.AIR)
-			throw new NullPointerException("ItemStack can't be null/Air!");
-		final ItemMeta meta = item.getItemMeta();
-		NBTReflectionUtil.getUnhandledNBTTags(meta).putAll(NBTReflectionUtil.getUnhandledNBTTags(bukkitItem.getItemMeta()));
-		item.setItemMeta(meta);
-	}
-
-	/**
 	 * Remove all custom (non-vanilla) NBT tags from the NBTItem.
 	 */
 	public void clearCustomNBT() {
@@ -130,7 +106,7 @@ public class NBTItem extends NBTCompound {
 	 */
 	static ItemStack convertNBTtoItem(final NBTCompound comp) {
 		return (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null,
-			NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
+				NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
 	}
 
 }

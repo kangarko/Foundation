@@ -1,13 +1,13 @@
 package org.mineacademy.fo.model;
 
+import java.util.Set;
+
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
-
-import java.util.Set;
 
 /**
  * Command sender used if this library lacks a Minecraft server (normally never, we

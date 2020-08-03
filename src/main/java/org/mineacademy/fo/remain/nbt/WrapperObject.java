@@ -1,10 +1,10 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.lang.reflect.Constructor;
+
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-
-import java.lang.reflect.Constructor;
 
 /**
  * This Enum wraps Constructors for NMS classes

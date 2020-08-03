@@ -1,12 +1,12 @@
 package org.mineacademy.fo.remain.nbt;
 
+import static org.mineacademy.fo.ReflectionUtil.CRAFTBUKKIT;
+import static org.mineacademy.fo.ReflectionUtil.NMS;
+
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-
-import static org.mineacademy.fo.ReflectionUtil.CRAFTBUKKIT;
-import static org.mineacademy.fo.ReflectionUtil.NMS;
 
 /**
  * Wraps NMS and CRAFT classes

@@ -1,5 +1,20 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
+
 import lombok.Data;
 import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
@@ -8,19 +23,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.command.CommandSender;
-import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.remain.Remain;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A very simple way of sending interactive chat messages
@@ -120,7 +122,7 @@ public class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(text, null, null)), (permissibleComponent) -> permissibleComponent.getComponent());
+		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(colorize ? Common.colorize(text) : text, null, null)), PermissibleComponent::getComponent);
 
 		for (final PermissibleComponent component : currentComponents)
 			component.getComponent().setHoverEvent(new HoverEvent(action, baseComponents.toArray(new BaseComponent[baseComponents.size()])));

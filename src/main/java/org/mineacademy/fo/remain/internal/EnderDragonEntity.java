@@ -1,11 +1,12 @@
 package org.mineacademy.fo.remain.internal;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.Location;
 import org.mineacademy.fo.remain.CompBarColor;
 import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents the fake dragon entity

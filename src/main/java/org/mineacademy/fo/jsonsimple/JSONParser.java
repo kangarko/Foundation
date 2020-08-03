@@ -203,15 +203,16 @@
  */
 package org.mineacademy.fo.jsonsimple;
 
-import lombok.Getter;
-import org.mineacademy.fo.exception.FoException;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+
+import org.mineacademy.fo.exception.FoException;
+
+import lombok.Getter;
 
 /**
  * Parses JSON data (<u>not</u> thread-safe).

@@ -1,7 +1,7 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -11,7 +11,8 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.exception.FoException;
 
-import java.util.Set;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a Discord command sender for Discord integration
@@ -26,7 +27,7 @@ public final class DiscordSender implements CommandSender {
 	private final String name;
 
 	@Override
-	public boolean isPermissionSet(String permission) {		
+	public boolean isPermissionSet(String permission) {
 		throw unsupported("isPermissionSet");
 	}
 

@@ -1,12 +1,14 @@
 package org.mineacademy.fo.bungee.message;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
-import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.plugin.SimplePlugin;
+
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
+
+import lombok.Getter;
 
 /**
  * Represents an incoming plugin message.

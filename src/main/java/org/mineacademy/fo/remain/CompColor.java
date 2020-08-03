@@ -1,6 +1,8 @@
 package org.mineacademy.fo.remain;
 
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.Common;
@@ -9,8 +11,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
 
 /**
  * A utility class enabling you to convert between {@link DyeColor} and {@link ChatColor} with ease

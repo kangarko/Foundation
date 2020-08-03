@@ -1,7 +1,8 @@
 package org.mineacademy.fo.remain.nbt.utils;
 
-import com.google.gson.Gson;
 import org.mineacademy.fo.remain.nbt.NbtApiException;
+
+import com.google.gson.Gson;
 
 /**
  * Helper class for 1.7 servers without Gson
@@ -42,9 +43,9 @@ public class GsonWrapper {
 				return null;
 			}
 
-			T obj = gson.fromJson(json, type);
+			final T obj = gson.fromJson(json, type);
 			return type.cast(obj);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
 		}
 	}

@@ -1,7 +1,8 @@
 package org.mineacademy.fo.model;
 
-import lombok.Data;
 import org.mineacademy.fo.collection.SerializedMap;
+
+import lombok.Data;
 
 /**
  * Simple tuple for key-value pairs

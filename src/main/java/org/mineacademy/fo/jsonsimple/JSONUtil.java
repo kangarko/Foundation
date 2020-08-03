@@ -247,11 +247,11 @@ public final class JSONUtil {
 	public static boolean isJSONType(Object value) {
 
 		return value == null ||
-			value instanceof Number ||
-			value instanceof String ||
-			value instanceof Boolean ||
-			value instanceof Collection ||
-			value instanceof Map ||
-			value.getClass().isArray();
+				value instanceof Number ||
+				value instanceof String ||
+				value instanceof Boolean ||
+				value instanceof Collection ||
+				value instanceof Map ||
+				value.getClass().isArray();
 	}
 }

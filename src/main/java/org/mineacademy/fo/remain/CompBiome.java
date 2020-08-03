@@ -1,9 +1,9 @@
 package org.mineacademy.fo.remain;
 
+import java.util.Map.Entry;
+
 import org.bukkit.block.Biome;
 import org.mineacademy.fo.collection.StrictMap;
-
-import java.util.Map.Entry;
 
 /**
  * A simple class for getting biome ID for legacy biomes.

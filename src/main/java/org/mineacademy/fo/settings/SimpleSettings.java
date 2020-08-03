@@ -1,5 +1,7 @@
 package org.mineacademy.fo.settings;
 
+import java.util.List;
+
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
@@ -9,8 +11,6 @@ import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.update.SpigotUpdater;
-
-import java.util.List;
 
 /**
  * A simple implementation of a typical main plugin settings

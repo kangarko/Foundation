@@ -4,7 +4,14 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.remain.nbt.*;
+import org.mineacademy.fo.remain.nbt.NBTCompound;
+import org.mineacademy.fo.remain.nbt.NBTCompoundList;
+import org.mineacademy.fo.remain.nbt.NBTEntity;
+import org.mineacademy.fo.remain.nbt.NBTItem;
+import org.mineacademy.fo.remain.nbt.NBTList;
+import org.mineacademy.fo.remain.nbt.NBTListCompound;
+import org.mineacademy.fo.remain.nbt.NBTTileEntity;
+import org.mineacademy.fo.remain.nbt.NBTType;
 
 /**
  * Utility class to test NBT library's compatibility
@@ -38,8 +45,8 @@ public class NBTInternals {
 	private static final byte BYTE_VALUE = 7;
 	private static final float FLOAT_VALUE = 13.37f;
 	private static final long LONG_VALUE = Integer.MAX_VALUE + 42L;
-	private static final int[] INTARRAY_VALUE = new int[]{1337, 42, 69};
-	private static final byte[] BYTEARRAY_VALUE = new byte[]{8, 7, 3, 2};
+	private static final int[] INTARRAY_VALUE = new int[] { 1337, 42, 69 };
+	private static final byte[] BYTEARRAY_VALUE = new byte[] { 8, 7, 3, 2 };
 
 	/**
 	 * Checks if the NBT library is working properly
@@ -99,15 +106,15 @@ public class NBTInternals {
 		}
 
 		if (!STRING_VALUE.equals(nbtItem.getString(STRING_KEY))
-			|| nbtItem.getInteger(INT_KEY) != INT_VALUE
-			|| nbtItem.getDouble(DOUBLE_KEY) != DOUBLE_VALUE
-			|| nbtItem.getByte(BYTE_KEY) != BYTE_VALUE
-			|| nbtItem.getShort(SHORT_KEY) != SHORT_VALUE
-			|| nbtItem.getFloat(FLOAT_KEY) != FLOAT_VALUE
-			|| nbtItem.getLong(LONG_KEY) != LONG_VALUE
-			|| nbtItem.getIntArray(INTARRAY_KEY).length != INTARRAY_VALUE.length
-			|| nbtItem.getByteArray(BYTEARRAY_KEY).length != BYTEARRAY_VALUE.length
-			|| !nbtItem.getBoolean(BOOLEAN_KEY).equals(BOOLEAN_VALUE)) {
+				|| nbtItem.getInteger(INT_KEY) != INT_VALUE
+				|| nbtItem.getDouble(DOUBLE_KEY) != DOUBLE_VALUE
+				|| nbtItem.getByte(BYTE_KEY) != BYTE_VALUE
+				|| nbtItem.getShort(SHORT_KEY) != SHORT_VALUE
+				|| nbtItem.getFloat(FLOAT_KEY) != FLOAT_VALUE
+				|| nbtItem.getLong(LONG_KEY) != LONG_VALUE
+				|| nbtItem.getIntArray(INTARRAY_KEY).length != INTARRAY_VALUE.length
+				|| nbtItem.getByteArray(BYTEARRAY_KEY).length != BYTEARRAY_VALUE.length
+				|| !nbtItem.getBoolean(BOOLEAN_KEY).equals(BOOLEAN_VALUE)) {
 			System.out.println("One key does not equal the original value!");
 
 			compatible = false;
@@ -130,9 +137,9 @@ public class NBTInternals {
 			compatible = false;
 		}
 		if (!(STRING_VALUE + "2").equals(comp.getString(STRING_KEY))
-			|| comp.getInteger(INT_KEY) != INT_VALUE * 2
-			|| comp.getDouble(DOUBLE_KEY) != DOUBLE_VALUE * 2
-			|| comp.getBoolean(BOOLEAN_KEY) == BOOLEAN_VALUE) {
+				|| comp.getInteger(INT_KEY) != INT_VALUE * 2
+				|| comp.getDouble(DOUBLE_KEY) != DOUBLE_VALUE * 2
+				|| comp.getBoolean(BOOLEAN_KEY) == BOOLEAN_VALUE) {
 			System.out.println("One key does not equal the original compound value!");
 
 			compatible = false;
@@ -154,7 +161,7 @@ public class NBTInternals {
 
 				compatible = false;
 			} else if (lcomp.getDouble("double1") == 0.3333 && lcomp.getInteger("int1") == 42 && lcomp.getString("test2").equals("test2")
-				&& !lcomp.hasKey("test1")) {
+					&& !lcomp.hasKey("test1")) {
 				//ok
 			} else {
 				System.out.println("One key in the Taglist changed!");

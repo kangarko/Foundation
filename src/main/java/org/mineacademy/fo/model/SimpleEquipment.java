@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
+import javax.annotation.Nullable;
+
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -12,7 +13,7 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompEquipmentSlot;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import javax.annotation.Nullable;
+import lombok.Getter;
 
 /**
  * A more robust alternative to the {@link EntityEquipment} class found in Bukkit

@@ -1,7 +1,10 @@
 package org.mineacademy.fo.menu;
 
-import lombok.Getter;
-import lombok.val;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -16,10 +19,8 @@ import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import lombok.Getter;
+import lombok.val;
 
 /**
  * An advanced menu listing items with automatic page support
@@ -80,7 +81,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param returnMakesNewInstance
 	 */
 	protected MenuPagged(final Menu parent, final Iterable<T> pages,
-	                     final boolean returnMakesNewInstance) {
+			final boolean returnMakesNewInstance) {
 		this(null, parent, pages, returnMakesNewInstance);
 	}
 
@@ -110,7 +111,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	@Deprecated
 	protected MenuPagged(final int pageSize, final Menu parent,
-	                     final Iterable<T> pages) {
+			final Iterable<T> pages) {
 		this(pageSize, parent, pages, false);
 	}
 
@@ -126,7 +127,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	@Deprecated
 	protected MenuPagged(final int pageSize, final Menu parent,
-	                     final Iterable<T> pages, final boolean returnMakesNewInstance) {
+			final Iterable<T> pages, final boolean returnMakesNewInstance) {
 		this((Integer) pageSize, parent, pages, returnMakesNewInstance);
 	}
 
@@ -207,10 +208,10 @@ public abstract class MenuPagged<T> extends Menu {
 
 			@Override
 			public void onClickedInMenu(final Player pl, final Menu menu,
-			                            final ClickType click) {
+					final ClickType click) {
 				if (canGo) {
 					currentPage = MathUtil.range(currentPage - 1, 1,
-						pages.size());
+							pages.size());
 
 					updatePage();
 				}
@@ -221,9 +222,9 @@ public abstract class MenuPagged<T> extends Menu {
 				final int str = currentPage - 1;
 
 				return ItemCreator.of(
-					canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE)
-					.name(str == 0 ? "&7First Page" : "&8<< &fPage " + str)
-					.build().make();
+						canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE)
+						.name(str == 0 ? "&7First Page" : "&8<< &fPage " + str)
+						.build().make();
 			}
 		} : Button.makeEmpty();
 
@@ -233,10 +234,10 @@ public abstract class MenuPagged<T> extends Menu {
 
 			@Override
 			public void onClickedInMenu(final Player pl, final Menu menu,
-			                            final ClickType click) {
+					final ClickType click) {
 				if (canGo) {
 					currentPage = MathUtil.range(currentPage + 1, 1,
-						pages.size());
+							pages.size());
 
 					updatePage();
 				}
@@ -247,11 +248,11 @@ public abstract class MenuPagged<T> extends Menu {
 				final boolean last = currentPage == pages.size();
 
 				return ItemCreator.of(
-					canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE)
-					.name(last
-						? "&7Last Page"
-						: "Page " + (currentPage + 1) + " &8>>")
-					.build().make();
+						canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE)
+						.name(last
+								? "&7Last Page"
+								: "Page " + (currentPage + 1) + " &8>>")
+						.build().make();
 			}
 		} : Button.makeEmpty();
 	}
@@ -271,8 +272,8 @@ public abstract class MenuPagged<T> extends Menu {
 		final boolean canAddNumbers = addPageNumbers() && pages.size() > 1;
 
 		return getTitle() + (canAddNumbers
-			? " &8" + currentPage + "/" + pages.size()
-			: "");
+				? " &8" + currentPage + "/" + pages.size()
+				: "");
 	}
 
 	/**
@@ -367,9 +368,9 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	@Override
 	public final void onMenuClick(final Player player, final int slot,
-	                              final InventoryAction action, final ClickType click,
-	                              final ItemStack cursor, final ItemStack clicked,
-	                              final boolean cancelled) {
+			final InventoryAction action, final ClickType click,
+			final ItemStack cursor, final ItemStack clicked,
+			final boolean cancelled) {
 		if (slot < getCurrentPageItems().size()) {
 			final T obj = getCurrentPageItems().get(slot);
 
@@ -378,9 +379,9 @@ public abstract class MenuPagged<T> extends Menu {
 				onPageClick(player, obj, click);
 
 				if (updateButtonOnClick()
-					&& prevType == player.getOpenInventory().getType())
+						&& prevType == player.getOpenInventory().getType())
 					player.getOpenInventory().getTopInventory().setItem(slot,
-						getItemAt(slot));
+							getItemAt(slot));
 			}
 		}
 	}
@@ -388,23 +389,23 @@ public abstract class MenuPagged<T> extends Menu {
 	// Do not allow override
 	@Override
 	public final void onButtonClick(final Player player, final int slot,
-	                                final InventoryAction action, final ClickType click,
-	                                final Button button) {
+			final InventoryAction action, final ClickType click,
+			final Button button) {
 		super.onButtonClick(player, slot, action, click, button);
 	}
 
 	// Do not allow override
 	@Override
 	public final void onMenuClick(final Player player, final int slot,
-	                              final ItemStack clicked) {
+			final ItemStack clicked) {
 		throw new FoException("Simplest click unsupported");
 	}
 
 	// Get all items in a page
 	private List<T> getCurrentPageItems() {
 		Valid.checkBoolean(pages.containsKey(currentPage - 1),
-			"The menu has only " + pages.size() + " pages, not "
-				+ currentPage + "!");
+				"The menu has only " + pages.size() + " pages, not "
+						+ currentPage + "!");
 
 		return pages.get(currentPage - 1);
 	}

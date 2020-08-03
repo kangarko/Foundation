@@ -1,7 +1,7 @@
 package org.mineacademy.fo.visual;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.util.HashSet;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.FallingBlock;
@@ -15,7 +15,8 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
-import java.util.HashSet;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * A utility class for displaying glowing block corners

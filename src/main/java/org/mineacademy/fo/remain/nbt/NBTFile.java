@@ -1,12 +1,11 @@
 package org.mineacademy.fo.remain.nbt;
 
-
-import org.mineacademy.fo.remain.nbt.nmsmappings.ObjectCreator;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.mineacademy.fo.remain.nbt.nmsmappings.ObjectCreator;
 
 /**
  * {@link NBTCompound} implementation backed by a {@link File}
@@ -27,7 +26,8 @@ public class NBTFile extends NBTCompound {
 	 */
 	public NBTFile(final File file) throws IOException {
 		super(null, null);
-		if (file == null) throw new NullPointerException("File can't be null!");
+		if (file == null)
+			throw new NullPointerException("File can't be null!");
 		this.file = file;
 		if (file.exists()) {
 			final FileInputStream inputsteam = new FileInputStream(file);

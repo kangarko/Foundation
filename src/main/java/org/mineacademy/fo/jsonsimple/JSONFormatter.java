@@ -203,7 +203,11 @@
  */
 package org.mineacademy.fo.jsonsimple;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 
 /**
  * Can format and minimize JSON data.
@@ -354,7 +358,7 @@ public class JSONFormatter {
 		// ====
 
 		try (StringReader reader = new StringReader(json);
-		     StringWriter writer = new StringWriter()) {
+				StringWriter writer = new StringWriter()) {
 
 			this.format(reader, writer);
 			return writer.toString();
@@ -391,11 +395,11 @@ public class JSONFormatter {
 			final char character = (char) read;
 
 			if (character != '\n' &&
-				character != '\t' &&
-				character != '\r' &&
-				character != '\b' &&
-				character != '\0' &&
-				character != '\f') {
+					character != '\t' &&
+					character != '\r' &&
+					character != '\b' &&
+					character != '\0' &&
+					character != '\f') {
 
 				if (character == '"')
 					inString = !(inString && lastChar != '\\');
@@ -422,7 +426,7 @@ public class JSONFormatter {
 		// ====
 
 		try (StringReader reader = new StringReader(json);
-		     StringWriter writer = new StringWriter()) {
+				StringWriter writer = new StringWriter()) {
 
 			this.minimize(reader, writer);
 			return writer.toString();

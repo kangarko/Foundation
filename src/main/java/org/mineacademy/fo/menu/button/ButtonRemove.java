@@ -1,7 +1,7 @@
 package org.mineacademy.fo.menu.button;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -13,7 +13,8 @@ import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import java.util.Arrays;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a standardized remove button that opens the remove confirmation dialog.
@@ -50,32 +51,32 @@ public class ButtonRemove extends Button {
 	public ItemStack getItem() {
 		return ItemCreator
 
-			.of(CompMaterial.LAVA_BUCKET)
-			.name("&4&lRemove " + toRemoveName)
+				.of(CompMaterial.LAVA_BUCKET)
+				.name("&4&lRemove " + toRemoveName)
 
-			.lores(Arrays.asList(
-				"&r",
-				"&7The selected " + toRemoveType + " will",
-				"&7be removed permanently."))
+				.lores(Arrays.asList(
+						"&r",
+						"&7The selected " + toRemoveType + " will",
+						"&7be removed permanently."))
 
-			.flag(CompItemFlag.HIDE_ATTRIBUTES)
-			.build().make();
+				.flag(CompItemFlag.HIDE_ATTRIBUTES)
+				.build().make();
 	}
 
 	public ItemStack getRemoveConfirmItem() {
 		return ItemCreator
 
-			.ofWool(CompColor.RED)
-			.name("&6&lRemove " + toRemoveName)
+				.ofWool(CompColor.RED)
+				.name("&6&lRemove " + toRemoveName)
 
-			.lores(Arrays.asList(
-				"&r",
-				"&7Confirm that this " + toRemoveType + " will",
-				"&7be removed permanently.",
-				"&cCannot be undone."))
+				.lores(Arrays.asList(
+						"&r",
+						"&7Confirm that this " + toRemoveType + " will",
+						"&7be removed permanently.",
+						"&cCannot be undone."))
 
-			.flag(CompItemFlag.HIDE_ATTRIBUTES)
-			.build().make();
+				.flag(CompItemFlag.HIDE_ATTRIBUTES)
+				.build().make();
 	}
 
 	public String getMenuTitle() {
@@ -93,7 +94,8 @@ public class ButtonRemove extends Button {
 	/**
 	 * The button that when clicked, actually removes the object
 	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE) final class RemoveConfirmButton extends Button {
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+	final class RemoveConfirmButton extends Button {
 
 		@Override
 		public ItemStack getItem() {

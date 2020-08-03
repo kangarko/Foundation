@@ -1,11 +1,10 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import org.mineacademy.fo.remain.nbt.nmsmappings.ClassWrapper;
 import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Float implementation for NBTLists
@@ -25,7 +24,7 @@ public class NBTFloatList extends NBTList<Float> {
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (final InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-			| NoSuchMethodException | SecurityException e) {
+				| NoSuchMethodException | SecurityException e) {
 			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
 		}
 	}

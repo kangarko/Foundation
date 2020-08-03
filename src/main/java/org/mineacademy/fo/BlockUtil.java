@@ -1,11 +1,18 @@
 package org.mineacademy.fo;
 
-import com.google.common.collect.Sets;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+
+import org.bukkit.Chunk;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.FallingBlock;
@@ -16,9 +23,12 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
+import com.google.common.collect.Sets;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for block manipulation.
@@ -36,14 +46,14 @@ public final class BlockUtil {
 	 * tree upwards
 	 */
 	private static final BlockFace[] TREE_TRUNK_FACES = {
-		BlockFace.UP, /*BlockFace.DOWN,*/ BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH
+			BlockFace.UP, /*BlockFace.DOWN,*/ BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH
 	};
 
 	/**
 	 * A list of safe blocks upon which a tree naturally grows
 	 */
 	private final static Set<String> TREE_GROUND_BLOCKS = Sets.newHashSet(
-		"GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
+			"GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
 
 	/**
 	 * The vertical gaps when creating locations for a bounding box,
@@ -486,15 +496,15 @@ public final class BlockUtil {
 	 */
 	public static boolean isBreakingFallingBlock(final Material material) {
 		return material.isTransparent() &&
-			material != CompMaterial.NETHER_PORTAL.getMaterial() &&
-			material != CompMaterial.END_PORTAL.getMaterial() ||
-			material == CompMaterial.COBWEB.getMaterial() ||
-			material == Material.DAYLIGHT_DETECTOR ||
-			CompMaterial.isTrapDoor(material) ||
-			material == CompMaterial.SIGN.getMaterial() ||
-			CompMaterial.isWallSign(material) ||
-			// Match all slabs besides double slab
-			SLAB_PATTERN.matcher(material.name()).matches();
+				material != CompMaterial.NETHER_PORTAL.getMaterial() &&
+				material != CompMaterial.END_PORTAL.getMaterial() ||
+				material == CompMaterial.COBWEB.getMaterial() ||
+				material == Material.DAYLIGHT_DETECTOR ||
+				CompMaterial.isTrapDoor(material) ||
+				material == CompMaterial.SIGN.getMaterial() ||
+				CompMaterial.isWallSign(material) ||
+				// Match all slabs besides double slab
+				SLAB_PATTERN.matcher(material.name()).matches();
 	}
 
 	/**
@@ -505,15 +515,15 @@ public final class BlockUtil {
 	 */
 	public static boolean isTool(final Material material) {
 		return material.name().endsWith("AXE") // axe & pickaxe
-			|| material.name().endsWith("SPADE")
-			|| material.name().endsWith("SWORD")
-			|| material.name().endsWith("HOE")
-			|| material.name().endsWith("BUCKET") // water, milk, lava,..
-			|| material == Material.BOW
-			|| material == Material.FISHING_ROD
-			|| material == Remain.getMaterial("CLOCK", "WATCH")
-			|| material == Material.COMPASS
-			|| material == Material.FLINT_AND_STEEL;
+				|| material.name().endsWith("SPADE")
+				|| material.name().endsWith("SWORD")
+				|| material.name().endsWith("HOE")
+				|| material.name().endsWith("BUCKET") // water, milk, lava,..
+				|| material == Material.BOW
+				|| material == Material.FISHING_ROD
+				|| material == Remain.getMaterial("CLOCK", "WATCH")
+				|| material == Material.COMPASS
+				|| material == Material.FLINT_AND_STEEL;
 	}
 
 	/**
@@ -524,9 +534,9 @@ public final class BlockUtil {
 	 */
 	public static boolean isArmor(final Material material) {
 		return material.name().endsWith("HELMET")
-			|| material.name().endsWith("CHESTPLATE")
-			|| material.name().endsWith("LEGGINGS")
-			|| material.name().endsWith("BOOTS");
+				|| material.name().endsWith("CHESTPLATE")
+				|| material.name().endsWith("LEGGINGS")
+				|| material.name().endsWith("BOOTS");
 	}
 
 	/**
@@ -770,8 +780,8 @@ public final class BlockUtil {
 
 		public double distance(final VectorHelper other) {
 			return Math.sqrt(Math.pow(other.x - x, 2) +
-				Math.pow(other.y - y, 2) +
-				Math.pow(other.z - z, 2));
+					Math.pow(other.y - y, 2) +
+					Math.pow(other.z - z, 2));
 		}
 
 		public VectorHelper normalize() {

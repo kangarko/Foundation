@@ -1,11 +1,8 @@
 package org.mineacademy.fo;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-import com.google.common.primitives.Primitives;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
@@ -17,8 +14,13 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Primitives;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for sending messages to BungeeCord.
@@ -161,8 +163,8 @@ public final class BungeeUtil {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-				"Unable to connect " + player.getName() + " to server " + serverName,
-				"Error: %error");
+					"Unable to connect " + player.getName() + " to server " + serverName,
+					"Error: %error");
 		}
 
 		player.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", byteArray.toByteArray());

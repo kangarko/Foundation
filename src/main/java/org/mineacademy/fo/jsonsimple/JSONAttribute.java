@@ -203,7 +203,11 @@
  */
 package org.mineacademy.fo.jsonsimple;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Marks a JSON attribute for serialization.
@@ -213,7 +217,7 @@ import java.lang.annotation.*;
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ ElementType.FIELD, ElementType.METHOD })
 public @interface JSONAttribute {
 
 	/**
@@ -230,7 +234,7 @@ public @interface JSONAttribute {
 	 * @return the attribute type
 	 * @since 1.0.0
 	 */
-	public Type[] type() default {Type.GETTER, Type.SETTER};
+	public Type[] type() default { Type.GETTER, Type.SETTER };
 
 	/**
 	 * Represents the type of an attribute. Not the data type but more if it's read only or not.

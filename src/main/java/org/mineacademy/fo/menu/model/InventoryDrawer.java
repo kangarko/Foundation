@@ -1,12 +1,13 @@
 package org.mineacademy.fo.menu.model;
 
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.CompMaterial;
+
+import lombok.Getter;
 
 /**
  * Represents a way to render the inventory to the player

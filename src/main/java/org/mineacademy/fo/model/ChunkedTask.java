@@ -1,9 +1,10 @@
 package org.mineacademy.fo.model;
 
+import org.mineacademy.fo.Common;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.mineacademy.fo.Common;
 
 /**
  * Splits manipulating with large about of items in a list
@@ -56,7 +57,7 @@ public abstract class ChunkedTask {
 			if (!finished) {
 				currentIndex += processAmount;
 
-				Common.runLaterAsync(waitPeriodTicks, () -> startChain());
+				Common.runLaterAsync(waitPeriodTicks, this::startChain);
 
 			} else
 				onFinish();

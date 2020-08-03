@@ -1,11 +1,11 @@
 package org.mineacademy.fo.collection;
 
-import org.mineacademy.fo.Valid;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.mineacademy.fo.Valid;
 
 /**
  * A map that automatically calls your code when you add/remove values etc.

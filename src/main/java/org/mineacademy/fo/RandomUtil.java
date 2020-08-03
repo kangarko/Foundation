@@ -1,17 +1,18 @@
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
+
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.DyeColor;
+import org.bukkit.Location;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * Utility class for generating random numbers.
@@ -27,33 +28,33 @@ public final class RandomUtil {
 	/**
 	 * The basic anglo-saxon alphabet used for getting random text
 	 */
-	private static final char[] ENGLISH_LETTERS = new char[]{
-		'a', 'b', 'c', 'd', 'e', ' ',
-		'f', 'g', 'h', 'i', 'j',
-		'k', 'l', 'm', 'n', 'o',
-		'p', 'q', 'r', 's', 't',
-		'u', 'v', 'w', 'y', 'z',
-		'!', '?', ',', '.', ' '
+	private static final char[] ENGLISH_LETTERS = new char[] {
+			'a', 'b', 'c', 'd', 'e', ' ',
+			'f', 'g', 'h', 'i', 'j',
+			'k', 'l', 'm', 'n', 'o',
+			'p', 'q', 'r', 's', 't',
+			'u', 'v', 'w', 'y', 'z',
+			'!', '?', ',', '.', ' '
 	};
 
 	/**
 	 * Symbols for chat colors using the & character including decorations like bold italics etc
 	 */
-	private static final char[] COLORS_AND_DECORATION = new char[]{
-		'0', '1', '2', '3', '4',
-		'5', '6', '7', '8', '9',
-		'a', 'b', 'c', 'd', 'e',
-		'f', 'k', 'l', 'n', 'o'
+	private static final char[] COLORS_AND_DECORATION = new char[] {
+			'0', '1', '2', '3', '4',
+			'5', '6', '7', '8', '9',
+			'a', 'b', 'c', 'd', 'e',
+			'f', 'k', 'l', 'n', 'o'
 	};
 
 	/**
 	 * Only valid chat colors without decorations
 	 */
-	private static final char[] CHAT_COLORS = new char[]{
-		'0', '1', '2', '3', '4',
-		'5', '6', '7', '8', '9',
-		'a', 'b', 'c', 'd', 'e',
-		'f'
+	private static final char[] CHAT_COLORS = new char[] {
+			'0', '1', '2', '3', '4',
+			'5', '6', '7', '8', '9',
+			'a', 'b', 'c', 'd', 'e',
+			'f'
 	};
 
 	/**
@@ -201,7 +202,7 @@ public final class RandomUtil {
 
 		// Remove values failing the condition
 		if (condition != null)
-			for (final Iterator<T> it = list.iterator(); it.hasNext(); ) {
+			for (final Iterator<T> it = list.iterator(); it.hasNext();) {
 				final T item = it.next();
 
 				if (!condition.test(item))

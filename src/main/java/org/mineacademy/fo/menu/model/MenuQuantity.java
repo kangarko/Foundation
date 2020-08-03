@@ -1,8 +1,9 @@
 package org.mineacademy.fo.menu.model;
 
+import org.mineacademy.fo.menu.MenuQuantitable;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.mineacademy.fo.menu.MenuQuantitable;
 
 /**
  * Represents how much we should change an

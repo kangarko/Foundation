@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import com.google.common.collect.Sets;
-import lombok.Getter;
+import java.util.HashMap;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -15,7 +15,9 @@ import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 
-import java.util.HashMap;
+import com.google.common.collect.Sets;
+
+import lombok.Getter;
 
 /**
  * Heavily inspired by a library made by Hex_27.
@@ -1036,7 +1038,7 @@ public enum CompMaterial {
 
 	// Handles Minecraft below 1.12 and replaces non-existing Materials to STONE.
 	private Material findName() {
-		final String[] names = {name(), legacyName, alternativeName, "STONE"};
+		final String[] names = { name(), legacyName, alternativeName, "STONE" };
 
 		for (final String legacy : names)
 			if (legacy != null)
@@ -1299,7 +1301,7 @@ public enum CompMaterial {
 	 */
 	public static final boolean isWoodPressurePlate(final Material mat) {
 		return nameEquals(mat, "WOOD_PLATE", "ACACIA_PRESSURE_PLATE", "BIRCH_PRESSURE_PLATE", "DARK_OAK_PRESSURE_PLATE",
-			"JUNGLE_PRESSURE_PLATE", "OAK_PRESSURE_PLATE", "SPRUCE_PRESSURE_PLATE");
+				"JUNGLE_PRESSURE_PLATE", "OAK_PRESSURE_PLATE", "SPRUCE_PRESSURE_PLATE");
 	}
 
 	/**
@@ -1509,10 +1511,10 @@ public enum CompMaterial {
 			else if (type == EntityType.MUSHROOM_COW)
 				name = "MOOSHROOM_SPAWN_EGG";
 
-
 			// Parse normally, backwards compatible
 			final CompMaterial mat = fromString(name);
-			if (mat == CompMaterial.STONE) return CompMaterial.SHEEP_SPAWN_EGG;
+			if (mat == CompMaterial.STONE)
+				return CompMaterial.SHEEP_SPAWN_EGG;
 
 			// Return the egg or sheep egg if does not exist
 			return Common.getOrDefault(mat, CompMaterial.SHEEP_SPAWN_EGG);
@@ -1723,78 +1725,78 @@ public enum CompMaterial {
 class SoftMaterials {
 
 	final static StrictSet<String> MATERIALS = new StrictSet<>(Sets.newHashSet(
-		"SKULL",
-		"ANVIL",
-		"TRAPPED_CHEST",
-		"GOLD_PLATE",
-		"IRON_PLATE",
-		"REDSTONE_COMPARATOR_OFF",
-		"REDSTONE_COMPARATOR_ON",
-		"DAYLIGHT_DETECTOR",
-		"REDSTONE_BLOCK",
-		"QUARTZ_ORE",
-		"HOPPER",
-		"QUARTZ_BLOCK",
-		"QUARTZ_STAIRS",
-		"ACTIVATOR_RAIL",
-		"DROPPER",
-		"STAINED_CLAY",
-		"STAINED_GLASS_PANE",
-		"LEAVES_2",
-		"LOG_2",
-		"ACACIA_STAIRS",
-		"DARK_OAK_STAIRS",
-		"SLIME_BLOCK",
-		"BARRIER",
-		"IRON_TRAPDOOR",
-		"PRISMARINE",
-		"SEA_LANTERN",
-		"HAY_BLOCK",
-		"CARPET",
-		"HARD_CLAY",
-		"COAL_BLOCK",
-		"PACKED_ICE",
-		"DOUBLE_PLANT",
-		"STANDING_BANNER",
-		"WALL_BANNER",
-		"DAYLIGHT_DETECTOR_INVERTED",
-		"RED_SANDSTONE",
-		"RED_SANDSTONE_STAIRS",
-		"DOUBLE_STONE_SLAB2",
-		"STONE_SLAB2",
-		"SPRUCE_FENCE_GATE",
-		"BIRCH_FENCE_GATE",
-		"JUNGLE_FENCE_GATE",
-		"DARK_OAK_FENCE_GATE",
-		"ACACIA_FENCE_GATE",
-		"SPRUCE_FENCE",
-		"BIRCH_FENCE",
-		"JUNGLE_FENCE",
-		"DARK_OAK_FENCE",
-		"ACACIA_FENCE",
-		"SPRUCE_DOOR",
-		"BIRCH_DOOR",
-		"JUNGLE_DOOR",
-		"ACACIA_DOOR",
-		"DARK_OAK_DOOR",
-		"END_ROD",
-		"CHORUS_PLANT",
-		"CHORUS_FLOWER",
-		"PURPUR_BLOCK",
-		"PURPUR_PILLAR",
-		"PURPUR_STAIRS",
-		"PURPUR_DOUBLE_SLAB",
-		"PURPUR_SLAB",
-		"END_BRICKS",
-		"GRASS_PATH",
-		"END_GATEWAY",
-		"FROSTED_ICE",
-		"MAGMA",
-		"NETHER_WART_BLOCK",
-		"RED_NETHER_BRICK",
-		"BONE_BLOCK",
-		"OBSERVER",
-		"PURPLE_SHULKER_BOX"
+			"SKULL",
+			"ANVIL",
+			"TRAPPED_CHEST",
+			"GOLD_PLATE",
+			"IRON_PLATE",
+			"REDSTONE_COMPARATOR_OFF",
+			"REDSTONE_COMPARATOR_ON",
+			"DAYLIGHT_DETECTOR",
+			"REDSTONE_BLOCK",
+			"QUARTZ_ORE",
+			"HOPPER",
+			"QUARTZ_BLOCK",
+			"QUARTZ_STAIRS",
+			"ACTIVATOR_RAIL",
+			"DROPPER",
+			"STAINED_CLAY",
+			"STAINED_GLASS_PANE",
+			"LEAVES_2",
+			"LOG_2",
+			"ACACIA_STAIRS",
+			"DARK_OAK_STAIRS",
+			"SLIME_BLOCK",
+			"BARRIER",
+			"IRON_TRAPDOOR",
+			"PRISMARINE",
+			"SEA_LANTERN",
+			"HAY_BLOCK",
+			"CARPET",
+			"HARD_CLAY",
+			"COAL_BLOCK",
+			"PACKED_ICE",
+			"DOUBLE_PLANT",
+			"STANDING_BANNER",
+			"WALL_BANNER",
+			"DAYLIGHT_DETECTOR_INVERTED",
+			"RED_SANDSTONE",
+			"RED_SANDSTONE_STAIRS",
+			"DOUBLE_STONE_SLAB2",
+			"STONE_SLAB2",
+			"SPRUCE_FENCE_GATE",
+			"BIRCH_FENCE_GATE",
+			"JUNGLE_FENCE_GATE",
+			"DARK_OAK_FENCE_GATE",
+			"ACACIA_FENCE_GATE",
+			"SPRUCE_FENCE",
+			"BIRCH_FENCE",
+			"JUNGLE_FENCE",
+			"DARK_OAK_FENCE",
+			"ACACIA_FENCE",
+			"SPRUCE_DOOR",
+			"BIRCH_DOOR",
+			"JUNGLE_DOOR",
+			"ACACIA_DOOR",
+			"DARK_OAK_DOOR",
+			"END_ROD",
+			"CHORUS_PLANT",
+			"CHORUS_FLOWER",
+			"PURPUR_BLOCK",
+			"PURPUR_PILLAR",
+			"PURPUR_STAIRS",
+			"PURPUR_DOUBLE_SLAB",
+			"PURPUR_SLAB",
+			"END_BRICKS",
+			"GRASS_PATH",
+			"END_GATEWAY",
+			"FROSTED_ICE",
+			"MAGMA",
+			"NETHER_WART_BLOCK",
+			"RED_NETHER_BRICK",
+			"BONE_BLOCK",
+			"OBSERVER",
+			"PURPLE_SHULKER_BOX"
 
 	));
 }

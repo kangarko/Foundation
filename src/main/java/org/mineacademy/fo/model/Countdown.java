@@ -1,12 +1,13 @@
 package org.mineacademy.fo.model;
 
-import lombok.AccessLevel;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
+
+import lombok.AccessLevel;
+import lombok.Getter;
 
 /**
  * Represents a runnable timer task that counts down to 0 and stops
@@ -78,10 +79,10 @@ public abstract class Countdown implements Runnable {
 				}
 
 				Common.error(t,
-					"Error in countdown!",
-					"Seconds since start: " + secondsSinceStart,
-					"Counting till: " + countdownSeconds,
-					"%error");
+						"Error in countdown!",
+						"Seconds since start: " + secondsSinceStart,
+						"Counting till: " + countdownSeconds,
+						"%error");
 			}
 		else {
 			cancel();

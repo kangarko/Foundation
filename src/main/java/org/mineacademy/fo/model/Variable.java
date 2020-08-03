@@ -1,9 +1,9 @@
 package org.mineacademy.fo.model;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,8 +11,10 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.YamlConfig;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Variable extends YamlConfig implements Actionable {
@@ -261,15 +263,15 @@ public final class Variable extends YamlConfig implements Actionable {
 	@Override
 	public SerializedMap serialize() {
 		return SerializedMap.ofArray(
-			"Key", key,
-			"Value", value,
-			"Hover", hoverText,
-			"Hover_Item", hoverItem,
-			"Open_Url", openUrl,
-			"Suggest_Command", suggestCommand,
-			"Run_Command", runCommand,
-			"Sender_Permission", senderPermission,
-			"Receiver_Permission", receiverPermission);
+				"Key", key,
+				"Value", value,
+				"Hover", hoverText,
+				"Hover_Item", hoverItem,
+				"Open_Url", openUrl,
+				"Suggest_Command", suggestCommand,
+				"Run_Command", runCommand,
+				"Sender_Permission", senderPermission,
+				"Receiver_Permission", receiverPermission);
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–

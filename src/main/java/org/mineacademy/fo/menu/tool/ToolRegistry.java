@@ -1,10 +1,10 @@
 package org.mineacademy.fo.menu.tool;
 
-import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Valid;
-
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Valid;
 
 /**
  * Represents the tool registry holding all registered items

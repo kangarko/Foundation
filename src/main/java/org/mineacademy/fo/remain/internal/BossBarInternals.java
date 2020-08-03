@@ -1,5 +1,8 @@
 package org.mineacademy.fo.remain.internal;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -20,9 +23,6 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompBarColor;
 import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
-
-import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * The classes handling Boss Bar cross-server compatibility are based off of the

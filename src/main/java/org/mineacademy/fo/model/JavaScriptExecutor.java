@@ -1,6 +1,15 @@
 package org.mineacademy.fo.model;
 
-import lombok.NonNull;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -8,14 +17,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import lombok.NonNull;
 
 /**
  * An engine that compiles and executes code on the fly.
@@ -46,12 +48,12 @@ public final class JavaScriptExecutor {
 
 		if (engine == null)
 			Common.logFramed(true,
-				"JavaScript placeholders will not function!",
-				"",
-				"Your Java version/distribution lacks",
-				"the Nashorn library for JavaScript",
-				"placeholders. Ensure you have Oracle",
-				"Java 8.");
+					"JavaScript placeholders will not function!",
+					"",
+					"Your Java version/distribution lacks",
+					"the Nashorn library for JavaScript",
+					"placeholders. Ensure you have Oracle",
+					"Java 8.");
 	}
 
 	/**
@@ -120,9 +122,9 @@ public final class JavaScriptExecutor {
 
 		} catch (final ScriptException ex) {
 			Common.error(ex,
-				"Script executing failed!",
-				"Script: " + javascript,
-				"%error");
+					"Script executing failed!",
+					"Script: " + javascript,
+					"%error");
 
 			return null;
 		}

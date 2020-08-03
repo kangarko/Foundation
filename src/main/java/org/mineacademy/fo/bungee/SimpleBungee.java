@@ -1,9 +1,10 @@
 package org.mineacademy.fo.bungee;
 
-import lombok.Getter;
+import java.lang.reflect.Constructor;
+
 import org.mineacademy.fo.Valid;
 
-import java.lang.reflect.Constructor;
+import lombok.Getter;
 
 /**
  * A unified way of combining bungee channel, listener and action

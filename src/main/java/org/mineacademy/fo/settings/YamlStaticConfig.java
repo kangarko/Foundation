@@ -1,5 +1,13 @@
 package org.mineacademy.fo.settings;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.TreeMap;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -16,14 +24,6 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig.CasusHelper;
 import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.TreeMap;
 
 /**
  * A special case {@link YamlConfig} that allows static access to this config. This is unsafe
@@ -73,7 +73,7 @@ public abstract class YamlStaticConfig {
 	 * @throws Exception
 	 */
 	public static final void load(final List<Class<? extends YamlStaticConfig>> classes)
-		throws Exception {
+			throws Exception {
 		if (classes == null)
 			return;
 
@@ -130,11 +130,11 @@ public abstract class YamlStaticConfig {
 	private final void loadViaReflection() {
 		Valid.checkNotNull(TEMPORARY_INSTANCE, "Instance cannot be null " + getFileName());
 		Valid.checkNotNull(
-			TEMPORARY_INSTANCE.getConfig(),
-			"Config cannot be null for " + getFileName());
+				TEMPORARY_INSTANCE.getConfig(),
+				"Config cannot be null for " + getFileName());
 		Valid.checkNotNull(
-			TEMPORARY_INSTANCE.getDefaults(),
-			"Default config cannot be null for " + getFileName());
+				TEMPORARY_INSTANCE.getDefaults(),
+				"Default config cannot be null for " + getFileName());
 
 		try {
 			preLoad();
@@ -192,11 +192,11 @@ public abstract class YamlStaticConfig {
 
 			if (m.getName().equals("init")) {
 				Valid.checkBoolean(
-					Modifier.isPrivate(mod)
-						&& Modifier.isStatic(mod)
-						&& m.getReturnType() == Void.TYPE
-						&& m.getParameterTypes().length == 0,
-					"Method '" + m.getName() + "' in " + clazz + " must be 'private static void init()'");
+						Modifier.isPrivate(mod)
+								&& Modifier.isStatic(mod)
+								&& m.getReturnType() == Void.TYPE
+								&& m.getParameterTypes().length == 0,
+						"Method '" + m.getName() + "' in " + clazz + " must be 'private static void init()'");
 
 				m.setAccessible(true);
 				m.invoke(null);
@@ -218,8 +218,8 @@ public abstract class YamlStaticConfig {
 
 			if (Modifier.isPublic(f.getModifiers()))
 				Valid.checkBoolean(
-					!f.getType().isPrimitive(),
-					"Field '" + f.getName() + "' in " + clazz + " must not be primitive!");
+						!f.getType().isPrimitive(),
+						"Field '" + f.getName() + "' in " + clazz + " must not be primitive!");
 
 			Object result = null;
 			try {
@@ -227,8 +227,8 @@ public abstract class YamlStaticConfig {
 			} catch (final NullPointerException ex) {
 			}
 			Valid.checkNotNull(
-				result,
-				"Null " + f.getType().getSimpleName() + " field '" + f.getName() + "' in " + clazz);
+					result,
+					"Null " + f.getType().getSimpleName() + " field '" + f.getName() + "' in " + clazz);
 		}
 	}
 
@@ -329,8 +329,8 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final <E extends Enum<E>> List<E> getCompatibleEnumList(
-		final String path,
-		final Class<E> listType) {
+			final String path,
+			final Class<E> listType) {
 		return TEMPORARY_INSTANCE.getCompatibleEnumList(path, listType);
 	}
 
@@ -354,6 +354,13 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getInteger(path);
 	}
 
+	/**
+	 * @deprecated use {@link #getDouble(String)}
+	 *
+	 * @param path
+	 * @return
+	 */
+	@Deprecated
 	protected static final double getDoubleSafe(final String path) {
 		return TEMPORARY_INSTANCE.getDoubleSafe(path);
 	}
@@ -391,9 +398,9 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final <E> E getWithData(
-		final String path,
-		final Class<E> typeOf,
-		Object... deserializeArguments) {
+			final String path,
+			final Class<E> typeOf,
+			Object... deserializeArguments) {
 		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
 	}
 
@@ -410,9 +417,9 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final <Key, Value> LinkedHashMap<Key, Value> getMap(
-		final String path,
-		final Class<Key> keyType,
-		final Class<Value> valueType) {
+			final String path,
+			final Class<Key> keyType,
+			final Class<Value> valueType) {
 		return TEMPORARY_INSTANCE.getMap(path, keyType, valueType);
 	}
 
@@ -422,8 +429,8 @@ public abstract class YamlStaticConfig {
 		// add default
 		if (getDefaults() != null && !getConfig().isSet(path)) {
 			Valid.checkBoolean(
-				getDefaults().isSet(path),
-				"Default '" + getFileName() + "' lacks a section at " + path);
+					getDefaults().isSet(path),
+					"Default '" + getFileName() + "' lacks a section at " + path);
 
 			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
 				for (final String setting : getDefaults().getConfigurationSection(path + "." + name).getKeys(false))

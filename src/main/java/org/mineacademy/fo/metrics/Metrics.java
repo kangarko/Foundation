@@ -1,19 +1,12 @@
 package org.mineacademy.fo.metrics;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.ServicePriority;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.remain.Remain;
-
-import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -24,6 +17,21 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicePriority;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.remain.Remain;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * bStats collects some data for plugin authors.
@@ -37,8 +45,8 @@ public class Metrics {
 		if (System.getProperty("bstats.relocatecheck") == null || !System.getProperty("bstats.relocatecheck").equals("false")) {
 			// Maven's Relocate is clever and changes strings, too. So we have to use this little "trick" ... :D
 			final String defaultPackage = new String(
-				new byte[]{'o', 'r', 'g', '.', 'b', 's', 't', 'a', 't', 's', '.', 'b', 'u', 'k', 'k', 'i', 't'});
-			final String examplePackage = new String(new byte[]{'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e'});
+					new byte[] { 'o', 'r', 'g', '.', 'b', 's', 't', 'a', 't', 's', '.', 'b', 'u', 'k', 'k', 'i', 't' });
+			final String examplePackage = new String(new byte[] { 'y', 'o', 'u', 'r', '.', 'p', 'a', 'c', 'k', 'a', 'g', 'e' });
 			// We want to make sure nobody just copy & pastes the example and use the wrong package names
 			if (Metrics.class.getPackage().getName().equals(defaultPackage) || Metrics.class.getPackage().getName().equals(examplePackage))
 				throw new IllegalStateException("bStats Metrics class has not been relocated correctly!");
@@ -116,11 +124,11 @@ public class Metrics {
 
 			// Inform the server owners about bStats
 			config.options().header(
-				"bStats collects some data for plugin authors like how many servers are using their plugins.\n" +
-					"To honor their work, you should not disable it.\n" +
-					"This has nearly no effect on the server performance!\n" +
-					"Check out https://bStats.org/ to learn more :)")
-				.copyDefaults(true);
+					"bStats collects some data for plugin authors like how many servers are using their plugins.\n" +
+							"To honor their work, you should not disable it.\n" +
+							"This has nearly no effect on the server performance!\n" +
+							"Check out https://bStats.org/ to learn more :)")
+					.copyDefaults(true);
 			try {
 				config.save(configFile);
 			} catch (final IOException ignored) {
@@ -204,8 +212,8 @@ public class Metrics {
 			// This fixes java.lang.NoSuchMethodError: org.bukkit.Bukkit.getOnlinePlayers()Ljava/util/Collection;
 			final Method onlinePlayersMethod = Class.forName("org.bukkit.Server").getMethod("getOnlinePlayers");
 			playerAmount = onlinePlayersMethod.getReturnType().equals(Collection.class)
-				? ((Collection<?>) onlinePlayersMethod.invoke(Bukkit.getServer())).size()
-				: ((Player[]) onlinePlayersMethod.invoke(Bukkit.getServer())).length;
+					? ((Collection<?>) onlinePlayersMethod.invoke(Bukkit.getServer())).size()
+					: ((Player[]) onlinePlayersMethod.invoke(Bukkit.getServer())).length;
 		} catch (final Exception e) {
 			playerAmount = Remain.getOnlinePlayers().size(); // Just use the new method if the Reflection failed
 		}

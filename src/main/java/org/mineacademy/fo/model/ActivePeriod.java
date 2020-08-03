@@ -1,9 +1,10 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a period between two points,

@@ -1,31 +1,44 @@
 package org.mineacademy.fo.menu.model;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.*;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.remain.*;
+import org.mineacademy.fo.remain.CompColor;
+import org.mineacademy.fo.remain.CompItemFlag;
+import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.CompMetadata;
+import org.mineacademy.fo.remain.CompMonsterEgg;
+import org.mineacademy.fo.remain.CompProperty;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Our core class for easy and comfortable item creation.
@@ -210,8 +223,8 @@ public final class ItemCreator {
 		if (MinecraftVersion.atLeast(V.v1_12) && color != null && !is.getType().toString().contains("LEATHER")) {
 			final String dye = color.getDye().toString();
 			final List<String> colorableMaterials = Arrays.asList(
-				"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
-				"STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
+					"BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX",
+					"STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
 
 			for (final String colorable : colorableMaterials) {
 				final String suffix = "_" + colorable;
@@ -273,7 +286,7 @@ public final class ItemCreator {
 
 		if (damage != -1) {
 			try {
-				is.setDurability((short) damage);
+				ReflectionUtil.invoke("setDurability", is, (short) damage);
 			} catch (final Throwable t) {
 			}
 
@@ -300,7 +313,7 @@ public final class ItemCreator {
 			for (final SimpleEnchant ench : enchants)
 				if (itemMeta instanceof EnchantmentStorageMeta)
 					((EnchantmentStorageMeta) itemMeta)
-						.addStoredEnchant(ench.getEnchant(), ench.getLevel(), true);
+							.addStoredEnchant(ench.getEnchant(), ench.getLevel(), true);
 				else
 					itemMeta.addEnchant(ench.getEnchant(), ench.getLevel(), true);
 
@@ -396,20 +409,24 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreatorBuilder ofSkullHash(final String hash) {
-		if (hash == null || hash.isEmpty()) return ofSkullHash(STEVE_TEXTURE);
+		if (hash == null || hash.isEmpty())
+			return ofSkullHash(STEVE_TEXTURE);
 
 		final ItemStack head = new ItemStack(CompMaterial.PLAYER_HEAD.getMaterial(), 1, (short) 3);
 		final SkullMeta meta = (SkullMeta) head.getItemMeta();
-		final GameProfile profile = new GameProfile(UUID.randomUUID(), "");
 
+		final Object gameProfile = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), UUID.randomUUID(), "");
+		final Object property = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), "textures", hash);
+		final Object properties = ReflectionUtil.invoke("getProperties", gameProfile);
 
-		profile.getProperties().put("textures", new Property("textures", hash));
+		ReflectionUtil.invoke("put", properties, "textures", property);
+
 		Field profileField = null;
 
 		try {
 			profileField = meta.getClass().getDeclaredField("profile");
 			profileField.setAccessible(true);
-			profileField.set(meta, profile);
+			profileField.set(meta, gameProfile);
 
 		} catch (final IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException exception) {
 			Common.throwError(exception, "Exception while setting skin texture");

@@ -1,13 +1,15 @@
 package org.mineacademy.fo.bungee.message;
 
-import com.google.common.primitives.Primitives;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.plugin.SimplePlugin;
+
+import com.google.common.primitives.Primitives;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a in/out message with a given action and server name

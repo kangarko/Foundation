@@ -1,5 +1,16 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,12 +24,6 @@ import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.model.Variable.VariableScope;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
-
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A simple engine that replaces lots of variables in a message.
@@ -299,10 +304,10 @@ public final class Variables {
 
 				} catch (final Throwable t) {
 					Common.throwError(t,
-						"Failed to replace a custom variable!",
-						"Message: " + message,
-						"Variable: " + key,
-						"%error");
+							"Failed to replace a custom variable!",
+							"Message: " + message,
+							"Variable: " + key,
+							"%error");
 				}
 		}
 
@@ -498,9 +503,9 @@ public final class Variables {
 	 */
 	private static Map<String, Map<String, String>> makeNewFastCache() {
 		return ExpiringMap.builder()
-			.maxSize(300)
-			.expiration(10, TimeUnit.MILLISECONDS)
-			.build();
+				.maxSize(300)
+				.expiration(10, TimeUnit.MILLISECONDS)
+				.build();
 	}
 
 	/**
@@ -511,8 +516,8 @@ public final class Variables {
 	 */
 	private static Map<String, String> makeNewCache() {
 		return ExpiringMap.builder()
-			.maxSize(300)
-			.expiration(1, TimeUnit.SECONDS)
-			.build();
+				.maxSize(300)
+				.expiration(1, TimeUnit.SECONDS)
+				.build();
 	}
 }

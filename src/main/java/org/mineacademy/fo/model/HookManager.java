@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -31,8 +33,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -75,8 +75,6 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
-import com.plotsquared.core.player.PlotPlayer;
-import com.plotsquared.core.plot.Plot;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import fr.xephi.authme.api.v3.AuthMeApi;
@@ -1982,9 +1980,7 @@ class PlaceholderAPIHook {
 		}
 
 		@Override
-		public @Nullable String onRequest(
-				@Nullable OfflinePlayer offlinePlayer,
-				@NotNull String identifier) {
+		public @Nullable String onRequest(@Nullable OfflinePlayer offlinePlayer, @NonNull String identifier) {
 
 			final boolean insertSpace = identifier.endsWith("+");
 			identifier = insertSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
@@ -2241,15 +2237,15 @@ class WorldGuardHook {
 				}
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-				.getRegions().values().forEach(reg -> {
-					if (reg == null || reg.getId() == null)
-						return;
+						.getRegions().values().forEach(reg -> {
+							if (reg == null || reg.getId() == null)
+								return;
 
-					final String name = Common.stripColors(reg.getId());
+							final String name = Common.stripColors(reg.getId());
 
-					if (!name.startsWith("__"))
-						list.add(name);
-				});
+							if (!name.startsWith("__"))
+								list.add(name);
+						});
 		}
 
 		return list;
@@ -2379,7 +2375,7 @@ final class FactionsMassive extends FactionsHook {
 		if (f != null)
 			return f.getLeader() != null ? f.getLeader().getName() : null;
 
-			return null;
+		return null;
 	}
 }
 
@@ -2496,15 +2492,14 @@ class PlotSquaredHook {
 
 	List<Player> getPlotPlayers(final Player player) {
 		final List<Player> players = new ArrayList<>();
-
-		final PlotPlayer plotPlayer = PlotPlayer.wrap(player);
+		final Object plotPlayer = ReflectionUtil.invokeStatic(ReflectionUtil.getMethod(ReflectionUtil.lookupClass("com.plotsquared.core.player.PlotPlayer"), "wrap", Player.class), player);
 		Valid.checkNotNull(plotPlayer, "Failed to convert player " + player.getName() + " to PlotPlayer!");
 
-		final Plot currentPlot = plotPlayer.getCurrentPlot();
+		final Object currentPlot = ReflectionUtil.invoke("getCurrentPlot", plotPlayer);
 
 		if (currentPlot != null)
-			for (final PlotPlayer playerInPlot : currentPlot.getPlayersInPlot()) {
-				final UUID id = playerInPlot.getUUID();
+			for (final Object playerInPlot : (Iterable<?>) ReflectionUtil.invoke("getPlayersInPlot", currentPlot)) {
+				final UUID id = ReflectionUtil.invoke("getUUID", playerInPlot);
 				final Player online = Bukkit.getPlayer(id);
 
 				if (online != null && online.isOnline())
@@ -2535,7 +2530,7 @@ class CMIHook {
 		try {
 			return user != null && user.getMutedUntil() != 0 && user.getMutedUntil() != null;
 
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			return false;
 		}
 	}
@@ -2558,7 +2553,7 @@ class CMIHook {
 
 		try {
 			user.getClass().getMethod("setLastTeleportLocation", Location.class).invoke(user, location);
-		} catch (Throwable t) {
+		} catch (final Throwable t) {
 			// Silently fail
 		}
 	}

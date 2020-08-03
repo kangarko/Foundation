@@ -1,8 +1,8 @@
 package org.mineacademy.fo.model;
 
-import org.bukkit.inventory.ItemStack;
-
 import java.util.List;
+
+import org.bukkit.inventory.ItemStack;
 
 /**
  *

@@ -1,8 +1,8 @@
 package org.mineacademy.fo.collection;
 
-import org.mineacademy.fo.Valid;
-
 import java.util.Iterator;
+
+import org.mineacademy.fo.Valid;
 
 /**
  * A list that automatically calls your code when you add/remove values etc.

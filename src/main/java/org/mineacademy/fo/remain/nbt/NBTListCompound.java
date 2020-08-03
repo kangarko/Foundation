@@ -10,7 +10,7 @@ package org.mineacademy.fo.remain.nbt;
  */
 public class NBTListCompound extends NBTCompound {
 
-	private NBTList<?> owner;
+	private final NBTList<?> owner;
 	private Object compound;
 
 	NBTListCompound(final NBTList<?> parent, final Object obj) {

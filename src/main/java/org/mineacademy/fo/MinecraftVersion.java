@@ -1,8 +1,9 @@
 package org.mineacademy.fo;
 
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.exception.FoException;
+
+import lombok.Getter;
 
 /**
  * Represents the current Minecraft version the plugin loaded on

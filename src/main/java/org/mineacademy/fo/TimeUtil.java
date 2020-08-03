@@ -1,11 +1,12 @@
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import org.mineacademy.fo.exception.FoException;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+
+import org.mineacademy.fo.exception.FoException;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * Utility class for calculating time from ticks and back.
