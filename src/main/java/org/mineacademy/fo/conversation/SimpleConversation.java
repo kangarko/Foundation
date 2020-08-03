@@ -1,8 +1,15 @@
 package org.mineacademy.fo.conversation;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import org.bukkit.conversations.*;
+import java.util.concurrent.TimeUnit;
+
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
+import org.bukkit.conversations.ConversationAbandonedListener;
+import org.bukkit.conversations.ConversationCanceller;
+import org.bukkit.conversations.ConversationPrefix;
+import org.bukkit.conversations.InactivityConversationCanceller;
+import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
@@ -12,7 +19,8 @@ import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
 
-import java.util.concurrent.TimeUnit;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 /**
  * A simple way to communicate with the player
@@ -20,11 +28,6 @@ import java.util.concurrent.TimeUnit;
  * the conversation input.
  */
 public abstract class SimpleConversation implements ConversationAbandonedListener {
-
-	/**
-	 * How often should we show the question in the prompt again, in seconds?
-	 */
-	private static final int QUESTION_SHOW_THRESHOLD = 20;
 
 	/**
 	 * The menu to return to, if any
@@ -259,7 +262,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				try {
 					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData()
-						.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(getTimeout(), TimeUnit.SECONDS).build());
+							.getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(getTimeout(), TimeUnit.SECONDS).build());
 
 					if (!askedQuestions.containsKey(question)) {
 						askedQuestions.put(question, null);

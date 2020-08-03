@@ -1,12 +1,12 @@
 package org.mineacademy.fo.conversation;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationContext;
 import org.mineacademy.fo.Valid;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A simple conversation canceller

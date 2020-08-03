@@ -1,23 +1,57 @@
 package org.mineacademy.fo.remain;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import lombok.NonNull;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.*;
+import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
+import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameRule;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
+import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.command.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,9 +67,15 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
-import org.mineacademy.fo.*;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
+import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -46,17 +86,14 @@ import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.internal.NBTInternals;
 import org.mineacademy.fo.remain.internal.ParticleInternals;
 
-import javax.annotation.Nullable;
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.Consumer;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
-import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
+import lombok.NonNull;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 
 /**
  * Our main cross-version compatibility class.
@@ -241,10 +278,10 @@ public final class Remain {
 				Remain.bungeeApiPresent = false;
 
 				throw new FoException(
-					"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
-						" &cinclude &elibraries required&c for this plugin to\n" +
-						" &crun. Install the following plugin for compatibility:\n" +
-						" &fhttps://www.spigotmc.org/resources/38379");
+						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
+								" &cinclude &elibraries required&c for this plugin to\n" +
+								" &crun. Install the following plugin for compatibility:\n" +
+								" &fhttps://www.spigotmc.org/resources/38379");
 			}
 
 			try {
@@ -609,9 +646,9 @@ public final class Remain {
 				throw throwable;
 
 			Debugger.saveError(throwable,
-				"Unable to parse JSON message.",
-				"JSON: " + json,
-				"Error: %error");
+					"Unable to parse JSON message.",
+					"JSON: " + json,
+					"Error: %error");
 		}
 
 		return text.toString();
@@ -1644,7 +1681,7 @@ public final class Remain {
 				else if (MinecraftVersion.atLeast(V.v1_9))
 					item.setAmount(0);
 
-					// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
+				// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
 				else {
 					final ItemStack[] content = player.getInventory().getContents();
 
@@ -1843,6 +1880,7 @@ public final class Remain {
 	 * @param gameRule game rule
 	 * @param value    value to set (true/false)
 	 */
+	@SuppressWarnings("rawtypes")
 	public static void setGameRule(final World world, final String gameRule, final boolean value) {
 		try {
 			if (MinecraftVersion.newerThan(V.v1_13)) {

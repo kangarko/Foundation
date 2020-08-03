@@ -9,7 +9,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.menu.tool.BlockTool;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import java.util.List;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * A class that can visualize selection of blocks in the arena

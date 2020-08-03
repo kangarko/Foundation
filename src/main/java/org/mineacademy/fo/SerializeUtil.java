@@ -1,8 +1,14 @@
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -25,9 +31,9 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.YamlConfig;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for serializing objects to writeable YAML data and back.
@@ -39,36 +45,6 @@ public final class SerializeUtil {
 	 * When serializing unknown objects throw an error if strict mode is enabled
 	 */
 	public static boolean STRICT_MODE = true;
-
-	/**
-	 * Special case: Support for GameAPI's ConfigSerializable interface
-	 */
-	private static final Class<?> gameAPIserializeClass;
-
-	// Load the GameAPI ConfigSerializable interface
-	static {
-		Class<?> cl;
-
-		final char[] path = new char[]{
-			'o', 'r', 'g',
-			'.',
-			'm', 'i', 'n', 'e', 'a', 'c', 'a', 'd', 'e', 'm', 'y',
-			'.',
-			'g', 'a', 'm', 'e', 'a', 'p', 'i',
-			'.',
-			'm', 'i', 's', 'c',
-			'.',
-			'C', 'o', 'n', 'f', 'i', 'g', 'S', 'e', 'r', 'i', 'a', 'l', 'i', 'z', 'a', 'b', 'l', 'e'
-		};
-
-		try {
-			cl = Class.forName(new String(path));
-		} catch (final ClassNotFoundException ex) {
-			cl = null;
-		}
-
-		gameAPIserializeClass = cl;
-	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Converting objects into strings so you can save them in your files
@@ -86,13 +62,6 @@ public final class SerializeUtil {
 
 		if (obj instanceof ConfigSerializable)
 			return serialize(((ConfigSerializable) obj).serialize().serialize());
-
-		else if (gameAPIserializeClass != null && gameAPIserializeClass.isAssignableFrom(obj.getClass()))
-			try {
-				return serialize(obj.getClass().getMethod("serialize").invoke(obj));
-			} catch (final ReflectiveOperationException ex) {
-				throw new FoException(ex);
-			}
 
 		else if (obj instanceof StrictCollection)
 			return serialize(((StrictCollection) obj).serialize());
@@ -161,9 +130,9 @@ public final class SerializeUtil {
 			throw new FoException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
 
 		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
-			|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
-			|| obj instanceof ItemStack
-			|| obj instanceof MemorySection)
+				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
+				|| obj instanceof ItemStack
+				|| obj instanceof MemorySection)
 			return obj;
 
 		else if (obj instanceof ConfigurationSerializable)

@@ -915,8 +915,8 @@ public final class JsonSimpleUtil {
 			else if (character == '/')
 				builder.append("\\/");
 			else if (character >= '\u0000' && character <= '\u001F' ||
-				character >= '\u007F' && character <= '\u009F' ||
-				character >= '\u2000' && character <= '\u20FF') {
+					character >= '\u007F' && character <= '\u009F' ||
+					character >= '\u2000' && character <= '\u20FF') {
 
 				final String hex = Integer.toHexString(character);
 				builder.append("\\u");

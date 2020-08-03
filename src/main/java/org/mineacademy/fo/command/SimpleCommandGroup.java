@@ -1,6 +1,10 @@
 package org.mineacademy.fo.command;
 
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
@@ -11,17 +15,13 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
+import lombok.Getter;
 
 /**
  * A command group contains a set of different subcommands
  * associated with the main command, for example: /arena join, /arena leave etc.
  */
 public abstract class SimpleCommandGroup {
-	protected static String pattern = " &f/{label} {usage} {desc}";
 
 	/**
 	 * The list of sub-commands belonging to this command tree, for example
@@ -230,14 +230,14 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected String[] getHelpHeader() {
-		return new String[]{
-			"&8",
-			"&8" + Common.chatLine(),
-			getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion(),
-			" ",
-			"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
-			"&6  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
-			" "
+		return new String[] {
+				"&8",
+				"&8" + Common.chatLine(),
+				getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion(),
+				" ",
+				"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
+				"&6  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
+				" "
 		};
 	}
 
@@ -296,19 +296,26 @@ public abstract class SimpleCommandGroup {
 
 			// Handle subcommands
 			if (command != null) {
+				final String oldSublabel = command.getSublabel();
 
-				// Simulate our main label
-				command.setSublabel(args[0]);
+				try {
+					// Simulate our main label
+					command.setSublabel(args[0]);
 
-				// Run the command
-				command.execute(sender, getLabel(), args.length == 1 ? new String[]{} : Arrays.copyOfRange(args, 1, args.length));
+					// Run the command
+					command.execute(sender, getLabel(), args.length == 1 ? new String[] {} : Arrays.copyOfRange(args, 1, args.length));
+
+				} finally {
+					// Restore old sublabel after the command has been run
+					command.setSublabel(oldSublabel);
+				}
 			}
 
 			// Handle help argument
 			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel()))
 				tellSubcommandsHelp();
 
-				// Handle unknown argument
+			// Handle unknown argument
 			else
 				returnInvalidArgs();
 		}
@@ -332,10 +339,9 @@ public abstract class SimpleCommandGroup {
 					final String usage = colorizeUsage(subcommand.getUsage());
 					final String desc = Common.getOrEmpty(subcommand.getDescription());
 
-					tellNoPrefix(pattern
-							.replace("{label}", getLabel())
-							.replace("{usage}", usage)
-						.replace("{desc}", (!desc.isEmpty() ? " &e- " + desc : "")));
+					System.out.println("Sublabel: " + subcommand.getSublabel());
+
+					tellNoPrefix(" &f/" + getLabel() + " " + subcommand.getSublabel() + " " + (usage.isEmpty() ? "" : usage + " ") + (!desc.isEmpty() ? "&e- " + desc : ""));
 					shown++;
 				}
 

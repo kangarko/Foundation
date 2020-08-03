@@ -1,13 +1,13 @@
 package org.mineacademy.fo.collection;
 
-import org.apache.commons.lang.StringUtils;
-import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.Valid;
 
 /**
  * Strict list that only allows to remove elements that are contained within, or add elements that are not.

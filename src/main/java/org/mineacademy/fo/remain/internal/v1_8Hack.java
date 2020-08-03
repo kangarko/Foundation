@@ -1,10 +1,10 @@
 package org.mineacademy.fo.remain.internal;
 
-import org.bukkit.Location;
-import org.mineacademy.fo.ReflectionUtil;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
+import org.bukkit.Location;
+import org.mineacademy.fo.ReflectionUtil;
 
 /**
  * Represents a fake dragon entity for Minecraft 1.8 protocol hack
@@ -70,7 +70,7 @@ class v1_8Hack extends EnderDragonEntity {
 			packet = PacketPlayOutEntityDestroy.newInstance();
 			final Field a = PacketPlayOutEntityDestroy.getDeclaredField("a");
 			a.setAccessible(true);
-			a.set(packet, new int[]{id});
+			a.set(packet, new int[] { id });
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -87,7 +87,7 @@ class v1_8Hack extends EnderDragonEntity {
 		Object packet = null;
 		try {
 			packet = PacketPlayOutEntityMetadata.getConstructor(int.class, DataWatcher, boolean.class)
-				.newInstance(id, watcher, true);
+					.newInstance(id, watcher, true);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -101,8 +101,8 @@ class v1_8Hack extends EnderDragonEntity {
 
 		try {
 			packet = PacketPlayOutEntityTeleport.getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class)
-				.newInstance(this.id, loc.getBlockX() * 32, loc.getBlockY() * 32, loc.getBlockZ() * 32, (byte) ((int) loc
-					.getYaw() * 256 / 360), (byte) ((int) loc.getPitch() * 256 / 360), false, false);
+					.newInstance(this.id, loc.getBlockX() * 32, loc.getBlockY() * 32, loc.getBlockZ() * 32, (byte) ((int) loc
+							.getYaw() * 256 / 360), (byte) ((int) loc.getPitch() * 256 / 360), false, false);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}

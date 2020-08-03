@@ -1,9 +1,10 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
 import org.apache.commons.lang.math.NumberUtils;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
+
+import lombok.Getter;
 
 /**
  * A class holding a minimum and a maximum

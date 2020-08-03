@@ -163,12 +163,12 @@ public enum ParticleInternals {
 				if (extra.length > 1)
 					data = extra[1];
 
-				extra = new int[]{id, id | data << 12};
+				extra = new int[] { id, id | data << 12 };
 			}
 
 			try {
 				packet = ParticleInternals.nmsPacketPlayOutParticle.getConstructor(ParticleInternals.nmsEnumParticle, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class).newInstance(ReflectionUtil.getEnum(ParticleInternals.nmsEnumParticle.getName() + "." + (this.enumValue != null ? this.enumValue : this.name().toUpperCase())), true, (float) location.getX(), (float) location.getY(),
-					(float) location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra);
+						(float) location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra);
 			} catch (final ReflectiveOperationException ex) {
 				return;
 			}

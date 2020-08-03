@@ -266,13 +266,13 @@ public class Yytoken {
 
 	/*@Override
 	public String toString() {
-
+	
 		StringBuilder builder = new StringBuilder();
-
+	
 		// ==== 01.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
 		// Replaced switch-case with if-else because if-else is faster
 		// ====
-
+	
 		       if(this.type == Yytoken.TYPE_VALUE) {builder.append("VALUE(").append(this.value).append(")");
 		} else if(this.type == Yytoken.TYPE_LEFT_BRACE) {builder.append("LEFT BRACE({)");
 		} else if(this.type == Yytoken.TYPE_RIGHT_BRACE) {builder.append("RIGHT BRACE(})");
@@ -282,7 +282,7 @@ public class Yytoken {
 		} else if(this.type == Yytoken.TYPE_COLON) {builder.append("COLON(:)");
 		} else if(this.type == Yytoken.TYPE_EOF) {builder.append("END OF FILE");
 		}
-
+	
 		return builder.toString();
 	}*/
 }

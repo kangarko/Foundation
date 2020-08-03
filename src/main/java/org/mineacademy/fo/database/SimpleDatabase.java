@@ -1,13 +1,18 @@
 package org.mineacademy.fo.database;
 
-import lombok.RequiredArgsConstructor;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Map.Entry;
+
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 
-import java.sql.*;
-import java.util.Map.Entry;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a simple MySQL database
@@ -116,9 +121,9 @@ public class SimpleDatabase {
 			e.printStackTrace();
 
 			Common.logFramed(true,
-				"Failed to connect to MySQL database",
-				"URL: " + url,
-				"Error: " + e.getMessage());
+					"Failed to connect to MySQL database",
+					"URL: " + url,
+					"Error: " + e.getMessage());
 		}
 	}
 

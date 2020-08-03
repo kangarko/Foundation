@@ -1,8 +1,13 @@
 package org.mineacademy.fo.menu;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -32,9 +37,9 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * The core class of Menu. Represents a simple menu.
@@ -192,7 +197,7 @@ public abstract class Menu {
 	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
 		returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
-		buttonsRegistrator = new OneTimeRunnable(() -> registerButtons());
+		buttonsRegistrator = new OneTimeRunnable(this::registerButtons);
 	}
 
 	/**
@@ -269,7 +274,7 @@ public abstract class Menu {
 			registeredButtons.add(button);
 		} else if (Button[].class.isAssignableFrom(type)) {
 			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()),
-				"Report / Button[] field must be final: " + field);
+					"Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
 
 			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
@@ -447,7 +452,7 @@ public abstract class Menu {
 
 				if (item == null)
 					drawer.setItem(slot,
-						ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "Slot " + slot).build().make());
+							ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "Slot " + slot).build().make());
 			}
 	}
 
@@ -490,13 +495,13 @@ public abstract class Menu {
 	protected final void redraw() {
 		final Inventory inv = getViewer().getOpenInventory().getTopInventory();
 		Valid.checkBoolean(inv.getType() == InventoryType.CHEST,
-			getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
+				getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
 
 		for (int i = 0; i < size; i++) {
 			final ItemStack item = getItemAt(i);
 
 			Valid.checkBoolean(i < inv.getSize(), "Item (" + (item != null ? item.getType() : "null") + ") position ("
-				+ i + ") > inv size (" + inv.getSize() + ")");
+					+ i + ") > inv size (" + inv.getSize() + ")");
 			inv.setItem(i, item);
 		}
 
@@ -614,7 +619,7 @@ public abstract class Menu {
 	 */
 	@Deprecated
 	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked,
-	                                  final ItemStack cursor) {
+			final ItemStack cursor) {
 		return false;
 	}
 
@@ -765,7 +770,7 @@ public abstract class Menu {
 	 * @param cancelled is the event cancelled?
 	 */
 	protected void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click,
-	                           final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
+			final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
 		final InventoryView openedInventory = player.getOpenInventory();
 
 		onMenuClick(player, slot, clicked);
@@ -815,7 +820,7 @@ public abstract class Menu {
 	 * @param button the button
 	 */
 	protected void onButtonClick(final Player player, final int slot, final InventoryAction action,
-	                             final ClickType click, final Button button) {
+			final ClickType click, final Button button) {
 		button.onClickedInMenu(player, this, click);
 	}
 

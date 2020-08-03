@@ -1,13 +1,13 @@
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * Utility class for mathematical operations.
@@ -358,7 +358,7 @@ public final class MathUtil {
 			double parseExpression() {
 				double v = parseTerm();
 
-				for (; ; ) {
+				for (;;) {
 					eatSpace();
 
 					if (c == '+') { // addition
@@ -376,7 +376,7 @@ public final class MathUtil {
 			double parseTerm() {
 				double v = parseFactor();
 
-				for (; ; ) {
+				for (;;) {
 					eatSpace();
 
 					if (c == '/') { // division

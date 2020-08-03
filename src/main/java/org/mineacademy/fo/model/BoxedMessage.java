@@ -1,6 +1,8 @@
 package org.mineacademy.fo.model;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
+import java.util.Objects;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -8,8 +10,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 
-import java.util.Arrays;
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a chat message surrounded by chat-wide line on the top and bottom:
@@ -133,7 +134,8 @@ public final class BoxedMessage {
 		int length = 0;
 
 		for (final String message : messages)
-			for (@SuppressWarnings("unused") final String part : message.split("\n"))
+			for (@SuppressWarnings("unused")
+			final String part : message.split("\n"))
 				length++;
 
 		return length;

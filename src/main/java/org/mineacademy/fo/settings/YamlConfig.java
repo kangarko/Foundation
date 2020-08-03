@@ -1,6 +1,25 @@
 package org.mineacademy.fo.settings;
 
-import lombok.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -8,27 +27,34 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.mineacademy.fo.*;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.*;
+import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.ConfigSerializable;
+import org.mineacademy.fo.model.Replacer;
+import org.mineacademy.fo.model.SimpleSound;
+import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Function;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * The core configuration class. Manages all settings files.
@@ -279,9 +305,9 @@ public class YamlConfig implements ConfigSerializable {
 
 			} catch (final Exception ex) {
 				Common.throwError(ex,
-					"Error loading configuration in " + getFileName() + "!",
-					"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
-					"Problem: " + ex + " (see below for more)");
+						"Error loading configuration in " + getFileName() + "!",
+						"Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"),
+						"Problem: " + ex + " (see below for more)");
 
 				//Remain.sneaky(ex);
 			}
@@ -709,11 +735,12 @@ public class YamlConfig implements ConfigSerializable {
 	 *
 	 * @param path
 	 * @return
+	 *
+	 * @deprecated use {@link #getDouble(String)}
 	 */
+	@Deprecated
 	protected final Double getDoubleSafe(final String path) {
-		final Object raw = getObject(path);
-
-		return raw != null ? Double.parseDouble(raw.toString()) : null;
+		return getDouble(path);
 	}
 
 	/**
@@ -736,7 +763,9 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final Double getDouble(final String path) {
-		return getT(path, Double.class);
+		final Object raw = getObject(path);
+
+		return raw != null ? Double.parseDouble(raw.toString()) : null;
 	}
 
 	/**
@@ -1485,13 +1514,13 @@ public class YamlConfig implements ConfigSerializable {
 			final Object object = getDefaults().get(pathAbs);
 
 			Valid.checkNotNull(object,
-				"Default '"
-					+ getFileName()
-					+ "' lacks "
-					+ Common.article(type.getSimpleName())
-					+ " at '"
-					+ pathAbs
-					+ "'");
+					"Default '"
+							+ getFileName()
+							+ "' lacks "
+							+ Common.article(type.getSimpleName())
+							+ " at '"
+							+ pathAbs
+							+ "'");
 			checkAssignable(true, pathAbs, object, type);
 
 			checkAndFlagForSave(pathAbs, object);
@@ -1611,13 +1640,13 @@ public class YamlConfig implements ConfigSerializable {
 		// add default
 		if (getDefaults() != null && !getConfig().isSet(path)) {
 			Valid.checkBoolean(
-				getDefaults().isSet(path),
-				"Default '" + getFileName() + "' lacks a section at " + path);
+					getDefaults().isSet(path),
+					"Default '" + getFileName() + "' lacks a section at " + path);
 
 			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
 				for (final String setting : getDefaults()
-					.getConfigurationSection(path + "." + name)
-					.getKeys(false))
+						.getConfigurationSection(path + "." + name)
+						.getKeys(false))
 					addDefaultIfNotExist(path + "." + name + "." + setting, Object.class);
 		}
 
@@ -1629,9 +1658,9 @@ public class YamlConfig implements ConfigSerializable {
 		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
 			// type, value (UNPARSED)
 			final LinkedHashMap<String, Object> valuesRaw = getMap(
-				path + "." + name,
-				String.class,
-				Object.class);
+					path + "." + name,
+					String.class,
+					Object.class);
 
 			groups.put(name, valuesRaw);
 		}
@@ -1799,7 +1828,7 @@ public class YamlConfig implements ConfigSerializable {
 
 			if (values.length != 3)
 				throw new FoException(
-					"Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
+						"Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
 
 			akuzativSg = values[0];
 			akuzativPl = values[1];

@@ -1,7 +1,12 @@
 package org.mineacademy.fo.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -14,8 +19,8 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.Remain;
 
-import java.util.*;
-import java.util.Map.Entry;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * An elegant way to find {variables} and replace them.

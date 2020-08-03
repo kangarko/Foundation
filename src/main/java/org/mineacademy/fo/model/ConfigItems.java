@@ -1,19 +1,20 @@
 package org.mineacademy.fo.model;
 
-import lombok.NonNull;
-import lombok.Setter;
-import org.apache.commons.lang.WordUtils;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.settings.YamlConfig;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang.WordUtils;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.settings.YamlConfig;
+
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * A special class that can store loaded {@link YamlConfig} files

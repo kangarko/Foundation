@@ -1,13 +1,13 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * A pretty specific class for picking up items for the player randomly,

@@ -1,5 +1,8 @@
 package org.mineacademy.fo.model;
 
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -12,9 +15,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 import org.mineacademy.fo.EntityUtil;
-
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 
 /**
  * Listens and executes events for {@link SimpleEnchantment}

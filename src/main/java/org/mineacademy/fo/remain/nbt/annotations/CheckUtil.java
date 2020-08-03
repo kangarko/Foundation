@@ -1,9 +1,9 @@
 package org.mineacademy.fo.remain.nbt.annotations;
 
+import java.lang.reflect.Method;
+
 import org.mineacademy.fo.remain.nbt.NbtApiException;
 import org.mineacademy.fo.remain.nbt.utils.MinecraftVersion;
-
-import java.lang.reflect.Method;
 
 public class CheckUtil {
 

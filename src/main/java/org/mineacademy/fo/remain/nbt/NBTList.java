@@ -1,10 +1,15 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
 import org.mineacademy.fo.remain.nbt.utils.MinecraftVersion;
-
-import java.util.*;
 
 /**
  * Abstract List implementation for ListCompounds
@@ -14,9 +19,9 @@ import java.util.*;
  */
 public abstract class NBTList<T> implements List<T> {
 
-	private String listName;
-	private NBTCompound parent;
-	private NBTType type;
+	private final String listName;
+	private final NBTCompound parent;
+	private final NBTType type;
 	Object listObject;
 
 	protected NBTList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
@@ -94,6 +99,7 @@ public abstract class NBTList<T> implements List<T> {
 		}
 	}
 
+	@Override
 	public T remove(final int i) {
 		try {
 			parent.getWriteLock().lock();
@@ -108,6 +114,7 @@ public abstract class NBTList<T> implements List<T> {
 		}
 	}
 
+	@Override
 	public int size() {
 		try {
 			parent.getReadLock().lock();
@@ -133,7 +140,8 @@ public abstract class NBTList<T> implements List<T> {
 
 	@Override
 	public void clear() {
-		while (!isEmpty()) remove(0);
+		while (!isEmpty())
+			remove(0);
 	}
 
 	@Override
@@ -167,7 +175,8 @@ public abstract class NBTList<T> implements List<T> {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final T ele : c) add(ele);
+			for (final T ele : c)
+				add(ele);
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -179,7 +188,8 @@ public abstract class NBTList<T> implements List<T> {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final T ele : c) add(index++, ele);
+			for (final T ele : c)
+				add(index++, ele);
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -218,7 +228,8 @@ public abstract class NBTList<T> implements List<T> {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final Object obj : c) remove(obj);
+			for (final Object obj : c)
+				remove(obj);
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -230,7 +241,10 @@ public abstract class NBTList<T> implements List<T> {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final Object obj : c) for (int i = 0; i < size(); i++) if (!obj.equals(get(i))) remove(i--);
+			for (final Object obj : c)
+				for (int i = 0; i < size(); i++)
+					if (!obj.equals(get(i)))
+						remove(i--);
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -243,7 +257,8 @@ public abstract class NBTList<T> implements List<T> {
 			parent.getWriteLock().lock();
 			final int size = size();
 			int id = -1;
-			while ((id = indexOf(o)) != -1) remove(id);
+			while ((id = indexOf(o)) != -1)
+				remove(id);
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -353,7 +368,6 @@ public abstract class NBTList<T> implements List<T> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <E> E[] toArray(final E[] a) {
 		try {
@@ -363,7 +377,8 @@ public abstract class NBTList<T> implements List<T> {
 			final Class<?> arrayclass = a.getClass().getComponentType();
 			for (int i = 0; i < size(); i++) {
 				final T obj = get(i);
-				if (arrayclass.isInstance(obj)) ar[i] = (E) get(i);
+				if (arrayclass.isInstance(obj))
+					ar[i] = (E) get(i);
 				else
 					throw new ArrayStoreException("The array does not match the objects stored in the List.");
 			}

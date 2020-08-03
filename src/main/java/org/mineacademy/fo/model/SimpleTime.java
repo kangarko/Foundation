@@ -1,7 +1,8 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
 import org.mineacademy.fo.TimeUtil;
+
+import lombok.Getter;
 
 /**
  * A simple class holding time values in human readable form such as 1 second or 5 minutes

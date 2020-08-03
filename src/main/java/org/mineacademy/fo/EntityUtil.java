@@ -1,9 +1,22 @@
 package org.mineacademy.fo;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
 import org.bukkit.Location;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.Creature;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ExperienceOrb;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Ghast;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Slime;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,9 +29,8 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.remain.Remain;
 
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * Utility class for managing entities.
@@ -60,9 +72,9 @@ public final class EntityUtil {
 	 */
 	public static boolean isAggressive(Entity entity) {
 		return entity instanceof Ghast ||
-			entity instanceof Slime ||
-			entity instanceof Wolf && ((Wolf) entity).isAngry() ||
-			entity instanceof Creature && !(entity instanceof Animals);
+				entity instanceof Slime ||
+				entity instanceof Wolf && ((Wolf) entity).isAngry() ||
+				entity instanceof Creature && !(entity instanceof Animals);
 	}
 
 	/**
@@ -73,8 +85,8 @@ public final class EntityUtil {
 	 */
 	public static boolean isCreature(Entity entity) {
 		return entity instanceof Slime ||
-			entity instanceof Wolf ||
-			entity instanceof Creature;
+				entity instanceof Wolf ||
+				entity instanceof Creature;
 	}
 
 	/**
@@ -86,9 +98,9 @@ public final class EntityUtil {
 	 */
 	public static boolean canBeCleaned(Entity entity) {
 		return entity instanceof FallingBlock ||
-			entity instanceof Item ||
-			entity instanceof Projectile ||
-			entity instanceof ExperienceOrb;
+				entity instanceof Item ||
+				entity instanceof Projectile ||
+				entity instanceof ExperienceOrb;
 	}
 
 	// ----------------------------------------------------------------------------------------------------

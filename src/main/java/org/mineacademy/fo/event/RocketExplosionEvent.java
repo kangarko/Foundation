@@ -1,11 +1,12 @@
 package org.mineacademy.fo.event;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.mineacademy.fo.menu.tool.Rocket;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * The event that is triggered when a {@link Rocket} explodes.

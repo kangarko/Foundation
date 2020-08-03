@@ -1,6 +1,16 @@
 package org.mineacademy.fo.update;
 
-import lombok.Getter;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -8,12 +18,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import lombok.Getter;
 
 /**
  * A simple class performing an update check for Spigot free and premium resources
@@ -233,13 +238,13 @@ public class SpigotUpdater implements Runnable {
 	 */
 	protected String replaceVariables(final String message) {
 		return message
-			.replace("{resourceId}", resourceId + "") // DEPRECATED
-			.replace("{resource_id}", resourceId + "")
-			.replace("{plugin.name}", SimplePlugin.getNamed()) // DEPRECATED
-			.replace("{plugin_name}", SimplePlugin.getNamed())
-			.replace("{new}", newVersion)
-			.replace("{curr}", SimplePlugin.getVersion()) // DEPRECATED
-			.replace("{current}", SimplePlugin.getVersion())
-			.replace("{user_id}", "%%__USER__%%");
+				.replace("{resourceId}", resourceId + "") // DEPRECATED
+				.replace("{resource_id}", resourceId + "")
+				.replace("{plugin.name}", SimplePlugin.getNamed()) // DEPRECATED
+				.replace("{plugin_name}", SimplePlugin.getNamed())
+				.replace("{new}", newVersion)
+				.replace("{curr}", SimplePlugin.getVersion()) // DEPRECATED
+				.replace("{current}", SimplePlugin.getVersion())
+				.replace("{user_id}", "%%__USER__%%");
 	}
 }

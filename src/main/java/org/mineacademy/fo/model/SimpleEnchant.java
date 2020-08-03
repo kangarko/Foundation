@@ -1,8 +1,9 @@
 package org.mineacademy.fo.model;
 
+import org.bukkit.enchantments.Enchantment;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.enchantments.Enchantment;
 
 /**
  * A simple wrapper for enchants

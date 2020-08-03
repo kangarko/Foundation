@@ -20,7 +20,8 @@ public class NBTEntity extends NBTCompound {
 	 */
 	public NBTEntity(final Entity entity) {
 		super(null, null);
-		if (entity == null) throw new NullPointerException("Entity can't be null!");
+		if (entity == null)
+			throw new NullPointerException("Entity can't be null!");
 		ent = entity;
 	}
 
@@ -42,12 +43,13 @@ public class NBTEntity extends NBTCompound {
 	 */
 	@AvaliableSince(version = MinecraftVersion.MC1_14_R1)
 	private NBTCompound getPersistentDataContainer() {
-//        FAUtil.check(this::getPersistentDataContainer, CheckUtil::isAvaliable);
-		if (hasKey("BukkitValues")) return getCompound("BukkitValues");
+		//        FAUtil.check(this::getPersistentDataContainer, CheckUtil::isAvaliable);
+		if (hasKey("BukkitValues"))
+			return getCompound("BukkitValues");
 		else {
 			final NBTContainer container = new NBTContainer();
 			container.addCompound("BukkitValues").setString("__nbtapi",
-				"Marker to make the PersistentDataContainer have content");
+					"Marker to make the PersistentDataContainer have content");
 			mergeCompound(container);
 			return getCompound("BukkitValues");
 		}

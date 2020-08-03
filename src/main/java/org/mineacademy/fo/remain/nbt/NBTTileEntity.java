@@ -21,7 +21,8 @@ public class NBTTileEntity extends NBTCompound {
 	 */
 	public NBTTileEntity(final BlockState tile) {
 		super(null, null);
-		if (tile == null || !tile.isPlaced()) throw new NullPointerException("Tile can't be null/not placed!");
+		if (tile == null || !tile.isPlaced())
+			throw new NullPointerException("Tile can't be null/not placed!");
 		this.tile = tile;
 	}
 
@@ -43,12 +44,13 @@ public class NBTTileEntity extends NBTCompound {
 	 */
 	@AvaliableSince(version = MinecraftVersion.MC1_14_R1)
 	private NBTCompound getPersistentDataContainer() {
-//        FAUtil.check(this::getPersistentDataContainer, CheckUtil::isAvaliable);
-		if (hasKey("PublicBukkitValues")) return getCompound("PublicBukkitValues");
+		//        FAUtil.check(this::getPersistentDataContainer, CheckUtil::isAvaliable);
+		if (hasKey("PublicBukkitValues"))
+			return getCompound("PublicBukkitValues");
 		else {
 			final NBTContainer container = new NBTContainer();
 			container.addCompound("PublicBukkitValues").setString("__nbtapi",
-				"Marker to make the PersistentDataContainer have content");
+					"Marker to make the PersistentDataContainer have content");
 			mergeCompound(container);
 			return getCompound("PublicBukkitValues");
 		}

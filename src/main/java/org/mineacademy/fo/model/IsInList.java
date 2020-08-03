@@ -1,10 +1,11 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
+import java.util.Collection;
+
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
 
-import java.util.Collection;
+import lombok.Getter;
 
 /**
  * A simple class allowing you to match if something is in that list.

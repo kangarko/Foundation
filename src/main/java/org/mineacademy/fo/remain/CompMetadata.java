@@ -1,8 +1,11 @@
 package org.mineacademy.fo.remain;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -29,7 +32,9 @@ import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlSectionConfig;
 
-import java.util.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for persistent metadata manipulation
@@ -465,7 +470,7 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
-				for (final Iterator<String> i = metadata.iterator(); i.hasNext(); ) {
+				for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
 					final String meta = i.next();
 
 					if (getTag(meta, key) != null)
@@ -486,7 +491,7 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
-				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext(); ) {
+				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
 					final String meta = i.next();
 
 					if (getTag(meta, key) != null)

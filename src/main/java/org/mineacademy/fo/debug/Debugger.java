@@ -1,9 +1,12 @@
 package org.mineacademy.fo.debug;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -14,8 +17,10 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import java.io.File;
-import java.util.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for solving problems and errors
@@ -154,11 +159,11 @@ public final class Debugger {
 
 		// Write out header and server info
 		fill(lines,
-			"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
-			header,
-			"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
-			"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),
-			"----------------------------------------------------------------------------------------------");
+				"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+				header,
+				"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
+				"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),
+				"----------------------------------------------------------------------------------------------");
 
 		// Write additional data
 		if (messages != null && !StringUtils.join(messages, "").isEmpty()) {

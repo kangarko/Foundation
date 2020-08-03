@@ -1,7 +1,8 @@
 package org.mineacademy.fo;
 
-import lombok.experimental.UtilityClass;
 import org.bukkit.command.CommandSender;
+
+import lombok.experimental.UtilityClass;
 
 /**
  * Streamlines the process of sending themed messages to players

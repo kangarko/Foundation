@@ -1,11 +1,17 @@
 package org.mineacademy.fo.conversation;
 
-import lombok.SneakyThrows;
-import org.bukkit.conversations.*;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.ConversationAbandonedEvent;
+import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.ConversationPrefix;
+import org.bukkit.conversations.Prompt;
+import org.bukkit.conversations.ValidatingPrompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.Menu;
+
+import lombok.SneakyThrows;
 
 /**
  * Represents one question for the player during a server conversation

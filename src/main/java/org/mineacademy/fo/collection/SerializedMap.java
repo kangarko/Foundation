@@ -1,6 +1,18 @@
 package org.mineacademy.fo.collection;
 
-import com.google.gson.Gson;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Location;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.ItemStack;
@@ -13,12 +25,7 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import com.google.gson.Gson;
 
 /**
  * Serialized map enables you to save and retain values from your

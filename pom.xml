@@ -3,9 +3,7 @@
 	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
 	owner of the MineAcademy.org End User License then you may use it for your 
 	own use in plugins but not for any other purpose. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.mineacademy</groupId>
@@ -33,27 +31,28 @@
 	</repositories>
 
 	<dependencies>
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.12</version>
+		</dependency>
 		<!-- The Spigot API and PaperSpigot server -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.16.1-R0.1-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.server</groupId>
-			<artifactId>PaperSpigot</artifactId>
-			<version>1.16.1-SNAPSHOT-131</version>
-		</dependency>
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>AuthMe</artifactId>
-			<version>5.6.0-SNAPSHOT-2382</version>
+			<version>5.6.0-SNAPSHOT-2418</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CitizensAPI</artifactId>
-			<version>2.0.26-b645</version>
+			<version>2.0.27-b691</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -63,12 +62,12 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>DiscordSRV</artifactId>
-			<version>1.19.0</version>
+			<version>1.19.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>EssentialsX</artifactId>
-			<version>2.17.2.3</version>
+			<version>2.18.0.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -78,22 +77,22 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>FactionsUUID</artifactId>
-			<version>1.6.9.5-U0.5.9-b221</version>
+			<version>1.6.9.5-U0.5.17-b237</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Jobs</artifactId>
-			<version>4.15.5</version>
+			<version>4.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>LockettePro</artifactId>
-			<version>2.9.5</version>
+			<version>2.10.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>LWC</artifactId>
-			<version>2.2.5</version>
+			<version>2.2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -103,88 +102,77 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>mcMMO</artifactId>
-			<version>2.1.128</version>
+			<version>2.1.138</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Multiverse-Core</artifactId>
-			<version>4.1.1-SNAPSHOT</version>
+			<version>4.1.1-SNAPSHOT-787</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>MVdWPlaceholderAPI</artifactId>
-			<version>3.0.1</version>
+			<version>3.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>MythicMobs</artifactId>
-			<version>4.7.2</version>
+			<version>4.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>NuVotifier</artifactId>
-			<version>2.6.0</version>
+			<version>2.7.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>PlaceholderAPI</artifactId>
-			<version>2.10.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>PlotSquared</artifactId>
-			<version>5.4</version>
+			<version>2.10.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>4.5.1-SNAPSHOT-b447</version>
+			<version>4.6.0-SNAPSHOT-b473</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Residence</artifactId>
-			<version>4.8.8.2</version>
+			<version>4.9.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>SimpleClans</artifactId>
-			<version>2.8.1</version>
+			<version>2.12.2</version>
 		</dependency>
 		<dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>StackMob</artifactId>
-            <version>5.0.2</version>
-        </dependency>
+			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>StackMob</artifactId>
+			<version>5.2.3</version>
+		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Towny</artifactId>
-			<version>0.95.2.0</version>
+			<version>0.96.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>TownyChat</artifactId>
-			<version>0.63</version>
+			<version>0.72</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Vault</artifactId>
-			<version>1.7.2</version>
+			<version>1.7.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.2.0-SNAPSHOT-4910</version>
+			<version>7.2.0-SNAPSHOT-5202</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldGuard</artifactId>
-			<version>7.0.3-SNAPSHOT-2020</version>
-		</dependency>
-		<!-- Lombok -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.12</version>
+			<version>7.0.4-SNAPSHOT-2061</version>
 		</dependency>
 	</dependencies>
 	<build>

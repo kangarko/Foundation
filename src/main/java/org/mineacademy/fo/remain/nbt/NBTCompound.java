@@ -1,9 +1,5 @@
 package org.mineacademy.fo.remain.nbt;
 
-import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-import org.mineacademy.fo.remain.nbt.utils.MinecraftVersion;
-
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Set;
@@ -11,6 +7,10 @@ import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
+import org.mineacademy.fo.remain.nbt.utils.MinecraftVersion;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -24,8 +24,8 @@ public class NBTCompound {
 	private final Lock readLock = readWriteLock.readLock();
 	private final Lock writeLock = readWriteLock.writeLock();
 
-	private String compundName;
-	private NBTCompound parent;
+	private final String compundName;
+	private final NBTCompound parent;
 
 	protected NBTCompound(final NBTCompound owner, final String name) {
 		this.compundName = name;
@@ -664,7 +664,7 @@ public class NBTCompound {
 		try {
 			writeLock.lock();
 			final NBTCompoundList list = (NBTCompoundList) NBTReflectionUtil.getList(this, name, NBTType.NBTTagCompound,
-				NBTListCompound.class);
+					NBTListCompound.class);
 			saveCompound();
 			return list;
 		} finally {

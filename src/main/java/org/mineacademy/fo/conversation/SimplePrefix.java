@@ -1,10 +1,11 @@
 package org.mineacademy.fo.conversation;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationPrefix;
 import org.mineacademy.fo.Common;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * A simple conversation prefix with a static string

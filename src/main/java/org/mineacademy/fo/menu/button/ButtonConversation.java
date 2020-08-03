@@ -1,6 +1,5 @@
 package org.mineacademy.fo.menu.button;
 
-import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -10,6 +9,8 @@ import org.mineacademy.fo.conversation.SimplePrompt;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+
+import lombok.Getter;
 
 /**
  * A button that runs a server conversation

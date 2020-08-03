@@ -1,5 +1,15 @@
 package org.mineacademy.fo.model;
 
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictSet;
+
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
 import github.scarsz.discordsrv.api.Subscribe;
@@ -10,15 +20,6 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictSet;
-
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public abstract class DiscordListener implements Listener {
 
@@ -235,10 +236,10 @@ public abstract class DiscordListener implements Listener {
 
 				} catch (final Throwable t) {
 					Common.error(t,
-						"Failed to handle DiscordSRV!",
-						"Sender: " + event.getAuthor().getName(),
-						"Channel: " + event.getChannel().getName(),
-						"Message: " + event.getMessage().getContentDisplay());
+							"Failed to handle DiscordSRV!",
+							"Sender: " + event.getAuthor().getName(),
+							"Channel: " + event.getChannel().getName(),
+							"Message: " + event.getMessage().getContentDisplay());
 				}
 		}
 	}

@@ -1,6 +1,10 @@
 package org.mineacademy.fo.database;
 
-import lombok.NonNull;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -10,10 +14,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import lombok.NonNull;
 
 /**
  * Represents a simple database where values are flattened and stored
@@ -125,9 +126,9 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 		} catch (final Throwable t) {
 			Common.error(t,
-				"Failed to load data from MySQL!",
-				"UUID: " + uuid,
-				"Error: %error");
+					"Failed to load data from MySQL!",
+					"UUID: " + uuid,
+					"Error: %error");
 
 		} finally {
 			isQuerying = false;
@@ -183,9 +184,9 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 		} catch (final Throwable ex) {
 			Common.error(ex,
-				"Failed to save data to MySQL!",
-				"UUID: " + uuid,
-				"Error: %error");
+					"Failed to save data to MySQL!",
+					"UUID: " + uuid,
+					"Error: %error");
 
 		} finally {
 			isQuerying = false;
@@ -206,7 +207,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 		final boolean isMainThread = Bukkit.isPrimaryThread();
 
 		LagCatcher.end("mysql", isMainThread ? 10 : MathUtil.atLeast(200, SimpleSettings.LAG_THRESHOLD_MILLIS),
-			WordUtils.capitalize(operation) + " data to MySQL took {time} ms" + (took > 10 && isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
+				WordUtils.capitalize(operation) + " data to MySQL took {time} ms" + (took > 10 && isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
 	}
 
 	/**

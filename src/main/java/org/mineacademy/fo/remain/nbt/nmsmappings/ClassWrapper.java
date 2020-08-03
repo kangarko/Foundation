@@ -9,7 +9,6 @@ import org.mineacademy.fo.remain.nbt.utils.MinecraftVersion;
  *
  * @author tr7zw
  */
-@SuppressWarnings("javadoc")
 public enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack"),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem"),
@@ -48,8 +47,10 @@ public enum ClassWrapper {
 	}
 
 	ClassWrapper(final PackageWrapper packageId, final String suffix, final MinecraftVersion from, final MinecraftVersion to) {
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) return;
-		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()) return;
+		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
+			return;
+		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
+			return;
 		enabled = true;
 		try {
 			final String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];

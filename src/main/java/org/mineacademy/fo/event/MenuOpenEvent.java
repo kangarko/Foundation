@@ -1,13 +1,14 @@
 package org.mineacademy.fo.event;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Triggered when a menu is opened for a player
