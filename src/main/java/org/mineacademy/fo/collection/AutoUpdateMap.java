@@ -13,7 +13,7 @@ import org.mineacademy.fo.Valid;
  * @param <V>
  * @param <K>
  */
-public final class AutoUpdateMap<V, K> extends StrictCollection {
+public final class AutoUpdateMap<V, K> extends AbstractStrictCollection {
 
 	/**
 	 * The internal map
@@ -90,7 +90,8 @@ public final class AutoUpdateMap<V, K> extends StrictCollection {
 	 * @param value
 	 */
 	public void overrideAndUpdate(V key, K value) {
-		map.override(key, value);
+		map.removeWeak(key);
+		map.put(key, value);
 
 		updater.run();
 	}

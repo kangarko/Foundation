@@ -14,12 +14,9 @@ import org.mineacademy.fo.Valid;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public final class StrictList<E> extends StrictCollection implements Iterable<E> {
+public final class StrictList<E> extends ArrayList<E> implements StrictCollection {
 
-	/**
-	 * The internal list
-	 */
-	private final List<E> list = new ArrayList<>();
+	private final String cannotRemoveMessage, cannotAddMessage;
 
 	/**
 	 * Create a new list of the given elements
@@ -59,16 +56,16 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @param addMessage
 	 */
 	public StrictList(String removeMessage, String addMessage) {
-		super(removeMessage, addMessage);
+		this.cannotRemoveMessage = removeMessage;
+		this.cannotAddMessage = addMessage;
 	}
 
 	/**
-	 * Return the default Java {@link ArrayList}
-	 *
-	 * @return
+	 * @deprecated As this list is now an extension of the {@link ArrayList}
 	 */
+	@Deprecated
 	public List<E> getSource() {
-		return list;
+		return this;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -92,7 +89,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public E getAndRemove(int index) {
-		final E e = list.get(index);
+		final E e = get(index);
 		remove(index);
 
 		return e;
@@ -103,10 +100,11 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 *
 	 * @param key
 	 */
-	public void remove(E key) {
+	public boolean remove(Object key) {
 		final boolean removed = removeWeak(key);
 
-		Valid.checkBoolean(removed, String.format(getCannotRemoveMessage(), key));
+		Valid.checkBoolean(removed, String.format(cannotAddMessage, key));
+		return removed;
 	}
 
 	/**
@@ -116,9 +114,9 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public E remove(int index) {
-		final E removed = list.remove(index);
+		final E removed = remove(index);
 
-		Valid.checkNotNull(removed, String.format(getCannotRemoveMessage(), "index: " + index));
+		Valid.checkNotNull(removed, String.format(cannotRemoveMessage, "index: " + index));
 		return removed;
 	}
 
@@ -147,11 +145,11 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 *
 	 * @param key
 	 */
-	public void add(E key) {
+	public boolean add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
-		Valid.checkBoolean(!list.contains(key), String.format(getCannotAddMessage(), key));
+		Valid.checkBoolean(!contains(key), String.format(cannotAddMessage, key));
 
-		addWeak(key);
+		return addWeak(key);
 	}
 
 	/**
@@ -161,11 +159,11 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public StrictList<E> range(int startIndex) {
-		Valid.checkBoolean(startIndex <= list.size(), "Start index out of range " + startIndex + " vs. list size " + list.size());
+		Valid.checkBoolean(startIndex <= size(), "Start index out of range " + startIndex + " vs. list size " + size());
 		final StrictList<E> ranged = new StrictList<>();
 
-		for (int i = startIndex; i < list.size(); i++)
-			ranged.add(list.get(i));
+		for (int i = startIndex; i < size(); i++)
+			ranged.add(get(i));
 
 		return ranged;
 	}
@@ -180,10 +178,10 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @param value
 	 * @return
 	 */
-	public boolean removeWeak(E value) {
+	public boolean removeWeak(Object value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
 
-		return list.remove(value);
+		return remove(value);
 	}
 
 	/**
@@ -201,18 +199,8 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 *
 	 * @param key
 	 */
-	public void addWeak(E key) {
-		list.add(key);
-	}
-
-	/**
-	 * Set a key to the certain index
-	 *
-	 * @param index
-	 * @param key
-	 */
-	public void set(int index, E key) {
-		list.set(index, key);
+	public boolean addWeak(E key) {
+		return super.add(key);
 	}
 
 	/**
@@ -223,17 +211,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public E getOrDefault(int index, E def) {
-		return index < list.size() ? list.get(index) : def;
-	}
-
-	/**
-	 * Return the value at given index
-	 *
-	 * @param index
-	 * @return
-	 */
-	public E get(int index) {
-		return list.get(index);
+		return index < size() ? get(index) : def;
 	}
 
 	/**
@@ -242,8 +220,8 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @param key
 	 * @return
 	 */
-	public boolean contains(E key) {
-		return list.contains(key);
+	public boolean contains(Object key) {
+		return contains(key);
 	}
 
 	/**
@@ -256,7 +234,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public boolean containsIgnoreCase(E key) {
-		for (final E other : list) {
+		for (final E other : this) {
 			if (other instanceof String && key instanceof String)
 				if (((String) other).equalsIgnoreCase((String) key))
 					return true;
@@ -269,63 +247,11 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	}
 
 	/**
-	 * Remove every single piece of that list!
-	 */
-	public void clear() {
-		list.clear();
-	}
-
-	/**
-	 * Return true if the list is empty
-	 *
-	 * @return
-	 */
-	public boolean isEmpty() {
-		return list.isEmpty();
-	}
-
-	/**
-	 * Get the list size
-	 *
-	 * @return
-	 */
-	public int size() {
-		return list.size();
-	}
-
-	/**
-	 * See {@link List#iterator()}
-	 */
-	@Override
-	public Iterator<E> iterator() {
-		return list.iterator();
-	}
-
-	/**
-	 * See {@link List#toArray()}
-	 *
-	 * @param e
-	 * @return
-	 */
-	public E[] toArray(E[] e) {
-		return list.toArray(e);
-	}
-
-	/**
-	 * Return {@link List#toArray()}
-	 *
-	 * @return
-	 */
-	public Object[] toArray() {
-		return list.toArray();
-	}
-
-	/**
 	 * Serializes every value in the list so you can store it in your settings
 	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serializeList(list);
+		return SerializeUtil.serializeList(this);
 	}
 
 	/**
@@ -335,16 +261,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public String join(String separator) {
-		return StringUtils.join(list, separator);
+		return StringUtils.join(this, separator);
 	}
 
-	/**
-	 * Returns string representation of this list
-	 * <p>
-	 * NB: For saving in files call {@link #serialize()}
-	 */
-	@Override
-	public String toString() {
-		return list.toString();
-	}
 }

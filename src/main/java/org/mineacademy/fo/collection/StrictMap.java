@@ -1,16 +1,11 @@
 package org.mineacademy.fo.collection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 
@@ -19,167 +14,124 @@ import org.mineacademy.fo.Valid;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public final class StrictMap<E, T> extends StrictCollection {
+public final class StrictMap<E, V> extends LinkedHashMap<E, V> implements StrictCollection {
 
-	private final Map<E, T> map = new LinkedHashMap<>();
+	private final String cannotRemoveMessage, cannotAddMessage;
+	private final Map<V, E> inverse = new LinkedHashMap<>();
 
 	public StrictMap() {
 		this("Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'");
 	}
 
 	public StrictMap(String removeMessage, String addMessage) {
-		super(removeMessage, addMessage);
+		this.cannotRemoveMessage = removeMessage;
+		this.cannotAddMessage = addMessage;
 	}
 
-	public StrictMap(Map<E, T> copyOf) {
+	public StrictMap(Map<E, V> copyOf) {
 		this();
-
 		setAll(copyOf);
 	}
 
-	public void setAll(Map<E, T> copyOf) {
-		map.clear();
+	public void setAll(Map<E, V> copyOf) {
+		clear();
 
-		for (final Map.Entry<E, T> e : copyOf.entrySet())
+		for (final Map.Entry<E, V> e : copyOf.entrySet())
 			put(e.getKey(), e.getValue());
 	}
 
-	public T remove(E key) {
-		final T removed = removeWeak(key);
-		Valid.checkNotNull(removed, String.format(getCannotRemoveMessage(), key));
+	@Override
+	public V remove(Object key) {
+		final V removed = removeWeak(key);
+		Valid.checkNotNull(removed, String.format(cannotRemoveMessage, key));
 
 		return removed;
 	}
 
-	public void removeByValue(T value) {
-		for (final Entry<E, T> e : map.entrySet())
-			if (e.getValue().equals(value)) {
-				map.remove(e.getKey());
-				return;
-			}
-
-		throw new NullPointerException(String.format(getCannotRemoveMessage(), value));
+	public void removeByValue(V value) {
+		E key = inverse.get(value);
+		if (key != null) {
+			remove(value);
+		} else {
+			throw new NullPointerException(String.format(cannotRemoveMessage, value));
+		}
 	}
 
-	public E getKeyFromValue(T value) {
-		for (final Entry<E, T> e : map.entrySet())
-			if (e.getValue().equals(value))
-				return e.getKey();
-
-		return null;
+	public E getKeyFromValue(V value) {
+		return inverse.get(value);
 	}
 
-	public T removeWeak(E value) {
-		return map.remove(value);
+	public V removeWeak(Object key) {
+		inverse.values().remove(key);
+		return super.remove(key);
 	}
 
 	public Object[] removeAll(Collection<E> keys) {
-		final List<T> removedKeys = new ArrayList<>();
+		final List<V> removedKeys = new ArrayList<>();
 
 		for (final E key : keys)
 			removedKeys.add(remove(key));
-
+		inverse.keySet().removeAll(removedKeys);
 		return removedKeys.toArray();
 	}
 
-	public void put(E key, T value) {
-		Valid.checkBoolean(!map.containsKey(key), String.format(getCannotAddMessage(), key, map.get(key)));
-
-		override(key, value);
+	@Override
+	public V put(E key, V value) {
+		Valid.checkBoolean(!containsKey(key), String.format(cannotAddMessage, key, get(key)));
+		inverse.put(value, key);
+		return super.put(key, value);
 	}
 
-	public void putAll(Map<? extends E, ? extends T> m) {
-		for (final Map.Entry<? extends E, ? extends T> e : m.entrySet())
-			Valid.checkBoolean(!map.containsKey(e.getKey()), String.format(getCannotAddMessage(), e.getKey(), map.get(e.getKey())));
-
-		override(m);
+	public boolean contains(E key) {
+		return containsKey(key);
 	}
 
-	public void override(E key, T value) {
-		map.put(key, value);
+	@Override public Set<E> keySet() {
+		return new StrictKeySet<>(super.keySet());
 	}
 
-	public void override(Map<? extends E, ? extends T> m) {
-		map.putAll(m);
+	public void putAll(Map<? extends E, ? extends V> m) {
+		for (final Map.Entry<? extends E, ? extends V> e : m.entrySet())
+			Valid.checkBoolean(!containsKey(e.getKey()), String.format(cannotAddMessage, e.getKey(), get(e.getKey())));
+		super.putAll(m);
+		for (final Map.Entry<? extends E, ? extends V> e : m.entrySet())
+			inverse.put(e.getValue(), e.getKey());
 	}
 
 	/**
 	 * Will return the key as normal or put it there and return it.
 	 */
-	public T getOrPut(E key, T defaultToPut) {
-		if (contains(key))
+	public V getOrPut(E key, V defaultToPut) {
+		if (containsKey(key))
 			return get(key);
 
 		put(key, defaultToPut);
 		return defaultToPut;
 	}
 
-	/**
-	 * CAN BE NULL, NO EXCEPTION THROWING
-	 */
-	public T get(E key) {
-		return map.get(key);
-	}
-
-	public T getOrDefault(E key, T def) {
-		return map.getOrDefault(key, def);
-	}
-
-	public boolean contains(E key) {
-		return key == null ? false : map.containsKey(key);
-	}
-
-	public boolean containsValue(T value) {
-		return value == null ? false : map.containsValue(value);
-	}
-
-	public Set<Entry<E, T>> entrySet() {
-		return map.entrySet();
-	}
-
-	public Set<E> keySet() {
-		return map.keySet();
-	}
-
-	public Collection<T> values() {
-		return map.values();
-	}
-
-	public void clear() {
-		map.clear();
-	}
-
-	public boolean isEmpty() {
-		return map.isEmpty();
-	}
-
-	public Map<E, T> getSource() {
-		return map;
-	}
-
-	public int size() {
-		return map.size();
+	@Deprecated
+	public Map<E, V> getSource() {
+		return this;
 	}
 
 	public E firstKey() {
-		return map.isEmpty() ? null : map.keySet().iterator().next();
+		return isEmpty() ? null : super.keySet().iterator().next();
 	}
 
-	public void forEachIterate(BiConsumer<E, T> consumer) {
-		for (final Iterator<Map.Entry<E, T>> it = entrySet().iterator(); it.hasNext();) {
-			final Map.Entry<E, T> entry = it.next();
-
+	public void forEachIterate(BiConsumer<E, V> consumer) {
+		for (final Entry<E, V> entry : entrySet()) {
 			consumer.accept(entry.getKey(), entry.getValue());
 		}
 	}
 
+
 	@Override
 	public Object serialize() {
-		if (!map.isEmpty()) {
+		if (!isEmpty()) {
 			final Map<Object, Object> copy = new HashMap<>();
 
-			for (final Entry<E, T> e : entrySet()) {
-				final T val = e.getValue();
+			for (final Entry<E, V> e : entrySet()) {
+				final V val = e.getValue();
 
 				if (val != null)
 					copy.put(SerializeUtil.serialize(e.getKey()), SerializeUtil.serialize(val));
@@ -188,11 +140,37 @@ public final class StrictMap<E, T> extends StrictCollection {
 			return copy;
 		}
 
-		return getSource();
+		return this;
 	}
 
-	@Override
-	public String toString() {
-		return map.toString();
+	class StrictKeySet<K> extends AbstractSet<K> implements StrictCollection {
+
+		private final Set<K> set;
+
+		StrictKeySet(Set<K> set) {
+			this.set = set;
+		}
+
+		@Override @NotNull public Iterator<K> iterator() {
+			return set.iterator();
+		}
+
+		@Override public boolean remove(final Object value) {
+			if (!contains(value)) {
+				throw new NullPointerException(String.format(cannotRemoveMessage, value));
+			}
+			return super.remove(value);
+		}
+
+		@Override public int size() {
+			return set.size();
+		}
+
+		@Override public Object serialize() {
+			if (size() == 0) {
+				return this;
+			}
+			return set.stream().map(SerializeUtil::serialize).collect(Collectors.toCollection(HashSet::new));
+		}
 	}
 }

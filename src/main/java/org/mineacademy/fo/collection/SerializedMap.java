@@ -32,7 +32,7 @@ import com.google.gson.Gson;
  * configuration easily, such as locations, other maps or lists and
  * much more.
  */
-public final class SerializedMap extends StrictCollection {
+public final class SerializedMap extends AbstractStrictCollection {
 
 	/**
 	 * The Google Json instance
@@ -100,7 +100,7 @@ public final class SerializedMap extends StrictCollection {
 				lastKey = (String) obj;
 
 			} else
-				map.override(lastKey, obj);
+				override(lastKey, obj);
 
 			string = !string;
 		}
@@ -139,8 +139,8 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public void override(final String key, final Object value) {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
-
-		map.override(key, value);
+    map.removeWeak(key);
+		map.put(key, value);
 	}
 
 	/**

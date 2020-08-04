@@ -1,12 +1,9 @@
 package org.mineacademy.fo.collection;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
@@ -16,9 +13,11 @@ import org.mineacademy.fo.exception.FoException;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public class StrictSet<E> extends StrictCollection implements Iterable<E> {
+public class StrictSet<E> extends AbstractStrictCollection implements Set<E> {
 
-	private final Set<E> list = new HashSet<>();
+	private static final Object PRESENT = new Object();
+
+	private final StrictMap<E, Object> map;
 
 	public StrictSet(E... elements) {
 		this();
@@ -44,80 +43,114 @@ public class StrictSet<E> extends StrictCollection implements Iterable<E> {
 
 	public StrictSet(String removeMessage, String addMessage) {
 		super(removeMessage, addMessage);
+		this.map = new StrictMap<>(removeMessage, addMessage);
 	}
 
 	public void setAll(Collection<E> collection) {
 		clear();
 
-		for (final E val : collection)
-			add(val);
+		this.addAll(collection);
 	}
 
-	public void remove(E value) {
+	public boolean remove(Object value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
-		final boolean removed = list.remove(value);
+		final boolean removed = map.remove(value) != null;
 
 		Valid.checkBoolean(removed, String.format(getCannotRemoveMessage(), value));
+		return removed;
 	}
 
-	public void add(E key) {
+	public boolean add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
-		Valid.checkBoolean(!list.contains(key), String.format(getCannotAddMessage(), key));
-
-		list.add(key);
+		Valid.checkBoolean(!map.containsKey(key), String.format(getCannotAddMessage(), key));
+		map.put(key, PRESENT);
+		return true;
 	}
 
-	public boolean contains(E key) {
-		return list.contains(key);
+	@Override public boolean addAll(@NotNull final Collection<? extends E> c) {
+		for (E element : c) {
+			 add(element);
+		}
+		return true;
+	}
+
+	@Override public boolean removeAll(@NotNull final Collection<?> c) {
+		boolean modified = false;
+		for (Object o : c) {
+			boolean b = remove(o);
+			if (!modified)
+				modified = b;
+		}
+		return modified;
+	}
+
+	@Override public boolean retainAll(@NotNull final Collection<?> c) {
+		Iterator<E> i = iterator();
+		boolean modified = false;
+		while (i.hasNext()) {
+			if (!c.contains(i.next())) {
+				i.remove();
+				modified = true;
+			}
+		}
+		return modified;
+	}
+
+	public boolean contains(Object key) {
+		return map.containsKey(key);
+	}
+
+	@Override public boolean containsAll(@NotNull final Collection<?> c) {
+		return map.keySet().containsAll(c);
 	}
 
 	public E getAt(int index) {
 		int i = 0;
 
-		final Iterator<E> it = list.iterator();
-
-		while (it.hasNext()) {
-			final E e = it.next();
-
+		for (final E e : map.keySet()) {
 			if (i++ == index)
 				return e;
 		}
 
-		throw new FoException("Index (" + index + ") + out of size (" + list.size() + ")");
+		throw new FoException("Index (" + index + ") + out of size (" + map.size() + ")");
 	}
 
 	public void clear() {
-		list.clear();
+		map.clear();
 	}
 
 	public boolean isEmpty() {
-		return list.isEmpty();
+		return map.isEmpty();
 	}
 
 	public int size() {
-		return list.size();
+		return map.size();
 	}
 
 	public Set<E> getSource() {
-		return list;
+		return map.keySet();
 	}
 
-	@Override
+	@Override @NotNull
 	public Iterator<E> iterator() {
-		return list.iterator();
+		return map.keySet().iterator();
 	}
 
-	public E[] toArray(E[] e) {
-		return list.toArray(e);
+	public <T> T[] toArray(T[] e) {
+		return map.keySet().toArray(e);
+	}
+
+	@NotNull @Override public Object[] toArray() {
+		return map.keySet().toArray();
 	}
 
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serializeList(list);
+		return SerializeUtil.serializeList(new ArrayList<>(this));
 	}
 
 	@Override
 	public String toString() {
-		return "StrictSet{\n" + StringUtils.join(list, "\n") + "}";
+		return "StrictSet{\n" + StringUtils.join(map.keySet(), "\n") + "}";
 	}
 }

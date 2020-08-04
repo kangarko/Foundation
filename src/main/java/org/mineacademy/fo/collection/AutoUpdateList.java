@@ -9,7 +9,7 @@ import org.mineacademy.fo.Valid;
  *
  * @param <T>
  */
-public final class AutoUpdateList<T> extends StrictCollection implements Iterable<T> {
+public final class AutoUpdateList<T> extends AbstractStrictCollection implements Iterable<T> {
 
 	/**
 	 * The list itself
