@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.debug.Debugger;
 
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,7 @@ public class SimpleDatabase {
 	/**
 	 * Map of variables you can use with the {} syntax in SQL
 	 */
-	private final StrictMap<String, String> sqlVariables = new StrictMap<>();
+	private final StrictLinkedHashMap<String, String> sqlVariables = new StrictLinkedHashMap<>();
 
 	// --------------------------------------------------------------------
 	// Connecting

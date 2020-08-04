@@ -42,7 +42,7 @@ public final class SerializedMap extends AbstractStrictCollection {
 	/**
 	 * The internal map with values
 	 */
-	private final StrictMap<String, Object> map = new StrictMap<>();
+	private final StrictLinkedHashMap<String, Object> map = new StrictLinkedHashMap<>();
 
 	/**
 	 * Creates a new serialized map with the given first key-value pair
@@ -620,7 +620,7 @@ public final class SerializedMap extends AbstractStrictCollection {
 	 * @return
 	 */
 	public Map<String, Object> asMap() {
-		return map.getSource();
+		return map;
 	}
 
 	/**
@@ -729,8 +729,8 @@ public final class SerializedMap extends AbstractStrictCollection {
 			if (firstArgument instanceof Map)
 				return SerializedMap.of((Map<String, Object>) firstArgument);
 
-			if (firstArgument instanceof StrictMap)
-				return SerializedMap.of(((StrictMap<String, Object>) firstArgument).getSource());
+			if (firstArgument instanceof StrictLinkedHashMap)
+				return SerializedMap.of(((StrictMap<String, Object>) firstArgument));
 		}
 
 		final SerializedMap map = new SerializedMap();

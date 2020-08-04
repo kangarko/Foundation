@@ -12,6 +12,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictSet;
+import org.mineacademy.fo.collection.StrictHashSet;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 
@@ -1724,7 +1725,7 @@ public enum CompMaterial {
 @Deprecated
 class SoftMaterials {
 
-	final static StrictSet<String> MATERIALS = new StrictSet<>(Sets.newHashSet(
+	final static StrictSet<String> MATERIALS = new StrictHashSet<>(Sets.newHashSet(
 			"SKULL",
 			"ANVIL",
 			"TRAPPED_CHEST",

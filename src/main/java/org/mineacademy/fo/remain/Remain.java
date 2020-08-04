@@ -77,6 +77,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.UUIDtoNameConverter;
@@ -194,7 +195,7 @@ public final class Remain {
 	/**
 	 * Stores player cooldowns for old MC versions
 	 */
-	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
+	private final static StrictLinkedHashMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictLinkedHashMap<>();
 
 	// Singleton
 	private Remain() {
@@ -1596,7 +1597,7 @@ public final class Remain {
 
 	// Internal method to get a players cooldown map
 	private static StrictMap<Material, Integer> getCooldown(final Player player) {
-		return Remain.cooldowns.getOrDefault(player.getUniqueId(), new StrictMap<>());
+		return Remain.cooldowns.getOrDefault(player.getUniqueId(), new StrictLinkedHashMap<>());
 	}
 
 	/**

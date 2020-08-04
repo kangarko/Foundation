@@ -24,7 +24,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -379,8 +379,10 @@ public final class CompMetadata {
 		@Getter
 		private static final MetadataFile instance = new MetadataFile();
 
-		private final StrictMap<UUID, List<String>> entityMetadataMap = new StrictMap<>();
-		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
+		private final StrictLinkedHashMap<UUID, List<String>>
+        entityMetadataMap = new StrictLinkedHashMap<>();
+		private final StrictLinkedHashMap<Location, BlockCache>
+        blockMetadataMap = new StrictLinkedHashMap<>();
 
 		private MetadataFile() {
 			super("Metadata");

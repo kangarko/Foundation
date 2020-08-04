@@ -10,7 +10,7 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
@@ -27,7 +27,7 @@ public class BlockVisualizer {
 	/**
 	 * Stores a map of currently visualized blocks
 	 */
-	private final StrictMap<Location, Object /*old MC compatibility*/> visualizedBlocks = new StrictMap<>();
+	private final StrictLinkedHashMap<Location, Object /*old MC compatibility*/> visualizedBlocks = new StrictLinkedHashMap<>();
 
 	/**
 	 * Starts visualizing the block at the given location

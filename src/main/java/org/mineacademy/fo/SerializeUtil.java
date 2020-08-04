@@ -19,9 +19,10 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.AbstractStrictCollection;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -110,9 +111,9 @@ public final class SerializeUtil {
 					serialized.add(serialize(element));
 
 			return serialized;
-		} else if (obj instanceof StrictMap) {
+		} else if (obj instanceof StrictLinkedHashMap) {
 			final StrictMap<Object, Object> oldMap = (StrictMap<Object, Object>) obj;
-			final StrictMap<Object, Object> newMap = new StrictMap<>();
+			final StrictLinkedHashMap<Object, Object> newMap = new StrictLinkedHashMap<>();
 
 			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
 				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));

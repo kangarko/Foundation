@@ -1679,8 +1679,8 @@ public final class Common {
 	 * @param converter
 	 * @return
 	 */
-	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> StrictMap<NEW_KEY, NEW_VALUE> convertStrict(final Map<OLD_KEY, OLD_VALUE> oldMap, final MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
-		final StrictMap<NEW_KEY, NEW_VALUE> newMap = new StrictMap<>();
+	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> StrictMap<NEW_KEY,NEW_VALUE> convertStrict(final Map<OLD_KEY, OLD_VALUE> oldMap, final MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
+		final StrictLinkedHashMap<NEW_KEY, NEW_VALUE> newMap = new StrictLinkedHashMap<>();
 		oldMap.entrySet().forEach(e -> newMap.put(converter.convertKey(e.getKey()), converter.convertValue(e.getValue())));
 
 		return newMap;

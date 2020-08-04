@@ -9,7 +9,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,7 +25,7 @@ public final class GeoAPI {
 	/**
 	 * The cached responses per IP addresses
 	 */
-	private static final StrictMap<String, GeoResponse> cache = new StrictMap<>();
+	private static final StrictLinkedHashMap<String, GeoResponse> cache = new StrictLinkedHashMap<>();
 
 	/**
 	 * Returns a {@link GeoResponse} with geographic data for the given IP address

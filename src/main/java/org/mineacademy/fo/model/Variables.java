@@ -19,7 +19,7 @@ import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.model.Variable.VariableScope;
 import org.mineacademy.fo.remain.Remain;
@@ -57,12 +57,13 @@ public final class Variables {
 	 * You take in a command sender (may/may not be a player) and output a replaced string.
 	 * The variable name (the key) is automatically surrounded by {} brackets
 	 */
-	private static final StrictMap<String, Function<CommandSender, String>> customVariables = new StrictMap<>();
+	private static final StrictLinkedHashMap<String, Function<CommandSender, String>> customVariables = new StrictLinkedHashMap<>();
 
 	/**
 	 * Player, Their Cached Variables
 	 */
-	private static final StrictMap<String, Map<String, String>> cache = new StrictMap<>();
+	private static final StrictLinkedHashMap<String, Map<String, String>>
+      cache = new StrictLinkedHashMap<>();
 
 	/**
 	 * Player, Original Message, Translated Message

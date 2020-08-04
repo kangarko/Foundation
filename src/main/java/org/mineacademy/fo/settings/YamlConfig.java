@@ -78,7 +78,8 @@ public class YamlConfig implements ConfigSerializable {
 	/**
 	 * All files that are currently loaded
 	 */
-	private static final StrictMap<ConfigInstance, List<YamlConfig>> loadedFiles = new StrictMap<>();
+	private static final StrictLinkedHashMap<ConfigInstance, List<YamlConfig>>
+		loadedFiles = new StrictLinkedHashMap<>();
 
 	/**
 	 * The config file instance this config belongs to.
@@ -1989,7 +1990,8 @@ final class LegacyEnum {
 	/**
 	 * The map list of backward-incompatible types
 	 */
-	private static final StrictMap<Class<? extends Enum<?>>, List<String>> INCOMPATIBLE_TYPES = new StrictMap<>();
+	private static final StrictLinkedHashMap<Class<? extends Enum<?>>, List<String>>
+		INCOMPATIBLE_TYPES = new StrictLinkedHashMap<>();
 
 	/**
 	 * Load incompatible values to map

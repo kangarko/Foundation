@@ -2,9 +2,8 @@ package org.mineacademy.fo.model;
 
 import java.util.Collection;
 
-import org.mineacademy.fo.collection.StrictArrayList;
-import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
+import org.mineacademy.fo.collection.StrictHashSet;
 
 import lombok.Getter;
 
@@ -36,7 +35,7 @@ public final class IsInList<T> {
 	 *
 	 * @param list
 	 */
-	public IsInList(final StrictSet<T> list) {
+	public IsInList(final StrictHashSet<T> list) {
 		this(list.getSource());
 	}
 
@@ -46,7 +45,7 @@ public final class IsInList<T> {
 	 * @param list
 	 */
 	public IsInList(final Collection<T> list) {
-		this.list = new StrictSet<>(list);
+		this.list = new StrictHashSet<>(list);
 
 		if (list.isEmpty())
 			matchAll = true;

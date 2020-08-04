@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictSet;
+import org.mineacademy.fo.collection.StrictHashSet;
 
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
@@ -26,7 +26,7 @@ public abstract class DiscordListener implements Listener {
 	/**
 	 * Holds registered Discord listeners
 	 */
-	private static final StrictSet<DiscordListener> registeredListeners = new StrictSet<>();
+	private static final StrictHashSet<DiscordListener> registeredListeners = new StrictHashSet<>();
 
 	/**
 	 * Temporarily stores the latest received message

@@ -3,7 +3,7 @@ package org.mineacademy.fo.remain;
 import java.util.Map.Entry;
 
 import org.bukkit.block.Biome;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.StrictLinkedHashMap;
 
 /**
  * A simple class for getting biome ID for legacy biomes.
@@ -16,7 +16,7 @@ public final class CompBiome {
 	/**
 	 * Biome enumeration with its biome ID data
 	 */
-	private final static StrictMap<Biome, Integer> map = new StrictMap<>();
+	private final static StrictLinkedHashMap<Biome, Integer> map = new StrictLinkedHashMap<>();
 
 	private CompBiome() {
 	}

@@ -1,184 +1,35 @@
 package org.mineacademy.fo.collection;
 
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.Collection;
+import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.NotNull;
-import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
+public interface StrictMap<E, V> extends Map<E, V>, StrictCollection {
 
-/**
- * Strict map that only allows to remove elements that are contained within, or add elements that are not.
- * <p>
- * Failing to do so results in an error, with optional error message.
- */
-public final class StrictMap<E, V> extends LinkedHashMap<E, V> implements StrictCollection {
+    void setAll(Map<E, V> copyOf);
 
-	private final String cannotRemoveMessage, cannotAddMessage;
-	private final Map<V, E> inverse = new LinkedHashMap<>();
+    void removeByValue(V value);
 
-	public StrictMap() {
-		this("Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'");
-	}
+    E getKeyFromValue(V value);
 
-	public StrictMap(String removeMessage, String addMessage) {
-		this.cannotRemoveMessage = removeMessage;
-		this.cannotAddMessage = addMessage;
-	}
+    V removeWeak(Object key);
 
-	public StrictMap(Map<E, V> copyOf) {
-		this();
-		setAll(copyOf);
-	}
+    Object[] removeAll(Collection<E> keys);
 
-	public void setAll(Map<E, V> copyOf) {
-		clear();
+    @Deprecated
+    default boolean contains(E key) {
+        return containsKey(key);
+    }
 
-		for (final Map.Entry<E, V> e : copyOf.entrySet())
-			put(e.getKey(), e.getValue());
-	}
+    void override(E key, V value);
 
-	@Override
-	public V remove(Object key) {
-		final V removed = removeWeak(key);
-		Valid.checkNotNull(removed, String.format(cannotRemoveMessage, key));
+    void override(Map<? extends E, ? extends V> m);
 
-		return removed;
-	}
+    V getOrPut(E key, V defaultToPut);
 
-	public void removeByValue(V value) {
-		E key = inverse.get(value);
-		if (key != null) {
-			remove(value);
-		} else {
-			throw new NullPointerException(String.format(cannotRemoveMessage, value));
-		}
-	}
+    @Deprecated Map<E, V> getSource();
 
-	public E getKeyFromValue(V value) {
-		return inverse.get(value);
-	}
+    E firstKey();
 
-	public V removeWeak(Object key) {
-		inverse.values().remove(key);
-		return super.remove(key);
-	}
-
-	public Object[] removeAll(Collection<E> keys) {
-		final List<V> removedKeys = new ArrayList<>();
-
-		for (final E key : keys)
-			removedKeys.add(remove(key));
-		inverse.keySet().removeAll(removedKeys);
-		return removedKeys.toArray();
-	}
-
-	@Override
-	public V put(E key, V value) {
-		Valid.checkBoolean(!containsKey(key), String.format(cannotAddMessage, key, get(key)));
-		inverse.put(value, key);
-		return super.put(key, value);
-	}
-
-	public void override(E key, V value) {
-		super.put(key, value);
-	}
-
-	public void override(Map<? extends E, ? extends V> m) {
-		super.putAll(m);
-	}
-
-	public boolean contains(E key) {
-		return containsKey(key);
-	}
-
-	@Override public Set<E> keySet() {
-		return new StrictKeySet<>(super.keySet());
-	}
-
-	public void putAll(Map<? extends E, ? extends V> m) {
-		for (final Map.Entry<? extends E, ? extends V> e : m.entrySet())
-			Valid.checkBoolean(!containsKey(e.getKey()), String.format(cannotAddMessage, e.getKey(), get(e.getKey())));
-		super.putAll(m);
-		for (final Map.Entry<? extends E, ? extends V> e : m.entrySet())
-			inverse.put(e.getValue(), e.getKey());
-	}
-
-	/**
-	 * Will return the key as normal or put it there and return it.
-	 */
-	public V getOrPut(E key, V defaultToPut) {
-		if (containsKey(key))
-			return get(key);
-
-		put(key, defaultToPut);
-		return defaultToPut;
-	}
-
-	@Deprecated
-	public Map<E, V> getSource() {
-		return this;
-	}
-
-	public E firstKey() {
-		return isEmpty() ? null : super.keySet().iterator().next();
-	}
-
-	public void forEachIterate(BiConsumer<E, V> consumer) {
-		for (final Entry<E, V> entry : entrySet()) {
-			consumer.accept(entry.getKey(), entry.getValue());
-		}
-	}
-
-
-	@Override
-	public Object serialize() {
-		if (!isEmpty()) {
-			final Map<Object, Object> copy = new HashMap<>();
-
-			for (final Entry<E, V> e : entrySet()) {
-				final V val = e.getValue();
-
-				if (val != null)
-					copy.put(SerializeUtil.serialize(e.getKey()), SerializeUtil.serialize(val));
-			}
-
-			return copy;
-		}
-
-		return this;
-	}
-
-	class StrictKeySet<K> extends AbstractSet<K> implements StrictCollection {
-
-		private final Set<K> set;
-
-		StrictKeySet(Set<K> set) {
-			this.set = set;
-		}
-
-		@Override @NotNull public Iterator<K> iterator() {
-			return set.iterator();
-		}
-
-		@Override public boolean remove(final Object value) {
-			if (!contains(value)) {
-				throw new NullPointerException(String.format(cannotRemoveMessage, value));
-			}
-			return super.remove(value);
-		}
-
-		@Override public int size() {
-			return set.size();
-		}
-
-		@Override public Object serialize() {
-			if (size() == 0) {
-				return this;
-			}
-			return set.stream().map(SerializeUtil::serialize).collect(Collectors.toCollection(HashSet::new));
-		}
-	}
+    void forEachIterate(BiConsumer<E, V> consumer);
 }
