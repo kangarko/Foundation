@@ -13,7 +13,7 @@ import org.mineacademy.fo.Valid;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public final class StrictArrayList<E> extends ArrayList<E> implements StrictCollection {
+public final class StrictArrayList<E> extends ArrayList<E> implements StrictList<E> {
 
 	private final String cannotRemoveMessage, cannotAddMessage;
 
@@ -76,7 +76,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 *
 	 * @param elements
 	 */
-	public void setAll(Iterable<E> elements) {
+	@Override public void setAll(Iterable<E> elements) {
 		clear();
 		addAll0(elements);
 	}
@@ -87,7 +87,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 * @param index
 	 * @return
 	 */
-	public E getAndRemove(int index) {
+	@Override public E getAndRemove(int index) {
 		final E e = get(index);
 		remove(index);
 
@@ -124,7 +124,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 *
 	 * @param elements
 	 */
-	public void addAll0(Iterable<E> elements) {
+	@Override public void addAll0(Iterable<E> elements) {
 		for (final E key : elements)
 			add(key);
 	}
@@ -157,7 +157,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 * @param startIndex
 	 * @return
 	 */
-	public StrictArrayList<E> range(int startIndex) {
+	@Override public StrictArrayList<E> range(int startIndex) {
 		Valid.checkBoolean(startIndex <= size(), "Start index out of range " + startIndex + " vs. list size " + size());
 		final StrictArrayList<E> ranged = new StrictArrayList<>();
 
@@ -177,7 +177,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 * @param value
 	 * @return
 	 */
-	public boolean removeWeak(Object value) {
+	@Override public boolean removeWeak(Object value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
 
 		return remove(value);
@@ -188,7 +188,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 *
 	 * @param keys
 	 */
-	public void addWeakAll(Iterable<E> keys) {
+	@Override public void addWeakAll(Iterable<E> keys) {
 		for (final E key : keys)
 			addWeak(key);
 	}
@@ -198,7 +198,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 *
 	 * @param key
 	 */
-	public boolean addWeak(E key) {
+	@Override public boolean addWeak(E key) {
 		return super.add(key);
 	}
 
@@ -209,7 +209,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 * @param def
 	 * @return
 	 */
-	public E getOrDefault(int index, E def) {
+	@Override public E getOrDefault(int index, E def) {
 		return index < size() ? get(index) : def;
 	}
 
@@ -232,7 +232,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 * @param key
 	 * @return
 	 */
-	public boolean containsIgnoreCase(E key) {
+	@Override public boolean containsIgnoreCase(E key) {
 		for (final E other : this) {
 			if (other instanceof String && key instanceof String)
 				if (((String) other).equalsIgnoreCase((String) key))
@@ -259,7 +259,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictColl
 	 * @param separator
 	 * @return
 	 */
-	public String join(String separator) {
+	@Override public String join(String separator) {
 		return StringUtils.join(this, separator);
 	}
 

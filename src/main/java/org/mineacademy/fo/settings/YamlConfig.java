@@ -36,9 +36,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.StrictArrayList;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.*;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
@@ -1071,7 +1069,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final <T extends Enum<T>> List<T> getCompatibleEnumList(final String path, final Class<T> type) {
-		final StrictArrayList<T> list = new StrictArrayList<>();
+		final StrictList<T> list = new StrictArrayList<>();
 		final List<String> enumNames = getStringList(path);
 
 		if (enumNames != null)
@@ -1092,7 +1090,7 @@ public class YamlConfig implements ConfigSerializable {
 					list.add(parsedEnum);
 			}
 
-		return list.getSource();
+		return list;
 	}
 
 	/**
@@ -1142,7 +1140,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected final StrictArrayList<String> getCommandList(final String path) {
+	protected final StrictList<String> getCommandList(final String path) {
 		final List<String> list = getStringList(path);
 		Valid.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + getFileName() + ") for this will be used as your main command!");
 
@@ -1155,8 +1153,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected final StrictArrayList<Material> getMaterialList(final String path) {
-		final StrictArrayList<Material> list = new StrictArrayList<>();
+	protected final StrictList<Material> getMaterialList(final String path) {
+		final StrictList<Material> list = new StrictArrayList<>();
 
 		for (final String raw : getStringList(path)) {
 			final CompMaterial mat = CompMaterial.fromStringCompat(raw);
@@ -1174,8 +1172,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected final StrictArrayList<Enchantment> getEnchants(final String path) {
-		final StrictArrayList<Enchantment> list = new StrictArrayList<>();
+	protected final StrictList<Enchantment> getEnchants(final String path) {
+		final StrictList<Enchantment> list = new StrictArrayList<>();
 
 		for (final String name : getStringList(path))
 			list.add(ItemUtil.findEnchantment(name));
@@ -1253,7 +1251,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @deprecated platform-specific code
 	 */
 	@Deprecated
-	protected final <E extends Enum<E>> StrictArrayList<E> getEnumList_OLD(final String path, final Class<E> listType) {
+	protected final <E extends Enum<E>> StrictList<E> getEnumList_OLD(final String path, final Class<E> listType) {
 		final StrictArrayList<E> list = new StrictArrayList<>();
 
 		for (final String item : getStringList(path))

@@ -5,6 +5,7 @@ import java.util.List;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictArrayList;
+import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
@@ -93,7 +94,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 * <p>
 	 * Typically this is left empty: Debug: []
 	 */
-	public static StrictArrayList<String> DEBUG_SECTIONS = new StrictArrayList<>();
+	public static StrictList<String> DEBUG_SECTIONS = new StrictArrayList<>();
 
 	/**
 	 * The plugin prefix in front of chat/console messages, added automatically unless
@@ -131,7 +132,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 * <p>
 	 * // ONLY MANDATORY IF YOU OVERRIDE {@link SimplePlugin#getMainCommand()} //
 	 */
-	public static StrictArrayList<String> MAIN_COMMAND_ALIASES = new StrictArrayList<>();
+	public static StrictList<String> MAIN_COMMAND_ALIASES = new StrictArrayList<>();
 
 	/**
 	 * The localization prefix, given you are using {@link SimpleLocalization} class to load and manage your

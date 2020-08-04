@@ -3,6 +3,7 @@ package org.mineacademy.fo.model;
 import java.util.Collection;
 
 import org.mineacademy.fo.collection.StrictArrayList;
+import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
 
 import lombok.Getter;
@@ -36,15 +37,6 @@ public final class IsInList<T> {
 	 * @param list
 	 */
 	public IsInList(final StrictSet<T> list) {
-		this(list.getSource());
-	}
-
-	/**
-	 * Create a new matching list
-	 *
-	 * @param list
-	 */
-	public IsInList(final StrictArrayList<T> list) {
 		this(list.getSource());
 	}
 

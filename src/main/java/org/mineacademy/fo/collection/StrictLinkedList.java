@@ -13,7 +13,7 @@ import java.util.List;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public final class StrictLinkedList<E> extends LinkedList<E> implements StrictCollection {
+public final class StrictLinkedList<E> extends LinkedList<E> implements StrictList<E> {
 
 	private final String cannotRemoveMessage, cannotAddMessage;
 
@@ -157,7 +157,7 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictCo
 	 * @param startIndex
 	 * @return
 	 */
-	public StrictLinkedList<E> range(int startIndex) {
+	public StrictList<E> range(int startIndex) {
 		Valid.checkBoolean(startIndex <= size(), "Start index out of range " + startIndex + " vs. list size " + size());
 		final StrictLinkedList<E> ranged = new StrictLinkedList<>();
 

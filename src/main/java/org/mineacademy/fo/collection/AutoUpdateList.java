@@ -14,7 +14,7 @@ public final class AutoUpdateList<T> extends AbstractStrictCollection implements
 	/**
 	 * The list itself
 	 */
-	private final StrictArrayList<T> list = new StrictArrayList<>();
+	private final StrictList<T> list = new StrictArrayList<>();
 
 	/**
 	 * The code that gets triggered
@@ -55,7 +55,7 @@ public final class AutoUpdateList<T> extends AbstractStrictCollection implements
 	 *
 	 * @return
 	 */
-	public StrictArrayList<T> getSource() {
+	public StrictList<T> getSource() {
 		return list;
 	}
 

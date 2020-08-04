@@ -40,9 +40,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
-import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.StrictArrayList;
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.*;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -1380,10 +1378,10 @@ public final class Common {
 	 * @return
 	 */
 	@SafeVarargs
-	public static <T> StrictArrayList<T> join(final StrictArrayList<T>... lists) {
-		final StrictArrayList<T> joined = new StrictArrayList<>();
+	public static <T> StrictList<T> join(final StrictList<T>... lists) {
+		final StrictList<T> joined = new StrictLinkedList<>();
 
-		for (final StrictArrayList<T> list : lists)
+		for (final StrictList<T> list : lists)
 			joined.addAll(list);
 
 		return joined;
@@ -1643,8 +1641,8 @@ public final class Common {
 	 * @param converter the converter
 	 * @return the new list
 	 */
-	public static <OLD, NEW> StrictArrayList<NEW> convertStrict(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
-		final StrictArrayList<NEW> copy = new StrictArrayList<>();
+	public static <OLD, NEW> StrictList<NEW> convertStrict(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
+		final StrictList<NEW> copy = new StrictArrayList<>();
 
 		for (final OLD old : list)
 			copy.add(converter.convert(old));

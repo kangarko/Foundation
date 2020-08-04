@@ -14,6 +14,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictArrayList;
+import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.Replacer;
@@ -294,15 +295,15 @@ public abstract class YamlStaticConfig {
 	// Config manipulators
 	// -----------------------------------------------------------------------------------------------------
 
-	protected static final StrictArrayList<Enchantment> getEnchantments(final String path) {
+	protected static final StrictList<Enchantment> getEnchantments(final String path) {
 		return TEMPORARY_INSTANCE.getEnchants(path);
 	}
 
-	protected static final StrictArrayList<Material> getMaterialList(final String path) {
+	protected static final StrictList<Material> getMaterialList(final String path) {
 		return TEMPORARY_INSTANCE.getMaterialList(path);
 	}
 
-	protected static final StrictArrayList<String> getCommandList(final String path) {
+	protected static final StrictList<String> getCommandList(final String path) {
 		return TEMPORARY_INSTANCE.getCommandList(path);
 	}
 

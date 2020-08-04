@@ -22,6 +22,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictArrayList;
+import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -72,7 +73,7 @@ public class SimpleScoreboard {
 	private final List<String> rows = new ArrayList<>();
 
 	@Getter
-	private final StrictArrayList<ViewedScoreboard> scoreboards = new StrictArrayList<>();
+	private final StrictList<ViewedScoreboard> scoreboards = new StrictArrayList<>();
 
 	/**
 	 * The color theme for key: value pairs such as
