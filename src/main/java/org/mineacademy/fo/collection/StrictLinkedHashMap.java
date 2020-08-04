@@ -10,9 +10,7 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 
 /**
- * Strict map that only allows to remove elements that are contained within, or add elements that are not.
- * <p>
- * Failing to do so results in an error, with optional error message.
+ * Strict map implementation which extends LinkedHashMap.
  */
 public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> implements
 	StrictMap<E, V> {
@@ -107,9 +105,6 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
 			inverse.put(e.getValue(), e.getKey());
 	}
 
-	/**
-	 * Will return the key as normal or put it there and return it.
-	 */
 	@Override public V getOrPut(E key, V defaultToPut) {
 		if (containsKey(key))
 			return get(key);
@@ -119,6 +114,9 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
 	}
 
 	@Override @Deprecated
+	/**
+	 * @deprecated As this map now extends {@link LinkedHashMap}
+	 */
 	public Map<E, V> getSource() {
 		return this;
 	}

@@ -81,22 +81,12 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 	// Methods below trigger strict checks
 	// ------------------------------------------------------------------------------------------------------------
 
-	/**
-	 * Clear the list and all all given elements
-	 *
-	 * @param elements
-	 */
+
 	@Override public void setAll(Iterable<E> elements) {
 		clear();
 		addAll0(elements);
 	}
 
-	/**
-	 * Return value at the given index and remove it immediatelly
-	 *
-	 * @param index
-	 * @return
-	 */
 	@Override public E getAndRemove(int index) {
 		final E e = get(index);
 		remove(index);
@@ -104,11 +94,6 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return e;
 	}
 
-	/**
-	 * Remove the given key
-	 *
-	 * @param key
-	 */
 	public boolean remove(Object key) {
 		final boolean removed = removeWeak(key);
 
@@ -116,44 +101,27 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return removed;
 	}
 
-	/**
-	 * Remove the key at the given index
-	 *
-	 * @param index
-	 * @return
-	 */
+
 	public E remove(int index) {
-		final E removed = remove(index);
+		final E removed = super.remove(index);
 
 		Valid.checkNotNull(removed, String.format(cannotRemoveMessage, "index: " + index));
 		return removed;
 	}
 
-	/**
-	 * Add the given elements
-	 *
-	 * @param elements
-	 */
 	@Override public void addAll0(Iterable<E> elements) {
 		for (final E key : elements)
 			add(key);
 	}
 
-	/**
-	 * Add the element if it does not exist
-	 *
-	 * @param key
-	 */
+
+	@Override
 	public void addIfNotExist(E key) {
 		if (!contains(key))
 			add(key);
 	}
 
-	/**
-	 * Add the element to the list
-	 *
-	 * @param key
-	 */
+	
 	public boolean add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
 		Valid.checkBoolean(!contains(key), String.format(cannotAddMessage, key));
@@ -161,12 +129,6 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return addWeak(key);
 	}
 
-	/**
-	 * Creates a copy of the list from the starting index
-	 *
-	 * @param startIndex
-	 * @return
-	 */
 	@Override public StrictArrayList<E> range(int startIndex) {
 		Valid.checkBoolean(startIndex <= size(), "Start index out of range " + startIndex + " vs. list size " + size());
 		final StrictArrayList<E> ranged = new StrictArrayList<>();
@@ -181,94 +143,31 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 	// Methods without throwing errors below
 	// ------------------------------------------------------------------------------------------------------------
 
-	/**
-	 * Remove the given key without throwing error if it does note exist
-	 *
-	 * @param value
-	 * @return
-	 */
 	@Override public boolean removeWeak(Object value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
 
 		return remove(value);
 	}
 
-	/**
-	 * Add all keys even if they exist
-	 *
-	 * @param keys
-	 */
 	@Override public void addWeakAll(Iterable<E> keys) {
 		for (final E key : keys)
 			addWeak(key);
 	}
 
-	/**
-	 * Add the given key at the end of the list regardless if it already exist
-	 *
-	 * @param key
-	 */
+
 	@Override public boolean addWeak(E key) {
 		return super.add(key);
 	}
 
-	/**
-	 * Return the value or the default
-	 *
-	 * @param index
-	 * @param def
-	 * @return
-	 */
 	@Override public E getOrDefault(int index, E def) {
 		return index < size() ? get(index) : def;
 	}
 
-	/**
-	 * Return true if the list contains the key
-	 *
-	 * @param key
-	 * @return
-	 */
-	public boolean contains(Object key) {
-		return contains(key);
-	}
-
-	/**
-	 * Return true if the list contains the key
-	 * <p>
-	 * If the key is a string we return true if it equals your key, case ignored,
-	 * otherwise we just call equals() method normally
-	 *
-	 * @param key
-	 * @return
-	 */
-	@Override public boolean containsIgnoreCase(E key) {
-		for (final E other : this) {
-			if (other instanceof String && key instanceof String)
-				if (((String) other).equalsIgnoreCase((String) key))
-					return true;
-
-			if (other.equals(key))
-				return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Serializes every value in the list so you can store it in your settings
-	 */
 	@Override
 	public Object serialize() {
 		return SerializeUtil.serializeList(this);
 	}
 
-	/**
-	 * Return all list values together split by the given separator
-	 *
-	 * @param separator
-	 * @return
-	 */
 	@Override public String join(String separator) {
 		return StringUtils.join(this, separator);
 	}

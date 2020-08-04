@@ -18,7 +18,7 @@ public final class AutoUpdateMap<V, K> extends AbstractStrictCollection {
 	/**
 	 * The internal map
 	 */
-	private final StrictLinkedHashMap<V, K> map = new StrictLinkedHashMap<>();
+	private final StrictMap<V, K> map = new StrictLinkedHashMap<>();
 
 	/**
 	 * The code that gets triggered

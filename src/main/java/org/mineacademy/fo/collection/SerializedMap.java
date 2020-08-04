@@ -42,7 +42,7 @@ public final class SerializedMap extends AbstractStrictCollection {
 	/**
 	 * The internal map with values
 	 */
-	private final StrictLinkedHashMap<String, Object> map = new StrictLinkedHashMap<>();
+	private final StrictMap<String, Object> map = new StrictLinkedHashMap<>();
 
 	/**
 	 * Creates a new serialized map with the given first key-value pair

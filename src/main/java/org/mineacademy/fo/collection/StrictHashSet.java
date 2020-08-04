@@ -9,9 +9,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
 /**
- * Strict set that only allows to remove elements that are contained within, or add elements that are not.
- * <p>
- * Failing to do so results in an error, with optional error message.
+ * Implementation of a strict set which uses an underlying {@link StrictLinkedHashMap} as the set provider.
  */
 public class StrictHashSet<E> extends AbstractStrictCollection implements StrictSet<E> {
 

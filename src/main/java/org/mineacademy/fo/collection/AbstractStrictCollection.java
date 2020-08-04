@@ -14,19 +14,13 @@ import lombok.RequiredArgsConstructor;
 public abstract class AbstractStrictCollection {
 
 	/**
-	 * The error message when removing non-existing keys
+	 * {@inheritDoc}
 	 */
 	private final String cannotRemoveMessage;
 
 	/**
-	 * The error message when adding duplicate keys
+	 * {@inheritDoc}
 	 */
 	private final String cannotAddMessage;
 
-	/**
-	 * Convert this object into something that can be safely stored in a settings file
-	 *
-	 * @return
-	 */
-	public abstract Object serialize();
 }
