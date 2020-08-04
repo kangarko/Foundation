@@ -23,7 +23,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictArrayList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.FoException;
@@ -155,7 +155,7 @@ public abstract class SimpleCommand extends Command {
 	 * Create a new simple command from the list. The first
 	 * item in the list is the main label and the other ones are the aliases.
 	 */
-	protected SimpleCommand(final StrictList<String> labels) {
+	protected SimpleCommand(final StrictArrayList<String> labels) {
 		this(labels.getSource());
 	}
 

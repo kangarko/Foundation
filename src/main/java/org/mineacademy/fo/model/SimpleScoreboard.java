@@ -21,7 +21,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictArrayList;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -72,7 +72,7 @@ public class SimpleScoreboard {
 	private final List<String> rows = new ArrayList<>();
 
 	@Getter
-	private final StrictList<ViewedScoreboard> scoreboards = new StrictList<>();
+	private final StrictArrayList<ViewedScoreboard> scoreboards = new StrictArrayList<>();
 
 	/**
 	 * The color theme for key: value pairs such as
@@ -268,7 +268,7 @@ public class SimpleScoreboard {
 	 */
 	private final void reloadEntries(final ViewedScoreboard viewedScoreboard) {
 		final Objective objective = viewedScoreboard.getObjective();
-		final StrictList<String> duplicates = new StrictList<>();
+		final StrictArrayList<String> duplicates = new StrictArrayList<>();
 
 		for (int i = rows.size(); i > 0; i--) {
 			final String sidebarEntry = rows.get(rows.size() - i);
@@ -330,7 +330,7 @@ public class SimpleScoreboard {
 	 * @param message
 	 * @return
 	 */
-	private final String fixDuplicates(final StrictList<String> duplicates, String message) {
+	private final String fixDuplicates(final StrictArrayList<String> duplicates, String message) {
 		message = StringUtils.substring(message, 0, 40);
 
 		final boolean cut = MinecraftVersion.olderThan(V.v1_8);

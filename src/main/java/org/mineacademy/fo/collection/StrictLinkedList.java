@@ -1,20 +1,19 @@
 package org.mineacademy.fo.collection;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Strict list that only allows to remove elements that are contained within, or add elements that are not.
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public final class StrictList<E> extends ArrayList<E> implements StrictCollection {
+public final class StrictLinkedList<E> extends LinkedList<E> implements StrictCollection {
 
 	private final String cannotRemoveMessage, cannotAddMessage;
 
@@ -24,7 +23,7 @@ public final class StrictList<E> extends ArrayList<E> implements StrictCollectio
 	 * @param elements
 	 */
 	@SafeVarargs
-	public StrictList(E... elements) {
+	public StrictLinkedList(E... elements) {
 		this();
 
 		setAll(Arrays.asList(elements));
@@ -35,7 +34,7 @@ public final class StrictList<E> extends ArrayList<E> implements StrictCollectio
 	 *
 	 * @param oldList
 	 */
-	public StrictList(Iterable<E> oldList) {
+	public StrictLinkedList(Iterable<E> oldList) {
 		this();
 
 		setAll(oldList);
@@ -44,7 +43,7 @@ public final class StrictList<E> extends ArrayList<E> implements StrictCollectio
 	/**
 	 * Create a new empty list
 	 */
-	public StrictList() {
+	public StrictLinkedList() {
 		this("Cannot remove '%s' as it is not in the list!", "Value '%s' is already in the list!");
 	}
 
@@ -55,13 +54,13 @@ public final class StrictList<E> extends ArrayList<E> implements StrictCollectio
 	 * @param removeMessage
 	 * @param addMessage
 	 */
-	public StrictList(String removeMessage, String addMessage) {
+	public StrictLinkedList(String removeMessage, String addMessage) {
 		this.cannotRemoveMessage = removeMessage;
 		this.cannotAddMessage = addMessage;
 	}
 
 	/**
-	 * @deprecated As this list is now an extension of the {@link ArrayList}
+	 * @deprecated As this list is now an extension of the {@link LinkedList}
 	 */
 	@Deprecated
 	public List<E> getSource() {
@@ -158,9 +157,9 @@ public final class StrictList<E> extends ArrayList<E> implements StrictCollectio
 	 * @param startIndex
 	 * @return
 	 */
-	public StrictList<E> range(int startIndex) {
+	public StrictLinkedList<E> range(int startIndex) {
 		Valid.checkBoolean(startIndex <= size(), "Start index out of range " + startIndex + " vs. list size " + size());
-		final StrictList<E> ranged = new StrictList<>();
+		final StrictLinkedList<E> ranged = new StrictLinkedList<>();
 
 		for (int i = startIndex; i < size(); i++)
 			ranged.add(get(i));

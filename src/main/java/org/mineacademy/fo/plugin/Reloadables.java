@@ -4,7 +4,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictArrayList;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.model.DiscordListener;
 
@@ -17,7 +17,7 @@ final class Reloadables {
 	/**
 	 * A list of currently enabled event listeners
 	 */
-	private final StrictList<Listener> listeners = new StrictList<>();
+	private final StrictArrayList<Listener> listeners = new StrictArrayList<>();
 
 	// -------------------------------------------------------------------------------------------
 	// Main

@@ -36,7 +36,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.SimpleBungee;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictArrayList;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
@@ -861,7 +861,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
+	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictArrayList)}
 	 *
 	 * @param label
 	 * @param group
@@ -871,7 +871,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
+	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictArrayList)}
 	 *
 	 * @param label
 	 * @param aliases
@@ -885,12 +885,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
+	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictArrayList)}
 	 *
 	 * @param labelAndAliases
 	 * @param group
 	 */
-	protected final void registerCommands(final StrictList<String> labelAndAliases, final SimpleCommandGroup group) {
+	protected final void registerCommands(final StrictArrayList<String> labelAndAliases, final SimpleCommandGroup group) {
 		Valid.checkBoolean(!labelAndAliases.isEmpty(), "Must specify at least label for command group: " + group);
 
 		if (getMainCommand() != null && getMainCommand().getLabel().equals(labelAndAliases.get(0)))

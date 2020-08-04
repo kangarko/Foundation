@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictArrayList;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -27,7 +27,7 @@ public abstract class SimpleCommandGroup {
 	 * The list of sub-commands belonging to this command tree, for example
 	 * the /boss command has subcommands /boss region, /boss menu etc.
 	 */
-	protected final StrictList<SimpleSubCommand> subcommands = new StrictList<>();
+	protected final StrictArrayList<SimpleSubCommand> subcommands = new StrictArrayList<>();
 
 	/**
 	 * The registered main command, if any
@@ -49,8 +49,8 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param labelAndAliases
 	 */
-	public final void register(StrictList<String> labelAndAliases) {
-		register(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictList<String>()).getSource());
+	public final void register(StrictArrayList<String> labelAndAliases) {
+		register(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictArrayList<String>()).getSource());
 	}
 
 	/**

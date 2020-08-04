@@ -41,7 +41,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictArrayList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
@@ -1380,10 +1380,10 @@ public final class Common {
 	 * @return
 	 */
 	@SafeVarargs
-	public static <T> StrictList<T> join(final StrictList<T>... lists) {
-		final StrictList<T> joined = new StrictList<>();
+	public static <T> StrictArrayList<T> join(final StrictArrayList<T>... lists) {
+		final StrictArrayList<T> joined = new StrictArrayList<>();
 
-		for (final StrictList<T> list : lists)
+		for (final StrictArrayList<T> list : lists)
 			joined.addAll(list);
 
 		return joined;
@@ -1643,8 +1643,8 @@ public final class Common {
 	 * @param converter the converter
 	 * @return the new list
 	 */
-	public static <OLD, NEW> StrictList<NEW> convertStrict(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
-		final StrictList<NEW> copy = new StrictList<>();
+	public static <OLD, NEW> StrictArrayList<NEW> convertStrict(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
+		final StrictArrayList<NEW> copy = new StrictArrayList<>();
 
 		for (final OLD old : list)
 			copy.add(converter.convert(old));
@@ -1698,8 +1698,8 @@ public final class Common {
 	 * @param converter
 	 * @return
 	 */
-	public static <LIST_KEY, OLD_KEY, OLD_VALUE> StrictList<LIST_KEY> convertToList(final Map<OLD_KEY, OLD_VALUE> map, final MapToListConverter<LIST_KEY, OLD_KEY, OLD_VALUE> converter) {
-		final StrictList<LIST_KEY> list = new StrictList<>();
+	public static <LIST_KEY, OLD_KEY, OLD_VALUE> StrictArrayList<LIST_KEY> convertToList(final Map<OLD_KEY, OLD_VALUE> map, final MapToListConverter<LIST_KEY, OLD_KEY, OLD_VALUE> converter) {
+		final StrictArrayList<LIST_KEY> list = new StrictArrayList<>();
 
 		for (final Entry<OLD_KEY, OLD_VALUE> e : map.entrySet())
 			list.add(converter.convert(e.getKey(), e.getValue()));
