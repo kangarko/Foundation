@@ -46,10 +46,10 @@ public class StrictSet<E> extends AbstractStrictCollection implements Set<E> {
 		this.map = new StrictMap<>(removeMessage, addMessage);
 	}
 
-	public void setAll(Collection<E> collection) {
+	public void setAll(Iterable<E> collection) {
 		clear();
 
-		this.addAll(collection);
+		this.addAll0(collection);
 	}
 
 	public boolean remove(Object value) {
@@ -64,6 +64,13 @@ public class StrictSet<E> extends AbstractStrictCollection implements Set<E> {
 		Valid.checkNotNull(key, "Cannot add null values");
 		Valid.checkBoolean(!map.containsKey(key), String.format(getCannotAddMessage(), key));
 		map.put(key, PRESENT);
+		return true;
+	}
+
+	public boolean addAll0(@NotNull final Iterable<? extends E> i) {
+		for (E element : i) {
+			add(element);
+		}
 		return true;
 	}
 

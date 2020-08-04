@@ -78,7 +78,7 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictCo
 	 */
 	public void setAll(Iterable<E> elements) {
 		clear();
-		addAll(elements);
+		addAll0(elements);
 	}
 
 	/**
@@ -124,7 +124,7 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictCo
 	 *
 	 * @param elements
 	 */
-	public void addAll(Iterable<E> elements) {
+	public void addAll0(Iterable<E> elements) {
 		for (final E key : elements)
 			add(key);
 	}

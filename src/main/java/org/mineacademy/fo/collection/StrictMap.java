@@ -82,6 +82,14 @@ public final class StrictMap<E, V> extends LinkedHashMap<E, V> implements Strict
 		return super.put(key, value);
 	}
 
+	public void override(E key, V value) {
+		super.put(key, value);
+	}
+
+	public void override(Map<? extends E, ? extends V> m) {
+		super.putAll(m);
+	}
+
 	public boolean contains(E key) {
 		return containsKey(key);
 	}

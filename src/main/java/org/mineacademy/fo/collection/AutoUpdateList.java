@@ -80,7 +80,7 @@ public final class AutoUpdateList<T> extends AbstractStrictCollection implements
 	 * @param keys
 	 */
 	public void addAllAndUpdate(Iterable<T> keys) {
-		list.addAll(keys);
+		list.addAll0(keys);
 
 		updater.run();
 	}
