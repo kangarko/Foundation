@@ -47,6 +47,10 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		this("Cannot remove '%s' as it is not in the list!", "Value '%s' is already in the list!");
 	}
 
+	public StrictArrayList(int initialSize) {
+		this("Cannot remove '%s' as it is not in the list!", "Value '%s' is already in the list!", initialSize);
+	}
+
 	/**
 	 * Create a new empty list with a custom remove/add message that are thrown as errors
 	 * if the values already exist or not exist
@@ -55,6 +59,12 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 	 * @param addMessage
 	 */
 	public StrictArrayList(String removeMessage, String addMessage) {
+		this.cannotRemoveMessage = removeMessage;
+		this.cannotAddMessage = addMessage;
+	}
+
+	public StrictArrayList(String removeMessage, String addMessage, int initialSize) {
+		super(initialSize);
 		this.cannotRemoveMessage = removeMessage;
 		this.cannotAddMessage = addMessage;
 	}
