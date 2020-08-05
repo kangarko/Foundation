@@ -117,7 +117,7 @@ class StrictCollectionImpl<E> implements StrictCollection<E> {
 
   @Override
   public boolean containsAll(@NotNull Collection<?> c) {
-    return c.containsAll(c);
+    return this.c.containsAll(c);
   }
 
   @Override
@@ -128,12 +128,6 @@ class StrictCollectionImpl<E> implements StrictCollection<E> {
 
   @Override
   public boolean removeAll(@NotNull Collection<?> c) {
-    c.forEach(this::remove);
-    return true;
-  }
-
-  @Override
-  public boolean removeAll0(Iterable<? extends E> elements) {
     c.forEach(this::remove);
     return true;
   }
@@ -154,6 +148,5 @@ class StrictCollectionImpl<E> implements StrictCollection<E> {
   @Override
   public void clear() {
     c.clear();
-    ;
   }
 }
