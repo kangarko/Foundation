@@ -7,6 +7,11 @@ import org.mineacademy.fo.Valid;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+/**
+ * StrictMap implementation (wrapper) backed by a given map.
+ * @param <K> The generic type of the key.
+ * @param <V> The generic type of value.
+ */
 public class StrictMapImpl<K, V> extends AbstractStrictDataHolder implements StrictMap<K, V> {
 
   private final Map<K, V> m; // Backing Map
