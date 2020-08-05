@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public interface StrictMap<E, V> extends Map<E, V>, StrictCollection {
+public interface StrictMap<E, V>  extends Map<E, V>, StrictDataHolder {
 
     /**
      * Clear the map and add all given entries
@@ -45,5 +45,9 @@ public interface StrictMap<E, V> extends Map<E, V>, StrictCollection {
 
     E firstKey();
 
+    /**
+     * @deprecated Please use {@link #forEach(BiConsumer)}
+     */
+    @Deprecated
     void forEachIterate(BiConsumer<E, V> consumer);
 }

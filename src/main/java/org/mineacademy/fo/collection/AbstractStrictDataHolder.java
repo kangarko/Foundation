@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter(value = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
-public abstract class AbstractStrictCollection {
+public abstract class AbstractStrictDataHolder implements StrictDataHolder {
 
 	/**
 	 * {@inheritDoc}

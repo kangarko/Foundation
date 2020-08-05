@@ -82,9 +82,9 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 	// ------------------------------------------------------------------------------------------------------------
 
 
-	@Override public void setAll(Iterable<E> elements) {
+	@Override public boolean setAll(Iterable<? extends E> elements) {
 		clear();
-		addAll0(elements);
+		return addAll0(elements);
 	}
 
 	@Override public E getAndRemove(int index) {
@@ -109,9 +109,10 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return removed;
 	}
 
-	@Override public void addAll0(Iterable<E> elements) {
+	@Override public boolean addAll0(Iterable<? extends E> elements) {
 		for (final E key : elements)
 			add(key);
+		return true;
 	}
 
 

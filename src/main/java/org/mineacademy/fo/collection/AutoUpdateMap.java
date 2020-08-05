@@ -13,7 +13,7 @@ import org.mineacademy.fo.Valid;
  * @param <V>
  * @param <K>
  */
-public final class AutoUpdateMap<V, K> extends AbstractStrictCollection {
+public final class AutoUpdateMap<V, K> extends AbstractStrictDataHolder {
 
 	/**
 	 * The internal map

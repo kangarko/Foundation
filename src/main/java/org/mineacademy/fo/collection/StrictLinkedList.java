@@ -71,9 +71,9 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 	// Methods below trigger strict checks
 	// ------------------------------------------------------------------------------------------------------------
 	
-	public void setAll(Iterable<E> elements) {
+	public boolean setAll(Iterable<? extends E> elements) {
 		clear();
-		addAll0(elements);
+		return addAll0(elements);
 	}
 
 	public E getAndRemove(int index) {
@@ -91,15 +91,27 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 	}
 
 	public E remove(int index) {
-		final E removed = remove(index);
+		final E removed = super.remove(index);
 
 		Valid.checkNotNull(removed, String.format(cannotRemoveMessage, "index: " + index));
 		return removed;
 	}
 
-	public void addAll0(Iterable<E> elements) {
+	public boolean addAll0(Iterable<? extends E> elements) {
 		for (final E key : elements)
 			add(key);
+		return true;
+	}
+
+	@Override
+	public boolean removeAll0(Iterable<? extends E> elements) {
+		boolean modified = false;
+		for (Object o : elements) {
+			boolean b = remove(o);
+			if (!modified)
+				modified = b;
+		}
+		return modified;
 	}
 
 	public void addIfNotExist(E key) {

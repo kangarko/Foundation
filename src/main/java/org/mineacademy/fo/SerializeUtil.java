@@ -21,7 +21,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.AbstractStrictCollection;
+import org.mineacademy.fo.collection.AbstractStrictDataHolder;
 import org.mineacademy.fo.collection.StrictLinkedHashMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
@@ -64,8 +64,8 @@ public final class SerializeUtil {
 		if (obj instanceof ConfigSerializable)
 			return serialize(((ConfigSerializable) obj).serialize().serialize());
 
-		else if (obj instanceof AbstractStrictCollection)
-			return serialize(((AbstractStrictCollection) obj).serialize());
+		else if (obj instanceof AbstractStrictDataHolder)
+			return serialize(((AbstractStrictDataHolder) obj).serialize());
 
 		else if (obj instanceof ChatColor)
 			return ((ChatColor) obj).name();

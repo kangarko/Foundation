@@ -32,7 +32,7 @@ import com.google.gson.Gson;
  * configuration easily, such as locations, other maps or lists and
  * much more.
  */
-public final class SerializedMap extends AbstractStrictCollection {
+public final class SerializedMap extends AbstractStrictDataHolder {
 
 	/**
 	 * The Google Json instance
