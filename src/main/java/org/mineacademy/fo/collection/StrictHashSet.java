@@ -41,7 +41,7 @@ public class StrictHashSet<E> extends AbstractStrictDataHolder implements Strict
 
   public StrictHashSet(String removeMessage, String addMessage) {
     super(removeMessage, addMessage);
-    this.map = new StrictLinkedHashMap<>(removeMessage, addMessage);
+    this.map = new StrictLinkedHashMap<>(removeMessage, addMessage, "Value '%s' is already in the map --> '%S'");
   }
 
   @Override
