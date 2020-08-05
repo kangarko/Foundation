@@ -22,6 +22,19 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
 		this("Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'");
 	}
 
+	public StrictLinkedHashMap(String removeMessage, String addMessage, int initialSize, float loadFactor) {
+		super(initialSize, loadFactor);
+		this.cannotRemoveMessage = removeMessage;
+		this.cannotAddMessage = addMessage;
+	}
+
+	public StrictLinkedHashMap(String removeMessage, String addMessage, int initialSize) {
+		super(initialSize);
+		this.cannotRemoveMessage = removeMessage;
+		this.cannotAddMessage = addMessage;
+	}
+
+
 	public StrictLinkedHashMap(String removeMessage, String addMessage) {
 		this.cannotRemoveMessage = removeMessage;
 		this.cannotAddMessage = addMessage;
@@ -113,10 +126,10 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
 		return defaultToPut;
 	}
 
-	@Override @Deprecated
 	/**
 	 * @deprecated As this map now extends {@link LinkedHashMap}
 	 */
+	@Deprecated
 	public Map<E, V> getSource() {
 		return this;
 	}
