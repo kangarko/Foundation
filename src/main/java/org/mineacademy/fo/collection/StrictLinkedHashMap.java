@@ -15,37 +15,46 @@ import java.util.stream.Collectors;
 public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> implements
         StrictMap<E, V> {
 
-  private final String cannotRemoveMessage, cannotAddMessage;
+  private final String cannotRemoveMessage, cannotAddMessage, cannotAddValue;
   private final Map<V, E> inverse = new LinkedHashMap<>();
 
   public StrictLinkedHashMap() {
-    this("Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'");
+    this("Cannot remove '%s' as it is not in the map!",
+            "Key '%s' is already in the map --> '%s'",
+            "Value '%s' is already in the map --> '%S'");
   }
 
   public StrictLinkedHashMap(int initialSize) {
-    this("Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'", initialSize);
+    this("Cannot remove '%s' as it is not in the map!",
+            "Key '%s' is already in the map --> '%s'",
+            "Value '%s' is already in the map --> '%S'", initialSize);
   }
 
   public StrictLinkedHashMap(int initialSize, float loadFactor) {
-    this("Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'", initialSize, loadFactor);
+    this("Cannot remove '%s' as it is not in the map!",
+            "Key '%s' is already in the map --> '%s'",
+            "Value '%s' is already in the map --> '%S'", initialSize, loadFactor);
   }
 
-  public StrictLinkedHashMap(String removeMessage, String addMessage, int initialSize, float loadFactor) {
+  public StrictLinkedHashMap(String removeMessage, String addMessage, String addValueMessage, int initialSize, float loadFactor) {
     super(initialSize, loadFactor);
     this.cannotRemoveMessage = removeMessage;
     this.cannotAddMessage = addMessage;
+    this.cannotAddValue = addValueMessage;
   }
 
-  public StrictLinkedHashMap(String removeMessage, String addMessage, int initialSize) {
+  public StrictLinkedHashMap(String removeMessage, String addMessage, String addValueMessage, int initialSize) {
     super(initialSize);
     this.cannotRemoveMessage = removeMessage;
     this.cannotAddMessage = addMessage;
+    this.cannotAddValue = addValueMessage;
   }
 
 
-  public StrictLinkedHashMap(String removeMessage, String addMessage) {
+  public StrictLinkedHashMap(String removeMessage, String addMessage, String addValueMessage) {
     this.cannotRemoveMessage = removeMessage;
     this.cannotAddMessage = addMessage;
+    this.cannotAddValue = addValueMessage;
   }
 
   public StrictLinkedHashMap(Map<E, V> copyOf) {
@@ -103,6 +112,7 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
   @Override
   public V put(E key, V value) {
     Valid.checkBoolean(!containsKey(key), String.format(cannotAddMessage, key, get(key)));
+    Valid.checkBoolean(!containsValue(key), String.format(cannotAddMessage, value));
     inverse.put(value, key);
     return super.put(key, value);
   }
@@ -128,7 +138,7 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
 
   @Override
   public Set<Entry<E, V>> entrySet() {
-    return super.entrySet();
+    return new StrictEntrySet<>(super.entrySet(), cannotRemoveMessage, cannotAddValue);
   }
 
   public void putAll(Map<? extends E, ? extends V> m) {
@@ -190,13 +200,16 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
 
     private final Set<Map.Entry<E, V>> entries;
     private final String cannotRemoveMessage;
+    private final String cannotAddMessage;
 
-    StrictEntrySet(Set<Map.Entry<E, V>> entries, String cannotRemoveMessage) {
+    StrictEntrySet(Set<Map.Entry<E, V>> entries, String cannotRemoveMessage, String cannotAddValueMessage) {
       this.entries = entries;
       this.cannotRemoveMessage = cannotRemoveMessage;
+      this.cannotAddMessage = cannotAddValueMessage;
     }
 
-    @Override @NotNull
+    @Override
+    @NotNull
     public Iterator<Entry<E, V>> iterator() {
       return entries.iterator();
     }
@@ -243,6 +256,33 @@ public final class StrictLinkedHashMap<E, V> extends LinkedHashMap<E, V> impleme
         return this;
       }
       return entries.stream().map(SerializeUtil::serialize).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    class StrictEntry<K, V> implements Map.Entry<K, V> {
+
+      private final Map.Entry<K, V> original;
+      private final Collection<Map.Entry<K, V>> entries;
+
+      public StrictEntry(Map.Entry<K, V> entry, Set<Map.Entry<K, V>> entries) {
+        this.original = entry;
+        this.entries = entries;
+      }
+
+      @Override
+      public K getKey() {
+        return original.getKey();
+      }
+
+      @Override
+      public V getValue() {
+        return original.getValue();
+      }
+
+      @Override
+      public V setValue(V value) {
+        Valid.checkBoolean(entries.stream().noneMatch(entry -> value.equals(entry.getValue())), String.format(cannotAddMessage, value, original.getKey()));
+        return original.setValue(value);
+      }
     }
   }
 

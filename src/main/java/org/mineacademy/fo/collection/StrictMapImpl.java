@@ -1,5 +1,7 @@
 package org.mineacademy.fo.collection;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.Valid;
@@ -14,15 +16,18 @@ import java.util.function.BiConsumer;
  */
 public class StrictMapImpl<K, V> extends AbstractStrictDataHolder implements StrictMap<K, V> {
 
+  @Getter(AccessLevel.PRIVATE)
+  private final String cannotAddValueMessage;
   private final Map<K, V> m; // Backing Map
   private final Map<V, K> inverse;
 
   StrictMapImpl(Map<K, V> m) {
-    this(m, "Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'");
+    this(m, "Cannot remove '%s' as it is not in the map!", "Key '%s' is already in the map --> '%s'", "Value '%s' is already in the map --> '%S'" );
   }
 
-  StrictMapImpl(Map<K, V> m, String cannotAdd, String cannotRemove) {
+  StrictMapImpl(Map<K, V> m, String cannotRemove, String cannotAdd, String cannotAddValue) {
     super(cannotAdd, cannotRemove);
+    this.cannotAddValueMessage = cannotAddValue;
     this.m = m;
     this.inverse = new StrictLinkedHashMap<>(m.size());
     for (Map.Entry<K, V> entry : m.entrySet()) {
@@ -137,7 +142,8 @@ public class StrictMapImpl<K, V> extends AbstractStrictDataHolder implements Str
   @Nullable
   @Override
   public V put(K key, V value) {
-    Valid.checkBoolean(!containsKey(key), String.format(getCannotAddMessage(), key));
+    Valid.checkBoolean(!containsKey(key), String.format(getCannotAddMessage(), key, get(key)));
+    Valid.checkBoolean(!containsValue(value), String.format(getCannotAddValueMessage(), value, getKeyFromValue(value)));
     override(key, value);
     return null;
   }
@@ -178,7 +184,7 @@ public class StrictMapImpl<K, V> extends AbstractStrictDataHolder implements Str
   @NotNull
   @Override
   public Set<Entry<K, V>> entrySet() {
-    return new StrictLinkedHashMap.StrictEntrySet<>(m.entrySet(), getCannotRemoveMessage());
+    return new StrictLinkedHashMap.StrictEntrySet<>(m.entrySet(), getCannotRemoveMessage(), getCannotAddValueMessage());
   }
 
   @Override
