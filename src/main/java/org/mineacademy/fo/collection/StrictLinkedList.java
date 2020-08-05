@@ -5,6 +5,7 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,6 +77,14 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 		return addAll0(elements);
 	}
 
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		for (E e : c) {
+			Valid.checkBoolean(!contains(e), String.format(cannotAddMessage, e));
+		}
+		return super.addAll(c);
+	}
+
 	public E getAndRemove(int index) {
 		final E e = get(index);
 		remove(index);
@@ -114,6 +123,14 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 		return modified;
 	}
 
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		for (Object o : c) {
+			Valid.checkBoolean(contains(o), String.format(cannotRemoveMessage, o));
+		}
+		return super.removeAll(c);
+	}
+
 	public void addIfNotExist(E key) {
 		if (!contains(key))
 			add(key);
@@ -124,6 +141,30 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 		Valid.checkBoolean(!contains(key), String.format(cannotAddMessage, key));
 
 		return addWeak(key);
+	}
+
+	@Override
+	public void add(int index, E element) {
+		Valid.checkBoolean(!contains(element), String.format(cannotAddMessage, element));
+		super.add(index, element);
+	}
+
+	@Override
+	public void addFirst(E element) {
+		Valid.checkBoolean(!contains(element), String.format(cannotAddMessage, element));
+		super.addFirst(element);
+	}
+
+	@Override
+	public void addLast(E element) {
+		Valid.checkBoolean(!contains(element), String.format(cannotAddMessage, element));
+		super.addLast(element);
+	}
+
+	@Override
+	public E set(int index, E element) {
+		Valid.checkBoolean(!contains(element), String.format(cannotAddMessage, element));
+		return super.set(index, element);
 	}
 
 	public StrictList<E> range(int startIndex) {
@@ -143,7 +184,7 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 	public boolean removeWeak(Object value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
 
-		return remove(value);
+		return super.remove(value);
 	}
 
 	public void addWeakAll(Iterable<E> keys) {
@@ -158,11 +199,7 @@ public final class StrictLinkedList<E> extends LinkedList<E> implements StrictLi
 	public E getOrDefault(int index, E def) {
 		return index < size() ? get(index) : def;
 	}
-
-	public boolean contains(Object key) {
-		return contains(key);
-	}
-
+	
 	public boolean containsIgnoreCase(E key) {
 		for (final E other : this) {
 			if (other instanceof String && key instanceof String)

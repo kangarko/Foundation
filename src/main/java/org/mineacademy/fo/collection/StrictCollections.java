@@ -20,8 +20,7 @@ public class StrictCollections {
 
   @Getter(AccessLevel.PUBLIC) // Messages for collections
   private String defaultCollectionCannotRemove = "Cannot remove '%s' as it is not in the collection!",
-          defaultCollectionCannotAdd = "Value '%s' is already in the collection!",
-          defaultCollectionCannotRetain = "Cannot retain '%s' as it is not in the collection!";
+          defaultCollectionCannotAdd = "Value '%s' is already in the collection!";
 
   @Getter(AccessLevel.PUBLIC) // Messages for maps
   private String defaultMapCannotRemove = "Cannot remove '%s' as it is not in the map!",
@@ -36,12 +35,7 @@ public class StrictCollections {
     Valid.checkBoolean(!Valid.isNullOrEmpty(defaultCannotRemove), "Message cannot be empty or null!");
     defaultCollectionCannotRemove = defaultCannotRemove;
   }
-
-  public void setDefaultCollectionCannotRetain(String defaultCannotRetain) {
-    Valid.checkBoolean(!Valid.isNullOrEmpty(defaultCannotRetain), "Message cannot be empty or null!");
-    defaultCollectionCannotRetain = defaultCannotRetain;
-  }
-
+  
   public void setDefaultMapCannotAdd(String defaultCannotAdd) {
     Valid.checkBoolean(!Valid.isNullOrEmpty(defaultCannotAdd), "Message cannot be empty or null!");
     defaultMapCannotAdd = defaultCannotAdd;
@@ -135,18 +129,6 @@ public class StrictCollections {
       }
     }
     return modified;
-  }
-
-  @SafeVarargs
-  public <E> boolean strictRetainAll(Collection<E> collection, E... elements) {
-    if (collection instanceof StrictCollection) {
-      return collection.removeAll(Arrays.asList(elements));
-    }
-    Collection<E> coll = Arrays.asList(elements);
-    for (E e : elements) {
-      Valid.checkBoolean(collection.contains(e), String.format(defaultCollectionCannotRetain, e));
-    }
-    return collection.removeIf(o -> !coll.contains(o));
   }
 
   public <K, V> void strictPutAll(Map<K, V> map, Map<K, V> toPut) {

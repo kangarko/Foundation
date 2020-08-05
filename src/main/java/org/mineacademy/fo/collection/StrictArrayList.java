@@ -2,6 +2,7 @@ package org.mineacademy.fo.collection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -81,13 +82,20 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 	// Methods below trigger strict checks
 	// ------------------------------------------------------------------------------------------------------------
 
-
-	@Override public boolean setAll(Iterable<? extends E> elements) {
+	public boolean setAll(Iterable<? extends E> elements) {
 		clear();
 		return addAll0(elements);
 	}
 
-	@Override public E getAndRemove(int index) {
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		for (E e : c) {
+			Valid.checkBoolean(!contains(e), String.format(cannotAddMessage, e));
+		}
+		return super.addAll(c);
+	}
+
+	public E getAndRemove(int index) {
 		final E e = get(index);
 		remove(index);
 
@@ -101,7 +109,6 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return removed;
 	}
 
-
 	public E remove(int index) {
 		final E removed = super.remove(index);
 
@@ -109,20 +116,37 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return removed;
 	}
 
-	@Override public boolean addAll0(Iterable<? extends E> elements) {
+	public boolean addAll0(Iterable<? extends E> elements) {
 		for (final E key : elements)
 			add(key);
 		return true;
 	}
 
+	@Override
+	public boolean removeAll0(Iterable<? extends E> elements) {
+		boolean modified = false;
+		for (Object o : elements) {
+			boolean b = remove(o);
+			if (!modified)
+				modified = b;
+		}
+		return modified;
+	}
+
 
 	@Override
+	public boolean removeAll(Collection<?> c) {
+		for (Object o : c) {
+			Valid.checkBoolean(contains(o), String.format(cannotRemoveMessage, o));
+		}
+		return super.removeAll(c);
+	}
+
 	public void addIfNotExist(E key) {
 		if (!contains(key))
 			add(key);
 	}
 
-	
 	public boolean add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
 		Valid.checkBoolean(!contains(key), String.format(cannotAddMessage, key));
@@ -130,9 +154,16 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return addWeak(key);
 	}
 
-	@Override public StrictArrayList<E> range(int startIndex) {
+
+	@Override
+	public E set(int index, E element) {
+		Valid.checkBoolean(!contains(element), String.format(cannotAddMessage, element));
+		return super.set(index, element);
+	}
+
+	public StrictList<E> range(int startIndex) {
 		Valid.checkBoolean(startIndex <= size(), "Start index out of range " + startIndex + " vs. list size " + size());
-		final StrictArrayList<E> ranged = new StrictArrayList<>();
+		final StrictLinkedList<E> ranged = new StrictLinkedList<>();
 
 		for (int i = startIndex; i < size(); i++)
 			ranged.add(get(i));
@@ -144,24 +175,36 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 	// Methods without throwing errors below
 	// ------------------------------------------------------------------------------------------------------------
 
-	@Override public boolean removeWeak(Object value) {
+	public boolean removeWeak(Object value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
 
-		return remove(value);
+		return super.remove(value);
 	}
 
-	@Override public void addWeakAll(Iterable<E> keys) {
+	public void addWeakAll(Iterable<E> keys) {
 		for (final E key : keys)
 			addWeak(key);
 	}
 
-
-	@Override public boolean addWeak(E key) {
+	public boolean addWeak(E key) {
 		return super.add(key);
 	}
 
-	@Override public E getOrDefault(int index, E def) {
+	public E getOrDefault(int index, E def) {
 		return index < size() ? get(index) : def;
+	}
+
+	public boolean containsIgnoreCase(E key) {
+		for (final E other : this) {
+			if (other instanceof String && key instanceof String)
+				if (((String) other).equalsIgnoreCase((String) key))
+					return true;
+
+			if (other.equals(key))
+				return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -169,7 +212,7 @@ public final class StrictArrayList<E> extends ArrayList<E> implements StrictList
 		return SerializeUtil.serializeList(this);
 	}
 
-	@Override public String join(String separator) {
+	public String join(String separator) {
 		return StringUtils.join(this, separator);
 	}
 
