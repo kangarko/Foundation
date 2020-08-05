@@ -910,6 +910,26 @@ public final class Common {
 		return loc.getWorld().getName() + " [" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "]";
 	}
 
+	/**
+	 * A very simple helper for duplicating the given text the given amount of times.
+	 *
+	 * Example: duplicate("apple", 2) will produce "appleapple"
+	 *
+	 * @param text
+	 * @param nTimes
+	 * @return
+	 */
+	public static String duplicate(String text, int nTimes) {
+		Valid.checkBoolean(nTimes > 0, "Cannot duplicate 0 times!");
+
+		final String toDuplicate = new String(text);
+
+		for (int i = 1; i < nTimes; i++)
+			text += toDuplicate;
+
+		return text;
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Plugins management
 	// ------------------------------------------------------------------------------------------------------------
