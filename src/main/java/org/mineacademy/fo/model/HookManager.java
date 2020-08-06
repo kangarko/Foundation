@@ -16,8 +16,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -87,6 +85,7 @@ import lombok.NonNull;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.clip.placeholderapi.expansion.Relational;
 import me.crafter.mc.lockettepro.LocketteProAPI;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPCRegistry;
@@ -960,14 +959,10 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String replaceRelationPlaceholders(final Player one, final Player two, final String msg) {
-		try {
-			if (msg == null || "".equals(msg.trim()))
-				return msg;
-
-			return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
-		} catch (final Throwable ignored) {
+		if (msg == null || "".equals(msg.trim()))
 			return msg;
-		}
+
+		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
 	}
 
 	/**
@@ -987,16 +982,11 @@ public final class HookManager {
 	 *
 	 * @param variable
 	 * @param value
-	 * @deprecated does not register the variable in PlaceholderAPI
 	 */
 	@Deprecated
 	public static void addPlaceholder(final String variable, final BiFunction<Player, String, String> value) {
-		try {
-			if (isPlaceholderAPILoaded())
-				placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value), null);
-		} catch (final Throwable ignored) {
-
-		}
+		if (isPlaceholderAPILoaded())
+			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value));
 	}
 
 	/**
@@ -1018,12 +1008,8 @@ public final class HookManager {
 	 * @param value
 	 */
 	public static void addPlaceholder(final String variable, final Function<Player, String> value) {
-		try {
-			if (isPlaceholderAPILoaded())
-				placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)), value);
-		} catch (final Throwable ignored) {
-
-		}
+		if (isPlaceholderAPILoaded())
+			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1797,17 +1783,13 @@ class PlaceholderAPIHook {
 	PlaceholderAPIHook() {
 		try {
 			new VariablesInjector().register();
+
 		} catch (final Throwable throwable) {
-			if (Debugger.isDebugged("placeholder"))
-				Debugger.saveError(throwable, "Can't inject variables!");
+			Common.error(throwable, "Failed to inject our variables into PlaceholderAPI!");
 		}
 	}
 
-	final void addPlaceholder(final PAPIPlaceholder placeholder, final Function<Player, String> replacer) {
-		placeholders.add(placeholder);
-
-		if (replacer == null)
-			return;
+	final void addPlaceholder(final PAPIPlaceholder placeholder) {
 		placeholders.add(placeholder);
 	}
 
@@ -1872,35 +1854,34 @@ class PlaceholderAPIHook {
 
 	private String setRelationalPlaceholders(final Player one, final Player two, String text) {
 
-		// TODO!
-		//		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
-		//
-		//		if (hooks.isEmpty())
-		//			return text;
-		//
-		//		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
-		//
-		//		while (m.find()) {
-		//			final String format = m.group(2);
-		//			final int index = format.indexOf("_");
-		//
-		//			if (index <= 0 || index >= format.length())
-		//				continue;
-		//
-		//			final String identifier = format.substring(0, index).toLowerCase();
-		//			final String params = format.substring(index + 1);
-		//
-		//			if (hooks.containsKey(identifier)) {
-		//				if (!(hooks.get(identifier) instanceof Relational))
-		//					continue;
-		//
-		//				final Relational rel = (Relational) hooks.get(identifier);
-		//				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
-		//
-		//				if (value != null)
-		//					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
-		//			}
-		//		}
+		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
+
+		if (hooks.isEmpty())
+			return text;
+
+		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
+
+		while (m.find()) {
+			final String format = m.group(2);
+			final int index = format.indexOf("_");
+
+			if (index <= 0 || index >= format.length())
+				continue;
+
+			final String identifier = format.substring(0, index).toLowerCase();
+			final String params = format.substring(index + 1);
+
+			if (hooks.containsKey(identifier)) {
+				if (!(hooks.get(identifier) instanceof Relational))
+					continue;
+
+				final Relational rel = (Relational) hooks.get(identifier);
+				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
+
+				if (value != null)
+					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
+			}
+		}
 
 		return text;
 	}
@@ -1969,8 +1950,7 @@ class PlaceholderAPIHook {
 		}
 
 		@Override
-		public @Nullable String onRequest(@Nullable OfflinePlayer offlinePlayer, @NonNull String identifier) {
-
+		public String onRequest(OfflinePlayer offlinePlayer, @NonNull String identifier) {
 			final boolean insertSpace = identifier.endsWith("+");
 			identifier = insertSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
 
@@ -1979,6 +1959,7 @@ class PlaceholderAPIHook {
 					try {
 
 						final Player player = offlinePlayer.getPlayer();
+
 						if (player == null)
 							return null;
 
