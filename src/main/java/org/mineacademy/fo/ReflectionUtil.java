@@ -5,11 +5,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.TreeSet;
+import java.sql.Ref;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -31,6 +28,160 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtil {
+
+	private static final Map<String, Class<?>> classCache = new HashMap<>();
+	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new HashMap<>();
+
+	private static final class ReflectionData<T> {
+		private final Class<T> clazz;
+
+		ReflectionData(final Class<T> clazz) {
+			this.clazz = clazz;
+		}
+
+		private final Map<String, Collection<Method>> methodCache = new HashMap<>();
+		private final Map<Integer, Constructor<?>> constructorCache = new HashMap<>();
+		private final Map<String, Field> fieldCache = new HashMap<>();
+
+		public Constructor<T> getDeclaredConstructor(Class<?>... paramTypes) throws NoSuchMethodException {
+			return getDeclaredConstructor(false, paramTypes);
+		}
+
+		public void cacheConstructor(final Constructor<T> constructor) {
+			final List<Class<?>> classes = new ArrayList<>();
+
+			for (final Class<?> param : constructor.getParameterTypes()) {
+				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
+
+				classes.add(param.isPrimitive() ? ClassUtils.wrapperToPrimitive(param) : param);
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		public Constructor<T> getDeclaredConstructor(final boolean cache, final Class<?>... paramTypes) throws NoSuchMethodException {
+			final int hashCode = Arrays.hashCode(paramTypes);
+			if (constructorCache.containsKey(hashCode)) {
+				return (Constructor<T>) constructorCache.get(hashCode);
+			}
+			final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+			if (cache) {
+				constructorCache.put(hashCode, constructor);
+			}
+			return constructor;
+		}
+
+		@SuppressWarnings("unchecked")
+		public Constructor<T> getConstructor(final boolean cache, final Class<?>... paramTypes) throws NoSuchMethodException {
+			final int hashCode = Arrays.hashCode(paramTypes);
+			if (constructorCache.containsKey(hashCode)) {
+				return (Constructor<T>) constructorCache.get(hashCode);
+			}
+			final Constructor<T> constructor = clazz.getConstructor(paramTypes);
+			if (cache) {
+				constructorCache.put(hashCode, constructor);
+			}
+			return constructor;
+		}
+
+		@SuppressWarnings("unchecked")
+		public Optional<Constructor<T>> getCachedConstructor(Class<?>... paramTypes) {
+			return Optional.ofNullable((Constructor<T>) constructorCache.get(Arrays.hashCode(paramTypes)));
+		}
+
+		public void cacheMethod(final Method method) {
+			methodCache.computeIfAbsent(method.getName(), (unused) -> new HashSet<>()).add(method);
+		}
+
+		public Optional<Method> getCachedMethod(final String name, final Class<?>... paramTypes) {
+			for (final Method m : methodCache.get(name)) {
+				if (Arrays.equals(m.getParameterTypes(), paramTypes)) {
+					return Optional.of(m);
+				}
+			}
+			return Optional.empty();
+		}
+
+		public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
+			return getDeclaredMethod(name, false, paramTypes);
+		}
+
+		public Method getMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
+			return getMethod(name, false, paramTypes);
+		}
+
+
+		public Method getDeclaredMethod(final String name, final boolean cache, final Class<?>... paramTypes) throws NoSuchMethodException {
+			if (methodCache.containsKey(name)) {
+				final Collection<Method> methods = methodCache.get(name);
+				for (final Method method : methods) {
+					if (Arrays.equals(paramTypes, method.getParameterTypes())) {
+						return method;
+					}
+				}
+			}
+			final Method method = clazz.getDeclaredMethod(name, paramTypes);
+			if (cache) {
+				methodCache.computeIfAbsent(name, (unused) -> new HashSet<>()).add(method);
+			}
+			return method;
+		}
+
+		public Method getMethod(final String name, final boolean cache, final Class<?>... paramTypes) throws NoSuchMethodException {
+			if (methodCache.containsKey(name)) {
+				final Collection<Method> methods = methodCache.get(name);
+				for (final Method method : methods) {
+					if (Arrays.equals(paramTypes, method.getParameterTypes())) {
+						return method;
+					}
+				}
+			}
+			final Method method = clazz.getMethod(name, paramTypes);
+			if (cache) {
+				methodCache.computeIfAbsent(name, (unused) -> new HashSet<>()).add(method);
+			}
+			return method;
+		}
+
+		public void cacheField(final Field field) {
+			fieldCache.put(field.getName(), field);
+		}
+
+		public Optional<Field> getCachedField(final String name) {
+			return Optional.ofNullable(fieldCache.get(name));
+		}
+
+
+		public Field getDeclaredField(final String name) throws NoSuchFieldException {
+			return getDeclaredField(name, false);
+		}
+
+		public Field getField(final String name) throws NoSuchFieldException {
+			return getField(name, false);
+		}
+
+		public Field getDeclaredField(final String name, final boolean cache) throws NoSuchFieldException{
+			if (fieldCache.containsKey(name)) {
+				return fieldCache.get(name);
+			}
+			final Field field = clazz.getDeclaredField(name);
+			if (cache) {
+				fieldCache.put(name, field);
+			}
+			return field;
+		}
+
+		public Field getField(final String name, final boolean cache) throws NoSuchFieldException {
+			if (fieldCache.containsKey(name)) {
+				return fieldCache.get(name);
+			}
+			final Field field = clazz.getField(name);
+			if (cache) {
+				fieldCache.put(name, field);
+			}
+			return field;
+		}
+
+	}
 
 	/**
 	 * The full package name for NMS
@@ -54,6 +205,18 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Find a class in net.minecraft.server package, adding the version
+	 * automatically
+	 *
+	 * @param cache Whether the resultant class should be cached into memory.
+	 * @param name
+	 * @return
+	 */
+	public static Class<?> getNMSClass(final boolean cache, final String name) {
+		return ReflectionUtil.lookupClass(cache, NMS + "." + MinecraftVersion.getServerVersion() + "." + name);
+	}
+
+	/**
 	 * Find a class in org.bukkit.craftbukkit package, adding the version
 	 * automatically
 	 *
@@ -61,7 +224,19 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getOBCClass(final String name) {
-		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + MinecraftVersion.getServerVersion() + "." + name);
+		return ReflectionUtil.lookupClass( CRAFTBUKKIT + "." + MinecraftVersion.getServerVersion() + "." + name);
+	}
+
+	/**
+	 * Find a class in org.bukkit.craftbukkit package, adding the version
+	 * automatically
+	 *
+	 * @param cache Whether the resultant class should be cached into memory.
+	 * @param name
+	 * @return
+	 */
+	public static Class<?> getOBCClass(final boolean cache, final String name) {
+		return ReflectionUtil.lookupClass( cache,CRAFTBUKKIT + "." + MinecraftVersion.getServerVersion() + "." + name);
 	}
 
 	/**
@@ -77,6 +252,16 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Return a constructor for the given NMS class. We prepend the class name
+	 * with the {@link #NMS} so you only have to give in the name of the class.
+	 *
+	 * @param cache Whether the returned value should be cached.
+	 */
+	public static Constructor<?> getNMSConstructor(final boolean cache, @NonNull final String nmsClass, final Class<?>... params) {
+		return getConstructor(cache, getNMSClass(nmsClass), params);
+	}
+
+	/**
 	 * Return a constructor for the given OBC class. We prepend the class name
 	 * with the {@link #OBC} so you only have to give in the name of the class.
 	 *
@@ -86,6 +271,16 @@ public final class ReflectionUtil {
 	 */
 	public static Constructor<?> getOBCConstructor(@NonNull final String obcClass, final Class<?>... params) {
 		return getConstructor(getOBCClass(obcClass), params);
+	}
+
+	/**
+	 * Return a constructor for the given OBC class. We prepend the class name
+	 * with the {@link #OBC} so you only have to give in the name of the class.
+	 *
+	 * @param cache Whether the returned value should be cached for later use.
+	 */
+	public static Constructor<?> getOBCConstructor(final boolean cache, @NonNull final String obcClass, final Class<?>... params) {
+		return getConstructor(cache, getOBCClass(obcClass), params);
 	}
 
 	/**
@@ -103,6 +298,18 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Return a constructor for the given fully qualified class path such as
+	 * org.mineacademy.boss.BossPlugin
+	 *
+	 * @param cache Whether the returned constructor should be cached into memory.
+	 */
+	public static Constructor<?> getConstructor(final boolean cache, @NonNull final String classPath, final Class<?>... params) {
+		final Class<?> clazz = lookupClass(cache, classPath);
+
+		return getConstructor(cache, clazz, params);
+	}
+
+	/**
 	 * Return a constructor for the given class
 	 *
 	 * @param clazz
@@ -110,7 +317,19 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Constructor<?> getConstructor(@NonNull final Class<?> clazz, final Class<?>... params) {
+		return getConstructor(false, clazz, params);
+	}
+
+	/**
+	 * Return a constructor for the given class
+	 *
+	 * @param cache Whether the returned constructor should be cached into memory.
+	 */
+	public static Constructor<?> getConstructor(final boolean cache, @NonNull final Class<?> clazz, final Class<?>... params) {
 		try {
+			if (reflectionDataCache.containsKey(clazz)) {
+				return reflectionDataCache.get(clazz).getConstructor(cache, params);
+			}
 			final Constructor<?> constructor = clazz.getConstructor(params);
 			constructor.setAccessible(true);
 
@@ -186,7 +405,7 @@ public final class ReflectionUtil {
 			list.addAll(Arrays.asList(clazz.getDeclaredFields()));
 		while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
 
-		return list.toArray(new Field[list.size()]);
+		return list.toArray(new Field[0]);
 	}
 
 	/**
@@ -197,7 +416,21 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Field getDeclaredField(final Class<?> clazz, final String fieldName) {
+		return getDeclaredField(false, clazz, fieldName);
+	}
+
+
+	/**
+	 * Gets the declared field in class by its name
+	 *
+	 * @param cache Whether the returned constructor should be cached into memory.
+	 *
+	 */
+	public static Field getDeclaredField(final boolean cache, final Class<?> clazz, final String fieldName) {
 		try {
+			if (reflectionDataCache.containsKey(clazz)) {
+				return reflectionDataCache.get(clazz).getDeclaredField(fieldName, cache);
+			}
 			final Field field = clazz.getDeclaredField(fieldName);
 			field.setAccessible(true);
 
@@ -216,7 +449,7 @@ public final class ReflectionUtil {
 	 * @param fieldName
 	 * @param fieldValue
 	 */
-	public static void setDeclaredField(@NonNull Object instance, String fieldName, Object fieldValue) {
+	public static void setDeclaredField(@NonNull final Object instance, final String fieldName, final Object fieldValue) {
 		final Field field = getDeclaredField(instance.getClass(), fieldName);
 
 		try {
@@ -412,7 +645,12 @@ public final class ReflectionUtil {
 	 */
 	public static <T> T instantiate(final Class<T> clazz) {
 		try {
-			final Constructor<T> c = clazz.getDeclaredConstructor();
+			final Constructor<T> c;
+			if (reflectionDataCache.containsKey(clazz)) {
+				c = ((ReflectionData<T>) reflectionDataCache.get(clazz)).getDeclaredConstructor(false);
+			} else {
+				c = clazz.getDeclaredConstructor();
+			}
 			c.setAccessible(true);
 
 			return c.newInstance();
@@ -430,6 +668,19 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T instantiate(final Class<T> clazz, final Object... params) {
+		return instantiate(false, clazz, params);
+	}
+
+	/**
+	 * Makes a new instance of a class with arguments.
+	 *
+	 * @param cache Whether the constructor and class should be cached into memeory.
+	 * @param clazz
+	 * @param params
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T instantiate(final boolean cache, final Class<T> clazz, final Object... params) {
 		try {
 			final List<Class<?>> classes = new ArrayList<>();
 
@@ -440,7 +691,13 @@ public final class ReflectionUtil {
 				classes.add(paramClass.isPrimitive() ? ClassUtils.wrapperToPrimitive(paramClass) : paramClass);
 			}
 
-			final Constructor<T> c = clazz.getDeclaredConstructor(classes.toArray(new Class[classes.size()]));
+			final Constructor<T> c;
+			if (cache) {
+				classCache.put(clazz.getCanonicalName(), clazz);
+				c = (Constructor<T>) reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new).getDeclaredConstructor(true, classes.toArray(new Class<?>[0]));
+			} else {
+				c = clazz.getDeclaredConstructor(classes.toArray(new Class<?>[0]));
+			}
 			c.setAccessible(true);
 
 			return c.newInstance(params);
@@ -468,6 +725,26 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Attempts to create a new instance from the given constructor and parameters
+	 *
+	 * @param cache Whether the returned constructor should be cached into memory.
+	 *
+	 */
+	public static <T> T instantiate(final boolean cache, final Constructor<T> constructor, final Object... params) {
+		if (cache) {
+			final Class<T> clazz = constructor.getDeclaringClass();
+			classCache.put(clazz.getCanonicalName(), clazz);
+			((ReflectionData<T> )reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new)).cacheConstructor(constructor);
+		}
+		try {
+			return constructor.newInstance(params);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException(ex, "Could not make new instance of " + constructor + " with params: " + Common.joinToString(params));
+		}
+	}
+
+	/**
 	 * Return true if the given absolute class path is available,
 	 * useful for checking for older MC versions for classes such as org.bukkit.entity.Phantom
 	 *
@@ -476,7 +753,28 @@ public final class ReflectionUtil {
 	 */
 	public static boolean isClassAvailable(final String path) {
 		try {
+			if (classCache.containsKey(path)) {
+				return true;
+			}
 			Class.forName(path);
+			return true;
+
+		} catch (final Throwable t) {
+			return false;
+		}
+	}
+
+
+	public static boolean isClassAvailable(final boolean cacheIfPresent, final String path) {
+		try {
+			if (classCache.containsKey(path)) {
+				return true;
+			}
+			final Class<?> clazz = Class.forName(path);
+			if (cacheIfPresent) {
+				classCache.put(path, clazz);
+				reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new);
+			}
 			return true;
 
 		} catch (final Throwable t) {
@@ -502,8 +800,26 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> lookupClass(final String path) {
+		return lookupClass(false, path);
+	}
+
+	/**
+	 * Wrapper for Class.forName
+	 *
+	 * @param cache Whether the looked-up class should be cached into memory.
+	 * @return
+	 */
+	public static Class<?> lookupClass(final boolean cache, final String path) {
+		if (classCache.containsKey(path)) {
+			return classCache.get(path);
+		}
 		try {
-			return Class.forName(path);
+			final Class<?> clazz = Class.forName(path);
+			if (cache) {
+				classCache.put(path, clazz);
+				reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new);
+			}
+			return clazz;
 
 		} catch (final ClassNotFoundException ex) {
 			throw new ReflectionException("Could not find class: " + path);
@@ -541,7 +857,7 @@ public final class ReflectionUtil {
 		Valid.checkNotNull(enumType, "Type missing for " + name);
 		Valid.checkNotNull(name, "Name missing for " + enumType);
 
-		final String rawName = new String(name).toUpperCase().replace(" ", "_");
+		final String rawName = name.toUpperCase().replace(" ", "_");
 
 		// Some compatibility workaround for ChatControl, Boss, CoreArena and other plugins
 		// having these values in their default config. This prevents
@@ -655,7 +971,7 @@ public final class ReflectionUtil {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T extends Enum<T>> T getEnumBasic(Object object, String value) {
+	public static <T extends Enum<T>> T getEnumBasic(final Object object, final String value) {
 		return Enum.valueOf((Class<T>) object, value);
 	}
 
@@ -740,7 +1056,7 @@ public final class ReflectionUtil {
 		try {
 			return getClasses0(plugin);
 
-		} catch (ReflectiveOperationException | IOException ex) {
+		} catch (final ReflectiveOperationException | IOException ex) {
 			throw new FoException(ex, "Failed getting classes for " + plugin.getName());
 		}
 	}
@@ -755,9 +1071,9 @@ public final class ReflectionUtil {
 		m.setAccessible(true);
 		final File pluginFile = (File) m.invoke(plugin);
 
-		final TreeSet<Class<?>> classes = new TreeSet<>((first, second) -> first.toString().compareTo(second.toString()));
+		final TreeSet<Class<?>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
 
-		try (JarFile jarFile = new JarFile(pluginFile)) {
+		try (final JarFile jarFile = new JarFile(pluginFile)) {
 			final Enumeration<JarEntry> entries = jarFile.entries();
 
 			while (entries.hasMoreElements()) {
@@ -766,7 +1082,7 @@ public final class ReflectionUtil {
 				if (name.endsWith(".class")) {
 					name = name.replace("/", ".").replaceFirst(".class", "");
 
-					Class<?> clazz;
+					final Class<?> clazz;
 
 					// Workaround
 					if (name.startsWith("de.exceptionflug.protocolize.api")) {
