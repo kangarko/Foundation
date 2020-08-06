@@ -72,9 +72,9 @@ public class Valid {
 	 * @param expression
 	 * @param falseMessage
 	 */
-	public void checkBoolean(final boolean expression, final String falseMessage) {
+	public void checkBoolean(final boolean expression, final String falseMessage, final Object... replacements) {
 		if (!expression)
-			throw new FoException(falseMessage);
+			throw new FoException(String.format(falseMessage, replacements));
 	}
 
 	/**
@@ -83,9 +83,9 @@ public class Valid {
 	 * @param toCheck
 	 * @param falseMessage
 	 */
-	public void checkInteger(final String toCheck, final String falseMessage) {
+	public void checkInteger(final String toCheck, final String falseMessage, final Object... replacements) {
 		if (!Valid.isInteger(toCheck))
-			throw new FoException(falseMessage);
+			throw new FoException(String.format(falseMessage, replacements));
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class Valid {
 	 * Checks if the code calling this method is run from the main thread,
 	 * failing with the error message if otherwise
 	 *
-	 * @param syncErrorMessage
+	 * @param asyncErrorMessage
 	 */
 	public void checkSync(final String asyncErrorMessage) {
 		Valid.checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
@@ -168,7 +168,7 @@ public class Valid {
 	 * @return
 	 */
 	public boolean isNullOrEmpty(final Collection<?> array) {
-		return array == null ? true : Valid.isNullOrEmpty(array.toArray());
+		return array == null || Valid.isNullOrEmpty(array.toArray());
 	}
 
 	/**
@@ -276,30 +276,28 @@ public class Valid {
 		if (first == null && second == null)
 			return true;
 
-		if (first == null && second != null)
+		if (first == null)
 			return false;
 
-		if (first != null && second == null)
+		if (second == null)
 			return false;
 
-		if (first != null) {
-			if (first.size() != second.size())
+		if (first.size() != second.size())
+			return false;
+
+		for (int i = 0; i < first.size(); i++) {
+			final T f = first.get(i);
+			final T s = second.get(i);
+
+			if (f == null && s != null)
 				return false;
 
-			for (int i = 0; i < first.size(); i++) {
-				final T f = first.get(i);
-				final T s = second.get(i);
+			if (f != null && s == null)
+				return false;
 
-				if (f == null && s != null)
+			if (f != null && !f.equals(s))
+				if (!Common.stripColors(f.toString()).equalsIgnoreCase(Common.stripColors(s.toString())))
 					return false;
-
-				if (f != null && s == null)
-					return false;
-
-				if (f != null && s != null && !f.equals(s))
-					if (!Common.stripColors(f.toString()).equalsIgnoreCase(Common.stripColors(s.toString())))
-						return false;
-			}
 		}
 
 		return true;
