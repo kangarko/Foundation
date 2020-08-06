@@ -7,6 +7,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Ref;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -29,8 +32,8 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionUtil {
 
-	private static final Map<String, Class<?>> classCache = new HashMap<>();
-	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new HashMap<>();
+	private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new ConcurrentHashMap<>();
 
 	private static final class ReflectionData<T> {
 		private final Class<T> clazz;
@@ -39,15 +42,20 @@ public final class ReflectionUtil {
 			this.clazz = clazz;
 		}
 
-		private final Map<String, Collection<Method>> methodCache = new HashMap<>();
-		private final Map<Integer, Constructor<?>> constructorCache = new HashMap<>();
-		private final Map<String, Field> fieldCache = new HashMap<>();
+		private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
+		private final Map<Integer, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
+		private final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
+		private final Collection<Object> caching = ConcurrentHashMap.newKeySet();
 
 		public Constructor<T> getDeclaredConstructor(Class<?>... paramTypes) throws NoSuchMethodException {
 			return getDeclaredConstructor(false, paramTypes);
 		}
 
 		public void cacheConstructor(final Constructor<T> constructor) {
+			if (caching.contains(constructor) || constructorCache.values().contains(constructor)) {
+				return;
+			}
+			caching.add(constructor);
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Class<?> param : constructor.getParameterTypes()) {
@@ -55,6 +63,8 @@ public final class ReflectionUtil {
 
 				classes.add(param.isPrimitive() ? ClassUtils.wrapperToPrimitive(param) : param);
 			}
+			constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);
+			caching.remove(constructor);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -65,7 +75,7 @@ public final class ReflectionUtil {
 			}
 			final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
 			if (cache) {
-				constructorCache.put(hashCode, constructor);
+				cacheConstructor(constructor);
 			}
 			return constructor;
 		}
@@ -78,7 +88,7 @@ public final class ReflectionUtil {
 			}
 			final Constructor<T> constructor = clazz.getConstructor(paramTypes);
 			if (cache) {
-				constructorCache.put(hashCode, constructor);
+				cacheConstructor(constructor);
 			}
 			return constructor;
 		}
@@ -89,7 +99,12 @@ public final class ReflectionUtil {
 		}
 
 		public void cacheMethod(final Method method) {
+			if (caching.contains(method) || methodCache.values().stream().anyMatch(methods -> methods.contains(method))) {
+				return;
+			}
+			caching.add(method);
 			methodCache.computeIfAbsent(method.getName(), (unused) -> new HashSet<>()).add(method);
+			caching.remove(method);
 		}
 
 		public Optional<Method> getCachedMethod(final String name, final Class<?>... paramTypes) {
@@ -121,7 +136,7 @@ public final class ReflectionUtil {
 			}
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
 			if (cache) {
-				methodCache.computeIfAbsent(name, (unused) -> new HashSet<>()).add(method);
+				cacheMethod(method);
 			}
 			return method;
 		}
@@ -142,8 +157,13 @@ public final class ReflectionUtil {
 			return method;
 		}
 
-		public void cacheField(final Field field) {
+		public synchronized void cacheField(final Field field) {
+			if (caching.contains(field) || fieldCache.containsKey(field.getName())) {
+				return;
+			}
+			caching.add(field);
 			fieldCache.put(field.getName(), field);
+			caching.remove(field);
 		}
 
 		public Optional<Field> getCachedField(final String name) {
@@ -165,7 +185,7 @@ public final class ReflectionUtil {
 			}
 			final Field field = clazz.getDeclaredField(name);
 			if (cache) {
-				fieldCache.put(name, field);
+				cacheField(field);
 			}
 			return field;
 		}
@@ -192,6 +212,11 @@ public final class ReflectionUtil {
 	 * The package name for Craftbukkit
 	 */
 	public static final String CRAFTBUKKIT = "org.bukkit.craftbukkit";
+
+	public static void clearCachedData(final Class<?> clazz) {
+		classCache.remove(clazz.getCanonicalName());
+		reflectionDataCache.remove(clazz);
+	}
 
 	/**
 	 * Find a class in net.minecraft.server package, adding the version
