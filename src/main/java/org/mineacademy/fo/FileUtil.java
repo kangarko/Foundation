@@ -10,24 +10,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
@@ -51,11 +44,6 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtil {
-
-	/**
-	 * File system manipulating with your JAR plugin file, only created once
-	 */
-	private static FileSystem fileSystem = null;
 
 	/**
 	 * Return the name of the file from the given path, stripping
@@ -307,12 +295,7 @@ public final class FileUtil {
 	private static void checkFileForKnownErrors(File file) throws IOException {
 		for (final String line : Files.readAllLines(file.toPath()))
 			if (line.contains("[*]"))
-				throw new FoException("Found [*] in your yaml file " + file + ". Please replace it with ['*'] instead.");
-		//else
-		//	if (line.replaceAll(/* TODO REGEX na zaciatocne a konecne medzery */)
-		// if (line.contains("-") && line.contains("*") && !line.contains("\"") && !contains '
-		// else
-		// if (Common.hasColor(message) && !contains " '
+				throw new FoException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -508,50 +491,26 @@ public final class FileUtil {
 	 * Extracts the folder and all of its content from the JAR file to
 	 * the given path in your plugin folder
 	 *
-	 * @param source      the source folder in your JAR plugin file
+	 * @param folder      the source folder in your JAR plugin file
 	 * @param destination the destination folder name in your plugin folder
 	 */
-	public static void extractFolderFromJar(String source, final String destination) {
-		try {
-			final Path target = getFile(destination).toPath();
+	public static void extractFolderFromJar(String folder, final String destination) {
+		Valid.checkBoolean(folder.endsWith("/"), "Folder must end with '/'! Given: " + folder);
+		Valid.checkBoolean(!folder.startsWith("/"), "Folder must not start with '/'! Given: " + folder);
+		Valid.checkBoolean(!getFile(folder).exists(), "Folder " + folder + " already exists!");
 
-			final URI resource = SimplePlugin.class.getResource(source).toURI();
-			final FileSystem fileSystem;
+		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry jarEntry = it.nextElement();
+				final String entryName = jarEntry.getName();
 
-			if (FileUtil.fileSystem == null) {
-				fileSystem = FileSystems.newFileSystem(resource, Collections.emptyMap());
-
-				FileUtil.fileSystem = fileSystem;
-
-			} else
-				fileSystem = FileSystems.getFileSystem(resource);
-
-			getInternalResource(source);
-
-			final Path jarPath = fileSystem.getPath(source);
-
-			Files.walkFileTree(jarPath, new SimpleFileVisitor<Path>() {
-
-				private Path currentTarget;
-
-				@Override
-				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-					currentTarget = target.resolve(jarPath.relativize(dir).toString());
-					Files.createDirectories(currentTarget);
-
-					return FileVisitResult.CONTINUE;
-				}
-
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					Files.copy(file, target.resolve(jarPath.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
-
-					return FileVisitResult.CONTINUE;
-				}
-			});
+				// Copy each individual file manually
+				if (entryName.startsWith(folder) && !entryName.equals(folder))
+					extract(entryName);
+			}
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to copy " + source + " to " + destination);
+			Common.throwError(t, "Failed to copy folder " + folder + " to " + destination);
 		}
 	}
 
