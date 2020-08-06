@@ -85,13 +85,16 @@ public final class ConfigItems<T extends YamlConfig> {
 		this.hasDefaultPrototype = hasDefaultPrototype;
 	}
 
+	/**
+	 * Load all item classes by creating a new instance of them and copying their folder from JAR to disk
+	 */
 	public void loadItems() {
 		// Clear old items
 		loadedItems.clear();
 
 		// Try copy items from our JAR
 		if (!FileUtil.getFile(folder).exists())
-			FileUtil.extractFolderFromJar("/" + folder, folder);
+			FileUtil.extractFolderFromJar(folder + "/", folder);
 
 		// Load items on our disk
 		final File[] files = FileUtil.getFiles(folder, "yml");
@@ -103,6 +106,13 @@ public final class ConfigItems<T extends YamlConfig> {
 		}
 	}
 
+	/**
+	 * Create the class (make new instance of) by the given name,
+	 * the class must have a private constructor taking in the String (name) or nothing
+	 *
+	 * @param name
+	 * @return
+	 */
 	public T loadOrCreateItem(final String name) {
 		Valid.checkBoolean(!isItemLoaded(name), WordUtils.capitalize(type) + name + " is already loaded: " + getItemNames());
 
@@ -142,6 +152,11 @@ public final class ConfigItems<T extends YamlConfig> {
 		return null;
 	}
 
+	/**
+	 * Remove the given item by instance
+	 *
+	 * @param item
+	 */
 	public void removeItem(@NonNull final T item) {
 		Valid.checkBoolean(isItemLoaded(item.getName()), WordUtils.capitalize(type) + " " + item.getName() + " not loaded. Available: " + getItemNames());
 
@@ -149,10 +164,22 @@ public final class ConfigItems<T extends YamlConfig> {
 		loadedItems.remove(item);
 	}
 
+	/**
+	 * Check if the given item by name is loaded
+	 *
+	 * @param name
+	 * @return
+	 */
 	public boolean isItemLoaded(final String name) {
 		return findItem(name) != null;
 	}
 
+	/**
+	 * Return the item instance by name, or null if not loaded
+	 *
+	 * @param name
+	 * @return
+	 */
 	public T findItem(@NonNull final String name) {
 		for (final T item : loadedItems)
 			if (item.getName().equalsIgnoreCase(name))
@@ -161,10 +188,20 @@ public final class ConfigItems<T extends YamlConfig> {
 		return null;
 	}
 
+	/**
+	 * Return all loaded items
+	 *
+	 * @return
+	 */
 	public List<T> getItems() {
 		return Collections.unmodifiableList(loadedItems);
 	}
 
+	/**
+	 * Return all loaded item names
+	 *
+	 * @return
+	 */
 	public List<String> getItemNames() {
 		return Common.convert(loadedItems, T::getName);
 	}
