@@ -201,6 +201,13 @@ public final class ReflectionUtil {
 			return field;
 		}
 
+		public void clearCache() {
+			while (!caching.isEmpty()); // Wait for existing values to continue caching
+			methodCache.clear();
+			reflectionDataCache.clear();
+			constructorCache.clear();
+		}
+
 	}
 
 	/**
@@ -213,9 +220,24 @@ public final class ReflectionUtil {
 	 */
 	public static final String CRAFTBUKKIT = "org.bukkit.craftbukkit";
 
-	public static void clearCachedData(final Class<?> clazz) {
-		classCache.remove(clazz.getCanonicalName());
-		reflectionDataCache.remove(clazz);
+	public static void clearCachedData(final Class<?>... classes) {
+		if (classes == null) {
+			return;
+		}
+		for (final Class<?> clazz : classes) {
+			classCache.remove(clazz.getCanonicalName());
+			final ReflectionData<?> data = reflectionDataCache.get(clazz);
+			if (data != null) {
+				data.clearCache();
+			}
+			reflectionDataCache.remove(clazz);
+		}
+	}
+
+	public static void clearCachedData() {
+		classCache.clear();
+		reflectionDataCache.values().forEach(ReflectionData::clearCache);
+		reflectionDataCache.clear();
 	}
 
 	/**
