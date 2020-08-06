@@ -89,6 +89,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * Load all item classes by creating a new instance of them and copying their folder from JAR to disk
 	 */
 	public void loadItems() {
+
 		// Clear old items
 		loadedItems.clear();
 
