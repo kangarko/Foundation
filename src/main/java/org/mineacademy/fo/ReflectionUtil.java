@@ -1,18 +1,8 @@
 package org.mineacademy.fo;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.sql.Ref;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -22,9 +12,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Utility class for various reflection methods
@@ -34,6 +30,7 @@ public final class ReflectionUtil {
 
 	private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new ConcurrentHashMap<>();
+	private static final Collection<String> classNameGuard = ConcurrentHashMap.newKeySet();
 
 	private static final class ReflectionData<T> {
 		private final Class<T> clazz;
@@ -45,17 +42,15 @@ public final class ReflectionUtil {
 		private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
 		private final Map<Integer, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 		private final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
-		private final Collection<Object> caching = ConcurrentHashMap.newKeySet();
+		private final Collection<String> fieldGuard = ConcurrentHashMap.newKeySet();
+		private final Collection<Integer> methodGuard = ConcurrentHashMap.newKeySet();
+		private final Collection<Integer> constructorGuard = ConcurrentHashMap.newKeySet();
 
 		public Constructor<T> getDeclaredConstructor(Class<?>... paramTypes) throws NoSuchMethodException {
 			return getDeclaredConstructor(false, paramTypes);
 		}
 
 		public void cacheConstructor(final Constructor<T> constructor) {
-			if (caching.contains(constructor) || constructorCache.values().contains(constructor)) {
-				return;
-			}
-			caching.add(constructor);
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Class<?> param : constructor.getParameterTypes()) {
@@ -64,33 +59,54 @@ public final class ReflectionUtil {
 				classes.add(param.isPrimitive() ? ClassUtils.wrapperToPrimitive(param) : param);
 			}
 			constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);
-			caching.remove(constructor);
 		}
 
 		@SuppressWarnings("unchecked")
 		public Constructor<T> getDeclaredConstructor(final boolean cache, final Class<?>... paramTypes) throws NoSuchMethodException {
-			final int hashCode = Arrays.hashCode(paramTypes);
+			final Integer hashCode = Arrays.hashCode(paramTypes);
 			if (constructorCache.containsKey(hashCode)) {
 				return (Constructor<T>) constructorCache.get(hashCode);
 			}
-			final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
-			if (cache) {
-				cacheConstructor(constructor);
+			if (constructorGuard.contains(hashCode))  {
+				while (constructorGuard.contains(hashCode)) {
+
+				} // Wait for other thread;
+				return getDeclaredConstructor(cache, paramTypes);
 			}
-			return constructor;
+			constructorGuard.add(hashCode);
+			try {
+				final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+				if (cache) {
+					cacheConstructor(constructor);
+				}
+				return constructor;
+			} finally {
+				constructorGuard.remove(hashCode);
+			}
 		}
 
 		@SuppressWarnings("unchecked")
 		public Constructor<T> getConstructor(final boolean cache, final Class<?>... paramTypes) throws NoSuchMethodException {
-			final int hashCode = Arrays.hashCode(paramTypes);
+			final Integer hashCode = Arrays.hashCode(paramTypes);
 			if (constructorCache.containsKey(hashCode)) {
 				return (Constructor<T>) constructorCache.get(hashCode);
 			}
-			final Constructor<T> constructor = clazz.getConstructor(paramTypes);
-			if (cache) {
-				cacheConstructor(constructor);
+			if (constructorGuard.contains(hashCode))  {
+				while (constructorGuard.contains(hashCode)) {
+
+				} // Wait for other thread;
+				return getConstructor(cache, paramTypes);
 			}
-			return constructor;
+			constructorGuard.add(hashCode);
+			try {
+				final Constructor<T> constructor = clazz.getConstructor(paramTypes);
+				if (cache) {
+					cacheConstructor(constructor);
+				}
+				return constructor;
+			} finally {
+				constructorGuard.remove(hashCode);
+			}
 		}
 
 		@SuppressWarnings("unchecked")
@@ -99,12 +115,7 @@ public final class ReflectionUtil {
 		}
 
 		public void cacheMethod(final Method method) {
-			if (caching.contains(method) || methodCache.values().stream().anyMatch(methods -> methods.contains(method))) {
-				return;
-			}
-			caching.add(method);
-			methodCache.computeIfAbsent(method.getName(), (unused) -> new HashSet<>()).add(method);
-			caching.remove(method);
+			methodCache.computeIfAbsent(method.getName(), (unused) -> ConcurrentHashMap.newKeySet()).add(method);
 		}
 
 		public Optional<Method> getCachedMethod(final String name, final Class<?>... paramTypes) {
@@ -150,20 +161,21 @@ public final class ReflectionUtil {
 					}
 				}
 			}
-			final Method method = clazz.getMethod(name, paramTypes);
-			if (cache) {
-				methodCache.computeIfAbsent(name, (unused) -> new HashSet<>()).add(method);
+			Integer hashCode = Arrays.hashCode(paramTypes);
+			methodGuard.add(hashCode);
+			try {
+				final Method method = clazz.getMethod(name, paramTypes);
+				if (cache) {
+					methodCache.computeIfAbsent(name, (unused) -> ConcurrentHashMap.newKeySet()).add(method);
+				}
+				return method;
+			} finally {
+				methodGuard.remove(hashCode);
 			}
-			return method;
 		}
 
-		public synchronized void cacheField(final Field field) {
-			if (caching.contains(field) || fieldCache.containsKey(field.getName())) {
-				return;
-			}
-			caching.add(field);
+		public void cacheField(final Field field) {
 			fieldCache.put(field.getName(), field);
-			caching.remove(field);
 		}
 
 		public Optional<Field> getCachedField(final String name) {
@@ -183,28 +195,51 @@ public final class ReflectionUtil {
 			if (fieldCache.containsKey(name)) {
 				return fieldCache.get(name);
 			}
-			final Field field = clazz.getDeclaredField(name);
-			if (cache) {
-				cacheField(field);
+			if (fieldGuard.contains(name)) {
+				while (fieldGuard.contains(name)) {
+				}
+				return getDeclaredField(name, cache);
 			}
-			return field;
+			fieldGuard.add(name);
+			try {
+				final Field field = clazz.getDeclaredField(name);
+				if (cache) {
+					cacheField(field);
+				}
+				return field;
+			} finally {
+				fieldGuard.remove(name);
+			}
 		}
 
 		public Field getField(final String name, final boolean cache) throws NoSuchFieldException {
 			if (fieldCache.containsKey(name)) {
 				return fieldCache.get(name);
 			}
-			final Field field = clazz.getField(name);
-			if (cache) {
-				fieldCache.put(name, field);
+			if (fieldGuard.contains(name)) {
+				while (fieldGuard.contains(name)) {
+				}
+				return getField(name, cache);
 			}
-			return field;
+			fieldGuard.add(name);
+			try {
+				final Field field = clazz.getField(name);
+				if (cache) {
+					fieldCache.put(name, field);
+				}
+				return field;
+			} finally {
+				fieldGuard.remove(name);
+			}
 		}
 
 		public void clearCache() {
-			while (!caching.isEmpty()); // Wait for existing values to continue caching
+			while (!fieldGuard.isEmpty()); // Wait for existing values to continue caching
+			fieldCache.clear();
+			while (!methodGuard.isEmpty());
 			methodCache.clear();
 			reflectionDataCache.clear();
+			while (!constructorGuard.isEmpty());
 			constructorCache.clear();
 		}
 
@@ -860,7 +895,14 @@ public final class ReflectionUtil {
 		if (classCache.containsKey(path)) {
 			return classCache.get(path);
 		}
+		if (classNameGuard.contains(path)) {
+			while (classNameGuard.contains(path)) {
+
+			} // Wait for other thread
+			return lookupClass(cache, path); // Re run method to see if the cached value now exists.
+		}
 		try {
+			classNameGuard.add(path);
 			final Class<?> clazz = Class.forName(path);
 			if (cache) {
 				classCache.put(path, clazz);
@@ -870,6 +912,8 @@ public final class ReflectionUtil {
 
 		} catch (final ClassNotFoundException ex) {
 			throw new ReflectionException("Could not find class: " + path);
+		} finally {
+			classNameGuard.remove(path);
 		}
 	}
 
