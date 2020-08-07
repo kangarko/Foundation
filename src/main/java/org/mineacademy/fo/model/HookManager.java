@@ -86,7 +86,6 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
-import me.crafter.mc.lockettepro.LocketteProAPI;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
@@ -2004,7 +2003,10 @@ class MVdWPlaceholderHook {
 
 	String replacePlaceholders(final Player player, final String message) {
 		try {
-			final String replaced = be.maximvdw.placeholderapi.PlaceholderAPI.replacePlaceholders(player, message);
+			final Class<?> placeholderAPI = ReflectionUtil.lookupClass("be.maximvdw.placeholderapi.PlaceholderAPI");
+			final Method replacePlaceholders = ReflectionUtil.getMethod(placeholderAPI, "replacePlaceholders", Player.class, String.class);
+
+			final String replaced = ReflectionUtil.invoke(replacePlaceholders, null, player, message);
 
 			return replaced == null ? "" : replaced;
 
@@ -2053,7 +2055,11 @@ class LWCHook {
 class LocketteProHook {
 
 	boolean isOwner(final Block block, final Player player) {
-		return LocketteProAPI.isProtected(block) ? LocketteProAPI.isOwner(block, player) : false;
+		final Class<?> locketteProAPI = ReflectionUtil.lookupClass("me.crafter.mc.lockettepro.LocketteProAPI");
+		final Method isProtected = ReflectionUtil.getMethod(locketteProAPI, "isProtected", Block.class);
+		final Method isOwner = ReflectionUtil.getMethod(locketteProAPI, "isOwner", Block.class, Player.class);
+
+		return (boolean) ReflectionUtil.invoke(isProtected, null, block) ? ReflectionUtil.invoke(isOwner, null, block, player) : false;
 	}
 }
 
