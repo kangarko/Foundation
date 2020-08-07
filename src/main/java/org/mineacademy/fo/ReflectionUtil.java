@@ -657,6 +657,19 @@ public final class ReflectionUtil {
 		return null;
 	}
 
+	/**
+	 * Get a declared class method
+	 *
+	 */
+	public static Method getDeclaredMethod(final Class<?> clazz, final String methodName, Class<?>... args) {
+		return getDeclaredMethod(false, clazz, methodName, args);
+	}
+
+	/**
+	 * Get a declared class method
+	 *
+	 * @param cache Whether or not the looked-up method should be cached.
+	 */
 	public static Method getDeclaredMethod(boolean cache, final Class<?> clazz, final String methodName, Class<?>... args) {
 		try {
 			if (reflectionDataCache.containsKey(clazz)) {
@@ -788,12 +801,17 @@ public final class ReflectionUtil {
 				classes.add(paramClass.isPrimitive() ? ClassUtils.wrapperToPrimitive(paramClass) : paramClass);
 			}
 
+			Class<?>[] paramArr = classes.toArray(new Class<?>[0]);
 			final Constructor<T> c;
-			if (cache) {
-				classCache.put(clazz.getCanonicalName(), clazz);
-				c = (Constructor<T>) reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new).getDeclaredConstructor(true, classes.toArray(new Class<?>[0]));
+			if (reflectionDataCache.containsKey(clazz)) {
+				c = ((ReflectionData<T>) reflectionDataCache.get(clazz)).getDeclaredConstructor(cache, paramArr);
 			} else {
-				c = clazz.getDeclaredConstructor(classes.toArray(new Class<?>[0]));
+				if (cache) {
+					classCache.put(clazz.getCanonicalName(), clazz);
+					c = (Constructor<T>) reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new).getDeclaredConstructor(true, paramArr);
+				} else {
+					c = clazz.getDeclaredConstructor(paramArr);
+				}
 			}
 			c.setAccessible(true);
 
