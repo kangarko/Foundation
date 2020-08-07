@@ -3,11 +3,16 @@ package org.mineacademy.fo.menu.model;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.Getter;
+
+import java.lang.reflect.Method;
 
 /**
  * Represents a way to render the inventory to the player
@@ -135,8 +140,27 @@ public final class InventoryDrawer {
 		inv.setContents(content);
 
 		// Before opening make sure we close his old inventory if exist
-		if (player.getOpenInventory() != null)
-			player.closeInventory();
+		if (player.getOpenInventory() != null) { // FIXME This will never be null as it will return the CraftingInventory - JD for HumanEntity#getOpenInventory
+			// Before opening make sure we close his old inventory if exist,
+			// but only if the inventory is NOT a menu. If it is a menu, we can overwrite the contents,
+			// as they will be re-rendered upon calling Menu#displayTo again. This will prevent the annoying
+			// mouse position reset that happens when you move from inventory to inventory.
+			if(!player.hasMetadata("Ka_Menu"))
+				player.closeInventory();
+			else
+				try {
+					final Method getHandle = ReflectionUtil.getMethod(ReflectionUtil.getOBCClass("CraftPlayer"), "getHandle");
+					Valid.checkNotNull(getHandle, "Failed to find OBC CraftPlayer#getHandle method!");
+					assert getHandle != null;
+					final Class<?> entityHumanClass =  ReflectionUtil.getNMSClass("EntityHuman");
+					final Object entityHumanObject = getHandle.invoke(player); // We assume all {org.bukkit.Player} instances are the OBC variants (no custom players),
+					final Method invCloseHandler = ReflectionUtil.getOBCClass("event.CraftEventFactory").getMethod("handleInventoryCloseEvent", entityHumanClass);
+					invCloseHandler.invoke(null, entityHumanObject);
+				} catch (ReflectiveOperationException ex) {
+					Common.error(ex, "Could not use internal CraftBukkit method to handle menu closing!");
+					player.closeInventory(); // Close the inventory as we would
+				}
+		}
 
 		player.openInventory(inv);
 	}
