@@ -91,7 +91,7 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static String bountifyCapitalizedEnum(String name) {
-		return WordUtils.capitalizeFully(name.toLowerCase());
+		return WordUtils.capitalizeFully(bountify(name.toLowerCase()));
 	}
 
 	/**
