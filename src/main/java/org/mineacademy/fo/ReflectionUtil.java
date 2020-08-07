@@ -657,6 +657,21 @@ public final class ReflectionUtil {
 		return null;
 	}
 
+	public static Method getDeclaredMethod(boolean cache, final Class<?> clazz, final String methodName, Class<?>... args) {
+		try {
+			if (reflectionDataCache.containsKey(clazz)) {
+				return reflectionDataCache.get(clazz).getDeclaredMethod(methodName, cache, args);
+			}
+			if (cache) {
+				return reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new).getDeclaredMethod(methodName, true, args); // Cache the value.
+			}
+			return clazz.getDeclaredMethod(methodName, args);
+		} catch (ReflectiveOperationException ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * Invoke a static method
 	 *
