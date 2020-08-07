@@ -125,6 +125,7 @@ public final class HookManager {
 	private static DiscordSRVHook discordSRVHook;
 	private static boolean nbtAPIDummyHook = false;
 	private static boolean nuVotifierDummyHook = false;
+	private static boolean townyChatDummyHook = false;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Main loading method
@@ -184,6 +185,9 @@ public final class HookManager {
 
 		if (Common.doesPluginExistSilently("Votifier"))
 			nuVotifierDummyHook = true;
+
+		if (Common.doesPluginExistSilently("TownyChat"))
+			townyChatDummyHook = true;
 
 		// DiscordSRV
 		if (Common.doesPluginExistSilently("DiscordSRV"))
@@ -336,7 +340,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isTownyChatLoaded() {
-		return townyHook != null && townyHook.hasChannelPlugin();
+		return townyHook != null && townyChatDummyHook;
 	}
 
 	/**
@@ -732,16 +736,6 @@ public final class HookManager {
 	 */
 	public static List<String> getTowns() {
 		return isTownyLoaded() ? townyHook.getTowns() : new ArrayList<>();
-	}
-
-	/**
-	 * Return the townychat town channel for player or null if none
-	 *
-	 * @param player
-	 * @return
-	 */
-	public static String getTownChannel(final Player player) {
-		return isTownyChatLoaded() ? townyHook.getTownyChannel(player) : null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1476,16 +1470,6 @@ class MultiverseHook {
 }
 
 class TownyHook {
-	private final boolean hasChat;
-	com.palmergames.bukkit.TownyChat.Chat townyChat = null;
-
-	TownyHook() {
-		if (hasChat = Common.doesPluginExistSilently("TownyChat")) {
-			final Plugin p = Bukkit.getServer().getPluginManager().getPlugin("TownyChat");
-			if (p instanceof com.palmergames.bukkit.TownyChat.Chat)
-				townyChat = (com.palmergames.bukkit.TownyChat.Chat) p;
-		}
-	}
 
 	Collection<? extends Player> getTownResidentsOnline(final Player pl) {
 		final List<Player> recipients = new ArrayList<>();
@@ -1549,35 +1533,6 @@ class TownyHook {
 		} catch (final Throwable e) {
 			return null;
 		}
-	}
-
-	boolean hasChannelPlugin() {
-		return hasChat;
-	}
-
-	String getTownyChannel(final Player pl) {
-		try {
-			// Towny chat doesn't have a nice channel manager
-			// this is used for sending directly to a channel, and it calls the async chat event
-			if (townyChat.getTownyPlayerListener().directedChat.containsKey(pl)) {
-				final com.palmergames.bukkit.TownyChat.channels.Channel channel = townyChat.getChannelsHandler().getChannel(pl, townyChat.getTownyPlayerListener().directedChat.get(pl));
-
-				if (channel != null)
-					return channel.getName();
-			}
-
-			for (final com.palmergames.bukkit.TownyChat.channels.Channel channel : townyChat.getChannelsHandler().getAllChannels().values())
-				if (townyChat.getTowny().hasPlayerMode(pl, channel.getName()))
-					return channel.getName();
-
-			final com.palmergames.bukkit.TownyChat.channels.Channel channel = townyChat.getChannelsHandler().getActiveChannel(pl,
-					com.palmergames.bukkit.TownyChat.channels.channelTypes.GLOBAL);
-			return channel == null ? null : channel.getName();
-
-		} catch (final Throwable ex) {
-		}
-
-		return null;
 	}
 
 	private Nation getNation(final Player pl) {
