@@ -2,7 +2,6 @@ package org.mineacademy.fo;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -76,6 +75,8 @@ public final class Common {
 	 * Pattern used to match colors with & or {@link ChatColor#COLOR_CHAR}
 	 */
 	private static final Pattern COLOR_REGEX = Pattern.compile("(?i)(&|" + ChatColor.COLOR_CHAR + ")([0-9A-F])");
+
+	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile(Pattern.quote("{#") + "(.*?)" + Pattern.quote("}"));
 
 	/**
 	 * We use this to send messages with colors to yor console
@@ -545,33 +546,26 @@ public final class Common {
 	 * @return the colored message
 	 */
 	public static String colorize(final String message) {
-		String result = message == null || message.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', message.replace("{prefix}", message.startsWith(Common.tellPrefix) ? "" : Common.removeSurroundingSpaces(Common.tellPrefix.trim())).replace("{server}", SimpleLocalization.SERVER_PREFIX).replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+		if (message == null || message.isEmpty())
+			return "";
 
-		// Don't replace rgb colors when older than 1.16
-		if (!MinecraftVersion.newerThan(MinecraftVersion.V.v1_15))
-			return result;
+		String result = ChatColor.translateAlternateColorCodes('&', message
+				.replace("{prefix}", message.startsWith(Common.tellPrefix) ? "" : Common.removeSurroundingSpaces(Common.tellPrefix.trim()))
+				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
+				.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+
 		// RGB colors
-		final Pattern pattern = Pattern.compile(Pattern.quote("{#") + "(.*?)" + Pattern.quote("}"));
-		final Matcher match = pattern.matcher(result);
-		while (match.find()) {
-			final String colorCode = match.group(1);
-			result = result.replaceAll("\\{#" + colorCode + "\\}", Common.getColor("#" + colorCode).toString());
+		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
+			final Matcher match = RGB_HEX_COLOR_REGEX.matcher(result);
+
+			while (match.find()) {
+				final String colorCode = match.group(1);
+
+				result = result.replaceAll("\\{#" + colorCode + "\\}", net.md_5.bungee.api.ChatColor.of("#" + colorCode).toString());
+			}
 		}
+
 		return result;
-
-	}
-
-	private static net.md_5.bungee.api.ChatColor getColor(@NonNull final String message) {
-		Valid.checkBoolean(MinecraftVersion.newerThan(MinecraftVersion.V.v1_15), "Minecraft version must be newer than 1.15!");
-		try {
-			final Class<?> clazz = net.md_5.bungee.api.ChatColor.class;
-			final Method method = clazz.getMethod("of", String.class);
-			final Object object = method.invoke(null, message);
-			return (net.md_5.bungee.api.ChatColor) object;
-
-		} catch (final Exception e) {
-			return net.md_5.bungee.api.ChatColor.WHITE;
-		}
 	}
 
 	// Remove first and last spaces from the given message
