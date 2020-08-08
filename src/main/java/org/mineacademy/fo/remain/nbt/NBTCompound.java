@@ -508,8 +508,10 @@ public class NBTCompound {
 		try {
 			readLock.lock();
 			final Boolean b = (Boolean) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_HAS_KEY, key);
+
 			if (b == null)
 				return false;
+
 			return b;
 		} finally {
 			readLock.unlock();

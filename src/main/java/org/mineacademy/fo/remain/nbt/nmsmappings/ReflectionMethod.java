@@ -119,10 +119,9 @@ public enum ReflectionMethod {
 			return;
 		compatible = true;
 		Since target = methodnames[0];
-		for (final Since s : methodnames) {
+		for (final Since s : methodnames)
 			if (s.version.getVersionId() <= server.getVersionId() && target.version.getVersionId() < s.version.getVersionId())
 				target = s;
-		}
 		targetVersion = target;
 		try {
 			method = targetClass.getMethod(targetVersion.name, args);
@@ -147,9 +146,11 @@ public enum ReflectionMethod {
 	 */
 	public Object run(Object target, Object... args) {
 		if (method == null)
-			throw new NbtApiException("Method not loaded! '" + this + "'");
+			throw new NbtApiException("Method '" + methodName + "' not loaded! '" + this + "'");
+
 		try {
 			return method.invoke(target, args);
+
 		} catch (final Exception ex) {
 			throw new NbtApiException("Error while calling the method '" + methodName + "', loaded: " + loaded + ", Enum: " + this, ex);
 		}
