@@ -116,6 +116,9 @@ public class NBTReflectionUtil {
 	 */
 	static Object getItemRootNBTTagCompound(final Object nmsitem) {
 		try {
+			if (nmsitem == null)
+				return ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
+
 			final Object answer = ReflectionMethod.NMSITEM_GETTAG.run(nmsitem);
 			return answer != null ? answer : ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 		} catch (final Exception e) {
