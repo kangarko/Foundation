@@ -237,8 +237,10 @@ public final class ItemCreator {
 			// If not revert to wool
 			if (MinecraftVersion.atLeast(V.v1_13))
 				is.setType(Material.valueOf(dye + "_WOOL"));
+
 			else if (MinecraftVersion.atLeast(V.v1_8))
 				applyColors0(color, material, is);
+
 		} else
 			applyColors0(color, material, is);
 
@@ -320,7 +322,9 @@ public final class ItemCreator {
 		if (lores != null && !lores.isEmpty()) {
 			final List<String> coloredLores = new ArrayList<>();
 
-			lores.forEach(line -> coloredLores.add(Common.colorize("&7" + line)));
+			for (final String lore : lores)
+				coloredLores.add(Common.colorize("&7" + lore));
+
 			itemMeta.setLore(coloredLores);
 		}
 
