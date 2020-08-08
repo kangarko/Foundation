@@ -602,6 +602,21 @@ public final class Common {
 	}
 
 	/**
+	 * Remove all {@link ChatColor#COLOR_CHAR} as well as & letter colors from the messages
+	 *
+	 * @param messages
+	 * @return
+	 */
+	public static Collection<String> stripColors(final Collection<String> messages) {
+		final List<String> stripped = new ArrayList<>();
+
+		for (final String message : messages)
+			stripped.add(revertColorizing(message));
+
+		return stripped;
+	}
+
+	/**
 	 * Remove all {@link ChatColor#COLOR_CHAR} as well as & letter colors from the message
 	 *
 	 * @param message
