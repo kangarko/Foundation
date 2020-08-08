@@ -1959,7 +1959,10 @@ class MVdWPlaceholderHook {
 	String replacePlaceholders(final Player player, final String message) {
 		try {
 			final Class<?> placeholderAPI = ReflectionUtil.lookupClass("be.maximvdw.placeholderapi.PlaceholderAPI");
+			Valid.checkNotNull(placeholderAPI, "Failed to look up class be.maximvdw.placeholderapi.PlaceholderAPI");
+
 			final Method replacePlaceholders = ReflectionUtil.getMethod(placeholderAPI, "replacePlaceholders", Player.class, String.class);
+			Valid.checkNotNull(placeholderAPI, "Failed to look up method PlaceholderAPI#replacePlaceholders(Player, String)");
 
 			final String replaced = ReflectionUtil.invoke(replacePlaceholders, null, player, message);
 
