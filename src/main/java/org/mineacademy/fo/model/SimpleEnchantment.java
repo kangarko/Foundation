@@ -29,6 +29,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * Represents a simple way of getting your own enchantments into Minecraft
@@ -326,10 +327,18 @@ public abstract class SimpleEnchantment extends Enchantment {
 			final List<String> originalLore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
 			final List<String> finalLore = new ArrayList<>();
 
+			final List<String> colorlessOriginals = new ArrayList<>();
+
+			for (final String original : originalLore)
+				colorlessOriginals.add(ChatColor.stripColor(Common.colorize(original)));
+
 			// Place our enchants
-			for (final String customEnchant : customEnchants)
-				if (!originalLore.contains(customEnchant))
+			for (final String customEnchant : customEnchants) {
+				final String colorlessEnchant = ChatColor.stripColor(Common.colorize(customEnchant));
+
+				if (!colorlessOriginals.contains(colorlessEnchant))
 					finalLore.add(customEnchant);
+			}
 
 			// Place the original lore at the bottom
 			finalLore.addAll(originalLore);
