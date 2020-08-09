@@ -3,9 +3,6 @@ package org.mineacademy.fo.menu.model;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -410,14 +407,17 @@ public final class ItemCreator {
 
 		final ItemStack head = new ItemStack(CompMaterial.PLAYER_HEAD.getMaterial(), 1, (short) 3);
 		final SkullMeta meta = (SkullMeta) head.getItemMeta();
+		assert meta != null;
 
-		GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
-		Property property = new Property("textures", hash);
-		PropertyMap properties = gameProfile.getProperties();
-		properties.put("textures", property);
-		//final Object gameProfile = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), UUID.randomUUID(), "");
-		//final Object property = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), "textures", hash);
-		//final Object properties = ReflectionUtil.invoke("getProperties", gameProfile);
+
+		//GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
+		//Property property = new Property("textures", hash);
+		//PropertyMap properties = gameProfile.getProperties();
+		//properties.put("textures", property);
+		final Class<?> clazz = ReflectionUtil.lookupClass("com.mojang.authlib.properties.GameProperty");
+		final Object gameProfile = ReflectionUtil.instantiate(clazz, UUID.randomUUID(), "");
+		final Object property = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), "textures", hash);
+		final Object properties = ReflectionUtil.invoke("getProperties", gameProfile);
 
 		ReflectionUtil.invoke("put", properties, "textures", property);
 

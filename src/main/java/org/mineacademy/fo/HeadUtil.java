@@ -2,7 +2,6 @@ package org.mineacademy.fo;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.util.UUIDTypeAdapter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.UtilityClass;
 import org.bukkit.Bukkit;
@@ -11,6 +10,7 @@ import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -73,11 +73,20 @@ public class HeadUtil {
   }
 
   private String fetchSkinHash(final UUID uuid) throws IOException {
-    System.out.println("uuid: " + uuid);
-    final URL url_1 = new URL(
-            SERVICE_URL + UUIDTypeAdapter
-                    .fromUUID(uuid)
-                    + "?unsigned=false");
+    //System.out.println("uuid: " + uuid);
+    final URL url_1;
+    try {
+      Class<?> typeAdapter = ReflectionUtil.lookupClass("com.mojang.util.UUIDTypeAdapter");
+      Method method = ReflectionUtil.getMethod(typeAdapter, "fromUUID");
+      if (method == null) {
+        throw new ReflectionUtil.ReflectionException("Unable to find UUIDTypeAdapter#fromUUID");
+      }
+      url_1 = new URL(ReflectionUtil.invokeStatic(method, uuid) + "?unsigned=false");
+    } catch (ReflectionUtil.ReflectionException ex) {
+      Common.throwError(ex);
+      throw new RuntimeException(); // Common#throw error should have already terminated.
+    }
+
     final InputStreamReader reader_1 = new InputStreamReader(url_1.openStream());
     final JsonObject textureProperty = new JsonParser().parse(reader_1).getAsJsonObject()
             .get("properties").getAsJsonArray().get(0).getAsJsonObject();
