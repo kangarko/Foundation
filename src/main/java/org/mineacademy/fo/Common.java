@@ -76,6 +76,9 @@ public final class Common {
 	 */
 	private static final Pattern COLOR_REGEX = Pattern.compile("(?i)(&|" + ChatColor.COLOR_CHAR + ")([0-9A-F])");
 
+	/**
+	 * Pattern used to match colors with {#HEX} code for MC 1.16+
+	 */
 	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile(Pattern.quote("{#") + "(.*?)" + Pattern.quote("}"));
 
 	/**
