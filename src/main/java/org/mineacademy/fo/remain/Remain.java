@@ -12,20 +12,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.hover.content.Content;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -744,9 +741,7 @@ public final class Remain {
 		try {
 			final BaseComponent[] components = ComponentSerializer.parse(json);
 
-			replaceHexPlaceholders(Arrays.asList(components), placeholders);
-
-			Remain.sendComponent(sender, components);
+			Remain.sendComponent(sender, replaceHexPlaceholders(Arrays.asList(components), placeholders).toArray(new BaseComponent[0]));
 
 		} catch (final RuntimeException ex) {
 			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
@@ -768,14 +763,59 @@ public final class Remain {
 		}
 	}
 
+	/**
+	 * Split text into a a list of BaseComponents based off of hex color declarations.
+	 * I.e `{hex} someText {hex} otherText` would be split into two components.
+	 * @param text The text to split.
+	 * @return Returns a list of base components which have been colorised and represent this text.
+	 */
+	private static List<BaseComponent> resolveNestedHex(final String text) {
+		ComponentBuilder builder = new ComponentBuilder();
+
+		Matcher matcher = RGB_HEX_ENCODED_REGEX.matcher(text);
+
+		while (matcher.find()) {
+			int start = matcher.start();
+			int end = start + 7;
+
+			boolean hasBrackets = false;
+			if (start != 0 && end != text.length()) {
+				hasBrackets = text.charAt(start - 1) == '{' && text.charAt(end) == '}';
+			}
+			//System.out.println(text.substring(start, end));
+			TextComponent component = new TextComponent();
+			String nestedText;
+			if (matcher.find()) {
+				int next = matcher.start();
+				matcher.find(start); // Go back.
+				nestedText = text.substring(end, next);
+			} else {
+				nestedText = text.substring(end);
+			}
+			if (hasBrackets) {
+				nestedText = nestedText.substring(1, nestedText.length() - 1);
+			}
+			component.setColor(net.md_5.bungee.api.ChatColor.of(text.substring(start, end)));
+			component.setText(nestedText);
+			builder.append(component);
+		}
+		return builder.getParts();
+	}
+
 	/*
 	 * A helper Method for MC 1.16+ to partially solve the issue of HEX colors in JSON
 	 *
 	 * BaseComponent does not support colors when in text, they must be set at the color level
 	 */
-	private static void replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
+	private static List<BaseComponent> replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
+
+		List<BaseComponent> list = new LinkedList<>();
 
 		for (final BaseComponent component : components) {
+
+			if (component.getExtra() != null)
+				list.addAll(replaceHexPlaceholders(component.getExtra(), placeholders));
+
 			if (component instanceof TextComponent) {
 				final TextComponent textComponent = (TextComponent) component;
 				String text = textComponent.getText();
@@ -784,33 +824,34 @@ public final class Remain {
 					String key = entry.getKey();
 					String value = Replacer.simplify(entry.getValue());
 
-					// Detect HEX in placeholder
-					final Matcher match = RGB_HEX_ENCODED_REGEX.matcher(text);
-
-					while (match.find()) {
-
-						// Find the color
-						final String color = "#" + match.group(2).replace(ChatColor.COLOR_CHAR + "", "");
-
-						// Remove it from chat and bind it to TextComponent instead
-						value = match.replaceAll("");
-						textComponent.setColor(net.md_5.bungee.api.ChatColor.of(color));
-					}
-
-					key = key.charAt(0) != '{' ? "{" + key : key;
-					key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
-
 					text = text.replace(key, value);
-					textComponent.setText(text);
 				}
+				list.addAll(resolveNestedHex(text));
 			}
 
-			if (component.getExtra() != null)
-				replaceHexPlaceholders(component.getExtra(), placeholders);
-
-			if (component.getHoverEvent() != null)
-				replaceHexPlaceholders(Arrays.asList(component.getHoverEvent().getValue()), placeholders);
+			if (component.getHoverEvent() != null) {
+				HoverEvent event = component.getHoverEvent();
+				List<Content> contents = event.getContents();
+				List<Content> newContents = new ArrayList<>(contents.size());
+				for (Content content : contents) {
+					if (content instanceof Text) {
+						Text text = (Text) content;
+						Object o = text.getValue();
+						if (o instanceof BaseComponent[]) {
+							Content newContent = new Text(replaceHexPlaceholders(Arrays.asList(((BaseComponent[]) o)),placeholders).toArray(new  BaseComponent[0]));
+							newContents.add(newContent);
+						} else {
+							newContents.add(content);
+						}
+					} else {
+						newContents.add(content);
+					}
+				}
+				event.getContents().clear();
+				event.getContents().addAll(newContents);
+			}
 		}
+		return list;
 	}
 
 	/**
@@ -2123,13 +2164,13 @@ class BungeeChatProvider {
 	}
 
 	private static void sendComponent0(final CommandSender sender, final BaseComponent... comps) {
-		String plainMessage = "";
+		StringBuilder plainMessage = new StringBuilder();
 
 		for (final BaseComponent comp : comps)
-			plainMessage += comp.toLegacyText();
+			plainMessage.append(comp.toLegacyText().replaceAll(ChatColor.COLOR_CHAR + "x", ""));
 
 		if (!(sender instanceof Player)) {
-			BungeeChatProvider.tell0(sender, plainMessage);
+			BungeeChatProvider.tell0(sender, plainMessage.toString());
 
 			return;
 		}
@@ -2141,10 +2182,10 @@ class BungeeChatProvider {
 			if (MinecraftVersion.newerThan(V.v1_7))
 				Common.error(ex, "Error printing JSON message, sending as plain.");
 
-			BungeeChatProvider.tell0(sender, plainMessage);
+			BungeeChatProvider.tell0(sender, plainMessage.toString());
 
 		} catch (final Exception ex) {
-			BungeeChatProvider.tell0(sender, plainMessage);
+			BungeeChatProvider.tell0(sender, plainMessage.toString());
 		}
 	}
 
