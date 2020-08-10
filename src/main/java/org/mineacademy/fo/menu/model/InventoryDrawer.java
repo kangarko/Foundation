@@ -1,16 +1,14 @@
 package org.mineacademy.fo.menu.model;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
-
-import lombok.Getter;
 
 import java.lang.reflect.Method;
 
@@ -129,36 +127,60 @@ public final class InventoryDrawer {
 	}
 
 	/**
-	 * Display the inventory to the player, closing older inventory if already opened
+	 * Display the inventory to the player, closing older inventory if already opened, this
+	 * method will attempt to display the inventory in a nicer manner. For the sake of compatibility with
+	 * existing code / existing behaviour this method will not log the error if one has occurred when attempting to do a nice display.
+	 * Invoking this method is the equivalent of calling:
+	 * <pre>
+	 *   display(player, true, false)
+	 * </pre>
 	 *
 	 * @param player the player
+	 * @see #display(Player, boolean, boolean)
 	 */
 	public void display(Player player) {
-		// Automatically append the black color in the menu, can be overriden by colors
+		display(player, true, false);
+	}
+
+	/**
+	 * Display the inventory to the player, closing older inventory if already opened.
+	 * If the previous inventory a player has opened is a {@link org.mineacademy.fo.menu.Menu} this
+	 * method will attempt to display the menu without the "close inventory" animation.
+	 * @param player the player
+	 * @param attemptNiceDisplay Whether a reflection based attempt for nicer handoff which stops the cursor from resetting / inventory close animation from running.
+	 * @param logFailure Whether to log console with the error when trying to display the inventory nicely.
+	 * @return Returns whether the attempt to display the menu nicely was successful.
+	 */
+	public boolean display(Player player, boolean attemptNiceDisplay, boolean logFailure) {
+		// Automatically append the black color in the menu, can be overridden by colors
 		final Inventory inv = Bukkit.createInventory(player, size, Common.colorize("&0" + title));
 
 		inv.setContents(content);
 
-			// Before opening make sure we close his old inventory if exist,
-			// but only if the inventory is NOT a menu. If it is a menu, we can overwrite the contents,
-			// as they will be re-rendered upon calling Menu#displayTo again. This will prevent the annoying
-			// mouse position reset that happens when you move from inventory to inventory.
-			if(!player.hasMetadata("Ka_Menu"))
-				player.closeInventory();
-			else
-				try {
-					final Method getHandle = ReflectionUtil.getMethod(ReflectionUtil.getOBCClass("CraftPlayer"), "getHandle");
-					Valid.checkNotNull(getHandle, "Failed to find OBC CraftPlayer#getHandle method!");
-					assert getHandle != null;
-					final Class<?> entityHumanClass =  ReflectionUtil.getNMSClass("EntityHuman");
-					final Object entityHumanObject = getHandle.invoke(player); // We assume all {org.bukkit.Player} instances are the OBC variants (no custom players),
-					final Method invCloseHandler = ReflectionUtil.getOBCClass("event.CraftEventFactory").getMethod("handleInventoryCloseEvent", entityHumanClass);
-					invCloseHandler.invoke(null, entityHumanObject);
-				} catch (ReflectiveOperationException ex) {
+		// Before opening make sure we close his old inventory if exist,
+		// but only if the inventory is NOT a menu. If it is a menu, we can overwrite the contents,
+		// as they will be re-rendered upon calling Menu#displayTo again. This will prevent the annoying
+		// mouse position reset that happens when you move from inventory to inventory.
+		boolean success = true;
+		if (!player.hasMetadata("Ka_Menu"))
+			player.closeInventory();
+		else if (attemptNiceDisplay)
+			try {
+				final Method getHandle = ReflectionUtil.getMethod(ReflectionUtil.getOBCClass("CraftPlayer"), "getHandle");
+				Valid.checkNotNull(getHandle, "Failed to find OBC CraftPlayer#getHandle method!");
+				assert getHandle != null;
+				final Class<?> entityHumanClass = ReflectionUtil.getNMSClass("EntityHuman");
+				final Object entityHumanObject = getHandle.invoke(player); // We assume all {org.bukkit.Player} instances are the OBC variants (no custom players),
+				final Method invCloseHandler = ReflectionUtil.getOBCClass("event.CraftEventFactory").getMethod("handleInventoryCloseEvent", entityHumanClass);
+				ReflectionUtil.invokeStatic(invCloseHandler, entityHumanObject);
+			} catch (ReflectiveOperationException ex) {
+				if (logFailure)
 					Common.error(ex, "Could not use internal CraftBukkit method to handle menu closing!");
-					player.closeInventory(); // Close the inventory as we would
-				}
+				player.closeInventory(); // Close the inventory as we would without this workaround
+				success = false;
+			}
 		player.openInventory(inv);
+		return success;
 	}
 
 	/**
