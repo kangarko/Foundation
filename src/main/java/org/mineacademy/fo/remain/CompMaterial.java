@@ -19,6 +19,7 @@ import org.mineacademy.fo.exception.FoException;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
  * Heavily inspired by a library made by Hex_27.
@@ -1296,6 +1297,9 @@ public enum CompMaterial {
 	 * @return -see above-
 	 */
 	public final boolean is(final ItemStack comp) {
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			return comp.getType() == material;
+		}
 		return is(comp.getType(), comp.getData().getData());
 	}
 
@@ -1306,6 +1310,9 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public final boolean is(final Block block) {
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			return block.getType() == material;
+		}
 		return block != null && is(block.getType(), block.getData());
 	}
 
@@ -1318,7 +1325,7 @@ public enum CompMaterial {
 	 */
 	public final boolean is(final Material type, final int data) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return type == toMaterial();
+			return type == material;
 
 		if (type == toMaterial() && data == this.data)
 			return true;
@@ -1583,7 +1590,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSkull(final Material mat) {
+	public static boolean isSkull(final Material mat) {
 		final String name = mat.toString();
 
 		return (name.endsWith("_HEAD") || name.endsWith("_SKULL")) && !name.contains("WALL");
@@ -1667,8 +1674,8 @@ public enum CompMaterial {
 			String name = type.toString() + "_SPAWN_EGG";
 
 			// Special cases
-			if (MinecraftVersion.newerThan(V.v1_15) && type == EntityType.ZOMBIFIED_PIGLIN)
-				if (MinecraftVersion.newerThan(V.v1_16)) // PIGMAN
+			if (MinecraftVersion.newerThan(V.v1_15) && type == EntityType.ZOMBIFIED_PIGLIN) // PIGMAN
+				if (MinecraftVersion.newerThan(V.v1_16))
 					name = "ZOMBIFIED_PIGLIN_SPAWN_EGG";
 					else
 					name = "ZOMBIE_PIGMAN_SPAWN_EGG"; // Does not exist post 1.15
@@ -1736,12 +1743,12 @@ public enum CompMaterial {
 	}
 
 	/**
-	 * Creates {@link CompMaterial} class from a given {@link Material}.
+	 * Get the {@link CompMaterial} instance from a given {@link Material} instance.
 	 *
 	 * @param mat
 	 * @return
 	 */
-	public static final CompMaterial fromMaterial(final Material mat) {
+	public static CompMaterial fromMaterial(final Material mat) {
 		try {
 			return CompMaterial.valueOf(mat.toString());
 
@@ -1865,8 +1872,16 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static Material fromId(final int id) {
+		boolean checkLegacy = false;
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			String api_version = SimplePlugin.getInstance().getDescription().getAPIVersion();
+			if (api_version != null) {
+				V declared_version = V.valueOf(api_version.substring(2)); // 1.12 or 1.13+
+				checkLegacy = declared_version == V.v1_12; // If the plugin is running in compatibility mode
+			}
+		}
 		for (final Material mat : Material.values())
-			if (MinecraftVersion.atLeast(V.v1_13)) {
+			if (checkLegacy) {
 				if (mat.toString().startsWith("LEGACY_") && mat.getId() == id)
 					return mat;
 			} else if (mat.getId() == id)
