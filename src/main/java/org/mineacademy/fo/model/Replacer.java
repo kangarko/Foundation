@@ -208,8 +208,8 @@ public final class Replacer {
 		for (final Entry<String, Object> replacement : map.entrySet()) {
 			String key = replacement.getKey();
 
-			key = key.indexOf(0) != '{' ? "{" + key : key;
-			key = key.indexOf(key.length() - 1) != '}' ? key + "}" : key;
+			key = key.charAt(0) != '{' ? "{" + key : key;
+			key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
 
 			message = message.replace(key, simplify(replacement.getValue()));
 		}
