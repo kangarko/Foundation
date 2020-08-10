@@ -622,7 +622,7 @@ public final class HookManager {
 		final Player player = sender instanceof Player ? (Player) sender : null;
 
 		if (player != null && isNPC(player)) {
-			Common.log("&eWarn: Called getNick for NPC! Notify the developers to add an ignore check at " + Debugger.traceRoute(true));
+			Common.log("&eWarn: Called getNick for NPC " + player.getName() + "! Notify the developers to add an ignore check at " + Debugger.traceRoute(true));
 
 			return player.getName();
 		}
@@ -630,9 +630,9 @@ public final class HookManager {
 		if (player == null)
 			return sender.getName();
 
-		final String nickyNick = isNickyLoaded() ? nickyHook.getNick_(player) : null;
-		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNick_(player.getName()) : null;
-		final String cmiNick = isCMILoaded() ? CMIHook.getNick_(player) : null;
+		final String nickyNick = isNickyLoaded() ? nickyHook.getNick(player) : null;
+		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNick(player.getName()) : null;
+		final String cmiNick = isCMILoaded() ? CMIHook.getNick(player) : null;
 
 		return nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
 	}
@@ -1405,7 +1405,7 @@ class EssentialsHook {
 		return null;
 	}
 
-	String getNick_(final String player) {
+	String getNick(final String player) {
 		final User user = getUser(player);
 
 		if (user == null) {
@@ -1936,7 +1936,7 @@ class NickyHook {
 	NickyHook() {
 	}
 
-	String getNick_(final Player player) {
+	String getNick(final Player player) {
 		final Constructor<?> nickConstructor = ReflectionUtil.getConstructor("io.loyloy.nicky.Nick", Player.class);
 		final Object nick = ReflectionUtil.instantiate(nickConstructor, player);
 		String nickname = ReflectionUtil.invoke("get", nick);
@@ -2468,13 +2468,6 @@ class CMIHook {
 		}
 	}
 
-	String getNick_(final Player player) {
-		final CMIUser user = getUser(player);
-		final String nick = user == null ? null : user.getNickName();
-
-		return nick == null || "".equals(nick) ? null : nick;
-	}
-
 	void setGodMode(final Player player, final boolean godMode) {
 		final CMIUser user = getUser(player);
 
@@ -2509,6 +2502,13 @@ class CMIHook {
 		} catch (final NullPointerException ex) {
 			return false;
 		}
+	}
+
+	String getNick(final Player player) {
+		final CMIUser user = getUser(player);
+		final String nick = user == null ? null : user.getNickName();
+
+		return nick == null || "".equals(nick) ? null : nick;
 	}
 
 	private CMIUser getUser(final Player player) {
