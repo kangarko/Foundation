@@ -345,7 +345,7 @@ public final class ReflectionUtil {
 
 	/**
 	 * Return a constructor for the given OBC class. We prepend the class name
-	 * with the {@link #OBC} so you only have to give in the name of the class.
+	 * with the {@link #CRAFTBUKKIT} so you only have to give in the name of the class.
 	 *
 	 * @param obcClass
 	 * @param params
@@ -357,7 +357,7 @@ public final class ReflectionUtil {
 
 	/**
 	 * Return a constructor for the given OBC class. We prepend the class name
-	 * with the {@link #OBC} so you only have to give in the name of the class.
+	 * with {@link #CRAFTBUKKIT} so you only have to give in the name of the class.
 	 *
 	 * @param cache Whether the returned value should be cached for later use.
 	 */
@@ -440,7 +440,6 @@ public final class ReflectionUtil {
 	 * @param clazz
 	 * @param field
 	 * @param instance
-	 * @param type
 	 * @return
 	 */
 	public static <T> T getFieldContent(Class<?> clazz, final String field, final Object instance) {
@@ -689,7 +688,7 @@ public final class ReflectionUtil {
 	 * Invoke a static method
 	 *
 	 * @param <T>
-	 * @param method
+	 * @param methodName
 	 * @param params
 	 * @return
 	 */
@@ -718,7 +717,7 @@ public final class ReflectionUtil {
 	 * Invoke a non static method
 	 *
 	 * @param <T>
-	 * @param method
+	 * @param methodName
 	 * @param instance
 	 * @param params
 	 * @return
@@ -1110,7 +1109,7 @@ public final class ReflectionUtil {
 	public static String getCallerMethods(final int skipMethods, final int count) {
 		final StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 
-		String methods = "";
+		final StringBuilder methods = new StringBuilder();
 		int counted = 0;
 
 		for (int i = 2 + skipMethods; i < elements.length && counted < count; i++) {
@@ -1119,12 +1118,12 @@ public final class ReflectionUtil {
 			if (!el.getMethodName().equals("getCallerMethods") && el.getClassName().indexOf("java.lang.Thread") != 0) {
 				final String[] clazz = el.getClassName().split("\\.");
 
-				methods += clazz[clazz.length == 0 ? 0 : clazz.length - 1] + "#" + el.getLineNumber() + "-" + el.getMethodName() + "()" + (i + 1 == elements.length ? "" : ".");
+				methods.append(clazz[clazz.length == 0 ? 0 : clazz.length - 1]).append("#").append(el.getLineNumber()).append("-").append(el.getMethodName()).append("()").append(i + 1 == elements.length ? "" : ".");
 				counted++;
 			}
 		}
 
-		return methods;
+		return methods.toString();
 	}
 
 	/**
