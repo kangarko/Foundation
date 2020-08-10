@@ -1123,12 +1123,7 @@ public enum CompMaterial {
 	WEEPING_VINES_PLANT("SEEDS"),
 	ZOGLIN_SPAWN_EGG("PIG_SPAWN_EGG"),
 	ZOMBIFIED_PIGLIN_SPAWN_EGG("PIG_ZOMBIE_SPAWN_EGG");
-
-
-
-
-
-
+	
 	// Safety compatibility check
 	public static boolean COMPATIBLE = true;
 
