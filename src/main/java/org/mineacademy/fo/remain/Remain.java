@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -76,9 +78,11 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.UUIDtoNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -102,6 +106,11 @@ import net.md_5.bungee.chat.ComponentSerializer;
  * compatible with MC 1.8.8 up to the latest version.
  */
 public final class Remain {
+
+	/**
+	 * Pattern used to match encoded HEX colors &x&F&F&F&F&F&F
+	 */
+	private static final Pattern RGB_HEX_ENCODED_REGEX = Pattern.compile("(?i)(§x)((§[0-9A-F]){6})");
 
 	// ----------------------------------------------------------------------------------------------------
 	// Methods below
@@ -731,6 +740,19 @@ public final class Remain {
 		return ComponentSerializer.parse(json);
 	}
 
+	public static void sendJson(final CommandSender sender, final String json, SerializedMap placeholders) {
+		try {
+			final BaseComponent[] components = ComponentSerializer.parse(json);
+
+			replaceHexPlaceholders(Arrays.asList(components), placeholders);
+
+			Remain.sendComponent(sender, components);
+
+		} catch (final RuntimeException ex) {
+			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
+		}
+	}
+
 	/**
 	 * Sends JSON component to sender
 	 *
@@ -743,6 +765,51 @@ public final class Remain {
 
 		} catch (final RuntimeException ex) {
 			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
+		}
+	}
+
+	/*
+	 * A helper Method for MC 1.16+ to partially solve the issue of HEX colors in JSON
+	 *
+	 * BaseComponent does not support colors when in text, they must be set at the color level
+	 */
+	private static void replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
+
+		for (final BaseComponent component : components) {
+			if (component instanceof TextComponent) {
+				final TextComponent textComponent = (TextComponent) component;
+				String text = textComponent.getText();
+
+				for (final Map.Entry<String, Object> entry : placeholders.entrySet()) {
+					String key = entry.getKey();
+					String value = Replacer.simplify(entry.getValue());
+
+					// Detect HEX in placeholder
+					final Matcher match = RGB_HEX_ENCODED_REGEX.matcher(text);
+
+					while (match.find()) {
+
+						// Find the color
+						final String color = "#" + match.group(2).replace(ChatColor.COLOR_CHAR + "", "");
+
+						// Remove it from chat and bind it to TextComponent instead
+						value = match.replaceAll("");
+						textComponent.setColor(net.md_5.bungee.api.ChatColor.of(color));
+					}
+
+					key = key.charAt(0) != '{' ? "{" + key : key;
+					key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
+
+					text = text.replace(key, value);
+					textComponent.setText(text);
+				}
+			}
+
+			if (component.getExtra() != null)
+				replaceHexPlaceholders(component.getExtra(), placeholders);
+
+			if (component.getHoverEvent() != null)
+				replaceHexPlaceholders(Arrays.asList(component.getHoverEvent().getValue()), placeholders);
 		}
 	}
 
