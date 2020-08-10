@@ -139,8 +139,6 @@ public final class InventoryDrawer {
 
 		inv.setContents(content);
 
-		// Before opening make sure we close his old inventory if exist
-		if (player.getOpenInventory() != null) { // FIXME This will never be null as it will return the CraftingInventory - JD for HumanEntity#getOpenInventory
 			// Before opening make sure we close his old inventory if exist,
 			// but only if the inventory is NOT a menu. If it is a menu, we can overwrite the contents,
 			// as they will be re-rendered upon calling Menu#displayTo again. This will prevent the annoying
@@ -160,8 +158,6 @@ public final class InventoryDrawer {
 					Common.error(ex, "Could not use internal CraftBukkit method to handle menu closing!");
 					player.closeInventory(); // Close the inventory as we would
 				}
-		}
-
 		player.openInventory(inv);
 	}
 
