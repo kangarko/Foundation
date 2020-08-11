@@ -166,7 +166,7 @@ public final class ItemUtil {
 		boolean dataMatch = !LEGACY_MATERIALS || first.getData().getData() == second.getData().getData();
 		final boolean metaMatch = first.hasItemMeta() == second.hasItemMeta();
 
-		if (!idMatch || !metaMatch || !(dataMatch || (dataMatch = first.getType() == Material.BOW)))
+		if (!idMatch || !metaMatch || !(dataMatch || first.getType() == Material.BOW))
 			return false;
 
 		// ItemMeta
@@ -195,7 +195,7 @@ public final class ItemUtil {
 		if (!firstHas && !secondHas)
 			return true; // nothing has, essentially same
 
-		else if (firstHas && !secondHas || !firstHas && secondHas)
+		else if (!firstHas || !secondHas)
 			return false; // one has but another hasn't, cannot be same
 
 		return firstNbt.getString(key).equals(secondNbt.getString(key));
