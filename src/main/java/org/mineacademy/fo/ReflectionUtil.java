@@ -316,7 +316,7 @@ public final class ReflectionUtil {
 	 */
 	public static Method getMethod(final Class<?> clazz, final String methodName, final Integer args) {
 		for (final Method method : clazz.getMethods())
-			if (method.getName().equals(methodName) && args.equals(new Integer(method.getParameterTypes().length))) {
+			if (method.getName().equals(methodName) && args.equals(method.getParameterTypes().length)) {
 				method.setAccessible(true);
 
 				return method;
@@ -541,7 +541,7 @@ public final class ReflectionUtil {
 		Valid.checkNotNull(enumType, "Type missing for " + name);
 		Valid.checkNotNull(name, "Name missing for " + enumType);
 
-		final String rawName = new String(name).toUpperCase().replace(" ", "_");
+		final String rawName = name.toUpperCase().replace(" ", "_");
 
 		// Some compatibility workaround for ChatControl, Boss, CoreArena and other plugins
 		// having these values in their default config. This prevents
