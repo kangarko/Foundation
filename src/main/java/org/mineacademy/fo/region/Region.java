@@ -33,7 +33,7 @@ public class Region implements ConfigSerializable {
 	 */
 	@Setter
 	@Nullable
-	private final String name;
+	private String name;
 
 	/**
 	 * The primary region position
