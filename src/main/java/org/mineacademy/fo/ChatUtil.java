@@ -85,9 +85,7 @@ public final class ChatUtil {
 			if (c == '&') {
 				previousCode = true;
 
-				continue;
-
-			} else if (previousCode == true) {
+			} else if (previousCode) {
 				previousCode = false;
 
 				if (c == 'l' || c == 'L') {
@@ -115,7 +113,7 @@ public final class ChatUtil {
 		int compensated = 0;
 
 		while (compensated < toCompensate) {
-			builder.append(spaceColor.toString() + space);
+			builder.append(spaceColor.toString()).append(space);
 
 			compensated += spaceLength;
 		}
@@ -141,18 +139,17 @@ public final class ChatUtil {
 	 */
 	public static String[] verticalCenter(final Collection<String> messages) {
 		final List<String> lines = new ArrayList<>();
-		final long padding = MathUtil.ceiling((VISIBLE_CHAT_LINES - messages.size()) / 2);
+		final long padding = MathUtil.ceiling((float) (VISIBLE_CHAT_LINES - messages.size()) / 2);
 
 		for (int i = 0; i < padding; i++)
 			lines.add(RandomUtil.nextColorOrDecoration());
 
-		for (final String message : messages)
-			lines.add(message);
+		lines.addAll(messages);
 
 		for (int i = 0; i < padding; i++)
 			lines.add(RandomUtil.nextColorOrDecoration());
 
-		return lines.toArray(new String[lines.size()]);
+		return lines.toArray(new String[0]);
 	}
 
 	/**
@@ -216,11 +213,11 @@ public final class ChatUtil {
 		for (String sentence : sentences)
 			try {
 				if (sentence.length() > 2)
-					if (!isDomain(message.split("\\s")[0]) && sentence.length() > 2 && Character.isUpperCase(sentence.charAt(0)) && Character.isLowerCase(sentence.charAt(2)))
-						sentence = sentence.substring(0, 1) + sentence.substring(1, 2).toLowerCase() + sentence.substring(2);
+					if (!isDomain(message.split("\\s")[0]) && Character.isUpperCase(sentence.charAt(0)) && Character.isLowerCase(sentence.charAt(2)))
+						sentence = sentence.charAt(0) + sentence.substring(1, 2).toLowerCase() + sentence.substring(2);
 
 				tempMessage = tempMessage + sentence + " ";
-			} catch (final NullPointerException ex) {
+			} catch (final NullPointerException ignored) {
 			}
 		return tempMessage.trim();
 	}
@@ -236,14 +233,14 @@ public final class ChatUtil {
 			return 0;
 
 		final String[] sentences = Common.stripColors(message).split(" ");
-		String messageToCheck = "";
+		StringBuilder messageToCheck = new StringBuilder();
 		double upperCount = 0;
 
 		for (final String sentence : sentences)
 			if (!isDomain(sentence))
-				messageToCheck += sentence + " ";
+				messageToCheck.append(sentence).append(" ");
 
-		for (final char ch : messageToCheck.toCharArray())
+		for (final char ch : messageToCheck.toString().toCharArray())
 			if (Character.isUpperCase(ch))
 				upperCount++;
 
