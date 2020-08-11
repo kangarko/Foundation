@@ -108,7 +108,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return plugin's version
 	 */
-	public static final String getVersion() {
+	public static String getVersion() {
 		return getInstance().getDescription().getVersion();
 	}
 
@@ -117,7 +117,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return plugin's name
 	 */
-	public static final String getNamed() {
+	public static String getNamed() {
 		return hasInstance() ? getInstance().getName() : "No instance yet";
 	}
 
@@ -126,7 +126,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return plugin's jar file
 	 */
-	public static final File getSource() {
+	public static File getSource() {
 		return getInstance().getFile();
 	}
 
@@ -135,7 +135,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return plugins' data folder in plugins/
 	 */
-	public static final File getData() {
+	public static File getData() {
 		return getInstance().getDataFolder();
 	}
 
@@ -146,7 +146,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param label
 	 * @return
 	 */
-	public static final boolean isMainCommand(final String label) {
+	public static boolean isMainCommand(final String label) {
 		return getInstance().getMainCommand() != null && getInstance().getMainCommand().getLabel().equals(label);
 	}
 
@@ -156,7 +156,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return if the instance has been set.
 	 */
-	public static final boolean hasInstance() {
+	public static boolean hasInstance() {
 		return instance != null;
 	}
 
@@ -443,10 +443,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * A dirty way of checking if Foundation has been shaded correctly
 	 */
-	private final void checkShading() {
+	private void checkShading() {
 		try {
 			throw new ShadingException();
-		} catch (final Throwable t) {
+		} catch (final Throwable ignored) {
 		}
 	}
 
@@ -466,12 +466,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				System.out.println(Common.consoleLine());
 				System.out.println("We have a class path problem in the Foundation library");
 				System.out.println("preventing " + getDescription().getName() + " from loading correctly!");
-				System.out.println("");
+				System.out.println();
 				System.out.println("This is likely caused by two plugins having the");
 				System.out.println("same Foundation library paths - make sure you");
 				System.out.println("relocale the package! If you are testing using");
 				System.out.println("Ant, only test one plugin at the time.");
-				System.out.println("");
+				System.out.println();
 				System.out.println("Possible cause: " + SimplePlugin.getNamed());
 				System.out.println("Foundation package: " + SimplePlugin.class.getPackage().getName());
 				System.out.println(Common.consoleLine());
@@ -487,21 +487,21 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	private final boolean checkLibraries0() {
+	private boolean checkLibraries0() {
 		boolean md_5 = false;
 		boolean gson = false;
 
 		try {
 			Class.forName("net.md_5.bungee.api.chat.BaseComponent");
 			md_5 = true;
-		} catch (final ClassNotFoundException ex) {
+		} catch (final ClassNotFoundException ignored) {
 		}
 
 		try {
 			Class.forName("com.google.gson.JsonSyntaxException");
 			gson = true;
 
-		} catch (final ClassNotFoundException ex) {
+		} catch (final ClassNotFoundException ignored) {
 		}
 
 		if (!md_5 || !gson) {
@@ -525,7 +525,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	private final boolean checkServerVersions0() {
+	private boolean checkServerVersions0() {
 
 		// Call the static block to test compatibility early
 		if (!MinecraftVersion.getCurrent().isTested()) {
@@ -766,7 +766,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 	}
 
-	private final void unregisterReloadables() {
+	private void unregisterReloadables() {
 		SimpleSettings.resetSettingsCall();
 		SimpleLocalization.resetLocalizationCall();
 
@@ -777,7 +777,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		try {
 			HookManager.removePacketListeners(this);
-		} catch (final NoClassDefFoundError ex) {
+		} catch (final NoClassDefFoundError ignored) {
 		}
 
 		getServer().getMessenger().unregisterIncomingPluginChannel(this);
@@ -1135,7 +1135,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		throw new FoException("Cannot call reloadConfig in " + getName() + ", use reload()!");
 	}
 
-	private final FoException unsupported(final String method) {
+	private FoException unsupported(final String method) {
 		return new FoException("Cannot call " + method + " in " + getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
 	}
 }
