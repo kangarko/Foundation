@@ -18,12 +18,15 @@ public final class HealthBarUtil {
 	/**
 	 * The default prefix and suffix
 	 */
-	private static String PREFIX = "&8[", SUFFIX = "&8]";
+	private static final String PREFIX = "&8[";
+	private static final String SUFFIX = "&8]";
 
 	/**
 	 * The default health bar colors
 	 */
-	private static ChatColor REMAINING_COLOR = ChatColor.DARK_RED, TOTAL_COLOR = ChatColor.GRAY, DEAD_COLOR = ChatColor.BLACK;
+	private static final ChatColor REMAINING_COLOR = ChatColor.DARK_RED;
+	private static final ChatColor TOTAL_COLOR = ChatColor.GRAY;
+	private static final ChatColor DEAD_COLOR = ChatColor.BLACK;
 
 	/**
 	 * Formats and displays the health bar as action bar.
@@ -64,10 +67,10 @@ public final class HealthBarUtil {
 		}
 
 		// Fill max health - remaining
-		String max = "";
+		StringBuilder max = new StringBuilder();
 		{
 			for (int i = 0; i < maxHealth - left.length(); i++)
-				max += "|";
+				max.append("|");
 		}
 
 		return PREFIX + REMAINING_COLOR + left + TOTAL_COLOR + max + SUFFIX;
@@ -80,14 +83,14 @@ public final class HealthBarUtil {
 
 	/* Fills up the graphic if the health is 0 */
 	private static String formatDeath(final int maxHealth) {
-		String max = "";
+		StringBuilder max = new StringBuilder();
 
 		if (maxHealth > 30)
-			max = "-0-";
+			max = new StringBuilder("-0-");
 
 		else
 			for (int i = 0; i < maxHealth; i++)
-				max += "|";
+				max.append("|");
 
 		return PREFIX + DEAD_COLOR + max + SUFFIX;
 	}
