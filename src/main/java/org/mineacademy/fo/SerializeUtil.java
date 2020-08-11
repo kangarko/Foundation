@@ -2,12 +2,7 @@ package org.mineacademy.fo;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -90,9 +85,6 @@ public final class SerializeUtil {
 		else if (obj instanceof PotionEffect)
 			return serializePotionEffect((PotionEffect) obj);
 
-		else if (obj instanceof ItemCreator.ItemCreatorBuilder)
-			return ((ItemCreator.ItemCreatorBuilder) obj).build().make();
-
 		else if (obj instanceof ItemCreator)
 			return ((ItemCreator) obj).make();
 
@@ -110,14 +102,6 @@ public final class SerializeUtil {
 					serialized.add(serialize(element));
 
 			return serialized;
-		} else if (obj instanceof StrictMap) {
-			final StrictMap<Object, Object> oldMap = (StrictMap<Object, Object>) obj;
-			final StrictMap<Object, Object> newMap = new StrictMap<>();
-
-			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
-				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
-
-			return newMap;
 		} else if (obj instanceof Map) {
 			final Map<Object, Object> oldMap = (Map<Object, Object>) obj;
 			final Map<Object, Object> newMap = new HashMap<>();
@@ -126,13 +110,7 @@ public final class SerializeUtil {
 				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
 
 			return newMap;
-		} else if (obj instanceof YamlConfig)
-			throw new FoException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
-
-		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
-				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
-				|| obj instanceof ItemStack
-				|| obj instanceof MemorySection)
+		} else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long || obj instanceof String || obj instanceof Boolean || obj instanceof ItemStack || obj instanceof MemorySection)
 			return obj;
 
 		else if (obj instanceof ConfigurationSerializable)
@@ -232,15 +210,14 @@ public final class SerializeUtil {
 					joinedClasses.add(param.getClass());
 			}
 
-			deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", joinedClasses.toArray(new Class[joinedClasses.size()]));
+			deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", joinedClasses.toArray(new Class[0]));
 
 			final List<Object> joinedParams = new ArrayList<>();
 
 			{ // Build parameter instances
 				joinedParams.add(map);
 
-				for (final Object param : deserializeParameters)
-					joinedParams.add(param);
+				joinedParams.addAll(Arrays.asList(deserializeParameters));
 			}
 
 			if (deserializeMethod != null) {
@@ -251,7 +228,7 @@ public final class SerializeUtil {
 		}
 
 		// Step 3 - Search for "getByName" method used by us or some Bukkit classes such as Enchantment
-		if (deserializeMethod == null && object instanceof String) {
+		if (object instanceof String) {
 			deserializeMethod = ReflectionUtil.getMethod(classOf, "getByName", String.class);
 
 			if (deserializeMethod != null)
