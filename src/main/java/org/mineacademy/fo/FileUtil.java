@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -73,7 +74,7 @@ public final class FileUtil {
 		int pos = path.lastIndexOf("/");
 
 		if (pos > 0)
-			path = path.substring(pos + 1, path.length());
+			path = path.substring(pos + 1);
 
 		pos = path.lastIndexOf(".");
 
@@ -124,7 +125,7 @@ public final class FileUtil {
 	private static File createFile(String path) {
 		final File datafolder = SimplePlugin.getInstance().getDataFolder();
 		final int lastIndex = path.lastIndexOf('/');
-		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
+		final File directory = new File(datafolder, path.substring(0, Math.max(lastIndex, 0)));
 
 		directory.mkdirs();
 
@@ -172,7 +173,7 @@ public final class FileUtil {
 
 		final String finalExtension = extension;
 
-		return dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+		return dataFolder.listFiles(file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
 	}
 
 	/**
@@ -372,7 +373,7 @@ public final class FileUtil {
 			} catch (final ClosedByInterruptException ex) {
 				try (BufferedWriter bw = new BufferedWriter(new FileWriter(to, true))) {
 					for (final String line : lines)
-						bw.append(System.lineSeparator() + line);
+						bw.append(System.lineSeparator()).append(line);
 
 				} catch (final IOException e) {
 					e.printStackTrace();
@@ -590,12 +591,11 @@ public final class FileUtil {
 	public static String getMD5Checksum(File filename) {
 		try {
 			final byte[] b = createChecksum(filename);
-			String result = "";
+			StringBuilder result = new StringBuilder();
 
-			for (int i = 0; i < b.length; i++)
-				result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+			for (byte value : b) result.append(Integer.toString((value & 0xff) + 0x100, 16).substring(1));
 
-			return result;
+			return result.toString();
 		} catch (final Exception ex) {
 			ex.printStackTrace();
 			return "";
