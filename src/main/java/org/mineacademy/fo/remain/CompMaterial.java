@@ -1203,7 +1203,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public final boolean is(final Block block) {
-		return block == null ? false : is(block.getType(), block.getData());
+		return block != null && is(block.getType(), block.getData());
 	}
 
 	/**
@@ -1222,10 +1222,7 @@ public enum CompMaterial {
 
 		final CompMaterial compMat = fromMaterial(type);
 
-		if (isDamageable(compMat) && toMaterial() == type)
-			return true;
-
-		return false;
+		return isDamageable(compMat) && toMaterial() == type;
 	}
 
 	/**
