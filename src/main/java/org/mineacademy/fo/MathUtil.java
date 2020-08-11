@@ -1,10 +1,8 @@
 package org.mineacademy.fo;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -86,7 +84,14 @@ public final class MathUtil {
 	 * @return
 	 */
 	public static int max(int... numbers) {
-		return Arrays.stream(numbers).max().getAsInt();
+		IntStream array = Arrays.stream(numbers);
+		OptionalInt optionalInt = array.max();
+
+		if (!optionalInt.isPresent()) {
+			return -1;
+		}
+
+		return optionalInt.getAsInt();
 	}
 
 	/**
@@ -145,7 +150,7 @@ public final class MathUtil {
 	 * @return
 	 */
 	public static double atLeast(final double value, final double min) {
-		return value > min ? value : min;
+		return Math.max(value, min);
 	}
 
 	/**
@@ -156,7 +161,7 @@ public final class MathUtil {
 	 * @return
 	 */
 	public static int atLeast(final int value, final int min) {
-		return value > min ? value : min;
+		return Math.max(value, min);
 	}
 
 	/**
