@@ -31,6 +31,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -381,7 +382,7 @@ public final class PlayerUtil {
 			try {
 				player.setGlowing(false);
 				player.setSilent(false);
-			} catch (final NoSuchMethodError err) {
+			} catch (final NoSuchMethodError ignored) {
 			}
 
 			player.setAllowFlight(false);
@@ -395,8 +396,9 @@ public final class PlayerUtil {
 			player.setVelocity(new Vector(0, 0, 0));
 			player.eject();
 
-			if (player.isInsideVehicle())
+			if (player.isInsideVehicle()) {
 				player.getVehicle().remove();
+			}
 
 			try {
 				for (final Entity passenger : player.getPassengers())
@@ -641,7 +643,7 @@ public final class PlayerUtil {
 	 */
 	public static ItemStack getFirstItem(final Player player, final ItemStack item) {
 		for (final ItemStack otherItem : player.getInventory().getContents())
-			if (otherItem != null && ItemUtil.isSimilar(otherItem, item))
+			if (ItemUtil.isSimilar(otherItem, item))
 				return otherItem;
 
 		return null;
@@ -675,7 +677,7 @@ public final class PlayerUtil {
 	 */
 	public static boolean takeFirstOnePiece(final Player player, final CompMaterial material) {
 		for (final ItemStack item : player.getInventory().getContents())
-			if (item != null && CompMaterial.fromLegacy(item.getType().toString(), item.getData().getData()) == material) {
+			if (CompMaterial.fromLegacy(item.getType().toString(), item.getData().getData()) == material) {
 				takeOnePiece(player, item);
 
 				return true;
@@ -710,7 +712,7 @@ public final class PlayerUtil {
 		int foundSize = 0;
 
 		for (final ItemStack item : player.getInventory().getContents())
-			if (item != null && item.getType() == material.getMaterial())
+			if (item.getType() == material.getMaterial())
 				foundSize += item.getAmount();
 
 		return foundSize >= atLeastSize;
@@ -730,7 +732,7 @@ public final class PlayerUtil {
 		for (int i = 0; i < inv.getSize(); i++) {
 			final ItemStack slot = inv.getItem(i);
 
-			if (slot != null && ItemUtil.isSimilar(slot, search)) {
+			if (ItemUtil.isSimilar(slot, search)) {
 				inv.setItem(i, replaceWith);
 
 				return true;
@@ -798,7 +800,7 @@ public final class PlayerUtil {
 
 			while (true) {
 				// Do we already have a stack of it?
-				final int maxAmount = oversizedStacks > item.getType().getMaxStackSize() ? oversizedStacks : item.getType().getMaxStackSize();
+				final int maxAmount = Math.max(oversizedStacks, item.getType().getMaxStackSize());
 				final int firstPartial = firstPartial(inventory, item, maxAmount);
 
 				// Drat! no partial stack
