@@ -217,7 +217,7 @@ public enum CompSound {
 	BLOCK_DISPENSER_LAUNCH("LEVEL_UP", "DISPENSER_LAUNCH", "BLOCK_DISPENSER_LAUNCH"),
 	ENTITY_ITEMFRAME_BREAK("STEP_WOOL", "BLOCK_CLOTH_STEP", "BLOCK_WOOL_STEP", "ENTITY_ITEMFRAME_BREAK");
 
-	private String[] versionDependentNames;
+	private final String[] versionDependentNames;
 	private org.bukkit.Sound cached = null;
 
 	CompSound(String... versionDependentNames) {
@@ -303,7 +303,7 @@ public enum CompSound {
 	 *
 	 * @return the level up sound
 	 */
-	public static final Sound getFallback() {
+	public static Sound getFallback() {
 		return Sound.valueOf(MinecraftVersion.atLeast(V.v1_9) ? "ENTITY_PLAYER_LEVELUP" : "LEVEL_UP");
 	}
 
@@ -320,14 +320,18 @@ public enum CompSound {
 		if (MinecraftVersion.atLeast(V.v1_9))
 			try {
 				return Sound.valueOf(soundName.toUpperCase());
-			} catch (final IllegalArgumentException ex) {
+			} catch (final IllegalArgumentException ignored) {
 			}
 
 		// If not, try to find the corresponding new sound
-		for (final CompSound compSound : values())
-			for (final String name : compSound.versionDependentNames)
-				if (name.equalsIgnoreCase(soundName))
+		for (final CompSound compSound : values()) {
+			for (final String name : compSound.versionDependentNames) {
+				if (name.equalsIgnoreCase(soundName)) {
 					sound = compSound;
+					break;
+				}
+			}
+		}
 
 		return sound != null ? sound.getSound() : getFallback();
 	}
