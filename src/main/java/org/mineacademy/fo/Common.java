@@ -39,6 +39,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
@@ -1261,8 +1262,8 @@ public final class Common {
 		while (throwable.getCause() != null)
 			throwable = throwable.getCause();
 
-		final String throwableName = throwable == null ? "Unknown error." : throwable.getClass().getSimpleName();
-		final String throwableMessage = throwable == null || throwable.getMessage() == null || throwable.getMessage().isEmpty() ? "" : ": " + throwable.getMessage();
+		final String throwableName = throwable.getClass().getSimpleName();
+		final String throwableMessage = throwable.getMessage() == null || throwable.getMessage().isEmpty() ? "" : ": " + throwable.getMessage();
 
 		for (int i = 0; i < msgs.length; i++)
 			msgs[i] = msgs[i].replace("%error", throwableName + throwableMessage);
@@ -1306,12 +1307,12 @@ public final class Common {
 	 */
 	public static boolean regExMatch(final Matcher matcher) {
 		try {
-			return matcher != null ? matcher.find() : false;
+			return matcher != null && matcher.find();
 
 		} catch (final RegexTimeoutException ex) {
-			FileUtil.writeFormatted(FoConstants.File.ERRORS, null, "Matching timed out (bad regex?) (plugin ver. " + SimplePlugin.getVersion() + ")! \nString checked: " + ex.getCheckedMessage() + "\nRegex: " + (matcher != null ? matcher.pattern().pattern() : "null") + "");
+			FileUtil.writeFormatted(FoConstants.File.ERRORS, null, "Matching timed out (bad regex?) (plugin ver. " + SimplePlugin.getVersion() + ")! \nString checked: " + ex.getCheckedMessage() + "\nRegex: " + matcher.pattern().pattern() + "");
 
-			Common.logFramed(false, "&cRegex check took too long! (allowed: " + SimpleSettings.REGEX_TIMEOUT + "ms)", "&cRegex:&f " + (matcher != null ? matcher.pattern().pattern() : matcher), "&cMessage:&f " + ex.getCheckedMessage());
+			Common.logFramed(false, "&cRegex check took too long! (allowed: " + SimpleSettings.REGEX_TIMEOUT + "ms)", "&cRegex:&f " + matcher.pattern().pattern(), "&cMessage:&f " + ex.getCheckedMessage());
 
 			return false;
 		}
@@ -1374,7 +1375,7 @@ public final class Common {
 				pattern = instance.regexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
 
 		} catch (final PatternSyntaxException ex) {
-			Common.throwError(ex, "Malformed regex: \'" + regex + "\'", "Use online services (like &fregex101.com&f) for fixing errors");
+			Common.throwError(ex, "Malformed regex: '" + regex + "'", "Use online services (like &fregex101.com&f) for fixing errors");
 
 			return null;
 		}
@@ -1454,12 +1455,12 @@ public final class Common {
 	 * @return
 	 */
 	public static String joinRange(final int start, final int stop, final String[] array, final String delimiter) {
-		String joined = "";
+		StringBuilder joined = new StringBuilder();
 
 		for (int i = start; i < MathUtil.range(stop, 0, array.length); i++)
-			joined += (joined.isEmpty() ? "" : delimiter) + array[i];
+			joined.append((joined.length() == 0) ? "" : delimiter).append(array[i]);
 
-		return joined;
+		return joined.toString();
 	}
 
 	/**
@@ -1523,7 +1524,7 @@ public final class Common {
 	 * @return
 	 */
 	public static <T extends CommandSender> String joinPlayers(final Iterable<T> array) {
-		return Common.join(array, ", ", (Stringer<T>) CommandSender::getName);
+		return Common.join(array, ", ", CommandSender::getName);
 	}
 
 	/**
@@ -1561,16 +1562,16 @@ public final class Common {
 	 */
 	public static <T> String join(final Iterable<T> array, final String delimiter, final Stringer<T> stringer) {
 		final Iterator<T> it = array.iterator();
-		String message = "";
+		StringBuilder message = new StringBuilder();
 
 		while (it.hasNext()) {
 			final T next = it.next();
 
 			if (next != null)
-				message += stringer.toString(next) + (it.hasNext() ? delimiter : "");
+				message.append(stringer.toString(next)).append(it.hasNext() ? delimiter : "");
 		}
 
-		return message;
+		return message.toString();
 	}
 
 	/**
@@ -1697,7 +1698,7 @@ public final class Common {
 	 */
 	public static <OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> Map<NEW_KEY, NEW_VALUE> convert(final Map<OLD_KEY, OLD_VALUE> oldMap, final MapToMapConverter<OLD_KEY, OLD_VALUE, NEW_KEY, NEW_VALUE> converter) {
 		final Map<NEW_KEY, NEW_VALUE> newMap = new HashMap<>();
-		oldMap.entrySet().forEach(e -> newMap.put(converter.convertKey(e.getKey()), converter.convertValue(e.getValue())));
+		oldMap.forEach((key, value) -> newMap.put(converter.convertKey(key), converter.convertValue(value)));
 
 		return newMap;
 	}
@@ -1996,14 +1997,11 @@ public final class Common {
 			}
 		}
 
-		if (index != -1) {
-			final int nextIndex = index + (forward ? 1 : -1);
+		final int nextIndex = index + (forward ? 1 : -1);
 
-			// Return the first slot if reached the end, or the last if vice versa
-			return nextIndex >= array.length ? array[0] : nextIndex < 0 ? array[array.length - 1] : array[nextIndex];
-		}
+		// Return the first slot if reached the end, or the last if vice versa
+		return nextIndex >= array.length ? array[0] : nextIndex < 0 ? array[array.length - 1] : array[nextIndex];
 
-		return null;
 	}
 
 	/**
@@ -2013,7 +2011,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String[] toArray(final Collection<String> array) {
-		return array.toArray(new String[array.size()]);
+		return array.toArray(new String[0]);
 	}
 
 	/**
@@ -2022,6 +2020,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
+	@SafeVarargs
 	public static <T> ArrayList<T> toList(final T... array) {
 		return new ArrayList<>(Arrays.asList(array));
 	}
@@ -2034,7 +2033,7 @@ public final class Common {
 	 */
 	public static <T> List<T> toList(final Iterable<T> it) {
 		final List<T> list = new ArrayList<>();
-		it.forEach(el -> list.add(el));
+		it.forEach(list::add);
 
 		return list;
 	}
@@ -2242,7 +2241,7 @@ public final class Common {
 	public static boolean callEvent(final Event event) {
 		Bukkit.getPluginManager().callEvent(event);
 
-		return event instanceof Cancellable ? !((Cancellable) event).isCancelled() : true;
+		return !(event instanceof Cancellable) || !((Cancellable) event).isCancelled();
 	}
 
 	/**
