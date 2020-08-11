@@ -95,12 +95,12 @@ public final class RandomUtil {
 	 * @return
 	 */
 	public static String nextString(final int minLength, final int maxLength) {
-		String message = "";
+		StringBuilder message = new StringBuilder();
 
 		for (int i = 0; i < minLength + random.nextInt(maxLength); i++)
-			message += ENGLISH_LETTERS[random.nextInt(ENGLISH_LETTERS.length)];
+			message.append(ENGLISH_LETTERS[random.nextInt(ENGLISH_LETTERS.length)]);
 
-		return message;
+		return message.toString();
 	}
 
 	/**
@@ -202,12 +202,7 @@ public final class RandomUtil {
 
 		// Remove values failing the condition
 		if (condition != null)
-			for (final Iterator<T> it = list.iterator(); it.hasNext();) {
-				final T item = it.next();
-
-				if (!condition.test(item))
-					it.remove();
-			}
+			list.removeIf(item -> !condition.test(item));
 
 		return list.get(nextInt(list.size()));
 	}
@@ -227,9 +222,8 @@ public final class RandomUtil {
 
 		final double x = randomRadius * Math.cos(theta) * Math.sin(phi);
 		final double z = randomRadius * Math.cos(phi);
-		final Location newLoc = origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 
-		return newLoc;
+		return origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 	}
 
 	/**
