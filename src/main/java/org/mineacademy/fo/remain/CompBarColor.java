@@ -10,5 +10,5 @@ public enum CompBarColor {
 	GREEN,
 	YELLOW,
 	PURPLE,
-	WHITE;
+	WHITE
 }
