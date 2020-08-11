@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
@@ -32,7 +33,7 @@ public class Region implements ConfigSerializable {
 	 */
 	@Setter
 	@Nullable
-	private String name;
+	private final String name;
 
 	/**
 	 * The primary region position
@@ -167,9 +168,12 @@ public class Region implements ConfigSerializable {
 
 		for (int cx = xMin; cx <= xMax; ++cx)
 			for (int cz = zMin; cz <= zMax; ++cz)
-				for (final Entity entity : getWorld().getChunkAt(cx, cz).getEntities())
-					if (entity.isValid() && entity.getLocation() != null && isWithin(entity.getLocation()))
-						found.add(entity);
+				for (final Entity entity : getWorld().getChunkAt(cx, cz).getEntities()) {
+					if (entity.isValid()) {
+						entity.getLocation();
+						if (isWithin(entity.getLocation())) found.add(entity);
+					}
+				}
 
 		return found;
 	}
@@ -182,12 +186,6 @@ public class Region implements ConfigSerializable {
 	public final World getWorld() {
 		if (!isWhole())
 			return null;
-
-		if (primary != null && secondary == null)
-			return Bukkit.getWorld(primary.getWorld().getName());
-
-		if (secondary != null && primary == null)
-			return Bukkit.getWorld(secondary.getWorld().getName());
 
 		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Worlds of this region not the same: " + primary.getWorld() + " != " + secondary.getWorld());
 		return Bukkit.getWorld(primary.getWorld().getName());
