@@ -339,8 +339,6 @@ public abstract class SimpleCommandGroup {
 					final String usage = colorizeUsage(subcommand.getUsage());
 					final String desc = Common.getOrEmpty(subcommand.getDescription());
 
-					System.out.println("Sublabel: " + subcommand.getSublabel());
-
 					tellNoPrefix(" &f/" + getLabel() + " " + subcommand.getSublabel() + " " + (usage.isEmpty() ? "" : usage + " ") + (!desc.isEmpty() ? "&e- " + desc : ""));
 					shown++;
 				}
