@@ -167,7 +167,7 @@ public enum ParticleInternals {
 			}
 
 			try {
-				packet = ParticleInternals.nmsPacketPlayOutParticle.getConstructor(ParticleInternals.nmsEnumParticle, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class).newInstance(ReflectionUtil.getEnum(ParticleInternals.nmsEnumParticle.getName() + "." + (this.enumValue != null ? this.enumValue : this.name().toUpperCase())), true, (float) location.getX(), (float) location.getY(),
+				packet = ParticleInternals.nmsPacketPlayOutParticle.getConstructor(ParticleInternals.nmsEnumParticle, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class).newInstance(getEnum(ParticleInternals.nmsEnumParticle.getName() + "." + (this.enumValue != null ? this.enumValue : this.name().toUpperCase())), true, (float) location.getX(), (float) location.getY(),
 						(float) location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra);
 			} catch (final ReflectiveOperationException ex) {
 				return;
@@ -200,6 +200,32 @@ public enum ParticleInternals {
 		}
 
 		Remain.sendPacket(player, packet);
+	}
+
+	/**
+	 * Advanced: Attempts to find an enum by its full qualified name
+	 *
+	 * @param enumFullName
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	private static Enum<?> getEnum(final String enumFullName) {
+		final String[] x = enumFullName.split("\\.(?=[^\\.]+$)");
+
+		if (x.length == 2) {
+			final String enumClassName = x[0];
+			final String enumName = x[1];
+
+			try {
+				final Class<Enum> cl = (Class<Enum>) Class.forName(enumClassName);
+
+				return Enum.valueOf(cl, enumName);
+			} catch (final ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return null;
 	}
 
 	/**

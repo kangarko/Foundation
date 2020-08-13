@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Valid;
@@ -298,7 +297,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getEnchants(path);
 	}
 
-	protected static final StrictList<Material> getMaterialList(final String path) {
+	protected static final StrictList<CompMaterial> getMaterialList(final String path) {
 		return TEMPORARY_INSTANCE.getMaterialList(path);
 	}
 

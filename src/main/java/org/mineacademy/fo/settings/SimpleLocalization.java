@@ -307,12 +307,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			// Upgrade from old path
-			if (isSetAbsolute("Update_Available")) {
-				pathPrefix(null);
+			pathPrefix(null);
 
+			// Upgrade from old path
+			if (isSetAbsolute("Update_Available"))
 				move("Update_Available", "Update.Available");
-			}
 
 			pathPrefix("Update");
 

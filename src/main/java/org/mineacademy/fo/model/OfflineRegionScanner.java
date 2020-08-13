@@ -125,7 +125,7 @@ public abstract class OfflineRegionScanner {
 		if (watchdog != null)
 			watchdog.resume();
 
-		LagCatcher.end("Region scanner for " + world.getName(), 0);
+		LagCatcher.end("Region scanner for " + world.getName(), true);
 	}
 
 	/**
