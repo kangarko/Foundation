@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -15,11 +14,11 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
-import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
  * Heavily inspired by a library made by Hex_27.
@@ -890,6 +889,7 @@ public enum CompMaterial {
 	ZOMBIE_SPAWN_EGG("MONSTER_EGG", 54),
 	ZOMBIE_VILLAGER_SPAWN_EGG("MONSTER_EGG"),
 	ZOMBIE_WALL_HEAD("SKULL"),
+
 	// Added 15.03.2019
 	BRAIN_CORAL_WALL_FAN("STONE"),
 	DEAD_BRAIN_CORAL("STONE"),
@@ -911,6 +911,7 @@ public enum CompMaterial {
 	DEAD_BUBBLE_CORAL("STONE"),
 	DEAD_BUBBLE_CORAL_FAN("STONE"),
 	DEAD_BUBBLE_CORAL_WALL_FAN("STONE"),
+
 	// Added 09.05.2019 - MC 1.14
 	ACACIA_WALL_SIGN("WALL_SIGN"),
 	BIRCH_WALL_SIGN("WALL_SIGN"),
@@ -956,17 +957,17 @@ public enum CompMaterial {
 	LEATHER_HORSE_ARMOR("IRON_BARDING", "IRON_HORSE_ARMOR", 0),
 	RAVAGER_SPAWN_EGG("MONSTER_EGG", "SHEEP_SPAWN_EGG", 0),
 	PILLAGER_SPAWN_EGG("MONSTER_EGG", "SHEEP_SPAWN_EGG", 0),
+
 	// Added 08.08.2020
 	SCAFFOLDING("LADDER"),
 	LANTERN("FLOWER_POT"),
 	LECTERN("BOOKSHELF"),
-	END_STONE_BRICK_SLAB("STEP","STONE_SLAB",0),
+	END_STONE_BRICK_SLAB("STEP", "STONE_SLAB", 0),
 	END_STONE_BRICK_STAIRS("COBBLESTONE_STAIRS", 0),
 	END_STONE_BRICK_WALL("COBBLESTONE_WALL"),
 	GRANITE_SLAB("STEP", "STONE_SLAB", 0),
 	GRANITE_STAIRS("COBBLESTONE_STAIRS", 0),
 	GRANITE_WALL("COBBLESTONE_WALL"),
-
 	FLETCHING_TABLE("CRAFTING_TABLE"),
 	FLOWER_BANNER_PATTERN("STONE"),
 	GLOBE_BANNER_PATTERN("STONE"),
@@ -1102,7 +1103,7 @@ public enum CompMaterial {
 	TARGET("HAY_BLOCk"),
 	TWISTING_VINES("VINE"),
 	TWISTING_VINES_PLANT("SEEDS"),
-	WARPED_BUTTON("WOODEN_BUTTON",0),
+	WARPED_BUTTON("WOODEN_BUTTON", 0),
 	WARPED_DOOR("OAK_DOOR"),
 	WARPED_FENCE("FENCE", 0),
 	WARPED_FENCE_GATE("FENCE_GATE", 0),
@@ -1124,9 +1125,10 @@ public enum CompMaterial {
 	WEEPING_VINES_PLANT("SEEDS"),
 	ZOGLIN_SPAWN_EGG("PIG_SPAWN_EGG"),
 	ZOMBIFIED_PIGLIN_SPAWN_EGG("PIG_ZOMBIE_SPAWN_EGG"),
+
 	// Added 12.8.2020 - MC 1.16.2
 	PIGLIN_BRUTE_SPAWN_EGG("PIGLIN_SPAWN_EGG");
-	
+
 	// Safety compatibility check
 	public static boolean COMPATIBLE = true;
 
@@ -1299,9 +1301,8 @@ public enum CompMaterial {
 	 * @return -see above-
 	 */
 	public final boolean is(final ItemStack comp) {
-		if (MinecraftVersion.atLeast(V.v1_13)) {
+		if (MinecraftVersion.atLeast(V.v1_13))
 			return comp.getType() == material;
-		}
 		return is(comp.getType(), comp.getData().getData());
 	}
 
@@ -1312,9 +1313,8 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public final boolean is(final Block block) {
-		if (MinecraftVersion.atLeast(V.v1_13)) {
+		if (MinecraftVersion.atLeast(V.v1_13))
 			return block.getType() == material;
-		}
 		return block != null && is(block.getType(), block.getData());
 	}
 
@@ -1354,9 +1354,8 @@ public enum CompMaterial {
 	 */
 	public static boolean isDamageable(final CompMaterial type) {
 		Valid.checkNotNull(type);
-		if (MinecraftVersion.atLeast(V.v1_13)) { // Use the newer api if possible.
+		if (MinecraftVersion.atLeast(V.v1_13))
 			return type.toItem().getItemMeta() instanceof org.bukkit.inventory.meta.Damageable;
-		}
 
 		switch (type.toString()) {
 			case "HELMET":
@@ -1396,9 +1395,8 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static boolean isAir(final Material material) {
-		if (MinecraftVersion.atLeast(V.v1_13)) {
+		if (MinecraftVersion.atLeast(V.v1_13))
 			return material.isAir();
-		}
 		return material == Material.AIR;
 	}
 
@@ -1679,7 +1677,7 @@ public enum CompMaterial {
 			if (MinecraftVersion.newerThan(V.v1_15) && type == EntityType.ZOMBIFIED_PIGLIN) // PIGMAN
 				if (MinecraftVersion.newerThan(V.v1_16))
 					name = "ZOMBIFIED_PIGLIN_SPAWN_EGG";
-					else
+				else
 					name = "ZOMBIE_PIGMAN_SPAWN_EGG"; // Does not exist post 1.15
 			else if (type == EntityType.MUSHROOM_COW)
 				name = "MOOSHROOM_SPAWN_EGG";
@@ -1745,21 +1743,26 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Get the {@link CompMaterial} instance from a given {@link ItemStack} instance.
+	 *
+	 * @param item
+	 * @return
+	 */
+	public static CompMaterial fromItem(ItemStack item) {
+		if (MinecraftVersion.atLeast(V.v1_13))
+			return fromMaterial(item.getType());
+
+		return fromLegacy(item.getType().toString(), item.getData().getData());
+	}
+
+	/**
 	 * Get the {@link CompMaterial} instance from a given {@link Material} instance.
 	 *
 	 * @param mat
 	 * @return
 	 */
 	public static CompMaterial fromMaterial(final Material mat) {
-		try {
-			return CompMaterial.valueOf(mat.toString());
-
-		} catch (final IllegalArgumentException e) {
-			for (final CompMaterial compMat : CompMaterial.values())
-				if (compMat.legacyName.equals(mat.toString()))
-					return compMat;
-		}
-		return null;
+		return fromString(mat.toString());
 	}
 
 	/**
@@ -1876,9 +1879,9 @@ public enum CompMaterial {
 	public static Material fromId(final int id) {
 		boolean checkLegacy = false;
 		if (MinecraftVersion.atLeast(V.v1_13)) {
-			String api_version = SimplePlugin.getInstance().getDescription().getAPIVersion();
+			final String api_version = SimplePlugin.getInstance().getDescription().getAPIVersion();
 			if (api_version != null) {
-				V declared_version = V.valueOf(api_version.substring(2)); // 1.12 or 1.13+
+				final V declared_version = V.valueOf(api_version.substring(2)); // 1.12 or 1.13+
 				checkLegacy = declared_version == V.v1_12; // If the plugin is running in compatibility mode
 			}
 		}
