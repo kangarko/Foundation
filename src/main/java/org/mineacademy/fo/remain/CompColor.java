@@ -46,7 +46,7 @@ public enum CompColor {
 	/**
 	 * The light gray color, previously silver (compatible for all MC versions)
 	 */
-	GRAY(ReflectionUtil.getEnum("LIGHT_GRAY", "SILVER", DyeColor.class), null, "SILVER"),
+	GRAY(getEnum("LIGHT_GRAY", "SILVER", DyeColor.class), null, "SILVER"),
 
 	/**
 	 * The dark gray color, called gray for dyecolor
@@ -149,6 +149,24 @@ public enum CompColor {
 	// Static access
 	// ----------------------------------------------------------------------------------------------------
 
+	/**
+	 * Attempts to lookup an enum by its primary name, if fails then by secondary
+	 * name, if fails than returns null
+	 *
+	 * @param newName
+	 * @param oldName
+	 * @param clazz
+	 * @return
+	 */
+	private static <T extends Enum<T>> T getEnum(final String newName, final String oldName, final Class<T> clazz) {
+		T en = ReflectionUtil.lookupEnumSilent(clazz, newName);
+
+		if (en == null)
+			en = ReflectionUtil.lookupEnumSilent(clazz, oldName);
+
+		return en;
+	}
+	
 	/**
 	 * Make new compatible dye from wool data
 	 *
