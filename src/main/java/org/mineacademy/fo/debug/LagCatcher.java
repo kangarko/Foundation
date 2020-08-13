@@ -1,28 +1,35 @@
 package org.mineacademy.fo.debug;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * A simple yet effective way to calculate duration
  * between two points in code
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LagCatcher {
 
 	/**
-	 * Stores the name of a code section and the initial time in ms when
-	 * it was put there
+	 * Stores sections with the time time they started to be measured
 	 */
-	private static final HashMap<String, Long> timings = new HashMap<>();
+	private static final StrictMap<String, Long> startTimesMap = new StrictMap<>();
 
-	private LagCatcher() {
-	}
+	/**
+	 * Stores sections with a list of lag durations for each section
+	 */
+	private static final StrictMap<String, List<Long>> durationsMap = new StrictMap<>();
 
 	/**
 	 * Puts the code section with the current ms time to the timings map
@@ -33,7 +40,7 @@ public final class LagCatcher {
 		if (SimpleSettings.LAG_THRESHOLD_MILLIS == -1)
 			return;
 
-		timings.put(section, System.nanoTime());
+		startTimesMap.put(section, System.nanoTime());
 	}
 
 	/**
@@ -55,44 +62,7 @@ public final class LagCatcher {
 	 * @param rapid
 	 */
 	public static void end(String section, boolean rapid) {
-		end(section, rapid ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS);
-	}
-
-	/**
-	 * Stops measuring time in a code section and print a console message
-	 * when it took over the given threshold
-	 *
-	 * @param section
-	 * @param thresholdMs
-	 */
-	public static void end(String section, int thresholdMs) {
-		end(section, thresholdMs, "{section} took {time} ms");
-	}
-
-	/**
-	 * Stops measuring time in a code section and print a console message.
-	 *
-	 * @param section
-	 * @param message
-	 */
-	public static void end(String section, String message) {
-		final double lag = finishAndCalculate(section);
-
-		message = message.replace("{section}", section);
-		message = message.replace("{time}", MathUtil.formatTwoDigits(lag));
-
-		Common.log(message);
-	}
-
-	/**
-	 * Stops measuring time in a code section and print a console message.
-	 *
-	 * @param section section to stop
-	 */
-	public static void endPrint(String section) {
-		final double lag = finishAndCalculate(section);
-
-		Common.log(section + " took " + MathUtil.formatTwoDigits(lag));
+		end(section, rapid ? 0 : SimpleSettings.LAG_THRESHOLD_MILLIS, "{section} took {time} ms");
 	}
 
 	/**
@@ -120,20 +90,6 @@ public final class LagCatcher {
 	}
 
 	/**
-	 * Returns the time in milliseconds how long a measured section section took.
-	 * <p>
-	 * This does NOT stop the section from being measured.
-	 *
-	 * @param section
-	 * @return the time in 00.000 format, in milliseconds, or 0 if not measured
-	 */
-	public static double endTook(String section) {
-		final Long nanoTime = timings.get(section);
-
-		return calculate(nanoTime);
-	}
-
-	/**
 	 * Attempts to run the given code the given amount of cycles rapidly
 	 * after each other, compounding the lag time together to see how long the
 	 * execution takes when it is multiplied
@@ -142,7 +98,9 @@ public final class LagCatcher {
 	 * @param name   the lag section name
 	 * @param code
 	 */
-	public static void testPerformance(int cycles, String name, Runnable code) {
+	public static void performanceTest(int cycles, String name, Runnable code) {
+		Valid.checkBoolean(cycles > 0, "Cycles must be above 0");
+
 		LagCatcher.start(name + "-whole");
 
 		final List<Double> lagMap = new ArrayList<>();
@@ -154,6 +112,57 @@ public final class LagCatcher {
 		}
 
 		System.out.println("Test '" + name + "' took " + MathUtil.formatTwoDigits(finishAndCalculate(name + "-whole")) + " ms. Average " + MathUtil.average(lagMap) + " ms");
+
+		// Measure individual sub sections of the performance test
+		if (!durationsMap.isEmpty()) {
+			for (final Map.Entry<String, List<Long>> entry : durationsMap.entrySet()) {
+				final String section = entry.getKey();
+				long duration = 0;
+
+				for (final long sectionDuration : entry.getValue())
+					duration += sectionDuration;
+
+				System.out.println("\tSection '" + section + "' took " + MathUtil.formatTwoDigits(duration / 1_000_000D));
+			}
+
+			System.out.println("Section measurement ended.");
+
+			durationsMap.clear();
+		}
+	}
+
+	/**
+	 * Work like {@link #start(String)} method except that this will accumulate every time
+	 * you call it and show in {@link #performanceTest(int, String, Runnable)}!
+	 *
+	 * @param section
+	 */
+	public static void performancePartStart(String section) {
+		final List<Long> sectionDurations = durationsMap.getOrPut(section, new ArrayList<>());
+
+		// Do not calculate duration, just append last time at the end
+		sectionDurations.add(System.nanoTime());
+	}
+
+	/**
+	 * Work like {@link #start(String)} method except that this will accumulate every time
+	 * you call it and show in {@link #performanceTest(int, String, Runnable)}!
+	 *
+	 * This will catch the duration of the last {@link #performancePartStart(String)} call
+	 * and put the lag to the map shown after performance test has ended.
+	 *
+	 * @param section
+	 */
+	public static void performancePartSnap(String section) {
+		Valid.checkBoolean(durationsMap.contains(section), "Section " + section + " is not measured! Are you calling it from performanceTest?");
+
+		final List<Long> sectionDurations = durationsMap.get(section);
+
+		final int index = sectionDurations.size() - 1;
+		final long nanoTime = sectionDurations.get(index);
+		final long duration = System.nanoTime() - nanoTime;
+
+		sectionDurations.set(index, duration);
 	}
 
 	/**
@@ -162,13 +171,9 @@ public final class LagCatcher {
 	 * @param section
 	 * @return
 	 */
-	public static double finishAndCalculate(String section) {
-		final Long nanoTime = timings.remove(section);
+	private static double finishAndCalculate(String section) {
+		final Long nanoTime = startTimesMap.remove(section);
 
-		return calculate(nanoTime);
-	}
-
-	private static double calculate(Long nanoTime) {
 		return nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D;
 	}
 }
