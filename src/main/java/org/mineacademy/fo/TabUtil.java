@@ -37,6 +37,7 @@ public final class TabUtil {
 	 * @param all
 	 * @return
 	 */
+	@SafeVarargs
 	public static <T> List<String> complete(String partialName, T... all) {
 		final List<String> clone = new ArrayList<>();
 

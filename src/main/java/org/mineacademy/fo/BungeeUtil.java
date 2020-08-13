@@ -126,7 +126,7 @@ public final class BungeeUtil {
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
 		for (final Object data : datas) {
-			Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", (Stringer<Object>) t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
+			Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
 
 			if (data instanceof Integer)
 				out.writeInt((Integer) data);

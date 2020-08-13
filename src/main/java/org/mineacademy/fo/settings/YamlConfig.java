@@ -279,7 +279,6 @@ public class YamlConfig implements ConfigSerializable {
 				YamlConfiguration defaultsConfig = null;
 
 				// We will have the default file to return to
-				// This enables auto config update
 				if (from != null) {
 					final InputStream is = FileUtil.getInternalResource(from);
 					Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
@@ -1155,14 +1154,14 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected final StrictList<Material> getMaterialList(final String path) {
-		final StrictList<Material> list = new StrictList<>();
+	protected final StrictList<CompMaterial> getMaterialList(final String path) {
+		final StrictList<CompMaterial> list = new StrictList<>();
 
 		for (final String raw : getStringList(path)) {
 			final CompMaterial mat = CompMaterial.fromStringCompat(raw);
 
 			if (mat != null)
-				list.add(mat.getMaterial());
+				list.add(mat);
 		}
 
 		return list;

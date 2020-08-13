@@ -312,7 +312,7 @@ public final class PlayerUtil {
 	 * @return
 	 */
 	public static boolean hasPerm(@NonNull final Permissible sender, @Nullable final String permission) {
-		return permission == null || sender.hasPermission(permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+		return permission == null || sender.hasPermission(!permission.contains("{plugin.name}") ? permission : permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

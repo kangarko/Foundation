@@ -215,6 +215,8 @@ public final class MathUtil {
 	 * @return
 	 */
 	public static double average(final Double... values) {
+		Valid.checkBoolean(values.length > 0, "No values given!");
+
 		double sum = 0;
 
 		for (final double val : values)

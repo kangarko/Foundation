@@ -203,11 +203,10 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * @param operation
 	 */
 	private void logPerformance(final String operation) {
-		final double took = LagCatcher.endTook("mysql");
 		final boolean isMainThread = Bukkit.isPrimaryThread();
 
 		LagCatcher.end("mysql", isMainThread ? 10 : MathUtil.atLeast(200, SimpleSettings.LAG_THRESHOLD_MILLIS),
-				WordUtils.capitalize(operation) + " data to MySQL took {time} ms" + (took > 10 && isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
+				WordUtils.capitalize(operation) + " data to MySQL took {time} ms" + (isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
 	}
 
 	/**

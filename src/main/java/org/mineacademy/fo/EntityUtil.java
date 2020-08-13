@@ -244,7 +244,7 @@ class HitTracking implements Listener {
 	 * List of flying projectiles with code to run on impact,
 	 * stop tracking after 30 seconds to prevent overloading the map
 	 */
-	private static ExpiringMap<UUID, HitListener> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
+	private static final ExpiringMap<UUID, HitListener> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
 
 	/**
 	 * Invoke the hit listener when the registered projectile hits something
