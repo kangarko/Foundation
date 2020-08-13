@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Damageable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -18,6 +19,7 @@ import org.mineacademy.fo.exception.FoException;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
  * Heavily inspired by a library made by Hex_27.
@@ -1019,8 +1021,112 @@ public enum CompMaterial {
 	HONEYCOMB("STONE"),
 	HONEYCOMB_BLOCK("STONE"),
 	HONEY_BLOCK("SLIME_BLOCK"),
-	HONEY_BOTTLE("BOTTLE");
+	HONEY_BOTTLE("BOTTLE"),
 
+	// Added 8.8.202 - MC 1.16
+	ANCIENT_DEBRIS("BEDROCK"),
+	BASALT("STONE"),
+	BLACKSTONE("STONE"),
+	BLACKSTONE_SLAB("STEP", "COBBLESTONE_SLAB", 0),
+	BLACKSTONE_STAIRS("COBBLESTONE_STAIRS", 0),
+	BLACKSTONE_WALL("COBBLESTONE_WALL"),
+	CHAIN("IRON_BARS"),
+	CHISELED_NETHER_BRICKS("NETHER_BRICKS"),
+	CHISELED_POLISHED_BLACKSTONE("STONE"),
+	CRACKED_NETHER_BRICKS("NETHER_BRICKS"),
+	CRACKED_POLISHED_BLACKSTONE_BRICKS("CRACKED_STONE_BRICKS"),
+	CRIMSON_BUTTON("BUTTON", 0),
+	CRIMSON_DOOR("DOOR", "OAK_DOOR", 0),
+	CRIMSON_FENCE("FENCE", "NETHER_BRICK_FENCE", 0),
+	CRIMSON_FENCE_GATE("FENCE_GATE", "NETHER_BRICK_FENCE_GATE", 0),
+	CRIMSON_FUNGUS("RED_MUSHROOM"),
+	CRIMSON_HYPHAE("NETHERRACK"),
+	CRIMSON_NYLIUM("NETHERRACK"),
+	CRIMSON_PLANKS("OAK_PLANKS"),
+	CRIMSON_PRESSURE_PLATE("WOODEN_PRESSURE_PLATE"),
+	CRIMSON_ROOTS("GRASS"),
+	CRIMSON_SIGN("SIGN"),
+	CRIMSON_WALL_SIGN("WALL_SIGN"),
+	CRIMSON_SLAB("STEP", "COBBLESTONE_SLAB", 0),
+	CRIMSON_STAIRS("COBBLESTONE_STAIRS", 0),
+	CRIMSON_STEM("LOG"),
+	CRIMSON_TRAPDOOR("TRAPDOOR", 0),
+	CRYING_OBSIDIAN("OBSIDIAN"),
+	GILDED_BLACKSTONE("STONE"),
+	HOGLIN_SPAWN_EGG("PIG_SPAWN_EGG"),
+	LODESTONE("STONE"),
+	MUSIC_DISC_PIGSTEP("GOLD_RECORD"), // Arbitrary choice between the first 2 discs
+	NETHERITE_AXE("DIAMOND_AXE"),
+	NETHERITE_BLOCK("NETHERRACK"),
+	NETHERITE_BOOTS("DIAMOND_BOOTS"),
+	NETHERITE_CHESTPLATE("DIAMOND_CHESTPLATE"),
+	NETHERITE_HELME("DIAMOND_HELEMET"),
+	NETHERITE_HOE("DIAMOND_HOE"),
+	NETHERITE_INGOT("DIAMOND"),
+	NETHERITE_LEGGINGS("DIAMOND_LEGGINGS"),
+	NETHERITE_PICKAXE("DIAMOND_PICKAXE"),
+	NETHERITE_SCRAP("PAPER"),
+	NETHERITE_SHOVEL("DIAMOND_SHOVEL"),
+	NETHERITE_SWORD("DIAMOND_SWORD"),
+	NETHER_GOLD_ORE("GOLD_ORE"),
+	NETHER_SPROUTS("AIR"),
+	PIGLIN_BANNER_PATTERN("STONE"),
+	PIGLIN_SPAWN_EGG("PIG_ZOMBIE_SPAWN_EGG"),
+	POLISHED_BASALT("STONE"),
+	POLISHED_BLACKSTONE("STONE"),
+	POLISHED_BLACKSTONE_BRICKS("STONE_BRICKS"),
+	POLISHED_BLACKSTONE_BRICK_SLAB("STEP", "COBBLESTONE_SLAB", 0),
+	POLISHED_BLACKSTONE_BRICK_STAIRS("COBBLESTONE_STAIRS"),
+	POLISHED_BLACKSTONE_BRICK_WALL("COBBLESTONE_WALL"),
+	POLISHED_BLACKSTONE_BUTTON("STONE_BUTTON", 0),
+	POLISHED_BLACKSTONE_PRESSURE_PLATE("STONE_PRESSURE_PLATE"),
+	POLISHED_BLACKSTONE_SLAB("STEP", "COBBLESTONE_SLAB", 0),
+	POLISHED_BLACKSTONE_STAIRS("COBBLESTONE_STAIRS", 0),
+	POLISHED_BLACKSTONE_WALL("COBBLESTONE_WALL"),
+	POTTED_CRIMSON_FUNGUS("FLOWER_POT"),
+	POTTED_CRIMSON_ROOTS("FLOWER_POT"),
+	POTTED_WARPED_FUNGUS("FLOWER_POT"),
+	POTTED_WARPED_ROOTS("FLOWER_POT"),
+	QUARTZ_BRICKS("QUARTZ_BLOCk"),
+	RESPAWN_ANCHOR("OBSIDIAN"),
+	SHROOMLIGHT("GLOWSTONE"),
+	SOUL_CAMPFIRE("FIRE"),
+	SOUL_FIRE("FIRE"),
+	SOUL_LANTERN("FLOWER_POT"),
+	SOUL_WALL_TORCH("TORCH", 1),
+	STRIDER_SPAWN_EGG("PIG_SPAWN_EGG"),
+	STRIPPED_CRIMSON_HYPHAE("LOG"),
+	STRIPPED_CRIMSON_STEM("GRASS"),
+	STRIPPED_WARPED_HYPHAE("LOG"),
+	STRIPPED_WARPED_STEM("LOG"),
+	TARGET("HAY_BLOCk"),
+	TWISTING_VINES("VINE"),
+	TWISTING_VINES_PLANT("SEEDS"),
+	WARPED_BUTTON("WOODEN_BUTTON",0),
+	WARPED_DOOR("OAK_DOOR"),
+	WARPED_FENCE("FENCE", 0),
+	WARPED_FENCE_GATE("FENCE_GATE", 0),
+	WARPED_FUNGUS("BROWN_MUSHROOM"),
+	WARPED_FUNGUS_ON_A_STICK("CARROT_ON_A_STICK"),
+	WARPED_HYPHAE("LOG"),
+	WARPED_NYLIUM("LOG"),
+	WARPED_PLANKS("PLANKS"),
+	WARPED_PRESSURE_PLATE("WOODEN_PRESSURE_PLATE"),
+	WARPED_ROOTS("GRASS"),
+	WARPED_SIGN("SIGN"),
+	WARPED_SLAB("STEP", "COBBLESTONE_SLAB", 0),
+	WARPED_STAIRS("COBBLESTONE_STAIRS", 0),
+	WARPED_STEM("LOG"),
+	WARPED_TRAPDOOR("TRAPDOOR"),
+	WARPED_WALL_SIGN("WALL_SIGN"),
+	WARPED_WART_BLOCK("NETHERRACK"),
+	WEEPING_VINES("VINE"),
+	WEEPING_VINES_PLANT("SEEDS"),
+	ZOGLIN_SPAWN_EGG("PIG_SPAWN_EGG"),
+	ZOMBIFIED_PIGLIN_SPAWN_EGG("PIG_ZOMBIE_SPAWN_EGG"),
+	// Added 12.8.2020 - MC 1.16.2
+	PIGLIN_BRUTE_SPAWN_EGG("PIGLIN_SPAWN_EGG");
+	
 	// Safety compatibility check
 	public static boolean COMPATIBLE = true;
 
@@ -1074,7 +1180,7 @@ public enum CompMaterial {
 	 *
 	 * @param legacyName
 	 */
-	private CompMaterial(final String legacyName) {
+	CompMaterial(final String legacyName) {
 		this(legacyName, null, 0);
 	}
 
@@ -1084,7 +1190,7 @@ public enum CompMaterial {
 	 * @param legacyName
 	 * @param data
 	 */
-	private CompMaterial(final String legacyName, final int data) {
+	CompMaterial(final String legacyName, final int data) {
 		this(legacyName, null, data);
 	}
 
@@ -1095,7 +1201,7 @@ public enum CompMaterial {
 	 * @param alternativeName alternative name or null if none
 	 * @param data
 	 */
-	private CompMaterial(final String legacyName, final String alternativeName, final int data) {
+	CompMaterial(final String legacyName, final String alternativeName, final int data) {
 		this.legacyName = legacyName;
 		this.alternativeName = alternativeName;
 		this.data = data;
@@ -1193,6 +1299,9 @@ public enum CompMaterial {
 	 * @return -see above-
 	 */
 	public final boolean is(final ItemStack comp) {
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			return comp.getType() == material;
+		}
 		return is(comp.getType(), comp.getData().getData());
 	}
 
@@ -1203,7 +1312,10 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public final boolean is(final Block block) {
-		return block == null ? false : is(block.getType(), block.getData());
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			return block.getType() == material;
+		}
+		return block != null && is(block.getType(), block.getData());
 	}
 
 	/**
@@ -1215,17 +1327,14 @@ public enum CompMaterial {
 	 */
 	public final boolean is(final Material type, final int data) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return type == toMaterial();
+			return type == material;
 
 		if (type == toMaterial() && data == this.data)
 			return true;
 
 		final CompMaterial compMat = fromMaterial(type);
 
-		if (isDamageable(compMat) && toMaterial() == type)
-			return true;
-
-		return false;
+		return isDamageable(compMat) && toMaterial() == type;
 	}
 
 	/**
@@ -1243,7 +1352,12 @@ public enum CompMaterial {
 	 * @param type
 	 * @return
 	 */
-	public static final boolean isDamageable(final CompMaterial type) {
+	public static boolean isDamageable(final CompMaterial type) {
+		Valid.checkNotNull(type);
+		if (MinecraftVersion.atLeast(V.v1_13)) { // Use the newer api if possible.
+			return type.toItem().getItemMeta() instanceof org.bukkit.inventory.meta.Damageable;
+		}
+
 		switch (type.toString()) {
 			case "HELMET":
 			case "CHESTPLATE":
@@ -1259,6 +1373,7 @@ public enum CompMaterial {
 			case "TRIDENT":
 			case "HORSE_ARMOR":
 			case "SHEARS":
+				return true;
 			default:
 				return false;
 		}
@@ -1270,7 +1385,7 @@ public enum CompMaterial {
 	 * @param block
 	 * @return
 	 */
-	public static final boolean isAir(final Block block) {
+	public static boolean isAir(final Block block) {
 		return block == null || isAir(block.getType());
 	}
 
@@ -1280,8 +1395,11 @@ public enum CompMaterial {
 	 * @param material
 	 * @return
 	 */
-	public static final boolean isAir(final Material material) {
-		return material == null || nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR");
+	public static boolean isAir(final Material material) {
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			return material.isAir();
+		}
+		return material == Material.AIR;
 	}
 
 	/**
@@ -1290,7 +1408,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isHorseArmor(final Material mat) {
+	public static boolean isHorseArmor(final Material mat) {
 		return nameEquals(mat, "BARDING", "HORSE_ARMOR");
 	}
 
@@ -1300,7 +1418,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isCarpet(final Material mat) {
+	public static boolean isCarpet(final Material mat) {
 		return nameContains(mat, "CARPET");
 	}
 
@@ -1310,7 +1428,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLeaves(final Material mat) {
+	public static boolean isLeaves(final Material mat) {
 		return mat.toString().endsWith("_LEAVES") || nameEquals(mat, "LEAVES", "LEAVES_2");
 	}
 
@@ -1321,7 +1439,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isHardClay(final Material mat) {
+	public static boolean isHardClay(final Material mat) {
 		return nameContains(mat, "STAINED_CLAY", "HARD_CLAY", "TERRACOTTA");
 	}
 
@@ -1331,7 +1449,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLeash(final Material mat) {
+	public static boolean isLeash(final Material mat) {
 		return nameEquals(mat, "LEASH", "LEAD");
 	}
 
@@ -1341,7 +1459,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isHeavyPressurePlate(final Material mat) {
+	public static boolean isHeavyPressurePlate(final Material mat) {
 		return nameContains(mat, "IRON_PLATE", "GOLD_PLATE", "WEIGHTED_PRESSURE_PLATE");
 	}
 
@@ -1351,7 +1469,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isWoodPressurePlate(final Material mat) {
+	public static boolean isWoodPressurePlate(final Material mat) {
 		return nameEquals(mat, "WOOD_PLATE", "ACACIA_PRESSURE_PLATE", "BIRCH_PRESSURE_PLATE", "DARK_OAK_PRESSURE_PLATE",
 				"JUNGLE_PRESSURE_PLATE", "OAK_PRESSURE_PLATE", "SPRUCE_PRESSURE_PLATE");
 	}
@@ -1362,7 +1480,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isFirework(final Material mat) {
+	public static boolean isFirework(final Material mat) {
 		return nameContains(mat, "FIREWORK");
 	}
 
@@ -1372,7 +1490,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLog(final Material mat) {
+	public static boolean isLog(final Material mat) {
 		return nameEquals(mat, "LOG", "LOG_2") || mat.toString().endsWith("_LOG");
 	}
 
@@ -1382,7 +1500,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isBoat(final Material mat) {
+	public static boolean isBoat(final Material mat) {
 		return nameContains(mat, "BOAT");
 	}
 
@@ -1392,7 +1510,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isWoodButton(final Material mat) {
+	public static boolean isWoodButton(final Material mat) {
 		final String n = mat.toString();
 
 		return n.endsWith("_BUTTON") && !n.equals("STONE_BUTTON");
@@ -1404,7 +1522,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isRedstoneLamp(final Material mat) {
+	public static boolean isRedstoneLamp(final Material mat) {
 		return nameContains(mat, "REDSTONE_LAMP");
 	}
 
@@ -1414,7 +1532,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isMonsterEgg(final Material mat) {
+	public static boolean isMonsterEgg(final Material mat) {
 		return nameContains(mat, "MONSTER_EGG", "_SPAWN_EGG");
 	}
 
@@ -1424,7 +1542,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSapling(final Material mat) {
+	public static boolean isSapling(final Material mat) {
 		return nameContains(mat, "SAPLING") && !mat.toString().startsWith("POTTED");
 	}
 
@@ -1434,7 +1552,7 @@ public enum CompMaterial {
 	 * @param mat the material
 	 * @return
 	 */
-	public static final boolean isWallSign(final Material mat) {
+	public static boolean isWallSign(final Material mat) {
 		return nameContains(mat, "WALL_SIGN");
 	}
 
@@ -1444,7 +1562,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isLongGrass(final Material mat) {
+	public static boolean isLongGrass(final Material mat) {
 		return nameEquals(mat, "LONG_GRASS", "TALL_GRASS", "FERN", "DEAD_BUSH") && !mat.toString().startsWith("POTTED");
 	}
 
@@ -1454,7 +1572,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isDoublePlant(final Material mat) {
+	public static boolean isDoublePlant(final Material mat) {
 		return nameEquals(mat, "DOUBLE_PLANT", "SUNFLOWER", "LILAC", "TALL_GRASS", "LARGE_FERN", "ROSE_BUSH", "PEONY", "TALL_SEAGRASS");
 	}
 
@@ -1464,7 +1582,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSkull(final CompMaterial mat) {
+	public static boolean isSkull(final CompMaterial mat) {
 		return isSkull(mat.getMaterial());
 	}
 
@@ -1474,7 +1592,7 @@ public enum CompMaterial {
 	 * @param mat
 	 * @return
 	 */
-	public static final boolean isSkull(final Material mat) {
+	public static boolean isSkull(final Material mat) {
 		final String name = mat.toString();
 
 		return (name.endsWith("_HEAD") || name.endsWith("_SKULL")) && !name.contains("WALL");
@@ -1559,7 +1677,10 @@ public enum CompMaterial {
 
 			// Special cases
 			if (MinecraftVersion.newerThan(V.v1_15) && type == EntityType.ZOMBIFIED_PIGLIN) // PIGMAN
-				name = "ZOMBIE_PIGMAN_SPAWN_EGG";
+				if (MinecraftVersion.newerThan(V.v1_16))
+					name = "ZOMBIFIED_PIGLIN_SPAWN_EGG";
+					else
+					name = "ZOMBIE_PIGMAN_SPAWN_EGG"; // Does not exist post 1.15
 			else if (type == EntityType.MUSHROOM_COW)
 				name = "MOOSHROOM_SPAWN_EGG";
 
@@ -1611,7 +1732,7 @@ public enum CompMaterial {
 	 * @param block
 	 * @return
 	 */
-	public static final CompMaterial fromBlock(final Block block) {
+	public static CompMaterial fromBlock(final Block block) {
 		try {
 			return CompMaterial.valueOf(block.getType().toString());
 
@@ -1624,12 +1745,12 @@ public enum CompMaterial {
 	}
 
 	/**
-	 * Creates {@link CompMaterial} class from a given {@link Material}.
+	 * Get the {@link CompMaterial} instance from a given {@link Material} instance.
 	 *
 	 * @param mat
 	 * @return
 	 */
-	public static final CompMaterial fromMaterial(final Material mat) {
+	public static CompMaterial fromMaterial(final Material mat) {
 		try {
 			return CompMaterial.valueOf(mat.toString());
 
@@ -1692,7 +1813,7 @@ public enum CompMaterial {
 			return CompMaterial.valueOf(key);
 
 		} catch (final IllegalArgumentException e) {
-			CompMaterial legacy = null;
+			CompMaterial legacy;
 			final String[] split = key.split(":");
 
 			if (split.length == 1)
@@ -1735,7 +1856,7 @@ public enum CompMaterial {
 		try {
 			final CompMaterial modern = valueOf(name);
 
-			if (modern.legacyName == name)
+			if (modern.legacyName.equals(name))
 				return null;
 
 			return fromLegacy(modern.legacyName, data);
@@ -1753,8 +1874,16 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static Material fromId(final int id) {
+		boolean checkLegacy = false;
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			String api_version = SimplePlugin.getInstance().getDescription().getAPIVersion();
+			if (api_version != null) {
+				V declared_version = V.valueOf(api_version.substring(2)); // 1.12 or 1.13+
+				checkLegacy = declared_version == V.v1_12; // If the plugin is running in compatibility mode
+			}
+		}
 		for (final Material mat : Material.values())
-			if (MinecraftVersion.atLeast(V.v1_13)) {
+			if (checkLegacy) {
 				if (mat.toString().startsWith("LEGACY_") && mat.getId() == id)
 					return mat;
 			} else if (mat.getId() == id)
