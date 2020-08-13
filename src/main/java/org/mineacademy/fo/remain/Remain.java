@@ -1,28 +1,16 @@
 package org.mineacademy.fo.remain;
 
-import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
-import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import lombok.NonNull;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -87,14 +75,31 @@ import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.internal.NBTInternals;
 import org.mineacademy.fo.remain.internal.ParticleInternals;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import lombok.NonNull;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
+import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
+import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 /**
  * Our main cross-version compatibility class.
@@ -766,6 +771,7 @@ public final class Remain {
 	/**
 	 * Split text into a a list of BaseComponents based off of hex color declarations.
 	 * I.e `{hex} someText {hex} otherText` would be split into two components.
+	 *
 	 * @param text The text to split.
 	 * @return Returns a list of base components which have been colorised and represent this text.
 	 */
@@ -838,7 +844,7 @@ public final class Remain {
 						Text text = (Text) content;
 						Object o = text.getValue();
 						if (o instanceof BaseComponent[]) {
-							Content newContent = new Text(replaceHexPlaceholders(Arrays.asList(((BaseComponent[]) o)),placeholders).toArray(new  BaseComponent[0]));
+							Content newContent = new Text(replaceHexPlaceholders(Arrays.asList(((BaseComponent[]) o)), placeholders).toArray(new BaseComponent[0]));
 							newContents.add(newContent);
 						} else {
 							newContents.add(content);
