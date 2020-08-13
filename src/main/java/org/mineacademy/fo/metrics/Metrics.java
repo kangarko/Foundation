@@ -34,8 +34,20 @@ import com.google.gson.JsonParser;
  * bStats collects some data for plugin authors.
  * <p>
  * Check out https://bStats.org/ to learn more about bStats!
+ *
+ * ** IMPORTANT **
+ * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+ * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+ * ACCOUNT GETTING SUSPENDED
+ *
+ * ** LEGAL DISCLAIMER **
+ * The follow class is the works of Bastian Opperman and is included
+ * in good faith to help spread awareness of his amazing service
+ * and enable more people use bStats.
+ *
+ * See more at: https://bstats.org/getting-started/include-metrics
  */
-public class Metrics {
+public final class Metrics {
 
 	static {
 		// You can use the property to disable the check in your test environment
@@ -79,6 +91,11 @@ public class Metrics {
 
 	/**
 	 * Class constructor.
+	 *
+	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
 	 *
 	 * @param plugin The plugin which stats should be submitted.
 	 * @param pluginId The id of the plugin.
@@ -149,6 +166,11 @@ public class Metrics {
 	/**
 	 * Checks if bStats is enabled.
 	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
+	 *
 	 * @return Whether bStats is enabled or not.
 	 */
 	public boolean isEnabled() {
@@ -157,6 +179,11 @@ public class Metrics {
 
 	/**
 	 * Starts the Scheduler which submits our data every 30 minutes.
+	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
 	 */
 	private void startSubmitting() {
 		final Timer timer = new Timer(true); // We use a timer cause the Bukkit scheduler is affected by server lags
@@ -181,6 +208,11 @@ public class Metrics {
 	 * Gets the plugin specific data.
 	 * This method is called using Reflection.
 	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
+	 *
 	 * @return The plugin specific data.
 	 */
 	public JsonObject getPluginData() {
@@ -199,6 +231,11 @@ public class Metrics {
 
 	/**
 	 * Gets the server specific data.
+	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
 	 *
 	 * @return The server specific data.
 	 */
@@ -246,6 +283,11 @@ public class Metrics {
 
 	/**
 	 * Collects the data and sends it afterwards.
+	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
 	 */
 	private void submitData() {
 		final JsonObject data = getServerData();
@@ -299,6 +341,11 @@ public class Metrics {
 	/**
 	 * Sends the data to the bStats server.
 	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
+	 *
 	 * @param plugin Any plugin. It's just used to get a logger instance.
 	 * @param data The data to send.
 	 * @throws Exception If the request failed.
@@ -343,6 +390,11 @@ public class Metrics {
 
 	/**
 	 * Gzips the given String.
+	 *
+	 * 	 * ** IMPORTANT DEVELOPER NOTICE **
+	 * DO NOT MODIFY ANY PARTS OR SECTIONS OF THIS CLASS
+	 * THIS IS TOTALLY UNSUPPORTED AND MAY LEAD TO YOUR BSTATS
+	 * ACCOUNT GETTING SUSPENDED
 	 *
 	 * @param str The string to gzip.
 	 * @return The gzipped String.
