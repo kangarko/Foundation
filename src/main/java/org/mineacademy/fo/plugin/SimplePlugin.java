@@ -777,7 +777,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			getMainCommand().unregister();
 
 		try {
-			HookManager.removePacketListeners(this);
+			HookManager.unloadDependencies(this);
 		} catch (final NoClassDefFoundError ex) {
 		}
 

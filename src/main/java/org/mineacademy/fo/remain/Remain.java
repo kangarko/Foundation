@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,11 +94,7 @@ import com.google.gson.JsonObject;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Content;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import net.md_5.bungee.chat.ComponentSerializer;
 
 /**
@@ -734,14 +729,68 @@ public final class Remain {
 		return ComponentSerializer.parse(json);
 	}
 
+	/**
+	 * Sends JSON component to sender
+	 *
+	 * @param sender
+	 * @param json
+	 * @param placeholders
+	 */
 	public static void sendJson(final CommandSender sender, final String json, SerializedMap placeholders) {
 		try {
 			final BaseComponent[] components = ComponentSerializer.parse(json);
 
-			Remain.sendComponent(sender, replaceHexPlaceholders(Arrays.asList(components), placeholders).toArray(new BaseComponent[0]));
+			replaceHexPlaceholders(Arrays.asList(components), placeholders);
+
+			Remain.sendComponent(sender, components);
 
 		} catch (final RuntimeException ex) {
 			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
+		}
+	}
+
+	/*
+	 * A helper Method for MC 1.16+ to partially solve the issue of HEX colors in JSON
+	 *
+	 * BaseComponent does not support colors when in text, they must be set at the color level
+	 */
+	private static void replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
+
+		for (final BaseComponent component : components) {
+			if (component instanceof TextComponent) {
+				final TextComponent textComponent = (TextComponent) component;
+				String text = textComponent.getText();
+
+				for (final Map.Entry<String, Object> entry : placeholders.entrySet()) {
+					String key = entry.getKey();
+					String value = Common.simplify(entry.getValue());
+
+					// Detect HEX in placeholder
+					final Matcher match = RGB_HEX_ENCODED_REGEX.matcher(text);
+
+					while (match.find()) {
+
+						// Find the color
+						final String color = "#" + match.group(2).replace(ChatColor.COLOR_CHAR + "", "");
+
+						// Remove it from chat and bind it to TextComponent instead
+						value = match.replaceAll("");
+						textComponent.setColor(net.md_5.bungee.api.ChatColor.of(color));
+					}
+
+					key = key.charAt(0) != '{' ? "{" + key : key;
+					key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
+
+					text = text.replace(key, value);
+					textComponent.setText(text);
+				}
+			}
+
+			if (component.getExtra() != null)
+				replaceHexPlaceholders(component.getExtra(), placeholders);
+
+			if (component.getHoverEvent() != null)
+				replaceHexPlaceholders(Arrays.asList(component.getHoverEvent().getValue()), placeholders);
 		}
 	}
 
@@ -758,97 +807,6 @@ public final class Remain {
 		} catch (final RuntimeException ex) {
 			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
 		}
-	}
-
-	/**
-	 * Split text into a a list of BaseComponents based off of hex color declarations.
-	 * I.e `{hex} someText {hex} otherText` would be split into two components.
-	 *
-	 * @param text The text to split.
-	 * @return Returns a list of base components which have been colorised and represent this text.
-	 */
-	private static List<BaseComponent> resolveNestedHex(final String text) {
-		final ComponentBuilder builder = new ComponentBuilder();
-
-		final Matcher matcher = RGB_HEX_ENCODED_REGEX.matcher(text);
-
-		while (matcher.find()) {
-			final int start = matcher.start();
-			final int end = start + 7;
-
-			boolean hasBrackets = false;
-
-			if (start != 0 && end != text.length())
-				hasBrackets = text.charAt(start - 1) == '{' && text.charAt(end) == '}';
-
-			final TextComponent component = new TextComponent();
-
-			String nestedText;
-
-			if (matcher.find()) {
-				final int next = matcher.start();
-				matcher.find(start); // Go back.
-				nestedText = text.substring(end, next);
-			} else
-				nestedText = text.substring(end);
-
-			if (hasBrackets)
-				nestedText = nestedText.substring(1, nestedText.length() - 1);
-
-			component.setColor(net.md_5.bungee.api.ChatColor.of(text.substring(start, end)));
-			component.setText(nestedText);
-
-			builder.append(component);
-		}
-		return builder.getParts();
-	}
-
-	/*
-	 * A helper Method for MC 1.16+ to partially solve the issue of HEX colors in JSON
-	 *
-	 * BaseComponent does not support colors when in text, they must be set at the color level
-	 */
-	private static List<BaseComponent> replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
-		final List<BaseComponent> list = new LinkedList<>();
-
-		for (final BaseComponent component : components) {
-			if (component.getExtra() != null)
-				list.addAll(replaceHexPlaceholders(component.getExtra(), placeholders));
-
-			if (component instanceof TextComponent) {
-				final TextComponent textComponent = (TextComponent) component;
-
-				String text = textComponent.getText();
-
-				for (final Map.Entry<String, Object> entry : placeholders.entrySet())
-					text = text.replace(entry.getKey(), Common.simplify(entry.getValue()));
-
-				list.addAll(resolveNestedHex(text));
-			}
-
-			if (component.getHoverEvent() != null) {
-				final HoverEvent event = component.getHoverEvent();
-				final List<Content> contents = event.getContents();
-				final List<Content> newContents = new ArrayList<>(contents.size());
-
-				for (final Content content : contents)
-					if (content instanceof Text) {
-						final Object value = ((Text) content).getValue();
-
-						if (value instanceof BaseComponent[]) {
-							final Content newContent = new Text(replaceHexPlaceholders(Arrays.asList(((BaseComponent[]) value)), placeholders).toArray(new BaseComponent[0]));
-							newContents.add(newContent);
-
-						} else
-							newContents.add(content);
-					} else
-						newContents.add(content);
-
-				contents.clear();
-				contents.addAll(newContents);
-			}
-		}
-		return list;
 	}
 
 	/**
