@@ -5,8 +5,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
-import com.google.common.primitives.Primitives;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -99,7 +97,6 @@ abstract class Message {
 
 		final Class<?>[] content = action.getContent();
 		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length);
-		Valid.checkBoolean(Primitives.wrap(content[actionHead]) == typeOf, "Unexpected data type " + typeOf + ", expected " + content[actionHead] + " for " + action.name());
 
 		actionHead++;
 	}
