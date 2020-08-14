@@ -12,6 +12,8 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -29,6 +31,7 @@ public class SimpleDatabase {
 	/**
 	 * The established connection, or null if none
 	 */
+	@Getter(value = AccessLevel.PROTECTED)
 	private Connection connection;
 
 	/**
