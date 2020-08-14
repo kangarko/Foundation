@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.RequiredArgsConstructor;
 
@@ -160,9 +161,9 @@ public final class BoxedMessage {
 
 	private void broadcast0(String message) {
 		if (sender != null)
-			Common.broadcastWithPlayer(message, sender);
+			Common.broadcast(message, sender);
 		else
-			Common.broadcast(message, false);
+			Common.broadcastTo(Remain.getOnlinePlayers(), message);
 	}
 
 	private void tell0(String message) {

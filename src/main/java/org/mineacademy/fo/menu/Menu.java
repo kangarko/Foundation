@@ -15,7 +15,6 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.Common;
@@ -23,6 +22,7 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
@@ -31,7 +31,6 @@ import org.mineacademy.fo.menu.button.ButtonReturnBack;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
-import org.mineacademy.fo.model.OneTimeRunnable;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -62,22 +61,6 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
-	 * An internal metadata tag the player gets when he opens the menu
-	 *
-	 * <p>
-	 * Used in {@link #getMenu(Player)}
-	 */
-	static final String TAG_CURRENT = "KaMenu_" + SimplePlugin.getNamed();
-
-	/**
-	 * An internal metadata tag the player gets when he opens another menu
-	 *
-	 * <p>
-	 * Used in {@link #getPreviousMenu(Player)}
-	 */
-	static final String TAG_PREVIOUS = "KaMenu_Previous_" + SimplePlugin.getNamed();
-
-	/**
 	 * The default sound when switching between menus.
 	 */
 	@Getter
@@ -92,6 +75,19 @@ public abstract class Menu {
 	private static boolean titleAnimationEnabled = true;
 
 	/**
+	 * The default duration of the new animated title before
+	 * it is reverted back to the old one
+	 * <p>
+	 * Used in {@link #updateInventoryTitle(Menu, Player, String, String)}
+	 */
+	@Setter
+	private static int titleAnimationDurationTicks = 20;
+
+	// --------------------------------------------------------------------------------
+	// Actual class
+	// --------------------------------------------------------------------------------
+
+	/**
 	 * Automatically registered Buttons in this menu (using reflection)
 	 */
 	private final List<Button> registeredButtons = new ArrayList<>();
@@ -100,37 +96,32 @@ public abstract class Menu {
 	 * The registrator responsible for scanning the class and making buttons
 	 * function
 	 */
-	private final OneTimeRunnable buttonsRegistrator;
+	private boolean buttonsRegistered = false;
 
 	/**
 	 * Parent menu
 	 */
 	private final Menu parent;
 
-	// --------------------------------------------------------------------------------
-	// Actual class
-	// --------------------------------------------------------------------------------
-
-	// --------------------------------------------------------------------------------
-	// Buttons that are registered automatically (we scan fields in your menu
-	// class)
-	// --------------------------------------------------------------------------------
 	/**
 	 * The return button to the previous menu, null if none
 	 */
 	private final Button returnButton;
+
+	// --------------------------------------------------------------------------------
+	// Other constructors
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * The inventory title of the menu, colors & are supported
+	 */
+	private String title = "&0Menu";
+
 	/**
 	 * The size of the menu
 	 */
 	private Integer size = 9 * 3;
 
-	// --------------------------------------------------------------------------------
-	// Other constructors
-	// --------------------------------------------------------------------------------
-	/**
-	 * The inventory title of the menu, colors & are supported
-	 */
-	private String title = "&0Menu";
 	/**
 	 * The description of the menu
 	 */
@@ -196,8 +187,7 @@ public abstract class Menu {
 	 */
 	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
-		returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
-		buttonsRegistrator = new OneTimeRunnable(this::registerButtons);
+		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
 	}
 
 	/**
@@ -207,7 +197,7 @@ public abstract class Menu {
 	 * @return the menu, or null if none
 	 */
 	public static final Menu getMenu(final Player player) {
-		return getMenu0(player, TAG_CURRENT);
+		return getMenu0(player, FoConstants.NBT.TAG_MENU_CURRENT);
 	}
 
 	/**
@@ -217,7 +207,7 @@ public abstract class Menu {
 	 * @return the menu, or none
 	 */
 	public static final Menu getPreviousMenu(final Player player) {
-		return getMenu0(player, TAG_PREVIOUS);
+		return getMenu0(player, FoConstants.NBT.TAG_MENU_PREVIOUS);
 	}
 
 	// Returns the menu associated with the players metadata, or null
@@ -272,12 +262,26 @@ public abstract class Menu {
 
 			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
 			registeredButtons.add(button);
+
 		} else if (Button[].class.isAssignableFrom(type)) {
 			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
 
 			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
 			registeredButtons.addAll(Arrays.asList(buttons));
+		}
+	}
+
+	/*
+	 * Utility method to register buttons if they yet have not been registered
+	 *
+	 * This method will only register them once until the server is reset
+	 */
+	private final void registerButtonsIfHasnt() {
+		if (!buttonsRegistered) {
+			registerButtons();
+
+			buttonsRegistered = true;
 		}
 	}
 
@@ -289,7 +293,10 @@ public abstract class Menu {
 	 * them here
 	 *
 	 * @return button list, null by default
+	 *
+	 * @deprecated subject for removal
 	 */
+	@Deprecated
 	protected List<Button> getButtonsToAutoRegister() {
 		return null;
 	}
@@ -301,8 +308,8 @@ public abstract class Menu {
 	 * @param fromItem the itemstack to compare to
 	 * @return the buttor or null if not found
 	 */
-	final Button getButton(final ItemStack fromItem) {
-		buttonsRegistrator.runIfHasnt();
+	protected final Button getButton(final ItemStack fromItem) {
+		registerButtonsIfHasnt();
 
 		if (fromItem != null)
 			for (final Button button : registeredButtons) {
@@ -349,30 +356,16 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
-	 * Displays this menu to the player
-	 *
-	 * <p>
-	 * The menu will not be displayed when the player is having server conversation
+	 * Display this menu to the player
 	 *
 	 * @param player the player
 	 */
 	public final void displayTo(final Player player) {
-		displayTo(player, false);
-	}
-
-	/**
-	 * Display this menu to the player
-	 *
-	 * @param player                   the player
-	 * @param ignoreServerConversation display menu even if the player is having
-	 *                                 server conversation?
-	 */
-	public final void displayTo(final Player player, final boolean ignoreServerConversation) {
 		Valid.checkNotNull(size, "Size not set in " + this + " (call setSize in your constructor)");
 		Valid.checkNotNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
 
 		viewer = player;
-		buttonsRegistrator.runIfHasnt();
+		registerButtonsIfHasnt();
 
 		// Draw the menu
 		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
@@ -399,7 +392,7 @@ public abstract class Menu {
 			return;
 
 		// Prevent menu in conversation
-		if (!ignoreServerConversation && player.isConversing()) {
+		if (player.isConversing()) {
 			player.sendRawMessage(ChatColor.RED + "Type 'exit' to quit your conversation before opening menu.");
 
 			return;
@@ -413,14 +406,14 @@ public abstract class Menu {
 			final Menu previous = getMenu(player);
 
 			if (previous != null)
-				player.setMetadata(TAG_PREVIOUS, new FixedMetadataValue(SimplePlugin.getInstance(), previous));
+				player.setMetadata(FoConstants.NBT.TAG_MENU_PREVIOUS, new FixedMetadataValue(SimplePlugin.getInstance(), previous));
 		}
 
 		// Register current menu
 		Common.runLater(1, () -> {
 			drawer.display(player);
 
-			player.setMetadata(TAG_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
+			player.setMetadata(FoConstants.NBT.TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
 		});
 	}
 
@@ -518,7 +511,7 @@ public abstract class Menu {
 	 */
 	public final void animateTitle(final String title) {
 		if (titleAnimationEnabled)
-			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle());
+			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle(), titleAnimationDurationTicks);
 	}
 
 	// --------------------------------------------------------------------------------
@@ -596,8 +589,9 @@ public abstract class Menu {
 	 * @param cursor   the cursor
 	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
 	 * by default
+	 *
 	 * @deprecated sometimes does not work correctly due to flaws in server to
-	 * client packet communication do not rely on this
+	 * client packet communication - do not rely on this
 	 */
 	@Deprecated
 	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
@@ -727,8 +721,8 @@ public abstract class Menu {
 	 *
 	 * @param visible
 	 */
-	protected void setSlotNumbersVisible() {
-		slotNumbersVisible = true;
+	protected final void setSlotNumbersVisible() {
+		this.slotNumbersVisible = true;
 	}
 
 	// --------------------------------------------------------------------------------
@@ -751,19 +745,7 @@ public abstract class Menu {
 	 * @param cancelled is the event cancelled?
 	 */
 	protected void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
-		final InventoryView openedInventory = player.getOpenInventory();
-
-		onMenuClick(player, slot, clicked);
-
-		// Delay by 1 tick to get the accurate item in slot
-		Common.runLater(() -> {
-			if (openedInventory.equals(player.getOpenInventory())) {
-				final Inventory topInventory = openedInventory.getTopInventory();
-
-				if (action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR"))
-					onItemPlace(player, slot, topInventory.getItem(slot));
-			}
-		});
+		this.onMenuClick(player, slot, clicked);
 	}
 
 	/**
@@ -774,16 +756,6 @@ public abstract class Menu {
 	 * @param clicked the item clicked
 	 */
 	protected void onMenuClick(final Player player, final int slot, final ItemStack clicked) {
-	}
-
-	/**
-	 * Called automatically when an item is placed to the menu
-	 *
-	 * @param player
-	 * @param slot
-	 * @param placed
-	 */
-	protected void onItemPlace(final Player player, final int slot, final ItemStack placed) {
 	}
 
 	/**

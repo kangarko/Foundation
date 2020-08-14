@@ -1,13 +1,13 @@
 package org.mineacademy.fo.debug;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -24,12 +24,12 @@ public final class LagCatcher {
 	/**
 	 * Stores sections with the time time they started to be measured
 	 */
-	private static final StrictMap<String, Long> startTimesMap = new StrictMap<>();
+	private static volatile Map<String, Long> startTimesMap = new HashMap<>();
 
 	/**
 	 * Stores sections with a list of lag durations for each section
 	 */
-	private static final StrictMap<String, List<Long>> durationsMap = new StrictMap<>();
+	private static volatile Map<String, List<Long>> durationsMap = new HashMap<>();
 
 	/**
 	 * Puts the code section with the current ms time to the timings map
@@ -138,7 +138,13 @@ public final class LagCatcher {
 	 * @param section
 	 */
 	public static void performancePartStart(String section) {
-		final List<Long> sectionDurations = durationsMap.getOrPut(section, new ArrayList<>());
+		List<Long> sectionDurations = durationsMap.get(section);
+
+		if (sectionDurations == null) {
+			sectionDurations = new ArrayList<>();
+
+			durationsMap.put(section, sectionDurations);
+		}
 
 		// Do not calculate duration, just append last time at the end
 		sectionDurations.add(System.nanoTime());
@@ -154,7 +160,7 @@ public final class LagCatcher {
 	 * @param section
 	 */
 	public static void performancePartSnap(String section) {
-		Valid.checkBoolean(durationsMap.contains(section), "Section " + section + " is not measured! Are you calling it from performanceTest?");
+		Valid.checkBoolean(durationsMap.containsKey(section), "Section " + section + " is not measured! Are you calling it from performanceTest?");
 
 		final List<Long> sectionDurations = durationsMap.get(section);
 

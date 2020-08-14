@@ -9,8 +9,8 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.update.SpigotUpdater;
 
 /**
  * A simple implementation of a typical main plugin settings

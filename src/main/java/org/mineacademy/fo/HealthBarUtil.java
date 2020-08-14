@@ -8,6 +8,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Utility class for displaying health bar above mobs.
@@ -18,12 +19,14 @@ public final class HealthBarUtil {
 	/**
 	 * The default prefix and suffix
 	 */
-	private static String PREFIX = "&8[", SUFFIX = "&8]";
+	@Setter
+	private static String prefix = "&8[", suffix = "&8]";
 
 	/**
 	 * The default health bar colors
 	 */
-	private static ChatColor REMAINING_COLOR = ChatColor.DARK_RED, TOTAL_COLOR = ChatColor.GRAY, DEAD_COLOR = ChatColor.BLACK;
+	@Setter
+	private static ChatColor remainingColor = ChatColor.DARK_RED, totalColor = ChatColor.GRAY, deadColor = ChatColor.BLACK;
 
 	/**
 	 * Formats and displays the health bar as action bar.
@@ -70,12 +73,12 @@ public final class HealthBarUtil {
 				max += "|";
 		}
 
-		return PREFIX + REMAINING_COLOR + left + TOTAL_COLOR + max + SUFFIX;
+		return prefix + remainingColor + left + totalColor + max + suffix;
 	}
 
 	/* Fills up the graphics if the health is too high */
 	private static String formatMuchHealth(final int remaining, final int max) {
-		return PREFIX + REMAINING_COLOR + remaining + " &8/ " + TOTAL_COLOR + max + SUFFIX;
+		return prefix + remainingColor + remaining + " &8/ " + totalColor + max + suffix;
 	}
 
 	/* Fills up the graphic if the health is 0 */
@@ -89,6 +92,6 @@ public final class HealthBarUtil {
 			for (int i = 0; i < maxHealth; i++)
 				max += "|";
 
-		return PREFIX + DEAD_COLOR + max + SUFFIX;
+		return prefix + deadColor + max + suffix;
 	}
 }

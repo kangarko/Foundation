@@ -232,7 +232,7 @@ public final class ReflectionUtil {
 			return constructor;
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Could not get constructor of " + clazz + " with parameters " + Common.joinToString(params));
+			throw new FoException(ex, "Could not get constructor of " + clazz + " with parameters " + Common.join(params));
 		}
 	}
 
@@ -580,7 +580,7 @@ public final class ReflectionUtil {
 			return constructor.newInstance(params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Could not make new instance of " + constructor + " with params: " + Common.joinToString(params));
+			throw new FoException(ex, "Could not make new instance of " + constructor + " with params: " + Common.join(params));
 		}
 	}
 

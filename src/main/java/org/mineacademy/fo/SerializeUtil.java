@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -22,7 +21,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
 import org.mineacademy.fo.collection.StrictMap;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -40,11 +38,6 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SerializeUtil {
-
-	/**
-	 * When serializing unknown objects throw an error if strict mode is enabled
-	 */
-	public static boolean STRICT_MODE = true;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Converting objects into strings so you can save them in your files
@@ -127,7 +120,7 @@ public final class SerializeUtil {
 
 			return newMap;
 		} else if (obj instanceof YamlConfig)
-			throw new FoException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
+			throw new SerializeFailedException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
 
 		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
 				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
@@ -138,11 +131,7 @@ public final class SerializeUtil {
 		else if (obj instanceof ConfigurationSerializable)
 			return ((ConfigurationSerializable) obj).serialize();
 
-		if (STRICT_MODE)
-			throw new FoException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
-
-		else
-			return Objects.toString(obj);
+		throw new SerializeFailedException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
 	}
 
 	/**
@@ -163,24 +152,6 @@ public final class SerializeUtil {
 	 */
 	private static String serializePotionEffect(final PotionEffect effect) {
 		return effect.getType().getName() + " " + effect.getDuration() + " " + effect.getAmplifier();
-	}
-
-	/**
-	 * Runsthrough each item in the list and serializes it
-	 * <p>
-	 * Returns a new list of serialized items
-	 *
-	 * @param <T>
-	 * @param array
-	 * @return
-	 */
-	public static List<Object> serializeList(final Iterable<?> array) {
-		final List<Object> list = new ArrayList<>();
-
-		for (final Object t : array)
-			list.add(serialize(t));
-
-		return list;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -312,7 +283,7 @@ public final class SerializeUtil {
 				// pass through
 
 			} else
-				throw new FoException("Unable to deserialize " + classOf.getSimpleName() + ", lacking static deserialize method! Data: " + object);
+				throw new SerializeFailedException("Unable to deserialize " + classOf.getSimpleName() + ", lacking static deserialize method! Data: " + object);
 
 		return (T) object;
 
@@ -378,6 +349,7 @@ public final class SerializeUtil {
 	 * @param asWhat
 	 * @return
 	 */
+	@Deprecated
 	public static <T extends ConfigSerializable> List<T> deserializeMapList(final Object listOfObjects, final Class<T> asWhat) {
 		if (listOfObjects == null)
 			return null;
@@ -432,5 +404,17 @@ public final class SerializeUtil {
 
 		Valid.checkBoolean(invoked.getClass().isAssignableFrom(asWhat), invoked.getClass().getSimpleName() + " != " + asWhat.getSimpleName());
 		return (T) invoked;
+	}
+
+	/**
+	 * Thrown when cannot serialize an object because it failed to determine its type
+	 */
+	public static class SerializeFailedException extends RuntimeException {
+
+		private static final long serialVersionUID = 1L;
+
+		public SerializeFailedException(String reason) {
+			super(reason);
+		}
 	}
 }

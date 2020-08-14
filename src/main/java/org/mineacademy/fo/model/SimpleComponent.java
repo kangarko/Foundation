@@ -27,7 +27,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * A very simple way of sending interactive chat messages
  */
-public class SimpleComponent {
+public final class SimpleComponent {
 
 	/**
 	 * The pattern to match URL addresses when parsing text
@@ -54,7 +54,7 @@ public class SimpleComponent {
 	/**
 	 * Create a new empty component
 	 */
-	protected SimpleComponent() {
+	private SimpleComponent() {
 		this(true, "");
 	}
 
@@ -64,7 +64,7 @@ public class SimpleComponent {
 	 * @param colorize
 	 * @param text
 	 */
-	protected SimpleComponent(boolean colorize, String... text) {
+	private SimpleComponent(boolean colorize, String... text) {
 		this.colorize = colorize;
 		this.currentComponents = fromLegacyText(colorize ? String.join("\n", Common.colorize(text)) : String.join("\n", text), null, null);
 	}

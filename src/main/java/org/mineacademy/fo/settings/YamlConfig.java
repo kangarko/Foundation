@@ -284,7 +284,7 @@ public class YamlConfig implements ConfigSerializable {
 					Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
 
 					defaultsConfig = Remain.loadConfiguration(is);
-					file = FileUtil.extract(false, from, to, line -> replaceVariables(line, FileUtil.getFileName(to)));
+					file = FileUtil.extract(from, to, line -> replaceVariables(line, FileUtil.getFileName(to)));
 
 				} else
 					file = FileUtil.getOrMakeFile(to);
@@ -348,16 +348,16 @@ public class YamlConfig implements ConfigSerializable {
 
 	/**
 	 * Replace variables in the destination file before it is copied. Variables
-	 * include {plugin.name} (lowercase), {file} and {file.lowercase} as well as
+	 * include {plugin_name} (lowercase), {file} and {file_lowercase} as well as
 	 * custom variables from {@link #replaceVariables(String)} method
 	 *
 	 * @param line
 	 * @param fileName
 	 */
 	private String replaceVariables(String line, final String fileName) {
-		line = line.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
+		line = line.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase());
 		line = line.replace("{file}", fileName);
-		line = line.replace("{file.lowercase}", fileName);
+		line = line.replace("{file_lowercase}", fileName);
 
 		return line;
 	}
@@ -1113,8 +1113,12 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return the found list, or an empty list
 	 */
 	protected final List<String> getStringList(final String path) {
-		final List<Object> list = getList(path);
+		final Object raw = getObject(path);
 
+		if (raw instanceof String)
+			return Arrays.asList((String) raw);
+
+		final List<Object> list = getList(path);
 		return list != null ? fixYamlBooleansInList(list) : new ArrayList<>();
 	}
 

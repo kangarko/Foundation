@@ -12,6 +12,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -38,7 +39,7 @@ public final class MenuListener implements Listener {
 		if (menu != null) {
 			menu.onMenuClose(player, event.getInventory());
 
-			player.removeMetadata(Menu.TAG_CURRENT, SimplePlugin.getInstance());
+			player.removeMetadata(FoConstants.NBT.TAG_MENU_CURRENT, SimplePlugin.getInstance());
 		}
 	}
 

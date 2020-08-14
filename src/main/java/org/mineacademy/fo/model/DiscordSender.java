@@ -9,6 +9,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
@@ -38,12 +39,12 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public boolean hasPermission(String perm) {
-		return perm == null ? true : HookManager.hasPermissionUnsafe(name, perm);
+		return perm == null ? true : PlayerUtil.hasPermUnsafe(name, perm);
 	}
 
 	@Override
 	public boolean hasPermission(Permission perm) {
-		return perm == null ? true : HookManager.hasPermissionUnsafe(name, perm.getName());
+		return perm == null ? true : PlayerUtil.hasPermUnsafe(name, perm.getName());
 	}
 
 	@Override

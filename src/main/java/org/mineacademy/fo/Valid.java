@@ -19,7 +19,7 @@ import lombok.experimental.UtilityClass;
  * logged into file.
  */
 @UtilityClass
-public class Valid {
+public final class Valid {
 
 	/**
 	 * Matching valid integers

@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -88,19 +87,6 @@ public final class FileUtil {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return a file in a path in our plugin folder, failing if the file does not exist
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static File getFileStrict(String path) {
-		final File file = getFile(path);
-		Valid.checkBoolean(file.exists(), "File '" + path + "' does not exists!");
-
-		return file;
-	}
-
-	/**
 	 * Returns a file from the given path inside our plugin folder, creating
 	 * the file if it does not exist
 	 *
@@ -113,13 +99,11 @@ public final class FileUtil {
 		return file.exists() ? file : createFile(path);
 	}
 
-	/**
+	/*
 	 * Create a new file in our plugin folder, supporting multiple directory paths
 	 * <p>
 	 * Example: logs/admin/console.log or worlds/nether.yml are all valid paths
 	 *
-	 * @param path
-	 * @return
 	 */
 	private static File createFile(String path) {
 		final File datafolder = SimplePlugin.getInstance().getDataFolder();
@@ -176,39 +160,12 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Checks if the file in the path exists and creates a new one if it does not
-	 * <p>
-	 * NB: THIS PATH IS ABSOLUTE, I.E. NOT IN YOUR PLUGINS FOLDER
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static File getOrMakeAbs(String path) {
-		return getOrMakeAbs(new File(path));
-	}
-
-	/**
-	 * Checks if the file in the parent and child path exists and creates a new one if it does not
-	 * <p>
-	 * NB: THIS PATH IS ABSOLUTE, I.E. NOT IN YOUR PLUGINS FOLDER
-	 *
-	 * @param parent
-	 * @param child
-	 * @return
-	 */
-	public static File getOrMakeAbs(File parent, String child) {
-		return getOrMakeAbs(new File(parent, child));
-	}
-
-	/**
 	 * Checks if the file exists and creates a new one if it does not
-	 * <p>
-	 * NB: THIS PATH IS ABSOLUTE, I.E. NOT IN YOUR PLUGINS FOLDER
 	 *
 	 * @param file
 	 * @return
 	 */
-	public static File getOrMakeAbs(File file) {
+	public static File createIfNotExists(File file) {
 		if (!file.exists())
 			try {
 				file.createNewFile();
@@ -398,7 +355,7 @@ public final class FileUtil {
 	 * @return the extracted file
 	 */
 	public static File extract(String path) {
-		return extract(false, path, path, null);
+		return extract(path, path);
 	}
 
 	/**
@@ -411,7 +368,7 @@ public final class FileUtil {
 	 * @return the extracted file
 	 */
 	public static File extract(String path, Function<String, String> replacer) {
-		return extract(false, path, path, replacer);
+		return extract(path, path, replacer);
 	}
 
 	/**
@@ -423,20 +380,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File extract(String from, String to) {
-		return extract(false, from, to);
-	}
-
-	/**
-	 * Copy file our plugin jar to destination
-	 * No action is done if the file already exists.
-	 *
-	 * @param override
-	 * @param from
-	 * @param to
-	 * @return
-	 */
-	public static File extract(boolean override, String from, String to) {
-		return extract(override, from, to, null);
+		return extract(from, to, null);
 	}
 
 	/**
@@ -450,13 +394,13 @@ public final class FileUtil {
 	 * @param replacer the variables replacer
 	 * @return the extracted file
 	 */
-	public static File extract(boolean override, String from, String to, @Nullable Function<String, String> replacer) {
+	public static File extract(String from, String to, @Nullable Function<String, String> replacer) {
 		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
 
 		final InputStream is = FileUtil.getInternalResource("/" + from);
 		Valid.checkNotNull(is, "Inbuilt file not found: " + from);
 
-		if (!override && file.exists())
+		if (file.exists())
 			return file;
 
 		file = FileUtil.createFile(to);
@@ -574,48 +518,6 @@ public final class FileUtil {
 					ex.printStackTrace();
 				}
 			});
-		}
-	}
-
-	// ----------------------------------------------------------------------------------------------------
-	// Checksums
-	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Generates a md5 checksum from the given file
-	 *
-	 * @param filename
-	 * @return
-	 */
-	public static String getMD5Checksum(File filename) {
-		try {
-			final byte[] b = createChecksum(filename);
-			String result = "";
-
-			for (int i = 0; i < b.length; i++)
-				result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
-
-			return result;
-		} catch (final Exception ex) {
-			ex.printStackTrace();
-			return "";
-		}
-	}
-
-	private static byte[] createChecksum(File filename) throws Exception {
-		try (InputStream fis = new FileInputStream(filename)) {
-			final byte[] buffer = new byte[1024];
-			final MessageDigest complete = MessageDigest.getInstance("MD5");
-			int numRead;
-
-			do {
-				numRead = fis.read(buffer);
-
-				if (numRead > 0)
-					complete.update(buffer, 0, numRead);
-			} while (numRead != -1);
-
-			return complete.digest();
 		}
 	}
 }
