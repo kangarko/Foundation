@@ -6,7 +6,7 @@ import lombok.Getter;
  * Represents a silent exception thrown then handling events,
  * this will only send the event player a message
  */
-public class EventHandledException extends RuntimeException {
+public final class EventHandledException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 

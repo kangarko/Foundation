@@ -71,7 +71,9 @@ public class SimpleScoreboard {
 	@Getter
 	private final List<String> rows = new ArrayList<>();
 
-	@Getter
+	/**
+	 * A list of viewed scoreboards
+	 */
 	private final StrictList<ViewedScoreboard> scoreboards = new StrictList<>();
 
 	/**

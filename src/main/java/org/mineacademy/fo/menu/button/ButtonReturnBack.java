@@ -62,7 +62,7 @@ public final class ButtonReturnBack extends Button {
 	 */
 	@Override
 	public ItemStack getItem() {
-		return ItemCreator.of(material).name(title).lores(lore).build().makeMenuTool();
+		return ItemCreator.of(material).name(title).lores(lore).build().make();
 	}
 
 	/**

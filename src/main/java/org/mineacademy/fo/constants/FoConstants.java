@@ -1,5 +1,6 @@
 package org.mineacademy.fo.constants;
 
+import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -90,7 +91,7 @@ public final class FoConstants {
 		 * The header that is put into the file that has been automatically
 		 * updated and comments were lost
 		 */
-		public static String[] UPDATED_FILE = new String[] {
+		public static final String[] UPDATED_FILE = new String[] {
 				Common.configLine(),
 				"",
 				" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
@@ -114,6 +115,22 @@ public final class FoConstants {
 		 * Represents our NBT tag used in {@link NBTUtil}
 		 */
 		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
+
+		/**
+		 * An internal metadata tag the player gets when he opens the menu
+		 *
+		 * <p>
+		 * Used in {@link #getMenu(Player)}
+		 */
+		public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
+
+		/**
+		 * An internal metadata tag the player gets when he opens another menu
+		 *
+		 * <p>
+		 * Used in {@link #getPreviousMenu(Player)}
+		 */
+		public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
 	}
 
 	/**
@@ -122,6 +139,6 @@ public final class FoConstants {
 	public static final class Permissions {
 
 		// Permission to receive alerts on join when a new version is available.
-		public static final String NOTIFY_UPDATE = "{plugin.name}.notify.update";
+		public static final String NOTIFY_UPDATE = "{plugin_name}.notify.update";
 	}
 }

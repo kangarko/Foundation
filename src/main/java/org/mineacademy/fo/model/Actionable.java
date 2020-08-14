@@ -5,8 +5,9 @@ import java.util.List;
 import org.bukkit.inventory.ItemStack;
 
 /**
- *
+ * @deprecated subject for removal
  */
+@Deprecated
 public interface Actionable extends ConfigSerializable {
 
 	/**

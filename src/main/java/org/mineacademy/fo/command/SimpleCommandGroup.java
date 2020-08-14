@@ -15,12 +15,15 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * A command group contains a set of different subcommands
  * associated with the main command, for example: /arena join, /arena leave etc.
  */
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class SimpleCommandGroup {
 
 	/**
@@ -33,12 +36,6 @@ public abstract class SimpleCommandGroup {
 	 * The registered main command, if any
 	 */
 	protected SimpleCommand mainCommand;
-
-	/**
-	 * Create a new command group, only allow extending classes
-	 */
-	protected SimpleCommandGroup() {
-	}
 
 	// ----------------------------------------------------------------------
 	// Main functions

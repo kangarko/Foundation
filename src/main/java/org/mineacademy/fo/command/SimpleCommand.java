@@ -44,13 +44,10 @@ import lombok.NonNull;
  */
 public abstract class SimpleCommand extends Command {
 
-	@Getter
-	private static final List<SimpleCommand> registeredCommands = new ArrayList<>();
-
 	/**
 	 * The default permission syntax for this command.
 	 */
-	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin.name}.command.{label}";
+	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin_name}.command.{label}";
 
 	/**
 	 * If this flag is true, we will use {@link Messenger} to send
@@ -156,14 +153,6 @@ public abstract class SimpleCommand extends Command {
 	 * item in the list is the main label and the other ones are the aliases.
 	 */
 	protected SimpleCommand(final StrictList<String> labels) {
-		this(labels.getSource());
-	}
-
-	/**
-	 * Create a new simple command from the list. The first
-	 * item in the list is the main label and the other ones are the aliases.
-	 */
-	protected SimpleCommand(final List<String> labels) {
 		this(parseLabelList0(labels), labels.size() > 1 ? labels.subList(1, labels.size()) : null);
 	}
 
@@ -186,8 +175,6 @@ public abstract class SimpleCommand extends Command {
 
 		// Set a default permission for this command
 		setPermission(DEFAULT_PERMISSION_SYNTAX);
-
-		registeredCommands.add(this);
 	}
 
 	/*
@@ -211,7 +198,7 @@ public abstract class SimpleCommand extends Command {
 	/*
 	 * Return the first index from the list or thrown an error if list empty
 	 */
-	private static String parseLabelList0(List<String> labels) {
+	private static String parseLabelList0(StrictList<String> labels) {
 		Valid.checkBoolean(!labels.isEmpty(), "Command label must not be empty!");
 
 		return labels.get(0);
@@ -498,7 +485,7 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
-		final Player player = PlayerUtil.getNickedNonVanishedPlayer(name);
+		final Player player = PlayerUtil.getPlayerByNickNoVanish(name);
 		checkBoolean(player != null && player.isOnline(), falseMessage.replace("{player}", name));
 
 		return player;
@@ -533,8 +520,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(
-			final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
+	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
 		T found = null;
 
 		try {
@@ -607,10 +593,12 @@ public abstract class SimpleCommand extends Command {
 		try {
 			return (T) numberType.getMethod("valueOf", String.class).invoke(null, args[index]); // Method valueOf is part of all main Number sub classes, eg. Short, Integer, Double, etc.
 		}
+
 		// Print stack trace for all exceptions, except NumberFormatException
 		// NumberFormatException is expected to happen, in this case we just want to display falseMessage without stack trace
 		catch (final IllegalAccessException | NoSuchMethodException e) {
 			e.printStackTrace();
+
 		} catch (final InvocationTargetException e) {
 			if (!(e.getCause() instanceof NumberFormatException))
 				e.printStackTrace();
@@ -631,6 +619,7 @@ public abstract class SimpleCommand extends Command {
 
 		if (args[index].equalsIgnoreCase("true"))
 			return true;
+
 		else if (args[index].equalsIgnoreCase("false"))
 			return false;
 
@@ -883,7 +872,7 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Internal method for replacing {label} {sublabel} and {plugin.name} placeholders
+	 * Internal method for replacing {label} {sublabel} and {plugin_name} placeholders
 	 *
 	 * @param message
 	 * @return
@@ -892,7 +881,7 @@ public abstract class SimpleCommand extends Command {
 		return message
 				.replace("{label}", getLabel())
 				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
-				.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase());
+				.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase());
 	}
 
 	/**
@@ -1081,7 +1070,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 */
 	protected final List<String> completeLastWordPlayerNames() {
-		return TabUtil.complete(getLastArg(), isPlayer() ? Common.getPlayerNames(getPlayer()) : Common.getPlayerNames());
+		return TabUtil.complete(getLastArg(), isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames());
 	}
 
 	// ----------------------------------------------------------------------
@@ -1188,13 +1177,13 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Get the permission without replacing {plugin.name}, {label} or {sublabel}
+	 * Get the permission without replacing {plugin_name}, {label} or {sublabel}
 	 *
 	 * @return
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	public final String getRawPermission() {
+	protected final String getRawPermission() {
 		return super.getPermission();
 	}
 
@@ -1301,12 +1290,11 @@ public abstract class SimpleCommand extends Command {
 
 	@Override
 	public boolean equals(final Object obj) {
-		return obj instanceof SimpleCommand ? ((SimpleCommand) obj).getLabel().equals(
-				getLabel()) && ((SimpleCommand) obj).getAliases().equals(getAliases()) : false;
+		return obj instanceof SimpleCommand ? ((SimpleCommand) obj).getLabel().equals(getLabel()) && ((SimpleCommand) obj).getAliases().equals(getAliases()) : false;
 	}
 
 	@Override
-	public String toString() {
+	public final String toString() {
 		return "Command{label=/" + label + "}";
 	}
 }

@@ -83,7 +83,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.UUIDtoNameConverter;
+import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
@@ -93,7 +93,6 @@ import org.mineacademy.fo.remain.nbt.NBTInternals;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import lombok.NonNull;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -645,7 +644,7 @@ public final class Remain {
 		final StringBuilder text = new StringBuilder();
 
 		try {
-			for (final BaseComponent comp : Remain.parseSave(json)) {
+			for (final BaseComponent comp : ComponentSerializer.parse(json)) {
 				if ((comp.getHoverEvent() != null || comp.getClickEvent() != null) && denyEvents)
 					throw new InteractiveTextFoundException();
 
@@ -665,15 +664,6 @@ public final class Remain {
 		}
 
 		return text.toString();
-	}
-
-	private static BaseComponent[] parseSave(@NonNull final String json) {
-		try {
-			return ComponentSerializer.parse(json);
-		} catch (final Throwable throwable) {
-			Debugger.debug("Components", "Can't parse component: '" + json + "'");
-			return new BaseComponent[0];
-		}
 	}
 
 	/**
@@ -1465,7 +1455,7 @@ public final class Remain {
 			return Bukkit.getOfflinePlayer(id);
 
 		} catch (final NoSuchMethodError err) {
-			final UUIDtoNameConverter f = new UUIDtoNameConverter(id);
+			final UUIDToNameConverter f = new UUIDToNameConverter(id);
 
 			try {
 				final String name = f.call();

@@ -1,23 +1,18 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtil.SerializeFailedException;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.remain.Remain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -72,7 +67,10 @@ public final class Replacer {
 	 *
 	 * @param variables
 	 * @return
+	 *
+	 * @deprecated use {@link Replacer#replaceArray(String, Object...)} for simplicity
 	 */
+	@Deprecated
 	public Replacer find(String... variables) {
 		this.variables = variables;
 
@@ -84,9 +82,12 @@ public final class Replacer {
 	 * <p>
 	 * See {@link SerializedMap#ofArray(Object...)}
 	 *
+	 * @deprecated use {@link Replacer#replaceArray(String, Object...)} for simplicity
+	 *
 	 * @param associativeArray
 	 * @return
 	 */
+	@Deprecated
 	public String replaceAll(Object... associativeArray) {
 		final SerializedMap map = SerializedMap.ofArray(associativeArray);
 
@@ -109,9 +110,12 @@ public final class Replacer {
 	 * <p>
 	 * Call this after {@link #find(String...)}!
 	 *
+	 * @deprecated use {@link Replacer#replaceArray(String, Object...)} for simplicity
+	 *
 	 * @param replacements
 	 * @return
 	 */
+	@Deprecated
 	public Replacer replace(Object... replacements) {
 		Valid.checkNotNull(variables, "call find() first");
 		Valid.checkBoolean(replacements.length == variables.length, "Variables " + variables.length + " != replacements " + replacements.length);
@@ -135,9 +139,13 @@ public final class Replacer {
 			// Convert it into a human readable string
 			String serialized;
 
-			SerializeUtil.STRICT_MODE = false;
-			serialized = Objects.toString(SerializeUtil.serialize(rep));
-			SerializeUtil.STRICT_MODE = true;
+			try {
+				serialized = Objects.toString(SerializeUtil.serialize(rep));
+
+			} catch (final SerializeFailedException ex) {
+				// ignore and convert to string
+				serialized = rep.toString();
+			}
 
 			message = message.replace(find, rep != null ? serialized : "");
 		}
@@ -150,8 +158,11 @@ public final class Replacer {
 	/**
 	 * Sends the finished message with variables replaced to the player
 	 *
+	 * @deprecated use {@link Replacer#replaceArray(String, Object...)} for simplicity
+	 *
 	 * @param recipient
 	 */
+	@Deprecated
 	public void tell(CommandSender recipient) {
 		Valid.checkNotNull(replacedMessage, "Replaced message not yet set, use find() and replace()");
 
@@ -161,8 +172,11 @@ public final class Replacer {
 	/**
 	 * Return the replaced message joined with spaces
 	 *
+	 * @deprecated use {@link Replacer#replaceArray(String, Object...)} for simplicity
+	 *
 	 * @return
 	 */
+	@Deprecated
 	public String getReplacedMessageJoined() {
 		Valid.checkNotNull(replacedMessage, "Replaced message not yet set, use find() and replace()");
 
@@ -176,22 +190,14 @@ public final class Replacer {
 	/**
 	 * Create a new replacer instance in which you can easily find and replace variables and send the message to player
 	 *
+	  * @deprecated use {@link Replacer#replaceArray(String, Object...)} for simplicity
+	 *
 	 * @param messages
 	 * @return
 	 */
+	@Deprecated
 	public static Replacer of(String... messages) {
 		return new Replacer(messages);
-	}
-
-	/**
-	 * Sends a message to the player replacing the given associative array of placeholders in the given message
-	 *
-	 * @param recipient
-	 * @param message
-	 * @param replacements
-	 */
-	public static void tell(CommandSender recipient, String message, Object... replacements) {
-		Common.tell(recipient, replaceArray(message, replacements));
 	}
 
 	/**
@@ -205,46 +211,40 @@ public final class Replacer {
 	public static String replaceArray(String message, Object... replacements) {
 		final SerializedMap map = SerializedMap.ofArray(replacements);
 
-		for (final Entry<String, Object> replacement : map.entrySet()) {
+		return replaceVariables(message, map);
+	}
+
+	/**
+	 * Replace all variables in the {@link SerializedMap#ofArray(Object...)} format
+	 * adding {} to them if they do not contain it already
+	 *
+	 * @param list
+	 * @param replacements
+	 * @return
+	 */
+	public static List<String> replaceArray(List<String> list, Object... replacements) {
+		final SerializedMap map = SerializedMap.ofArray(replacements);
+
+		for (int i = 0; i < list.size(); i++) {
+			String message = list.get(i);
+
+			message = replaceVariables(message, map);
+			list.set(i, message);
+		}
+
+		return list;
+	}
+
+	private static String replaceVariables(String message, SerializedMap variables) {
+		for (final Entry<String, Object> replacement : variables.entrySet()) {
 			String key = replacement.getKey();
 
 			key = key.charAt(0) != '{' ? "{" + key : key;
 			key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
 
-			message = message.replace(key, simplify(replacement.getValue()));
+			message = message.replace(key, Common.simplify(replacement.getValue()));
 		}
 
 		return message;
-	}
-
-	/**
-	 * Replace some common classes such as entity to name automatically
-	 *
-	 * @param arg
-	 * @return
-	 */
-	public static String simplify(Object arg) {
-		if (arg instanceof Entity)
-			return Remain.getName((Entity) arg);
-
-		else if (arg instanceof CommandSender)
-			return ((CommandSender) arg).getName();
-
-		else if (arg instanceof World)
-			return ((World) arg).getName();
-
-		else if (arg instanceof Location)
-			return Common.shortLocation((Location) arg);
-
-		else if (arg.getClass() == double.class || arg.getClass() == float.class)
-			return MathUtil.formatTwoDigits((double) arg);
-
-		else if (arg instanceof Collection)
-			return Common.join((Collection<?>) arg, ", ", Replacer::simplify);
-
-		else if (arg instanceof Enum)
-			return ((Enum<?>) arg).name();
-
-		return arg.toString();
 	}
 }

@@ -30,7 +30,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	public StrictList(E... elements) {
 		this();
 
-		setAll(Arrays.asList(elements));
+		addAll(Arrays.asList(elements));
 	}
 
 	/**
@@ -41,25 +41,14 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	public StrictList(Iterable<E> oldList) {
 		this();
 
-		setAll(oldList);
+		addAll(oldList);
 	}
 
 	/**
 	 * Create a new empty list
 	 */
 	public StrictList() {
-		this("Cannot remove '%s' as it is not in the list!", "Value '%s' is already in the list!");
-	}
-
-	/**
-	 * Create a new empty list with a custom remove/add message that are thrown as errors
-	 * if the values already exist or not exist
-	 *
-	 * @param removeMessage
-	 * @param addMessage
-	 */
-	public StrictList(String removeMessage, String addMessage) {
-		super(removeMessage, addMessage);
+		super("Cannot remove '%s' as it is not in the list!", "Value '%s' is already in the list!");
 	}
 
 	/**
@@ -74,16 +63,6 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	// ------------------------------------------------------------------------------------------------------------
 	// Methods below trigger strict checks
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Clear the list and all all given elements
-	 *
-	 * @param elements
-	 */
-	public void setAll(Iterable<E> elements) {
-		clear();
-		addAll(elements);
-	}
 
 	/**
 	 * Return value at the given index and remove it immediatelly
@@ -239,23 +218,12 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	/**
 	 * Return true if the list contains the key
 	 *
-	 * @param key
-	 * @return
-	 */
-	public boolean contains(E key) {
-		return list.contains(key);
-	}
-
-	/**
-	 * Return true if the list contains the key
-	 * <p>
-	 * If the key is a string we return true if it equals your key, case ignored,
-	 * otherwise we just call equals() method normally
+	 * If the key is string we return true if it contains ignore case
 	 *
 	 * @param key
 	 * @return
 	 */
-	public boolean containsIgnoreCase(E key) {
+	public boolean contains(E key) {
 		for (final E other : list) {
 			if (other instanceof String && key instanceof String)
 				if (((String) other).equalsIgnoreCase((String) key))
@@ -266,6 +234,22 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns a view of the portion of this list between the specified fromIndex,
+	 * inclusive, and toIndex, exclusive. (If fromIndex and toIndex are equal,
+	 * the returned list is empty.) The returned list is backed by this list,
+	 * so non-structural changes in the returned list are reflected in this list,
+	 * and vice-versa.The returned list supports all of the optional list operations
+	 * supported by this list.
+	 *
+	 * @param fromIndex
+	 * @param toIndex
+	 * @return
+	 */
+	public List<E> subList(int fromIndex, int toIndex) {
+		return list.subList(fromIndex, toIndex);
 	}
 
 	/**
@@ -294,11 +278,13 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	}
 
 	/**
-	 * See {@link List#iterator()}
+	 * Return all list values together split by the given separator
+	 *
+	 * @param separator
+	 * @return
 	 */
-	@Override
-	public Iterator<E> iterator() {
-		return list.iterator();
+	public String join(String separator) {
+		return StringUtils.join(list, separator);
 	}
 
 	/**
@@ -321,21 +307,19 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	}
 
 	/**
+	 * See {@link List#iterator()}
+	 */
+	@Override
+	public Iterator<E> iterator() {
+		return list.iterator();
+	}
+
+	/**
 	 * Serializes every value in the list so you can store it in your settings
 	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serializeList(list);
-	}
-
-	/**
-	 * Return all list values together split by the given separator
-	 *
-	 * @param separator
-	 * @return
-	 */
-	public String join(String separator) {
-		return StringUtils.join(list, separator);
+		return SerializeUtil.serialize(list);
 	}
 
 	/**

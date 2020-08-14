@@ -16,65 +16,93 @@ import org.mineacademy.fo.exception.FoException;
  * <p>
  * Failing to do so results in an error, with optional error message.
  */
-public class StrictSet<E> extends StrictCollection implements Iterable<E> {
+public final class StrictSet<E> extends StrictCollection implements Iterable<E> {
 
-	private final Set<E> list = new HashSet<>();
+	/**
+	 * The internal set
+	 */
+	private final Set<E> set = new HashSet<>();
 
+	/**
+	 * Create a new set from the given elements
+	 *
+	 * @param elements
+	 */
+	@SafeVarargs
 	public StrictSet(E... elements) {
 		this();
 
-		setAll(Arrays.asList(elements));
+		addAll(Arrays.asList(elements));
 	}
 
+	/**
+	 * Create a new set from the given elements
+	 *
+	 * @param oldList
+	 */
 	public StrictSet(Collection<E> oldList) {
 		this();
 
-		setAll(oldList);
+		addAll(oldList);
 	}
 
-	public StrictSet(Collection<E> oldList, String removeMsg, String addMsg) {
-		this(removeMsg, addMsg);
-
-		setAll(oldList);
-	}
-
+	/**
+	 * Create a new strict set
+	 */
 	public StrictSet() {
-		this("Cannot remove '%s' as it is not in the set!", "Value '%s' is already in the set!");
+		super("Cannot remove '%s' as it is not in the set!", "Value '%s' is already in the set!");
 	}
 
-	public StrictSet(String removeMessage, String addMessage) {
-		super(removeMessage, addMessage);
-	}
+	// ------------------------------------------------------------------------------------------------------------
+	// Methods below trigger strict checks
+	// ------------------------------------------------------------------------------------------------------------
 
-	public void setAll(Collection<E> collection) {
-		clear();
-
-		for (final E val : collection)
-			add(val);
-	}
-
+	/**
+	 * Remove the given element from the set
+	 * failing if it is null or not within the set
+	 *
+	 * @param value
+	 */
 	public void remove(E value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
-		final boolean removed = list.remove(value);
+		final boolean removed = set.remove(value);
 
 		Valid.checkBoolean(removed, String.format(getCannotRemoveMessage(), value));
 	}
 
+	/**
+	 * Add all elements to the set
+	 *
+	 * @param collection
+	 */
+	public void addAll(Collection<E> collection) {
+		for (final E val : collection)
+			add(val);
+	}
+
+	/**
+	 * Add the given element to the set
+	 * failing if it is null or already within the set
+	 *
+	 * @param key
+	 */
 	public void add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
-		Valid.checkBoolean(!list.contains(key), String.format(getCannotAddMessage(), key));
+		Valid.checkBoolean(!set.contains(key), String.format(getCannotAddMessage(), key));
 
-		list.add(key);
+		set.add(key);
 	}
 
-	public boolean contains(E key) {
-		return list.contains(key);
-	}
-
+	/**
+	 * Return the element at the given index
+	 *
+	 * @param index
+	 * @return
+	 */
 	public E getAt(int index) {
 		int i = 0;
 
-		final Iterator<E> it = list.iterator();
+		final Iterator<E> it = set.iterator();
 
 		while (it.hasNext()) {
 			final E e = it.next();
@@ -83,41 +111,95 @@ public class StrictSet<E> extends StrictCollection implements Iterable<E> {
 				return e;
 		}
 
-		throw new FoException("Index (" + index + ") + out of size (" + list.size() + ")");
+		throw new FoException("Index (" + index + ") + out of size (" + set.size() + ")");
 	}
 
+	// ------------------------------------------------------------------------------------------------------------
+	// Methods without throwing errors below
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return true if the set contains the given element
+	 *
+	 * @param key
+	 * @return
+	 */
+	public boolean contains(E key) {
+		return set.contains(key);
+	}
+
+	/**
+	 * Clear the set
+	 */
 	public void clear() {
-		list.clear();
+		set.clear();
 	}
 
+	/**
+	 * Return true if the set is empty
+	 *
+	 * @return
+	 */
 	public boolean isEmpty() {
-		return list.isEmpty();
+		return set.isEmpty();
 	}
 
+	/**
+	 * Return the sets size
+	 *
+	 * @return
+	 */
 	public int size() {
-		return list.size();
+		return set.size();
 	}
 
+	/**
+	 * Return the original Java implementation of the set
+	 *
+	 * @return
+	 */
 	public Set<E> getSource() {
-		return list;
+		return set;
 	}
 
+	/**
+	 * Return all set values together split by the given separator
+	 *
+	 * @param separator
+	 * @return
+	 */
+	public String join(String separator) {
+		return StringUtils.join(set, separator);
+	}
+
+	/**
+	 * Return this set as array
+	 *
+	 * @param e
+	 * @return
+	 */
+	public E[] toArray(E[] e) {
+		return set.toArray(e);
+	}
+
+	/**
+	 * Return the sets iterator
+	 */
 	@Override
 	public Iterator<E> iterator() {
-		return list.iterator();
+		return set.iterator();
 	}
 
-	public E[] toArray(E[] e) {
-		return list.toArray(e);
-	}
-
+	/**
+	 * Return this set as list of serialized objects
+	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serializeList(list);
+		return SerializeUtil.serialize(set);
 	}
 
 	@Override
 	public String toString() {
-		return "StrictSet{\n" + StringUtils.join(list, "\n") + "}";
+		return "StrictSet{\n" + StringUtils.join(set, "\n") + "}";
 	}
 }

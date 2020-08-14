@@ -823,24 +823,6 @@ public final class HookManager {
 	}
 
 	/**
-	 * Check to see if this user has the given permission node <br>
-	 * Note: Due to vault API Limitations, this will return false if the node is
-	 * false or undefined. Some permissions plugins don't load superperms into their
-	 * dataset, so this should not be relied on.
-	 *
-	 * @param online The player to check
-	 * @param perm   Permission node
-	 * @return true if permission is set and not denied
-	 * @deprecated use {@link PlayerUtil#hasPerm(org.bukkit.permissions.Permissible, String)}
-	 */
-	@Deprecated
-	public static boolean hasPermissionVault(final Player online, final String perm) {
-		return online != null && online.getUniqueId() != null
-				&& isVaultLoaded()
-				&& vaultHook.hasPerm(online.getWorld().getName(), online.getName(), perm);
-	}
-
-	/**
 	 * Checks if the given UUID has permission (uses Vault)
 	 *
 	 * @param id
@@ -880,7 +862,7 @@ public final class HookManager {
 			return has;
 		}
 
-		return player != null ? player.isOp() : false;
+		return player != null && player.isOp();
 	}
 
 	/**

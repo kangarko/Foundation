@@ -26,18 +26,6 @@ public final class RandomUtil {
 	private static final Random random = new Random();
 
 	/**
-	 * The basic anglo-saxon alphabet used for getting random text
-	 */
-	private static final char[] ENGLISH_LETTERS = new char[] {
-			'a', 'b', 'c', 'd', 'e', ' ',
-			'f', 'g', 'h', 'i', 'j',
-			'k', 'l', 'm', 'n', 'o',
-			'p', 'q', 'r', 's', 't',
-			'u', 'v', 'w', 'y', 'z',
-			'!', '?', ',', '.', ' '
-	};
-
-	/**
 	 * Symbols for chat colors using the & character including decorations like bold italics etc
 	 */
 	private static final char[] COLORS_AND_DECORATION = new char[] {
@@ -84,23 +72,6 @@ public final class RandomUtil {
 	 */
 	public static boolean chanceD(final double percent) {
 		return random.nextDouble() < percent;
-	}
-
-	/**
-	 * Returns a string that consist of alphanumerical a-z characters, !, ?, ,, .
-	 * and whitespace of desired length from {@link #ENGLISH_LETTERS}
-	 *
-	 * @param minLength
-	 * @param maxLength
-	 * @return
-	 */
-	public static String nextString(final int minLength, final int maxLength) {
-		String message = "";
-
-		for (int i = 0; i < minLength + random.nextInt(maxLength); i++)
-			message += ENGLISH_LETTERS[random.nextInt(ENGLISH_LETTERS.length)];
-
-		return message;
 	}
 
 	/**

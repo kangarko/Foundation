@@ -229,6 +229,7 @@ public final class ChatUtil {
 	 * How much big letters the message has, in percentage.
 	 *
 	 * @param message the message to check
+	 *
 	 * @return how much percent of the message is big letters (from 0 to 100)
 	 */
 	public static double getCapsPercentage(final String message) {
@@ -255,6 +256,7 @@ public final class ChatUtil {
 	 *
 	 * @param message the message to check
 	 * @param ignored the list of strings to ignore (whitelist)
+	 *
 	 * @return how many big letters are in message
 	 */
 	public static int getCapsInRow(final String message, final List<String> ignored) {
@@ -281,9 +283,10 @@ public final class ChatUtil {
 	 *
 	 * @param first
 	 * @param second
+	 *
 	 * @return
 	 */
-	public static double percentageSimilarity(String first, String second) {
+	public static double getSimilarityPercentage(String first, String second) {
 		if (first.isEmpty() && second.isEmpty())
 			return 1D;
 
@@ -305,14 +308,11 @@ public final class ChatUtil {
 		return (longerLength - editDistance(longer, shorter)) / (double) longerLength;
 	}
 
-	/**
+	/*
 	 * Remove any similarity traits of a message such as removing colors,
 	 * lowercasing it, removing diacritic
-	 *
-	 * @param message
-	 * @return
 	 */
-	public static String removeSimilarity(String message) {
+	private static String removeSimilarity(String message) {
 		message = replaceDiacritic(message);
 		message = Common.stripColors(message);
 		message = message.toLowerCase();
@@ -394,6 +394,12 @@ public final class ChatUtil {
 	}
 }
 
+/**
+ * Contains information about all allowed Minecraft letters
+ *
+ * @deprecated new Minecraft versions support Unicode and a much broader range
+ *
+ */
 enum DefaultFontInfo {
 
 	A('A', 5),

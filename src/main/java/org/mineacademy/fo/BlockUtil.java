@@ -9,15 +9,12 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.bukkit.Chunk;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -46,14 +43,13 @@ public final class BlockUtil {
 	 * tree upwards
 	 */
 	private static final BlockFace[] TREE_TRUNK_FACES = {
-			BlockFace.UP, /*BlockFace.DOWN,*/ BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH
+			BlockFace.UP, BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH
 	};
 
 	/**
 	 * A list of safe blocks upon which a tree naturally grows
 	 */
-	private final static Set<String> TREE_GROUND_BLOCKS = Sets.newHashSet(
-			"GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
+	private final static Set<String> TREE_GROUND_BLOCKS = Sets.newHashSet("GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
 
 	/**
 	 * The vertical gaps when creating locations for a bounding box,
@@ -68,37 +64,8 @@ public final class BlockUtil {
 	public static double BOUNDING_HORIZONTAL_GAP = 1;
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Block manipulation
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Remove the block if player has creative, otherwise, drop it.
-	 *
-	 * @param player
-	 * @param block
-	 */
-	public static void destroyBlockSurvival(final Player player, final Block block) {
-		if (player.getGameMode() != GameMode.CREATIVE)
-			block.breakNaturally();
-		else
-			block.setType(Material.AIR);
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
 	// Cuboid region manipulation
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Returns true if the given location is within the two cuboid bounds
-	 *
-	 * @param location
-	 * @param primary
-	 * @param secondary
-	 * @return
-	 */
-	public static boolean isWithinCuboid(final Location location, final Location primary, final Location secondary) {
-		return isWithinCuboid(location, primary.toVector(), secondary.toVector());
-	}
 
 	/**
 	 * Returns true if the given location is within the two vector cuboid bounds
@@ -108,7 +75,7 @@ public final class BlockUtil {
 	 * @param secondary
 	 * @return
 	 */
-	public static boolean isWithinCuboid(final Location location, final Vector primary, final Vector secondary) {
+	public static boolean isWithinCuboid(final Location location, final Location primary, final Location secondary) {
 		final double locX = location.getX();
 		final double locY = location.getY();
 		final double locZ = location.getZ();
@@ -459,19 +426,6 @@ public final class BlockUtil {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Returns true whether the block is suitable for setting as cornerstone,
-	 * foundation, region point or other key points. Also checks the player click
-	 * action.
-	 *
-	 * @param clicked
-	 * @param action
-	 * @return
-	 */
-	public static boolean canSetup(final Block clicked, final Action action) {
-		return (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK) && isForBlockSelection(clicked.getType());
-	}
-
-	/**
 	 * Returns true whether the given block is a "LOG" type and we perform a search
 	 * down to the bottom most connected block to find if that stands onto {@link #TREE_GROUND_BLOCKS}
 	 *
@@ -519,11 +473,11 @@ public final class BlockUtil {
 				|| material.name().endsWith("SWORD")
 				|| material.name().endsWith("HOE")
 				|| material.name().endsWith("BUCKET") // water, milk, lava,..
-				|| material == Material.BOW
-				|| material == Material.FISHING_ROD
-				|| material == Remain.getMaterial("CLOCK", "WATCH")
-				|| material == Material.COMPASS
-				|| material == Material.FLINT_AND_STEEL;
+				|| material == CompMaterial.BOW.getMaterial()
+				|| material == CompMaterial.FISHING_ROD.getMaterial()
+				|| material == CompMaterial.CLOCK.getMaterial()
+				|| material == CompMaterial.COMPASS.getMaterial()
+				|| material == CompMaterial.FLINT_AND_STEEL.getMaterial();
 	}
 
 	/**
@@ -540,10 +494,10 @@ public final class BlockUtil {
 	}
 
 	/**
-	 * Returns true if block is safe to select, see {@link #SELECTION_BLOCKS}
+	 * Returns true if block is safe to select
 	 *
 	 * @param material the material
-	 * @return if block contains the partial name of {@link #SELECTION_BLOCKS}
+	 * @return
 	 */
 	public static boolean isForBlockSelection(final Material material) {
 		if (!material.isBlock() || material == Material.AIR)

@@ -1,4 +1,4 @@
-package org.mineacademy.fo.update;
+package org.mineacademy.fo.model;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -105,7 +105,9 @@ public class SpigotUpdater implements Runnable {
 
 					channel = Channels.newChannel(connection.getInputStream());
 
-					final File updateFolder = FileUtil.getOrMakeAbs(Bukkit.getUpdateFolderFile());
+					final File updateFolder = Bukkit.getUpdateFolderFile();
+					FileUtil.createIfNotExists(updateFolder);
+
 					final File destination = new File(updateFolder, SimplePlugin.getNamed() + "-" + newVersion + ".jar");
 					final FileOutputStream output = new FileOutputStream(destination);
 
@@ -231,19 +233,16 @@ public class SpigotUpdater implements Runnable {
 
 	/**
 	 * Used to replace variables in the update log/notify/downloaded message such
-	 * as {new} {current} and {plugin.name}
+	 * as {new} {current} and {plugin_name}
 	 *
 	 * @param message
 	 * @return
 	 */
 	protected String replaceVariables(final String message) {
 		return message
-				.replace("{resourceId}", resourceId + "") // DEPRECATED
 				.replace("{resource_id}", resourceId + "")
-				.replace("{plugin.name}", SimplePlugin.getNamed()) // DEPRECATED
 				.replace("{plugin_name}", SimplePlugin.getNamed())
 				.replace("{new}", newVersion)
-				.replace("{curr}", SimplePlugin.getVersion()) // DEPRECATED
 				.replace("{current}", SimplePlugin.getVersion())
 				.replace("{user_id}", "%%__USER__%%");
 	}

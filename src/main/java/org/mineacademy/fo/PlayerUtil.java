@@ -32,13 +32,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.jsonsimple.JSONObject;
 import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
@@ -64,14 +62,6 @@ public final class PlayerUtil {
 	 * Stores a list of currently pending title animation tasks to restore the tile to its original one
 	 */
 	private static final Map<UUID, BukkitTask> titleRestoreTasks = new ConcurrentHashMap<>();
-
-	/**
-	 * The default duration of the new animated title before
-	 * it is reverted back to the old one
-	 * <p>
-	 * Used in {@link #updateInventoryTitle(Menu, Player, String, String)}
-	 */
-	public static int ANIMATION_DURATION_TICKS = 20;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Misc
@@ -262,7 +252,7 @@ public final class PlayerUtil {
 	 */
 	@Deprecated
 	public static boolean hasPermUnsafe(final UUID id, final String permission) {
-		return HookManager.hasPermissionUnsafe(id, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+		return HookManager.hasPermissionUnsafe(id, permission.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	/**
@@ -275,44 +265,19 @@ public final class PlayerUtil {
 	 */
 	@Deprecated
 	public static boolean hasPermUnsafe(final String playerName, final String permission) {
-		return HookManager.hasPermissionUnsafe(playerName, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
-	}
-
-	/**
-	 * Returns true if the player has a permission using Vault. This returns false if the player is OP and
-	 * does not have the permission explicitly set
-	 *
-	 * @param player
-	 * @param permission
-	 */
-	@Deprecated
-	public static boolean hasPermVault(final Player player, final String permission) {
-		return permission == null || HookManager.hasPermissionVault(player, permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+		return HookManager.hasPermissionUnsafe(playerName, permission.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	/**
 	 * Return if the given sender has a certain permission
-	 * You can use {plugin.name} to replace with your plugin name (lower-cased)
-	 *
-	 * @param sender
-	 * @param permission
-	 * @param associativeArray
-	 * @return
-	 */
-	public static boolean hasPerm(@NonNull final Permissible sender, @Nullable String permission, Object... associativeArray) {
-		return hasPerm(sender, Replacer.replaceArray(permission, associativeArray));
-	}
-
-	/**
-	 * Return if the given sender has a certain permission
-	 * You can use {plugin.name} to replace with your plugin name (lower-cased)
+	 * You can use {plugin_name} to replace with your plugin name (lower-cased)
 	 *
 	 * @param sender
 	 * @param permission
 	 * @return
 	 */
 	public static boolean hasPerm(@NonNull final Permissible sender, @Nullable final String permission) {
-		return permission == null || sender.hasPermission(!permission.contains("{plugin.name}") ? permission : permission.replace("{plugin.name}", SimplePlugin.getNamed().toLowerCase()));
+		return permission == null || sender.hasPermission(!permission.contains("{plugin_name}") ? permission : permission.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -426,12 +391,10 @@ public final class PlayerUtil {
 		}
 	}
 
-	/**
+	/*
 	 * Cleans players inventory and restores food levels
-	 *
-	 * @param player
 	 */
-	public static void cleanInventoryAndFood(final Player player) {
+	private static void cleanInventoryAndFood(final Player player) {
 		player.getInventory().setArmorContents(null);
 		player.getInventory().setContents(new ItemStack[player.getInventory().getContents().length]);
 		try {
@@ -478,8 +441,11 @@ public final class PlayerUtil {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static boolean isVanished(final Player player, final Player otherPlayer) {
-		return isVanished(player) || !otherPlayer.canSee(player);
+	public static boolean isVanished(final Player player, @Nullable final Player otherPlayer) {
+		if (otherPlayer != null && !otherPlayer.canSee(player))
+			return true;
+
+		return isVanished(player);
 	}
 
 	/**
@@ -492,8 +458,6 @@ public final class PlayerUtil {
 	public static boolean isVanished(final Player player) {
 		if (HookManager.isVanished(player))
 			return true;
-
-		Debugger.debug("tell-vanished", "Check vanish for " + player.getName() + ". Metadata ? " + player.hasMetadata("vanished"));
 
 		if (player.hasMetadata("vanished"))
 			for (final MetadataValue meta : player.getMetadata("vanished"))
@@ -513,8 +477,8 @@ public final class PlayerUtil {
 	 * @param name
 	 * @return
 	 */
-	public static Player getNickedNonVanishedPlayer(final String name) {
-		return getNickedPlayer(name, false);
+	public static Player getPlayerByNickNoVanish(final String name) {
+		return getPlayerByNick(name, false);
 	}
 
 	/**
@@ -524,7 +488,7 @@ public final class PlayerUtil {
 	 * @param ignoreVanished
 	 * @return
 	 */
-	public static Player getNickedPlayer(final String name, final boolean ignoreVanished) {
+	public static Player getPlayerByNick(final String name, final boolean ignoreVanished) {
 		Player found = Bukkit.getPlayer(name);
 
 		if (found == null)
@@ -562,18 +526,6 @@ public final class PlayerUtil {
 	// ----------------------------------------------------------------------------------------------------
 	// Animation
 	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Sends an animated title to player for the {@link #ANIMATION_DURATION_TICKS} duration. Colors are replaced
-	 *
-	 * @param menu           the menu
-	 * @param player         the player
-	 * @param temporaryTitle the animated title
-	 * @param oldTitle       the old title
-	 */
-	public static void updateInventoryTitle(final Menu menu, final Player player, final String temporaryTitle, final String oldTitle) {
-		updateInventoryTitle(menu, player, temporaryTitle, oldTitle, ANIMATION_DURATION_TICKS);
-	}
 
 	/**
 	 * Sends an animated title to player. Colors are replaced.

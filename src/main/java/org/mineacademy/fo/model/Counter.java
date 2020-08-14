@@ -6,7 +6,10 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 /**
  * Special usage class used in CoreArena/Boss to count loaded arenas
  * vs. the ones that actually load correctly
+ *
+ * @deprecated subject for removal
  */
+@Deprecated
 public final class Counter {
 
 	/**

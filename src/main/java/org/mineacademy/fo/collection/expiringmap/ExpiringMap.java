@@ -258,7 +258,7 @@ import lombok.NonNull;
  * @param <V> Value type
  * @author Jonathan Halterman
  */
-public class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
+public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	static volatile ScheduledExecutorService EXPIRER;
 	static volatile ThreadPoolExecutor LISTENER_SERVICE;
 	static ThreadFactory THREAD_FACTORY;

@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.Common;
 
 /**
  * Wraps NMS and CRAFT classes
@@ -54,8 +54,9 @@ enum WrapperClass {
 		try {
 			final String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
 			clazz = Class.forName(packageId.getUri() + "." + version + "." + suffix);
+
 		} catch (final Exception ex) {
-			Debugger.debug("NBT", "[NBTAPI] Error while trying to resolve the class '" + suffix + "'!");
+			Common.throwError(ex, "Error while trying to resolve NBT class '" + suffix + "'!");
 		}
 	}
 

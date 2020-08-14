@@ -54,13 +54,13 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
+import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
-import org.mineacademy.fo.update.SpigotUpdater;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
@@ -262,8 +262,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load our dependency system
 			try {
 				HookManager.loadDependencies();
+
 			} catch (final Throwable throwable) {
-				Debugger.debug("Can't load dependencies");
+				Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
 			}
 
 			if (!isEnabled || !isEnabled())

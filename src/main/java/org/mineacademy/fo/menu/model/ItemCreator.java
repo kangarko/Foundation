@@ -1,11 +1,9 @@
 package org.mineacademy.fo.menu.model;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -47,8 +45,6 @@ import lombok.Singular;
  */
 @Builder
 public final class ItemCreator {
-
-	private static final String STEVE_TEXTURE = "ewogICJ0aW1lc3RhbXAiIDogMTU5MTU3NDcyMzc4MywKICAicHJvZmlsZUlkIiA6ICI4NjY3YmE3MWI4NWE0MDA0YWY1NDQ1N2E5NzM0ZWVkNyIsCiAgInByb2ZpbGVOYW1lIiA6ICJTdGV2ZSIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82ZDNiMDZjMzg1MDRmZmMwMjI5Yjk0OTIxNDdjNjlmY2Y1OWZkMmVkNzg4NWY3ODUwMjE1MmY3N2I0ZDUwZGUxIgogICAgfSwKICAgICJDQVBFIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS85NTNjYWM4Yjc3OWZlNDEzODNlNjc1ZWUyYjg2MDcxYTcxNjU4ZjIxODBmNTZmYmNlOGFhMzE1ZWE3MGUyZWQ2IgogICAgfQogIH0KfQ==";
 
 	/**
 	 * The initial item stack
@@ -205,8 +201,8 @@ public final class ItemCreator {
 		//
 		// First, make sure the ItemStack is not null (it can be null if you create this class only using material)
 		//
-
 		Valid.checkBoolean(material != null || item != null, "Material or item must be set!");
+
 		ItemStack is = item != null ? item.clone() : new ItemStack(material.getMaterial(), amount);
 		final ItemMeta itemMeta = meta != null ? meta.clone() : is.getItemMeta();
 
@@ -265,6 +261,7 @@ public final class ItemCreator {
 
 				if ("MOOSHROOM".equals(entityRaw))
 					entityRaw = "MUSHROOM_COW";
+
 				else if ("ZOMBIE_PIGMAN".equals(entityRaw))
 					entityRaw = "PIG_ZOMBIE";
 
@@ -404,41 +401,6 @@ public final class ItemCreator {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Creates an ItemBuilder from a skull-texture
-	 *
-	 * @param hash Base64-String representation of a skull-texture
-	 * @return
-	 */
-	public static ItemCreatorBuilder ofSkullHash(final String hash) {
-		if (hash == null || hash.isEmpty())
-			return ofSkullHash(STEVE_TEXTURE);
-
-		final ItemStack head = new ItemStack(CompMaterial.PLAYER_HEAD.getMaterial(), 1, (short) 3);
-		final SkullMeta meta = (SkullMeta) head.getItemMeta();
-
-		final Object gameProfile = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), UUID.randomUUID(), "");
-		final Object property = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property"), "textures", hash);
-		final Object properties = ReflectionUtil.invoke("getProperties", gameProfile);
-
-		ReflectionUtil.invoke("put", properties, "textures", property);
-
-		Field profileField = null;
-
-		try {
-			profileField = meta.getClass().getDeclaredField("profile");
-			profileField.setAccessible(true);
-			profileField.set(meta, gameProfile);
-
-		} catch (final IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException exception) {
-			Common.throwError(exception, "Exception while setting skin texture");
-		}
-
-		head.setItemMeta(meta);
-
-		return of(head);
-	}
-
-	/**
 	 * Convenience method to get a new item creator with material, name and lore set
 	 *
 	 * @param material
@@ -522,9 +484,5 @@ public final class ItemCreator {
 		Valid.checkNotNull(mat, "Material cannot be null!");
 
 		return ItemCreator.builder().material(mat);
-	}
-
-	public static ItemCreatorBuilder ofString(final String material) {
-		return of(CompMaterial.valueOf(material));
 	}
 }

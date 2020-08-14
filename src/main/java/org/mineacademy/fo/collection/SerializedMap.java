@@ -764,7 +764,9 @@ public final class SerializedMap extends StrictCollection {
 	public static SerializedMap of(final Map<String, Object> map) {
 		final SerializedMap serialized = new SerializedMap();
 
-		serialized.map.setAll(map);
+		serialized.map.clear();
+		serialized.map.putAll(map);
+
 		return serialized;
 	}
 

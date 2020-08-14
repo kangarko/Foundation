@@ -81,17 +81,7 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static String bountifyCapitalized(Enum<?> enumeration) {
-		return bountifyCapitalizedEnum(enumeration.toString());
-	}
-
-	/**
-	 * Lowercases everything and finally capitalizes it
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static String bountifyCapitalizedEnum(String name) {
-		return WordUtils.capitalizeFully(bountify(name.toLowerCase()));
+		return WordUtils.capitalizeFully(bountify(enumeration.toString().toLowerCase()));
 	}
 
 	/**
@@ -102,26 +92,6 @@ public final class ItemUtil {
 	 */
 	public static String bountifyCapitalized(String name) {
 		return WordUtils.capitalizeFully(bountify(name));
-	}
-
-	/**
-	 * Returns a human readable fancy potion effect type
-	 *
-	 * @param enumeration
-	 * @return
-	 */
-	public static String bountify(PotionEffectType enumeration) {
-		return PotionWrapper.getLocalizedName(enumeration.getName());
-	}
-
-	/**
-	 * Returns a fancy enchantment name
-	 *
-	 * @param enchant
-	 * @return
-	 */
-	public static String bountify(Enchantment enchant) {
-		return EnchantmentWrapper.toMinecraft(enchant.getName());
 	}
 
 	/**
@@ -142,6 +112,26 @@ public final class ItemUtil {
 	 */
 	public static String bountify(String name) {
 		return name.toLowerCase().replace("_", " ");
+	}
+
+	/**
+	 * Returns a human readable fancy potion effect type
+	 *
+	 * @param enumeration
+	 * @return
+	 */
+	public static String bountify(PotionEffectType enumeration) {
+		return PotionWrapper.getLocalizedName(enumeration.getName());
+	}
+
+	/**
+	 * Returns a fancy enchantment name
+	 *
+	 * @param enchant
+	 * @return
+	 */
+	public static String bountify(Enchantment enchant) {
+		return EnchantmentWrapper.toMinecraft(enchant.getName());
 	}
 
 	// ----------------------------------------------------------------------------------------------------

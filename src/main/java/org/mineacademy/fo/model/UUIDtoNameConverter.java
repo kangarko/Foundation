@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
  * given UUID
  */
 @RequiredArgsConstructor
-public class UUIDtoNameConverter implements Callable<String> {
+public class UUIDToNameConverter implements Callable<String> {
 
 	/**
 	 * The URL to connect to

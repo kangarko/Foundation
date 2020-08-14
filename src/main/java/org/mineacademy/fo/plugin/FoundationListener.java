@@ -11,7 +11,7 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleScoreboard;
-import org.mineacademy.fo.update.SpigotUpdater;
+import org.mineacademy.fo.model.SpigotUpdater;
 
 /**
  * Listens for some events we handle for you automatically
