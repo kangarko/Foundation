@@ -2,10 +2,6 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.io.InputStream;
 
-import org.mineacademy.fo.remain.nbt.nmsmappings.ClassWrapper;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ObjectCreator;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-
 /**
  * A Standalone {@link NBTCompound} implementation. All data is just kept inside
  * this Object.
@@ -21,7 +17,7 @@ public class NBTContainer extends NBTCompound {
 	 */
 	NBTContainer() {
 		super(null, null);
-		nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
+		nbt = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
 	}
 
 	/**
@@ -33,7 +29,7 @@ public class NBTContainer extends NBTCompound {
 		super(null, null);
 		if (nbt == null)
 			throw new NullPointerException("The NBT-Object can't be null!");
-		if (!ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass()))
+		if (!WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass()))
 			throw new NbtApiException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
 		this.nbt = nbt;
 	}
@@ -59,7 +55,7 @@ public class NBTContainer extends NBTCompound {
 		if (nbtString == null)
 			throw new NullPointerException("The String can't be null!");
 		try {
-			nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
+			nbt = WrapperReflection.PARSE_NBT.run(null, nbtString);
 		} catch (final Exception ex) {
 			throw new NbtApiException("Unable to parse Malformed Json!", ex);
 		}

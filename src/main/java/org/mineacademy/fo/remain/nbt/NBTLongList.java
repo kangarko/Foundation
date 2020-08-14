@@ -3,9 +3,6 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.mineacademy.fo.remain.nbt.nmsmappings.ClassWrapper;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-
 /**
  * Long implementation for NBTLists
  *
@@ -20,7 +17,7 @@ public class NBTLongList extends NBTList<Long> {
 	@Override
 	protected Object asTag(final Long object) {
 		try {
-			final Constructor<?> con = ClassWrapper.NMS_NBTTAGLONG.getClazz().getDeclaredConstructor(long.class);
+			final Constructor<?> con = WrapperClass.NMS_NBTTAGLONG.getClazz().getDeclaredConstructor(long.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (final InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -31,7 +28,7 @@ public class NBTLongList extends NBTList<Long> {
 	@Override
 	public Long get(final int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = WrapperReflection.LIST_GET.run(listObject, index);
 			return Long.valueOf(obj.toString().replace("L", ""));
 		} catch (final NumberFormatException nf) {
 			return 0L;

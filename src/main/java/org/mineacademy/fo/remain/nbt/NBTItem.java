@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain.nbt;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
 
 /**
  * NBT class to access vanilla/custom tags on ItemStacks. This class doesn't
@@ -30,14 +29,14 @@ public class NBTItem extends NBTCompound {
 
 	@Override
 	public Object getCompound() {
-		return NBTReflectionUtil.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
+		return NBTReflectionUtil.getItemRootNBTTagCompound(WrapperReflection.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
 	}
 
 	@Override
 	protected void setCompound(final Object compound) {
-		final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
-		ReflectionMethod.ITEMSTACK_SET_TAG.run(stack, compound);
-		bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
+		final Object stack = WrapperReflection.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+		WrapperReflection.ITEMSTACK_SET_TAG.run(stack, compound);
+		bukkitItem = (ItemStack) WrapperReflection.ITEMSTACK_BUKKITMIRROR.run(null, stack);
 	}
 
 	/**
@@ -94,7 +93,7 @@ public class NBTItem extends NBTCompound {
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
 	static NBTContainer convertItemtoNBT(final ItemStack item) {
-		return NBTReflectionUtil.convertNMSItemtoNBTCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, item));
+		return NBTReflectionUtil.convertNMSItemtoNBTCompound(WrapperReflection.ITEMSTACK_NMSCOPY.run(null, item));
 	}
 
 	/**
@@ -105,7 +104,7 @@ public class NBTItem extends NBTCompound {
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */
 	static ItemStack convertNBTtoItem(final NBTCompound comp) {
-		return (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
+		return (ItemStack) WrapperReflection.ITEMSTACK_BUKKITMIRROR.run(null, NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
 	}
 
 }

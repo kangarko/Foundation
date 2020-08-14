@@ -1,17 +1,9 @@
-package org.mineacademy.fo.remain.internal;
+package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.remain.nbt.NBTCompound;
-import org.mineacademy.fo.remain.nbt.NBTCompoundList;
-import org.mineacademy.fo.remain.nbt.NBTEntity;
-import org.mineacademy.fo.remain.nbt.NBTItem;
-import org.mineacademy.fo.remain.nbt.NBTList;
-import org.mineacademy.fo.remain.nbt.NBTListCompound;
-import org.mineacademy.fo.remain.nbt.NBTTileEntity;
-import org.mineacademy.fo.remain.nbt.NBTType;
 
 /**
  * Utility class to test NBT library's compatibility
