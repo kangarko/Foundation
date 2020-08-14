@@ -43,17 +43,26 @@ public final class JavaScriptExecutor {
 	static {
 		Thread.currentThread().setContextClassLoader(SimplePlugin.class.getClassLoader());
 
-		final ScriptEngineManager engineManager = new ScriptEngineManager(null);
+		ScriptEngineManager engineManager = new ScriptEngineManager();
+		ScriptEngine scriptEngine = engineManager.getEngineByName("Nashorn");
+
+		// Workaround for newer Minecraft releases, still unsure what the cause is
+		if (scriptEngine == null) {
+			engineManager = new ScriptEngineManager(null);
+
+			scriptEngine = engineManager.getEngineByName("Nashorn");
+		}
+
 		engine = engineManager.getEngineByName("Nashorn");
 
 		if (engine == null)
 			Common.logFramed(true,
 					"JavaScript placeholders will not function!",
 					"",
-					"Your Java version/distribution lacks",
-					"the Nashorn library for JavaScript",
-					"placeholders. Ensure you have Oracle",
-					"Java 8.");
+					"Your Java version/distribution lacks the",
+					"Nashorn library for JavaScript placeholders.",
+					"Please install Oracle Java 8 JDK.");
+
 	}
 
 	/**

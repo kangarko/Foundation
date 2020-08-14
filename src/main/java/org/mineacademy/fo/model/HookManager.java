@@ -263,6 +263,22 @@ public final class HookManager {
 		}
 	}
 
+	/**
+	 * Removes packet listeners from ProtocolLib for a plugin
+	 *
+	 * @param plugin
+	 *
+	 * @deprecated internal use only, please do not call
+	 */
+	@Deprecated
+	public static void unloadDependencies(final Plugin plugin) {
+		if (isProtocolLibLoaded())
+			protocolLibHook.removePacketListeners(plugin);
+
+		if (isPlaceholderAPILoaded())
+			placeholderAPIHook.unregister();
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Methods for determining which plugins were loaded after you call the load method
 	// ------------------------------------------------------------------------------------------------------------
@@ -1058,19 +1074,6 @@ public final class HookManager {
 	}
 
 	/**
-	 * Removes packet listeners from ProtocolLib for a plugin
-	 *
-	 * @param plugin
-	 * @deprecated no need to call this manually as we call this in {@link SimplePlugin} when
-	 * you restart or reload your plugin automatically
-	 */
-	@Deprecated
-	public static void removePacketListeners(final Plugin plugin) {
-		if (isProtocolLibLoaded())
-			protocolLibHook.removePacketListeners(plugin);
-	}
-
-	/**
 	 * Send a {@link PacketContainer} to the given player
 	 *
 	 * @param player
@@ -1716,13 +1719,21 @@ class PlaceholderAPIHook {
 
 	private final Set<PAPIPlaceholder> placeholders = new HashSet<>();
 
+	private VariablesInjector injector;
+
 	PlaceholderAPIHook() {
 		try {
-			new VariablesInjector().register();
+			injector = new VariablesInjector();
+			injector.register();
 
 		} catch (final Throwable throwable) {
 			Common.error(throwable, "Failed to inject our variables into PlaceholderAPI!");
 		}
+	}
+
+	final void unregister() {
+		if (injector != null)
+			injector.unregister();
 	}
 
 	final void addPlaceholder(final PAPIPlaceholder placeholder) {
