@@ -1,8 +1,5 @@
 package org.mineacademy.fo.remain.nbt;
 
-import org.mineacademy.fo.remain.nbt.nmsmappings.ObjectCreator;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-
 public class NBTGameProfile {
 
 	/**
@@ -12,7 +9,7 @@ public class NBTGameProfile {
 	 * @return A NBTContainer with all the GameProfile data
 	 */
 	public static NBTCompound toNBT(final Object profile) {
-		return new NBTContainer(ReflectionMethod.GAMEPROFILE_SERIALIZE.run(null, ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance(), profile));
+		return new NBTContainer(WrapperReflection.GAMEPROFILE_SERIALIZE.run(null, WrapperObject.NMS_NBTTAGCOMPOUND.getInstance(), profile));
 	}
 
 	/**
@@ -22,7 +19,7 @@ public class NBTGameProfile {
 	 * @return The reconstructed GameProfile
 	 */
 	public static Object fromNBT(final NBTCompound compound) {
-		return ReflectionMethod.GAMEPROFILE_DESERIALIZE.run(null, NBTReflectionUtil.gettoCompount(compound.getCompound(), compound));
+		return WrapperReflection.GAMEPROFILE_DESERIALIZE.run(null, NBTReflectionUtil.gettoCompount(compound.getCompound(), compound));
 	}
 
 }

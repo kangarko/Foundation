@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-import org.mineacademy.fo.remain.nbt.utils.MinecraftVersion;
-
 /**
  * Abstract List implementation for ListCompounds
  *
@@ -55,10 +52,10 @@ public abstract class NBTList<T> implements List<T> {
 	public boolean add(final T element) {
 		try {
 			parent.getWriteLock().lock();
-			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId())
-				ReflectionMethod.LIST_ADD.run(listObject, size(), asTag(element));
+			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId())
+				WrapperReflection.LIST_ADD.run(listObject, size(), asTag(element));
 			else
-				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, asTag(element));
+				WrapperReflection.LEGACY_LIST_ADD.run(listObject, asTag(element));
 			save();
 			return true;
 		} catch (final Exception ex) {
@@ -72,10 +69,10 @@ public abstract class NBTList<T> implements List<T> {
 	public void add(final int index, final T element) {
 		try {
 			parent.getWriteLock().lock();
-			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId())
-				ReflectionMethod.LIST_ADD.run(listObject, index, asTag(element));
+			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId())
+				WrapperReflection.LIST_ADD.run(listObject, index, asTag(element));
 			else
-				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, asTag(element));
+				WrapperReflection.LEGACY_LIST_ADD.run(listObject, asTag(element));
 			save();
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
@@ -89,7 +86,7 @@ public abstract class NBTList<T> implements List<T> {
 		try {
 			parent.getWriteLock().lock();
 			final T prev = get(index);
-			ReflectionMethod.LIST_SET.run(listObject, index, asTag(element));
+			WrapperReflection.LIST_SET.run(listObject, index, asTag(element));
 			save();
 			return prev;
 		} catch (final Exception ex) {
@@ -104,7 +101,7 @@ public abstract class NBTList<T> implements List<T> {
 		try {
 			parent.getWriteLock().lock();
 			final T old = get(i);
-			ReflectionMethod.LIST_REMOVE_KEY.run(listObject, i);
+			WrapperReflection.LIST_REMOVE_KEY.run(listObject, i);
 			save();
 			return old;
 		} catch (final Exception ex) {
@@ -118,7 +115,7 @@ public abstract class NBTList<T> implements List<T> {
 	public int size() {
 		try {
 			parent.getReadLock().lock();
-			return (int) ReflectionMethod.LIST_SIZE.run(listObject);
+			return (int) WrapperReflection.LIST_SIZE.run(listObject);
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		} finally {

@@ -3,9 +3,6 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.mineacademy.fo.remain.nbt.nmsmappings.ClassWrapper;
-import org.mineacademy.fo.remain.nbt.nmsmappings.ReflectionMethod;
-
 /**
  * String implementation for NBTLists
  *
@@ -20,7 +17,7 @@ public class NBTStringList extends NBTList<String> {
 	@Override
 	public String get(final int index) {
 		try {
-			return (String) ReflectionMethod.LIST_GET_STRING.run(listObject, index);
+			return (String) WrapperReflection.LIST_GET_STRING.run(listObject, index);
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}
@@ -29,7 +26,7 @@ public class NBTStringList extends NBTList<String> {
 	@Override
 	protected Object asTag(final String object) {
 		try {
-			final Constructor<?> con = ClassWrapper.NMS_NBTTAGSTRING.getClazz().getDeclaredConstructor(String.class);
+			final Constructor<?> con = WrapperClass.NMS_NBTTAGSTRING.getClazz().getDeclaredConstructor(String.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (final InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {

@@ -1,68 +1,61 @@
 package org.mineacademy.fo.remain.nbt;
 
-import static org.mineacademy.fo.ReflectionUtil.CRAFTBUKKIT;
-import static org.mineacademy.fo.ReflectionUtil.NMS;
-
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.debug.Debugger;
 
 /**
  * Wraps NMS and CRAFT classes
  *
  * @author tr7zw
  */
-public enum WrapperClass {
-	CRAFT_ITEMSTACK(CRAFTBUKKIT, "inventory.CraftItemStack"),
-	CRAFT_ENTITY(CRAFTBUKKIT, "entity.CraftEntity"),
-	CRAFT_WORLD(CRAFTBUKKIT, "CraftWorld"),
-
-	NMS_NBTBASE(NMS, "NBTBase"),
-	NMS_NBTTAGSTRING(NMS, "NBTTagString"),
-	NMS_NBTTAGINT(NMS, "NBTTagInt"),
-	NMS_ITEMSTACK(NMS, "ItemStack"),
-	NMS_NBTTAGCOMPOUND(NMS, "NBTTagCompound"),
-	NMS_NBTTAGLIST(NMS, "NBTTagList"),
-	NMS_NBTCOMPRESSEDSTREAMTOOLS(NMS, "NBTCompressedStreamTools"),
-	NMS_MOJANGSONPARSER(NMS, "MojangsonParser"),
-	NMS_TILEENTITY(NMS, "TileEntity"),
-	NMS_BLOCKPOSITION(NMS, "BlockPosition"),
-	NMS_WORLDSERVER(NMS, "WorldServer"),
-	NMS_MINECRAFTSERVER(NMS, "MinecraftServer"),
-	NMS_WORLD(NMS, "World"),
-	NMS_ENTITY(NMS, "Entity"),
-	NMS_ENTITYTYPES(NMS, "EntityTypes"),
-	NMS_REGISTRYSIMPLE(NMS, "RegistrySimple", MinecraftVersion.V.v1_11, MinecraftVersion.V.v1_12),
-	NMS_REGISTRYMATERIALS(NMS, "RegistryMaterials"),
-	NMS_IREGISTRY(NMS, "IRegistry"),
-	NMS_MINECRAFTKEY(NMS, "MinecraftKey"),
-	NMS_IBLOCKDATA(NMS, "IBlockData");
+enum WrapperClass {
+	CRAFT_ITEMSTACK(WrapperPackage.CRAFTBUKKIT, "inventory.CraftItemStack"),
+	CRAFT_METAITEM(WrapperPackage.CRAFTBUKKIT, "inventory.CraftMetaItem"),
+	CRAFT_ENTITY(WrapperPackage.CRAFTBUKKIT, "entity.CraftEntity"),
+	CRAFT_WORLD(WrapperPackage.CRAFTBUKKIT, "CraftWorld"),
+	NMS_NBTBASE(WrapperPackage.NMS, "NBTBase"),
+	NMS_NBTTAGSTRING(WrapperPackage.NMS, "NBTTagString"),
+	NMS_NBTTAGINT(WrapperPackage.NMS, "NBTTagInt"),
+	NMS_NBTTAGFLOAT(WrapperPackage.NMS, "NBTTagFloat"),
+	NMS_NBTTAGDOUBLE(WrapperPackage.NMS, "NBTTagDouble"),
+	NMS_NBTTAGLONG(WrapperPackage.NMS, "NBTTagLong"),
+	NMS_ITEMSTACK(WrapperPackage.NMS, "ItemStack"),
+	NMS_NBTTAGCOMPOUND(WrapperPackage.NMS, "NBTTagCompound"),
+	NMS_NBTTAGLIST(WrapperPackage.NMS, "NBTTagList"),
+	NMS_NBTCOMPRESSEDSTREAMTOOLS(WrapperPackage.NMS, "NBTCompressedStreamTools"),
+	NMS_MOJANGSONPARSER(WrapperPackage.NMS, "MojangsonParser"),
+	NMS_TILEENTITY(WrapperPackage.NMS, "TileEntity"),
+	NMS_BLOCKPOSITION(WrapperPackage.NMS, "BlockPosition"),
+	NMS_WORLDSERVER(WrapperPackage.NMS, "WorldServer"),
+	NMS_MINECRAFTSERVER(WrapperPackage.NMS, "MinecraftServer"),
+	NMS_WORLD(WrapperPackage.NMS, "World"),
+	NMS_ENTITY(WrapperPackage.NMS, "Entity"),
+	NMS_ENTITYTYPES(WrapperPackage.NMS, "EntityTypes"),
+	NMS_REGISTRYSIMPLE(WrapperPackage.NMS, "RegistrySimple", WrapperVersion.MC1_11_R1, WrapperVersion.MC1_12_R1),
+	NMS_REGISTRYMATERIALS(WrapperPackage.NMS, "RegistryMaterials"),
+	NMS_IREGISTRY(WrapperPackage.NMS, "IRegistry"),
+	NMS_MINECRAFTKEY(WrapperPackage.NMS, "MinecraftKey"),
+	NMS_GAMEPROFILESERIALIZER(WrapperPackage.NMS, "GameProfileSerializer"),
+	NMS_IBLOCKDATA(WrapperPackage.NMS, "IBlockData");
 
 	private Class<?> clazz;
 	private boolean enabled = false;
 
-	WrapperClass(final String packageId, final String suffix) {
+	WrapperClass(final WrapperPackage packageId, final String suffix) {
 		this(packageId, suffix, null, null);
 	}
 
-	WrapperClass(final String packageId, final String suffix, final MinecraftVersion.V from, final MinecraftVersion.V to) {
-		if (from != null && MinecraftVersion.olderThan(from))
+	WrapperClass(final WrapperPackage packageId, final String suffix, final WrapperVersion from, final WrapperVersion to) {
+		if (from != null && WrapperVersion.getVersion().getVersionId() < from.getVersionId())
 			return;
-
-		if (to != null && MinecraftVersion.newerThan(to))
+		if (to != null && WrapperVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
-
 		enabled = true;
-
 		try {
 			final String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-			clazz = Class.forName(packageId + "." + version + "." + suffix);
-
+			clazz = Class.forName(packageId.getUri() + "." + version + "." + suffix);
 		} catch (final Exception ex) {
-			if (MinecraftVersion.atLeast(V.v1_8))
-				Common.error(ex, "Error while trying to resolve the class '" + suffix + "'!");
-
+			Debugger.debug("NBT", "[NBTAPI] Error while trying to resolve the class '" + suffix + "'!");
 		}
 	}
 

@@ -1,16 +1,32 @@
 package org.mineacademy.fo.remain;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import lombok.NonNull;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Content;
-import net.md_5.bungee.api.chat.hover.content.Text;
-import net.md_5.bungee.chat.ComponentSerializer;
+import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
+import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -67,39 +83,25 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.UUIDtoNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
-import org.mineacademy.fo.remain.internal.NBTInternals;
 import org.mineacademy.fo.remain.internal.ParticleInternals;
+import org.mineacademy.fo.remain.nbt.NBTInternals;
 
-import javax.annotation.Nullable;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
-import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
+import lombok.NonNull;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Content;
+import net.md_5.bungee.api.chat.hover.content.Text;
+import net.md_5.bungee.chat.ComponentSerializer;
 
 /**
  * Our main cross-version compatibility class.
@@ -776,33 +778,36 @@ public final class Remain {
 	 * @return Returns a list of base components which have been colorised and represent this text.
 	 */
 	private static List<BaseComponent> resolveNestedHex(final String text) {
-		ComponentBuilder builder = new ComponentBuilder();
+		final ComponentBuilder builder = new ComponentBuilder();
 
-		Matcher matcher = RGB_HEX_ENCODED_REGEX.matcher(text);
+		final Matcher matcher = RGB_HEX_ENCODED_REGEX.matcher(text);
 
 		while (matcher.find()) {
-			int start = matcher.start();
-			int end = start + 7;
+			final int start = matcher.start();
+			final int end = start + 7;
 
 			boolean hasBrackets = false;
-			if (start != 0 && end != text.length()) {
+
+			if (start != 0 && end != text.length())
 				hasBrackets = text.charAt(start - 1) == '{' && text.charAt(end) == '}';
-			}
-			//System.out.println(text.substring(start, end));
-			TextComponent component = new TextComponent();
+
+			final TextComponent component = new TextComponent();
+
 			String nestedText;
+
 			if (matcher.find()) {
-				int next = matcher.start();
+				final int next = matcher.start();
 				matcher.find(start); // Go back.
 				nestedText = text.substring(end, next);
-			} else {
+			} else
 				nestedText = text.substring(end);
-			}
-			if (hasBrackets) {
+
+			if (hasBrackets)
 				nestedText = nestedText.substring(1, nestedText.length() - 1);
-			}
+
 			component.setColor(net.md_5.bungee.api.ChatColor.of(text.substring(start, end)));
 			component.setText(nestedText);
+
 			builder.append(component);
 		}
 		return builder.getParts();
@@ -814,47 +819,43 @@ public final class Remain {
 	 * BaseComponent does not support colors when in text, they must be set at the color level
 	 */
 	private static List<BaseComponent> replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
-
-		List<BaseComponent> list = new LinkedList<>();
+		final List<BaseComponent> list = new LinkedList<>();
 
 		for (final BaseComponent component : components) {
-
 			if (component.getExtra() != null)
 				list.addAll(replaceHexPlaceholders(component.getExtra(), placeholders));
 
 			if (component instanceof TextComponent) {
 				final TextComponent textComponent = (TextComponent) component;
+
 				String text = textComponent.getText();
 
-				for (final Map.Entry<String, Object> entry : placeholders.entrySet()) {
-					String key = entry.getKey();
-					String value = Replacer.simplify(entry.getValue());
+				for (final Map.Entry<String, Object> entry : placeholders.entrySet())
+					text = text.replace(entry.getKey(), Common.simplify(entry.getValue()));
 
-					text = text.replace(key, value);
-				}
 				list.addAll(resolveNestedHex(text));
 			}
 
 			if (component.getHoverEvent() != null) {
-				HoverEvent event = component.getHoverEvent();
-				List<Content> contents = event.getContents();
-				List<Content> newContents = new ArrayList<>(contents.size());
-				for (Content content : contents) {
+				final HoverEvent event = component.getHoverEvent();
+				final List<Content> contents = event.getContents();
+				final List<Content> newContents = new ArrayList<>(contents.size());
+
+				for (final Content content : contents)
 					if (content instanceof Text) {
-						Text text = (Text) content;
-						Object o = text.getValue();
-						if (o instanceof BaseComponent[]) {
-							Content newContent = new Text(replaceHexPlaceholders(Arrays.asList(((BaseComponent[]) o)), placeholders).toArray(new BaseComponent[0]));
+						final Object value = ((Text) content).getValue();
+
+						if (value instanceof BaseComponent[]) {
+							final Content newContent = new Text(replaceHexPlaceholders(Arrays.asList(((BaseComponent[]) value)), placeholders).toArray(new BaseComponent[0]));
 							newContents.add(newContent);
-						} else {
+
+						} else
 							newContents.add(content);
-						}
-					} else {
+					} else
 						newContents.add(content);
-					}
-				}
-				event.getContents().clear();
-				event.getContents().addAll(newContents);
+
+				contents.clear();
+				contents.addAll(newContents);
 			}
 		}
 		return list;
@@ -2170,7 +2171,7 @@ class BungeeChatProvider {
 	}
 
 	private static void sendComponent0(final CommandSender sender, final BaseComponent... comps) {
-		StringBuilder plainMessage = new StringBuilder();
+		final StringBuilder plainMessage = new StringBuilder();
 
 		for (final BaseComponent comp : comps)
 			plainMessage.append(comp.toLegacyText().replaceAll(ChatColor.COLOR_CHAR + "x", ""));

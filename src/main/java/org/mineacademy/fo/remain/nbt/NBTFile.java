@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.mineacademy.fo.remain.nbt.nmsmappings.ObjectCreator;
-
 /**
  * {@link NBTCompound} implementation backed by a {@link File}
  *
@@ -33,7 +31,7 @@ public class NBTFile extends NBTCompound {
 			final FileInputStream inputsteam = new FileInputStream(file);
 			nbt = NBTReflectionUtil.readNBT(inputsteam);
 		} else {
-			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
+			nbt = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
 			save();
 		}
 	}

@@ -1,17 +1,13 @@
-package org.mineacademy.fo.remain.nbt.utils;
-
-import java.util.logging.Logger;
+package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
 
 /**
- * This class acts as the "Brain" of the NBTApi. It contains the main logger for
- * other classes,registers bStats and checks rather Maven shading was done
- * correctly.
+ * This class acts as the "Brain" of the NBTApi.
  *
  * @author tr7zw
  */
-public enum MinecraftVersion {
+enum WrapperVersion {
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
 	MC1_8_R3(183),
@@ -24,22 +20,16 @@ public enum MinecraftVersion {
 	MC1_13_R2(1132),
 	MC1_14_R1(1141),
 	MC1_15_R1(1151),
-	MC1_16_R1(1161);
+	MC1_16_R1(1161),
+	MC1_16_R2(1162),
+	;
 
-	private static MinecraftVersion version;
+	private static WrapperVersion version;
 	private static Boolean hasGsonSupport;
-
-	/**
-	 * Logger used by the api
-	 */
-	public static final Logger logger = Logger.getLogger("NBTAPI");
-
-	// NBT-API Version
-	protected static final String VERSION = "2.4.2-SNAPSHOT";
 
 	private final int versionId;
 
-	MinecraftVersion(final int versionId) {
+	WrapperVersion(final int versionId) {
 		this.versionId = versionId;
 	}
 
@@ -56,21 +46,22 @@ public enum MinecraftVersion {
 	 *
 	 * @return The enum for the MinecraftVersion this server is running
 	 */
-	public static MinecraftVersion getVersion() {
+	public static WrapperVersion getVersion() {
 		if (version != null)
 			return version;
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 		//		logger.info("[NBTAPI] Found Spigot: " + ver + "! Trying to find NMS support");
 		try {
-			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
+			version = WrapperVersion.valueOf(ver.replace("v", "MC"));
 		} catch (final IllegalArgumentException ex) {
-			version = MinecraftVersion.UNKNOWN;
+			version = WrapperVersion.UNKNOWN;
 		}
 		if (version != UNKNOWN) {
 
 			//			logger.info("[NBTAPI] NMS support '" + version.name() + "' loaded!")
 		} else
-			logger.warning("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
+			System.out.println("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
+
 		return version;
 	}
 
@@ -81,10 +72,10 @@ public enum MinecraftVersion {
 		if (hasGsonSupport != null)
 			return hasGsonSupport;
 		try {
-			logger.info("[NBTAPI] Found Gson: " + Class.forName("com.google.gson.Gson"));
+			System.out.println("[NBTAPI] Found Gson: " + Class.forName("com.google.gson.Gson"));
 			hasGsonSupport = true;
 		} catch (final Exception ex) {
-			logger.info("[NBTAPI] Gson not found! This will not allow the usage of some methods!");
+			System.out.println("[NBTAPI] Gson not found! This will not allow the usage of some methods!");
 			hasGsonSupport = false;
 		}
 		return hasGsonSupport;
