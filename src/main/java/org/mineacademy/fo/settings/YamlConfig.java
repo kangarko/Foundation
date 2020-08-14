@@ -1115,8 +1115,11 @@ public class YamlConfig implements ConfigSerializable {
 	protected final List<String> getStringList(final String path) {
 		final Object raw = getObject(path);
 
-		if (raw instanceof String)
-			return Arrays.asList((String) raw);
+		if (raw instanceof String) {
+			final String output = (String) raw;
+
+			return "'[]'".equals(output) || "[]".equals(output) ? new ArrayList<>() : Arrays.asList(output);
+		}
 
 		final List<Object> list = getList(path);
 		return list != null ? fixYamlBooleansInList(list) : new ArrayList<>();
