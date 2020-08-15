@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -56,6 +57,7 @@ import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
 import com.earth2me.essentials.User;
+import com.earth2me.essentials.UserMap;
 import com.gmail.nossr50.datatypes.chat.ChatMode;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -650,7 +652,24 @@ public final class HookManager {
 		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNick(player.getName()) : null;
 		final String cmiNick = isCMILoaded() ? CMIHook.getNick(player) : null;
 
-		return nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
+		final String nick = nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
+
+		return Common.stripColors(nick.replace(ChatColor.COLOR_CHAR + "x", ""));
+	}
+
+	/**
+	 * Attempts to reverse lookup player name from his nick
+	 *
+	 * Only Essentials and CMI are supported
+	 *
+	 * @param nick
+	 * @return
+	 */
+	public static String getNameFromNick(@NonNull String nick) {
+		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNameFromNick(nick) : nick;
+		final String cmiNick = isCMILoaded() ? CMIHook.getNameFromNick(nick) : nick;
+
+		return !essNick.equals(nick) && !"".equals(essNick) ? essNick : !cmiNick.equals(nick) && !"".equals(cmiNick) ? cmiNick : nick;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1402,6 +1421,20 @@ class EssentialsHook {
 		final String essNick = Common.getOrEmpty(user.getNickname());
 
 		return "".equals(essNick) ? null : essNick;
+	}
+
+	String getNameFromNick(final String nick) {
+		final UserMap users = ess.getUserMap();
+
+		if (users != null)
+			for (final UUID userId : users.getAllUniqueUsers()) {
+				final User user = users.getUser(userId);
+
+				if (user != null && user.getNickname() != null && Valid.colorlessEquals(user.getNickname().toLowerCase(), nick.toLowerCase()))
+					return Common.getOrDefault(user.getName(), nick);
+			}
+
+		return nick;
 	}
 
 	void setBackLocation(final String player, final Location loc) {
@@ -2502,6 +2535,14 @@ class CMIHook {
 		final String nick = user == null ? null : user.getNickName();
 
 		return nick == null || "".equals(nick) ? null : nick;
+	}
+
+	String getNameFromNick(String nick) {
+		for (final CMIUser user : CMI.getInstance().getPlayerManager().getAllUsers().values())
+			if (user != null && user.getNickName() != null && Valid.colorlessEquals(user.getNickName().toLowerCase(), nick.toLowerCase()))
+				return Common.getOrDefault(user.getName(), nick);
+
+		return nick;
 	}
 
 	private CMIUser getUser(final Player player) {
