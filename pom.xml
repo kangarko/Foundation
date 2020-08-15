@@ -39,12 +39,14 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.12</version>
 		</dependency>
+
 		<!-- The Spigot API and PaperSpigot server -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.16.2-R0.1-SNAPSHOT</version>
 		</dependency>
+
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
