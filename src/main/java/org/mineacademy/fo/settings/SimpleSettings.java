@@ -172,7 +172,7 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 * <p>
 	 * // ONLY MANDATORY IF YOU OVERRIDE {@link SimplePlugin#getUpdateCheck()} //
 	 */
-	public static Boolean NOTIFY_UPDATES = false;
+	public static Boolean NOTIFY_UPDATES = true;
 
 	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -242,8 +242,8 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 			final boolean keySet = isSetDefault("Notify_Updates");
 
-			if (SimplePlugin.getInstance().getUpdateCheck() != null && !keySet)
-				throw new FoException("Since you override getUpdateCheck in your main plugin class you must set the 'Notify_Updates' key in " + getFileName());
+			//if (SimplePlugin.getInstance().getUpdateCheck() != null && !keySet)
+			//	throw new FoException("Since you override getUpdateCheck in your main plugin class you must set the 'Notify_Updates' key in " + getFileName());
 
 			NOTIFY_UPDATES = keySet ? getBoolean("Notify_Updates") : NOTIFY_UPDATES;
 		}
