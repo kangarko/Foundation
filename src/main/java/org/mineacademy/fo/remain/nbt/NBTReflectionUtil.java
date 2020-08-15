@@ -12,6 +12,8 @@ import java.util.Set;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 
 import com.google.gson.Gson;
 
@@ -32,7 +34,8 @@ public class NBTReflectionUtil {
 			field_unhandledTags = WrapperClass.CRAFT_METAITEM.getClazz().getDeclaredField("unhandledTags");
 			field_unhandledTags.setAccessible(true);
 		} catch (final NoSuchFieldException e) {
-			e.printStackTrace();
+			if (MinecraftVersion.atLeast(V.v1_8))
+				e.printStackTrace();
 		}
 	}
 
