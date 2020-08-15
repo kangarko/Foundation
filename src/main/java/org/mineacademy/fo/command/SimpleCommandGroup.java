@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
@@ -88,6 +89,18 @@ public abstract class SimpleCommandGroup {
 	 */
 	public final boolean isRegistered() {
 		return mainCommand != null;
+	}
+
+	/**
+	 * Scans all of your plugin's classes and registers commands extending the given class
+	 * automatically.
+	 *
+	 * @param <T>
+	 * @param ofClass
+	 */
+	protected final <T extends SimpleSubCommand> void autoRegisterSubcommands(Class<T> ofClass) {
+		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), ofClass))
+			registerSubcommand(ReflectionUtil.instantiate(clazz));
 	}
 
 	/**
@@ -332,6 +345,9 @@ public abstract class SimpleCommandGroup {
 		protected void tellSubcommandsHelp() {
 			tell(getHelpHeader());
 
+			if (subcommands.isEmpty())
+				return;
+
 			Integer shown = 0;
 
 			for (final SimpleSubCommand subcommand : subcommands)
@@ -350,7 +366,7 @@ public abstract class SimpleCommandGroup {
 				}
 
 			if (shown == 0)
-				tellNoPrefix(SimpleLocalization.Commands.HELP_HEADER_NO_SUBCOMMANDS);
+				tellNoPrefix(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
 		}
 
 		/**
