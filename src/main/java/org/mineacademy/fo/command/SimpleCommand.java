@@ -342,7 +342,7 @@ public abstract class SimpleCommand extends Command {
 				dynamicTellError(ex.getMessages());
 
 		} catch (final Throwable t) {
-			dynamicTellError(SimpleLocalization.Commands.ERROR.find("error").replace(t.toString()).getReplacedMessage());
+			dynamicTellError(SimpleLocalization.Commands.ERROR.replace("{error}", t.toString()));
 			final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
 			Common.error(t, "Failed to execute command /" + getLabel() + sublabel + " " + String.join(" ", args));
@@ -1246,7 +1246,7 @@ public abstract class SimpleCommand extends Command {
 	public final String getUsage() {
 		final String bukkitUsage = super.getUsage();
 
-		return bukkitUsage.equals("/" + label) ? "" : bukkitUsage;
+		return bukkitUsage.equals("/" + getMainLabel()) ? "" : bukkitUsage;
 	}
 
 	/**
@@ -1270,10 +1270,10 @@ public abstract class SimpleCommand extends Command {
 	 * Updates the label of this command
 	 */
 	@Override
-	public final boolean setLabel(final String name) {
-		label = name;
+	public final boolean setLabel(final String label) {
+		this.label = label;
 
-		return super.setLabel(name);
+		return super.setLabel(label);
 	}
 
 	/**
