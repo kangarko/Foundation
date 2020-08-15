@@ -9,6 +9,9 @@ import org.bukkit.Bukkit;
  */
 enum WrapperVersion {
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
+	MC1_4_R1(147),
+	MC1_5_R3(152),
+	MC1_6_R3(163),
 	MC1_7_R4(174),
 	MC1_8_R3(183),
 	MC1_9_R1(191),

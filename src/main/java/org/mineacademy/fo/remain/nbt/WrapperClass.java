@@ -23,20 +23,20 @@ enum WrapperClass {
 	NMS_NBTTAGCOMPOUND(WrapperPackage.NMS, "NBTTagCompound"),
 	NMS_NBTTAGLIST(WrapperPackage.NMS, "NBTTagList"),
 	NMS_NBTCOMPRESSEDSTREAMTOOLS(WrapperPackage.NMS, "NBTCompressedStreamTools"),
-	NMS_MOJANGSONPARSER(WrapperPackage.NMS, "MojangsonParser"),
+	NMS_MOJANGSONPARSER(WrapperPackage.NMS, "MojangsonParser", WrapperVersion.MC1_7_R4),
 	NMS_TILEENTITY(WrapperPackage.NMS, "TileEntity"),
-	NMS_BLOCKPOSITION(WrapperPackage.NMS, "BlockPosition"),
+	NMS_BLOCKPOSITION(WrapperPackage.NMS, "BlockPosition", WrapperVersion.MC1_8_R3),
 	NMS_WORLDSERVER(WrapperPackage.NMS, "WorldServer"),
 	NMS_MINECRAFTSERVER(WrapperPackage.NMS, "MinecraftServer"),
 	NMS_WORLD(WrapperPackage.NMS, "World"),
 	NMS_ENTITY(WrapperPackage.NMS, "Entity"),
 	NMS_ENTITYTYPES(WrapperPackage.NMS, "EntityTypes"),
 	NMS_REGISTRYSIMPLE(WrapperPackage.NMS, "RegistrySimple", WrapperVersion.MC1_11_R1, WrapperVersion.MC1_12_R1),
-	NMS_REGISTRYMATERIALS(WrapperPackage.NMS, "RegistryMaterials"),
+	NMS_REGISTRYMATERIALS(WrapperPackage.NMS, "RegistryMaterials", WrapperVersion.MC1_7_R4),
 	NMS_IREGISTRY(WrapperPackage.NMS, "IRegistry"),
-	NMS_MINECRAFTKEY(WrapperPackage.NMS, "MinecraftKey"),
-	NMS_GAMEPROFILESERIALIZER(WrapperPackage.NMS, "GameProfileSerializer"),
-	NMS_IBLOCKDATA(WrapperPackage.NMS, "IBlockData");
+	NMS_MINECRAFTKEY(WrapperPackage.NMS, "MinecraftKey", WrapperVersion.MC1_8_R3),
+	NMS_GAMEPROFILESERIALIZER(WrapperPackage.NMS, "GameProfileSerializer", WrapperVersion.MC1_7_R4),
+	NMS_IBLOCKDATA(WrapperPackage.NMS, "IBlockData", WrapperVersion.MC1_8_R3);
 
 	private Class<?> clazz;
 	private boolean enabled = false;
@@ -45,12 +45,19 @@ enum WrapperClass {
 		this(packageId, suffix, null, null);
 	}
 
+	WrapperClass(final WrapperPackage packageId, final String suffix, final WrapperVersion from) {
+		this(packageId, suffix, from, null);
+	}
+
 	WrapperClass(final WrapperPackage packageId, final String suffix, final WrapperVersion from, final WrapperVersion to) {
 		if (from != null && WrapperVersion.getVersion().getVersionId() < from.getVersionId())
 			return;
+
 		if (to != null && WrapperVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
+
 		enabled = true;
+
 		try {
 			final String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
 			clazz = Class.forName(packageId.getUri() + "." + version + "." + suffix);
