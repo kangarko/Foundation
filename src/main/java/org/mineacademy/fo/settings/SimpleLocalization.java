@@ -2,7 +2,6 @@ package org.mineacademy.fo.settings;
 
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.SimpleCommand;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -157,12 +156,12 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown when there is a fatal error running this command
 		 */
-		public static Replacer ERROR = Replacer.of("&4&lOups! &cThe command failed :( Check the console and report the error.");
+		public static String ERROR = "&4&lOups! &cThe command failed :( Check the console and report the error.";
 
 		/**
 		 * The message shown when player has no permissions to view ANY subcommands in group command.
 		 */
-		public static String HELP_HEADER_NO_SUBCOMMANDS = "&cYou don't have permissions to view any subcommands.";
+		public static String HEADER_NO_SUBCOMMANDS = "&cYou don't have permissions to view any subcommands.";
 
 		/**
 		 * Key for when plugin is reloading {@link org.mineacademy.fo.plugin.SimplePlugin}
@@ -225,10 +224,10 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 				RELOAD_FAIL = getString("Reload_Fail");
 
 			if (isSetDefault("Error"))
-				ERROR = getReplacer("Error");
+				ERROR = getString("Error");
 
 			if (isSetDefault("Header_No_Subcommands"))
-				HELP_HEADER_NO_SUBCOMMANDS = getString("Header_No_Subcommands");
+				HEADER_NO_SUBCOMMANDS = getString("Header_No_Subcommands");
 
 			if (isSet("Reloading"))
 				RELOADING = getString("Reloading");
@@ -237,8 +236,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 				DISABLED = getString("Disabled");
 
 			if (isSet("Use_While_Null"))
-				USE_WHILE_NULL = getString("Use_While_Null").replace("{state}", SimplePlugin.isReloading() ? RELOADING : DISABLED);
-
+				USE_WHILE_NULL = getString("Use_While_Null");
 		}
 	}
 
@@ -294,13 +292,13 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		 */
 		public static String AVAILABLE = "&2A new version of &3{plugin_name}&2 is available.\n"
 				+ "&2Current version: &f{current}&2; New version: &f{new}\n"
-				+ "&2URL: &7https://www.spigotmc.org/resources/{resource_id}/.";
+				+ "&2URL: &7https://spigotmc.org/resources/{resource_id}/.";
 
 		/**
 		 * The message if a new version is found and downloaded
 		 */
 		public static String DOWNLOADED = "&3{plugin_name}&2 has been upgraded from {current} to {new}.\n"
-				+ "&2Visit &7https://www.spigotmc.org/resources/{resource_id} &2for more information.\n"
+				+ "&2Visit &7https://spigotmc.org/resources/{resource_id} &2for more information.\n"
 				+ "&2Please restart the server to load the new version.";
 
 		/**
