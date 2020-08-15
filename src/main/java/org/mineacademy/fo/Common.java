@@ -45,6 +45,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
 import org.mineacademy.fo.model.DiscordSender;
+import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
@@ -507,8 +508,14 @@ public final class Common {
 
 			while (match.find()) {
 				final String colorCode = match.group(1);
+				String replacement = "";
 
-				result = result.replaceAll("\\{#" + colorCode + "\\}", net.md_5.bungee.api.ChatColor.of("#" + colorCode).toString());
+				try {
+					replacement = net.md_5.bungee.api.ChatColor.of("#" + colorCode).toString();
+				} catch (final IllegalArgumentException ex) {
+				}
+
+				result = result.replaceAll("\\{#" + colorCode + "\\}", replacement);
 			}
 		}
 
@@ -555,7 +562,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String stripColors(final String message) {
-		return message == null ? "" : message.replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-or])", "");
+		return message == null ? "" : message.replace(ChatColor.COLOR_CHAR + "x", "").replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-or])", "");
 	}
 
 	/**
@@ -1508,7 +1515,7 @@ public final class Common {
 	 *
 	 * @return
 	 */
-	public static List<String> getPlayerNames(final boolean includeVanished, Player otherPlayer) {
+	public static List<String> getPlayerNames(final boolean includeVanished, @Nullable Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -1516,6 +1523,36 @@ public final class Common {
 				continue;
 
 			found.add(online.getName());
+		}
+
+		return found;
+	}
+
+	/**
+	 * Return nicknames of online players
+	 *
+	 * @param includeVanished
+	 * @return
+	 */
+	public static List<String> getPlayerNicknames(final boolean includeVanished) {
+		return getPlayerNicknames(includeVanished, null);
+	}
+
+	/**
+	 * Return nicknames of online players
+	 *
+	 * @param includeVanished
+	 * @param otherPlayer
+	 * @return
+	 */
+	public static List<String> getPlayerNicknames(final boolean includeVanished, @Nullable Player otherPlayer) {
+		final List<String> found = new ArrayList<>();
+
+		for (final Player online : Remain.getOnlinePlayers()) {
+			if (PlayerUtil.isVanished(online, otherPlayer) && !includeVanished)
+				continue;
+
+			found.add(HookManager.getNick(online));
 		}
 
 		return found;
