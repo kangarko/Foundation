@@ -136,6 +136,15 @@ public abstract class SimpleCommandGroup {
 		return mainCommand.getMainLabel();
 	}
 
+	/**
+	 * Return aliases for the main command
+	 *
+	 * @return
+	 */
+	public final List<String> getAliases() {
+		return mainCommand.getAliases();
+	}
+
 	// ----------------------------------------------------------------------
 	// Functions
 	// ----------------------------------------------------------------------
