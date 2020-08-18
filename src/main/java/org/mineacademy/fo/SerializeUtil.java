@@ -122,7 +122,7 @@ public final class SerializeUtil {
 		} else if (obj instanceof YamlConfig)
 			throw new SerializeFailedException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
 
-		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long
+		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long || obj instanceof Short
 				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
 				|| obj instanceof ItemStack
 				|| obj instanceof MemorySection)
