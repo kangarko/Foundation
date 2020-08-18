@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.MemorySection;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.Common;
@@ -358,11 +360,11 @@ public final class SerializedMap extends StrictCollection {
 			if (raw instanceof ItemMeta)
 				item.setItemMeta((ItemMeta) raw);
 
-			else if (raw instanceof Map)
-				try {
-					final Map<String, Object> metaMap = (Map<String, Object>) raw;
+			else if (raw instanceof Map) {
+				final Map<String, Object> meta = (Map<String, Object>) raw;
 
-					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (metaMap.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
+				try {
+					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (meta.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
 					final Constructor<?> c = cl.getDeclaredConstructor(Map.class);
 					c.setAccessible(true);
 
@@ -372,8 +374,49 @@ public final class SerializedMap extends StrictCollection {
 						item.setItemMeta((ItemMeta) craftMeta);
 
 				} catch (final Throwable t) {
-					t.printStackTrace();
+
+					// We have to manually deserialize metadata :(
+					final ItemMeta itemMeta = item.getItemMeta();
+
+					final String display = meta.containsKey("display-name") ? (String) meta.get("display-name") : null;
+
+					if (display != null)
+						itemMeta.setDisplayName(display);
+
+					final List<String> lore = meta.containsKey("lore") ? (List<String>) meta.get("lore") : null;
+
+					if (lore != null)
+						itemMeta.setLore(lore);
+
+					final SerializedMap enchants = meta.containsKey("enchants") ? SerializedMap.of(meta.get("enchants")) : null;
+
+					if (enchants != null)
+						for (final Map.Entry<String, Object> entry : enchants.entrySet()) {
+							final Enchantment enchantment = Enchantment.getByName(entry.getKey());
+							final int level = (int) entry.getValue();
+
+							itemMeta.addEnchant(enchantment, level, true);
+						}
+
+					final List<String> itemFlags = meta.containsKey("ItemFlags") ? (List<String>) meta.get("ItemFlags") : null;
+
+					if (itemFlags != null)
+						for (final String flag : itemFlags)
+							try {
+								itemMeta.addItemFlags(ItemFlag.valueOf(flag));
+							} catch (final Exception ex) {
+								// Likely not MC compatible, ignore
+							}
+
+					System.out.println("**************** NOTICE ****************");
+					System.out.println(SimplePlugin.getNamed() + " manually deserialized your item.");
+					System.out.println("Item: " + item);
+					System.out.println("This is ONLY supported for basic items, items having");
+					System.out.println("special flags like monster eggs will NOT function.");
+
+					item.setItemMeta(itemMeta);
 				}
+			}
 
 		return item;
 	}
