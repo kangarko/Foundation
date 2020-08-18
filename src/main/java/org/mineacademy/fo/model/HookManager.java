@@ -1752,9 +1752,11 @@ class PlaceholderAPIHook {
 
 	private final Set<PAPIPlaceholder> placeholders = new HashSet<>();
 
-	private VariablesInjector injector;
+	private static volatile VariablesInjector injector;
 
 	PlaceholderAPIHook() {
+		unregister();
+
 		try {
 			injector = new VariablesInjector();
 			injector.register();
@@ -1766,7 +1768,12 @@ class PlaceholderAPIHook {
 
 	final void unregister() {
 		if (injector != null)
-			injector.unregister();
+			try {
+				injector.unregister();
+
+			} catch (final Throwable t) {
+				// Silence, probably plugin got removed in the meantime
+			}
 	}
 
 	final void addPlaceholder(final PAPIPlaceholder placeholder) {
