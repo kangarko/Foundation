@@ -71,9 +71,14 @@ public final class Debugger {
 				else
 					System.out.println("[" + section + "] " + message);
 
-			if (SimplePlugin.hasInstance())
-				for (final String message : messages)
-					FileUtil.writeFormatted(FoConstants.File.DEBUG, "[" + section + "]", message);
+			if (SimplePlugin.hasInstance()) {
+				Common.runAsync(() -> {
+					synchronized (pendingMessages) {
+						for (final String message : messages)
+							FileUtil.writeFormatted(FoConstants.File.DEBUG, "[" + section + "]", message);
+					}
+				});
+			}
 		}
 	}
 
