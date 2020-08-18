@@ -740,7 +740,8 @@ public final class Remain {
 		try {
 			final BaseComponent[] components = ComponentSerializer.parse(json);
 
-			replaceHexPlaceholders(Arrays.asList(components), placeholders);
+			if (MinecraftVersion.atLeast(V.v1_16))
+				replaceHexPlaceholders(Arrays.asList(components), placeholders);
 
 			Remain.sendComponent(sender, components);
 
