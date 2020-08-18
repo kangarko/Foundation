@@ -223,6 +223,10 @@ public final class Replacer {
 	 * @return
 	 */
 	public static List<String> replaceArray(List<String> list, Object... replacements) {
+
+		// Create a copy, do not alter existing list
+		list = new ArrayList<>(list);
+
 		final SerializedMap map = SerializedMap.ofArray(replacements);
 
 		for (int i = 0; i < list.size(); i++) {
