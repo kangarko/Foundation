@@ -180,6 +180,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * block. We register things using {@link #reloadables} during this block
 	 */
 	private boolean startingReloadables = false;
+	
+	/**
+	 * For your convenience, the Foundation library will automatically disable the plugin should it be executed in an
+	 * unsupported environment, such as a very new or old Minecraft version. You can disable this safety check here.
+	 * Please not that it must be disabled before {@link #onPluginPreStart()} is called.
+	 */
+	private boolean safeLoad = true;
 
 	// ----------------------------------------------------------------------------------------
 	// Main methods
@@ -212,8 +219,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (!isEnabled)
 			return;
 
-		// Before all, check if necessary libraries and the minimum required MC version
-		if (!checkLibraries0() || !checkServerVersions0()) {
+		// Before all, check if necessary libraries and the minimum required MC version (if safeLoad is true)
+		if (!checkLibraries0() || (safeLoad && !checkServerVersions0())) {
 			isEnabled = false;
 			setEnabled(false);
 
@@ -1070,6 +1077,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	protected final File getFile() {
 		return super.getFile();
+	}
+	
+	/**
+	 * Set whether or not the plugin should load safely and disable for unsupported versions. Use at your own risk.
+	 */
+	protected void setSafeLoad(boolean value) {
+		this.safeLoad = value;
 	}
 
 	/**
