@@ -146,7 +146,17 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 * Remove a given key
+	 * Remove the given key, returning null if not set
+	 *
+	 * @param key
+	 * @return
+	 */
+	public Object removeWeak(final String key) {
+		return map.removeWeak(key);
+	}
+
+	/**
+	 * Remove the given key, throwing error if not set
 	 *
 	 * @param key
 	 * @return
@@ -408,11 +418,12 @@ public final class SerializedMap extends StrictCollection {
 								// Likely not MC compatible, ignore
 							}
 
-					System.out.println("**************** NOTICE ****************");
-					System.out.println(SimplePlugin.getNamed() + " manually deserialized your item.");
-					System.out.println("Item: " + item);
-					System.out.println("This is ONLY supported for basic items, items having");
-					System.out.println("special flags like monster eggs will NOT function.");
+					Common.log(
+							"**************** NOTICE ****************",
+							SimplePlugin.getNamed() + " manually deserialized your item.",
+							"Item: " + item,
+							"This is ONLY supported for basic items, items having",
+							"special flags like monster eggs will NOT function.");
 
 					item.setItemMeta(itemMeta);
 				}
@@ -637,6 +648,15 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Return the first entry or null if map is empty
+	 *
+	 * @return
+	 */
+	public Map.Entry<String, Object> firstEntry() {
+		return isEmpty() ? null : map.getSource().entrySet().iterator().next();
+	}
+
+	/**
 	 * @see Map#keySet()
 	 */
 	public Set<String> keySet() {
@@ -655,6 +675,13 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public Set<Entry<String, Object>> entrySet() {
 		return map.entrySet();
+	}
+
+	/**
+	 * @see Map#size()
+	 */
+	public int size() {
+		return map.size();
 	}
 
 	/**
