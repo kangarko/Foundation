@@ -464,7 +464,7 @@ public final class FileUtil {
 	 * @param path
 	 * @return the resource input stream, or null if not found
 	 */
-	public static InputStream getInternalResource(String path) {
+	public static InputStream getInternalResource(@NonNull String path) {
 		// First attempt
 		InputStream is = SimplePlugin.getInstance().getClass().getResourceAsStream(path);
 

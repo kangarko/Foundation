@@ -2,6 +2,7 @@ package org.mineacademy.fo.bungee;
 
 import java.lang.reflect.Constructor;
 
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
@@ -47,7 +48,7 @@ public final class SimpleBungee {
 
 			return (BungeeListener) con.newInstance();
 		} catch (final ReflectiveOperationException ex) {
-			System.out.println("Unable to create new instance of " + listenerClass + ", ensure constructor is public without parameters!");
+			Common.log("Unable to create new instance of " + listenerClass + ", ensure constructor is public without parameters!");
 			ex.printStackTrace();
 
 			return null;
@@ -62,7 +63,7 @@ public final class SimpleBungee {
 			return (BungeeAction[]) actionEnum.getMethod("values").invoke(null);
 
 		} catch (final ReflectiveOperationException ex) {
-			System.out.println("Unable to get values() of " + actionEnum + ", ensure it is an enum!");
+			Common.log("Unable to get values() of " + actionEnum + ", ensure it is an enum!");
 			ex.printStackTrace();
 
 			return null;

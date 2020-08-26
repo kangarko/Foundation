@@ -1,6 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
+import org.mineacademy.fo.Common;
 
 /**
  * This class acts as the "Brain" of the NBTApi.
@@ -63,7 +64,7 @@ enum WrapperVersion {
 
 			//			logger.info("[NBTAPI] NMS support '" + version.name() + "' loaded!")
 		} else
-			System.out.println("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
+			Common.log("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
 
 		return version;
 	}
@@ -75,10 +76,10 @@ enum WrapperVersion {
 		if (hasGsonSupport != null)
 			return hasGsonSupport;
 		try {
-			System.out.println("[NBTAPI] Found Gson: " + Class.forName("com.google.gson.Gson"));
+			Common.log("[NBTAPI] Found Gson: " + Class.forName("com.google.gson.Gson"));
 			hasGsonSupport = true;
 		} catch (final Exception ex) {
-			System.out.println("[NBTAPI] Gson not found! This will not allow the usage of some methods!");
+			Common.log("[NBTAPI] Gson not found! This will not allow the usage of some methods!");
 			hasGsonSupport = false;
 		}
 		return hasGsonSupport;
