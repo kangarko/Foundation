@@ -54,7 +54,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 /**
  * The core configuration class. Manages all settings files.
@@ -83,6 +82,12 @@ public class YamlConfig implements ConfigSerializable {
 	private static final StrictMap<ConfigInstance, List<YamlConfig>> loadedFiles = new StrictMap<>();
 
 	/**
+	 * Experimental flag to save comments and match local yaml file exactly with the one
+	 * in the jar
+	 */
+	public static boolean SAVE_COMMENTS = false;
+
+	/**
 	 * The config file instance this config belongs to.
 	 */
 	private ConfigInstance instance;
@@ -109,9 +114,9 @@ public class YamlConfig implements ConfigSerializable {
 
 	/**
 	 * Internal flag that can be toggled to disable working with default files.
+	 *
 	 */
-	@Setter
-	private boolean usingDefaults = true;
+	private boolean useDefaults = true;
 
 	/**
 	 * Internal flag to indicate whether you are calling this from
@@ -178,6 +183,21 @@ public class YamlConfig implements ConfigSerializable {
 		loadedFiles.put(instance, existing);
 	}
 
+	/**
+	 * Return a copy of all loaded config files from the server/plugin reload
+	 *
+	 * @return
+	 */
+	public static List<YamlConfig> getLoadedFiles() {
+		final List<YamlConfig> copyOfLoadedFiles = new ArrayList<>();
+
+		for (final List<YamlConfig> loadedFilesList : loadedFiles.values())
+			for (final YamlConfig loadedFile : loadedFilesList)
+				copyOfLoadedFiles.add(loadedFile);
+
+		return Collections.unmodifiableList(copyOfLoadedFiles);
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Main loading methods.
 	// ------------------------------------------------------------------------------------------------------------
@@ -218,7 +238,7 @@ public class YamlConfig implements ConfigSerializable {
 
 				Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
 
-				instance = new ConfigInstance(file, config, defaultsConfig);
+				instance = new ConfigInstance(localePath, file, config, defaultsConfig);
 				addConfig(instance, this);
 			}
 
@@ -267,6 +287,8 @@ public class YamlConfig implements ConfigSerializable {
 
 		if (from != null)
 			Valid.checkBoolean(from.contains("."), "From path must contain file extension: " + from);
+		else
+			useDefaults = false;
 
 		try {
 			loading = true;
@@ -292,7 +314,7 @@ public class YamlConfig implements ConfigSerializable {
 				Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
 
 				config = FileUtil.loadConfigurationStrict(file);
-				instance = new ConfigInstance(file, config, defaultsConfig);
+				instance = new ConfigInstance(from == null ? to : from, file, config, defaultsConfig);
 
 				addConfig(instance, this);
 			}
@@ -304,9 +326,8 @@ public class YamlConfig implements ConfigSerializable {
 
 			} catch (final Exception ex) {
 				Common.throwError(ex, "Error loading configuration in " + getFileName() + "!", "Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"), "Problem: " + ex + " (see below for more)");
-
-				//Remain.sneaky(ex);
 			}
+
 		} finally {
 			loading = false;
 		}
@@ -320,7 +341,7 @@ public class YamlConfig implements ConfigSerializable {
 	private void saveIfNecessary0() {
 
 		// We want to save the file if the save is pending or if there are no defaults
-		if (save || getDefaults() == null) {
+		if (save || SAVE_COMMENTS || getDefaults() == null) {
 			save();
 
 			save = false;
@@ -413,6 +434,15 @@ public class YamlConfig implements ConfigSerializable {
 	// TODO In the future we'll make this final
 	public String getName() {
 		return FileUtil.getFileName(instance.getFile());
+	}
+
+	/**
+	 * Return the file corresponding with these settings
+	 *
+	 * @return
+	 */
+	public final File getFile() {
+		return instance.getFile();
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -519,7 +549,7 @@ public class YamlConfig implements ConfigSerializable {
 		Object raw = getConfig().get(path);
 
 		// Ensure that the default config actually did have the value, if used
-		if (getDefaults() != null)
+		if (useDefaults && getDefaults() != null)
 			Valid.checkNotNull(raw, "Failed to insert value at '" + path + "' from default config");
 
 		// Ensure the value is of the given type
@@ -1213,7 +1243,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param valueParameter
 	 * @return
 	 */
-	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
+	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 
@@ -1512,8 +1542,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param pathAbs
 	 * @param type
 	 */
-	public void addDefaultIfNotExist(final String pathAbs, final Class<?> type) {
-		if (usingDefaults && getDefaults() != null && !isSetAbsolute(pathAbs)) {
+	protected void addDefaultIfNotExist(final String pathAbs, final Class<?> type) {
+		if (useDefaults && getDefaults() != null && !isSetAbsolute(pathAbs)) {
 			final Object object = getDefaults().get(pathAbs);
 
 			Valid.checkNotNull(object, "Default '" + getFileName() + "' lacks " + Common.article(type.getSimpleName()) + " at '" + pathAbs + "'");
@@ -1536,7 +1566,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 */
 	private void forceSingleDefaults(final String path) {
-		if (getDefaults() != null)
+		if (useDefaults && getDefaults() != null)
 			throw new FoException("Cannot use get method with default when getting " + formPathPrefix(path) + " and using a default config for " + getFileName());
 	}
 
@@ -1888,6 +1918,11 @@ public class YamlConfig implements ConfigSerializable {
 class ConfigInstance {
 
 	/**
+	 * The path where the default config lays
+	 */
+	private final String defaultsPath;
+
+	/**
 	 * The file this configuration belongs to.
 	 */
 	private final File file;
@@ -1915,17 +1950,24 @@ class ConfigInstance {
 		}
 
 		try {
-			config.save(file);
+			if (defaultsPath != null && YamlConfig.SAVE_COMMENTS)
+				ConfigUpdater.update(defaultsPath, file);
+
+			else
+				config.save(file);
 
 		} catch (final NullPointerException ex) {
 			if (ex.getMessage() != null && ex.getMessage().contains("Nodes must be provided")) {
-				final Map<String, Object> dump = config.getValues(true);
+				final Map<String, Object> dump = config.getValues(false);
 
 				FileUtil.write("error_yaml.log", Common.configLine(), "Got null nodes error when saving " + file, "Please report this to plugin developers!", Common.configLine(), "Raw dump:", dump.toString());
 
-				// Split in case of an error there as well, at least we get the top part
-				FileUtil.write("error_yaml.log", "", "Serialized: ", SerializeUtil.serialize(dump).toString());
+				Common.log("Got 'Nodes must be provided error', scanning for null key-value pairs:");
 
+				for (final Map.Entry<String, Object> entry : dump.entrySet())
+					Common.log(entry.getKey() + ": " + entry.getValue());
+
+				Common.log("Enumeration ended. Please send this log to: " + SimplePlugin.getInstance().getDescription().getAuthors() + " on SpigotMC!");
 				Common.error(ex, "Failed to save " + file + ", please see error_yaml.log in your plugin folder and report this to plugin developers!");
 			} else
 				throw ex;
