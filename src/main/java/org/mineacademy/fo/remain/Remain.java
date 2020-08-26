@@ -194,6 +194,11 @@ public final class Remain {
 	private static boolean hasAdvancements = true;
 
 	/**
+	 * Can you call {@link YamlConfiguration#load(java.io.Reader)}
+	 */
+	private static boolean hasYamlReaderLoad = true;
+
+	/**
 	 * Does the current server has the "net.md_5.bungee" library present?
 	 */
 	private static boolean bungeeApiPresent = true;
@@ -229,6 +234,7 @@ public final class Remain {
 				compMaterial.getMaterial();
 
 			getNMSClass("Entity");
+
 		} catch (final Throwable t) {
 			System.out.println("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION **");
 			System.out.println("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
@@ -250,39 +256,39 @@ public final class Remain {
 
 			// Load optional parts
 			try {
-				Remain.getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
-				Remain.fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
-				Remain.sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
+				getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
+				fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
+				sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
 
 			} catch (final Throwable t) {
 				System.out.println("Unable to find setup some parts of reflection. Plugin will still function.");
 				System.out.println("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
 				System.out.println("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
 
-				Remain.fieldPlayerConnection = null;
-				Remain.sendPacket = null;
-				Remain.getHandle = null;
+				fieldPlayerConnection = null;
+				sendPacket = null;
+				getHandle = null;
 			}
 
 			// Load mandatory parts
 			getPlayersMethod = Bukkit.class.getMethod("getOnlinePlayers");
-			Remain.isGetPlayersCollection = Remain.getPlayersMethod.getReturnType() == Collection.class;
+			isGetPlayersCollection = getPlayersMethod.getReturnType() == Collection.class;
 
 			getHealthMethod = LivingEntity.class.getMethod("getHealth");
-			Remain.isGetHealthDouble = Remain.getHealthMethod.getReturnType() == double.class;
+			isGetHealthDouble = getHealthMethod.getReturnType() == double.class;
 
-			Remain.hasExtendedPlayerTitleAPI = MinecraftVersion.atLeast(V.v1_11);
+			hasExtendedPlayerTitleAPI = MinecraftVersion.atLeast(V.v1_11);
 
 			try {
 				World.class.getMethod("spawnParticle", org.bukkit.Particle.class, Location.class, int.class);
 			} catch (final NoClassDefFoundError | ReflectiveOperationException ex) {
-				Remain.hasParticleAPI = false;
+				hasParticleAPI = false;
 			}
 
 			try {
 				Class.forName("net.md_5.bungee.chat.ComponentSerializer");
 			} catch (final ClassNotFoundException ex) {
-				Remain.bungeeApiPresent = false;
+				bungeeApiPresent = false;
 
 				throw new FoException(
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
@@ -294,31 +300,31 @@ public final class Remain {
 			try {
 				Objective.class.getMethod("getScore", String.class);
 			} catch (final NoClassDefFoundError | NoSuchMethodException e) {
-				Remain.newScoreboardAPI = false;
+				newScoreboardAPI = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.event.player.PlayerEditBookEvent").getName();
 			} catch (final ClassNotFoundException ex) {
-				Remain.hasBookEvent = false;
+				hasBookEvent = false;
 			}
 
 			try {
 				Inventory.class.getMethod("getLocation");
 			} catch (final ReflectiveOperationException ex) {
-				Remain.hasInventoryLocation = false;
+				hasInventoryLocation = false;
 			}
 
 			try {
 				Entity.class.getMethod("getScoreboardTags");
 			} catch (final ReflectiveOperationException ex) {
-				Remain.hasScoreboardTags = false;
+				hasScoreboardTags = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.inventory.meta.SpawnEggMeta");
 			} catch (final ClassNotFoundException err) {
-				Remain.hasSpawnEggMeta = false;
+				hasSpawnEggMeta = false;
 			}
 
 			try {
@@ -326,7 +332,14 @@ public final class Remain {
 				Class.forName("org.bukkit.NamespacedKey");
 
 			} catch (final ClassNotFoundException err) {
-				Remain.hasAdvancements = false;
+				hasAdvancements = false;
+			}
+
+			try {
+				YamlConfiguration.class.getMethod("load", java.io.Reader.class);
+
+			} catch (final NoSuchMethodException err) {
+				hasYamlReaderLoad = false;
 			}
 
 		} catch (final ReflectiveOperationException ex) {
@@ -364,11 +377,13 @@ public final class Remain {
 	public static Object getHandleEntity(final Entity entity) {
 		Object nms_entity = null;
 		final Method handle = ReflectionUtil.getMethod(entity.getClass(), "getHandle");
+
 		try {
 			nms_entity = handle.invoke(entity);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
+
 		return nms_entity;
 	}
 
@@ -394,16 +409,17 @@ public final class Remain {
 	 * @param packet the packet
 	 */
 	public static void sendPacket(final Player player, final Object packet) {
-		if (Remain.getHandle == null || Remain.fieldPlayerConnection == null || Remain.sendPacket == null) {
-			System.out.println("Cannot send packet " + packet.getClass().getSimpleName() + " on your server sofware (known to be broken on Cauldron).");
+		if (getHandle == null || fieldPlayerConnection == null || sendPacket == null) {
+			Common.log("Cannot send packet " + packet.getClass().getSimpleName() + " on your server sofware (known to be broken on Cauldron).");
+
 			return;
 		}
 
 		try {
-			final Object handle = Remain.getHandle.invoke(player);
-			final Object playerConnection = Remain.fieldPlayerConnection.get(handle);
+			final Object handle = getHandle.invoke(player);
+			final Object playerConnection = fieldPlayerConnection.get(handle);
 
-			Remain.sendPacket.invoke(playerConnection, packet);
+			sendPacket.invoke(playerConnection, packet);
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new ReflectionException("Could not send " + packet.getClass().getSimpleName() + " to " + player.getName(), ex);
@@ -421,7 +437,7 @@ public final class Remain {
 	 * @return the health
 	 */
 	public static int getHealth(final LivingEntity entity) {
-		return Remain.isGetHealthDouble ? (int) entity.getHealth() : Remain.getHealhLegacy(entity);
+		return isGetHealthDouble ? (int) entity.getHealth() : getHealhLegacy(entity);
 	}
 
 	/**
@@ -431,7 +447,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static int getMaxHealth(final LivingEntity entity) {
-		return Remain.isGetHealthDouble ? (int) entity.getMaxHealth() : Remain.getMaxHealhLegacy(entity);
+		return isGetHealthDouble ? (int) entity.getMaxHealth() : getMaxHealhLegacy(entity);
 	}
 
 	/**
@@ -440,7 +456,7 @@ public final class Remain {
 	 * @return the online players
 	 */
 	public static Collection<? extends Player> getOnlinePlayers() {
-		return Remain.isGetPlayersCollection ? Bukkit.getOnlinePlayers() : Arrays.asList(Remain.getPlayersLegacy());
+		return isGetPlayersCollection ? Bukkit.getOnlinePlayers() : Arrays.asList(getPlayersLegacy());
 	}
 
 	/**
@@ -450,7 +466,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static FallingBlock spawnFallingBlock(final Block block) {
-		return Remain.spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5) /* fix alignment */, block.getType(), block.getData());
+		return spawnFallingBlock(block.getLocation().add(0.5, 0, 0.5) /* fix alignment */, block.getType(), block.getData());
 	}
 
 	/**
@@ -481,7 +497,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static FallingBlock spawnFallingBlock(final Location loc, final Material material) {
-		return Remain.spawnFallingBlock(loc, material, (byte) 0);
+		return spawnFallingBlock(loc, material, (byte) 0);
 	}
 
 	/**
@@ -577,7 +593,7 @@ public final class Remain {
 	 * @param data
 	 */
 	public static void setTypeAndData(final Block block, final CompMaterial material, final byte data) {
-		Remain.setTypeAndData(block, material.getMaterial(), data);
+		setTypeAndData(block, material.getMaterial(), data);
 	}
 
 	/**
@@ -588,7 +604,7 @@ public final class Remain {
 	 * @param data
 	 */
 	public static void setTypeAndData(final Block block, final Material material, final byte data) {
-		Remain.setTypeAndData(block, material, data, true);
+		setTypeAndData(block, material, data, true);
 	}
 
 	/**
@@ -619,7 +635,7 @@ public final class Remain {
 	 * @throws InteractiveTextFoundException
 	 */
 	public static String toLegacyText(final String json) throws InteractiveTextFoundException {
-		return Remain.toLegacyText(json, true);
+		return toLegacyText(json, true);
 	}
 
 	/**
@@ -635,7 +651,7 @@ public final class Remain {
 	 *                                       unpacked
 	 */
 	public static String toLegacyText(final String json, final boolean denyEvents) throws InteractiveTextFoundException {
-		Valid.checkBoolean(Remain.bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 		final StringBuilder text = new StringBuilder();
 
 		try {
@@ -666,9 +682,9 @@ public final class Remain {
 	 * world converts to {text:"Hello world",color="gold"}
 	 */
 	public static String toJson(final String message) {
-		Valid.checkBoolean(Remain.bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
-		return Remain.toJson(TextComponent.fromLegacyText(message));
+		return toJson(TextComponent.fromLegacyText(message));
 	}
 
 	/**
@@ -678,7 +694,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static String toJson(final BaseComponent... comps) {
-		Valid.checkBoolean(Remain.bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		String json;
 
@@ -724,7 +740,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static BaseComponent[] toComponent(final String json) {
-		Valid.checkBoolean(Remain.bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
+		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
 		return ComponentSerializer.parse(json);
 	}
@@ -743,7 +759,7 @@ public final class Remain {
 			if (MinecraftVersion.atLeast(V.v1_16))
 				replaceHexPlaceholders(Arrays.asList(components), placeholders);
 
-			Remain.sendComponent(sender, components);
+			sendComponent(sender, components);
 
 		} catch (final RuntimeException ex) {
 			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
@@ -803,7 +819,7 @@ public final class Remain {
 	 */
 	public static void sendJson(final CommandSender sender, final String json) {
 		try {
-			Remain.sendComponent(sender, ComponentSerializer.parse(json));
+			sendComponent(sender, ComponentSerializer.parse(json));
 
 		} catch (final RuntimeException ex) {
 			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
@@ -828,7 +844,7 @@ public final class Remain {
 	 * @param subtitle
 	 */
 	public static void sendTitle(final Player player, final String title, final String subtitle) {
-		Remain.sendTitle(player, 20, 3 * 20, 20, title, subtitle);
+		sendTitle(player, 20, 3 * 20, 20, title, subtitle);
 	}
 
 	/**
@@ -843,7 +859,7 @@ public final class Remain {
 	 */
 	public static void sendTitle(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
 		if (MinecraftVersion.newerThan(V.v1_7))
-			if (Remain.hasExtendedPlayerTitleAPI)
+			if (hasExtendedPlayerTitleAPI)
 				player.sendTitle(Common.colorize(title), Common.colorize(subtitle), fadeIn, stay, fadeOut);
 			else
 				ChatInternals.sendTitleLegacy(player, fadeIn, stay, fadeOut, title, subtitle);
@@ -859,7 +875,7 @@ public final class Remain {
 	 * @param player the player
 	 */
 	public static void resetTitle(final Player player) {
-		if (Remain.hasExtendedPlayerTitleAPI)
+		if (hasExtendedPlayerTitleAPI)
 			player.resetTitle();
 		else
 			ChatInternals.resetTitleLegacy(player);
@@ -911,7 +927,7 @@ public final class Remain {
 	 * @param percent
 	 */
 	public static void sendBossbarPercent(final Player player, final String message, final float percent) {
-		Remain.sendBossbarPercent(player, message, percent, null, null);
+		sendBossbarPercent(player, message, percent, null, null);
 	}
 
 	/**
@@ -935,7 +951,7 @@ public final class Remain {
 	 * @param seconds
 	 */
 	public static void sendBossbarTimed(final Player player, final String message, final int seconds) {
-		Remain.sendBossbarTimed(player, message, seconds, null, null);
+		sendBossbarTimed(player, message, seconds, null, null);
 	}
 
 	/**
@@ -999,7 +1015,7 @@ public final class Remain {
 	 * @param command
 	 */
 	public static void registerCommand(final Command command) {
-		final CommandMap commandMap = Remain.getCommandMap();
+		final CommandMap commandMap = getCommandMap();
 		commandMap.register(command.getLabel(), command);
 
 		Valid.checkBoolean(command.isRegistered(), "Command /" + command.getLabel() + " could not have been registered properly!");
@@ -1011,7 +1027,7 @@ public final class Remain {
 	 * @param label the label
 	 */
 	public static void unregisterCommand(final String label) {
-		Remain.unregisterCommand(label, true);
+		unregisterCommand(label, true);
 	}
 
 	/**
@@ -1038,7 +1054,7 @@ public final class Remain {
 			final Field f = SimpleCommandMap.class.getDeclaredField("knownCommands");
 			f.setAccessible(true);
 
-			final Map<String, Command> cmdMap = (Map<String, Command>) f.get(Remain.getCommandMap());
+			final Map<String, Command> cmdMap = (Map<String, Command>) f.get(getCommandMap());
 
 			cmdMap.remove(label);
 
@@ -1067,7 +1083,7 @@ public final class Remain {
 	 * @param enchantment
 	 */
 	public static void registerEnchantment(final Enchantment enchantment) {
-		Remain.unregisterEnchantment(enchantment);
+		unregisterEnchantment(enchantment);
 
 		ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
 		Enchantment.registerEnchantment(enchantment);
@@ -1101,7 +1117,7 @@ public final class Remain {
 	 * @return the location
 	 */
 	public static Location getLocation(final Inventory inv) {
-		if (Remain.hasInventoryLocation)
+		if (hasInventoryLocation)
 			try {
 				return inv.getLocation();
 
@@ -1181,7 +1197,7 @@ public final class Remain {
 	 * @param player
 	 */
 	public static void respawn(final Player player) {
-		Remain.respawn(player, 2);
+		respawn(player, 2);
 	}
 
 	/**
@@ -1205,7 +1221,7 @@ public final class Remain {
 						if (args.length == 1 && args[0] == respawnEnum.getClass()) {
 							final Object packet = getNMSClass("PacketPlayInClientCommand").getConstructor(args).newInstance(respawnEnum);
 
-							Remain.sendPacket(player, packet);
+							sendPacket(player, packet);
 							break;
 						}
 					}
@@ -1265,7 +1281,7 @@ public final class Remain {
 				packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
 			}
 
-			Remain.sendPacket(player, packet);
+			sendPacket(player, packet);
 
 			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container")).invoke(entityPlayer, activeContainer);
 		} catch (final ReflectiveOperationException ex) {
@@ -1284,9 +1300,9 @@ public final class Remain {
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Location location, final CompMaterial material) {
 		if (delayTicks > 0)
-			Common.runLater(delayTicks, () -> Remain.sendBlockChange0(player, location, material));
+			Common.runLater(delayTicks, () -> sendBlockChange0(player, location, material));
 		else
-			Remain.sendBlockChange0(player, location, material);
+			sendBlockChange0(player, location, material);
 	}
 
 	private static void sendBlockChange0(final Player player, final Location location, final CompMaterial material) {
@@ -1307,9 +1323,9 @@ public final class Remain {
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Block block) {
 		if (delayTicks > 0)
-			Common.runLater(delayTicks, () -> Remain.sendBlockChange0(player, block));
+			Common.runLater(delayTicks, () -> sendBlockChange0(player, block));
 		else
-			Remain.sendBlockChange0(player, block);
+			sendBlockChange0(player, block);
 	}
 
 	private static void sendBlockChange0(final Player player, final Block block) {
@@ -1328,7 +1344,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static int getPlaytimeMinutes(final Player player) {
-		return player.getStatistic(Remain.getPlayTimeStatisticName()) / (Remain.isPlaytimeStatisticTicks() ? 20 : 1);
+		return player.getStatistic(getPlayTimeStatisticName()) / (isPlaytimeStatisticTicks() ? 20 : 1);
 	}
 
 	/**
@@ -1437,7 +1453,7 @@ public final class Remain {
 			return Bukkit.getPlayer(id);
 
 		} catch (final NoSuchMethodError err) {
-			for (final Player online : Remain.getOnlinePlayers())
+			for (final Player online : getOnlinePlayers())
 				if (online.getUniqueId().equals(id))
 					return online;
 
@@ -1570,7 +1586,7 @@ public final class Remain {
 	 * @param message
 	 */
 	public static void sendToast(final Player receiver, final String message) {
-		Remain.sendToast(receiver, message, CompMaterial.BOOK);
+		sendToast(receiver, message, CompMaterial.BOOK);
 	}
 
 	/**
@@ -1582,7 +1598,7 @@ public final class Remain {
 	 * @param icon
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
-		if (Remain.hasAdvancements && message != null && !message.isEmpty()) {
+		if (hasAdvancements && message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
 			if (!colorized.isEmpty()) {
@@ -1609,10 +1625,10 @@ public final class Remain {
 			player.setCooldown(material, cooldownTicks);
 
 		} catch (final Throwable t) {
-			final StrictMap<Material, Integer> cooldown = Remain.getCooldown(player);
+			final StrictMap<Material, Integer> cooldown = getCooldown(player);
 
 			cooldown.override(material, cooldownTicks);
-			Remain.cooldowns.override(player.getUniqueId(), cooldown);
+			cooldowns.override(player.getUniqueId(), cooldown);
 		}
 	}
 
@@ -1631,7 +1647,7 @@ public final class Remain {
 			return player.hasCooldown(material);
 
 		} catch (final Throwable t) {
-			final StrictMap<Material, Integer> cooldown = Remain.getCooldown(player);
+			final StrictMap<Material, Integer> cooldown = getCooldown(player);
 
 			return cooldown.contains(material);
 		}
@@ -1652,7 +1668,7 @@ public final class Remain {
 			return player.getCooldown(material);
 
 		} catch (final Throwable t) {
-			final StrictMap<Material, Integer> cooldown = Remain.getCooldown(player);
+			final StrictMap<Material, Integer> cooldown = getCooldown(player);
 
 			return cooldown.getOrDefault(material, 0);
 		}
@@ -1660,7 +1676,7 @@ public final class Remain {
 
 	// Internal method to get a players cooldown map
 	private static StrictMap<Material, Integer> getCooldown(final Player player) {
-		return Remain.cooldowns.getOrDefault(player.getUniqueId(), new StrictMap<>());
+		return cooldowns.getOrDefault(player.getUniqueId(), new StrictMap<>());
 	}
 
 	/**
@@ -1670,7 +1686,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Entity getEntity(final UUID uuid) {
-		Remain.catchAsync("iterating through entities [CMN]");
+		catchAsync("iterating through entities [CMN]");
 
 		for (final World world : Bukkit.getWorlds())
 			for (final Entity entity : world.getEntities())
@@ -1708,7 +1724,7 @@ public final class Remain {
 	 * @param player
 	 */
 	public static void takeHandItem(final Player player) {
-		Remain.takeItemAndSetAsHand(player, player.getItemInHand());
+		takeItemAndSetAsHand(player, player.getItemInHand());
 	}
 
 	/**
@@ -1821,7 +1837,7 @@ public final class Remain {
 		YamlConfiguration conf = null;
 
 		try {
-			conf = Remain.loadConfigurationStrict(is);
+			conf = loadConfigurationStrict(is);
 
 		} catch (final Throwable ex) {
 			ex.printStackTrace();
@@ -1845,14 +1861,21 @@ public final class Remain {
 			conf.load(new InputStreamReader(is, StandardCharsets.UTF_8));
 
 		} catch (final NoSuchMethodError ex) {
-			Remain.loadFromString(is, conf);
+			loadConfigurationFromString(is, conf);
 		}
 
 		return conf;
 	}
 
-	// Load the YAML configuration from stream
-	private static void loadFromString(final InputStream stream, final YamlConfiguration conf) throws IOException, InvalidConfigurationException {
+	/**
+	 * Load the YAML configuration from stream
+	 *
+	 * @param stream
+	 * @param conf
+	 * @throws IOException
+	 * @throws InvalidConfigurationException
+	 */
+	public static YamlConfiguration loadConfigurationFromString(final InputStream stream, final YamlConfiguration conf) throws IOException, InvalidConfigurationException {
 		Valid.checkNotNull(stream, "Stream cannot be null");
 
 		final StringBuilder builder = new StringBuilder();
@@ -1868,6 +1891,7 @@ public final class Remain {
 		}
 
 		conf.loadFromString(builder.toString());
+		return conf;
 	}
 
 	/**
@@ -1973,13 +1997,12 @@ public final class Remain {
 	 * @return true if the server is running Paper(Spigot)
 	 */
 	public static boolean isPaper() {
-
 		try {
-			Bukkit.class.getMethod("getTPS");
+			Class.forName("co.aikar.timings.Timing");
 
 			return true;
 
-		} catch (final NoSuchMethodException e) {
+		} catch (final Throwable e) {
 			return false;
 		}
 	}
@@ -1990,7 +2013,7 @@ public final class Remain {
 	 * @return if the bungee chat API is present
 	 */
 	public static boolean isBungeeApiPresent() {
-		return Remain.bungeeApiPresent;
+		return bungeeApiPresent;
 	}
 
 	/**
@@ -1999,7 +2022,7 @@ public final class Remain {
 	 * @return if server supports native scoreboard api
 	 */
 	public static boolean hasNewScoreboardAPI() {
-		return Remain.newScoreboardAPI;
+		return newScoreboardAPI;
 	}
 
 	/**
@@ -2008,7 +2031,7 @@ public final class Remain {
 	 * @return if server supports native particle api
 	 */
 	public static boolean hasParticleAPI() {
-		return Remain.hasParticleAPI;
+		return hasParticleAPI;
 	}
 
 	/**
@@ -2017,7 +2040,7 @@ public final class Remain {
 	 * @return if server supports book event
 	 */
 	public static boolean hasBookEvent() {
-		return Remain.hasBookEvent;
+		return hasBookEvent;
 	}
 
 	/**
@@ -2026,7 +2049,7 @@ public final class Remain {
 	 * @return if server supports permanent scoreboard tags
 	 */
 	public static boolean hasScoreboardTags() {
-		return Remain.hasScoreboardTags;
+		return hasScoreboardTags;
 	}
 
 	/**
@@ -2035,7 +2058,17 @@ public final class Remain {
 	 * @return true if egg meta are supported
 	 */
 	public static boolean hasSpawnEggMeta() {
-		return Remain.hasSpawnEggMeta;
+		return hasSpawnEggMeta;
+	}
+
+	/**
+	 * Return if the server version supports {@link YamlConfiguration#load(java.io.Reader)}
+	 * otherwise you need to use just {@link InputStream}
+	 *
+	 * @return
+	 */
+	public static boolean hasYamlReaderLoad() {
+		return hasYamlReaderLoad;
 	}
 
 	// ------------------------ Legacy ------------------------
@@ -2043,7 +2076,7 @@ public final class Remain {
 	// return the legacy online player array
 	private static Player[] getPlayersLegacy() {
 		try {
-			return (Player[]) Remain.getPlayersMethod.invoke(null);
+			return (Player[]) getPlayersMethod.invoke(null);
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Reflection malfunction");
 		}
@@ -2052,7 +2085,7 @@ public final class Remain {
 	// return the legacy get health int method
 	private static int getHealhLegacy(final LivingEntity entity) {
 		try {
-			return (int) Remain.getHealthMethod.invoke(entity);
+			return (int) getHealthMethod.invoke(entity);
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Reflection malfunction");
 		}
