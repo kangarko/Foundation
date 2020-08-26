@@ -149,6 +149,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String RELOAD_SUCCESS = "&6{plugin_name} {plugin_version} has been reloaded.";
 
 		/**
+		 * The message ar "Reload_File_Load_Error" key shown then pre-loading disk files fails.
+		 */
+		public static String RELOAD_FILE_LOAD_ERROR = "&4Oups, &cthere was a problem loading files from your disk! See the console for more information. {plugin_name} has not been reloaded.";
+
+		/**
 		 * The message at "Reload_Fail" key shown when the plugin has failed to reload.
 		 */
 		public static String RELOAD_FAIL = "&4Oups, &creloading failed! See the console for more information. Error: {error}";
@@ -219,6 +224,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Reload_Success"))
 				RELOAD_SUCCESS = getString("Reload_Success");
+
+			if (isSetDefault("Reload_File_Load_Error"))
+				RELOAD_FILE_LOAD_ERROR = getString("Reload_File_Load_Error");
 
 			if (isSetDefault("Reload_Fail"))
 				RELOAD_FAIL = getString("Reload_Fail");
