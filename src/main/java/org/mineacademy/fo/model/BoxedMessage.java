@@ -62,7 +62,7 @@ public final class BoxedMessage {
 	 * @param messages
 	 */
 	private BoxedMessage(Iterable<? extends CommandSender> recipients, Player sender, String[] messages) {
-		this.recipients = recipients;
+		this.recipients = Common.toList(recipients); // Make a copy to prevent changes in the list on send
 		this.sender = sender;
 		this.messages = messages;
 	}
