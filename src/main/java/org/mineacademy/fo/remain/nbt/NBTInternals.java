@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 
@@ -92,7 +93,7 @@ public class NBTInternals {
 		nbtItem = new NBTItem(item);
 
 		if (!nbtItem.hasKey(STRING_KEY)) {
-			System.out.println("NBTAPI was not able to check a key!");
+			Common.log("NBTAPI was not able to check a key!");
 
 			compatible = false;
 		}
@@ -107,24 +108,24 @@ public class NBTInternals {
 				|| nbtItem.getIntArray(INTARRAY_KEY).length != INTARRAY_VALUE.length
 				|| nbtItem.getByteArray(BYTEARRAY_KEY).length != BYTEARRAY_VALUE.length
 				|| !nbtItem.getBoolean(BOOLEAN_KEY).equals(BOOLEAN_VALUE)) {
-			System.out.println("One key does not equal the original value!");
+			Common.log("One key does not equal the original value!");
 
 			compatible = false;
 		}
 		nbtItem.setString(STRING_KEY, null);
 		if (nbtItem.getKeys().size() != 10) {
-			System.out.println("Wasn't able to remove a key (Got " + nbtItem.getKeys().size() + " when expecting 10)!");
+			Common.log("Wasn't able to remove a key (Got " + nbtItem.getKeys().size() + " when expecting 10)!");
 
 			compatible = false;
 		}
 		comp = nbtItem.getCompound(COMPONENT_KEY);
 		if (comp == null) {
-			System.out.println("Wasn't able to get the NBTCompound!!");
+			Common.log("Wasn't able to get the NBTCompound!!");
 
 			compatible = false;
 		}
 		if (!comp.hasKey(STRING_KEY)) {
-			System.out.println("Wasn't able to check a compound key!");
+			Common.log("Wasn't able to check a compound key!");
 
 			compatible = false;
 		}
@@ -132,46 +133,46 @@ public class NBTInternals {
 				|| comp.getInteger(INT_KEY) != INT_VALUE * 2
 				|| comp.getDouble(DOUBLE_KEY) != DOUBLE_VALUE * 2
 				|| comp.getBoolean(BOOLEAN_KEY) == BOOLEAN_VALUE) {
-			System.out.println("One key does not equal the original compound value!");
+			Common.log("One key does not equal the original compound value!");
 
 			compatible = false;
 		}
 
 		list = comp.getStringList("testlist");
 		if (comp.getType("testlist") != NBTType.NBTTagList) {
-			System.out.println("Wasn't able to get the correct Tag type!");
+			Common.log("Wasn't able to get the correct Tag type!");
 
 			compatible = false;
 		}
 		if (!list.get(1).equals("test42") || list.size() != 3)
-			System.out.println("The List support got an error, and may not work!");
+			Common.log("The List support got an error, and may not work!");
 		taglist = comp.getCompoundList("complist");
 		if (taglist.size() == 1) {
 			lcomp = taglist.get(0);
 			if (lcomp.getKeys().size() != 3) {
-				System.out.println("Wrong key amount in Taglist (" + lcomp.getKeys().size() + ")!");
+				Common.log("Wrong key amount in Taglist (" + lcomp.getKeys().size() + ")!");
 
 				compatible = false;
 			} else if (lcomp.getDouble("double1") == 0.3333 && lcomp.getInteger("int1") == 42 && lcomp.getString("test2").equals("test2")
 					&& !lcomp.hasKey("test1")) {
 				//ok
 			} else {
-				System.out.println("One key in the Taglist changed!");
+				Common.log("One key in the Taglist changed!");
 
 				compatible = false;
 			}
 		} else {
-			System.out.println("Taglist is empty!");
+			Common.log("Taglist is empty!");
 
 			compatible = false;
 		}
 
 		if ((!compatible || !jsonCompatible) && MinecraftVersion.newerThan(V.v1_7)) {
-			System.out.println("WARNING");
-			System.out.println("The NBT library seems to be broken with your");
-			System.out.println("Spigot version " + MinecraftVersion.getServerVersion());
-			System.out.println();
-			System.out.println("Please contact the developer of this library.");
+			Common.log("WARNING");
+			Common.log("The NBT library seems to be broken with your");
+			Common.log("Spigot version " + MinecraftVersion.getServerVersion());
+			Common.log();
+			Common.log("Please contact the developer of this library.");
 		}
 
 		return compatible && jsonCompatible;

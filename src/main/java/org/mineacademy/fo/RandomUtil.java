@@ -126,6 +126,8 @@ public final class RandomUtil {
 	 * @return
 	 */
 	public static int nextInt(final int boundExclusive) {
+		Valid.checkBoolean(boundExclusive > 0, "Getting a random number must have the bound above 0, got: " + boundExclusive);
+
 		return random.nextInt(boundExclusive);
 	}
 
