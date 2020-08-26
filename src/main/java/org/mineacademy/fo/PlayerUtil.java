@@ -19,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -66,6 +67,37 @@ public final class PlayerUtil {
 	// ------------------------------------------------------------------------------------------------------------
 	// Misc
 	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Attempts to convert a player name to UUID
+	 *
+	 * If server is in online mode, this may involve a blocking request!
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static UUID convertNameToUUID(String name) {
+		// Try using essentials to quickly get the player name
+		final Plugin essentials = Bukkit.getPluginManager().getPlugin("Essentials");
+
+		UUID uuid = null;
+
+		if (essentials != null)
+			for (final File playerYml : essentials.getDataFolder().listFiles()) {
+				final YamlConfiguration playerConfig = FileUtil.loadConfigurationStrict(playerYml);
+
+				if (name.equalsIgnoreCase(playerConfig.getString("lastAccountName", null)))
+					uuid = UUID.fromString(playerYml.getName().replace(".yml", ""));
+			}
+		else {
+			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
+
+			if (offlinePlayer != null)
+				uuid = offlinePlayer.getUniqueId();
+		}
+
+		return uuid;
+	}
 
 	/**
 	 * Kicks the player on the main thread with a colorized message
@@ -252,7 +284,7 @@ public final class PlayerUtil {
 	 */
 	@Deprecated
 	public static boolean hasPermUnsafe(final UUID id, final String permission) {
-		return HookManager.hasPermissionUnsafe(id, permission.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()));
+		return HookManager.hasPermissionUnsafe(id, permission);
 	}
 
 	/**
@@ -265,7 +297,7 @@ public final class PlayerUtil {
 	 */
 	@Deprecated
 	public static boolean hasPermUnsafe(final String playerName, final String permission) {
-		return HookManager.hasPermissionUnsafe(playerName, permission.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()));
+		return HookManager.hasPermissionUnsafe(playerName, permission);
 	}
 
 	/**
@@ -505,7 +537,7 @@ public final class PlayerUtil {
 		int delta = Integer.MAX_VALUE;
 
 		for (final Player player : Remain.getOnlinePlayers()) {
-			final String nick = HookManager.getNick(player);
+			final String nick = HookManager.getNickColorless(player);
 
 			if (nick.toLowerCase().startsWith(name)) {
 				final int curDelta = Math.abs(nick.length() - name.length());
