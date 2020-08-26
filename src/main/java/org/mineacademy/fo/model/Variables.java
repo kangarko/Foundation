@@ -435,7 +435,7 @@ public final class Variables {
 			case "display_name":
 				return player == null ? Common.resolveSenderName(console) : player.getDisplayName();
 			case "nick":
-				return player == null ? Common.resolveSenderName(console) : HookManager.getNick(player);
+				return player == null ? Common.resolveSenderName(console) : HookManager.getNickColored(player);
 
 			case "player_prefix":
 			case "pl_prefix":
