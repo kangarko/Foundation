@@ -1,8 +1,10 @@
 package org.mineacademy.fo.command;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.YamlConfig;
 
 /**
  * A simple predefined command for quickly reloading the plugin
@@ -19,11 +21,31 @@ public final class ReloadCommand extends SimpleSubCommand {
 	@Override
 	protected void onCommand() {
 		try {
+			// Syntax check YML files before loading
+			boolean syntaxParsed = true;
+
+			for (final YamlConfig loaded : YamlConfig.getLoadedFiles()) {
+				try {
+					FileUtil.loadConfigurationStrict(loaded.getFile());
+
+				} catch (final FoException ex) {
+					ex.printStackTrace();
+
+					syntaxParsed = false;
+				}
+			}
+
+			if (!syntaxParsed) {
+				tell(SimpleLocalization.Commands.RELOAD_FILE_LOAD_ERROR);
+
+				return;
+			}
+
 			SimplePlugin.getInstance().reload();
-			Common.tell(sender, SimpleLocalization.Commands.RELOAD_SUCCESS.replace("{plugin_name}", SimplePlugin.getNamed()).replace("{plugin_version}", SimplePlugin.getVersion()));
+			tell(SimpleLocalization.Commands.RELOAD_SUCCESS);
 
 		} catch (final Throwable t) {
-			Common.tell(sender, SimpleLocalization.Commands.RELOAD_FAIL.replace("{error}", t.getMessage() != null ? t.getMessage() : "unknown"));
+			tell(SimpleLocalization.Commands.RELOAD_FAIL.replace("{error}", t.getMessage() != null ? t.getMessage() : "unknown"));
 
 			t.printStackTrace();
 		}
