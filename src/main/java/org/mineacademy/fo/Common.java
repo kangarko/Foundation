@@ -398,12 +398,7 @@ public final class Common {
 		final boolean hasPrefix = message.contains("{prefix}");
 
 		// Add colors and replace player
-		message = Replacer.replaceArray(message,
-				"player", resolveSenderName(sender),
-				"plugin_name", SimplePlugin.getNamed(),
-				"plugin_version", SimplePlugin.getVersion());
-
-		message = colorize(message);
+		message = colorize(message.replace("{player}", resolveSenderName(sender)));
 
 		// Send [JSON] prefixed messages as json component
 		if (message.startsWith("[JSON]")) {
@@ -499,7 +494,7 @@ public final class Common {
 		String result = ChatColor.translateAlternateColorCodes('&', message
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
-				.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase())
+				.replace("{plugin_name}", SimplePlugin.getNamed())
 				.replace("{plugin_version}", SimplePlugin.getVersion()));
 
 		// RGB colors
@@ -562,7 +557,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String stripColors(final String message) {
-		return message == null ? "" : message.replace(ChatColor.COLOR_CHAR + "x", "").replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-or])", "");
+		return message == null ? "" : message.replace(ChatColor.COLOR_CHAR + "x", "").replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-orA-F-K-OR])", "");
 	}
 
 	/**
@@ -945,7 +940,7 @@ public final class Common {
 	 * @param playerSender
 	 * @param command
 	 */
-	public static void dispatchCommandAsPlayer(@NonNull final Player playerSender, @NonNull final String command) {
+	public static void dispatchCommandAsPlayer(@NonNull final Player playerSender, @NonNull String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
@@ -1552,7 +1547,7 @@ public final class Common {
 			if (PlayerUtil.isVanished(online, otherPlayer) && !includeVanished)
 				continue;
 
-			found.add(HookManager.getNick(online));
+			found.add(HookManager.getNickColorless(online));
 		}
 
 		return found;
