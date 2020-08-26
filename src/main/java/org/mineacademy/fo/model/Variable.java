@@ -22,7 +22,7 @@ public final class Variable extends YamlConfig implements Actionable {
 	/**
 	 * A list of all loaded variables
 	 */
-	private static final ConfigItems<Variable> loadedVariables = new ConfigItems<>("variable", "variables", Variable.class, false);
+	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class, false);
 
 	static {
 		loadedVariables.setVerbose(true);
@@ -284,10 +284,6 @@ public final class Variable extends YamlConfig implements Actionable {
 
 	public static void loadVariables() {
 		loadedVariables.loadItems();
-	}
-
-	public static Variable loadOrCreateVariable(final String name) {
-		return loadedVariables.loadOrCreateItem(name);
 	}
 
 	public static void removeVariable(final Variable variable) {
