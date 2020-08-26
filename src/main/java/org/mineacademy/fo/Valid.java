@@ -2,6 +2,7 @@ package org.mineacademy.fo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
@@ -244,6 +245,22 @@ public final class Valid {
 	 */
 	public boolean isInRange(final long value, final long min, final long max) {
 		return value >= min && value <= max;
+	}
+
+	/**
+	 * Return true if the given object is a {@link UUID}
+	 *
+	 * @param object
+	 * @return
+	 */
+	public boolean isUUID(Object object) {
+		if (object instanceof String) {
+			final String[] components = object.toString().split("-");
+
+			return components.length == 5;
+		}
+
+		return object instanceof UUID;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
