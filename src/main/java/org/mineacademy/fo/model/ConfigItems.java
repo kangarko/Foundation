@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
@@ -48,27 +49,20 @@ public final class ConfigItems<T extends YamlConfig> {
 	private final Class<T> prototypeClass;
 
 	/**
-	 * Does these items have a default prototype in the prototype/ folder in your JAR?
-	 */
-	private final boolean hasDefaultPrototype;
-
-	/**
 	 * Shall we log each item loaded? True by default
 	 */
 	@Setter
 	private boolean verbose = true;
 
 	/**
-	 * Create a new config items instance with prototype class,
-	 * ensure you make one in prototype/type.yml in your JAR
-	 *
-	 * @param type
-	 * @param folder
-	 * @param prototypeClass
+	 * Do we have a default file (a prototype) to copy default settings from?
 	 */
-	public ConfigItems(String type, String folder, Class<T> prototypeClass) {
-		this(type, folder, prototypeClass, true);
-	}
+	private boolean hasDefaults = true;
+
+	/**
+	 * Are all items stored in a single file?
+	 */
+	private boolean singleFile = false;
 
 	/**
 	 * Create a new config items instance
@@ -77,12 +71,30 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param folder
 	 * @param prototypeClass
 	 * @param hasDefaultPrototype
+	 * @param singleFile
 	 */
-	public ConfigItems(String type, String folder, Class<T> prototypeClass, boolean hasDefaultPrototype) {
+	private ConfigItems(String type, String folder, Class<T> prototypeClass, boolean singleFile, boolean hasDefaults) {
 		this.type = type;
 		this.folder = folder;
 		this.prototypeClass = prototypeClass;
-		this.hasDefaultPrototype = hasDefaultPrototype;
+		this.singleFile = singleFile;
+		this.hasDefaults = hasDefaults;
+	}
+
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String name, String folder, Class<P> prototypeClass) {
+		return fromFolder(name, folder, prototypeClass, true);
+	}
+
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String name, String folder, Class<P> prototypeClass, boolean hasDefaults) {
+		return new ConfigItems<>(name, folder, prototypeClass, false, hasDefaults);
+	}
+
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
+		return fromFile(path, file, prototypeClass, true);
+	}
+
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass, boolean hasDefaults) {
+		return new ConfigItems<>(path, file, prototypeClass, true, hasDefaults);
 	}
 
 	/**
@@ -93,17 +105,27 @@ public final class ConfigItems<T extends YamlConfig> {
 		// Clear old items
 		loadedItems.clear();
 
-		// Try copy items from our JAR
-		if (!FileUtil.getFile(folder).exists())
-			FileUtil.extractFolderFromJar(folder + "/", folder);
+		if (singleFile) {
+			final File file = FileUtil.getOrMakeFile(this.folder);
+			final YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-		// Load items on our disk
-		final File[] files = FileUtil.getFiles(folder, "yml");
+			for (final String name : config.getConfigurationSection(this.type).getKeys(false))
+				loadOrCreateItem(name);
+		}
 
-		for (final File file : files) {
-			final String name = FileUtil.getFileName(file);
+		else {
+			// Try copy items from our JAR
+			if (!FileUtil.getFile(folder).exists())
+				FileUtil.extractFolderFromJar(folder + "/", folder);
 
-			loadOrCreateItem(name);
+			// Load items on our disk
+			final File[] files = FileUtil.getFiles(folder, "yml");
+
+			for (final File file : files) {
+				final String name = FileUtil.getFileName(file);
+
+				loadOrCreateItem(name);
+			}
 		}
 	}
 
@@ -114,7 +136,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param name
 	 * @return
 	 */
-	public T loadOrCreateItem(final String name) {
+	private void loadOrCreateItem(final String name) {
 		Valid.checkBoolean(!isItemLoaded(name), WordUtils.capitalize(type) + name + " is already loaded: " + getItemNames());
 
 		try {
@@ -136,21 +158,17 @@ public final class ConfigItems<T extends YamlConfig> {
 			final T item = nameConstructor ? constructor.newInstance(name) : constructor.newInstance();
 
 			// Automatically load configuration and paste prototype
-			item.loadConfiguration(hasDefaultPrototype ? "prototype/" + type + ".yml" : YamlConfig.NO_DEFAULT, folder + "/" + name + ".yml");
+			item.loadConfiguration(hasDefaults ? "prototype/" + type + ".yml" : YamlConfig.NO_DEFAULT, folder + "/" + name + ".yml");
 
 			// Register
 			loadedItems.add(item);
 
 			if (verbose)
-				Common.log("[+] Loaded " + type + " " + item.getName());
-
-			return item;
+				Common.log("[+] Loaded " + (type.endsWith("s") ? type.substring(0, type.length() - 1).toLowerCase() : type) + " " + item.getName());
 
 		} catch (final Throwable t) {
 			Common.throwError(t, "Failed to load " + type + " " + name);
 		}
-
-		return null;
 	}
 
 	/**
