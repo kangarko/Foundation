@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map.Entry;
 
+import fr.xephi.authme.libs.com.zaxxer.hikari.HikariConfig;
+import fr.xephi.authme.libs.com.zaxxer.hikari.HikariDataSource;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
@@ -33,6 +35,8 @@ public class SimpleDatabase {
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
 	private Connection connection;
+
+	private HikariDataSource hikariDataSource;
 
 	/**
 	 * The last credentials from the connect function, or null if never called
@@ -112,11 +116,24 @@ public class SimpleDatabase {
 	 * @param password
 	 * @param table
 	 */
+
 	public final void connect(final String url, final String user, final String password, final String table) {
+		final HikariConfig hikariConfig = new HikariConfig();
+
+		hikariConfig.setMaximumPoolSize(10);
+		hikariConfig.setJdbcUrl(url);
+		hikariConfig.setUsername(user);
+		hikariConfig.setPassword(password);
+		hikariConfig.setMaxLifetime(600000L);
+		hikariConfig.setIdleTimeout(300000L);
+		hikariConfig.setLeakDetectionThreshold(300000L);
+		hikariConfig.setConnectionTimeout(100000L);
+
+		this.hikariDataSource = new HikariDataSource(hikariConfig);
 		this.lastCredentials = new LastCredentials(url, user, password, table);
 
 		try {
-			this.connection = DriverManager.getConnection(url, user, password);
+			this.connection = this.hikariDataSource.getConnection();
 
 			onConnected();
 
@@ -153,15 +170,7 @@ public class SimpleDatabase {
 	 * Attempts to close the connection, if not null
 	 */
 	protected final void close() {
-		if (connection != null)
-			synchronized (connection) {
-				try {
-					connection.close();
-
-				} catch (final SQLException e) {
-					Common.error(e, "Error closing MySQL connection!");
-				}
-			}
+		this.hikariDataSource.close();
 	}
 
 	// --------------------------------------------------------------------
