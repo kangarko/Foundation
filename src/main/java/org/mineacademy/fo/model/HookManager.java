@@ -695,6 +695,16 @@ public final class HookManager {
 		return !essNick.equals(nick) && !"".equals(essNick) ? essNick : !cmiNick.equals(nick) && !"".equals(cmiNick) ? cmiNick : nick;
 	}
 
+	/**
+	 * Attempts to find UUID stored in the Essentials/userdata folder
+	 *
+	 * @param name
+	 * @return UUID with the name found or null if not stored
+	 */
+	/*public static Tuple<UUID, String> getEssentialsUUIDFromName(String name) {
+		return isEssentialsXLoaded() ? essentialsxHook.getUUIDfromName(name) : null;
+	}*/
+
 	// ------------------------------------------------------------------------------------------------------------
 	// EssentialsX
 	// ------------------------------------------------------------------------------------------------------------
@@ -889,62 +899,26 @@ public final class HookManager {
 	 * @param perm
 	 * @return
 	 */
-	public static boolean hasPermissionProtocolLib(Player player, String perm) {
+	public static boolean hasProtocolLibPermission(Player player, String perm) {
 		if (isProtocolLibLoaded() && protocolLibHook.isTemporaryPlayer(player))
-			return hasPermissionUnsafe(player.getUniqueId(), perm);
+			return hasVaultPermission(player.getName(), perm);
 
-		try {
-			return PlayerUtil.hasPerm(player, perm);
-		} catch (final Throwable t) {
-			try {
-				return hasPermissionUnsafe(player.getUniqueId(), perm);
-			} catch (final Throwable tt) {
-				return false; // Default to false
-			}
-		}
-	}
-
-	/**
-	 * Checks if the given UUID has permission (uses Vault)
-	 *
-	 * @param id
-	 * @param perm
-	 * @return
-	 * @deprecated use {@link PlayerUtil#hasPerm(org.bukkit.permissions.Permissible, String)}
-	 */
-	@Deprecated
-	public static boolean hasPermissionUnsafe(final UUID id, final String perm) {
-		final OfflinePlayer player = Remain.getOfflinePlayerByUUID(id);
-		final Boolean has = player != null && isVaultLoaded() ? vaultHook.hasPerm(player.getName(), perm.contains("{plugin_name}") ? perm.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()) : perm) : null;
-
-		return hasPerm0(player, has);
+		return PlayerUtil.hasPerm(player, perm);
 	}
 
 	/**
 	 * Checks if the given player name has a certain permission using vault
+	 * Or throws an error if Vault is not present
 	 *
 	 * @param name
 	 * @param perm
+	 *
 	 * @return
-	 * @deprecated use {@link PlayerUtil#hasPerm(org.bukkit.permissions.Permissible, String)}
 	 */
-	@Deprecated
-	public static boolean hasPermissionUnsafe(final String name, final String perm) {
-		final OfflinePlayer player = Bukkit.getOfflinePlayer(name);
-		final Boolean has = player != null && player.getName() != null && isVaultLoaded() ? vaultHook.hasPerm(player.getName(), perm.contains("{plugin_name}") ? perm.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()) : perm) : null;
+	public static boolean hasVaultPermission(final String name, final String perm) {
+		Valid.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
 
-		return hasPerm0(player, has);
-	}
-
-	private static boolean hasPerm0(final OfflinePlayer player, final Boolean has) {
-		if (has != null) {
-			if (!has && player != null)
-				return player.isOp();
-
-			return has;
-		}
-
-		return player != null && player.isOp();
+		return vaultHook.hasPerm(name, perm.contains("{plugin_name}") ? perm.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()) : perm);
 	}
 
 	/**
@@ -1385,6 +1359,18 @@ class EssentialsHook {
 	EssentialsHook() {
 		ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
 	}
+
+	/*Tuple<UUID, String> getUUIDfromName(String name) {
+		for (final File playerYml : new File(ess.getDataFolder(), "userdata").listFiles()) {
+			final YamlConfiguration playerConfig = FileUtil.loadConfigurationStrict(playerYml);
+			final String essName = playerConfig.getString("lastAccountName");
+	
+			if (name.equalsIgnoreCase(essName))
+				return new Tuple<>(UUID.fromString(playerYml.getName().replace(".yml", "")), essName);
+		}
+	
+		return null;
+	}*/
 
 	void setGodMode(final Player player, final boolean godMode) {
 		final User user = getUser(player.getName());
