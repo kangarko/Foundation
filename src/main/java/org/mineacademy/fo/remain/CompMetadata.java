@@ -393,8 +393,6 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				loadEntities();
 				loadBlockStates();
-
-				save();
 			}
 		}
 
