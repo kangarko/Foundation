@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -307,6 +308,10 @@ public abstract class YamlStaticConfig {
 
 	protected static final List<String> getStringList(final String path) {
 		return TEMPORARY_INSTANCE.getStringList(path);
+	}
+
+	protected static final <E> Set<E> getSet(final String path, Class<E> typeOf) {
+		return TEMPORARY_INSTANCE.getSet(path, typeOf);
 	}
 
 	protected static final <E> List<E> getList(final String path, final Class<E> listType) {
