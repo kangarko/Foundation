@@ -649,7 +649,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String chatLine() {
-		return "*----------------------------------------------------*";
+		return "*---------------------------------------------------*";
 	}
 
 	/**
@@ -658,7 +658,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String chatLineSmooth() {
-		return ChatColor.STRIKETHROUGH + "――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――";
+		return ChatColor.STRIKETHROUGH + "―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――";
 	}
 
 	/**

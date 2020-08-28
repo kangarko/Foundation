@@ -55,7 +55,7 @@
 			<artifactId>spigot-api</artifactId>
 			<version>1.16.2-R0.1-SNAPSHOT</version>
 		</dependency>
-
+		
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
