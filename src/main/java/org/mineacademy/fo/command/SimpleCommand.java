@@ -25,6 +25,7 @@ import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
@@ -237,7 +238,7 @@ public abstract class SimpleCommand extends Command {
 			final String owningPlugin = oldCommand.getPlugin().getName();
 
 			if (!owningPlugin.equals(SimplePlugin.getNamed()))
-				Common.log("&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
+				Debugger.debug("plugin", "&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
 
 			Remain.unregisterCommand(oldCommand.getLabel(), unregisterOldAliases);
 		}
