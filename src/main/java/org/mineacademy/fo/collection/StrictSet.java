@@ -71,6 +71,15 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	}
 
 	/**
+	 * Remove the given element from the set
+	 *
+	 * @param value
+	 */
+	public void removeWeak(E value) {
+		set.remove(value);
+	}
+
+	/**
 	 * Add all elements to the set
 	 *
 	 * @param collection
@@ -90,6 +99,15 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 		Valid.checkNotNull(key, "Cannot add null values");
 		Valid.checkBoolean(!set.contains(key), String.format(getCannotAddMessage(), key));
 
+		set.add(key);
+	}
+
+	/**
+	 * Add the given element to the set
+	 *
+	 * @param key
+	 */
+	public void override(E key) {
 		set.add(key);
 	}
 
