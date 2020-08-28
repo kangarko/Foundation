@@ -182,6 +182,19 @@ public final class ItemCreator {
 	}
 
 	/**
+	 * Make an item bearing the given owner skull name
+	 *
+	 * @param owner
+	 * @return
+	 */
+	public ItemStack makeSkull(String owner) {
+		final ItemStack item = make();
+		Valid.checkBoolean(item.getItemMeta() instanceof SkullMeta, "makeSkull can only be used on skulls");
+
+		return SkullCreator.itemWithName(item, owner);
+	}
+
+	/**
 	 * Attempts to remove all enchants, used to remove glow
 	 */
 	public ItemCreator removeEnchants() {
