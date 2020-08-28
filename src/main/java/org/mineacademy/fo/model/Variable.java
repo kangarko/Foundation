@@ -25,7 +25,7 @@ public final class Variable extends YamlConfig implements Actionable {
 	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class, false);
 
 	static {
-		loadedVariables.setVerbose(true);
+		loadedVariables.setVerbose(false);
 	}
 
 	/**
