@@ -1419,8 +1419,6 @@ public final class Remain {
 
 	/**
 	 * Tries to find offline player by uuid
-	 * <p>
-	 * This method may include a blocking call
 	 *
 	 * @param id
 	 * @return
@@ -1430,6 +1428,9 @@ public final class Remain {
 			return Bukkit.getOfflinePlayer(id);
 
 		} catch (final NoSuchMethodError err) {
+			if (Bukkit.isPrimaryThread())
+				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + SimplePlugin.getNamed() + " plugin authors.");
+
 			final UUIDToNameConverter f = new UUIDToNameConverter(id);
 
 			try {
