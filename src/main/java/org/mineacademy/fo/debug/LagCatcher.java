@@ -172,6 +172,23 @@ public final class LagCatcher {
 	}
 
 	/**
+	 * Calculates how long a section took (in ms) but does not remove it from the map
+	 * it will continue being measure
+	 *
+	 * @param section
+	 * @return
+	 */
+	public static void took(String section) {
+		final Long nanoTime = startTimesMap.get(section);
+		final String message = section + " took " + MathUtil.formatTwoDigits(nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D) + " ms";
+
+		if (SimplePlugin.hasInstance())
+			Common.logNoPrefix("[{plugin_name} {plugin_version}] " + message);
+		else
+			System.out.println("[LagCatcher] " + message);
+	}
+
+	/**
 	 * Calculates how long a section took (in ms) and removes it from the timings map
 	 *
 	 * @param section
