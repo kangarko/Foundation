@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -19,7 +20,6 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -67,37 +67,6 @@ public final class PlayerUtil {
 	// ------------------------------------------------------------------------------------------------------------
 	// Misc
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Attempts to convert a player name to UUID
-	 *
-	 * If server is in online mode, this may involve a blocking request!
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static UUID convertNameToUUID(String name) {
-		// Try using essentials to quickly get the player name
-		final Plugin essentials = Bukkit.getPluginManager().getPlugin("Essentials");
-
-		UUID uuid = null;
-
-		if (essentials != null)
-			for (final File playerYml : essentials.getDataFolder().listFiles()) {
-				final YamlConfiguration playerConfig = FileUtil.loadConfigurationStrict(playerYml);
-
-				if (name.equalsIgnoreCase(playerConfig.getString("lastAccountName", null)))
-					uuid = UUID.fromString(playerYml.getName().replace(".yml", ""));
-			}
-		else {
-			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
-
-			if (offlinePlayer != null)
-				uuid = offlinePlayer.getUniqueId();
-		}
-
-		return uuid;
-	}
 
 	/**
 	 * Kicks the player on the main thread with a colorized message
@@ -273,32 +242,6 @@ public final class PlayerUtil {
 	// ------------------------------------------------------------------------------------------------------------
 	// Permissions
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Checks if the given UUID has a certain permission, returns false if failed
-	 *
-	 * @param id
-	 * @param permission
-	 * @return
-	 * @deprecated returns false if failed for whatever reason
-	 */
-	@Deprecated
-	public static boolean hasPermUnsafe(final UUID id, final String permission) {
-		return HookManager.hasPermissionUnsafe(id, permission);
-	}
-
-	/**
-	 * Checks if the given name has a certain permission, returns false if failed
-	 *
-	 * @param playerName
-	 * @param permission
-	 * @return
-	 * @deprecated returns false if failed for whatever reason, also can connect to the internet for UUID lookup on the main thread
-	 */
-	@Deprecated
-	public static boolean hasPermUnsafe(final String playerName, final String permission) {
-		return HookManager.hasPermissionUnsafe(playerName, permission);
-	}
 
 	/**
 	 * Return if the given sender has a certain permission
@@ -553,6 +496,20 @@ public final class PlayerUtil {
 		}
 
 		return found;
+	}
+
+	/**
+	 * Performs an async player lookup then runs the action in a sync runnable
+	 *
+	 * @param name
+	 * @param syncAction
+	 */
+	public static void lookupOfflinePlayerAsync(String name, Consumer<OfflinePlayer> syncAction) {
+		Common.runAsync(() -> {
+			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
+
+			Common.runLater(() -> syncAction.accept(offlinePlayer));
+		});
 	}
 
 	// ----------------------------------------------------------------------------------------------------
