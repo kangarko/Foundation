@@ -21,8 +21,8 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -30,8 +30,6 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.SerializeUtil;
@@ -50,8 +48,6 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -453,11 +449,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * Saves the content of this config into the file
 	 */
 	public final void save() {
-
 		if (loading) {
-			// If we are loading only set the flag to save to save it later together
-			if (!save)
-				save = true;
+			save = true;
 
 			return;
 		}
@@ -467,8 +460,21 @@ public class YamlConfig implements ConfigSerializable {
 		onSave();
 
 		// Automatically serialize on save
-		for (final Entry<String, Object> entry : serialize().entrySet())
-			setNoSave(entry.getKey(), entry.getValue());
+		final SerializedMap serialized = serialize();
+
+		// Make the map from serialize() override sections it is placed into
+		if (serialized != null) {
+			if (pathPrefix == null || pathPrefix.isEmpty()) {
+				if (serialized.isEmpty())
+					for (final String key : getConfig().getKeys(false))
+						getConfig().set(key, null);
+				else
+					for (final Entry<String, Object> entry : serialized.entrySet())
+						setNoSave(entry.getKey(), entry.getValue());
+
+			} else
+				setNoSave("", serialized.isEmpty() ? null : serialized);
+		}
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 		rewriteVariablesIn(instance.getFile());
@@ -511,7 +517,7 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return new SerializedMap();
+		return null;
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1097,8 +1103,11 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param <T>
 	 * @param path
 	 * @param type
+	 *
 	 * @return
+	 * @deprecated this code is specifically targeted for our plugins only
 	 */
+	@Deprecated
 	protected final <T extends Enum<T>> List<T> getCompatibleEnumList(final String path, final Class<T> type) {
 		final StrictList<T> list = new StrictList<>();
 		final List<String> enumNames = getStringList(path);
@@ -1279,45 +1288,6 @@ public class YamlConfig implements ConfigSerializable {
 		return map;
 	}
 
-	/**
-	 * Get a list of enumerations
-	 *
-	 * @param <E>
-	 * @param path
-	 * @param listType
-	 * @return
-	 * @deprecated platform-specific code
-	 */
-	@Deprecated
-	protected final <E extends Enum<E>> StrictList<E> getEnumList_OLD(final String path, final Class<E> listType) {
-		final StrictList<E> list = new StrictList<>();
-
-		for (final String item : getStringList(path))
-			if (item.equals("*"))
-				return new StrictList<>();
-			else if (listType == Material.class) {
-				final Material mat = CompMaterial.fromStringCompat(item).getMaterial();
-
-				if (mat != null)
-					list.add((E) mat);
-
-			} else if (listType == CompMaterial.class) {
-				final CompMaterial mat = CompMaterial.fromStringCompat(item);
-
-				if (mat != null)
-					list.add((E) mat);
-
-			} else {
-				// Compatibility workaround because we have DROWNED in our default config but it does not exist in old MC
-				if (listType == SpawnReason.class && "DROWNED".equals(item) && MinecraftVersion.olderThan(V.v1_13))
-					continue;
-
-				list.add(ReflectionUtil.lookupEnum(listType, item));
-			}
-
-		return list;
-	}
-
 	// ------------------------------------------------------------------------------------
 	// Configuration Setters
 	// ------------------------------------------------------------------------------------
@@ -1359,6 +1329,10 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param value
 	 */
 	protected final void setNoSave(String path, Object value) {
+
+		if (loading)
+			Valid.checkBoolean(serialize() == null, "Cannot save data using setNoSave during onLoadFinish when you use serialize() because SerializeMap would override this anyways!");
+
 		path = formPathPrefix(path);
 		value = SerializeUtil.serialize(value);
 
@@ -1913,7 +1887,7 @@ public class YamlConfig implements ConfigSerializable {
  * <p>
  * This represents the access to that file.
  */
-@Getter(value = AccessLevel.PROTECTED)
+//@Getter(value = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
 class ConfigInstance {
 
@@ -1942,8 +1916,7 @@ class ConfigInstance {
 	 *
 	 * @param header
 	 */
-	protected void save(final String[] header) {
-
+	protected synchronized void save(final String[] header) {
 		if (header != null) {
 			config.options().copyHeader(true);
 			config.options().header(String.join("\n", header));
@@ -1953,8 +1926,14 @@ class ConfigInstance {
 			if (defaultsPath != null && YamlConfig.SAVE_COMMENTS)
 				ConfigUpdater.update(defaultsPath, file);
 
-			else
+			else {
 				config.save(file);
+
+				// Workaround: When saving maps, the config somehow stops
+				// recognizing them as sections so we must reload in order
+				// for all maps to be turned back into MemorySection to be reachable by get()
+				reload();
+			}
 
 		} catch (final NullPointerException ex) {
 			if (ex.getMessage() != null && ex.getMessage().contains("Nodes must be provided")) {
@@ -1972,7 +1951,7 @@ class ConfigInstance {
 			} else
 				throw ex;
 
-		} catch (final IOException e) {
+		} catch (final IOException | InvalidConfigurationException e) {
 			Common.error(e, "Failed to save " + file.getName());
 		}
 	}
@@ -1982,17 +1961,33 @@ class ConfigInstance {
 	 *
 	 * @throws Exception
 	 */
-	protected void reload() throws Exception {
+	protected synchronized void reload() throws IOException, InvalidConfigurationException {
 		config.load(file);
 	}
 
 	/**
 	 * Removes the config file from the disk
 	 */
-	protected void delete() {
+	protected synchronized void delete() {
 		YamlConfig.unregisterLoadedFile(file);
 
 		file.delete();
+	}
+
+	public synchronized File getFile() {
+		return file;
+	}
+
+	public synchronized YamlConfiguration getConfig() {
+		return config;
+	}
+
+	public synchronized YamlConfiguration getDefaultConfig() {
+		return defaultConfig;
+	}
+
+	public synchronized String getDefaultsPath() {
+		return defaultsPath;
 	}
 
 	/**
@@ -2001,7 +1996,7 @@ class ConfigInstance {
 	 * @param file
 	 * @return
 	 */
-	public boolean equals(final File file) {
+	public synchronized boolean equals(final File file) {
 		return equals((Object) file);
 	}
 
@@ -2011,7 +2006,7 @@ class ConfigInstance {
 	 * @param fileName
 	 * @return
 	 */
-	public boolean equals(final String fileName) {
+	public synchronized boolean equals(final String fileName) {
 		return equals((Object) fileName);
 	}
 
@@ -2023,7 +2018,7 @@ class ConfigInstance {
 	 * @return
 	 */
 	@Override
-	public boolean equals(final Object obj) {
+	public synchronized boolean equals(final Object obj) {
 		return obj instanceof ConfigInstance ? ((ConfigInstance) obj).file.getName().equals(file.getName()) : obj instanceof File ? ((File) obj).getName().equals(file.getName()) : obj instanceof String ? ((String) obj).equals(file.getName()) : false;
 	}
 }
