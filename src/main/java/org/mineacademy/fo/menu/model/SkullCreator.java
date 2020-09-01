@@ -234,10 +234,10 @@ public class SkullCreator {
 			final Object profile = ReflectionUtil.instantiate(gameProfileClass.getConstructor(UUID.class, String.class), id, "aaaaa");
 
 			final Class<?> propertyClass = ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property");
-			final Object property = ReflectionUtil.instantiate(propertyClass.getConstructor(String.class), b64);
+			final Object property = ReflectionUtil.instantiate(propertyClass.getConstructor(String.class, String.class), "textures", b64);
 			final Object propertyMap = ReflectionUtil.invoke("getProperties", profile);
 
-			propertyMap.getClass().getMethod("put", String.class, propertyClass).invoke(propertyMap, "textures", property);
+			ReflectionUtil.invoke("put", propertyMap, "textures", property);
 
 			return profile;
 
