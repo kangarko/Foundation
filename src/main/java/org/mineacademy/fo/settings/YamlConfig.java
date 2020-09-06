@@ -1916,7 +1916,7 @@ class ConfigInstance {
 	 *
 	 * @param header
 	 */
-	protected synchronized void save(final String[] header) {
+	protected void save(final String[] header) {
 		if (header != null) {
 			config.options().copyHeader(true);
 			config.options().header(String.join("\n", header));
@@ -1961,32 +1961,32 @@ class ConfigInstance {
 	 *
 	 * @throws Exception
 	 */
-	protected synchronized void reload() throws IOException, InvalidConfigurationException {
+	protected void reload() throws IOException, InvalidConfigurationException {
 		config.load(file);
 	}
 
 	/**
 	 * Removes the config file from the disk
 	 */
-	protected synchronized void delete() {
+	protected void delete() {
 		YamlConfig.unregisterLoadedFile(file);
 
 		file.delete();
 	}
 
-	public synchronized File getFile() {
+	public File getFile() {
 		return file;
 	}
 
-	public synchronized YamlConfiguration getConfig() {
+	public YamlConfiguration getConfig() {
 		return config;
 	}
 
-	public synchronized YamlConfiguration getDefaultConfig() {
+	public YamlConfiguration getDefaultConfig() {
 		return defaultConfig;
 	}
 
-	public synchronized String getDefaultsPath() {
+	public String getDefaultsPath() {
 		return defaultsPath;
 	}
 
@@ -1996,7 +1996,7 @@ class ConfigInstance {
 	 * @param file
 	 * @return
 	 */
-	public synchronized boolean equals(final File file) {
+	public boolean equals(final File file) {
 		return equals((Object) file);
 	}
 
@@ -2006,7 +2006,7 @@ class ConfigInstance {
 	 * @param fileName
 	 * @return
 	 */
-	public synchronized boolean equals(final String fileName) {
+	public boolean equals(final String fileName) {
 		return equals((Object) fileName);
 	}
 
@@ -2018,7 +2018,7 @@ class ConfigInstance {
 	 * @return
 	 */
 	@Override
-	public synchronized boolean equals(final Object obj) {
+	public boolean equals(final Object obj) {
 		return obj instanceof ConfigInstance ? ((ConfigInstance) obj).file.getName().equals(file.getName()) : obj instanceof File ? ((File) obj).getName().equals(file.getName()) : obj instanceof String ? ((String) obj).equals(file.getName()) : false;
 	}
 }
