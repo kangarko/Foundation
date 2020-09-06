@@ -1882,7 +1882,12 @@ public final class Common {
 	 */
 	public static <T> List<T> toList(final Iterable<T> it) {
 		final List<T> list = new ArrayList<>();
-		it.forEach(el -> list.add(el));
+
+		if (it != null)
+			it.forEach(el -> {
+				if (el != null)
+					list.add(el);
+			});
 
 		return list;
 	}
