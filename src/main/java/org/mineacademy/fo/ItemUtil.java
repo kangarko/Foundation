@@ -164,8 +164,11 @@ public final class ItemUtil {
 			final ItemMeta f = first.getItemMeta();
 			final ItemMeta s = second.getItemMeta();
 
-			final String fName = Common.stripColors(Common.getOrEmpty(f.getDisplayName()).toLowerCase());
-			final String sName = Common.stripColors(Common.getOrEmpty(s.getDisplayName()).toLowerCase());
+			if ((f == null && s != null) || (s == null && f != null))
+				return false;
+
+			final String fName = f == null ? "" : Common.stripColors(Common.getOrEmpty(f.getDisplayName()).toLowerCase());
+			final String sName = s == null ? "" : Common.stripColors(Common.getOrEmpty(s.getDisplayName()).toLowerCase());
 
 			if (!fName.equals(sName) || !Valid.listEquals(f.getLore(), s.getLore()))
 				return false;
