@@ -155,7 +155,7 @@ public final class MinecraftVersion {
 
 			final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
 			final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
-			final boolean hasGatekeeper = !"craftbukkit".equals(curr);
+			final boolean hasGatekeeper = !"craftbukkit".equals(curr) && !"".equals(packageName);
 
 			serverVersion = curr;
 
