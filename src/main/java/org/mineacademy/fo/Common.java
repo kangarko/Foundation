@@ -79,6 +79,11 @@ public final class Common {
 	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile(Pattern.quote("{#") + "(.*?)" + Pattern.quote("}"));
 
 	/**
+	 * Pattern used to match colors with {#HEX} code for MC 1.16+
+	 */
+	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + ChatColor.COLOR_CHAR + "x)(" + ChatColor.COLOR_CHAR + "[0-9A-F]){6}");
+
+	/**
 	 * We use this to send messages with colors to your console
 	 */
 	private static final CommandSender CONSOLE_SENDER = Bukkit.getServer() != null ? Bukkit.getServer().getConsoleSender() : null;
@@ -577,6 +582,22 @@ public final class Common {
 	 * @return
 	 */
 	public static String lastColor(final String message) {
+
+		// RGB colors
+		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
+			final int c = message.lastIndexOf(ChatColor.COLOR_CHAR);
+			final Matcher match = RGB_X_COLOR_REGEX.matcher(message);
+
+			String lastColor = null;
+
+			while (match.find())
+				lastColor = match.group(0);
+
+			if (lastColor != null)
+				if ((c == -1 || c < (message.lastIndexOf(lastColor) + lastColor.length())))
+					return lastColor;
+		}
+
 		final String andLetter = lastColorLetter(message);
 		final String colorChat = lastColorChar(message);
 
