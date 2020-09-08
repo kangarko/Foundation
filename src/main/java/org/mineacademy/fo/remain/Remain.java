@@ -2147,10 +2147,10 @@ class BungeeChatProvider {
 	static void sendComponent(final CommandSender sender, final Object comps) {
 
 		if (comps instanceof TextComponent)
-			BungeeChatProvider.sendComponent0(sender, (TextComponent) comps);
+			sendComponent0(sender, (TextComponent) comps);
 
 		else
-			BungeeChatProvider.sendComponent0(sender, (BaseComponent[]) comps);
+			sendComponent0(sender, (BaseComponent[]) comps);
 	}
 
 	private static void sendComponent0(final CommandSender sender, final BaseComponent... comps) {
@@ -2160,7 +2160,7 @@ class BungeeChatProvider {
 			plainMessage.append(comp.toLegacyText().replaceAll(ChatColor.COLOR_CHAR + "x", ""));
 
 		if (!(sender instanceof Player)) {
-			BungeeChatProvider.tell0(sender, plainMessage.toString());
+			tell0(sender, plainMessage.toString());
 
 			return;
 		}
@@ -2172,10 +2172,10 @@ class BungeeChatProvider {
 			if (MinecraftVersion.newerThan(V.v1_7))
 				Common.error(ex, "Error printing JSON message, sending as plain.");
 
-			BungeeChatProvider.tell0(sender, plainMessage.toString());
+			tell0(sender, plainMessage.toString());
 
 		} catch (final Exception ex) {
-			BungeeChatProvider.tell0(sender, plainMessage.toString());
+			tell0(sender, plainMessage.toString());
 		}
 	}
 
