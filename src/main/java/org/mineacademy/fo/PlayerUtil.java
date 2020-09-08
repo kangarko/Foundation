@@ -464,10 +464,7 @@ public final class PlayerUtil {
 	 * @return
 	 */
 	public static Player getPlayerByNick(final String name, final boolean ignoreVanished) {
-		Player found = Bukkit.getPlayer(name);
-
-		if (found == null)
-			found = lookupNickedPlayer0(name);
+		final Player found = lookupNickedPlayer0(name);
 
 		if (ignoreVanished && found != null && PlayerUtil.isVanished(found))
 			return null;
@@ -482,7 +479,7 @@ public final class PlayerUtil {
 		for (final Player player : Remain.getOnlinePlayers()) {
 			final String nick = HookManager.getNickColorless(player);
 
-			if (nick.toLowerCase().startsWith(name)) {
+			if (nick.toLowerCase().startsWith(name.toLowerCase())) {
 				final int curDelta = Math.abs(nick.length() - name.length());
 
 				if (curDelta < delta) {
