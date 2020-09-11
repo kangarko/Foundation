@@ -3,6 +3,8 @@ package org.mineacademy.fo.model;
 import java.util.Arrays;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -61,8 +63,8 @@ public final class BoxedMessage {
 	 * @param sender
 	 * @param messages
 	 */
-	private BoxedMessage(Iterable<? extends CommandSender> recipients, Player sender, String[] messages) {
-		this.recipients = Common.toList(recipients); // Make a copy to prevent changes in the list on send
+	private BoxedMessage(@Nullable Iterable<? extends CommandSender> recipients, Player sender, String[] messages) {
+		this.recipients = recipients == null ? null : Common.toList(recipients); // Make a copy to prevent changes in the list on send
 		this.sender = sender;
 		this.messages = messages;
 	}
