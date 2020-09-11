@@ -209,6 +209,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Check if Foundation is correctly moved
 		checkShading();
 
+		// Inject server-name to newer MC versions that lack it
+		Remain.injectServerName();
+
 		if (!isEnabled)
 			return;
 

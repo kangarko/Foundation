@@ -5,6 +5,8 @@ import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -92,6 +95,7 @@ import org.mineacademy.fo.remain.nbt.NBTInternals;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import lombok.Getter;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -207,6 +211,12 @@ public final class Remain {
 	 * Stores player cooldowns for old MC versions
 	 */
 	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
+
+	/**
+	 * The server-name from server.properties (is lacking on new Minecraft version so we have to readd it back)
+	 */
+	@Getter
+	private static String serverName;
 
 	// Singleton
 	private Remain() {
@@ -1835,6 +1845,8 @@ public final class Remain {
 	 * @return the configuration
 	 */
 	public static YamlConfiguration loadConfiguration(final InputStream is) {
+		Valid.checkNotNull(is, "Could not load configuration from a null input stream!");
+
 		YamlConfiguration conf = null;
 
 		try {
@@ -1982,6 +1994,33 @@ public final class Remain {
 		} catch (final Throwable t) {
 			Common.error(t, "Game rule " + gameRule + " not found.");
 		}
+	}
+
+	/**
+	 * New Minecraft versions lack server-name that we rely on for BungeeCord,
+	 * restore it back
+	 */
+	public static void injectServerName() {
+		final Properties properties = new Properties();
+		final File props = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
+
+		try (final FileReader fileReader = new FileReader(props)) {
+			properties.load(fileReader);
+
+			if (!properties.containsKey("server-name")) {
+				properties.setProperty("server-name", "Undefined - see mineacademy.org/server-properties to configure");
+
+				try (FileWriter fileWriter = new FileWriter(props)) {
+					properties.store(fileWriter, "Minecraft server properties\nModified by " + SimplePlugin.getNamed() + ", see mineacademy.org/server-properties for more information");
+				}
+			}
+
+			serverName = properties.getProperty("server-name");
+
+		} catch (final Throwable e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	// ----------------------------------------------------------------------------------------------------
