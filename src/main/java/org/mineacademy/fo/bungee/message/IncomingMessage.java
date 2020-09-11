@@ -1,5 +1,8 @@
 package org.mineacademy.fo.bungee.message;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.debug.Debugger;
@@ -31,6 +34,11 @@ public final class IncomingMessage extends Message {
 	private final ByteArrayDataInput input;
 
 	/**
+	 * The internal stream
+	 */
+	private final ByteArrayInputStream stream;
+
+	/**
 	 * Create a new incoming message from the given array
 	 * <p>
 	 * NB: This uses the standardized Foundation model where the first
@@ -41,7 +49,8 @@ public final class IncomingMessage extends Message {
 	 */
 	public IncomingMessage(byte[] data) {
 		this.data = data;
-		this.input = ByteStreams.newDataInput(data);
+		this.stream = new ByteArrayInputStream(data);
+		this.input = ByteStreams.newDataInput(stream);
 
 		// -----------------------------------------------------------------
 		// We are automatically reading the first two strings assuming the
@@ -86,6 +95,26 @@ public final class IncomingMessage extends Message {
 		moveHead(Byte.class);
 
 		return input.readByte();
+	}
+
+	/**
+	 * Reads the rest of the bytes
+	 *
+	 * @return
+	 */
+	public byte[] readBytes() {
+		moveHead(byte[].class);
+
+		final byte[] array = new byte[stream.available()];
+
+		try {
+			stream.read(array);
+
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
+		return array;
 	}
 
 	/**
