@@ -1793,6 +1793,10 @@ public enum CompMaterial {
 		// try to resolve common pitfalls and emulate the material enum writing style
 		key = key.replace(" ", "_").toUpperCase();
 
+		// Translate generic monster egg to sheep instead of the white unattributed egg on MC 1.13+
+		if (MinecraftVersion.atLeast(V.v1_13) && key.equals("MONSTER_EGG"))
+			key = "SHEEP_SPAWN_EGG";
+
 		try {
 			return CompMaterial.valueOf(key);
 
