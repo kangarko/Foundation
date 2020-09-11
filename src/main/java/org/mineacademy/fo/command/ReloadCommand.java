@@ -26,7 +26,8 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			for (final YamlConfig loaded : YamlConfig.getLoadedFiles()) {
 				try {
-					FileUtil.loadConfigurationStrict(loaded.getFile());
+					if (loaded.getFile().exists())
+						FileUtil.loadConfigurationStrict(loaded.getFile());
 
 				} catch (final FoException ex) {
 					ex.printStackTrace();
