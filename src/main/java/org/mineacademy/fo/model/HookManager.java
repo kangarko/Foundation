@@ -503,10 +503,20 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isFAWELoaded() {
-		final Plugin worldEdit = Bukkit.getPluginManager().getPlugin("WorldEdit");
-		final String desc = worldEdit != null ? worldEdit.getDescription().getDescription() : null;
 
-		return "Fast Async WorldEdit plugin".equals(desc);
+		// Check for FAWE directly
+		final Plugin fawe = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
+
+		if (fawe != null && fawe.isEnabled())
+			return true;
+
+		// Check for legacy FAWE installations
+		final Plugin worldEdit = Bukkit.getPluginManager().getPlugin("WorldEdit");
+
+		if (worldEdit != null && worldEdit.isEnabled() && "Fast Async WorldEdit plugin".equals(worldEdit.getDescription().getDescription()))
+			return true;
+
+		return false;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
