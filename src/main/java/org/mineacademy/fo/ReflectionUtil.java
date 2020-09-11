@@ -24,6 +24,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -677,47 +678,46 @@ public final class ReflectionUtil {
 		// Some compatibility workaround for ChatControl, Boss, CoreArena and other plugins
 		// having these values in their default config. This prevents
 		// malfunction on plugin's first load, in case it is loaded on an older MC version.
-		if (MinecraftVersion.atLeast(V.v1_13)) {
-			if (enumType == Material.class)
-				if (rawName.equals("RAW_FISH"))
-					name = "PUFFERFISH";
+		{
+			if (MinecraftVersion.atLeast(V.v1_13))
+				if (enumType == org.bukkit.block.Biome.class)
+					if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
+						name = "SNOWY_TAIGA";
 
-				else if (rawName.equals("MONSTER_EGG"))
-					name = "SHEEP_SPAWN_EGG";
-
-			if (enumType == org.bukkit.block.Biome.class)
-				if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
-					name = "SNOWY_TAIGA";
+			if (MinecraftVersion.atLeast(V.v1_14))
+				if (enumType == EntityType.class)
+					if (rawName.equals("TIPPED_ARROW"))
+						name = "ARROW";
 		}
-
-		if (MinecraftVersion.atLeast(V.v1_14))
-			if (enumType == EntityType.class)
-				if (rawName.equals("TIPPED_ARROW"))
-					name = "ARROW";
 
 		final String oldName = name;
 
 		E result = lookupEnumSilent(enumType, name);
 
+		// Try making the enum uppercased
 		if (result == null) {
 			name = name.toUpperCase();
 
 			result = lookupEnumSilent(enumType, name);
 		}
 
+		// Try replacing spaces with underscores
 		if (result == null) {
 			name = name.replace(" ", "_");
 
 			result = lookupEnumSilent(enumType, name);
 		}
 
+		// Try crunching all underscores (were spaces) all together
 		if (result == null)
 			result = lookupEnumSilent(enumType, name.replace("_", ""));
 
-		if (result == null) {
-			name = name.endsWith("S") ? name.substring(0, name.length() - 1) : name + "S";
+		// Before giving up, see if we can translate legacy material names
+		if (result == null && enumType == Material.class) {
+			final CompMaterial compMaterial = CompMaterial.fromString(name);
 
-			result = lookupEnumSilent(enumType, name);
+			if (compMaterial != null)
+				return (E) compMaterial.getMaterial();
 		}
 
 		if (result == null)
