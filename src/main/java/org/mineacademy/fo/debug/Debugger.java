@@ -14,6 +14,7 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -287,22 +288,43 @@ public final class Debugger {
 	 * @param throwable the throwable to print
 	 */
 	public static void printStackTrace(@NonNull Throwable throwable) {
-		print(throwable.toString());
 
+		// Load all causes
+		final List<Throwable> causes = new ArrayList<>();
+
+		if (throwable.getCause() != null) {
+			Throwable cause = throwable.getCause();
+
+			do
+				causes.add(cause);
+			while ((cause = cause.getCause()) != null);
+		}
+
+		if (throwable instanceof FoException && !causes.isEmpty()) {
+			// Do not print parent exception if we are only wrapping it, saves console spam
+			print(throwable.getMessage());
+
+		} else {
+			print(throwable.toString());
+
+			printStackTraceElements(throwable);
+		}
+
+		if (!causes.isEmpty()) {
+			final Throwable lastCause = causes.get(causes.size() - 1);
+
+			print(lastCause.toString());
+			printStackTraceElements(lastCause);
+		}
+	}
+
+	private static void printStackTraceElements(Throwable throwable) {
 		for (final StackTraceElement element : throwable.getStackTrace()) {
 			final String line = element.toString();
 
 			if (canPrint(line))
 				print("\tat " + line);
 		}
-
-		Throwable cause = throwable.getCause();
-
-		if (cause != null)
-			do
-				if (cause != null)
-					printStackTrace(cause);
-			while ((cause = cause.getCause()) != null);
 	}
 
 	/**
@@ -312,7 +334,7 @@ public final class Debugger {
 	 * @return
 	 */
 	private static boolean canPrint(String message) {
-		return !message.contains("net.minecraft") && !message.contains("org.bukkit.craftbukkit") && !message.contains("nashorn") && !message.contains("javax.script");
+		return !message.contains("net.minecraft") && !message.contains("org.bukkit.craftbukkit") && !message.contains("nashorn") && !message.contains("javax.script") && !message.contains("org.yaml.snakeyaml");
 	}
 
 	// Print a simple console message
