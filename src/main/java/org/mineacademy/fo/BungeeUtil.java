@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.mineacademy.fo.Common.Stringer;
@@ -12,7 +13,6 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -61,17 +61,21 @@ public final class BungeeUtil {
 	@SafeVarargs
 	public static <T> void tellBungee(String channel, BungeeAction action, T... datas) {
 		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs needed: " + action.getContent().length);
+		Valid.checkBoolean(!Remain.getServerName().equals("Undefined - see mineacademy.org/server-properties to configure"), "Please configure your 'server-name' in server.properties according to mineacademy.org/server-properties first before using BungeeCord features");
 
-		Debugger.put("bungee", "Server '" + SimpleSettings.BUNGEE_SERVER_NAME + "' sent bungee message [" + channel + ", " + action + "]: ");
+		Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-		out.writeUTF(SimpleSettings.BUNGEE_SERVER_NAME);
+		out.writeUTF(Remain.getServerName());
 		out.writeUTF(action.toString());
 
 		actionHead = 0;
 
-		for (final Object data : datas) {
-			Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
+		for (Object data : datas) {
+			Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + " (" + t.getClass().getSimpleName() + ")"));
+
+			if (data instanceof CommandSender)
+				data = ((CommandSender) data).getName();
 
 			if (data instanceof Integer) {
 				Debugger.put("bungee", data.toString() + ", ");
@@ -84,21 +88,31 @@ public final class BungeeUtil {
 
 				moveHead(action, Double.class);
 				out.writeDouble((Double) data);
+
 			} else if (data instanceof Long) {
 				Debugger.put("bungee", data.toString() + ", ");
 
 				moveHead(action, Long.class);
 				out.writeLong((Long) data);
+
 			} else if (data instanceof Boolean) {
 				Debugger.put("bungee", data.toString() + ", ");
 
 				moveHead(action, Boolean.class);
 				out.writeBoolean((Boolean) data);
+
 			} else if (data instanceof String) {
 				Debugger.put("bungee", data.toString() + ", ");
 
 				moveHead(action, String.class);
 				out.writeUTF((String) data);
+
+			} else if (data instanceof byte[]) {
+				Debugger.put("bungee", data.toString() + ", ");
+
+				moveHead(action, String.class);
+				out.write((byte[]) data);
+
 			} else
 				throw new FoException("Unknown type of data: " + data + " (" + data.getClass().getSimpleName() + ")");
 		}
