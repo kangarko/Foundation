@@ -33,6 +33,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -209,6 +210,19 @@ public final class FileUtil {
 				throw new FoException(ee, "Could not read lines from " + file.getName());
 			}
 		}
+	}
+
+	/**
+	 * Attempts to load a yaml configuration from the given path inside of your plugin's JAR
+	 *
+	 * @param internalFileName
+	 * @return
+	 */
+	public static YamlConfiguration loadInternalConfiguration(String internalFileName) {
+		final InputStream is = getInternalResource(internalFileName);
+		Valid.checkNotNull(is, "Failed getting internal configuration from " + internalFileName);
+
+		return Remain.loadConfiguration(is);
 	}
 
 	/**
