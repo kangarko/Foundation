@@ -101,6 +101,17 @@ public final class Valid {
 	}
 
 	/**
+	 * Throws an error if the given message is empty or null
+	 *
+	 * @param message
+	 * @param message
+	 */
+	public void checkNotEmpty(final String message, final String emptyMessage) {
+		if (message == null || message.length() == 0)
+			throw new IllegalArgumentException(emptyMessage);
+	}
+
+	/**
 	 * Checks if the player has the given permission, if false we send him {@link SimpleLocalization#NO_PERMISSION}
 	 * message and return false, otherwise no message is sent and we return true
 	 *
