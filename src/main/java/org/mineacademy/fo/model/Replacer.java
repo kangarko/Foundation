@@ -246,7 +246,12 @@ public final class Replacer {
 			key = key.charAt(0) != '{' ? "{" + key : key;
 			key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
 
-			message = message.replace(key, Common.simplify(replacement.getValue()));
+			String value = Common.simplify(replacement.getValue());
+
+			if (key.endsWith("+}") && !"".equals(value))
+				value = value + " ";
+
+			message = message.replace(key, value);
 		}
 
 		return message;
