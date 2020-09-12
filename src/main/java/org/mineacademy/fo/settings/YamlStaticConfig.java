@@ -54,6 +54,16 @@ public abstract class YamlStaticConfig {
 			}
 
 			@Override
+			protected boolean saveComments() {
+				return YamlStaticConfig.this.saveComments();
+			}
+
+			@Override
+			protected List<String> getUncommentedSections() {
+				return YamlStaticConfig.this.getUncommentedSections();
+			}
+
+			@Override
 			protected void onLoadFinish() {
 				loadViaReflection();
 			}
@@ -98,6 +108,20 @@ public abstract class YamlStaticConfig {
 	 */
 	protected String[] getHeader() {
 		return FoConstants.Header.UPDATED_FILE;
+	}
+
+	/**
+	 * @see YamlConfig#saveComments()
+	 */
+	protected boolean saveComments() {
+		return false;
+	}
+
+	/**
+	 * @see YamlConfig#getUncommentedSections()
+	 */
+	protected List<String> getUncommentedSections() {
+		return null;
 	}
 
 	/**
@@ -264,6 +288,10 @@ public abstract class YamlStaticConfig {
 
 	protected static final void move(final Object value, final String fromPath, final String toPath) {
 		TEMPORARY_INSTANCE.move(value, fromPath, toPath);
+	}
+
+	protected static final String formPathPrefix(final String path) {
+		return TEMPORARY_INSTANCE.formPathPrefix(path);
 	}
 
 	protected static final void pathPrefix(final String pathPrefix) {
