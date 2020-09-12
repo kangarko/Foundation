@@ -48,6 +48,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -76,12 +77,6 @@ public class YamlConfig implements ConfigSerializable {
 	 * All files that are currently loaded
 	 */
 	private static final StrictMap<ConfigInstance, List<YamlConfig>> loadedFiles = new StrictMap<>();
-
-	/**
-	 * Experimental flag to save comments and match local yaml file exactly with the one
-	 * in the jar
-	 */
-	public static boolean SAVE_COMMENTS = false;
 
 	/**
 	 * The config file instance this config belongs to.
@@ -234,7 +229,7 @@ public class YamlConfig implements ConfigSerializable {
 
 				Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
 
-				instance = new ConfigInstance(localePath, file, config, defaultsConfig);
+				instance = new ConfigInstance(localePath, file, config, defaultsConfig, saveComments(), getUncommentedSections());
 				addConfig(instance, this);
 			}
 
@@ -310,7 +305,7 @@ public class YamlConfig implements ConfigSerializable {
 				Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
 
 				config = FileUtil.loadConfigurationStrict(file);
-				instance = new ConfigInstance(from == null ? to : from, file, config, defaultsConfig);
+				instance = new ConfigInstance(from == null ? to : from, file, config, defaultsConfig, saveComments(), getUncommentedSections());
 
 				addConfig(instance, this);
 			}
@@ -337,7 +332,7 @@ public class YamlConfig implements ConfigSerializable {
 	private void saveIfNecessary0() {
 
 		// We want to save the file if the save is pending or if there are no defaults
-		if (save || SAVE_COMMENTS || getDefaults() == null) {
+		if (save || saveComments() || getDefaults() == null) {
 			save();
 
 			save = false;
@@ -507,6 +502,36 @@ public class YamlConfig implements ConfigSerializable {
 		} catch (final Exception e) {
 			Common.error(e, "Failed to reload " + getFileName());
 		}
+	}
+
+	/**
+	 * Experimental - Shall we attempt to save comments into this yaml config
+	 * and enforce the file to always look like the default one?
+	 *
+	 * You can exclude sections you do not want to symlink in {@link #getUncommentedSections()}
+	 *
+	 * Defaults to false.
+	 *
+	 * @return
+	 */
+	protected boolean saveComments() {
+		return false;
+	}
+
+	/**
+	 * If {@link #SAVE_COMMENTS} is on, what sections should we ignore from
+	 * being updated/enforced commands?
+	 *
+	 * E.g. In ChatControl people can add their own channels so we make the
+	 * "Channels.List" ignored so that peoples' channels (new sections) won't get
+	 * remove.
+	 *
+	 * None by default.
+	 *
+	 * @return
+	 */
+	protected List<String> getUncommentedSections() {
+		return null;
 	}
 
 	/**
@@ -1899,17 +1924,31 @@ class ConfigInstance {
 	/**
 	 * The file this configuration belongs to.
 	 */
+	@Getter
 	private final File file;
 
 	/**
 	 * Our config we are manipulating.
 	 */
+	@Getter
 	private final YamlConfiguration config;
 
 	/**
 	 * The default config we reach out to fill values from.
 	 */
+	@Getter
 	private final YamlConfiguration defaultConfig;
+
+	/**
+	 * Experimental - Should we save comments for this config instance?
+	 */
+	private final boolean saveComments;
+
+	/**
+	 * If {@link YamlConfig#SAVE_COMMENTS} is on, we'll ignore these sections
+	 * from comments being set
+	 */
+	private final List<String> uncommentedSections;
 
 	/**
 	 * Saves the config instance with the given header, can be null
@@ -1923,8 +1962,8 @@ class ConfigInstance {
 		}
 
 		try {
-			if (defaultsPath != null && YamlConfig.SAVE_COMMENTS)
-				ConfigUpdater.update(defaultsPath, file);
+			if (defaultsPath != null && saveComments)
+				ConfigUpdater.update(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
 
 			else {
 				config.save(file);
@@ -1972,22 +2011,6 @@ class ConfigInstance {
 		YamlConfig.unregisterLoadedFile(file);
 
 		file.delete();
-	}
-
-	public File getFile() {
-		return file;
-	}
-
-	public YamlConfiguration getConfig() {
-		return config;
-	}
-
-	public YamlConfiguration getDefaultConfig() {
-		return defaultConfig;
-	}
-
-	public String getDefaultsPath() {
-		return defaultsPath;
 	}
 
 	/**

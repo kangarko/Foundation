@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +19,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.Remain;
 import org.yaml.snakeyaml.Yaml;
 
@@ -32,9 +34,10 @@ import lombok.NonNull;
  * Read and write each line of the new config, if the old config has value for the given key it writes that value in the new config.
  * If a key has an attached comment above it, it is written first.
  *
- * @author tchristofferson
+ * @author tchristofferson, kangarko
  *
  * Source: https://github.com/tchristofferson/Config-Updater
+ * Modified by MineAcademy.org
  */
 class ConfigUpdater {
 
@@ -43,10 +46,11 @@ class ConfigUpdater {
 	 *
 	 * @param internalPath The yaml file name to update from, typically config.yml
 	 * @param outerPath The yaml file to update
+	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
 	 *
 	 * @throws IOException If an IOException occurs
 	 */
-	public static void update(@NonNull String internalPath, File outerPath) throws IOException {
+	public static void update(@NonNull String internalPath, File outerPath, List<String> ignoredSections) throws IOException {
 		final BufferedReader newReader = new BufferedReader(new InputStreamReader(FileUtil.getInternalResource(internalPath), StandardCharsets.UTF_8));
 		final List<String> newLines = newReader.lines().collect(Collectors.toList());
 		newReader.close();
@@ -55,98 +59,192 @@ class ConfigUpdater {
 		final FileConfiguration newConfig = Remain.loadConfiguration(FileUtil.getInternalResource(internalPath));
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outerPath), StandardCharsets.UTF_8));
 
-		final List<String> ignoredSectionsArrayList = new ArrayList<>();
-		//ignoredSections can ONLY contain configurations sections
-		ignoredSectionsArrayList.removeIf(ignoredSection -> !newConfig.isConfigurationSection(ignoredSection));
+		// ignoredSections can ONLY contain configurations sections
+		for (final String ignoredSection : ignoredSections)
+			Valid.checkBoolean(newConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections not '" + ignoredSection + "' that is " + newConfig.get(ignoredSection));
+
+		// Save keys added to config that are not in default and would otherwise be lost
+		final Set<String> newKeys = newConfig.getKeys(true);
+		final Map<String, Object> removedKeys = new HashMap<>();
+
+		outerLoop:
+		for (final Map.Entry<String, Object> oldEntry : oldConfig.getValues(true).entrySet()) {
+			final String oldKey = oldEntry.getKey();
+
+			for (final String ignoredKey : ignoredSections)
+				if (oldKey.startsWith(ignoredKey))
+					continue outerLoop;
+
+			if (!newKeys.contains(oldKey))
+				removedKeys.put(oldKey, oldEntry.getValue());
+		}
+
+		if (!removedKeys.isEmpty()) {
+			final File backupFile = FileUtil.getOrMakeFile(outerPath.getName().replace(".yml", "_unused.yml"));
+			final FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
+
+			for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
+				backupConfig.set(entry.getKey(), entry.getValue());
+
+			backupConfig.save(backupFile);
+
+			Common.log("Found the following entries in " + outerPath.getName() + " that were unused and moved into " + backupFile.getName() + ": " + removedKeys.keySet());
+		}
 
 		final Yaml yaml = new Yaml();
-		final Map<String, String> comments = parseComments(newLines, ignoredSectionsArrayList, oldConfig, yaml);
+		final Map<String, String> comments = parseComments(newLines, ignoredSections, oldConfig, yaml);
 
-		write(newConfig, oldConfig, comments, ignoredSectionsArrayList, writer, yaml);
+		write(newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 	}
 
-	//Write method doing the work.
-	//It checks if key has a comment associated with it and writes comment then the key and value
+	// Write method doing the work.
+	// It checks if key has a comment associated with it and writes comment then the key and value
 	private static void write(FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
-		outer:
+
+		final Set<String> copyAllowed = new HashSet<>();
+		final Set<String> reverseCopy = new HashSet<>();
+
+		outerloop:
 		for (final String key : newConfig.getKeys(true)) {
-			final String[] keys = key.split("\\.");
-			final String actualKey = keys[keys.length - 1];
-			final String comment = comments.remove(key);
 
-			final StringBuilder prefixBuilder = new StringBuilder();
-			final int indents = keys.length - 1;
-			appendPrefixSpaces(prefixBuilder, indents);
-			final String prefixSpaces = prefixBuilder.toString();
+			checkIgnore:
+			{
 
-			if (comment != null) {
-				writer.write(comment);//No \n character necessary, new line is automatically at end of comment
-			}
+				for (final String allowed : copyAllowed)
+					if (key.startsWith(allowed))
+						break checkIgnore;
 
-			for (final String ignoredSection : ignoredSections) {
-				if (key.startsWith(ignoredSection)) {
-					continue outer;
+				// These keys are already written below
+				for (final String allowed : reverseCopy)
+					if (key.startsWith(allowed))
+						continue outerloop;
+
+				for (final String ignoredSection : ignoredSections) {
+					if (key.equals(ignoredSection)) {
+						// Write from new to old config
+						if ((!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty())) {
+							copyAllowed.add(ignoredSection);
+
+							break;
+						}
+
+						// Write from old to new, copying all keys and subkeys manually
+						else {
+							write0(key, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
+
+							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true))
+								write0(ignoredSection + "." + oldKey, oldConfig, newConfig, comments, ignoredSections, writer, yaml);
+
+							reverseCopy.add(ignoredSection);
+							continue outerloop;
+						}
+					}
+
+					if (key.startsWith(ignoredSection))
+						continue outerloop;
 				}
 			}
 
-			final Object newObj = newConfig.get(key);
-			final Object oldObj = oldConfig.get(key);
-
-			if (newObj instanceof ConfigurationSection && oldObj instanceof ConfigurationSection) {
-				//write the old section
-				writeSection(writer, actualKey, prefixSpaces, (ConfigurationSection) oldObj);
-			} else if (newObj instanceof ConfigurationSection) {
-				//write the new section, old value is no more
-				writeSection(writer, actualKey, prefixSpaces, (ConfigurationSection) newObj);
-			} else if (oldObj != null) {
-				//write the old object
-				write(oldObj, actualKey, prefixSpaces, yaml, writer);
-			} else {
-				//write new object
-				write(newObj, actualKey, prefixSpaces, yaml, writer);
-			}
+			write0(key, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 		}
+
+		/*for (final String ignoredSection : ignoredSections) {
+			if (!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty()) {
+				for (String key : newConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
+					key = ignoredSection + "." + key;
+		
+					System.out.println("# Writing ignored key from default: " + key);
+					write0(key, newConfig, oldConfig, comments, writer, yaml);
+				}
+			}
+		
+			else {
+				for (String key : oldConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
+					key = ignoredSection + "." + key;
+		
+					System.out.println("# Writing ignored key from old: " + key);
+					write0(key, newConfig, oldConfig, comments, writer, yaml);
+				}
+			}
+		}*/
 
 		final String danglingComments = comments.get(null);
 
-		if (danglingComments != null) {
+		if (danglingComments != null)
 			writer.write(danglingComments);
-		}
 
 		writer.close();
 	}
 
-	//Doesn't work with configuration sections, must be an actual object
-	//Auto checks if it is serializable and writes to file
+	private static void write0(String key, FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
+		final String[] keys = key.split("\\.");
+		final String actualKey = keys[keys.length - 1];
+		final String comment = comments.remove(key);
+
+		final StringBuilder prefixBuilder = new StringBuilder();
+		final int indents = keys.length - 1;
+		appendPrefixSpaces(prefixBuilder, indents);
+		final String prefixSpaces = prefixBuilder.toString();
+
+		// No \n character necessary, new line is automatically at end of comment
+		if (comment != null)
+			writer.write(comment);
+
+		final Object newObj = newConfig.get(key);
+		final Object oldObj = oldConfig.get(key);
+
+		// Write the old section
+		if (newObj instanceof ConfigurationSection && oldObj instanceof ConfigurationSection)
+			writeSection(writer, actualKey, prefixSpaces, (ConfigurationSection) oldObj);
+
+		// Write the new section, old value is no more
+		else if (newObj instanceof ConfigurationSection)
+			writeSection(writer, actualKey, prefixSpaces, (ConfigurationSection) newObj);
+
+		// Write the old object
+		else if (oldObj != null)
+			write(oldObj, actualKey, prefixSpaces, yaml, writer);
+
+		// Write new object
+		else
+			write(newObj, actualKey, prefixSpaces, yaml, writer);
+	}
+
+	// Doesn't work with configuration sections, must be an actual object
+	// Auto checks if it is serializable and writes to file
 	private static void write(Object obj, String actualKey, String prefixSpaces, Yaml yaml, BufferedWriter writer) throws IOException {
-		if (obj instanceof ConfigurationSerializable) {
+		if (obj instanceof ConfigurationSerializable)
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(((ConfigurationSerializable) obj).serialize()));
-		} else if (obj instanceof String || obj instanceof Character) {
+
+		else if (obj instanceof String || obj instanceof Character) {
 			if (obj instanceof String) {
 				final String s = (String) obj;
+
 				obj = s.replace("\n", "\\n");
 			}
 
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(obj));
-		} else if (obj instanceof List) {
+
+		} else if (obj instanceof List)
 			writeList((List<?>) obj, actualKey, prefixSpaces, yaml, writer);
-		} else {
+
+		else
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(obj));
-		}
+
 	}
 
-	//Writes a configuration section
+	// Writes a configuration section
 	private static void writeSection(BufferedWriter writer, String actualKey, String prefixSpaces, ConfigurationSection section) throws IOException {
-		if (section.getKeys(false).isEmpty()) {
+		if (section.getKeys(false).isEmpty())
 			writer.write(prefixSpaces + actualKey + ": {}");
-		} else {
+
+		else
 			writer.write(prefixSpaces + actualKey + ":");
-		}
 
 		writer.write("\n");
 	}
 
-	//Writes a list of any object
+	// Writes a list of any object
 	private static void writeList(List<?> list, String actualKey, String prefixSpaces, Yaml yaml, BufferedWriter writer) throws IOException {
 		writer.write(getListAsString(list, actualKey, prefixSpaces, yaml));
 	}
@@ -188,7 +286,7 @@ class ConfigUpdater {
 		final StringBuilder keyBuilder = new StringBuilder();
 		int lastLineIndentCount = 0;
 
-		outer:
+		//outer:
 		for (final String line : lines) {
 			if (line != null && line.trim().startsWith("-"))
 				continue;
@@ -198,7 +296,7 @@ class ConfigUpdater {
 			} else {
 				lastLineIndentCount = setFullKey(keyBuilder, line, lastLineIndentCount);
 
-				for (final String ignoredSection : ignoredSections) {
+				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
 
@@ -207,7 +305,7 @@ class ConfigUpdater {
 
 						continue outer;
 					}
-				}
+				}*/
 
 				if (keyBuilder.length() > 0) {
 					comments.put(keyBuilder.toString(), builder.toString());
@@ -223,22 +321,22 @@ class ConfigUpdater {
 		return comments;
 	}
 
-	private static void appendSection(StringBuilder builder, ConfigurationSection section, StringBuilder prefixSpaces, Yaml yaml) {
+	/*private static void appendSection(StringBuilder builder, ConfigurationSection section, StringBuilder prefixSpaces, Yaml yaml) {
 		builder.append(prefixSpaces).append(getKeyFromFullKey(section.getCurrentPath())).append(":");
 		final Set<String> keys = section.getKeys(false);
-
+	
 		if (keys.isEmpty()) {
 			builder.append(" {}\n");
 			return;
 		}
-
+	
 		builder.append("\n");
 		prefixSpaces.append("  ");
-
+	
 		for (final String key : keys) {
 			final Object value = section.get(key);
 			final String actualKey = getKeyFromFullKey(key);
-
+	
 			if (value instanceof ConfigurationSection) {
 				appendSection(builder, (ConfigurationSection) value, prefixSpaces, yaml);
 				prefixSpaces.setLength(prefixSpaces.length() - 2);
@@ -248,7 +346,7 @@ class ConfigUpdater {
 				builder.append(prefixSpaces.toString()).append(actualKey).append(": ").append(yaml.dump(value));
 			}
 		}
-	}
+	}*/
 
 	//Counts spaces in front of key and divides by 2 since 1 indent = 2 spaces
 	private static int countIndents(String s) {
@@ -279,10 +377,10 @@ class ConfigUpdater {
 		keyBuilder.setLength(temp.length());
 	}
 
-	private static String getKeyFromFullKey(String fullKey) {
+	/*private static String getKeyFromFullKey(String fullKey) {
 		final String[] keys = fullKey.split("\\.");
 		return keys[keys.length - 1];
-	}
+	}*/
 
 	//Updates the keyBuilder and returns configLines number of indents
 	private static int setFullKey(StringBuilder keyBuilder, String configLine, int lastLineIndentCount) {
