@@ -19,6 +19,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Function;
@@ -32,6 +33,7 @@ import javax.annotation.Nullable;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -504,6 +506,92 @@ public final class FileUtil {
 	// ----------------------------------------------------------------------------------------------------
 	// Archiving
 	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Attempt to compress the given file into a byte array of the following structure:
+	 *
+	 * A list of all lines from the file + the file path up to your server root folder such as plugins/ChatControl/localization/ if
+	 * the file is in the localization/ folder in your plugin folder appended at the end of the list.
+	 *
+	 * THE FILE MUST BE SOMEWHERE IN YOUR ROOT SERVER FOLDER (does not matter how many directories deep)
+	 * AND YOUR WORKING DIRECTORY MUST BE SET TO YOUR ROOT SERVER FOLDER.
+	 *
+	 * @param file
+	 * @return filepath from server root with the byte compressed file content array
+	 */
+	public static Tuple<String, byte[]> compress(@NonNull File file) {
+		final List<String> lines = new ArrayList<>(readLines(file)); // ensure modifiable
+
+		// Add all parent directories until we reach the plugin's folder
+		final List<File> parentDirs = new ArrayList<>();
+
+		File parent = file.getParentFile();
+
+		while (parent != null) {
+			parentDirs.add(parent);
+
+			parent = parent.getParentFile();
+		}
+
+		Collections.reverse(parentDirs);
+
+		final String filePath = Common.join(parentDirs, "/", File::getName) + "/" + file.getName();
+
+		lines.add(filePath);
+
+		// Join using our custom deliminer
+		final String joinedLines = String.join("%CMPRSDBF%", lines);
+
+		return new Tuple<>(filePath, CompressUtil.compress(joinedLines));
+	}
+
+	/**
+	 * Decompresses and writes all content to the file found in the array,
+	 *
+	 * see {@link #compress(File)}
+	 *
+	 * @param data
+	 * @return
+	 */
+	public static File decompressAndWrite(@NonNull byte[] data) {
+		final Tuple<File, List<String>> tuple = decompress(data);
+
+		final File file = tuple.getKey();
+		final List<String> lines = tuple.getValue();
+
+		try {
+			Files.write(file.toPath(), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+		} catch (final IOException e) {
+			Common.throwError(e, "Failed to write " + lines.size() + " lines into " + file);
+		}
+
+		return file;
+	}
+
+	/**
+	 * Decompresses the given data array into a file-lines tuple,
+	 * see {@link #compress(File)}
+	 *
+	 * @param data
+	 * @return
+	 */
+	public static Tuple<File, List<String>> decompress(@NonNull byte[] data) {
+		final String decompressed = CompressUtil.decompress(data);
+		final String[] linesRaw = decompressed.split("%CMPRSDBF%");
+		Valid.checkBoolean(linesRaw.length > 0, "Received empty lines to decompress into a file!");
+
+		final List<String> lines = new ArrayList<>();
+
+		// Load lines
+		for (int i = 0; i < linesRaw.length - 1; i++)
+			lines.add(linesRaw[i]);
+
+		// The final line is the file
+		final File file = new File(linesRaw[linesRaw.length - 1]);
+
+		return new Tuple<>(file, lines);
+	}
 
 	/**
 	 * Creates a ZIP archive from the given source directory (inside our plugin folder)
