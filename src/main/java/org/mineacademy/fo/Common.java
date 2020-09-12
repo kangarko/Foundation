@@ -793,7 +793,8 @@ public final class Common {
 				"crisis", "crises",
 				"thesis", "theses",
 				"datum", "data",
-				"index", "indices");
+				"index", "indices",
+				"entry", "entries");
 
 		return exceptions.containsKey(ofWhat) ? count + " " + (count == 0 || count > 1 ? exceptions.getString(ofWhat) : ofWhat) : null;
 	}
@@ -1494,6 +1495,17 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return the last key in the list or null if null list or empty
+	 *
+	 * @param <T>
+	 * @param list
+	 * @return
+	 */
+	public static <T> T last(List<T> list) {
+		return list == null || list.isEmpty() ? null : list.get(list.size() - 1);
+	}
+
+	/**
 	 * Convenience method for getting a list of world names
 	 *
 	 * @return
@@ -1882,7 +1894,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String[] toArray(final Collection<String> array) {
-		return array.toArray(new String[array.size()]);
+		return array == null ? new String[0] : array.toArray(new String[array.size()]);
 	}
 
 	/**
@@ -1892,7 +1904,7 @@ public final class Common {
 	 * @return
 	 */
 	public static <T> ArrayList<T> toList(final T... array) {
-		return new ArrayList<>(Arrays.asList(array));
+		return array == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(array));
 	}
 
 	/**
@@ -1901,7 +1913,7 @@ public final class Common {
 	 * @param it the iterable
 	 * @return the new list
 	 */
-	public static <T> List<T> toList(final Iterable<T> it) {
+	public static <T> List<T> toList(@Nullable final Iterable<T> it) {
 		final List<T> list = new ArrayList<>();
 
 		if (it != null)
