@@ -9,7 +9,7 @@ import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.settings.SimpleSettings;
+import org.mineacademy.fo.remain.Remain;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -27,7 +27,7 @@ public final class OutgoingMessage extends Message {
 	private final List<Object> queue = new ArrayList<>();
 
 	public OutgoingMessage(BungeeAction action) {
-		setServerName(SimpleSettings.BUNGEE_SERVER_NAME);
+		setServerName(Remain.getServerName());
 		setAction(action);
 
 		// -----------------------------------------------------------------

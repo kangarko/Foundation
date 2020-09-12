@@ -41,7 +41,7 @@ abstract class Message {
 	 * @param serverName
 	 */
 	protected final void setServerName(String serverName) {
-		Valid.checkBoolean(this.serverName == null, "ServerName already set");
+		Valid.checkBoolean(this.serverName == null, "Server name already set");
 		Valid.checkNotNull(serverName, "Server name cannot be null!");
 
 		this.serverName = serverName;
