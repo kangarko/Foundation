@@ -11,6 +11,7 @@ import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 
 /**
  * A simple implementation of a typical main plugin settings
@@ -155,13 +156,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	public static String SERVER_NAME = "Server";
 
 	/**
-	 * The server name identifier
-	 * <p>
-	 * Mandatory if using BungeeCord
-	 */
-	public static String BUNGEE_SERVER_NAME = "Server";
-
-	/**
 	 * Should we check for updates from SpigotMC and notify the console and users with permission?
 	 * <p>
 	 * See {@link SimplePlugin#getUpdateCheck()} that you can make to return {@link SpigotUpdater} with your Spigot plugin ID.
@@ -208,14 +202,11 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 		// -------------------------------------------------------------------
 
 		{ // Load Bungee server name
+			if (isSet("Bungee_Server_Name"))
+				throw new FoException("Detected 'Bungee_Server_Name' that is now located in server.properties in 'server-name' key. DO NOT REPORT THIS - Simply move the key and remove it from " + getFileName());
 
-			final boolean keySet = isSetDefault("Bungee_Server_Name");
-
-			if (SimplePlugin.getInstance().getBungeeCord() != null && !keySet)
-				throw new FoException("Since you override getBungeeCord in your main plugin class you must set the 'Bungee_Server_Name' key in " + getFileName());
-
-			BUNGEE_SERVER_NAME = keySet ? getString("Bungee_Server_Name") : BUNGEE_SERVER_NAME;
-
+			if (SimplePlugin.getInstance().getBungeeCord() != null)
+				Valid.checkBoolean(Remain.isServerNameChanged(), "Please set a unique server name for server-name in your server.properties");
 		}
 
 		{ // Load localization

@@ -2020,7 +2020,15 @@ public final class Remain {
 		} catch (final Throwable e) {
 			e.printStackTrace();
 		}
+	}
 
+	/**
+	 * Return true if the server-name property in server.properties got modified
+	 *
+	 * @return
+	 */
+	public static boolean isServerNameChanged() {
+		return !"Undefined - see mineacademy.org/server-properties to configure".equals(serverName) && !"Unknown Server".equals(serverName);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
