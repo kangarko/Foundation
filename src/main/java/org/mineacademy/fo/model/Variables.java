@@ -1,15 +1,15 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -21,7 +21,6 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
-import org.mineacademy.fo.model.Variable.VariableScope;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -33,22 +32,22 @@ import org.mineacademy.fo.settings.SimpleSettings;
 public final class Variables {
 
 	/**
-	 * A static flag indicating whether we should replace & color codes in the replace() methods below
-	 */
-	public static boolean REPLACE_COLORS = true;
-
-	/**
 	 * The pattern to find simple {} placeholders
 	 */
-	protected static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
+	static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
 
 	/**
 	 * The patter to find simple {} placeholders starting with {rel_ (used for PlaceholderAPI)
 	 */
-	protected static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[{](rel_)([^}]+)[}]");
+	static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[{](rel_)([^}]+)[}]");
+
+	/**
+	 * Player - [Original Message - Translated Message]
+	 */
+	private static final Map<String, Map<String, String>> cache = ExpiringMap.builder().expiration(10, TimeUnit.MILLISECONDS).build();
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Changing variables for loading
+	// Custom variables
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -58,20 +57,6 @@ public final class Variables {
 	 * The variable name (the key) is automatically surrounded by {} brackets
 	 */
 	private static final StrictMap<String, Function<CommandSender, String>> customVariables = new StrictMap<>();
-
-	/**
-	 * Player, Their Cached Variables
-	 */
-	private static final StrictMap<String, Map<String, String>> cache = new StrictMap<>();
-
-	/**
-	 * Player, Original Message, Translated Message
-	 */
-	private static final Map<String, Map<String, String>> customCache = makeNewFastCache();
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Custom variables
-	// ------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * As a developer you can add or remove custom variables. Return an unmodifiable
@@ -123,93 +108,18 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * @param messages
-	 * @param sender
-	 * @return
-	 * @see #replace(VariableScope, String, CommandSender)
-	 */
-	public static List<String> replaceAll(List<String> messages, CommandSender sender) {
-		return replaceAll(VariableScope.FORMAT, messages, sender);
-	}
-
-	/**
-	 * @param messages
-	 * @param sender
-	 * @return
-	 * @see #replace(VariableScope, String, CommandSender)
-	 */
-	public static List<String> replaceAll(List<String> messages, CommandSender sender, Map<String, Object> replacements) {
-		return replaceAll(VariableScope.FORMAT, messages, sender, replacements);
-	}
-
-	/**
-	 * @param scope
-	 * @param messages
-	 * @param sender
-	 * @return
-	 * @see #replace(VariableScope, String, CommandSender)
-	 */
-	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender) {
-		return Variables.replaceAll(scope, messages, sender, null);
-	}
-
-	/**
-	 * @param scope
-	 * @param messages
-	 * @param sender
-	 * @return
-	 * @see #replace(VariableScope, String, CommandSender)
-	 */
-	public static List<String> replaceAll(VariableScope scope, List<String> messages, CommandSender sender, Map<String, Object> replacements) {
-		final List<String> replaced = new ArrayList<>(messages); // Make a copy to ensure writeable
-
-		for (int i = 0; i < replaced.size(); i++) {
-			final String message = replaced.get(i);
-
-			replaced.set(i, Variables.replace(scope, message, sender, replacements));
-		}
-
-		return replaced;
-	}
-
-	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 * <p>
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI.
+	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
+	 * @param scope
 	 * @param message
 	 * @param sender
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender) {
-		return replace(VariableScope.FORMAT, message, sender);
-	}
-
-	/**
-	 * Replaces variables in the message using the message sender as an object to replace
-	 * player-related placeholders. We also replace custom replacements from the Map
-	 * <p>
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI.
-	 *
-	 * @param message
-	 * @param sender
-	 * @return
-	 */
-	public static String replace(String message, CommandSender sender, Map<String, Object> replacements) {
-		return replace(VariableScope.FORMAT, message, sender, replacements);
-	}
-
-	/**
-	 * @param replaceCustom
-	 * @param message
-	 * @param sender
-	 * @return
-	 * @deprecated replacing custom variables has been removed
-	 */
-	@Deprecated
-	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
-		return replace(message, sender);
+		return replace(message, sender, null);
 	}
 
 	/**
@@ -218,27 +128,11 @@ public final class Variables {
 	 * <p>
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
-	 * @param scope
 	 * @param message
 	 * @param sender
 	 * @return
 	 */
-	public static String replace(VariableScope scope, String message, CommandSender sender) {
-		return replace(scope, message, sender, null);
-	}
-
-	/**
-	 * Replaces variables in the message using the message sender as an object to replace
-	 * player-related placeholders.
-	 * <p>
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
-	 *
-	 * @param scope
-	 * @param message
-	 * @param sender
-	 * @return
-	 */
-	public static String replace(VariableScope scope, String message, CommandSender sender, Map<String, Object> replacements) {
+	public static String replace(String message, CommandSender sender, @Nullable Map<String, Object> replacements) {
 		if (message == null || message.isEmpty())
 			return "";
 
@@ -251,13 +145,14 @@ public final class Variables {
 
 		if (senderIsPlayer) {
 			// Already cached ? Return.
-			final Map<String, String> cached = customCache.get(sender.getName());
+			final Map<String, String> cached = cache.get(sender.getName());
+			final String cachedVar = cached != null ? cached.get(message) : null;
 
-			if (cached != null && cached.containsKey(message))
-				return cached.get(message);
+			if (cachedVar != null)
+				return cachedVar;
 
 			// Custom placeholders
-			message = replaceJavascriptVariables0(scope, message, sender);
+			message = replaceJavascriptVariables0(message, (Player) sender);
 
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
@@ -267,16 +162,15 @@ public final class Variables {
 		message = replaceHardVariables0(sender, message);
 
 		// Support the & color system
-		if (REPLACE_COLORS)
-			message = Common.colorize(message);
+		message = Common.colorize(message);
 
 		if (senderIsPlayer) {
-			final Map<String, String> map = customCache.get(sender.getName());
+			final Map<String, String> map = cache.get(sender.getName());
 
 			if (map != null)
 				map.put(original, message);
 			else
-				customCache.put(sender.getName(), Common.newHashMap(original, message));
+				cache.put(sender.getName(), Common.newHashMap(original, message));
 		}
 
 		return message;
@@ -285,22 +179,18 @@ public final class Variables {
 	/**
 	 * Replaces javascript variables in the message
 	 *
-	 * @param scope
 	 * @param message
-	 * @param sender
+	 * @param player
 	 * @return
 	 */
-	private static String replaceJavascriptVariables0(VariableScope scope, String message, CommandSender sender) {
+	private static String replaceJavascriptVariables0(String message, Player player) {
 
 		for (final Variable variable : Variable.getVariables()) {
 			final String key = variable.getKey();
 
-			if (variable.getScope() != scope)
-				continue;
-
 			if (message.contains(key))
 				try {
-					message = message.replace(key, variable.getValue(sender));
+					message = message.replace(key, variable.getValue(player));
 
 				} catch (final Throwable t) {
 					Common.throwError(t,
@@ -327,61 +217,25 @@ public final class Variables {
 		final Player player = sender instanceof Player ? (Player) sender : null;
 
 		while (matcher.find()) {
-			final String variable = matcher.group(1);
+			String variable = matcher.group(1);
+			boolean addSpace = false;
 
-			final boolean isSenderCached = cache.contains(sender.getName());
-			boolean makeCache = true;
+			if (variable.endsWith("+")) {
+				variable = variable.substring(0, variable.length() - 1);
 
-			String value = null;
-
-			// Player is cached
-			if (isSenderCached) {
-				final Map<String, String> senderCache = cache.get(sender.getName());
-				final String storedVariable = senderCache.get(variable);
-
-				// This specific variable is cached
-				if (storedVariable != null) {
-					value = storedVariable;
-					makeCache = false;
-				}
+				addSpace = true;
 			}
 
-			if (makeCache) {
-				value = replaceVariable0(variable, player, sender);
+			String value = lookupVariable0(player, sender, variable);
 
-				if (value != null) {
-					final Map<String, String> speciCache = cache.getOrPut(sender.getName(), makeNewCache());
+			if (value != null) {
+				value = value.isEmpty() ? "" : Common.colorize(value) + (addSpace ? " " : "");
 
-					speciCache.put(variable, value);
-				}
+				message = message.replace(matcher.group(), value);
 			}
-
-			if (value != null)
-				message = message.replace("{" + variable + "}", Common.colorize(value));
 		}
 
 		return message;
-	}
-
-	/**
-	 * Replaces the given variable with a few hardcoded within the plugin, see below
-	 * <p>
-	 * Also, if the variable ends with +, we insert a space after it if it is not empty
-	 *
-	 * @param variable
-	 * @param player
-	 * @param console
-	 * @return
-	 */
-	private static String replaceVariable0(String variable, Player player, CommandSender console) {
-		final boolean insertSpace = variable.endsWith("+");
-
-		if (insertSpace)
-			variable = variable.substring(0, variable.length() - 1); // Remove the + symbol
-
-		final String found = lookupVariable0(player, console, variable);
-
-		return found == null ? null : found + (insertSpace && !found.isEmpty() ? " " : "");
 	}
 
 	/**
@@ -406,8 +260,6 @@ public final class Variables {
 		}
 
 		switch (variable) {
-			case "bungee_server_name":
-				return SimpleSettings.BUNGEE_SERVER_NAME;
 			case "server_name":
 				return SimpleSettings.SERVER_NAME;
 			case "nms_version":
@@ -490,34 +342,5 @@ public final class Variables {
 		} catch (final Throwable t) {
 			return player.getAddress() != null ? player.getAddress().toString() : "";
 		}
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Cache making
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Create a new expiring map with 10 millisecond expiration
-	 *
-	 * @return
-	 */
-	private static Map<String, Map<String, String>> makeNewFastCache() {
-		return ExpiringMap.builder()
-				.maxSize(300)
-				.expiration(10, TimeUnit.MILLISECONDS)
-				.build();
-	}
-
-	/**
-	 * Create a new expiring map with 1 second expiration, used to cache player-related
-	 * variables that are called 10x after each other to save performance
-	 *
-	 * @return
-	 */
-	private static Map<String, String> makeNewCache() {
-		return ExpiringMap.builder()
-				.maxSize(300)
-				.expiration(1, TimeUnit.SECONDS)
-				.build();
 	}
 }
