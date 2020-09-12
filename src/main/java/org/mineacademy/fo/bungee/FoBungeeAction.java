@@ -54,9 +54,9 @@ public enum FoBungeeAction implements BungeeAction {
 	/**
 	 * Broadcast a message in a channel.
 	 *
-	 * Parameters: sender, channel name, has mute bypass permission, message
+	 * Parameters: sender, channel name, message, has mute bypass permission, has ignore bypass permission
 	 */
-	CHANNEL(String.class, String.class, Boolean.class, String.class),
+	CHANNEL(String.class, String.class, String.class, Boolean.class, Boolean.class),
 
 	/**
 	 * Sends an announcement message to everyone, and plays a nice sound
@@ -66,18 +66,11 @@ public enum FoBungeeAction implements BungeeAction {
 	ANNOUNCEMENT(String.class, String.class),
 
 	/**
-	 * Broadcast a json message to every player with permission.
-	 *
-	 * Parameters: show permission, json message
-	 */
-	BROADCAST_JSON_WITH_PERMISSION(String.class, String.class),
-
-	/**
 	 * Broadcast a json message to every player with permission as a sender.
 	 *
-	 * Parameters: sender, sender uuid, show permission, json message
+	 * Parameters: sender, show permission, json message, has sender ignore bypass permission?
 	 */
-	BROADCAST_JSON_WITH_PERMISSION_AS(String.class, String.class, String.class, String.class),
+	BROADCAST_JSON_WITH_PERMISSION_AS(String.class, String.class, String.class, Boolean.class),
 
 	/**
 	 * Forwards a spy message to players with permissions
@@ -109,6 +102,7 @@ public enum FoBungeeAction implements BungeeAction {
 	 * Parameters: sender, recipient, message
 	 */
 	PM_PLAYER_FOUND(String.class, String.class, String.class),
+
 	;
 
 	/**
