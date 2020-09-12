@@ -225,7 +225,7 @@ public class SimpleDatabase {
 				return resultSet;
 
 			} catch (final SQLException e) {
-				Common.error(e, "Error on querying MySQL with: " + sql);
+				Common.throwError(e, "Error on querying MySQL with: " + sql);
 			}
 		}
 
