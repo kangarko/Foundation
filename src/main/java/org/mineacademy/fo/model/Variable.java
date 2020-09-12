@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Valid;
@@ -27,12 +26,6 @@ public final class Variable extends YamlConfig implements Actionable {
 	static {
 		loadedVariables.setVerbose(false);
 	}
-
-	/**
-	 * Where can this variable be used
-	 */
-	@Getter
-	private VariableScope scope;
 
 	/**
 	 * The variable key what we should find
@@ -114,7 +107,6 @@ public final class Variable extends YamlConfig implements Actionable {
 		this.value = getString("Value");
 		Valid.checkNotNull(this.value, "Please set the 'Value' variable output in " + getFileName() + " variable file!");
 
-		this.scope = get("Scope", VariableScope.class, VariableScope.FORMAT);
 		this.hoverText = getStringList("Hover");
 		this.hoverItem = getString("Hover_Item");
 		this.openUrl = getString("Open_Url");
@@ -135,32 +127,16 @@ public final class Variable extends YamlConfig implements Actionable {
 	 * @param player
 	 * @return
 	 */
-	public String getValue(CommandSender player) {
-		if (player instanceof Player) {
-			// Replace variables in script
-			final String script = Variables.replace(scope, this.value, player);
+	public String getValue(Player player) {
+		// Replace variables in script
+		final String script = Variables.replace(this.value, player);
 
-			return String.valueOf(JavaScriptExecutor.run(script, player));
-		}
-
-		// We do not support replacing variables for the console
-		return "";
+		return String.valueOf(JavaScriptExecutor.run(script, player));
 	}
 
 	// ----------------------------------------------------------------------------------
 	// Setters
 	// ----------------------------------------------------------------------------------
-
-	/**
-	 * Set where this variable may be used
-	 *
-	 * @param score the score to set
-	 */
-	public void setScope(VariableScope score) {
-		this.scope = score;
-
-		save();
-	}
 
 	/**
 	 * Set what we should find in chat such
@@ -304,27 +280,5 @@ public final class Variable extends YamlConfig implements Actionable {
 
 	public static List<String> getVariableNames() {
 		return loadedVariables.getItemNames();
-	}
-
-	// ------–------–------–------–------–------–------–------–------–------–------–------–
-	// Classes
-	// ------–------–------–------–------–------–------–------–------–------–------–------–
-
-	/**
-	 * Where a variable can be used
-	 */
-	public enum VariableScope {
-
-		/**
-		 * Variable may be used in chat formatting
-		 * such as {player}
-		 */
-		FORMAT,
-
-		/**
-		 * Players can type this variable to their chat msg and it will be translated
-		 * such as [item]
-		 */
-		CHAT
 	}
 }
