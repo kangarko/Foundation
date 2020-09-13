@@ -477,6 +477,10 @@ public final class PlayerUtil {
 		int delta = Integer.MAX_VALUE;
 
 		for (final Player player : Remain.getOnlinePlayers()) {
+
+			if (player.getName().equalsIgnoreCase(name))
+				return player;
+
 			final String nick = HookManager.getNickColorless(player);
 
 			if (nick.toLowerCase().startsWith(name.toLowerCase())) {
@@ -503,7 +507,9 @@ public final class PlayerUtil {
 	 */
 	public static void lookupOfflinePlayerAsync(String name, Consumer<OfflinePlayer> syncAction) {
 		Common.runAsync(() -> {
-			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
+			// If the given name is a nick, try to get the real name
+			final String parsedName = HookManager.getNameFromNick(name);
+			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(parsedName);
 
 			Common.runLater(() -> syncAction.accept(offlinePlayer));
 		});
