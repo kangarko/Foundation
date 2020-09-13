@@ -203,7 +203,8 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		{ // Load Bungee server name
 			if (isSet("Bungee_Server_Name"))
-				throw new FoException("Detected 'Bungee_Server_Name' that is now located in server.properties in 'server-name' key. DO NOT REPORT THIS - Simply move the key and remove it from " + getFileName());
+				throw new FoException("Detected 'Bungee_Server_Name' that has been moved to 'server-name' in server.properties file. *DO NOT REPORT THIS*, simply set server-name to '"
+						+ getString("Bungee_Server_Name") + "' in server.properties and remove it from " + getFileName());
 
 			if (SimplePlugin.getInstance().getBungeeCord() != null)
 				Valid.checkBoolean(Remain.isServerNameChanged(), "Please set a unique server name for server-name in your server.properties");
