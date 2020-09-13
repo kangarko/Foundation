@@ -1454,18 +1454,18 @@ class EssentialsHook {
 		return "".equals(essNick) ? null : essNick;
 	}
 
-	String getNameFromNick(final String nick) {
+	String getNameFromNick(final String maybeNick) {
 		final UserMap users = ess.getUserMap();
 
 		if (users != null)
 			for (final UUID userId : users.getAllUniqueUsers()) {
 				final User user = users.getUser(userId);
 
-				if (user != null && user.getNickname() != null && Valid.colorlessEquals(user.getNickname().toLowerCase(), nick.toLowerCase()))
-					return Common.getOrDefault(user.getName(), nick);
+				if (user != null && user.getNickname() != null && Valid.colorlessEquals(user.getNickname(), maybeNick))
+					return Common.getOrDefault(user.getName(), maybeNick);
 			}
 
-		return nick;
+		return maybeNick;
 	}
 
 	void setBackLocation(final String player, final Location loc) {
