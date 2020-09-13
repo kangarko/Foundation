@@ -82,7 +82,7 @@ public abstract class FileReader<T> {
 
 				} else {
 					if (object == null && previous == null)
-						throw new NullPointerException("File " + path + " appears to have wrong encoding! Learn how to fix it here: http://tiny.cc/chc_encoding");
+						throw new NullPointerException("File " + path + " appears to have wrong encoding! Learn how to fix it here: https://github.com/kangarko/chatcontrol-pro/wiki/Use-Right-Encoding");
 
 					Valid.checkNotNull(object, "Cannot define operator when nothing is being created! File: \'" + path + "\' Line " + i + ": \'" + line + "\' Previous: \'" + previous + "\'");
 
