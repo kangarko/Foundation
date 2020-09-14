@@ -1816,6 +1816,21 @@ public final class Common {
 	/**
 	 * Returns the value or its default counterpart in case it is null
 	 *
+	 * @param value
+	 * @param def
+	 *
+	 * @deprecated subject for removal, use {@link #getOrDefault(Object, Object)}
+	 * 			   as it works exactly the same now
+	 * @return
+	 */
+	@Deprecated
+	public static String getOrSupply(String value, String def) {
+		return getOrDefault(value, def);
+	}
+
+	/**
+	 * Returns the value or its default counterpart in case it is null
+	 *
 	 * @param value the primary value
 	 * @param def   the default value
 	 * @return the value, or default it the value is null

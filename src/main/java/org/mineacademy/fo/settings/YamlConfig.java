@@ -960,10 +960,10 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param def
 	 * @return
 	 */
-	protected final SimpleTime getTime(final String path, final String def) {
+	protected final <T extends SimpleTime> T getTime(final String path, final String def) {
 		forceSingleDefaults(path);
 
-		return isSet(path) ? getTime(path) : SimpleTime.from(def);
+		return isSet(path) ? getTime(path) : (T) SimpleTime.from(def);
 	}
 
 	/**
@@ -972,11 +972,11 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected final SimpleTime getTime(final String path) {
+	protected final <T extends SimpleTime> T getTime(final String path) {
 		final Object obj = getObject(path);
 		Valid.checkNotNull(obj, "No time specified at the path '" + path + "' in " + getFileName());
 
-		return SimpleTime.from(obj.toString());
+		return (T) SimpleTime.from(obj.toString());
 	}
 
 	/**
@@ -1691,11 +1691,27 @@ public class YamlConfig implements ConfigSerializable {
 	// ------------------------------------------------------------------------------------
 
 	/**
-	 * @deprecated use {@link SimpleTime} instead
+	 * @deprecated This class has been moved into {@link SimpleTime}.
+	 * 			   To migrate, simply rename TimeHelper into SimpleTime everywhere.
 	 */
 	@Deprecated
-	public static final class TimeHelper {
-		// Dead class
+	public static final class TimeHelper extends SimpleTime {
+
+		protected TimeHelper(String time) {
+			super(time);
+		}
+
+		/**
+		 * Generate new time. Valid examples: 15 ticks 1 second 25 minutes 3 hours etc.
+		 *
+		 * @deprecated use {@link SimpleTime#from(String)} that has now replaced this constructor
+		 * @param time
+		 * @return
+		 */
+		@Deprecated
+		public static TimeHelper from(final String time) {
+			return new TimeHelper(time);
+		}
 	}
 
 	/**

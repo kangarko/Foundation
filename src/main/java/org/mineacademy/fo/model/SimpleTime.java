@@ -8,12 +8,12 @@ import lombok.Getter;
  * A simple class holding time values in human readable form such as 1 second or 5 minutes
  */
 @Getter
-public final class SimpleTime {
+public class SimpleTime {
 
 	private final String raw;
 	private final int timeTicks;
 
-	private SimpleTime(final String time) {
+	protected SimpleTime(final String time) {
 		raw = time;
 		timeTicks = (int) TimeUtil.toTicks(time);
 	}

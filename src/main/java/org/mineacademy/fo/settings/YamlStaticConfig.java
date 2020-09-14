@@ -397,7 +397,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getTitle(path);
 	}
 
-	protected static final SimpleTime getTime(final String path) {
+	protected static final <T extends SimpleTime> T getTime(final String path) {
 		return TEMPORARY_INSTANCE.getTime(path);
 	}
 
