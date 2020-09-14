@@ -108,6 +108,13 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * @deprecated, use {@link #replace(String, CommandSender)} as it will work the same
+	 */
+	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
+		return replace(message, sender);
+	}
+
+	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 * <p>
