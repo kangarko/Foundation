@@ -61,7 +61,7 @@ public final class BungeeUtil {
 	@SafeVarargs
 	public static <T> void tellBungee(String channel, BungeeAction action, T... datas) {
 		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs needed: " + action.getContent().length);
-		Valid.checkBoolean(!Remain.getServerName().equals("Undefined - see mineacademy.org/server-properties to configure"), "Please configure your 'server-name' in server.properties according to mineacademy.org/server-properties first before using BungeeCord features");
+		Valid.checkBoolean(Remain.isServerNameChanged(), "Please configure your 'server-name' in server.properties according to mineacademy.org/server-properties first before using BungeeCord features");
 
 		Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();

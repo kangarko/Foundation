@@ -113,9 +113,12 @@ public class SimpleDatabase {
 	 * @param table
 	 */
 	public final void connect(final String url, final String user, final String password, final String table) {
-		this.lastCredentials = new LastCredentials(url, user, password, table);
+
+		// Close any open connection
+		close();
 
 		try {
+			this.lastCredentials = new LastCredentials(url, user, password, table);
 			this.connection = DriverManager.getConnection(url, user, password);
 
 			onConnected();
@@ -152,7 +155,7 @@ public class SimpleDatabase {
 	/**
 	 * Attempts to close the connection, if not null
 	 */
-	protected final void close() {
+	public final void close() {
 		if (connection != null)
 			synchronized (connection) {
 				try {

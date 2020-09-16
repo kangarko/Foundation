@@ -8,7 +8,7 @@ import org.mineacademy.fo.Valid;
 import lombok.Getter;
 
 /**
- * A unified way of combining bungee channel, listener and action
+ * A unified way of combining Bungee channel, listener and action
  */
 @Getter
 public final class SimpleBungee {

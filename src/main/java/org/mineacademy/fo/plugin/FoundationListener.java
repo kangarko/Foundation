@@ -8,7 +8,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.constants.FoPermissions;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
@@ -22,7 +22,7 @@ final class FoundationListener implements Listener {
 	public void onJoin(PlayerJoinEvent e) {
 		final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
 
-		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(e.getPlayer(), FoConstants.Permissions.NOTIFY_UPDATE))
+		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(e.getPlayer(), FoPermissions.NOTIFY_UPDATE))
 			Common.tellLater(4 * 20, e.getPlayer(), check.getNotifyMessage());
 	}
 
