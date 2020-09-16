@@ -99,16 +99,35 @@ public final class FileUtil {
 	public static File getOrMakeFile(String path) {
 		final File file = getFile(path);
 
-		return file.exists() ? file : createFile(path);
+		return file.exists() ? file : createIfNotExists(path);
 	}
 
-	/*
+	/**
+	 * Checks if the file exists and creates a new one if it does not
+	 *
+	 * @param file
+	 * @return
+	 */
+	public static File createIfNotExists(File file) {
+		if (!file.exists())
+			try {
+				file.createNewFile();
+			} catch (final Throwable t) {
+				Common.throwError(t, "Could not create new " + file + " due to " + t);
+			}
+
+		return file;
+	}
+
+	/**
 	 * Create a new file in our plugin folder, supporting multiple directory paths
 	 * <p>
 	 * Example: logs/admin/console.log or worlds/nether.yml are all valid paths
 	 *
+	 * @param path
+	 * @return
 	 */
-	private static File createFile(String path) {
+	public static File createIfNotExists(String path) {
 		final File datafolder = SimplePlugin.getInstance().getDataFolder();
 		final int lastIndex = path.lastIndexOf('/');
 		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
@@ -160,23 +179,6 @@ public final class FileUtil {
 		final String finalExtension = extension;
 
 		return dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
-	}
-
-	/**
-	 * Checks if the file exists and creates a new one if it does not
-	 *
-	 * @param file
-	 * @return
-	 */
-	public static File createIfNotExists(File file) {
-		if (!file.exists())
-			try {
-				file.createNewFile();
-			} catch (final Throwable t) {
-				Common.throwError(t, "Could not create new " + file + " due to " + t);
-			}
-
-		return file;
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -419,7 +421,7 @@ public final class FileUtil {
 		if (file.exists())
 			return file;
 
-		file = FileUtil.createFile(to);
+		file = createIfNotExists(to);
 
 		try {
 
