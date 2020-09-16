@@ -25,9 +25,7 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
- * A simple engine that replaces lots of variables in a message.
- * <p>
- * Utilizes {@link FileReader}
+ * A simple engine that replaces variables in a message.
  */
 public final class Variables {
 

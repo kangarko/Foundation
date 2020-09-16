@@ -11,7 +11,6 @@ import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.Remain;
 
 /**
  * A simple implementation of a typical main plugin settings
@@ -201,15 +200,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 		// Load maybe-mandatory values
 		// -------------------------------------------------------------------
 
-		{ // Load Bungee server name
-			if (isSet("Bungee_Server_Name"))
-				throw new FoException("Detected 'Bungee_Server_Name' that has been moved to 'server-name' in server.properties file. *DO NOT REPORT THIS*, simply set server-name to '"
-						+ getString("Bungee_Server_Name") + "' in server.properties and remove it from " + getFileName());
-
-			if (SimplePlugin.getInstance().getBungeeCord() != null)
-				Valid.checkBoolean(Remain.isServerNameChanged(), "Please set a unique server name for server-name in your server.properties");
-		}
-
 		{ // Load localization
 			final boolean hasLocalization = hasLocalization();
 			final boolean keySet = isSetDefault("Locale");
@@ -233,9 +223,6 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 		{ // Load updates notifier
 
 			final boolean keySet = isSetDefault("Notify_Updates");
-
-			//if (SimplePlugin.getInstance().getUpdateCheck() != null && !keySet)
-			//	throw new FoException("Since you override getUpdateCheck in your main plugin class you must set the 'Notify_Updates' key in " + getFileName());
 
 			NOTIFY_UPDATES = keySet ? getBoolean("Notify_Updates") : NOTIFY_UPDATES;
 		}

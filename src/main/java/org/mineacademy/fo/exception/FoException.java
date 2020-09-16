@@ -53,6 +53,6 @@ public class FoException extends RuntimeException {
 
 	@Override
 	public String getMessage() {
-		return "Report / " + super.getMessage();
+		return "Report: " + super.getMessage();
 	}
 }
