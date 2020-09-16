@@ -3,18 +3,21 @@ package org.mineacademy.fo.model;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
@@ -24,9 +27,24 @@ import lombok.Getter;
 public abstract class FolderWatcher extends Thread {
 
 	/**
+	 * A list to help Foundation stop threads on reload
+	 */
+	private static volatile Set<FolderWatcher> activeThreads = new HashSet<>();
+
+	/**
+	 * Stop all active threads
+	 */
+	public static void stopThreads() {
+		for (final FolderWatcher thread : activeThreads)
+			thread.stopWatching();
+
+		activeThreads.clear();
+	}
+
+	/**
 	 * Workaround for duplicated values in the loop
 	 */
-	private static volatile ExpiringMap<Path, File> justModified = ExpiringMap.builder().expiration(10, TimeUnit.MILLISECONDS).build();
+	private final Map<String, BukkitTask> scheduledUpdates = new HashMap<>();
 
 	/**
 	 * The folder that is being watched
@@ -34,15 +52,24 @@ public abstract class FolderWatcher extends Thread {
 	private final Path folder;
 
 	/**
+	 * A one-way flag used to stop the thread while loop deadlock
+	 */
+	@Getter
+	private boolean watching = true;
+
+	/**
 	 * Start a new file watcher and start watching the given folder
 	 *
 	 * @param folder
 	 */
 	public FolderWatcher(File folder) {
+		Valid.checkBoolean(folder.exists(), folder + " does not exists!");
 		Valid.checkBoolean(folder.isDirectory(), folder + " must be a directory!");
 
 		this.folder = folder.toPath();
 		this.start();
+
+		activeThreads.add(this);
 	}
 
 	/**
@@ -53,47 +80,61 @@ public abstract class FolderWatcher extends Thread {
 		final FileSystem fileSystem = folder.getFileSystem();
 
 		try (WatchService service = fileSystem.newWatchService()) {
-			folder.register(service, ENTRY_MODIFY);
+			final WatchKey registration = folder.register(service, ENTRY_MODIFY);
 
-			while (true) {
-				try {
-					final WatchKey watchKey = service.take();
+			while (watching) {
+				synchronized (activeThreads) {
+					try {
+						final WatchKey watchKey = service.take();
 
-					for (final WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-						final Kind<?> kind = watchEvent.kind();
+						for (final WatchEvent<?> watchEvent : watchKey.pollEvents()) {
+							final Kind<?> kind = watchEvent.kind();
 
-						if (justModified.containsKey(this.folder))
-							break;
+							if (kind == ENTRY_MODIFY) {
+								final Path watchEventPath = (Path) watchEvent.context();
+								final File fileModified = new File(SimplePlugin.getData(), watchEventPath.toFile().getName());
 
-						if (kind == ENTRY_MODIFY) {
-							final Path watchEventPath = (Path) watchEvent.context();
-							final File fileModified = new File(SimplePlugin.getData(), watchEventPath.toFile().getName());
+								final String path = fileModified.getAbsolutePath();
+								final BukkitTask pendingTask = scheduledUpdates.remove(path);
 
-							// Force run sync
-							Common.runLater(() -> {
-								try {
-									onModified(fileModified);
+								// Cancel the old task and reschedule
+								if (pendingTask != null)
+									pendingTask.cancel();
 
-								} catch (final Throwable t) {
-									Common.error(t, "Error in calling onModified when watching changed file " + fileModified);
-								}
-							});
+								// Force run sync -- reschedule five seconds later to ensure no further edits take place
+								scheduledUpdates.put(path, Common.runLater(10, () -> {
+									if (!watching)
+										return;
 
-							justModified.put(this.folder, fileModified);
+									try {
+										onModified(fileModified);
+
+										scheduledUpdates.remove(path);
+
+									} catch (final Throwable t) {
+										Common.error(t, "Error in calling onModified when watching changed file " + fileModified);
+									}
+								}));
+
+								break;
+							}
 						}
+
+						if (!watchKey.reset())
+							Common.error(new FoException("Failed to reset watch key! Restarting sync engine.."));
+
+					} catch (final Throwable t) {
+						Common.error(t, "Error in handling watching thread loop for folder " + this.getFolder());
 					}
-
-					if (!watchKey.reset())
-						break;
-
-				} catch (final Throwable t) {
-					Common.error(t, "Error in handling watching thread loop for folder " + this.getFolder());
 				}
 			}
 
-		} catch (final IOException ex) {
-			Common.error(ex, "Error in initializing watching thread loop for folder " + this.getFolder());
+			registration.cancel();
+
+		} catch (final Throwable t) {
+			Common.error(t, "Error in initializing watching thread loop for folder " + this.getFolder());
 		}
+
 	}
 
 	/**
@@ -102,4 +143,20 @@ public abstract class FolderWatcher extends Thread {
 	 * @param file
 	 */
 	protected abstract void onModified(File file);
+
+	/**
+	 * Stops listening for folder changes
+	 */
+	public void stopWatching() {
+		Valid.checkBoolean(this.watching, "The folder watcher for folder " + folder + " is no longer watching!");
+
+		this.watching = false;
+
+		for (final BukkitTask task : this.scheduledUpdates.values())
+			try {
+				task.cancel();
+			} catch (final Exception ex) {
+				// ignore
+			}
+	}
 }
