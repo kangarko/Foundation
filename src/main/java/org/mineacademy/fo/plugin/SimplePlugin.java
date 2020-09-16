@@ -50,6 +50,7 @@ import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.EnchantmentListener;
+import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
@@ -209,9 +210,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Check if Foundation is correctly moved
 		checkShading();
 
-		// Inject server-name to newer MC versions that lack it
-		Remain.injectServerName();
-
 		if (!isEnabled)
 			return;
 
@@ -230,6 +228,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (getStartupLogo() != null)
 			Common.ADD_LOG_PREFIX = false;
 
+		// Print startup logo early before onPluginPreStart
+		if (getStartupLogo() != null) {
+			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
+
+			Common.ADD_LOG_PREFIX = false;
+			Common.log(getStartupLogo());
+			Common.ADD_LOG_PREFIX = hadLogPrefix;
+		}
+
+		// Inject server-name to newer MC versions that lack it
+		Remain.injectServerName();
+
 		// --------------------------------------------
 		// Call the main pre start method
 		// --------------------------------------------
@@ -239,13 +249,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Return if plugin pre start indicated a fatal problem
 		if (!isEnabled || !isEnabled())
 			return;
-
-		if (getStartupLogo() != null) {
-			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
-			Common.ADD_LOG_PREFIX = false;
-			Common.log(getStartupLogo());
-			Common.ADD_LOG_PREFIX = hadLogPrefix;
-		}
 
 		try {
 
@@ -579,12 +582,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		Debugger.printStackTrace(throwable);
 
 		Common.log(
-				"&c  _   _                       _ ",
-				"&c  | | | | ___   ___  _ __  ___| |",
-				"&c  | |_| |/ _ \\ / _ \\| '_ \\/ __| |",
-				"&c  |  _  | (_) | (_) | |_) \\__ \\_|",
-				"&4  |_| |_|\\___/ \\___/| .__/|___(_)",
-				"&4                    |_|          ",
+				"&4    ___                  _ ",
+				"&4   / _ \\  ___  _ __  ___| |",
+				"&4  | | | |/ _ \\| '_ \\/ __| |",
+				"&4  | |_| | (_) | |_) \\__ \\_|",
+				"&4   \\___/ \\___/| .__/|___(_)",
+				"&4             |_|          ",
 				"&4!-----------------------------------------------------!",
 				" &cError loading " + getDescription().getName() + " v" + getDescription().getVersion() + ", plugin is disabled!",
 				" &cRunning on " + getServer().getBukkitVersion() + " (" + MinecraftVersion.getServerVersion() + ") & Java " + System.getProperty("java.version"),
@@ -775,6 +778,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		SimpleLocalization.resetLocalizationCall();
 
 		BlockVisualizer.stopAll();
+		FolderWatcher.stopThreads();
 
 		if (getMainCommand() != null && getMainCommand().isRegistered())
 			getMainCommand().unregister();
@@ -1033,7 +1037,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Return the bungee suite if you want this plugin
+	 * Return the BungeeCord suite if you want this plugin
 	 * to send and receive messages from BungeeCord
 	 *
 	 * @return
