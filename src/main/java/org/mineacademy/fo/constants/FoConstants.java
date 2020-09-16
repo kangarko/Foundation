@@ -132,13 +132,4 @@ public final class FoConstants {
 		 */
 		public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
 	}
-
-	/**
-	 * Used to store basic library permissions
-	 */
-	public static final class Permissions {
-
-		// Permission to receive alerts on join when a new version is available.
-		public static final String NOTIFY_UPDATE = "{plugin_name}.notify.update";
-	}
 }
