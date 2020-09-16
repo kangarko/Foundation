@@ -1,7 +1,5 @@
 package org.mineacademy.fo.menu;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -144,45 +142,13 @@ public abstract class MenuPagged<T> extends Menu {
 		final int autoPageSize = pageSize != null ? pageSize : items <= 9 ? 9 * 1 : items <= 9 * 2 ? 9 * 2 : items <= 9 * 3 ? 9 * 3 : items <= 9 * 4 ? 9 * 4 : 9 * 5;
 
 		this.currentPage = 1;
-		this.pages = fillPages(autoPageSize, pages);
+		this.pages = Common.fillPages(autoPageSize, pages);
 
 		setSize(9 + autoPageSize);
 
 		nextPageSlot = getSize() - 4;
 		previousPageSlot = getSize() - 6;
 		setButtons();
-	}
-
-	/**
-	 * Dynamically populates the pages
-	 *
-	 * @param allItems all items that will be split
-	 * @return the map containing pages and their items
-	 */
-	private Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
-		final List<T> allItems = Common.toList(items);
-
-		final Map<Integer, List<T>> pages = new HashMap<>();
-		final int pageCount = allItems.size() == cellSize ? 0 : allItems.size() / cellSize;
-
-		for (int i = 0; i <= pageCount; i++) {
-			final List<T> pageItems = new ArrayList<>();
-
-			final int down = cellSize * i;
-			final int up = down + cellSize;
-
-			for (int valueIndex = down; valueIndex < up; valueIndex++)
-				if (valueIndex < allItems.size()) {
-					final T page = allItems.get(valueIndex);
-
-					pageItems.add(page);
-				} else
-					break;
-
-			pages.put(i, pageItems);
-		}
-
-		return pages;
 	}
 
 	@SuppressWarnings("unused")

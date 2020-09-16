@@ -880,7 +880,8 @@ public final class Common {
 	 * @return
 	 */
 	public static String duplicate(String text, int nTimes) {
-		Valid.checkBoolean(nTimes > 0, "Cannot duplicate 0 times!");
+		if (nTimes == 0)
+			return text;
 
 		final String toDuplicate = new String(text);
 
@@ -1178,8 +1179,13 @@ public final class Common {
 		final String throwableName = throwable == null ? "Unknown error." : throwable.getClass().getSimpleName();
 		final String throwableMessage = throwable == null || throwable.getMessage() == null || throwable.getMessage().isEmpty() ? "" : ": " + throwable.getMessage();
 
-		for (int i = 0; i < msgs.length; i++)
-			msgs[i] = msgs[i].replace("%error", throwableName + throwableMessage);
+		for (int i = 0; i < msgs.length; i++) {
+			final String error = throwableName + throwableMessage;
+
+			msgs[i] = msgs[i]
+					.replace("%error%", error)
+					.replace("%error", error);
+		}
 
 		return msgs;
 	}
@@ -1488,6 +1494,38 @@ public final class Common {
 			return ((Enum<?>) arg).name();
 
 		return arg.toString();
+	}
+
+	/**
+	 * Dynamically populates pages, used for pagination in commands or menus
+	 *
+	 * @param allItems all items that will be split
+	 * @return the map containing pages and their items
+	 */
+	public static <T> Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
+		final List<T> allItems = Common.toList(items);
+
+		final Map<Integer, List<T>> pages = new HashMap<>();
+		final int pageCount = allItems.size() == cellSize ? 0 : allItems.size() / cellSize;
+
+		for (int i = 0; i <= pageCount; i++) {
+			final List<T> pageItems = new ArrayList<>();
+
+			final int down = cellSize * i;
+			final int up = down + cellSize;
+
+			for (int valueIndex = down; valueIndex < up; valueIndex++)
+				if (valueIndex < allItems.size()) {
+					final T page = allItems.get(valueIndex);
+
+					pageItems.add(page);
+				} else
+					break;
+
+			pages.put(i, pageItems);
+		}
+
+		return pages;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
