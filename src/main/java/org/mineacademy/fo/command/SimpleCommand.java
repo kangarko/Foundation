@@ -48,7 +48,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * The default permission syntax for this command.
 	 */
-	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin_name}.command.{label}";
+	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin_name_lower}.command.{label}";
 
 	/**
 	 * If this flag is true, we will use {@link Messenger} to send
@@ -486,7 +486,7 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
-		final Player player = PlayerUtil.getPlayerByNickNoVanish(name);
+		final Player player = Bukkit.getPlayer(name);
 		checkBoolean(player != null && player.isOnline(), falseMessage.replace("{player}", name));
 
 		return player;
@@ -882,7 +882,7 @@ public abstract class SimpleCommand extends Command {
 		return message
 				.replace("{label}", getLabel())
 				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
-				.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase());
+				.replace("{plugin_name_lower}", SimplePlugin.getNamed().toLowerCase());
 	}
 
 	/**
