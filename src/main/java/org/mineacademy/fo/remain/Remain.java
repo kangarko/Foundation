@@ -74,6 +74,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.EntityUtil;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -2004,11 +2005,27 @@ public final class Remain {
 		final Properties properties = new Properties();
 		final File props = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
 
+		// If user has Bungee_Server_Name in their settings, move it automatically
+		final File settingsFile = FileUtil.getFile("settings.yml");
+		String previousName = null;
+
+		if (settingsFile.exists()) {
+			final YamlConfiguration settings = FileUtil.loadConfigurationStrict(settingsFile);
+			final String previousNameRaw = settings.getString("Bungee_Server_Name");
+
+			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
+				Common.log("&eWarning: Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
+						" It has been moved there and you can now delete this key from settings.yml if it was not deleted already.");
+
+				previousName = previousNameRaw;
+			}
+		}
+
 		try (final FileReader fileReader = new FileReader(props)) {
 			properties.load(fileReader);
 
-			if (!properties.containsKey("server-name")) {
-				properties.setProperty("server-name", "Undefined - see mineacademy.org/server-properties to configure");
+			if (!properties.containsKey("server-name") || previousName != null) {
+				properties.setProperty("server-name", previousName != null ? previousName : "Undefined - see mineacademy.org/server-properties to configure");
 
 				try (FileWriter fileWriter = new FileWriter(props)) {
 					properties.store(fileWriter, "Minecraft server properties\nModified by " + SimplePlugin.getNamed() + ", see mineacademy.org/server-properties for more information");
@@ -2028,7 +2045,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static boolean isServerNameChanged() {
-		return !"Undefined - see mineacademy.org/server-properties to configure".equals(serverName) && !"Unknown Server".equals(serverName);
+		return !"Undefined - see mineacademy.org/server-properties to configure".equals(serverName) && !"undefined".equals(serverName) && !"Unknown Server".equals(serverName);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
