@@ -517,7 +517,8 @@ public final class FileUtil {
 			for (final File subfolder : file.listFiles())
 				deleteRecursivelly(subfolder);
 
-		Valid.checkBoolean(file.delete(), "Failed to delete file: " + file);
+		if (file.exists())
+			Valid.checkBoolean(file.delete(), "Failed to delete file: " + file);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
