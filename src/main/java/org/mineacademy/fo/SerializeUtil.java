@@ -3,10 +3,11 @@ package org.mineacademy.fo;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -113,7 +114,7 @@ public final class SerializeUtil {
 			return newMap;
 		} else if (obj instanceof Map) {
 			final Map<Object, Object> oldMap = (Map<Object, Object>) obj;
-			final Map<Object, Object> newMap = new HashMap<>();
+			final Map<Object, Object> newMap = new LinkedHashMap<>();
 
 			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
 				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
@@ -125,7 +126,8 @@ public final class SerializeUtil {
 		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long || obj instanceof Short
 				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
 				|| obj instanceof ItemStack
-				|| obj instanceof MemorySection)
+				|| obj instanceof MemorySection
+				|| obj instanceof Pattern)
 			return obj;
 
 		else if (obj instanceof ConfigurationSerializable)
