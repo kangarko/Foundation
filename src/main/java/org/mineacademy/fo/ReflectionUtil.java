@@ -295,13 +295,18 @@ public final class ReflectionUtil {
 	 * @param clazz
 	 * @return
 	 */
-	public static Field[] getAllFields(Class<?> clazz) {
+	public static Field[] getAllFields(@NonNull Class<?> clazz) {
 		final List<Field> list = new ArrayList<>();
 
-		do
-			list.addAll(Arrays.asList(clazz.getDeclaredFields()));
+		try {
+			do
+				list.addAll(Arrays.asList(clazz.getDeclaredFields()));
 
-		while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
+			while (!(clazz = clazz.getSuperclass()).isAssignableFrom(Object.class));
+
+		} catch (final NullPointerException ex) {
+			// Pass through - such as interfaces or object itself throw this
+		}
 
 		return list.toArray(new Field[0]);
 	}
