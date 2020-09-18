@@ -42,7 +42,7 @@ public final class DebugCommand extends SimpleSubCommand {
 		// Zip the folder
 		zipAndRemoveFolder(debugFolder);
 
-		tell("&2Successfuly copied " + files.size() + " files to debug/. Please ZIP it and upload via uploadfiles.io then send to us for review.");
+		tell("&2Successfuly copied " + files.size() + " files to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via uploadfiles.io and send it to us for review.");
 	}
 
 	/*
@@ -96,7 +96,7 @@ public final class DebugCommand extends SimpleSubCommand {
 			} catch (final Exception ex) {
 				ex.printStackTrace();
 
-				returnTell("&cCopying files failed for file " + file.getName() + " and it was stopped. See console for more information.");
+				returnTell("&cCopying files failed on file " + file.getName() + " and it was stopped. See console for more information.");
 			}
 		}
 	}
@@ -114,7 +114,7 @@ public final class DebugCommand extends SimpleSubCommand {
 		} catch (final IOException ex) {
 			ex.printStackTrace();
 
-			returnTell("&cCreating a ZIP of your files failed, see console for more information. Please zip debug/ folder manually.");
+			returnTell("&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via uploadfiles.io manually.");
 		}
 	}
 
