@@ -13,6 +13,8 @@ public interface Rule {
 	 *
 	 * @param rule
 	 * @param args
+	 *
+	 * @return true if the operator was parsed successfully
 	 */
-	void onOperatorParse(String[] args);
+	boolean onOperatorParse(String[] args);
 }
