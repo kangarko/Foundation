@@ -500,6 +500,7 @@ public final class Common {
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 				.replace("{plugin_name}", SimplePlugin.getNamed())
+				.replace("{plugin_name_lower}", SimplePlugin.getNamed().toLowerCase())
 				.replace("{plugin_version}", SimplePlugin.getVersion()));
 
 		// RGB colors
