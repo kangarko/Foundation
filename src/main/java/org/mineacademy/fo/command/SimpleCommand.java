@@ -27,7 +27,6 @@ import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.CommandException;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -49,6 +48,11 @@ public abstract class SimpleCommand extends Command {
 	 * The default permission syntax for this command.
 	 */
 	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin_name_lower}.command.{label}";
+
+	/**
+	 * Denotes an empty list used to disable tab-completion
+	 */
+	protected static final List<String> NO_COMPLETE = new ArrayList<>();
 
 	/**
 	 * If this flag is true, we will use {@link Messenger} to send
@@ -199,7 +203,7 @@ public abstract class SimpleCommand extends Command {
 	/*
 	 * Return the first index from the list or thrown an error if list empty
 	 */
-	private static String parseLabelList0(StrictList<String> labels) {
+	private static String parseLabelList0(final StrictList<String> labels) {
 		Valid.checkBoolean(!labels.isEmpty(), "Command label must not be empty!");
 
 		return labels.get(0);
@@ -300,25 +304,19 @@ public abstract class SimpleCommand extends Command {
 			// Check for minimum required arguments and print help
 			if (args.length < getMinArguments() || autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 
-				// Enforce setUsage being used
-				if (Common.getOrEmpty(getUsage()).isEmpty())
-					throw new FoException("If you set getMinArguments you must also call setUsage for /" + getLabel() + " command!");
+				final String usage = getMultilineUsageMessage() != null ? String.join("\n&c", getMultilineUsageMessage()) : getUsage() != null && !getUsage().isEmpty() ? getUsage() : null;
+				Valid.checkNotNull(usage, "If you set getMinArguments you must also call setUsage for /" + getLabel() + " command!");
 
 				if (!Common.getOrEmpty(getDescription()).isEmpty())
 					tellNoPrefix(SimpleLocalization.Commands.LABEL_DESCRIPTION.replace("{description}", getDescription()));
 
 				if (getMultilineUsageMessage() != null) {
-					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES);
-					tellNoPrefix(getMultilineUsageMessage());
-
-				} else if (getMultilineUsageMessage() != null) {
-					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES);
-					tellNoPrefix(getMultilineUsageMessage());
+					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES, "&c" + usage);
 
 				} else {
 					final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
-					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : ""));
+					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : ""));
 				}
 
 				return true;
@@ -335,7 +333,9 @@ public abstract class SimpleCommand extends Command {
 				dynamicTellError(ex.getMessage() != null ? ex.getMessage() : SimpleLocalization.Commands.INVALID_SUB_ARGUMENT);
 			else {
 				dynamicTellError(SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
-				tellNoPrefix(getMultilineUsageMessage());
+
+				for (final String line : getMultilineUsageMessage())
+					tellNoPrefix("&c" + line);
 			}
 
 		} catch (final CommandException ex) {
@@ -571,7 +571,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final <T extends Number & Comparable<T>> T findNumber(Class<T> numberType, final int index, final T min, final T max, final String falseMessage) {
+	protected final <T extends Number & Comparable<T>> T findNumber(final Class<T> numberType, final int index, final T min, final T max, final String falseMessage) {
 		final T number = findNumber(numberType, index, falseMessage);
 		checkBoolean(number.compareTo(min) >= 0 && number.compareTo(max) <= 0, falseMessage.replace("{min}", min + "").replace("{max}", max + ""));
 
@@ -588,7 +588,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final <T extends Number> T findNumber(Class<T> numberType, final int index, final String falseMessage) {
+	protected final <T extends Number> T findNumber(final Class<T> numberType, final int index, final String falseMessage) {
 		checkBoolean(index < args.length, falseMessage);
 
 		try {
@@ -804,7 +804,9 @@ public abstract class SimpleCommand extends Command {
 	 * message for player
 	 */
 	protected final void returnInvalidArgs() {
-		returnTell(SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", getLabel()));
+		tellError(SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", getLabel()));
+
+		throw new CommandException();
 	}
 
 	/**
@@ -835,6 +837,15 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void returnTell(final String... messages) throws CommandException {
 		throw new CommandException(replacePlaceholders(messages));
+	}
+
+	/**
+	 * Ho ho ho, returns the command usage to the sender
+	 *
+	 * @throws InvalidCommandArgException
+	 */
+	protected final void returnUsage() throws InvalidCommandArgException {
+		throw new InvalidCommandArgException();
 	}
 
 	// ----------------------------------------------------------------------
@@ -1208,12 +1219,6 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkNotNull(sender, "Sender cannot be null");
 
 		return sender;
-	}
-
-	protected final String getUsageError() {
-		final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
-
-		return SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!getUsage().startsWith("/") ? " " + Common.stripColors(getUsage()) : "");
 	}
 
 	/**
