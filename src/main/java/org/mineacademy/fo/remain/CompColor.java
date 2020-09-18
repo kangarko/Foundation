@@ -166,7 +166,7 @@ public enum CompColor {
 
 		return en;
 	}
-	
+
 	/**
 	 * Make new compatible dye from wool data
 	 *
