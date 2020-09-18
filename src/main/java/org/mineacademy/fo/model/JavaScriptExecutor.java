@@ -144,16 +144,27 @@ public final class JavaScriptExecutor {
 	 *
 	 * @param javascript
 	 * @param replacements
+	 *
 	 * @return
-	 * @throws ScriptException
 	 */
-	public static Object run(String javascript, Map<String, Object> replacements) throws ScriptException {
-		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+	public static Object run(String javascript, Map<String, Object> replacements) {
+		try {
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-		if (replacements != null)
-			for (final Map.Entry<String, Object> replacement : replacements.entrySet())
-				engine.put(replacement.getKey(), replacement.getValue());
+			if (replacements != null)
+				for (final Map.Entry<String, Object> replacement : replacements.entrySet())
+					engine.put(replacement.getKey(), replacement.getValue());
 
-		return engine.eval(javascript);
+			return engine.eval(javascript);
+
+		} catch (final ScriptException ex) {
+			Common.error(ex,
+					"Script executing failed!",
+					"Script: " + javascript,
+					"Variables: " + replacements,
+					"%error");
+
+			return null;
+		}
 	}
 }
