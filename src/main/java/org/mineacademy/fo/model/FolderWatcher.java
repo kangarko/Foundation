@@ -17,6 +17,7 @@ import java.util.Set;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -69,7 +70,15 @@ public abstract class FolderWatcher extends Thread {
 		this.folder = folder.toPath();
 		this.start();
 
+		for (final FolderWatcher other : activeThreads) {
+			//Valid.checkBoolean(other.folder.toString().equals(this.folder.toString()), "Tried to add a duplicate file watcher for " + this.folder);
+			if (other.folder.toString().equals(this.folder.toString()))
+				Common.log("&cWarning: A duplicate file watcher for '" + folder.getPath() + "' was added. This is untested and may causes fatal issues!");
+		}
+
 		activeThreads.add(this);
+
+		Debugger.debug("upload", "Started folder watcher for " + folder + " in " + folder.getAbsolutePath() + " (path: " + this.folder + ")");
 	}
 
 	/**
@@ -83,50 +92,50 @@ public abstract class FolderWatcher extends Thread {
 			final WatchKey registration = folder.register(service, ENTRY_MODIFY);
 
 			while (watching) {
-				synchronized (activeThreads) {
-					try {
-						final WatchKey watchKey = service.take();
+				//synchronized (activeThreads) {
+				try {
+					final WatchKey watchKey = service.take();
 
-						for (final WatchEvent<?> watchEvent : watchKey.pollEvents()) {
-							final Kind<?> kind = watchEvent.kind();
+					for (final WatchEvent<?> watchEvent : watchKey.pollEvents()) {
+						final Kind<?> kind = watchEvent.kind();
 
-							if (kind == ENTRY_MODIFY) {
-								final Path watchEventPath = (Path) watchEvent.context();
-								final File fileModified = new File(SimplePlugin.getData(), watchEventPath.toFile().getName());
+						if (kind == ENTRY_MODIFY) {
+							final Path watchEventPath = (Path) watchEvent.context();
+							final File fileModified = new File(SimplePlugin.getData(), watchEventPath.toFile().getName());
 
-								final String path = fileModified.getAbsolutePath();
-								final BukkitTask pendingTask = scheduledUpdates.remove(path);
+							final String path = fileModified.getAbsolutePath();
+							final BukkitTask pendingTask = scheduledUpdates.remove(path);
 
-								// Cancel the old task and reschedule
-								if (pendingTask != null)
-									pendingTask.cancel();
+							// Cancel the old task and reschedule
+							if (pendingTask != null)
+								pendingTask.cancel();
 
-								// Force run sync -- reschedule five seconds later to ensure no further edits take place
-								scheduledUpdates.put(path, Common.runLater(10, () -> {
-									if (!watching)
-										return;
+							// Force run sync -- reschedule five seconds later to ensure no further edits take place
+							scheduledUpdates.put(path, Common.runLater(10, () -> {
+								if (!watching)
+									return;
 
-									try {
-										onModified(fileModified);
+								try {
+									onModified(fileModified);
 
-										scheduledUpdates.remove(path);
+									scheduledUpdates.remove(path);
 
-									} catch (final Throwable t) {
-										Common.error(t, "Error in calling onModified when watching changed file " + fileModified);
-									}
-								}));
+								} catch (final Throwable t) {
+									Common.error(t, "Error in calling onModified when watching changed file " + fileModified);
+								}
+							}));
 
-								break;
-							}
+							break;
 						}
-
-						if (!watchKey.reset())
-							Common.error(new FoException("Failed to reset watch key! Restarting sync engine.."));
-
-					} catch (final Throwable t) {
-						Common.error(t, "Error in handling watching thread loop for folder " + this.getFolder());
 					}
+
+					if (!watchKey.reset())
+						Common.error(new FoException("Failed to reset watch key! Restarting sync engine.."));
+
+				} catch (final Throwable t) {
+					Common.error(t, "Error in handling watching thread loop for folder " + this.getFolder());
 				}
+				//}
 			}
 
 			registration.cancel();
@@ -158,5 +167,10 @@ public abstract class FolderWatcher extends Thread {
 			} catch (final Exception ex) {
 				// ignore
 			}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof FolderWatcher && ((FolderWatcher) obj).folder.toString().equals(this.folder.toString());
 	}
 }
