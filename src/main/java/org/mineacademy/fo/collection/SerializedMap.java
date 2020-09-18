@@ -111,6 +111,17 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Puts the key-value pair into the map if the value is true
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIfTrue(final String key, @Nullable final boolean value) {
+		if (value)
+			put(key, value);
+	}
+
+	/**
 	 * Puts the key-value pair into the map if the value is not null
 	 *
 	 * @param key
@@ -453,7 +464,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public <K, V> Tuple<K, V> getTuple(String key, final Tuple<K, V> def) {
+	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def) {
 		return get(key, Tuple.class, def);
 	}
 
