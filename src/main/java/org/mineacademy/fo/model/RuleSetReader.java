@@ -64,14 +64,14 @@ public abstract class RuleSetReader<T extends Rule> {
 		T rule = null;
 		String match = null;
 
+		//System.out.println("# READING " + file);
+
 		for (int i = 0; i < lines.size(); i++) {
 			final String line = lines.get(i).trim();
 
-			// Reached end of the file and a rule is still being created, finish it.
-			if (i + 1 == lines.size() && rule != null && canFinish(rule))
-				rules.add(rule);
+			//System.out.println(i + "/" + lines.size() + ": " + line);
 
-			else if (!line.isEmpty() && !line.startsWith("#")) {
+			if (!line.isEmpty() && !line.startsWith("#")) {
 
 				// If a line starts with matcher then assume a new rule is found and start creating it. This makes a new instance of the object.
 				if (line.startsWith(newKeyword + " ")) {
@@ -86,7 +86,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 					try {
 						match = line.replace(newKeyword + " ", "");
-						rule = createRule(match);
+						rule = createRule(file, match);
 
 					} catch (final Throwable t) {
 						Common.throwError(t,
@@ -108,13 +108,17 @@ public abstract class RuleSetReader<T extends Rule> {
 							rule.onOperatorParse(line.split(" "));
 
 						} catch (final Throwable t) {
-							Common.error(t,
+							Common.throwError(t,
 									"Error parsing rule operator from line (" + i + "): " + line,
 									"File: " + file,
 									"Error: %error");
 						}
 				}
 			}
+
+			// Reached end of the file and a rule is still being created, finish it.
+			if (i + 1 == lines.size() && rule != null && canFinish(rule))
+				rules.add(rule);
 		}
 
 		return rules;
@@ -136,9 +140,11 @@ public abstract class RuleSetReader<T extends Rule> {
 	 *
 	 * Example: When the rule starts with "match one two", the value is only "one two" etc.
 	 *
+	 * @param file
 	 * @param value
+	 *
 	 * @return the rule created, or null if the value is not valid
 	 */
 	@Nullable
-	protected abstract T createRule(String value);
+	protected abstract T createRule(File file, String value);
 }
