@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 
 /**
@@ -111,7 +113,7 @@ enum WrapperReflection {
 	private boolean compatible = false;
 	private String methodName = null;
 
-	WrapperReflection(Class<?> targetClass, Class<?>[] args, WrapperVersion addedSince, WrapperVersion removedAfter, Since... methodnames) {
+	WrapperReflection(final Class<?> targetClass, final Class<?>[] args, final WrapperVersion addedSince, final WrapperVersion removedAfter, final Since... methodnames) {
 		this.removedAfter = removedAfter;
 
 		final WrapperVersion server = WrapperVersion.getVersion();
@@ -135,11 +137,19 @@ enum WrapperReflection {
 			methodName = targetVersion.name;
 
 		} catch (NullPointerException | NoSuchMethodException | SecurityException t) {
-			Common.throwError(t, "Unable to find the method '" + targetVersion.name + "' in '" + (targetClass == null ? "null" : targetClass.getSimpleName()) + "' Enum: " + this);
+			final String message = "Unable to find the method '" + targetVersion.name + "' in '" + (targetClass == null ? "null" : targetClass.getSimpleName()) + "' Enum: " + this;
+
+			if (MinecraftVersion.olderThan(V.v1_8)) {
+				Common.log(message);
+
+				return;
+			}
+
+			Common.throwError(t, message);
 		}
 	}
 
-	WrapperReflection(Class<?> targetClass, Class<?>[] args, WrapperVersion addedSince, Since... methodnames) {
+	WrapperReflection(final Class<?> targetClass, final Class<?>[] args, final WrapperVersion addedSince, final Since... methodnames) {
 		this(targetClass, args, addedSince, null, methodnames);
 	}
 
@@ -150,7 +160,7 @@ enum WrapperReflection {
 	 * @param args
 	 * @return Value returned by the method
 	 */
-	public Object run(Object target, Object... args) {
+	public Object run(final Object target, final Object... args) {
 		if (method == null)
 			throw new NbtApiException("Method '" + methodName + "' not loaded! '" + this + "'");
 
@@ -187,7 +197,7 @@ enum WrapperReflection {
 		public final WrapperVersion version;
 		public final String name;
 
-		public Since(WrapperVersion version, String name) {
+		public Since(final WrapperVersion version, final String name) {
 			this.version = version;
 			this.name = name;
 		}
