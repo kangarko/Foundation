@@ -2,7 +2,6 @@ package org.mineacademy.fo.collection;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -311,7 +310,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	@Override
 	public Object serialize() {
 		if (!map.isEmpty()) {
-			final Map<Object, Object> copy = new HashMap<>();
+			final Map<Object, Object> copy = new LinkedHashMap<>();
 
 			for (final Entry<E, T> e : entrySet()) {
 				final T val = e.getValue();
