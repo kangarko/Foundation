@@ -152,16 +152,16 @@ class ConfigUpdater {
 			if (!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty()) {
 				for (String key : newConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
 					key = ignoredSection + "." + key;
-		
+
 					System.out.println("# Writing ignored key from default: " + key);
 					write0(key, newConfig, oldConfig, comments, writer, yaml);
 				}
 			}
-		
+
 			else {
 				for (String key : oldConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
 					key = ignoredSection + "." + key;
-		
+
 					System.out.println("# Writing ignored key from old: " + key);
 					write0(key, newConfig, oldConfig, comments, writer, yaml);
 				}
@@ -299,10 +299,10 @@ class ConfigUpdater {
 				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
-
+				
 						if (value instanceof ConfigurationSection)
 							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-
+				
 						continue outer;
 					}
 				}*/
@@ -324,19 +324,19 @@ class ConfigUpdater {
 	/*private static void appendSection(StringBuilder builder, ConfigurationSection section, StringBuilder prefixSpaces, Yaml yaml) {
 		builder.append(prefixSpaces).append(getKeyFromFullKey(section.getCurrentPath())).append(":");
 		final Set<String> keys = section.getKeys(false);
-	
+
 		if (keys.isEmpty()) {
 			builder.append(" {}\n");
 			return;
 		}
-	
+
 		builder.append("\n");
 		prefixSpaces.append("  ");
-	
+
 		for (final String key : keys) {
 			final Object value = section.get(key);
 			final String actualKey = getKeyFromFullKey(key);
-	
+
 			if (value instanceof ConfigurationSection) {
 				appendSection(builder, (ConfigurationSection) value, prefixSpaces, yaml);
 				prefixSpaces.setLength(prefixSpaces.length() - 2);

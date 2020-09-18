@@ -10,8 +10,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
-import lombok.Setter;
-
 /**
  * A simple implementation of a basic localization file.
  * We create the localization/messages_LOCALEPREFIX.yml file
@@ -38,8 +36,16 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * localization keys over all message files each time you make an update. Instead,
 	 * only place them into the fallback file, by default it's messages_en.yml.
 	 */
-	@Setter
 	private static String FALLBACK_LOCALIZATION_FILE = "localization/messages_en.yml";
+
+	/**
+	 * See {@link #FALLBACK_LOCALIZATION_FILE}
+	 *
+	 * @param fallBackFile
+	 */
+	public static void setFallbackLocalizationFile(final String fallBackFile) {
+		FALLBACK_LOCALIZATION_FILE = fallBackFile;
+	}
 
 	/**
 	 * The fallback localization file config instance, see {@link #FALLBACK_LOCALIZATION_FILE}.
@@ -119,7 +125,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * @param path
 	 * @return
 	 */
-	protected static final String getFallbackString(String path) {
+	protected static final String getFallbackString(final String path) {
 		return getFallback(path, String.class);
 	}
 
@@ -132,7 +138,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * @param listType
 	 * @return
 	 */
-	protected static final <T> List<T> getFallbackList(String path, Class<T> listType) {
+	protected static final <T> List<T> getFallbackList(final String path, final Class<T> listType) {
 		final List<T> list = new ArrayList<>();
 		final List<Object> objects = getFallback(path, List.class);
 
@@ -152,7 +158,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * @param typeOf
 	 * @return
 	 */
-	protected static final <T> T getFallback(String path, Class<T> typeOf) {
+	protected static final <T> T getFallback(final String path, final Class<T> typeOf) {
 
 		// If string already exists, has a default path, or locale is set to english, use the native method
 		if (isSet(path) || isSetDefault(path) || "en".equals(SimpleSettings.LOCALE_PREFIX))

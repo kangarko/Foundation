@@ -763,7 +763,7 @@ public final class Remain {
 	 * @param json
 	 * @param placeholders
 	 */
-	public static void sendJson(final CommandSender sender, final String json, SerializedMap placeholders) {
+	public static void sendJson(final CommandSender sender, final String json, final SerializedMap placeholders) {
 		try {
 			final BaseComponent[] components = ComponentSerializer.parse(json);
 
@@ -782,7 +782,7 @@ public final class Remain {
 	 *
 	 * BaseComponent does not support colors when in text, they must be set at the color level
 	 */
-	private static void replaceHexPlaceholders(List<BaseComponent> components, SerializedMap placeholders) {
+	private static void replaceHexPlaceholders(final List<BaseComponent> components, final SerializedMap placeholders) {
 
 		for (final BaseComponent component : components) {
 			if (component instanceof TextComponent) {
