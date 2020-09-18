@@ -178,6 +178,21 @@ public final class SimpleComponent {
 	// Building
 	// --------------------------------------------------------------------
 
+	/**
+	 * Append a new component on the end of this one
+	 *
+	 * @param newComponent
+	 * @return
+	 */
+	public SimpleComponent append(SimpleComponent newComponent) {
+		for (final PermissibleComponent baseComponent : currentComponents)
+			pastComponents.add(baseComponent);
+
+		currentComponents = new PermissibleComponent[] { new PermissibleComponent(newComponent.build(), null) };
+
+		return this;
+	}
+
 	public SimpleComponent append(String text) {
 		return append(text, null);
 	}
