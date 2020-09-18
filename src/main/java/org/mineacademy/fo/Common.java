@@ -417,8 +417,15 @@ public final class Common {
 
 		} else
 			for (final String part : splitNewline(message)) {
-				final String prefix = removeSurroundingSpaces(tellPrefix);
-				final String toSend = (ADD_TELL_PREFIX && !hasPrefix && !prefix.isEmpty() ? prefix + " " : "") + part;
+				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
+				final String prefix = (ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "");
+
+				final String toSend;
+
+				if (Common.stripColors(part).startsWith("<center>"))
+					toSend = ChatUtil.center(prefix + part.replace("<center>", ""));
+				else
+					toSend = prefix + part;
 
 				// Make player engaged in a server conversation still receive the message
 				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
@@ -882,7 +889,7 @@ public final class Common {
 	 */
 	public static String duplicate(String text, int nTimes) {
 		if (nTimes == 0)
-			return text;
+			return "";
 
 		final String toDuplicate = new String(text);
 
