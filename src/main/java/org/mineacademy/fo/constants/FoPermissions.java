@@ -8,5 +8,5 @@ import org.mineacademy.fo.command.Permission;
 public class FoPermissions {
 
 	@Permission(value = "Receive plugin update notifications on join.")
-	public static final String NOTIFY_UPDATE = "{plugin_name}.notify.update";
+	public static final String NOTIFY_UPDATE = "{plugin_name_lower}.notify.update";
 }
