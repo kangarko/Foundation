@@ -239,7 +239,14 @@ public final class Replacer {
 		return list;
 	}
 
-	private static String replaceVariables(String message, SerializedMap variables) {
+	/**
+	 * Replace key pairs in the message
+	 *
+	 * @param message
+	 * @param variables
+	 * @return
+	 */
+	public static String replaceVariables(String message, SerializedMap variables) {
 		for (final Entry<String, Object> replacement : variables.entrySet()) {
 			String key = replacement.getKey();
 
