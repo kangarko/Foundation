@@ -1,6 +1,8 @@
 package org.mineacademy.fo;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
@@ -46,6 +48,66 @@ public class Messenger {
 	 */
 	@Setter
 	private String announcePrefix = "&8&l[&5&l!&l&8] &d";
+
+	/**
+	 * Send a message prepended with the {@link #infoPrefix}
+	 *
+	 * @param message
+	 */
+	public void broadcastInfo(final String message) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, infoPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #successPrefix}
+	 *
+	 * @param message
+	 */
+	public void broadcastSuccess(final String message) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, successPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #warnPrefix}
+	 *
+	 * @param message
+	 */
+	public void broadcastWarn(final String message) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, warnPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #errorPrefix}
+	 *
+	 * @param message
+	 */
+	public void broadcastError(final String message) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, errorPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #questionPrefix}
+	 *
+	 * @param message
+	 */
+	public void broadcastQuestion(final String message) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, questionPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #announcePrefix}
+	 *
+	 * @param message
+	 */
+	public void broadcastAnnounce(final String message) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, announcePrefix, message);
+	}
 
 	/**
 	 * Send a message prepended with the {@link #infoPrefix}
