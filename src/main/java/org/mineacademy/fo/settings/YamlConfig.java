@@ -344,7 +344,7 @@ public class YamlConfig implements ConfigSerializable {
 	private void saveIfNecessary0() {
 
 		// We want to save the file if the save is pending or if there are no defaults
-		if (save || getDefaults() == null) {
+		if (save || saveComments() || getDefaults() == null) {
 			save();
 
 			save = false;
@@ -507,6 +507,8 @@ public class YamlConfig implements ConfigSerializable {
 	public final void reload() {
 		try {
 			instance.reload();
+
+			save = true;
 
 			onLoadFinish();
 			saveIfNecessary0();
