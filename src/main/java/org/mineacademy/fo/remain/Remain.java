@@ -353,6 +353,14 @@ public final class Remain {
 				hasYamlReaderLoad = false;
 			}
 
+			// Initialize legacy material data now to avoid future lag
+			if (MinecraftVersion.atLeast(V.v1_16))
+				try {
+					Bukkit.getUnsafe().fromLegacy(Material.AIR);
+				} catch (final Throwable t) {
+					// Silence
+				}
+
 		} catch (final ReflectiveOperationException ex) {
 			throw new UnsupportedOperationException("Failed to set up reflection, " + SimplePlugin.getNamed() + " won't work properly", ex);
 		}
@@ -2134,6 +2142,15 @@ public final class Remain {
 	 */
 	public static boolean hasYamlReaderLoad() {
 		return hasYamlReaderLoad;
+	}
+
+	/**
+	 * Return if the MC version is 1.16+ that supports HEX RGB colors
+	 *
+	 * @return
+	 */
+	public static boolean hasHexColors() {
+		return MinecraftVersion.atLeast(V.v1_16);
 	}
 
 	// ------------------------ Legacy ------------------------
