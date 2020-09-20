@@ -377,7 +377,7 @@ public final class CompMetadata {
 		private static volatile Object LOCK = new Object();
 
 		@Getter
-		private static final MetadataFile instance = new MetadataFile();
+		private static volatile MetadataFile instance = new MetadataFile();
 
 		private final StrictMap<UUID, List<String>> entityMetadataMap = new StrictMap<>();
 		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
@@ -393,6 +393,8 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				loadEntities();
 				loadBlockStates();
+
+				save();
 			}
 		}
 
@@ -420,8 +422,6 @@ public final class CompMetadata {
 						applySavedMetadata(metadata, entity);
 					}
 				}
-
-				setNoSave("Entity", entityMetadataMap);
 			}
 		}
 
@@ -442,9 +442,23 @@ public final class CompMetadata {
 						applySavedMetadata(blockCache.getMetadata(), block);
 					}
 				}
-
-				setNoSave("Block", blockMetadataMap);
 			}
+		}
+
+		/**
+		 * @see org.mineacademy.fo.settings.YamlConfig#serialize()
+		 */
+		@Override
+		public SerializedMap serialize() {
+			final SerializedMap map = new SerializedMap();
+
+			if (!this.entityMetadataMap.isEmpty())
+				map.put("Entity", this.entityMetadataMap);
+
+			if (!this.blockMetadataMap.isEmpty())
+				map.put("Block", this.blockMetadataMap);
+
+			return map;
 		}
 
 		private void applySavedMetadata(final List<String> metadata, final Metadatable entity) {
