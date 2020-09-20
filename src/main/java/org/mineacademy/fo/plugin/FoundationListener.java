@@ -88,6 +88,9 @@ final class FoundationListener implements Listener {
 		final ChatPages chatPages = (ChatPages) player.getMetadata("FoPages").get(0).value();
 		final Map<Integer, List<SimpleComponent>> pages = chatPages.getPages();
 
+		// Remove empty lines
+		pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+
 		if (!pages.containsKey(page)) {
 			Common.tell(player, "Pages do not contain page number ");
 
@@ -104,7 +107,7 @@ final class FoundationListener implements Listener {
 			for (final SimpleComponent comp : messagesOnPage)
 				comp.send(player);
 
-			for (int i = messagesOnPage.size(); i < chatPages.getLinesPerPage(); i++)
+			for (int i = messagesOnPage.size(); i < chatPages.getLinesPerPage() + (pages.size() == 1 ? 1 : 0); i++)
 				SimpleComponent.of("&r").send(player);
 
 			for (final SimpleComponent component : chatPages.getFooter())
@@ -113,7 +116,8 @@ final class FoundationListener implements Listener {
 
 		Common.tell(player, " ");
 
-		{ // Fill in the pagination line
+		// Fill in the pagination line
+		if (pages.size() > 1) {
 			final SimpleComponent pagination = SimpleComponent.of("&7Page " + (page + 1) + "/" + pages.size() + ". Visit the ");
 
 			if (page == 0)
