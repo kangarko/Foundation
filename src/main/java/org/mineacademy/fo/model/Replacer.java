@@ -3,8 +3,8 @@ package org.mineacademy.fo.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
@@ -247,18 +247,25 @@ public final class Replacer {
 	 * @return
 	 */
 	public static String replaceVariables(String message, SerializedMap variables) {
-		for (final Entry<String, Object> replacement : variables.entrySet()) {
-			String key = replacement.getKey();
+		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 
-			key = key.charAt(0) != '{' ? "{" + key : key;
-			key = key.charAt(key.length() - 1) != '}' ? key + "}" : key;
+		while (matcher.find()) {
+			String variable = matcher.group(1);
+			boolean addSpace = false;
 
-			String value = Common.simplify(replacement.getValue());
+			if (variable.endsWith("+")) {
+				variable = variable.substring(0, variable.length() - 1);
 
-			if (key.endsWith("+}") && !"".equals(value))
-				value = value + " ";
+				addSpace = true;
+			}
 
-			message = message.replace(key, value);
+			String value = variables.containsKey(variable) ? variables.getObject(variable).toString() : null;
+
+			if (value != null) {
+				value = value.isEmpty() ? "" : Common.colorize(value) + (addSpace ? " " : "");
+
+				message = message.replace(matcher.group(), value);
+			}
 		}
 
 		return message;
