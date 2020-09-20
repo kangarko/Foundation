@@ -18,6 +18,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPages;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -277,6 +278,14 @@ public abstract class SimpleCommandGroup {
 	}
 
 	/**
+	 * Return the subcommand description when listing all commands using the "help" or "?" subcommand
+	 * @return
+	 */
+	protected String getSubcommandDescription() {
+		return " &f/{label} {sublabel} {usage+}{dash+}{description}";
+	}
+
+	/**
 	 * Return the default color in the {@link #getHelpHeader()},
 	 * GOLD + BOLD colors by default
 	 *
@@ -375,29 +384,32 @@ public abstract class SimpleCommandGroup {
 					final String usage = colorizeUsage(subcommand.getUsage());
 					final String desc = Common.getOrEmpty(subcommand.getDescription());
 
-					final SimpleComponent line = SimpleComponent.of(" &f/" + getLabel() + " " + subcommand.getSublabel() + " " + (usage.isEmpty() ? "" : usage + " "));
+					final SimpleComponent line = SimpleComponent.of(Replacer.replaceArray(getSubcommandDescription(),
+							"label", getLabel(),
+							"sublabel", subcommand.getSublabel(),
+							"usage", usage,
+							"description", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_8) ? desc : "",
+							"dash", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_8) ? "&e-" : ""));
 
-					if (!desc.isEmpty())
-						if (MinecraftVersion.atLeast(V.v1_8)) {
-							final String command = Common.stripColors(line.getPlainMessage()).substring(1);
-							final List<String> hover = new ArrayList<>();
+					if (!desc.isEmpty() && MinecraftVersion.atLeast(V.v1_8)) {
+						final String command = Common.stripColors(line.getPlainMessage()).substring(1);
+						final List<String> hover = new ArrayList<>();
 
-							hover.add("&7Description: &f" + desc);
-							hover.add("&7Permission: &f" + subcommand.getPermission());
+						hover.add("&7Description: &f" + desc);
+						hover.add("&7Permission: &f" + subcommand.getPermission());
 
-							if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
-								hover.add("&7Usage: ");
+						if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
+							hover.add("&7Usage: ");
 
-								for (final String usageLine : subcommand.getMultilineUsageMessage())
-									hover.add("&f" + replacePlaceholders(colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
+							for (final String usageLine : subcommand.getMultilineUsageMessage())
+								hover.add("&f" + replacePlaceholders(colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
 
-							} else
-								hover.add("&7Usage: &f" + (usage.isEmpty() ? command : usage));
-
-							line.onHover(hover);
-							line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());
 						} else
-							line.append("&e- " + desc);
+							hover.add("&7Usage: &f" + (usage.isEmpty() ? command : usage));
+
+						line.onHover(hover);
+						line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());
+					}
 
 					lines.add(line);
 				}
