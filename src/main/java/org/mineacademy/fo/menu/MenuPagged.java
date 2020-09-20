@@ -166,7 +166,20 @@ public abstract class MenuPagged<T> extends Menu {
 		final boolean hasPages = pages.size() > 1;
 
 		// Set previous button
-		prevButton = hasPages ? new Button() {
+		prevButton = hasPages ? formPreviousButton() : Button.makeEmpty();
+
+		// Set next page button
+		nextButton = hasPages ? formNextButton() : Button.makeEmpty();
+	}
+
+	/**
+	 * Return the button to list the previous page,
+	 * override to customize it.
+	 *
+	 * @return
+	 */
+	public Button formPreviousButton() {
+		return new Button() {
 			final boolean canGo = currentPage > 1;
 
 			@Override
@@ -184,10 +197,17 @@ public abstract class MenuPagged<T> extends Menu {
 
 				return ItemCreator.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE).name(str == 0 ? "&7First Page" : "&8<< &fPage " + str).build().make();
 			}
-		} : Button.makeEmpty();
+		};
+	}
 
-		// Set next page button
-		nextButton = hasPages ? new Button() {
+	/**
+	 * Return the button to list the next page,
+	 * override to customize it.
+	 *
+	 * @return
+	 */
+	public Button formNextButton() {
+		return new Button() {
 			final boolean canGo = currentPage < pages.size();
 
 			@Override
@@ -205,7 +225,7 @@ public abstract class MenuPagged<T> extends Menu {
 
 				return ItemCreator.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE).name(last ? "&7Last Page" : "Page " + (currentPage + 1) + " &8>>").build().make();
 			}
-		} : Button.makeEmpty();
+		};
 	}
 
 	// Reinits the menu and plays the anvil sound
