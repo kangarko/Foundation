@@ -19,14 +19,17 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
 import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleTime;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -62,6 +65,15 @@ public final class SerializeUtil {
 
 		else if (obj instanceof ChatColor)
 			return ((ChatColor) obj).name();
+
+		else if (obj instanceof CompChatColor)
+			return ((CompChatColor) obj).getName();
+
+		else if (obj instanceof net.md_5.bungee.api.ChatColor) {
+			final net.md_5.bungee.api.ChatColor color = ((net.md_5.bungee.api.ChatColor) obj);
+
+			return MinecraftVersion.atLeast(V.v1_16) ? color.toString() : color.name();
+		}
 
 		else if (obj instanceof CompMaterial)
 			return obj.toString();
@@ -265,6 +277,12 @@ public final class SerializeUtil {
 
 			else if (classOf == SimpleTime.class)
 				object = SimpleTime.from(object.toString());
+
+			else if (classOf == net.md_5.bungee.api.ChatColor.class)
+				throw new FoException("Instead of net.md_5.bungee.api.ChatColor, use our CompChatColor");
+
+			else if (classOf == CompChatColor.class)
+				object = CompChatColor.of(object.toString());
 
 			else if (classOf == UUID.class)
 				object = UUID.fromString(object.toString());

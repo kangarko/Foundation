@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.command.annotation.Permission;
+import org.mineacademy.fo.command.annotation.PermissionGroup;
 import org.mineacademy.fo.constants.FoPermissions;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPages;

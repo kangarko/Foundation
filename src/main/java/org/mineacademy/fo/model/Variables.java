@@ -123,7 +123,7 @@ public final class Variables {
 	 * @param sender
 	 * @return
 	 */
-	public static String replace(String message, CommandSender sender) {
+	public static String replace(String message, @Nullable CommandSender sender) {
 		return replace(message, sender, null);
 	}
 
@@ -137,7 +137,7 @@ public final class Variables {
 	 * @param sender
 	 * @return
 	 */
-	public static String replace(String message, CommandSender sender, @Nullable Map<String, Object> replacements) {
+	public static String replace(String message, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements) {
 		if (message == null || message.isEmpty())
 			return "";
 
@@ -217,7 +217,7 @@ public final class Variables {
 	 * @param message
 	 * @return
 	 */
-	private static String replaceHardVariables0(CommandSender sender, String message) {
+	private static String replaceHardVariables0(@Nullable CommandSender sender, String message) {
 		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 		final Player player = sender instanceof Player ? (Player) sender : null;
 

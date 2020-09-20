@@ -211,6 +211,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.mineacademy.fo.jsonsimple.annotation.JSONAttribute;
+import org.mineacademy.fo.jsonsimple.annotation.JSONRoot;
+
 /**
  * Provides static methods which allow you to convert Java objects into {@linkplain JSONObject}s
  * and the other way around.

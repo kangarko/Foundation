@@ -1,16 +1,14 @@
-package org.mineacademy.fo.command;
+package org.mineacademy.fo.command.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Retention(RUNTIME)
-@Target(FIELD)
-public @interface Permission {
+@Target(TYPE)
+public @interface PermissionGroup {
 
 	public String value() default "";
-
-	public boolean def() default false;
 }

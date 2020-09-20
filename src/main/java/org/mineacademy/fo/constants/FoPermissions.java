@@ -1,6 +1,6 @@
 package org.mineacademy.fo.constants;
 
-import org.mineacademy.fo.command.Permission;
+import org.mineacademy.fo.command.annotation.Permission;
 
 /**
  * Used to store basic library permissions

@@ -482,7 +482,7 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.ChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
 	 *
 	 * @param messages the messages to replace color codes with '&'
 	 * @return the colored message
@@ -492,7 +492,7 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.ChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
 	 * <p>
 	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimplePlugin#getServerPrefix()}
 	 *
