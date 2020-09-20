@@ -4,9 +4,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -52,7 +55,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Denotes an empty list used to disable tab-completion
 	 */
-	protected static final List<String> NO_COMPLETE = new ArrayList<>();
+	protected static final List<String> NO_COMPLETE = Collections.unmodifiableList(new ArrayList<>());
 
 	/**
 	 * If this flag is true, we will use {@link Messenger} to send
@@ -454,6 +457,18 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Check if the given boolean is true or returns {@link #returnInvalidArgs()}
+	 *
+	 * @param value
+	 *
+	 * @throws CommandException
+	 */
+	protected final void checkUsage(final boolean value) throws CommandException {
+		if (!value)
+			returnInvalidArgs();
+	}
+
+	/**
 	 * Checks if the given object is not null
 	 *
 	 * @param value
@@ -488,6 +503,19 @@ public abstract class SimpleCommand extends Command {
 	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
 		final Player player = Bukkit.getPlayer(name);
 		checkBoolean(player != null && player.isOnline(), falseMessage.replace("{player}", name));
+
+		return player;
+	}
+
+	protected final Player findPlayerOrSelf(@Nullable final String name) throws CommandException {
+		if (name == null) {
+			checkBoolean(isPlayer(), "When running from console, specify player name.");
+
+			return getPlayer();
+		}
+
+		final Player player = Bukkit.getPlayer(name);
+		checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE.replace("{player}", name));
 
 		return player;
 	}
