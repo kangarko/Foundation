@@ -158,16 +158,16 @@ public final class ConfigItems<T extends YamlConfig> {
 			final T item = nameConstructor ? constructor.newInstance(name) : constructor.newInstance();
 
 			// Automatically load configuration and paste prototype
-			item.loadConfiguration(hasDefaults ? "prototype/" + type + ".yml" : YamlConfig.NO_DEFAULT, folder + "/" + name + ".yml");
+			item.loadConfiguration(hasDefaults ? "prototype/" + type + ".yml" : YamlConfig.NO_DEFAULT, singleFile ? folder : folder + "/" + name + ".yml");
 
 			// Register
 			loadedItems.add(item);
 
-			if (verbose)
+			if (verbose && !singleFile)
 				Common.log("[+] Loaded " + (type.endsWith("s") ? type.substring(0, type.length() - 1).toLowerCase() : type) + " " + item.getName());
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to load " + type + " " + name);
+			Common.throwError(t, "Failed to load " + type + " " + name + " from " + folder);
 		}
 	}
 
