@@ -83,6 +83,11 @@ public abstract class Menu {
 	@Setter
 	private static int titleAnimationDurationTicks = 20;
 
+	/**
+	 * A placeholder to represent that no item should be displayed/returned
+	 */
+	protected static final ItemStack NO_ITEM = null;
+
 	// --------------------------------------------------------------------------------
 	// Actual class
 	// --------------------------------------------------------------------------------

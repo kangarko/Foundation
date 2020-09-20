@@ -334,7 +334,8 @@ public final class Debugger {
 	 * @return
 	 */
 	private static boolean canPrint(String message) {
-		return !message.contains("net.minecraft") && !message.contains("org.bukkit.craftbukkit") && !message.contains("nashorn") && !message.contains("javax.script") && !message.contains("org.yaml.snakeyaml");
+		return message.contains("mineacademy");
+		//return !message.contains("net.minecraft") && !message.contains("org.bukkit.craftbukkit") && !message.contains("nashorn") && !message.contains("javax.script") && !message.contains("org.yaml.snakeyaml");
 	}
 
 	// Print a simple console message

@@ -3,6 +3,7 @@ package org.mineacademy.fo.model;
 import org.mineacademy.fo.TimeUtil;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * A simple class holding time values in human readable form such as 1 second or 5 minutes
@@ -13,7 +14,7 @@ public class SimpleTime {
 	private final String raw;
 	private final int timeTicks;
 
-	protected SimpleTime(final String time) {
+	protected SimpleTime(@NonNull final String time) {
 		raw = time;
 		timeTicks = (int) TimeUtil.toTicks(time);
 	}
