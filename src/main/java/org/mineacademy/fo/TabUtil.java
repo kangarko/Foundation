@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -42,29 +38,12 @@ public final class TabUtil {
 		final List<String> clone = new ArrayList<>();
 
 		for (final T s : all)
-			if (s != null)
+			if (s != null) {
+				final boolean lowercase = s instanceof Enum;
+				final String parsed = SerializeUtil.serialize(s).toString();
 
-				if (s instanceof ChatColor)
-					clone.add(((ChatColor) s).name().toLowerCase());
-
-				else if (s instanceof CommandSender)
-					clone.add(((CommandSender) s).getName());
-
-				else if (s instanceof EntityType) {
-					if (((EntityType) s).isAlive() && ((EntityType) s).isSpawnable())
-						clone.add(s.toString().toLowerCase());
-
-				} else if (s instanceof Enum)
-					clone.add(s.toString().toLowerCase());
-
-				else if (s instanceof Double)
-					clone.add(MathUtil.formatTwoDigits(Double.parseDouble(s.toString())));
-
-				else if (s instanceof Float)
-					clone.add(MathUtil.formatTwoDigits(Float.parseFloat(s.toString())));
-
-				else
-					clone.add(s.toString());
+				clone.add(lowercase ? parsed.toLowerCase() : parsed);
+			}
 
 		return complete(partialName, clone);
 	}
