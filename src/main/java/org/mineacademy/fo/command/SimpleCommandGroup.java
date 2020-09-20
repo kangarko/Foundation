@@ -9,6 +9,7 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
@@ -16,6 +17,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.ChatPages;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -23,6 +25,7 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * A command group contains a set of different subcommands
@@ -40,7 +43,15 @@ public abstract class SimpleCommandGroup {
 	/**
 	 * The registered main command, if any
 	 */
-	protected SimpleCommand mainCommand;
+	private SimpleCommand mainCommand;
+
+	/**
+	 * How many commands shall we display per page by default?
+	 *
+	 * Defaults to 12
+	 */
+	@Setter(value = AccessLevel.PROTECTED)
+	private int commandsPerPage = 12;
 
 	// ----------------------------------------------------------------------
 	// Main functions
@@ -122,7 +133,7 @@ public abstract class SimpleCommandGroup {
 	 */
 	protected final void registerSubcommand(final SimpleSubCommand command) {
 		Valid.checkNotNull(mainCommand, "Cannot add subcommands when main command is missing! Call register()");
-		Valid.checkBoolean(!subcommands.contains(command), "Subcommand /" + mainCommand.getLabel() + " " + command.getSublabel() + " already registered!");
+		Valid.checkBoolean(!subcommands.contains(command), "Subcommand /" + mainCommand.getLabel() + " " + command.getSublabel() + " already registered when trying to add " + command.getClass());
 
 		subcommands.add(command);
 	}
@@ -392,12 +403,13 @@ public abstract class SimpleCommandGroup {
 				}
 
 			if (!lines.isEmpty()) {
-				if (getHelpHeader() != null)
-					for (final String header : getHelpHeader())
-						tellNoPrefix(header);
+				final ChatPages pages = new ChatPages(MathUtil.range(0, lines.size(), commandsPerPage));
 
-				for (final SimpleComponent line : lines)
-					line.send(sender);
+				if (getHelpHeader() != null)
+					pages.setHeader(getHelpHeader());
+
+				pages.setPages(lines);
+				pages.showTo(sender);
 
 			} else
 				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
