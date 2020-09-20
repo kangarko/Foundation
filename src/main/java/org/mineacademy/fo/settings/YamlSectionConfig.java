@@ -89,4 +89,17 @@ public abstract class YamlSectionConfig extends YamlConfig {
 
 		return path.endsWith(".") ? path.substring(0, path.length() - 1) : path;
 	}
+
+	// ----------------------------------------------------------------
+	// Misc
+	// ----------------------------------------------------------------
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "YamlSection{file=" + getFileName() + ", section=" + super.getPathPrefix() + ", local path=" + this.localPathPrefix + "}";
+	}
+
 }
