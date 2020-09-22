@@ -371,7 +371,7 @@ public class YamlConfig implements ConfigSerializable {
 	private void saveIfNecessary0() {
 
 		// We want to save the file if the save is pending or if there are no defaults
-		if (save || saveComments() || getDefaults() == null) {
+		if (save || saveComments() /*|| getDefaults() == null*/) {
 			save();
 
 			save = false;
@@ -507,7 +507,7 @@ public class YamlConfig implements ConfigSerializable {
 						setNoSave(entry.getKey(), entry.getValue());
 
 			} else
-				setNoSave("", serialized.isEmpty() ? null : serialized);
+				setNoSave("", serialized.isEmpty() ? null : serialized.serialize());
 		}
 
 		instance.save(header != null ? header : file.equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
@@ -2033,17 +2033,16 @@ class ConfigInstance {
 		}
 
 		try {
+
+			config.save(file);
+
+			// Workaround: When saving maps, the config somehow stops
+			// recognizing them as sections so we must reload in order
+			// for all maps to be turned back into MemorySection to be reachable by get()
+			reload();
+
 			if (defaultsPath != null && saveComments)
 				ConfigUpdater.update(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
-
-			else {
-				config.save(file);
-
-				// Workaround: When saving maps, the config somehow stops
-				// recognizing them as sections so we must reload in order
-				// for all maps to be turned back into MemorySection to be reachable by get()
-				reload();
-			}
 
 		} catch (final NullPointerException ex) {
 			if (ex.getMessage() != null && ex.getMessage().contains("Nodes must be provided")) {
