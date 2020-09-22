@@ -7,14 +7,21 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -24,6 +31,11 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public abstract class SimpleListener<T extends Event> implements Listener, EventExecutor {
+
+	/**
+	 * Shall we use {@link Messenger} to send messages? Those will be sent as error.
+	 */
+	public static boolean USE_MESSENGER = false;
 
 	/**
 	 * The event we are listening to
@@ -43,6 +55,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	/**
 	 * The run event temporary placeholder
 	 */
+	@Getter(value = AccessLevel.PROTECTED)
 	private T event;
 
 	/**
@@ -80,10 +93,17 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 			final String[] messages = ex.getMessages();
 			final boolean cancelled = ex.isCancelled();
 
-			final Player player = findPlayer((T) event);
+			final Player player = findPlayer();
 
 			if (messages != null && player != null)
-				Common.tell(player, messages);
+				for (String message : messages) {
+					message = Variables.replace(message, player);
+
+					if (USE_MESSENGER)
+						Messenger.error(player, message);
+					else
+						Common.tell(player, "&c" + message);
+				}
 
 			if (cancelled && event instanceof Cancellable)
 				((Cancellable) event).setCancelled(true);
@@ -100,17 +120,30 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 *
 	 * @param event
 	 */
-	public abstract void execute(T event);
+	protected abstract void execute(T event);
 
 	/**
 	 * Return a player from this event, null if none,
 	 * used for messaging
 	 *
-	 * @param event
 	 * @return
 	 */
-	protected Player findPlayer(T event) {
-		return null;
+	protected Player findPlayer() {
+		if (this.event instanceof PlayerEvent)
+			return ((PlayerEvent) this.event).getPlayer();
+
+		throw new FoException("findPlayer called but not implemented for " + this.event + " either set event or call setPlayer");
+	}
+
+	/**
+	 * If the object is null, stop your code from further execution, cancel the event and
+	 * send the player a null message (see {@link #findPlayer(Event)})
+	 *
+	 * @param toCheck
+	 * @param falseMessages
+	 */
+	protected final void checkNotNull(Object toCheck, String... nullMessages) {
+		checkBoolean(toCheck != null, nullMessages);
 	}
 
 	/**
@@ -130,11 +163,31 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * when he lacks the given permission
 	 *
 	 * @param permission
+	 */
+	protected final void checkPerm(String permission) {
+		checkPerm(permission, SimpleLocalization.NO_PERMISSION);
+	}
+
+	/**
+	 * Return if the {@link #findPlayer(Event)} player has the given permission;
+	 *
+	 * @param permission
+	 * @return
+	 */
+	protected final boolean hasPerm(String permission) {
+		return PlayerUtil.hasPerm(findPlayer(), permission);
+	}
+
+	/**
+	 * Stop code from executing and send the player a message (see {@link #findPlayer(Event)})
+	 * when he lacks the given permission
+	 *
+	 * @param permission
 	 * @param falseMessage
 	 */
 	protected final void checkPerm(String permission, String falseMessage) {
-		final Player player = findPlayer(event);
-		Valid.checkNotNull(player, "Player cannot be null for " + event.getEventName() + "!");
+		final Player player = findPlayer();
+		Valid.checkNotNull(player, "Player cannot be null for " + this.event + "!");
 
 		if (!PlayerUtil.hasPerm(player, permission))
 			throw new EventHandledException(true, falseMessage.replace("{permission}", permission));
