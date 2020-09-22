@@ -2226,7 +2226,6 @@ class SneakyThrow {
 class BungeeChatProvider {
 
 	static void sendComponent(final CommandSender sender, final Object comps) {
-
 		if (comps instanceof TextComponent)
 			sendComponent0(sender, (TextComponent) comps);
 
@@ -2247,15 +2246,22 @@ class BungeeChatProvider {
 		}
 
 		try {
-			((Player) sender).spigot().sendMessage(comps);
+			if (MinecraftVersion.equals(V.v1_7)) {
+				// Elegant way of sending JSON on such old MC version - just use the native command
+				// And ensure sync
+				final String json = Remain.toJson(comps);
 
-		} catch (final NoClassDefFoundError | NoSuchMethodError ex) {
-			if (MinecraftVersion.newerThan(V.v1_7))
-				Common.error(ex, "Error printing JSON message, sending as plain.");
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + sender.getName() + " " + json);
 
-			tell0(sender, plainMessage.toString());
+			} else
+				((Player) sender).spigot().sendMessage(comps);
 
-		} catch (final Exception ex) {
+		} catch (final Throwable ex) {
+
+			// This is the minimum MC version that supports interactive chat
+			if (MinecraftVersion.atLeast(V.v1_7))
+				Common.throwError(ex, "Failed to send component: " + plainMessage.toString() + " to " + sender.getName());
+
 			tell0(sender, plainMessage.toString());
 		}
 	}
