@@ -50,7 +50,7 @@ public final class PermsCommand extends SimpleSubCommand {
 						"&6 Enumerating all " + SimplePlugin.getNamed() + " permissions",
 						"&8" + Common.chatLine())
 				.setPages(list())
-				.showTo(sender);
+				.send(sender);
 	}
 
 	private List<SimpleComponent> list() {
