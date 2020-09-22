@@ -11,7 +11,9 @@ import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -40,33 +42,17 @@ public final class SimpleComponent {
 	private final List<PermissibleComponent> pastComponents = new ArrayList<>();
 
 	/**
-	 * Shall we automatically translate & into colors? True by default
-	 * <p>
-	 * Hover/Click events will always be colorized
-	 */
-	private final boolean colorize;
-
-	/**
 	 * The current component that is being modified
 	 */
 	private PermissibleComponent[] currentComponents;
 
 	/**
-	 * Create a new empty component
-	 */
-	private SimpleComponent() {
-		this(true, "");
-	}
-
-	/**
 	 * Create a new interactive chat component
 	 *
-	 * @param colorize
 	 * @param text
 	 */
-	private SimpleComponent(boolean colorize, String... text) {
-		this.colorize = colorize;
-		this.currentComponents = fromLegacyText(colorize ? String.join("\n", Common.colorize(text)) : String.join("\n", text), null, null);
+	private SimpleComponent(String... text) {
+		this.currentComponents = fromLegacyText(String.join("\n", Common.colorize(text)), null, null);
 	}
 
 	/**
@@ -122,7 +108,7 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(colorize ? Common.colorize(text) : text, null, null)), PermissibleComponent::getComponent);
+		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(Common.colorize(text), null, null)), PermissibleComponent::getComponent);
 
 		for (final PermissibleComponent component : currentComponents)
 			component.getComponent().setHoverEvent(new HoverEvent(action, baseComponents.toArray(new BaseComponent[baseComponents.size()])));
@@ -169,7 +155,7 @@ public final class SimpleComponent {
 	 */
 	public SimpleComponent onClick(Action action, String text) {
 		for (final PermissibleComponent component : currentComponents)
-			component.getComponent().setClickEvent(new ClickEvent(action, Common.colorize(text)));
+			component.getComponent().setClickEvent(new ClickEvent(action, text));
 
 		return this;
 	}
@@ -177,6 +163,12 @@ public final class SimpleComponent {
 	// --------------------------------------------------------------------
 	// Building
 	// --------------------------------------------------------------------
+
+	public SimpleComponent appendFirst(SimpleComponent component) {
+		pastComponents.add(0, new PermissibleComponent(component.getTextComponent(), null));
+
+		return this;
+	}
 
 	/**
 	 * Append a new component on the end of this one
@@ -188,13 +180,17 @@ public final class SimpleComponent {
 		for (final PermissibleComponent baseComponent : currentComponents)
 			pastComponents.add(baseComponent);
 
-		currentComponents = new PermissibleComponent[] { new PermissibleComponent(newComponent.build(), null) };
+		currentComponents = new PermissibleComponent[] { new PermissibleComponent(newComponent.build(null), null) };
 
 		return this;
 	}
 
 	public SimpleComponent append(String text) {
-		return append(text, null);
+		return append(text, null, null);
+	}
+
+	public SimpleComponent appendWithOptions(String text, AppendOption... options) {
+		return append(text, null, null, options);
 	}
 
 	/**
@@ -205,18 +201,30 @@ public final class SimpleComponent {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent append(String text, String viewPermission) {
+	public SimpleComponent append(String text, @Nullable String viewPermission, BaseComponent compotentToInheritFormattingFrom, AppendOption... options) {
+		final List<AppendOption> optionsList = Arrays.asList(options);
 
 		// Copy the last color to reuse in the next component
 		BaseComponent lastComponentFormatting = null;
 
-		for (final PermissibleComponent baseComponent : currentComponents) {
+		for (int i = 0; i < currentComponents.length; i++) {
+			final PermissibleComponent baseComponent = currentComponents[i];
 			pastComponents.add(baseComponent);
 
-			lastComponentFormatting = baseComponent.getComponent();
+			if (!optionsList.contains(AppendOption.DO_NOT_INHERIT_FORMAT)) {
+				if (compotentToInheritFormattingFrom != null) {
+					System.out.println("Adding formatting to " + text);
+
+					final List<BaseComponent> extra = compotentToInheritFormattingFrom.getExtra();
+
+					lastComponentFormatting = extra != null ? extra.get(extra.size() - 1) : compotentToInheritFormattingFrom;
+
+				} else
+					lastComponentFormatting = baseComponent.getComponent();
+			}
 		}
 
-		currentComponents = fromLegacyText(colorize ? Common.colorize(text) : text, lastComponentFormatting, viewPermission);
+		currentComponents = fromLegacyText(!optionsList.contains(AppendOption.DO_NOT_COLORIZE) ? Common.colorize(text) : text, lastComponentFormatting, viewPermission);
 
 		return this;
 	}
@@ -226,14 +234,16 @@ public final class SimpleComponent {
 	 *
 	 * @return
 	 */
-	public TextComponent build() {
+	private TextComponent build(CommandSender receiver) {
 		final TextComponent mainComponent = new TextComponent("");
 
 		for (final PermissibleComponent pastComponent : pastComponents)
-			mainComponent.addExtra(pastComponent.getComponent());
+			if (pastComponent.getPermission() == null || receiver == null || PlayerUtil.hasPerm(receiver, pastComponent.getPermission()))
+				mainComponent.addExtra(pastComponent.getComponent());
 
 		for (final PermissibleComponent currentComponent : currentComponents)
-			mainComponent.addExtra(currentComponent.getComponent());
+			if (currentComponent.getPermission() == null || receiver == null || PlayerUtil.hasPerm(receiver, currentComponent.getPermission()))
+				mainComponent.addExtra(currentComponent.getComponent());
 
 		return mainComponent;
 	}
@@ -254,7 +264,16 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public String getPlainMessage() {
-		return build().toLegacyText();
+		return build(null).toLegacyText();
+	}
+
+	/**
+	 * Return md_5 {@link TextComponent} object
+	 *
+	 * @return
+	 */
+	public TextComponent getTextComponent() {
+		return build(null);
 	}
 
 	// --------------------------------------------------------------------
@@ -268,13 +287,14 @@ public final class SimpleComponent {
 	 * If they are console, they receive a plain text message.
 	 *
 	 * @param <T>
-	 * @param senders
+	 * @param receiver
 	 */
-	public <T extends CommandSender> void send(Iterable<T> senders) {
-		final TextComponent mainComponent = build();
+	public <T extends CommandSender> void send(Iterable<T> receivers) {
+		for (final CommandSender receiver : receivers) {
+			final TextComponent mainComponent = build(receiver);
 
-		for (final CommandSender sender : senders)
-			Remain.sendComponent(sender, mainComponent);
+			Remain.sendComponent(receiver, mainComponent);
+		}
 	}
 
 	/**
@@ -283,13 +303,14 @@ public final class SimpleComponent {
 	 * <p>
 	 * If they are console, they receive a plain text message.
 	 *
-	 * @param senders
+	 * @param receiver
 	 */
-	public <T extends CommandSender> void send(T... senders) {
-		final TextComponent mainComponent = build();
+	public <T extends CommandSender> void send(T... receivers) {
+		for (final CommandSender receiver : receivers) {
+			final TextComponent mainComponent = build(receiver);
 
-		for (final CommandSender sender : senders)
-			Remain.sendComponent(sender, mainComponent);
+			Remain.sendComponent(receiver, mainComponent);
+		}
 	}
 
 	// --------------------------------------------------------------------
@@ -306,8 +327,11 @@ public final class SimpleComponent {
 	 * @param viewPermission
 	 * @return
 	 */
-	public static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
+	private static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
 		final List<PermissibleComponent> components = new ArrayList<>();
+
+		if (Common.stripColors(message).startsWith("<center>"))
+			message = ChatUtil.center(message.replace("<center>", ""));
 
 		// Plot the previous formatting manually before the message to retain it
 		if (lastComponentFormatting != null) {
@@ -444,22 +468,16 @@ public final class SimpleComponent {
 	 * Create a new interactive chat component
 	 * You can then build upon your text to add interactive elements
 	 *
-	 * @param text
-	 * @return
-	 */
-	public static SimpleComponent of(String... text) {
-		return of(true, text);
-	}
-
-	/**
-	 * Create a new interactive chat component
-	 * You can then build upon your text to add interactive elements
-	 *
 	 * @param colorize
 	 * @param text
 	 * @return
 	 */
-	public static SimpleComponent of(boolean colorize, String... text) {
-		return new SimpleComponent(colorize, text);
+	public static SimpleComponent of(String... text) {
+		return new SimpleComponent(text);
+	}
+
+	public enum AppendOption {
+		DO_NOT_COLORIZE,
+		DO_NOT_INHERIT_FORMAT;
 	}
 }

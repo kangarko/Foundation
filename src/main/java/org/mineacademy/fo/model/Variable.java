@@ -1,11 +1,13 @@
 package org.mineacademy.fo.model;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -16,7 +18,12 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Variable extends YamlConfig implements Actionable {
+public final class Variable extends YamlConfig {
+
+	/**
+	 * The pattern to find singular [syntax_name] variables
+	 */
+	public static final Pattern SINGLE_VARIABLE_PATTERN = Pattern.compile("[\\[]([^\\[\\]]+)[\\]]");
 
 	/**
 	 * A list of all loaded variables
@@ -40,6 +47,13 @@ public final class Variable extends YamlConfig implements Actionable {
 	private String value;
 
 	/**
+	 * The JavaScript condition that must return TRUE for this variable to be shown
+	 */
+	@Nullable
+	@Getter
+	private String javaScriptCondition;
+
+	/**
 	 * The permission the sender must have to show the part
 	 */
 	@Nullable
@@ -52,10 +66,6 @@ public final class Variable extends YamlConfig implements Actionable {
 	@Nullable
 	@Getter
 	private String receiverPermission;
-
-	// ----------------------------------------------------------------------------------
-	// Actionable
-	// ----------------------------------------------------------------------------------
 
 	/**
 	 * The hover text or null if not set
@@ -107,6 +117,7 @@ public final class Variable extends YamlConfig implements Actionable {
 		this.value = getString("Value");
 		Valid.checkNotNull(this.value, "Please set the 'Value' variable output in " + getFileName() + " variable file!");
 
+		this.javaScriptCondition = getString("Condition");
 		this.hoverText = getStringList("Hover");
 		this.hoverItem = getString("Hover_Item");
 		this.openUrl = getString("Open_Url");
@@ -124,111 +135,70 @@ public final class Variable extends YamlConfig implements Actionable {
 	 * Runs the script for the given player and
 	 * returns the output
 	 *
-	 * @param player
+	 * @param sender
 	 * @return
 	 */
-	public String getValue(Player player) {
-		// Replace variables in script
-		final String script = Variables.replace(this.value, player);
+	public String getValue(CommandSender sender) {
+		try {
+			Variables.REPLACE_JAVASCRIPT = false;
 
-		return String.valueOf(JavaScriptExecutor.run(script, player));
-	}
+			// Replace variables in script
+			final String script = Variables.replace(this.value, sender);
 
-	// ----------------------------------------------------------------------------------
-	// Setters
-	// ----------------------------------------------------------------------------------
+			return String.valueOf(JavaScriptExecutor.run(script, sender));
 
-	/**
-	 * Set what we should find in chat such
-	 * as {player} or [item]
-	 *
-	 * @param key the key to set
-	 */
-	public void setKey(String key) {
-		this.key = key;
-
-		save();
+		} finally {
+			Variables.REPLACE_JAVASCRIPT = true;
+		}
 	}
 
 	/**
-	 * Sets the script used to replace the key
-	 * such as "player.getName()" for the {@link #getKey()}
+	 * Create the variable and append it to the existing component as if the player initiated it
 	 *
-	 * @param value the value to set
+	 * @param sender
+	 * @param existingComponent
+	 * @return
 	 */
-	public void setValue(String value) {
-		this.value = value;
+	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent) {
 
-		save();
-	}
+		if (this.senderPermission != null && !PlayerUtil.hasPerm(sender, this.senderPermission))
+			return SimpleComponent.of("");
 
-	/**
-	 * Set the hover text for this format
-	 *
-	 * @param hoverText the hoverText to set
-	 */
-	@Override
-	public void setHoverText(List<String> hoverText) {
-		this.hoverText = hoverText;
+		if (this.javaScriptCondition != null) {
+			final Object result = JavaScriptExecutor.run(this.javaScriptCondition, sender);
+			Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + result.getClass());
 
-		save();
-	}
+			if ((boolean) result == false)
+				return SimpleComponent.of("");
+		}
 
-	/**
-	 * Set the script to get a particular item stack
-	 *
-	 * @param hoverItem the hoverItem to set
-	 */
-	@Override
-	public void setHoverItem(String hoverItem) {
-		this.hoverItem = hoverItem;
+		final String value = this.getValue(sender);
 
-		save();
-	}
+		if (value == null || "".equals(value) || "null".equals(value))
+			return SimpleComponent.of("");
 
-	/**
-	 * Set what URL should be opened for this command
-	 *
-	 * @param openUrl the openUrl to set
-	 */
-	@Override
-	public void setOpenUrl(String openUrl) {
-		this.openUrl = openUrl;
+		final SimpleComponent component = existingComponent.append(Variables.replace(value, sender), this.receiverPermission, null);
 
-		save();
-	}
+		if (!Valid.isNullOrEmpty(this.hoverText))
+			component.onHover(Variables.replace(this.hoverText, sender));
 
-	/**
-	 * Set what command to suggest on this command
-	 *
-	 * @param suggestCommand the suggestCommand to set
-	 */
-	@Override
-	public void setSuggestCommand(String suggestCommand) {
-		this.suggestCommand = suggestCommand;
+		if (this.hoverItem != null) {
+			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender), sender);
+			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
-		save();
-	}
+			component.onHover((ItemStack) result);
+		}
 
-	@Override
-	public void setRunCommand(String runCommand) {
-		this.runCommand = runCommand;
+		if (this.openUrl != null)
+			component.onClickOpenUrl(Variables.replace(this.openUrl, sender));
 
-		save();
-	}
+		if (this.suggestCommand != null)
+			component.onClickSuggestCmd(Variables.replace(this.suggestCommand, sender));
 
-	@Override
-	public void setSenderPermission(String senderPermission) {
-		this.senderPermission = senderPermission;
+		if (this.runCommand != null)
+			component.onClickRunCmd(Variables.replace(this.runCommand, sender));
 
-		save();
-	}
-
-	@Override
-	public void setReceiverPermission(String receiverPermission) {
-		this.receiverPermission = receiverPermission;
-
-		save();
+		return component;
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -243,15 +213,16 @@ public final class Variable extends YamlConfig implements Actionable {
 	@Override
 	public SerializedMap serialize() {
 		return SerializedMap.ofArray(
-				"Key", key,
-				"Value", value,
-				"Hover", hoverText,
-				"Hover_Item", hoverItem,
-				"Open_Url", openUrl,
-				"Suggest_Command", suggestCommand,
-				"Run_Command", runCommand,
-				"Sender_Permission", senderPermission,
-				"Receiver_Permission", receiverPermission);
+				"Key", this.key,
+				"Value", this.value,
+				"Condition", this.javaScriptCondition,
+				"Hover", this.hoverText,
+				"Hover_Item", this.hoverItem,
+				"Open_Url", this.openUrl,
+				"Suggest_Command", this.suggestCommand,
+				"Run_Command", this.runCommand,
+				"Sender_Permission", this.senderPermission,
+				"Receiver_Permission", this.receiverPermission);
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
