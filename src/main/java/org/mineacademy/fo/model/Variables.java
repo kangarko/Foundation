@@ -2,8 +2,10 @@ package org.mineacademy.fo.model;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -32,17 +34,22 @@ public final class Variables {
 	/**
 	 * The pattern to find simple {} placeholders
 	 */
-	static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[({|%)]([^{}]+)[(}|%)]");
+	public static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[({|%)]([^{}]+)[(}|%)]");
 
 	/**
 	 * The patter to find simple {} placeholders starting with {rel_ (used for PlaceholderAPI)
 	 */
-	static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[({|%)](rel_)([^}]+)[(}|%)]");
+	public static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[({|%)](rel_)([^}]+)[(}|%)]");
 
 	/**
 	 * Player - [Original Message - Translated Message]
 	 */
 	private static final Map<String, Map<String, String>> cache = ExpiringMap.builder().expiration(10, TimeUnit.MILLISECONDS).build();
+
+	/**
+	 * Should we replace javascript placeholders from variables/ folder automatically?
+	 */
+	public static boolean REPLACE_JAVASCRIPT = true;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Custom variables
@@ -113,12 +120,29 @@ public final class Variables {
 	}
 
 	/**
-	 * Replaces variables in the message using the message sender as an object to replace
+	 * Replaces variables in the messages using the message sender as an object to replace
 	 * player-related placeholders.
-	 * <p>
+	 *
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
-	 * @param scope
+	 * @param messages
+	 * @param sender
+	 * @return
+	 */
+	public static List<String> replace(Iterable<String> messages, @Nullable CommandSender sender) {
+
+		// Trick: Join the lines to only parse variables at once -- performance++ -- then split again
+		final String deliminer = "%FLVJ%";
+
+		return Arrays.asList(replace(String.join(deliminer, messages), sender, null).split(deliminer));
+	}
+
+	/**
+	 * Replaces variables in the message using the message sender as an object to replace
+	 * player-related placeholders.
+	 *
+	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 *
 	 * @param message
 	 * @param sender
 	 * @return
@@ -130,7 +154,7 @@ public final class Variables {
 	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
-	 * <p>
+	 *
 	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param message
@@ -157,7 +181,8 @@ public final class Variables {
 				return cachedVar;
 
 			// Custom placeholders
-			message = replaceJavascriptVariables0(message, (Player) sender);
+			if (REPLACE_JAVASCRIPT)
+				message = replaceJavascriptVariables0(message, (Player) sender);
 
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
@@ -181,12 +206,8 @@ public final class Variables {
 		return message;
 	}
 
-	/**
-	 * Replaces javascript variables in the message
-	 *
-	 * @param message
-	 * @param player
-	 * @return
+	/*
+	 * Replaces JavaScript variables in the message
 	 */
 	private static String replaceJavascriptVariables0(String message, Player player) {
 
@@ -207,15 +228,10 @@ public final class Variables {
 		}
 
 		return message;
-
 	}
 
-	/**
+	/*
 	 * Replaces our hardcoded variables in the message, using a cache for better performance
-	 *
-	 * @param sender
-	 * @param message
-	 * @return
 	 */
 	private static String replaceHardVariables0(@Nullable CommandSender sender, String message) {
 		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
@@ -243,13 +259,8 @@ public final class Variables {
 		return message;
 	}
 
-	/**
+	/*
 	 * Replaces the given variable with a few hardcoded within the plugin, see below
-	 *
-	 * @param player
-	 * @param console
-	 * @param variable
-	 * @return
 	 */
 	private static String lookupVariable0(Player player, CommandSender console, String variable) {
 		GeoResponse geoResponse = null;
@@ -318,16 +329,16 @@ public final class Variables {
 				return player == null ? "" : geoResponse.getRegionName();
 			case "isp":
 				return player == null ? "" : geoResponse.getIsp();
+
+			case "random_uuid":
+				return UUID.randomUUID().toString();
 		}
 
 		return null;
 	}
 
-	/**
+	/*
 	 * Formats the {health} variable
-	 *
-	 * @param player
-	 * @return
 	 */
 	private static String formatHealth0(Player player) {
 		final int hp = Remain.getHealth(player);
@@ -335,11 +346,8 @@ public final class Variables {
 		return (hp > 10 ? ChatColor.DARK_GREEN : hp > 5 ? ChatColor.GOLD : ChatColor.RED) + "" + hp;
 	}
 
-	/**
-	 * Formats the {pl_address} variable for the player
-	 *
-	 * @param player
-	 * @return
+	/*
+	 * Formats the IP address variable for the player
 	 */
 	private static String formatIp0(Player player) {
 		try {
