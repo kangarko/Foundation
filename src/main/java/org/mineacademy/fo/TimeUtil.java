@@ -3,8 +3,6 @@ package org.mineacademy.fo;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import org.mineacademy.fo.exception.FoException;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -146,7 +144,7 @@ public final class TimeUtil {
 			else if (sub.startsWith("year"))
 				unit = 31556926;
 			else
-				throw new FoException("Must define date type! Example: '1 second' (Got '" + sub + "')");
+				throw new IllegalArgumentException("Must define date type! Example: '1 second' (Got '" + sub + "')");
 
 			seconds += multiplier * (isTicks ? 1 : unit * 20);
 		}
