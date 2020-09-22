@@ -27,22 +27,26 @@ public final class DebugCommand extends SimpleSubCommand {
 
 	@Override
 	protected void onCommand() {
-		final File debugFolder = FileUtil.getFile("debug");
-		final List<File> files = listFilesRecursively(SimplePlugin.getData(), new ArrayList<>());
+		tell("&6Preparing debug log...");
 
-		// Clean up the old folder if exists
-		FileUtil.deleteRecursivelly(debugFolder);
+		Common.runAsync(() -> {
+			final File debugFolder = FileUtil.getFile("debug");
+			final List<File> files = listFilesRecursively(SimplePlugin.getData(), new ArrayList<>());
 
-		// Collect general debug information first
-		writeDebugInformation();
+			// Clean up the old folder if exists
+			FileUtil.deleteRecursivelly(debugFolder);
 
-		// Copy all plugin files
-		copyFilesToDebug(files);
+			// Collect general debug information first
+			writeDebugInformation();
 
-		// Zip the folder
-		zipAndRemoveFolder(debugFolder);
+			// Copy all plugin files
+			copyFilesToDebug(files);
 
-		tell("&2Successfuly copied " + files.size() + " files to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via uploadfiles.io and send it to us for review.");
+			// Zip the folder
+			zipAndRemoveFolder(debugFolder);
+
+			tell("&2Successfuly copied " + files.size() + " files to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via uploadfiles.io and send it to us for review.");
+		});
 	}
 
 	/*
