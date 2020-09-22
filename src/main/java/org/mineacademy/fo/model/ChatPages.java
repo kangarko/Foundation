@@ -144,7 +144,7 @@ public final class ChatPages {
 	 *
 	 * @param sender
 	 */
-	public void showTo(CommandSender sender) {
+	public void send(CommandSender sender) {
 		if (sender instanceof Player) {
 			final Player player = (Player) sender;
 
