@@ -121,6 +121,7 @@ class ConfigUpdater {
 
 				for (final String ignoredSection : ignoredSections) {
 					if (key.equals(ignoredSection)) {
+
 						// Write from new to old config
 						if ((!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty())) {
 							copyAllowed.add(ignoredSection);
@@ -130,10 +131,11 @@ class ConfigUpdater {
 
 						// Write from old to new, copying all keys and subkeys manually
 						else {
-							write0(key, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
+							write0(key, true, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 
-							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true))
-								write0(ignoredSection + "." + oldKey, oldConfig, newConfig, comments, ignoredSections, writer, yaml);
+							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
+								write0(ignoredSection + "." + oldKey, true, oldConfig, newConfig, comments, ignoredSections, writer, yaml);
+							}
 
 							reverseCopy.add(ignoredSection);
 							continue outerloop;
@@ -145,28 +147,8 @@ class ConfigUpdater {
 				}
 			}
 
-			write0(key, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
+			write0(key, false, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 		}
-
-		/*for (final String ignoredSection : ignoredSections) {
-			if (!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty()) {
-				for (String key : newConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
-					key = ignoredSection + "." + key;
-
-					System.out.println("# Writing ignored key from default: " + key);
-					write0(key, newConfig, oldConfig, comments, writer, yaml);
-				}
-			}
-
-			else {
-				for (String key : oldConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
-					key = ignoredSection + "." + key;
-
-					System.out.println("# Writing ignored key from old: " + key);
-					write0(key, newConfig, oldConfig, comments, writer, yaml);
-				}
-			}
-		}*/
 
 		final String danglingComments = comments.get(null);
 
@@ -176,7 +158,7 @@ class ConfigUpdater {
 		writer.close();
 	}
 
-	private static void write0(String key, FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
+	private static void write0(String key, boolean forceNew, FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
 		final String[] keys = key.split("\\.");
 		final String actualKey = keys[keys.length - 1];
 		final String comment = comments.remove(key);
@@ -194,7 +176,7 @@ class ConfigUpdater {
 		final Object oldObj = oldConfig.get(key);
 
 		// Write the old section
-		if (newObj instanceof ConfigurationSection && oldObj instanceof ConfigurationSection)
+		if (newObj instanceof ConfigurationSection && !forceNew && oldObj instanceof ConfigurationSection)
 			writeSection(writer, actualKey, prefixSpaces, (ConfigurationSection) oldObj);
 
 		// Write the new section, old value is no more
@@ -202,12 +184,13 @@ class ConfigUpdater {
 			writeSection(writer, actualKey, prefixSpaces, (ConfigurationSection) newObj);
 
 		// Write the old object
-		else if (oldObj != null)
+		else if (oldObj != null && !forceNew)
 			write(oldObj, actualKey, prefixSpaces, yaml, writer);
 
 		// Write new object
 		else
 			write(newObj, actualKey, prefixSpaces, yaml, writer);
+
 	}
 
 	// Doesn't work with configuration sections, must be an actual object
