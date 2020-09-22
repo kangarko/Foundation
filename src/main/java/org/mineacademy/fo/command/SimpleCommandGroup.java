@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.ChatColor;
@@ -82,8 +83,27 @@ public abstract class SimpleCommandGroup {
 			mainCommand.setAliases(aliases);
 
 		mainCommand.register();
-
 		registerSubcommands();
+
+		// Sort A-Z
+		Collections.sort(subcommands.getSource(), (f, s) -> f.getSublabel().compareTo(s.getSublabel()));
+
+		// Check for collision
+		checkSubCommandAliasesCollision();
+	}
+
+	/*
+	 * Enforce non-overlapping aliases for subcommands
+	 */
+	private void checkSubCommandAliasesCollision() {
+		final List<String> aliases = new ArrayList<>();
+
+		for (final SimpleSubCommand subCommand : subcommands)
+			for (final String alias : subCommand.getSublabels()) {
+				Valid.checkBoolean(!aliases.contains(alias), "Subcommand '/" + getLabel() + " " + subCommand.getSublabel() + "' has alias '" + alias + "' that is already in use by another subcommand!");
+
+				aliases.add(alias);
+			}
 	}
 
 	/**
@@ -190,7 +210,7 @@ public abstract class SimpleCommandGroup {
 	 *               may be null
 	 * @return
 	 */
-	protected String[] getNoParamsHeader(final CommandSender sender) {
+	protected List<SimpleComponent> getNoParamsHeader(CommandSender sender) {
 		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -216,7 +236,7 @@ public abstract class SimpleCommandGroup {
 
 		messages.add("&8" + Common.chatLine());
 
-		return messages.toArray(new String[messages.size()]);
+		return Common.convert(messages, SimpleComponent::of);
 	}
 
 	/**
@@ -332,6 +352,7 @@ public abstract class SimpleCommandGroup {
 					tellSubcommandsHelp();
 				else
 					tell(getNoParamsHeader(sender));
+
 				return;
 			}
 
@@ -388,10 +409,10 @@ public abstract class SimpleCommandGroup {
 							"label", getLabel(),
 							"sublabel", subcommand.getSublabel(),
 							"usage", usage,
-							"description", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_8) ? desc : "",
-							"dash", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_8) ? "&e-" : ""));
+							"description", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_7) ? desc : "",
+							"dash", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_7) ? "&e-" : ""));
 
-					if (!desc.isEmpty() && MinecraftVersion.atLeast(V.v1_8)) {
+					if (!desc.isEmpty() && MinecraftVersion.atLeast(V.v1_7)) {
 						final String command = Common.stripColors(line.getPlainMessage()).substring(1);
 						final List<String> hover = new ArrayList<>();
 
@@ -421,7 +442,7 @@ public abstract class SimpleCommandGroup {
 					pages.setHeader(getHelpHeader());
 
 				pages.setPages(lines);
-				pages.showTo(sender);
+				pages.send(sender);
 
 			} else
 				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
@@ -487,7 +508,7 @@ public abstract class SimpleCommandGroup {
 			final List<String> tab = new ArrayList<>();
 
 			for (final SimpleSubCommand subcommand : subcommands)
-				if (!(subcommand instanceof FillerSubCommand) && hasPerm(subcommand.getPermission()))
+				if (subcommand.showInHelp() && !(subcommand instanceof FillerSubCommand) && hasPerm(subcommand.getPermission()))
 					for (final String label : subcommand.getSublabels())
 						if (!label.trim().isEmpty() && label.startsWith(param))
 							tab.add(label);
