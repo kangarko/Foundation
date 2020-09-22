@@ -6,7 +6,6 @@ import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.event.SimpleListener;
-import org.mineacademy.fo.model.DiscordListener;
 
 /**
  * A simple way of registering events and other things that
@@ -27,13 +26,8 @@ final class Reloadables {
 	 * Remove all listeners and cancel all running tasks
 	 */
 	void reload() {
-		for (final Listener listener : listeners) {
+		for (final Listener listener : listeners)
 			HandlerList.unregisterAll(listener);
-
-			if (listener instanceof DiscordListener.DiscordListenerImpl)
-				((DiscordListener.DiscordListenerImpl) listener).unsubscribe();
-
-		}
 
 		listeners.clear();
 	}

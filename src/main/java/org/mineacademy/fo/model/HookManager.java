@@ -1292,10 +1292,10 @@ public final class HookManager {
 	 * @param channel
 	 * @param message
 	 */
-	public static void sendDiscordMessage(final String senderName, final String channel, final String message) {
+	/*public static void sendDiscordMessage(final String senderName, final String channel, final String message) {
 		if (isDiscordSRVLoaded())
 			discordSRVHook.sendMessage(senderName, channel, message);
-	}
+	}*/
 
 	/**
 	 * Sends a message from the given sender to a certain channel on Discord using DiscordSRV
@@ -1306,8 +1306,8 @@ public final class HookManager {
 	 * @param channel
 	 * @param message
 	 */
-	public static void sendDiscordMessage(final CommandSender sender, final String channel, final String message) {
-		if (isDiscordSRVLoaded())
+	public static void sendDiscordMessage(final CommandSender sender, final String channel, @NonNull final String message) {
+		if (isDiscordSRVLoaded() && !Common.stripColors(message).isEmpty())
 			discordSRVHook.sendMessage(sender, channel, message);
 	}
 
@@ -1317,8 +1317,8 @@ public final class HookManager {
 	 * @param channel
 	 * @param message
 	 */
-	public static void sendDiscordMessage(final String channel, final String message) {
-		if (isDiscordSRVLoaded())
+	public static void sendDiscordMessage(final String channel, @NonNull final String message) {
+		if (isDiscordSRVLoaded() && !Common.stripColors(message).isEmpty())
 			discordSRVHook.sendMessage(channel, message);
 	}
 
@@ -2622,11 +2622,11 @@ class DiscordSRVHook implements Listener {
 		return DiscordSRV.getPlugin().getChannels().keySet();
 	}
 
-	boolean sendMessage(final String sender, final String channel, final String message) {
+	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
-	}
+	}*/
 
 	boolean sendMessage(final String channel, final String message) {
 		return sendMessage((CommandSender) null, channel, message);

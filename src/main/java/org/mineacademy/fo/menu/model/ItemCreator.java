@@ -247,7 +247,7 @@ public final class ItemCreator {
 			if (MinecraftVersion.atLeast(V.v1_13))
 				is.setType(Material.valueOf(dye + "_WOOL"));
 
-			else if (MinecraftVersion.atLeast(V.v1_8))
+			else
 				applyColors0(color, material, is);
 
 		} else

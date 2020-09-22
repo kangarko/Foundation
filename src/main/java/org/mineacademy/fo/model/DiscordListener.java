@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictSet;
 
 import github.scarsz.discordsrv.DiscordSRV;
@@ -19,6 +18,7 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.Message;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Role;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public abstract class DiscordListener implements Listener {
@@ -27,6 +27,13 @@ public abstract class DiscordListener implements Listener {
 	 * Holds registered Discord listeners
 	 */
 	private static final StrictSet<DiscordListener> registeredListeners = new StrictSet<>();
+
+	/**
+	 * Cleans all registered listeners
+	 */
+	public static final void clearRegisteredListeners() {
+		registeredListeners.clear();
+	}
 
 	/**
 	 * Temporarily stores the latest received message
@@ -40,6 +47,14 @@ public abstract class DiscordListener implements Listener {
 	 */
 	protected DiscordListener() {
 		registeredListeners.add(this);
+	}
+
+	/**
+	 * Register for listening to events only if not already
+	 */
+	protected void register() {
+		if (!registeredListeners.contains(this))
+			registeredListeners.add(this);
 	}
 
 	/**
@@ -201,23 +216,18 @@ public abstract class DiscordListener implements Listener {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static final class DiscordListenerImpl implements Listener {
 
-		private static boolean registered = false;
-
-		public DiscordListenerImpl() {
-			Valid.checkBoolean(!registered, "Already registered!");
-
-			registered = true;
-
-			DiscordSRV.api.subscribe(this);
-		}
+		@Getter
+		private static volatile DiscordListenerImpl instance = new DiscordListenerImpl();
 
 		/**
-		 * Remove this listener
+		 * Reload the listener
 		 */
-		public void unsubscribe() {
+		public void resubscribe() {
 			DiscordSRV.api.unsubscribe(this);
+			DiscordSRV.api.subscribe(this);
 		}
 
 		/**

@@ -139,7 +139,7 @@ public enum CompAttribute {
 				return null;
 
 			} catch (final Throwable t) {
-				if (MinecraftVersion.olderThan(V.v1_9) && MinecraftVersion.atLeast(V.v1_8))
+				if (MinecraftVersion.equals(V.v1_8))
 					t.printStackTrace();
 
 				return null;
@@ -167,7 +167,7 @@ public enum CompAttribute {
 					setLegacy(entity, value);
 
 			} catch (final Throwable t) {
-				if (MinecraftVersion.olderThan(V.v1_9) && MinecraftVersion.atLeast(V.v1_8))
+				if (MinecraftVersion.equals(V.v1_8))
 					t.printStackTrace();
 
 				if (t instanceof NullPointerException)
