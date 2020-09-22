@@ -12,6 +12,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.constants.FoPermissions;
 import org.mineacademy.fo.model.ChatPages;
@@ -107,17 +109,17 @@ final class FoundationListener implements Listener {
 			for (final SimpleComponent comp : messagesOnPage)
 				comp.send(player);
 
-			for (int i = messagesOnPage.size(); i < chatPages.getLinesPerPage() + (pages.size() == 1 ? 1 : 0); i++)
+			for (int i = messagesOnPage.size(); i < chatPages.getLinesPerPage(); i++)
 				SimpleComponent.of("&r").send(player);
 
 			for (final SimpleComponent component : chatPages.getFooter())
 				component.send(player);
 		}
 
-		Common.tell(player, " ");
-
 		// Fill in the pagination line
-		if (pages.size() > 1) {
+		if (MinecraftVersion.atLeast(V.v1_7) && pages.size() > 1) {
+			Common.tell(player, " ");
+
 			final SimpleComponent pagination = SimpleComponent.of("&7Page " + (page + 1) + "/" + pages.size() + ". Visit the ");
 
 			if (page == 0)

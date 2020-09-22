@@ -106,8 +106,9 @@ public final class ConfigItems<T extends YamlConfig> {
 		loadedItems.clear();
 
 		if (singleFile) {
-			final File file = FileUtil.getOrMakeFile(this.folder);
+			final File file = FileUtil.extract(this.folder);
 			final YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+			Valid.checkBoolean(config.isSet(this.type), "Unable to locate configuration section " + this.type + " in " + file);
 
 			for (final String name : config.getConfigurationSection(this.type).getKeys(false))
 				loadOrCreateItem(name);

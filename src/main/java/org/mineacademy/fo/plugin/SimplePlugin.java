@@ -318,8 +318,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			FoundationPacketListener.addPacketListener();
 
 			// Register DiscordSRV listener
-			if (HookManager.isDiscordSRVLoaded())
-				reloadables.registerEvents(new DiscordListener.DiscordListenerImpl());
+			if (HookManager.isDiscordSRVLoaded()) {
+				DiscordListener.DiscordListenerImpl.getInstance().resubscribe();
+
+				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
+			}
 
 			// Set the logging and tell prefix
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
@@ -760,6 +763,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			onReloadablesStart();
 			startingReloadables = false;
 
+			if (HookManager.isDiscordSRVLoaded()) {
+				DiscordListener.DiscordListenerImpl.getInstance().resubscribe();
+
+				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
+			}
+
 			registerBungeeCord();
 
 		} catch (final Throwable t) {
@@ -779,6 +788,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		BlockVisualizer.stopAll();
 		FolderWatcher.stopThreads();
+
+		DiscordListener.clearRegisteredListeners();
 
 		if (getMainCommand() != null && getMainCommand().isRegistered())
 			getMainCommand().unregister();

@@ -130,12 +130,7 @@ public final class JavaScriptExecutor {
 			return result;
 
 		} catch (final ScriptException ex) {
-			Common.error(ex,
-					"Script executing failed!",
-					"Script: " + javascript,
-					"%error");
-
-			return null;
+			throw new RuntimeException("Script execution failed for '" + javascript + "'", ex);
 		}
 	}
 
@@ -158,13 +153,7 @@ public final class JavaScriptExecutor {
 			return engine.eval(javascript);
 
 		} catch (final ScriptException ex) {
-			Common.error(ex,
-					"Script executing failed!",
-					"Script: " + javascript,
-					"Variables: " + replacements,
-					"%error");
-
-			return null;
+			throw new RuntimeException("Script execution failed for '" + javascript + "'", ex);
 		}
 	}
 }
