@@ -55,6 +55,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.server.TemporaryPlayer;
+import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
 import com.earth2me.essentials.User;
@@ -107,7 +108,7 @@ public final class HookManager {
 	// ------------------------------------------------------------------------------------------------------------
 
 	private static AuthMeHook authMe;
-	private static EssentialsHook essentialsxHook;
+	private static EssentialsHook essentialsHook;
 	private static MultiverseHook multiverseHook;
 	private static ProtocolLibHook protocolLibHook;
 	private static TownyHook townyHook;
@@ -205,12 +206,7 @@ public final class HookManager {
 
 		// EssentialsX
 		if (Common.doesPluginExistSilently("Essentials")) {
-			final boolean isEssentialsX = Bukkit.getPluginManager().getPlugin("Essentials").getDescription().getAuthors().contains("drtshock");
-
-			if (isEssentialsX)
-				essentialsxHook = new EssentialsHook();
-			else
-				Common.log("Detected old Essentials. We only support EssentialsX, see https://spigotmc.org/resources/9089");
+			essentialsHook = new EssentialsHook();
 		}
 
 		// Plotsquared
@@ -318,8 +314,8 @@ public final class HookManager {
 	 *
 	 * @return
 	 */
-	public static boolean isEssentialsXLoaded() {
-		return essentialsxHook != null;
+	public static boolean isEssentialsLoaded() {
+		return essentialsHook != null;
 	}
 
 	/**
@@ -552,7 +548,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isAfk(final Player player) {
-		final boolean essAFK = isEssentialsXLoaded() && essentialsxHook.isAfk(player.getName());
+		final boolean essAFK = isEssentialsLoaded() && essentialsHook.isAfk(player.getName());
 		final boolean cmiAFK = isCMILoaded() && CMIHook.isAfk(player);
 
 		return essAFK || cmiAFK;
@@ -565,7 +561,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isVanished(final Player player) {
-		final boolean essVanish = isEssentialsXLoaded() ? essentialsxHook.isVanished(player.getName()) : false;
+		final boolean essVanish = isEssentialsLoaded() ? essentialsHook.isVanished(player.getName()) : false;
 		final boolean cmiVanish = isCMILoaded() ? CMIHook.isVanished(player) : false;
 
 		return essVanish || cmiVanish;
@@ -578,7 +574,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isMuted(final Player player) {
-		final boolean isEssMuted = isEssentialsXLoaded() ? essentialsxHook.isMuted(player.getName()) : false;
+		final boolean isEssMuted = isEssentialsLoaded() ? essentialsHook.isMuted(player.getName()) : false;
 		final boolean isCMIMuted = isCMILoaded() ? CMIHook.isMuted(player) : false;
 
 		return isEssMuted || isCMIMuted;
@@ -591,8 +587,8 @@ public final class HookManager {
 	 * @param godMode
 	 */
 	public static void setGodMode(final Player player, final boolean godMode) {
-		if (isEssentialsXLoaded())
-			essentialsxHook.setGodMode(player, godMode);
+		if (isEssentialsLoaded())
+			essentialsHook.setGodMode(player, godMode);
 
 		if (isCMILoaded())
 			CMIHook.setGodMode(player, godMode);
@@ -605,8 +601,8 @@ public final class HookManager {
 	 * @param location
 	 */
 	public static void setBackLocation(final Player player, final Location location) {
-		if (isEssentialsXLoaded())
-			essentialsxHook.setBackLocation(player.getName(), location);
+		if (isEssentialsLoaded())
+			essentialsHook.setBackLocation(player.getName(), location);
 
 		if (isCMILoaded())
 			CMIHook.setLastTeleportLocation(player, location);
@@ -620,8 +616,8 @@ public final class HookManager {
 	 * @param ignore
 	 */
 	public static void setIgnore(final UUID player, final UUID who, final boolean ignore) {
-		if (isEssentialsXLoaded())
-			essentialsxHook.setIgnore(player, who, ignore);
+		if (isEssentialsLoaded())
+			essentialsHook.setIgnore(player, who, ignore);
 
 		if (isCMILoaded())
 			CMIHook.setIgnore(player, who, ignore);
@@ -638,7 +634,7 @@ public final class HookManager {
 		Valid.checkBoolean(player != null, "Player to check ignore from cannot be null/empty");
 		Valid.checkBoolean(who != null, "Player to check ignore to cannot be null/empty");
 
-		return isEssentialsXLoaded() ? essentialsxHook.isIgnoring(player, who) : isCMILoaded() ? CMIHook.isIgnoring(player, who) : false;
+		return isEssentialsLoaded() ? essentialsHook.isIgnoring(player, who) : isCMILoaded() ? CMIHook.isIgnoring(player, who) : false;
 	}
 
 	/**
@@ -682,7 +678,7 @@ public final class HookManager {
 			return sender.getName();
 
 		final String nickyNick = isNickyLoaded() ? nickyHook.getNick(player) : null;
-		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNick(player.getName()) : null;
+		final String essNick = isEssentialsLoaded() ? essentialsHook.getNick(player.getName()) : null;
 		final String cmiNick = isCMILoaded() ? CMIHook.getNick(player) : null;
 
 		final String nick = nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
@@ -699,7 +695,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String getNameFromNick(@NonNull String nick) {
-		final String essNick = isEssentialsXLoaded() ? essentialsxHook.getNameFromNick(nick) : nick;
+		final String essNick = isEssentialsLoaded() ? essentialsHook.getNameFromNick(nick) : nick;
 		final String cmiNick = isCMILoaded() ? CMIHook.getNameFromNick(nick) : nick;
 
 		return !essNick.equals(nick) && !"".equals(essNick) ? essNick : !cmiNick.equals(nick) && !"".equals(cmiNick) ? cmiNick : nick;
@@ -712,7 +708,7 @@ public final class HookManager {
 	 * @return UUID with the name found or null if not stored
 	 */
 	/*public static Tuple<UUID, String> getEssentialsUUIDFromName(String name) {
-		return isEssentialsXLoaded() ? essentialsxHook.getUUIDfromName(name) : null;
+		return isEssentialsLoaded() ? essentialsxHook.getUUIDfromName(name) : null;
 	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -726,7 +722,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static Player getReplyTo(final Player player) {
-		return isEssentialsXLoaded() ? essentialsxHook.getReplyTo(player.getName()) : null;
+		return isEssentialsLoaded() ? essentialsHook.getReplyTo(player.getName()) : null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1427,15 +1423,21 @@ class EssentialsHook {
 		if (user == null)
 			return null;
 
-		try {
-			final String replyPlayer = user.getReplyRecipient().getName();
-			final Player bukkitPlayer = Bukkit.getPlayer(replyPlayer);
+		String replyPlayer;
 
-			if (bukkitPlayer != null && bukkitPlayer.isOnline())
-				return bukkitPlayer;
+		try {
+			replyPlayer = user.getReplyRecipient().getName();
 
 		} catch (final Throwable ex) {
+			final CommandSource commandSource = ReflectionUtil.invoke("getReplyTo", user);
+
+			replyPlayer = commandSource == null ? null : commandSource.getPlayer().getName();
 		}
+
+		final Player bukkitPlayer = replyPlayer == null ? null : Bukkit.getPlayer(replyPlayer);
+
+		if (bukkitPlayer != null && bukkitPlayer.isOnline())
+			return bukkitPlayer;
 
 		return null;
 	}
@@ -1493,7 +1495,9 @@ class EssentialsHook {
 		if (user == null)
 			try {
 				user = ess.getUserMap().getUserFromBukkit(name);
+
 			} catch (final Throwable ex) {
+				user = ess.getUser(name);
 			}
 		return user;
 	}
