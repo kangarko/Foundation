@@ -61,8 +61,11 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * If this flag is true, we will use {@link Messenger} to send
 	 * messages (no prefix supported)
+	 *
+	 * @deprecated use {@link Messenger#ENABLED} instead
 	 */
-	public static boolean USE_MESSENGER = false;
+	@Deprecated
+	public static boolean USE_MESSENGER = Messenger.ENABLED;
 
 	/**
 	 * You can set the cooldown time before executing the command again. This map
