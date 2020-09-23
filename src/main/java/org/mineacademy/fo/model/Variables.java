@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +22,6 @@ import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -61,7 +61,7 @@ public final class Variables {
 	 * You take in a command sender (may/may not be a player) and output a replaced string.
 	 * The variable name (the key) is automatically surrounded by {} brackets
 	 */
-	private static final StrictMap<String, Function<CommandSender, String>> customVariables = new StrictMap<>();
+	private static final Map<String, Function<CommandSender, String>> customVariables = new HashMap<>();
 
 	/**
 	 * As a developer you can add or remove custom variables. Return an unmodifiable
@@ -105,7 +105,7 @@ public final class Variables {
 	 * @return
 	 */
 	public static boolean hasVariable(String variable) {
-		return customVariables.contains(variable);
+		return customVariables.containsKey(variable);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -115,6 +115,7 @@ public final class Variables {
 	/**
 	 * @deprecated, use {@link #replace(String, CommandSender)} as it will work the same
 	 */
+	@Deprecated
 	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
 		return replace(message, sender);
 	}

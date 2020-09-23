@@ -134,7 +134,7 @@ public final class DebugCommand extends SimpleSubCommand {
 
 			} else {
 				// Ignore the debug zip file itself
-				if (!file.getName().equals("debug.zip"))
+				if (!file.getName().equals("debug.zip") && !file.getName().equals("mysql.yml"))
 					files.add(file);
 			}
 

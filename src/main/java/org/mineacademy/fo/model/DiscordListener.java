@@ -52,7 +52,7 @@ public abstract class DiscordListener implements Listener {
 	/**
 	 * Register for listening to events only if not already
 	 */
-	protected void register() {
+	public void register() {
 		if (!registeredListeners.contains(this))
 			registeredListeners.add(this);
 	}
