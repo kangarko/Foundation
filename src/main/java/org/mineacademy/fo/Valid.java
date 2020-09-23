@@ -160,6 +160,8 @@ public final class Valid {
 	 * @return
 	 */
 	public boolean isInteger(final String raw) {
+		Valid.checkNotNull(raw, "Cannot check if null is an integer!");
+
 		return Valid.PATTERN_INTEGER.matcher(raw).find();
 	}
 
@@ -170,6 +172,8 @@ public final class Valid {
 	 * @return
 	 */
 	public boolean isDecimal(final String raw) {
+		Valid.checkNotNull(raw, "Cannot check if null is a decimal!");
+
 		return Valid.PATTERN_DECIMAL.matcher(raw).find();
 	}
 

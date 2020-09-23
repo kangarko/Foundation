@@ -331,7 +331,7 @@ public class SimpleDatabase {
 	 * @param sql
 	 * @return
 	 */
-	private final String replaceVariables(String sql) {
+	protected final String replaceVariables(String sql) {
 
 		for (final Entry<String, String> entry : sqlVariables.entrySet())
 			sql = sql.replace("{" + entry.getKey() + "}", entry.getValue());
