@@ -29,6 +29,8 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 import com.google.gson.Gson;
 
+import lombok.Setter;
+
 /**
  * Serialized map enables you to save and retain values from your
  * configuration easily, such as locations, other maps or lists and
@@ -45,6 +47,12 @@ public final class SerializedMap extends StrictCollection {
 	 * The internal map with values
 	 */
 	private final StrictMap<String, Object> map = new StrictMap<>();
+
+	/**
+	 * Should we remove entries on get for this map instance,
+	 */
+	@Setter
+	private boolean removeOnGet = false;
 
 	/**
 	 * Creates a new serialized map with the given first key-value pair
@@ -561,7 +569,7 @@ public final class SerializedMap extends StrictCollection {
 		if (!map.contains(key))
 			return list;
 
-		final Object rawList = map.get(key);
+		final Object rawList = this.removeOnGet ? map.removeWeak(key) : map.get(key);
 		Valid.checkBoolean(rawList instanceof List, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead!");
 
 		for (final Object object : (List<Object>) rawList)
@@ -625,7 +633,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	private <T> T get(final String key, final Class<T> type, final T def) {
-		Object raw = map.get(key);
+		Object raw = removeOnGet ? map.removeWeak(key) : map.get(key);
 
 		// Try to get the value by key with ignoring case
 		if (raw == null)
