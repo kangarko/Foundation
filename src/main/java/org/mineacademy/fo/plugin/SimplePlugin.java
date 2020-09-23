@@ -141,17 +141,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Return true if the {@link #getMainCommand()} is registered and its label
-	 * equals to the given label
-	 *
-	 * @param label
-	 * @return
-	 */
-	public static final boolean isMainCommand(final String label) {
-		return getInstance().getMainCommand() != null && getInstance().getMainCommand().getLabel().equals(label);
-	}
-
-	/**
 	 * Get if the instance that is used across the library has been set. Normally it
 	 * is always set, except for testing.
 	 *
@@ -833,6 +822,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			reloadables.registerEvents(listener);
 		else
 			getServer().getPluginManager().registerEvents(listener, this);
+
+		if (listener instanceof DiscordListener)
+			((DiscordListener) listener).register();
 	}
 
 	/**
