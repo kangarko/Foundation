@@ -51,7 +51,14 @@ public final class Variable extends YamlConfig {
 	 */
 	@Nullable
 	@Getter
-	private String javaScriptCondition;
+	private String senderCondition;
+
+	/**
+	 * The JavaScript condition that must return TRUE for this variable to be shown to a receiver
+	 */
+	@Nullable
+	@Getter
+	private String receiverCondition;
 
 	/**
 	 * The permission the sender must have to show the part
@@ -117,7 +124,8 @@ public final class Variable extends YamlConfig {
 		this.value = getString("Value");
 		Valid.checkNotNull(this.value, "Please set the 'Value' variable output in " + getFileName() + " variable file!");
 
-		this.javaScriptCondition = getString("Condition");
+		this.senderCondition = getString("Sender_Condition");
+		this.receiverCondition = getString("Receiver_Condition");
 		this.hoverText = getStringList("Hover");
 		this.hoverItem = getString("Hover_Item");
 		this.openUrl = getString("Open_Url");
@@ -164,8 +172,8 @@ public final class Variable extends YamlConfig {
 		if (this.senderPermission != null && !PlayerUtil.hasPerm(sender, this.senderPermission))
 			return SimpleComponent.of("");
 
-		if (this.javaScriptCondition != null) {
-			final Object result = JavaScriptExecutor.run(this.javaScriptCondition, sender);
+		if (this.senderCondition != null) {
+			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
 			Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + result.getClass());
 
 			if ((boolean) result == false)
@@ -177,7 +185,10 @@ public final class Variable extends YamlConfig {
 		if (value == null || "".equals(value) || "null".equals(value))
 			return SimpleComponent.of("");
 
-		final SimpleComponent component = existingComponent.append(Variables.replace(value, sender), this.receiverPermission, null);
+		final SimpleComponent component = existingComponent
+				.append(Variables.replace(value, sender))
+				.viewPermission(this.receiverPermission)
+				.viewCondition(this.receiverCondition);
 
 		if (!Valid.isNullOrEmpty(this.hoverText))
 			component.onHover(Variables.replace(this.hoverText, sender));
@@ -215,7 +226,8 @@ public final class Variable extends YamlConfig {
 		return SerializedMap.ofArray(
 				"Key", this.key,
 				"Value", this.value,
-				"Condition", this.javaScriptCondition,
+				"Sender_Condition", this.senderCondition,
+				"Receiver_Condition", this.receiverCondition,
 				"Hover", this.hoverText,
 				"Hover_Item", this.hoverItem,
 				"Open_Url", this.openUrl,
