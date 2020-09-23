@@ -14,11 +14,14 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -52,16 +55,39 @@ public final class SimpleComponent {
 	 * @param text
 	 */
 	private SimpleComponent(String... text) {
-		this.currentComponents = fromLegacyText(String.join("\n", Common.colorize(text)), null, null);
+		this.currentComponents = fromLegacyText(String.join("\n", Common.colorize(text)), null);
 	}
 
 	/**
 	 * Represents a component with viewing permission
 	 */
-	@Data
+	@RequiredArgsConstructor
+	@Setter
 	public static class PermissibleComponent {
+
+		@Getter
 		private final BaseComponent component;
-		private final String permission;
+
+		private String viewPermission;
+		private String viewCondition;
+
+		public boolean canSendTo(@Nullable CommandSender receiver) {
+			if (receiver == null)
+				return true;
+
+			if (this.viewPermission != null && !PlayerUtil.hasPerm(receiver, this.viewPermission))
+				return false;
+
+			if (this.viewCondition != null) {
+				final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
+				Valid.checkBoolean(result instanceof Boolean, "Receiver condition must return Boolean not " + result.getClass() + " for component: " + component.toLegacyText());
+
+				if ((boolean) result == false)
+					return false;
+			}
+
+			return true;
+		}
 	}
 
 	// --------------------------------------------------------------------
@@ -108,10 +134,24 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(Common.colorize(text), null, null)), PermissibleComponent::getComponent);
+		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(Common.colorize(text), null)), PermissibleComponent::getComponent);
 
 		for (final PermissibleComponent component : currentComponents)
 			component.getComponent().setHoverEvent(new HoverEvent(action, baseComponents.toArray(new BaseComponent[baseComponents.size()])));
+
+		return this;
+	}
+
+	public SimpleComponent viewPermission(String viewPermission) {
+		for (final PermissibleComponent component : currentComponents)
+			component.setViewPermission(viewPermission);
+
+		return this;
+	}
+
+	public SimpleComponent viewCondition(String javaScriptViewCondition) {
+		for (final PermissibleComponent component : currentComponents)
+			component.setViewCondition(javaScriptViewCondition);
 
 		return this;
 	}
@@ -160,12 +200,25 @@ public final class SimpleComponent {
 		return this;
 	}
 
+	/**
+	 * Invoke {@link TextComponent#setInsertion(String)} for {@link #currentComponents}
+	 *
+	 * @param insertion
+	 * @return
+	 */
+	public SimpleComponent onClickInsert(String insertion) {
+		for (final PermissibleComponent component : currentComponents)
+			component.getComponent().setInsertion(insertion);
+
+		return this;
+	}
+
 	// --------------------------------------------------------------------
 	// Building
 	// --------------------------------------------------------------------
 
 	public SimpleComponent appendFirst(SimpleComponent component) {
-		pastComponents.add(0, new PermissibleComponent(component.getTextComponent(), null));
+		pastComponents.add(0, new PermissibleComponent(component.getTextComponent()));
 
 		return this;
 	}
@@ -180,17 +233,17 @@ public final class SimpleComponent {
 		for (final PermissibleComponent baseComponent : currentComponents)
 			pastComponents.add(baseComponent);
 
-		currentComponents = new PermissibleComponent[] { new PermissibleComponent(newComponent.build(null), null) };
+		currentComponents = new PermissibleComponent[] { new PermissibleComponent(newComponent.build(null)) };
 
 		return this;
 	}
 
 	public SimpleComponent append(String text) {
-		return append(text, null, null);
+		return append(text, null);
 	}
 
 	public SimpleComponent appendWithOptions(String text, AppendOption... options) {
-		return append(text, null, null, options);
+		return append(text, null, options);
 	}
 
 	/**
@@ -201,7 +254,7 @@ public final class SimpleComponent {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent append(String text, @Nullable String viewPermission, BaseComponent compotentToInheritFormattingFrom, AppendOption... options) {
+	public SimpleComponent append(String text, BaseComponent compotentToInheritFormattingFrom, AppendOption... options) {
 		final List<AppendOption> optionsList = Arrays.asList(options);
 
 		// Copy the last color to reuse in the next component
@@ -213,8 +266,6 @@ public final class SimpleComponent {
 
 			if (!optionsList.contains(AppendOption.DO_NOT_INHERIT_FORMAT)) {
 				if (compotentToInheritFormattingFrom != null) {
-					System.out.println("Adding formatting to " + text);
-
 					final List<BaseComponent> extra = compotentToInheritFormattingFrom.getExtra();
 
 					lastComponentFormatting = extra != null ? extra.get(extra.size() - 1) : compotentToInheritFormattingFrom;
@@ -224,7 +275,7 @@ public final class SimpleComponent {
 			}
 		}
 
-		currentComponents = fromLegacyText(!optionsList.contains(AppendOption.DO_NOT_COLORIZE) ? Common.colorize(text) : text, lastComponentFormatting, viewPermission);
+		currentComponents = fromLegacyText(!optionsList.contains(AppendOption.DO_NOT_COLORIZE) ? Common.colorize(text) : text, lastComponentFormatting);
 
 		return this;
 	}
@@ -238,11 +289,11 @@ public final class SimpleComponent {
 		final TextComponent mainComponent = new TextComponent("");
 
 		for (final PermissibleComponent pastComponent : pastComponents)
-			if (pastComponent.getPermission() == null || receiver == null || PlayerUtil.hasPerm(receiver, pastComponent.getPermission()))
+			if (pastComponent.canSendTo(receiver))
 				mainComponent.addExtra(pastComponent.getComponent());
 
 		for (final PermissibleComponent currentComponent : currentComponents)
-			if (currentComponent.getPermission() == null || receiver == null || PlayerUtil.hasPerm(receiver, currentComponent.getPermission()))
+			if (currentComponent.canSendTo(receiver))
 				mainComponent.addExtra(currentComponent.getComponent());
 
 		return mainComponent;
@@ -323,34 +374,34 @@ public final class SimpleComponent {
 	 * the last color
 	 *
 	 * @param message
-	 * @param lastComponentFormatting
+	 * @param inheritFormatting
 	 * @param viewPermission
 	 * @return
 	 */
-	private static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent lastComponentFormatting, @Nullable String viewPermission) {
+	private static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent inheritFormatting) {
 		final List<PermissibleComponent> components = new ArrayList<>();
 
 		if (Common.stripColors(message).startsWith("<center>"))
 			message = ChatUtil.center(message.replace("<center>", ""));
 
 		// Plot the previous formatting manually before the message to retain it
-		if (lastComponentFormatting != null) {
-			if (lastComponentFormatting.isBold())
+		if (inheritFormatting != null) {
+			if (inheritFormatting.isBold())
 				message = ChatColor.BOLD + message;
 
-			if (lastComponentFormatting.isItalic())
+			if (inheritFormatting.isItalic())
 				message = ChatColor.ITALIC + message;
 
-			if (lastComponentFormatting.isObfuscated())
+			if (inheritFormatting.isObfuscated())
 				message = ChatColor.MAGIC + message;
 
-			if (lastComponentFormatting.isStrikethrough())
+			if (inheritFormatting.isStrikethrough())
 				message = ChatColor.STRIKETHROUGH + message;
 
-			if (lastComponentFormatting.isUnderlined())
+			if (inheritFormatting.isUnderlined())
 				message = ChatColor.UNDERLINE + message;
 
-			message = lastComponentFormatting.getColor() + message;
+			message = inheritFormatting.getColor() + message;
 		}
 
 		final Matcher matcher = URL_PATTERN.matcher(message);
@@ -382,7 +433,7 @@ public final class SimpleComponent {
 					old.setText(builder.toString());
 
 					builder = new StringBuilder();
-					components.add(new PermissibleComponent(old, viewPermission));
+					components.add(new PermissibleComponent(old));
 				}
 
 				switch (format.getName().toUpperCase()) {
@@ -438,7 +489,7 @@ public final class SimpleComponent {
 					component = new TextComponent(old);
 					old.setText(builder.toString());
 					builder = new StringBuilder();
-					components.add(new PermissibleComponent(old, viewPermission));
+					components.add(new PermissibleComponent(old));
 				}
 
 				final TextComponent old = component;
@@ -447,7 +498,7 @@ public final class SimpleComponent {
 				final String urlString = message.substring(i, pos);
 				component.setText(urlString);
 				component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
-				components.add(new PermissibleComponent(component, viewPermission));
+				components.add(new PermissibleComponent(component));
 
 				i += pos - i - 1;
 				component = old;
@@ -459,7 +510,7 @@ public final class SimpleComponent {
 		}
 
 		component.setText(builder.toString());
-		components.add(new PermissibleComponent(component, viewPermission));
+		components.add(new PermissibleComponent(component));
 
 		return components.stream().toArray(PermissibleComponent[]::new);
 	}
