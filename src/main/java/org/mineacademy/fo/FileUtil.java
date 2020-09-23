@@ -320,6 +320,16 @@ public final class FileUtil {
 	}
 
 	/**
+	 * Write lines to a file, creating the file if not exist appending lines at the end
+	 *
+	 * @param to
+	 * @param lines
+	 */
+	public static void write(File to, String... lines) {
+		write(createIfNotExists(to), Arrays.asList(lines), StandardOpenOption.APPEND);
+	}
+
+	/**
 	 * Write lines to a file path in our plugin directory,
 	 * creating the file if it does not exist, appending lines at the end
 	 *
