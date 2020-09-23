@@ -143,6 +143,10 @@ public final class TimeUtil {
 
 			else if (sub.startsWith("year"))
 				unit = 31556926;
+
+			else if (sub.startsWith("potato"))
+				unit = 1337;
+
 			else
 				throw new IllegalArgumentException("Must define date type! Example: '1 second' (Got '" + sub + "')");
 
