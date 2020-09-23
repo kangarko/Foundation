@@ -33,11 +33,6 @@ import lombok.RequiredArgsConstructor;
 public abstract class SimpleListener<T extends Event> implements Listener, EventExecutor {
 
 	/**
-	 * Shall we use {@link Messenger} to send messages? Those will be sent as error.
-	 */
-	public static boolean USE_MESSENGER = false;
-
-	/**
 	 * The event we are listening to
 	 */
 	private final Class<T> eventClass;
@@ -99,7 +94,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 				for (String message : messages) {
 					message = Variables.replace(message, player);
 
-					if (USE_MESSENGER)
+					if (Messenger.ENABLED)
 						Messenger.error(player, message);
 					else
 						Common.tell(player, "&c" + message);

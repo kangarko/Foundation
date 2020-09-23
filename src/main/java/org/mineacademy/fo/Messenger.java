@@ -14,6 +14,11 @@ import lombok.experimental.UtilityClass;
 public class Messenger {
 
 	/**
+	 * Should we use messenger globally such as in commands & listeners?
+	 */
+	public static boolean ENABLED = false;
+
+	/**
 	 * The prefix send while sending info message
 	 */
 	@Setter
