@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
@@ -204,6 +206,21 @@ public final class Replacer {
 	 * Replace all variables in the {@link SerializedMap#ofArray(Object...)} format
 	 * adding {} to them if they do not contain it already
 	 *
+	 * @param list
+	 * @param replacements
+	 * @return
+	 */
+	public static List<String> replaceArray(List<String> list, Object... replacements) {
+		String joined = String.join("%FLPV%", list);
+		joined = replaceArray(joined, replacements);
+
+		return java.util.Arrays.asList(joined.split("%FLPV%"));
+	}
+
+	/**
+	 * Replace all variables in the {@link SerializedMap#ofArray(Object...)} format
+	 * adding {} to them if they do not contain it already
+	 *
 	 * @param message
 	 * @param associativeArray
 	 * @return
@@ -222,21 +239,11 @@ public final class Replacer {
 	 * @param replacements
 	 * @return
 	 */
-	public static List<String> replaceArray(List<String> list, Object... replacements) {
+	public static List<String> replaceVariables(List<String> list, SerializedMap replacements) {
+		String joined = String.join("%FLPV%", list);
+		joined = replaceVariables(joined, replacements);
 
-		// Create a copy, do not alter existing list
-		list = new ArrayList<>(list);
-
-		final SerializedMap map = SerializedMap.ofArray(replacements);
-
-		for (int i = 0; i < list.size(); i++) {
-			String message = list.get(i);
-
-			message = replaceVariables(message, map);
-			list.set(i, message);
-		}
-
-		return list;
+		return java.util.Arrays.asList(joined.split("%FLPV%"));
 	}
 
 	/**
@@ -246,7 +253,13 @@ public final class Replacer {
 	 * @param variables
 	 * @return
 	 */
-	public static String replaceVariables(String message, SerializedMap variables) {
+	public static String replaceVariables(@Nullable String message, SerializedMap variables) {
+		if (message == null)
+			return null;
+
+		if ("".equals(message))
+			return "";
+
 		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 
 		while (matcher.find()) {
