@@ -2,6 +2,7 @@ package org.mineacademy.fo;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Setter;
@@ -53,6 +54,18 @@ public class Messenger {
 	 */
 	@Setter
 	private String announcePrefix = "&8&l[&5&l!&l&8] &d";
+
+	/**
+	 * Automatically add prefixes as variables on first class class.
+	 */
+	static {
+		Variables.addVariable("info_prefix", t -> infoPrefix);
+		Variables.addVariable("success_prefix", t -> successPrefix);
+		Variables.addVariable("warn_prefix", t -> warnPrefix);
+		Variables.addVariable("error_prefix", t -> errorPrefix);
+		Variables.addVariable("question_prefix", t -> questionPrefix);
+		Variables.addVariable("announce_prefix", t -> announcePrefix);
+	}
 
 	/**
 	 * Send a message prepended with the {@link #infoPrefix}
@@ -180,4 +193,5 @@ public class Messenger {
 	private void tell(final CommandSender player, final String prefix, final String message) {
 		Common.tellNoPrefix(player, prefix + message);
 	}
+
 }
