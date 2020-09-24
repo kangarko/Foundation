@@ -272,7 +272,17 @@ public final class Replacer {
 				addSpace = true;
 			}
 
-			String value = variables.containsKey(variable) ? variables.getObject(variable).toString() : null;
+			String value = null;
+
+			for (final Map.Entry<String, Object> entry : variables.entrySet()) {
+				String variableKey = entry.getKey();
+
+				variableKey = variableKey.startsWith("{") ? variableKey.substring(1) : variableKey;
+				variableKey = variableKey.endsWith("}") ? variableKey.substring(0, variableKey.length() - 1) : variableKey;
+
+				if (variableKey.equals(variable))
+					value = entry.getValue().toString();
+			}
 
 			if (value != null) {
 				value = value.isEmpty() ? "" : Common.colorize(value) + (addSpace ? " " : "");
