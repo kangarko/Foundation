@@ -169,7 +169,7 @@ public final class HookManager {
 		if (Common.doesPluginExistSilently("Residence"))
 			residenceHook = new ResidenceHook();
 
-		if (Common.doesPluginExistSilently("WorldEdit"))
+		if (Common.doesPluginExistSilently("WorldEdit") || Common.doesPluginExistSilently("FastAsyncWorldEdit"))
 			worldeditHook = new WorldEditHook();
 
 		if (Common.doesPluginExistSilently("WorldGuard"))
@@ -445,7 +445,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isWorldEditLoaded() {
-		return worldeditHook != null;
+		return worldeditHook != null || isFAWELoaded();
 	}
 
 	/**
