@@ -78,7 +78,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 					// Found another match, assuming previous rule is finished creating.
 					if (rule != null) {
-						Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Line (" + i + "): '" + line + "' Rules: " + rules);
+						Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Line (" + (i + 1) + "): '" + line + "' Rules: " + rules);
 
 						if (canFinish(rule))
 							rules.add(rule);
@@ -90,7 +90,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 					} catch (final Throwable t) {
 						Common.throwError(t,
-								"Error creating rule from line (" + i + "): " + line,
+								"Error creating rule from line (" + (i + 1) + "): " + line,
 								"File: " + file,
 								"Error: %error",
 								"Processing aborted.");
@@ -101,7 +101,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 				// If something is being created then attempt to parse operators.
 				else {
-					Valid.checkNotNull(match, "Cannot define operator when no rule is being created! File: '" + file + "' Line (" + i + "): '" + line + "'");
+					Valid.checkNotNull(match, "Cannot define operator when no rule is being created! File: '" + file + "' Line (" + (i + 1) + "): '" + line + "'");
 
 					if (rule != null)
 						try {
@@ -109,7 +109,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 						} catch (final Throwable t) {
 							Common.throwError(t,
-									"Error parsing rule operator from line (" + i + "): " + line,
+									"Error parsing rule operator from line (" + (i + 1) + "): " + line,
 									"File: " + file,
 									"Error: %error");
 						}
