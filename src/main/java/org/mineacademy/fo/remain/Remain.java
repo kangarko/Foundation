@@ -673,6 +673,10 @@ public final class Remain {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 		final StringBuilder text = new StringBuilder();
 
+		// Translate options does not want to work well with ChatControl
+		if (json.contains("\"translate\""))
+			return text.append("").toString();
+
 		try {
 			for (final BaseComponent comp : ComponentSerializer.parse(json)) {
 				if ((comp.getHoverEvent() != null || comp.getClickEvent() != null) && denyEvents)
@@ -761,7 +765,17 @@ public final class Remain {
 	public static BaseComponent[] toComponent(final String json) {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 
-		return ComponentSerializer.parse(json);
+		try {
+			return ComponentSerializer.parse(json);
+
+		} catch (final Throwable t) {
+			Common.throwError(t,
+					"Failed to call toComponent!",
+					"Json: " + json,
+					"Error: %error%");
+
+			return null;
+		}
 	}
 
 	/**
