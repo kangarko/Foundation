@@ -351,6 +351,14 @@ public class YamlConfig implements ConfigSerializable {
 				this.instance = instance;
 
 				try {
+
+					// Place comments first (this also copies default keys to be used in onLoadFinish)
+					// before loading
+					if (saveComments()) {
+						this.instance.writeComments();
+						this.instance.reload();
+					}
+
 					onLoadFinish();
 
 				} catch (final Exception ex) {
@@ -630,6 +638,10 @@ public class YamlConfig implements ConfigSerializable {
 			// Workaround for empty lists
 			if (raw.equals("[]") && type == List.class)
 				raw = new ArrayList<>();
+
+			// Retype manually
+			if (type == Long.class && raw instanceof Integer)
+				raw = (long) raw;
 
 			checkAssignable(false, path, raw, type);
 		}
@@ -2041,8 +2053,7 @@ class ConfigInstance {
 			// for all maps to be turned back into MemorySection to be reachable by get()
 			reload();
 
-			if (defaultsPath != null && saveComments)
-				ConfigUpdater.update(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
+			writeComments();
 
 		} catch (final NullPointerException ex) {
 			if (ex.getMessage() != null && ex.getMessage().contains("Nodes must be provided")) {
@@ -2054,6 +2065,16 @@ class ConfigInstance {
 		} catch (final IOException | InvalidConfigurationException e) {
 			Common.error(e, "Failed to save " + file.getName());
 		}
+	}
+
+	/**
+	 * Attempts to save configuration comments using default file
+	 *
+	 * @throws IOException
+	 */
+	protected void writeComments() throws IOException {
+		if (defaultsPath != null && saveComments)
+			ConfigUpdater.update(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
 	}
 
 	/**
