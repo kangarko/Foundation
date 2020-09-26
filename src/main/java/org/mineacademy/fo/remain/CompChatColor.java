@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -28,11 +28,6 @@ public final class CompChatColor {
 	 */
 	public static final char COLOR_CHAR = '\u00A7';
 	public static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
-
-	/**
-	 * Pattern to remove all colour codes.
-	 */
-	public static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)" + String.valueOf(COLOR_CHAR) + "[0-9A-FK-ORX]");
 
 	/**
 	 * Colour instances keyed by their active character.
@@ -155,10 +150,13 @@ public final class CompChatColor {
 	public static final CompChatColor RESET = new CompChatColor('r', "reset");
 
 	/**
-	 * This colour's colour char prefixed by the {@link #COLOR_CHAR}.
+	 * The code representing this color such as a, r, etc.
 	 */
-	private final String toString;
+	private final char code;
 
+	/**
+	 * The name of this color
+	 */
 	@Getter
 	private final String name;
 
@@ -168,23 +166,30 @@ public final class CompChatColor {
 	@Getter
 	private final Color color;
 
+	/**
+	 * This colour's colour char prefixed by the {@link #COLOR_CHAR}.
+	 */
+	private final String toString;
+
 	private CompChatColor(char code, String name) {
 		this(code, name, null);
 	}
 
 	private CompChatColor(char code, String name, Color color) {
+		this.code = code;
 		this.name = name;
-		this.toString = new String(new char[] { COLOR_CHAR, code });
 		this.color = color;
+		this.toString = new String(new char[] { COLOR_CHAR, code });
 
 		BY_CHAR.put(code, this);
 		BY_NAME.put(name.toUpperCase(Locale.ROOT), this);
 	}
 
 	private CompChatColor(String name, String toString, int rgb) {
+		this.code = '#';
 		this.name = name;
-		this.toString = toString;
 		this.color = new Color(rgb);
+		this.toString = toString;
 	}
 
 	@Override
@@ -205,40 +210,24 @@ public final class CompChatColor {
 		return Objects.equals(this.toString, ((CompChatColor) obj).toString);
 	}
 
+	/**
+	 * Get the color code
+	 *
+	 * @return the code
+	 */
+	public char getCode() {
+		Valid.checkBoolean(code != '#', "Cannot retrieve color code for HEX colors");
+
+		return code;
+	}
+
 	@Override
 	public String toString() {
 		return toString;
 	}
 
 	/**
-	 * Strips the given message of all color codes
-	 *
-	 * @param input String to strip of color
-	 * @return A copy of the input string, without any coloring
-	 */
-	public static String stripColor(final String input) {
-		if (input == null) {
-			return null;
-		}
-
-		return STRIP_COLOR_PATTERN.matcher(input).replaceAll("");
-	}
-
-	public static String translateAlternateColorCodes(char altColorChar, String textToTranslate) {
-		final char[] b = textToTranslate.toCharArray();
-
-		for (int i = 0; i < b.length - 1; i++)
-			if (b[i] == altColorChar && ALL_CODES.indexOf(b[i + 1]) > -1) {
-				b[i] = CompChatColor.COLOR_CHAR;
-
-				b[i + 1] = Character.toLowerCase(b[i + 1]);
-			}
-
-		return new String(b);
-	}
-
-	/**
-	 * Get the colour represented by the specified code.
+	 * Get the color represented by the specified code.
 	 *
 	 * @param code the code to search for
 	 * @return the mapped colour, or null if non exists
@@ -247,10 +236,22 @@ public final class CompChatColor {
 		return BY_CHAR.get(code);
 	}
 
+	/**
+	 * Parse the given color to chat color
+	 *
+	 * @param color
+	 * @return
+	 */
 	public static CompChatColor of(Color color) {
 		return of("#" + Integer.toHexString(color.getRGB()).substring(2));
 	}
 
+	/**
+	 * Get a color from #123456 HEX code, & color code or name
+	 *
+	 * @param string
+	 * @return
+	 */
 	public static CompChatColor of(@NonNull String string) {
 
 		if (string.startsWith("#") && string.length() == 7) {
