@@ -1,5 +1,7 @@
 package org.mineacademy.fo.command;
 
+import java.util.List;
+
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -50,5 +52,13 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			t.printStackTrace();
 		}
+	}
+
+	/**
+	 * @see org.mineacademy.fo.command.SimpleCommand#tabComplete()
+	 */
+	@Override
+	protected List<String> tabComplete() {
+		return NO_COMPLETE;
 	}
 }

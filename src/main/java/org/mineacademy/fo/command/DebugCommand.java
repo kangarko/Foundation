@@ -140,4 +140,12 @@ public final class DebugCommand extends SimpleSubCommand {
 
 		return files;
 	}
+
+	/**
+	 * @see org.mineacademy.fo.command.SimpleCommand#tabComplete()
+	 */
+	@Override
+	protected List<String> tabComplete() {
+		return NO_COMPLETE;
+	}
 }
