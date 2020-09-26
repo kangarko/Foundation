@@ -22,7 +22,6 @@ import java.util.jar.JarFile;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -50,7 +49,6 @@ import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
@@ -58,7 +56,6 @@ import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -277,12 +274,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
 			}
-
-			// Add some basic variables
-			Variables.addVariable("label", t -> getMainCommand() != null ? "null" : getMainCommand().getLabel());
-			Variables.addVariable("sender_is_player", t -> t instanceof Player ? "true" : "false");
-			Variables.addVariable("sender_is_discord", t -> t instanceof DiscordSender ? "true" : "false");
-			Variables.addVariable("sender_is_console", t -> t instanceof ConsoleCommandSender ? "true" : "false");
 
 			// --------------------------------------------
 			// Call the main start method
