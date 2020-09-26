@@ -264,6 +264,7 @@ public class BossBarInternals implements Listener {
 				cancelTimer(player);
 			} else
 				sendDragon(drag, player);
+
 		}).getTaskId());
 
 		sendDragon(dragon, player);

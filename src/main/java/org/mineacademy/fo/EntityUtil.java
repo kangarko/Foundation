@@ -22,11 +22,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.EntityUtil.HitListener;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.remain.CompRunnable;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -172,7 +172,7 @@ public final class EntityUtil {
 		if (isProjectile && hitGroundListener != null)
 			HitTracking.addFlyingProjectile((Projectile) entity, event -> hitGroundListener.run());
 
-		Common.runTimer(1, new BukkitRunnable() {
+		Common.runTimer(1, new CompRunnable() {
 
 			private int elapsedTicks = 0;
 

@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
-import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
 
 /**
  * Wraps NMS and CRAFT classes
@@ -58,12 +58,20 @@ enum WrapperClass {
 
 		enabled = true;
 
+		final String nms = MinecraftVersion.getServerVersion();
+
 		try {
-			final String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-			clazz = Class.forName(packageId.getUri() + "." + version + "." + suffix);
+			clazz = Class.forName(packageId.getUri() + "." + (nms.isEmpty() ? "" : nms + ".") + suffix);
 
 		} catch (final Exception ex) {
-			Common.throwError(ex, "Error while trying to resolve NBT class '" + suffix + "'!");
+
+			if (nms.isEmpty()) {
+				if (suffix.equals("inventory.CraftMetaItem"))
+					return;
+			}
+
+			Common.throwError(ex,
+					"Error while trying to resolve NBT class '" + suffix + "'!");
 		}
 	}
 

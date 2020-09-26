@@ -209,6 +209,11 @@ public final class Remain {
 	private static boolean bungeeApiPresent = true;
 
 	/**
+	 * Is org/bukkit/inventory/meta/ItemMeta class present? MC 1.4.7+
+	 */
+	private static boolean hasItemMeta = true;
+
+	/**
 	 * Stores player cooldowns for old MC versions
 	 */
 	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
@@ -258,18 +263,13 @@ public final class Remain {
 
 		try {
 
-			// Test for very old CraftBukkit (older than 1.3.2)
-			try {
-				Class.forName("org.bukkit.Sound");
-			} catch (final ClassNotFoundException ex) {
-				throw new UnsupportedOperationException("Minecraft 1.2.5 is not supported.");
-			}
+			final boolean hasNMS = MinecraftVersion.atLeast(V.v1_4);
 
 			// Load optional parts
 			try {
 				getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
-				fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
-				sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
+				fieldPlayerConnection = getNMSClass("EntityPlayer").getField(hasNMS ? "playerConnection" : "netServerHandler");
+				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler").getMethod("sendPacket", getNMSClass("Packet"));
 
 			} catch (final Throwable t) {
 				System.out.println("Unable to find setup some parts of reflection. Plugin will still function.");
@@ -351,6 +351,13 @@ public final class Remain {
 
 			} catch (final NoSuchMethodException err) {
 				hasYamlReaderLoad = false;
+			}
+
+			try {
+				Class.forName("org.bukkit.inventory.meta.ItemMeta");
+
+			} catch (final Exception ex) {
+				hasItemMeta = false;
 			}
 
 			// Initialize legacy material data now to avoid future lag
@@ -1824,23 +1831,8 @@ public final class Remain {
 	 * @param level
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
-		final PotionType wrapped = PotionType.getByEffect(type);
-		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
-
-		try {
-			final org.bukkit.potion.PotionData data = new org.bukkit.potion.PotionData(level > 0 && wrapped != null ? wrapped : PotionType.WATER);
-
-			if (level > 0 && wrapped == null)
-				meta.addEnchant(Enchantment.DURABILITY, 1, true);
-
-			meta.setBasePotionData(data);
-
-		} catch (final NoSuchMethodError | NoClassDefFoundError ex) {
-			meta.setMainEffect(type);
-			meta.addCustomEffect(new PotionEffect(type, Integer.MAX_VALUE, level - 1), true);
-		}
-
-		item.setItemMeta(meta);
+		if (hasItemMeta)
+			PotionSetter.setPotion(item, type, level);
 	}
 
 	/**
@@ -2159,6 +2151,15 @@ public final class Remain {
 	}
 
 	/**
+	 * Return if this MC is likely 1.3.2 and greater
+	 *
+	 * @return
+	 */
+	public static boolean hasItemMeta() {
+		return hasItemMeta;
+	}
+
+	/**
 	 * Return if the MC version is 1.16+ that supports HEX RGB colors
 	 *
 	 * @return
@@ -2373,5 +2374,35 @@ class AdvancementAccessor {
 
 	private Advancement getAdvancement() {
 		return Bukkit.getAdvancement(key);
+	}
+}
+
+class PotionSetter {
+
+	/**
+	 * Attempts to insert a certain potion to the given item
+	 *
+	 * @param item
+	 * @param type
+	 * @param level
+	 */
+	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
+		final PotionType wrapped = PotionType.getByEffect(type);
+		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
+
+		try {
+			final org.bukkit.potion.PotionData data = new org.bukkit.potion.PotionData(level > 0 && wrapped != null ? wrapped : PotionType.WATER);
+
+			if (level > 0 && wrapped == null)
+				meta.addEnchant(Enchantment.DURABILITY, 1, true);
+
+			meta.setBasePotionData(data);
+
+		} catch (final NoSuchMethodError | NoClassDefFoundError ex) {
+			meta.setMainEffect(type);
+			meta.addCustomEffect(new PotionEffect(type, Integer.MAX_VALUE, level - 1), true);
+		}
+
+		item.setItemMeta(meta);
 	}
 }

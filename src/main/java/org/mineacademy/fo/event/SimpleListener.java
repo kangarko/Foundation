@@ -103,6 +103,9 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 			if (cancelled && event instanceof Cancellable)
 				((Cancellable) event).setCancelled(true);
 
+		} catch (final Throwable t) {
+			Common.error(t, "Unhandled exception listening to " + this.eventClass.getSimpleName());
+
 		} finally {
 			LagCatcher.end(logName);
 

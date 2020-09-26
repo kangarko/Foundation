@@ -5,6 +5,7 @@ import java.util.function.BiConsumer;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,6 +16,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 import org.mineacademy.fo.EntityUtil;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.remain.Remain;
 
 /**
  * Listens and executes events for {@link SimpleEnchantment}
@@ -43,21 +47,32 @@ public final class EnchantmentListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onShoot(ProjectileLaunchEvent event) {
-		final ProjectileSource projectileSource = event.getEntity().getShooter();
+		try {
+			final ProjectileSource projectileSource = event.getEntity().getShooter();
 
-		if (projectileSource instanceof LivingEntity) {
-			final LivingEntity shooter = (LivingEntity) projectileSource;
+			if (projectileSource instanceof LivingEntity) {
+				final LivingEntity shooter = (LivingEntity) projectileSource;
 
-			execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
-			EntityUtil.trackHit(event.getEntity(), hitEvent -> execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
+				execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
+				EntityUtil.trackHit(event.getEntity(), hitEvent -> execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
+			}
+		} catch (final NoSuchMethodError ex) {
+			if (MinecraftVersion.atLeast(V.v1_4))
+				ex.printStackTrace();
 		}
 	}
 
 	private void execute(LivingEntity source, BiConsumer<SimpleEnchantment, Integer> executer) {
-		final ItemStack hand = source.getEquipment().getItemInHand();
+		try {
+			final ItemStack hand = source instanceof Player ? ((Player) source).getItemInHand() : source.getEquipment().getItemInHand();
 
-		if (hand != null)
-			for (final Entry<SimpleEnchantment, Integer> e : SimpleEnchantment.findEnchantments(hand).entrySet())
-				executer.accept(e.getKey(), e.getValue());
+			if (hand != null)
+				for (final Entry<SimpleEnchantment, Integer> e : SimpleEnchantment.findEnchantments(hand).entrySet())
+					executer.accept(e.getKey(), e.getValue());
+
+		} catch (final NoSuchMethodError ex) {
+			if (Remain.hasItemMeta())
+				ex.printStackTrace();
+		}
 	}
 }
