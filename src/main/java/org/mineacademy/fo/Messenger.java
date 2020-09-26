@@ -2,9 +2,9 @@ package org.mineacademy.fo;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
 
@@ -23,49 +23,43 @@ public class Messenger {
 	 * The prefix send while sending info message
 	 */
 	@Setter
+	@Getter
 	private String infoPrefix = "&8&l[&9&li&8&l] &7";
 
 	/**
 	 * The prefix send while sending success message
 	 */
 	@Setter
+	@Getter
 	private String successPrefix = "&8&l[&2&l\u2714&8&l] &7";
 
 	/**
 	 * The prefix send while sending warning message
 	 */
 	@Setter
+	@Getter
 	private String warnPrefix = "&8&l[&6&l!&8&l] &6";
 
 	/**
 	 * The prefix send while sending error message
 	 */
 	@Setter
+	@Getter
 	private String errorPrefix = "&8&l[&4&l\u2715&8&l] &c";
 
 	/**
 	 * The prefix send while sending questions
 	 */
 	@Setter
+	@Getter
 	private String questionPrefix = "&8&l[&a&l?&l&8] &7";
 
 	/**
 	 * The prefix send while sending announcements
 	 */
 	@Setter
+	@Getter
 	private String announcePrefix = "&8&l[&5&l!&l&8] &d";
-
-	/**
-	 * Automatically add prefixes as variables on first class class.
-	 */
-	static {
-		Variables.addVariable("info_prefix", t -> infoPrefix);
-		Variables.addVariable("success_prefix", t -> successPrefix);
-		Variables.addVariable("warn_prefix", t -> warnPrefix);
-		Variables.addVariable("error_prefix", t -> errorPrefix);
-		Variables.addVariable("question_prefix", t -> questionPrefix);
-		Variables.addVariable("announce_prefix", t -> announcePrefix);
-	}
 
 	/**
 	 * Send a message prepended with the {@link #infoPrefix}
@@ -155,6 +149,17 @@ public class Messenger {
 	 */
 	public void warn(final CommandSender player, final String message) {
 		tell(player, warnPrefix, message);
+	}
+
+	/**
+	 * Send messages prepended with the {@link #errorPrefix}
+	 *
+	 * @param player
+	 * @param messages
+	 */
+	public void error(final CommandSender player, final String... messages) {
+		for (final String message : messages)
+			error(player, message);
 	}
 
 	/**

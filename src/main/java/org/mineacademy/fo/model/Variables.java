@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.GeoAPI;
@@ -23,6 +24,7 @@ import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -333,6 +335,33 @@ public final class Variables {
 
 			case "random_uuid":
 				return UUID.randomUUID().toString();
+			case "label":
+				return SimplePlugin.getInstance().getMainCommand() != null ? SimplePlugin.getInstance().getMainCommand().getLabel() : "noMainCommandLabel";
+			case "sender_is_player":
+				return player != null ? "true" : "false";
+			case "sender_is_discord":
+				return console instanceof DiscordSender ? "true" : "false";
+			case "sender_is_console":
+				return console instanceof ConsoleCommandSender ? "true" : "false";
+
+			case "info_prefix":
+			case "prefix_info":
+				return org.mineacademy.fo.Messenger.getInfoPrefix();
+			case "success_prefix":
+			case "prefix_success":
+				return org.mineacademy.fo.Messenger.getSuccessPrefix();
+			case "warn_prefix":
+			case "prefix_warn":
+				return org.mineacademy.fo.Messenger.getWarnPrefix();
+			case "error_prefix":
+			case "prefix_error":
+				return org.mineacademy.fo.Messenger.getErrorPrefix();
+			case "question_prefix":
+			case "prefix_question":
+				return org.mineacademy.fo.Messenger.getQuestionPrefix();
+			case "announce_prefix":
+			case "prefix_announce":
+				return org.mineacademy.fo.Messenger.getAnnouncePrefix();
 		}
 
 		return null;
