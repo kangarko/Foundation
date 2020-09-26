@@ -109,4 +109,12 @@ public final class PermsCommand extends SimpleSubCommand {
 			listIn(inner, messages);
 		}
 	}
+
+	/**
+	 * @see org.mineacademy.fo.command.SimpleCommand#tabComplete()
+	 */
+	@Override
+	protected List<String> tabComplete() {
+		return NO_COMPLETE;
+	}
 }
