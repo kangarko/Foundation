@@ -1,5 +1,6 @@
 package org.mineacademy.fo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -376,6 +377,31 @@ public final class Valid {
 		return true;
 	}
 
+	/**
+	 * Return true if the given list contains all strings equal
+	 *
+	 * @param values
+	 * @return
+	 */
+	public boolean valuesEqual(Collection<String> values) {
+		final List<String> copy = new ArrayList<>(values);
+		String lastValue = null;
+
+		for (int i = 0; i < copy.size(); i++) {
+			final String value = copy.get(i);
+
+			if (lastValue == null)
+				lastValue = value;
+
+			if (!lastValue.equals(value))
+				return false;
+
+			lastValue = value;
+		}
+
+		return true;
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Matching in lists
 	// ------------------------------------------------------------------------------------------------------------
@@ -438,7 +464,10 @@ public final class Valid {
 	 * @param element
 	 * @param list
 	 * @return
+	 *
+	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
 	 */
+	@Deprecated
 	public boolean isInListContains(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
