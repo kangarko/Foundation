@@ -64,12 +64,8 @@ public abstract class RuleSetReader<T extends Rule> {
 		T rule = null;
 		String match = null;
 
-		//System.out.println("# READING " + file);
-
 		for (int i = 0; i < lines.size(); i++) {
 			final String line = lines.get(i).trim();
-
-			//System.out.println(i + "/" + lines.size() + ": " + line);
 
 			if (!line.isEmpty() && !line.startsWith("#")) {
 
@@ -78,7 +74,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 					// Found another match, assuming previous rule is finished creating.
 					if (rule != null) {
-						Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Line (" + (i + 1) + "): '" + line + "' Rules: " + rules);
+						Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Duplicated rule: " + rule);
 
 						if (canFinish(rule))
 							rules.add(rule);

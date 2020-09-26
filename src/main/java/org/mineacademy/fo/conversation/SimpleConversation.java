@@ -270,7 +270,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 						context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
 					}
 				} catch (final NoSuchMethodError ex) {
-					// Unfortunatelly old MC version detected
+					// Unfortunately, old MC version was detected
 				}
 
 				// Edit 2 - Save last prompt if it is our class
