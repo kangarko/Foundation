@@ -1,6 +1,7 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -69,6 +70,8 @@ public final class TabUtil {
 			if (!val.toLowerCase().startsWith(partialName))
 				iterator.remove();
 		}
+
+		Collections.sort(tab);
 
 		return tab;
 	}
