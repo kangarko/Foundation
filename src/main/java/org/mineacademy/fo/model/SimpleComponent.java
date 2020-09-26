@@ -269,7 +269,6 @@ public final class SimpleComponent {
 					final List<BaseComponent> extra = compotentToInheritFormattingFrom.getExtra();
 
 					lastComponentFormatting = extra != null ? extra.get(extra.size() - 1) : compotentToInheritFormattingFrom;
-
 				} else
 					lastComponentFormatting = baseComponent.getComponent();
 			}
