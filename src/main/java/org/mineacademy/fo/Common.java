@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -1777,6 +1778,35 @@ public final class Common {
 		}
 
 		return parts.split(delimiter);
+	}
+
+	/**
+	 * Split the given string into array of the given max line length
+	 *
+	 * @param input
+	 * @param maxLineLength
+	 * @return
+	 */
+	public static String[] split(String input, int maxLineLength) {
+		final StringTokenizer tok = new StringTokenizer(input, " ");
+		final StringBuilder output = new StringBuilder(input.length());
+
+		int lineLen = 0;
+
+		while (tok.hasMoreTokens()) {
+			final String word = tok.nextToken();
+
+			if (lineLen + word.length() > maxLineLength) {
+				output.append("\n");
+
+				lineLen = 0;
+			}
+
+			output.append(word);
+			lineLen += word.length();
+		}
+
+		return output.toString().split("\n");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
