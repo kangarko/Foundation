@@ -136,6 +136,6 @@ public final class SimpleSound {
 
 	@Override
 	public String toString() {
-		return sound + ", " + volume + ", " + pitch;
+		return sound + " " + volume + " " + pitch;
 	}
 }

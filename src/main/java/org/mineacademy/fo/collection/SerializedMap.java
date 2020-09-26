@@ -29,6 +29,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 import com.google.gson.Gson;
 
+import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -114,6 +115,17 @@ public final class SerializedMap extends StrictCollection {
 
 			string = !string;
 		}
+
+		return this;
+	}
+
+	/**
+	 * Add another map to this map
+	 *
+	 * @param anotherMap
+	 */
+	public SerializedMap put(@NonNull SerializedMap anotherMap) {
+		map.putAll(anotherMap.asMap());
 
 		return this;
 	}
@@ -790,8 +802,12 @@ public final class SerializedMap extends StrictCollection {
 
 		lines.add("{");
 
-		for (final Map.Entry<?, ?> entry : map.entrySet())
-			lines.add("\t'" + entry.getKey() + "' = '" + entry.getValue() + "'");
+		for (final Map.Entry<?, ?> entry : map.entrySet()) {
+			final Object value = entry.getValue();
+
+			if (value != null && !value.toString().equals("[]") && !value.toString().equals("{}") && !value.toString().isEmpty() && !value.toString().equals("0.0") && !value.toString().equals("false"))
+				lines.add("\t'" + entry.getKey() + "' = '" + entry.getValue() + "'");
+		}
 
 		lines.add("}");
 
