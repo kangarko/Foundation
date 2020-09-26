@@ -243,7 +243,8 @@ public final class FileUtil {
 		final YamlConfiguration conf = new YamlConfiguration();
 
 		try {
-			checkFileForKnownErrors(file);
+			if (file.exists())
+				checkFileForKnownErrors(file);
 
 			conf.load(file);
 
@@ -268,7 +269,7 @@ public final class FileUtil {
 	 * Check file for known errors
 	 */
 	private static void checkFileForKnownErrors(File file) throws IOException {
-		for (final String line : Files.readAllLines(file.toPath()))
+		for (final String line : readLines(file))
 			if (line.contains("[*]"))
 				throw new FoException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
 	}

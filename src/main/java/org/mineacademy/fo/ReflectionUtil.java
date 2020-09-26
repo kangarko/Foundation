@@ -3,7 +3,9 @@ package org.mineacademy.fo;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -191,7 +193,12 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getNMSClass(final String name) {
-		return ReflectionUtil.lookupClass(NMS + "." + MinecraftVersion.getServerVersion() + "." + name);
+		String version = MinecraftVersion.getServerVersion();
+
+		if (!version.isEmpty())
+			version += ".";
+
+		return ReflectionUtil.lookupClass(NMS + "." + version + name);
 	}
 
 	/**
@@ -202,7 +209,12 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getOBCClass(final String name) {
-		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + MinecraftVersion.getServerVersion() + "." + name);
+		String version = MinecraftVersion.getServerVersion();
+
+		if (!version.isEmpty())
+			version += ".";
+
+		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + version + name);
 	}
 
 	/**
@@ -741,9 +753,33 @@ public final class ReflectionUtil {
 	 */
 	public static <E extends Enum<E>> E lookupEnumSilent(final Class<E> enumType, final String name) {
 		try {
+
+			// Since we obfuscate our plugins, enum names are changed.
+			// Therefore we look up
+			boolean hasKey = false;
+			Method method = null;
+
+			try {
+				method = enumType.getDeclaredMethod("fromKey", String.class);
+
+				if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
+					hasKey = true;
+
+			} catch (final Throwable t) {
+			}
+
+			if (hasKey)
+				return (E) method.invoke(null, name);
+
+			// Resort to enum name
 			return Enum.valueOf(enumType, name);
 
 		} catch (final IllegalArgumentException ex) {
+			return null;
+
+		} catch (IllegalAccessException | InvocationTargetException ex) {
+			Common.throwError(ex, "Unable to invoke getKey for " + enumType);
+
 			return null;
 		}
 	}
