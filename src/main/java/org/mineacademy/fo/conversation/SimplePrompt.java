@@ -96,7 +96,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param ctx
 	 * @return
 	 */
-	protected Player getPlayer(final ConversationContext ctx) {
+	protected final Player getPlayer(final ConversationContext ctx) {
 		Valid.checkBoolean(ctx.getForWhom() instanceof Player, "Conversable is not a player but: " + ctx.getForWhom());
 
 		return (Player) ctx.getForWhom();
@@ -108,7 +108,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param ctx
 	 * @param message
 	 */
-	protected void tell(final String message) {
+	protected final void tell(final String message) {
 		Valid.checkNotNull(player, "Cannot use tell() when player not yet set!");
 
 		tell(player, message);
@@ -120,7 +120,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param ctx
 	 * @param message
 	 */
-	protected void tell(final ConversationContext ctx, final String message) {
+	protected final void tell(final ConversationContext ctx, final String message) {
 		tell(getPlayer(ctx), message);
 	}
 
@@ -130,7 +130,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param conversable
 	 * @param message
 	 */
-	protected void tell(final Conversable conversable, final String message) {
+	protected final void tell(final Conversable conversable, final String message) {
 		Common.tellConversing(conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
 	}
 
@@ -141,7 +141,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param conversable
 	 * @param message
 	 */
-	protected void tellLater(final int delayTicks, final Conversable conversable, final String message) {
+	protected final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
 		Common.tellLaterConversing(delayTicks, conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
 	}
 
