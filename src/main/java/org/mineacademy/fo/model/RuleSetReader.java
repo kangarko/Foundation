@@ -101,7 +101,8 @@ public abstract class RuleSetReader<T extends Rule> {
 
 				// If something is being created then attempt to parse operators.
 				else {
-					Valid.checkNotNull(match, "Cannot define operator when no rule is being created! File: '" + file + "' Line (" + (i + 1) + "): '" + line + "'");
+					if (!onNoMatchLineParse(file, line))
+						Valid.checkNotNull(match, "Cannot define operator when no rule is being created! File: '" + file + "' Line (" + (i + 1) + "): '" + line + "'");
 
 					if (rule != null)
 						try {
@@ -122,6 +123,20 @@ public abstract class RuleSetReader<T extends Rule> {
 		}
 
 		return rules;
+	}
+
+	/**
+	 * Called if there is no match {@link #newKeyword} but something is on the line
+	 * enabling you to inject your own custom operators and settings
+	 *
+	 * Return true if you processed the line, false if we should throw an error
+	 *
+	 * @param file the current file
+	 * @param line
+	 * @return
+	 */
+	protected boolean onNoMatchLineParse(File file, String line) {
+		return false;
 	}
 
 	/**
