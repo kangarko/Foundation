@@ -28,6 +28,7 @@ import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
+import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -104,6 +105,9 @@ public final class SerializeUtil {
 
 		else if (obj instanceof SimpleTime)
 			return ((SimpleTime) obj).getRaw();
+
+		else if (obj instanceof SimpleSound)
+			return ((SimpleSound) obj).toString();
 
 		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
@@ -277,6 +281,9 @@ public final class SerializeUtil {
 
 			else if (classOf == SimpleTime.class)
 				object = SimpleTime.from(object.toString());
+
+			else if (classOf == SimpleSound.class)
+				object = new SimpleSound(object.toString());
 
 			else if (classOf == net.md_5.bungee.api.ChatColor.class)
 				throw new FoException("Instead of net.md_5.bungee.api.ChatColor, use our CompChatColor");
