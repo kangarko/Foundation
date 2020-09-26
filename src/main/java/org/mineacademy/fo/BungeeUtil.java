@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.mineacademy.fo.Common.Stringer;
 import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.SimpleBungee;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -43,7 +44,10 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(BungeeAction action, T... datas) {
-		tellBungee(SimplePlugin.getInstance().getBungeeCord().getChannel(), action, datas);
+		final SimpleBungee bungee = SimplePlugin.getInstance().getBungeeCord();
+		Valid.checkNotNull(bungee, SimplePlugin.getNamed() + " does not implement getBungeeCord()!");
+
+		tellBungee(bungee.getChannel(), action, datas);
 	}
 
 	/**
