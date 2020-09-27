@@ -2,6 +2,8 @@ package org.mineacademy.fo;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -21,6 +23,30 @@ public final class TimeUtil {
 	 * The date format in dd.MM.yyy HH:mm
 	 */
 	private static final DateFormat DATE_FORMAT_SHORT = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+
+	/**
+	 * The pattern recognizing 1d1h1s type of dates
+	 */
+	private static final Pattern TOKEN_PATTERN = Pattern.compile("(?:([0-9]+)\\s*y[a-z]*[,\\s]*)?"
+			// Months
+			+ "(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?"
+
+			// Weeks
+			+ "(?:([0-9]+)\\s*w[a-z]*[,\\s]*)?"
+
+			// Days
+			+ "(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?"
+
+			// Hours
+			+ "(?:([0-9]+)\\s*h[a-z]*[,\\s]*)?"
+
+			// Minutes
+			+ "(?:([0-9]+)\\s*m[a-z]*[,\\s]*)?"
+
+			// Seconds (the "s" may be left out)
+			+ "(?:([0-9]+)\\s*(?:s[a-z]*)?)?",
+
+			Pattern.CASE_INSENSITIVE);
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Current time
@@ -211,5 +237,97 @@ public final class TimeUtil {
 		seconds = seconds % 60;
 
 		return (days > 0 ? days + "d " : "") + (hours > 0 ? hours + "h " : "") + (minutes > 0 ? minutes + "m " : "") + seconds + "s";
+	}
+
+	/**
+	 * Convert the given string token into milliseconds
+	 *
+	 * Example: 1y, 1mo, 1w, 1d, 1h, 1m, 1s and these can all be combined together
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static long parseToken(String text) {
+		final Matcher matcher = TOKEN_PATTERN.matcher(text);
+
+		long years = 0, months = 0, weeks = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
+		boolean found = false;
+
+		while (matcher.find()) {
+
+			if (matcher.group() == null || matcher.group().isEmpty())
+				continue;
+
+			for (int i = 0; i < matcher.groupCount(); i++)
+				if (matcher.group(i) != null && !matcher.group(i).isEmpty()) {
+					found = true;
+
+					break;
+				}
+
+			if (found) {
+				for (int i = 1; i < 8; i++)
+					if (matcher.group(i) != null && !matcher.group(i).isEmpty()) {
+						final long output = Long.parseLong(matcher.group(i));
+
+						if (i == 1) {
+							checkLimit("years", output, 10);
+
+							years = output;
+						}
+
+						else if (i == 2) {
+							checkLimit("months", output, 12);
+
+							months = output;
+						}
+
+						else if (i == 3) {
+							checkLimit("weeks", output, 4);
+
+							weeks = output;
+						}
+
+						else if (i == 4) {
+							checkLimit("days", output, 31);
+
+							days = output;
+						}
+
+						else if (i == 5) {
+							checkLimit("hours", output, 24);
+
+							hours = output;
+						}
+
+						else if (i == 6) {
+							checkLimit("minutes", output, 60);
+
+							minutes = output;
+						}
+
+						else if (i == 7) {
+							checkLimit("seconds", output, 60);
+
+							seconds = output;
+						}
+					}
+
+				break;
+			}
+		}
+
+		if (!found)
+			throw new NumberFormatException("Date not found from: " + text);
+
+		return (seconds + (minutes * 60) + (hours * 3600) + (days * 86400) + (weeks * 7 * 86400) + (months * 30 * 86400) + (years * 365 * 86400)) * 1000;
+	}
+
+	/*
+	 * Check value over limit
+	 */
+	private static void checkLimit(String type, long value, int maxLimit) {
+		if (value > maxLimit)
+			throw new IllegalArgumentException("Value type " + type + " is out of bounds! Max limit: " + maxLimit + ", given: " + value);
 	}
 }

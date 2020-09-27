@@ -2263,11 +2263,11 @@ class BungeeChatProvider {
 		try {
 			if (MinecraftVersion.equals(V.v1_7)) {
 				// Elegant way of sending JSON on such old MC version - just use the native command
-				// And ensure sync
-				final String json = Remain.toJson(comps);
+				Common.runLater(() -> {
+					final String json = Remain.toJson(comps);
 
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + sender.getName() + " " + json);
-
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + sender.getName() + " " + json);
+				});
 			} else
 				((Player) sender).spigot().sendMessage(comps);
 

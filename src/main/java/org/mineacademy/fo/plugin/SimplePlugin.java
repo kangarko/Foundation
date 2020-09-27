@@ -1040,6 +1040,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Should we remove diacritical marks before matching regex?
+	 * Defaults to true
+	 *
+	 * @return
+	 */
+	public boolean regexStripAccents() {
+		return true;
+	}
+
+	/**
 	 * Return the BungeeCord suite if you want this plugin
 	 * to send and receive messages from BungeeCord
 	 *

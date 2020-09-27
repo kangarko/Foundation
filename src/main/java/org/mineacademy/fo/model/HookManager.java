@@ -992,14 +992,14 @@ public final class HookManager {
 	 *
 	 * @param one
 	 * @param two
-	 * @param msg
+	 * @param message
 	 * @return
 	 */
-	public static String replaceRelationPlaceholders(final Player one, final Player two, final String msg) {
-		if (msg == null || "".equals(msg.trim()))
-			return msg;
+	public static String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
+		if (message == null || "".equals(message.trim()))
+			return message;
 
-		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, msg) : msg;
+		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, message) : message;
 	}
 
 	/**
@@ -1879,18 +1879,19 @@ class PlaceholderAPIHook {
 		return text;
 	}
 
-	final String replaceRelationPlaceholders(final Player one, final Player two, final String msg) {
+	final String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
 		try {
-			return setRelationalPlaceholders(one, two, msg);
+			return setRelationalPlaceholders(one, two, message);
+
 		} catch (final Throwable t) {
 			Common.error(t,
 					"PlaceholderAPI failed to replace relation variables!",
 					"Player one: " + one,
 					"Player two: " + two,
-					"Message: " + msg,
+					"Message: " + message,
 					"Error: %error");
 
-			return msg;
+			return message;
 		}
 	}
 
@@ -1900,10 +1901,10 @@ class PlaceholderAPIHook {
 		if (hooks.isEmpty())
 			return text;
 
-		final Matcher m = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
+		final Matcher matcher = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
 
-		while (m.find()) {
-			final String format = m.group(2);
+		while (matcher.find()) {
+			final String format = matcher.group(2);
 			final int index = format.indexOf("_");
 
 			if (index <= 0 || index >= format.length())
@@ -1920,7 +1921,7 @@ class PlaceholderAPIHook {
 				final String value = one != null && two != null ? rel.onPlaceholderRequest(one, two, params) : "";
 
 				if (value != null)
-					text = text.replaceAll(Pattern.quote(m.group()), Matcher.quoteReplacement(Common.colorize(value)));
+					text = text.replaceAll(Pattern.quote(matcher.group()), Matcher.quoteReplacement(Common.colorize(value)));
 			}
 		}
 
@@ -2628,7 +2629,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 

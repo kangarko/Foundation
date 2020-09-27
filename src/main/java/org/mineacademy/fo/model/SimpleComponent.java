@@ -3,6 +3,7 @@ package org.mineacademy.fo.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +11,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
@@ -18,10 +20,9 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -32,6 +33,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * A very simple way of sending interactive chat messages
  */
+@ToString
 public final class SimpleComponent {
 
 	/**
@@ -40,38 +42,100 @@ public final class SimpleComponent {
 	private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
 
 	/**
-	 * The past components having different hover/click events
+	 * The past components
 	 */
-	private final List<PermissibleComponent> pastComponents = new ArrayList<>();
+	private final List<Part> pastComponents = new ArrayList<>();
 
 	/**
-	 * The current component that is being modified
+	 * The current component being created
 	 */
-	private PermissibleComponent[] currentComponents;
+	@Nullable
+	private Part currentComponent;
 
 	/**
-	 * Create a new interactive chat component
-	 *
-	 * @param text
-	 */
-	private SimpleComponent(String... text) {
-		this.currentComponents = fromLegacyText(String.join("\n", Common.colorize(text)), null);
-	}
-
-	/**
-	 * Represents a component with viewing permission
+	 * The part that is being created
 	 */
 	@RequiredArgsConstructor
-	@Setter
-	public static class PermissibleComponent {
+	public static final class Part {
 
-		@Getter
-		private final BaseComponent component;
+		/**
+		 * The text
+		 */
+		private final String text;
 
+		/**
+		 * The view permission
+		 */
 		private String viewPermission;
+
+		/**
+		 * The view JS condition
+		 */
 		private String viewCondition;
 
-		public boolean canSendTo(@Nullable CommandSender receiver) {
+		/**
+		 * The hover event
+		 */
+		private HoverEvent hoverEvent;
+
+		/**
+		 * The click event
+		 */
+		private ClickEvent clickEvent;
+
+		/**
+		 * The insertion
+		 */
+		private String insertion;
+
+		/**
+		 * What component to inherit colors/decoration from?
+		 */
+		@Nullable
+		private BaseComponent inheritFormatting;
+
+		/**
+		 * Convert this part into a text component
+		 *
+		 * @return
+		 * @deprecated receiver-specific formatting will be lost and forced
+		 */
+		@Deprecated
+		public TextComponent toTextComponent() {
+			return toTextComponent(null);
+		}
+
+		/**
+		 * Turn this part of the components into a {@link TextComponent}
+		 * for the given receiver
+		 *
+		 * @param receiver
+		 * @return
+		 */
+		private TextComponent toTextComponent(CommandSender receiver) {
+			if (!canSendTo(receiver))
+				return new TextComponent("");
+
+			final BaseComponent[] base = toComponent(this.text, this.inheritFormatting);
+
+			for (final BaseComponent part : base) {
+				if (this.hoverEvent != null)
+					part.setHoverEvent(hoverEvent);
+
+				if (this.clickEvent != null)
+					part.setClickEvent(clickEvent);
+
+				if (this.insertion != null)
+					part.setInsertion(insertion);
+			}
+
+			return new TextComponent(base);
+		}
+
+		/*
+		 * Can this component be shown to the given sender?
+		 */
+		private boolean canSendTo(@Nullable CommandSender receiver) {
 			if (receiver == null)
 				return true;
 
@@ -80,7 +144,7 @@ public final class SimpleComponent {
 
 			if (this.viewCondition != null) {
 				final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
-				Valid.checkBoolean(result instanceof Boolean, "Receiver condition must return Boolean not " + result.getClass() + " for component: " + component.toLegacyText());
+				Valid.checkBoolean(result instanceof Boolean, "Receiver condition must return Boolean not " + result.getClass() + " for component: " + this);
 
 				if ((boolean) result == false)
 					return false;
@@ -88,6 +152,15 @@ public final class SimpleComponent {
 
 			return true;
 		}
+	}
+
+	/**
+	 * Create a new interactive chat component
+	 *
+	 * @param text
+	 */
+	private SimpleComponent(String text) {
+		this.currentComponent = new Part(text);
 	}
 
 	// --------------------------------------------------------------------
@@ -134,24 +207,31 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		final List<BaseComponent> baseComponents = Common.convert(Arrays.asList(fromLegacyText(Common.colorize(text), null)), PermissibleComponent::getComponent);
-
-		for (final PermissibleComponent component : currentComponents)
-			component.getComponent().setHoverEvent(new HoverEvent(action, baseComponents.toArray(new BaseComponent[baseComponents.size()])));
+		this.currentComponent.hoverEvent = new HoverEvent(action, TextComponent.fromLegacyText(text));
 
 		return this;
 	}
 
+	/**
+	 * Set view permission for last component part
+	 *
+	 * @param viewPermission
+	 * @return
+	 */
 	public SimpleComponent viewPermission(String viewPermission) {
-		for (final PermissibleComponent component : currentComponents)
-			component.setViewPermission(viewPermission);
+		this.currentComponent.viewPermission = viewPermission;
 
 		return this;
 	}
 
-	public SimpleComponent viewCondition(String javaScriptViewCondition) {
-		for (final PermissibleComponent component : currentComponents)
-			component.setViewCondition(javaScriptViewCondition);
+	/**
+	 * Set view permission for last component part
+	 *
+	 * @param viewCondition
+	 * @return
+	 */
+	public SimpleComponent viewCondition(String viewCondition) {
+		this.currentComponent.viewCondition = viewCondition;
 
 		return this;
 	}
@@ -194,8 +274,7 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onClick(Action action, String text) {
-		for (final PermissibleComponent component : currentComponents)
-			component.getComponent().setClickEvent(new ClickEvent(action, text));
+		this.currentComponent.clickEvent = new ClickEvent(action, text);
 
 		return this;
 	}
@@ -207,8 +286,7 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onClickInsert(String insertion) {
-		for (final PermissibleComponent component : currentComponents)
-			component.getComponent().setInsertion(insertion);
+		this.currentComponent.insertion = insertion;
 
 		return this;
 	}
@@ -217,33 +295,37 @@ public final class SimpleComponent {
 	// Building
 	// --------------------------------------------------------------------
 
+	/**
+	 * Append new component at the beginning of all components
+	 *
+	 * @param component
+	 * @return
+	 */
 	public SimpleComponent appendFirst(SimpleComponent component) {
-		pastComponents.add(0, new PermissibleComponent(component.getTextComponent()));
+		this.pastComponents.addAll(0, component.pastComponents);
 
 		return this;
 	}
 
 	/**
-	 * Append a new component on the end of this one
+	 * Append text to this simple component
 	 *
-	 * @param newComponent
+	 * @param text
 	 * @return
 	 */
-	public SimpleComponent append(SimpleComponent newComponent) {
-		for (final PermissibleComponent baseComponent : currentComponents)
-			pastComponents.add(baseComponent);
-
-		currentComponents = new PermissibleComponent[] { new PermissibleComponent(newComponent.build(null)) };
-
-		return this;
-	}
-
 	public SimpleComponent append(String text) {
-		return append(text, null);
+		return this.append(text, true);
 	}
 
-	public SimpleComponent appendWithOptions(String text, AppendOption... options) {
-		return append(text, null, options);
+	/**
+	 * Append text to this simple component
+	 *
+	 * @param text
+	 * @param colorize
+	 * @return
+	 */
+	public SimpleComponent append(String text, boolean colorize) {
+		return this.append(text, null, colorize);
 	}
 
 	/**
@@ -252,59 +334,51 @@ public final class SimpleComponent {
 	 * specified here
 	 *
 	 * @param text
+	 * @param inheritFormatting
 	 * @return
 	 */
-	public SimpleComponent append(String text, BaseComponent compotentToInheritFormattingFrom, AppendOption... options) {
-		final List<AppendOption> optionsList = Arrays.asList(options);
+	public SimpleComponent append(String text, BaseComponent inheritFormatting) {
+		return this.append(text, inheritFormatting, true);
+	}
 
-		// Copy the last color to reuse in the next component
-		BaseComponent lastComponentFormatting = null;
+	/**
+	 * Create another component. The current is put in a list of past components
+	 * so next time you use onClick or onHover, you will be added the event to the new one
+	 * specified here
+	 *
+	 * @param text
+	 * @param colorize
+	 * @return
+	 */
+	public SimpleComponent append(String text, BaseComponent inheritFormatting, boolean colorize) {
 
-		for (int i = 0; i < currentComponents.length; i++) {
-			final PermissibleComponent baseComponent = currentComponents[i];
-			pastComponents.add(baseComponent);
+		// Get the last extra
+		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent();
 
-			if (!optionsList.contains(AppendOption.DO_NOT_INHERIT_FORMAT)) {
-				if (compotentToInheritFormattingFrom != null) {
-					final List<BaseComponent> extra = compotentToInheritFormattingFrom.getExtra();
+		if (!inherit.getExtra().isEmpty())
+			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
 
-					lastComponentFormatting = extra != null ? extra.get(extra.size() - 1) : compotentToInheritFormattingFrom;
-				} else
-					lastComponentFormatting = baseComponent.getComponent();
-			}
-		}
+		this.pastComponents.add(this.currentComponent);
 
-		currentComponents = fromLegacyText(!optionsList.contains(AppendOption.DO_NOT_COLORIZE) ? Common.colorize(text) : text, lastComponentFormatting);
+		this.currentComponent = new Part(colorize ? Common.colorize(text) : text);
+		this.currentComponent.inheritFormatting = inherit;
 
 		return this;
 	}
 
 	/**
-	 * Form a single {@link TextComponent} out of all components created
+	 * Append a new component on the end of this one
 	 *
+	 * @param component
 	 * @return
 	 */
-	private TextComponent build(CommandSender receiver) {
-		final TextComponent mainComponent = new TextComponent("");
+	public SimpleComponent append(SimpleComponent component) {
+		this.pastComponents.addAll(component.pastComponents);
+		this.pastComponents.add(this.currentComponent);
 
-		for (final PermissibleComponent pastComponent : pastComponents)
-			if (pastComponent.canSendTo(receiver))
-				mainComponent.addExtra(pastComponent.getComponent());
+		this.currentComponent = component.currentComponent;
 
-		for (final PermissibleComponent currentComponent : currentComponents)
-			if (currentComponent.canSendTo(receiver))
-				mainComponent.addExtra(currentComponent.getComponent());
-
-		return mainComponent;
-	}
-
-	/**
-	 * Return all components that we have created
-	 *
-	 * @return
-	 */
-	public List<PermissibleComponent> getComponents() {
-		return Common.joinArrays(pastComponents, Arrays.asList(currentComponents));
+		return this;
 	}
 
 	/**
@@ -318,12 +392,38 @@ public final class SimpleComponent {
 	}
 
 	/**
-	 * Return md_5 {@link TextComponent} object
+	 * Builds the component and its past components into a {@link TextComponent}
 	 *
 	 * @return
 	 */
 	public TextComponent getTextComponent() {
 		return build(null);
+	}
+
+	/**
+	 * Builds the component and its past components into a {@link TextComponent}
+	 *
+	 * @param receiver
+	 * @return
+	 */
+	public TextComponent build(CommandSender receiver) {
+		final TextComponent preparedComponent = new TextComponent("");
+
+		for (final Part part : this.pastComponents)
+			preparedComponent.addExtra(part.toTextComponent(receiver));
+
+		preparedComponent.addExtra(this.currentComponent.toTextComponent(receiver));
+
+		return preparedComponent;
+	}
+
+	/**
+	 * Return all past components, immutable
+	 *
+	 * @return the components
+	 */
+	public List<SimpleComponent.Part> getPreviousComponents() {
+		return Collections.unmodifiableList(this.pastComponents);
 	}
 
 	// --------------------------------------------------------------------
@@ -336,15 +436,10 @@ public final class SimpleComponent {
 	 * <p>
 	 * If they are console, they receive a plain text message.
 	 *
-	 * @param <T>
 	 * @param receiver
 	 */
-	public <T extends CommandSender> void send(Iterable<T> receivers) {
-		for (final CommandSender receiver : receivers) {
-			final TextComponent mainComponent = build(receiver);
-
-			Remain.sendComponent(receiver, mainComponent);
-		}
+	public <T extends CommandSender> void send(T... receivers) {
+		this.send(Arrays.asList(receivers));
 	}
 
 	/**
@@ -353,14 +448,72 @@ public final class SimpleComponent {
 	 * <p>
 	 * If they are console, they receive a plain text message.
 	 *
+	 * @param <T>
 	 * @param receiver
 	 */
-	public <T extends CommandSender> void send(T... receivers) {
-		for (final CommandSender receiver : receivers) {
-			final TextComponent mainComponent = build(receiver);
+	public <T extends CommandSender> void send(Iterable<T> receivers) {
+		this.sendAs(null, receivers);
+	}
 
-			Remain.sendComponent(receiver, mainComponent);
+	/**
+	 * Attempts to send the complete {@link SimpleComponent} to the given
+	 * command senders. If they are players, we send them interactive elements.
+	 * <p>
+	 * If they are console, they receive a plain text message.
+	 *
+	 * We will also replace relation placeholders if the sender is set and is player.
+	 *
+	 * @param <T>
+	 * @param receiver
+	 */
+	public <T extends CommandSender> void sendAs(@Nullable CommandSender sender, Iterable<T> receivers) {
+		for (final CommandSender receiver : receivers) {
+			final TextComponent component = new TextComponent(build(receiver));
+
+			if (receiver instanceof Player && sender instanceof Player)
+				setRelationPlaceholders(component, (Player) receiver, (Player) sender);
+
+			Remain.sendComponent(receiver, component);
 		}
+	}
+
+	/*
+	 * Replace relationship placeholders in the full component and all of its extras
+	 */
+	private void setRelationPlaceholders(final TextComponent component, final Player receiver, final Player sender) {
+
+		// Set the main text
+		component.setText(HookManager.replaceRelationPlaceholders(sender, receiver, component.getText()));
+
+		if (component.getExtra() == null)
+			return;
+
+		for (final BaseComponent extra : component.getExtra())
+			if (extra instanceof TextComponent) {
+
+				final TextComponent text = (TextComponent) extra;
+				final ClickEvent clickEvent = text.getClickEvent();
+				final HoverEvent hoverEvent = text.getHoverEvent();
+
+				// Replace for the text itself
+				//text.setText(HookManager.replaceRelationPlaceholders(sender, receiver, text.getText()));
+
+				// And for the click event
+				if (clickEvent != null)
+					text.setClickEvent(new ClickEvent(clickEvent.getAction(), HookManager.replaceRelationPlaceholders(sender, receiver, clickEvent.getValue())));
+
+				// And for the hover event
+				if (hoverEvent != null)
+					for (final BaseComponent hoverBaseComponent : hoverEvent.getValue())
+						if (hoverBaseComponent instanceof TextComponent) {
+							final TextComponent hoverTextComponent = (TextComponent) hoverBaseComponent;
+
+							hoverTextComponent.setText(HookManager.replaceRelationPlaceholders(sender, receiver, hoverTextComponent.getText()));
+						}
+
+				// Then repeat for the extra parts in the text itself
+				setRelationPlaceholders(text, receiver, sender);
+			}
 	}
 
 	// --------------------------------------------------------------------
@@ -377,9 +530,10 @@ public final class SimpleComponent {
 	 * @param viewPermission
 	 * @return
 	 */
-	private static PermissibleComponent[] fromLegacyText(@NonNull String message, @Nullable BaseComponent inheritFormatting) {
-		final List<PermissibleComponent> components = new ArrayList<>();
+	private static TextComponent[] toComponent(@NonNull String message, @Nullable BaseComponent inheritFormatting) {
+		final List<TextComponent> components = new ArrayList<>();
 
+		// TODO being able to be used in {message}
 		if (Common.stripColors(message).startsWith("<center>"))
 			message = ChatUtil.center(message.replace("<center>", ""));
 
@@ -432,7 +586,7 @@ public final class SimpleComponent {
 					old.setText(builder.toString());
 
 					builder = new StringBuilder();
-					components.add(new PermissibleComponent(old));
+					components.add(old);
 				}
 
 				switch (format.getName().toUpperCase()) {
@@ -488,7 +642,7 @@ public final class SimpleComponent {
 					component = new TextComponent(old);
 					old.setText(builder.toString());
 					builder = new StringBuilder();
-					components.add(new PermissibleComponent(old));
+					components.add(old);
 				}
 
 				final TextComponent old = component;
@@ -497,7 +651,7 @@ public final class SimpleComponent {
 				final String urlString = message.substring(i, pos);
 				component.setText(urlString);
 				component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
-				components.add(new PermissibleComponent(component));
+				components.add(component);
 
 				i += pos - i - 1;
 				component = old;
@@ -509,9 +663,20 @@ public final class SimpleComponent {
 		}
 
 		component.setText(builder.toString());
-		components.add(new PermissibleComponent(component));
+		components.add(component);
 
-		return components.stream().toArray(PermissibleComponent[]::new);
+		return components.stream().toArray(TextComponent[]::new);
+	}
+
+	/**
+	 * Create a new interactive chat component
+	 * You can then build upon your text to add interactive elements
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static SimpleComponent of(String... text) {
+		return of(true, text);
 	}
 
 	/**
@@ -522,12 +687,12 @@ public final class SimpleComponent {
 	 * @param text
 	 * @return
 	 */
-	public static SimpleComponent of(String... text) {
-		return new SimpleComponent(text);
-	}
+	public static SimpleComponent of(boolean colorize, String... text) {
+		final SimpleComponent component = new SimpleComponent("");
 
-	public enum AppendOption {
-		DO_NOT_COLORIZE,
-		DO_NOT_INHERIT_FORMAT;
+		for (final String textPart : text)
+			component.append(colorize ? Common.colorize(textPart) : textPart);
+
+		return component;
 	}
 }
