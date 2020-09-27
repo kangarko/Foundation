@@ -7,6 +7,7 @@ import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationCanceller;
+import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationPrefix;
 import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.conversations.Prompt;
@@ -64,11 +65,11 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 		// Setup
 		final CustomConversation conversation = new CustomConversation(player);
+		final CustomCanceller canceller = new CustomCanceller();
 
-		final InactivityConversationCanceller inactivityCanceller = new InactivityConversationCanceller(SimplePlugin.getInstance(), 45);
-		inactivityCanceller.setConversation(conversation);
+		canceller.setConversation(conversation);
 
-		conversation.getCancellers().add(inactivityCanceller);
+		conversation.getCancellers().add(canceller);
 		conversation.getCancellers().add(getCanceller());
 
 		conversation.addConversationAbandonedListener(this);
@@ -88,8 +89,14 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 */
 	@Override
 	public final void conversationAbandoned(final ConversationAbandonedEvent event) {
-		final Conversable conversing = event.getContext().getForWhom();
+		final ConversationContext context = event.getContext();
+		final Conversable conversing = context.getForWhom();
+
 		final Object source = event.getSource();
+		final boolean timeout = (boolean) context.getAllSessionData().getOrDefault("FLP#TIMEOUT", false);
+
+		// Remove the session data so that they are invisible to other plugnis
+		context.getAllSessionData().remove("FLP#TIMEOUT");
 
 		if (source instanceof CustomConversation) {
 			final SimplePrompt lastPrompt = ((CustomConversation) source).getLastSimplePrompt();
@@ -98,7 +105,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				lastPrompt.onConversationEnd(this, event);
 		}
 
-		onConversationEnd(event);
+		onConversationEnd(event, timeout);
 
 		if (conversing instanceof Player) {
 			final Player player = (Player) conversing;
@@ -108,6 +115,18 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 			if (menuToReturnTo != null && reopenMenu())
 				menuToReturnTo.newInstance().displayTo(player);
 		}
+	}
+
+	/**
+	 * Fired when the user quits this conversation (see {@link #getCanceller()}, or
+	 * simply quits the game)
+	 *
+	 *
+	 * @param event
+	 * @param canceledFromInactivity true if user failed to enter input in the period set in {@link #getTimeout()}
+	 */
+	protected void onConversationEnd(final ConversationAbandonedEvent event, boolean canceledFromInactivity) {
+		this.onConversationEnd(event);
 	}
 
 	/**
@@ -132,6 +151,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		return new SimplePrefix(Common.ADD_TELL_PREFIX ? addLastSpace(Common.getTellPrefix()) : "");
 	}
 
+	/*
+	 * Add a space to the prefix if it ends with one
+	 */
 	private final String addLastSpace(final String prefix) {
 		return prefix.endsWith(" ") ? prefix : prefix + " ";
 	}
@@ -181,6 +203,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	public void setMenuToReturnTo(final Menu menu) {
 		this.menuToReturnTo = menu;
 	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Static access
 	// ------------------------------------------------------------------------------------------------------------
@@ -227,6 +250,29 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		Common.tellLaterConversing(delayTicks, conversable, message);
 	}
 
+	// ------------------------------------------------------------------------------------------------------------
+	// Classes
+	// ------------------------------------------------------------------------------------------------------------
+
+	private final class CustomCanceller extends InactivityConversationCanceller {
+
+		/**
+		 * @param plugin
+		 * @param timeoutSeconds
+		 */
+		public CustomCanceller() {
+			super(SimplePlugin.getInstance(), getTimeout());
+		}
+
+		/**
+		 * @see org.bukkit.conversations.InactivityConversationCanceller#cancelling(org.bukkit.conversations.Conversation)
+		 */
+		@Override
+		protected void cancelling(Conversation conversation) {
+			conversation.getContext().setSessionData("FLP#TIMEOUT", true);
+		}
+	}
+
 	/**
 	 * Custom conversation class used for only showing the question once per 20 seconds interval
 	 */
@@ -245,19 +291,18 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 			if (insertPrefix() && SimpleConversation.this.getPrefix() != null)
 				prefix = SimpleConversation.this.getPrefix();
+
 		}
 
 		@Override
 		public void outputNextPrompt() {
 			if (currentPrompt == null)
 				abandon(new ConversationAbandonedEvent(this));
-			else {
-				// Edit start
 
-				// Edit 1 - save the time when we showed the question to the player
+			else {
+				// Save the time when we showed the question to the player
 				// so that we only show it once per the given threshold
 				final String promptClass = currentPrompt.getClass().getSimpleName();
-
 				final String question = currentPrompt.getPromptText(context);
 
 				try {
@@ -273,11 +318,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 					// Unfortunately, old MC version was detected
 				}
 
-				// Edit 2 - Save last prompt if it is our class
+				// Save last prompt if it is our class
 				if (currentPrompt instanceof SimplePrompt)
 					lastSimplePrompt = ((SimplePrompt) currentPrompt).clone();
-
-				// Edit end
 
 				if (!currentPrompt.blocksForInput(context)) {
 					currentPrompt = currentPrompt.acceptInput(context, null);

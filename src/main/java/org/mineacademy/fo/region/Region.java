@@ -16,6 +16,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.ConfigSerializable;
+import org.mineacademy.fo.visual.VisualizedRegion;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -26,6 +27,11 @@ import lombok.Setter;
  */
 @Getter
 public class Region implements ConfigSerializable {
+
+	/**
+	 * Represents an empty region
+	 */
+	public static final VisualizedRegion EMPTY = new VisualizedRegion(null, null);
 
 	/**
 	 * The name of the region, or null if not given

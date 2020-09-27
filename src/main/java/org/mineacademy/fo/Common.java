@@ -1260,7 +1260,9 @@ public final class Common {
 	 */
 	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
 		try {
-			final String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
+			String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
+			strippedMessage = SimplePlugin.getInstance().regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
+
 			final int timeout = SimpleSettings.REGEX_TIMEOUT;
 
 			return pattern.matcher(new TimedCharSequence(strippedMessage, timeout));
@@ -1296,6 +1298,7 @@ public final class Common {
 		Pattern pattern = null;
 
 		regex = SimplePlugin.getInstance().regexStripColors() ? stripColors(regex) : regex;
+		regex = SimplePlugin.getInstance().regexStripAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
 
 		try {
 

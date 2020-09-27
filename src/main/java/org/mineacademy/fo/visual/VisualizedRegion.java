@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -44,7 +46,7 @@ public final class VisualizedRegion extends Region {
 	 * @param primary
 	 * @param secondary
 	 */
-	public VisualizedRegion(final Location primary, final Location secondary) {
+	public VisualizedRegion(@Nullable final Location primary, @Nullable final Location secondary) {
 		super(primary, secondary);
 	}
 
@@ -55,7 +57,7 @@ public final class VisualizedRegion extends Region {
 	 * @param primary
 	 * @param secondary
 	 */
-	public VisualizedRegion(final String name, final Location primary, final Location secondary) {
+	public VisualizedRegion(@Nullable final String name, final Location primary, @Nullable final Location secondary) {
 		super(name, primary, secondary);
 	}
 

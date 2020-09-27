@@ -27,7 +27,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -866,7 +865,7 @@ public final class ReflectionUtil {
 					final Class<?> clazz;
 
 					try {
-						YamlConfig.INVOKE_SAVE = false;
+						//YamlConfig.INVOKE_SAVE = false;
 
 						clazz = Class.forName(name);
 
@@ -874,7 +873,7 @@ public final class ReflectionUtil {
 						continue;
 
 					} finally {
-						YamlConfig.INVOKE_SAVE = true;
+						//YamlConfig.INVOKE_SAVE = true;
 					}
 
 					classes.add(clazz);

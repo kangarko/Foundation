@@ -78,8 +78,8 @@ public class YamlConfig implements ConfigSerializable {
 	 *
 	 * @deprecated do not use
 	 */
-	@Deprecated
-	public static boolean INVOKE_SAVE = true;
+	//@Deprecated
+	//public static boolean INVOKE_SAVE_ = true;
 
 	/**
 	 * All files that are currently loaded
@@ -226,8 +226,8 @@ public class YamlConfig implements ConfigSerializable {
 	 * @throws Exception
 	 */
 	protected final void loadLocalization(final String localePrefix) throws Exception {
-		if (!INVOKE_SAVE)
-			return;
+		//if (!INVOKE_SAVE)
+		//	return;
 
 		synchronized (loadedFiles) {
 			Valid.checkNotNull(localePrefix, "locale cannot be null!");
@@ -301,8 +301,11 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param to,   the destination path in plugins/ThisPlugin/
 	 */
 	public final void loadConfiguration(final String from, final String to) {
-		if (!INVOKE_SAVE)
+		/*if (!INVOKE_SAVE) {
+			System.out.println("@do not load " + from + " to " + to);
+
 			return;
+		}*/
 
 		synchronized (loadedFiles) {
 			Valid.checkNotNull(to, "File to path cannot be null!");
@@ -452,6 +455,9 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	protected final String getFileName() {
+		Valid.checkNotNull(instance, "Instance == null");
+		Valid.checkNotNull(instance.getFile(), "Instance file == null");
+
 		return instance.getFile().getName();
 	}
 

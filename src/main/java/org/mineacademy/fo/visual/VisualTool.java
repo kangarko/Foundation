@@ -11,6 +11,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * A class that can visualize selection of blocks in the arena
@@ -91,16 +92,20 @@ public abstract class VisualTool extends BlockTool {
 	/**
 	 * Return a list of points we should render in this visualization
 	 *
+	 * @param player
+	 *
 	 * @return
 	 */
-	protected abstract List<Location> getVisualizedPoints();
+	protected abstract List<Location> getVisualizedPoints(Player player);
 
 	/**
 	 * Return a region that this tool should draw particles around
 	 *
+	 * @param player
+	 *
 	 * @return
 	 */
-	protected VisualizedRegion getVisualizedRegion() {
+	protected VisualizedRegion getVisualizedRegion(Player player) {
 		return null;
 	}
 
@@ -125,14 +130,14 @@ public abstract class VisualTool extends BlockTool {
 	/*
 	 * Visualize the region and points if exist
 	 */
-	private void visualize(final Player player) {
-		final VisualizedRegion region = getVisualizedRegion();
+	private void visualize(@NonNull final Player player) {
+		final VisualizedRegion region = getVisualizedRegion(player);
 
 		if (region != null && region.isWhole())
 			if (!region.canSeeParticles(player))
 				region.showParticles(player);
 
-		for (final Location location : getVisualizedPoints()) {
+		for (final Location location : getVisualizedPoints(player)) {
 			if (location == null)
 				continue;
 
@@ -146,13 +151,13 @@ public abstract class VisualTool extends BlockTool {
 	/*
 	 * Stop visualizing region and points if they were so before
 	 */
-	private void stopVisualizing(final Player player) {
-		final VisualizedRegion region = getVisualizedRegion();
+	private void stopVisualizing(@NonNull final Player player) {
+		final VisualizedRegion region = getVisualizedRegion(player);
 
 		if (region != null && region.canSeeParticles(player))
 			region.hideParticles(player);
 
-		for (final Location location : getVisualizedPoints()) {
+		for (final Location location : getVisualizedPoints(player)) {
 			if (location == null)
 				continue;
 
