@@ -355,11 +355,10 @@ public final class SimpleComponent {
 		// Get the last extra
 		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent();
 
-		if (!inherit.getExtra().isEmpty())
+		if (inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
 
 		this.pastComponents.add(this.currentComponent);
-
 		this.currentComponent = new Part(colorize ? Common.colorize(text) : text);
 		this.currentComponent.inheritFormatting = inherit;
 
@@ -374,8 +373,8 @@ public final class SimpleComponent {
 	 */
 	public SimpleComponent append(SimpleComponent component) {
 		this.pastComponents.addAll(component.pastComponents);
-		this.pastComponents.add(this.currentComponent);
 
+		this.pastComponents.add(this.currentComponent);
 		this.currentComponent = component.currentComponent;
 
 		return this;
@@ -574,56 +573,62 @@ public final class SimpleComponent {
 				if (c >= 'A' && c <= 'Z')
 					c += 32;
 
-				ChatColor format = ChatColor.getByChar(c);
+				ChatColor format;
+
+				if (c == 'x' && i + 12 < message.length()) {
+					final StringBuilder hex = new StringBuilder("#");
+
+					for (int j = 0; j < 6; j++)
+						hex.append(message.charAt(i + 2 + (j * 2)));
+
+					try {
+						format = ChatColor.of(hex.toString());
+
+					} catch (final IllegalArgumentException ex) {
+						format = null;
+					}
+
+					i += 12;
+
+				} else
+					format = ChatColor.getByChar(c);
 
 				if (format == null)
 					continue;
 
 				if (builder.length() > 0) {
 					final TextComponent old = component;
-
 					component = new TextComponent(old);
 					old.setText(builder.toString());
-
 					builder = new StringBuilder();
 					components.add(old);
 				}
 
-				switch (format.getName().toUpperCase()) {
-					case "BOLD":
-						component.setBold(true);
-						break;
-					case "ITALIC":
-						component.setItalic(true);
-						break;
-					case "UNDERLINE":
-						component.setUnderlined(true);
-						break;
-					case "STRIKETHROUGH":
-						component.setStrikethrough(true);
-						break;
-					case "OBFUSCATED":
-						component.setObfuscated(true);
-						break;
-					case "MAGIC":
-						component.setObfuscated(true);
-						break;
-					case "RESET":
-						format = ChatColor.RESET;
+				if (format == ChatColor.BOLD)
+					component.setBold(true);
 
-					default:
-						component = new TextComponent();
-						component.setColor(format);
+				else if (format == ChatColor.ITALIC)
+					component.setItalic(true);
 
-						if (format == ChatColor.RESET) {
-							component.setBold(false);
-							component.setItalic(false);
-							component.setUnderlined(false);
-							component.setStrikethrough(false);
-							component.setObfuscated(false);
-						}
+				else if (format == ChatColor.UNDERLINE)
+					component.setUnderlined(true);
 
-						break;
+				else if (format == ChatColor.STRIKETHROUGH)
+					component.setStrikethrough(true);
+
+				else if (format == ChatColor.MAGIC)
+					component.setObfuscated(true);
+
+				else if (format == ChatColor.RESET) {
+					format = ChatColor.WHITE;
+
+					component = new TextComponent();
+					component.setColor(format);
+
+				} else {
+					component = new TextComponent();
+
+					component.setColor(format);
 				}
 
 				continue;
@@ -636,9 +641,9 @@ public final class SimpleComponent {
 
 			// Web link handling
 			if (matcher.region(i, pos).find()) {
+
 				if (builder.length() > 0) {
 					final TextComponent old = component;
-
 					component = new TextComponent(old);
 					old.setText(builder.toString());
 					builder = new StringBuilder();
@@ -665,7 +670,7 @@ public final class SimpleComponent {
 		component.setText(builder.toString());
 		components.add(component);
 
-		return components.stream().toArray(TextComponent[]::new);
+		return components.toArray(new TextComponent[components.size()]);
 	}
 
 	/**
@@ -675,7 +680,18 @@ public final class SimpleComponent {
 	 * @param text
 	 * @return
 	 */
-	public static SimpleComponent of(String... text) {
+	public static SimpleComponent empty() {
+		return of(true, "");
+	}
+
+	/**
+	 * Create a new interactive chat component
+	 * You can then build upon your text to add interactive elements
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static SimpleComponent of(String text) {
 		return of(true, text);
 	}
 
@@ -687,12 +703,7 @@ public final class SimpleComponent {
 	 * @param text
 	 * @return
 	 */
-	public static SimpleComponent of(boolean colorize, String... text) {
-		final SimpleComponent component = new SimpleComponent("");
-
-		for (final String textPart : text)
-			component.append(colorize ? Common.colorize(textPart) : textPart);
-
-		return component;
+	public static SimpleComponent of(boolean colorize, String text) {
+		return new SimpleComponent(text == null ? "" : colorize ? Common.colorize(text) : text);
 	}
 }
