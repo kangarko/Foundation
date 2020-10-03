@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.io.File;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,71 @@ public abstract class RuleSetReader<T extends Rule> {
 	 */
 	public RuleSetReader(String newKeyword) {
 		this.newKeyword = newKeyword;
+	}
+
+	/**
+	 * Load all items in this ruleset
+	 */
+	public abstract void load();
+
+	// ------–------–------–------–------–------–------–------–------–------–------–------–
+	// Classes
+	// ------–------–------–------–------–------–------–------–------–------–------–------–
+
+	/**
+	 * Toggle the given rule on/off
+	 *
+	 * @param rule
+	 * @param disabled
+	 */
+	public final void toggleRule(Rule rule, boolean disabled) {
+
+		final File file = rule.getFile();
+		Valid.checkBoolean(file.exists(), "No such file: " + file + " Rule: " + rule);
+
+		final List<String> lines = FileUtil.readLines(file);
+		boolean found = false;
+
+		for (int i = 0; i < lines.size(); i++) {
+			final String line = lines.get(i);
+
+			// Found our rule
+			if (line.equals(this.newKeyword + " " + rule.getMatch()))
+				found = true;
+
+			// Found something else
+			else if (line.startsWith("#") || line.isEmpty() || line.startsWith("match ")) {
+				if (found && i > 0 && disabled) {
+					lines.add(i, "disabled");
+
+					break;
+				}
+			}
+
+			// Found the disabled operator
+			else if (line.equals("disabled")) {
+				if (found && !disabled) {
+					lines.remove(i);
+
+					break;
+				}
+			}
+		}
+
+		Valid.checkBoolean(found, "Failed to disable rule " + rule);
+		saveAndLoad(file, lines);
+	}
+
+	/**
+	 * Save the given file with the given lines and reloads
+	 *
+	 * @param rule
+	 * @param lines
+	 */
+	protected final void saveAndLoad(File file, List<String> lines) {
+		FileUtil.write(file, lines, StandardOpenOption.TRUNCATE_EXISTING);
+
+		load();
 	}
 
 	/**

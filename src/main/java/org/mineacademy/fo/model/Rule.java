@@ -1,8 +1,24 @@
 package org.mineacademy.fo.model;
 
+import java.io.File;
+
 import org.mineacademy.fo.Common;
 
 public interface Rule {
+
+	/**
+	 * Return the uniquely identifying expression that identifies this rule
+	 *
+	 * @return
+	 */
+	String getMatch();
+
+	/**
+	 * Return the file this rule residues in
+	 *
+	 * @return
+	 */
+	File getFile();
 
 	/**
 	 * Attempts to parse the given line from {@link RuleSetReader} containing an operator such as
