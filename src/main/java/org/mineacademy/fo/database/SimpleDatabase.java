@@ -5,15 +5,23 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -43,6 +51,11 @@ public class SimpleDatabase {
 	 * Map of variables you can use with the {} syntax in SQL
 	 */
 	private final StrictMap<String, String> sqlVariables = new StrictMap<>();
+
+	/**
+	 * Indicates that {@link #batchUpdate(List)} is ongoing
+	 */
+	private boolean batchUpdateGoingOn = false;
 
 	// --------------------------------------------------------------------
 	// Connecting
@@ -172,6 +185,56 @@ public class SimpleDatabase {
 	// --------------------------------------------------------------------
 
 	/**
+	 * Insert the given column-values pairs into the {@link #getTable()}
+	 *
+	 * @param columnValuesPairs
+	 */
+	protected final void insert(@NonNull SerializedMap map) {
+		this.insert("{table}", map);
+	}
+
+	/**
+	 * Insert the given column-values pairs into the given table
+	 *
+	 * @param table
+	 * @param columnValuesPairs
+	 */
+	protected final void insert(String table, @NonNull SerializedMap map) {
+		final String columns = Common.join(map.keySet());
+		final String values = Common.join(map.values(), ", ", value -> value == null ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+
+		update("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
+	}
+
+	/**
+	 * Insert the batch map into {@link #getTable()}
+	 *
+	 * @param maps
+	 */
+	protected final void insertBatch(@NonNull List<SerializedMap> maps) {
+		this.insertBatch("{table}", maps);
+	}
+
+	/**
+	 * Insert the batch map into the database
+	 *
+	 * @param table
+	 * @param maps
+	 */
+	protected final void insertBatch(String table, @NonNull List<SerializedMap> maps) {
+		final List<String> sqls = new ArrayList<>();
+
+		for (final SerializedMap map : maps) {
+			final String columns = Common.join(map.keySet());
+			final String values = Common.join(map.values(), ", ", value -> value == null ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+
+			sqls.add("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
+		}
+
+		this.batchUpdate(sqls);
+	}
+
+	/**
 	 * Attempts to execute a new update query
 	 * <p>
 	 * Make sure you called connect() first otherwise an error will be thrown
@@ -233,6 +296,68 @@ public class SimpleDatabase {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Executes a massive batch update
+	 *
+	 * @param sqls
+	 */
+	protected final void batchUpdate(@NonNull List<String> sqls) {
+		if (sqls.size() == 0)
+			return;
+
+		try {
+			final Statement batchStatement = getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			final int processedCount = sqls.size();
+
+			// Prevent automatically sending db instructions
+			getConnection().setAutoCommit(false);
+
+			for (final String sql : sqls)
+				batchStatement.addBatch(replaceVariables(sql));
+
+			if (processedCount > 10_000)
+				Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
+						+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
+
+			// Set the flag to start time notifications timer
+			batchUpdateGoingOn = true;
+
+			// Notify console that progress still is being made
+			new Timer().scheduleAtFixedRate(new TimerTask() {
+
+				@Override
+				public void run() {
+					if (batchUpdateGoingOn)
+						Common.log("Still executing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
+					else
+						cancel();
+				}
+			}, 1000 * 30, 1000 * 30);
+
+			// Execute
+			batchStatement.executeBatch();
+
+			// This will block the thread
+			getConnection().commit();
+
+			Common.log("Updated " + processedCount + " database entries.");
+
+		} catch (final Throwable t) {
+			t.printStackTrace();
+
+		} finally {
+			try {
+				getConnection().setAutoCommit(true);
+
+			} catch (final SQLException ex) {
+				ex.printStackTrace();
+			}
+
+			// Even in case of failure, cancel
+			batchUpdateGoingOn = false;
+		}
 	}
 
 	/**
