@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,26 +94,16 @@ public final class SimpleComponent {
 		private BaseComponent inheritFormatting;
 
 		/**
-		 * Convert this part into a text component
-		 *
-		 * @return
-		 * @deprecated receiver-specific formatting will be lost and forced
-		 */
-		@Deprecated
-		public TextComponent toTextComponent() {
-			return toTextComponent(null);
-		}
-
-		/**
 		 * Turn this part of the components into a {@link TextComponent}
 		 * for the given receiver
 		 *
 		 * @param receiver
 		 * @return
 		 */
+		@Nullable
 		private TextComponent toTextComponent(CommandSender receiver) {
-			if (!canSendTo(receiver))
-				return new TextComponent("");
+			if (!canSendTo(receiver) || isEmpty())
+				return null;
 
 			final BaseComponent[] base = toComponent(this.text, this.inheritFormatting);
 
@@ -130,6 +119,13 @@ public final class SimpleComponent {
 			}
 
 			return new TextComponent(base);
+		}
+
+		/*
+		 * Return if we're dealing with an empty format
+		 */
+		private boolean isEmpty() {
+			return this.text.isEmpty() && this.hoverEvent == null && this.clickEvent == null && this.insertion == null;
 		}
 
 		/*
@@ -207,7 +203,7 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		this.currentComponent.hoverEvent = new HoverEvent(action, TextComponent.fromLegacyText(text));
+		this.currentComponent.hoverEvent = new HoverEvent(action, toComponent(Common.colorize(text), null));
 
 		return this;
 	}
@@ -302,6 +298,7 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent appendFirst(SimpleComponent component) {
+		this.pastComponents.add(0, component.currentComponent);
 		this.pastComponents.addAll(0, component.pastComponents);
 
 		return this;
@@ -353,12 +350,13 @@ public final class SimpleComponent {
 	public SimpleComponent append(String text, BaseComponent inheritFormatting, boolean colorize) {
 
 		// Get the last extra
-		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent();
+		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent(null);
 
-		if (inherit.getExtra() != null && !inherit.getExtra().isEmpty())
+		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
 
 		this.pastComponents.add(this.currentComponent);
+
 		this.currentComponent = new Part(colorize ? Common.colorize(text) : text);
 		this.currentComponent.inheritFormatting = inherit;
 
@@ -373,9 +371,16 @@ public final class SimpleComponent {
 	 */
 	public SimpleComponent append(SimpleComponent component) {
 		this.pastComponents.addAll(component.pastComponents);
-
 		this.pastComponents.add(this.currentComponent);
+
+		// Get the last extra
+		BaseComponent inherit = Common.getOrDefault(component.currentComponent.inheritFormatting, this.currentComponent.toTextComponent(null));
+
+		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
+			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
+
 		this.currentComponent = component.currentComponent;
+		this.currentComponent.inheritFormatting = inherit;
 
 		return this;
 	}
@@ -406,23 +411,27 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public TextComponent build(CommandSender receiver) {
-		final TextComponent preparedComponent = new TextComponent("");
+		TextComponent preparedComponent = null;
 
-		for (final Part part : this.pastComponents)
-			preparedComponent.addExtra(part.toTextComponent(receiver));
+		for (final Part part : this.pastComponents) {
+			final TextComponent component = part.toTextComponent(receiver);
 
-		preparedComponent.addExtra(this.currentComponent.toTextComponent(receiver));
+			if (component != null)
+				if (preparedComponent == null)
+					preparedComponent = component;
+				else
+					preparedComponent.addExtra(component);
+		}
 
-		return preparedComponent;
-	}
+		final TextComponent currentComponent = this.currentComponent.toTextComponent(receiver);
 
-	/**
-	 * Return all past components, immutable
-	 *
-	 * @return the components
-	 */
-	public List<SimpleComponent.Part> getPreviousComponents() {
-		return Collections.unmodifiableList(this.pastComponents);
+		if (currentComponent != null)
+			if (preparedComponent == null)
+				preparedComponent = currentComponent;
+			else
+				preparedComponent.addExtra(currentComponent);
+
+		return Common.getOrDefault(preparedComponent, new TextComponent(""));
 	}
 
 	// --------------------------------------------------------------------
@@ -704,6 +713,6 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public static SimpleComponent of(boolean colorize, String text) {
-		return new SimpleComponent(text == null ? "" : colorize ? Common.colorize(text) : text);
+		return new SimpleComponent(colorize ? Common.colorize(text) : text);
 	}
 }
