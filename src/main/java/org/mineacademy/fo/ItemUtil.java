@@ -1,5 +1,7 @@
 package org.mineacademy.fo;
 
+import java.util.ArrayList;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -170,7 +172,7 @@ public final class ItemUtil {
 			final String fName = f == null ? "" : Common.stripColors(Common.getOrEmpty(f.getDisplayName()).toLowerCase());
 			final String sName = s == null ? "" : Common.stripColors(Common.getOrEmpty(s.getDisplayName()).toLowerCase());
 
-			if (!fName.equals(sName) || !Valid.listEquals(f.getLore(), s.getLore()))
+			if ((fName != null && !fName.equals(sName)) || !Valid.listEquals(f == null ? new ArrayList<>() : f.getLore(), s == null ? new ArrayList<>() : s.getLore()))
 				return false;
 		}
 
