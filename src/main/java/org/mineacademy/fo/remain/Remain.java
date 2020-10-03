@@ -65,6 +65,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
@@ -589,6 +590,25 @@ public final class Remain {
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Error spawning item " + item.getType() + " at " + location);
+
+			return null;
+		}
+	}
+
+	/**
+	 * Return NMS copy of the given itemstack
+	 *
+	 * @param itemStack
+	 * @return
+	 */
+	public static Object asNMSCopy(ItemStack itemStack) {
+		try {
+			final Method asNmsCopy = getOBCClass("inventory.CraftItemStack").getMethod("asNMSCopy", ItemStack.class);
+
+			return asNmsCopy.invoke(null, itemStack);
+
+		} catch (final ReflectiveOperationException ex) {
+			Common.throwError(ex, "Unable to convert item to NMS item: " + itemStack);
 
 			return null;
 		}
@@ -1274,6 +1294,37 @@ public final class Remain {
 	}
 
 	/**
+	 * Opens the book for the player given the book is a WRITTEN_BOOK
+	 *
+	 * @param player
+	 * @param book
+	 */
+	public static void openBook(Player player, ItemStack book) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
+
+		try {
+			player.openBook(book);
+
+		} catch (final NoSuchMethodError ex) {
+			final ItemStack oldItem = player.getItemInHand();
+
+			// Set the book temporarily to hands
+			player.setItemInHand(book);
+
+			final Object craftPlayer = getHandleEntity(player);
+			final Object nmsItemstack = asNMSCopy(book);
+
+			Common.runLater(() -> {
+				final Method openInventory = ReflectionUtil.getMethod(craftPlayer.getClass(), "openBook", nmsItemstack.getClass());
+				ReflectionUtil.invoke(openInventory, craftPlayer, nmsItemstack);
+
+				// Reset hands
+				player.setItemInHand(oldItem);
+			});
+		}
+	}
+
+	/**
 	 * Update the player's inventory title without closing the window
 	 *
 	 * @param player the player
@@ -1384,7 +1435,9 @@ public final class Remain {
 	 * @return
 	 */
 	public static int getPlaytimeMinutes(final Player player) {
-		return player.getStatistic(getPlayTimeStatisticName()) / (isPlaytimeStatisticTicks() ? 20 : 1);
+		final Statistic stat = getPlayTimeStatisticName();
+
+		return player.getStatistic(stat) / (stat.name().contains("TICK") ? 20 * 60 : 60 * 60);
 	}
 
 	/**
@@ -1530,6 +1583,82 @@ public final class Remain {
 		final InventoryView view = e.getView();
 
 		return slot < 0 ? null : view.getTopInventory() != null && slot < view.getTopInventory().getSize() ? view.getTopInventory() : view.getBottomInventory();
+	}
+
+	/**
+	 * Return a list of pages (new MC also will expose interactive elements)
+	 * in a book
+	 *
+	 * @param meta
+	 * @return
+	 */
+	public static List<BaseComponent[]> getPages(BookMeta meta) {
+		try {
+			return meta.spigot().getPages();
+
+		} catch (final NoSuchMethodError ex) {
+			final List<BaseComponent[]> list = new ArrayList<>();
+
+			for (final String page : meta.getPages())
+				list.add(TextComponent.fromLegacyText(page));
+
+			return list;
+		}
+	}
+
+	/**
+	 * Attempts to set the book pages from the given list
+	 *
+	 * @param meta
+	 * @param pages
+	 */
+	public static void setPages(BookMeta meta, List<BaseComponent[]> pages) {
+		try {
+			meta.spigot().setPages(pages);
+
+		} catch (final NoSuchMethodError ex) {
+			/*final List<String> list = new ArrayList<>();
+
+			for (final BaseComponent[] page : pages)
+				list.add(TextComponent.toLegacyText(page));
+
+			meta.setPages(list);*/
+
+			try {
+				final List<Object> chatComponentPages = (List<Object>) ReflectionUtil.getFieldContent(ReflectionUtil.getOBCClass("inventory.CraftMetaBook"), "pages", meta);
+
+				for (final BaseComponent[] text : pages)
+					chatComponentPages.add(toIChatBaseComponent(text));
+
+			} catch (final Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Return IChatBaseComponent from the given JSON
+	 *
+	 * @param baseComponents
+	 * @return
+	 */
+	public static Object toIChatBaseComponent(BaseComponent[] baseComponents) {
+		return toIChatBaseComponent(toJson(baseComponents));
+	}
+
+	/**
+	 * Return IChatBaseComponent from the given JSON
+	 *
+	 * @param json
+	 * @return
+	 */
+	public static Object toIChatBaseComponent(String json) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "Serializing chat components requires Minecraft 1.7.10 and greater");
+
+		final Class<?> chatSerializer = ReflectionUtil.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer");
+		final Method a = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
+
+		return ReflectionUtil.invoke(a, null, json);
 	}
 
 	/**
@@ -2262,12 +2391,14 @@ class BungeeChatProvider {
 
 		try {
 			if (MinecraftVersion.equals(V.v1_7)) {
-				// Elegant way of sending JSON on such old MC version - just use the native command
-				Common.runLater(() -> {
-					final String json = Remain.toJson(comps);
+				final Class<?> chatBaseComponentClass = ReflectionUtil.getNMSClass("IChatBaseComponent");
+				final Class<?> packetClass = ReflectionUtil.getNMSClass("PacketPlayOutChat");
 
-					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + sender.getName() + " " + json);
-				});
+				final Object chatBaseComponent = Remain.toIChatBaseComponent(comps);
+				final Object packet = ReflectionUtil.instantiate(ReflectionUtil.getConstructor(packetClass, chatBaseComponentClass), chatBaseComponent);
+
+				Remain.sendPacket((Player) sender, packet);
+
 			} else
 				((Player) sender).spigot().sendMessage(comps);
 
