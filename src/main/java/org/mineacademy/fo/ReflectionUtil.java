@@ -3,7 +3,6 @@ package org.mineacademy.fo;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -754,7 +753,7 @@ public final class ReflectionUtil {
 		try {
 
 			// Since we obfuscate our plugins, enum names are changed.
-			// Therefore we look up
+			// Therefore we look up a special fromKey method in some of our enums
 			boolean hasKey = false;
 			Method method = null;
 
@@ -776,9 +775,7 @@ public final class ReflectionUtil {
 		} catch (final IllegalArgumentException ex) {
 			return null;
 
-		} catch (IllegalAccessException | InvocationTargetException ex) {
-			Common.throwError(ex, "Unable to invoke getKey for " + enumType);
-
+		} catch (final ReflectiveOperationException ex) {
 			return null;
 		}
 	}

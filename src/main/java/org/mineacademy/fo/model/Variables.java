@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -333,8 +332,6 @@ public final class Variables {
 			case "isp":
 				return player == null ? "" : geoResponse.getIsp();
 
-			case "random_uuid":
-				return UUID.randomUUID().toString();
 			case "label":
 				return SimplePlugin.getInstance().getMainCommand() != null ? SimplePlugin.getInstance().getMainCommand().getLabel() : "noMainCommandLabel";
 			case "sender_is_player":
