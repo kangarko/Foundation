@@ -1,7 +1,9 @@
 package org.mineacademy.fo;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +25,11 @@ public final class TimeUtil {
 	 * The date format in dd.MM.yyy HH:mm
 	 */
 	private static final DateFormat DATE_FORMAT_SHORT = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+
+	/**
+	 * The date format in dd.MM HH:mm
+	 */
+	private static final DateFormat DATE_FORMAT_MONTH = new SimpleDateFormat("dd.MM HH:mm");
 
 	/**
 	 * The pattern recognizing 1d1h1s type of dates
@@ -112,6 +119,17 @@ public final class TimeUtil {
 	 */
 	public static String getFormattedDateShort(final long time) {
 		return DATE_FORMAT_SHORT.format(time);
+	}
+
+	/**
+	 * Return the given date in millis formatted as
+	 * dd.MM HH:mm
+	 *
+	 * @param time
+	 * @return
+	 */
+	public static String getFormattedDateMonth(final long time) {
+		return DATE_FORMAT_MONTH.format(time);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -277,37 +295,37 @@ public final class TimeUtil {
 						}
 
 						else if (i == 2) {
-							checkLimit("months", output, 12);
+							checkLimit("months", output, 12 * 100);
 
 							months = output;
 						}
 
 						else if (i == 3) {
-							checkLimit("weeks", output, 4);
+							checkLimit("weeks", output, 4 * 100);
 
 							weeks = output;
 						}
 
 						else if (i == 4) {
-							checkLimit("days", output, 31);
+							checkLimit("days", output, 31 * 100);
 
 							days = output;
 						}
 
 						else if (i == 5) {
-							checkLimit("hours", output, 24);
+							checkLimit("hours", output, 24 * 100);
 
 							hours = output;
 						}
 
 						else if (i == 6) {
-							checkLimit("minutes", output, 60);
+							checkLimit("minutes", output, 60 * 100);
 
 							minutes = output;
 						}
 
 						else if (i == 7) {
-							checkLimit("seconds", output, 60);
+							checkLimit("seconds", output, 60 * 100);
 
 							seconds = output;
 						}
@@ -329,5 +347,27 @@ public final class TimeUtil {
 	private static void checkLimit(String type, long value, int maxLimit) {
 		if (value > maxLimit)
 			throw new IllegalArgumentException("Value type " + type + " is out of bounds! Max limit: " + maxLimit + ", given: " + value);
+	}
+
+	/**
+	 * Convert the given long timestamp into one that is recognized by MySQL
+	 *
+	 * @param timestamp
+	 * @return
+	 */
+	public static String toSQLTimestamp(long timestamp) {
+		final java.util.Date date = new Date(timestamp);
+
+		return new Timestamp(date.getTime()).toString();
+	}
+
+	/**
+	 * Convert the given MySQL timestamp into a long
+	 *
+	 * @param timestamp
+	 * @return
+	 */
+	public static long fromSQLTimestamp(String timestamp) {
+		return Timestamp.valueOf(timestamp).getTime();
 	}
 }
