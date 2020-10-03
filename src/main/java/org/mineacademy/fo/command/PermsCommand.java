@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.annotation.Permission;
 import org.mineacademy.fo.command.annotation.PermissionGroup;
@@ -46,9 +45,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	protected void onCommand() {
 
 		new ChatPages(15)
-				.setHeader("&8" + Common.chatLine(),
-						"&6 Enumerating all " + SimplePlugin.getNamed() + " permissions",
-						"&8" + Common.chatLine())
+				.setFoundationHeader("Listing All " + SimplePlugin.getNamed() + " Permissions")
 				.setPages(list())
 				.send(sender);
 	}
