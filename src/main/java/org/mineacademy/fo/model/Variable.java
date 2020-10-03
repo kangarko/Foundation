@@ -147,6 +147,8 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	public String getValue(CommandSender sender) {
+		final boolean replaceJs = Variables.REPLACE_JAVASCRIPT;
+
 		try {
 			Variables.REPLACE_JAVASCRIPT = false;
 
@@ -156,7 +158,7 @@ public final class Variable extends YamlConfig {
 			return String.valueOf(JavaScriptExecutor.run(script, sender));
 
 		} finally {
-			Variables.REPLACE_JAVASCRIPT = true;
+			Variables.REPLACE_JAVASCRIPT = replaceJs;
 		}
 	}
 
