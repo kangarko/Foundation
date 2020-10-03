@@ -51,7 +51,7 @@ public abstract class Countdown implements Runnable {
 	 * @param time
 	 */
 	protected Countdown(final SimpleTime time) {
-		this(time.getTimeSeconds());
+		this((int) time.getTimeSeconds());
 	}
 
 	/**
