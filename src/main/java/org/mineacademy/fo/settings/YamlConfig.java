@@ -302,8 +302,6 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	public final void loadConfiguration(final String from, final String to) {
 		/*if (!INVOKE_SAVE) {
-			System.out.println("@do not load " + from + " to " + to);
-
 			return;
 		}*/
 
@@ -1195,6 +1193,9 @@ public class YamlConfig implements ConfigSerializable {
 		final StrictList<T> list = new StrictList<>();
 		final List<String> enumNames = getStringList(path);
 
+		if (enumNames.size() == 1 && "*".equals(enumNames.get(0)))
+			return list.getSource();
+
 		if (enumNames != null)
 			for (final String enumName : enumNames) {
 				T parsedEnum = null;
@@ -1202,7 +1203,7 @@ public class YamlConfig implements ConfigSerializable {
 				try {
 					parsedEnum = ReflectionUtil.lookupEnumSilent(type, enumName);
 
-				} catch (final MissingEnumException ex) {
+				} catch (final IllegalArgumentException | MissingEnumException ex) {
 
 					// Only throw an exception if the user has put in malformed value
 					if (!LegacyEnum.isIncompatible(type, enumName))
@@ -1273,6 +1274,13 @@ public class YamlConfig implements ConfigSerializable {
 	protected final StrictList<String> getCommandList(final String path) {
 		final List<String> list = getStringList(path);
 		Valid.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + getFileName() + ") for this will be used as your main command!");
+
+		for (int i = 0; i < list.size(); i++) {
+			String command = list.get(i);
+
+			command = command.startsWith("/") ? command.substring(1) : command;
+			list.set(i, command);
+		}
 
 		return new StrictList<>(list);
 	}
@@ -2044,6 +2052,7 @@ class ConfigInstance {
 	 * @param header
 	 */
 	protected void save(final String[] header) {
+		Valid.checkSync("Async file " + this.file + " saving was temporarily disabled - report this error!");
 
 		if (header != null) {
 			config.options().copyHeader(true);
