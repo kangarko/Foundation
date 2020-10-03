@@ -12,11 +12,11 @@ import lombok.NonNull;
 public class SimpleTime {
 
 	private final String raw;
-	private final int timeTicks;
+	private final long timeTicks;
 
 	protected SimpleTime(@NonNull final String time) {
-		raw = time;
-		timeTicks = (int) TimeUtil.toTicks(time);
+		this.raw = time;
+		this.timeTicks = TimeUtil.toTicks(time);
 	}
 
 	/**
@@ -44,21 +44,26 @@ public class SimpleTime {
 	 *
 	 * @return
 	 */
-	public int getTimeSeconds() {
-		return timeTicks / 20;
+	public long getTimeSeconds() {
+		return this.timeTicks / 20L;
 	}
 
 	/**
 	 * Get the time specified in ticks
+	 * *WARNING* if the time ticks is over {@value Integer#MAX_VALUE} it will overflow!
 	 *
 	 * @return
 	 */
 	public int getTimeTicks() {
-		return timeTicks;
+		return (int) this.timeTicks;
+	}
+
+	public String getRaw() {
+		return this.timeTicks == 0 ? "0" : this.raw;
 	}
 
 	@Override
 	public String toString() {
-		return raw;
+		return this.raw;
 	}
 }
