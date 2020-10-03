@@ -27,6 +27,14 @@ import lombok.RequiredArgsConstructor;
 public final class ChatPages {
 
 	/**
+	 * This is the height that will fill all chat lines (20)
+	 * if you use {@link #setFoundationHeader(String)}.
+	 *
+	 * It is 17 because our header is 3 lines wide.
+	 */
+	public static final int FOUNDATION_HEIGHT = 15;
+
+	/**
 	 * How many lines per page? Maximum on screen is 20 minus header and footer.
 	 */
 	private final int linesPerPage;
@@ -45,6 +53,30 @@ public final class ChatPages {
 	 * The footer included on every page.
 	 */
 	private final List<SimpleComponent> footer = new ArrayList<>();
+
+	/**
+	 * Construct chat pages taking the entire visible
+	 * chat portion when chat is maximize given {@link #setFoundationHeader(String)}
+	 * is used and there is no footer. We use {@link #FOUNDATION_HEIGHT} for height.
+	 */
+	public ChatPages() {
+		this(FOUNDATION_HEIGHT);
+	}
+
+	/**
+	 * Sets the standard Foundation header used across plugins.
+	 * ----------------
+	 * \<center\>title
+	 * ---------------
+	 *
+	 * @param title
+	 * @return
+	 */
+	public ChatPages setFoundationHeader(String title) {
+		return this.setHeader("&8" + Common.chatLine(),
+				"<center>&6" + title,
+				"&8" + Common.chatLine());
+	}
 
 	/**
 	 * Set the content type
