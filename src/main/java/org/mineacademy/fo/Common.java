@@ -326,7 +326,12 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void tellLater(final int delayTicks, final CommandSender sender, final String... messages) {
-		runLater(delayTicks, () -> tell(sender, messages));
+		runLater(delayTicks, () -> {
+			if (sender instanceof Player && !((Player) sender).isOnline())
+				return;
+
+			tell(sender, messages);
+		});
 	}
 
 	/**
@@ -573,6 +578,16 @@ public final class Common {
 	 */
 	public static String stripColors(final String message) {
 		return message == null ? "" : message.replace(ChatColor.COLOR_CHAR + "x", "").replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-orA-F-K-OR])", "");
+	}
+
+	/**
+	 * Only remove the & colors from the message
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String stripColorsLetter(final String message) {
+		return message == null ? "" : message.replaceAll("&([0-9a-fk-orA-F-K-OR])", "");
 	}
 
 	/**
@@ -1918,8 +1933,6 @@ public final class Common {
 	 * @return the value, or default it the value is null
 	 */
 	public static <T> T getOrDefault(final T value, final T def) {
-		Valid.checkNotNull(def, "The default value must not be null!");
-
 		if (value instanceof String && ("none".equalsIgnoreCase((String) value) || "".equals(value)))
 			return def;
 
