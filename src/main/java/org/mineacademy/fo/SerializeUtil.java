@@ -32,11 +32,13 @@ import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
  * Utility class for serializing objects to writeable YAML data and back.
@@ -108,6 +110,12 @@ public final class SerializeUtil {
 
 		else if (obj instanceof SimpleSound)
 			return ((SimpleSound) obj).toString();
+
+		else if (obj instanceof BaseComponent)
+			throw new FoException("Cannot serialize singular BaseComponent, use BaseComponent[] instead");
+
+		else if (obj instanceof BaseComponent[])
+			return Remain.toJson((BaseComponent[]) obj);
 
 		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
@@ -293,6 +301,12 @@ public final class SerializeUtil {
 
 			else if (classOf == UUID.class)
 				object = UUID.fromString(object.toString());
+
+			else if (classOf == BaseComponent.class)
+				throw new FoException("Cannot deserialize a singular component, use BaseComponent[] instead");
+
+			else if (classOf == BaseComponent[].class)
+				object = Remain.toComponent(object.toString());
 
 			else if (Enum.class.isAssignableFrom(classOf))
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
