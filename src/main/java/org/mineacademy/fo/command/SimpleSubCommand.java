@@ -56,7 +56,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	protected SimpleSubCommand(SimpleCommandGroup parent, String sublabel) {
 		super(parent.getLabel());
 
-		this.sublabels = sublabel.split("\\|");
+		this.sublabels = sublabel.split("(\\||\\/)");
 		Valid.checkBoolean(sublabels.length > 0, "Please set at least 1 sublabel");
 
 		this.sublabel = sublabels[0];

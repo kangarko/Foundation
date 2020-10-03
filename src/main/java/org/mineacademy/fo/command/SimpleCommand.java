@@ -24,13 +24,13 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -195,14 +195,14 @@ public abstract class SimpleCommand extends Command {
 	private static String parseLabel0(final String label) {
 		Valid.checkNotNull(label, "Label must not be null!");
 
-		return label.split("\\|")[0];
+		return label.split("(\\||\\/)")[0];
 	}
 
 	/*
 	 * Split the given label by | and use the second and further parts as aliases
 	 */
 	private static List<String> parseAliases0(final String label) {
-		final String[] aliases = label.split("\\|");
+		final String[] aliases = label.split("(\\||\\/)");
 
 		return aliases.length > 0 ? Arrays.asList(Arrays.copyOfRange(aliases, 1, aliases.length)) : new ArrayList<>();
 	}
@@ -249,7 +249,7 @@ public abstract class SimpleCommand extends Command {
 			final String owningPlugin = oldCommand.getPlugin().getName();
 
 			if (!owningPlugin.equals(SimplePlugin.getNamed()))
-				Debugger.debug("plugin", "&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
+				Debugger.debug("command", "&eCommand &f/" + getLabel() + " &ealready used by " + owningPlugin + ", we take it over...");
 
 			Remain.unregisterCommand(oldCommand.getLabel(), unregisterOldAliases);
 		}
@@ -344,6 +344,10 @@ public abstract class SimpleCommand extends Command {
 				for (final String line : getMultilineUsageMessage())
 					tellNoPrefix("&c" + line);
 			}
+
+		} catch (final EventHandledException ex) {
+			if (ex.getMessages() != null)
+				dynamicTellError(ex.getMessages());
 
 		} catch (final CommandException ex) {
 			if (ex.getMessages() != null)
@@ -558,7 +562,7 @@ public abstract class SimpleCommand extends Command {
 
 		try {
 			found = ReflectionUtil.lookupEnum(enumType, name);
-		} catch (final MissingEnumException ex) {
+		} catch (final Throwable t) {
 		}
 
 		checkNotNull(found, falseMessage.replace("{enum}", name));
