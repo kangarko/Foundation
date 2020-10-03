@@ -153,6 +153,50 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Puts the map into this map if not null and not empty
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIf(final String key, @Nullable final Map<?, ?> value) {
+		if (value != null && !value.isEmpty())
+			put(key, value);
+	}
+
+	/**
+	 * Puts the collection into map if not null and not empty
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIf(final String key, @Nullable final Collection<?> value) {
+		if (value != null && !value.isEmpty())
+			put(key, value);
+	}
+
+	/**
+	 * Puts the boolean into map if true
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIf(final String key, final boolean value) {
+		if (value)
+			put(key, value);
+	}
+
+	/**
+	 * Puts the value into map if not null
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIf(final String key, @Nullable final Object value) {
+		if (value != null)
+			put(key, value);
+	}
+
+	/**
 	 * Puts a new key-value pair in the map, failing if the value is null
 	 * or if the old key exists
 	 *
@@ -582,10 +626,17 @@ public final class SerializedMap extends StrictCollection {
 			return list;
 
 		final Object rawList = this.removeOnGet ? map.removeWeak(key) : map.get(key);
-		Valid.checkBoolean(rawList instanceof List, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead!");
 
-		for (final Object object : (List<Object>) rawList)
-			list.add(object == null ? null : SerializeUtil.deserialize(type, object));
+		// Forgive if string used instead of string list
+		if (type == String.class && rawList instanceof String) {
+			list.add((T) rawList);
+
+		} else {
+			Valid.checkBoolean(rawList instanceof List, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead!");
+
+			for (final Object object : (List<Object>) rawList)
+				list.add(object == null ? null : SerializeUtil.deserialize(type, object));
+		}
 
 		return list;
 	}
