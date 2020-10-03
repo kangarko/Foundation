@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
@@ -94,7 +95,12 @@ final class FoundationListener implements Listener {
 		pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 
 		if (!pages.containsKey(page)) {
-			Common.tell(player, "Pages do not contain page number ");
+			final String playerMessage = "Pages do not contain page number.";
+
+			if (Messenger.ENABLED)
+				Messenger.error(player, playerMessage);
+			else
+				Common.tell(player, playerMessage);
 
 			event.setCancelled(true);
 			return;
@@ -109,7 +115,16 @@ final class FoundationListener implements Listener {
 			for (final SimpleComponent comp : messagesOnPage)
 				comp.send(player);
 
-			for (int i = messagesOnPage.size(); i < chatPages.getLinesPerPage(); i++)
+			int whiteLines = chatPages.getLinesPerPage();
+
+			if (whiteLines == 15 && pages.size() == 1) {
+				if (messagesOnPage.size() < 17)
+					whiteLines = 7;
+				else
+					whiteLines += 2;
+			}
+
+			for (int i = messagesOnPage.size(); i < whiteLines; i++)
 				SimpleComponent.of("&r").send(player);
 
 			for (final SimpleComponent component : chatPages.getFooter())
