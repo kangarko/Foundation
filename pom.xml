@@ -43,10 +43,20 @@
 		<!-- Solves a weird BUILD FAILURE problem, see https://www.spigotmc.org/threads/455923 
 			Apparently this is used somewhere in the other jars and causing issues if 
 			not stated explicitly -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
 			<version>19.0.0</version>
+			<scope>provided</scope>
+		</dependency>-->
+
+		<!-- This is NOT used anywhere in Foundation, only here to prevent compile 
+			errors from missing the log4j dependency that is shipped in the server jar -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.13.3</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- The Spigot API and PaperSpigot server -->
