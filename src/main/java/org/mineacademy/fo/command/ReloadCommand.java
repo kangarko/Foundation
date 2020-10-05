@@ -1,12 +1,13 @@
 package org.mineacademy.fo.command;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
-import org.mineacademy.fo.settings.YamlConfig;
 
 /**
  * A simple predefined command for quickly reloading the plugin
@@ -20,16 +21,34 @@ public final class ReloadCommand extends SimpleSubCommand {
 		setDescription("Reload the configuration.");
 	}
 
+	private List<File> collectYamlFiles(File directory, List<File> list) {
+
+		for (final File file : directory.listFiles()) {
+			if (file.getName().endsWith(".yml"))
+				list.add(file);
+
+			if (file.isDirectory())
+				collectYamlFiles(file, list);
+		}
+
+		return list;
+	}
+
 	@Override
 	protected void onCommand() {
 		try {
 			// Syntax check YML files before loading
 			boolean syntaxParsed = true;
 
-			for (final YamlConfig loaded : YamlConfig.getLoadedFiles()) {
+			final List<File> yamlFiles = new ArrayList<>();
+
+			collectYamlFiles(SimplePlugin.getData(), yamlFiles);
+
+			System.out.println("@Found: " + yamlFiles);
+
+			for (final File file : yamlFiles) {
 				try {
-					if (loaded.getFile().exists())
-						FileUtil.loadConfigurationStrict(loaded.getFile());
+					FileUtil.loadConfigurationStrict(file);
 
 				} catch (final FoException ex) {
 					ex.printStackTrace();

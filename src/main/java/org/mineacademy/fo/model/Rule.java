@@ -11,7 +11,7 @@ public interface Rule {
 	 *
 	 * @return
 	 */
-	String getMatch();
+	String getUid();
 
 	/**
 	 * Return the file this rule residues in

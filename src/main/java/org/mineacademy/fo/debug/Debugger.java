@@ -232,6 +232,9 @@ public final class Debugger {
 			final String[] classNames = el.getClassName().split("\\.");
 			final String className = classNames[classNames.length - 1];
 
+			if (el.toString().contains("net.minecraft.server") || el.toString().contains("org.bukkit.craftbukkit"))
+				break;
+
 			if (!paths.contains(className))
 				paths.add(className + (trackLineNumbers ? "#" + el.getLineNumber() : ""));
 		}

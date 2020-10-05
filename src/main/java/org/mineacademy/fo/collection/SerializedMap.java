@@ -155,16 +155,25 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * Puts the map into this map if not null and not empty
 	 *
+	 * This will put a NULL value into the map if the value is null
+	 *
 	 * @param key
 	 * @param value
 	 */
 	public void putIf(final String key, @Nullable final Map<?, ?> value) {
 		if (value != null && !value.isEmpty())
 			put(key, value);
+
+		// This value is undesirable to save if null, so if YamlConfig is used
+		// it will remove it from the config
+		else
+			map.getSource().put(key, null);
 	}
 
 	/**
 	 * Puts the collection into map if not null and not empty
+	 *
+	 * This will put a NULL value into the map if the value is null
 	 *
 	 * @param key
 	 * @param value
@@ -172,10 +181,17 @@ public final class SerializedMap extends StrictCollection {
 	public void putIf(final String key, @Nullable final Collection<?> value) {
 		if (value != null && !value.isEmpty())
 			put(key, value);
+
+		// This value is undesirable to save if null, so if YamlConfig is used
+		// it will remove it from the config
+		else
+			map.getSource().put(key, null);
 	}
 
 	/**
 	 * Puts the boolean into map if true
+	 *
+	 * This will put a NULL value into the map if the value is null
 	 *
 	 * @param key
 	 * @param value
@@ -183,10 +199,17 @@ public final class SerializedMap extends StrictCollection {
 	public void putIf(final String key, final boolean value) {
 		if (value)
 			put(key, value);
+
+		// This value is undesirable to save if null, so if YamlConfig is used
+		// it will remove it from the config
+		else
+			map.getSource().put(key, null);
 	}
 
 	/**
 	 * Puts the value into map if not null
+	 *
+	 * This will put a NULL value into the map if the value is null
 	 *
 	 * @param key
 	 * @param value
@@ -194,6 +217,11 @@ public final class SerializedMap extends StrictCollection {
 	public void putIf(final String key, @Nullable final Object value) {
 		if (value != null)
 			put(key, value);
+
+		// This value is undesirable to save if null, so if YamlConfig is used
+		// it will remove it from the config
+		else
+			map.getSource().put(key, null);
 	}
 
 	/**

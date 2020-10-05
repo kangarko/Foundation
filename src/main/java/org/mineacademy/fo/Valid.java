@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -10,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -186,6 +188,34 @@ public final class Valid {
 	 */
 	public boolean isNullOrEmpty(final Collection<?> array) {
 		return array == null || Valid.isNullOrEmpty(array.toArray());
+	}
+
+	/**
+	 * Return true if the map is null or only contains null values
+	 *
+	 * @param map
+	 * @return
+	 */
+	public boolean isNullOrEmptyValues(SerializedMap map) {
+		return isNullOrEmptyValues(map == null ? null : map.asMap());
+	}
+
+	/**
+	 * Return true if the map is null or only contains null values
+	 *
+	 * @param map
+	 * @return
+	 */
+	public boolean isNullOrEmptyValues(final Map<?, ?> map) {
+
+		if (map == null)
+			return true;
+
+		for (final Object value : map.values())
+			if (value != null)
+				return false;
+
+		return true;
 	}
 
 	/**
