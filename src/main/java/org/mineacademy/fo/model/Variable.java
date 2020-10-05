@@ -28,7 +28,7 @@ public final class Variable extends YamlConfig {
 	/**
 	 * A list of all loaded variables
 	 */
-	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class, false);
+	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class);
 
 	static {
 		loadedVariables.setVerbose(false);
@@ -214,17 +214,11 @@ public final class Variable extends YamlConfig {
 		return component;
 	}
 
-	// ----------------------------------------------------------------------------------
-	// Serialize
-	// ----------------------------------------------------------------------------------
-
 	/**
-	 * Turn this class into a saveable format to the file
-	 *
-	 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
+	 * @see org.mineacademy.fo.settings.YamlConfig#toString()
 	 */
 	@Override
-	public SerializedMap serialize() {
+	public String toString() {
 		return SerializedMap.ofArray(
 				"Key", this.key,
 				"Value", this.value,
@@ -236,7 +230,7 @@ public final class Variable extends YamlConfig {
 				"Suggest_Command", this.suggestCommand,
 				"Run_Command", this.runCommand,
 				"Sender_Permission", this.senderPermission,
-				"Receiver_Permission", this.receiverPermission);
+				"Receiver_Permission", this.receiverPermission).toStringFormatted();
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–

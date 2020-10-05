@@ -229,9 +229,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Inject server-name to newer MC versions that lack it
 		Remain.injectServerName();
 
-		// Add filtering
-		FoundationFilter.inject();
-
 		// --------------------------------------------
 		// Call the main pre start method
 		// --------------------------------------------
@@ -742,6 +739,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			if (getSettings() != null)
 				YamlStaticConfig.load(getSettings());
+
+			CompMetadata.MetadataFile.onReload();
 
 			FoundationPacketListener.addPacketListener();
 

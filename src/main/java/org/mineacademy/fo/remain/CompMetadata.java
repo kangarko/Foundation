@@ -422,6 +422,8 @@ public final class CompMetadata {
 						applySavedMetadata(metadata, entity);
 					}
 				}
+
+				save("Entity", this.entityMetadataMap);
 			}
 		}
 
@@ -442,23 +444,9 @@ public final class CompMetadata {
 						applySavedMetadata(blockCache.getMetadata(), block);
 					}
 				}
+
+				save("Block", this.blockMetadataMap);
 			}
-		}
-
-		/**
-		 * @see org.mineacademy.fo.settings.YamlConfig#serialize()
-		 */
-		@Override
-		public SerializedMap serialize() {
-			final SerializedMap map = new SerializedMap();
-
-			if (!this.entityMetadataMap.isEmpty())
-				map.put("Entity", this.entityMetadataMap);
-
-			if (!this.blockMetadataMap.isEmpty())
-				map.put("Block", this.blockMetadataMap);
-
-			return map;
 		}
 
 		private void applySavedMetadata(final List<String> metadata, final Metadatable entity) {
@@ -547,6 +535,10 @@ public final class CompMetadata {
 
 				return map;
 			}
+		}
+
+		public static void onReload() {
+			instance = new MetadataFile();
 		}
 	}
 }
