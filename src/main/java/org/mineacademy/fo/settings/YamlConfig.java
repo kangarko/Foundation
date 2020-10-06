@@ -179,7 +179,6 @@ public class YamlConfig {
 		synchronized (loadedFiles) {
 			Valid.checkBoolean(!config.loaded, "Config " + config.getClass() + " for file " + instance.getFile() + " has already been loaded: " + Debugger.traceRoute(true));
 
-			System.out.println("@add " + config.getClass().getSimpleName() + " for " + instance.getFile());
 			loadedFiles.add(instance);
 		}
 	}
