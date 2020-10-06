@@ -1325,6 +1325,42 @@ public class YamlConfig {
 		return map;
 	}
 
+	protected final <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull String path, final Class<Key> keyType, final Class<Value> setType) {
+		// The map we are creating, preserve order
+		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
+
+		final YamlConfiguration config = getConfig();
+		final YamlConfiguration defaults = getDefaults();
+
+		// Add path prefix right away
+		path = formPathPrefix(path);
+
+		// Add defaults
+		if (defaults != null && !config.isSet(path)) {
+			Valid.checkBoolean(defaults.isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
+
+			for (final String key : defaults.getConfigurationSection(path).getKeys(false))
+				addDefaultIfNotExist(path + "." + key, setType);
+		}
+
+		// Load key-value pairs from config to our map
+		final ConfigurationSection configSection = config.getConfigurationSection(path);
+
+		if (configSection != null)
+			for (final Map.Entry<String, Object> entry : configSection.getValues(false).entrySet()) {
+				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue());
+
+				// Ensure the pair values are valid for the given paramenters
+				checkAssignable(false, path, key, keyType);
+				checkAssignable(false, path, value, setType);
+
+				map.put(key, new HashSet<>(value));
+			}
+
+		return map;
+	}
+
 	// ------------------------------------------------------------------------------------
 	// Configuration Setters
 	// ------------------------------------------------------------------------------------
