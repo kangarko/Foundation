@@ -1378,10 +1378,8 @@ class EssentialsHook {
 			final com.earth2me.essentials.User user = ess.getUser(player);
 			final com.earth2me.essentials.User toIgnoreUser = ess.getUser(toIgnore);
 
-			if (ignore && user.isIgnoredPlayer(toIgnoreUser))
-				return;
-
-			user.setIgnoredPlayer(toIgnoreUser, ignore);
+			if (toIgnoreUser != null)
+				user.setIgnoredPlayer(toIgnoreUser, ignore);
 
 		} catch (final Throwable t) {
 		}
@@ -2629,7 +2627,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
