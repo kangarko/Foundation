@@ -47,7 +47,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param rule
 	 * @param disabled
 	 */
-	public final void toggleRule(Rule rule, boolean disabled) {
+	public final void toggleMessage(Rule rule, boolean disabled) {
 
 		final File file = rule.getFile();
 		Valid.checkBoolean(file.exists(), "No such file: " + file + " Rule: " + rule);
