@@ -59,7 +59,7 @@ public abstract class RuleSetReader<T extends Rule> {
 			final String line = lines.get(i);
 
 			// Found our rule
-			if (line.equals(this.newKeyword + " " + rule.getMatch()))
+			if (line.equals(this.newKeyword + " " + rule.getUid()))
 				found = true;
 
 			// Found something else
