@@ -22,6 +22,7 @@ import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
@@ -215,6 +216,7 @@ public final class Variables {
 
 		for (final Variable variable : Variable.getVariables()) {
 			final String key = variable.getKey();
+			Valid.checkNotNull(key, "Variable had null key: " + variable);
 
 			if (message.contains(key))
 				try {
