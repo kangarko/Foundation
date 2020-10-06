@@ -12,12 +12,9 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.YamlConfig;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Variable extends YamlConfig {
 
 	/**
@@ -108,6 +105,13 @@ public final class Variable extends YamlConfig {
 	@Getter
 	@Nullable
 	private String runCommand;
+
+	/*
+	 * Create and load a new variable (automatically called)
+	 */
+	private Variable(String file) {
+		this.loadConfiguration(NO_DEFAULT, "variables/" + file + ".yml");
+	}
 
 	// ----------------------------------------------------------------------------------
 	// Loading
