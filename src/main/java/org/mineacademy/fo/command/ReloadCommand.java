@@ -44,8 +44,6 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			collectYamlFiles(SimplePlugin.getData(), yamlFiles);
 
-			System.out.println("@Found: " + yamlFiles);
-
 			for (final File file : yamlFiles) {
 				try {
 					FileUtil.loadConfigurationStrict(file);
