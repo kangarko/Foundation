@@ -49,7 +49,7 @@ public final class Debugger {
 		if (new File(SimplePlugin.getData(), "debug.lock").exists()) {
 			debugModeEnabled = true;
 
-			System.out.println("Detected debug.lock file, debug features enabled!");
+			Bukkit.getLogger().info("Detected debug.lock file, debug features enabled!");
 
 		} else
 			debugModeEnabled = false;
@@ -71,15 +71,6 @@ public final class Debugger {
 					Common.log("[" + section + "] " + message);
 				else
 					System.out.println("[" + section + "] " + message);
-
-			/*if (SimplePlugin.hasInstance()) {
-				Common.runAsync(() -> {
-					synchronized (pendingMessages) {
-						for (final String message : messages)
-							FileUtil.writeFormatted(FoConstants.File.DEBUG, "[" + section + "]", message);
-					}
-				});
-			}*/
 		}
 	}
 

@@ -30,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.exception.FoException;
@@ -140,7 +141,7 @@ public final class FileUtil {
 			destination.createNewFile();
 
 		} catch (final IOException ex) {
-			System.out.println("Failed to create a new file " + path);
+			Bukkit.getLogger().severe("Failed to create a new file " + path);
 
 			ex.printStackTrace();
 		}
@@ -366,7 +367,7 @@ public final class FileUtil {
 			}
 
 		} catch (final Exception ex) {
-			System.out.println("Failed to write to " + to);
+			Bukkit.getLogger().severe("Failed to write to " + to);
 
 			ex.printStackTrace(); // do not throw our exception since it would cause an infinite loop if there is a problem due to error writing
 		}

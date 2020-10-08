@@ -89,7 +89,7 @@ public abstract class OfflineRegionScanner {
 				watchdog.suspend();
 
 			} catch (final Throwable t) {
-				System.out.println("FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
+				Bukkit.getLogger().severe("FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
 				Common.callEvent(new RegionScanCompleteEvent(world));
 
 				t.printStackTrace();
@@ -99,16 +99,16 @@ public abstract class OfflineRegionScanner {
 			// pass through
 		}
 
-		System.out.println(Common.consoleLine());
-		System.out.println("Scanning regions in " + world.getName());
-		System.out.println(Common.consoleLine());
+		Bukkit.getLogger().info(Common.consoleLine());
+		Bukkit.getLogger().info("Scanning regions in " + world.getName());
+		Bukkit.getLogger().info(Common.consoleLine());
 
 		LagCatcher.start("Region scanner for " + world.getName());
 
 		final File[] files = getRegionFiles(world);
 
 		if (files == null) {
-			Common.log("Unable to locate the region files for: " + world.getName());
+			Bukkit.getLogger().warning("Unable to locate the region files for: " + world.getName());
 
 			return;
 		}
@@ -143,9 +143,9 @@ public abstract class OfflineRegionScanner {
 
 				// Queue finished
 				if (file == null) {
-					System.out.println(Common.consoleLine());
-					System.out.println("Region scanner finished.");
-					System.out.println(Common.consoleLine());
+					Bukkit.getLogger().info(Common.consoleLine());
+					Bukkit.getLogger().info("Region scanner finished.");
+					Bukkit.getLogger().info(Common.consoleLine());
 
 					Common.callEvent(new RegionScanCompleteEvent(world));
 					onScanFinished();
@@ -217,7 +217,7 @@ public abstract class OfflineRegionScanner {
 			RegionAccessor.save(region);
 
 		} catch (final Throwable t) {
-			System.out.println("Failed to save region " + file + ", operation stopped.");
+			Bukkit.getLogger().severe("Failed to save region " + file + ", operation stopped.");
 			Remain.sneaky(t);
 		}
 	}

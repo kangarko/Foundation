@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -377,8 +378,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 						if (isTool || isEnchant) {
 
 							if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
-								System.out.println("**** WARNING ****");
-								System.out.println("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
+								Bukkit.getLogger().warning("**** WARNING ****");
+								Bukkit.getLogger().warning("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
 
 								continue;
 							}
@@ -415,12 +416,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 								final String error = Common.getOrEmpty(t.getMessage());
 
 								if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
-									System.out.println("**** WARNING ****");
+									Bukkit.getLogger().warning("**** WARNING ****");
 
 									if (error.contains("DragonFireball"))
-										System.out.println("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
+										Bukkit.getLogger().warning("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
 									else
-										System.out.println("Your Minecraft version does not have " + error + " class you call in: " + clazz);
+										Bukkit.getLogger().warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
 								} else
 									Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
 							}
@@ -462,18 +463,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		public ShadingException() {
 			if (!SimplePlugin.getNamed().equals(getDescription().getName())) {
-				System.out.println(Common.consoleLine());
-				System.out.println("We have a class path problem in the Foundation library");
-				System.out.println("preventing " + getDescription().getName() + " from loading correctly!");
-				System.out.println("");
-				System.out.println("This is likely caused by two plugins having the");
-				System.out.println("same Foundation library paths - make sure you");
-				System.out.println("relocale the package! If you are testing using");
-				System.out.println("Ant, only test one plugin at the time.");
-				System.out.println("");
-				System.out.println("Possible cause: " + SimplePlugin.getNamed());
-				System.out.println("Foundation package: " + SimplePlugin.class.getPackage().getName());
-				System.out.println(Common.consoleLine());
+				Bukkit.getLogger().severe(Common.consoleLine());
+				Bukkit.getLogger().severe("We have a class path problem in the Foundation library");
+				Bukkit.getLogger().severe("preventing " + getDescription().getName() + " from loading correctly!");
+				Bukkit.getLogger().severe("");
+				Bukkit.getLogger().severe("This is likely caused by two plugins having the");
+				Bukkit.getLogger().severe("same Foundation library paths - make sure you");
+				Bukkit.getLogger().severe("relocale the package! If you are testing using");
+				Bukkit.getLogger().severe("Ant, only test one plugin at the time.");
+				Bukkit.getLogger().severe("");
+				Bukkit.getLogger().severe("Possible cause: " + SimplePlugin.getNamed());
+				Bukkit.getLogger().severe("Foundation package: " + SimplePlugin.class.getPackage().getName());
+				Bukkit.getLogger().severe(Common.consoleLine());
 
 				isEnabled = false;
 			}
@@ -504,16 +505,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 
 		if (!md_5 || !gson) {
-			System.out.println("==================================================");
-			System.out.println("Your Minecraft version (" + MinecraftVersion.getCurrent() + ")");
-			System.out.println("lacks libraries " + getName() + " needs:");
-			System.out.println("JSON Chat (by md_5) found: " + md_5);
-			System.out.println("Gson (by Google) found: " + gson);
-			System.out.println(" ");
-			System.out.println("To fix that, please install BungeeChatAPI:");
-			System.out.println("https://www.spigotmc.org/resources/38379/");
-			System.out.println("==================================================");
-			return false;
+			Bukkit.getLogger().severe(Common.consoleLine());
+			Bukkit.getLogger().severe("Your Minecraft version (" + MinecraftVersion.getCurrent() + ")");
+			Bukkit.getLogger().severe("lacks libraries " + getName() + " needs:");
+			Bukkit.getLogger().severe("JSON Chat (by md_5) found: " + md_5);
+			Bukkit.getLogger().severe("Gson (by Google) found: " + gson);
+			Bukkit.getLogger().severe(" ");
+			Bukkit.getLogger().severe("To fix that, please install BungeeChatAPI:");
+			Bukkit.getLogger().severe("https://www.spigotmc.org/resources/38379/");
+			Bukkit.getLogger().severe(Common.consoleLine());
 		}
 
 		return true;
@@ -527,17 +527,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private final boolean checkServerVersions0() {
 
 		// Call the static block to test compatibility early
-		if (!MinecraftVersion.getCurrent().isTested()) {
-			System.out.println(Common.consoleLine());
-			System.out.println("** Your Minecraft version " + MinecraftVersion.getCurrent() + " has not yet");
-			System.out.println("been officialy tested with the Foundation");
-			System.out.println("library that powers the " + SimplePlugin.getNamed() + " plugin.");
-			System.out.println(" ");
-			System.out.println("For your safety, the plugin is now disabled.");
-			System.out.println(Common.consoleLine());
-
-			return false;
-		}
+		if (!MinecraftVersion.getCurrent().isTested())
+			Common.logFramed(
+					"*** WARNING ***",
+					"Your Minecraft version " + MinecraftVersion.getCurrent() + " has not yet",
+					"been officialy tested with the Foundation,",
+					"the library that " + SimplePlugin.getNamed() + " plugin uses.",
+					"",
+					"Loading the plugin at your own risk...",
+					Common.consoleLine());
 
 		// Check min version
 		final V minimumVersion = getMinimumVersion();
