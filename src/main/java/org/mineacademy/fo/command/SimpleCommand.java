@@ -34,6 +34,7 @@ import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -177,6 +178,10 @@ public abstract class SimpleCommand extends Command {
 	protected SimpleCommand(final String label, final List<String> aliases) {
 		super(label);
 
+		// NOTICE:
+		// Any usages of "this instanceof" is considered a poor quality code. The reason we use it
+		// is that we know for certain these parent classes exist, and we need to navigate
+		// developers on their proper usage. We recommend you avoid using "this instanceof" if possible.
 		Valid.checkBoolean(!(this instanceof CommandExecutor), "Please do not write 'implements CommandExecutor' for /" + super.getLabel() + " cmd, we already have a listener there");
 		Valid.checkBoolean(!(this instanceof TabCompleter), "Please do not write 'implements TabCompleter' for /" + super.getLabel() + " cmd, simply override tabComplete method");
 
@@ -515,6 +520,13 @@ public abstract class SimpleCommand extends Command {
 		return player;
 	}
 
+	/**
+	 * Return the player by the given name, and, when the name is null, return the sender if sender is player.
+	 *
+	 * @param name
+	 * @return
+	 * @throws CommandException
+	 */
 	protected final Player findPlayerOrSelf(@Nullable final String name) throws CommandException {
 		if (name == null) {
 			checkBoolean(isPlayer(), "When running from console, specify player name.");
@@ -526,6 +538,24 @@ public abstract class SimpleCommand extends Command {
 		checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE.replace("{player}", name));
 
 		return player;
+	}
+
+	/**
+	 * Attempts to convert the given input (such as 1 hour) into
+	 * a {@link SimpleTime} object
+	 *
+	 * @param raw
+	 * @return
+	 */
+	protected final SimpleTime findTime(String raw) {
+		try {
+			return SimpleTime.from(raw);
+
+		} catch (final IllegalArgumentException ex) {
+			returnTell("Expected time such as '3 hours' or '15 minutes', got: '" + raw + "'");
+
+			return null;
+		}
 	}
 
 	/**
