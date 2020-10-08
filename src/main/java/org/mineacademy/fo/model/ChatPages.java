@@ -10,6 +10,7 @@ import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -73,9 +74,7 @@ public final class ChatPages {
 	 * @return
 	 */
 	public ChatPages setFoundationHeader(String title) {
-		return this.setHeader("&8" + Common.chatLine(),
-				"<center>&6" + title,
-				"&8" + Common.chatLine());
+		return this.setHeader("&r", "&6&m" + ChatUtil.center("&r&6 " + title + " &m", '-', 150), "&r");
 	}
 
 	/**
@@ -181,7 +180,7 @@ public final class ChatPages {
 			final Player player = (Player) sender;
 
 			player.setMetadata("FoPages", new FixedMetadataValue(SimplePlugin.getInstance(), this));
-			player.chat("/#flp 0");
+			player.chat("/#flp 1");
 		}
 
 		else {
