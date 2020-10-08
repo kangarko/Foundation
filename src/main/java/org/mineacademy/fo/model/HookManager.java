@@ -107,26 +107,29 @@ public final class HookManager {
 	// Store hook classes separately for below, avoiding no such method/field errors
 	// ------------------------------------------------------------------------------------------------------------
 
-	private static AuthMeHook authMe;
+	private static AuthMeHook authMeHook;
+	private static BanManagerHook banManagerHook;
+	private static BossHook bossHook;
+	private static CitizensHook citizensHook;
+	private static CMIHook CMIHook;
+	private static DiscordSRVHook discordSRVHook;
 	private static EssentialsHook essentialsHook;
+	private static FactionsHook factionsHook;
+	private static LocketteProHook locketteProHook;
+	private static LWCHook lwcHook;
+	private static McMMOHook mcmmoHook;
 	private static MultiverseHook multiverseHook;
+	private static MVdWPlaceholderHook MVdWPlaceholderHook;
+	private static NickyHook nickyHook;
+	private static PlaceholderAPIHook placeholderAPIHook;
+	private static PlotSquaredHook plotSquaredHook;
 	private static ProtocolLibHook protocolLibHook;
+	private static ResidenceHook residenceHook;
 	private static TownyHook townyHook;
 	private static VaultHook vaultHook;
-	private static PlaceholderAPIHook placeholderAPIHook;
-	private static FactionsHook factionsHook;
-	private static NickyHook nickyHook;
-	private static MVdWPlaceholderHook MVdWPlaceholderHook;
-	private static McMMOHook mcmmoHook;
-	private static LWCHook lwcHook;
-	private static LocketteProHook locketteProHook;
-	private static ResidenceHook residenceHook;
 	private static WorldEditHook worldeditHook;
 	private static WorldGuardHook worldguardHook;
-	private static PlotSquaredHook plotSquaredHook;
-	private static CMIHook CMIHook;
-	private static CitizensHook citizensHook;
-	private static DiscordSRVHook discordSRVHook;
+
 	private static boolean nbtAPIDummyHook = false;
 	private static boolean nuVotifierDummyHook = false;
 	private static boolean townyChatDummyHook = false;
@@ -140,60 +143,20 @@ public final class HookManager {
 	 */
 	public static void loadDependencies() {
 		if (Common.doesPluginExistSilently("AuthMe"))
-			authMe = new AuthMeHook();
+			authMeHook = new AuthMeHook();
 
-		if (Common.doesPluginExistSilently("Multiverse-Core"))
-			multiverseHook = new MultiverseHook();
+		if (Common.doesPluginExistSilently("BanManager"))
+			banManagerHook = new BanManagerHook();
 
-		if (Common.doesPluginExistSilently("Towny"))
-			townyHook = new TownyHook();
-
-		if (Common.doesPluginExistSilently("Vault"))
-			vaultHook = new VaultHook();
-
-		if (Common.doesPluginExistSilently("PlaceholderAPI"))
-			placeholderAPIHook = new PlaceholderAPIHook();
-
-		if (Common.doesPluginExistSilently("Nicky"))
-			nickyHook = new NickyHook();
-
-		if (Common.doesPluginExistSilently("MVdWPlaceholderAPI"))
-			MVdWPlaceholderHook = new MVdWPlaceholderHook();
-
-		if (Common.doesPluginExistSilently("LWC"))
-			lwcHook = new LWCHook();
-
-		if (Common.doesPluginExistSilently("Lockette"))
-			locketteProHook = new LocketteProHook();
-
-		if (Common.doesPluginExistSilently("Residence"))
-			residenceHook = new ResidenceHook();
-
-		if (Common.doesPluginExistSilently("WorldEdit") || Common.doesPluginExistSilently("FastAsyncWorldEdit"))
-			worldeditHook = new WorldEditHook();
-
-		if (Common.doesPluginExistSilently("WorldGuard"))
-			worldguardHook = new WorldGuardHook(worldeditHook);
-
-		if (Common.doesPluginExistSilently("mcMMO"))
-			mcmmoHook = new McMMOHook();
-
-		if (Common.doesPluginExistSilently("CMI"))
-			CMIHook = new CMIHook();
+		if (Common.doesPluginExistSilently("Boss"))
+			bossHook = new BossHook();
 
 		if (Common.doesPluginExistSilently("Citizens"))
 			citizensHook = new CitizensHook();
 
-		if (Common.doesPluginExistSilently("NBTAPI"))
-			nbtAPIDummyHook = true;
+		if (Common.doesPluginExistSilently("CMI"))
+			CMIHook = new CMIHook();
 
-		if (Common.doesPluginExistSilently("Votifier"))
-			nuVotifierDummyHook = true;
-
-		if (Common.doesPluginExistSilently("TownyChat"))
-			townyChatDummyHook = true;
-
-		// DiscordSRV
 		if (Common.doesPluginExistSilently("DiscordSRV"))
 			try {
 				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
@@ -204,35 +167,8 @@ public final class HookManager {
 				Common.error(ex, "&c" + SimplePlugin.getNamed() + " failed to hook DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 
-		// EssentialsX
-		if (Common.doesPluginExistSilently("Essentials")) {
+		if (Common.doesPluginExistSilently("Essentials"))
 			essentialsHook = new EssentialsHook();
-		}
-
-		// Plotsquared
-		if (Common.doesPluginExistSilently("PlotSquared")) {
-			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
-
-			if (ver.startsWith("5."))
-				plotSquaredHook = new PlotSquaredHook();
-			else
-				Common.log("&eCould not hook into PlotSquared, version 5.x required, you have " + ver);
-		}
-
-		// ProtocolLib
-		if (Common.doesPluginExistSilently("ProtocolLib")) {
-			protocolLibHook = new ProtocolLibHook();
-
-			// Also check if the library is loaded properly
-			try {
-				if (MinecraftVersion.newerThan(V.v1_6))
-					Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
-			} catch (final Throwable t) {
-				protocolLibHook = null;
-
-				Common.throwError(t, "You are running an old and unsupported version of ProtocolLib, please update it.");
-			}
-		}
 
 		// Various kinds of Faction plugins
 		if (Common.doesPluginExistSilently("Factions")) {
@@ -260,6 +196,74 @@ public final class HookManager {
 
 			}
 		}
+
+		if (Common.doesPluginExistSilently("Lockette"))
+			locketteProHook = new LocketteProHook();
+
+		if (Common.doesPluginExistSilently("LWC"))
+			lwcHook = new LWCHook();
+
+		if (Common.doesPluginExistSilently("mcMMO"))
+			mcmmoHook = new McMMOHook();
+
+		if (Common.doesPluginExistSilently("Multiverse-Core"))
+			multiverseHook = new MultiverseHook();
+
+		if (Common.doesPluginExistSilently("MVdWPlaceholderAPI"))
+			MVdWPlaceholderHook = new MVdWPlaceholderHook();
+
+		if (Common.doesPluginExistSilently("Nicky"))
+			nickyHook = new NickyHook();
+
+		if (Common.doesPluginExistSilently("PlaceholderAPI"))
+			placeholderAPIHook = new PlaceholderAPIHook();
+
+		if (Common.doesPluginExistSilently("PlotSquared")) {
+			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
+
+			if (ver.startsWith("5."))
+				plotSquaredHook = new PlotSquaredHook();
+			else
+				Common.log("&eCould not hook into PlotSquared, version 5.x required, you have " + ver);
+		}
+
+		if (Common.doesPluginExistSilently("ProtocolLib")) {
+			protocolLibHook = new ProtocolLibHook();
+
+			// Also check if the library is loaded properly
+			try {
+				if (MinecraftVersion.newerThan(V.v1_6))
+					Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
+			} catch (final Throwable t) {
+				protocolLibHook = null;
+
+				Common.throwError(t, "You are running an old and unsupported version of ProtocolLib, please update it.");
+			}
+		}
+
+		if (Common.doesPluginExistSilently("Residence"))
+			residenceHook = new ResidenceHook();
+
+		if (Common.doesPluginExistSilently("Towny"))
+			townyHook = new TownyHook();
+
+		if (Common.doesPluginExistSilently("Vault"))
+			vaultHook = new VaultHook();
+
+		if (Common.doesPluginExistSilently("WorldEdit") || Common.doesPluginExistSilently("FastAsyncWorldEdit"))
+			worldeditHook = new WorldEditHook();
+
+		if (Common.doesPluginExistSilently("WorldGuard"))
+			worldguardHook = new WorldGuardHook(worldeditHook);
+
+		if (Common.doesPluginExistSilently("NBTAPI"))
+			nbtAPIDummyHook = true;
+
+		if (Common.doesPluginExistSilently("Votifier"))
+			nuVotifierDummyHook = true;
+
+		if (Common.doesPluginExistSilently("TownyChat"))
+			townyChatDummyHook = true;
 	}
 
 	/**
@@ -288,7 +292,25 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isAuthMeLoaded() {
-		return authMe != null;
+		return authMeHook != null;
+	}
+
+	/**
+	 * Return if BanManager plugin is detected
+	 *
+	 * @return
+	 */
+	public static boolean isBanManagerLoaded() {
+		return banManagerHook != null;
+	}
+
+	/**
+	 * Return if Boss plugin is detected
+	 *
+	 * @return
+	 */
+	public static boolean isBossLoaded() {
+		return bossHook != null;
 	}
 
 	/**
@@ -534,7 +556,22 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isLogged(final Player player) {
-		return !isAuthMeLoaded() || authMe.isLogged(player);
+		return !isAuthMeLoaded() || authMeHook.isLogged(player);
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Boss
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Returns the Boss name from the given entity, if Boss plugin is installed and
+	 * the given entity is a Boss, otherwise returns null.
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static String getBossName(Entity entity) {
+		return isBossLoaded() ? bossHook.getBossName(entity) : null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -561,10 +598,13 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isVanished(final Player player) {
-		final boolean essVanish = isEssentialsLoaded() ? essentialsHook.isVanished(player.getName()) : false;
-		final boolean cmiVanish = isCMILoaded() ? CMIHook.isVanished(player) : false;
+		if (isEssentialsLoaded() && essentialsHook.isVanished(player.getName()))
+			return true;
 
-		return essVanish || cmiVanish;
+		if (isCMILoaded() && CMIHook.isVanished(player))
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -574,10 +614,16 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isMuted(final Player player) {
-		final boolean isEssMuted = isEssentialsLoaded() ? essentialsHook.isMuted(player.getName()) : false;
-		final boolean isCMIMuted = isCMILoaded() ? CMIHook.isMuted(player) : false;
+		if (isEssentialsLoaded() && essentialsHook.isMuted(player.getName()))
+			return true;
 
-		return isEssMuted || isCMIMuted;
+		if (isCMILoaded() && CMIHook.isMuted(player))
+			return true;
+
+		if (isBanManagerLoaded() && banManagerHook.isMuted(player))
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -2676,5 +2722,51 @@ class DiscordSRVHook implements Listener {
 			DiscordUtil.sendMessage(textChannel, message);
 		}
 		return true;
+	}
+}
+
+class BanManagerHook {
+
+	/*
+	 * Return true if the given player is muted
+	 */
+	boolean isMuted(final Player player) {
+		try {
+			final Class<?> api = ReflectionUtil.lookupClass("me.confuser.banmanager.common.api.BmAPI");
+			final Method isMuted = ReflectionUtil.getMethod(api, "isMuted", UUID.class);
+
+			return ReflectionUtil.invoke(isMuted, null, player.getUniqueId());
+
+		} catch (final Throwable t) {
+			Common.log("Unable to check if " + player.getName() + " is muted at BanManager. Is the API hook outdated? Got: " + t);
+
+			return false;
+		}
+	}
+}
+
+class BossHook {
+
+	/*
+	 * Return the Boss name if the given player is a Boss or null
+	 */
+	String getBossName(final Entity entity) {
+		try {
+			final Class<?> api = ReflectionUtil.lookupClass("org.mineacademy.boss.api.BossAPI");
+			final Method getBoss = ReflectionUtil.getMethod(api, "getBoss", Entity.class);
+
+			final Object boss = ReflectionUtil.invoke(getBoss, null, entity);
+
+			if (boss != null) {
+				final Method getName = ReflectionUtil.getMethod(boss.getClass(), "getName");
+
+				return ReflectionUtil.invoke(getName, boss);
+			}
+
+		} catch (final Throwable t) {
+			Common.log("Unable to check if " + entity + " is a BOSS. Is the API hook outdated? Got: " + t);
+		}
+
+		return null;
 	}
 }
