@@ -40,7 +40,7 @@ public final class Valid {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Throws an error if the given object is null
+	 * Throw an error if the given object is null
 	 *
 	 * @param toCheck
 	 */
@@ -50,7 +50,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Throws an error with a custom message if the given object is null
+	 * Throw an error with a custom message if the given object is null
 	 *
 	 * @param toCheck
 	 * @param falseMessage
@@ -61,7 +61,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Throws an error if the given expression is false
+	 * Throw an error if the given expression is false
 	 *
 	 * @param expression
 	 */
@@ -71,7 +71,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Throws an error with a custom message if the given expression is false
+	 * Throw an error with a custom message if the given expression is false
 	 *
 	 * @param expression
 	 * @param falseMessage
@@ -82,7 +82,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Throws an error with a custom message if the given toCheck string is not a number!
+	 * Throw an error with a custom message if the given toCheck string is not a number!
 	 *
 	 * @param toCheck
 	 * @param falseMessage
@@ -93,7 +93,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Throws an error with a custom message if the given collection is null or empty
+	 * Throw an error with a custom message if the given collection is null or empty
 	 *
 	 * @param collection
 	 * @param message
@@ -104,7 +104,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Throws an error if the given message is empty or null
+	 * Throw an error if the given message is empty or null
 	 *
 	 * @param message
 	 * @param message
@@ -115,7 +115,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Checks if the player has the given permission, if false we send him {@link SimpleLocalization#NO_PERMISSION}
+	 * Check if the player has the given permission, if false we send him {@link SimpleLocalization#NO_PERMISSION}
 	 * message and return false, otherwise no message is sent and we return true
 	 *
 	 * @param sender
@@ -133,7 +133,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Checks if the code calling this method is run from the main thread,
+	 * Check if the code calling this method is run from the main thread,
 	 * failing with the error message if otherwise
 	 *
 	 * @param asyncErrorMessage
@@ -143,7 +143,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Checks if the code calling this method is run from a different than main thread,
+	 * Check if the code calling this method is run from a different than main thread,
 	 * failing with the error message if otherwise
 	 *
 	 * @param syncErrorMessage
@@ -157,7 +157,7 @@ public final class Valid {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Returns true if the given string is a valid integer
+	 * Return true if the given string is a valid integer
 	 *
 	 * @param raw
 	 * @return
@@ -169,7 +169,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if the given string is a valid whole number
+	 * Return true if the given string is a valid whole number
 	 *
 	 * @param raw
 	 * @return
@@ -314,7 +314,7 @@ public final class Valid {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Returns true if the two locations has same world and block positions
+	 * Return true if the two locations has same world and block positions
 	 *
 	 * @param first
 	 * @param sec
@@ -367,7 +367,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if two strings are equal regardless of their colors
+	 * Return true if two strings are equal regardless of their colors
 	 *
 	 * @param first
 	 * @param second
@@ -378,7 +378,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if two string lists are equal regardless of their colors
+	 * Return true if two string lists are equal regardless of their colors
 	 *
 	 * @param first
 	 * @param second
@@ -389,7 +389,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if two string arrays are equal regardless of their colors
+	 * Return true if two string arrays are equal regardless of their colors
 	 *
 	 * @param firstArray
 	 * @param secondArray
@@ -437,8 +437,8 @@ public final class Valid {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Returns true if the given is in the given list, depending on the mode
-	 * <p>
+	 * Return true if the given is in the given list, depending on the mode
+	 *
 	 * If isBlacklist mode is enabled, we return true when element is NOT in the list,
 	 * if it is false, we return true if element is in the list.
 	 *
@@ -452,7 +452,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if any element in the given list equals (case ignored) to your given element
+	 * Return true if any element in the given list equals (case ignored) to your given element
 	 *
 	 * @param element
 	 * @param list
@@ -471,7 +471,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if any element in the given list starts with (case ignored) your given element
+	 * Return true if any element in the given list starts with (case ignored) your given element
 	 *
 	 * @param element
 	 * @param list
@@ -489,7 +489,7 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if any element in the given list contains (case ignored) your given element
+	 * Return true if any element in the given list contains (case ignored) your given element
 	 *
 	 * @param element
 	 * @param list
@@ -511,8 +511,8 @@ public final class Valid {
 	}
 
 	/**
-	 * Returns true if any element in the given list matches your given element.
-	 * <p>
+	 * Return true if any element in the given list matches your given element.
+	 *
 	 * A regular expression is compiled from that list element.
 	 *
 	 * @param element
@@ -532,7 +532,22 @@ public final class Valid {
 	}
 
 	/**
-	 * Prepares the message for isInList comparation - lowercases it and removes the initial slash /
+	 * Return true if the given enum contains the given element, by {@link Enum#name()} (case insensitive)
+	 *
+	 * @param element
+	 * @param enumeration
+	 * @return
+	 */
+	public boolean isInListEnum(final String element, final Enum<?>[] enumeration) {
+		for (final Enum<?> constant : enumeration)
+			if (constant.name().equalsIgnoreCase(element))
+				return true;
+
+		return false;
+	}
+
+	/**
+	 * Prepare the message for isInList comparation - lowercases it and removes the initial slash /
 	 *
 	 * @param message
 	 * @return
