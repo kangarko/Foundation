@@ -1,6 +1,7 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -40,10 +41,16 @@ public final class TabUtil {
 
 		for (final T s : all)
 			if (s != null) {
-				final boolean lowercase = s instanceof Enum;
-				final String parsed = SerializeUtil.serialize(s).toString();
+				if (s instanceof Collection)
+					for (final Object iterable : (Collection<?>) s)
+						clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(iterable).toString());
 
-				clone.add(lowercase ? parsed.toLowerCase() : parsed);
+				else {
+					final boolean lowercase = s instanceof Enum;
+					final String parsed = SerializeUtil.serialize(s).toString();
+
+					clone.add(lowercase ? parsed.toLowerCase() : parsed);
+				}
 			}
 
 		return complete(partialName, clone);
