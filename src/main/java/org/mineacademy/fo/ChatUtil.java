@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
 import org.mineacademy.fo.model.Whiteblacklist;
 
 import lombok.AccessLevel;
@@ -36,7 +35,7 @@ public final class ChatUtil {
 	 * @return
 	 */
 	public static String center(final String message) {
-		return center(message, ' ', ChatColor.WHITE);
+		return center(message, ' ');
 	}
 
 	/**
@@ -47,7 +46,7 @@ public final class ChatUtil {
 	 * @return
 	 */
 	public static String center(final String message, final int centerPx) {
-		return center(message, ' ', ChatColor.WHITE, centerPx);
+		return center(message, ' ', centerPx);
 	}
 
 	/**
@@ -61,8 +60,8 @@ public final class ChatUtil {
 	 * @param spaceColor
 	 * @return
 	 */
-	public static String center(final String message, final char space, final ChatColor spaceColor) {
-		return center(message, space, spaceColor, CENTER_PX);
+	public static String center(final String message, final char space) {
+		return center(message, space, CENTER_PX);
 	}
 
 	/**
@@ -70,11 +69,10 @@ public final class ChatUtil {
 	 *
 	 * @param message
 	 * @param space
-	 * @param spaceColor
 	 * @param centerPx
 	 * @return
 	 */
-	public static String center(final String message, final char space, final ChatColor spaceColor, final int centerPx) {
+	public static String center(final String message, final char space, final int centerPx) {
 		if (message == null || message.equals(""))
 			return "";
 
@@ -116,7 +114,7 @@ public final class ChatUtil {
 		int compensated = 0;
 
 		while (compensated < toCompensate) {
-			builder.append(spaceColor.toString() + space);
+			builder.append(space);
 
 			compensated += spaceLength;
 		}
