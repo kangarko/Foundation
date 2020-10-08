@@ -286,6 +286,8 @@ public final class Variables {
 				return MinecraftVersion.getServerVersion();
 			case "timestamp":
 				return TimeUtil.getFormattedDate();
+			case "timestamp_short":
+				return TimeUtil.getFormattedDateShort();
 
 			case "town":
 				return player == null ? "" : HookManager.getTownName(player);
