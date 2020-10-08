@@ -1352,7 +1352,10 @@ public class YamlConfig {
 
 				// Ensure the pair values are valid for the given paramenters
 				checkAssignable(false, path, key, keyType);
-				checkAssignable(false, path, value, setType);
+
+				if (!value.isEmpty())
+					for (final Value item : value)
+						checkAssignable(false, path, item, setType);
 
 				map.put(key, new HashSet<>(value));
 			}
