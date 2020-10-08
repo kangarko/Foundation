@@ -253,13 +253,12 @@ public final class Remain {
 			getNMSClass("Entity");
 
 		} catch (final Throwable t) {
-			System.out.println("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION **");
-			System.out.println("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
+			Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
+			Bukkit.getLogger().severe("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
 
 			t.printStackTrace();
 
-			System.out.println("***************************************************************");
-			throw new FoException("(This is a proxy exception, look for errors above)");
+			Bukkit.getLogger().severe("***************************************************************");
 		}
 
 		try {
@@ -273,9 +272,9 @@ public final class Remain {
 				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler").getMethod("sendPacket", getNMSClass("Packet"));
 
 			} catch (final Throwable t) {
-				System.out.println("Unable to find setup some parts of reflection. Plugin will still function.");
-				System.out.println("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-				System.out.println("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
+				Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
+				Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
 
 				fieldPlayerConnection = null;
 				sendPacket = null;
@@ -1618,10 +1617,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
@@ -2435,7 +2434,7 @@ class AdvancementAccessor {
 	private final String message;
 
 	AdvancementAccessor(final String message, final String icon) {
-		this.key = new NamespacedKey(SimplePlugin.getInstance(), "" + System.nanoTime() / 1000);
+		this.key = new NamespacedKey(SimplePlugin.getInstance(), UUID.randomUUID().toString());
 		this.message = message;
 		this.icon = icon;
 	}

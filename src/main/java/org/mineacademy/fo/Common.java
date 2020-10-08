@@ -699,7 +699,7 @@ public final class Common {
 	}
 
 	/**
-	 * Returns a long ----------- chat line with strike color
+	 * Returns a long &m----------- chat line with strike color
 	 *
 	 * @return
 	 */

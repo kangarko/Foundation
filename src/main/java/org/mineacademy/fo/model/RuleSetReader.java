@@ -104,19 +104,9 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @return
 	 */
 	protected final List<T> loadFromFile(String path) {
-		try {
-			final File file = FileUtil.extract(path);
+		final File file = FileUtil.extract(path);
 
-			return loadFromFile(file);
-
-		} catch (final Throwable t) {
-			Common.throwError(t,
-					"Failed to parse rules from " + path,
-					"Check for syntax errors.",
-					"Error: " + t.getMessage());
-
-			return null;
-		}
+		return loadFromFile(file);
 	}
 
 	/*
