@@ -137,6 +137,28 @@ public abstract class Button {
 	}
 
 	/**
+	 * Creates a lazy button with the given builder and action when clicked
+	 *
+	 * @param builder
+	 * @param onClickFunction
+	 * @return
+	 */
+	public static final Button makeSimple(ItemCreator.ItemCreatorBuilder builder, final Consumer<Player> onClickFunction) {
+		return new Button() {
+
+			@Override
+			public ItemStack getItem() {
+				return builder.build().makeMenuTool();
+			}
+
+			@Override
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+				onClickFunction.accept(player);
+			}
+		};
+	}
+
+	/**
 	 * Creates a lazy button having the given icon, title, label (the second lore row) and the click function
 	 * taking in the player and the click type
 	 *
