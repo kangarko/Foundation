@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
@@ -293,15 +294,11 @@ public abstract class Menu {
 	/**
 	 * Returns a list of buttons that should be registered manually.
 	 *
-	 * <p>
 	 * NOTICE: Button fields in your class are registered automatically, do not add
 	 * them here
 	 *
 	 * @return button list, null by default
-	 *
-	 * @deprecated subject for removal
 	 */
-	@Deprecated
 	protected List<Button> getButtonsToAutoRegister() {
 		return null;
 	}
@@ -517,6 +514,73 @@ public abstract class Menu {
 	public final void animateTitle(final String title) {
 		if (titleAnimationEnabled)
 			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle(), titleAnimationDurationTicks);
+	}
+
+	// --------------------------------------------------------------------------------
+	// Convenience messenger functions
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param messages
+	 */
+	public void tell(String... messages) {
+		Common.tell(this.viewer, messages);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public void tellInfo(String message) {
+		Messenger.info(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public void tellSuccess(String message) {
+		Messenger.success(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public void tellWarn(String message) {
+		Messenger.warn(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public void tellError(String message) {
+		Messenger.error(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public void tellQuestion(String message) {
+		Messenger.question(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public void tellAnnounce(String message) {
+		Messenger.announce(this.viewer, message);
 	}
 
 	// --------------------------------------------------------------------------------
