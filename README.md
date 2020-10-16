@@ -16,7 +16,7 @@ Foundation has never been publicly released before MineAcademy. We decided to re
 
 We aim to provide extreme compatibility layer enabling these Minecraft versions to work:
 
-- 1.2.5 (from 2012)
+- 1.2.5 (from 2012) - Of course, there are things that don't work due to lacking API, but it loads and you can build with Foundation!
 - 1.3.2
 - 1.4.7
 - 1.5.2
