@@ -13,6 +13,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,9 +30,11 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
@@ -307,7 +310,11 @@ public abstract class SimpleCommand extends Command {
 			Common.ADD_TELL_PREFIX = addTellPrefix;
 
 		// Catch "errors" that contain a message to send to the player
+		// Measure performance of all commands
+		final String lagSection = "Command /" + getLabel() + (args.length > 0 ? " " + String.join(" ", args) : "");
+
 		try {
+			LagCatcher.start(lagSection);
 
 			// Check if sender has the proper permission
 			if (getPermission() != null)
@@ -319,17 +326,33 @@ public abstract class SimpleCommand extends Command {
 				final String usage = getMultilineUsageMessage() != null ? String.join("\n&c", getMultilineUsageMessage()) : getUsage() != null ? getUsage() : null;
 				Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "") + "' command!");
 
-				if (!Common.getOrEmpty(getDescription()).isEmpty())
-					tellNoPrefix(SimpleLocalization.Commands.LABEL_DESCRIPTION.replace("{description}", getDescription()));
+				final ChatPaginator paginator = new ChatPaginator(ChatColor.RED);
+				final List<String> pages = new ArrayList<>();
+
+				if (!Common.getOrEmpty(getDescription()).isEmpty()) {
+					pages.add(replacePlaceholders("&c&lDescription:"));
+					pages.add(replacePlaceholders("&c" + getDescription()));
+				}
 
 				if (getMultilineUsageMessage() != null) {
-					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGES, "&c" + usage);
+					pages.add("");
+					pages.add(replacePlaceholders("&c&lUsages:"));
+
+					for (final String usagePart : usage.split("\n"))
+						pages.add(replacePlaceholders("&c" + usagePart));
 
 				} else {
 					final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
-					tellNoPrefix(SimpleLocalization.Commands.LABEL_USAGE + " /" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : ""));
+					pages.add("");
+					pages.add("&c&lUsage:");
+					pages.add("&c" + replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : "")));
 				}
+
+				paginator
+						.setFoundationHeader("Help for /" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : ""))
+						.setPages(Common.toArray(pages))
+						.send(sender);
 
 				return true;
 			}
@@ -366,6 +389,7 @@ public abstract class SimpleCommand extends Command {
 
 		} finally {
 			Common.ADD_TELL_PREFIX = hadTellPrefix;
+			LagCatcher.end(lagSection);
 		}
 
 		return true;
@@ -771,7 +795,16 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Sends a multiline message to the player without plugins prefix
+	 * Sends a multiline message to the player without plugin's prefix.
+	 *
+	 * @param messages
+	 */
+	protected final void tellNoPrefix(Collection<String> messages) {
+		tellNoPrefix(messages.toArray(new String[messages.size()]));
+	}
+
+	/**
+	 * Sends a multiline message to the player without plugin's prefix.
 	 *
 	 * @param messages
 	 */
