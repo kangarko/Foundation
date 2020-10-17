@@ -188,7 +188,6 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 */
 	@Override
 	public EnchantmentTarget getItemTarget() {
-		//return EnchantmentTarget.ALL; TODO
 		return EnchantmentTarget.BREAKABLE;
 	}
 

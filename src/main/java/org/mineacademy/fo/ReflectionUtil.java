@@ -61,7 +61,7 @@ public final class ReflectionUtil {
 			for (final Class<?> param : constructor.getParameterTypes()) {
 				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
 
-				classes.add(param.isPrimitive() ? ClassUtils.wrapperToPrimitive(param) : param);
+				classes.add(param);
 			}
 
 			constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);

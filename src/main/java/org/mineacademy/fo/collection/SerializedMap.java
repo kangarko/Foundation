@@ -660,7 +660,7 @@ public final class SerializedMap extends StrictCollection {
 			list.add((T) rawList);
 
 		} else {
-			Valid.checkBoolean(rawList instanceof List, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead!");
+			Valid.checkBoolean(rawList instanceof List, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead! Try putting '' quotes around the message!");
 
 			for (final Object object : (List<Object>) rawList)
 				list.add(object == null ? null : SerializeUtil.deserialize(type, object));
@@ -723,7 +723,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	private <T> T get(final String key, final Class<T> type, final T def) {
+	public <T> T get(final String key, final Class<T> type, final T def) {
 		Object raw = removeOnGet ? map.removeWeak(key) : map.get(key);
 
 		// Try to get the value by key with ignoring case

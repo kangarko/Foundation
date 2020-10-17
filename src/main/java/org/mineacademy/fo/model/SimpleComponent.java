@@ -55,7 +55,7 @@ public final class SimpleComponent {
 	 * The part that is being created
 	 */
 	@RequiredArgsConstructor
-	public static final class Part {
+	private static final class Part {
 
 		/**
 		 * The text
@@ -156,6 +156,11 @@ public final class SimpleComponent {
 	 * @param text
 	 */
 	private SimpleComponent(String text) {
+
+		// Inject the center element here already
+		if (Common.stripColors(text).startsWith("<center>"))
+			text = ChatUtil.center(text.replace("<center>", "").trim());
+
 		this.currentComponent = new Part(text);
 	}
 
@@ -370,8 +375,8 @@ public final class SimpleComponent {
 	 * @return
 	 */
 	public SimpleComponent append(SimpleComponent component) {
-		this.pastComponents.addAll(component.pastComponents);
 		this.pastComponents.add(this.currentComponent);
+		this.pastComponents.addAll(component.pastComponents);
 
 		// Get the last extra
 		BaseComponent inherit = Common.getOrDefault(component.currentComponent.inheritFormatting, this.currentComponent.toTextComponent(null));
@@ -540,10 +545,6 @@ public final class SimpleComponent {
 	 */
 	private static TextComponent[] toComponent(@NonNull String message, @Nullable BaseComponent inheritFormatting) {
 		final List<TextComponent> components = new ArrayList<>();
-
-		// TODO being able to be used in {message}
-		if (Common.stripColors(message).startsWith("<center>"))
-			message = ChatUtil.center(message.replace("<center>", ""));
 
 		// Plot the previous formatting manually before the message to retain it
 		if (inheritFormatting != null) {

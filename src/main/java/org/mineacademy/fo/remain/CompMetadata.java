@@ -239,6 +239,7 @@ public final class CompMetadata {
 	 * @return
 	 */
 	public static boolean hasMetadata(final ItemStack item, final String key) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "NBT ItemStack tags only support MC 1.7.10+");
 		Valid.checkNotNull(item);
 
 		final NBTItem nbt = new NBTItem(item);
