@@ -273,7 +273,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (getMainCommand() != null) {
 				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
 
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+				reloadables.registerCommands(SimpleSettings.MAIN_COMMAND_ALIASES, getMainCommand());
 			}
 
 			// --------------------------------------------
@@ -730,6 +730,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			unregisterReloadables();
 
+			// Load our dependency system
+			try {
+				HookManager.loadDependencies();
+
+			} catch (final Throwable throwable) {
+				Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
+			}
+
 			onPluginPreReload();
 			reloadables.reload();
 
@@ -746,7 +754,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			onPluginReload();
 
 			if (getMainCommand() != null)
-				getMainCommand().register(SimpleSettings.MAIN_COMMAND_ALIASES);
+				reloadables.registerCommands(SimpleSettings.MAIN_COMMAND_ALIASES, getMainCommand());
 
 			startingReloadables = true;
 			onReloadablesStart();
@@ -760,13 +768,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			registerBungeeCord();
 
+			Common.log(Common.consoleLineSmooth());
+
 		} catch (final Throwable t) {
 			Common.throwError(t, "Error reloading " + getName() + " " + getVersion());
 
 		} finally {
-			Common.log(Common.consoleLineSmooth());
-
 			Common.ADD_LOG_PREFIX = hadLogPrefix;
+
 			reloading = false;
 		}
 	}
@@ -779,9 +788,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		FolderWatcher.stopThreads();
 
 		DiscordListener.clearRegisteredListeners();
-
-		if (getMainCommand() != null && getMainCommand().isRegistered())
-			getMainCommand().unregister();
 
 		try {
 			HookManager.unloadDependencies(this);
@@ -874,30 +880,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
 	 *
-	 * @param label
-	 * @param group
-	 */
-	protected final void registerCommands(final String label, final SimpleCommandGroup group) {
-		registerCommands(label, null, group);
-	}
-
-	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
-	 *
-	 * @param label
-	 * @param aliases
-	 * @param group
-	 */
-	protected final void registerCommands(final String label, final List<String> aliases, final SimpleCommandGroup group) {
-		if (getMainCommand() != null && getMainCommand().getLabel().equals(label))
-			throw new FoException("Your main command group is registered automatically!");
-
-		group.register(label, aliases);
-	}
-
-	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
-	 *
 	 * @param labelAndAliases
 	 * @param group
 	 */
@@ -907,7 +889,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (getMainCommand() != null && getMainCommand().getLabel().equals(labelAndAliases.get(0)))
 			throw new FoException("Your main command group is registered automatically!");
 
-		group.register(labelAndAliases);
+		reloadables.registerCommands(labelAndAliases, group);
 	}
 
 	// ----------------------------------------------------------------------------------------
