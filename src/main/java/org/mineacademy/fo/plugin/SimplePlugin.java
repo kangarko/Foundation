@@ -878,6 +878,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Shortcut for calling {@link SimpleCommandGroup#register(String, List))}
+	 *
+	 * @param labelAndAliases
+	 * @param group
+	 */
+	protected final void registerCommands(final String labelAndAliases, final SimpleCommandGroup group) {
+		this.registerCommands(new StrictList<>(labelAndAliases.split("\\|")), group);
+	}
+
+	/**
 	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
 	 *
 	 * @param labelAndAliases
