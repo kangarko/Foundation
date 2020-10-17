@@ -18,7 +18,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.ChatPages;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -40,7 +40,7 @@ public abstract class SimpleCommandGroup {
 	 * The list of sub-commands belonging to this command tree, for example
 	 * the /boss command has subcommands /boss region, /boss menu etc.
 	 */
-	protected final StrictList<SimpleSubCommand> subcommands = new StrictList<>();
+	private final StrictList<SimpleSubCommand> subcommands = new StrictList<>();
 
 	/**
 	 * The registered main command, if any
@@ -133,7 +133,10 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param <T>
 	 * @param ofClass
+	 *
+	 * @deprecated produces unexpected results if called more than once from your code, deal with caution!
 	 */
+	@Deprecated
 	protected final <T extends SimpleSubCommand> void autoRegisterSubcommands(final Class<T> ofClass) {
 		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), ofClass))
 			if (!Modifier.isAbstract(clazz.getModifiers()))
@@ -216,7 +219,7 @@ public abstract class SimpleCommandGroup {
 
 		final List<String> messages = new ArrayList<>();
 
-		messages.add("&8" + Common.chatLine());
+		messages.add("&8" + Common.chatLineSmooth());
 		messages.add(getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion());
 		messages.add(" ");
 
@@ -234,7 +237,7 @@ public abstract class SimpleCommandGroup {
 				messages.add("   " + credits);
 		}
 
-		messages.add("&8" + Common.chatLine());
+		messages.add("&8" + Common.chatLineSmooth());
 
 		return Common.convert(messages, SimpleComponent::of);
 	}
@@ -288,7 +291,7 @@ public abstract class SimpleCommandGroup {
 	protected String[] getHelpHeader() {
 		return new String[] {
 				"&8",
-				"&8" + Common.chatLine(),
+				"&8" + Common.chatLineSmooth(),
 				getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion(),
 				" ",
 				"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
@@ -389,8 +392,11 @@ public abstract class SimpleCommandGroup {
 		 * Automatically tells all help for all subcommands
 		 */
 		protected void tellSubcommandsHelp() {
-			if (subcommands.isEmpty())
+			if (subcommands.isEmpty()) {
+				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
+
 				return;
+			}
 
 			final List<SimpleComponent> lines = new ArrayList<>();
 
@@ -436,7 +442,7 @@ public abstract class SimpleCommandGroup {
 				}
 
 			if (!lines.isEmpty()) {
-				final ChatPages pages = new ChatPages(MathUtil.range(0, lines.size(), commandsPerPage));
+				final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), commandsPerPage), ChatColor.DARK_GRAY);
 
 				if (getHelpHeader() != null)
 					pages.setHeader(getHelpHeader());
@@ -445,7 +451,7 @@ public abstract class SimpleCommandGroup {
 				pages.send(sender);
 
 			} else
-				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
+				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS_PERMISSION);
 		}
 
 		/**

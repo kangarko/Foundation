@@ -11,6 +11,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.AccessLevel;
@@ -75,6 +76,16 @@ public final class ItemUtil {
 	// ----------------------------------------------------------------------------------------------------
 	// Enumeration - fancy names
 	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * See {@link #bountifyCapitalized(CompChatColor)}
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static String bountifyCapitalized(CompChatColor color) {
+		return bountifyCapitalized(color.getName());
+	}
 
 	/**
 	 * Removes _ from the enum, lowercases everything and finally capitalizes it
@@ -176,10 +187,14 @@ public final class ItemUtil {
 				return false;
 		}
 
-		final NBTItem firstNbt = new NBTItem(first);
-		final NBTItem secondNbt = new NBTItem(second);
+		if (MinecraftVersion.atLeast(V.v1_7)) {
+			final NBTItem firstNbt = new NBTItem(first);
+			final NBTItem secondNbt = new NBTItem(second);
 
-		return matchNbt(SimplePlugin.getNamed(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getNamed() + "_Item", firstNbt, secondNbt);
+			return matchNbt(SimplePlugin.getNamed(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getNamed() + "_Item", firstNbt, secondNbt);
+		}
+
+		return true;
 	}
 
 	// Compares the NBT string tag of two items
