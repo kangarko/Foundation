@@ -12,6 +12,23 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 
 Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting their ideas out there.
 
+### Compatibility
+
+We aim to provide extreme compatibility layer enabling these Minecraft versions to work:
+
+- 1.2.5 (from 2012) - Of course, there are things that don't work due to lacking API, but it loads and you can build with Foundation!
+- 1.3.2
+- 1.4.7
+- 1.5.2
+- 1.6.4
+- 1.7.10
+- 1.8.8
+- 1.9.x, 1.10.x, 1.11.x
+- 1.12.x
+- 1.13.x
+- 1.14.x, 1.15.x, 1.16.x
+- We continously update for newer versions but sometimes forget to update this here, but it does not mean that the library is incompatible!
+
 ### Compiling and using
 
 We use JitPack to automatically compile and host the latest release of Foundation for you.
