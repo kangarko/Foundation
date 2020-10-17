@@ -44,7 +44,7 @@ public final class MinecraftVersion {
 		/**
 		 * The numeric version (the second part of the 1.x number)
 		 */
-		private final int ver;
+		private final int minorVersionNumber;
 
 		/**
 		 * Is this library tested with this Minecraft version?
@@ -68,7 +68,7 @@ public final class MinecraftVersion {
 		 * @param tested
 		 */
 		V(int version, boolean tested) {
-			this.ver = version;
+			this.minorVersionNumber = version;
 			this.tested = tested;
 		}
 
@@ -81,10 +81,18 @@ public final class MinecraftVersion {
 		 */
 		protected static V parse(int number) {
 			for (final V v : values())
-				if (v.ver == number)
+				if (v.minorVersionNumber == number)
 					return v;
 
 			throw new FoException("Invalid version number: " + number);
+		}
+
+		/**
+		 * @see java.lang.Enum#toString()
+		 */
+		@Override
+		public String toString() {
+			return "1." + this.minorVersionNumber;
 		}
 	}
 
@@ -131,7 +139,7 @@ public final class MinecraftVersion {
 	// Compares two versions by the number
 	private static int compareWith(V version) {
 		try {
-			return getCurrent().ver - version.ver;
+			return getCurrent().minorVersionNumber - version.minorVersionNumber;
 
 		} catch (final Throwable t) {
 			t.printStackTrace();
