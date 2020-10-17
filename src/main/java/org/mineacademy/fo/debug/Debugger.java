@@ -181,6 +181,9 @@ public final class Debugger {
 
 					final String trace = el.toString();
 
+					if (trace.contains("sun.reflect"))
+						continue;
+
 					if (count > 6 && trace.startsWith("net.minecraft.server"))
 						break;
 

@@ -9,6 +9,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -511,6 +513,12 @@ public class NBTCompound {
 				return false;
 
 			return b;
+		} catch (final Throwable t) {
+			if (MinecraftVersion.atLeast(V.v1_8))
+				t.printStackTrace();
+
+			return false;
+
 		} finally {
 			readLock.unlock();
 		}

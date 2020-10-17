@@ -10,7 +10,6 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.debug.Debugger;
 
 /**
  * This class caches method reflections, keeps track of method name changes between versions and allows early checking for problems
@@ -141,7 +140,7 @@ enum WrapperReflection {
 			final String message = "Unable to find the method '" + targetVersion.name + "' in '" + (targetClass == null ? "null" : targetClass.getSimpleName()) + "' Enum: " + this;
 
 			if (MinecraftVersion.olderThan(V.v1_8)) {
-				Debugger.debug("nbt", message);
+				Common.log(message);
 
 				return;
 			}

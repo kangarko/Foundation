@@ -21,7 +21,7 @@ public final class ChatUtil {
 	/**
 	 * The default center padding
 	 */
-	public final static int CENTER_PX = 154;
+	public final static int CENTER_PX = 152;
 
 	/**
 	 * The vertical lines a player can see at once in his chat history
