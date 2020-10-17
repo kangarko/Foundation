@@ -448,7 +448,6 @@ public class YamlConfig {
 	 *
 	 * @return
 	 */
-	// TODO In the future we'll make this final
 	public String getName() {
 		return FileUtil.getFileName(instance.getFile());
 	}
@@ -469,7 +468,7 @@ public class YamlConfig {
 	/**
 	 * Saves the content of this config into the file
 	 */
-	public final void save() {
+	public void save() {
 		if (loading) {
 			save = true;
 
