@@ -9,9 +9,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,6 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.HookManager.PAPIPlaceholder;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
@@ -83,7 +83,6 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -120,6 +119,7 @@ public final class HookManager {
 	private static McMMOHook mcmmoHook;
 	private static MultiverseHook multiverseHook;
 	private static MVdWPlaceholderHook MVdWPlaceholderHook;
+	private static MythicMobsHook mythicMobsHook;
 	private static NickyHook nickyHook;
 	private static PlaceholderAPIHook placeholderAPIHook;
 	private static PlotSquaredHook plotSquaredHook;
@@ -211,6 +211,9 @@ public final class HookManager {
 
 		if (Common.doesPluginExistSilently("MVdWPlaceholderAPI"))
 			MVdWPlaceholderHook = new MVdWPlaceholderHook();
+
+		if (Common.doesPluginExistSilently("MythicMobs"))
+			mythicMobsHook = new MythicMobsHook();
 
 		if (Common.doesPluginExistSilently("Nicky"))
 			nickyHook = new NickyHook();
@@ -347,6 +350,15 @@ public final class HookManager {
 	 */
 	public static boolean isMultiverseCoreLoaded() {
 		return multiverseHook != null;
+	}
+
+	/**
+	 * Is MythicMobs loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isMMythicMobsLoaded() {
+		return mythicMobsHook != null;
 	}
 
 	/**
@@ -560,7 +572,7 @@ public final class HookManager {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Boss
+	// Boss-related plugins
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -572,6 +584,17 @@ public final class HookManager {
 	 */
 	public static String getBossName(Entity entity) {
 		return isBossLoaded() ? bossHook.getBossName(entity) : null;
+	}
+
+	/**
+	 * Returns the name from the given entity, if MythicMobs plugin is installed and
+	 * the given entity is a mythic mob, otherwise returns null.
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static String getMythicMobName(Entity entity) {
+		return isMMythicMobsLoaded() ? mythicMobsHook.getBossName(entity) : null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1052,47 +1075,29 @@ public final class HookManager {
 	 * If PlaceholderAPI is loaded, registers a new placeholder within it
 	 * with the given variable and value.
 	 * <p>
-	 * The variable is automatically prepended with your plugin name, lowercased + _,
-	 * such as chatcontrol_ or boss_ + your variable.
+	 * 		The variable is automatically prepended with your plugin name, lowercased + _,
+	 * 		such as chatcontrol_ or boss_ + your variable.
 	 * <p>
-	 * Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
+	 * 		Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
 	 * <p>
-	 * The value will be called against the given player and the variable you set initially
+	 * 		The value will be called against the given player
 	 * <p>
-	 * NB: In your chat formatting plugin you can append your variable with a "+" sign
-	 * to automatically insert a space after it in case it is not empty (NOT HERE, but in your
-	 * chat control plugin)
 	 *
 	 * @param variable
 	 * @param value
+	 *
+	 * @deprecated It still works, but we now have a new system where you register variables through {@link Variables#addExpansion(SimpleExpansion)}
+	 * 			   instead. It gives you better flexibility and, like PlaceholderAPI, you can replace different variables on the fly.
 	 */
 	@Deprecated
-	public static void addPlaceholder(final String variable, final BiFunction<Player, String, String> value) {
-		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, value));
-	}
-
-	/**
-	 * If PlaceholderAPI is loaded, registers a new placeholder within it
-	 * with the given variable and value.
-	 * <p>
-	 * The variable is automatically prepended with your plugin name, lowercased + _,
-	 * such as chatcontrol_ or boss_ + your variable.
-	 * <p>
-	 * Example if the variable is player health in ChatControl plugin: "chatcontrol_health"
-	 * <p>
-	 * The value will be called against the given player
-	 * <p>
-	 * NB: In your chat formatting plugin you can append your variable with a "+" sign
-	 * to automatically insert a space after it in case it is not empty (NOT HERE, but in your
-	 * chat control plugin)
-	 *
-	 * @param variable
-	 * @param value
-	 */
 	public static void addPlaceholder(final String variable, final Function<Player, String> value) {
-		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.addPlaceholder(new PAPIPlaceholder(variable, (player, identifier) -> value.apply(player)));
+		Variables.addExpansion(new SimpleExpansion() {
+
+			@Override
+			protected String onReplace(@NonNull CommandSender sender, String identifier) {
+				return variable.equalsIgnoreCase(identifier) && sender instanceof Player ? value.apply((Player) sender) : null;
+			}
+		});
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1376,12 +1381,12 @@ public final class HookManager {
 	 * <p>
 	 * and the value that is callable so that you can return updated value each time.
 	 */
-	@Data
+	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
-	}
+	}*/
 }
 
 // ------------------------------------------------------------------------------------------------------------
@@ -1838,13 +1843,9 @@ class VaultHook {
 
 class PlaceholderAPIHook {
 
-	private final Set<PAPIPlaceholder> placeholders = new HashSet<>();
-
 	private static volatile VariablesInjector injector;
 
 	PlaceholderAPIHook() {
-		unregister();
-
 		try {
 			injector = new VariablesInjector();
 			injector.register();
@@ -1862,10 +1863,6 @@ class PlaceholderAPIHook {
 			} catch (final Throwable t) {
 				// Silence, probably plugin got removed in the meantime
 			}
-	}
-
-	final void addPlaceholder(final PAPIPlaceholder placeholder) {
-		placeholders.add(placeholder);
 	}
 
 	final String replacePlaceholders(final Player pl, final String msg) {
@@ -1893,10 +1890,17 @@ class PlaceholderAPIHook {
 
 		while (matcher.find()) {
 			String format = matcher.group(1);
-			boolean addSpace = false;
+			boolean frontSpace = false;
+			boolean backSpace = false;
+
+			if (format.startsWith("+")) {
+				frontSpace = true;
+
+				format = format.substring(1);
+			}
 
 			if (format.endsWith("+")) {
-				addSpace = true;
+				backSpace = true;
 
 				format = format.substring(0, format.length() - 1);
 			}
@@ -1915,7 +1919,7 @@ class PlaceholderAPIHook {
 				if (value != null) {
 					value = Matcher.quoteReplacement(Common.colorize(value));
 
-					text = text.replaceAll(Pattern.quote(matcher.group()), value + (addSpace && !value.isEmpty() ? " " : ""));
+					text = text.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? "" : (frontSpace ? " " : "") + value + (backSpace ? " " : ""));
 				}
 			}
 		}
@@ -2035,29 +2039,48 @@ class PlaceholderAPIHook {
 			return SimplePlugin.getInstance().getDescription().getVersion();
 		}
 
+		/**
+		 * Replace Foundation variables but with our plugin name added as prefix
+		 *
+		 * We return null if an invalid placeholder (f.e. %ourplugin_nonexistingplaceholder%) is provided
+		 */
 		@Override
 		public String onRequest(OfflinePlayer offlinePlayer, @NonNull String identifier) {
-			final boolean insertSpace = identifier.endsWith("+");
-			identifier = insertSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
+			final Player player = offlinePlayer.getPlayer();
 
-			for (final PAPIPlaceholder replacer : placeholders)
-				if (identifier.equalsIgnoreCase(replacer.getVariable()))
-					try {
+			if (player == null || !player.isOnline())
+				return null;
 
-						final Player player = offlinePlayer.getPlayer();
+			final boolean frontSpace = identifier.startsWith("+");
+			final boolean backSpace = identifier.endsWith("+");
 
-						if (player == null)
-							return null;
+			identifier = frontSpace ? identifier.substring(1) : identifier;
+			identifier = backSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
 
-						final String value = Common.getOrEmpty(replacer.getValue().apply(player, identifier));
+			final Function<CommandSender, String> variable = Variables.getVariable(identifier);
 
-						return value + (!value.isEmpty() && insertSpace ? " " : "");
+			try {
+				if (variable != null) {
+					final String value = variable.apply(player);
 
-					} catch (final Exception e) {
-						Common.error(e, "Failed to replace your '" + identifier + "' variable for " + offlinePlayer.getName());
-					}
+					if (value != null)
+						return value;
+				}
 
-			// We return null if an invalid placeholder (f.e. %someplugin_placeholder3%) was provided
+				for (final SimpleExpansion expansion : Variables.getExpansions()) {
+					final String value = expansion.replacePlaceholders(player, identifier);
+
+					if (value != null)
+						return (!value.isEmpty() && frontSpace ? " " : "") + value + (!value.isEmpty() && backSpace ? " " : "");
+				}
+
+			} catch (final Exception ex) {
+				Common.error(ex,
+						"Error replacing PlaceholderAPI variables",
+						"Identifier: " + identifier,
+						"Player: " + player.getName());
+			}
+
 			return null;
 		}
 	}
@@ -2738,7 +2761,8 @@ class BanManagerHook {
 			return ReflectionUtil.invoke(isMuted, null, player.getUniqueId());
 
 		} catch (final Throwable t) {
-			Common.log("Unable to check if " + player.getName() + " is muted at BanManager. Is the API hook outdated? Got: " + t);
+			if (!t.toString().contains("Could not find class"))
+				Common.log("Unable to check if " + player.getName() + " is muted at BanManager. Is the API hook outdated? Got: " + t);
 
 			return false;
 		}
@@ -2765,6 +2789,34 @@ class BossHook {
 
 		} catch (final Throwable t) {
 			Common.log("Unable to check if " + entity + " is a BOSS. Is the API hook outdated? Got: " + t);
+		}
+
+		return null;
+	}
+}
+
+class MythicMobsHook {
+
+	/*
+	 * Attempt to return a MythicMob name from the given entity
+	 * or null if the entity is not a MythicMob
+	 */
+	final String getBossName(Entity entity) {
+		try {
+			final Class<?> mythicMobs = ReflectionUtil.lookupClass("io.lumine.xikage.mythicmobs.MythicMobs");
+			final Object instance = ReflectionUtil.invokeStatic(mythicMobs, "inst");
+			final Object mobManager = ReflectionUtil.invoke("getMobManager", instance);
+			final Optional<Object> activeMob = ReflectionUtil.invoke(ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMob", UUID.class), mobManager, entity.getUniqueId());
+			final Object mob = activeMob != null && activeMob.isPresent() ? activeMob.get() : null;
+
+			if (mob != null) {
+				final Object mythicEntity = ReflectionUtil.invoke("getEntity", mob);
+
+				if (mythicEntity != null)
+					return (String) ReflectionUtil.invoke("getName", mythicEntity);
+			}
+
+		} catch (final NoSuchElementException ex) {
 		}
 
 		return null;
