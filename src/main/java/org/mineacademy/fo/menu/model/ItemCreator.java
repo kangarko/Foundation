@@ -381,8 +381,12 @@ public final class ItemCreator {
 
 		// Apply NBT tags
 		if (tags != null)
-			for (final Tuple<String, String> tag : tags)
-				is = CompMetadata.setMetadata(is, tag.getKey(), tag.getValue());
+			if (MinecraftVersion.atLeast(V.v1_8))
+				for (final Tuple<String, String> tag : tags)
+					is = CompMetadata.setMetadata(is, tag.getKey(), tag.getValue());
+
+			else if (!tags.isEmpty() && item != null)
+				Common.log("Item had unsupported tags " + tags + " that are not supported on MC " + MinecraftVersion.getServerVersion() + " Item: " + is);
 
 		return is;
 	}
