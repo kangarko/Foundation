@@ -116,6 +116,11 @@ public final class Remain {
 	 */
 	private static final Pattern RGB_HEX_ENCODED_REGEX = Pattern.compile("(?i)(§x)((§[0-9A-F]){6})");
 
+	/**
+	 * The Google Json instance
+	 */
+	private final static Gson gson = new Gson();
+
 	// ----------------------------------------------------------------------------------------------------
 	// Methods below
 	// ----------------------------------------------------------------------------------------------------
@@ -727,6 +732,27 @@ public final class Remain {
 	}
 
 	/**
+	 * Return the given list as JSON
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static String toJson(final Collection<String> list) {
+		return gson.toJson(list);
+	}
+
+	/**
+	 * Convert the given json into list
+	 *
+	 * @param json
+	 * @param typeOf
+	 * @return
+	 */
+	public static List<String> fromJsonList(String json) {
+		return gson.fromJson(json, List.class);
+	}
+
+	/**
 	 * Converts chat message with color codes to Json chat components e.g. &6Hello
 	 * world converts to {text:"Hello world",color="gold"}
 	 */
@@ -764,7 +790,7 @@ public final class Remain {
 	 * @param item the item to convert
 	 * @return the Json string representation of the item
 	 */
-	public static String toJson(final ItemStack item) {
+	public static String toJson(ItemStack item) {
 		// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
 		final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
 		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
@@ -1126,8 +1152,12 @@ public final class Remain {
 		}
 	}
 
-	// Return servers command map
-	private static SimpleCommandMap getCommandMap() {
+	/**
+	 * Return the server's command map
+	 *
+	 * @return
+	 */
+	public static SimpleCommandMap getCommandMap() {
 		try {
 			return (SimpleCommandMap) getOBCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
 
@@ -1333,47 +1363,51 @@ public final class Remain {
 	@Deprecated
 	public static void updateInventoryTitle(final Player player, String title) {
 		try {
-			if (MinecraftVersion.olderThan(V.v1_8))
-				return;
-
-			if (MinecraftVersion.olderThan(V.v1_9) && title.length() > 16)
-				title = title.substring(0, 15);
+			if (MinecraftVersion.olderThan(V.v1_9) && title.length() > 32)
+				title = title.substring(0, 32);
 
 			final Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
 
 			final Object activeContainer = entityPlayer.getClass().getField("activeContainer").get(entityPlayer);
-			final Constructor<?> chatMessageConst = getNMSClass("ChatMessage").getConstructor(String.class, Object[].class);
-
 			final Object windowId = activeContainer.getClass().getField("windowId").get(activeContainer);
-			final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
 
 			final Object packet;
 
-			if (MinecraftVersion.newerThan(V.v1_13)) {
-				final Class<?> containersClass = getNMSClass("Containers");
-				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent"));
+			if (MinecraftVersion.atLeast(V.v1_8)) {
+				final Constructor<?> chatMessageConst = getNMSClass("ChatMessage").getConstructor(String.class, Object[].class);
+				final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
 
-				final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
+				if (MinecraftVersion.newerThan(V.v1_13)) {
+					final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
 
-				if (inventorySize < 1 || inventorySize > 6) {
-					Common.log("Cannot update title for " + player.getName() + " as their inventory has non typical size: " + inventorySize + " rows");
+					if (inventorySize < 1 || inventorySize > 6) {
+						Common.log("Cannot update title for " + player.getName() + " as their inventory has non typical size: " + inventorySize + " rows");
 
-					return;
+						return;
+					}
+
+					final Class<?> containersClass = getNMSClass("Containers");
+					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent"));
+					final Object container = containersClass.getField("GENERIC_9X" + inventorySize).get(null);
+
+					packet = packetConst.newInstance(windowId, container, chatMessage);
+
+				} else {
+					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent"), int.class);
+
+					packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
 				}
-
-				final Object container = containersClass.getField("GENERIC_9X" + inventorySize).get(null);
-
-				packet = packetConst.newInstance(windowId, container, chatMessage);
-
 			} else {
-				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent"), int.class);
+				final Constructor<?> openWindow = ReflectionUtil.getConstructor(
+						getNMSClass(MinecraftVersion.atLeast(V.v1_7) ? "PacketPlayOutOpenWindow" : "Packet100OpenWindow"), int.class, int.class, String.class, int.class, boolean.class);
 
-				packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
+				packet = ReflectionUtil.instantiate(openWindow, windowId, 0, ChatColor.translateAlternateColorCodes('&', title), player.getOpenInventory().getTopInventory().getSize(), true);
 			}
 
 			sendPacket(player, packet);
 
 			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container")).invoke(entityPlayer, activeContainer);
+
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
 		}
@@ -1617,10 +1651,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
