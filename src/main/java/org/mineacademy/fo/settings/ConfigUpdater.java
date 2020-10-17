@@ -88,7 +88,7 @@ class ConfigUpdater {
 
 			backupConfig.save(backupFile);
 
-			Common.log("Found the following entries in " + outerPath.getName() + " that were unused and moved into " + backupFile.getName() + ": " + removedKeys.keySet());
+			Common.log("&6Warning: The following entries in " + outerPath.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
 		}
 
 		final Yaml yaml = new Yaml();
@@ -282,10 +282,10 @@ class ConfigUpdater {
 				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
-				
+
 						if (value instanceof ConfigurationSection)
 							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-				
+
 						continue outer;
 					}
 				}*/
@@ -307,19 +307,19 @@ class ConfigUpdater {
 	/*private static void appendSection(StringBuilder builder, ConfigurationSection section, StringBuilder prefixSpaces, Yaml yaml) {
 		builder.append(prefixSpaces).append(getKeyFromFullKey(section.getCurrentPath())).append(":");
 		final Set<String> keys = section.getKeys(false);
-
+	
 		if (keys.isEmpty()) {
 			builder.append(" {}\n");
 			return;
 		}
-
+	
 		builder.append("\n");
 		prefixSpaces.append("  ");
-
+	
 		for (final String key : keys) {
 			final Object value = section.get(key);
 			final String actualKey = getKeyFromFullKey(key);
-
+	
 			if (value instanceof ConfigurationSection) {
 				appendSection(builder, (ConfigurationSection) value, prefixSpaces, yaml);
 				prefixSpaces.setLength(prefixSpaces.length() - 2);
