@@ -130,7 +130,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 					// Found another match, assuming previous rule is finished creating.
 					if (rule != null) {
-						Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Duplicated rule: " + rule);
+						//Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Duplicated rule: " + rule);
 
 						if (canFinish(rule))
 							rules.add(rule);
