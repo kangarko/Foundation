@@ -15,7 +15,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * A special class that can store loaded {@link YamlConfig} files
@@ -52,12 +51,6 @@ public final class ConfigItems<T extends YamlConfig> {
 	private final Class<T> prototypeClass;
 
 	/**
-	 * Shall we log each item loaded? True by default
-	 */
-	@Setter
-	private boolean verbose = true;
-
-	/**
 	 * Are all items stored in a single file?
 	 */
 	private boolean singleFile = false;
@@ -78,10 +71,28 @@ public final class ConfigItems<T extends YamlConfig> {
 		this.singleFile = singleFile;
 	}
 
+	/**
+	 * Load items from the given folder
+	 *
+	 * @param <P>
+	 * @param name - the name of what we are loading, used for error messages such as "class", "format"
+	 * @param folder
+	 * @param prototypeClass
+	 * @return
+	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String name, String folder, Class<P> prototypeClass) {
 		return new ConfigItems<>(name, folder, prototypeClass, false);
 	}
 
+	/**
+	 * Load items from the given YAML file path
+	 *
+	 * @param <P>
+	 * @param path
+	 * @param file
+	 * @param prototypeClass
+	 * @return
+	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
 		return new ConfigItems<>(path, file, prototypeClass, true);
 	}
@@ -154,11 +165,8 @@ public final class ConfigItems<T extends YamlConfig> {
 			// Register
 			loadedItems.add(item);
 
-			if (verbose && !singleFile)
-				Common.log("[+] Loaded " + (type.endsWith("s") ? type.substring(0, type.length() - 1).toLowerCase() : type) + " " + item.getName());
-
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to load " + type + " " + name + " from " + folder);
+			Common.throwError(t, "Failed to load" + (type == null ? "" : " " + type) + " " + name + " from " + folder);
 		}
 	}
 
