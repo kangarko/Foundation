@@ -1,7 +1,6 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -41,9 +40,14 @@ public final class TabUtil {
 
 		for (final T s : all)
 			if (s != null) {
-				if (s instanceof Collection)
-					for (final Object iterable : (Collection<?>) s)
+				if (s instanceof Iterable)
+					for (final Object iterable : (Iterable<?>) s)
 						clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(iterable).toString());
+
+				// Trick: Automatically parse enum constants
+				else if (s instanceof Enum[])
+					for (final Object iterable : ((Enum[]) s)[0].getClass().getEnumConstants())
+						clone.add(iterable.toString().toLowerCase());
 
 				else {
 					final boolean lowercase = s instanceof Enum;
