@@ -1,5 +1,6 @@
 package org.mineacademy.fo;
 
+import java.awt.Color;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -110,6 +111,9 @@ public final class SerializeUtil {
 
 		else if (obj instanceof SimpleSound)
 			return ((SimpleSound) obj).toString();
+
+		else if (obj instanceof Color)
+			return "#" + ((Color) obj).getRGB();
 
 		else if (obj instanceof BaseComponent)
 			throw new FoException("Cannot serialize singular BaseComponent, use BaseComponent[] instead");
@@ -311,7 +315,10 @@ public final class SerializeUtil {
 			else if (Enum.class.isAssignableFrom(classOf))
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
 
-			else if (List.class.isAssignableFrom(classOf) && object instanceof List) {
+			else if (Color.class.isAssignableFrom(classOf)) {
+				object = CompChatColor.of(object.toString()).getColor();
+
+			} else if (List.class.isAssignableFrom(classOf) && object instanceof List) {
 				// Good
 
 			} else if (Map.class.isAssignableFrom(classOf) && object instanceof Map) {
