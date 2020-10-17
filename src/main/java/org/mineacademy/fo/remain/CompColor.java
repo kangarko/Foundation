@@ -221,6 +221,20 @@ public enum CompColor {
 		throw new FoException("Could not get CompColor from ChatColor." + color.name());
 	}
 
+	/**
+	 * Returns a {@link CompDye} from the given chat color
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static final CompColor fromChatColor(final CompChatColor color) {
+		for (final CompColor comp : values())
+			if (comp.chatColor.name().equalsIgnoreCase(color.getName()) || comp.legacyName.equalsIgnoreCase(color.toString()))
+				return comp;
+
+		throw new FoException("Could not get CompColor from ChatColor." + color.getName());
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Converters
 	// ----------------------------------------------------------------------------------------------------
