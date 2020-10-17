@@ -195,8 +195,15 @@ public class Messenger {
 	/*
 	 * Internal method to perform the sending
 	 */
-	private void tell(final CommandSender player, final String prefix, final String message) {
-		Common.tellNoPrefix(player, prefix + message);
-	}
+	private void tell(final CommandSender player, final String prefix, String message) {
+		final String colorless = Common.stripColors(message);
+		final boolean foundElements = colorless.startsWith("[JSON]") || colorless.startsWith("<title>") || colorless.startsWith("<actionbar>") || colorless.startsWith("<bossbar>");
 
+		// Special case: Send the prefix for actionbar
+		if (colorless.startsWith("<actionbar>"))
+			message = message.replace("<actionbar>", "<actionbar>" + prefix);
+
+		// Only insert prefix if the message is sent through the normal chat
+		Common.tellNoPrefix(player, (foundElements ? "" : prefix) + message);
+	}
 }
