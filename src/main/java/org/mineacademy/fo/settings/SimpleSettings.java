@@ -1,5 +1,7 @@
 package org.mineacademy.fo.settings;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.mineacademy.fo.Common;
@@ -86,6 +88,11 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	// Settings we offer by default for your main config file
 	// Specify those you need to modify
 	// --------------------------------------------------------------------
+
+	/**
+	 * The {timestamp} format.
+	 */
+	public static DateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 	/**
 	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
@@ -175,6 +182,14 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 
 		pathPrefix(null);
 		upgradeOldSettings();
+
+		if (isSetDefault("Timestamp_Format"))
+			try {
+				TIMESTAMP_FORMAT = new SimpleDateFormat(getString("Timestamp_Format"));
+
+			} catch (final IllegalArgumentException ex) {
+				Common.throwError(ex, "Wrong 'Timestamp_Format '" + getString("Timestamp_Format") + "', see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for examples'");
+			}
 
 		if (isSetDefault("Prefix"))
 			PLUGIN_PREFIX = getString("Prefix");
