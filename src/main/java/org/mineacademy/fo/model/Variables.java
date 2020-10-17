@@ -2,10 +2,8 @@ package org.mineacademy.fo.model;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -22,8 +20,10 @@ import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.model.Variable.Type;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -32,6 +32,11 @@ import org.mineacademy.fo.settings.SimpleSettings;
  * A simple engine that replaces variables in a message.
  */
 public final class Variables {
+
+	/**
+	 * The pattern to find singular [syntax_name] variables
+	 */
+	public static final Pattern MESSAGE_PLACEHOLDER_PATTERN = Pattern.compile("[\\[]([^\\[\\]]+)[\\]]");
 
 	/**
 	 * The pattern to find simple {} placeholders
@@ -50,8 +55,9 @@ public final class Variables {
 
 	/**
 	 * Should we replace javascript placeholders from variables/ folder automatically?
+	 * Used internally to prevent race condition
 	 */
-	public static boolean REPLACE_JAVASCRIPT = true;
+	static boolean REPLACE_JAVASCRIPT = true;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Custom variables
@@ -59,20 +65,32 @@ public final class Variables {
 
 	/**
 	 * Variables added to Foundation by you or other plugins
-	 * <p>
+	 *
 	 * You take in a command sender (may/may not be a player) and output a replaced string.
 	 * The variable name (the key) is automatically surrounded by {} brackets
 	 */
-	private static final Map<String, Function<CommandSender, String>> customVariables = new HashMap<>();
+	private static final StrictMap<String, Function<CommandSender, String>> customVariables = new StrictMap<>();
 
 	/**
-	 * As a developer you can add or remove custom variables. Return an unmodifiable
-	 * set of all added custom variables
+	 * Variables added to Foundation by you or other plugins
+	 *
+	 * This is used to dynamically replace the variable based on its content, like
+	 * PlaceholderAPI.
+	 *
+	 * We also hook into PlaceholderAPI, however, you'll have to use your plugin's prefix before
+	 * all variables when called from there.
+	 */
+	private static final StrictList<SimpleExpansion> customExpansions = new StrictList<>();
+
+	/**
+	 * Return the variable for the given key that is a function of replacing
+	 * itself for the player. Returns null if no such variable by key is present.
 	 *
 	 * @return
 	 */
-	public static Set<String> getVariables() {
-		return Collections.unmodifiableSet(customVariables.keySet());
+	@Nullable
+	public static Function<CommandSender, String> getVariable(String key) {
+		return customVariables.get(key);
 	}
 
 	/**
@@ -86,7 +104,7 @@ public final class Variables {
 	 * @param replacer
 	 */
 	public static void addVariable(String variable, Function<CommandSender, String> replacer) {
-		customVariables.put(variable, replacer);
+		customVariables.override(variable, replacer);
 	}
 
 	/**
@@ -107,7 +125,44 @@ public final class Variables {
 	 * @return
 	 */
 	public static boolean hasVariable(String variable) {
-		return customVariables.containsKey(variable);
+		return customVariables.contains(variable);
+	}
+
+	/**
+	 * Return an immutable list of all currently loaded expansions
+	 *
+	 * @return
+	 */
+	public static List<SimpleExpansion> getExpansions() {
+		return Collections.unmodifiableList(customExpansions.getSource());
+	}
+
+	/**
+	 * Registers a new expansion if it was not already registered
+	 *
+	 * @param expansion
+	 */
+	public static void addExpansion(SimpleExpansion expansion) {
+		customExpansions.addIfNotExist(expansion);
+	}
+
+	/**
+	 * Unregisters an expansion if it was registered already
+	 *
+	 * @param expansion
+	 */
+	public static void removeExpansion(SimpleExpansion expansion) {
+		customExpansions.remove(expansion);
+	}
+
+	/**
+	 * Return true if the expansion has already been registered
+	 *
+	 * @param expansion
+	 * @return
+	 */
+	public static boolean hasExpansion(SimpleExpansion expansion) {
+		return customExpansions.contains(expansion);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -132,12 +187,12 @@ public final class Variables {
 	 * @param sender
 	 * @return
 	 */
-	public static List<String> replace(Iterable<String> messages, @Nullable CommandSender sender) {
+	public static List<String> replace(Iterable<String> messages, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements) {
 
 		// Trick: Join the lines to only parse variables at once -- performance++ -- then split again
 		final String deliminer = "%FLVJ%";
 
-		return Arrays.asList(replace(String.join(deliminer, messages), sender, null).split(deliminer));
+		return Arrays.asList(replace(String.join(deliminer, messages), sender, replacements).split(deliminer));
 	}
 
 	/**
@@ -184,8 +239,16 @@ public final class Variables {
 				return cachedVar;
 
 			// Custom placeholders
-			if (REPLACE_JAVASCRIPT)
-				message = replaceJavascriptVariables0(message, (Player) sender);
+			if (REPLACE_JAVASCRIPT) {
+				REPLACE_JAVASCRIPT = false;
+
+				try {
+					message = replaceJavascriptVariables0(message, (Player) sender, replacements);
+
+				} finally {
+					REPLACE_JAVASCRIPT = true;
+				}
+			}
 
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
@@ -212,23 +275,23 @@ public final class Variables {
 	/*
 	 * Replaces JavaScript variables in the message
 	 */
-	private static String replaceJavascriptVariables0(String message, Player player) {
+	private static String replaceJavascriptVariables0(String message, Player player, @Nullable Map<String, Object> replacements) {
 
-		for (final Variable variable : Variable.getVariables()) {
-			final String key = variable.getKey();
-			Valid.checkNotNull(key, "Variable had null key: " + variable);
+		final Matcher matcher = BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 
-			if (message.contains(key))
-				try {
-					message = message.replace(key, variable.getValue(player));
+		while (matcher.find()) {
+			final String variableKey = matcher.group();
 
-				} catch (final Throwable t) {
-					Common.throwError(t,
-							"Failed to replace a custom variable!",
-							"Message: " + message,
-							"Variable: " + key,
-							"%error");
-				}
+			// Find the variable key without []
+			final Variable variable = Variable.findVariable(variableKey.substring(1, variableKey.length() - 1));
+
+			if (variable != null && variable.getType() == Type.FORMAT) {
+				final SimpleComponent component = variable.build(player, SimpleComponent.empty(), replacements);
+
+				// We do not support interact chat elements so we just flatten the variable
+				// For interactive chat, use formatting
+				message = message.replace(variableKey, component.getPlainMessage());
+			}
 		}
 
 		return message;
@@ -243,18 +306,25 @@ public final class Variables {
 
 		while (matcher.find()) {
 			String variable = matcher.group(1);
-			boolean addSpace = false;
+			boolean frontSpace = false;
+			boolean backSpace = false;
+
+			if (variable.startsWith("+")) {
+				variable = variable.substring(1);
+
+				frontSpace = true;
+			}
 
 			if (variable.endsWith("+")) {
 				variable = variable.substring(0, variable.length() - 1);
 
-				addSpace = true;
+				backSpace = true;
 			}
 
 			String value = lookupVariable0(player, sender, variable);
 
 			if (value != null) {
-				value = value.isEmpty() ? "" : Common.colorize(value) + (addSpace ? " " : "");
+				value = value.isEmpty() ? "" : (frontSpace ? " " : "") + Common.colorize(value) + (backSpace ? " " : "");
 
 				message = message.replace(matcher.group(), value);
 			}
@@ -272,7 +342,17 @@ public final class Variables {
 		if (player != null && Arrays.asList("country_code", "country_name", "region_name", "isp").contains(variable))
 			geoResponse = GeoAPI.getCountry(player.getAddress());
 
-		{ // Replace custom variables
+		if (console != null) {
+
+			// Replace custom expansions
+			for (final SimpleExpansion expansion : customExpansions) {
+				final String value = expansion.replacePlaceholders(console, variable);
+
+				if (value != null)
+					return value;
+			}
+
+			// Replace custom variables
 			final Function<CommandSender, String> customReplacer = customVariables.get(variable);
 
 			if (customReplacer != null)
@@ -285,7 +365,7 @@ public final class Variables {
 			case "nms_version":
 				return MinecraftVersion.getServerVersion();
 			case "timestamp":
-				return TimeUtil.getFormattedDate();
+				return SimpleSettings.TIMESTAMP_FORMAT.format(System.currentTimeMillis());
 			case "timestamp_short":
 				return TimeUtil.getFormattedDateShort();
 
@@ -308,6 +388,7 @@ public final class Variables {
 				return player == null ? Common.resolveSenderName(console) : player.getPlayerListName();
 			case "display_name":
 				return player == null ? Common.resolveSenderName(console) : player.getDisplayName();
+			case "player_nick":
 			case "nick":
 				return player == null ? Common.resolveSenderName(console) : HookManager.getNickColored(player);
 
@@ -345,6 +426,8 @@ public final class Variables {
 			case "sender_is_console":
 				return console instanceof ConsoleCommandSender ? "true" : "false";
 
+			case "plugin_prefix":
+				return SimpleSettings.PLUGIN_PREFIX;
 			case "info_prefix":
 			case "prefix_info":
 				return org.mineacademy.fo.Messenger.getInfoPrefix();

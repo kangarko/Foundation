@@ -1,12 +1,14 @@
 package org.mineacademy.fo.model;
 
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -14,22 +16,20 @@ import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 public final class Variable extends YamlConfig {
-
-	/**
-	 * The pattern to find singular [syntax_name] variables
-	 */
-	public static final Pattern SINGLE_VARIABLE_PATTERN = Pattern.compile("[\\[]([^\\[\\]]+)[\\]]");
 
 	/**
 	 * A list of all loaded variables
 	 */
 	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class);
 
-	static {
-		loadedVariables.setVerbose(false);
-	}
+	/**
+	 * The kind of this variable
+	 */
+	@Getter
+	private Type type;
 
 	/**
 	 * The variable key what we should find
@@ -122,11 +122,21 @@ public final class Variable extends YamlConfig {
 	 */
 	@Override
 	protected void onLoadFinish() {
+
+		// Do not use Valid.checkNotNull since it appends Report: prefix. We do not want people to report this, instead, we want them to fix this.
+
+		this.type = get("Type", Type.class);
+		Objects.requireNonNull(this.type, "Please set 'Type' as variable type (available: " + Common.join(Type.values()) + ") in " + getFile().toPath());
+
 		this.key = getString("Key");
-		Valid.checkNotNull(this.key, "Please set the 'Key' variable name in " + getFileName() + " variable file!");
+		Objects.requireNonNull(this.key, "Please set 'Key' as variable name in " + getFile().toPath());
+
+		// Test for key validity
+		if (!Common.regExMatch("^\\w+$", this.key))
+			throw new IllegalArgumentException("The 'Key' variable in " + getFile().toPath() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 
 		this.value = getString("Value");
-		Valid.checkNotNull(this.value, "Please set the 'Value' variable output in " + getFileName() + " variable file!");
+		Objects.requireNonNull(this.value, "Please set 'Value' as variable output in " + getFile().toPath());
 
 		this.senderCondition = getString("Sender_Condition");
 		this.receiverCondition = getString("Receiver_Condition");
@@ -137,6 +147,23 @@ public final class Variable extends YamlConfig {
 		this.runCommand = getString("Run_Command");
 		this.senderPermission = getString("Sender_Permission");
 		this.receiverPermission = getString("Receiver_Permission");
+
+		if (this.type == Type.FORMAT) {
+			if (this.hoverText != null && !this.hoverText.isEmpty())
+				throw new IllegalStateException("FORMAT variables do not support Hover, you need to add this directly to the format!");
+
+			if (this.hoverItem != null)
+				throw new IllegalStateException("FORMAT variables do not support Hover_Item, you need to add this directly to the format!");
+
+			if (this.openUrl != null && !this.openUrl.isEmpty())
+				throw new IllegalStateException("FORMAT variables do not support Open_Url, you need to add this directly to the format!");
+
+			if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
+				throw new IllegalStateException("FORMAT variables do not support Suggest_Command, you need to add this directly to the format!");
+
+			if (this.runCommand != null && !this.runCommand.isEmpty())
+				throw new IllegalStateException("FORMAT variables do not support Run_Command, you need to add this directly to the format!");
+		}
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -144,25 +171,24 @@ public final class Variable extends YamlConfig {
 	// ----------------------------------------------------------------------------------
 
 	/**
-	 * Runs the script for the given player and
+	 * Runs the script for the given player and the replacements,
 	 * returns the output
 	 *
 	 * @param sender
+	 * @param replacements
 	 * @return
 	 */
-	public String getValue(CommandSender sender) {
-		final boolean replaceJs = Variables.REPLACE_JAVASCRIPT;
+	public String getValue(CommandSender sender, @Nullable Map<String, Object> replacements) {
+		Variables.REPLACE_JAVASCRIPT = false;
 
 		try {
-			Variables.REPLACE_JAVASCRIPT = false;
-
 			// Replace variables in script
-			final String script = Variables.replace(this.value, sender);
+			final String script = Variables.replace(this.value, sender, replacements);
 
 			return String.valueOf(JavaScriptExecutor.run(script, sender));
 
 		} finally {
-			Variables.REPLACE_JAVASCRIPT = replaceJs;
+			Variables.REPLACE_JAVASCRIPT = true;
 		}
 	}
 
@@ -173,7 +199,7 @@ public final class Variable extends YamlConfig {
 	 * @param existingComponent
 	 * @return
 	 */
-	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent) {
+	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent, @Nullable Map<String, Object> replacements) {
 
 		if (this.senderPermission != null && !PlayerUtil.hasPerm(sender, this.senderPermission))
 			return SimpleComponent.of("");
@@ -186,34 +212,34 @@ public final class Variable extends YamlConfig {
 				return SimpleComponent.of("");
 		}
 
-		final String value = this.getValue(sender);
+		final String value = this.getValue(sender, replacements);
 
 		if (value == null || "".equals(value) || "null".equals(value))
 			return SimpleComponent.of("");
 
 		final SimpleComponent component = existingComponent
-				.append(Variables.replace(value, sender))
+				.append(Variables.replace(value, sender, replacements))
 				.viewPermission(this.receiverPermission)
 				.viewCondition(this.receiverCondition);
 
 		if (!Valid.isNullOrEmpty(this.hoverText))
-			component.onHover(Variables.replace(this.hoverText, sender));
+			component.onHover(Variables.replace(this.hoverText, sender, replacements));
 
 		if (this.hoverItem != null) {
-			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender), sender);
+			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements), sender);
 			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
 			component.onHover((ItemStack) result);
 		}
 
 		if (this.openUrl != null)
-			component.onClickOpenUrl(Variables.replace(this.openUrl, sender));
+			component.onClickOpenUrl(Variables.replace(this.openUrl, sender, replacements));
 
 		if (this.suggestCommand != null)
-			component.onClickSuggestCmd(Variables.replace(this.suggestCommand, sender));
+			component.onClickSuggestCmd(Variables.replace(this.suggestCommand, sender, replacements));
 
 		if (this.runCommand != null)
-			component.onClickRunCmd(Variables.replace(this.runCommand, sender));
+			component.onClickRunCmd(Variables.replace(this.runCommand, sender, replacements));
 
 		return component;
 	}
@@ -241,27 +267,112 @@ public final class Variable extends YamlConfig {
 	// Static
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
 
+	/**
+	 * Load all variables from variables/ folder
+	 */
 	public static void loadVariables() {
 		loadedVariables.loadItems();
 	}
 
+	/**
+	 * Remove the given variable in case it exists
+	 *
+	 * @param variable
+	 */
 	public static void removeVariable(final Variable variable) {
 		loadedVariables.removeItem(variable);
 	}
 
+	/**
+	 * Return true if the given variable by key is loaded
+	 *
+	 * @param name
+	 * @return
+	 */
 	public static boolean isVariableLoaded(final String name) {
 		return loadedVariables.isItemLoaded(name);
 	}
 
+	/**
+	 * Return a variable, or null if not loaded
+	 *
+	 * @param name
+	 * @return
+	 */
 	public static Variable findVariable(@NonNull final String name) {
-		return loadedVariables.findItem(name);
+		for (final Variable item : getVariables())
+			if (item.getKey().equalsIgnoreCase(name))
+				return item;
+
+		return null;
 	}
 
+	/**
+	 * Return a list of all variables
+	 *
+	 * @return
+	 */
 	public static List<Variable> getVariables() {
 		return loadedVariables.getItems();
 	}
 
+	/**
+	 * Return a list of all variable names
+	 *
+	 * @return
+	 */
 	public static List<String> getVariableNames() {
 		return loadedVariables.getItemNames();
+	}
+
+	// ------–------–------–------–------–------–------–------–------–------–------–------–
+	// Classes
+	// ------–------–------–------–------–------–------–------–------–------–------–------–
+
+	/**
+	 * Represents a variable type
+	 */
+	@RequiredArgsConstructor
+	public enum Type {
+
+		/**
+		 * This variable is used in chat format and "server to player" messages
+		 * Cannot be used by players. Example: [{channel}] {player}: {message}
+		 */
+		FORMAT("format"),
+
+		/**
+		 * This variable can be used by players in chat such as "I have an [item]"
+		 */
+		MESSAGE("message"),
+		;
+
+		/**
+		 * The saveable non-obfuscated key
+		 */
+		@Getter
+		private final String key;
+
+		/**
+		 * Attempt to load the type from the given config key
+		 *
+		 * @param key
+		 * @return
+		 */
+		public static Type fromKey(String key) {
+			for (final Type mode : values())
+				if (mode.key.equalsIgnoreCase(key))
+					return mode;
+
+			throw new IllegalArgumentException("No such item type: " + key + ". Available: " + Common.join(values()));
+		}
+
+		/**
+		 * Returns {@link #getKey()}
+		 */
+		@Override
+		public String toString() {
+			return this.key;
+		}
 	}
 }
