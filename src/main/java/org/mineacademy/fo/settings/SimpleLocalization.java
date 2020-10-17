@@ -271,7 +271,12 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown when player has no permissions to view ANY subcommands in group command.
 		 */
-		public static String HEADER_NO_SUBCOMMANDS = "&cYou don't have permissions to view any subcommands.";
+		public static String HEADER_NO_SUBCOMMANDS = "&cThere are no arguments for this command.";
+
+		/**
+		 * The message shown when player has no permissions to view ANY subcommands in group command.
+		 */
+		public static String HEADER_NO_SUBCOMMANDS_PERMISSION = "&cYou don't have permissions to view any subcommands.";
 
 		/**
 		 * Key for when plugin is reloading {@link org.mineacademy.fo.plugin.SimplePlugin}
@@ -341,6 +346,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Header_No_Subcommands"))
 				HEADER_NO_SUBCOMMANDS = getString("Header_No_Subcommands");
+
+			if (isSetDefault("Header_No_Subcommands_Permission"))
+				HEADER_NO_SUBCOMMANDS_PERMISSION = getString("Header_No_Subcommands_Permission");
 
 			if (isSet("Reloading"))
 				RELOADING = getString("Reloading");
