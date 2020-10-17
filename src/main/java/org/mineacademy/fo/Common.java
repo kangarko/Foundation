@@ -412,15 +412,54 @@ public final class Common {
 		// Add colors and replace player
 		message = colorize(message.replace("{player}", resolveSenderName(sender)));
 
+		// Used for matching
+		final String colorlessMessage = stripColors(message);
+
 		// Send [JSON] prefixed messages as json component
 		if (message.startsWith("[JSON]")) {
-			String stripped = message.substring(6);
-
-			if (stripped.startsWith(" "))
-				stripped = stripped.substring(1);
+			final String stripped = message.substring(6).trim();
 
 			if (!stripped.isEmpty())
 				Remain.sendJson(sender, stripped);
+
+		} else if (colorlessMessage.startsWith("<actionbar>")) {
+			final String stripped = message.replace("<actionbar>", "");
+
+			if (!stripped.isEmpty())
+				if (sender instanceof Player)
+					Remain.sendActionBar((Player) sender, stripped);
+				else
+					tellJson(sender, stripped);
+
+		} else if (colorlessMessage.startsWith("<title>")) {
+			final String stripped = message.replace("<title>", "");
+
+			if (!stripped.isEmpty()) {
+				final String[] split = stripped.split("\\|");
+				final String title = split[0];
+				final String subtitle = split.length > 1 ? Common.joinRange(1, split) : null;
+
+				if (sender instanceof Player)
+					Remain.sendTitle((Player) sender, title, subtitle);
+
+				else {
+					tellJson(sender, title);
+
+					if (subtitle != null)
+						tellJson(sender, subtitle);
+				}
+			}
+
+		} else if (colorlessMessage.startsWith("<bossbar>")) {
+			final String stripped = message.replace("<bossbar>", "");
+
+			if (!stripped.isEmpty()) {
+				if (sender instanceof Player)
+					// cannot provide time here so we show it for 10 seconds
+					Remain.sendBossbarTimed((Player) sender, stripped, 10);
+				else
+					tellJson(sender, stripped);
+			}
 
 		} else
 			for (final String part : splitNewline(message)) {
@@ -699,12 +738,12 @@ public final class Common {
 	}
 
 	/**
-	 * Returns a long &m----------- chat line with strike color
+	 * Returns a long &m----------- chat line with strike effect
 	 *
 	 * @return
 	 */
 	public static String chatLineSmooth() {
-		return ChatColor.STRIKETHROUGH + "―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――";
+		return "&m-----------------------------------------------------";
 	}
 
 	/**
@@ -914,6 +953,20 @@ public final class Common {
 			text += toDuplicate;
 
 		return text;
+	}
+
+	/**
+	 * Limits the string to the given length maximum
+	 * appending "..." at the end when it is cut
+	 *
+	 * @param text
+	 * @param maxLength
+	 * @return
+	 */
+	public static String limit(String text, int maxLength) {
+		final int length = text.length();
+
+		return maxLength >= length ? text : text.substring(0, maxLength) + "...";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1179,20 +1232,24 @@ public final class Common {
 	 * <p>
 	 * Possible to use %error variable
 	 *
-	 * @param throwable
+	 * @param t
 	 * @param messages
 	 */
-	public static void throwError(Throwable throwable, final String... messages) {
-		if (throwable.getCause() != null)
-			throwable = throwable.getCause();
+	public static void throwError(Throwable t, final String... messages) {
+
+		// Get to the root cause of this problem
+		while (t.getCause() != null)
+			t = t.getCause();
+
+		// Delegate to only print out the relevant stuff
+		if (t instanceof FoException)
+			throw (FoException) t;
 
 		if (messages != null)
-			logFramed(false, replaceErrorVariable(throwable, messages));
+			logFramed(false, replaceErrorVariable(t, messages));
 
-		if (!(throwable instanceof FoException))
-			Debugger.saveError(throwable, messages);
-
-		Remain.sneaky(throwable);
+		Debugger.saveError(t, messages);
+		Remain.sneaky(t);
 	}
 
 	/*

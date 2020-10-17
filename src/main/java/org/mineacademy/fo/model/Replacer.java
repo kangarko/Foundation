@@ -264,12 +264,20 @@ public final class Replacer {
 
 		while (matcher.find()) {
 			String variable = matcher.group(1);
-			boolean addSpace = false;
+
+			boolean frontSpace = false;
+			boolean backSpace = false;
+
+			if (variable.startsWith("+")) {
+				variable = variable.substring(1);
+
+				frontSpace = true;
+			}
 
 			if (variable.endsWith("+")) {
 				variable = variable.substring(0, variable.length() - 1);
 
-				addSpace = true;
+				backSpace = true;
 			}
 
 			String value = null;
@@ -285,7 +293,7 @@ public final class Replacer {
 			}
 
 			if (value != null) {
-				value = value.isEmpty() ? "" : Common.colorize(value) + (addSpace ? " " : "");
+				value = value.isEmpty() ? "" : (frontSpace ? " " : "") + Common.colorize(value) + (backSpace ? " " : "");
 
 				message = message.replace(matcher.group(), value);
 			}
