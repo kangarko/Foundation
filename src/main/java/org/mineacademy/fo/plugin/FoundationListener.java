@@ -18,7 +18,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.constants.FoPermissions;
-import org.mineacademy.fo.model.ChatPages;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleScoreboard;
@@ -48,7 +48,7 @@ final class FoundationListener implements Listener {
 	}
 
 	/**
-	 * Handler for {@link ChatPages}
+	 * Handler for {@link ChatPaginator}
 	 *
 	 * @param event
 	 */
@@ -89,7 +89,7 @@ final class FoundationListener implements Listener {
 			return;
 		}
 
-		final ChatPages chatPages = (ChatPages) player.getMetadata("FoPages").get(0).value();
+		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata("FoPages").get(0).value();
 		final Map<Integer, List<SimpleComponent>> pages = chatPages.getPages();
 
 		// Remove empty lines
@@ -134,12 +134,12 @@ final class FoundationListener implements Listener {
 
 		// Fill in the pagination line
 		if (MinecraftVersion.atLeast(V.v1_7) && pages.size() > 1) {
-			Common.tell(player, " ");
+			Common.tellNoPrefix(player, " ");
 
 			final int pagesDigits = (int) (Math.log10(pages.size()) + 1);
 			final int multiply = 23 - MathUtil.ceiling(pagesDigits);
 
-			final SimpleComponent pagination = SimpleComponent.of("&6&m" + Common.duplicate("-", multiply) + "&r");
+			final SimpleComponent pagination = SimpleComponent.of(chatPages.getThemeColor() + "&m" + Common.duplicate("-", multiply) + "&r");
 
 			if (page == 0)
 				pagination.append(" &7« ");
@@ -150,12 +150,12 @@ final class FoundationListener implements Listener {
 			pagination.append("/");
 			pagination.append(pages.size() + "").onHover("&7You can also navigate using the", "&7hidden /#flp <page> command.");
 
-			if (page + 2 >= pages.size())
+			if (page + 1 >= pages.size())
 				pagination.append(" &7» ");
 			else
 				pagination.append(" &6» ").onHover("&7Go to page " + (page + 2)).onClickRunCmd("/#flp " + (page + 2));
 
-			pagination.append("&6&m" + Common.duplicate("-", multiply));
+			pagination.append(chatPages.getThemeColor() + "&m" + Common.duplicate("-", multiply));
 
 			pagination.send(player);
 		}
