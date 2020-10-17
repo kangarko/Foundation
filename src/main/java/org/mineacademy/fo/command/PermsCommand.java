@@ -9,7 +9,7 @@ import org.mineacademy.fo.command.annotation.Permission;
 import org.mineacademy.fo.command.annotation.PermissionGroup;
 import org.mineacademy.fo.constants.FoPermissions;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.ChatPages;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -44,7 +44,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	@Override
 	protected void onCommand() {
 
-		new ChatPages(15)
+		new ChatPaginator(15)
 				.setFoundationHeader("Listing All " + SimplePlugin.getNamed() + " Permissions")
 				.setPages(list())
 				.send(sender);

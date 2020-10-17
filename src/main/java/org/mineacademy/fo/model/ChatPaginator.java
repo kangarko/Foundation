@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public final class ChatPages {
+public final class ChatPaginator {
 
 	/**
 	 * This is the height that will fill all chat lines (20)
@@ -39,6 +40,11 @@ public final class ChatPages {
 	 * How many lines per page? Maximum on screen is 20 minus header and footer.
 	 */
 	private final int linesPerPage;
+
+	/**
+	 * The color used in header and footer
+	 */
+	private final ChatColor themeColor;
 
 	/**
 	 * The header included on every page.
@@ -58,10 +64,32 @@ public final class ChatPages {
 	/**
 	 * Construct chat pages taking the entire visible
 	 * chat portion when chat is maximize given {@link #setFoundationHeader(String)}
-	 * is used and there is no footer. We use {@link #FOUNDATION_HEIGHT} for height.
+	 * is used and there is no footer. We use {@link #FOUNDATION_HEIGHT} for height
+	 * and {@link ChatColor#GOLD} for color.
 	 */
-	public ChatPages() {
-		this(FOUNDATION_HEIGHT);
+	public ChatPaginator() {
+		this(FOUNDATION_HEIGHT, ChatColor.GOLD);
+	}
+
+	/**
+	 * Construct chat pages taking the entire visible
+	 * chat portion when chat is maximize given {@link #setFoundationHeader(String)}
+	 * is used and there is no footer. We use {@link #FOUNDATION_HEIGHT} for height.
+	 *
+	 * @param color to use
+	 */
+	public ChatPaginator(ChatColor themeColor) {
+		this(FOUNDATION_HEIGHT, themeColor);
+	}
+
+	/**
+	 * Creates a paginator with the given lines per page. Maximum on screen is 20 minus header and footer.
+	 * The {@link ChatColor#GOLD} color is used.
+	 *
+	 * @param linesPerPage
+	 */
+	public ChatPaginator(int linesPerPage) {
+		this(linesPerPage, ChatColor.GOLD);
 	}
 
 	/**
@@ -70,11 +98,14 @@ public final class ChatPages {
 	 * \<center\>title
 	 * ---------------
 	 *
+	 * IMPORTANT: Use {@link #setThemeColor(ChatColor)} first if you want to use
+	 * a custom theme color
+	 *
 	 * @param title
 	 * @return
 	 */
-	public ChatPages setFoundationHeader(String title) {
-		return this.setHeader("&r", "&6&m" + ChatUtil.center("&r&6 " + title + " &m", '-', 150), "&r");
+	public ChatPaginator setFoundationHeader(String title) {
+		return this.setHeader("&r", this.themeColor + "&m" + ChatUtil.center("&r" + this.themeColor + " " + title + " &m", '-', 150), "&r");
 	}
 
 	/**
@@ -83,7 +114,7 @@ public final class ChatPages {
 	 * @param components
 	 * @return
 	 */
-	public ChatPages setHeader(SimpleComponent... components) {
+	public ChatPaginator setHeader(SimpleComponent... components) {
 		for (final SimpleComponent component : components)
 			this.header.add(component);
 
@@ -96,7 +127,7 @@ public final class ChatPages {
 	 * @param messages
 	 * @return
 	 */
-	public ChatPages setHeader(String... messages) {
+	public ChatPaginator setHeader(String... messages) {
 		for (final String message : messages)
 			this.header.add(SimpleComponent.of(message));
 
@@ -109,7 +140,7 @@ public final class ChatPages {
 	 * @param components
 	 * @return
 	 */
-	public ChatPages setPages(SimpleComponent... components) {
+	public ChatPaginator setPages(SimpleComponent... components) {
 		this.pages.clear();
 		this.pages.putAll(Common.fillPages(this.linesPerPage, Arrays.asList(components)));
 
@@ -122,7 +153,7 @@ public final class ChatPages {
 	 * @param messages
 	 * @return
 	 */
-	public ChatPages setPages(String... messages) {
+	public ChatPaginator setPages(String... messages) {
 		final List<SimpleComponent> pages = new ArrayList<>();
 
 		for (final String message : messages)
@@ -137,7 +168,7 @@ public final class ChatPages {
 	 * @param components
 	 * @return
 	 */
-	public ChatPages setPages(Collection<SimpleComponent> components) {
+	public ChatPaginator setPages(Collection<SimpleComponent> components) {
 		this.pages.clear();
 		this.pages.putAll(Common.fillPages(this.linesPerPage, components));
 
@@ -150,7 +181,7 @@ public final class ChatPages {
 	 * @param components
 	 * @return
 	 */
-	public ChatPages setFooter(SimpleComponent... components) {
+	public ChatPaginator setFooter(SimpleComponent... components) {
 		for (final SimpleComponent component : components)
 			this.footer.add(component);
 
@@ -163,7 +194,7 @@ public final class ChatPages {
 	 * @param messages
 	 * @return
 	 */
-	public ChatPages setFooter(String... messages) {
+	public ChatPaginator setFooter(String... messages) {
 		for (final String message : messages)
 			this.footer.add(SimpleComponent.of(message));
 
