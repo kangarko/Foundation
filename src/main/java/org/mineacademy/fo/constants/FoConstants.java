@@ -1,5 +1,7 @@
 package org.mineacademy.fo.constants;
 
+import java.util.UUID;
+
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.TimeUtil;
@@ -9,6 +11,11 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  * Stores constants for this plugin
  */
 public final class FoConstants {
+
+	/**
+	 * Represents a UUID consisting of 0's only
+	 */
+	public static final UUID NULL_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
 	public static final class File {
 
