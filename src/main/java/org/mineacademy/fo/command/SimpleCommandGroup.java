@@ -392,66 +392,73 @@ public abstract class SimpleCommandGroup {
 		 * Automatically tells all help for all subcommands
 		 */
 		protected void tellSubcommandsHelp() {
-			if (subcommands.isEmpty()) {
-				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
 
-				return;
-			}
+			// Building help can be heavy so do it off of the main thread
+			Common.runAsync(() -> {
+				if (subcommands.isEmpty()) {
+					tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
 
-			final List<SimpleComponent> lines = new ArrayList<>();
-
-			for (final SimpleSubCommand subcommand : subcommands)
-				if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
-					if (subcommand instanceof FillerSubCommand) {
-						tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
-
-						continue;
-					}
-
-					final String usage = colorizeUsage(subcommand.getUsage());
-					final String desc = Common.getOrEmpty(subcommand.getDescription());
-
-					final SimpleComponent line = SimpleComponent.of(Replacer.replaceArray(getSubcommandDescription(),
-							"label", getLabel(),
-							"sublabel", subcommand.getSublabel(),
-							"usage", usage,
-							"description", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_7) ? desc : "",
-							"dash", !desc.isEmpty() && MinecraftVersion.olderThan(V.v1_7) ? "&e-" : ""));
-
-					if (!desc.isEmpty() && MinecraftVersion.atLeast(V.v1_7)) {
-						final String command = Common.stripColors(line.getPlainMessage()).substring(1);
-						final List<String> hover = new ArrayList<>();
-
-						hover.add("&7Description: &f" + desc);
-						hover.add("&7Permission: &f" + subcommand.getPermission());
-
-						if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
-							hover.add("&7Usage: ");
-
-							for (final String usageLine : subcommand.getMultilineUsageMessage())
-								hover.add("&f" + replacePlaceholders(colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
-
-						} else
-							hover.add("&7Usage: &f" + (usage.isEmpty() ? command : usage));
-
-						line.onHover(hover);
-						line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());
-					}
-
-					lines.add(line);
+					return;
 				}
 
-			if (!lines.isEmpty()) {
-				final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), commandsPerPage), ChatColor.DARK_GRAY);
+				final List<SimpleComponent> lines = new ArrayList<>();
 
-				if (getHelpHeader() != null)
-					pages.setHeader(getHelpHeader());
+				for (final SimpleSubCommand subcommand : subcommands)
+					if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
+						if (subcommand instanceof FillerSubCommand) {
+							tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
 
-				pages.setPages(lines);
-				pages.send(sender);
+							continue;
+						}
 
-			} else
-				tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS_PERMISSION);
+						final String usage = colorizeUsage(subcommand.getUsage());
+						final String desc = Common.getOrEmpty(subcommand.getDescription());
+						final boolean atLeast17 = MinecraftVersion.atLeast(V.v1_7);
+
+						final SimpleComponent line = SimpleComponent.of(Replacer.replaceArray(getSubcommandDescription(),
+								"label", getLabel(),
+								"sublabel", subcommand.getSublabel(),
+								"usage", usage,
+								"description", !desc.isEmpty() && !atLeast17 ? desc : "",
+								"dash", !desc.isEmpty() && !atLeast17 ? "&e-" : ""));
+
+						if (!desc.isEmpty() && atLeast17) {
+							final String command = Common.stripColors(line.getPlainMessage()).substring(1);
+							final List<String> hover = new ArrayList<>();
+
+							hover.add("&7Description: &f" + desc);
+							hover.add("&7Permission: &f" + subcommand.getPermission());
+
+							if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
+								hover.add("&7Usage: ");
+
+								for (final String usageLine : subcommand.getMultilineUsageMessage())
+									hover.add("&f" + replacePlaceholders(colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
+
+							} else
+								hover.add("&7Usage: &f" + (usage.isEmpty() ? command : usage));
+
+							line.onHover(hover);
+							line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());
+						}
+
+						lines.add(line);
+					}
+
+				if (!lines.isEmpty()) {
+					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), commandsPerPage), ChatColor.DARK_GRAY);
+
+					if (getHelpHeader() != null)
+						pages.setHeader(getHelpHeader());
+
+					pages.setPages(lines);
+
+					// Send the component on the main thread
+					Common.runLater(() -> pages.send(sender));
+
+				} else
+					tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS_PERMISSION);
+			});
 		}
 
 		/**

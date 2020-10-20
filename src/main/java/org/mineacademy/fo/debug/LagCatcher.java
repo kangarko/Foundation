@@ -79,13 +79,11 @@ public final class LagCatcher {
 		final double lag = finishAndCalculate(section);
 
 		if (lag > thresholdMs && SimpleSettings.LAG_THRESHOLD_MILLIS != -1) {
-			message = message.replace("{section}", section);
-			message = message.replace("{time}", MathUtil.formatTwoDigits(lag));
+			message = (SimplePlugin.hasInstance() ? "[" + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + "] " : "") + message
+					.replace("{section}", section)
+					.replace("{time}", MathUtil.formatTwoDigits(lag));
 
-			if (SimplePlugin.hasInstance())
-				Common.logNoPrefix("[{plugin_name} {plugin_version}] " + message);
-			else
-				System.out.println("[LagCatcher] " + message);
+			System.out.println(message);
 		}
 	}
 

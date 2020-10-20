@@ -62,7 +62,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 		this.sublabel = sublabels[0];
 
 		// If the default perm was not changed, improve it
-		if (getRawPermission().equals(DEFAULT_PERMISSION_SYNTAX)) {
+		if (getRawPermission().equals(getDefaultPermission())) {
 			final SimplePlugin instance = SimplePlugin.getInstance();
 
 			if (instance.getMainCommand() != null && instance.getMainCommand().getLabel().equals(this.getMainLabel()))
