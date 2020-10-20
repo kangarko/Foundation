@@ -2,6 +2,7 @@ package org.mineacademy.fo.bungee.message;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
@@ -26,7 +27,8 @@ public final class OutgoingMessage extends Message {
 	 */
 	private final List<Object> queue = new ArrayList<>();
 
-	public OutgoingMessage(BungeeAction action) {
+	public OutgoingMessage(UUID senderUid, BungeeAction action) {
+		setSenderUid(senderUid.toString());
 		setServerName(Remain.getServerName());
 		setAction(action);
 
@@ -35,6 +37,7 @@ public final class OutgoingMessage extends Message {
 		// first is the senders server name and the second is the action
 		// -----------------------------------------------------------------
 
+		queue.add(senderUid);
 		queue.add(getServerName());
 		queue.add(getAction());
 	}

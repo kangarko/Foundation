@@ -12,6 +12,8 @@ import lombok.Getter;
  * 2) The {@link BungeeAction}
  *
  * and the rest is the actual data within this enum
+ *
+ * @deprecated subject for REMOVAL
  */
 public enum FoBungeeAction implements BungeeAction {
 
