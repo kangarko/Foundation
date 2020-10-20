@@ -29,12 +29,14 @@ import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.command.SimpleCommandGroup.MainCommand;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
 import org.mineacademy.fo.model.ChatPaginator;
+import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
@@ -53,16 +55,6 @@ import lombok.NonNull;
 public abstract class SimpleCommand extends Command {
 
 	/**
-	 * The default permission syntax for this command.
-	 */
-	protected static final String DEFAULT_PERMISSION_SYNTAX = "{plugin_name_lower}.command.{label}";
-
-	/**
-	 * Denotes an empty list used to disable tab-completion
-	 */
-	protected static final List<String> NO_COMPLETE = Collections.unmodifiableList(new ArrayList<>());
-
-	/**
 	 * If this flag is true, we will use {@link Messenger} to send
 	 * messages (no prefix supported)
 	 *
@@ -70,6 +62,20 @@ public abstract class SimpleCommand extends Command {
 	 */
 	@Deprecated
 	public static boolean USE_MESSENGER = Messenger.ENABLED;
+
+	/**
+	 * Denotes an empty list used to disable tab-completion
+	 */
+	protected static final List<String> NO_COMPLETE = Collections.unmodifiableList(new ArrayList<>());
+
+	/**
+	 * Return the default permission syntax
+	 *
+	 * @return
+	 */
+	protected static final String getDefaultPermission() {
+		return SimplePlugin.getNamed().toLowerCase() + ".command.{label}";
+	}
 
 	/**
 	 * You can set the cooldown time before executing the command again. This map
@@ -194,7 +200,7 @@ public abstract class SimpleCommand extends Command {
 			setAliases(aliases);
 
 		// Set a default permission for this command
-		setPermission(DEFAULT_PERMISSION_SYNTAX);
+		setPermission(getDefaultPermission());
 	}
 
 	/*
@@ -314,7 +320,9 @@ public abstract class SimpleCommand extends Command {
 		final String lagSection = "Command /" + getLabel() + (args.length > 0 ? " " + String.join(" ", args) : "");
 
 		try {
-			LagCatcher.start(lagSection);
+			// Prevent duplication since MainCommand delegates this
+			if (!(this instanceof MainCommand))
+				LagCatcher.start(lagSection);
 
 			// Check if sender has the proper permission
 			if (getPermission() != null)
@@ -323,36 +331,40 @@ public abstract class SimpleCommand extends Command {
 			// Check for minimum required arguments and print help
 			if (args.length < getMinArguments() || autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 
-				final String usage = getMultilineUsageMessage() != null ? String.join("\n&c", getMultilineUsageMessage()) : getUsage() != null ? getUsage() : null;
-				Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "") + "' command!");
+				Common.runAsync(() -> {
+					final String usage = getMultilineUsageMessage() != null ? String.join("\n&c", getMultilineUsageMessage()) : getUsage() != null ? getUsage() : null;
+					Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "") + "' command!");
 
-				final ChatPaginator paginator = new ChatPaginator(ChatColor.RED);
-				final List<String> pages = new ArrayList<>();
+					final ChatPaginator paginator = new ChatPaginator(ChatColor.RED);
+					final List<String> pages = new ArrayList<>();
 
-				if (!Common.getOrEmpty(getDescription()).isEmpty()) {
-					pages.add(replacePlaceholders("&c&lDescription:"));
-					pages.add(replacePlaceholders("&c" + getDescription()));
-				}
+					if (!Common.getOrEmpty(getDescription()).isEmpty()) {
+						pages.add(replacePlaceholders("&c&lDescription:"));
+						pages.add(replacePlaceholders("&c" + getDescription()));
+					}
 
-				if (getMultilineUsageMessage() != null) {
-					pages.add("");
-					pages.add(replacePlaceholders("&c&lUsages:"));
+					if (getMultilineUsageMessage() != null) {
+						pages.add("");
+						pages.add(replacePlaceholders("&c&lUsages:"));
 
-					for (final String usagePart : usage.split("\n"))
-						pages.add(replacePlaceholders("&c" + usagePart));
+						for (final String usagePart : usage.split("\n"))
+							pages.add(replacePlaceholders("&c" + usagePart));
 
-				} else {
-					final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
+					} else {
+						final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
-					pages.add("");
-					pages.add("&c&lUsage:");
-					pages.add("&c" + replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : "")));
-				}
+						pages.add("");
+						pages.add("&c&lUsage:");
+						pages.add("&c" + replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : "")));
+					}
 
-				paginator
-						.setFoundationHeader("Help for /" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : ""))
-						.setPages(Common.toArray(pages))
-						.send(sender);
+					paginator
+							.setFoundationHeader("Help for /" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : ""))
+							.setPages(Common.toArray(pages));
+
+					// Force sending on the main thread
+					Common.runLater(() -> paginator.send(sender));
+				});
 
 				return true;
 			}
@@ -389,7 +401,10 @@ public abstract class SimpleCommand extends Command {
 
 		} finally {
 			Common.ADD_TELL_PREFIX = hadTellPrefix;
-			LagCatcher.end(lagSection);
+
+			// Prevent duplication since MainCommand delegates this
+			if (!(this instanceof MainCommand))
+				LagCatcher.end(lagSection, 8, "{section} took {time} ms");
 		}
 
 		return true;
@@ -465,7 +480,7 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	public final void checkPerm(@NonNull final String perm) throws CommandException {
-		if (isPlayer() && !PlayerUtil.hasPerm(sender, perm))
+		if (isPlayer() && !hasPerm(perm))
 			throw new CommandException(getPermissionMessage().replace("{permission}", perm));
 	}
 
@@ -539,7 +554,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
 		final Player player = Bukkit.getPlayer(name);
-		checkBoolean(player != null && player.isOnline(), falseMessage.replace("{player}", name));
+		checkBoolean(player != null && player.isOnline() && !HookManager.isVanished(player), falseMessage.replace("{player}", name));
 
 		return player;
 	}
@@ -612,10 +627,33 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
+		return this.findEnum(enumType, name, null, falseMessage);
+	}
+
+	/**
+	 * Finds an enumeration of a certain type, if it fails it prints a false message to the player
+	 * You can use the {enum} variable in the false message for the name parameter
+	 *
+	 * You can also use the condition to filter certain enums and act as if they did not existed
+	 * if your function returns false for such
+	 *
+	 * @param <T>
+	 * @param enumType
+	 * @param name
+	 * @param condition
+	 * @param falseMessage
+	 * @return
+	 * @throws CommandException
+	 */
+	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String name, final Function<T, Boolean> condition, final String falseMessage) throws CommandException {
 		T found = null;
 
 		try {
 			found = ReflectionUtil.lookupEnum(enumType, name);
+
+			if (!condition.apply(found))
+				found = null;
+
 		} catch (final Throwable t) {
 		}
 
@@ -731,8 +769,8 @@ public abstract class SimpleCommand extends Command {
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(@Nullable String permission) {
-		return PlayerUtil.hasPerm(sender, permission == null ? null : permission.replace("{label}", getLabel()));
+	protected final boolean hasPerm(String permission) {
+		return permission == null ? true : PlayerUtil.hasPerm(sender, permission.replace("{label}", getLabel()));
 	}
 
 	// ----------------------------------------------------------------------
@@ -1008,8 +1046,7 @@ public abstract class SimpleCommand extends Command {
 	private String replaceBasicPlaceholders0(final String message) {
 		return message
 				.replace("{label}", getLabel())
-				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel())
-				.replace("{plugin_name_lower}", SimplePlugin.getNamed().toLowerCase());
+				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : super.getLabel());
 	}
 
 	/**

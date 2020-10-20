@@ -77,15 +77,47 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 
 	/**
+	 * The instance of this plugin
+	 */
+	private static volatile SimplePlugin instance;
+
+	/**
+	 * Shortcut for getDescription().getVersion()
+	 *
+	 * @return plugin's version
+	 */
+	@Getter
+	private static String version;
+
+	/**
+	 * Shortcut for getName()
+	 *
+	 * @return plugin's name
+	 */
+	@Getter
+	private static String named;
+
+	/**
+	 * Shortcut for getFile()
+	 *
+	 * @return plugin's jar file
+	 */
+	@Getter
+	private static File source;
+
+	/**
+	 * Shortcut for getDataFolder()
+	 *
+	 * @return plugins' data folder in plugins/
+	 */
+	@Getter
+	private static File data;
+
+	/**
 	 * An internal flag to indicate that the plugin is being reloaded.
 	 */
 	@Getter
 	private static volatile boolean reloading = false;
-
-	/**
-	 * The instance of this plugin
-	 */
-	private static volatile SimplePlugin instance;
 
 	/**
 	 * Returns the instance of {@link SimplePlugin}.
@@ -98,47 +130,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	public static SimplePlugin getInstance() {
 		if (instance == null) {
 			instance = JavaPlugin.getPlugin(SimplePlugin.class);
-
 			Objects.requireNonNull(instance, "Cannot get a new instance! Have you reloaded?");
+
+			// Cache results for best performance
+			version = instance.getDescription().getVersion();
+			named = instance.getName();
+			source = instance.getFile();
+			data = instance.getDataFolder();
 		}
 
 		return instance;
-	}
-
-	/**
-	 * Shortcut for getDescription().getVersion()
-	 *
-	 * @return plugin's version
-	 */
-	public static final String getVersion() {
-		return getInstance().getDescription().getVersion();
-	}
-
-	/**
-	 * Shortcut for getName()
-	 *
-	 * @return plugin's name
-	 */
-	public static final String getNamed() {
-		return hasInstance() ? getInstance().getName() : "No instance yet";
-	}
-
-	/**
-	 * Shortcut for getFile()
-	 *
-	 * @return plugin's jar file
-	 */
-	public static final File getSource() {
-		return getInstance().getFile();
-	}
-
-	/**
-	 * Shortcut for getDataFolder()
-	 *
-	 * @return plugins' data folder in plugins/
-	 */
-	public static final File getData() {
-		return getInstance().getDataFolder();
 	}
 
 	/**

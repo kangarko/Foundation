@@ -53,7 +53,8 @@ public final class TabUtil {
 					final boolean lowercase = s instanceof Enum;
 					final String parsed = SerializeUtil.serialize(s).toString();
 
-					clone.add(lowercase ? parsed.toLowerCase() : parsed);
+					if (!"".equals(parsed))
+						clone.add(lowercase ? parsed.toLowerCase() : parsed);
 				}
 			}
 
