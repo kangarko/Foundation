@@ -1,5 +1,9 @@
 package org.mineacademy.fo.bungee.message;
 
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
@@ -18,6 +22,13 @@ import lombok.RequiredArgsConstructor;
 abstract class Message {
 
 	/**
+	 * The UUID of the sender who initiated the packet, can be null
+	 */
+	@Nullable
+	@Getter
+	private UUID senderUid;
+
+	/**
 	 * The server name
 	 */
 	@Getter
@@ -33,6 +44,16 @@ abstract class Message {
 	 * {@link BungeeAction#getContent()}
 	 */
 	private int actionHead = 0;
+
+	/**
+	 * Set the sender UUID
+	 *
+	 * @param raw
+	 */
+	protected final void setSenderUid(String raw) {
+		if (raw != null)
+			this.senderUid = UUID.fromString(raw);
+	}
 
 	/**
 	 * Set the server name for this message, reason it is here:
