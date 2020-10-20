@@ -16,6 +16,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -33,7 +34,7 @@ import net.md_5.bungee.api.chat.TextComponent;
  * A very simple way of sending interactive chat messages
  */
 @ToString
-public final class SimpleComponent {
+public final class SimpleComponent implements ConfigSerializable {
 
 	/**
 	 * The pattern to match URL addresses when parsing text
@@ -52,105 +53,6 @@ public final class SimpleComponent {
 	private Part currentComponent;
 
 	/**
-	 * The part that is being created
-	 */
-	@RequiredArgsConstructor
-	private static final class Part {
-
-		/**
-		 * The text
-		 */
-		private final String text;
-
-		/**
-		 * The view permission
-		 */
-		private String viewPermission;
-
-		/**
-		 * The view JS condition
-		 */
-		private String viewCondition;
-
-		/**
-		 * The hover event
-		 */
-		private HoverEvent hoverEvent;
-
-		/**
-		 * The click event
-		 */
-		private ClickEvent clickEvent;
-
-		/**
-		 * The insertion
-		 */
-		private String insertion;
-
-		/**
-		 * What component to inherit colors/decoration from?
-		 */
-		@Nullable
-		private BaseComponent inheritFormatting;
-
-		/**
-		 * Turn this part of the components into a {@link TextComponent}
-		 * for the given receiver
-		 *
-		 * @param receiver
-		 * @return
-		 */
-		@Nullable
-		private TextComponent toTextComponent(CommandSender receiver) {
-			if (!canSendTo(receiver) || isEmpty())
-				return null;
-
-			final BaseComponent[] base = toComponent(this.text, this.inheritFormatting);
-
-			for (final BaseComponent part : base) {
-				if (this.hoverEvent != null)
-					part.setHoverEvent(hoverEvent);
-
-				if (this.clickEvent != null)
-					part.setClickEvent(clickEvent);
-
-				if (this.insertion != null)
-					part.setInsertion(insertion);
-			}
-
-			return new TextComponent(base);
-		}
-
-		/*
-		 * Return if we're dealing with an empty format
-		 */
-		private boolean isEmpty() {
-			return this.text.isEmpty() && this.hoverEvent == null && this.clickEvent == null && this.insertion == null;
-		}
-
-		/*
-		 * Can this component be shown to the given sender?
-		 */
-		private boolean canSendTo(@Nullable CommandSender receiver) {
-			if (receiver == null)
-				return true;
-
-			if (this.viewPermission != null && !PlayerUtil.hasPerm(receiver, this.viewPermission))
-				return false;
-
-			if (this.viewCondition != null) {
-				final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
-				Valid.checkBoolean(result instanceof Boolean, "Receiver condition must return Boolean not " + result.getClass() + " for component: " + this);
-
-				if ((boolean) result == false)
-					return false;
-			}
-
-			return true;
-		}
-	}
-
-	/**
 	 * Create a new interactive chat component
 	 *
 	 * @param text
@@ -162,6 +64,12 @@ public final class SimpleComponent {
 			text = ChatUtil.center(text.replace("<center>", "").trim());
 
 		this.currentComponent = new Part(text);
+	}
+
+	/**
+	 * Private constructor used when deserializing
+	 */
+	private SimpleComponent() {
 	}
 
 	// --------------------------------------------------------------------
@@ -530,6 +438,38 @@ public final class SimpleComponent {
 	}
 
 	// --------------------------------------------------------------------
+	// Serialize
+	// --------------------------------------------------------------------
+
+	/**
+	 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
+	 */
+	@Override
+	public SerializedMap serialize() {
+		final SerializedMap map = new SerializedMap();
+
+		map.putIf("Current_Component", this.currentComponent);
+		map.put("Past_Components", this.pastComponents);
+
+		return map;
+	}
+
+	/**
+	 * Create a {@link SimpleComponent} from the serialized map
+	 *
+	 * @param map
+	 * @return
+	 */
+	public static SimpleComponent deserialize(SerializedMap map) {
+		final SimpleComponent component = new SimpleComponent();
+
+		component.currentComponent = map.get("Current_Component", Part.class);
+		component.pastComponents.addAll(map.getList("Past_Components", Part.class));
+
+		return component;
+	}
+
+	// --------------------------------------------------------------------
 	// Static
 	// --------------------------------------------------------------------
 
@@ -715,5 +655,151 @@ public final class SimpleComponent {
 	 */
 	public static SimpleComponent of(boolean colorize, String text) {
 		return new SimpleComponent(colorize ? Common.colorize(text) : text);
+	}
+
+	// --------------------------------------------------------------------
+	// Classes
+	// --------------------------------------------------------------------
+
+	/**
+	 * The part that is being created
+	 */
+	@RequiredArgsConstructor
+	static final class Part implements ConfigSerializable {
+
+		/**
+		 * The text
+		 */
+		private final String text;
+
+		/**
+		 * The view permission
+		 */
+		@Nullable
+		private String viewPermission;
+
+		/**
+		 * The view JS condition
+		 */
+		@Nullable
+		private String viewCondition;
+
+		/**
+		 * The hover event
+		 */
+		@Nullable
+		private HoverEvent hoverEvent;
+
+		/**
+		 * The click event
+		 */
+		@Nullable
+		private ClickEvent clickEvent;
+
+		/**
+		 * The insertion
+		 */
+		@Nullable
+		private String insertion;
+
+		/**
+		 * What component to inherit colors/decoration from?
+		 */
+		@Nullable
+		private BaseComponent inheritFormatting;
+
+		/**
+		 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
+		 */
+		@Override
+		public SerializedMap serialize() {
+			final SerializedMap map = new SerializedMap();
+
+			map.put("Text", this.text);
+			map.putIf("View_Permission", this.viewPermission);
+			map.putIf("View_Condition", this.viewCondition);
+			map.putIf("Hover_Event", this.hoverEvent);
+			map.putIf("Click_Event", this.clickEvent);
+			map.putIf("Insertion", this.insertion);
+			map.putIf("Inherit_Formatting", this.inheritFormatting);
+
+			return map;
+		}
+
+		/**
+		 * Create a Part from the given serializedMap
+		 *
+		 * @param map
+		 * @return
+		 */
+		public static Part deserialize(SerializedMap map) {
+			final Part part = new Part(map.getString("Text"));
+
+			part.viewPermission = map.getString("View_Permission");
+			part.viewCondition = map.getString("View_Condition");
+			part.hoverEvent = map.get("Hover_Event", HoverEvent.class);
+			part.clickEvent = map.get("Click_Event", ClickEvent.class);
+			part.insertion = map.getString("Insertion");
+			part.inheritFormatting = map.get("Inherit_Formatting", BaseComponent.class);
+
+			return part;
+		}
+
+		/**
+		 * Turn this part of the components into a {@link TextComponent}
+		 * for the given receiver
+		 *
+		 * @param receiver
+		 * @return
+		 */
+		@Nullable
+		private TextComponent toTextComponent(CommandSender receiver) {
+			if (!canSendTo(receiver) || isEmpty())
+				return null;
+
+			final BaseComponent[] base = toComponent(this.text, this.inheritFormatting);
+
+			for (final BaseComponent part : base) {
+				if (this.hoverEvent != null)
+					part.setHoverEvent(hoverEvent);
+
+				if (this.clickEvent != null)
+					part.setClickEvent(clickEvent);
+
+				if (this.insertion != null)
+					part.setInsertion(insertion);
+			}
+
+			return new TextComponent(base);
+		}
+
+		/*
+		 * Return if we're dealing with an empty format
+		 */
+		private boolean isEmpty() {
+			return this.text.isEmpty() && this.hoverEvent == null && this.clickEvent == null && this.insertion == null;
+		}
+
+		/*
+		 * Can this component be shown to the given sender?
+		 */
+		private boolean canSendTo(@Nullable CommandSender receiver) {
+
+			if (this.viewPermission != null && (receiver == null || !PlayerUtil.hasPerm(receiver, this.viewPermission)))
+				return false;
+
+			if (this.viewCondition != null) {
+				if (receiver == null)
+					return false;
+
+				final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
+				Valid.checkBoolean(result instanceof Boolean, "Receiver condition must return Boolean not " + result.getClass() + " for component: " + this);
+
+				if ((boolean) result == false)
+					return false;
+			}
+
+			return true;
+		}
 	}
 }

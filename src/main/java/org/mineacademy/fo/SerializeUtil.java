@@ -40,6 +40,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
 
 /**
  * Utility class for serializing objects to writeable YAML data and back.
@@ -116,10 +118,22 @@ public final class SerializeUtil {
 			return "#" + ((Color) obj).getRGB();
 
 		else if (obj instanceof BaseComponent)
-			throw new FoException("Cannot serialize singular BaseComponent, use BaseComponent[] instead");
+			return Remain.toJson((BaseComponent) obj);
 
 		else if (obj instanceof BaseComponent[])
 			return Remain.toJson((BaseComponent[]) obj);
+
+		else if (obj instanceof HoverEvent) {
+			final HoverEvent event = (HoverEvent) obj;
+
+			return SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue()).serialize();
+		}
+
+		else if (obj instanceof ClickEvent) {
+			final ClickEvent event = (ClickEvent) obj;
+
+			return SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue()).serialize();
+		}
 
 		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
@@ -306,11 +320,31 @@ public final class SerializeUtil {
 			else if (classOf == UUID.class)
 				object = UUID.fromString(object.toString());
 
-			else if (classOf == BaseComponent.class)
-				throw new FoException("Cannot deserialize a singular component, use BaseComponent[] instead");
+			else if (classOf == BaseComponent.class) {
+				final BaseComponent[] deserialized = Remain.toComponent(object.toString());
+				Valid.checkBoolean(deserialized.length == 1, "Failed to deserialize into singular BaseComponent: " + object);
 
-			else if (classOf == BaseComponent[].class)
+				object = deserialized[0];
+
+			} else if (classOf == BaseComponent[].class)
 				object = Remain.toComponent(object.toString());
+
+			else if (classOf == HoverEvent.class) {
+				final SerializedMap serialized = SerializedMap.of(object);
+				final HoverEvent.Action action = serialized.get("Action", HoverEvent.Action.class);
+				final BaseComponent[] value = serialized.get("Value", BaseComponent[].class);
+
+				object = new HoverEvent(action, value);
+			}
+
+			else if (classOf == ClickEvent.class) {
+				final SerializedMap serialized = SerializedMap.of(object);
+
+				final ClickEvent.Action action = serialized.get("Action", ClickEvent.Action.class);
+				final String value = serialized.getString("Value");
+
+				object = new ClickEvent(action, value);
+			}
 
 			else if (Enum.class.isAssignableFrom(classOf))
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
