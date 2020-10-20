@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1731,6 +1733,25 @@ public final class Common {
 	}
 
 	/**
+	 * Converts a set having one type object into another
+	 *
+	 * @param list      the old list
+	 * @param converter the converter;
+	 * @return the new list
+	 */
+	public static <OLD, NEW> Set<NEW> convertSet(final Iterable<OLD> list, final TypeConverter<OLD, NEW> converter) {
+		final Set<NEW> copy = new HashSet<>();
+
+		for (final OLD old : list) {
+			final NEW result = converter.convert(old);
+			if (result != null)
+				copy.add(converter.convert(old));
+		}
+
+		return copy;
+	}
+
+	/**
 	 * Converts a list having one type object into another
 	 *
 	 * @param list      the old list
@@ -2133,6 +2154,17 @@ public final class Common {
 		map.put(firstKey, firstValue);
 
 		return map;
+	}
+
+	/**
+	 * Create a new hashset
+	 *
+	 * @param <T>
+	 * @param keys
+	 * @return
+	 */
+	public static <T> Set<T> newSet(final T... keys) {
+		return new HashSet<>(Arrays.asList(keys));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
