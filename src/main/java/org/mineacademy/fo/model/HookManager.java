@@ -33,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -1383,7 +1384,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1478,9 +1479,15 @@ class EssentialsHook {
 			replyPlayer = user.getReplyRecipient().getName();
 
 		} catch (final Throwable ex) {
-			final CommandSource commandSource = ReflectionUtil.invoke("getReplyTo", user);
+			try {
+				final Method getReplyTo = ReflectionUtil.getMethod(user.getClass(), "getReplyTo");
+				final CommandSource commandSource = ReflectionUtil.invoke(getReplyTo, user);
 
-			replyPlayer = commandSource == null ? null : commandSource.getPlayer().getName();
+				replyPlayer = commandSource == null ? null : commandSource.getPlayer().getName();
+
+			} catch (final Throwable t) {
+				replyPlayer = null;
+			}
 		}
 
 		final Player bukkitPlayer = replyPlayer == null ? null : Bukkit.getPlayer(replyPlayer);
@@ -1914,7 +1921,29 @@ class PlaceholderAPIHook {
 			final String params = format.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
+
+				// Wait 0.5 seconds then kill the thread to prevent server
+				// crashing on PlaceholderAPI variables hanging up on the main thread
+				final Thread currentThread = Thread.currentThread();
+				final BukkitTask watchDog = Common.runLater(20, () -> {
+					Common.logFramed(
+							"IMPORTANT: PREVENTED SERVER CRASH FROM PLACEHOLDERAPI",
+							"Replacing a variable using PlaceholderAPI took",
+							"longer than our maximum limit (1 second) and",
+							"was forcefully interrupted to prevent your",
+							"server from crashing. This is not error on",
+							"our end, please contact the expansion author.",
+							"",
+							"Variable: " + identifier,
+							"Player: " + player.getName());
+
+					currentThread.stop();
+				});
+
 				String value = hooks.get(identifier).onRequest(player, params);
+
+				// Indicate we no longer have to kill the thread
+				watchDog.cancel();
 
 				if (value != null) {
 					value = Matcher.quoteReplacement(Common.colorize(value));
@@ -2696,7 +2725,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
