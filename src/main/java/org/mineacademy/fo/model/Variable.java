@@ -126,17 +126,17 @@ public final class Variable extends YamlConfig {
 		// Do not use Valid.checkNotNull since it appends Report: prefix. We do not want people to report this, instead, we want them to fix this.
 
 		this.type = get("Type", Type.class);
-		Objects.requireNonNull(this.type, "Please set 'Type' as variable type (available: " + Common.join(Type.values()) + ") in " + getFile().toPath());
+		Objects.requireNonNull(this.type, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Type' as variable type (available: " + Common.join(Type.values()) + ") in " + getFile().toPath());
 
 		this.key = getString("Key");
-		Objects.requireNonNull(this.key, "Please set 'Key' as variable name in " + getFile().toPath());
+		Objects.requireNonNull(this.key, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile().toPath());
 
 		// Test for key validity
 		if (!Common.regExMatch("^\\w+$", this.key))
-			throw new IllegalArgumentException("The 'Key' variable in " + getFile().toPath() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile().toPath() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 
 		this.value = getString("Value");
-		Objects.requireNonNull(this.value, "Please set 'Value' as variable output in " + getFile().toPath());
+		Objects.requireNonNull(this.value, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' as variable output in " + getFile().toPath());
 
 		this.senderCondition = getString("Sender_Condition");
 		this.receiverCondition = getString("Receiver_Condition");
