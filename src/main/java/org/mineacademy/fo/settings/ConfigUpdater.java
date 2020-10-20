@@ -304,33 +304,6 @@ class ConfigUpdater {
 		return comments;
 	}
 
-	/*private static void appendSection(StringBuilder builder, ConfigurationSection section, StringBuilder prefixSpaces, Yaml yaml) {
-		builder.append(prefixSpaces).append(getKeyFromFullKey(section.getCurrentPath())).append(":");
-		final Set<String> keys = section.getKeys(false);
-	
-		if (keys.isEmpty()) {
-			builder.append(" {}\n");
-			return;
-		}
-	
-		builder.append("\n");
-		prefixSpaces.append("  ");
-	
-		for (final String key : keys) {
-			final Object value = section.get(key);
-			final String actualKey = getKeyFromFullKey(key);
-	
-			if (value instanceof ConfigurationSection) {
-				appendSection(builder, (ConfigurationSection) value, prefixSpaces, yaml);
-				prefixSpaces.setLength(prefixSpaces.length() - 2);
-			} else if (value instanceof List) {
-				builder.append(getListAsString((List<?>) value, actualKey, prefixSpaces.toString(), yaml));
-			} else {
-				builder.append(prefixSpaces.toString()).append(actualKey).append(": ").append(yaml.dump(value));
-			}
-		}
-	}*/
-
 	//Counts spaces in front of key and divides by 2 since 1 indent = 2 spaces
 	private static int countIndents(String s) {
 		int spaces = 0;
