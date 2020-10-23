@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -26,7 +28,6 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.model.SimpleEnchantment;
-import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -43,8 +44,9 @@ import lombok.Singular;
  * <p>
  * You can use this to make named items with incredible speed and quality.
  */
-@Builder
-public final class ItemCreator {
+final @Builder
+
+public class ItemCreator {
 
 	/**
 	 * The initial item stack
@@ -124,7 +126,7 @@ public final class ItemCreator {
 	 * The list of NBT tags with their key-value pairs
 	 */
 	@Singular
-	private final List<Tuple<String, String>> tags;
+	private final Map<String, String> tags;
 
 	/**
 	 * The item meta, overriden by other fields
@@ -382,8 +384,8 @@ public final class ItemCreator {
 		// Apply NBT tags
 		if (tags != null)
 			if (MinecraftVersion.atLeast(V.v1_8))
-				for (final Tuple<String, String> tag : tags)
-					is = CompMetadata.setMetadata(is, tag.getKey(), tag.getValue());
+				for (final Entry<String, String> entry : tags.entrySet())
+					is = CompMetadata.setMetadata(is, entry.getKey(), entry.getValue());
 
 			else if (!tags.isEmpty() && item != null)
 				Common.log("Item had unsupported tags " + tags + " that are not supported on MC " + MinecraftVersion.getServerVersion() + " Item: " + is);

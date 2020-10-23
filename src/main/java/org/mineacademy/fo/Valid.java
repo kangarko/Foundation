@@ -482,6 +482,7 @@ public final class Valid {
 			for (final String matched : list)
 				if (Valid.normalizeEquals(element).startsWith(Valid.normalizeEquals(matched)))
 					return true;
+
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
 		}
 

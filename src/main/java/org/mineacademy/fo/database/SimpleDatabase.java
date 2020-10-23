@@ -187,21 +187,21 @@ public class SimpleDatabase {
 	/**
 	 * Insert the given column-values pairs into the {@link #getTable()}
 	 *
-	 * @param columnValuesPairs
+	 * @param columsAndValues
 	 */
-	protected final void insert(@NonNull SerializedMap map) {
-		this.insert("{table}", map);
+	protected final void insert(@NonNull SerializedMap columsAndValues) {
+		this.insert("{table}", columsAndValues);
 	}
 
 	/**
 	 * Insert the given column-values pairs into the given table
 	 *
 	 * @param table
-	 * @param columnValuesPairs
+	 * @param columsAndValues
 	 */
-	protected final void insert(String table, @NonNull SerializedMap map) {
-		final String columns = Common.join(map.keySet());
-		final String values = Common.join(map.values(), ", ", value -> value == null ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+	protected final void insert(String table, @NonNull SerializedMap columsAndValues) {
+		final String columns = Common.join(columsAndValues.keySet());
+		final String values = Common.join(columsAndValues.values(), ", ", value -> value == null ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
 
 		update("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
 	}

@@ -1323,6 +1323,16 @@ public class YamlConfig {
 		return map;
 	}
 
+	/**
+	 * Load a map having a Set as value with the given parameters
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param setType
+	 * @return
+	 */
 	protected final <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull String path, final Class<Key> keyType, final Class<Value> setType) {
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
