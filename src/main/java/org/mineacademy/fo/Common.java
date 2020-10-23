@@ -2006,6 +2006,8 @@ public final class Common {
 	/**
 	 * Returns the value or its default counterpart in case it is null
 	 *
+	 * PSA: If values are strings, we return default if the value is empty or equals to "none"
+	 *
 	 * @param value the primary value
 	 * @param def   the default value
 	 * @return the value, or default it the value is null
@@ -2014,6 +2016,18 @@ public final class Common {
 		if (value instanceof String && ("none".equalsIgnoreCase((String) value) || "".equals(value)))
 			return def;
 
+		return getOrDefaultStrict(value, def);
+	}
+
+	/**
+	 * Returns the value or its default counterpart in case it is null
+	 *
+	 * @param <T>
+	 * @param value
+	 * @param def
+	 * @return
+	 */
+	public static <T> T getOrDefaultStrict(final T value, final T def) {
 		return value != null ? value : def;
 	}
 
