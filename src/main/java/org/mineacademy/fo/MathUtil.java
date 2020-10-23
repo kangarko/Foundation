@@ -95,8 +95,8 @@ public final class MathUtil {
 	 * @param d1
 	 * @return
 	 */
-	public static int floor(final double d1) {
-		final int i = (int) d1;
+	public static long floor(final double d1) {
+		final long i = (long) d1;
 
 		return d1 >= i ? i : i - 1;
 	}
@@ -107,8 +107,8 @@ public final class MathUtil {
 	 * @param f1
 	 * @return
 	 */
-	public static int ceiling(final double f1) {
-		final int i = (int) f1;
+	public static long ceiling(final double f1) {
+		final long i = (long) f1;
 
 		return f1 >= i ? i : i - 1;
 	}
