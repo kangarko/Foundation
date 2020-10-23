@@ -354,6 +354,9 @@ public final class FileUtil {
 			final Path path = Paths.get(to.toURI());
 
 			try {
+				if (!to.exists())
+					createIfNotExists(to);
+
 				Files.write(path, lines, StandardCharsets.UTF_8, options);
 
 			} catch (final ClosedByInterruptException ex) {
