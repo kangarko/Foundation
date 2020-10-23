@@ -137,7 +137,7 @@ final class FoundationListener implements Listener {
 			Common.tellNoPrefix(player, " ");
 
 			final int pagesDigits = (int) (Math.log10(pages.size()) + 1);
-			final int multiply = 23 - MathUtil.ceiling(pagesDigits);
+			final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
 
 			final SimpleComponent pagination = SimpleComponent.of(chatPages.getThemeColor() + "&m" + Common.duplicate("-", multiply) + "&r");
 
