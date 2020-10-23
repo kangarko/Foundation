@@ -44,6 +44,7 @@ public class ChatInternals {
 	}
 
 	static {
+
 		// New MC versions have native API's
 		if (MinecraftVersion.olderThan(V.v1_12) && MinecraftVersion.newerThan(V.v1_6))
 			try {

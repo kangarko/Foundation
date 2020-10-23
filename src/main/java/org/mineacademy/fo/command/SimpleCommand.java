@@ -410,6 +410,10 @@ public abstract class SimpleCommand extends Command {
 		return true;
 	}
 
+	/*
+	 * If messenger is on, we send the message prefixed with Messenger.getErrorPrefix()
+	 * otherwise we just send a normal message
+	 */
 	private void dynamicTellError(final String... messages) {
 		if (USE_MESSENGER)
 			for (final String message : messages)
