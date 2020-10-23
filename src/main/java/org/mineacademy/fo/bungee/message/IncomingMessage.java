@@ -2,8 +2,10 @@ package org.mineacademy.fo.bungee.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -76,6 +78,30 @@ public final class IncomingMessage extends Message {
 		moveHead(String.class);
 
 		return input.readUTF();
+	}
+
+	/**
+	 * Read a UUID from the string data
+	 *
+	 * @return
+	 */
+	public UUID readUUID() {
+		moveHead(UUID.class);
+
+		return UUID.fromString(input.readUTF());
+	}
+
+	/**
+	 * Read an enumerator from the given string data
+	 *
+	 * @param <T>
+	 * @param typeOf
+	 * @return
+	 */
+	public <T extends Enum<T>> T readEnum(Class<T> typeOf) {
+		moveHead(typeOf);
+
+		return ReflectionUtil.lookupEnum(typeOf, input.readUTF());
 	}
 
 	/**

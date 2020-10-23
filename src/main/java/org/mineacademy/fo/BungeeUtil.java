@@ -127,6 +127,12 @@ public final class BungeeUtil {
 					moveHead(action, UUID.class);
 					out.writeUTF(((UUID) data).toString());
 
+				} else if (data instanceof Enum) {
+					Debugger.put("bungee", data.toString() + ", ");
+
+					moveHead(action, Enum.class);
+					out.writeUTF(((Enum<?>) data).toString());
+
 				} else if (data instanceof byte[]) {
 					Debugger.put("bungee", data.toString() + ", ");
 
