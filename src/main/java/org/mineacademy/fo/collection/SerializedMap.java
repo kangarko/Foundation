@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,6 +24,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -679,6 +681,87 @@ public final class SerializedMap extends StrictCollection {
 		final Object raw = get(key, Object.class);
 
 		return raw != null ? SerializedMap.of(Common.getMapFromSection(raw)) : new SerializedMap();
+	}
+
+	/**
+	 * Load a map with preserved order from the given path. Each key in the map
+	 * must match the given key/value type and will be deserialized
+	 * <p>
+	 * We will add defaults if applicable
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param valueType
+	 * @param valueParameter
+	 * @return
+	 */
+	public <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
+		// The map we are creating, preserve order
+		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
+		final Object raw = this.map.get(path);
+
+		if (raw != null) {
+			Valid.checkBoolean(raw instanceof Map, "Expected Map<" + keyType.getSimpleName() + ", " + valueType.getSimpleName() + "> at " + path + ", got " + raw.getClass());
+
+			for (final Entry<?, ?> entry : ((Map<?, ?>) raw).entrySet()) {
+				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+				final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
+
+				// Ensure the pair values are valid for the given paramenters
+				checkAssignable(path, key, keyType);
+				checkAssignable(path, value, valueType);
+
+				map.put(key, value);
+			}
+		}
+
+		return map;
+	}
+
+	/**
+	 * Load a map having a Set as value with the given parameters
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param setType
+	 * @return
+	 */
+	public <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull String path, final Class<Key> keyType, final Class<Value> setType) {
+		// The map we are creating, preserve order
+		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
+		final Object raw = this.map.get(path);
+
+		if (raw != null) {
+			Valid.checkBoolean(raw instanceof Map, "Expected Map<" + keyType.getSimpleName() + ", Set<" + setType.getSimpleName() + ">> at " + path + ", got " + raw.getClass());
+
+			for (final Entry<?, ?> entry : ((Map<?, ?>) raw).entrySet()) {
+				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue());
+
+				// Ensure the pair values are valid for the given paramenters
+				checkAssignable(path, key, keyType);
+
+				if (!value.isEmpty())
+					for (final Value item : value)
+						checkAssignable(path, item, setType);
+
+				map.put(key, new HashSet<>(value));
+			}
+		}
+
+		return map;
+	}
+
+	/*
+	 * Checks if the clazz parameter can be assigned to the given value
+	 */
+	private void checkAssignable(final String path, final Object value, final Class<?> clazz) {
+		if (!clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName()))
+			throw new FoException("Malformed map! Key '" + path + "' in the map must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
 	}
 
 	/**
