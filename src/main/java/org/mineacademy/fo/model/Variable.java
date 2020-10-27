@@ -12,6 +12,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
@@ -123,20 +124,8 @@ public final class Variable extends YamlConfig {
 	@Override
 	protected void onLoadFinish() {
 
-		// Do not use Valid.checkNotNull since it appends Report: prefix. We do not want people to report this, instead, we want them to fix this.
-
-		this.type = get("Type", Type.class);
-		Objects.requireNonNull(this.type, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Type' as variable type (available: " + Common.join(Type.values()) + ") in " + getFile().toPath());
-
-		this.key = getString("Key");
-		Objects.requireNonNull(this.key, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile().toPath());
-
-		// Test for key validity
-		if (!Common.regExMatch("^\\w+$", this.key))
-			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile().toPath() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
-
-		this.value = getString("Value");
-		Objects.requireNonNull(this.value, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' as variable output in " + getFile().toPath());
+		// We do not use Valid.checkNotNull below since it appends Report: prefix.
+		// Do not incentivize people to report this, instead, we want them to fix this.
 
 		this.senderCondition = getString("Sender_Condition");
 		this.receiverCondition = getString("Receiver_Condition");
@@ -148,21 +137,62 @@ public final class Variable extends YamlConfig {
 		this.senderPermission = getString("Sender_Permission");
 		this.receiverPermission = getString("Receiver_Permission");
 
+		this.key = getString("Key");
+		Objects.requireNonNull(this.key, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile().toPath());
+
+		this.type = get("Type", Type.class);
+
+		// Auto-fix some of the problems in old ChatControl
+		if (SimplePlugin.getNamed().equals("ChatControl") && SimplePlugin.getVersion().startsWith("8.")) {
+
+			if (this.type == null)
+				this.type = Type.FORMAT;
+
+			if (this.key.startsWith("{") || this.key.startsWith("["))
+				this.key = this.key.substring(1);
+
+			if (this.key.endsWith("}") || this.key.endsWith("]"))
+				this.key = this.key.substring(0, this.key.length() - 1);
+
+			if (this.type == Type.FORMAT) {
+				if (this.hoverText != null && !this.hoverText.isEmpty()) {
+					this.hoverText = null;
+
+					Common.log("Hover_Text is currently unsupported for variable " + getName() + ", please set it in your formatting.yml instead");
+				}
+
+				if (this.hoverItem != null) {
+					this.hoverItem = null;
+
+					Common.log("Hover_Item is currently unsupported for variable " + getName());
+				}
+			}
+
+		} else
+			Objects.requireNonNull(this.type, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Type' key as variable type (set to FORMAT if variable can't be used by players, or MESSAGE if players can use it in chat with [variable_syntax]) in " + getFile());
+
+		// Test for key validity
+		if (!Common.regExMatch("^\\w+$", this.key))
+			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+
+		this.value = getString("Value");
+		Objects.requireNonNull(this.value, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as variable output in " + getFile());
+
 		if (this.type == Type.FORMAT) {
 			if (this.hoverText != null && !this.hoverText.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Hover, you need to add this directly to the format!");
+				throw new IllegalStateException("FORMAT variables do not support Hover, you need to add this directly to the format and remove this key from " + getFileName());
 
 			if (this.hoverItem != null)
-				throw new IllegalStateException("FORMAT variables do not support Hover_Item, you need to add this directly to the format!");
+				throw new IllegalStateException("FORMAT variables do not support Hover_Item, you need to add this directly to the format and remove this key from " + getFileName());
 
 			if (this.openUrl != null && !this.openUrl.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Open_Url, you need to add this directly to the format!");
+				throw new IllegalStateException("FORMAT variables do not support Open_Url, you need to add this directly to the format and remove this key from " + getFileName());
 
 			if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Suggest_Command, you need to add this directly to the format!");
+				throw new IllegalStateException("FORMAT variables do not support Suggest_Command, you need to add this directly to the format and remove this key from " + getFileName());
 
 			if (this.runCommand != null && !this.runCommand.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Run_Command, you need to add this directly to the format!");
+				throw new IllegalStateException("FORMAT variables do not support Run_Command, you need to add this directly to the format and remove this key from " + getFileName());
 		}
 	}
 
