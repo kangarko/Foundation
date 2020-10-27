@@ -17,7 +17,8 @@ public abstract class CompRunnable implements Runnable {
 	 * @throws IllegalStateException if task was not scheduled yet
 	 */
 	public synchronized void cancel() throws IllegalStateException {
-		Bukkit.getScheduler().cancelTask(getTaskId());
+		if (taskId != -1)
+			Bukkit.getScheduler().cancelTask(getTaskId());
 	}
 
 	/**
