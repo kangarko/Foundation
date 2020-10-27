@@ -7,6 +7,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 
@@ -94,7 +95,7 @@ public enum CompProperty {
 					final NBTEntity nbtEntity = new NBTEntity((Entity) instance);
 					final boolean has = Boolean.parseBoolean(key.toString());
 
-					if (this == CompProperty.INVULNERABLE)
+					if (this == INVULNERABLE)
 						nbtEntity.setInteger("Invulnerable", has ? 1 : 0);
 
 					else if (this == AI)
@@ -102,6 +103,19 @@ public enum CompProperty {
 
 					else if (this == CompProperty.GRAVITY)
 						nbtEntity.setInteger("NoGravity", has ? 0 : 1);
+				}
+
+				if (Remain.hasItemMeta() && instance instanceof ItemMeta) {
+					if (this == UNBREAKABLE)
+						try {
+							final Object spigot = ReflectionUtil.invoke("spigot", instance);
+							final Method method = ReflectionUtil.getMethod(spigot.getClass(), "setUnbreakable", boolean.class);
+
+							ReflectionUtil.invoke(method, spigot, true);
+
+						} catch (final Throwable t) {
+							t.printStackTrace();
+						}
 				}
 
 			} else

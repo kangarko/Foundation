@@ -44,9 +44,7 @@ import lombok.Singular;
  * <p>
  * You can use this to make named items with incredible speed and quality.
  */
-final @Builder
-
-public class ItemCreator {
+final @Builder public class ItemCreator {
 
 	/**
 	 * The initial item stack
@@ -344,17 +342,7 @@ public class ItemCreator {
 			flags.add(CompItemFlag.HIDE_ATTRIBUTES);
 			flags.add(CompItemFlag.HIDE_UNBREAKABLE);
 
-			if (MinecraftVersion.olderThan(V.v1_12))
-				try {
-					final Object spigot = itemMeta.getClass().getMethod("spigot").invoke(itemMeta);
-
-					spigot.getClass().getMethod("setUnbreakable", boolean.class).invoke(spigot, true);
-
-				} catch (final Throwable t) {
-					// Probably 1.7.10, tough luck
-				}
-			else
-				CompProperty.UNBREAKABLE.apply(itemMeta, true);
+			CompProperty.UNBREAKABLE.apply(itemMeta, true);
 		}
 
 		if (hideTags)
