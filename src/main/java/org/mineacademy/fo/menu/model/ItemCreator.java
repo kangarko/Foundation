@@ -248,10 +248,10 @@ final @Builder public class ItemCreator {
 				is.setType(Material.valueOf(dye + "_WOOL"));
 
 			else
-				applyColors0(color, material, is);
+				applyColors0(itemMeta, color, material, is);
 
 		} else
-			applyColors0(color, material, is);
+			applyColors0(itemMeta, color, material, is);
 
 		// Fix monster eggs
 		if (is.getType().toString().endsWith("SPAWN_EGG")) {
@@ -308,7 +308,7 @@ final @Builder public class ItemCreator {
 		}
 
 		if (color != null && is.getType().toString().contains("LEATHER"))
-			((LeatherArmorMeta) itemMeta).setColor(color.getDye().getColor());
+			((LeatherArmorMeta) itemMeta).setColor(color.getColor());
 
 		if (skullOwner != null && itemMeta instanceof SkullMeta)
 			((SkullMeta) itemMeta).setOwner(skullOwner);
@@ -384,11 +384,12 @@ final @Builder public class ItemCreator {
 	/**
 	 * A method to add colors (colorize) item bellow 1.13
 	 *
+	 * @param itemMeta 	   the item meta
 	 * @param color    color to set
 	 * @param material material used
 	 * @param is       ItemStack to apply to
 	 */
-	private static void applyColors0(final CompColor color, final CompMaterial material, final ItemStack is) {
+	private void applyColors0(final ItemMeta itemMeta, final CompColor color, final CompMaterial material, final ItemStack is) {
 		int dataValue = material != null ? material.getData() : is.getData().getData();
 
 		if (!is.getType().toString().contains("LEATHER") && color != null)
@@ -401,6 +402,10 @@ final @Builder public class ItemCreator {
 
 		if (MinecraftVersion.olderThan(V.v1_13))
 			is.setDurability((short) dataValue);
+
+		if (itemMeta instanceof LeatherArmorMeta)
+			((LeatherArmorMeta) itemMeta).setColor(color.getColor());
+
 	}
 
 	// ----------------------------------------------------------------------------------------
