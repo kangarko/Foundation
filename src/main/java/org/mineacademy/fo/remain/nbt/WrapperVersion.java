@@ -29,8 +29,6 @@ enum WrapperVersion {
 	;
 
 	private static WrapperVersion version;
-	private static Boolean hasGsonSupport;
-
 	private final int versionId;
 
 	WrapperVersion(final int versionId) {
@@ -53,35 +51,19 @@ enum WrapperVersion {
 	public static WrapperVersion getVersion() {
 		if (version != null)
 			return version;
+
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-		//		logger.info("[NBTAPI] Found Spigot: " + ver + "! Trying to find NMS support");
+
 		try {
 			version = WrapperVersion.valueOf(ver.replace("v", "MC"));
+
 		} catch (final IllegalArgumentException ex) {
 			version = WrapperVersion.UNKNOWN;
 		}
-		if (version != UNKNOWN) {
 
-			//			logger.info("[NBTAPI] NMS support '" + version.name() + "' loaded!")
-		} else
+		if (version == UNKNOWN)
 			Common.log("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
 
 		return version;
-	}
-
-	/**
-	 * @return True, if Gson is usable
-	 */
-	public static boolean hasGsonSupport() {
-		if (hasGsonSupport != null)
-			return hasGsonSupport;
-		try {
-			Common.log("[NBTAPI] Found Gson: " + Class.forName("com.google.gson.Gson"));
-			hasGsonSupport = true;
-		} catch (final Exception ex) {
-			Common.log("[NBTAPI] Gson not found! This will not allow the usage of some methods!");
-			hasGsonSupport = false;
-		}
-		return hasGsonSupport;
 	}
 }
