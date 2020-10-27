@@ -443,11 +443,11 @@ public class NBTReflectionUtil {
 	 * @param value
 	 */
 	static void setObject(final NBTCompound comp, final String key, final Object value) {
-		if (!WrapperVersion.hasGsonSupport())
-			return;
 		try {
 			final String json = gson.toJson(value);
+
 			setData(comp, WrapperReflection.COMPOUND_SET_STRING, key, json);
+
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
 		}
@@ -462,9 +462,6 @@ public class NBTReflectionUtil {
 	 * @return The loaded Object or null, if not found
 	 */
 	public static <T> T getObject(final NBTCompound comp, final String key, final Class<T> type) {
-		if (!WrapperVersion.hasGsonSupport())
-			return null;
-
 		final String json = (String) getData(comp, WrapperReflection.COMPOUND_GET_STRING, key);
 
 		if (json == null)

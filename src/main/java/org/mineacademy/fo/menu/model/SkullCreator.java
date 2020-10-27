@@ -33,8 +33,6 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SkullCreator {
 
-	private static boolean warningPosted = false;
-
 	// some reflection stuff to be used when setting a skull's profile
 	private static Field blockProfileField;
 	private static Method metaSetProfileMethod;
@@ -44,10 +42,9 @@ public class SkullCreator {
 	 * Creates a player skull, should work in both legacy and new Bukkit APIs.
 	 */
 	public static ItemStack createSkull() {
-		checkLegacy();
-
 		try {
 			return new ItemStack(Material.valueOf("PLAYER_HEAD"));
+
 		} catch (final IllegalArgumentException e) {
 			return new ItemStack(Material.valueOf("SKULL_ITEM"), 1, (byte) 3);
 		}
@@ -198,10 +195,10 @@ public class SkullCreator {
 	}
 
 	private static void setToSkull(Block block) {
-		checkLegacy();
 
 		try {
 			block.setType(Material.valueOf("PLAYER_HEAD"), false);
+
 		} catch (final IllegalArgumentException e) {
 			block.setType(Material.valueOf("SKULL"), false);
 			final Skull state = (Skull) block.getState();
@@ -280,24 +277,6 @@ public class SkullCreator {
 			} catch (NoSuchFieldException | IllegalAccessException ex2) {
 				ex2.printStackTrace();
 			}
-		}
-	}
-
-	// suppress warning since PLAYER_HEAD doesn't exist in 1.12.2,
-	// but we expect this and catch the error at runtime.
-	private static void checkLegacy() {
-		try {
-			// if both of these succeed, then we are running
-			// in a legacy api, but on a modern (1.13+) server.
-			Material.class.getDeclaredField("PLAYER_HEAD");
-			Material.valueOf("SKULL");
-
-			if (!warningPosted) {
-				Common.log("Using the legacy Bukkit API with 1.13+ versions is not supported!");
-
-				warningPosted = true;
-			}
-		} catch (NoSuchFieldException | IllegalArgumentException ignored) {
 		}
 	}
 }
