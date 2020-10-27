@@ -22,6 +22,10 @@ public final class EventHandledException extends RuntimeException {
 	@Getter
 	private final boolean cancelled;
 
+	public EventHandledException() {
+		this(true);
+	}
+
 	/**
 	 * Create a new command exception with messages for the command sender
 	 *
