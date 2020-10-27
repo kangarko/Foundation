@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -16,57 +17,62 @@ import lombok.Getter;
 /**
  * A utility class enabling you to convert between {@link DyeColor} and {@link ChatColor} with ease
  */
-public enum CompColor {
+public final class CompColor {
+
+	/**
+	 * The list of all native values
+	 */
+	private static final List<CompColor> values = new ArrayList<>();
 
 	/**
 	 * The blue color
 	 */
-	BLUE(DyeColor.BLUE),
+	public static final CompColor BLUE = new CompColor("BLUE", DyeColor.BLUE);
 
 	/**
 	 * The black color
 	 */
-	BLACK(DyeColor.BLACK),
+	public static final CompColor BLACK = new CompColor("BLACK", DyeColor.BLACK);
 
 	/**
 	 * The dark aqua (cyan) color
 	 */
-	DARK_AQUA(DyeColor.CYAN),
+	public static final CompColor DARK_AQUA = new CompColor("DARK_AQUA", DyeColor.CYAN);
 
 	/**
 	 * The dark blue color, called BLUE for dyecolor
 	 */
-	DARK_BLUE(DyeColor.BLUE),
+	public static final CompColor DARK_BLUE = new CompColor("DARK_BLUE", DyeColor.BLUE);
 
 	/**
 	 * The aqua color (called light blue for dyecolor)
 	 */
-	AQUA(DyeColor.LIGHT_BLUE),
+	public static final CompColor AQUA = new CompColor("AQUA", DyeColor.LIGHT_BLUE);
 
 	/**
 	 * The light gray color, previously silver (compatible for all MC versions)
 	 */
-	GRAY(getEnum("LIGHT_GRAY", "SILVER", DyeColor.class), null, "SILVER"),
+	public static final CompColor GRAY = new CompColor("GRAY", getEnum("LIGHT_GRAY", "SILVER", DyeColor.class), null, "SILVER");
 
 	/**
 	 * The dark gray color, called gray for dyecolor
 	 */
-	DARK_GRAY(DyeColor.GRAY),
+	public static final CompColor DARK_GRAY = new CompColor("DARK_GRAY", DyeColor.GRAY);
 
 	/**
 	 * The dark green color, called green for dyecolor
 	 */
-	DARK_GREEN(DyeColor.GREEN),
+	public static final CompColor DARK_GREEN = new CompColor("DARK_GREEN", DyeColor.GREEN);
 
 	/**
 	 * The green color, called lime for dyecolor
 	 */
-	GREEN(DyeColor.LIME),
+	public static final CompColor GREEN = new CompColor("GREEN", DyeColor.LIME);
 
 	/**
 	 * The gold color, called orange for dyecolor
 	 */
-	GOLD(DyeColor.ORANGE),
+	public static final CompColor GOLD = new CompColor("GOLD", DyeColor.ORANGE);
 
 	/**
 	 * The brown color
@@ -74,37 +80,37 @@ public enum CompColor {
 	 * NB: This color does not have a {@link ChatColor} alternative,
 	 * so we give you GOLD chat color instead
 	 */
-	BROWN(DyeColor.BROWN, ChatColor.GOLD),
+	public static final CompColor BROWN = new CompColor("BROWN", DyeColor.BROWN, ChatColor.GOLD);
 
 	/**
 	 * The dark red color, called red for dyecolor
 	 */
-	DARK_RED(DyeColor.RED),
+	public static final CompColor DARK_RED = new CompColor("DARK_RED", DyeColor.RED);
 
 	/**
 	 * The red color
 	 */
-	RED(DyeColor.RED),
+	public static final CompColor RED = new CompColor("RED", DyeColor.RED);
 
 	/**
 	 * The white
 	 */
-	WHITE(DyeColor.WHITE),
+	public static final CompColor WHITE = new CompColor("WHITE", DyeColor.WHITE);
 
 	/**
 	 * The yellow color
 	 */
-	YELLOW(DyeColor.YELLOW),
+	public static final CompColor YELLOW = new CompColor("YELLOW", DyeColor.YELLOW);
 
 	/**
 	 * The dark purple color, called purple for dyecolor
 	 */
-	DARK_PURPLE(DyeColor.PURPLE),
+	public static final CompColor DARK_PURPLE = new CompColor("DARK_PURPLE", DyeColor.PURPLE);
 
 	/**
 	 * The light purple color, called magenta for dyecolor
 	 */
-	LIGHT_PURPLE(DyeColor.MAGENTA),
+	public static final CompColor LIGHT_PURPLE = new CompColor("LIGHT_PURPLE", DyeColor.MAGENTA);
 
 	/**
 	 * The pink color
@@ -112,7 +118,13 @@ public enum CompColor {
 	 * NB: This color does not have a {@link ChatColor} alternative,
 	 * so we give you LIGHT_PURPLE chat color instead
 	 */
-	PINK(DyeColor.PINK, ChatColor.LIGHT_PURPLE);
+	public static final CompColor PINK = new CompColor("PINK", DyeColor.PINK, ChatColor.LIGHT_PURPLE);
+
+	/**
+	 * The toString representation
+	 */
+	@Getter
+	private final String name;
 
 	/**
 	 * The {@link DyeColor} representation
@@ -131,18 +143,41 @@ public enum CompColor {
 	 */
 	private final String legacyName;
 
-	private CompColor(final DyeColor dye) {
-		this(dye, null);
+	/**
+	 * The associated HEX color or null if not set
+	 */
+	private Color color;
+
+	private CompColor(final Color color) {
+		this(null, null, null);
+
+		this.color = color;
 	}
 
-	private CompColor(final DyeColor dye, final ChatColor chatColor) {
-		this(dye, chatColor, null);
+	private CompColor(final String name, final DyeColor dye) {
+		this(name, dye, null);
 	}
 
-	private CompColor(final DyeColor dye, final ChatColor chatColor, final String legacyName) {
+	private CompColor(final String name, final DyeColor dye, final ChatColor chatColor) {
+		this(name, dye, chatColor, null);
+	}
+
+	private CompColor(final String name, final DyeColor dye, final ChatColor chatColor, final String legacyName) {
+		this.name = name;
 		this.dye = dye;
-		this.chatColor = chatColor == null ? ChatColor.valueOf(toString()) : chatColor;
+		this.chatColor = chatColor == null ? name != null ? ChatColor.valueOf(name) : ChatColor.WHITE : chatColor;
 		this.legacyName = Common.getOrEmpty(legacyName);
+
+		values.add(this);
+	}
+
+	/**
+	 * Get the bukkit color
+	 *
+	 * @return
+	 */
+	public Color getColor() {
+		return color != null ? color : dye.getColor();
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -173,24 +208,43 @@ public enum CompColor {
 	 * @param data
 	 * @return
 	 */
-	public static final CompColor fromWoolData(final byte data) {
+	public static CompColor fromWoolData(final byte data) {
 		return fromDye(DyeColor.getByWoolData(data));
 	}
 
 	/**
 	 * Make new compatible dye from name
 	 *
+	 * @param color
+	 * @return
+	 */
+	public static CompColor fromColor(Color color) {
+		return fromName("#" + Integer.toHexString(color.asRGB()).substring(2));
+	}
+
+	/**
+	 * Make new compatible dye from name. Name can also be a valid
+	 * RGB: #123456
+	 *
 	 * @param name
 	 * @return
 	 */
-	public static final CompColor fromName(String name) {
+	public static CompColor fromName(String name) {
+
+		// Support HEX colors
+		if (name.startsWith("#") && name.length() == 7)
+			return new CompColor(Color.fromRGB(
+					Integer.valueOf(name.substring(1, 3), 16),
+					Integer.valueOf(name.substring(3, 5), 16),
+					Integer.valueOf(name.substring(5, 7), 16)));
+
 		name = name.toUpperCase();
 
 		for (final CompColor comp : values())
 			if (comp.chatColor.toString().equals(name) || comp.dye.toString().equals(name) || comp.legacyName.equals(name))
 				return comp;
 
-		throw new FoException("Could not get CompColor from name: " + name);
+		throw new IllegalArgumentException("Could not get CompColor from name: " + name);
 	}
 
 	/**
@@ -199,12 +253,12 @@ public enum CompColor {
 	 * @param dye
 	 * @return
 	 */
-	public static final CompColor fromDye(final DyeColor dye) {
+	public static CompColor fromDye(final DyeColor dye) {
 		for (final CompColor comp : values())
 			if (comp.dye == dye || comp.legacyName.equals(dye.toString()))
 				return comp;
 
-		throw new FoException("Could not get CompColor from DyeColor." + dye.toString());
+		throw new IllegalArgumentException("Could not get CompColor from DyeColor." + dye.toString());
 	}
 
 	/**
@@ -213,12 +267,12 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final CompColor fromChatColor(final ChatColor color) {
+	public static CompColor fromChatColor(final ChatColor color) {
 		for (final CompColor comp : values())
 			if (comp.chatColor == color || comp.legacyName.equals(color.toString()))
 				return comp;
 
-		throw new FoException("Could not get CompColor from ChatColor." + color.name());
+		throw new IllegalArgumentException("Could not get CompColor from ChatColor." + color.name());
 	}
 
 	/**
@@ -227,7 +281,7 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final CompColor fromChatColor(final CompChatColor color) {
+	public static CompColor fromChatColor(final CompChatColor color) {
 		for (final CompColor comp : values())
 			if (comp.chatColor.name().equalsIgnoreCase(color.getName()) || comp.legacyName.equalsIgnoreCase(color.toString()))
 				return comp;
@@ -245,8 +299,8 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final DyeColor toDye(final ChatColor color) {
-		final CompColor c = ReflectionUtil.lookupEnumSilent(CompColor.class, color.name());
+	public static DyeColor toDye(final ChatColor color) {
+		final CompColor c = fromName(color.name());
 
 		return c != null ? c.getDye() : DyeColor.WHITE;
 	}
@@ -257,7 +311,7 @@ public enum CompColor {
 	 * @param dye
 	 * @return
 	 */
-	public static final ChatColor toColor(final DyeColor dye) {
+	public static ChatColor toColor(final DyeColor dye) {
 		for (final CompColor c : CompColor.values())
 			if (c.getDye() == dye)
 				return c.getChatColor();
@@ -271,7 +325,7 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final CompMaterial toConcrete(final ChatColor color) {
+	public static CompMaterial toConcrete(final ChatColor color) {
 		final CompMaterial wool = toWool(color);
 
 		return CompMaterial.fromString(wool.toString().replace("_WOOL", MinecraftVersion.olderThan(V.v1_12) ? "_STAINED_GLASS" : "_CONCRETE"));
@@ -283,66 +337,65 @@ public enum CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static final CompMaterial toWool(final ChatColor color) {
+	public static CompMaterial toWool(final ChatColor color) {
 		final CompColor comp = fromChatColor(color);
 
-		switch (comp) {
-			case AQUA:
-				return CompMaterial.LIGHT_BLUE_WOOL;
+		if (comp == AQUA)
+			return CompMaterial.LIGHT_BLUE_WOOL;
 
-			case BLACK:
-				return CompMaterial.BLACK_WOOL;
+		if (comp == BLACK)
+			return CompMaterial.BLACK_WOOL;
 
-			case BLUE:
-				return CompMaterial.BLUE_WOOL;
+		if (comp == BLUE)
+			return CompMaterial.BLUE_WOOL;
 
-			case BROWN:
-				return CompMaterial.BROWN_WOOL;
+		if (comp == BROWN)
+			return CompMaterial.BROWN_WOOL;
 
-			case DARK_AQUA:
-				return CompMaterial.CYAN_WOOL;
+		if (comp == DARK_AQUA)
+			return CompMaterial.CYAN_WOOL;
 
-			case DARK_BLUE:
-				return CompMaterial.BLUE_WOOL;
+		if (comp == DARK_BLUE)
+			return CompMaterial.BLUE_WOOL;
 
-			case DARK_GRAY:
-				return CompMaterial.GRAY_WOOL;
+		if (comp == DARK_GRAY)
+			return CompMaterial.GRAY_WOOL;
 
-			case DARK_GREEN:
-				return CompMaterial.GREEN_WOOL;
+		if (comp == DARK_GREEN)
+			return CompMaterial.GREEN_WOOL;
 
-			case DARK_PURPLE:
-				return CompMaterial.PURPLE_WOOL;
+		if (comp == DARK_PURPLE)
+			return CompMaterial.PURPLE_WOOL;
 
-			case DARK_RED:
-				return CompMaterial.RED_WOOL;
+		if (comp == DARK_RED)
+			return CompMaterial.RED_WOOL;
 
-			case GOLD:
-				return CompMaterial.ORANGE_WOOL;
+		if (comp == GOLD)
+			return CompMaterial.ORANGE_WOOL;
 
-			case GRAY:
-				return CompMaterial.LIGHT_GRAY_WOOL;
+		if (comp == GRAY)
+			return CompMaterial.LIGHT_GRAY_WOOL;
 
-			case GREEN:
-				return CompMaterial.LIME_WOOL;
+		if (comp == GREEN)
+			return CompMaterial.LIME_WOOL;
 
-			case LIGHT_PURPLE:
-				return CompMaterial.MAGENTA_WOOL;
+		if (comp == LIGHT_PURPLE)
+			return CompMaterial.MAGENTA_WOOL;
 
-			case PINK:
-				return CompMaterial.PINK_WOOL;
+		if (comp == PINK)
+			return CompMaterial.PINK_WOOL;
 
-			case RED:
-				return CompMaterial.RED_WOOL;
+		if (comp == RED)
+			return CompMaterial.RED_WOOL;
 
-			case WHITE:
-				return CompMaterial.WHITE_WOOL;
+		if (comp == WHITE)
+			return CompMaterial.WHITE_WOOL;
 
-			case YELLOW:
-				return CompMaterial.YELLOW_WOOL;
-		}
+		if (comp == YELLOW)
+			return CompMaterial.YELLOW_WOOL;
 
 		return CompMaterial.WHITE_WOOL;
+
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -354,7 +407,7 @@ public enum CompColor {
 	 *
 	 * @return
 	 */
-	public static final List<ChatColor> getChatColors() {
+	public static List<ChatColor> getChatColors() {
 		final List<ChatColor> list = new ArrayList<>();
 
 		for (final ChatColor color : ChatColor.values())
@@ -362,5 +415,33 @@ public enum CompColor {
 				list.add(color);
 
 		return list;
+	}
+
+	// ----------------------------------------------------------------------------------------------------
+	// Leftovers from when this class was an enum
+	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return all predefined colors
+	 *
+	 * @return
+	 */
+	public static CompColor[] values() {
+		return values.toArray(new CompColor[values.size()]);
+	}
+
+	/**
+	 * See {@link #fromName(String)}
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static CompColor valueOf(String name) {
+		return fromName(name);
+	}
+
+	@Override
+	public String toString() {
+		return this.name;
 	}
 }
