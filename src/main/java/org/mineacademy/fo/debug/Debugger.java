@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -114,7 +113,9 @@ public final class Debugger {
 			return;
 
 		final List<String> parts = pendingMessages.remove(section);
-		Valid.checkNotNull(parts, "No messages to debug at section: " + section);
+
+		if (parts == null)
+			return;
 
 		final String whole = StringUtils.join(parts, "");
 
