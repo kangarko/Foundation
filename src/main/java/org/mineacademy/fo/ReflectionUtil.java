@@ -510,9 +510,9 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
-		try {
-			Valid.checkNotNull(method, "Method cannot be null for " + instance);
+		Valid.checkNotNull(method, "Method cannot be null for " + instance);
 
+		try {
 			return (T) method.invoke(instance, params);
 
 		} catch (final ReflectiveOperationException ex) {
@@ -700,10 +700,15 @@ public final class ReflectionUtil {
 					if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
 						name = "SNOWY_TAIGA";
 
-			if (MinecraftVersion.atLeast(V.v1_14))
-				if (enumType == EntityType.class)
+			if (enumType == EntityType.class)
+				if (MinecraftVersion.atLeast(V.v1_14)) {
 					if (rawName.equals("TIPPED_ARROW"))
 						name = "ARROW";
+
+				} else if (MinecraftVersion.olderThan(V.v1_9))
+					if (rawName.equals("TRIDENT"))
+						name = "ARROW";
+
 		}
 
 		final String oldName = name;
