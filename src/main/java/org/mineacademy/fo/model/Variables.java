@@ -380,6 +380,14 @@ public final class Variables {
 				return player == null ? "" : HookManager.getWorldAlias(player.getWorld());
 			case "health":
 				return player == null ? "" : formatHealth0(player) + ChatColor.RESET;
+			case "location":
+				return player == null ? "" : Common.shortLocation(player.getLocation());
+			case "x":
+				return player == null ? "" : String.valueOf(player.getLocation().getBlockX());
+			case "y":
+				return player == null ? "" : String.valueOf(player.getLocation().getBlockY());
+			case "z":
+				return player == null ? "" : String.valueOf(player.getLocation().getBlockZ());
 
 			case "player":
 			case "player_name":
