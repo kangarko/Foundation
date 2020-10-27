@@ -1384,7 +1384,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1473,7 +1473,7 @@ class EssentialsHook {
 		if (user == null)
 			return null;
 
-		String replyPlayer;
+		String replyPlayer = null;
 
 		try {
 			replyPlayer = user.getReplyRecipient().getName();
@@ -1481,9 +1481,12 @@ class EssentialsHook {
 		} catch (final Throwable ex) {
 			try {
 				final Method getReplyTo = ReflectionUtil.getMethod(user.getClass(), "getReplyTo");
-				final CommandSource commandSource = ReflectionUtil.invoke(getReplyTo, user);
 
-				replyPlayer = commandSource == null ? null : commandSource.getPlayer().getName();
+				if (getReplyTo != null) {
+					final CommandSource commandSource = ReflectionUtil.invoke(getReplyTo, user);
+
+					replyPlayer = commandSource == null ? null : commandSource.getPlayer().getName();
+				}
 
 			} catch (final Throwable t) {
 				replyPlayer = null;
@@ -2725,7 +2728,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -2762,6 +2765,7 @@ class DiscordSRVHook implements Listener {
 
 					try {
 						instance.processChatMessage((Player) sender, message, channel, false);
+
 					} finally {
 						discordConfig.set(outMessageKey, outMessageOldValue);
 					}
@@ -2769,7 +2773,7 @@ class DiscordSRVHook implements Listener {
 			}
 
 		} else {
-			Debugger.debug("discord", "[MC->Discord] " + (sender == null ? "No given sender " : sender.getName() + " (generic)") + "sent message to '" + channel + "' channel. Message: '" + message + "'");
+			Debugger.debug("discord", "[MC->Discord] " + (sender == null ? "No sender " : sender.getName() + " (generic)") + "sent message to '" + channel + "' channel. Message: '" + message + "'");
 
 			DiscordUtil.sendMessage(textChannel, message);
 		}
