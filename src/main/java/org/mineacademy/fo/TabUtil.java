@@ -15,16 +15,6 @@ import lombok.NoArgsConstructor;
 public final class TabUtil {
 
 	/**
-	 * A shortcut for completing player names from all players connected online
-	 *
-	 * @param partialName
-	 * @return
-	 */
-	public static List<String> completePlayerName(String partialName) {
-		return complete(partialName, Common.getPlayerNames());
-	}
-
-	/**
 	 * Return a list of tab completions for the given array,
 	 * we attempt to resolve what type of the array it is,
 	 * supports for chat colors, command senders, enumerations etc.
