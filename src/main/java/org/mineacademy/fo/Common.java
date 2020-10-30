@@ -1622,7 +1622,7 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return the last key in the list or null if null list or empty
+	 * Return the last key in the list or null if list is null or empty
 	 *
 	 * @param <T>
 	 * @param list
@@ -1630,6 +1630,17 @@ public final class Common {
 	 */
 	public static <T> T last(List<T> list) {
 		return list == null || list.isEmpty() ? null : list.get(list.size() - 1);
+	}
+
+	/**
+	 * Return the last key in the array or null if array is null or empty
+	 * 
+	 * @param <T>
+	 * @param array
+	 * @return
+	 */
+	public static <T> T last(T[] array) {
+		return array == null || array.length == 0 ? null : array[array.length - 1];
 	}
 
 	/**
