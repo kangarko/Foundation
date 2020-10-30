@@ -315,9 +315,12 @@ public abstract class SimpleCommand extends Command {
 		if (hadTellPrefix)
 			Common.ADD_TELL_PREFIX = addTellPrefix;
 
+		// Optional sublabel if this is a sub command
+		final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
+
 		// Catch "errors" that contain a message to send to the player
 		// Measure performance of all commands
-		final String lagSection = "Command /" + getLabel() + (args.length > 0 ? " " + String.join(" ", args) : "");
+		final String lagSection = "Command /" + getLabel() + sublabel + (args.length > 0 ? " " + String.join(" ", args) : "");
 
 		try {
 			// Prevent duplication since MainCommand delegates this
@@ -333,7 +336,7 @@ public abstract class SimpleCommand extends Command {
 
 				Common.runAsync(() -> {
 					final String usage = getMultilineUsageMessage() != null ? String.join("\n&c", getMultilineUsageMessage()) : getUsage() != null ? getUsage() : null;
-					Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "") + "' command!");
+					Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + getLabel() + sublabel + "' command!");
 
 					final ChatPaginator paginator = new ChatPaginator(ChatColor.RED);
 					final List<String> pages = new ArrayList<>();
@@ -351,15 +354,13 @@ public abstract class SimpleCommand extends Command {
 							pages.add(replacePlaceholders("&c" + usagePart));
 
 					} else {
-						final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
-
 						pages.add("");
 						pages.add("&c&lUsage:");
 						pages.add("&c" + replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : "")));
 					}
 
 					paginator
-							.setFoundationHeader("Help for /" + getLabel() + (this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : ""))
+							.setFoundationHeader("Help for /" + getLabel() + sublabel)
 							.setPages(Common.toArray(pages));
 
 					// Force sending on the main thread
@@ -395,7 +396,6 @@ public abstract class SimpleCommand extends Command {
 
 		} catch (final Throwable t) {
 			dynamicTellError(SimpleLocalization.Commands.ERROR.replace("{error}", t.toString()));
-			final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
 			Common.error(t, "Failed to execute command /" + getLabel() + sublabel + " " + String.join(" ", args));
 
@@ -557,7 +557,7 @@ public abstract class SimpleCommand extends Command {
 	 * @throws CommandException
 	 */
 	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
-		final Player player = Bukkit.getPlayer(name);
+		final Player player = findPlayerInternal(name);
 		checkBoolean(player != null && player.isOnline() && !HookManager.isVanished(player), falseMessage.replace("{player}", name));
 
 		return player;
@@ -577,10 +577,23 @@ public abstract class SimpleCommand extends Command {
 			return getPlayer();
 		}
 
-		final Player player = Bukkit.getPlayer(name);
+		final Player player = findPlayerInternal(name);
 		checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE.replace("{player}", name));
 
 		return player;
+	}
+
+	/**
+	 * A simple call to Bukkit.getPlayer(name) meant to be overriden
+	 * if you have a custom implementation of getting players by name.
+	 * 
+	 * Example use: ChatControl can find players by their nicknames too
+	 * 
+	 * @param name
+	 * @return
+	 */
+	protected Player findPlayerInternal(String name) {
+		return Bukkit.getPlayer(name);
 	}
 
 	/**
@@ -1257,7 +1270,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @return
 	 */
-	protected final List<String> completeLastWordPlayerNames() {
+	protected List<String> completeLastWordPlayerNames() {
 		return TabUtil.complete(getLastArg(), isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames());
 	}
 
