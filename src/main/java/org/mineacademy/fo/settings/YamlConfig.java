@@ -409,6 +409,8 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final YamlConfiguration getConfig() {
+		Valid.checkNotNull(instance, "Cannot call getConfig when no instance is set!");
+
 		return instance.getConfig();
 	}
 
@@ -419,6 +421,8 @@ public class YamlConfig {
 	 */
 	@Nullable
 	protected final YamlConfiguration getDefaults() {
+		Valid.checkNotNull(instance, "Cannot call getDefaults when no instance is set!");
+
 		return instance.getDefaultConfig();
 	}
 

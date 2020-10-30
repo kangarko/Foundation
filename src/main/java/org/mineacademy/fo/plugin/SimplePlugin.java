@@ -130,13 +130,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	public static SimplePlugin getInstance() {
 		if (instance == null) {
 			instance = JavaPlugin.getPlugin(SimplePlugin.class);
-			Objects.requireNonNull(instance, "Cannot get a new instance! Have you reloaded?");
 
-			// Cache results for best performance
-			version = instance.getDescription().getVersion();
-			named = instance.getName();
-			source = instance.getFile();
-			data = instance.getDataFolder();
+			Objects.requireNonNull(instance, "Cannot get a new instance! Have you reloaded?");
 		}
 
 		return instance;
@@ -190,6 +185,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			else
 				throw ex;
 		}
+
+		// Cache results for best performance
+		version = instance.getDescription().getVersion();
+		named = instance.getName();
+		source = instance.getFile();
+		data = instance.getDataFolder();
 
 		// Call parent
 		onPluginLoad();
