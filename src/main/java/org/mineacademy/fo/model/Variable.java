@@ -138,7 +138,7 @@ public final class Variable extends YamlConfig {
 		this.receiverPermission = getString("Receiver_Permission");
 
 		this.key = getString("Key");
-		Objects.requireNonNull(this.key, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile().toPath());
+		Objects.requireNonNull(this.key, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile());
 
 		this.type = get("Type", Type.class);
 
@@ -176,7 +176,7 @@ public final class Variable extends YamlConfig {
 			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 
 		this.value = getString("Value");
-		Objects.requireNonNull(this.value, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as variable output in " + getFile());
+		Objects.requireNonNull(this.value, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFile() + " (this can be a JavaScript code)");
 
 		if (this.type == Type.FORMAT) {
 			if (this.hoverText != null && !this.hoverText.isEmpty())

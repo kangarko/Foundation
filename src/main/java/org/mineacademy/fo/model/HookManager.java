@@ -2135,7 +2135,8 @@ class NickyHook {
 		if (nickname != null) {
 			final Method formatMethod = ReflectionUtil.getMethod(nick.getClass(), "format", String.class);
 
-			nickname = ReflectionUtil.invoke(formatMethod, nick, nickname);
+			if (formatMethod != null)
+				nickname = ReflectionUtil.invoke(formatMethod, nick, nickname);
 		}
 
 		return nickname != null && !nickname.isEmpty() ? nickname : null;
