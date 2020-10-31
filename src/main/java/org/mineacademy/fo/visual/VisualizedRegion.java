@@ -139,9 +139,12 @@ public final class VisualizedRegion extends Region {
 				final Set<Location> blocks = BlockUtil.getBoundingBox(getPrimary(), getSecondary());
 
 				for (final Location location : blocks)
-					for (final Player viewer : viewers)
-						if (viewer.getLocation().distance(location) < 100)
+					for (final Player viewer : viewers) {
+						final Location viewerLocation = viewer.getLocation();
+
+						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
 							particle.spawnFor(viewer, location);
+					}
 
 			}
 		});
