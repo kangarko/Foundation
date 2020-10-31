@@ -4,11 +4,41 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.mineacademy.fo.Common;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This class is provided as an easy way to handle scheduling tasks.
  */
 public abstract class CompRunnable implements Runnable {
+
+	/**
+	 * Wraps a delegate runnable and safely handles errors
+	 */
+	@Getter
+	@RequiredArgsConstructor
+	public static final class SafeRunnable implements Runnable {
+
+		/**
+		 * The actual runnable
+		 */
+		private final Runnable delegate;
+
+		/**
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			try {
+				delegate.run();
+
+			} catch (final Exception ex) {
+				Common.error(ex, "Failed to execute scheduled task: " + ex);
+			}
+		}
+	}
 
 	private int taskId = -1;
 
