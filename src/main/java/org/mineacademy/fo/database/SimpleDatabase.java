@@ -226,7 +226,7 @@ public class SimpleDatabase {
 
 		for (final SerializedMap map : maps) {
 			final String columns = Common.join(map.keySet());
-			final String values = Common.join(map.values(), ", ", value -> value == null ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+			final String values = Common.join(map.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
 
 			sqls.add("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
 		}
@@ -290,8 +290,10 @@ public class SimpleDatabase {
 
 				return resultSet;
 
-			} catch (final SQLException e) {
-				Common.throwError(e, "Error on querying MySQL with: " + sql);
+			} catch (final SQLException ex) {
+				ex.printStackTrace();
+
+				Common.throwError(ex, "Error on querying MySQL with: " + sql);
 			}
 		}
 
