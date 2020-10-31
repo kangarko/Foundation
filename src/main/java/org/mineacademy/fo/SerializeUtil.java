@@ -377,12 +377,14 @@ public final class SerializeUtil {
 	 * @param raw
 	 * @return
 	 */
-	public static Location deserializeLocation(final Object raw) {
+	public static Location deserializeLocation(Object raw) {
 		if (raw == null)
 			return null;
 
 		if (raw instanceof Location)
 			return (Location) raw;
+
+		raw = raw.toString().replace("\"", "");
 
 		final String[] parts = raw.toString().contains(", ") ? raw.toString().split(", ") : raw.toString().split(" ");
 		Valid.checkBoolean(parts.length == 4 || parts.length == 6, "Expected location (String) but got " + raw.getClass().getSimpleName() + ": " + raw);
