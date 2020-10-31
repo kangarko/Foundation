@@ -12,8 +12,6 @@ public class FoPermissions {
 	public static final String NOTIFY_UPDATE;
 
 	static {
-		final String pluginName = SimplePlugin.getNamed().toLowerCase();
-
-		NOTIFY_UPDATE = pluginName + ".notify.update";
+		NOTIFY_UPDATE = SimplePlugin.getNamed().toLowerCase() + ".notify.update";
 	}
 }
