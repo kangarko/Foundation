@@ -35,6 +35,9 @@ public abstract class CompRunnable implements Runnable {
 				delegate.run();
 
 			} catch (final Exception ex) {
+				if (ex instanceof IllegalStateException && ex.getMessage() != null && (ex.getMessage().contains("Not scheduled yet") || ex.getMessage().contains("Already scheduled")))
+					return;
+
 				Common.error(ex, "Failed to execute scheduled task: " + ex);
 			}
 		}
