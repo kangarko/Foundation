@@ -102,7 +102,7 @@ public class SimpleDatabase {
 	 * @param autoReconnect
 	 */
 	public final void connect(final String host, final int port, final String database, final String user, final String password, final String table, final boolean autoReconnect) {
-		connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&autoReconnect=" + autoReconnect, user, password, table);
+		connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=" + autoReconnect, user, password, table);
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class SimpleDatabase {
 	 */
 	protected final void insert(String table, @NonNull SerializedMap columsAndValues) {
 		final String columns = Common.join(columsAndValues.keySet());
-		final String values = Common.join(columsAndValues.values(), ", ", value -> value == null ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+		final String values = Common.join(columsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
 
 		update("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
 	}
