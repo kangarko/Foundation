@@ -94,49 +94,49 @@ public final class BungeeUtil {
 				if (data instanceof Integer) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Integer.class);
+					moveHead(action, Integer.class, datas);
 					out.writeInt((Integer) data);
 
 				} else if (data instanceof Double) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Double.class);
+					moveHead(action, Double.class, datas);
 					out.writeDouble((Double) data);
 
 				} else if (data instanceof Long) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Long.class);
+					moveHead(action, Long.class, datas);
 					out.writeLong((Long) data);
 
 				} else if (data instanceof Boolean) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Boolean.class);
+					moveHead(action, Boolean.class, datas);
 					out.writeBoolean((Boolean) data);
 
 				} else if (data instanceof String) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, String.class);
+					moveHead(action, String.class, datas);
 					out.writeUTF((String) data);
 
 				} else if (data instanceof UUID) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, UUID.class);
+					moveHead(action, UUID.class, datas);
 					out.writeUTF(((UUID) data).toString());
 
 				} else if (data instanceof Enum) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Enum.class);
+					moveHead(action, Enum.class, datas);
 					out.writeUTF(((Enum<?>) data).toString());
 
 				} else if (data instanceof byte[]) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, String.class);
+					moveHead(action, String.class, datas);
 					out.write((byte[]) data);
 
 				} else
@@ -234,11 +234,11 @@ public final class BungeeUtil {
 	 *
 	 * @param typeOf
 	 */
-	private static void moveHead(BungeeAction action, Class<?> typeOf) throws Throwable {
+	private static void moveHead(BungeeAction action, Class<?> typeOf, Object[] datas) throws Throwable {
 		Valid.checkNotNull(action, "Action not set!");
 
 		final Class<?>[] content = action.getContent();
-		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length + "! (Set Debug to [bungee] in settings.yml and report this issue along with the new console messages");
+		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length + "! Set Debug to [bungee] in settings.yml and report. Data length: " + datas.length + " data: " + Common.join(datas));
 
 		actionHead++;
 	}
