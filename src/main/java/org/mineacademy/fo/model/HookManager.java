@@ -994,7 +994,11 @@ public final class HookManager {
 	public static boolean hasVaultPermission(final String name, final String perm) {
 		Valid.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
 
-		return vaultHook.hasPerm(name, perm.contains("{plugin_name}") ? perm.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase()) : perm);
+		// TODO remove checks below to increase method call performance
+		Valid.checkNotNull(perm, "Permission to check in vault cannot be null");
+		Valid.checkBoolean(!perm.contains("{plugin_name}"), "Replacing {plugin_name} in vault permissions is no longer supported!");
+
+		return vaultHook.hasPerm(name, perm);
 	}
 
 	/**
@@ -1384,7 +1388,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1920,7 +1924,7 @@ class PlaceholderAPIHook {
 			if (index <= 0 || index >= format.length())
 				continue;
 
-			final String identifier = format.substring(0, index).toLowerCase();
+			final String identifier = format.substring(0, index);
 			final String params = format.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
@@ -1990,7 +1994,7 @@ class PlaceholderAPIHook {
 			if (index <= 0 || index >= format.length())
 				continue;
 
-			final String identifier = format.substring(0, index).toLowerCase();
+			final String identifier = format.substring(0, index);
 			final String params = format.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
@@ -2700,7 +2704,7 @@ class CMIHook {
 
 	String getNameFromNick(String nick) {
 		for (final CMIUser user : CMI.getInstance().getPlayerManager().getAllUsers().values())
-			if (user != null && user.getNickName() != null && Valid.colorlessEquals(user.getNickName().toLowerCase(), nick.toLowerCase()))
+			if (user != null && user.getNickName() != null && Valid.colorlessEquals(user.getNickName(), nick))
 				return Common.getOrDefault(user.getName(), nick);
 
 		return nick;
@@ -2728,7 +2732,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
