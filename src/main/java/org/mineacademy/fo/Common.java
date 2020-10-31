@@ -51,6 +51,7 @@ import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompRunnable;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -433,6 +434,15 @@ public final class Common {
 				else
 					tellJson(sender, stripped);
 
+		} else if (colorlessMessage.startsWith("<toast>")) {
+			final String stripped = message.replace("<toast>", "");
+
+			if (!stripped.isEmpty())
+				if (sender instanceof Player)
+					Remain.sendToast((Player) sender, stripped);
+				else
+					tellJson(sender, stripped);
+
 		} else if (colorlessMessage.startsWith("<title>")) {
 			final String stripped = message.replace("<title>", "");
 
@@ -555,7 +565,6 @@ public final class Common {
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 				.replace("{plugin_name}", SimplePlugin.getNamed())
-				.replace("{plugin_name_lower}", SimplePlugin.getNamed().toLowerCase())
 				.replace("{plugin_version}", SimplePlugin.getVersion()));
 
 		// RGB colors
@@ -1579,8 +1588,21 @@ public final class Common {
 		else if (arg instanceof Collection)
 			return Common.join((Collection<?>) arg, ", ", Common::simplify);
 
+		else if (arg instanceof ChatColor)
+			return ((Enum<?>) arg).name().toLowerCase();
+
+		else if (arg instanceof CompChatColor)
+			return ((CompChatColor) arg).getName();
+
 		else if (arg instanceof Enum)
-			return ((Enum<?>) arg).name();
+			return ((Enum<?>) arg).toString().toLowerCase();
+
+		try {
+			if (arg instanceof net.md_5.bungee.api.ChatColor)
+				return ((net.md_5.bungee.api.ChatColor) arg).getName();
+		} catch (final Exception e) {
+			// No MC compatible
+		}
 
 		return arg.toString();
 	}
