@@ -55,10 +55,10 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static Enchantment findEnchantment(String name) {
-		Enchantment enchant = Enchantment.getByName(name.toLowerCase());
+		Enchantment enchant = Enchantment.getByName(name);
 
 		if (enchant == null)
-			enchant = Enchantment.getByName(name);
+			enchant = Enchantment.getByName(name.toLowerCase());
 
 		if (enchant == null) {
 			name = EnchantmentWrapper.toBukkit(name);
@@ -180,10 +180,10 @@ public final class ItemUtil {
 			if ((f == null && s != null) || (s == null && f != null))
 				return false;
 
-			final String fName = f == null ? "" : Common.stripColors(Common.getOrEmpty(f.getDisplayName()).toLowerCase());
-			final String sName = s == null ? "" : Common.stripColors(Common.getOrEmpty(s.getDisplayName()).toLowerCase());
+			final String fName = f == null ? "" : Common.stripColors(Common.getOrEmpty(f.getDisplayName()));
+			final String sName = s == null ? "" : Common.stripColors(Common.getOrEmpty(s.getDisplayName()));
 
-			if ((fName != null && !fName.equals(sName)) || !Valid.listEquals(f == null ? new ArrayList<>() : f.getLore(), s == null ? new ArrayList<>() : s.getLore()))
+			if ((fName != null && !fName.equalsIgnoreCase(sName)) || !Valid.listEquals(f == null ? new ArrayList<>() : f.getLore(), s == null ? new ArrayList<>() : s.getLore()))
 				return false;
 		}
 

@@ -382,9 +382,7 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Replace variables in the destination file before it is copied. Variables
-	 * include {plugin_name} (lowercase), {file} and {file_lowercase} as well as
-	 * custom variables from {@link #replaceVariables(String)} method
+	 * Replace variables in the destination file before it is copied.
 	 *
 	 * @param line
 	 * @param fileName

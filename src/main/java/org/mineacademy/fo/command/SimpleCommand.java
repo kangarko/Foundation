@@ -1055,7 +1055,7 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Internal method for replacing {label} {sublabel} and {plugin_name} placeholders
+	 * Internal method for replacing {label} and {sublabel}
 	 *
 	 * @param message
 	 * @return
@@ -1378,7 +1378,7 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Get the permission without replacing {plugin_name}, {label} or {sublabel}
+	 * Get the permission without replacing variables
 	 *
 	 * @return
 	 * @deprecated internal use only

@@ -461,7 +461,7 @@ public final class Valid {
 	public boolean isInList(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
-				if (Valid.normalizeEquals(element).equals(Valid.normalizeEquals(matched)))
+				if (removeSlash(element).equalsIgnoreCase(removeSlash(matched)))
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
@@ -480,7 +480,7 @@ public final class Valid {
 	public boolean isInListStartsWith(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
-				if (Valid.normalizeEquals(element).startsWith(Valid.normalizeEquals(matched)))
+				if (removeSlash(element).toLowerCase().startsWith(removeSlash(matched).toLowerCase()))
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
@@ -502,7 +502,7 @@ public final class Valid {
 	public boolean isInListContains(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
-				if (Valid.normalizeEquals(element).contains(Valid.normalizeEquals(matched)))
+				if (removeSlash(element).toLowerCase().contains(removeSlash(matched).toLowerCase()))
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
@@ -553,10 +553,7 @@ public final class Valid {
 	 * @param message
 	 * @return
 	 */
-	private String normalizeEquals(String message) {
-		if (message.startsWith("/"))
-			message = message.substring(1);
-
-		return message.toLowerCase();
+	private String removeSlash(String message) {
+		return message.startsWith("/") ? message.substring(1) : message;
 	}
 }

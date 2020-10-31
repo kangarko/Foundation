@@ -196,24 +196,18 @@ public final class FileUtil {
 		Valid.checkNotNull(file, "File cannot be null");
 		Valid.checkBoolean(file.exists(), "File: " + file + " does not exists!");
 
-		try {
-			return Files.readAllLines(Paths.get(file.toURI()), StandardCharsets.UTF_8);
+		// Older method, missing libraries
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+			final List<String> lines = new ArrayList<>();
+			String line;
 
-		} catch (final IOException ex) {
+			while ((line = br.readLine()) != null)
+				lines.add(line);
 
-			// Older method, missing libraries
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-				final List<String> lines = new ArrayList<>();
-				String line;
+			return lines;
 
-				while ((line = br.readLine()) != null)
-					lines.add(line);
-
-				return lines;
-
-			} catch (final IOException ee) {
-				throw new FoException(ee, "Could not read lines from " + file.getName());
-			}
+		} catch (final IOException ee) {
+			throw new FoException(ee, "Could not read lines from " + file.getName());
 		}
 	}
 
