@@ -52,7 +52,11 @@ abstract class Message {
 	 */
 	protected final void setSenderUid(String raw) {
 		if (raw != null)
-			this.senderUid = UUID.fromString(raw);
+			try {
+				this.senderUid = UUID.fromString(raw);
+			} catch (final IllegalArgumentException ex) {
+				throw new IllegalArgumentException("Expected UUID, got " + raw + " for packet " + this.action + " from server " + this.serverName);
+			}
 	}
 
 	/**
