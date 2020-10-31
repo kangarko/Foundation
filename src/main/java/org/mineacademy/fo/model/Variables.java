@@ -361,7 +361,7 @@ public final class Variables {
 
 		switch (variable) {
 			case "server_name":
-				return SimpleSettings.SERVER_NAME;
+				return Remain.getServerName();
 			case "nms_version":
 				return MinecraftVersion.getServerVersion();
 			case "timestamp":
