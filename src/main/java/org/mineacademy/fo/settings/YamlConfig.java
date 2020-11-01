@@ -2088,7 +2088,7 @@ class ConfigInstance {
 	 */
 	protected void writeComments() throws IOException {
 		if (defaultsPath != null && saveComments)
-			ConfigUpdater.update(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
+			YamlComments.writeComments(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
 	}
 
 	/**
