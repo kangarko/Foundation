@@ -832,6 +832,7 @@ public final class Common {
 	private static String getException(final long count, final String ofWhat) {
 		final SerializedMap exceptions = SerializedMap.ofArray(
 				"life", "lives",
+				"class", "classes",
 				"wolf", "wolves",
 				"knife", "knives",
 				"wife", "wives",
@@ -869,7 +870,8 @@ public final class Common {
 				"thesis", "theses",
 				"datum", "data",
 				"index", "indices",
-				"entry", "entries");
+				"entry", "entries",
+				"boss", "bosses");
 
 		return exceptions.containsKey(ofWhat) ? count + " " + (count == 0 || count > 1 ? exceptions.getString(ofWhat) : ofWhat) : null;
 	}
