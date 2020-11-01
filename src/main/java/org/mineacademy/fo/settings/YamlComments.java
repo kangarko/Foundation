@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,25 +40,45 @@ import lombok.NonNull;
  * Source: https://github.com/tchristofferson/Config-Updater
  * Modified by MineAcademy.org
  */
-class ConfigUpdater {
+public final class YamlComments {
 
 	/**
 	 * Update a yaml file from a resource inside your plugin jar
 	 *
-	 * @param internalPath The yaml file name to update from, typically config.yml
-	 * @param outerPath The yaml file to update
+	 * @param jarPath The yaml file name to update from, typically config.yml
+	 * @param diskFile The yaml file to update
+	 *
+	 * @throws IOException If an IOException occurs
+	 */
+	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile) {
+		try {
+			writeComments(jarPath, diskFile, new ArrayList<>());
+
+		} catch (final IOException ex) {
+			Common.error(ex,
+					"Failed writing comments!",
+					"Path in plugin jar wherefrom comments are fetched: " + jarPath,
+					"Disk file where comments are written: " + diskFile);
+		}
+	}
+
+	/**
+	 * Update a yaml file from a resource inside your plugin jar
+	 *
+	 * @param jarPath The yaml file name to update from, typically config.yml
+	 * @param diskFile The yaml file to update
 	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
 	 *
 	 * @throws IOException If an IOException occurs
 	 */
-	public static void update(@NonNull String internalPath, File outerPath, List<String> ignoredSections) throws IOException {
-		final BufferedReader newReader = new BufferedReader(new InputStreamReader(FileUtil.getInternalResource(internalPath), StandardCharsets.UTF_8));
+	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) throws IOException {
+		final BufferedReader newReader = new BufferedReader(new InputStreamReader(FileUtil.getInternalResource(jarPath), StandardCharsets.UTF_8));
 		final List<String> newLines = newReader.lines().collect(Collectors.toList());
 		newReader.close();
 
-		final FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(outerPath);
-		final FileConfiguration newConfig = Remain.loadConfiguration(FileUtil.getInternalResource(internalPath));
-		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outerPath), StandardCharsets.UTF_8));
+		final FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(diskFile);
+		final FileConfiguration newConfig = Remain.loadConfiguration(FileUtil.getInternalResource(jarPath));
+		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
 
 		// ignoredSections can ONLY contain configurations sections
 		for (final String ignoredSection : ignoredSections)
@@ -80,7 +101,7 @@ class ConfigUpdater {
 		}
 
 		if (!removedKeys.isEmpty()) {
-			final File backupFile = FileUtil.getOrMakeFile(outerPath.getName().replace(".yml", "_unused.yml"));
+			final File backupFile = FileUtil.getOrMakeFile(diskFile.getName().replace(".yml", "_unused.yml"));
 			final FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
 
 			for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
@@ -88,7 +109,7 @@ class ConfigUpdater {
 
 			backupConfig.save(backupFile);
 
-			Common.log("&6Warning: The following entries in " + outerPath.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
+			Common.log("&6Warning: The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
 		}
 
 		final Yaml yaml = new Yaml();
@@ -282,10 +303,10 @@ class ConfigUpdater {
 				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
-
+				
 						if (value instanceof ConfigurationSection)
 							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-
+				
 						continue outer;
 					}
 				}*/
