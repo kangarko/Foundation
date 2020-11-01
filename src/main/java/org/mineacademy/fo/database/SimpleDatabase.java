@@ -202,8 +202,9 @@ public class SimpleDatabase {
 	protected final void insert(String table, @NonNull SerializedMap columsAndValues) {
 		final String columns = Common.join(columsAndValues.keySet());
 		final String values = Common.join(columsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+		final String duplicateUpdate = Common.join(columsAndValues.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
-		update("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
+		update("INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ") ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
 	}
 
 	/**
@@ -226,12 +227,20 @@ public class SimpleDatabase {
 
 		for (final SerializedMap map : maps) {
 			final String columns = Common.join(map.keySet());
-			final String values = Common.join(map.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'");
+			final String values = Common.join(map.values(), ", ", value -> parseValue(value));
+			final String duplicateUpdate = Common.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
-			sqls.add("REPLACE INTO " + table + " (" + columns + ") VALUES (" + values + ");");
+			sqls.add("INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ") ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
 		}
 
 		this.batchUpdate(sqls);
+	}
+
+	/*
+	 * A helper method to insert compatible value to db
+	 */
+	private final String parseValue(Object value) {
+		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'";
 	}
 
 	/**
@@ -344,7 +353,7 @@ public class SimpleDatabase {
 			// This will block the thread
 			getConnection().commit();
 
-			Common.log("Updated " + processedCount + " database entries.");
+			//Common.log("Updated " + processedCount + " database entries.");
 
 		} catch (final Throwable t) {
 			t.printStackTrace();
