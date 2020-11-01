@@ -703,9 +703,9 @@ public final class SerializedMap extends StrictCollection {
 		final Object raw = this.map.get(path);
 
 		if (raw != null) {
-			Valid.checkBoolean(raw instanceof Map, "Expected Map<" + keyType.getSimpleName() + ", " + valueType.getSimpleName() + "> at " + path + ", got " + raw.getClass());
+			Valid.checkBoolean(raw instanceof Map || raw instanceof MemorySection, "Expected Map<" + keyType.getSimpleName() + ", " + valueType.getSimpleName() + "> at " + path + ", got " + raw.getClass());
 
-			for (final Entry<?, ?> entry : ((Map<?, ?>) raw).entrySet()) {
+			for (final Entry<?, ?> entry : Common.getMapFromSection(raw).entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
 
