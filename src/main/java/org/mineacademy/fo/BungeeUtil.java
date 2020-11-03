@@ -28,14 +28,6 @@ import lombok.NonNull;
 public final class BungeeUtil {
 
 	/**
-	 * The current position of writing the data based on the
-	 * {@link BungeeAction#getContent()}
-	 * <p>
-	 * Reset in tell methods
-	 */
-	private static int actionHead = 0;
-
-	/**
 	 * See {@link #tellBungee(BungeeChannel, Player, Object...)}
 	 * <p>
 	 * NB: This one uses the default channel name specified in {@link SimplePlugin}. By
@@ -70,11 +62,9 @@ public final class BungeeUtil {
 
 		final Player recipient = getThroughWhomSendMessage();
 
-		if (recipient == null) {
-			Common.log("Unable to send channel '" + channel + "' packet '" + action + "' to BungeeCord because this server is empty.");
-
+		// This server is empty, do not send
+		if (recipient == null)
 			return;
-		}
 
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
@@ -82,7 +72,7 @@ public final class BungeeUtil {
 		out.writeUTF(Remain.getServerName());
 		out.writeUTF(action.toString());
 
-		actionHead = 0;
+		int actionHead = 0;
 
 		for (Object data : datas) {
 			try {
@@ -94,53 +84,55 @@ public final class BungeeUtil {
 				if (data instanceof Integer) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Integer.class, datas);
+					moveHead(actionHead, action, Integer.class, datas);
 					out.writeInt((Integer) data);
 
 				} else if (data instanceof Double) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Double.class, datas);
+					moveHead(actionHead, action, Double.class, datas);
 					out.writeDouble((Double) data);
 
 				} else if (data instanceof Long) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Long.class, datas);
+					moveHead(actionHead, action, Long.class, datas);
 					out.writeLong((Long) data);
 
 				} else if (data instanceof Boolean) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Boolean.class, datas);
+					moveHead(actionHead, action, Boolean.class, datas);
 					out.writeBoolean((Boolean) data);
 
 				} else if (data instanceof String) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, String.class, datas);
+					moveHead(actionHead, action, String.class, datas);
 					out.writeUTF((String) data);
 
 				} else if (data instanceof UUID) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, UUID.class, datas);
+					moveHead(actionHead, action, UUID.class, datas);
 					out.writeUTF(((UUID) data).toString());
 
 				} else if (data instanceof Enum) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, Enum.class, datas);
+					moveHead(actionHead, action, Enum.class, datas);
 					out.writeUTF(((Enum<?>) data).toString());
 
 				} else if (data instanceof byte[]) {
 					Debugger.put("bungee", data.toString() + ", ");
 
-					moveHead(action, String.class, datas);
+					moveHead(actionHead, action, String.class, datas);
 					out.write((byte[]) data);
 
 				} else
 					throw new FoException("Unknown type of data: " + data + " (" + data.getClass().getSimpleName() + ")");
+
+				actionHead++;
 
 			} catch (final Throwable t) {
 				t.printStackTrace();
@@ -234,12 +226,10 @@ public final class BungeeUtil {
 	 *
 	 * @param typeOf
 	 */
-	private static void moveHead(BungeeAction action, Class<?> typeOf, Object[] datas) throws Throwable {
+	private static void moveHead(int actionHead, BungeeAction action, Class<?> typeOf, Object[] datas) throws Throwable {
 		Valid.checkNotNull(action, "Action not set!");
 
 		final Class<?>[] content = action.getContent();
 		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length + "! Set Debug to [bungee] in settings.yml and report. Data length: " + datas.length + " data: " + Common.join(datas));
-
-		actionHead++;
 	}
 }
