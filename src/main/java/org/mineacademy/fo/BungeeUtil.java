@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common.Stringer;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.bungee.SimpleBungee;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -110,6 +111,12 @@ public final class BungeeUtil {
 
 					moveHead(actionHead, action, String.class, datas);
 					out.writeUTF((String) data);
+
+				} else if (data instanceof SerializedMap) {
+					Debugger.put("bungee", data.toString() + ", ");
+
+					moveHead(actionHead, action, String.class, datas);
+					out.writeUTF(((SerializedMap) data).toJson());
 
 				} else if (data instanceof UUID) {
 					Debugger.put("bungee", data.toString() + ", ");
