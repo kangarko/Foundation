@@ -402,6 +402,7 @@ public abstract class SimpleCommandGroup {
 				}
 
 				final List<SimpleComponent> lines = new ArrayList<>();
+				final boolean atLeast17 = MinecraftVersion.atLeast(V.v1_7);
 
 				for (final SimpleSubCommand subcommand : subcommands)
 					if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
@@ -413,17 +414,17 @@ public abstract class SimpleCommandGroup {
 
 						final String usage = colorizeUsage(subcommand.getUsage());
 						final String desc = Common.getOrEmpty(subcommand.getDescription());
-						final boolean atLeast17 = MinecraftVersion.atLeast(V.v1_7);
-
-						final SimpleComponent line = SimpleComponent.of(Replacer.replaceArray(getSubcommandDescription(),
+						final String plainMessage = Replacer.replaceArray(getSubcommandDescription(),
 								"label", getLabel(),
 								"sublabel", subcommand.getSublabel(),
 								"usage", usage,
 								"description", !desc.isEmpty() && !atLeast17 ? desc : "",
-								"dash", !desc.isEmpty() && !atLeast17 ? "&e-" : ""));
+								"dash", !desc.isEmpty() && !atLeast17 ? "&e-" : "");
+
+						final SimpleComponent line = SimpleComponent.of(plainMessage);
 
 						if (!desc.isEmpty() && atLeast17) {
-							final String command = Common.stripColors(line.getPlainMessage()).substring(1);
+							final String command = Common.stripColors(plainMessage).substring(1);
 							final List<String> hover = new ArrayList<>();
 
 							hover.add("&7Description: &f" + desc);
