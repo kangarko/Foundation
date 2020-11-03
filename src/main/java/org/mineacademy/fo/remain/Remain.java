@@ -1889,7 +1889,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Entity getEntity(final UUID uuid) {
-		catchAsync("iterating through entities [CMN]");
+		Valid.checkSync("Remain#getEntity must be called on the main thread");
 
 		for (final World world : Bukkit.getWorlds())
 			for (final Entity entity : world.getEntities())
@@ -2121,20 +2121,6 @@ public final class Remain {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Calls "catch async" method in Spigot that checks if we are calling from the
-	 * main thread
-	 *
-	 * @param message
-	 */
-	public static void catchAsync(final String message) {
-		try {
-			Class.forName("org.spigotmc.AsyncCatcher").getMethod("catchOp", String.class).invoke(null, message);
-		} catch (final Throwable t) {
-			// No spigot
-		}
 	}
 
 	/**

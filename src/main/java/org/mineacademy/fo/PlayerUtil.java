@@ -517,15 +517,15 @@ public final class PlayerUtil {
 	 * Performs an async player lookup then runs the action in a sync runnable
 	 *
 	 * @param name
-	 * @param syncAction
+	 * @param syncCallback
 	 */
-	public static void lookupOfflinePlayerAsync(String name, Consumer<OfflinePlayer> syncAction) {
+	public static void lookupOfflinePlayerAsync(String name, Consumer<OfflinePlayer> syncCallback) {
 		Common.runAsync(() -> {
 			// If the given name is a nick, try to get the real name
 			final String parsedName = HookManager.getNameFromNick(name);
 			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(parsedName);
 
-			Common.runLater(() -> syncAction.accept(offlinePlayer));
+			Common.runLater(() -> syncCallback.accept(offlinePlayer));
 		});
 	}
 

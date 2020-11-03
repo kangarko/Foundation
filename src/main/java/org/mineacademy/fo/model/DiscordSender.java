@@ -103,8 +103,10 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public void sendMessage(String message) {
+		final String finalMessage = Common.stripColors(message);
+
 		Common.runAsync(() -> {
-			final Message sentMessage = channel.sendMessage(Common.stripColors(message)).complete();
+			final Message sentMessage = channel.sendMessage(finalMessage).complete();
 
 			// Automatically remove after a short while
 			channel.deleteMessageById(sentMessage.getIdLong()).completeAfter(4, TimeUnit.SECONDS);
