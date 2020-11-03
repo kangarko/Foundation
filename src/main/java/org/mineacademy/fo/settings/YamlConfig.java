@@ -2030,14 +2030,7 @@ class ConfigInstance {
 			//reload();
 			//config.loadFromString(config.saveToString());
 
-			Common.runAsync(() -> {
-				try {
-					writeComments();
-
-				} catch (final Exception ex) {
-					Common.error(ex, "Failed to save comments to " + file.getName());
-				}
-			});
+			writeComments();
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Failed to save " + file.getName());
