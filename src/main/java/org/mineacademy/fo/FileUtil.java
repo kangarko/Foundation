@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -386,31 +385,6 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Copy file our plugin jar to destination, replacing variables in that file before it is saved
-	 * No action is done if the file already exists.
-	 *
-	 * @param path     the path to the file inside the plugin
-	 * @param replacer the variables replacer, takes in a variable (you must put brackets around it) and outputs
-	 *                 the desired string
-	 * @return the extracted file
-	 */
-	public static File extract(String path, Function<String, String> replacer) {
-		return extract(path, path, replacer);
-	}
-
-	/**
-	 * Copy file our plugin jar to destination
-	 * No action is done if the file already exists.
-	 *
-	 * @param from
-	 * @param to
-	 * @return
-	 */
-	public static File extract(String from, String to) {
-		return extract(from, to, null);
-	}
-
-	/**
 	 * Copy file from our plugin jar to destination - customizable destination file
 	 * name.
 	 *
@@ -418,10 +392,9 @@ public final class FileUtil {
 	 * @param from     the path to the file inside the plugin
 	 * @param to       the path where the file will be copyed inside the plugin
 	 *                 folder
-	 * @param replacer the variables replacer
 	 * @return the extracted file
 	 */
-	public static File extract(String from, String to, @Nullable Function<String, String> replacer) {
+	public static File extract(String from, String to) {
 		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
 
 		final InputStream is = FileUtil.getInternalResource("/" + from);
@@ -435,16 +408,14 @@ public final class FileUtil {
 		try {
 
 			final List<String> lines = new ArrayList<>();
+			final String fileName = getFileName(file);
 
 			// Load lines from internal file and replace them
 			try (final BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 				String line;
 
-				while ((line = br.readLine()) != null) {
-					line = replacer != null ? replacer.apply(line) : line;
-
-					lines.add(line);
-				}
+				while ((line = br.readLine()) != null)
+					lines.add(replaceVariables(line, fileName));
 			}
 
 			Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
@@ -456,6 +427,19 @@ public final class FileUtil {
 		}
 
 		return file;
+	}
+
+	/*
+	 * A helper method to replace variables in files we are extracting.
+	 * 
+	 * Saves us time so that we can distribute the same file across multiple
+	 * plugins each having its own unique plugin name and file name.
+	 */
+	private static String replaceVariables(String line, String fileName) {
+		return line
+				.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase())
+				.replace("{file}", fileName)
+				.replace("{file_lowercase}", fileName);
 	}
 
 	/**
