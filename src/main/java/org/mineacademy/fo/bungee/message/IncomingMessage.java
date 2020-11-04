@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -89,6 +90,17 @@ public final class IncomingMessage extends Message {
 		moveHead(UUID.class);
 
 		return UUID.fromString(input.readUTF());
+	}
+
+	/**
+	 * Read a map from the string data if json
+	 *
+	 * @return
+	 */
+	public SerializedMap readMap() {
+		moveHead(String.class);
+
+		return SerializedMap.fromJson(input.readUTF());
 	}
 
 	/**
