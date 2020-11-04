@@ -15,14 +15,13 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -33,7 +32,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * A very simple way of sending interactive chat messages
  */
-@ToString
 public final class SimpleComponent implements ConfigSerializable {
 
 	/**
@@ -347,6 +345,28 @@ public final class SimpleComponent implements ConfigSerializable {
 		return Common.getOrDefault(preparedComponent, new TextComponent(""));
 	}
 
+	/**
+	 * Quickly and dirtly replaces an object in all parts of this component
+	 * 
+	 * @param variable the factual variable - you must supply brackets
+	 * @param value
+	 * @return
+	 */
+	public SimpleComponent replace(String variable, Object value) {
+		final String serialized = SerializeUtil.serialize(value).toString();
+
+		for (final Part part : this.pastComponents) {
+			Valid.checkNotNull(part.text);
+
+			part.text = part.text.replace(variable, serialized);
+		}
+
+		Valid.checkNotNull(this.currentComponent.text);
+		this.currentComponent.text = this.currentComponent.text.replace(variable, serialized);
+
+		return this;
+	}
+
 	// --------------------------------------------------------------------
 	// Sending
 	// --------------------------------------------------------------------
@@ -435,6 +455,14 @@ public final class SimpleComponent implements ConfigSerializable {
 				// Then repeat for the extra parts in the text itself
 				setRelationPlaceholders(text, receiver, sender);
 			}
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.serialize().toStringFormatted();
 	}
 
 	// --------------------------------------------------------------------
@@ -664,13 +692,12 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The part that is being created
 	 */
-	@RequiredArgsConstructor
 	static final class Part implements ConfigSerializable {
 
 		/**
 		 * The text
 		 */
-		private final String text;
+		private String text;
 
 		/**
 		 * The view permission
@@ -707,6 +734,15 @@ public final class SimpleComponent implements ConfigSerializable {
 		 */
 		@Nullable
 		private BaseComponent inheritFormatting;
+
+		/*
+		 * Create a new part 
+		 */
+		private Part(String text) {
+			Valid.checkNotNull(text, "Part text cannot be null");
+
+			this.text = text;
+		}
 
 		/**
 		 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
@@ -800,6 +836,14 @@ public final class SimpleComponent implements ConfigSerializable {
 			}
 
 			return true;
+		}
+
+		/**
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return this.serialize().toStringFormatted();
 		}
 	}
 }
