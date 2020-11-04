@@ -4,10 +4,12 @@ package org.mineacademy.fo.remain.nbt;
  * Package enum
  *
  * @author tr7zw
+ *
  */
 enum WrapperPackage {
 	NMS(new String(new byte[] { 'n', 'e', 't', '.', 'm', 'i', 'n', 'e', 'c', 'r', 'a', 'f', 't', '.', 's', 'e', 'r', 'v', 'e', 'r' })),
-	CRAFTBUKKIT(new String(new byte[] { 'o', 'r', 'g', '.', 'b', 'u', 'k', 'k', 'i', 't', '.', 'c', 'r', 'a', 'f', 't', 'b', 'u', 'k', 'k', 'i', 't' })),;
+	CRAFTBUKKIT(new String(new byte[] { 'o', 'r', 'g', '.', 'b', 'u', 'k', 'k', 'i', 't', '.', 'c', 'r', 'a', 'f', 't', 'b', 'u', 'k', 'k', 'i', 't' })),
+	;
 
 	private final String uri;
 

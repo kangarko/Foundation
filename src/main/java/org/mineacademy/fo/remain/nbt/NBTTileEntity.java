@@ -9,6 +9,7 @@ import org.bukkit.block.BlockState;
  * once.
  *
  * @author tr7zw
+ *
  */
 public class NBTTileEntity extends NBTCompound {
 
@@ -17,10 +18,11 @@ public class NBTTileEntity extends NBTCompound {
 	/**
 	 * @param tile BlockState from any TileEntity
 	 */
-	public NBTTileEntity(final BlockState tile) {
+	public NBTTileEntity(BlockState tile) {
 		super(null, null);
-		if (tile == null || !tile.isPlaced())
+		if (tile == null || (WrapperVersion.isAtLeastVersion(WrapperVersion.MC1_8_R3) && !tile.isPlaced())) {
 			throw new NullPointerException("Tile can't be null/not placed!");
+		}
 		this.tile = tile;
 	}
 
@@ -30,7 +32,7 @@ public class NBTTileEntity extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
+	protected void setCompound(Object compound) {
 		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, compound);
 	}
 }

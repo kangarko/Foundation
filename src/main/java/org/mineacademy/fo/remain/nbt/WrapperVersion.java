@@ -4,15 +4,15 @@ import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 
 /**
- * This class acts as the "Brain" of the NBTApi.
+ * This class acts as the "Brain" of the NBTApi. It contains the main logger for
+ * other classes,registers bStats and checks rather Maven shading was done
+ * correctly.
  *
  * @author tr7zw
+ *
  */
 enum WrapperVersion {
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
-	MC1_4_R1(147),
-	MC1_5_R3(152),
-	MC1_6_R3(163),
 	MC1_7_R4(174),
 	MC1_8_R3(183),
 	MC1_9_R1(191),
@@ -26,12 +26,13 @@ enum WrapperVersion {
 	MC1_15_R1(1151),
 	MC1_16_R1(1161),
 	MC1_16_R2(1162),
-	;
+	MC1_16_R3(1163);
 
 	private static WrapperVersion version;
+
 	private final int versionId;
 
-	WrapperVersion(final int versionId) {
+	WrapperVersion(int versionId) {
 		this.versionId = versionId;
 	}
 
@@ -40,6 +41,26 @@ enum WrapperVersion {
 	 */
 	public int getVersionId() {
 		return versionId;
+	}
+
+	/**
+	 * Returns true if the current versions is at least the given Version
+	 *
+	 * @param version The minimum version
+	 * @return
+	 */
+	public static boolean isAtLeastVersion(WrapperVersion version) {
+		return getVersion().getVersionId() >= version.getVersionId();
+	}
+
+	/**
+	 * Returns true if the current versions newer (not equal) than the given version
+	 *
+	 * @param version The minimum version
+	 * @return
+	 */
+	public static boolean isNewerThan(WrapperVersion version) {
+		return getVersion().getVersionId() > version.getVersionId();
 	}
 
 	/**

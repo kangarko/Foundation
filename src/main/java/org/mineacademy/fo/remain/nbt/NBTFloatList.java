@@ -3,38 +3,41 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * Float implementation for NBTLists
  *
  * @author tr7zw
+ *
  */
 public class NBTFloatList extends NBTList<Float> {
 
-	NBTFloatList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
+	protected NBTFloatList(NBTCompound owner, String name, NBTType type, Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	protected Object asTag(final Float object) {
+	protected Object asTag(Float object) {
 		try {
 			final Constructor<?> con = WrapperClass.NMS_NBTTAGFLOAT.getClazz().getDeclaredConstructor(float.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
-		} catch (final InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
+			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
 		}
 	}
 
 	@Override
-	public Float get(final int index) {
+	public Float get(int index) {
 		try {
 			final Object obj = WrapperReflection.LIST_GET.run(listObject, index);
-			return Float.valueOf(obj.toString());
+			return Float.parseFloat(obj.toString());
 		} catch (final NumberFormatException nf) {
 			return 0f;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		}
 	}
 

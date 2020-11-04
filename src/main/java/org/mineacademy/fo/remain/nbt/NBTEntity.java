@@ -8,6 +8,7 @@ import org.bukkit.entity.Entity;
  * to the Entity, use the merge method to do many things at once.
  *
  * @author tr7zw
+ *
  */
 public class NBTEntity extends NBTCompound {
 
@@ -16,10 +17,11 @@ public class NBTEntity extends NBTCompound {
 	/**
 	 * @param entity Any valid Bukkit Entity
 	 */
-	public NBTEntity(final Entity entity) {
+	public NBTEntity(Entity entity) {
 		super(null, null);
-		if (entity == null)
+		if (entity == null) {
 			throw new NullPointerException("Entity can't be null!");
+		}
 		ent = entity;
 	}
 
@@ -29,7 +31,7 @@ public class NBTEntity extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
+	protected void setCompound(Object compound) {
 		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
 	}
 }

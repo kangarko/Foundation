@@ -3,11 +3,13 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.exception.FoException;
 
 /**
  * This Enum wraps Constructors for NMS classes
  *
  * @author tr7zw
+ *
  */
 enum WrapperObject {
 	NMS_NBTTAGCOMPOUND(null, null, WrapperClass.NMS_NBTTAGCOMPOUND.getClazz()),
@@ -17,17 +19,19 @@ enum WrapperObject {
 	private Constructor<?> construct;
 	private Class<?> targetClass;
 
-	WrapperObject(final WrapperVersion from, final WrapperVersion to, final Class<?> clazz, final Class<?>... args) {
+	WrapperObject(WrapperVersion from, WrapperVersion to, Class<?> clazz, Class<?>... args) {
 		if (clazz == null)
 			return;
 		if (from != null && WrapperVersion.getVersion().getVersionId() < from.getVersionId())
 			return;
 		if (to != null && WrapperVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
+
 		try {
 			this.targetClass = clazz;
 			construct = clazz.getDeclaredConstructor(args);
 			construct.setAccessible(true);
+
 		} catch (final Exception ex) {
 			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
@@ -39,11 +43,11 @@ enum WrapperObject {
 	 * @param args
 	 * @return Object created
 	 */
-	public Object getInstance(final Object... args) {
+	public Object getInstance(Object... args) {
 		try {
 			return construct.newInstance(args);
 		} catch (final Exception ex) {
-			throw new NbtApiException("Exception while creating a new instance of '" + targetClass + "'", ex);
+			throw new FoException(ex, "Exception while creating a new instance of '" + targetClass + "'");
 		}
 	}
 
