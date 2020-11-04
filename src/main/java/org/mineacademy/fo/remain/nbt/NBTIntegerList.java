@@ -3,37 +3,41 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * Integer implementation for NBTLists
  *
  * @author tr7zw
+ *
  */
 public class NBTIntegerList extends NBTList<Integer> {
 
-	NBTIntegerList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
+	protected NBTIntegerList(NBTCompound owner, String name, NBTType type, Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	protected Object asTag(final Integer object) {
+	protected Object asTag(Integer object) {
 		try {
 			final Constructor<?> con = WrapperClass.NMS_NBTTAGINT.getClazz().getDeclaredConstructor(int.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
-		} catch (final InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
 		}
 	}
 
 	@Override
-	public Integer get(final int index) {
+	public Integer get(int index) {
 		try {
 			final Object obj = WrapperReflection.LIST_GET.run(listObject, index);
-			return Integer.valueOf(obj.toString());
+			return Integer.parseInt(obj.toString());
 		} catch (final NumberFormatException nf) {
 			return 0;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		}
 	}
 

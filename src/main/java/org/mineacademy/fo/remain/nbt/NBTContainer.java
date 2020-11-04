@@ -2,11 +2,14 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.io.InputStream;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * A Standalone {@link NBTCompound} implementation. All data is just kept inside
  * this Object.
  *
  * @author tr7zw
+ *
  */
 public class NBTContainer extends NBTCompound {
 
@@ -15,7 +18,7 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Creates an empty, standalone NBTCompound
 	 */
-	NBTContainer() {
+	public NBTContainer() {
 		super(null, null);
 		nbt = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
 	}
@@ -25,12 +28,14 @@ public class NBTContainer extends NBTCompound {
 	 *
 	 * @param nbt
 	 */
-	NBTContainer(final Object nbt) {
+	public NBTContainer(Object nbt) {
 		super(null, null);
-		if (nbt == null)
+		if (nbt == null) {
 			throw new NullPointerException("The NBT-Object can't be null!");
-		if (!WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass()))
-			throw new NbtApiException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
+		}
+		if (!WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass())) {
+			throw new FoException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
+		}
 		this.nbt = nbt;
 	}
 
@@ -39,7 +44,7 @@ public class NBTContainer extends NBTCompound {
 	 *
 	 * @param inputsteam
 	 */
-	public NBTContainer(final InputStream inputsteam) {
+	public NBTContainer(InputStream inputsteam) {
 		super(null, null);
 		this.nbt = NBTReflectionUtil.readNBT(inputsteam);
 	}
@@ -50,14 +55,15 @@ public class NBTContainer extends NBTCompound {
 	 *
 	 * @param nbtString
 	 */
-	public NBTContainer(final String nbtString) {
+	public NBTContainer(String nbtString) {
 		super(null, null);
-		if (nbtString == null)
+		if (nbtString == null) {
 			throw new NullPointerException("The String can't be null!");
+		}
 		try {
 			nbt = WrapperReflection.PARSE_NBT.run(null, nbtString);
 		} catch (final Exception ex) {
-			throw new NbtApiException("Unable to parse Malformed Json!", ex);
+			throw new FoException(ex, "Unable to parse a malformed json!");
 		}
 	}
 
@@ -67,7 +73,7 @@ public class NBTContainer extends NBTCompound {
 	}
 
 	@Override
-	public void setCompound(final Object tag) {
+	public void setCompound(Object tag) {
 		nbt = tag;
 	}
 

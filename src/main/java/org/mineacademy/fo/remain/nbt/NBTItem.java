@@ -9,22 +9,41 @@ import org.bukkit.inventory.meta.ItemMeta;
  * autosave to the Itemstack, use getItem to get the changed ItemStack
  *
  * @author tr7zw
+ *
  */
 public class NBTItem extends NBTCompound {
 
 	private ItemStack bukkitItem;
+	private final boolean directApply;
+	private ItemStack originalSrcStack = null;
 
 	/**
 	 * Constructor for NBTItems. The ItemStack will be cloned!
 	 *
 	 * @param item
 	 */
-	public NBTItem(final ItemStack item) {
-		super(null, null);
-		if (item == null)
-			throw new NullPointerException("ItemStack can't be null!");
+	public NBTItem(ItemStack item) {
+		this(item, false);
+	}
 
+	/**
+	 * Constructor for NBTItems. The ItemStack will be cloned! If directApply is true,
+	 * all changed will be mapped to the original item. Changes to the NBTItem will overwrite changes done
+	 * to the original item in that case.
+	 *
+	 * @param item
+	 * @param directApply
+	 */
+	public NBTItem(ItemStack item, boolean directApply) {
+		super(null, null);
+		if (item == null || item.getType() == Material.AIR) {
+			throw new NullPointerException("ItemStack can't be null/Air!");
+		}
+		this.directApply = directApply;
 		bukkitItem = item.clone();
+		if (directApply) {
+			this.originalSrcStack = item;
+		}
 	}
 
 	@Override
@@ -33,7 +52,7 @@ public class NBTItem extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
+	protected void setCompound(Object compound) {
 		final Object stack = WrapperReflection.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
 		WrapperReflection.ITEMSTACK_SET_TAG.run(stack, compound);
 		bukkitItem = (ItemStack) WrapperReflection.ITEMSTACK_BUKKITMIRROR.run(null, stack);
@@ -48,12 +67,38 @@ public class NBTItem extends NBTCompound {
 	 *
 	 * @param item ItemStack that should get the new NBT data
 	 */
-	public void applyNBT(final ItemStack item) {
-		if (item == null || item.getType() == Material.AIR)
+	public void applyNBT(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) {
 			throw new NullPointerException("ItemStack can't be null/Air!");
+		}
 		final NBTItem nbti = new NBTItem(new ItemStack(item.getType()));
 		nbti.mergeCompound(this);
 		item.setItemMeta(nbti.getItem().getItemMeta());
+	}
+
+	/**
+	 * Merge all NBT tags to the provided ItemStack.
+	 *
+	 * @param item ItemStack that should get the new NBT data
+	 */
+	public void mergeNBT(ItemStack item) {
+		final NBTItem nbti = new NBTItem(item);
+		nbti.mergeCompound(this);
+		item.setItemMeta(nbti.getItem().getItemMeta());
+	}
+
+	/**
+	 * Merge only custom (non-vanilla) NBT tags to the provided ItemStack.
+	 *
+	 * @param item ItemStack that should get the new NBT data
+	 */
+	public void mergeCustomNBT(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) {
+			throw new NullPointerException("ItemStack can't be null/Air!");
+		}
+		final ItemMeta meta = item.getItemMeta();
+		NBTReflectionUtil.getUnhandledNBTTags(meta).putAll(NBTReflectionUtil.getUnhandledNBTTags(bukkitItem.getItemMeta()));
+		item.setItemMeta(meta);
 	}
 
 	/**
@@ -72,7 +117,7 @@ public class NBTItem extends NBTCompound {
 		return bukkitItem;
 	}
 
-	protected void setItem(final ItemStack item) {
+	protected void setItem(ItemStack item) {
 		bukkitItem = item;
 	}
 
@@ -92,7 +137,7 @@ public class NBTItem extends NBTCompound {
 	 * @param item
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
-	static NBTContainer convertItemtoNBT(final ItemStack item) {
+	public static NBTContainer convertItemtoNBT(ItemStack item) {
 		return NBTReflectionUtil.convertNMSItemtoNBTCompound(WrapperReflection.ITEMSTACK_NMSCOPY.run(null, item));
 	}
 
@@ -103,8 +148,16 @@ public class NBTItem extends NBTCompound {
 	 * @param comp
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */
-	static ItemStack convertNBTtoItem(final NBTCompound comp) {
-		return (ItemStack) WrapperReflection.ITEMSTACK_BUKKITMIRROR.run(null, NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
+	public static ItemStack convertNBTtoItem(NBTCompound comp) {
+		return (ItemStack) WrapperReflection.ITEMSTACK_BUKKITMIRROR.run(null,
+				NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
+	}
+
+	@Override
+	protected void saveCompound() {
+		if (directApply) {
+			applyNBT(originalSrcStack);
+		}
 	}
 
 }

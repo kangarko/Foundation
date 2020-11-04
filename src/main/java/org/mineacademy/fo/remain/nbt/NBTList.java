@@ -8,20 +8,23 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * Abstract List implementation for ListCompounds
  *
- * @param <T>
  * @author tr7zw
+ *
+ * @param <T>
  */
 public abstract class NBTList<T> implements List<T> {
 
 	private final String listName;
 	private final NBTCompound parent;
 	private final NBTType type;
-	Object listObject;
+	protected Object listObject;
 
-	protected NBTList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
+	protected NBTList(NBTCompound owner, String name, NBTType type, Object list) {
 		parent = owner;
 		listName = name;
 		this.type = type;
@@ -49,40 +52,42 @@ public abstract class NBTList<T> implements List<T> {
 	protected abstract Object asTag(T object);
 
 	@Override
-	public boolean add(final T element) {
+	public boolean add(T element) {
 		try {
 			parent.getWriteLock().lock();
-			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId())
+			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId()) {
 				WrapperReflection.LIST_ADD.run(listObject, size(), asTag(element));
-			else
+			} else {
 				WrapperReflection.LEGACY_LIST_ADD.run(listObject, asTag(element));
+			}
 			save();
 			return true;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
 	}
 
 	@Override
-	public void add(final int index, final T element) {
+	public void add(int index, T element) {
 		try {
 			parent.getWriteLock().lock();
-			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId())
+			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId()) {
 				WrapperReflection.LIST_ADD.run(listObject, index, asTag(element));
-			else
+			} else {
 				WrapperReflection.LEGACY_LIST_ADD.run(listObject, asTag(element));
+			}
 			save();
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
 	}
 
 	@Override
-	public T set(final int index, final T element) {
+	public T set(int index, T element) {
 		try {
 			parent.getWriteLock().lock();
 			final T prev = get(index);
@@ -90,14 +95,14 @@ public abstract class NBTList<T> implements List<T> {
 			save();
 			return prev;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
 	}
 
 	@Override
-	public T remove(final int i) {
+	public T remove(int i) {
 		try {
 			parent.getWriteLock().lock();
 			final T old = get(i);
@@ -105,7 +110,7 @@ public abstract class NBTList<T> implements List<T> {
 			save();
 			return old;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
@@ -117,7 +122,7 @@ public abstract class NBTList<T> implements List<T> {
 			parent.getReadLock().lock();
 			return (int) WrapperReflection.LIST_SIZE.run(listObject);
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getReadLock().unlock();
 		}
@@ -137,17 +142,19 @@ public abstract class NBTList<T> implements List<T> {
 
 	@Override
 	public void clear() {
-		while (!isEmpty())
+		while (!isEmpty()) {
 			remove(0);
+		}
 	}
 
 	@Override
-	public boolean contains(final Object o) {
+	public boolean contains(Object o) {
 		try {
 			parent.getReadLock().lock();
-			for (int i = 0; i < size(); i++)
+			for (int i = 0; i < size(); i++) {
 				if (o.equals(get(i)))
 					return true;
+			}
 			return false;
 		} finally {
 			parent.getReadLock().unlock();
@@ -155,12 +162,13 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public int indexOf(final Object o) {
+	public int indexOf(Object o) {
 		try {
 			parent.getReadLock().lock();
-			for (int i = 0; i < size(); i++)
+			for (int i = 0; i < size(); i++) {
 				if (o.equals(get(i)))
 					return i;
+			}
 			return -1;
 		} finally {
 			parent.getReadLock().unlock();
@@ -168,12 +176,13 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean addAll(final Collection<? extends T> c) {
+	public boolean addAll(Collection<? extends T> c) {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final T ele : c)
+			for (final T ele : c) {
 				add(ele);
+			}
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -181,12 +190,13 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean addAll(int index, final Collection<? extends T> c) {
+	public boolean addAll(int index, Collection<? extends T> c) {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final T ele : c)
+			for (final T ele : c) {
 				add(index++, ele);
+			}
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -194,12 +204,13 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean containsAll(final Collection<?> c) {
+	public boolean containsAll(Collection<?> c) {
 		try {
 			parent.getReadLock().lock();
-			for (final Object ele : c)
+			for (final Object ele : c) {
 				if (!contains(ele))
 					return false;
+			}
 			return true;
 		} finally {
 			parent.getReadLock().unlock();
@@ -207,13 +218,14 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public int lastIndexOf(final Object o) {
+	public int lastIndexOf(Object o) {
 		try {
 			parent.getReadLock().lock();
 			int index = -1;
-			for (int i = 0; i < size(); i++)
+			for (int i = 0; i < size(); i++) {
 				if (o.equals(get(i)))
 					index = i;
+			}
 			return index;
 		} finally {
 			parent.getReadLock().unlock();
@@ -221,12 +233,13 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean removeAll(final Collection<?> c) {
+	public boolean removeAll(Collection<?> c) {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final Object obj : c)
+			for (final Object obj : c) {
 				remove(obj);
+			}
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -234,14 +247,17 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean retainAll(final Collection<?> c) {
+	public boolean retainAll(Collection<?> c) {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
-			for (final Object obj : c)
-				for (int i = 0; i < size(); i++)
-					if (!obj.equals(get(i)))
+			for (final Object obj : c) {
+				for (int i = 0; i < size(); i++) {
+					if (!obj.equals(get(i))) {
 						remove(i--);
+					}
+				}
+			}
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -249,13 +265,14 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public boolean remove(final Object o) {
+	public boolean remove(Object o) {
 		try {
 			parent.getWriteLock().lock();
 			final int size = size();
 			int id = -1;
-			while ((id = indexOf(o)) != -1)
+			while ((id = indexOf(o)) != -1) {
 				remove(id);
+			}
 			return size != size();
 		} finally {
 			parent.getWriteLock().unlock();
@@ -294,14 +311,14 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public ListIterator<T> listIterator(final int startIndex) {
+	public ListIterator<T> listIterator(int startIndex) {
 		final NBTList<T> list = this;
 		return new ListIterator<T>() {
 
 			int index = startIndex - 1;
 
 			@Override
-			public void add(final T e) {
+			public void add(T e) {
 				list.add(index, e);
 			}
 
@@ -346,7 +363,7 @@ public abstract class NBTList<T> implements List<T> {
 			}
 
 			@Override
-			public void set(final T e) {
+			public void set(T e) {
 				list.set(index, e);
 			}
 		};
@@ -366,7 +383,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public <E> E[] toArray(final E[] a) {
+	public <E> E[] toArray(E[] a) {
 		try {
 			parent.getReadLock().lock();
 			final E[] ar = Arrays.copyOf(a, size());
@@ -374,10 +391,11 @@ public abstract class NBTList<T> implements List<T> {
 			final Class<?> arrayclass = a.getClass().getComponentType();
 			for (int i = 0; i < size(); i++) {
 				final T obj = get(i);
-				if (arrayclass.isInstance(obj))
+				if (arrayclass.isInstance(obj)) {
 					ar[i] = (E) get(i);
-				else
+				} else {
 					throw new ArrayStoreException("The array does not match the objects stored in the List.");
+				}
 			}
 			return ar;
 		} finally {
@@ -386,7 +404,7 @@ public abstract class NBTList<T> implements List<T> {
 	}
 
 	@Override
-	public List<T> subList(final int fromIndex, final int toIndex) {
+	public List<T> subList(int fromIndex, int toIndex) {
 		try {
 			parent.getReadLock().lock();
 			final ArrayList<T> list = new ArrayList<>();

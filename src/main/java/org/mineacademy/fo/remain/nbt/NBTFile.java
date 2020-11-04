@@ -9,6 +9,7 @@ import java.io.IOException;
  * {@link NBTCompound} implementation backed by a {@link File}
  *
  * @author tr7zw
+ *
  */
 public class NBTFile extends NBTCompound {
 
@@ -22,10 +23,11 @@ public class NBTFile extends NBTCompound {
 	 * @param file
 	 * @throws IOException
 	 */
-	public NBTFile(final File file) throws IOException {
+	public NBTFile(File file) throws IOException {
 		super(null, null);
-		if (file == null)
+		if (file == null) {
 			throw new NullPointerException("File can't be null!");
+		}
 		this.file = file;
 		if (file.exists()) {
 			final FileInputStream inputsteam = new FileInputStream(file);
@@ -69,7 +71,7 @@ public class NBTFile extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
+	protected void setCompound(Object compound) {
 		nbt = compound;
 	}
 
