@@ -159,6 +159,9 @@ public final class CompMetadata {
 	public static String getMetadata(final ItemStack item, final String key) {
 		Valid.checkNotNull(item, "Reading NBT tag got null item");
 
+		if (item == null || CompMaterial.isAir(item.getType()))
+			return null;
+
 		final String compoundTag = FoConstants.NBT.TAG;
 		final NBTItem nbt = new NBTItem(item);
 
