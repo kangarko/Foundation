@@ -416,6 +416,9 @@ public final class Variables {
 			case "pl_address":
 				return player == null ? "" : formatIp0(player);
 
+			case "player_vanished":
+				return player == null ? "false" : String.valueOf(HookManager.isVanished(player));
+
 			case "country_code":
 				return player == null ? "" : geoResponse.getCountryCode();
 			case "country_name":
