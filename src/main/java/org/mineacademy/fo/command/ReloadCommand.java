@@ -37,6 +37,8 @@ public final class ReloadCommand extends SimpleSubCommand {
 	@Override
 	protected void onCommand() {
 		try {
+			tell("Reloading plugin's data, please wait..");
+
 			// Syntax check YML files before loading
 			boolean syntaxParsed = true;
 
