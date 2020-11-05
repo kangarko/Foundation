@@ -902,7 +902,16 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	public String toJson() {
-		return gson.toJson(map);
+		final Object map = serialize();
+
+		try {
+			return gson.toJson(map);
+
+		} catch (final Throwable t) {
+			Common.error(t, "Failed to serialize to json, data: " + map);
+
+			return "{}";
+		}
 	}
 
 	/**
