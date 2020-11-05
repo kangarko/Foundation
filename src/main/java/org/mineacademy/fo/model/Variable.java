@@ -158,13 +158,13 @@ public final class Variable extends YamlConfig {
 				if (this.hoverText != null && !this.hoverText.isEmpty()) {
 					this.hoverText = null;
 
-					Common.log("Hover_Text is currently unsupported for variable " + getName() + ", please set it in your formatting.yml instead");
+					Common.log("&6Warning: Hover_Text is currently unsupported for variable " + getName() + ", please set it in your formatting.yml instead");
 				}
 
 				if (this.hoverItem != null) {
 					this.hoverItem = null;
 
-					Common.log("Hover_Item is currently unsupported for variable " + getName());
+					Common.log("&6Warning: Hover_Item is currently unsupported for variable " + getName());
 				}
 			}
 

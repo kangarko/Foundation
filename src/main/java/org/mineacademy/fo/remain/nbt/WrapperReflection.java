@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.exception.FoException;
 
 /**
@@ -126,13 +127,15 @@ enum WrapperReflection {
 				target = s;
 		}
 		targetVersion = target;
+
 		try {
 			method = targetClass.getMethod(targetVersion.name, args);
 			method.setAccessible(true);
 			loaded = true;
 			methodName = targetVersion.name;
+
 		} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
-			System.out.println("[NBTAPI] Unable to find the method '" + targetVersion.name + "' in '" + (targetClass == null ? "null" : targetClass.getSimpleName()) + "' Enum: " + this); //NOSONAR This gets loaded before the logger is loaded
+			Common.log("[NBTAPI] Unable to find the method '" + targetVersion.name + "' in '" + (targetClass == null ? "null" : targetClass.getSimpleName()) + "' Enum: " + this); //NOSONAR This gets loaded before the logger is loaded
 		}
 	}
 
