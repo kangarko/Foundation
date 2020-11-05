@@ -897,6 +897,15 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
+	 * Converts this map into a JSON string
+	 *
+	 * @return
+	 */
+	public String toJson() {
+		return gson.toJson(map);
+	}
+
+	/**
 	 * @see Map#isEmpty()
 	 */
 	public boolean isEmpty() {
@@ -938,15 +947,6 @@ public final class SerializedMap extends StrictCollection {
 
 				Common.logNoPrefix("[" + SimplePlugin.getNamed() + "] Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
 			}
-	}
-
-	/**
-	 * Converts this map into a JSON string
-	 *
-	 * @return
-	 */
-	public String toJson() {
-		return gson.toJson(serialize());
 	}
 
 	/**
@@ -1073,9 +1073,15 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public static SerializedMap fromJson(final String json) {
 		final SerializedMap serializedMap = new SerializedMap();
-		final Map<String, Object> map = gson.fromJson(json, Map.class);
 
-		serializedMap.map.putAll(map);
+		try {
+			final Map<String, Object> map = gson.fromJson(json, Map.class);
+
+			serializedMap.map.putAll(map);
+
+		} catch (final Throwable t) {
+			Common.throwError(t, "Failed to parse JSON from " + json);
+		}
 
 		return serializedMap;
 	}

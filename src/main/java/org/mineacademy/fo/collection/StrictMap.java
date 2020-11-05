@@ -312,11 +312,11 @@ public final class StrictMap<E, T> extends StrictCollection {
 		if (!map.isEmpty()) {
 			final Map<Object, Object> copy = new LinkedHashMap<>();
 
-			for (final Entry<E, T> e : entrySet()) {
-				final T val = e.getValue();
+			for (final Entry<E, T> entry : entrySet()) {
+				final T val = entry.getValue();
 
 				if (val != null)
-					copy.put(SerializeUtil.serialize(e.getKey()), SerializeUtil.serialize(val));
+					copy.put(SerializeUtil.serialize(entry.getKey()), SerializeUtil.serialize(val));
 			}
 
 			return copy;
