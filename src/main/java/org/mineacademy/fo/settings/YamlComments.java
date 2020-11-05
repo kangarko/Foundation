@@ -109,7 +109,7 @@ public final class YamlComments {
 
 			backupConfig.save(backupFile);
 
-			Common.log("&6Warning: The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
+			Common.log("&cWarning: The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
 		}
 
 		final Yaml yaml = new Yaml();
@@ -303,10 +303,10 @@ public final class YamlComments {
 				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
-				
+
 						if (value instanceof ConfigurationSection)
 							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-				
+
 						continue outer;
 					}
 				}*/
