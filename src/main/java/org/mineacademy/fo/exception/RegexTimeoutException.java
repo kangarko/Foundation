@@ -19,9 +19,9 @@ public final class RegexTimeoutException extends RuntimeException {
 	/**
 	 * The execution limit in miliseconds
 	 */
-	private final int executionLimit;
+	private final long executionLimit;
 
-	public RegexTimeoutException(CharSequence checkedMessage, int timeoutLimit) {
+	public RegexTimeoutException(CharSequence checkedMessage, long timeoutLimit) {
 		this.checkedMessage = checkedMessage.toString();
 		this.executionLimit = timeoutLimit;
 	}

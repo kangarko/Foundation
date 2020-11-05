@@ -43,7 +43,6 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
-import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
@@ -1321,13 +1320,29 @@ public final class Common {
 	 * @return
 	 */
 	public static boolean regExMatch(final Matcher matcher) {
+		Valid.checkNotNull(matcher, "Cannot call regExMatch on null matcher");
+
+		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
+
 		try {
-			return matcher != null ? matcher.find() : false;
+			return matcher.find();
 
 		} catch (final RegexTimeoutException ex) {
-			FileUtil.writeFormatted(FoConstants.File.ERRORS, null, "Matching timed out (bad regex?) (plugin ver. " + SimplePlugin.getVersion() + ")! \nString checked: " + ex.getCheckedMessage() + "\nRegex: " + (matcher != null ? matcher.pattern().pattern() : "null") + "");
-
-			logFramed(false, "&cRegex check took too long! (allowed: " + SimpleSettings.REGEX_TIMEOUT + "ms)", "&cRegex:&f " + (matcher != null ? matcher.pattern().pattern() : matcher), "&cMessage:&f " + ex.getCheckedMessage());
+			Common.error(ex,
+					"A regular expression took too long to process, and was",
+					"stopped to prevent freezing your server.",
+					"",
+					"Limit " + SimpleSettings.REGEX_TIMEOUT + "ms ",
+					"Expression: '" + matcher.pattern().pattern() + "'",
+					"Evaluated message: '" + ex.getCheckedMessage() + "'",
+					"",
+					"IF YOU CREATED THAT RULE YOURSELF, we unfortunately",
+					"can't provide support for custom expressions.",
+					"",
+					"Use services like regex101.com to test and fix it.",
+					"Put the expression without '' and the message there.",
+					"Ensure to turn flags 'insensitive' and 'unicode' " + (caseInsensitive ? "on" : "off"),
+					"on there when testing: https://i.imgur.com/PRR5Rfn.png");
 
 			return false;
 		}
@@ -1344,18 +1359,31 @@ public final class Common {
 	 * @return
 	 */
 	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
+		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
+
 		try {
 			String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
 			strippedMessage = SimplePlugin.getInstance().regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
 
-			final int timeout = SimpleSettings.REGEX_TIMEOUT;
-
-			return pattern.matcher(new TimedCharSequence(strippedMessage, timeout));
+			return pattern.matcher(TimedCharSequence.withSettingsLimit(strippedMessage));
 
 		} catch (final RegexTimeoutException ex) {
-			FileUtil.writeFormatted(FoConstants.File.ERRORS, null, "Regex check timed out (bad regex?) (plugin ver. " + SimplePlugin.getVersion() + ")! \nString checked: " + ex.getCheckedMessage() + "\nRegex: " + pattern.pattern() + "");
+			Common.error(ex,
+					"A regular expression took too long to process, and was",
+					"stopped to prevent freezing your server.",
+					"",
+					"Limit " + SimpleSettings.REGEX_TIMEOUT + "ms ",
+					"Expression: '" + pattern.pattern() + "'",
+					"Evaluated message: '" + ex.getCheckedMessage() + "'",
+					"",
+					"IF YOU CREATED THAT RULE YOURSELF, we unfortunately",
+					"can't provide support for custom expressions.",
+					"",
+					"Use services like regex101.com to test and fix it.",
+					"Put the expression without '' and the message there.",
+					"Ensure to turn flags 'insensitive' and 'unicode' " + (caseInsensitive ? "on" : "off"),
+					"on there when testing: https://i.imgur.com/PRR5Rfn.png");
 
-			throwError(ex, "&cChecking a message took too long! (limit: " + SimpleSettings.REGEX_TIMEOUT + ")", "&cReg-ex:&f " + pattern.pattern(), "&cString:&f " + ex.getCheckedMessage());
 			return null;
 		}
 	}
@@ -1658,7 +1686,7 @@ public final class Common {
 
 	/**
 	 * Return the last key in the array or null if array is null or empty
-	 * 
+	 *
 	 * @param <T>
 	 * @param array
 	 * @return
@@ -2586,30 +2614,25 @@ final class TimedCharSequence implements CharSequence {
 	/**
 	 * The timeout limit in millis
 	 */
-	private final int timeoutLimit;
+	private final long futureTimestampLimit;
 
-	/**
+	/*
 	 * Create a new timed message for the given message with a timeout in millis
-	 *
-	 * @param message
-	 * @param timeoutLimit
 	 */
-	public TimedCharSequence(final CharSequence message, final Integer timeoutLimit) {
-		Valid.checkNotNull(message, "msg = null");
-		Valid.checkNotNull(timeoutLimit, "timeout = null");
-
+	private TimedCharSequence(@NonNull final CharSequence message, long futureTimestampLimit) {
 		this.message = message;
-		this.timeoutLimit = timeoutLimit;
+		this.futureTimestampLimit = futureTimestampLimit;
 	}
 
 	/**
 	 * Gets a character at the given index, or throws an error if
-	 * this is called too late after the constructor, see {@link #timeoutLimit}
+	 * this is called too late after the constructor, see {@link #futureTimestampLimit}
 	 */
 	@Override
 	public char charAt(final int index) {
-		if (System.currentTimeMillis() > System.currentTimeMillis() + timeoutLimit)
-			throw new RegexTimeoutException(message, timeoutLimit);
+
+		if (System.currentTimeMillis() > futureTimestampLimit)
+			throw new RegexTimeoutException(message, futureTimestampLimit);
 
 		return message.charAt(index);
 	}
@@ -2621,11 +2644,21 @@ final class TimedCharSequence implements CharSequence {
 
 	@Override
 	public CharSequence subSequence(final int start, final int end) {
-		return new TimedCharSequence(message.subSequence(start, end), timeoutLimit);
+		return new TimedCharSequence(message.subSequence(start, end), futureTimestampLimit);
 	}
 
 	@Override
 	public String toString() {
 		return message.toString();
+	}
+
+	/**
+	 * Compile a new char sequence with limit from settings.yml
+	 *
+	 * @param message
+	 * @return
+	 */
+	static TimedCharSequence withSettingsLimit(CharSequence message) {
+		return new TimedCharSequence(message, System.currentTimeMillis() + SimpleSettings.REGEX_TIMEOUT);
 	}
 }
