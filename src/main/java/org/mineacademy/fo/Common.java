@@ -575,7 +575,7 @@ public final class Common {
 				String replacement = "";
 
 				try {
-					replacement = net.md_5.bungee.api.ChatColor.of("#" + colorCode).toString();
+					replacement = CompChatColor.of("#" + colorCode).toString();
 				} catch (final IllegalArgumentException ex) {
 				}
 
@@ -986,19 +986,16 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return true if the plugin exist and is loaded correctly,
-	 * printing a "Hooked into" console message when it does
+	 * @see #doesPluginExist(String)
 	 *
-	 * @param plugin
+	 * @deprecated subject for removal, this simply calls {@link #doesPluginExist(String)}
+	 *
+	 * @param pluginName
 	 * @return
 	 */
-	public static boolean doesPluginExist(final String plugin) {
-		final boolean hooked = doesPluginExistSilently(plugin);
-
-		if (hooked)
-			log("&3Hooked into&8: &f" + plugin);
-
-		return hooked;
+	@Deprecated
+	public static boolean doesPluginExistSilently(final String pluginName) {
+		return doesPluginExist(pluginName);
 	}
 
 	/**
@@ -1010,7 +1007,7 @@ public final class Common {
 	 * @param pluginName
 	 * @return
 	 */
-	public static boolean doesPluginExistSilently(final String pluginName) {
+	public static boolean doesPluginExist(final String pluginName) {
 		Plugin lookup = null;
 
 		for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins())
@@ -1422,7 +1419,15 @@ public final class Common {
 				pattern = instance.regexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
 
 		} catch (final PatternSyntaxException ex) {
-			throwError(ex, "Malformed regex: \'" + regex + "\'", "Use online services (like regex101.com) for fixing errors");
+			throwError(ex,
+					"Your regular expression is malformed!",
+					"Expression: '" + regex + "'",
+					"",
+					"IF YOU CREATED IT YOURSELF, we unfortunately",
+					"can't provide support for custom expressions.",
+					"Use online services like regex101.com to put your",
+					"expression there (without '') and discover where",
+					"the syntax error lays and how to fix it.");
 
 			return null;
 		}

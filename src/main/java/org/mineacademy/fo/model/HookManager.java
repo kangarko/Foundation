@@ -146,22 +146,22 @@ public final class HookManager {
 	 * Detect various plugins and load their methods into this library so you can use it later
 	 */
 	public static void loadDependencies() {
-		if (Common.doesPluginExistSilently("AuthMe"))
+		if (Common.doesPluginExist("AuthMe"))
 			authMeHook = new AuthMeHook();
 
-		if (Common.doesPluginExistSilently("BanManager"))
+		if (Common.doesPluginExist("BanManager"))
 			banManagerHook = new BanManagerHook();
 
-		if (Common.doesPluginExistSilently("Boss"))
+		if (Common.doesPluginExist("Boss"))
 			bossHook = new BossHook();
 
-		if (Common.doesPluginExistSilently("Citizens"))
+		if (Common.doesPluginExist("Citizens"))
 			citizensHook = new CitizensHook();
 
-		if (Common.doesPluginExistSilently("CMI"))
+		if (Common.doesPluginExist("CMI"))
 			CMIHook = new CMIHook();
 
-		if (Common.doesPluginExistSilently("DiscordSRV"))
+		if (Common.doesPluginExist("DiscordSRV"))
 			try {
 				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
 
@@ -171,13 +171,13 @@ public final class HookManager {
 				Common.error(ex, "&c" + SimplePlugin.getNamed() + " failed to hook DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 
-		if (Common.doesPluginExistSilently("Essentials"))
+		if (Common.doesPluginExist("Essentials"))
 			essentialsHook = new EssentialsHook();
 
 		// Various kinds of Faction plugins
 		final Plugin factions = Bukkit.getPluginManager().getPlugin("Factions");
 
-		if (Common.doesPluginExistSilently("FactionsX") && factions == null)
+		if (Common.doesPluginExist("FactionsX") && factions == null)
 			Common.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
 
 		else if (factions != null) {
@@ -204,16 +204,16 @@ public final class HookManager {
 			}
 		}
 
-		if (Common.doesPluginExistSilently("Lands"))
+		if (Common.doesPluginExist("Lands"))
 			landsHook = new LandsHook();
 
-		if (Common.doesPluginExistSilently("Lockette"))
+		if (Common.doesPluginExist("Lockette"))
 			locketteProHook = new LocketteProHook();
 
-		if (Common.doesPluginExistSilently("LWC"))
+		if (Common.doesPluginExist("LWC"))
 			lwcHook = new LWCHook();
 
-		if (Common.doesPluginExistSilently("mcMMO")) {
+		if (Common.doesPluginExist("mcMMO")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("mcMMO").getDescription().getVersion();
 
 			if (ver.startsWith("2."))
@@ -222,22 +222,22 @@ public final class HookManager {
 				Common.log("&cWarning: Could not hook into mcMMO, version 2.x required, you have " + ver);
 		}
 
-		if (Common.doesPluginExistSilently("Multiverse-Core"))
+		if (Common.doesPluginExist("Multiverse-Core"))
 			multiverseHook = new MultiverseHook();
 
-		if (Common.doesPluginExistSilently("MVdWPlaceholderAPI"))
+		if (Common.doesPluginExist("MVdWPlaceholderAPI"))
 			MVdWPlaceholderHook = new MVdWPlaceholderHook();
 
-		if (Common.doesPluginExistSilently("MythicMobs"))
+		if (Common.doesPluginExist("MythicMobs"))
 			mythicMobsHook = new MythicMobsHook();
 
-		if (Common.doesPluginExistSilently("Nicky"))
+		if (Common.doesPluginExist("Nicky"))
 			nickyHook = new NickyHook();
 
-		if (Common.doesPluginExistSilently("PlaceholderAPI"))
+		if (Common.doesPluginExist("PlaceholderAPI"))
 			placeholderAPIHook = new PlaceholderAPIHook();
 
-		if (Common.doesPluginExistSilently("PlotSquared")) {
+		if (Common.doesPluginExist("PlotSquared")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
 
 			if (ver.startsWith("5."))
@@ -246,7 +246,7 @@ public final class HookManager {
 				Common.log("&cWarning: Could not hook into PlotSquared, version 5.x required, you have " + ver);
 		}
 
-		if (Common.doesPluginExistSilently("ProtocolLib")) {
+		if (Common.doesPluginExist("ProtocolLib")) {
 			protocolLibHook = new ProtocolLibHook();
 
 			// Also check if the library is loaded properly
@@ -260,28 +260,28 @@ public final class HookManager {
 			}
 		}
 
-		if (Common.doesPluginExistSilently("Residence"))
+		if (Common.doesPluginExist("Residence"))
 			residenceHook = new ResidenceHook();
 
-		if (Common.doesPluginExistSilently("Towny"))
+		if (Common.doesPluginExist("Towny"))
 			townyHook = new TownyHook();
 
-		if (Common.doesPluginExistSilently("Vault"))
+		if (Common.doesPluginExist("Vault"))
 			vaultHook = new VaultHook();
 
-		if (Common.doesPluginExistSilently("WorldEdit") || Common.doesPluginExistSilently("FastAsyncWorldEdit"))
+		if (Common.doesPluginExist("WorldEdit") || Common.doesPluginExist("FastAsyncWorldEdit"))
 			worldeditHook = new WorldEditHook();
 
-		if (Common.doesPluginExistSilently("WorldGuard"))
+		if (Common.doesPluginExist("WorldGuard"))
 			worldguardHook = new WorldGuardHook(worldeditHook);
 
-		if (Common.doesPluginExistSilently("NBTAPI"))
+		if (Common.doesPluginExist("NBTAPI"))
 			nbtAPIDummyHook = true;
 
-		if (Common.doesPluginExistSilently("Votifier"))
+		if (Common.doesPluginExist("Votifier"))
 			nuVotifierDummyHook = true;
 
-		if (Common.doesPluginExistSilently("TownyChat"))
+		if (Common.doesPluginExist("TownyChat"))
 			townyChatDummyHook = true;
 	}
 
@@ -1436,7 +1436,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2818,7 +2818,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
