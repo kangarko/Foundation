@@ -1,0 +1,119 @@
+# !-----------------------------------------------------------------------------------------------!
+#                          This is an example of a localization file.
+# !-----------------------------------------------------------------------------------------------!
+#
+#   How this works is that, you create a localization/ folder in your plugin src/main/resources
+#   source folder and copy this file there, renaming it to messages_en.yml.
+#
+#   You will now have a fully functional localization file, taking all values from
+#   SimpleLocalization.
+#
+#   You can then create your own localization class that extends SimpleLocalization, and 
+#   create new fields there for your own custom messages. See SimpleLocalization for how it's
+#   done, except that you don't have to call isSetDefault for each field, thus saving time.
+#
+#   IMPORTANT: Change the "Version" key to your localization version (if unsure, set it to 1)
+#
+# !-----------------------------------------------------------------------------------------------!
+#
+#    1) COLOR CODES are supported with the '&' character.
+#       - For usage, see http://minecraftwiki.net/wiki/Formatting_codes
+#       - When you use them, place quotes around the message like this: "Hello &cworld."
+#
+#    2) TO HIDE any message, set it to 'none'.
+#
+#    3) For UNICODE CHARACTERS (smileys, symbols, ..), save the file in UTF-8 encoding. See
+#       - https://github.com/kangarko/ChatControl-Pro/wiki/Use-Right-Encoding
+#
+#    4) JSON is supported. Prepend the message with [JSON].
+#
+# !-----------------------------------------------------------------------------------------------!
+
+Commands: 
+  No_Console: "&cYou may only use this command as a player."
+  Console_Missing_Player_Name: "When running from console, specify player name."
+  Cooldown_Wait: "&cWait {duration} second(s) before using this command again."
+  Invalid_Argument: "&cInvalid argument. Run &6/{label} ? &cfor help."
+  Invalid_Sub_Argument: "&cInvalid argument. Run '/{label} {0}' for help."
+  Invalid_Argument_Multiline: "&cInvalid argument. Usage:"
+  Invalid_Time: "Expected time such as '3 hours' or '15 minutes', got: '{input}'"
+  Invalid_Number: "The number must be a whole or a decimal number. Got: '{input}'"
+  Label_Authors: "Made by"
+  Label_Description: "&c&lDescription:"
+  Label_Optional_Args: "optional arguments"
+  Label_Required_Args: "required arguments"
+  Label_Usages: "&c&lUsages:"
+  Label_Usage: "&c&lUsage:"
+  Label_Help_For: "Help for /"
+  Label_Subcommand_Description: " &f/{label} {sublabel} {usage+}{dash+}{description}"
+  Help_Tooltip_Description: "&7Description: &f{description}"
+  Help_Tooltip_Permission: "&7Permission: &f{permission}"
+  Help_Tooltip_Usage: "&7Usage: &f"
+  Reload_Description: "Reload the configuration."
+  Reload_Started: "Reloading plugin's data, please wait.."
+  Reload_Success: "&6ChatControl {plugin_version} has been reloaded."
+  Reload_Fail: "&4Oups, &creloading failed! See the console for more information. Error: {error}"
+  Reload_File_Load_Error: "&4Oups, &cthere was a problem loading files from your disk! See the console for more information. ChatControl has not been reloaded."
+  Debug_Description: "ZIP your settings for reporting bugs."
+  Debug_Preparing: "&6Preparing debug log..."
+  Debug_Success: "&2Successfuly copied {amount} file(s) to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via uploadfiles.io and send it to us for review."
+  Debug_Copy_Fail: "&cCopying files failed on file {file} and it was stopped. See console for more information."
+  Debug_Zip_Fail: "&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via uploadfiles.io manually."
+  Perms_Description: "List all permissions the plugin has."
+  Perms_Header: "Listing All {plugin_name} Permissions"
+  Perms_Main: "Main"
+  Perms_Permissions: "Permissions:"
+  Perms_True_By_Default: "&7[true by default]"
+  Perms_Info: "&7Info: &f"
+  Perms_Default: "&7Default? "
+  Perms_Applied: "&7Do you have it? "
+  Perms_Yes: "&2yes"
+  Perms_No: "&cno"
+  Error: "&4&lOups! &cThe command failed :( Check the console and report the error."
+  Header_No_Subcommands: "&cThere are no arguments for this command."
+  Header_No_Subcommands_Permission: "&cYou don't have permissions to view any subcommands."
+  Reloading: "reloading"
+  Disabled: "disabled"
+  Use_While_Null: "&cCannot use this command while the plugin is {state}."
+  
+Pages:
+  No_Page_Number: "&cPlease specify the page number for this command."
+  No_Pages: "&cYou do not have any pages saved to show."
+  No_Page: "Pages do not contain the given page number."
+  Invalid_Page: "&cYour input '{input}' is not a valid number."
+  Go_To_Page: "&7Go to page {page}"
+  Go_To_First_Page: "&7Go to the first page"
+  Tooltip: "&7You can also navigate using the\n&7hidden /#flp <page> command."
+  
+  
+Player: 
+  Not_Online: "&cPlayer {player} &cis not online on this server."
+  
+Menu:
+  Cannot_Open_During_Conversation: "&cType 'exit' to quit your conversation before opening menu."
+  Item_Deleted: "&2The {item} has been deleted."
+  Error: "&cOups! There was a problem with this menu! Please contact the administrator to review the console for details."
+  Page_Previous: "&8<< &fPage {page}"
+  Page_Next: "Page {page} &8>>"
+  Page_First: "&7First Page"
+  Page_Last: "&7Last Page"
+  Title_Tools: "Tools Menu"
+  Tooltip_Info: "&fMenu Information"
+  Button_Return_Title: "&4&lReturn"
+  Button_Return_Lore: "\nReturn back."
+
+Tool:
+  Error: "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details."
+  
+Update: 
+  Available: |-
+    &2A new version of &3ChatControl&2 is available.
+    &2Current version: &f{current}&2; New version: &f{new}
+    &2URL: &7https://spigotmc.org/resources/{resource_id}/
+              
+No_Permission: "&cNo permission: {permission}" 
+Server_Prefix: "[Server]" 
+Console_Name: "Console" 
+Data_Missing: "&c{name} lacks database information! Please only create {type} in-game! Skipping.."
+Conversation_Requires_Player: "Only players may enter this conversation."
+Version: TYPE_VERSION_HERE_AS_INTEGER
