@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
@@ -234,6 +235,14 @@ public class YamlConfig {
 
 				this.instance = instance;
 
+				// Place comments first (this also copies default keys to be used in onLoadFinish) before loading
+				if (saveComments()) {
+
+					// Use the default locale file to copy messages from
+					this.instance.writeComments("localization/messages_en.yml");
+					this.instance.reload();
+				}
+
 				onLoadFinish();
 
 				loaded = true;
@@ -325,9 +334,10 @@ public class YamlConfig {
 
 				try {
 
-					// Place comments first (this also copies default keys to be used in onLoadFinish)
-					// before loading
+					// Place comments first (this also copies default keys to be used in onLoadFinish) before loading
 					if (saveComments()) {
+
+						// Use the default locale file to copy messages from
 						this.instance.writeComments();
 						this.instance.reload();
 					}
@@ -705,7 +715,28 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final String getString(final String path) {
-		return getT(path, String.class);
+		final Object object = getObject(path);
+
+		if (object == null)
+			return null;
+
+		else if (object instanceof List)
+			return Common.join((List<?>) object, "\n");
+
+		else if (object instanceof String[])
+			return Common.join(Arrays.asList((String[]) object), "\n");
+
+		else if (object instanceof Boolean
+				|| object instanceof Integer
+				|| object instanceof Long
+				|| object instanceof Double
+				|| object instanceof Float)
+			return Objects.toString(object);
+
+		else if (object instanceof String)
+			return (String) object;
+
+		throw new FoException("Excepted string at '" + path + "' in " + getFileName() + ", got (" + object.getClass() + "): " + object);
 	}
 
 	/**
@@ -1136,7 +1167,19 @@ public class YamlConfig {
 	protected final String[] getStringArray(final String path) {
 		final Object array = getObject(path);
 
-		return array != null ? String.join("\n", array.toString()).split("\n") : new String[0];
+		if (array == null)
+			return new String[0];
+
+		else if (array instanceof String)
+			return ((String) array).split("\n");
+
+		else if (array instanceof List)
+			return Common.join((List<?>) array, "\n").split("\n");
+
+		else if (array instanceof String[])
+			return (String[]) array;
+
+		throw new FoException("Excepted string or string list at '" + path + "' in " + getFileName() + ", got (" + array.getClass() + "): " + array);
 	}
 
 	/**
@@ -2042,7 +2085,18 @@ class ConfigInstance {
 	 *
 	 * @throws IOException
 	 */
-	protected void writeComments() throws IOException {
+	public void writeComments() throws IOException {
+		this.writeComments(this.defaultsPath);
+	}
+
+	/**
+	 * Attempts to save configuration comments using the given file
+	 *
+	 * @param defaultsPath
+	 *
+	 * @throws IOException
+	 */
+	protected void writeComments(String defaultsPath) throws IOException {
 		if (defaultsPath != null && saveComments)
 			YamlComments.writeComments(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
 	}
