@@ -305,7 +305,7 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected String getSubcommandDescription() {
-		return " &f/{label} {sublabel} {usage+}{dash+}{description}";
+		return SimpleLocalization.Commands.LABEL_SUBCOMMAND_DESCRIPTION;
 	}
 
 	/**
@@ -427,17 +427,17 @@ public abstract class SimpleCommandGroup {
 							final String command = Common.stripColors(plainMessage).substring(1);
 							final List<String> hover = new ArrayList<>();
 
-							hover.add("&7Description: &f" + desc);
-							hover.add("&7Permission: &f" + subcommand.getPermission());
+							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_DESCRIPTION.replace("{description}", desc));
+							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_PERMISSION.replace("{permission}", subcommand.getPermission()));
 
 							if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
-								hover.add("&7Usage: ");
+								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE);
 
 								for (final String usageLine : subcommand.getMultilineUsageMessage())
 									hover.add("&f" + replacePlaceholders(colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
 
 							} else
-								hover.add("&7Usage: &f" + (usage.isEmpty() ? command : usage));
+								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage));
 
 							line.onHover(hover);
 							line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());

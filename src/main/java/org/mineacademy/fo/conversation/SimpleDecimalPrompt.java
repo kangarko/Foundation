@@ -6,6 +6,7 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -61,7 +62,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected String getFailedValidationText(final ConversationContext context, final String invalidInput) {
-		return "The number must be a whole or a decimal number.";
+		return SimpleLocalization.Commands.INVALID_NUMBER.replace("{input}", invalidInput);
 	}
 
 	/**

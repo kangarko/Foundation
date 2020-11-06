@@ -8,6 +8,7 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 
 /**
  * A simple predefined command for quickly reloading the plugin
@@ -18,7 +19,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 	public ReloadCommand() {
 		super("reload|rl");
 
-		setDescription("Reload the configuration.");
+		setDescription(Commands.RELOAD_DESCRIPTION);
 	}
 
 	private List<File> collectYamlFiles(File directory, List<File> list) {
@@ -37,7 +38,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 	@Override
 	protected void onCommand() {
 		try {
-			tell("Reloading plugin's data, please wait..");
+			tell(Commands.RELOAD_STARTED);
 
 			// Syntax check YML files before loading
 			boolean syntaxParsed = true;

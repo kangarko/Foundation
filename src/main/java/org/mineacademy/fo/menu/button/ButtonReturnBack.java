@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,14 +36,14 @@ public final class ButtonReturnBack extends Button {
 	 */
 	@Getter
 	@Setter
-	private static String title = "&4&lReturn";
+	private static String title = SimpleLocalization.Menu.BUTTON_RETURN_TITLE;
 
 	/**
 	 * The lore of this button
 	 */
 	@Getter
 	@Setter
-	private static List<String> lore = Arrays.asList("", "Return back.");
+	private static List<String> lore = Arrays.asList(SimpleLocalization.Menu.BUTTON_RETURN_LORE);
 
 	/**
 	 * The parent menu

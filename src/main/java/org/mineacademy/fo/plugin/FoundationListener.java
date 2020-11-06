@@ -23,6 +23,7 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
  * Listens for some events we handle for you automatically
@@ -63,14 +64,14 @@ final class FoundationListener implements Listener {
 			return;
 
 		if (args.length != 2) {
-			Common.tell(player, "&cPlease specify the page number for this command.");
+			Common.tell(player, SimpleLocalization.Pages.NO_PAGE_NUMBER);
 
 			event.setCancelled(true);
 			return;
 		}
 
 		if (!player.hasMetadata("FoPages")) {
-			Common.tell(player, "&cYou do not have any pages saved to show.");
+			Common.tell(player, SimpleLocalization.Pages.NO_PAGES);
 
 			event.setCancelled(true);
 			return;
@@ -83,7 +84,7 @@ final class FoundationListener implements Listener {
 			page = Integer.parseInt(numberRaw) - 1;
 
 		} catch (final NumberFormatException ex) {
-			Common.tell(player, "&cYour input '" + numberRaw + "' is not a valid number.");
+			Common.tell(player, SimpleLocalization.Pages.INVALID_PAGE.replace("{input}", numberRaw));
 
 			event.setCancelled(true);
 			return;
@@ -96,7 +97,7 @@ final class FoundationListener implements Listener {
 		pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 
 		if (!pages.containsKey(page)) {
-			final String playerMessage = "Pages do not contain the given page number.";
+			final String playerMessage = SimpleLocalization.Pages.NO_PAGE;
 
 			if (Messenger.ENABLED)
 				Messenger.error(player, playerMessage);
@@ -145,16 +146,16 @@ final class FoundationListener implements Listener {
 			if (page == 0)
 				pagination.append(" &7« ");
 			else
-				pagination.append(" &6« ").onHover("&7Go to page " + page).onClickRunCmd("/#flp " + page);
+				pagination.append(" &6« ").onHover(SimpleLocalization.Pages.GO_TO_PAGE.replace("{page}", String.valueOf(page))).onClickRunCmd("/#flp " + page);
 
-			pagination.append("&f" + (page + 1)).onHover("&7Go to the first page").onClickRunCmd("/#flp 1");
+			pagination.append("&f" + (page + 1)).onHover(SimpleLocalization.Pages.GO_TO_FIRST_PAGE).onClickRunCmd("/#flp 1");
 			pagination.append("/");
-			pagination.append(pages.size() + "").onHover("&7You can also navigate using the", "&7hidden /#flp <page> command.");
+			pagination.append(pages.size() + "").onHover(SimpleLocalization.Pages.TOOLTIP);
 
 			if (page + 1 >= pages.size())
 				pagination.append(" &7» ");
 			else
-				pagination.append(" &6» ").onHover("&7Go to page " + (page + 2)).onClickRunCmd("/#flp " + (page + 2));
+				pagination.append(" &6» ").onHover(SimpleLocalization.Pages.GO_TO_PAGE.replace("{page}", String.valueOf(page + 2))).onClickRunCmd("/#flp " + (page + 2));
 
 			pagination.append(chatPages.getThemeColor() + "&m" + Common.duplicate("-", multiply));
 

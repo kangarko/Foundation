@@ -7,7 +7,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.DebugCommand;
+import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -195,28 +198,23 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String NO_CONSOLE = "&cYou may only use this command as a player";
 
 		/**
+		 * The message shown when console runs a command without specifying target player name
+		 */
+		public static String CONSOLE_MISSING_PLAYER_NAME = "When running from console, specify player name.";
+
+		/**
 		 * The message shown when there is a fatal error running this command
 		 */
 		public static String COOLDOWN_WAIT = "&cWait {duration} second(s) before using this command again.";
 
 		/**
-		 * The message shown when the player tries a command but inputs an
-		 * invalid first argument parameter. We suggest he types /{label} ? for help so make
-		 * sure you implement some help there as well.
+		 * Keys below indicate an invalid action or input
 		 */
 		public static String INVALID_ARGUMENT = "&cInvalid argument. Run &6/{label} ? &cfor help.";
-
-		/**
-		 * The message shown when the player tries a command but inputs an
-		 * invalid second argument parameter. We so suggest he types /{label} {0} for help
-		 */
 		public static String INVALID_SUB_ARGUMENT = "&cInvalid argument. Run '/{label} {0}' for help.";
-
-		/**
-		 * The message shown on the same occasion as {@link #INVALID_ARGUMENT} however
-		 * this is shows when the command overrides {@link SimpleCommand#getMultilineUsageMessage()}
-		 */
 		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
+		public static String INVALID_TIME = "Expected time such as '3 hours' or '15 minutes'. Got: '{input}'";
+		public static String INVALID_NUMBER = "The number must be a whole or a decimal number. Got: '{input}'";
 
 		/**
 		 * The authors label
@@ -226,7 +224,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The description label
 		 */
-		public static String LABEL_DESCRIPTION = "&cDescription: {description}";
+		public static String LABEL_DESCRIPTION = "&c&lDescription:";
 
 		/**
 		 * The optional arguments label
@@ -241,26 +239,37 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The multiline usages label, see {@link SimpleCommand#getMultilineUsageMessage()}
 		 */
-		public static String LABEL_USAGES = "&cUsages:";
+		public static String LABEL_USAGES = "&c&lUsages:";
 
 		/**
 		 * The usage label
 		 */
-		public static String LABEL_USAGE = "&cUsage:";
+		public static String LABEL_USAGE = "&c&lUsage:";
 
 		/**
-		 * The message at "Reload_Success" key shown when the plugin has been reloaded successfully.
+		 * The help for label
 		 */
+		public static String LABEL_HELP_FOR = "Help for /";
+
+		/**
+		 * The label shown when building subcommands
+		 */
+		public static String LABEL_SUBCOMMAND_DESCRIPTION = " &f/{label} {sublabel} {usage+}{dash+}{description}";
+
+		/**
+		 * The keys below are shown as hover tooltip on /command help menu.
+		 */
+		public static String HELP_TOOLTIP_DESCRIPTION = "&7Description: &f{description}";
+		public static String HELP_TOOLTIP_PERMISSION = "&7Permission: &f{permission}";
+		public static String HELP_TOOLTIP_USAGE = "&7Usage: &f";
+
+		/**
+		 * The keys below are used in the {@link ReloadCommand}
+		 */
+		public static String RELOAD_DESCRIPTION = "Reload the configuration.";
+		public static String RELOAD_STARTED = "Reloading plugin's data, please wait..";
 		public static String RELOAD_SUCCESS = "&6{plugin_name} {plugin_version} has been reloaded.";
-
-		/**
-		 * The message ar "Reload_File_Load_Error" key shown then pre-loading disk files fails.
-		 */
 		public static String RELOAD_FILE_LOAD_ERROR = "&4Oups, &cthere was a problem loading files from your disk! See the console for more information. {plugin_name} has not been reloaded.";
-
-		/**
-		 * The message at "Reload_Fail" key shown when the plugin has failed to reload.
-		 */
 		public static String RELOAD_FAIL = "&4Oups, &creloading failed! See the console for more information. Error: {error}";
 
 		/**
@@ -286,12 +295,35 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * Key for when plugin is disabled {@link org.mineacademy.fo.plugin.SimplePlugin}
 		 */
-
 		public static String DISABLED = "disabled";
+
 		/**
 		 * The message shown when plugin is reloading or was disabled and player attempts to run command
 		 */
 		public static String USE_WHILE_NULL = "&cCannot use this command while the plugin is {state}.";
+
+		/**
+		 * The keys below are used in the {@link DebugCommand}
+		 */
+		public static String DEBUG_DESCRIPTION = "ZIP your settings for reporting bugs.";
+		public static String DEBUG_PREPARING = "&6Preparing debug log...";
+		public static String DEBUG_SUCCESS = "&2Successfuly copied {amount} file(s) to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via uploadfiles.io and send it to us for review.";
+		public static String DEBUG_COPY_FAIL = "&cCopying files failed on file {file} and it was stopped. See console for more information.";
+		public static String DEBUG_ZIP_FAIL = "&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via uploadfiles.io manually.";
+
+		/**
+		 * The keys below are used in the {@link PermsCommand}
+		 */
+		public static String PERMS_DESCRIPTION = "List all permissions the plugin has.";
+		public static String PERMS_HEADER = "Listing All {plugin_name} Permissions";
+		public static String PERMS_MAIN = "Main";
+		public static String PERMS_PERMISSIONS = "Permissions:";
+		public static String PERMS_TRUE_BY_DEFAULT = "&7[true by default]";
+		public static String PERMS_INFO = "&7Info: &f";
+		public static String PERMS_DEFAULT = "&7Default? ";
+		public static String PERMS_APPLIED = "&7Do you have it? ";
+		public static String PERMS_YES = "&2yes";
+		public static String PERMS_NO = "&cno";
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -301,6 +333,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("No_Console"))
 				NO_CONSOLE = getString("No_Console");
+
+			if (isSetDefault("Console_Missing_Player_Name"))
+				CONSOLE_MISSING_PLAYER_NAME = getString("Console_Missing_Player_Name");
 
 			if (isSetDefault("Cooldown_Wait"))
 				COOLDOWN_WAIT = getString("Cooldown_Wait");
@@ -313,6 +348,12 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Invalid_Argument_Multiline"))
 				INVALID_ARGUMENT_MULTILINE = getString("Invalid_Argument_Multiline");
+
+			if (isSetDefault("Invalid_Time"))
+				INVALID_TIME = getString("Invalid_Time");
+
+			if (isSetDefault("Invalid_Number"))
+				INVALID_NUMBER = getString("Invalid_Number");
 
 			if (isSetDefault("Label_Authors"))
 				LABEL_AUTHORS = getString("Label_Authors");
@@ -329,8 +370,29 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 			if (isSetDefault("Label_Usage"))
 				LABEL_USAGE = getString("Label_Usage");
 
+			if (isSetDefault("Label_Help_For"))
+				LABEL_HELP_FOR = getString("Label_Help_For");
+
+			if (isSetDefault("Label_Subcommand_Description"))
+				LABEL_SUBCOMMAND_DESCRIPTION = getString("Label_Help_For");
+
 			if (isSetDefault("Label_Usages"))
 				LABEL_USAGES = getString("Label_Usages");
+
+			if (isSetDefault("Help_Tooltip_Description"))
+				HELP_TOOLTIP_DESCRIPTION = getString("Help_Tooltip_Description");
+
+			if (isSetDefault("Help_Tooltip_Permission"))
+				HELP_TOOLTIP_PERMISSION = getString("Help_Tooltip_Permission");
+
+			if (isSetDefault("Help_Tooltip_Usage"))
+				HELP_TOOLTIP_USAGE = getString("Help_Tooltip_Usage");
+
+			if (isSetDefault("Reload_Description"))
+				RELOAD_DESCRIPTION = getString("Reload_Description");
+
+			if (isSetDefault("Reload_Started"))
+				RELOAD_STARTED = getString("Reload_Started");
 
 			if (isSetDefault("Reload_Success"))
 				RELOAD_SUCCESS = getString("Reload_Success");
@@ -358,6 +420,51 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSet("Use_While_Null"))
 				USE_WHILE_NULL = getString("Use_While_Null");
+
+			if (isSetDefault("Debug_Description"))
+				DEBUG_DESCRIPTION = getString("Debug_Description");
+
+			if (isSetDefault("Debug_Preparing"))
+				DEBUG_PREPARING = getString("Debug_Preparing");
+
+			if (isSetDefault("Debug_Success"))
+				DEBUG_SUCCESS = getString("Debug_Success");
+
+			if (isSetDefault("Debug_Copy_Fail"))
+				DEBUG_COPY_FAIL = getString("Debug_Copy_Fail");
+
+			if (isSetDefault("Debug_Zip_Fail"))
+				DEBUG_ZIP_FAIL = getString("Debug_Zip_Fail");
+
+			if (isSetDefault("Perms_Description"))
+				PERMS_DESCRIPTION = getString("Perms_Description");
+
+			if (isSetDefault("Perms_Header"))
+				PERMS_HEADER = getString("Perms_Header");
+
+			if (isSetDefault("Perms_Main"))
+				PERMS_MAIN = getString("Perms_Main");
+
+			if (isSetDefault("Perms_Permissions"))
+				PERMS_PERMISSIONS = getString("Perms_Permissions");
+
+			if (isSetDefault("Perms_True_By_Default"))
+				PERMS_TRUE_BY_DEFAULT = getString("Perms_True_By_Default");
+
+			if (isSetDefault("Perms_Info"))
+				PERMS_INFO = getString("Perms_Info");
+
+			if (isSetDefault("Perms_Default"))
+				PERMS_DEFAULT = getString("Perms_Default");
+
+			if (isSetDefault("Perms_Applied"))
+				PERMS_APPLIED = getString("Perms_Applied");
+
+			if (isSetDefault("Perms_Yes"))
+				PERMS_YES = getString("Perms_Yes");
+
+			if (isSetDefault("Perms_No"))
+				PERMS_NO = getString("Perms_No");
 		}
 	}
 
@@ -383,7 +490,56 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	}
 
 	/**
-	 * Key related to the GUI system
+	 * Keys related to {@link ChatPaginator}
+	 */
+	public static final class Pages {
+
+		/**
+		 * Below you find different keys called from {@link FoundationListener}
+		 */
+
+		public static String NO_PAGE_NUMBER = "&cPlease specify the page number for this command.";
+		public static String NO_PAGES = "&cYou do not have any pages saved to show.";
+		public static String NO_PAGE = "Pages do not contain the given page number.";
+		public static String INVALID_PAGE = "&cYour input '{input}' is not a valid number.";
+		public static String GO_TO_PAGE = "&7Go to page {page}";
+		public static String GO_TO_FIRST_PAGE = "&7Go to the first page";
+		public static String[] TOOLTIP = new String[] {
+				"&7You can also navigate using the",
+				"&7hidden /#flp <page> command."
+		};
+
+		/**
+		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
+		 */
+		private static void init() {
+			pathPrefix("Pages");
+
+			if (isSetDefault("No_Page_Number"))
+				NO_PAGE_NUMBER = getString("No_Page_Number");
+
+			if (isSetDefault("No_Pages"))
+				NO_PAGES = getString("No_Pages");
+
+			if (isSetDefault("No_Page"))
+				NO_PAGE = getString("No_Page");
+
+			if (isSetDefault("Invalid_Page"))
+				INVALID_PAGE = getString("Invalid_Page");
+
+			if (isSetDefault("Go_To_Page"))
+				GO_TO_PAGE = getString("Go_To_Page");
+
+			if (isSetDefault("Go_To_First_Page"))
+				GO_TO_FIRST_PAGE = getString("Go_To_First_Page");
+
+			if (isSetDefault("Tooltip"))
+				TOOLTIP = getStringArray("Tooltip");
+		}
+	}
+
+	/**
+	 * Keys related to the GUI system
 	 */
 	public static final class Menu {
 
@@ -393,6 +549,32 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String ITEM_DELETED = "&2The {item} has been deleted.";
 
 		/**
+		 * Message shown when the player tries to open menu, but has an ongoing conversation.
+		 */
+		public static String CANNOT_OPEN_DURING_CONVERSATION = "&cType 'exit' to quit your conversation before opening menu.";
+
+		/**
+		 * Message shown on error
+		 */
+		public static String ERROR = "&cOups! There was a problem with this menu! Please contact the administrator to review the console for details.";
+
+		/**
+		 * Keys related to menu pagination
+		 */
+		public static String PAGE_PREVIOUS = "&8<< &fPage {page}";
+		public static String PAGE_NEXT = "Page {page} &8>>";
+		public static String PAGE_FIRST = "&7First Page";
+		public static String PAGE_LAST = "&7Last Page";
+
+		/**
+		 * Keys related to menu titles and tooltips
+		 */
+		public static String TITLE_TOOLS = "Tools Menu";
+		public static String TOOLTIP_INFO = "&fMenu Information";
+		public static String BUTTON_RETURN_TITLE = "&4&lReturn";
+		public static String[] BUTTON_RETURN_LORE = new String[] { "", "Return back." };
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -400,6 +582,57 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Item_Deleted"))
 				ITEM_DELETED = getString("Item_Deleted");
+
+			if (isSetDefault("Cannot_Open_During_Conversation"))
+				CANNOT_OPEN_DURING_CONVERSATION = getString("Cannot_Open_During_Conversation");
+
+			if (isSetDefault("Error"))
+				ERROR = getString("Error");
+
+			if (isSetDefault("Page_Previous"))
+				PAGE_PREVIOUS = getString("Page_Previous");
+
+			if (isSetDefault("Page_Next"))
+				PAGE_NEXT = getString("Page_Next");
+
+			if (isSetDefault("Page_First"))
+				PAGE_FIRST = getString("Page_First");
+
+			if (isSetDefault("Page_Last"))
+				PAGE_LAST = getString("Page_Last");
+
+			if (isSetDefault("Title_Tools"))
+				TITLE_TOOLS = getString("Title_Tools");
+
+			if (isSetDefault("Tooltip_Info"))
+				TOOLTIP_INFO = getString("Tooltip_Info");
+
+			if (isSetDefault("Button_Return_Title"))
+				BUTTON_RETURN_TITLE = getString("Button_Return_Title");
+
+			if (isSetDefault("Button_Return_Lore"))
+				BUTTON_RETURN_LORE = getStringArray("Button_Return_Lore");
+		}
+	}
+
+	/**
+	 * Keys related to tools
+	 */
+	public static final class Tool {
+
+		/**
+		 * The message shown when a tool errors out.
+		 */
+		public static String ERROR = "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details.";
+
+		/**
+		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
+		 */
+		private static void init() {
+			pathPrefix("Tool");
+
+			if (isSetDefault("Error"))
+				ERROR = getString("Error");
 		}
 	}
 
