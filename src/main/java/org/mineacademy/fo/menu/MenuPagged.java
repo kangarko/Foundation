@@ -16,6 +16,7 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
 import lombok.val;
@@ -193,9 +194,12 @@ public abstract class MenuPagged<T> extends Menu {
 
 			@Override
 			public ItemStack getItem() {
-				final int str = currentPage - 1;
+				final int previousPage = currentPage - 1;
 
-				return ItemCreator.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE).name(str == 0 ? "&7First Page" : "&8<< &fPage " + str).build().make();
+				return ItemCreator
+						.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE)
+						.name(previousPage == 0 ? SimpleLocalization.Menu.PAGE_FIRST : SimpleLocalization.Menu.PAGE_PREVIOUS.replace("{page}", String.valueOf(previousPage)))
+						.build().make();
 			}
 		};
 	}
@@ -221,9 +225,12 @@ public abstract class MenuPagged<T> extends Menu {
 
 			@Override
 			public ItemStack getItem() {
-				final boolean last = currentPage == pages.size();
+				final boolean lastPage = currentPage == pages.size();
 
-				return ItemCreator.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE).name(last ? "&7Last Page" : "Page " + (currentPage + 1) + " &8>>").build().make();
+				return ItemCreator
+						.of(canGo ? CompMaterial.LIME_DYE : CompMaterial.GRAY_DYE)
+						.name(lastPage ? SimpleLocalization.Menu.PAGE_LAST : SimpleLocalization.Menu.PAGE_NEXT.replace("{page}", String.valueOf(currentPage + 1)))
+						.build().make();
 			}
 		};
 	}

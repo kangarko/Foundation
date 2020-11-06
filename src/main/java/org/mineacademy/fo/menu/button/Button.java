@@ -12,6 +12,7 @@ import org.mineacademy.fo.conversation.SimpleDecimalPrompt;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,7 +36,7 @@ public abstract class Button {
 	 * Colorized automatically.
 	 */
 	@Setter
-	private static String infoButtonTitle = "&fMenu Information";
+	private static String infoButtonTitle = SimpleLocalization.Menu.TOOLTIP_INFO;
 
 	// ----------------------------------------------------------------
 	// Button functions

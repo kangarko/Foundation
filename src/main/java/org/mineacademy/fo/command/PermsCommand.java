@@ -12,7 +12,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 
 import lombok.NonNull;
 
@@ -35,7 +35,7 @@ public final class PermsCommand extends SimpleSubCommand {
 		this.classToList = classToList;
 		this.variables = variables;
 
-		setDescription("List all permissions the plugin has.");
+		setDescription(Commands.PERMS_DESCRIPTION);
 
 		// Invoke to check for errors early
 		list();
@@ -45,7 +45,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	protected void onCommand() {
 
 		new ChatPaginator(15)
-				.setFoundationHeader("Listing All " + SimplePlugin.getNamed() + " Permissions")
+				.setFoundationHeader(Commands.PERMS_HEADER)
 				.setPages(list())
 				.send(sender);
 	}
@@ -75,7 +75,7 @@ public final class PermsCommand extends SimpleSubCommand {
 			if (!messages.isEmpty() && !clazz.isAnnotationPresent(PermissionGroup.class))
 				throw new FoException("Please place @PermissionGroup over " + clazz);
 
-			messages.add(SimpleComponent.of("&7- " + (messages.isEmpty() ? "Main" : group.value()) + " Permissions:"));
+			messages.add(SimpleComponent.of("&7- " + (messages.isEmpty() ? Commands.PERMS_MAIN : group.value()) + " " + Commands.PERMS_PERMISSIONS));
 		}
 
 		for (final Field field : clazz.getDeclaredFields()) {
@@ -94,10 +94,10 @@ public final class PermsCommand extends SimpleSubCommand {
 			final boolean has = sender == null ? false : hasPerm(node);
 
 			messages.add(SimpleComponent
-					.of("  " + (has ? "&a" : "&7") + node + (def ? " &7[true by default]" : ""))
-					.onHover("&7Info: &f" + info,
-							"&7Default? " + (def ? "&2yes" : "&cno"),
-							"&7Do you have it? " + (has ? "&2yes" : "&cno")));
+					.of("  " + (has ? "&a" : "&7") + node + (def ? " " + Commands.PERMS_TRUE_BY_DEFAULT : ""))
+					.onHover(Commands.PERMS_INFO + info,
+							Commands.PERMS_DEFAULT + (def ? Commands.PERMS_YES : Commands.PERMS_NO),
+							Commands.PERMS_APPLIED + (has ? Commands.PERMS_YES : Commands.PERMS_NO)));
 		}
 
 		for (final Class<?> inner : clazz.getDeclaredClasses()) {

@@ -19,6 +19,7 @@ import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompItemFlag;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
  * A standardized menu to display a list of tools player can toggle to get in
@@ -52,7 +53,7 @@ public abstract class MenuTools extends Menu {
 		final int pages = items < 9 ? 9 * 1 : items < 9 * 2 ? 9 * 2 : items < 9 * 3 ? 9 * 3 : items < 9 * 4 ? 9 * 4 : 9 * 5;
 
 		setSize(pages);
-		setTitle("Tools Menu");
+		setTitle(SimpleLocalization.Menu.TITLE_TOOLS);
 	}
 
 	/**

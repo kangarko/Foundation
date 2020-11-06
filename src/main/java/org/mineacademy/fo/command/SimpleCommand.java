@@ -342,25 +342,25 @@ public abstract class SimpleCommand extends Command {
 					final List<String> pages = new ArrayList<>();
 
 					if (!Common.getOrEmpty(getDescription()).isEmpty()) {
-						pages.add(replacePlaceholders("&c&lDescription:"));
+						pages.add(replacePlaceholders(SimpleLocalization.Commands.LABEL_DESCRIPTION));
 						pages.add(replacePlaceholders("&c" + getDescription()));
 					}
 
 					if (getMultilineUsageMessage() != null) {
 						pages.add("");
-						pages.add(replacePlaceholders("&c&lUsages:"));
+						pages.add(replacePlaceholders(SimpleLocalization.Commands.LABEL_USAGES));
 
 						for (final String usagePart : usage.split("\n"))
 							pages.add(replacePlaceholders("&c" + usagePart));
 
 					} else {
 						pages.add("");
-						pages.add("&c&lUsage:");
+						pages.add(SimpleLocalization.Commands.LABEL_USAGE);
 						pages.add("&c" + replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : "")));
 					}
 
 					paginator
-							.setFoundationHeader("Help for /" + getLabel() + sublabel)
+							.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR + getLabel() + sublabel)
 							.setPages(Common.toArray(pages));
 
 					// Force sending on the main thread
@@ -572,7 +572,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final Player findPlayerOrSelf(@Nullable final String name) throws CommandException {
 		if (name == null) {
-			checkBoolean(isPlayer(), "When running from console, specify player name.");
+			checkBoolean(isPlayer(), SimpleLocalization.Commands.CONSOLE_MISSING_PLAYER_NAME);
 
 			return getPlayer();
 		}
@@ -586,9 +586,9 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * A simple call to Bukkit.getPlayer(name) meant to be overriden
 	 * if you have a custom implementation of getting players by name.
-	 * 
+	 *
 	 * Example use: ChatControl can find players by their nicknames too
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -608,7 +608,7 @@ public abstract class SimpleCommand extends Command {
 			return SimpleTime.from(raw);
 
 		} catch (final IllegalArgumentException ex) {
-			returnTell("Expected time such as '3 hours' or '15 minutes', got: '" + raw + "'");
+			returnTell(SimpleLocalization.Commands.INVALID_TIME.replace("{input}", raw));
 
 			return null;
 		}
@@ -740,12 +740,13 @@ public abstract class SimpleCommand extends Command {
 			return (T) numberType.getMethod("valueOf", String.class).invoke(null, args[index]); // Method valueOf is part of all main Number sub classes, eg. Short, Integer, Double, etc.
 		}
 
-		// Print stack trace for all exceptions, except NumberFormatException
-		// NumberFormatException is expected to happen, in this case we just want to display falseMessage without stack trace
 		catch (final IllegalAccessException | NoSuchMethodException e) {
 			e.printStackTrace();
 
 		} catch (final InvocationTargetException e) {
+
+			// Print stack trace for all exceptions, except NumberFormatException
+			// NumberFormatException is expected to happen, in this case we just want to display falseMessage without stack trace
 			if (!(e.getCause() instanceof NumberFormatException))
 				e.printStackTrace();
 		}

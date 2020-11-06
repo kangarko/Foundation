@@ -64,7 +64,14 @@ public interface MenuQuantitable {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(CompMaterial.STRING, "Edit Quantity: &7" + getQuantity().getAmount(), "", "&8< &7Left click to decrease", "&8> &7Right click to increase").build().make();
+				return ItemCreator
+						.of(
+								CompMaterial.STRING,
+								"Edit Quantity: &7" + getQuantity().getAmount(),
+								"",
+								"&8< &7Left click to decrease",
+								"&8> &7Right click to increase")
+						.build().make();
 			}
 		};
 	}

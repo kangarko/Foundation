@@ -23,6 +23,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 import org.mineacademy.fo.remain.CompRunnable;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Data;
 
@@ -84,8 +85,9 @@ public final class ToolsListener implements Listener {
 			} catch (final Throwable t) {
 				event.setCancelled(true);
 
-				Common.tell(player, "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details.");
-				Common.error(t, "Failed to handle " + event.getAction() + " using Tool: " + tool.getClass());
+				Common.tell(player, SimpleLocalization.Tool.ERROR);
+				Common.error(t,
+						"Failed to handle " + event.getAction() + " using Tool: " + tool.getClass());
 			}
 	}
 
@@ -205,8 +207,9 @@ public final class ToolsListener implements Listener {
 			} catch (final Throwable t) {
 				event.setCancelled(true);
 
-				Common.tell(player, "&cOups! There was a problem with this projectile! Please contact the administrator to review the console for details.");
-				Common.error(t, "Failed to shoot Rocket " + tool.getClass());
+				Common.tell(player, SimpleLocalization.Tool.ERROR);
+				Common.error(t,
+						"Failed to shoot rocket " + tool.getClass());
 			}
 	}
 
@@ -238,8 +241,9 @@ public final class ToolsListener implements Listener {
 				} else
 					projectile.remove();
 			} catch (final Throwable t) {
-				Common.tell(shooter, "&cOups! There was a problem with this rocket! Please contact the administrator to review the console for details.");
-				Common.error(t, "Failed to handle impact by Rocket " + shot.getRocket().getClass());
+				Common.tell(shooter, SimpleLocalization.Tool.ERROR);
+				Common.error(t,
+						"Failed to handle impact by rocket " + shot.getRocket().getClass());
 			}
 		}
 	}
