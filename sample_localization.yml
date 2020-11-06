@@ -29,6 +29,9 @@
 #
 # !-----------------------------------------------------------------------------------------------!
 
+# -----------------------------------------------------------------------------------------------
+# Messages related to commands
+# -----------------------------------------------------------------------------------------------
 Commands: 
   No_Console: "&cYou may only use this command as a player."
   Console_Missing_Player_Name: "When running from console, specify player name."
@@ -76,6 +79,9 @@ Commands:
   Disabled: "disabled"
   Use_While_Null: "&cCannot use this command while the plugin is {state}."
   
+# -----------------------------------------------------------------------------------------------
+# Messages related to paginator splitting command help into multiple pages
+# -----------------------------------------------------------------------------------------------
 Pages:
   No_Page_Number: "&cPlease specify the page number for this command."
   No_Pages: "&cYou do not have any pages saved to show."
@@ -85,10 +91,15 @@ Pages:
   Go_To_First_Page: "&7Go to the first page"
   Tooltip: "&7You can also navigate using the\n&7hidden /#flp <page> command."
   
-  
+# -----------------------------------------------------------------------------------------------
+# Messages related to players
+# -----------------------------------------------------------------------------------------------
 Player: 
   Not_Online: "&cPlayer {player} &cis not online on this server."
-  
+
+# -----------------------------------------------------------------------------------------------
+# Messages related to menus
+# -----------------------------------------------------------------------------------------------
 Menu:
   Cannot_Open_During_Conversation: "&cType 'exit' to quit your conversation before opening menu."
   Item_Deleted: "&2The {item} has been deleted."
@@ -101,19 +112,48 @@ Menu:
   Tooltip_Info: "&fMenu Information"
   Button_Return_Title: "&4&lReturn"
   Button_Return_Lore: "\nReturn back."
-
+  
+# -----------------------------------------------------------------------------------------------
+# Messages related to tools
+# -----------------------------------------------------------------------------------------------
 Tool:
   Error: "&cOups! There was a problem with this tool! Please contact the administrator to review the console for details."
-  
+
+# -----------------------------------------------------------------------------------------------
+# Messages related to updating the plugin
+# -----------------------------------------------------------------------------------------------
 Update: 
   Available: |-
     &2A new version of &3ChatControl&2 is available.
     &2Current version: &f{current}&2; New version: &f{new}
     &2URL: &7https://spigotmc.org/resources/{resource_id}/
-              
+
+# -----------------------------------------------------------------------------------------------
+# Messages shown when player runs a command he lacks permission for
+# -----------------------------------------------------------------------------------------------
 No_Permission: "&cNo permission: {permission}" 
-Server_Prefix: "[Server]" 
+
+# -----------------------------------------------------------------------------------------------
+# The server prefix
+# -----------------------------------------------------------------------------------------------
+Server_Prefix: "[Server]"
+
+# -----------------------------------------------------------------------------------------------
+# The console name
+# ----------------------------------------------------------------------------------------------- 
 Console_Name: "Console" 
+
+# -----------------------------------------------------------------------------------------------
+# A special message when users edit our data.db which they should not
+# -----------------------------------------------------------------------------------------------
 Data_Missing: "&c{name} lacks database information! Please only create {type} in-game! Skipping.."
+
+# -----------------------------------------------------------------------------------------------
+# Shown when console tries to enter a server conversation
+# -----------------------------------------------------------------------------------------------
 Conversation_Requires_Player: "Only players may enter this conversation."
+
+# -----------------------------------------------------------------------------------------------
+# Internal versioning number
+# -----------------------------------------------------------------------------------------------
 Version: TYPE_VERSION_HERE_AS_INTEGER
