@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +73,10 @@ public final class YamlComments {
 	 * @throws IOException If an IOException occurs
 	 */
 	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) throws IOException {
-		final BufferedReader newReader = new BufferedReader(new InputStreamReader(FileUtil.getInternalResource(jarPath), StandardCharsets.UTF_8));
+		final InputStream internalResource = FileUtil.getInternalResource(jarPath);
+		Valid.checkNotNull(internalResource, "Failed getting internal resource: " + jarPath);
+
+		final BufferedReader newReader = new BufferedReader(new InputStreamReader(internalResource, StandardCharsets.UTF_8));
 		final List<String> newLines = newReader.lines().collect(Collectors.toList());
 		newReader.close();
 
@@ -82,7 +86,7 @@ public final class YamlComments {
 
 		// ignoredSections can ONLY contain configurations sections
 		for (final String ignoredSection : ignoredSections)
-			Valid.checkBoolean(newConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections not '" + ignoredSection + "' that is " + newConfig.get(ignoredSection));
+			Valid.checkBoolean(newConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections in " + jarPath + " (file " + diskFile + ")" + " not '" + ignoredSection + "' that is " + newConfig.get(ignoredSection));
 
 		// Save keys added to config that are not in default and would otherwise be lost
 		final Set<String> newKeys = newConfig.getKeys(true);
@@ -303,10 +307,10 @@ public final class YamlComments {
 				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
-
+				
 						if (value instanceof ConfigurationSection)
 							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-
+				
 						continue outer;
 					}
 				}*/
