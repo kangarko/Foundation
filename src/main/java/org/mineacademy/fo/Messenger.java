@@ -24,42 +24,42 @@ public class Messenger {
 	 */
 	@Setter
 	@Getter
-	private String infoPrefix = "&8&l[&9&li&8&l] &7";
+	private String infoPrefix = "&8&l[&9&li&8&l]&7 ";
 
 	/**
 	 * The prefix send while sending success message
 	 */
 	@Setter
 	@Getter
-	private String successPrefix = "&8&l[&2&l\u2714&8&l] &7";
+	private String successPrefix = "&8&l[&2&l\u2714&8&l]&7 ";
 
 	/**
 	 * The prefix send while sending warning message
 	 */
 	@Setter
 	@Getter
-	private String warnPrefix = "&8&l[&6&l!&8&l] &6";
+	private String warnPrefix = "&8&l[&6&l!&8&l]&6 ";
 
 	/**
 	 * The prefix send while sending error message
 	 */
 	@Setter
 	@Getter
-	private String errorPrefix = "&8&l[&4&l\u2715&8&l] &c";
+	private String errorPrefix = "&8&l[&4&l\u2715&8&l]&c ";
 
 	/**
 	 * The prefix send while sending questions
 	 */
 	@Setter
 	@Getter
-	private String questionPrefix = "&8&l[&a&l?&l&8] &7";
+	private String questionPrefix = "&8&l[&a&l?&l&8]&7 ";
 
 	/**
 	 * The prefix send while sending announcements
 	 */
 	@Setter
 	@Getter
-	private String announcePrefix = "&8&l[&5&l!&l&8] &d";
+	private String announcePrefix = "&8&l[&5&l!&l&8]&d ";
 
 	/**
 	 * Send a message prepended with the {@link #infoPrefix}
