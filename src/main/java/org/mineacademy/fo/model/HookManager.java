@@ -1742,7 +1742,12 @@ class ProtocolLibHook {
 	final void addPacketListener(final Object listener) {
 		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
 
-		manager.addPacketListener((PacketListener) listener);
+		try {
+			manager.addPacketListener((PacketListener) listener);
+
+		} catch (final Throwable t) {
+			Common.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
+		}
 	}
 
 	final void removePacketListeners(final Plugin plugin) {
