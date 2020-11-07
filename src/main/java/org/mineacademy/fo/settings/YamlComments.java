@@ -271,9 +271,11 @@ public final class YamlComments {
 			final Object o = list.get(i);
 
 			if (o instanceof String || o instanceof Character) {
-				builder.append(prefixSpaces).append("- '").append(o).append("'");
+				builder.append(prefixSpaces).append("- '").append(o.toString().replace("'", "''")).append("'");
+
 			} else if (o instanceof List) {
 				builder.append(prefixSpaces).append("- ").append(yaml.dump(o));
+
 			} else {
 				builder.append(prefixSpaces).append("- ").append(o);
 			}
@@ -307,10 +309,10 @@ public final class YamlComments {
 				/*for (final String ignoredSection : ignoredSections) {
 					if (keyBuilder.toString().equals(ignoredSection)) {
 						final Object value = oldConfig.get(keyBuilder.toString());
-				
+
 						if (value instanceof ConfigurationSection)
 							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-				
+
 						continue outer;
 					}
 				}*/
