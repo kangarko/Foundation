@@ -249,7 +249,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The help for label
 		 */
-		public static String LABEL_HELP_FOR = "Help for /";
+		public static String LABEL_HELP_FOR = "Help for /{label}";
 
 		/**
 		 * The label shown when building subcommands
