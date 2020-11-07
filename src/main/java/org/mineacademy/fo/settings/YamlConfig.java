@@ -229,7 +229,7 @@ public class YamlConfig {
 
 					Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
 
-					instance = new ConfigInstance(localePath, file, config, defaultsConfig, saveComments(), getUncommentedSections());
+					instance = new ConfigInstance(file, config, defaultsConfig, saveComments(), getUncommentedSections(), localePath);
 					addConfig(instance, this);
 				}
 
@@ -237,9 +237,7 @@ public class YamlConfig {
 
 				// Place comments first (this also copies default keys to be used in onLoadFinish) before loading
 				if (saveComments()) {
-
-					// Use the default locale file to copy messages from
-					this.instance.writeComments("localization/messages_en.yml");
+					this.instance.writeComments();
 					this.instance.reload();
 				}
 
@@ -326,7 +324,7 @@ public class YamlConfig {
 
 					config = FileUtil.loadConfigurationStrict(file);
 
-					instance = new ConfigInstance(from == null ? to : from, file, config, defaultsConfig, saveComments(), getUncommentedSections());
+					instance = new ConfigInstance(file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
 					addConfig(instance, this);
 				}
 
@@ -336,8 +334,6 @@ public class YamlConfig {
 
 					// Place comments first (this also copies default keys to be used in onLoadFinish) before loading
 					if (saveComments()) {
-
-						// Use the default locale file to copy messages from
 						this.instance.writeComments();
 						this.instance.reload();
 					}
@@ -2013,11 +2009,6 @@ public class YamlConfig {
 class ConfigInstance {
 
 	/**
-	 * The path where the default config lays
-	 */
-	private final String defaultsPath;
-
-	/**
 	 * The file this configuration belongs to.
 	 */
 	@Getter
@@ -2053,6 +2044,11 @@ class ConfigInstance {
 	private final List<String> uncommentedSections;
 
 	/**
+	 * Wherefrom shall we save o' mighty comments?
+	 */
+	private final String commentsFilePath;
+
+	/**
 	 * Saves the config instance with the given header, can be null
 	 *
 	 * @param header
@@ -2086,19 +2082,8 @@ class ConfigInstance {
 	 * @throws IOException
 	 */
 	public void writeComments() throws IOException {
-		this.writeComments(this.defaultsPath);
-	}
-
-	/**
-	 * Attempts to save configuration comments using the given file
-	 *
-	 * @param defaultsPath
-	 *
-	 * @throws IOException
-	 */
-	protected void writeComments(String defaultsPath) throws IOException {
-		if (defaultsPath != null && saveComments)
-			YamlComments.writeComments(defaultsPath, file, Common.getOrDefault(uncommentedSections, new ArrayList<>()));
+		if (this.commentsFilePath != null && this.saveComments)
+			YamlComments.writeComments(this.commentsFilePath, this.file, Common.getOrDefault(this.uncommentedSections, new ArrayList<>()));
 	}
 
 	/**
