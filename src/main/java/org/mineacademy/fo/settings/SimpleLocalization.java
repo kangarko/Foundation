@@ -374,7 +374,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 				LABEL_HELP_FOR = getString("Label_Help_For");
 
 			if (isSetDefault("Label_Subcommand_Description"))
-				LABEL_SUBCOMMAND_DESCRIPTION = getString("Label_Help_For");
+				LABEL_SUBCOMMAND_DESCRIPTION = getString("Label_Subcommand_Description");
 
 			if (isSetDefault("Label_Usages"))
 				LABEL_USAGES = getString("Label_Usages");
