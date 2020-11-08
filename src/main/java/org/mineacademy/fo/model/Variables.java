@@ -368,7 +368,10 @@ public final class Variables {
 				return SimpleSettings.TIMESTAMP_FORMAT.format(System.currentTimeMillis());
 			case "timestamp_short":
 				return TimeUtil.getFormattedDateShort();
-
+			case "chat_line":
+				return Common.chatLine();
+			case "chat_line_smooth":
+				return Common.chatLineSmooth();
 			case "town":
 				return player == null ? "" : HookManager.getTownName(player);
 			case "nation":
