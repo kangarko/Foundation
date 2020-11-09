@@ -238,17 +238,21 @@ public final class Variables {
 			if (cachedVar != null)
 				return cachedVar;
 
-			// Custom placeholders
-			if (REPLACE_JAVASCRIPT) {
-				REPLACE_JAVASCRIPT = false;
+		}
 
-				try {
-					message = replaceJavascriptVariables0(message, (Player) sender, replacements);
+		// Custom placeholders
+		if (REPLACE_JAVASCRIPT) {
+			REPLACE_JAVASCRIPT = false;
 
-				} finally {
-					REPLACE_JAVASCRIPT = true;
-				}
+			try {
+				message = replaceJavascriptVariables0(message, sender, replacements);
+
+			} finally {
+				REPLACE_JAVASCRIPT = true;
 			}
+		}
+
+		if (senderIsPlayer) {
 
 			// PlaceholderAPI and MvdvPlaceholderAPI
 			message = HookManager.replacePlaceholders((Player) sender, message);
@@ -275,7 +279,7 @@ public final class Variables {
 	/*
 	 * Replaces JavaScript variables in the message
 	 */
-	private static String replaceJavascriptVariables0(String message, Player player, @Nullable Map<String, Object> replacements) {
+	private static String replaceJavascriptVariables0(String message, CommandSender sender, @Nullable Map<String, Object> replacements) {
 
 		final Matcher matcher = BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 
@@ -286,7 +290,7 @@ public final class Variables {
 			final Variable variable = Variable.findVariable(variableKey.substring(1, variableKey.length() - 1));
 
 			if (variable != null && variable.getType() == Type.FORMAT) {
-				final SimpleComponent component = variable.build(player, SimpleComponent.empty(), replacements);
+				final SimpleComponent component = variable.build(sender, SimpleComponent.empty(), replacements);
 
 				// We do not support interact chat elements so we just flatten the variable
 				// For interactive chat, use formatting
