@@ -1436,7 +1436,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1656,7 +1656,6 @@ class TownyHook {
 				if (playerNation.equals(getNationName(online)))
 					recipients.add(online);
 
-		Debugger.debug("towny", "Players in " + pl.getName() + "'s nation '" + playerNation + "': " + recipients);
 		return recipients;
 	}
 
@@ -2823,7 +2822,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
