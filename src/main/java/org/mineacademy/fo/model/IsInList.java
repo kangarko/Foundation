@@ -75,4 +75,13 @@ public final class IsInList<T> {
 	public boolean contains(final T toEvaluateAgainst) {
 		return matchAll || list.contains(toEvaluateAgainst);
 	}
+
+	/**
+	 * Return true if list is equal to ["*"]
+	 *
+	 * @return
+	 */
+	public boolean isEntireList() {
+		return matchAll;
+	}
 }
