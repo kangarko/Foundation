@@ -431,7 +431,7 @@ public final class FileUtil {
 
 	/*
 	 * A helper method to replace variables in files we are extracting.
-	 * 
+	 *
 	 * Saves us time so that we can distribute the same file across multiple
 	 * plugins each having its own unique plugin name and file name.
 	 */

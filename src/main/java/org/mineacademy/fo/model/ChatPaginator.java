@@ -218,9 +218,11 @@ public final class ChatPaginator {
 			for (final SimpleComponent component : this.header)
 				component.send(sender);
 
+			int amount = 1;
+
 			for (final List<SimpleComponent> components : this.pages.values())
 				for (final SimpleComponent component : components)
-					component.send(sender);
+					component.replace("{count}", amount++).send(sender);
 
 			for (final SimpleComponent component : this.footer)
 				component.send(sender);
