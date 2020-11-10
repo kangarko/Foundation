@@ -373,7 +373,7 @@ public final class HookManager {
 	 *
 	 * @return
 	 */
-	public static boolean isMMythicMobsLoaded() {
+	public static boolean isMythicMobsLoaded() {
 		return mythicMobsHook != null;
 	}
 
@@ -619,7 +619,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String getMythicMobName(Entity entity) {
-		return isMMythicMobsLoaded() ? mythicMobsHook.getBossName(entity) : null;
+		return isMythicMobsLoaded() ? mythicMobsHook.getBossName(entity) : null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
