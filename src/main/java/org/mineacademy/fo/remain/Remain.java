@@ -93,6 +93,7 @@ import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.internal.ParticleInternals;
 import org.mineacademy.fo.remain.nbt.NBTInternals;
+import org.mineacademy.fo.settings.SimpleYaml;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -1651,10 +1652,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -2021,10 +2022,10 @@ public final class Remain {
 	 * @param is the input stream
 	 * @return the configuration
 	 */
-	public static YamlConfiguration loadConfiguration(final InputStream is) {
+	public static SimpleYaml loadConfiguration(final InputStream is) {
 		Valid.checkNotNull(is, "Could not load configuration from a null input stream!");
 
-		YamlConfiguration conf = null;
+		SimpleYaml conf = null;
 
 		try {
 			conf = loadConfigurationStrict(is);
@@ -2044,8 +2045,8 @@ public final class Remain {
 	 * @return the configuration
 	 * @throws Throwable when any error occurs
 	 */
-	public static YamlConfiguration loadConfigurationStrict(final InputStream is) throws Throwable {
-		final YamlConfiguration conf = new YamlConfiguration();
+	public static SimpleYaml loadConfigurationStrict(final InputStream is) throws Throwable {
+		final SimpleYaml conf = new SimpleYaml();
 
 		try {
 			conf.load(new InputStreamReader(is, StandardCharsets.UTF_8));
@@ -2065,7 +2066,7 @@ public final class Remain {
 	 * @throws IOException
 	 * @throws InvalidConfigurationException
 	 */
-	public static YamlConfiguration loadConfigurationFromString(final InputStream stream, final YamlConfiguration conf) throws IOException, InvalidConfigurationException {
+	public static SimpleYaml loadConfigurationFromString(final InputStream stream, final SimpleYaml conf) throws IOException, InvalidConfigurationException {
 		Valid.checkNotNull(stream, "Stream cannot be null");
 
 		final StringBuilder builder = new StringBuilder();
@@ -2172,7 +2173,7 @@ public final class Remain {
 		String previousName = null;
 
 		if (settingsFile.exists()) {
-			final YamlConfiguration settings = FileUtil.loadConfigurationStrict(settingsFile);
+			final SimpleYaml settings = FileUtil.loadConfigurationStrict(settingsFile);
 			final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
 			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {

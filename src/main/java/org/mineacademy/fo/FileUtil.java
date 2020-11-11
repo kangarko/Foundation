@@ -31,11 +31,11 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleYaml;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -216,7 +216,7 @@ public final class FileUtil {
 	 * @param internalFileName
 	 * @return
 	 */
-	public static YamlConfiguration loadInternalConfiguration(String internalFileName) {
+	public static SimpleYaml loadInternalConfiguration(String internalFileName) {
 		final InputStream is = getInternalResource(internalFileName);
 		Valid.checkNotNull(is, "Failed getting internal configuration from " + internalFileName);
 
@@ -226,15 +226,17 @@ public final class FileUtil {
 	/**
 	 * Loads YAML configuration from file, failing if anything happens or the file does not exist
 	 *
+	 * FIX FOR PROJECT ORION STUDENTS IN ARENA MANAGER, SIMPLY RENAME YamlConfiguration TO FileConfiguration
+	 *
 	 * @param file
 	 * @return
 	 * @throws RuntimeException
 	 */
-	public static YamlConfiguration loadConfigurationStrict(File file) throws RuntimeException {
+	public static SimpleYaml loadConfigurationStrict(File file) throws RuntimeException {
 		Valid.checkNotNull(file, "File is null!");
 		Valid.checkBoolean(file.exists(), "File " + file.getName() + " does not exists");
 
-		final YamlConfiguration conf = new YamlConfiguration();
+		final SimpleYaml conf = new SimpleYaml();
 
 		try {
 			if (file.exists())

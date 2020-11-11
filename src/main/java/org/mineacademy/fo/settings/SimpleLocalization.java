@@ -3,7 +3,7 @@ package org.mineacademy.fo.settings;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
@@ -53,7 +53,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	/**
 	 * The fallback localization file config instance, see {@link #FALLBACK_LOCALIZATION_FILE}.
 	 */
-	private static YamlConfiguration fallbackLocalization;
+	private static FileConfiguration fallbackLocalization;
 
 	/**
 	 * A flag indicating that this class has been loaded

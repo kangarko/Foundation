@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -310,11 +310,11 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getFileName();
 	}
 
-	protected static final YamlConfiguration getConfig() {
+	protected static final FileConfiguration getConfig() {
 		return TEMPORARY_INSTANCE.getConfig();
 	}
 
-	protected static final YamlConfiguration getDefaults() {
+	protected static final FileConfiguration getDefaults() {
 		return TEMPORARY_INSTANCE.getDefaults();
 	}
 
