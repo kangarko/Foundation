@@ -29,6 +29,7 @@ public final class DiscordSender implements CommandSender {
 	private final User user;
 	private final MessageChannel channel;
 	private final Message message;
+	//private final UUID uuid;
 
 	@Override
 	public boolean isPermissionSet(String permission) {
@@ -42,12 +43,18 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public boolean hasPermission(String perm) {
-		return perm == null ? true : HookManager.hasVaultPermission(getName(), perm);
+		return false;
+
+		//final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(this.uuid);
+		//return perm == null ? true : offlinePlayer == null ? false : HookManager.hasVaultPermission(offlinePlayer, perm);
 	}
 
 	@Override
 	public boolean hasPermission(Permission perm) {
-		return perm == null ? true : HookManager.hasVaultPermission(getName(), perm.getName());
+		return false;
+
+		//final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(this.uuid);
+		//return perm == null ? true : offlinePlayer == null ? false : HookManager.hasVaultPermission(offlinePlayer, perm.getName());
 	}
 
 	@Override

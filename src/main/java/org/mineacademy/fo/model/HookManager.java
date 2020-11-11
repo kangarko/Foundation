@@ -1015,7 +1015,7 @@ public final class HookManager {
 	 */
 	public static boolean hasProtocolLibPermission(Player player, String perm) {
 		if (isProtocolLibLoaded() && protocolLibHook.isTemporaryPlayer(player))
-			return hasVaultPermission(player.getName(), perm);
+			return hasVaultPermission(player, perm);
 
 		return PlayerUtil.hasPerm(player, perm);
 	}
@@ -1024,19 +1024,20 @@ public final class HookManager {
 	 * Checks if the given player name has a certain permission using vault
 	 * Or throws an error if Vault is not present
 	 *
-	 * @param name
+	 * @param offlinePlayer
 	 * @param perm
 	 *
 	 * @return
 	 */
-	public static boolean hasVaultPermission(final String name, final String perm) {
+	public static boolean hasVaultPermission(final OfflinePlayer offlinePlayer, final String perm) {
 		Valid.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
+		//Valid.checkAsync("Calling hasVaultPermission on the main thread was not disabled to prevent server freeze condition, please contact plugin authors to correct this");
 
 		// TODO remove checks below to increase method call performance
 		Valid.checkNotNull(perm, "Permission to check in vault cannot be null");
 		Valid.checkBoolean(!perm.contains("{plugin_name}"), "Replacing {plugin_name} in vault permissions is no longer supported!");
 
-		return vaultHook.hasPerm(name, perm);
+		return vaultHook.hasPerm(offlinePlayer, perm);
 	}
 
 	/**
@@ -1842,6 +1843,10 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 	// Permissions
 	// ------------------------------------------------------------------------------
+
+	Boolean hasPerm(@NonNull final OfflinePlayer player, final String perm) {
+		return permissions != null ? perm != null ? permissions.playerHas((String) null, player, perm) : true : null;
+	}
 
 	Boolean hasPerm(@NonNull final String player, final String perm) {
 		return permissions != null ? perm != null ? permissions.has((String) null, player, perm) : true : null;
