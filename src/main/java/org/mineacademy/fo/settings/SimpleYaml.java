@@ -18,7 +18,6 @@ import org.bukkit.configuration.file.YamlRepresenter;
 import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.ReflectionUtil;
 import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.representer.Representer;
@@ -37,13 +36,13 @@ public class SimpleYaml extends FileConfiguration {
 	@Getter
 	private final DumperOptions yamlOptions = new DumperOptions();
 
-	@Getter
-	private final LoaderOptions loaderOptions = new LoaderOptions();
+	//@Getter
+	//private final LoaderOptions loaderOptions = new LoaderOptions();
 
 	@Getter
 	private final Representer yamlRepresenter = new YamlRepresenter();
 
-	private final Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
+	private final Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
 
 	@NotNull
 	@Override
@@ -70,8 +69,7 @@ public class SimpleYaml extends FileConfiguration {
 
 		Map<?, ?> input;
 		try {
-			loaderOptions.setAllowDuplicateKeys(false); // Foundation: Prevent duplicated keys
-			loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE); // SPIGOT-5881: Not ideal, but was default pre SnakeYAML 1.26
+			//loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE); // SPIGOT-5881: Not ideal, but was default pre SnakeYAML 1.26
 
 			input = (Map<?, ?>) yaml.load(contents);
 		} catch (final YAMLException e) {
