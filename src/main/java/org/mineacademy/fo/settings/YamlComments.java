@@ -25,6 +25,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.Remain;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import lombok.NonNull;
@@ -116,7 +117,10 @@ public final class YamlComments {
 			Common.log("&cWarning: The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
 		}
 
-		final Yaml yaml = new Yaml();
+		final DumperOptions dumperOptions = new DumperOptions();
+		dumperOptions.setWidth(4096);
+
+		final Yaml yaml = new Yaml(dumperOptions);
 		final Map<String, String> comments = parseComments(newLines, ignoredSections, oldConfig, yaml);
 
 		write(newConfig, oldConfig, comments, ignoredSections, writer, yaml);
@@ -306,17 +310,6 @@ public final class YamlComments {
 			} else {
 				lastLineIndentCount = setFullKey(keyBuilder, line, lastLineIndentCount);
 
-				/*for (final String ignoredSection : ignoredSections) {
-					if (keyBuilder.toString().equals(ignoredSection)) {
-						final Object value = oldConfig.get(keyBuilder.toString());
-
-						if (value instanceof ConfigurationSection)
-							appendSection(builder, (ConfigurationSection) value, new StringBuilder(getPrefixSpaces(lastLineIndentCount)), yaml);
-
-						continue outer;
-					}
-				}*/
-
 				if (keyBuilder.length() > 0) {
 					comments.put(keyBuilder.toString(), builder.toString());
 					builder.setLength(0);
@@ -359,11 +352,6 @@ public final class YamlComments {
 		temp = temp.substring(0, temp.length() - keys[keys.length - 1].length() - 1);
 		keyBuilder.setLength(temp.length());
 	}
-
-	/*private static String getKeyFromFullKey(String fullKey) {
-		final String[] keys = fullKey.split("\\.");
-		return keys[keys.length - 1];
-	}*/
 
 	//Updates the keyBuilder and returns configLines number of indents
 	private static int setFullKey(StringBuilder keyBuilder, String configLine, int lastLineIndentCount) {

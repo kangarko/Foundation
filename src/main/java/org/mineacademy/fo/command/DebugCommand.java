@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -80,8 +80,8 @@ public final class DebugCommand extends SimpleSubCommand {
 
 				// Strip sensitive keys from .YML files
 				if (file.getName().endsWith(".yml")) {
-					final YamlConfiguration config = FileUtil.loadConfigurationStrict(file);
-					final YamlConfiguration copyConfig = FileUtil.loadConfigurationStrict(copy);
+					final FileConfiguration config = FileUtil.loadConfigurationStrict(file);
+					final FileConfiguration copyConfig = FileUtil.loadConfigurationStrict(copy);
 
 					for (final Map.Entry<String, Object> entry : config.getValues(true).entrySet()) {
 						final String key = entry.getKey();

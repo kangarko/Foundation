@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -224,8 +223,8 @@ public class YamlConfig {
 							save = true;
 					}
 
-					final YamlConfiguration config = FileUtil.loadConfigurationStrict(file);
-					final YamlConfiguration defaultsConfig = Remain.loadConfiguration(is);
+					final SimpleYaml config = FileUtil.loadConfigurationStrict(file);
+					final SimpleYaml defaultsConfig = Remain.loadConfiguration(is);
 
 					Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
 
@@ -302,8 +301,8 @@ public class YamlConfig {
 
 				if (instance == null) {
 					final File file;
-					final YamlConfiguration config;
-					YamlConfiguration defaultsConfig = null;
+					final SimpleYaml config;
+					SimpleYaml defaultsConfig = null;
 
 					// Reformat afterwards with comments engine
 					if (!new File(SimplePlugin.getInstance().getDataFolder(), to).exists() && saveComments())
@@ -378,7 +377,7 @@ public class YamlConfig {
 	 *
 	 * @return
 	 */
-	protected final YamlConfiguration getConfig() {
+	protected final SimpleYaml getConfig() {
 		Valid.checkNotNull(instance, "Cannot call getConfig when no instance is set!");
 
 		return instance.getConfig();
@@ -390,7 +389,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	@Nullable
-	protected final YamlConfiguration getDefaults() {
+	protected final SimpleYaml getDefaults() {
 		Valid.checkNotNull(instance, "Cannot call getDefaults when no instance is set!");
 
 		return instance.getDefaultConfig();
@@ -1296,8 +1295,8 @@ public class YamlConfig {
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 
-		final YamlConfiguration config = getConfig();
-		final YamlConfiguration defaults = getDefaults();
+		final SimpleYaml config = getConfig();
+		final SimpleYaml defaults = getDefaults();
 
 		// Add path prefix right away
 		path = formPathPrefix(path);
@@ -1342,8 +1341,8 @@ public class YamlConfig {
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
 
-		final YamlConfiguration config = getConfig();
-		final YamlConfiguration defaults = getDefaults();
+		final SimpleYaml config = getConfig();
+		final SimpleYaml defaults = getDefaults();
 
 		// Add path prefix right away
 		path = formPathPrefix(path);
@@ -2017,12 +2016,12 @@ class ConfigInstance {
 	/**
 	 * Our config we are manipulating.
 	 */
-	private final YamlConfiguration config;
+	private final SimpleYaml config;
 
 	/**
 	 * @return the config
 	 */
-	public YamlConfiguration getConfig() {
+	public SimpleYaml getConfig() {
 		return config;
 	}
 
@@ -2030,7 +2029,7 @@ class ConfigInstance {
 	 * The default config we reach out to fill values from.
 	 */
 	@Getter
-	private final YamlConfiguration defaultConfig;
+	private final SimpleYaml defaultConfig;
 
 	/**
 	 * Experimental - Should we save comments for this config instance?
