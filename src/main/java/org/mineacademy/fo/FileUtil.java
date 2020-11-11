@@ -245,29 +245,28 @@ public final class FileUtil {
 			conf.load(file);
 
 		} catch (final FileNotFoundException ex) {
-			throw new FoException(ex, "Configuration file missing: " + file.getName());
+			throw new IllegalArgumentException("Configuration file missing: " + file.getName(), ex);
 
 		} catch (final IOException ex) {
-			throw new FoException(ex, "IO exception opening " + file.getName());
+			throw new IllegalArgumentException("IO exception opening " + file.getName(), ex);
 
 		} catch (final InvalidConfigurationException ex) {
-			throw new FoException(ex, "Malformed YAML file " + file.getName());
+			throw new IllegalArgumentException("Malformed YAML file " + file.getName(), ex);
 
 		} catch (final Throwable t) {
-			throw new FoException(t, "Error reading YAML file " + file.getName());
+			throw new IllegalArgumentException("Error reading YAML file " + file.getName(), t);
 		}
 
-		Valid.checkNotNull(conf, "Could not load: " + file.getName());
 		return conf;
 	}
 
 	/*
 	 * Check file for known errors
 	 */
-	private static void checkFileForKnownErrors(File file) throws IOException {
+	private static void checkFileForKnownErrors(File file) throws IllegalArgumentException {
 		for (final String line : readLines(file))
 			if (line.contains("[*]"))
-				throw new FoException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
+				throw new IllegalArgumentException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
 	}
 
 	// ----------------------------------------------------------------------------------------------------
