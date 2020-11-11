@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
@@ -20,19 +19,6 @@ public final class ReloadCommand extends SimpleSubCommand {
 		super("reload|rl");
 
 		setDescription(Commands.RELOAD_DESCRIPTION);
-	}
-
-	private List<File> collectYamlFiles(File directory, List<File> list) {
-
-		for (final File file : directory.listFiles()) {
-			if (file.getName().endsWith(".yml"))
-				list.add(file);
-
-			if (file.isDirectory())
-				collectYamlFiles(file, list);
-		}
-
-		return list;
 	}
 
 	@Override
@@ -51,8 +37,8 @@ public final class ReloadCommand extends SimpleSubCommand {
 				try {
 					FileUtil.loadConfigurationStrict(file);
 
-				} catch (final FoException ex) {
-					ex.printStackTrace();
+				} catch (final Throwable t) {
+					t.printStackTrace();
 
 					syntaxParsed = false;
 				}
@@ -72,6 +58,23 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			t.printStackTrace();
 		}
+	}
+
+	/*
+	 * Get a list of all files ending with "yml" in the given directory
+	 * and its subdirectories
+	 */
+	private List<File> collectYamlFiles(File directory, List<File> list) {
+
+		for (final File file : directory.listFiles()) {
+			if (file.getName().endsWith("yml"))
+				list.add(file);
+
+			if (file.isDirectory())
+				collectYamlFiles(file, list);
+		}
+
+		return list;
 	}
 
 	/**
