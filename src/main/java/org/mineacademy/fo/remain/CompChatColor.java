@@ -255,7 +255,6 @@ public final class CompChatColor {
 	public static CompChatColor of(@NonNull String string) {
 
 		if (string.startsWith("#") && string.length() == 7) {
-
 			if (!MinecraftVersion.atLeast(V.v1_16))
 				throw new IllegalArgumentException("Only Minecraft 1.16+ supports # HEX color codes!");
 
