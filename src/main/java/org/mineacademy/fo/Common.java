@@ -83,6 +83,11 @@ public final class Common {
 	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile("#((?:[0-9a-fA-F]{3}){1,2})");
 
 	/**
+	 * Pattern used to match colors with {#HEX} code for MC 1.16+
+	 */
+	private static final Pattern RGB_HEX_BRACKED_COLOR_REGEX = Pattern.compile("\\{#((?:[0-9a-fA-F]{3}){1,2})\\}");
+
+	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
 	 */
 	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + ChatColor.COLOR_CHAR + "x)(" + ChatColor.COLOR_CHAR + "[0-9a-fA-F]){6}");
@@ -568,7 +573,23 @@ public final class Common {
 
 		// RGB colors
 		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
-			final Matcher match = RGB_HEX_COLOR_REGEX.matcher(result);
+			Matcher match = RGB_HEX_COLOR_REGEX.matcher(result);
+
+			while (match.find()) {
+				final String colorCode = match.group(1);
+				String replacement = "";
+
+				try {
+					replacement = CompChatColor.of("#" + colorCode).toString();
+
+				} catch (final IllegalArgumentException ex) {
+				}
+
+				result = result.replaceAll("#" + colorCode, replacement);
+			}
+
+			// Preserve compatibility with former systems
+			match = RGB_HEX_BRACKED_COLOR_REGEX.matcher(result);
 
 			while (match.find()) {
 				final String colorCode = match.group(1);
