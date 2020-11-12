@@ -12,6 +12,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
+import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.AccessLevel;
@@ -164,6 +165,15 @@ public final class ItemUtil {
 	public static boolean isSimilar(ItemStack first, ItemStack second) {
 		if (first == null || second == null)
 			return false;
+
+		final boolean firstAir = CompMaterial.isAir(first.getType());
+		final boolean secondAir = CompMaterial.isAir(second.getType());
+
+		if ((firstAir && !secondAir) || (!firstAir && secondAir))
+			return false;
+
+		if (firstAir && secondAir)
+			return true;
 
 		final boolean idMatch = first.getType() == second.getType();
 		boolean dataMatch = !LEGACY_MATERIALS || first.getData().getData() == second.getData().getData();
