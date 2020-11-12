@@ -573,7 +573,9 @@ public final class Common {
 
 		// RGB colors
 		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
-			Matcher match = RGB_HEX_COLOR_REGEX.matcher(result);
+
+			// Preserve compatibility with former systems
+			Matcher match = RGB_HEX_BRACKED_COLOR_REGEX.matcher(result);
 
 			while (match.find()) {
 				final String colorCode = match.group(1);
@@ -585,11 +587,10 @@ public final class Common {
 				} catch (final IllegalArgumentException ex) {
 				}
 
-				result = result.replaceAll("#" + colorCode, replacement);
+				result = result.replaceAll("\\{#" + colorCode + "\\}", replacement);
 			}
 
-			// Preserve compatibility with former systems
-			match = RGB_HEX_BRACKED_COLOR_REGEX.matcher(result);
+			match = RGB_HEX_COLOR_REGEX.matcher(result);
 
 			while (match.find()) {
 				final String colorCode = match.group(1);
