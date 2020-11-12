@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.Menu;
+import org.mineacademy.fo.model.Variables;
 
 import lombok.SneakyThrows;
 
@@ -57,17 +58,17 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @return
 	 */
 	@Override
-	public final String getPromptText(final ConversationContext ctx) {
-		return Common.colorize(getPrompt(ctx));
+	public final String getPromptText(final ConversationContext context) {
+		return String.join("\n", Common.splitNewline(Variables.replace(getPrompt(context), getPlayer(context))));
 	}
 
 	/**
 	 * Return the question to the user in this prompt
 	 *
-	 * @param ctx
+	 * @param context
 	 * @return
 	 */
-	protected abstract String getPrompt(ConversationContext ctx);
+	protected abstract String getPrompt(ConversationContext context);
 
 	/**
 	 * Checks if the input from the user was valid, if it was, we can continue to the next prompt
@@ -117,11 +118,11 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	/**
 	 * Send the player (in case any) the given message
 	 *
-	 * @param ctx
+	 * @param context
 	 * @param message
 	 */
-	protected final void tell(final ConversationContext ctx, final String message) {
-		tell(getPlayer(ctx), message);
+	protected final void tell(final ConversationContext context, final String message) {
+		tell(getPlayer(context), message);
 	}
 
 	/**
@@ -164,7 +165,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 			final String failPrompt = getFailedValidationText(context, input);
 
 			if (failPrompt != null)
-				tellLater(1, context.getForWhom(), "&c" + failPrompt);
+				tellLater(1, context.getForWhom(), Variables.replace("&c" + failPrompt, getPlayer(context)));
 
 			// Redisplay this prompt to the user to re-collect input
 			return this;
