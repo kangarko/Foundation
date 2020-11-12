@@ -129,7 +129,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public static SimplePlugin getInstance() {
 		if (instance == null) {
-			instance = JavaPlugin.getPlugin(SimplePlugin.class);
+			try {
+				instance = JavaPlugin.getPlugin(SimplePlugin.class);
+
+			} catch (final IllegalStateException ex) {
+				if (Bukkit.getPluginManager().getPlugin("PlugMan") != null)
+					Bukkit.getLogger().severe("Failed to get instance of the plugin, if you reloaded using PlugMan you need to do a clean restart instead.");
+
+				throw ex;
+			}
 
 			Objects.requireNonNull(instance, "Cannot get a new instance! Have you reloaded?");
 		}
@@ -198,6 +206,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	@Override
 	public final void onEnable() {
+
+		// Solve reloading issues with PlugMan
+		for (final StackTraceElement element : new Throwable().getStackTrace()) {
+			if (element.toString().contains("com.rylinaux.plugman.util.PluginUtil.load")) {
+				Common.log("&cWarning: Detected PlugMan reload, which is poorly designed. "
+						+ "It causes Bukkit not able to get our plugin from a static initializer."
+						+ " It may or may not run. Use our own reload command or do a clean restart!");
+
+				break;
+			}
+		}
 
 		// Check if Foundation is correctly moved
 		checkShading();
