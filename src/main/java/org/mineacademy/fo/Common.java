@@ -75,17 +75,17 @@ public final class Common {
 	/**
 	 * Pattern used to match colors with & or {@link ChatColor#COLOR_CHAR}
 	 */
-	private static final Pattern COLOR_REGEX = Pattern.compile("(?i)(&|" + ChatColor.COLOR_CHAR + ")([0-9A-F])");
+	private static final Pattern COLOR_AND_DECORATION_REGEX = Pattern.compile("(&|" + ChatColor.COLOR_CHAR + ")[0-9a-fk-orA-FK-OR]");
 
 	/**
-	 * Pattern used to match colors with {#HEX} code for MC 1.16+
+	 * Pattern used to match colors with #HEX code for MC 1.16+
 	 */
-	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile(Pattern.quote("{#") + "(.*?)" + Pattern.quote("}"));
+	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile("#((?:[0-9a-fA-F]{3}){1,2})");
 
 	/**
-	 * Pattern used to match colors with {#HEX} code for MC 1.16+
+	 * Pattern used to match colors with #HEX code for MC 1.16+
 	 */
-	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + ChatColor.COLOR_CHAR + "x)(" + ChatColor.COLOR_CHAR + "[0-9A-F]){6}");
+	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + ChatColor.COLOR_CHAR + "x)(" + ChatColor.COLOR_CHAR + "[0-9a-fA-F]){6}");
 
 	/**
 	 * We use this to send messages with colors to your console
@@ -576,10 +576,11 @@ public final class Common {
 
 				try {
 					replacement = CompChatColor.of("#" + colorCode).toString();
+
 				} catch (final IllegalArgumentException ex) {
 				}
 
-				result = result.replaceAll("\\{#" + colorCode + "\\}", replacement);
+				result = result.replaceAll("#" + colorCode, replacement);
 			}
 		}
 
@@ -625,8 +626,32 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static String stripColors(final String message) {
-		return message == null ? "" : message.replace(ChatColor.COLOR_CHAR + "x", "").replaceAll("(" + ChatColor.COLOR_CHAR + "|&)([0-9a-fk-orA-F-K-OR])", "");
+	public static String stripColors(String message) {
+
+		if (message == null || message.isEmpty())
+			return message;
+
+		// Replace & color codes
+		Matcher matcher = COLOR_AND_DECORATION_REGEX.matcher(message);
+
+		while (matcher.find())
+			message = matcher.replaceAll("");
+
+		// Replace hex colors, both raw and parsed
+		if (Remain.hasHexColors()) {
+			matcher = RGB_HEX_COLOR_REGEX.matcher(message);
+
+			while (matcher.find())
+				message = matcher.replaceAll("");
+
+			matcher = RGB_X_COLOR_REGEX.matcher(message);
+
+			while (matcher.find())
+				message = matcher.replaceAll("");
+
+		}
+
+		return message;
 	}
 
 	/**
@@ -646,7 +671,7 @@ public final class Common {
 	 * @return
 	 */
 	public static boolean hasColors(final String message) {
-		return COLOR_REGEX.matcher(message).find();
+		return COLOR_AND_DECORATION_REGEX.matcher(message).find();
 	}
 
 	/**
