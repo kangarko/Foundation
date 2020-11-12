@@ -111,7 +111,9 @@ Menu:
   Title_Tools: "Tools Menu"
   Tooltip_Info: "&fMenu Information"
   Button_Return_Title: "&4&lReturn"
-  Button_Return_Lore: "\nReturn back."
+  Button_Return_Lore:
+  - ""
+  - "Return back."
   
 # -----------------------------------------------------------------------------------------------
 # Messages related to tools
