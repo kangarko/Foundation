@@ -245,6 +245,9 @@ public final class CompMetadata {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "NBT ItemStack tags only support MC 1.7.10+");
 		Valid.checkNotNull(item);
 
+		if (CompMaterial.isAir(item.getType()))
+			return false;
+
 		final NBTItem nbt = new NBTItem(item);
 		final NBTCompound tag = nbt.getCompound(FoConstants.NBT.TAG);
 
