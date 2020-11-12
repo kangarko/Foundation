@@ -234,13 +234,12 @@ public class YamlConfig {
 
 				this.instance = instance;
 
-				// Place comments first (this also copies default keys to be used in onLoadFinish) before loading
+				onLoadFinish();
+
 				if (saveComments()) {
 					this.instance.writeComments();
 					this.instance.reload();
 				}
-
-				onLoadFinish();
 
 				loaded = true;
 
@@ -331,13 +330,12 @@ public class YamlConfig {
 
 				try {
 
-					// Place comments first (this also copies default keys to be used in onLoadFinish) before loading
+					onLoadFinish();
+
 					if (saveComments()) {
 						this.instance.writeComments();
 						this.instance.reload();
 					}
-
-					onLoadFinish();
 
 				} catch (final Exception ex) {
 					Common.throwError(ex, "Error loading configuration in " + getFileName() + "!", "Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"), "Problem: " + ex + " (see below for more)");
