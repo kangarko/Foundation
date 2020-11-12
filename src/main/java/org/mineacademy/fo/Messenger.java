@@ -197,7 +197,7 @@ public class Messenger {
 	 */
 	private void tell(final CommandSender player, final String prefix, String message) {
 		final String colorless = Common.stripColors(message);
-		final boolean foundElements = colorless.startsWith("[JSON]") || colorless.startsWith("<title>") || colorless.startsWith("<actionbar>") || colorless.startsWith("<bossbar>");
+		final boolean foundElements = colorless.startsWith("[JSON]") || colorless.startsWith("<toast>") || colorless.startsWith("<title>") || colorless.startsWith("<actionbar>") || colorless.startsWith("<bossbar>");
 
 		// Special case: Send the prefix for actionbar
 		if (colorless.startsWith("<actionbar>"))
