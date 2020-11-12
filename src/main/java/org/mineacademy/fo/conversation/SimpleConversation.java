@@ -17,6 +17,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
 
@@ -236,7 +237,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param message
 	 */
 	protected static final void tell(final Conversable conversable, final String message) {
-		Common.tellConversing(conversable, message);
+		Common.tellConversing(conversable, Variables.replace(message, (Player) conversable));
 	}
 
 	/**
@@ -247,7 +248,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param message
 	 */
 	protected static final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
-		Common.tellLaterConversing(delayTicks, conversable, message);
+		Common.tellLaterConversing(delayTicks, conversable, Variables.replace(message, (Player) conversable));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
