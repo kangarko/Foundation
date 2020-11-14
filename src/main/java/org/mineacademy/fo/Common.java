@@ -80,7 +80,7 @@ public final class Common {
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
 	 */
-	private static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile("#((?:[0-9a-fA-F]{3}){1,2})");
+	public static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)#((?:[0-9a-fA-F]{3}){1,2})");
 
 	/**
 	 * Pattern used to match colors with {#HEX} code for MC 1.16+
@@ -604,6 +604,8 @@ public final class Common {
 
 				result = result.replaceAll("#" + colorCode, replacement);
 			}
+
+			result = result.replace("\\#", "#");
 		}
 
 		return result;
