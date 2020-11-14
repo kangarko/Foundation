@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
@@ -219,6 +220,24 @@ public final class CompChatColor {
 		Valid.checkBoolean(code != '#', "Cannot retrieve color code for HEX colors");
 
 		return code;
+	}
+
+	/**
+	 * Return true if the color is HEX?
+	 *
+	 * @return
+	 */
+	public boolean isHex() {
+		return code == '#';
+	}
+
+	/**
+	 * Return the color's name such as red, or in case of hex color return
+	 * the code, colorized
+	 * @return
+	 */
+	public String toReadableString() {
+		return isHex() ? toString + "\\" + getName() : ItemUtil.bountify(getName());
 	}
 
 	@Override
