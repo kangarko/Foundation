@@ -1437,7 +1437,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1845,7 +1845,16 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 
 	Boolean hasPerm(@NonNull final OfflinePlayer player, final String perm) {
-		return permissions != null ? perm != null ? permissions.playerHas((String) null, player, perm) : true : null;
+		try {
+			return permissions != null ? perm != null ? permissions.playerHas((String) null, player, perm) : true : null;
+		} catch (final Throwable t) {
+			Common.logTimed(900,
+					"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has " + perm + " permission, returning false. "
+							+ "This error only shows every 15 minutes. "
+							+ "Run /vault-info and check if your permissions plugin is running correctl.");
+
+			return false;
+		}
 	}
 
 	Boolean hasPerm(@NonNull final String player, final String perm) {
@@ -2827,7 +2836,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
