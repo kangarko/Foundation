@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.regex.Matcher;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,6 +12,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.remain.Remain;
 
@@ -228,7 +228,7 @@ public class ChatInternals {
 		text = removeBracketsAndColorize(text);
 
 		try {
-			return componentSerializer.invoke(null, "{\"text\":\"" + Matcher.quoteReplacement(text) + "\"}");
+			return componentSerializer.invoke(null, SerializedMap.of("text", text).toJson());
 
 		} catch (final Throwable t) {
 			throw new FoException(t, "Failed to serialize text: " + text);
