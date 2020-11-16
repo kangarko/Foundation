@@ -18,6 +18,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -137,12 +138,25 @@ public class SimpleDatabase {
 			onConnected();
 
 		} catch (final SQLException e) {
-			e.printStackTrace();
 
-			Common.logFramed(true,
-					"Failed to connect to MySQL database",
-					"URL: " + url,
-					"Error: " + e.getMessage());
+			if (Common.getOrEmpty(e.getMessage()).contains("No suitable driver found"))
+				Common.logFramed(true,
+						"Failed to look up MySQL driver",
+						"If you had MySQL disabled, then enabled it and reload,",
+						"this is normal - just restart.",
+						"",
+						"You have have access to your server machine, try installing",
+						"https://dev.mysql.com/downloads/connector/j/5.1.html#downloads",
+						"",
+						"If this problem persists after a restart, please contact",
+						"your hosting provider.");
+			else
+				Common.logFramed(true,
+						"Failed to connect to MySQL database",
+						"URL: " + url,
+						"Error: " + e.getMessage());
+
+			Remain.sneaky(e);
 		}
 	}
 
