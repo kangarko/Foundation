@@ -28,25 +28,26 @@ public final class TabUtil {
 	public static <T> List<String> complete(String partialName, T... all) {
 		final List<String> clone = new ArrayList<>();
 
-		for (final T s : all)
-			if (s != null) {
-				if (s instanceof Iterable)
-					for (final Object iterable : (Iterable<?>) s)
-						clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(iterable).toString());
+		if (all != null)
+			for (final T s : all)
+				if (s != null) {
+					if (s instanceof Iterable)
+						for (final Object iterable : (Iterable<?>) s)
+							clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(iterable).toString());
 
-				// Trick: Automatically parse enum constants
-				else if (s instanceof Enum[])
-					for (final Object iterable : ((Enum[]) s)[0].getClass().getEnumConstants())
-						clone.add(iterable.toString().toLowerCase());
+					// Trick: Automatically parse enum constants
+					else if (s instanceof Enum[])
+						for (final Object iterable : ((Enum[]) s)[0].getClass().getEnumConstants())
+							clone.add(iterable.toString().toLowerCase());
 
-				else {
-					final boolean lowercase = s instanceof Enum;
-					final String parsed = SerializeUtil.serialize(s).toString();
+					else {
+						final boolean lowercase = s instanceof Enum;
+						final String parsed = SerializeUtil.serialize(s).toString();
 
-					if (!"".equals(parsed))
-						clone.add(lowercase ? parsed.toLowerCase() : parsed);
+						if (!"".equals(parsed))
+							clone.add(lowercase ? parsed.toLowerCase() : parsed);
+					}
 				}
-			}
 
 		return complete(partialName, clone);
 	}
