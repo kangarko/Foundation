@@ -672,7 +672,6 @@ public final class Common {
 
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
 		}
 
 		return message;
@@ -1368,27 +1367,11 @@ public final class Common {
 	public static boolean regExMatch(final Matcher matcher) {
 		Valid.checkNotNull(matcher, "Cannot call regExMatch on null matcher");
 
-		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
-
 		try {
 			return matcher.find();
 
 		} catch (final RegexTimeoutException ex) {
-			Common.error(ex,
-					"A regular expression took too long to process, and was",
-					"stopped to prevent freezing your server.",
-					"",
-					"Limit " + SimpleSettings.REGEX_TIMEOUT + "ms ",
-					"Expression: '" + matcher.pattern().pattern() + "'",
-					"Evaluated message: '" + ex.getCheckedMessage() + "'",
-					"",
-					"IF YOU CREATED THAT RULE YOURSELF, we unfortunately",
-					"can't provide support for custom expressions.",
-					"",
-					"Use services like regex101.com to test and fix it.",
-					"Put the expression without '' and the message there.",
-					"Ensure to turn flags 'insensitive' and 'unicode' " + (caseInsensitive ? "on" : "off"),
-					"on there when testing: https://i.imgur.com/PRR5Rfn.png");
+			handleRegexTimeoutException(ex, matcher.pattern());
 
 			return false;
 		}
@@ -1405,7 +1388,6 @@ public final class Common {
 	 * @return
 	 */
 	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
-		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
 
 		try {
 			String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
@@ -1414,21 +1396,7 @@ public final class Common {
 			return pattern.matcher(TimedCharSequence.withSettingsLimit(strippedMessage));
 
 		} catch (final RegexTimeoutException ex) {
-			Common.error(ex,
-					"A regular expression took too long to process, and was",
-					"stopped to prevent freezing your server.",
-					"",
-					"Limit " + SimpleSettings.REGEX_TIMEOUT + "ms ",
-					"Expression: '" + pattern.pattern() + "'",
-					"Evaluated message: '" + ex.getCheckedMessage() + "'",
-					"",
-					"IF YOU CREATED THAT RULE YOURSELF, we unfortunately",
-					"can't provide support for custom expressions.",
-					"",
-					"Use services like regex101.com to test and fix it.",
-					"Put the expression without '' and the message there.",
-					"Ensure to turn flags 'insensitive' and 'unicode' " + (caseInsensitive ? "on" : "off"),
-					"on there when testing: https://i.imgur.com/PRR5Rfn.png");
+			handleRegexTimeoutException(ex, pattern);
 
 			return null;
 		}
@@ -1482,6 +1450,35 @@ public final class Common {
 		}
 
 		return pattern;
+	}
+
+	/**
+	 * A special call handling regex timeout exception, do not use
+	 *
+	 * @param ex
+	 * @param pattern
+	 */
+	public static void handleRegexTimeoutException(RegexTimeoutException ex, Pattern pattern) {
+		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
+
+		Common.error(ex,
+				"A regular expression took too long to process, and was",
+				"stopped to prevent freezing your server.",
+				" ",
+				"Limit " + SimpleSettings.REGEX_TIMEOUT + "ms ",
+				"Expression: '" + (pattern == null ? "unknown" : pattern.pattern()) + "'",
+				"Evaluated message: '" + ex.getCheckedMessage() + "'",
+				" ",
+				"IF YOU CREATED THAT RULE YOURSELF, we unfortunately",
+				"can't provide support for custom expressions.",
+				" ",
+				"Sometimes, all you need doing is increasing timeout",
+				"limit in your settings.yml",
+				" ",
+				"Use services like regex101.com to test and fix it.",
+				"Put the expression without '' and the message there.",
+				"Ensure to turn flags 'insensitive' and 'unicode' " + (caseInsensitive ? "on" : "off"),
+				"on there when testing: https://i.imgur.com/PRR5Rfn.png");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
