@@ -91,7 +91,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent onHover(String... text) {
-		return onHover(HoverEvent.Action.SHOW_TEXT, String.join("\n", text));
+		return onHover(HoverEvent.Action.SHOW_TEXT, String.join("&r\n", text));
 	}
 
 	/**
@@ -346,8 +346,8 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Quickly and dirtly replaces an object in all parts of this component
-	 * 
+	 * Quickly replaces an object in all parts of this component
+	 *
 	 * @param variable the factual variable - you must supply brackets
 	 * @param value
 	 * @return
@@ -516,6 +516,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 		// Plot the previous formatting manually before the message to retain it
 		if (inheritFormatting != null) {
+
 			if (inheritFormatting.isBold())
 				message = ChatColor.BOLD + message;
 
@@ -562,7 +563,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					try {
 						format = ChatColor.of(hex.toString());
 
-					} catch (final IllegalArgumentException ex) {
+					} catch (NoSuchMethodError | IllegalArgumentException ex) {
 						format = null;
 					}
 
@@ -576,8 +577,11 @@ public final class SimpleComponent implements ConfigSerializable {
 
 				if (builder.length() > 0) {
 					final TextComponent old = component;
+
 					component = new TextComponent(old);
+
 					old.setText(builder.toString());
+
 					builder = new StringBuilder();
 					components.add(old);
 				}
@@ -605,6 +609,11 @@ public final class SimpleComponent implements ConfigSerializable {
 
 				} else {
 					component = new TextComponent();
+
+					component.setItalic(false);
+					component.setUnderlined(false);
+					component.setStrikethrough(false);
+					component.setBold(false);
 
 					component.setColor(format);
 				}
@@ -646,6 +655,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		}
 
 		component.setText(builder.toString());
+
 		components.add(component);
 
 		return components.toArray(new TextComponent[components.size()]);
@@ -736,7 +746,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		private BaseComponent inheritFormatting;
 
 		/*
-		 * Create a new part 
+		 * Create a new part
 		 */
 		private Part(String text) {
 			Valid.checkNotNull(text, "Part text cannot be null");
