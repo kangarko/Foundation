@@ -774,6 +774,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
 
+			// Something went wrong in the reload pipeline
+			if (!isEnabled || !isEnabled())
+				return;
+
 			if (getMainCommand() != null)
 				reloadables.registerCommands(SimpleSettings.MAIN_COMMAND_ALIASES, getMainCommand());
 
