@@ -22,7 +22,14 @@ import lombok.NonNull;
  */
 public final class PermsCommand extends SimpleSubCommand {
 
+	/*
+	 * Classes with permissions listed as fields
+	 */
 	private final Class<? extends FoPermissions> classToList;
+
+	/*
+	 * Special variables to replace in the annotation of each permission field in permissions class
+	 */
 	private final SerializedMap variables;
 
 	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList) {
@@ -50,6 +57,9 @@ public final class PermsCommand extends SimpleSubCommand {
 				.send(sender);
 	}
 
+	/*
+	 * Iterate through all classes and superclasses in the given classes and fill their permissions
+	 */
 	private List<SimpleComponent> list() {
 		final List<SimpleComponent> messages = new ArrayList<>();
 		Class<?> iteratedClass = classToList;
@@ -67,6 +77,10 @@ public final class PermsCommand extends SimpleSubCommand {
 		return messages;
 	}
 
+	/*
+	 * Find annotations and compile permissions list from the given class and given existing
+	 * permissions
+	 */
 	private void listIn(Class<?> clazz, List<SimpleComponent> messages) throws ReflectiveOperationException {
 
 		if (!clazz.isAssignableFrom(FoPermissions.class)) {
@@ -75,7 +89,9 @@ public final class PermsCommand extends SimpleSubCommand {
 			if (!messages.isEmpty() && !clazz.isAnnotationPresent(PermissionGroup.class))
 				throw new FoException("Please place @PermissionGroup over " + clazz);
 
-			messages.add(SimpleComponent.of("&7- " + (messages.isEmpty() ? Commands.PERMS_MAIN : group.value()) + " " + Commands.PERMS_PERMISSIONS));
+			messages.add(SimpleComponent
+					.of("&7- " + (messages.isEmpty() ? Commands.PERMS_MAIN : group.value()) + " " + Commands.PERMS_PERMISSIONS)
+					.onClickOpenUrl(""));
 		}
 
 		for (final Field field : clazz.getDeclaredFields()) {
@@ -95,6 +111,7 @@ public final class PermsCommand extends SimpleSubCommand {
 
 			messages.add(SimpleComponent
 					.of("  " + (has ? "&a" : "&7") + node + (def ? " " + Commands.PERMS_TRUE_BY_DEFAULT : ""))
+					.onClickOpenUrl("")
 					.onHover(Commands.PERMS_INFO + info,
 							Commands.PERMS_DEFAULT + (def ? Commands.PERMS_YES : Commands.PERMS_NO),
 							Commands.PERMS_APPLIED + (has ? Commands.PERMS_YES : Commands.PERMS_NO)));
