@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -424,6 +425,37 @@ public final class FileUtil {
 		} catch (final IOException ex) {
 			Common.error(ex,
 					"Failed to extract " + from + " to " + to,
+					"Error: %error");
+		}
+
+		return file;
+	}
+
+	/**
+	 * Similar to {@link #extract(String, String)} but intended
+	 * for non-text file types such as images etc.
+	 *
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	public static File extractRaw(String path) {
+		File file = new File(SimplePlugin.getInstance().getDataFolder(), path);
+
+		final InputStream is = FileUtil.getInternalResource("/" + path);
+		Valid.checkNotNull(is, "Inbuilt file not found: " + path);
+
+		if (file.exists())
+			return file;
+
+		file = createIfNotExists(path);
+
+		try {
+			Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+		} catch (final IOException ex) {
+			Common.error(ex,
+					"Failed to extract " + path,
 					"Error: %error");
 		}
 
