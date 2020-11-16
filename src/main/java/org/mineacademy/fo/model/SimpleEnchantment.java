@@ -319,13 +319,18 @@ public abstract class SimpleEnchantment extends Enchantment {
 		final List<String> customEnchants = new ArrayList<>();
 
 		// Fill in our enchants
-		for (final Map.Entry<Enchantment, Integer> e : item.getEnchantments().entrySet())
-			if (e.getKey() instanceof SimpleEnchantment) {
-				final String lore = ((SimpleEnchantment) e.getKey()).getLore(e.getValue());
+		try {
+			for (final Map.Entry<Enchantment, Integer> e : item.getEnchantments().entrySet())
+				if (e.getKey() instanceof SimpleEnchantment) {
+					final String lore = ((SimpleEnchantment) e.getKey()).getLore(e.getValue());
 
-				if (lore != null && !lore.isEmpty())
-					customEnchants.add(Common.colorize("&r&7" + lore));
-			}
+					if (lore != null && !lore.isEmpty())
+						customEnchants.add(Common.colorize("&r&7" + lore));
+				}
+
+		} catch (final NullPointerException ex) {
+			// Some weird problem in third party plugin
+		}
 
 		if (!customEnchants.isEmpty()) {
 			final ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
