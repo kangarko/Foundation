@@ -1031,11 +1031,6 @@ public final class HookManager {
 	 */
 	public static boolean hasVaultPermission(final OfflinePlayer offlinePlayer, final String perm) {
 		Valid.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
-		//Valid.checkAsync("Calling hasVaultPermission on the main thread was not disabled to prevent server freeze condition, please contact plugin authors to correct this");
-
-		// TODO remove checks below to increase method call performance
-		Valid.checkNotNull(perm, "Permission to check in vault cannot be null");
-		Valid.checkBoolean(!perm.contains("{plugin_name}"), "Replacing {plugin_name} in vault permissions is no longer supported!");
 
 		return vaultHook.hasPerm(offlinePlayer, perm);
 	}
@@ -1847,6 +1842,7 @@ class VaultHook {
 	Boolean hasPerm(@NonNull final OfflinePlayer player, final String perm) {
 		try {
 			return permissions != null ? perm != null ? permissions.playerHas((String) null, player, perm) : true : null;
+
 		} catch (final Throwable t) {
 			Common.logTimed(900,
 					"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has " + perm + " permission, returning false. "
