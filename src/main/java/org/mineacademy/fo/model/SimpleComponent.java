@@ -831,10 +831,10 @@ public final class SimpleComponent implements ConfigSerializable {
 		 */
 		private boolean canSendTo(@Nullable CommandSender receiver) {
 
-			if (this.viewPermission != null && (receiver == null || !PlayerUtil.hasPerm(receiver, this.viewPermission)))
+			if (this.viewPermission != null && !this.viewPermission.isEmpty() && (receiver == null || !PlayerUtil.hasPerm(receiver, this.viewPermission)))
 				return false;
 
-			if (this.viewCondition != null) {
+			if (this.viewCondition != null && !this.viewCondition.isEmpty()) {
 				if (receiver == null)
 					return false;
 
