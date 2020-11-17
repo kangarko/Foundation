@@ -1432,7 +1432,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2716,7 +2716,22 @@ class PlotSquaredHook {
 
 	List<Player> getPlotPlayers(final Player player) {
 		final List<Player> players = new ArrayList<>();
-		final Object plotPlayer = ReflectionUtil.invokeStatic(ReflectionUtil.getMethod(ReflectionUtil.lookupClass("com.plotsquared.core.player.PlotPlayer"), "wrap", Player.class), player);
+
+		final Class<?> plotPlayerClass = ReflectionUtil.lookupClass("com.plotsquared.core.player.PlotPlayer");
+		Method wrap;
+
+		try {
+			wrap = plotPlayerClass.getMethod("wrap", Player.class);
+		} catch (final ReflectiveOperationException ex) {
+			try {
+				wrap = plotPlayerClass.getMethod("wrap", Object.class);
+
+			} catch (final ReflectiveOperationException ex2) {
+				throw new NullPointerException("PlotSquared could not convert " + player.getName() + " into PlotPlayer! Is the integration outdated?");
+			}
+		}
+
+		final Object plotPlayer = ReflectionUtil.invokeStatic(wrap, player);
 		Valid.checkNotNull(plotPlayer, "Failed to convert player " + player.getName() + " to PlotPlayer!");
 
 		final Object currentPlot = ReflectionUtil.invoke("getCurrentPlot", plotPlayer);
@@ -2832,7 +2847,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
