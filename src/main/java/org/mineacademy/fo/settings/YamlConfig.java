@@ -236,11 +236,6 @@ public class YamlConfig {
 
 				onLoadFinish();
 
-				if (saveComments()) {
-					this.instance.writeComments();
-					this.instance.reload();
-				}
-
 				loaded = true;
 
 			} finally {
@@ -329,13 +324,7 @@ public class YamlConfig {
 				this.instance = instance;
 
 				try {
-
 					onLoadFinish();
-
-					if (saveComments()) {
-						this.instance.writeComments();
-						this.instance.reload();
-					}
 
 				} catch (final Exception ex) {
 					Common.throwError(ex, "Error loading configuration in " + getFileName() + "!", "Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"), "Problem: " + ex + " (see below for more)");
@@ -357,7 +346,7 @@ public class YamlConfig {
 	private void saveIfNecessary0() {
 
 		// We want to save the file if the save is pending or if there are no defaults
-		if (save || saveComments() /*|| getDefaults() == null*/) {
+		if (save || saveComments()) {
 			save();
 
 			save = false;
