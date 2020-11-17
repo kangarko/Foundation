@@ -2,7 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -12,7 +12,6 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
@@ -20,6 +19,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 public final class Variable extends YamlConfig {
+
+	/**
+	 * Return the prototype file path for the given variable fiel name
+	 */
+	public static Function<String, String> PROTOTYPE_PATH = t -> NO_DEFAULT;
 
 	/**
 	 * A list of all loaded variables
@@ -108,10 +112,26 @@ public final class Variable extends YamlConfig {
 	private String runCommand;
 
 	/*
+	 * Shall we save comments for this file?
+	 */
+	private final boolean saveComments;
+
+	/*
 	 * Create and load a new variable (automatically called)
 	 */
 	private Variable(String file) {
-		this.loadConfiguration(NO_DEFAULT, "variables/" + file + ".yml");
+		final String prototypePath = PROTOTYPE_PATH.apply(file);
+
+		this.saveComments = prototypePath != null;
+		this.loadConfiguration(prototypePath, "variables/" + file + ".yml");
+	}
+
+	/**
+	 * @see org.mineacademy.fo.settings.YamlConfig#saveComments()
+	 */
+	@Override
+	protected boolean saveComments() {
+		return saveComments;
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -124,75 +144,90 @@ public final class Variable extends YamlConfig {
 	@Override
 	protected void onLoadFinish() {
 
-		// We do not use Valid.checkNotNull below since it appends Report: prefix.
-		// Do not incentivize people to report this, instead, we want them to fix this.
-
+		this.type = get("Type", Type.class);
+		this.key = getString("Key");
+		this.value = getString("Value");
 		this.senderCondition = getString("Sender_Condition");
 		this.receiverCondition = getString("Receiver_Condition");
-		this.hoverText = getStringList("Hover");
-		this.hoverItem = getString("Hover_Item");
-		this.openUrl = getString("Open_Url");
-		this.suggestCommand = getString("Suggest_Command");
-		this.runCommand = getString("Run_Command");
 		this.senderPermission = getString("Sender_Permission");
 		this.receiverPermission = getString("Receiver_Permission");
 
-		this.key = getString("Key");
-		Objects.requireNonNull(this.key, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile());
+		// Correct common mistakes
+		if (this.type == null) {
+			this.type = Type.FORMAT;
 
-		this.type = get("Type", Type.class);
+			save();
+		}
 
-		// Auto-fix some of the problems in old ChatControl
-		if (SimplePlugin.getNamed().equals("ChatControl") && SimplePlugin.getVersion().startsWith("8.")) {
+		if (this.key.startsWith("{") || this.key.startsWith("[")) {
+			this.key = this.key.substring(1);
 
-			if (this.type == null)
-				this.type = Type.FORMAT;
+			save();
+		}
 
-			if (this.key.startsWith("{") || this.key.startsWith("["))
-				this.key = this.key.substring(1);
+		if (this.key.endsWith("}") || this.key.endsWith("]")) {
+			this.key = this.key.substring(0, this.key.length() - 1);
 
-			if (this.key.endsWith("}") || this.key.endsWith("]"))
-				this.key = this.key.substring(0, this.key.length() - 1);
+			save();
+		}
 
-			if (this.type == Type.FORMAT) {
-				if (this.hoverText != null && !this.hoverText.isEmpty()) {
-					this.hoverText = null;
+		if (this.type == Type.MESSAGE) {
+			this.hoverText = getStringList("Hover");
+			this.hoverItem = getString("Hover_Item");
+			this.openUrl = getString("Open_Url");
+			this.suggestCommand = getString("Suggest_Command");
+			this.runCommand = getString("Run_Command");
+		}
 
-					Common.log("&cWarning: Hover_Text is currently unsupported for variable " + getName() + ", please set it in your formatting.yml instead");
-				}
+		// Check for known mistakes
+		if (this.key == null || this.key.isEmpty())
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile());
 
-				if (this.hoverItem != null) {
-					this.hoverItem = null;
-
-					Common.log("&cWarning: Hover_Item is currently unsupported for variable " + getName());
-				}
-			}
-
-		} else
-			Objects.requireNonNull(this.type, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Type' key as variable type (set to FORMAT if variable can't be used by players, or MESSAGE if players can use it in chat with [variable_syntax]) in " + getFile());
+		if (this.value == null || this.value.isEmpty())
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFile() + " (this can be a JavaScript code)");
 
 		// Test for key validity
 		if (!Common.regExMatch("^\\w+$", this.key))
 			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+	}
 
-		this.value = getString("Value");
-		Objects.requireNonNull(this.value, "(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFile() + " (this can be a JavaScript code)");
+	/**
+	 * Return this class as a map
+	 *
+	 * @return
+	 */
+	public SerializedMap serialize() {
+		final SerializedMap map = new SerializedMap();
 
-		if (this.type == Type.FORMAT) {
-			if (this.hoverText != null && !this.hoverText.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Hover, you need to add this directly to the format and remove this key from " + getFileName());
+		map.putIf("Type", this.type);
+		map.putIf("Key", this.key);
+		map.putIf("Sender_Condition", this.senderCondition);
+		map.putIf("Receiver_Condition", this.receiverCondition);
+		map.putIf("Hover", this.hoverText);
+		map.putIf("Hover_Item", this.hoverItem);
+		map.putIf("Open_Url", this.openUrl);
+		map.putIf("Suggest_Command", this.suggestCommand);
+		map.putIf("Run_Command", this.runCommand);
+		map.putIf("Sender_Permission", this.senderPermission);
+		map.putIf("Receiver_Permission", this.receiverPermission);
 
-			if (this.hoverItem != null)
-				throw new IllegalStateException("FORMAT variables do not support Hover_Item, you need to add this directly to the format and remove this key from " + getFileName());
+		return map;
+	}
 
-			if (this.openUrl != null && !this.openUrl.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Open_Url, you need to add this directly to the format and remove this key from " + getFileName());
+	/**
+	 * @see org.mineacademy.fo.settings.YamlConfig#save()
+	 */
+	@Override
+	public void save() {
 
-			if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Suggest_Command, you need to add this directly to the format and remove this key from " + getFileName());
+		final SerializedMap map = serialize();
 
-			if (this.runCommand != null && !this.runCommand.isEmpty())
-				throw new IllegalStateException("FORMAT variables do not support Run_Command, you need to add this directly to the format and remove this key from " + getFileName());
+		// We serialize null values too but they are not saved
+		if (!map.isEmpty() && !"{}".equals(map.toString())) {
+			for (final Map.Entry<String, Object> entry : map.entrySet())
+				setNoSave(entry.getKey(), entry.getValue());
+
+			super.save();
 		}
 	}
 
@@ -231,10 +266,10 @@ public final class Variable extends YamlConfig {
 	 */
 	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent, @Nullable Map<String, Object> replacements) {
 
-		if (this.senderPermission != null && !PlayerUtil.hasPerm(sender, this.senderPermission))
+		if (this.senderPermission != null && !this.senderPermission.isEmpty() && !PlayerUtil.hasPerm(sender, this.senderPermission))
 			return SimpleComponent.of("");
 
-		if (this.senderCondition != null) {
+		if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
 			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
 			Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + result.getClass());
 
@@ -244,7 +279,7 @@ public final class Variable extends YamlConfig {
 
 		final String value = this.getValue(sender, replacements);
 
-		if (value == null || "".equals(value) || "null".equals(value))
+		if (value == null || value.isEmpty() || "null".equals(value))
 			return SimpleComponent.of("");
 
 		final SimpleComponent component = existingComponent
@@ -255,20 +290,20 @@ public final class Variable extends YamlConfig {
 		if (!Valid.isNullOrEmpty(this.hoverText))
 			component.onHover(Variables.replace(this.hoverText, sender, replacements));
 
-		if (this.hoverItem != null) {
+		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements), sender);
 			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
 			component.onHover((ItemStack) result);
 		}
 
-		if (this.openUrl != null)
+		if (this.openUrl != null && !this.openUrl.isEmpty())
 			component.onClickOpenUrl(Variables.replace(this.openUrl, sender, replacements));
 
-		if (this.suggestCommand != null)
+		if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
 			component.onClickSuggestCmd(Variables.replace(this.suggestCommand, sender, replacements));
 
-		if (this.runCommand != null)
+		if (this.runCommand != null && !this.runCommand.isEmpty())
 			component.onClickRunCmd(Variables.replace(this.runCommand, sender, replacements));
 
 		return component;
@@ -279,18 +314,7 @@ public final class Variable extends YamlConfig {
 	 */
 	@Override
 	public String toString() {
-		return SerializedMap.ofArray(
-				"Key", this.key,
-				"Value", this.value,
-				"Sender_Condition", this.senderCondition,
-				"Receiver_Condition", this.receiverCondition,
-				"Hover", this.hoverText,
-				"Hover_Item", this.hoverItem,
-				"Open_Url", this.openUrl,
-				"Suggest_Command", this.suggestCommand,
-				"Run_Command", this.runCommand,
-				"Sender_Permission", this.senderPermission,
-				"Receiver_Permission", this.receiverPermission).toStringFormatted();
+		return serialize().toStringFormatted();
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
@@ -374,8 +398,7 @@ public final class Variable extends YamlConfig {
 		/**
 		 * This variable can be used by players in chat such as "I have an [item]"
 		 */
-		MESSAGE("message"),
-		;
+		MESSAGE("message"),;
 
 		/**
 		 * The saveable non-obfuscated key
