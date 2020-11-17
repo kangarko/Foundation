@@ -24,6 +24,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -87,7 +88,8 @@ public final class YamlComments {
 
 		// ignoredSections can ONLY contain configurations sections
 		for (final String ignoredSection : ignoredSections)
-			Valid.checkBoolean(newConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections in " + jarPath + " (file " + diskFile + ")" + " not '" + ignoredSection + "' that is " + newConfig.get(ignoredSection));
+			if (newConfig.isSet(ignoredSection))
+				Valid.checkBoolean(newConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections in " + jarPath + " (file " + diskFile + ")" + " not '" + ignoredSection + "' that is " + newConfig.get(ignoredSection));
 
 		// Save keys added to config that are not in default and would otherwise be lost
 		final Set<String> newKeys = newConfig.getKeys(true);
@@ -105,8 +107,9 @@ public final class YamlComments {
 				removedKeys.put(oldKey, oldEntry.getValue());
 		}
 
+		// Move to unused/ folder and retain old path
 		if (!removedKeys.isEmpty()) {
-			final File backupFile = FileUtil.getOrMakeFile(diskFile.getName().replace(".yml", "_unused.yml"));
+			final File backupFile = FileUtil.getOrMakeFile("unused/" + diskFile.toPath().toString().replace("plugins/" + SimplePlugin.getNamed(), ""));
 			final FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
 
 			for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
@@ -230,9 +233,17 @@ public final class YamlComments {
 
 		else if (obj instanceof String || obj instanceof Character) {
 			if (obj instanceof String) {
-				final String s = (String) obj;
+				final String string = (String) obj;
 
-				obj = s.replace("\n", "\\n");
+				// Split multi line strings using |-
+				if (string.contains("\n")) {
+					writer.write(prefixSpaces + actualKey + ": |-\n");
+
+					for (final String line : string.split("\n"))
+						writer.write(prefixSpaces + "    " + line + "\n");
+
+					return;
+				}
 			}
 
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(obj));
@@ -248,7 +259,7 @@ public final class YamlComments {
 	// Writes a configuration section
 	private static void writeSection(BufferedWriter writer, String actualKey, String prefixSpaces, ConfigurationSection section) throws IOException {
 		if (section.getKeys(false).isEmpty())
-			writer.write(prefixSpaces + actualKey + ": {}");
+			writer.write(prefixSpaces + actualKey + ":");
 
 		else
 			writer.write(prefixSpaces + actualKey + ":");
