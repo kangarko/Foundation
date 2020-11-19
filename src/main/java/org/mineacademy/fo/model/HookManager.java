@@ -671,9 +671,11 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is vanished in EssentialsX or CMI, or false if neither plugin is present
 	 *
+	 * @deprecated this does not call metadata check in most plugins, see {@link PlayerUtil#isVanished(Player)}
 	 * @param player
 	 * @return
 	 */
+	@Deprecated
 	public static boolean isVanished(final Player player) {
 		if (isEssentialsLoaded() && essentialsHook.isVanished(player.getName()))
 			return true;
@@ -1462,7 +1464,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2877,7 +2879,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 

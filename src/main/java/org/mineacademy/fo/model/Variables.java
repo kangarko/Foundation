@@ -19,6 +19,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
@@ -423,7 +424,7 @@ public final class Variables {
 				return player == null ? "" : formatIp0(player);
 
 			case "player_vanished":
-				return player == null ? "false" : String.valueOf(HookManager.isVanished(player));
+				return player == null ? "false" : String.valueOf(PlayerUtil.isVanished(player));
 
 			case "country_code":
 				return player == null ? "" : geoResponse.getCountryCode();
