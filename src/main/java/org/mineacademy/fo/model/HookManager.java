@@ -118,6 +118,7 @@ public final class HookManager {
 	private static EssentialsHook essentialsHook;
 	private static FactionsHook factionsHook;
 	private static LandsHook landsHook;
+	private static LiteBansHook liteBansHook;
 	private static LocketteProHook locketteProHook;
 	private static LWCHook lwcHook;
 	private static McMMOHook mcmmoHook;
@@ -207,6 +208,9 @@ public final class HookManager {
 		if (Common.doesPluginExist("Lands"))
 			landsHook = new LandsHook();
 
+		if (Common.doesPluginExist("LiteBans"))
+			liteBansHook = new LiteBansHook();
+
 		if (Common.doesPluginExist("Lockette"))
 			locketteProHook = new LocketteProHook();
 
@@ -274,6 +278,8 @@ public final class HookManager {
 
 		if (Common.doesPluginExist("WorldGuard"))
 			worldguardHook = new WorldGuardHook(worldeditHook);
+
+		// Dummy hooks
 
 		if (Common.doesPluginExist("NBTAPI"))
 			nbtAPIDummyHook = true;
@@ -351,12 +357,97 @@ public final class HookManager {
 	}
 
 	/**
+	 * Is DiscordSRV loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isDiscordSRVLoaded() {
+		return discordSRVHook != null;
+	}
+
+	/**
 	 * Is EssentialsX loaded?
 	 *
 	 * @return
 	 */
 	public static boolean isEssentialsLoaded() {
 		return essentialsHook != null;
+	}
+
+	/**
+	 * Are Faction plugins loaded? We support UUID factions and free factions
+	 *
+	 * @return
+	 */
+	public static boolean isFactionsLoaded() {
+		return factionsHook != null;
+	}
+
+	/**
+	 * Is FastAsyncWorldEdit loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isFAWELoaded() {
+
+		// Check for FAWE directly
+		final Plugin fawe = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
+
+		if (fawe != null && fawe.isEnabled())
+			return true;
+
+		// Check for legacy FAWE installations
+		final Plugin worldEdit = Bukkit.getPluginManager().getPlugin("WorldEdit");
+
+		if (worldEdit != null && worldEdit.isEnabled() && "Fast Async WorldEdit plugin".equals(worldEdit.getDescription().getDescription()))
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Is Lands loaded as a plugin?
+	 *
+	 * @return
+	 */
+	public static boolean isLandsLoaded() {
+		return landsHook != null;
+	}
+
+	/**
+	 * Is LiteBans loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isLiteBansLoaded() {
+		return liteBansHook != null;
+	}
+
+	/**
+	 * Is Lockette Pro loaded
+	 *
+	 * @return
+	 */
+	public static boolean isLocketteProLoaded() {
+		return locketteProHook != null;
+	}
+
+	/**
+	 * Is LWC loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isLWCLoaded() {
+		return lwcHook != null;
+	}
+
+	/**
+	 * Is mcMMO loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isMcMMOLoaded() {
+		return mcmmoHook != null;
 	}
 
 	/**
@@ -369,12 +460,66 @@ public final class HookManager {
 	}
 
 	/**
+	 * Is MVdWPlaceholderAPI loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isMVdWPlaceholderAPILoaded() {
+		return MVdWPlaceholderHook != null;
+	}
+
+	/**
 	 * Is MythicMobs loaded?
 	 *
 	 * @return
 	 */
 	public static boolean isMythicMobsLoaded() {
 		return mythicMobsHook != null;
+	}
+
+	/**
+	 * Is NBTAPI loaded as a plugin?
+	 *
+	 * @return
+	 */
+	public static boolean isNbtAPILoaded() {
+		return nbtAPIDummyHook;
+	}
+
+	/**
+	 * Is Nicky loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isNickyLoaded() {
+		return nickyHook != null;
+	}
+
+	/**
+	 * Is nuVotifier loaded as a plugin?
+	 *
+	 * @return
+	 */
+	public static boolean isNuVotifierLoaded() {
+		return nuVotifierDummyHook;
+	}
+
+	/**
+	 * Is PlaceholderAPI loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isPlaceholderAPILoaded() {
+		return placeholderAPIHook != null;
+	}
+
+	/**
+	 * Is PlotSquared loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isPlotSquaredLoaded() {
+		return plotSquaredHook != null;
 	}
 
 	/**
@@ -388,6 +533,15 @@ public final class HookManager {
 	 */
 	public static boolean isProtocolLibLoaded() {
 		return protocolLibHook != null;
+	}
+
+	/**
+	 * Is Residence loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isResidenceLoaded() {
+		return residenceHook != null;
 	}
 
 	/**
@@ -418,78 +572,6 @@ public final class HookManager {
 	}
 
 	/**
-	 * Is PlaceholderAPI loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isPlaceholderAPILoaded() {
-		return placeholderAPIHook != null;
-	}
-
-	/**
-	 * Are Faction plugins loaded? We support UUID factions and free factions
-	 *
-	 * @return
-	 */
-	public static boolean isFactionsLoaded() {
-		return factionsHook != null;
-	}
-
-	/**
-	 * Is Nicky loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isNickyLoaded() {
-		return nickyHook != null;
-	}
-
-	/**
-	 * Is MVdWPlaceholderAPI loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isMVdWPlaceholderAPILoaded() {
-		return MVdWPlaceholderHook != null;
-	}
-
-	/**
-	 * Is mcMMO loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isMcMMOLoaded() {
-		return mcmmoHook != null;
-	}
-
-	/**
-	 * Is LWC loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isLWCLoaded() {
-		return lwcHook != null;
-	}
-
-	/**
-	 * Is Lockette Pro loaded
-	 *
-	 * @return
-	 */
-	public static boolean isLocketteProLoaded() {
-		return locketteProHook != null;
-	}
-
-	/**
-	 * Is Residence loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isResidenceLoaded() {
-		return residenceHook != null;
-	}
-
-	/**
 	 * Is WorldEdit loaded?
 	 *
 	 * @return
@@ -505,73 +587,6 @@ public final class HookManager {
 	 */
 	public static boolean isWorldGuardLoaded() {
 		return worldguardHook != null;
-	}
-
-	/**
-	 * Is PlotSquared loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isPlotSquaredLoaded() {
-		return plotSquaredHook != null;
-	}
-
-	/**
-	 * Is DiscordSRV loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isDiscordSRVLoaded() {
-		return discordSRVHook != null;
-	}
-
-	/**
-	 * Is Lands loaded as a plugin?
-	 *
-	 * @return
-	 */
-	public static boolean isLandsLoaded() {
-		return landsHook != null;
-	}
-
-	/**
-	 * Is NBTAPI loaded as a plugin?
-	 *
-	 * @return
-	 */
-	public static boolean isNbtAPILoaded() {
-		return nbtAPIDummyHook;
-	}
-
-	/**
-	 * Is nuVotifier loaded as a plugin?
-	 *
-	 * @return
-	 */
-	public static boolean isNuVotifierLoaded() {
-		return nuVotifierDummyHook;
-	}
-
-	/**
-	 * Is FastAsyncWorldEdit loaded?
-	 *
-	 * @return
-	 */
-	public static boolean isFAWELoaded() {
-
-		// Check for FAWE directly
-		final Plugin fawe = Bukkit.getPluginManager().getPlugin("FastAsyncWorldEdit");
-
-		if (fawe != null && fawe.isEnabled())
-			return true;
-
-		// Check for legacy FAWE installations
-		final Plugin worldEdit = Bukkit.getPluginManager().getPlugin("WorldEdit");
-
-		if (worldEdit != null && worldEdit.isEnabled() && "Fast Async WorldEdit plugin".equals(worldEdit.getDescription().getDescription()))
-			return true;
-
-		return false;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -685,7 +700,32 @@ public final class HookManager {
 		if (isBanManagerLoaded() && banManagerHook.isMuted(player))
 			return true;
 
+		if (isLiteBansLoaded() && liteBansHook.isMuted(player))
+			return true;
+
 		return false;
+	}
+
+	/**
+	 * If litebans is loaded, mute player - this expects you having /lmute command installed!
+	 *
+	 * @param player
+	 * @param durationTokenized
+	 * @param reason
+	 */
+	public static void setLiteBansMute(Player player, String durationTokenized, String reason) {
+		if (isLiteBansLoaded())
+			Common.dispatchCommand(player, "lmute {player} " + durationTokenized + (reason == null || reason.isEmpty() ? "" : " " + reason));
+	}
+
+	/**
+	 * If litebans is loaded, unmute player - this expects you having /lunmute command installed!
+	 *
+	 * @param player
+	 */
+	public static void setLiteBansUnmute(Player player) {
+		if (isLiteBansLoaded())
+			Common.dispatchCommand(player, "lunmute {player}");
 	}
 
 	/**
@@ -808,16 +848,6 @@ public final class HookManager {
 
 		return !essNick.equals(nick) && !"".equals(essNick) ? essNick : !cmiNick.equals(nick) && !"".equals(cmiNick) ? cmiNick : nick;
 	}
-
-	/**
-	 * Attempts to find UUID stored in the Essentials/userdata folder
-	 *
-	 * @param name
-	 * @return UUID with the name found or null if not stored
-	 */
-	/*public static Tuple<UUID, String> getEssentialsUUIDFromName(String name) {
-		return isEssentialsLoaded() ? essentialsxHook.getUUIDfromName(name) : null;
-	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
 	// EssentialsX
@@ -1432,7 +1462,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2847,7 +2877,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -2990,5 +3020,26 @@ class LandsHook {
 			return land.getOnlinePlayers();
 
 		return new ArrayList<>();
+	}
+}
+
+class LiteBansHook {
+
+	/*
+	 * Return true if the given player is muted
+	 */
+	boolean isMuted(final Player player) {
+		try {
+			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
+			final Object instance = ReflectionUtil.invokeStatic(api, "get");
+
+			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
+
+		} catch (final Throwable t) {
+			if (!t.toString().contains("Could not find class"))
+				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? Got: " + t);
+
+			return false;
+		}
 	}
 }
