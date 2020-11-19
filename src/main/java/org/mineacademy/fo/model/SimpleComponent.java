@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
@@ -535,30 +534,28 @@ public final class SimpleComponent implements ConfigSerializable {
 			message = inheritFormatting.getColor() + message;
 		}
 
-		final Matcher matcher = URL_PATTERN.matcher(message);
-
 		StringBuilder builder = new StringBuilder();
 		TextComponent component = new TextComponent();
 
-		for (int i = 0; i < message.length(); i++) {
-			char c = message.charAt(i);
+		for (int index = 0; index < message.length(); index++) {
+			char letter = message.charAt(index);
 
-			if (c == ChatColor.COLOR_CHAR) {
-				if (++i >= message.length())
+			if (letter == ChatColor.COLOR_CHAR) {
+				if (++index >= message.length())
 					break;
 
-				c = message.charAt(i);
+				letter = message.charAt(index);
 
-				if (c >= 'A' && c <= 'Z')
-					c += 32;
+				if (letter >= 'A' && letter <= 'Z')
+					letter += 32;
 
 				ChatColor format;
 
-				if (c == 'x' && i + 12 < message.length()) {
+				if (letter == 'x' && index + 12 < message.length()) {
 					final StringBuilder hex = new StringBuilder("#");
 
 					for (int j = 0; j < 6; j++)
-						hex.append(message.charAt(i + 2 + (j * 2)));
+						hex.append(message.charAt(index + 2 + (j * 2)));
 
 					try {
 						format = ChatColor.of(hex.toString());
@@ -567,10 +564,10 @@ public final class SimpleComponent implements ConfigSerializable {
 						format = null;
 					}
 
-					i += 12;
+					index += 12;
 
 				} else
-					format = ChatColor.getByChar(c);
+					format = ChatColor.getByChar(letter);
 
 				if (format == null)
 					continue;
@@ -579,7 +576,6 @@ public final class SimpleComponent implements ConfigSerializable {
 					final TextComponent old = component;
 
 					component = new TextComponent(old);
-
 					old.setText(builder.toString());
 
 					builder = new StringBuilder();
@@ -607,13 +603,13 @@ public final class SimpleComponent implements ConfigSerializable {
 					component = new TextComponent();
 					component.setColor(format);
 
+					component.setBold(false);
+					component.setItalic(false);
+					component.setStrikethrough(false);
+					component.setUnderlined(false);
+
 				} else {
 					component = new TextComponent();
-
-					component.setItalic(false);
-					component.setUnderlined(false);
-					component.setStrikethrough(false);
-					component.setBold(false);
 
 					component.setColor(format);
 				}
@@ -621,18 +617,20 @@ public final class SimpleComponent implements ConfigSerializable {
 				continue;
 			}
 
-			int pos = message.indexOf(' ', i);
+			int pos = message.indexOf(' ', index);
 
 			if (pos == -1)
 				pos = message.length();
 
 			// Web link handling
-			if (matcher.region(i, pos).find()) {
+			if (URL_PATTERN.matcher(message).region(index, pos).find()) {
 
 				if (builder.length() > 0) {
 					final TextComponent old = component;
 					component = new TextComponent(old);
+
 					old.setText(builder.toString());
+
 					builder = new StringBuilder();
 					components.add(old);
 				}
@@ -640,22 +638,21 @@ public final class SimpleComponent implements ConfigSerializable {
 				final TextComponent old = component;
 				component = new TextComponent(old);
 
-				final String urlString = message.substring(i, pos);
+				final String urlString = message.substring(index, pos);
 				component.setText(urlString);
 				component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
 				components.add(component);
 
-				i += pos - i - 1;
+				index += pos - index - 1;
 				component = old;
 
 				continue;
 			}
 
-			builder.append(c);
+			builder.append(letter);
 		}
 
 		component.setText(builder.toString());
-
 		components.add(component);
 
 		return components.toArray(new TextComponent[components.size()]);
