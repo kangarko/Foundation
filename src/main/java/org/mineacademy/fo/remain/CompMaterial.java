@@ -1773,12 +1773,12 @@ public enum CompMaterial {
 	 */
 	@Deprecated
 	public static CompMaterial fromStringCompat(final String name) {
-		final CompMaterial lookup = CompMaterial.fromString(name);
+		final CompMaterial lookup = fromString(name);
 
 		if (lookup == null && SoftMaterials.MATERIALS.contains(name))
 			return null;
 
-		return CompMaterial.fromStringStrict(name);
+		return fromStringStrict(name);
 	}
 
 	/**
@@ -1821,8 +1821,12 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static CompMaterial fromLegacy(String name, final int data) {
+
 		// try to resolve common pitfalls and emulate the material enum writing style
 		name = name.replace(" ", "_").toUpperCase();
+
+		// CompMaterial does not support legacy names
+		name = name.replace("LEGACY_", "");
 
 		if (cachedSearch.containsKey(name + "," + data))
 			return cachedSearch.get(name + "," + data);
