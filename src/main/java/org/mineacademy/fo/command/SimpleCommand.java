@@ -36,7 +36,6 @@ import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
 import org.mineacademy.fo.model.ChatPaginator;
-import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
@@ -558,7 +557,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
 		final Player player = findPlayerInternal(name);
-		checkBoolean(player != null && player.isOnline() && !HookManager.isVanished(player), falseMessage.replace("{player}", name));
+		checkBoolean(player != null && player.isOnline() && !PlayerUtil.isVanished(player), falseMessage.replace("{player}", name));
 
 		return player;
 	}
