@@ -66,13 +66,14 @@ public final class ReloadCommand extends SimpleSubCommand {
 	 */
 	private List<File> collectYamlFiles(File directory, List<File> list) {
 
-		for (final File file : directory.listFiles()) {
-			if (file.getName().endsWith("yml"))
-				list.add(file);
+		if (directory.exists())
+			for (final File file : directory.listFiles()) {
+				if (file.getName().endsWith("yml"))
+					list.add(file);
 
-			if (file.isDirectory())
-				collectYamlFiles(file, list);
-		}
+				if (file.isDirectory())
+					collectYamlFiles(file, list);
+			}
 
 		return list;
 	}

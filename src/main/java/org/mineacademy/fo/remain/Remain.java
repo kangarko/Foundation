@@ -906,7 +906,8 @@ public final class Remain {
 			sendComponent(sender, ComponentSerializer.parse(json));
 
 		} catch (final RuntimeException ex) {
-			Common.error(ex, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
+			Common.error(ex,
+					"Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
 		}
 	}
 
@@ -1650,10 +1651,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
