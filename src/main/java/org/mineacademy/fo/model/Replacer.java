@@ -289,7 +289,7 @@ public final class Replacer {
 				variableKey = variableKey.endsWith("}") ? variableKey.substring(0, variableKey.length() - 1) : variableKey;
 
 				if (variableKey.equals(variable))
-					value = entry.getValue().toString();
+					value = entry.getValue() == null ? "null" : entry.getValue().toString();
 			}
 
 			if (value != null) {
