@@ -477,13 +477,25 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Checks if the player has the given permission
+	 * Checks if the current sender has the given permission
 	 *
 	 * @param perm
 	 * @throws CommandException
 	 */
 	public final void checkPerm(@NonNull final String perm) throws CommandException {
 		if (isPlayer() && !hasPerm(perm))
+			throw new CommandException(getPermissionMessage().replace("{permission}", perm));
+	}
+
+	/**
+	 * Checks if the given sender has the given permission
+	 *
+	 * @param sender
+	 * @param perm
+	 * @throws CommandException
+	 */
+	public final void checkPerm(@NonNull CommandSender sender, @NonNull final String perm) throws CommandException {
+		if (isPlayer() && !hasPerm(sender, perm))
 			throw new CommandException(getPermissionMessage().replace("{permission}", perm));
 	}
 
@@ -779,14 +791,29 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * A convenience check for quickly determining if the sender has a given
 	 * permission.
-	 * <p>
+	 *
 	 * TIP: For a more complete check use {@link #checkPerm(String)} that
 	 * will automatically return your command if they lack the permission.
 	 *
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(String permission) {
+	protected final boolean hasPerm(@Nullable String permission) {
+		return this.hasPerm(sender, permission);
+	}
+
+	/**
+	 * A convenience check for quickly determining if the sender has a given
+	 * permission.
+	 *
+	 * TIP: For a more complete check use {@link #checkPerm(String)} that
+	 * will automatically return your command if they lack the permission.
+	 *
+	 * @param sender
+	 * @param permission
+	 * @return
+	 */
+	protected final boolean hasPerm(CommandSender sender, @Nullable String permission) {
 		return permission == null ? true : PlayerUtil.hasPerm(sender, permission.replace("{label}", getLabel()));
 	}
 
