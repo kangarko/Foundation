@@ -3031,17 +3031,21 @@ class LiteBansHook {
 	 * Return true if the given player is muted
 	 */
 	boolean isMuted(final Player player) {
-		try {
+		return false; // Problematic, we're investigating this
+		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
-			if (!t.toString().contains("Could not find class"))
-				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? Got: " + t);
-
+			if (!t.toString().contains("Could not find class")) {
+				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
+		
+				t.printStackTrace();
+			}
+		
 			return false;
-		}
+		}*/
 	}
 }
