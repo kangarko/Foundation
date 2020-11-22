@@ -70,7 +70,7 @@ final class FoundationListener implements Listener {
 			return;
 		}
 
-		if (!player.hasMetadata("FoPages")) {
+		if (!player.hasMetadata(ChatPaginator.getPageNbtTag())) {
 			Common.tell(player, SimpleLocalization.Pages.NO_PAGES);
 
 			event.setCancelled(true);
@@ -90,7 +90,7 @@ final class FoundationListener implements Listener {
 			return;
 		}
 
-		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata("FoPages").get(0).value();
+		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata(ChatPaginator.getPageNbtTag()).get(0).value();
 		final Map<Integer, List<SimpleComponent>> pages = chatPages.getPages();
 
 		// Remove empty lines

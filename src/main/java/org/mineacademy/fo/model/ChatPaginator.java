@@ -210,7 +210,7 @@ public final class ChatPaginator {
 		if (sender instanceof Player) {
 			final Player player = (Player) sender;
 
-			player.setMetadata("FoPages", new FixedMetadataValue(SimplePlugin.getInstance(), this));
+			player.setMetadata(getPageNbtTag(), new FixedMetadataValue(SimplePlugin.getInstance(), this));
 			player.chat("/#flp 1");
 		}
 
@@ -227,5 +227,9 @@ public final class ChatPaginator {
 			for (final SimpleComponent component : this.footer)
 				component.send(sender);
 		}
+	}
+
+	public static String getPageNbtTag() {
+		return "FoPages_" + SimplePlugin.getNamed();
 	}
 }
