@@ -13,6 +13,7 @@ import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
 import github.scarsz.discordsrv.api.Subscribe;
 import github.scarsz.discordsrv.api.events.DiscordGuildMessagePreProcessEvent;
+import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Message;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
@@ -74,6 +75,16 @@ public abstract class DiscordListener implements Listener {
 	 * @param event
 	 */
 	protected abstract void onMessageReceived(DiscordGuildMessagePreProcessEvent event);
+
+	/**
+	 * Called automatically when someone writes a message in Minecraft and DiscordSRV
+	 * automatically processes it -- if you are handling your message, we recommend
+	 * canceling the event here to avoid double sending
+	 *
+	 * @param event
+	 */
+	protected void onMessageSent(GameChatMessagePreProcessEvent event) {
+	}
 
 	/**
 	 * Convenience method for finding players, will stop your code if the player
@@ -246,10 +257,34 @@ public abstract class DiscordListener implements Listener {
 
 				} catch (final Throwable t) {
 					Common.error(t,
-							"Failed to handle DiscordSRV!",
+							"Failed to handle DiscordSRV->Minecraft message!",
 							"Sender: " + event.getAuthor().getName(),
 							"Channel: " + event.getChannel().getName(),
 							"Message: " + event.getMessage().getContentDisplay());
+				}
+		}
+
+		/**
+		 * Notify when DiscordSRV processes a Minecraft message and wants to
+		 * send it to Discord
+		 *
+		 * @param event
+		 */
+		@Subscribe(priority = ListenerPriority.HIGHEST)
+		public void onMessageSend(GameChatMessagePreProcessEvent event) {
+			for (final DiscordListener listener : registeredListeners)
+				try {
+					listener.onMessageSent(event);
+
+				} catch (final RemovedMessageException ex) {
+					// Fail through since we handled that
+
+				} catch (final Throwable t) {
+					Common.error(t,
+							"Failed to handle Minecraft->DiscordSRV message!",
+							"Sender: " + event.getPlayer().getName(),
+							"Channel: " + event.getChannel(),
+							"Message: " + event.getMessage());
 				}
 		}
 	}
