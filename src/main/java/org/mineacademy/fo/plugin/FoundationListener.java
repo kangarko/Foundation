@@ -71,9 +71,8 @@ final class FoundationListener implements Listener {
 		}
 
 		if (!player.hasMetadata(ChatPaginator.getPageNbtTag())) {
-			Common.tell(player, SimpleLocalization.Pages.NO_PAGES);
-
 			event.setCancelled(true);
+
 			return;
 		}
 
