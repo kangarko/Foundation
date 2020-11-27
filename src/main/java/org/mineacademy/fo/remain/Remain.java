@@ -1651,10 +1651,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {

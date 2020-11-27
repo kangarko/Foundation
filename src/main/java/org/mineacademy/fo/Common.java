@@ -672,6 +672,8 @@ public final class Common {
 
 			while (matcher.find())
 				message = matcher.replaceAll("");
+
+			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}
 
 		return message;
