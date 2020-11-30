@@ -7,6 +7,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
@@ -251,6 +252,14 @@ public final class Variable extends YamlConfig {
 			final String script = Variables.replace(this.value, sender, replacements);
 
 			return String.valueOf(JavaScriptExecutor.run(script, sender));
+
+		} catch (final RuntimeException ex) {
+
+			// Assume console or Discord lack proper methods to call
+			if (sender instanceof Player)
+				throw ex;
+
+			return "";
 
 		} finally {
 			Variables.REPLACE_JAVASCRIPT = true;
