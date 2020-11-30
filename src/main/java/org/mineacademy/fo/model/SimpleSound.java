@@ -7,6 +7,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompSound;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -15,7 +16,7 @@ import lombok.NonNull;
  * A class holding a sound, volume and a pitch
  */
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SimpleSound {
 
 	/**
@@ -40,6 +41,11 @@ public final class SimpleSound {
 	private boolean randomPitch = false;
 
 	/**
+	 * Is this sound enabled?
+	 */
+	private boolean enabled = true;
+
+	/**
 	 * Create a new sound
 	 *
 	 * @param sound
@@ -47,7 +53,17 @@ public final class SimpleSound {
 	 * @param pitch
 	 */
 	public SimpleSound(Sound sound, float volume, float pitch) {
-		this(sound, volume, pitch, false);
+		this(sound, volume, pitch, false, true);
+	}
+
+	/**
+	 * Create a new sound with a random pitch
+	 *
+	 * @param sound
+	 * @param volume
+	 */
+	public SimpleSound(Sound sound, float volume) {
+		this(sound, volume, 1.0F, true, true);
 	}
 
 	/**
@@ -65,11 +81,15 @@ public final class SimpleSound {
 		if ("none".equals(line)) {
 			this.sound = CompSound.CLICK.getSound();
 			this.volume = 0.0F;
+			this.enabled = false;
 
 			return;
 		}
 
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
+
+		final String volumeRaw = values[1];
+		final String pitchRaw = values[2];
 
 		try {
 			sound = CompSound.convert(values[0]);
@@ -89,8 +109,15 @@ public final class SimpleSound {
 		Valid.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
 		Valid.checkNotNull(sound, "Unable to parse sound from: " + line);
 
-		volume = Float.parseFloat(values[1]);
-		pitch = Float.parseFloat(values[2]);
+		volume = Float.parseFloat(volumeRaw);
+
+		if ("random".equals(pitchRaw)) {
+			pitch = 1.0F;
+			randomPitch = true;
+		}
+
+		else
+			pitch = Float.parseFloat(pitchRaw);
 	}
 
 	/**
@@ -99,8 +126,9 @@ public final class SimpleSound {
 	 * @param players
 	 */
 	public void play(Iterable<Player> players) {
-		for (final Player player : players)
-			play(player);
+		if (enabled)
+			for (final Player player : players)
+				play(player);
 	}
 
 	/**
@@ -109,9 +137,11 @@ public final class SimpleSound {
 	 * @param player
 	 */
 	public void play(Player player) {
-		Valid.checkNotNull(sound);
+		if (enabled) {
+			Valid.checkNotNull(sound);
 
-		player.playSound(player.getLocation(), sound, volume, getPitch());
+			player.playSound(player.getLocation(), sound, volume, getPitch());
+		}
 	}
 
 	/**
@@ -120,9 +150,11 @@ public final class SimpleSound {
 	 * @param location
 	 */
 	public void play(Location location) {
-		Valid.checkNotNull(sound);
+		if (enabled) {
+			Valid.checkNotNull(sound);
 
-		location.getWorld().playSound(location, sound, volume, getPitch());
+			location.getWorld().playSound(location, sound, volume, getPitch());
+		}
 	}
 
 	/**
@@ -134,8 +166,11 @@ public final class SimpleSound {
 		return randomPitch ? (float) Math.random() : pitch;
 	}
 
+	/**
+	 * Returns a serialized sound, does not support random pitch
+	 */
 	@Override
 	public String toString() {
-		return sound + " " + volume + " " + pitch;
+		return enabled ? sound + " " + volume + " " + (randomPitch ? "random" : pitch) : "none";
 	}
 }
