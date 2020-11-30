@@ -138,4 +138,5 @@ public final class DiscordSender implements CommandSender {
 	private FoException unsupported(String method) {
 		return new FoException("DiscordSender cannot invoke " + method + "()");
 	}
+
 }

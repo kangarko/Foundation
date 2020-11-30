@@ -66,7 +66,7 @@ public abstract class Menu {
 	 */
 	@Getter
 	@Setter
-	private static SimpleSound sound = new SimpleSound(CompSound.NOTE_STICKS.getSound(), .4F, 1F, true);
+	private static SimpleSound sound = new SimpleSound(CompSound.NOTE_STICKS.getSound(), .4F);
 
 	/**
 	 * Should we animate menu titles?
