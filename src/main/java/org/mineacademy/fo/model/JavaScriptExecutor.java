@@ -14,8 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -113,21 +111,8 @@ public final class JavaScriptExecutor {
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-			if (sender != null) {
-				if (MinecraftVersion.olderThan(V.v1_13)) {
-					if (!(sender instanceof Player)) {
-
-						// Older MC versions lack the Spigot class for CommandSender so
-						// we just return nothing here instead. Fixes DiscordSRV error
-						if (javascript.contains("player."))
-							return "";
-
-					} else
-						engine.put("player", sender);
-
-				} else
-					engine.put("player", sender);
-			}
+			if (sender != null)
+				engine.put("player", sender);
 
 			if (event != null)
 				engine.put("event", event);
