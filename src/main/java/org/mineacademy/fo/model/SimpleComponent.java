@@ -17,6 +17,7 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -408,12 +409,20 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public <T extends CommandSender> void sendAs(@Nullable CommandSender sender, Iterable<T> receivers) {
 		for (final CommandSender receiver : receivers) {
-			final TextComponent component = new TextComponent(build(receiver));
+			final TextComponent component = build(receiver);
 
 			if (receiver instanceof Player && sender instanceof Player)
 				setRelationPlaceholders(component, (Player) receiver, (Player) sender);
 
-			Remain.sendComponent(receiver, component);
+			// Prevent clients being kicked out, so we just send plain message instead
+			if (Remain.toJson(component).length() > Short.MAX_VALUE) {
+				final String legacy = Common.colorize(component.toLegacyText());
+
+				Debugger.debug("component", "Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: " + legacy);
+				receiver.sendMessage(legacy);
+
+			} else
+				Remain.sendComponent(receiver, component);
 		}
 	}
 
