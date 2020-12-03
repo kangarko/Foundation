@@ -88,9 +88,6 @@ public final class SimpleSound {
 
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
 
-		final String volumeRaw = values[1];
-		final String pitchRaw = values[2];
-
 		try {
 			sound = CompSound.convert(values[0]);
 
@@ -108,6 +105,9 @@ public final class SimpleSound {
 
 		Valid.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
 		Valid.checkNotNull(sound, "Unable to parse sound from: " + line);
+
+		final String volumeRaw = values[1];
+		final String pitchRaw = values[2];
 
 		volume = Float.parseFloat(volumeRaw);
 
