@@ -19,6 +19,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Heavily inspired by a library made by Hex_27.
@@ -1711,7 +1712,7 @@ public enum CompMaterial {
 	 * @param block
 	 * @return
 	 */
-	public static CompMaterial fromBlock(final Block block) {
+	public static CompMaterial fromBlock(@NonNull final Block block) {
 		try {
 			return CompMaterial.valueOf(block.getType().toString());
 
