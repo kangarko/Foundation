@@ -7,7 +7,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 
@@ -108,13 +107,21 @@ public enum CompProperty {
 				if (Remain.hasItemMeta() && instance instanceof ItemMeta) {
 					if (this == UNBREAKABLE)
 						try {
-							final Object spigot = ReflectionUtil.invoke("spigot", instance);
-							final Method method = ReflectionUtil.getMethod(spigot.getClass(), "setUnbreakable", boolean.class);
+							final boolean has = Boolean.parseBoolean(key.toString());
 
-							ReflectionUtil.invoke(method, spigot, true);
+							final Method spigotMethod = instance.getClass().getMethod("spigot");
+							spigotMethod.setAccessible(true);
+
+							final Object spigot = spigotMethod.invoke(instance);
+
+							final Method setUnbreakable = spigot.getClass().getMethod("setUnbreakable", boolean.class);
+							setUnbreakable.setAccessible(true);
+
+							setUnbreakable.invoke(spigot, has);
 
 						} catch (final Throwable t) {
-							t.printStackTrace();
+							if (MinecraftVersion.atLeast(V.v1_8))
+								t.printStackTrace();
 						}
 				}
 
