@@ -91,7 +91,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent onHover(String... text) {
-		return onHover(HoverEvent.Action.SHOW_TEXT, String.join("&r\n", text));
+		return onHover(HoverEvent.Action.SHOW_TEXT, text);
 	}
 
 	/**
@@ -103,18 +103,31 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent onHover(ItemStack item) {
-		return CompMaterial.isAir(item.getType()) ? onHover("Air") : onHover(HoverEvent.Action.SHOW_ITEM, Remain.toJson(item));
+		if (CompMaterial.isAir(item.getType()))
+			return onHover("Air");
+
+		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_ITEM, Remain.toComponent(Remain.toJson(item)));
+		return this;
 	}
 
 	/**
 	 * Add a hover event for the {@link #currentComponents}
 	 *
 	 * @param action
-	 * @param text
+	 * @param lines
 	 * @return
 	 */
-	public SimpleComponent onHover(HoverEvent.Action action, String text) {
-		this.currentComponent.hoverEvent = new HoverEvent(action, toComponent(Common.colorize(text), null));
+	public SimpleComponent onHover(HoverEvent.Action action, String[] lines) {
+		final TextComponent component = new TextComponent();
+
+		// We must compile each component separately otherwise decoration such as bold will overflow lines
+		for (int i = 0; i < lines.length; i++) {
+			final String line = lines[i];
+
+			component.addExtra(new TextComponent(toComponent(Common.colorize(line) + (i + 1 < lines.length ? "\n" : ""), null)));
+		}
+
+		this.currentComponent.hoverEvent = new HoverEvent(action, new BaseComponent[] { component });
 
 		return this;
 	}

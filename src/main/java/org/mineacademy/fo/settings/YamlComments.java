@@ -24,7 +24,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -109,9 +108,8 @@ public final class YamlComments {
 
 		// Move to unused/ folder and retain old path
 		if (!removedKeys.isEmpty()) {
-			final File backupFile = FileUtil.getOrMakeFile("unused/" + diskFile.toPath().toString()
-					.replace("plugins/" + SimplePlugin.getNamed(), "")
-					.replace("plugins\\" + SimplePlugin.getNamed(), ""));
+			final File backupFile = FileUtil.getOrMakeFile("unused/" + diskFile.getName());
+
 			final FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
 
 			for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
