@@ -75,23 +75,53 @@ public final class SimpleComponent implements ConfigSerializable {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Add a show text hover event for the {@link #currentComponents}
+	 * Add a show text ; event for the {@link #currentComponents}
 	 *
 	 * @param texts
 	 * @return
 	 */
 	public SimpleComponent onHover(Collection<String> texts) {
-		return onHover(texts.toArray(new String[texts.size()]));
+		return onHover(Common.toArray(texts));
 	}
 
 	/**
 	 * Add a show text hover event for the {@link #currentComponents}
 	 *
-	 * @param text
+	 * @param lines
 	 * @return
 	 */
-	public SimpleComponent onHover(String... text) {
-		return onHover(HoverEvent.Action.SHOW_TEXT, text);
+	public SimpleComponent onHover(String... lines) {
+
+		final List<BaseComponent> components = new ArrayList<>();
+
+		// We must compile each component separately otherwise decoration such as bold will overflow lines
+		for (int i = 0; i < lines.length; i++) {
+			final String line = lines[i];
+
+			for (final BaseComponent extra : toComponent(Common.colorize(line) + (i + 1 < lines.length ? "\n" : ""), null)) {
+
+				if (!line.contains(ChatColor.BOLD.toString()))
+					extra.setBold(false);
+
+				if (!line.contains(ChatColor.ITALIC.toString()))
+					extra.setItalic(false);
+
+				if (!line.contains(ChatColor.MAGIC.toString()))
+					extra.setObfuscated(false);
+
+				if (!line.contains(ChatColor.STRIKETHROUGH.toString()))
+					extra.setStrikethrough(false);
+
+				if (!line.contains(ChatColor.UNDERLINE.toString()))
+					extra.setUnderlined(false);
+
+				components.add(extra);
+			}
+		}
+
+		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, components.toArray(new BaseComponent[components.size()]));
+
+		return this;
 	}
 
 	/**
@@ -106,28 +136,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		if (CompMaterial.isAir(item.getType()))
 			return onHover("Air");
 
-		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_ITEM, Remain.toComponent(Remain.toJson(item)));
-		return this;
-	}
-
-	/**
-	 * Add a hover event for the {@link #currentComponents}
-	 *
-	 * @param action
-	 * @param lines
-	 * @return
-	 */
-	public SimpleComponent onHover(HoverEvent.Action action, String[] lines) {
-		final TextComponent component = new TextComponent();
-
-		// We must compile each component separately otherwise decoration such as bold will overflow lines
-		for (int i = 0; i < lines.length; i++) {
-			final String line = lines[i];
-
-			component.addExtra(new TextComponent(toComponent(Common.colorize(line) + (i + 1 < lines.length ? "\n" : ""), null)));
-		}
-
-		this.currentComponent.hoverEvent = new HoverEvent(action, new BaseComponent[] { component });
+		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[] { new TextComponent(Remain.toJson(item)) });
 
 		return this;
 	}
