@@ -109,7 +109,8 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 		} finally {
 			LagCatcher.end(logName);
 
-			this.event = null;
+			// Do not null the event since this breaks findPlayer for any scheduled tasks
+			//this.event = null;
 		}
 	}
 
@@ -127,10 +128,12 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @return
 	 */
 	protected Player findPlayer() {
+		Valid.checkNotNull(this.event, "Called findPlayer for null event!");
+
 		if (this.event instanceof PlayerEvent)
 			return ((PlayerEvent) this.event).getPlayer();
 
-		throw new FoException("findPlayer called but not implemented for " + this.event + " either set event or call setPlayer");
+		throw new FoException("Called findPlayer but not method not implemented for event " + this.event);
 	}
 
 	/**
