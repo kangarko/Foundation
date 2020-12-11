@@ -17,7 +17,6 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -440,7 +439,7 @@ public final class SimpleComponent implements ConfigSerializable {
 			if (Remain.toJson(component).length() > Short.MAX_VALUE) {
 				final String legacy = Common.colorize(component.toLegacyText());
 
-				Debugger.debug("component", "Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: " + legacy);
+				Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: " + legacy);
 				receiver.sendMessage(legacy);
 
 			} else
