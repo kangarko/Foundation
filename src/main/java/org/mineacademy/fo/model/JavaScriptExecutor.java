@@ -130,7 +130,13 @@ public final class JavaScriptExecutor {
 			return result;
 
 		} catch (final ScriptException ex) {
-			throw new RuntimeException("Script execution failed for '" + javascript + "'", ex);
+			final String message = ex.toString();
+			String error = "Script execution failed for";
+
+			if (message.contains("ReferenceError:") && message.contains("is not defined"))
+				error = "Found invalid or unparsed variable in";
+
+			throw new RuntimeException(error + " '" + javascript + "'", ex);
 		}
 	}
 
