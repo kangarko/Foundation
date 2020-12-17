@@ -13,6 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
@@ -436,7 +438,7 @@ public final class SimpleComponent implements ConfigSerializable {
 				setRelationPlaceholders(component, (Player) receiver, (Player) sender);
 
 			// Prevent clients being kicked out, so we just send plain message instead
-			if (Remain.toJson(component).length() > Short.MAX_VALUE) {
+			if (MinecraftVersion.olderThan(V.v1_9) && Remain.toJson(component).length() > Short.MAX_VALUE) {
 				final String legacy = Common.colorize(component.toLegacyText());
 
 				Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: " + legacy);
