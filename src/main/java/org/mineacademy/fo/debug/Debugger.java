@@ -226,14 +226,19 @@ public final class Debugger {
 		for (final StackTraceElement el : exception.getStackTrace()) {
 			final String[] classNames = el.getClassName().split("\\.");
 			final String className = classNames[classNames.length - 1];
+			final String line = el.toString();
 
-			if (el.toString().contains("net.minecraft.server") || el.toString().contains("org.bukkit.craftbukkit"))
+			if (line.contains("net.minecraft.server") || line.contains("org.bukkit.craftbukkit"))
 				break;
 
+			if (line.contains("org.bukkit.plugin.java.JavaPluginLoader") || line.contains("org.bukkit.plugin.SimplePluginManager") || line.contains("org.bukkit.plugin.JavaPlugin"))
+				continue;
+
 			if (!paths.contains(className))
-				paths.add(className + (trackLineNumbers ? "#" + el.getLineNumber() : ""));
+				paths.add(className + "#" + el.getMethodName() + (trackLineNumbers ? "(" + el.getLineNumber() + ")" : ""));
 		}
 
+		// Remove call to self
 		if (!paths.isEmpty())
 			paths.remove(0);
 
