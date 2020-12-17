@@ -129,7 +129,7 @@ public final class JavaScriptExecutor {
 
 			return result;
 
-		} catch (final ScriptException ex) {
+		} catch (final Throwable ex) {
 			final String message = ex.toString();
 			String error = "Script execution failed for";
 
