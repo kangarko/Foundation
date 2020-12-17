@@ -149,6 +149,7 @@ public final class BungeeUtil {
 		}
 
 		Debugger.push("bungee");
+
 		recipient.sendPluginMessage(SimplePlugin.getInstance(), channel, out.toByteArray());
 
 		actionHead = 0;
