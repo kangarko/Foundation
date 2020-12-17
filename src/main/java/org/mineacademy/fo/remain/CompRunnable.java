@@ -1,13 +1,15 @@
 package org.mineacademy.fo.remain;
 
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.debug.Debugger;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * This class is provided as an easy way to handle scheduling tasks.
@@ -18,8 +20,14 @@ public abstract class CompRunnable implements Runnable {
 	 * Wraps a delegate runnable and safely handles errors
 	 */
 	@Getter
-	@RequiredArgsConstructor
 	public static final class SafeRunnable implements Runnable {
+
+		/*
+		 * Internal counter how many tasks have been scheduled,
+		 * this has nothing to do with Bukkit's task counter and
+		 * does not reset upon plugin's reload!
+		 */
+		private static int scheduledTasks = 0;
 
 		/**
 		 * The actual runnable
@@ -27,10 +35,35 @@ public abstract class CompRunnable implements Runnable {
 		private final Runnable delegate;
 
 		/**
+		 * The classes who called this safe runnable
+		 */
+		private final List<String> source;
+
+		/*
+		 * The internal task id, this is not Bukkit's task id but our own!
+		 */
+		private final int taskId;
+
+		/**
+		 * Create a new runnable, wrapping the old one
+		 */
+		public SafeRunnable(Runnable delegate) {
+			this.delegate = delegate;
+			this.source = Debugger.traceRoute(true);
+			this.taskId = ++scheduledTasks;
+
+			// Remove the call to self and Common
+			this.source.remove(0);
+			this.source.remove(0);
+		}
+
+		/**
 		 * @see java.lang.Runnable#run()
 		 */
 		@Override
 		public void run() {
+			Debugger.debug("runnable", "Running task #" + taskId + " from " + Common.join(source));
+
 			try {
 				delegate.run();
 
