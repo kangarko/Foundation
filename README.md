@@ -12,6 +12,8 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 
 Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting their ideas out there.
 
+Check out https://mineacademy.org/plugins for our official list of plugins that use Foundation.
+
 ### Compatibility
 
 We aim to provide extreme compatibility layer enabling these Minecraft versions to work:
