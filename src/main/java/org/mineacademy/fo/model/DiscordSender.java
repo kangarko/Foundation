@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
@@ -139,4 +140,17 @@ public final class DiscordSender implements CommandSender {
 		return new FoException("DiscordSender cannot invoke " + method + "()");
 	}
 
+	/**
+	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String)
+	 */
+	public void sendMessage(UUID uuid, String message) {
+		this.sendMessage(message);
+	}
+
+	/**
+	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String[])
+	 */
+	public void sendMessage(UUID uuid, String[] messages) {
+		this.sendMessage(messages);
+	}
 }
