@@ -1,5 +1,6 @@
 package org.mineacademy.fo.bungee;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -28,6 +29,11 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	 */
 	@Override
 	public final void onPluginMessageReceived(String tag, Player player, byte[] data) {
+
+		// Cauldron/Thermos is unsupported for bungee
+		if (Bukkit.getName().contains("Cauldron"))
+			return;
+
 		if (tag.equals(SimplePlugin.getInstance().getBungeeCord().getChannel())) {
 			final IncomingMessage message = new IncomingMessage(data);
 
