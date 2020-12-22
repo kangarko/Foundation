@@ -92,35 +92,9 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent onHover(String... lines) {
-
-		final List<BaseComponent> components = new ArrayList<>();
-
-		// We must compile each component separately otherwise decoration such as bold will overflow lines
-		for (int i = 0; i < lines.length; i++) {
-			final String line = lines[i];
-
-			for (final BaseComponent extra : toComponent(Common.colorize(line) + (i + 1 < lines.length ? "\n" : ""), null)) {
-
-				if (!line.contains(ChatColor.BOLD.toString()))
-					extra.setBold(false);
-
-				if (!line.contains(ChatColor.ITALIC.toString()))
-					extra.setItalic(false);
-
-				if (!line.contains(ChatColor.MAGIC.toString()))
-					extra.setObfuscated(false);
-
-				if (!line.contains(ChatColor.STRIKETHROUGH.toString()))
-					extra.setStrikethrough(false);
-
-				if (!line.contains(ChatColor.UNDERLINE.toString()))
-					extra.setUnderlined(false);
-
-				components.add(extra);
-			}
-		}
-
-		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, components.toArray(new BaseComponent[components.size()]));
+		// I don't know why we have to wrap this inside new text component but we do this
+		// to properly reset bold and other decoration colors
+		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { new TextComponent(TextComponent.fromLegacyText(String.join("\n", lines))) });
 
 		return this;
 	}
@@ -635,10 +609,10 @@ public final class SimpleComponent implements ConfigSerializable {
 					component = new TextComponent();
 					component.setColor(format);
 
-					component.setBold(false);
+					/*component.setBold(false);
 					component.setItalic(false);
 					component.setStrikethrough(false);
-					component.setUnderlined(false);
+					component.setUnderlined(false);*/
 
 				} else {
 					component = new TextComponent();
@@ -687,7 +661,8 @@ public final class SimpleComponent implements ConfigSerializable {
 		component.setText(builder.toString());
 		components.add(component);
 
-		return components.toArray(new TextComponent[components.size()]);
+		//return components.toArray(new TextComponent[components.size()]);
+		return new TextComponent[] { new TextComponent(components.toArray(new TextComponent[components.size()])) };
 	}
 
 	/**
@@ -832,7 +807,7 @@ public final class SimpleComponent implements ConfigSerializable {
 			if (!canSendTo(receiver) || isEmpty())
 				return null;
 
-			final BaseComponent[] base = toComponent(this.text, this.inheritFormatting);
+			final List<BaseComponent> base = toComponent(this.text, this.inheritFormatting)[0].getExtra();
 
 			for (final BaseComponent part : base) {
 				if (this.hoverEvent != null)
@@ -845,7 +820,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					part.setInsertion(insertion);
 			}
 
-			return new TextComponent(base);
+			return new TextComponent(base.toArray(new BaseComponent[base.size()]));
 		}
 
 		/*
