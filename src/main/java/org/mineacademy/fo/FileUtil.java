@@ -252,7 +252,7 @@ public final class FileUtil {
 			throw new IllegalArgumentException("IO exception opening " + file.getName(), ex);
 
 		} catch (final InvalidConfigurationException ex) {
-			throw new IllegalArgumentException("Malformed YAML file " + file.getName(), ex);
+			throw new IllegalArgumentException("Malformed YAML file " + file.getName() + " - use services like yaml-online-parser.appspot.com to check and fix it", ex);
 
 		} catch (final Throwable t) {
 			throw new IllegalArgumentException("Error reading YAML file " + file.getName(), t);
