@@ -2040,7 +2040,7 @@ class ConfigInstance {
 	 * @param header
 	 */
 	protected void save(final String[] header) {
-		Valid.checkSync("Async file " + this.file + " saving was temporarily disabled - report this error!");
+		Valid.checkSync("Async file " + this.file + " saving was temporarily disabled, if you're a dev, see https://pastebin.com/EFKP69Ut if not, report this.");
 
 		if (header != null) {
 			config.options().copyHeader(true);
