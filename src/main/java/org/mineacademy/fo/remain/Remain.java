@@ -1651,10 +1651,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
@@ -2435,7 +2435,8 @@ class BungeeChatProvider {
 		} catch (final Throwable ex) {
 
 			// This is the minimum MC version that supports interactive chat
-			if (MinecraftVersion.atLeast(V.v1_7))
+			// Ignoring Cauldron
+			if (MinecraftVersion.atLeast(V.v1_7) && !Bukkit.getName().contains("Cauldron"))
 				Common.throwError(ex, "Failed to send component: " + plainMessage.toString() + " to " + sender.getName());
 
 			tell0(sender, plainMessage.toString());
