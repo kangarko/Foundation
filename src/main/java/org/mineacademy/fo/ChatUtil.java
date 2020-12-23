@@ -367,6 +367,15 @@ public final class ChatUtil {
 		return Normalizer.normalize(message, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
+	/**
+	 * Return true if the given message contains [JSON] or any interactive part like  {@literal <toast> or <actionbar>}
+	 * @param msg
+	 * @return
+	 */
+	public static boolean isInteractive(String msg) {
+		return msg.startsWith("[JSON]") || msg.startsWith("<toast>") || msg.startsWith("<title>") || msg.startsWith("<actionbar>") || msg.startsWith("<bossbar>");
+	}
+
 	// --------------------------------------------------------------------------------
 	// Helpers
 	// --------------------------------------------------------------------------------
