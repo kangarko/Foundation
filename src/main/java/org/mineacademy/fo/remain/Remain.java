@@ -1801,13 +1801,16 @@ public final class Remain {
 	 * @param icon
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
-		if (hasAdvancements && message != null && !message.isEmpty()) {
+		if (message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
 			if (!colorized.isEmpty()) {
 				Valid.checkSync("Toasts may only be sent from the main thread");
 
-				new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
+				if (hasAdvancements)
+					new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
+				else
+					receiver.sendMessage(colorized);
 			}
 		}
 	}
