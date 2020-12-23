@@ -1,7 +1,12 @@
 package org.mineacademy.fo.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
@@ -193,14 +198,18 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 * applied to.
 	 * @return
 	 */
-	public Material enchantMaterial() { return SimpleEnchantmentTargetMaterial.enchantMaterial(); }
+	public Material enchantMaterial() {
+		return null;
+	}
 
 	/**
 	 * Select what materials this enchantment can be
 	 * applied to.
 	 * @return
 	 */
-	public Set<Material> enchantMaterials() { return SimpleEnchantmentTargetMaterial.enchantMaterials(); }
+	public Set<Material> enchantMaterials() {
+		return new HashSet<>();
+	}
 
 	// ------------------------------------------------------------------------------------------
 	// Bukkit methods
