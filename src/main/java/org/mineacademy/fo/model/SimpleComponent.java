@@ -94,7 +94,8 @@ public final class SimpleComponent implements ConfigSerializable {
 	public SimpleComponent onHover(String... lines) {
 		// I don't know why we have to wrap this inside new text component but we do this
 		// to properly reset bold and other decoration colors
-		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { new TextComponent(TextComponent.fromLegacyText(String.join("\n", lines))) });
+		final String joined = Common.colorize(String.join("\n", lines));
+		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { new TextComponent(TextComponent.fromLegacyText(joined)) });
 
 		return this;
 	}
