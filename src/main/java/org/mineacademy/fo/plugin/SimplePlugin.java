@@ -300,6 +300,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
+			if (!isEnabled || !isEnabled())
+				return;
+
 			startingReloadables = true;
 			onReloadablesStart();
 			startingReloadables = false;
