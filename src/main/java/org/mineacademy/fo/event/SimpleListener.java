@@ -80,9 +80,11 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 		LagCatcher.start(logName);
 
 		try {
-			this.event = (T) event;
+			if(!event.getClass().equals(eventClass)) return;
 
-			execute((T) event);
+			this.event = eventClass.cast(event);
+
+			execute(this.event);
 
 		} catch (final EventHandledException ex) {
 			final String[] messages = ex.getMessages();
