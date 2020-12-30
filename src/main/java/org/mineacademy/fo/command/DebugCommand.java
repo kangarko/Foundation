@@ -57,7 +57,7 @@ public final class DebugCommand extends SimpleSubCommand {
 				" Debug log generated " + TimeUtil.getFormattedDate(),
 				Common.consoleLine(),
 				"Plugin: " + SimplePlugin.getInstance().getDescription().getFullName(),
-				"Server Version: " + MinecraftVersion.getServerVersion(),
+				"Server Version: " + Bukkit.getName() + " " + MinecraftVersion.getServerVersion(),
 				"Java: " + System.getProperty("java.version") + " (" + System.getProperty("java.specification.vendor") + "/" + System.getProperty("java.vm.vendor") + ")",
 				"OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"),
 				"Players Online: " + Remain.getOnlinePlayers().size(),
