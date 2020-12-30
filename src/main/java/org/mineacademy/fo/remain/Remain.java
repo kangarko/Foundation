@@ -905,8 +905,13 @@ public final class Remain {
 		try {
 			sendComponent(sender, ComponentSerializer.parse(json));
 
-		} catch (final RuntimeException ex) {
-			Common.error(ex,
+		} catch (final Throwable t) {
+
+			// Silence a bug in md_5's library
+			if (t.toString().contains("missing 'text' property"))
+				return;
+
+			Common.error(t,
 					"Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
 		}
 	}
