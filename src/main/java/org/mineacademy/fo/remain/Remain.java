@@ -85,7 +85,6 @@ import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -721,10 +720,10 @@ public final class Remain {
 			if (throwable instanceof InteractiveTextFoundException)
 				throw throwable;
 
-			Debugger.saveError(throwable,
+			/*Debugger.saveError(throwable,
 					"Unable to parse JSON message.",
 					"JSON: " + json,
-					"Error: %error");
+					"Error: %error");*/
 		}
 
 		return text.toString();
