@@ -246,7 +246,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
-		@Subscribe(priority = ListenerPriority.MONITOR)
+		@Subscribe(priority = ListenerPriority.HIGHEST)
 		public void onMessageReceived(DiscordGuildMessagePreProcessEvent event) {
 			for (final DiscordListener listener : registeredListeners)
 				try {
