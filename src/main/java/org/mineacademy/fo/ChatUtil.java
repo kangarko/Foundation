@@ -189,13 +189,18 @@ public final class ChatUtil {
 		String tempMessage = "";
 
 		for (String sentence : sentences) {
-			final String word = message.split("\\s")[0];
+			try {
+				final String word = message.split("\\s")[0];
 
-			if (!isDomain(word))
-				sentence = sentence.substring(0, 1).toUpperCase() + sentence.substring(1);
+				if (!isDomain(word))
+					sentence = sentence.substring(0, 1).toUpperCase() + sentence.substring(1);
 
-			tempMessage = tempMessage + sentence + " ";
+				tempMessage = tempMessage + sentence + " ";
+			} catch (final ArrayIndexOutOfBoundsException ex) {
+				// Probably an exotic language, silence
+			}
 		}
+
 		return tempMessage.trim();
 	}
 
