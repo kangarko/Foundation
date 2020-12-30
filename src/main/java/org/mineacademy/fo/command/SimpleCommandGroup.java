@@ -428,7 +428,9 @@ public abstract class SimpleCommandGroup {
 							final List<String> hover = new ArrayList<>();
 
 							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_DESCRIPTION.replace("{description}", desc));
-							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_PERMISSION.replace("{permission}", subcommand.getPermission()));
+
+							if (subcommand.getPermission() != null)
+								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_PERMISSION.replace("{permission}", subcommand.getPermission()));
 
 							if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
 								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE);
