@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -116,6 +117,17 @@ public final class JavaScriptExecutor {
 
 			if (event != null)
 				engine.put("event", event);
+
+			if (sender instanceof DiscordSender) {
+				final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(javascript);
+
+				while (matcher.find()) {
+
+					// We do not support variables when the message sender is Discord,
+					// so just replace those that were not translated earlier with false value. 
+					javascript = javascript.replace(matcher.group(), "false");
+				}
+			}
 
 			final Object result = engine.eval(javascript);
 
