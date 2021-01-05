@@ -844,10 +844,13 @@ public final class SimpleComponent implements ConfigSerializable {
 					return false;
 
 				final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
-				Valid.checkBoolean(result instanceof Boolean, "Receiver condition must return Boolean not " + (result == null ? "null" : result.getClass()) + " for component: " + this);
 
-				if ((boolean) result == false)
-					return false;
+				if (result != null) {
+					Valid.checkBoolean(result instanceof Boolean, "View condition must return Boolean not " + (result == null ? "null" : result.getClass()) + " for component: " + this);
+
+					if ((boolean) result == false)
+						return false;
+				}
 			}
 
 			return true;
