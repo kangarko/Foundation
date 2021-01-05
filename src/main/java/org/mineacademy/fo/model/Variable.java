@@ -280,10 +280,13 @@ public final class Variable extends YamlConfig {
 
 		if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
 			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
-			Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
 
-			if ((boolean) result == false)
-				return SimpleComponent.of("");
+			if (result != null) {
+				Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+
+				if ((boolean) result == false)
+					return SimpleComponent.of("");
+			}
 		}
 
 		final String value = this.getValue(sender, replacements);
