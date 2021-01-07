@@ -64,8 +64,11 @@ public final class BungeeUtil {
 		final Player recipient = getThroughWhomSendMessage();
 
 		// This server is empty, do not send
-		if (recipient == null)
+		if (recipient == null) {
+			Debugger.put("bungee", "Cannot send " + action + " bungee channel '" + channel + "' message because this server has no players");
+
 			return;
+		}
 
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
