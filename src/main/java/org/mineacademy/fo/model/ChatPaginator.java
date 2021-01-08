@@ -15,6 +15,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -65,10 +66,10 @@ public final class ChatPaginator {
 	 * Construct chat pages taking the entire visible
 	 * chat portion when chat is maximize given {@link #setFoundationHeader(String)}
 	 * is used and there is no footer. We use {@link #FOUNDATION_HEIGHT} for height
-	 * and {@link ChatColor#GOLD} for color.
+	 * and {@link SimpleLocalization.Commands#HEADER_COLOR} for color.
 	 */
 	public ChatPaginator() {
-		this(FOUNDATION_HEIGHT, ChatColor.GOLD);
+		this(FOUNDATION_HEIGHT, SimpleLocalization.Commands.HEADER_COLOR);
 	}
 
 	/**
@@ -84,12 +85,12 @@ public final class ChatPaginator {
 
 	/**
 	 * Creates a paginator with the given lines per page. Maximum on screen is 20 minus header and footer.
-	 * The {@link ChatColor#GOLD} color is used.
+	 * The {@link SimpleLocalization.Commands#HEADER_COLOR} color is used.
 	 *
 	 * @param linesPerPage
 	 */
 	public ChatPaginator(int linesPerPage) {
-		this(linesPerPage, ChatColor.GOLD);
+		this(linesPerPage, SimpleLocalization.Commands.HEADER_COLOR);
 	}
 
 	/**

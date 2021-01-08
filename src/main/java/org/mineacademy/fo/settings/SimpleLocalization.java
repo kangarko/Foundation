@@ -3,6 +3,7 @@ package org.mineacademy.fo.settings;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtil;
@@ -288,6 +289,16 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static String HEADER_NO_SUBCOMMANDS_PERMISSION = "&cYou don't have permissions to view any subcommands.";
 
 		/**
+		 * The primary color shown in the ----- COMMAND ----- header
+		 */
+		public static ChatColor HEADER_COLOR = ChatColor.GOLD;
+
+		/**
+		 * The secondary color shown in the ----- COMMAND ----- header such as in /chc ? 
+		 */
+		public static ChatColor HEADER_SECONDARY_COLOR = ChatColor.RED;
+
+		/**
 		 * Key for when plugin is reloading {@link org.mineacademy.fo.plugin.SimplePlugin}
 		 */
 		public static String RELOADING = "reloading";
@@ -411,6 +422,12 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Header_No_Subcommands_Permission"))
 				HEADER_NO_SUBCOMMANDS_PERMISSION = getString("Header_No_Subcommands_Permission");
+
+			if (isSetDefault("Header_Color"))
+				HEADER_COLOR = get("Header_Color", ChatColor.class);
+
+			if (isSetDefault("Header_Secondary_Color"))
+				HEADER_SECONDARY_COLOR = get("Header_Secondary_Color", ChatColor.class);
 
 			if (isSet("Reloading"))
 				RELOADING = getString("Reloading");

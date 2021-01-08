@@ -13,7 +13,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -337,7 +336,7 @@ public abstract class SimpleCommand extends Command {
 					final String usage = getMultilineUsageMessage() != null ? String.join("\n&c", getMultilineUsageMessage()) : getUsage() != null ? getUsage() : null;
 					Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + getLabel() + sublabel + "' command!");
 
-					final ChatPaginator paginator = new ChatPaginator(ChatColor.RED);
+					final ChatPaginator paginator = new ChatPaginator(SimpleLocalization.Commands.HEADER_SECONDARY_COLOR);
 					final List<String> pages = new ArrayList<>();
 
 					if (!Common.getOrEmpty(getDescription()).isEmpty()) {
