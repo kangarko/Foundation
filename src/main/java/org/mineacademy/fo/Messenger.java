@@ -196,6 +196,11 @@ public class Messenger {
 	 * Internal method to perform the sending
 	 */
 	private void tell(final CommandSender player, final String prefix, String message) {
+
+		// Support localization being none or empty
+		if (message.isEmpty() || "none".equals(message))
+			return;
+
 		final String colorless = Common.stripColors(message);
 		final boolean foundElements = ChatUtil.isInteractive(colorless);
 
