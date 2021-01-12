@@ -14,7 +14,6 @@ import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.exception.FoException;
 
-import github.scarsz.discordsrv.dependencies.jda.api.entities.Member;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Message;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.User;
@@ -28,11 +27,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class DiscordSender implements CommandSender {
 
+	private final String name;
 	private final User user;
-	private final Member member;
 	private final MessageChannel channel;
 	private final Message message;
-	//private final UUID uuid;
 
 	@Override
 	public boolean isPermissionSet(String permission) {
@@ -47,17 +45,11 @@ public final class DiscordSender implements CommandSender {
 	@Override
 	public boolean hasPermission(String perm) {
 		return false;
-
-		//final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(this.uuid);
-		//return perm == null ? true : offlinePlayer == null ? false : HookManager.hasVaultPermission(offlinePlayer, perm);
 	}
 
 	@Override
 	public boolean hasPermission(Permission perm) {
 		return false;
-
-		//final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(this.uuid);
-		//return perm == null ? true : offlinePlayer == null ? false : HookManager.hasVaultPermission(offlinePlayer, perm.getName());
 	}
 
 	@Override
@@ -125,7 +117,7 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public String getName() {
-		return Common.getOrDefaultStrict(member.getNickname(), user.getName());
+		return name;
 	}
 
 	@Override
@@ -146,6 +138,7 @@ public final class DiscordSender implements CommandSender {
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String)
 	 */
 	//@Override - Disable to prevent errors in older MC
+	@Override
 	public void sendMessage(UUID uuid, String message) {
 		this.sendMessage(message);
 	}
@@ -154,6 +147,7 @@ public final class DiscordSender implements CommandSender {
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String[])
 	 */
 	//@Override - Disable to prevent errors in older MC
+	@Override
 	public void sendMessage(UUID uuid, String[] messages) {
 		this.sendMessage(messages);
 	}
