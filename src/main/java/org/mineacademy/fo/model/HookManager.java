@@ -2219,7 +2219,7 @@ class PlaceholderAPIHook {
 		 */
 		@Override
 		public String onRequest(OfflinePlayer offlinePlayer, @NonNull String identifier) {
-			final Player player = offlinePlayer.getPlayer();
+			final Player player = offlinePlayer != null ? offlinePlayer.getPlayer() : null;
 
 			if (player == null || !player.isOnline())
 				return null;
