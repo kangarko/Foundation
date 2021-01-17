@@ -132,12 +132,14 @@ public class SimpleDatabase {
 		close();
 
 		try {
+			Class.forName("com.mysql.jdbc.Driver");
+
 			this.lastCredentials = new LastCredentials(url, user, password, table);
 			this.connection = DriverManager.getConnection(url, user, password);
 
 			onConnected();
 
-		} catch (final SQLException e) {
+		} catch (final Exception e) {
 
 			if (Common.getOrEmpty(e.getMessage()).contains("No suitable driver found"))
 				Common.logFramed(true,
