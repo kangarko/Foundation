@@ -50,6 +50,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
+import com.Zrips.CMI.Modules.TabList.TabListManager;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -2906,9 +2907,15 @@ class CMIHook {
 
 	void setNick(final UUID uniqueId, String nick) {
 		final CMIUser user = getUser(uniqueId);
+		final TabListManager tabManager = CMI.getInstance().getTabListManager();
 
-		if (user != null)
+		if (user != null) {
 			user.setNickName(nick, true);
+			user.updateDisplayName();
+
+			if (tabManager.isUpdatesOnNickChange())
+				tabManager.updateTabList(3);
+		}
 	}
 
 	String getNameFromNick(String nick) {
