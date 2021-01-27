@@ -207,7 +207,9 @@ public abstract class Button {
 
 	@Override
 	public final String toString() {
-		return getClass().getSimpleName() + "{" + getItem().getType() + "}";
+		final ItemStack item = getItem();
+
+		return getClass().getSimpleName() + "{" + (item != null ? item.getType() : "null") + "}";
 	}
 
 	// ----------------------------------------------------------------
