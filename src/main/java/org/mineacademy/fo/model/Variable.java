@@ -250,8 +250,9 @@ public final class Variable extends YamlConfig {
 		try {
 			// Replace variables in script
 			final String script = Variables.replace(this.value, sender, replacements);
+			final String result = String.valueOf(JavaScriptExecutor.run(script, sender));
 
-			return String.valueOf(JavaScriptExecutor.run(script, sender));
+			return result;
 
 		} catch (final RuntimeException ex) {
 
