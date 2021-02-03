@@ -1978,8 +1978,12 @@ public class YamlConfig {
 			play(player, 3, 2 * 20, 5, replacer);
 		}
 
-		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut, final Function<String, String> replacer) {
-			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer.apply(title), replacer.apply(subtitle));
+		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut) {
+			this.play(player, fadeIn, stay, fadeOut, null);
+		}
+
+		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut, @Nullable Function<String, String> replacer) {
+			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer != null ? replacer.apply(title) : title, replacer != null ? replacer.apply(subtitle) : subtitle);
 		}
 	}
 }
