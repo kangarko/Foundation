@@ -30,15 +30,18 @@ public class SpigotUpdater implements Runnable {
 	 */
 	@Getter
 	private final int resourceId;
+
 	/**
 	 * Should we automatically download newer versions to the {@link Bukkit#getUpdateFolder()}?
 	 */
 	private final boolean download;
+
 	/**
 	 * Did we found that a newer version is available?
 	 */
 	@Getter
 	private boolean newVersionAvailable = false;
+
 	/**
 	 * The newer version
 	 */
@@ -50,7 +53,6 @@ public class SpigotUpdater implements Runnable {
 	 *
 	 * @param resourceId the id of the plugin at Spigot's page
 	 */
-
 	public SpigotUpdater(final int resourceId) {
 		this(resourceId, false);
 	}
