@@ -326,6 +326,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		 * The keys below are used in the {@link PermsCommand}
 		 */
 		public static String PERMS_DESCRIPTION = "List all permissions the plugin has.";
+		public static String PERMS_USAGE = "[phrase]";
 		public static String PERMS_HEADER = "Listing All {plugin_name} Permissions";
 		public static String PERMS_MAIN = "Main";
 		public static String PERMS_PERMISSIONS = "Permissions:";
@@ -455,6 +456,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Perms_Description"))
 				PERMS_DESCRIPTION = getString("Perms_Description");
+
+			if (isSetDefault("Perms_Usage"))
+				PERMS_USAGE = getString("Perms_Usage");
 
 			if (isSetDefault("Perms_Header"))
 				PERMS_HEADER = getString("Perms_Header");
