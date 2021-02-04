@@ -328,7 +328,8 @@ public final class Variables {
 			String value = lookupVariable0(player, sender, variable);
 
 			if (value != null) {
-				value = value.isEmpty() ? "" : (frontSpace ? " " : "") + Common.colorize(value) + (backSpace ? " " : "");
+				final boolean emptyColorless = Common.stripColors(value).isEmpty();
+				value = value.isEmpty() ? "" : (frontSpace && !emptyColorless ? " " : "") + Common.colorize(value) + (backSpace && !emptyColorless ? " " : "");
 
 				message = message.replace(matcher.group(), value);
 			}

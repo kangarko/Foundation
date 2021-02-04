@@ -264,6 +264,20 @@ public final class SimpleComponent implements ConfigSerializable {
 		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
 
+		// Center text for each line separatelly if replacing colors
+		if (colorize) {
+			final List<String> formatContents = Arrays.asList(text.split("\n"));
+
+			for (int i = 0; i < formatContents.size(); i++) {
+				final String line = formatContents.get(i);
+
+				if (Common.stripColors(line).startsWith("<center>"))
+					formatContents.set(i, ChatUtil.center(line.replace("<center>", "")));
+			}
+
+			text = String.join("\n", formatContents);
+		}
+
 		this.pastComponents.add(this.currentComponent);
 
 		this.currentComponent = new Part(colorize ? Common.colorize(text) : text);

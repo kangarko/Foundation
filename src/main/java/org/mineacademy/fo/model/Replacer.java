@@ -293,7 +293,8 @@ public final class Replacer {
 			}
 
 			if (value != null) {
-				value = value.isEmpty() ? "" : (frontSpace ? " " : "") + Common.colorize(value) + (backSpace ? " " : "");
+				final boolean emptyColorless = Common.stripColors(value).isEmpty();
+				value = value.isEmpty() ? "" : (frontSpace && !emptyColorless ? " " : "") + Common.colorize(value) + (backSpace && !emptyColorless ? " " : "");
 
 				message = message.replace(matcher.group(), value);
 			}
