@@ -696,6 +696,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isMuted(final Player player) {
+
 		if (isEssentialsLoaded() && essentialsHook.isMuted(player.getName()))
 			return true;
 
@@ -2244,8 +2245,11 @@ class PlaceholderAPIHook {
 				for (final SimpleExpansion expansion : Variables.getExpansions()) {
 					final String value = expansion.replacePlaceholders(player, identifier);
 
-					if (value != null)
-						return (!value.isEmpty() && frontSpace ? " " : "") + value + (!value.isEmpty() && backSpace ? " " : "");
+					if (value != null) {
+						final boolean emptyColorless = Common.stripColors(value).isEmpty();
+
+						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? " " : "");
+					}
 				}
 
 			} catch (final Exception ex) {
@@ -2855,7 +2859,7 @@ class CMIHook {
 		final CMIUser user = getUser(player);
 
 		try {
-			return user != null && user.getMutedUntil() != 0 && user.getMutedUntil() != null;
+			return user != null && user.getMutedUntil() != 0 && user.getMutedUntil() != null && user.getMutedUntil() > System.currentTimeMillis();
 
 		} catch (final Exception ex) {
 			return false;
