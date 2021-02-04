@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.mineacademy.fo.model.Whiteblacklist;
 
 import lombok.AccessLevel;
@@ -77,11 +78,13 @@ public final class ChatUtil {
 			return "";
 
 		int messagePxSize = 0;
+
 		boolean previousCode = false;
 		boolean isBold = false;
 
 		for (final char c : message.toCharArray())
-			if (c == '&') {
+
+			if (c == '&' || c == ChatColor.COLOR_CHAR) {
 				previousCode = true;
 
 				continue;
