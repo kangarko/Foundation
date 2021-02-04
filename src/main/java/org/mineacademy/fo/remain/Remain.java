@@ -910,8 +910,7 @@ public final class Remain {
 			if (t.toString().contains("missing 'text' property"))
 				return;
 
-			Common.error(t,
-					"Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
+			throw new RuntimeException("Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json, t);
 		}
 	}
 
