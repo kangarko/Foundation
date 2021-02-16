@@ -1,8 +1,11 @@
 package org.mineacademy.fo.settings;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +28,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
@@ -46,6 +50,9 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -2039,6 +2046,11 @@ class ConfigInstance {
 	private final String commentsFilePath;
 
 	/**
+	 * The pending save task to avoid concurrency issues
+	 */
+	private BukkitTask pendingTask = null;
+
+	/**
 	 * Saves the config instance with the given header, can be null
 	 *
 	 * @param header
@@ -2052,14 +2064,47 @@ class ConfigInstance {
 		}
 
 		try {
-			config.save(file);
+
+			// Either use write method for comments or the one from Bukkit
+			if (!writeComments()) {
+
+				// Pull the data on the main thread
+				final Map<String, Object> values = config.getValues(false);
+
+				// If this code is called within the next 5 ticks, get the latest data, cancel save
+				// and reschedule to maximize performance
+				if (pendingTask != null)
+					pendingTask.cancel();
+
+				pendingTask = Common.runLaterAsync(5, () -> {
+
+					try {
+
+						// Yaml#dump should be save async... note that this also builds header
+						final String data = config.saveToString(values);
+
+						Files.createParentDirs(file);
+
+						final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
+
+						try {
+							writer.write(data);
+						} finally {
+							writer.close();
+						}
+
+						pendingTask = null;
+
+					} catch (final Throwable t) {
+						Common.error(t);
+					}
+				});
+			}
 
 			// Workaround: When saving maps, the config stops recognizing them as sections so we must reload in order
 			// for all maps to be turned back into MemorySection to be reachable by get()
 			//reload();
 			//config.loadFromString(config.saveToString());
-
-			writeComments();
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Failed to save " + file.getName());
@@ -2071,9 +2116,14 @@ class ConfigInstance {
 	 *
 	 * @throws IOException
 	 */
-	public void writeComments() throws IOException {
-		if (this.commentsFilePath != null && this.saveComments)
+	public boolean writeComments() throws IOException {
+		if (this.commentsFilePath != null && this.saveComments) {
 			YamlComments.writeComments(this.commentsFilePath, this.file, Common.getOrDefault(this.uncommentedSections, new ArrayList<>()));
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

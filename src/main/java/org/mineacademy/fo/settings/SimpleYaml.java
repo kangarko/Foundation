@@ -47,6 +47,10 @@ public class SimpleYaml extends FileConfiguration {
 	@NotNull
 	@Override
 	public String saveToString() {
+		return this.saveToString(getValues(false));
+	}
+
+	public String saveToString(Map<String, Object> values) {
 		yamlOptions.setIndent(2);
 		yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		yamlOptions.setWidth(4096); // Foundation: Do not wrap long lines
@@ -54,7 +58,7 @@ public class SimpleYaml extends FileConfiguration {
 		yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
 		final String header = buildHeader();
-		String dump = yaml.dump(getValues(false));
+		String dump = yaml.dump(values);
 
 		if (dump.equals(BLANK_CONFIG)) {
 			dump = "";
