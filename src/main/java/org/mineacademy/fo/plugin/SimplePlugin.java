@@ -536,7 +536,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Bukkit.getLogger().severe("Gson (by Google) found: " + gson);
 			Bukkit.getLogger().severe(" ");
 			Bukkit.getLogger().severe("To fix that, please install BungeeChatAPI:");
-			Bukkit.getLogger().severe("https://www.spigotmc.org/resources/38379/");
+			Bukkit.getLogger().severe("https://mineacademy.org/plugins/#misc");
 			Bukkit.getLogger().severe(Common.consoleLine());
 		}
 
