@@ -308,7 +308,7 @@ public final class Remain {
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
 								" &cinclude &elibraries required&c for this plugin to\n" +
 								" &crun. Install the following plugin for compatibility:\n" +
-								" &fhttps://www.spigotmc.org/resources/38379");
+								" &fhttps://mineacademy.org/plugins/#misc");
 			}
 
 			try {
@@ -1654,10 +1654,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
