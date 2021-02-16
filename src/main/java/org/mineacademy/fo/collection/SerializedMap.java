@@ -733,9 +733,13 @@ public final class SerializedMap extends StrictCollection {
 	public <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull String path, final Class<Key> keyType, final Class<Value> setType) {
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
-		final Object raw = this.map.get(path);
+		Object raw = this.map.get(path);
 
 		if (raw != null) {
+
+			if (raw instanceof MemorySection)
+				raw = Common.getMapFromSection(raw);
+
 			Valid.checkBoolean(raw instanceof Map, "Expected Map<" + keyType.getSimpleName() + ", Set<" + setType.getSimpleName() + ">> at " + path + ", got " + raw.getClass());
 
 			for (final Entry<?, ?> entry : ((Map<?, ?>) raw).entrySet()) {
