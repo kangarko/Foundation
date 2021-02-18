@@ -15,8 +15,14 @@ public class SimpleTime {
 	private final long timeTicks;
 
 	protected SimpleTime(@NonNull final String time) {
-		this.raw = time;
-		this.timeTicks = TimeUtil.toTicks(time);
+		if ("none".equalsIgnoreCase(time)) {
+			this.raw = "0";
+			this.timeTicks = 0;
+
+		} else {
+			this.raw = time;
+			this.timeTicks = TimeUtil.toTicks(time);
+		}
 	}
 
 	/**
@@ -31,6 +37,7 @@ public class SimpleTime {
 
 	/**
 	 * Generate new time. Valid examples: 15 ticks 1 second 25 minutes 3 hours etc.
+	 * or input "none" to create an instance with the time of 0
 	 *
 	 * @param time
 	 * @return
