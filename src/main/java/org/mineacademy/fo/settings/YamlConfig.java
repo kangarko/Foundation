@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -1268,7 +1269,9 @@ public class YamlConfig {
 	 * @return map, or empty map
 	 */
 	protected final SerializedMap getMap(final String path) {
-		return isSet(path) ? SerializedMap.of(Common.getMapFromSection(getT(path, Object.class))) : new SerializedMap();
+		final LinkedHashMap<?, ?> map = getMap(path, Object.class, Object.class);
+
+		return SerializedMap.of(map);
 	}
 
 	/**
@@ -1286,6 +1289,7 @@ public class YamlConfig {
 	 * @return
 	 */
 	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
+
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 
@@ -2056,12 +2060,20 @@ class ConfigInstance {
 	 * @param header
 	 */
 	protected void save(final String[] header) {
-		Valid.checkSync("Async file " + this.file + " saving was temporarily disabled, if you're a dev, see https://pastebin.com/EFKP69Ut if not, report this.");
 
 		if (header != null) {
 			config.options().copyHeader(true);
 			config.options().header(String.join("\n", header));
 		}
+
+		if (Bukkit.isPrimaryThread())
+			this.save0();
+
+		else
+			Common.runLater(this::save0);
+	}
+
+	private void save0() {
 
 		try {
 
