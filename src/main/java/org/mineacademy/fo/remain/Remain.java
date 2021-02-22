@@ -1654,10 +1654,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
@@ -2075,7 +2075,7 @@ public final class Remain {
 		Valid.checkNotNull(stream, "Stream cannot be null");
 
 		final StringBuilder builder = new StringBuilder();
-		final InputStreamReader reader = new InputStreamReader(stream);
+		final InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
 
 		try (final BufferedReader input = new BufferedReader(reader)) {
 			String line;
