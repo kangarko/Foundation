@@ -333,7 +333,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Register DiscordSRV listener
 			if (HookManager.isDiscordSRVLoaded()) {
-				DiscordListener.DiscordListenerImpl.getInstance().resubscribe();
+				final DiscordListener.DiscordListenerImpl discord = DiscordListener.DiscordListenerImpl.getInstance();
+
+				discord.resubscribe();
+				discord.registerHook();
 
 				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
