@@ -428,9 +428,17 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			// Prevent clients being kicked out, so we just send plain message instead
 			if (MinecraftVersion.olderThan(V.v1_9) && Remain.toJson(component).length() > Short.MAX_VALUE) {
-				final String legacy = Common.colorize(component.toLegacyText());
+				String legacy = Common.colorize(component.toLegacyText());
 
-				Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: " + legacy);
+				if (legacy.length() > Short.MAX_VALUE) {
+					legacy = legacy.substring(0, Short.MAX_VALUE / 2);
+
+					Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements and limiting to 16,000 letters: " + legacy);
+				}
+
+				else
+					Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: " + legacy);
+
 				receiver.sendMessage(legacy);
 
 			} else
