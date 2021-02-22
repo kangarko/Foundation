@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.StrictSet;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
@@ -239,6 +240,20 @@ public abstract class DiscordListener implements Listener {
 		public void resubscribe() {
 			DiscordSRV.api.unsubscribe(this);
 			DiscordSRV.api.subscribe(this);
+		}
+
+		/**
+		 * Register plugin hook
+		 *
+		 * https://github.com/kangarko/ChatControl-Red/issues/703
+		 */
+		public void registerHook() {
+			try {
+				DiscordSRV.getPlugin().getPluginHooks().add(SimplePlugin::getInstance);
+
+			} catch (final Error err) {
+				// Support previous Discord versions
+			}
 		}
 
 		/**
