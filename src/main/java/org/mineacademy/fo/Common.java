@@ -40,6 +40,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
@@ -482,12 +483,18 @@ public final class Common {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
 				final String prefix = (ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "");
 
-				final String toSend;
+				String toSend;
 
 				if (Common.stripColors(part).startsWith("<center>"))
 					toSend = ChatUtil.center(prefix + part.replace("<center>", ""));
 				else
 					toSend = prefix + part;
+
+				if (MinecraftVersion.olderThan(V.v1_9) && toSend.length() > Short.MAX_VALUE) {
+					toSend = toSend.substring(0, Short.MAX_VALUE / 2);
+
+					Common.log("Warning: Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
+				}
 
 				// Make player engaged in a server conversation still receive the message
 				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
@@ -2608,6 +2615,7 @@ public final class Common {
 	 * @param <K>
 	 * @param <V>
 	 */
+	@SuppressWarnings("hiding")
 	public interface MapToListConverter<O, K, V> {
 
 		/**
