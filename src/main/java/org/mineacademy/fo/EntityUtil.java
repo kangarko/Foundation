@@ -71,10 +71,16 @@ public final class EntityUtil {
 	 * @return
 	 */
 	public static boolean isAggressive(Entity entity) {
-		return entity instanceof Ghast ||
-				entity instanceof Slime ||
-				entity instanceof Wolf && ((Wolf) entity).isAngry() ||
-				entity instanceof Creature && !(entity instanceof Animals);
+		if (entity instanceof Ghast || entity instanceof Slime)
+			return true;
+
+		if (entity instanceof Wolf && ((Wolf) entity).isAngry())
+			return true;
+
+		if (entity instanceof Animals)
+			return false;
+
+		return entity instanceof Creature;
 	}
 
 	/**
