@@ -15,7 +15,7 @@ public class SimpleTime {
 	private final long timeTicks;
 
 	protected SimpleTime(@NonNull final String time) {
-		if ("none".equalsIgnoreCase(time)) {
+		if ("0".equals(time) || "none".equalsIgnoreCase(time)) {
 			this.raw = "0";
 			this.timeTicks = 0;
 
