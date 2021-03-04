@@ -1073,6 +1073,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
+	 * Should we replace accents with their non accented friends when
+	 * checking two strings for similarity in ChatUtil?
+	 *
+	 * @return defaults to true
+	 */
+	public boolean similarityStripAccents() {
+		return true;
+	}
+
+	/**
 	 * Return the BungeeCord suite if you want this plugin
 	 * to send and receive messages from BungeeCord
 	 *

@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.model.Whiteblacklist;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -233,6 +234,38 @@ public final class ChatUtil {
 	}
 
 	/**
+	 * Attempts to remove all emojis from the given input
+	 *
+	 * @author https://stackoverflow.com/a/32101331
+	 * @param message
+	 * @return
+	 */
+	public static String removeEmoji(String message) {
+		if (message == null)
+			return "";
+
+		final StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < message.length(); i++) {
+
+			// Emojis are two characters long in java, e.g. a rocket emoji is "\uD83D\uDE80";
+			if (i < (message.length() - 1)) {
+
+				if (Character.isSurrogatePair(message.charAt(i), message.charAt(i + 1))) {
+					// also skip the second character of the emoji
+					i += 1;
+
+					continue;
+				}
+			}
+
+			builder.append(message.charAt(i));
+		}
+
+		return builder.toString();
+	}
+
+	/**
 	 * How much big letters the message has, in percentage.
 	 *
 	 * @param message the message to check
@@ -347,7 +380,10 @@ public final class ChatUtil {
 	 * lowercasing it, removing diacritic
 	 */
 	private static String removeSimilarity(String message) {
-		message = replaceDiacritic(message);
+
+		if (SimplePlugin.getInstance().similarityStripAccents())
+			message = replaceDiacritic(message);
+
 		message = Common.stripColors(message);
 		message = message.toLowerCase();
 
