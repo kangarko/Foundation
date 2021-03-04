@@ -294,7 +294,13 @@ public final class Variables {
 
 				// We do not support interact chat elements in format variables,
 				// so we just flatten the variable. Use formatting or chat variables instead.
-				message = message.replace(variableKey, component.getPlainMessage());
+				String plain = component.getPlainMessage();
+
+				// And we remove the white prefix that is by default added in every component
+				if (plain.startsWith(ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "f"))
+					plain = plain.substring(4);
+
+				message = message.replace(variableKey, plain);
 			}
 		}
 
