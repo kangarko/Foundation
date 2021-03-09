@@ -43,15 +43,12 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * The next button automatically generated
 	 */
-	protected Button nextButton;
+	private Button nextButton;
 
 	/**
 	 * The "go to previous page" button automatically generated
 	 */
-	protected Button prevButton;
-
-	protected int nextPageSlot;
-	protected int previousPageSlot;
+	private Button prevButton;
 
 	/**
 	 * Create a new paged menu where each page has 3 rows + 1 bottom bar
@@ -146,9 +143,6 @@ public abstract class MenuPagged<T> extends Menu {
 		this.pages = Common.fillPages(autoPageSize, pages);
 
 		setSize(9 + autoPageSize);
-
-		nextPageSlot = getSize() - 4;
-		previousPageSlot = getSize() - 6;
 		setButtons();
 	}
 
@@ -329,11 +323,10 @@ public abstract class MenuPagged<T> extends Menu {
 				return convertToItemStack(object);
 		}
 
-		if (slot == nextPageSlot) {
+		if (slot == getSize() - 6)
 			return prevButton.getItem();
-		}
 
-		if (slot == previousPageSlot)
+		if (slot == getSize() - 4)
 			return nextButton.getItem();
 
 		return null;
