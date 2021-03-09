@@ -836,6 +836,18 @@ public abstract class SimpleCommand extends Command {
 	// ----------------------------------------------------------------------
 
 	/**
+	 * Sends a message to the player
+	 *
+	 * @see Replacer#replaceArray
+	 *
+	 * @param message
+	 * @param replacements
+	 */
+	protected final void tellReplaced(final String message, final Object... replacements) {
+		tell(Replacer.replaceArray(message, replacements));
+	}
+
+	/**
 	 * Sends a interactive chat component to the sender, not replacing any special
 	 * variables just executing the {@link SimpleComponent#send(CommandSender...)} method
 	 * as a shortcut
