@@ -70,11 +70,17 @@ final class FoundationListener implements Listener {
 			return;
 		}
 
-		if (!player.hasMetadata(ChatPaginator.getPageNbtTag())) {
+		final String nbtPageTag = ChatPaginator.getPageNbtTag();
+
+		if (!player.hasMetadata(nbtPageTag)) {
 			event.setCancelled(true);
 
 			return;
 		}
+
+		// Prevent shading issue with multiple plugins having Foundation shaded
+		if (player.hasMetadata("FoPages") && !player.getMetadata("FoPages").get(0).asString().equals(SimplePlugin.getNamed()))
+			return;
 
 		final String numberRaw = args[1];
 		int page = -1;
@@ -89,7 +95,7 @@ final class FoundationListener implements Listener {
 			return;
 		}
 
-		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata(ChatPaginator.getPageNbtTag()).get(0).value();
+		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata(nbtPageTag).get(0).value();
 		final Map<Integer, List<SimpleComponent>> pages = chatPages.getPages();
 
 		// Remove empty lines
