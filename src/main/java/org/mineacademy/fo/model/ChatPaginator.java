@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.command.PermsCommand;
@@ -211,7 +212,16 @@ public final class ChatPaginator {
 		if (sender instanceof Player) {
 			final Player player = (Player) sender;
 
+			// Remove old FoPages to prevent conflicts when two or more plugins use Foundation shaded
+			if (player.hasMetadata("FoPages")) {
+				final Plugin owningPlugin = player.getMetadata("FoPages").get(0).getOwningPlugin();
+
+				player.removeMetadata("FoPages", owningPlugin);
+			}
+
+			player.setMetadata("FoPages", new FixedMetadataValue(SimplePlugin.getInstance(), SimplePlugin.getNamed()));
 			player.setMetadata(getPageNbtTag(), new FixedMetadataValue(SimplePlugin.getInstance(), this));
+
 			player.chat("/#flp 1");
 		}
 
