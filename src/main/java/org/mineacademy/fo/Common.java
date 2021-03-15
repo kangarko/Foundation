@@ -168,6 +168,17 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Broadcast the message as per {@link Replacer#replaceArray(String, Object...)} mechanics
+	 * such as broadcastReplaced("Hello {world} from {player}", "world", "survival_world", "player", "kangarko")
+	 *
+	 * @param message
+	 * @param replacements
+	 */
+	public static void broadcastReplaced(final String message, final Object... replacements) {
+		broadcast(Replacer.replaceArray(message, replacements));
+	}
+
+	/**
 	 * Broadcast the message replacing {player} variable with the given command sender
 	 *
 	 * @param message
@@ -2692,8 +2703,11 @@ final class TimedCharSequence implements CharSequence {
 	@Override
 	public char charAt(final int index) {
 
-		if (System.currentTimeMillis() > futureTimestampLimit)
-			throw new RegexTimeoutException(message, futureTimestampLimit);
+		// Temporarily disabled due to a rare condition upstream when we take this message
+		// and run it in a runnable, then this is still being evaluated past limit and it fails
+		//
+		//if (System.currentTimeMillis() > futureTimestampLimit)
+		//	throw new RegexTimeoutException(message, futureTimestampLimit);
 
 		return message.charAt(index);
 	}
