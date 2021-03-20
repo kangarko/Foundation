@@ -1105,12 +1105,20 @@ public final class Common {
 	 * @param playerReplacement
 	 * @param command
 	 */
-	public static void dispatchCommand(@Nullable final CommandSender playerReplacement, @NonNull final String command) {
+	public static void dispatchCommand(@Nullable final CommandSender playerReplacement, @NonNull String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		final String finalCommand = command.startsWith("/") ? command.substring(1) : command;
-		runLater(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), colorize(finalCommand.replace("{player}", playerReplacement == null ? "" : resolveSenderName(playerReplacement)))));
+		command = command.startsWith("/") ? command.substring(1) : command;
+		command = command.replace("{player}", playerReplacement == null ? "" : resolveSenderName(playerReplacement));
+
+		// Workaround for JSON in tellraw getting HEX colors replaced
+		if (!command.startsWith("tellraw"))
+			command = colorize(command);
+
+		final String finalCommand = command;
+
+		runLater(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
 	}
 
 	/**
