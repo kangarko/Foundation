@@ -220,6 +220,21 @@ public final class Variables {
 	 * @return
 	 */
 	public static String replace(String message, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements) {
+		return replace(message, sender, replacements, true);
+	}
+
+	/**
+	 * Replaces variables in the message using the message sender as an object to replace
+	 * player-related placeholders.
+	 *
+	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 *
+	 * @param message
+	 * @param sender
+	 * @param colorize
+	 * @return
+	 */
+	public static String replace(String message, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements, boolean colorize) {
 		if (message == null || message.isEmpty())
 			return "";
 
