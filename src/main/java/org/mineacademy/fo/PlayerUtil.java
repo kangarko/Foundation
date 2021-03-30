@@ -39,6 +39,7 @@ import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompAttribute;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
@@ -314,7 +315,23 @@ public final class PlayerUtil {
 				cleanInventoryAndFood(player);
 
 				player.resetMaxHealth();
-				player.setHealth(20);
+
+				try {
+					player.setHealth(20);
+
+				} catch (final Throwable t) {
+					// Try attribute way
+
+					try {
+						final double maxHealthAttr = CompAttribute.GENERIC_MAX_HEALTH.get(player);
+
+						player.setHealth(maxHealthAttr);
+
+					} catch (final Throwable tt) {
+						// silence if a third party plugin is controlling health
+					}
+				}
+
 				player.setHealthScaled(false);
 
 				for (final PotionEffect potion : player.getActivePotionEffects())
