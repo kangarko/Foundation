@@ -57,7 +57,7 @@ public final class JavaScriptExecutor {
 		engine = engineManager.getEngineByName("Nashorn");
 
 		if (engine == null)
-			Common.logFramed(true,
+			Common.logFramed(false,
 					"JavaScript placeholders will not function!",
 					"",
 					"Your Java version/distribution lacks the",
@@ -107,6 +107,12 @@ public final class JavaScriptExecutor {
 
 			if (result != null)
 				return result;
+		}
+
+		if (engine == null) {
+			System.out.println("Warning: Not running script for " + sender + " because JavaScript library is missing (install Oracle Java 8 or 11): " + javascript);
+
+			return null;
 		}
 
 		try {
