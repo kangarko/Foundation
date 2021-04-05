@@ -108,10 +108,18 @@ public final class DiscordSender implements CommandSender {
 		final String finalMessage = Common.stripColors(message);
 
 		Common.runAsync(() -> {
-			final Message sentMessage = channel.sendMessage(finalMessage).complete();
+				final Message sentMessage = channel.sendMessage(finalMessage).complete();
 
-			// Automatically remove after a short while
-			channel.deleteMessageById(sentMessage.getIdLong()).completeAfter(4, TimeUnit.SECONDS);
+				try {
+				// Automatically remove after a short while
+				channel.deleteMessageById(sentMessage.getIdLong()).completeAfter(4, TimeUnit.SECONDS);
+
+			} catch (final Throwable t) {
+
+				// Ignore already deleted messages
+				if (!t.toString().contains("Unknown Message"))
+					t.printStackTrace();
+			}
 		});
 	}
 
