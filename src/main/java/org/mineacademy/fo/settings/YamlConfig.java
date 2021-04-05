@@ -81,6 +81,16 @@ public class YamlConfig {
 	public static final String NO_DEFAULT = null;
 
 	/**
+	 * Experimental flag to turn on async config saving.
+	 *
+	 * This will break things if you immediatelly load values in your config after saving (such as calling onLoadFinish()
+	 * right after save() method).
+	 *
+	 * False by default
+	 */
+	public static boolean ASYNC_SAVE = false;
+
+	/**
 	 * All files that are currently loaded
 	 */
 	private static volatile StrictSet<ConfigInstance> loadedFiles = new StrictSet<>();
@@ -530,6 +540,13 @@ public class YamlConfig {
 	 * @return
 	 */
 	private <T> T getT(String path, final Class<T> type) {
+
+		// Warn about old data version being fetched while expecting new
+		if (instance.isPendingAsyncSave())
+			Debugger.debug("async-save", "Called data load getX() method on " + getFile() + " while saving its data. "
+					+ "The loading data method will still see the old values! Possible solution: "
+					+ "Turn YamlConfig.ASYNC_SAVE off or load data in a Runnable 5 ticks later. Call: " + Debugger.traceRoute(true));
+
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
 
@@ -2007,7 +2024,7 @@ public class YamlConfig {
  */
 //@Getter(value = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
-class ConfigInstance {
+final class ConfigInstance {
 
 	/**
 	 * The file this configuration belongs to.
@@ -2055,11 +2072,18 @@ class ConfigInstance {
 	private BukkitTask pendingTask = null;
 
 	/**
+	 * Is a save going on right now?
+	 */
+	private boolean savePending = false;
+
+	/**
 	 * Saves the config instance with the given header, can be null
 	 *
 	 * @param header
 	 */
 	protected void save(final String[] header) {
+
+		this.savePending = true;
 
 		if (header != null) {
 			config.options().copyHeader(true);
@@ -2083,43 +2107,61 @@ class ConfigInstance {
 				// Pull the data on the main thread
 				final Map<String, Object> values = config.getValues(false);
 
-				// If this code is called within the next 5 ticks, get the latest data, cancel save
-				// and reschedule to maximize performance
-				if (pendingTask != null)
-					pendingTask.cancel();
+				if (YamlConfig.ASYNC_SAVE) {
 
-				pendingTask = Common.runLaterAsync(5, () -> {
+					// If this code is called within the next 1 tick, get the latest data, cancel save
+					// and reschedule to maximize performance
+					if (pendingTask != null)
+						pendingTask.cancel();
 
-					try {
+					pendingTask = Common.runLaterAsync(() -> saveDo(values));
+				}
 
-						// Yaml#dump should be save async... note that this also builds header
-						final String data = config.saveToString(values);
-
-						Files.createParentDirs(file);
-
-						final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
-
-						try {
-							writer.write(data);
-						} finally {
-							writer.close();
-						}
-
-						pendingTask = null;
-
-					} catch (final Throwable t) {
-						Common.error(t);
-					}
-				});
+				else
+					saveDo(values);
 			}
-
-			// Workaround: When saving maps, the config stops recognizing them as sections so we must reload in order
-			// for all maps to be turned back into MemorySection to be reachable by get()
-			//reload();
-			//config.loadFromString(config.saveToString());
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Failed to save " + file.getName());
+		}
+	}
+
+	/**
+	 * Return true if there is an async save pending task going on
+	 *
+	 * @return
+	 */
+	public boolean isPendingAsyncSave() {
+		return this.savePending;
+	}
+
+	/*
+	 * Invoke the actual savings mechanism with the given config data as a hash map
+	 */
+	private void saveDo(Map<String, Object> values) {
+		try {
+
+			// Yaml#dump should be save async... note that this also builds header
+			final String data = config.saveToString(values);
+
+			Files.createParentDirs(file);
+
+			final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
+
+			try {
+				writer.write(data);
+			} finally {
+				writer.close();
+			}
+
+			if (YamlConfig.ASYNC_SAVE)
+				pendingTask = null;
+
+		} catch (final Throwable t) {
+			Common.error(t);
+
+		} finally {
+			this.savePending = false;
 		}
 	}
 
