@@ -2227,6 +2227,27 @@ public final class Remain {
 		return !"see mineacademy.org/server-properties to configure".contains(serverName) && !"undefined".equals(serverName) && !"Unknown Server".equals(serverName);
 	}
 
+	/**
+	 * Return the corresponding major Java version such as 8 for Java 1.8, or 11 for Java 11.
+	 * 
+	 * @return
+	 */
+	public static int getJavaVersion() {
+		String version = System.getProperty("java.version");
+
+		if (version.startsWith("1."))
+			version = version.substring(2, 3);
+
+		else {
+			final int dot = version.indexOf(".");
+
+			if (dot != -1)
+				version = version.substring(0, dot);
+		}
+
+		return Integer.parseInt(version);
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Getters for various server functions
 	// ----------------------------------------------------------------------------------------------------
