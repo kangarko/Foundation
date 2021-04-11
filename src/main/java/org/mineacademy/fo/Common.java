@@ -1231,7 +1231,7 @@ public final class Common {
 			return;
 
 		for (String message : messages) {
-			if (message.equals("none") || message.isEmpty())
+			if (message.equals("none"))
 				continue;
 
 			if (stripColors(message).replace(" ", "").isEmpty()) {
@@ -2321,6 +2321,22 @@ public final class Common {
 	 */
 	public static <T> Set<T> newSet(final T... keys) {
 		return new HashSet<>(Arrays.asList(keys));
+	}
+
+	/**
+	 * Create a new array list that is mutable
+	 * 
+	 * @param <T>
+	 * @param keys
+	 * @return
+	 */
+	public static <T> List<T> newList(final T... keys) {
+		final List<T> list = new ArrayList<>();
+
+		for (final T key : keys)
+			list.add(key);
+
+		return list;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
