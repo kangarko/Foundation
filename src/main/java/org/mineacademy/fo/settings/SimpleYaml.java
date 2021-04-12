@@ -23,27 +23,34 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.representer.Representer;
 
-import lombok.Getter;
-
 /**
  * A frustration-free implementation of {@link Configuration} which saves all files in Yaml.
  * Note that this implementation is not synchronized.
  */
-public class SimpleYaml extends FileConfiguration {
+public final class SimpleYaml extends FileConfiguration {
 
-	protected static final String COMMENT_PREFIX = "# ";
-	protected static final String BLANK_CONFIG = "{}\n";
+	private static final String COMMENT_PREFIX = "# ";
+	private static final String BLANK_CONFIG = "{}\n";
 
-	@Getter
 	private final DumperOptions yamlOptions = new DumperOptions();
-
-	@Getter
-	private final LoaderOptions loaderOptions = new LoaderOptions();
-
-	@Getter
 	private final Representer yamlRepresenter = new YamlRepresenter();
 
-	private final Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
+	// MC 1.8.8 compatibility, where SpigotMC ships with now an outdated SnakeYAML library
+	private Object loaderOptions = null;
+
+	private final Yaml yaml;
+
+	public SimpleYaml() {
+
+		// Load options only if available
+		if (ReflectionUtil.isClassAvailable("org.yaml.snakeyaml.LoaderOptions")) {
+			this.loaderOptions = new LoaderOptions();
+			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, (LoaderOptions) loaderOptions);
+		}
+
+		else
+			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
+	}
 
 	@NotNull
 	@Override
@@ -56,7 +63,8 @@ public class SimpleYaml extends FileConfiguration {
 		yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		yamlOptions.setWidth(4096); // Foundation: Do not wrap long lines
 
-		loaderOptions.setMaxAliasesForCollections(512);
+		if (loaderOptions != null)
+			((LoaderOptions) loaderOptions).setMaxAliasesForCollections(512);
 
 		yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
