@@ -1,6 +1,8 @@
 package org.mineacademy.fo.model;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -8,6 +10,7 @@ import java.util.regex.Matcher;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
@@ -15,8 +18,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
 
@@ -54,16 +59,40 @@ public final class JavaScriptExecutor {
 			scriptEngine = engineManager.getEngineByName("Nashorn");
 		}
 
-		engine = engineManager.getEngineByName("Nashorn");
+		// If still fails, try to load our own library for Java 15 and up
+		if (scriptEngine == null) {
+			final String nashorn = "org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory";
 
-		if (engine == null)
-			Common.logFramed(false,
-					"JavaScript placeholders will not function!",
+			if (ReflectionUtil.isClassAvailable(nashorn)) {
+				final ScriptEngineFactory engineFactory = ReflectionUtil.instantiate(ReflectionUtil.lookupClass(nashorn));
+
+				engineManager.registerEngineName("Nashorn", engineFactory);
+				scriptEngine = engineManager.getEngineByName("Nashorn");
+			}
+		}
+
+		engine = scriptEngine;
+
+		if (engine == null) {
+			final List<String> warningMessage = Common.newList(
+					"ERROR: JavaScript placeholders will not function!",
 					"",
 					"Your Java version/distribution lacks the",
-					"Nashorn library for JavaScript placeholders.",
-					"Please install Oracle Java 8 JDK.");
+					"Nashorn library for JavaScript placeholders.");
 
+			if (Remain.getJavaVersion() >= 15)
+				warningMessage.addAll(Arrays.asList(
+						"",
+						"To fix this, install the NashornPlus",
+						"plugin from mineacademy.org/nashorn"));
+			else
+				warningMessage.addAll(Arrays.asList(
+						"",
+						"To fix this, install Java 11 from Oracle",
+						"or other vendor that supports Nashorn."));
+
+			Common.logFramed(false, Common.toArray(warningMessage));
+		}
 	}
 
 	/**
@@ -72,7 +101,7 @@ public final class JavaScriptExecutor {
 	 * @param javascript
 	 * @return
 	 */
-	public static Object run(String javascript) {
+	public static Object run(final String javascript) {
 		return run(javascript, null, null);
 	}
 
@@ -84,7 +113,7 @@ public final class JavaScriptExecutor {
 	 * @param sender
 	 * @return
 	 */
-	public static Object run(String javascript, CommandSender sender) {
+	public static Object run(final String javascript, final CommandSender sender) {
 		return run(javascript, sender, null);
 	}
 
@@ -97,7 +126,7 @@ public final class JavaScriptExecutor {
 	 * @param event
 	 * @return
 	 */
-	public static Object run(@NonNull String javascript, CommandSender sender, Event event) {
+	public static Object run(@NonNull String javascript, final CommandSender sender, final Event event) {
 
 		// Cache for highest performance
 		Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
@@ -110,7 +139,7 @@ public final class JavaScriptExecutor {
 		}
 
 		if (engine == null) {
-			System.out.println("Warning: Not running script for " + sender + " because JavaScript library is missing (install Oracle Java 8 or 11): " + javascript);
+			Common.log("Warning: Not running script for " + sender.getName() + " because JavaScript library is missing (install Oracle Java 8 or 11): " + javascript);
 
 			return null;
 		}
@@ -166,7 +195,14 @@ public final class JavaScriptExecutor {
 	 *
 	 * @return
 	 */
-	public static Object run(String javascript, Map<String, Object> replacements) {
+	public static Object run(final String javascript, final Map<String, Object> replacements) {
+
+		if (engine == null) {
+			Common.log("Warning: Not running script because JavaScript library is missing (install Oracle Java 8 or 11): " + javascript);
+
+			return javascript;
+		}
+
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
