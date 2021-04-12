@@ -18,6 +18,7 @@ import org.bukkit.configuration.file.YamlRepresenter;
 import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.ReflectionUtil;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.representer.Representer;
@@ -36,13 +37,13 @@ public class SimpleYaml extends FileConfiguration {
 	@Getter
 	private final DumperOptions yamlOptions = new DumperOptions();
 
-	//@Getter
-	//private final LoaderOptions loaderOptions = new LoaderOptions();
+	@Getter
+	private final LoaderOptions loaderOptions = new LoaderOptions();
 
 	@Getter
 	private final Representer yamlRepresenter = new YamlRepresenter();
 
-	private final Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
+	private final Yaml yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
 
 	@NotNull
 	@Override
@@ -54,6 +55,8 @@ public class SimpleYaml extends FileConfiguration {
 		yamlOptions.setIndent(2);
 		yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		yamlOptions.setWidth(4096); // Foundation: Do not wrap long lines
+
+		loaderOptions.setMaxAliasesForCollections(512);
 
 		yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
