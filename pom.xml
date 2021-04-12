@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.16</version>
+			<version>1.18.20</version>
 		</dependency>
 
 		<!-- Solves a weird BUILD FAILURE problem, see https://www.spigotmc.org/threads/455923 
