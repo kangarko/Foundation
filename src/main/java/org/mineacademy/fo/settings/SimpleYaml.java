@@ -35,17 +35,17 @@ public final class SimpleYaml extends FileConfiguration {
 	private final DumperOptions yamlOptions = new DumperOptions();
 	private final Representer yamlRepresenter = new YamlRepresenter();
 
-	// MC 1.8.8 compatibility, where SpigotMC ships with now an outdated SnakeYAML library
-	private Object loaderOptions = null;
-
 	private final Yaml yaml;
 
 	public SimpleYaml() {
 
 		// Load options only if available
 		if (ReflectionUtil.isClassAvailable("org.yaml.snakeyaml.LoaderOptions")) {
-			this.loaderOptions = new LoaderOptions();
-			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, (LoaderOptions) loaderOptions);
+
+			final LoaderOptions loaderOptions = new LoaderOptions();
+			loaderOptions.setMaxAliasesForCollections(512);
+
+			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
 		}
 
 		else
@@ -62,9 +62,6 @@ public final class SimpleYaml extends FileConfiguration {
 		yamlOptions.setIndent(2);
 		yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		yamlOptions.setWidth(4096); // Foundation: Do not wrap long lines
-
-		if (loaderOptions != null)
-			((LoaderOptions) loaderOptions).setMaxAliasesForCollections(512);
 
 		yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
