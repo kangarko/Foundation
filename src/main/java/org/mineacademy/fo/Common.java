@@ -1056,7 +1056,7 @@ public final class Common {
 	/**
 	 * @see #doesPluginExist(String)
 	 *
-	 * @deprecated subject for removal, this simply calls {@link #doesPluginExist(String)}
+	 * @deprecated subject for removal, please use {@link #doesPluginExist(String)} because it now works the same
 	 *
 	 * @param pluginName
 	 * @return

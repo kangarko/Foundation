@@ -1171,14 +1171,13 @@ public final class HookManager {
 	 * <p>
 	 * 		The value will be called against the given player
 	 * <p>
+	 * 
+	 * 	 * ATTENTION: We now have a new system where you register variables through {@link Variables#addExpansion(SimpleExpansion)}
+	 * 			   instead. It gives you better flexibility and, like PlaceholderAPI, you can replace different variables on the fly.
 	 *
 	 * @param variable
 	 * @param value
-	 *
-	 * @deprecated It still works, but we now have a new system where you register variables through {@link Variables#addExpansion(SimpleExpansion)}
-	 * 			   instead. It gives you better flexibility and, like PlaceholderAPI, you can replace different variables on the fly.
 	 */
-	@Deprecated
 	public static void addPlaceholder(final String variable, final Function<Player, String> value) {
 		Variables.addExpansion(new SimpleExpansion() {
 
@@ -1482,7 +1481,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2956,7 +2955,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3112,16 +3111,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
