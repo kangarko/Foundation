@@ -550,7 +550,8 @@ public class YamlConfig {
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
 
-		Valid.checkBoolean(!path.contains(".."), "Path must not contain '..' or more: " + path);
+		// Commented out : players with their names starting with a dot will cause plugins malfunction
+		//Valid.checkBoolean(!path.contains(".."), "Path must not contain '..' or more: " + path);
 		Valid.checkBoolean(!path.endsWith("."), "Path must not end with '.': " + path);
 
 		// Copy defaults if not set

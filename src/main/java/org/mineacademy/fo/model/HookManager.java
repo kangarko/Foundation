@@ -204,7 +204,7 @@ public final class HookManager {
 					factionsHook = new FactionsMassive();
 
 				} else
-					Common.log("&cWarning: Recognized MCore Factions, but not hooked! Check if you have the latest version!");
+					Common.log("&cWarning: &fRecognized MCore Factions, but not hooked! Check if you have the latest version!");
 
 			}
 		}
@@ -230,7 +230,7 @@ public final class HookManager {
 			if (ver.startsWith("2."))
 				mcmmoHook = new McMMOHook();
 			else
-				Common.log("&cWarning: Could not hook into mcMMO, version 2.x required, you have " + ver);
+				Common.log("&cWarning: &fCould not hook into mcMMO, version 2.x required, you have " + ver);
 		}
 
 		if (Common.doesPluginExist("Multiverse-Core"))
@@ -254,7 +254,7 @@ public final class HookManager {
 			if (ver.startsWith("5.") || ver.startsWith("3."))
 				plotSquaredHook = new PlotSquaredHook();
 			else
-				Common.log("&cWarning: Could not hook into PlotSquared, version 3.x or 5.x required, you have " + ver);
+				Common.log("&cWarning: &fCould not hook into PlotSquared, version 3.x or 5.x required, you have " + ver);
 		}
 
 		if (Common.doesPluginExist("ProtocolLib")) {
@@ -2795,7 +2795,7 @@ class McMMOHook {
 
 		} catch (final Throwable throwable) {
 			if (!errorLogged) {
-				Common.log("&cWarning: Failed getting mcMMO party chat for " + player.getName() + " due to error. Returning null."
+				Common.log("&cWarning: &fFailed getting mcMMO party chat for " + player.getName() + " due to error. Returning null."
 						+ " Ensure you have the latest mcMMO version, if so, contact plugin authors to update the integration. Error was: " + throwable);
 
 				errorLogged = true;
@@ -2818,7 +2818,7 @@ class McMMOHook {
 
 		} catch (final Throwable throwable) {
 			if (!errorLogged) {
-				Common.log("&cWarning: Failed getting mcMMO party recipients for " + bukkitPlayer.getName() + " due to error. Returning null."
+				Common.log("&cWarning: &fFailed getting mcMMO party recipients for " + bukkitPlayer.getName() + " due to error. Returning null."
 						+ " Ensure you have the latest mcMMO version, if so, contact plugin authors to update the integration. Error was: " + throwable);
 
 				errorLogged = true;
