@@ -13,6 +13,7 @@ import java.util.TimerTask;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -132,7 +133,8 @@ public class SimpleDatabase {
 		close();
 
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+			if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+				Class.forName("com.mysql.jdbc.Driver");
 
 			this.lastCredentials = new LastCredentials(url, user, password, table);
 			this.connection = DriverManager.getConnection(url, user, password);
