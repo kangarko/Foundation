@@ -3168,16 +3168,21 @@ class ItemsAdderHook {
 
 	private final Class<?> itemsAdder;
 	private final Method replaceFontImagesMethod;
+	private final Method replaceFontImagesMethodNoPlayer;
 
 	ItemsAdderHook() {
 		this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
 		this.replaceFontImagesMethod = ReflectionUtil.getDeclaredMethod(itemsAdder, "replaceFontImages", Player.class, String.class);
+		this.replaceFontImagesMethodNoPlayer = ReflectionUtil.getDeclaredMethod(itemsAdder, "replaceFontImages", String.class);
 	}
 
 	/*
 	 * Return true if the given player is muted
 	 */
-	String replaceFontImages(final Player player, final String message) {
+	String replaceFontImages(@Nullable final Player player, final String message) {
+		if (player == null)
+			return ReflectionUtil.invokeStatic(replaceFontImagesMethodNoPlayer, message);
+
 		return ReflectionUtil.invokeStatic(replaceFontImagesMethod, player, message);
 	}
 }
