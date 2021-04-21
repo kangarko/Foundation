@@ -120,6 +120,7 @@ public final class HookManager {
 	private static DiscordSRVHook discordSRVHook;
 	private static EssentialsHook essentialsHook;
 	private static FactionsHook factionsHook;
+	private static ItemsAdderHook itemsAdderHook;
 	private static LandsHook landsHook;
 	private static LiteBansHook liteBansHook;
 	private static LocketteProHook locketteProHook;
@@ -207,6 +208,9 @@ public final class HookManager {
 
 			}
 		}
+
+		if (Common.doesPluginExist("ItemsAdder"))
+			itemsAdderHook = new ItemsAdderHook();
 
 		if (Common.doesPluginExist("Lands"))
 			landsHook = new LandsHook();
@@ -406,6 +410,15 @@ public final class HookManager {
 			return true;
 
 		return false;
+	}
+
+	/**
+	 * Is ItemsAdder loaded as a plugin?
+	 *
+	 * @return
+	 */
+	public static boolean isItemsAdderLoaded() {
+		return itemsAdderHook != null;
 	}
 
 	/**
@@ -881,6 +894,31 @@ public final class HookManager {
 	 */
 	public static Player getReplyTo(final Player player) {
 		return isEssentialsLoaded() ? essentialsHook.getReplyTo(player.getName()) : null;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// ItemsAdder
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Use ItemsAdder to replace font images in the message
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String replaceFontImages(final String message) {
+		return replaceFontImages(null, message);
+	}
+
+	/**
+	 * Use ItemsAdder to replace font images in the message based on the player's permission
+	 *
+	 * @param player
+	 * @param message
+	 * @return
+	 */
+	public static String replaceFontImages(@Nullable Player player, final String message) {
+		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImages(player, message) : message;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -3123,5 +3161,23 @@ class LiteBansHook {
 		
 			return false;
 		}*/
+	}
+}
+
+class ItemsAdderHook {
+
+	private final Class<?> itemsAdder;
+	private final Method replaceFontImagesMethod;
+
+	ItemsAdderHook() {
+		this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
+		this.replaceFontImagesMethod = ReflectionUtil.getDeclaredMethod(itemsAdder, "replaceFontImages", Player.class, String.class);
+	}
+
+	/*
+	 * Return true if the given player is muted
+	 */
+	String replaceFontImages(final Player player, final String message) {
+		return ReflectionUtil.invokeStatic(replaceFontImagesMethod, player, message);
 	}
 }
