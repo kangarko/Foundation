@@ -73,7 +73,7 @@ public abstract class FolderWatcher extends Thread {
 		for (final FolderWatcher other : activeThreads) {
 			//Valid.checkBoolean(other.folder.toString().equals(this.folder.toString()), "Tried to add a duplicate file watcher for " + this.folder);
 			if (other.folder.toString().equals(this.folder.toString()))
-				Common.log("&cWarning: A duplicate file watcher for '" + folder.getPath() + "' was added. This is untested and may causes fatal issues!");
+				Common.log("&cWarning: &fA duplicate file watcher for '" + folder.getPath() + "' was added. This is untested and may causes fatal issues!");
 		}
 
 		activeThreads.add(this);
