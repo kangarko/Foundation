@@ -41,11 +41,19 @@ public final class SimpleYaml extends FileConfiguration {
 
 		// Load options only if available
 		if (ReflectionUtil.isClassAvailable("org.yaml.snakeyaml.LoaderOptions")) {
+			Yaml yaml;
 
-			final LoaderOptions loaderOptions = new LoaderOptions();
-			loaderOptions.setMaxAliasesForCollections(512);
+			try {
+				final LoaderOptions loaderOptions = new LoaderOptions();
+				loaderOptions.setMaxAliasesForCollections(512);
 
-			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
+				yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions, loaderOptions);
+
+			} catch (final NoSuchMethodError ex) {
+				yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
+			}
+
+			this.yaml = yaml;
 		}
 
 		else
