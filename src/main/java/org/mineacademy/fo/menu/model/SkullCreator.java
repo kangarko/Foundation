@@ -8,7 +8,6 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.block.Block;
@@ -17,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -117,7 +117,13 @@ public class SkullCreator {
 	public static ItemStack itemWithUuid(@NonNull ItemStack item, @NonNull UUID id) {
 		final SkullMeta meta = (SkullMeta) item.getItemMeta();
 
-		meta.setOwningPlayer(Bukkit.getOfflinePlayer(id));
+		try {
+			meta.setOwningPlayer(Remain.getOfflinePlayerByUUID(id));
+
+		} catch (final Throwable t) {
+			meta.setOwner(Remain.getOfflinePlayerByUUID(id).getName());
+		}
+
 		item.setItemMeta(meta);
 
 		return item;
@@ -165,7 +171,13 @@ public class SkullCreator {
 
 		final Skull state = (Skull) block.getState();
 
-		state.setOwningPlayer(Bukkit.getOfflinePlayer(id));
+		try {
+			state.setOwningPlayer(Remain.getOfflinePlayerByUUID(id));
+
+		} catch (final Throwable t) {
+			state.setOwner(Remain.getOfflinePlayerByUUID(id).getName());
+		}
+
 		state.update(false, false);
 	}
 
