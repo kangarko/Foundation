@@ -1,5 +1,6 @@
 package org.mineacademy.fo;
 
+import java.awt.Color;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,8 +9,10 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.model.Whiteblacklist;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -418,6 +421,69 @@ public final class ChatUtil {
 	 */
 	public static boolean isInteractive(String msg) {
 		return msg.startsWith("[JSON]") || msg.startsWith("<toast>") || msg.startsWith("<title>") || msg.startsWith("<actionbar>") || msg.startsWith("<bossbar>");
+	}
+
+	/**
+	 * Automatically add gradient for the given string using the two colors as start/ending colors
+	 * 
+	 * @param message
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	public static String generateGradient(String message, CompChatColor from, CompChatColor to) {
+		if (!MinecraftVersion.atLeast(V.v1_16))
+			return message;
+
+		final Color color1 = from.getColor();
+		final Color color2 = to.getColor();
+
+		final char[] letters = message.toCharArray();
+		String gradient = "";
+
+		ChatColor lastDecoration = null;
+
+		for (int i = 0; i < letters.length; i++) {
+			final char letter = letters[i];
+
+			// Support color decoration and insert it manually after each character
+			if (letter == ChatColor.COLOR_CHAR && i + 1 < letters.length) {
+				final char decoration = letters[i + 1];
+
+				if (decoration == 'k')
+					lastDecoration = ChatColor.MAGIC;
+
+				else if (decoration == 'l')
+					lastDecoration = ChatColor.BOLD;
+
+				else if (decoration == 'm')
+					lastDecoration = ChatColor.STRIKETHROUGH;
+
+				else if (decoration == 'n')
+					lastDecoration = ChatColor.UNDERLINE;
+
+				else if (decoration == 'o')
+					lastDecoration = ChatColor.ITALIC;
+
+				else if (decoration == 'r')
+					lastDecoration = null;
+
+				i++;
+				continue;
+			}
+
+			final float ratio = (float) i / (float) letters.length;
+
+			final int red = (int) (color2.getRed() * ratio + color1.getRed() * (1 - ratio));
+			final int green = (int) (color2.getGreen() * ratio + color1.getGreen() * (1 - ratio));
+			final int blue = (int) (color2.getBlue() * ratio + color1.getBlue() * (1 - ratio));
+
+			final Color stepColor = new Color(red, green, blue);
+
+			gradient += CompChatColor.of(stepColor).toString() + (lastDecoration == null ? "" : lastDecoration.toString()) + letters[i];
+		}
+
+		return gradient;
 	}
 
 	// --------------------------------------------------------------------------------
