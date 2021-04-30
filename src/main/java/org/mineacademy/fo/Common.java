@@ -501,7 +501,7 @@ public final class Common {
 				else
 					toSend = prefix + part;
 
-				if (MinecraftVersion.olderThan(V.v1_9) && toSend.length() > Short.MAX_VALUE) {
+				if (MinecraftVersion.olderThan(V.v1_9) && toSend.length() + 1 >= Short.MAX_VALUE) {
 					toSend = toSend.substring(0, Short.MAX_VALUE / 2);
 
 					Common.log("Warning: Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
