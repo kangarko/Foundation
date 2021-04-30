@@ -20,6 +20,7 @@ import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -182,6 +183,14 @@ public final class JavaScriptExecutor {
 
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
 				error = "Found invalid or unparsed variable in";
+
+			// Special support for throwing exceptions in the JS code so that users 
+			// can send messages to player directly if upstream supports that
+			if (ex.getCause() != null && ex.getCause().toString().contains("event handled: ")) {
+				String[] errorMessage = ex.getCause().toString().split("event handled\\: ");
+
+				throw new EventHandledException(true, errorMessage.length == 2 ? errorMessage[1] : null);
+			}
 
 			throw new RuntimeException(error + " '" + javascript + "'", ex);
 		}
