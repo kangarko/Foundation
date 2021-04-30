@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.messaging.MessageTooLargeException;
 import org.mineacademy.fo.Common.Stringer;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.bungee.SimpleBungee;
@@ -153,7 +154,14 @@ public final class BungeeUtil {
 
 		Debugger.push("bungee");
 
-		recipient.sendPluginMessage(SimplePlugin.getInstance(), channel, out.toByteArray());
+		byte[] byteArray = out.toByteArray();
+
+		try {
+			recipient.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+
+		} catch (MessageTooLargeException ex) {
+			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
+		}
 
 		actionHead = 0;
 	}
