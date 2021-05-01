@@ -29,7 +29,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
@@ -79,16 +78,6 @@ public class YamlConfig {
 	 * NOT auto update the config with the specified default value
 	 */
 	public static final String NO_DEFAULT = null;
-
-	/**
-	 * Experimental flag to turn on async config saving.
-	 *
-	 * This will break things if you immediatelly load values in your config after saving (such as calling onLoadFinish()
-	 * right after save() method).
-	 *
-	 * False by default
-	 */
-	public static boolean ASYNC_SAVE = false;
 
 	/**
 	 * All files that are currently loaded
@@ -540,12 +529,6 @@ public class YamlConfig {
 	 * @return
 	 */
 	private <T> T getT(String path, final Class<T> type) {
-
-		// Warn about old data version being fetched while expecting new
-		if (instance.isPendingAsyncSave())
-			Debugger.debug("async-save", "Called data load getX() method on " + getFile() + " while saving its data. "
-					+ "The loading data method will still see the old values! Possible solution: "
-					+ "Turn YamlConfig.ASYNC_SAVE off or load data in a Runnable 5 ticks later. Call: " + Debugger.traceRoute(true));
 
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
@@ -2068,23 +2051,11 @@ final class ConfigInstance {
 	private final String commentsFilePath;
 
 	/**
-	 * The pending save task to avoid concurrency issues
-	 */
-	private BukkitTask pendingTask = null;
-
-	/**
-	 * Is a save going on right now?
-	 */
-	private boolean savePending = false;
-
-	/**
 	 * Saves the config instance with the given header, can be null
 	 *
 	 * @param header
 	 */
 	protected void save(final String[] header) {
-
-		this.savePending = true;
 
 		if (header != null) {
 			config.options().copyHeader(true);
@@ -2108,61 +2079,27 @@ final class ConfigInstance {
 				// Pull the data on the main thread
 				final Map<String, Object> values = config.getValues(false);
 
-				if (YamlConfig.ASYNC_SAVE) {
+				try {
 
-					// If this code is called within the next 1 tick, get the latest data, cancel save
-					// and reschedule to maximize performance
-					if (pendingTask != null)
-						pendingTask.cancel();
+					// Yaml#dump should be save async... note that this also builds header
+					final String data = config.saveToString(values);
+					Files.createParentDirs(file);
 
-					pendingTask = Common.runLaterAsync(() -> saveDo(values));
+					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
+
+					try {
+						writer.write(data);
+					} finally {
+						writer.close();
+					}
+
+				} catch (final Throwable t) {
+					Common.error(t);
 				}
-
-				else
-					saveDo(values);
 			}
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Failed to save " + file.getName());
-		}
-	}
-
-	/**
-	 * Return true if there is an async save pending task going on
-	 *
-	 * @return
-	 */
-	public boolean isPendingAsyncSave() {
-		return this.savePending;
-	}
-
-	/*
-	 * Invoke the actual savings mechanism with the given config data as a hash map
-	 */
-	private void saveDo(Map<String, Object> values) {
-		try {
-
-			// Yaml#dump should be save async... note that this also builds header
-			final String data = config.saveToString(values);
-
-			Files.createParentDirs(file);
-
-			final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
-
-			try {
-				writer.write(data);
-			} finally {
-				writer.close();
-			}
-
-			if (YamlConfig.ASYNC_SAVE)
-				pendingTask = null;
-
-		} catch (final Throwable t) {
-			Common.error(t);
-
-		} finally {
-			this.savePending = false;
 		}
 	}
 
