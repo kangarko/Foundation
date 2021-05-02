@@ -573,6 +573,20 @@ public final class Common {
 
 	/**
 	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 *
+	 * @param messages the messages to replace color codes with '&'
+	 * @return the colored message
+	 */
+	public static String[] colorizeArray(final String... messages) {
+
+		for (int i = 0; i < messages.length; i++)
+			messages[i] = colorize(messages[i]);
+
+		return messages;
+	}
+
+	/**
+	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
 	 * <p>
 	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimplePlugin#getServerPrefix()}
 	 *
@@ -1101,6 +1115,9 @@ public final class Common {
 
 	/**
 	 * Runs the given command (without /) as the console, replacing {player} with sender
+	 * 
+	 * You can prefix the command with @(announce|warn|error|info|question|success) to send a formatted
+	 * message to playerReplacement directly.
 	 *
 	 * @param playerReplacement
 	 * @param command
@@ -1109,16 +1126,36 @@ public final class Common {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		command = command.startsWith("/") ? command.substring(1) : command;
-		command = command.replace("{player}", playerReplacement == null ? "" : resolveSenderName(playerReplacement));
+		if (command.startsWith("@announce "))
+			Messenger.announce(playerReplacement, command.replace("@announce ", ""));
 
-		// Workaround for JSON in tellraw getting HEX colors replaced
-		if (!command.startsWith("tellraw"))
-			command = colorize(command);
+		else if (command.startsWith("@warn "))
+			Messenger.warn(playerReplacement, command.replace("@warn ", ""));
 
-		final String finalCommand = command;
+		else if (command.startsWith("@error "))
+			Messenger.error(playerReplacement, command.replace("@error ", ""));
 
-		runLater(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+		else if (command.startsWith("@info "))
+			Messenger.info(playerReplacement, command.replace("@info ", ""));
+
+		else if (command.startsWith("@question "))
+			Messenger.question(playerReplacement, command.replace("@question ", ""));
+
+		else if (command.startsWith("@success "))
+			Messenger.success(playerReplacement, command.replace("@success ", ""));
+
+		else {
+			command = command.startsWith("/") ? command.substring(1) : command;
+			command = command.replace("{player}", playerReplacement == null ? "" : resolveSenderName(playerReplacement));
+
+			// Workaround for JSON in tellraw getting HEX colors replaced
+			if (!command.startsWith("tellraw"))
+				command = colorize(command);
+
+			final String finalCommand = command;
+
+			runLater(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
+		}
 	}
 
 	/**
