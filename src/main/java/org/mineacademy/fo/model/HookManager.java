@@ -1654,7 +1654,7 @@ class EssentialsHook {
 		final User user = getUser(uniqueId);
 
 		if (user != null)
-			user.setNickname(nick);
+			user.setNickname(Common.colorize(nick));
 	}
 
 	String getNameFromNick(final String maybeNick) {
@@ -2951,7 +2951,7 @@ class CMIHook {
 		final TabListManager tabManager = CMI.getInstance().getTabListManager();
 
 		if (user != null) {
-			user.setNickName(nick, true);
+			user.setNickName(Common.colorize(nick), true);
 			user.updateDisplayName();
 
 			if (tabManager.isUpdatesOnNickChange())
