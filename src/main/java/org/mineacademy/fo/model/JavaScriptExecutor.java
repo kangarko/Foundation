@@ -186,10 +186,15 @@ public final class JavaScriptExecutor {
 
 			// Special support for throwing exceptions in the JS code so that users 
 			// can send messages to player directly if upstream supports that
-			if (ex.getCause() != null && ex.getCause().toString().contains("event handled: ")) {
-				String[] errorMessage = ex.getCause().toString().split("event handled\\: ");
+			String cause = ex.getCause().toString();
 
-				throw new EventHandledException(true, errorMessage.length == 2 ? errorMessage[1] : null);
+			if (ex.getCause() != null && cause.contains("event handled")) {
+				String[] errorMessageSplit = cause.contains("event handled: ") ? cause.split("event handled\\: ") : new String[0];
+
+				if (errorMessageSplit.length == 2)
+					Common.tellNoPrefix(sender, errorMessageSplit[1]);
+
+				throw new EventHandledException(true);
 			}
 
 			throw new RuntimeException(error + " '" + javascript + "'", ex);
