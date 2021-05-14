@@ -34,6 +34,11 @@ import net.md_5.bungee.api.chat.TextComponent;
 public final class SimpleComponent implements ConfigSerializable {
 
 	/**
+	 * Prevent oversized JSON from kicking players by removing interactive elements from it?  
+	 */
+	public static boolean STRIP_OVERSIZED_COMPONENTS = true;
+
+	/**
 	 * The pattern to match URL addresses when parsing text
 	 */
 	private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
@@ -425,7 +430,7 @@ public final class SimpleComponent implements ConfigSerializable {
 				setRelationPlaceholders(component, (Player) receiver, (Player) sender);
 
 			// Prevent clients being kicked out, so we just send plain message instead
-			if (Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
+			if (STRIP_OVERSIZED_COMPONENTS && Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
 				String legacy = Common.colorize(component.toLegacyText());
 
 				if (legacy.length() + 1 >= Short.MAX_VALUE)
