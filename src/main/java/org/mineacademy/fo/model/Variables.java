@@ -277,7 +277,8 @@ public final class Variables {
 		message = replaceHardVariables0(sender, message);
 
 		// Support the & color system
-		message = Common.colorize(message);
+		if (!message.startsWith("[JSON]"))
+			message = Common.colorize(message);
 
 		if (senderIsPlayer) {
 			final Map<String, String> map = cache.get(sender.getName());
