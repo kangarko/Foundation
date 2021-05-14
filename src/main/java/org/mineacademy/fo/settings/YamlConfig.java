@@ -285,10 +285,9 @@ public class YamlConfig {
 
 		synchronized (loadedFiles) {
 
+			Valid.checkBoolean(!loading, "Duplicate call to loadConfiguration (already loading)");
 			Valid.checkNotNull(to, "File to path cannot be null!");
 			Valid.checkBoolean(to.contains("."), "To path must contain file extension: " + to);
-
-			Valid.checkBoolean(!loading, "Duplicate call to loadConfiguration");
 
 			if (from != null)
 				Valid.checkBoolean(from.contains("."), "From path must contain file extension: " + from);
@@ -443,6 +442,15 @@ public class YamlConfig {
 		}
 
 		onSave();
+
+		{ // Save automatically
+			final SerializedMap map = serialize();
+
+			if (map != null)
+				for (final Map.Entry<String, Object> entry : map.entrySet())
+					setNoSave(entry.getKey(), entry.getValue());
+		}
+
 		instance.save(header != null ? header : getFileName().equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 	}
 
@@ -450,6 +458,17 @@ public class YamlConfig {
 	 * Called automatically when the file is saved
 	 */
 	protected void onSave() {
+	}
+
+	/**
+	 * Called automatically on save, use this to put
+	 * things you want saved in your file and they will then be automatically
+	 * saved when call save() method
+	 * 
+	 * @return
+	 */
+	protected SerializedMap serialize() {
+		return null;
 	}
 
 	/**
@@ -529,6 +548,8 @@ public class YamlConfig {
 	 * @return
 	 */
 	private <T> T getT(String path, final Class<T> type) {
+
+		Debugger.debug("config", "Called get() '" + path + "' = '" + this.getConfig().get(path) + "' " + (this.getDefaults() != null ? "vs def = '" + this.getDefaults().get(path) + "'" : "no defaults") + ". Disk config contains: " + this.getConfig().getValues(true));
 
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
@@ -673,6 +694,9 @@ public class YamlConfig {
 	protected final Boolean getBoolean(final String path, final boolean def) {
 		forceSingleDefaults(path);
 
+		boolean set = isSet(path);
+		Debugger.debug("config", "\tGetting Boolean at '" + path + "', " + (set ? "set to = " + getBoolean(path) : "not set, returning default " + def));
+
 		return isSet(path) ? getBoolean(path) : def;
 	}
 
@@ -762,6 +786,9 @@ public class YamlConfig {
 	 */
 	protected final Integer getInteger(final String path, final Integer def) {
 		forceSingleDefaults(path);
+
+		boolean set = isSet(path);
+		Debugger.debug("config", "\tGetting Integer at '" + path + "', " + (set ? "set to = " + getInteger(path) : "not set, returning default " + def));
 
 		return isSet(path) ? getInteger(path) : def;
 	}
@@ -1182,14 +1209,19 @@ public class YamlConfig {
 	protected final List<String> getStringList(final String path) {
 		final Object raw = getObject(path);
 
+		if (raw == null)
+			return new ArrayList<>();
+
 		if (raw instanceof String) {
 			final String output = (String) raw;
 
 			return "'[]'".equals(output) || "[]".equals(output) ? new ArrayList<>() : Arrays.asList(output);
 		}
 
-		final List<Object> list = getList(path);
-		return list != null ? fixYamlBooleansInList(list) : new ArrayList<>();
+		if (raw instanceof List)
+			return fixYamlBooleansInList((List<Object>) raw);
+
+		throw new FoException("Excepted a list at '" + path + "' in " + getFileName() + ", got (" + raw.getClass() + "): " + raw);
 	}
 
 	/**

@@ -197,6 +197,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
+	@Override
 	public SerializedMap serialize() {
 		final SerializedMap map = new SerializedMap();
 
@@ -213,23 +214,6 @@ public final class Variable extends YamlConfig {
 		map.putIf("Receiver_Permission", this.receiverPermission);
 
 		return map;
-	}
-
-	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#save()
-	 */
-	@Override
-	public void save() {
-
-		final SerializedMap map = serialize();
-
-		// We serialize null values too but they are not saved
-		if (!map.isEmpty() && !"{}".equals(map.toString())) {
-			for (final Map.Entry<String, Object> entry : map.entrySet())
-				setNoSave(entry.getKey(), entry.getValue());
-
-			super.save();
-		}
 	}
 
 	// ----------------------------------------------------------------------------------
