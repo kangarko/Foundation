@@ -76,10 +76,12 @@ import com.massivecraft.factions.entity.MPlayer;
 import com.massivecraft.massivecore.ps.PS;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
+import com.palmergames.bukkit.towny.TownyUniverse;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.WorldCoord;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import fr.xephi.authme.api.v3.AuthMeApi;
@@ -996,7 +998,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String getTown(final Location location) {
-		return isTownyLoaded() ? townyHook.getTown(location) : null;
+		return isTownyLoaded() ? townyHook.getTownName(location) : null;
 	}
 
 	/**
@@ -1783,16 +1785,27 @@ class TownyHook {
 
 	List<String> getTowns() {
 		try {
-			return Common.convert(TownyUniverse.getDataSource().getTowns(), Town::getName);
+			//import com.palmergames.bukkit.towny.object.TownyUniverse;
+
+			return Common.convert(TownyUniverse.getInstance().getTowns(), Town::getName);
 
 		} catch (final Throwable e) {
 			return new ArrayList<>();
 		}
 	}
 
-	String getTown(final Location loc) {
+	String getTownName(final Location loc) {
+		Town town = getTown(loc);
+
+		return town != null ? town.getName() : null;
+	}
+
+	private Town getTown(final Location loc) {
 		try {
-			return TownyUniverse.getTownName(loc);
+			WorldCoord worldCoord = WorldCoord.parseWorldCoord(loc);
+			TownBlock townBlock = TownyUniverse.getInstance().getTownBlock(worldCoord);
+
+			return townBlock != null ? townBlock.getTown() : null;
 
 		} catch (final Throwable e) {
 			return null;
@@ -1801,7 +1814,9 @@ class TownyHook {
 
 	String getTownOwner(final Location loc) {
 		try {
-			return TownyUniverse.getDataSource().getTown(TownyUniverse.getTownName(loc)).getMayor().getName();
+			Town town = getTown(loc);
+
+			return town != null ? town.getMayor().getName() : null;
 
 		} catch (final Throwable e) {
 			return null;
@@ -1830,9 +1845,9 @@ class TownyHook {
 		}
 	}
 
-	private Resident getResident(final Player pl) {
+	private Resident getResident(final Player player) {
 		try {
-			return TownyUniverse.getDataSource().getResident(pl.getName());
+			return TownyUniverse.getInstance().getResident(player.getName());
 
 		} catch (final Throwable e) {
 			return null;
