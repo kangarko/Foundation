@@ -427,16 +427,23 @@ public final class Common {
 
 		// Has prefix already? This is replaced when colorizing
 		final boolean hasPrefix = message.contains("{prefix}");
+		final boolean hasJSON = message.startsWith("[JSON]");
 
-		// Add colors and replace player
-		message = colorize(message.replace("{player}", resolveSenderName(sender)));
+		// Replace player
+		message = message.replace("{player}", resolveSenderName(sender));
+
+		// Replace colors
+		if (!hasJSON)
+			message = colorize(message);
 
 		// Used for matching
 		final String colorlessMessage = stripColors(message);
 
 		// Send [JSON] prefixed messages as json component
-		if (message.startsWith("[JSON]")) {
+		if (hasJSON) {
 			final String stripped = message.substring(6).trim();
+
+			System.out.println("Sending: " + stripped);
 
 			if (!stripped.isEmpty())
 				Remain.sendJson(sender, stripped);
