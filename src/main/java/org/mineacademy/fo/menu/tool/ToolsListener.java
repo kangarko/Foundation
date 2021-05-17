@@ -12,6 +12,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -87,7 +88,37 @@ public final class ToolsListener implements Listener {
 
 				Common.tell(player, SimpleLocalization.Tool.ERROR);
 				Common.error(t,
-						"Failed to handle " + event.getAction() + " using Tool: " + tool.getClass());
+						"Failed to handle " + event.getAction() + " using tool: " + tool.getClass());
+			}
+	}
+
+	/**
+	 * Handles block placing
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onToolPlaceBlock(final BlockPlaceEvent event) {
+
+		final Player player = event.getPlayer();
+		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
+
+		if (tool != null)
+			try {
+				if (event.isCancelled() && tool.ignoreCancelled())
+					return;
+
+				tool.onBlockPlace(event);
+
+				if (tool.autoCancel())
+					event.setCancelled(true);
+
+			} catch (final Throwable t) {
+				event.setCancelled(true);
+
+				Common.tell(player, SimpleLocalization.Tool.ERROR);
+				Common.error(t,
+						"Failed to handle placing " + event.getBlock() + " using tool: " + tool.getClass());
 			}
 	}
 
