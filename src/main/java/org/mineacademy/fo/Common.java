@@ -443,8 +443,6 @@ public final class Common {
 		if (hasJSON) {
 			final String stripped = message.substring(6).trim();
 
-			System.out.println("Sending: " + stripped);
-
 			if (!stripped.isEmpty())
 				Remain.sendJson(sender, stripped);
 
