@@ -1,6 +1,7 @@
 package org.mineacademy.fo.menu.tool;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ItemUtil;
@@ -67,7 +68,16 @@ public abstract class Tool {
 	 *
 	 * @param event the event
 	 */
-	protected abstract void onBlockClick(PlayerInteractEvent event);
+	protected void onBlockClick(PlayerInteractEvent event) {
+	}
+
+	/**
+	 * Called automatically when a block is placed using this tool
+	 * 
+	 * @param event
+	 */
+	protected void onBlockPlace(BlockPlaceEvent event) {
+	}
 
 	/**
 	 * Called when the player swap items in their hotbar and the new slot matches
