@@ -1,6 +1,7 @@
 package org.mineacademy.fo;
 
 import java.awt.Color;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -287,6 +288,7 @@ public final class SerializeUtil {
 
 		// Step 4 - If there is no deserialize method, just deserialize the given object
 		if (object != null)
+
 			if (classOf == String.class)
 				object = object.toString();
 
@@ -372,6 +374,31 @@ public final class SerializeUtil {
 
 			} else if (ConfigurationSerializable.class.isAssignableFrom(classOf) && object instanceof ConfigurationSerializable) {
 				// Good
+
+			} else if (classOf.isArray()) {
+				Class<?> arrayType = classOf.getComponentType();
+				T[] array;
+
+				if (object instanceof List) {
+					List<?> rawList = (List<?>) object;
+					array = (T[]) Array.newInstance(classOf.getComponentType(), rawList.size());
+
+					for (int i = 0; i < rawList.size(); i++) {
+						Object element = rawList.get(i);
+
+						array[i] = element == null ? null : (T) deserialize(arrayType, element, (Object[]) null);
+					}
+				}
+
+				else {
+					Object[] rawArray = (Object[]) object;
+					array = (T[]) Array.newInstance(classOf.getComponentType(), rawArray.length);
+
+					for (int i = 0; i < array.length; i++)
+						array[i] = rawArray[i] == null ? null : (T) deserialize(classOf.getComponentType(), rawArray[i], (Object[]) null);
+				}
+
+				return (T) array;
 
 			} else if (classOf == Object.class) {
 				// pass through
