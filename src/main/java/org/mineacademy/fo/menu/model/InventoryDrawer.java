@@ -1,8 +1,11 @@
 package org.mineacademy.fo.menu.model;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -124,21 +127,42 @@ public final class InventoryDrawer {
 	}
 
 	/**
-	 * Display the inventory to the player, closing older inventory if already opened
-	 *
-	 * @param player the player
+	 * Display this inventory to the player, closing older inventory if already opened
+	 * 
+	 * @param player
 	 */
 	public void display(Player player) {
-		// Automatically append the black color in the menu, can be overriden by colors
-		final Inventory inv = Bukkit.createInventory(player, size, Common.colorize("&0" + title));
-
-		inv.setContents(content);
+		Inventory inv = this.build(player);
 
 		// Before opening make sure we close his old inventory if exist
 		if (player.getOpenInventory() != null)
 			player.closeInventory();
 
 		player.openInventory(inv);
+	}
+
+	/**
+	 * Builds the inventory
+	 * 
+	 * @return
+	 */
+	public Inventory build() {
+		return this.build(null);
+	}
+
+	/**
+	 * Builds the inventory for the given holder
+	 * 
+	 * @param holder
+	 * @return
+	 */
+	public Inventory build(@Nullable InventoryHolder holder) {
+		// Automatically append the black color in the menu, can be overriden by colors
+		final Inventory inv = Bukkit.createInventory(holder, size, Common.colorize("&0" + title));
+
+		inv.setContents(content);
+
+		return inv;
 	}
 
 	/**
