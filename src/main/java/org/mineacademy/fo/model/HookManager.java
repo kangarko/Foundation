@@ -1655,8 +1655,11 @@ class EssentialsHook {
 	void setNick(final UUID uniqueId, String nick) {
 		final User user = getUser(uniqueId);
 
-		if (user != null)
-			user.setNickname(Common.colorize(nick));
+		if (user != null) {
+			final boolean isEmpty = nick == null || Common.stripColors(nick).replace(" ", "").isEmpty();
+
+			user.setNickname(isEmpty ? null : Common.colorize(nick));
+		}
 	}
 
 	String getNameFromNick(final String maybeNick) {
@@ -1795,15 +1798,15 @@ class TownyHook {
 	}
 
 	String getTownName(final Location loc) {
-		Town town = getTown(loc);
+		final Town town = getTown(loc);
 
 		return town != null ? town.getName() : null;
 	}
 
 	private Town getTown(final Location loc) {
 		try {
-			WorldCoord worldCoord = WorldCoord.parseWorldCoord(loc);
-			TownBlock townBlock = TownyUniverse.getInstance().getTownBlock(worldCoord);
+			final WorldCoord worldCoord = WorldCoord.parseWorldCoord(loc);
+			final TownBlock townBlock = TownyUniverse.getInstance().getTownBlock(worldCoord);
 
 			return townBlock != null ? townBlock.getTown() : null;
 
@@ -1814,7 +1817,7 @@ class TownyHook {
 
 	String getTownOwner(final Location loc) {
 		try {
-			Town town = getTown(loc);
+			final Town town = getTown(loc);
 
 			return town != null ? town.getMayor().getName() : null;
 
@@ -2966,7 +2969,9 @@ class CMIHook {
 		final TabListManager tabManager = CMI.getInstance().getTabListManager();
 
 		if (user != null) {
-			user.setNickName(Common.colorize(nick), true);
+			final boolean isEmpty = nick == null || Common.stripColors(nick).replace(" ", "").isEmpty();
+
+			user.setNickName(isEmpty ? null : Common.colorize(nick), true);
 			user.updateDisplayName();
 
 			if (tabManager.isUpdatesOnNickChange())
