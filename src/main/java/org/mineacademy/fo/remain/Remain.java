@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1812,10 +1813,53 @@ public final class Remain {
 
 				if (hasAdvancements)
 					new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
+
 				else
 					receiver.sendMessage(colorized);
 			}
 		}
+	}
+
+	/**
+	 * Send a "toast" notification to the given receivers. This is an advancement notification that cannot
+	 * be modified that much. It imposes a slight performance penalty the more players to send to.
+	 * 
+	 * Each player sending is delayed by 0.1s
+	 *
+	 * @param receiver
+	 * @param message you can replace player-specific variables in the message here
+	 * @param icon
+	 */
+	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
+
+		if (hasAdvancements) {
+			Common.runLaterAsync(() -> {
+				for (final Player receiver : receivers) {
+
+					// Sleep to mitigate sending not working at once 
+					Common.sleep(100);
+
+					Common.runLater(() -> {
+						final String colorized = Common.colorize(message.apply(receiver));
+
+						if (!colorized.isEmpty()) {
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase());
+
+							if (receiver.isOnline())
+								accessor.show(receiver);
+						}
+					});
+				}
+			});
+
+		} else
+			for (final Player receiver : receivers) {
+				final String colorized = Common.colorize(message.apply(receiver));
+
+				if (!colorized.isEmpty())
+					receiver.sendMessage(colorized);
+			}
+
 	}
 
 	/**
