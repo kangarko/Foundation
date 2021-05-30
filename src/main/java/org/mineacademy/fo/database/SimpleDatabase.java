@@ -245,7 +245,7 @@ public class SimpleDatabase {
 
 		for (final SerializedMap map : maps) {
 			final String columns = Common.join(map.keySet());
-			final String values = Common.join(map.values(), ", ", value -> parseValue(value));
+			final String values = Common.join(map.values(), ", ", this::parseValue);
 			final String duplicateUpdate = Common.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
 			sqls.add("INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ") ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
@@ -336,56 +336,58 @@ public class SimpleDatabase {
 		if (sqls.size() == 0)
 			return;
 
-		try {
-			final Statement batchStatement = getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			final int processedCount = sqls.size();
-
-			// Prevent automatically sending db instructions
-			getConnection().setAutoCommit(false);
-
-			for (final String sql : sqls)
-				batchStatement.addBatch(replaceVariables(sql));
-
-			if (processedCount > 10_000)
-				Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
-						+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
-
-			// Set the flag to start time notifications timer
-			batchUpdateGoingOn = true;
-
-			// Notify console that progress still is being made
-			new Timer().scheduleAtFixedRate(new TimerTask() {
-
-				@Override
-				public void run() {
-					if (batchUpdateGoingOn)
-						Common.log("Still executing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
-					else
-						cancel();
-				}
-			}, 1000 * 30, 1000 * 30);
-
-			// Execute
-			batchStatement.executeBatch();
-
-			// This will block the thread
-			getConnection().commit();
-
-			//Common.log("Updated " + processedCount + " database entries.");
-
-		} catch (final Throwable t) {
-			t.printStackTrace();
-
-		} finally {
+		synchronized (connection) {
 			try {
-				getConnection().setAutoCommit(true);
+				final Statement batchStatement = getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+				final int processedCount = sqls.size();
 
-			} catch (final SQLException ex) {
-				ex.printStackTrace();
+				// Prevent automatically sending db instructions
+				getConnection().setAutoCommit(false);
+
+				for (final String sql : sqls)
+					batchStatement.addBatch(replaceVariables(sql));
+
+				if (processedCount > 10_000)
+					Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
+							+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
+
+				// Set the flag to start time notifications timer
+				batchUpdateGoingOn = true;
+
+				// Notify console that progress still is being made
+				new Timer().scheduleAtFixedRate(new TimerTask() {
+
+					@Override
+					public void run() {
+						if (batchUpdateGoingOn)
+							Common.log("Still executing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
+						else
+							cancel();
+					}
+				}, 1000 * 30, 1000 * 30);
+
+				// Execute
+				batchStatement.executeBatch();
+
+				// This will block the thread
+				getConnection().commit();
+
+				//Common.log("Updated " + processedCount + " database entries.");
+
+			} catch (final Throwable t) {
+				t.printStackTrace();
+
+			} finally {
+				try {
+					getConnection().setAutoCommit(true);
+
+				} catch (final SQLException ex) {
+					ex.printStackTrace();
+				}
+
+				// Even in case of failure, cancel
+				batchUpdateGoingOn = false;
 			}
-
-			// Even in case of failure, cancel
-			batchUpdateGoingOn = false;
 		}
 	}
 
