@@ -982,6 +982,16 @@ public final class HookManager {
 	}
 
 	/**
+	 * Return the online nation players in players ally (Towny), or an empty list
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static Collection<? extends Player> getAllyPlayersOnline(final Player player) {
+		return isTownyLoaded() ? townyHook.getAllyPlayersOnline(player) : new ArrayList<>();
+	}
+
+	/**
 	 * Return the town owner name at the given location or null if none
 	 *
 	 * @param location
@@ -1770,6 +1780,21 @@ class TownyHook {
 			for (final Player online : Remain.getOnlinePlayers())
 				if (playerNation.equals(getNationName(online)))
 					recipients.add(online);
+
+		return recipients;
+	}
+
+	Collection<? extends Player> getAllyPlayersOnline(final Player pl) {
+		final List<Player> recipients = new ArrayList<>();
+		final Resident resident = getResident(pl);
+
+		if (resident != null)
+			for (final Player online : Remain.getOnlinePlayers()) {
+				final Resident otherResident = getResident(online);
+
+				if (otherResident != null && otherResident.isAlliedWith(resident))
+					recipients.add(online);
+			}
 
 		return recipients;
 	}
