@@ -2620,6 +2620,8 @@ class PotionSetter {
 	 * @param level
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
+		Valid.checkBoolean(item.getItemMeta() instanceof org.bukkit.inventory.meta.PotionMeta, "Can only use setPotion for items with PotionMeta not: " + item.getItemMeta());
+
 		final PotionType wrapped = PotionType.getByEffect(type);
 		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
 
