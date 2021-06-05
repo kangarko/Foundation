@@ -18,7 +18,23 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
+/**
+ * A sample sub-command that you can automatically add
+ * to your main command group to help collect debugging information
+ * users can submit to you when they have problems.
+ */
 public final class DebugCommand extends SimpleSubCommand {
+
+	/**
+	 * Create a new sub-command with the given permission.
+	 * 
+	 * @param permission
+	 */
+	public DebugCommand(String permission) {
+		this();
+
+		setPermission(permission);
+	}
 
 	public DebugCommand() {
 		super("debug");
