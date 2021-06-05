@@ -5,10 +5,12 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
@@ -49,6 +51,22 @@ import net.md_5.bungee.api.chat.HoverEvent;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SerializeUtil {
+
+	/**
+	 * A list of custom serializers
+	 */
+	private static Map<Class<Object>, Function<Object, String>> serializers = new HashMap<>();
+
+	/**
+	 * Add a custom serializer to the list
+	 * 
+	 * @param <T>
+	 * @param fromClass
+	 * @param serializer
+	 */
+	public static <T> void addSerializer(Class<T> fromClass, Function<T, String> serializer) {
+		serializers.put((Class<Object>) fromClass, (Function<Object, String>) serializer);
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Converting objects into strings so you can save them in your files
@@ -147,6 +165,7 @@ public final class SerializeUtil {
 					serialized.add(serialize(element));
 
 			return serialized;
+
 		} else if (obj instanceof StrictMap) {
 			final StrictMap<Object, Object> oldMap = (StrictMap<Object, Object>) obj;
 			final StrictMap<Object, Object> newMap = new StrictMap<>();
@@ -155,6 +174,7 @@ public final class SerializeUtil {
 				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
 
 			return newMap;
+
 		} else if (obj instanceof Map) {
 			final Map<Object, Object> oldMap = (Map<Object, Object>) obj;
 			final Map<Object, Object> newMap = new LinkedHashMap<>();
@@ -163,6 +183,7 @@ public final class SerializeUtil {
 				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
 
 			return newMap;
+
 		} else if (obj instanceof YamlConfig)
 			throw new SerializeFailedException("To save your YamlConfig " + obj.getClass().getSimpleName() + " make it implement ConfigSerializable!");
 
@@ -175,6 +196,9 @@ public final class SerializeUtil {
 
 		else if (obj instanceof ConfigurationSerializable)
 			return ((ConfigurationSerializable) obj).serialize();
+
+		else if (serializers.containsKey(obj.getClass()))
+			return serializers.get(obj.getClass()).apply(obj);
 
 		throw new SerializeFailedException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
 	}
@@ -376,22 +400,22 @@ public final class SerializeUtil {
 				// Good
 
 			} else if (classOf.isArray()) {
-				Class<?> arrayType = classOf.getComponentType();
+				final Class<?> arrayType = classOf.getComponentType();
 				T[] array;
 
 				if (object instanceof List) {
-					List<?> rawList = (List<?>) object;
+					final List<?> rawList = (List<?>) object;
 					array = (T[]) Array.newInstance(classOf.getComponentType(), rawList.size());
 
 					for (int i = 0; i < rawList.size(); i++) {
-						Object element = rawList.get(i);
+						final Object element = rawList.get(i);
 
 						array[i] = element == null ? null : (T) deserialize(arrayType, element, (Object[]) null);
 					}
 				}
 
 				else {
-					Object[] rawArray = (Object[]) object;
+					final Object[] rawArray = (Object[]) object;
 					array = (T[]) Array.newInstance(classOf.getComponentType(), rawArray.length);
 
 					for (int i = 0; i < array.length; i++)
