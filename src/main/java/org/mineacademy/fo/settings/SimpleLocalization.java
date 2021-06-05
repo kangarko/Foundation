@@ -1,12 +1,6 @@
 package org.mineacademy.fo.settings;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
@@ -22,39 +16,6 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  */
 @SuppressWarnings("unused")
 public abstract class SimpleLocalization extends YamlStaticConfig {
-
-	/**
-	 * A fallback localization is a file in your plugin's JAR we open and look values
-	 * in, when user-selected localization doesn't have them nor it has them in your JAR.
-	 * <br><br>
-	 * Example:<br>
-	 * 	messages_en.yml as fallback in the JAR<br>
-	 * 	messages_it.yml in the JAR<br>
-	 * 	messages_it.yml on the disk & used<br>
-	 * <br>
-	 * When there is a string missing from messages_it on the disk, we try to place the
-	 * default one from the same file in the JAR. However, when messages_it.yml in the
-	 * JAR also lacks this file, we then visit the fallback file.
-	 * <br>
-	 * This saves enormous amount of time since you don't have to copy-paste new
-	 * localization keys over all message files each time you make an update. Instead,
-	 * only place them into the fallback file, by default it's messages_en.yml.
-	 */
-	private static String FALLBACK_LOCALIZATION_FILE = "localization/messages_en.yml";
-
-	/**
-	 * See {@link #FALLBACK_LOCALIZATION_FILE}
-	 *
-	 * @param fallBackFile
-	 */
-	public static void setFallbackLocalizationFile(final String fallBackFile) {
-		FALLBACK_LOCALIZATION_FILE = fallBackFile;
-	}
-
-	/**
-	 * The fallback localization file config instance, see {@link #FALLBACK_LOCALIZATION_FILE}.
-	 */
-	private static FileConfiguration fallbackLocalization;
 
 	/**
 	 * A flag indicating that this class has been loaded
@@ -104,9 +65,6 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 		if ((VERSION = getInteger("Version")) != getConfigVersion())
 			set("Version", getConfigVersion());
-
-		// Load English localization file
-		fallbackLocalization = FileUtil.loadInternalConfiguration(FALLBACK_LOCALIZATION_FILE);
 	}
 
 	/**
@@ -117,69 +75,6 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 * @return
 	 */
 	protected abstract int getConfigVersion();
-
-	// --------------------------------------------------------------------
-	// Fallback
-	// --------------------------------------------------------------------
-
-	/**
-	 * Get a String from the localization file, utilizing
-	 * {@link #FALLBACK_LOCALIZATION_FILE} mechanics
-	 *
-	 * @param path
-	 * @return
-	 */
-	protected static final String getFallbackString(final String path) {
-		return getFallback(path, String.class);
-	}
-
-	/**
-	 * Get a list from the localization file, utilizing
-	 * {@link #FALLBACK_LOCALIZATION_FILE} mechanics
-	 *
-	 * @param <T>
-	 * @param path
-	 * @param listType
-	 * @return
-	 */
-	protected static final <T> List<T> getFallbackList(final String path, final Class<T> listType) {
-		final List<T> list = new ArrayList<>();
-		final List<Object> objects = getFallback(path, List.class);
-
-		if (objects != null)
-			for (final Object object : objects)
-				list.add(object != null ? SerializeUtil.deserialize(listType, object) : null);
-
-		return list;
-	}
-
-	/**
-	 * Get a key from the localization file, utilizing
-	 * {@link #FALLBACK_LOCALIZATION_FILE} mechanics
-	 *
-	 * @param <T>
-	 * @param path
-	 * @param typeOf
-	 * @return
-	 */
-	protected static final <T> T getFallback(final String path, final Class<T> typeOf) {
-
-		// If string already exists, has a default path, or locale is set to english, use the native method
-		if (isSet(path) || isSetDefault(path) || "en".equals(SimpleSettings.LOCALE_PREFIX))
-			return get(path, typeOf);
-
-		// Try to pull the value from English localization
-		final String relativePath = formPathPrefix(path);
-		final Object key = fallbackLocalization.get(relativePath);
-
-		Valid.checkNotNull(key, "Neither " + getFileName() + ", the default one, nor " + FALLBACK_LOCALIZATION_FILE + " contained " + relativePath + "! Please report this to " + SimplePlugin.getNamed() + " developers!");
-		Valid.checkBoolean(key.getClass().isAssignableFrom(typeOf), "Expected " + typeOf + " at " + relativePath + " in " + FALLBACK_LOCALIZATION_FILE + " but got " + key.getClass() + ": " + key);
-
-		// Write it to the file being used
-		set(path, key);
-
-		return (T) key;
-	}
 
 	// --------------------------------------------------------------------
 	// Shared values
@@ -697,6 +592,11 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	}
 
 	/**
+	 * Denotes the "none" message
+	 */
+	public static String NONE;
+
+	/**
 	 * The message for player if they lack a permission.
 	 */
 	public static String NO_PERMISSION = "&cInsufficient permission ({permission}).";
@@ -744,6 +644,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 
 		if (isSetDefault("Conversation_Requires_Player"))
 			CONVERSATION_REQUIRES_PLAYER = getString("Conversation_Requires_Player");
+
+		if (isSetDefault("None"))
+			NONE = getString("None");
 
 		localizationClassCalled = true;
 	}
