@@ -17,7 +17,7 @@ public class Messenger {
 	/**
 	 * Should we use messenger globally such as in commands & listeners?
 	 */
-	public static boolean ENABLED = false;
+	public static boolean ENABLED = true;
 
 	/**
 	 * The prefix send while sending info message
