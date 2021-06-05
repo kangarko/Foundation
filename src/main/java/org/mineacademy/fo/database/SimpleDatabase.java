@@ -287,7 +287,7 @@ public class SimpleDatabase {
 				statement.close();
 
 			} catch (final SQLException e) {
-				Common.error(e, "Error on updating MySQL with: " + sql);
+				handleError(e, "Error on updating MySQL with: " + sql);
 			}
 		}
 	}
@@ -318,9 +318,7 @@ public class SimpleDatabase {
 				return resultSet;
 
 			} catch (final SQLException ex) {
-				ex.printStackTrace();
-
-				Common.throwError(ex, "Error on querying MySQL with: " + sql);
+				handleError(ex, "Error on querying MySQL with: " + sql);
 			}
 		}
 
@@ -433,6 +431,20 @@ public class SimpleDatabase {
 				return false;
 			}
 		}
+	}
+
+	/*
+	 * Checks if there's a collation-related error and prints warning message for the user to
+	 * update his database.
+	 */
+	private void handleError(Throwable t, String fallbackMessage) {
+		if (t.toString().contains("Unknown collation")) {
+			Common.log("You need to update your MySQL provider driver. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
+			Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable MySQL connection or update your driver to fix this.");
+		}
+
+		else
+			Common.throwError(t, fallbackMessage);
 	}
 
 	// --------------------------------------------------------------------
