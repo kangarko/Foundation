@@ -10,11 +10,25 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 
 /**
- * A simple predefined command for quickly reloading the plugin
+ * A simple predefined sub-command for quickly reloading the plugin
  * using /{label} reload|rl
  */
 public final class ReloadCommand extends SimpleSubCommand {
 
+	/**
+	 * Create a new reload sub-command with the given permission.
+	 * 
+	 * @param permission
+	 */
+	public ReloadCommand(String permission) {
+		this();
+
+		setPermission(permission);
+	}
+
+	/**
+	 * Create a new reload sub-command
+	 */
 	public ReloadCommand() {
 		super("reload|rl");
 

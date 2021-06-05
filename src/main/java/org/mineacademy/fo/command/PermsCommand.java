@@ -13,6 +13,7 @@ import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.NonNull;
 
@@ -32,10 +33,39 @@ public final class PermsCommand extends SimpleSubCommand {
 	 */
 	private final SerializedMap variables;
 
+	/**
+	 * Create a new "permisions|perms" subcommand using the given class
+	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class. 
+	 * 
+	 * @param classToList
+	 */
 	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList) {
-		this(classToList, new SerializedMap());
+		this(classToList, SerializedMap
+				.of("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0)));
 	}
 
+	/**
+	 * Create a new "permisions|perms" subcommand using the given class
+	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class
+	 * and the given command permission. 
+	 * 
+	 * @param classToList
+	 * @param permission
+	 */
+	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList, String permission) {
+		this(classToList, SerializedMap
+				.of("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0)));
+
+		setPermission(permission);
+	}
+
+	/**
+	 * Create a new "permisions|perms" subcommand using the given class with
+	 * the given variables to replace in the \@PermissionGroup annotation in that class.
+	 * 
+	 * @param classToList
+	 * @param variables
+	 */
 	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList, SerializedMap variables) {
 		super("permissions|perms");
 
