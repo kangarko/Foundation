@@ -72,7 +72,7 @@ final class FoundationFilter {
 			return true;
 
 		// One less spammy message for server owners
-		if (message.endsWith("which is not a depend, softdepend or loadbefore of this plugin"))
+		if (message.endsWith("which is not a depend, softdepend or loadbefore of this plugin."))
 			return true;
 
 		message = message.toLowerCase();
