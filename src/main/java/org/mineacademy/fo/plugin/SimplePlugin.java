@@ -15,8 +15,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -59,6 +61,7 @@ import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -200,6 +203,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
+		// Add console filters early - no reload support
+		FoundationFilter.inject();
+
 		// Call parent
 		onPluginLoad();
 	}
@@ -303,6 +309,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (!isEnabled || !isEnabled())
 				return;
 
+			// Hide plugin name before console messages
+			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
+			Common.ADD_LOG_PREFIX = false;
+
 			startingReloadables = true;
 			onReloadablesStart();
 			startingReloadables = false;
@@ -329,7 +339,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(new EnchantmentListener());
 
 			// Register our packet listener
-			FoundationPacketListener.addPacketListener();
+			FoundationPacketListener.addNativeListener();
 
 			// Register DiscordSRV listener
 			if (HookManager.isDiscordSRVLoaded()) {
@@ -341,8 +351,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
-			// Set the logging and tell prefix
-			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
+			// Prepare Nashorn engine
+			JavaScriptExecutor.run("");
 
 			// Finish off by starting metrics (currently bStats)
 			final int pluginId = getMetricsPluginId();
@@ -350,8 +360,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (pluginId != -1)
 				new Metrics(this, pluginId);
 
-			// Prepare Nashorn engine
-			JavaScriptExecutor.run("");
+			// Set the logging and tell prefix
+			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
+
+			// Finally, place plugin name before console messages after plugin has (re)loaded
+			Common.runLater(() -> Common.ADD_LOG_PREFIX = hadLogPrefix);
 
 		} catch (final Throwable t) {
 			displayError0(t);
@@ -775,7 +788,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			CompMetadata.MetadataFile.onReload();
 
-			FoundationPacketListener.addPacketListener();
+			FoundationPacketListener.addNativeListener();
+
+			Lang.reloadFile();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
@@ -1019,6 +1034,19 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public int getMetricsPluginId() {
 		return -1;
+	}
+
+	/**
+	 * Foundation automatically can filter console commands for you, including
+	 * messages from other plugins or the server itself, preventing unnecessary console spam.
+	 * 
+	 * You can return a list of messages that will be matched using "startsWith OR contains" method
+	 * and will be filtered.
+	 * 
+	 * @return
+	 */
+	public Set<String> getConsoleFilter() {
+		return new HashSet<>();
 	}
 
 	/**
