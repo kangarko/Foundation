@@ -51,7 +51,7 @@ public final class Variables {
 	/**
 	 * Player - [Original Message - Translated Message]
 	 */
-	private static final Map<String, Map<String, String>> cache = ExpiringMap.builder().expiration(10, TimeUnit.MILLISECONDS).build();
+	private static final Map<String, Map<String, String>> cache = ExpiringMap.builder().expiration(500, TimeUnit.MILLISECONDS).build();
 
 	/**
 	 * Should we replace javascript placeholders from variables/ folder automatically?
@@ -246,13 +246,13 @@ public final class Variables {
 			message = Replacer.replaceArray(message, replacements);
 
 		if (senderIsPlayer) {
+
 			// Already cached ? Return.
 			final Map<String, String> cached = cache.get(sender.getName());
 			final String cachedVar = cached != null ? cached.get(message) : null;
 
 			if (cachedVar != null)
 				return cachedVar;
-
 		}
 
 		// Custom placeholders
