@@ -1823,7 +1823,7 @@ public final class Remain {
 	/**
 	 * Send a "toast" notification to the given receivers. This is an advancement notification that cannot
 	 * be modified that much. It imposes a slight performance penalty the more players to send to.
-	 * 
+	 *
 	 * Each player sending is delayed by 0.1s
 	 *
 	 * @param receiver
@@ -1836,7 +1836,7 @@ public final class Remain {
 			Common.runLaterAsync(() -> {
 				for (final Player receiver : receivers) {
 
-					// Sleep to mitigate sending not working at once 
+					// Sleep to mitigate sending not working at once
 					Common.sleep(100);
 
 					Common.runLater(() -> {
@@ -2273,7 +2273,7 @@ public final class Remain {
 
 	/**
 	 * Return the corresponding major Java version such as 8 for Java 1.8, or 11 for Java 11.
-	 * 
+	 *
 	 * @return
 	 */
 	public static int getJavaVersion() {
@@ -2288,6 +2288,9 @@ public final class Remain {
 			if (dot != -1)
 				version = version.substring(0, dot);
 		}
+
+		if (version.contains("-"))
+			version = version.split("\\-")[0];
 
 		return Integer.parseInt(version);
 	}
@@ -2426,7 +2429,7 @@ public final class Remain {
 			if (number instanceof Double)
 				return ((Double) number).intValue();
 			if (number instanceof Integer)
-				return ((Integer) number);
+				return (Integer) number;
 
 			return (int) Double.parseDouble(number.toString());
 
