@@ -1,6 +1,8 @@
 package org.mineacademy.fo;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -20,6 +22,8 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -34,10 +38,10 @@ public final class PacketUtil {
 
 	/**
 	 * A convenience shortcut to add packet listener
-	 * 
+	 *
 	 * @param adapter
 	 */
-	public static void addPacketListener(SimpleAdapter adapter) {
+	public static void addPacketListener(final SimpleAdapter adapter) {
 		Valid.checkBoolean(HookManager.isVaultLoaded(), "ProtocolLib integration requires Vault to be installed. Please install that plugin before continuing.");
 
 		HookManager.addPacketListener(adapter);
@@ -49,29 +53,29 @@ public final class PacketUtil {
 
 	/**
 	 * A convenience method for listening to Client>Server packets of the given type.
-	 * 
+	 *
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addReceivingListener(PacketType type, Consumer<PacketEvent> consumer) {
+	public static void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
 		addReceivingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
 	 * A convenience method for listening to Client>Server packets of the given type and priority.
-	 * 
+	 *
 	 * @param priority
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addReceivingListener(ListenerPriority priority, PacketType type, Consumer<PacketEvent> consumer) {
+	public static void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
 		addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
 			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
 			 */
 			@Override
-			public void onPacketReceiving(PacketEvent event) {
+			public void onPacketReceiving(final PacketEvent event) {
 
 				if (event.getPlayer() != null)
 					consumer.accept(event);
@@ -85,34 +89,52 @@ public final class PacketUtil {
 
 	/**
 	 * A convenience method for listening to Server>Client packets of the given type.
-	 * 
+	 *
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addSendingListener(PacketType type, Consumer<PacketEvent> consumer) {
+	public static void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
 		addSendingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
 	 * A convenience method for listening to Server>Client packets of the given type and priority.
-	 * 
+	 *
 	 * @param priority
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addSendingListener(ListenerPriority priority, PacketType type, Consumer<PacketEvent> consumer) {
+	public static void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
 		addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
 			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
 			 */
 			@Override
-			public void onPacketSending(PacketEvent event) {
+			public void onPacketSending(final PacketEvent event) {
 
 				if (event.getPlayer() != null)
 					consumer.accept(event);
 			}
 		});
+	}
+
+	/**
+	 * Sets the hoverable text in the server's menu
+	 * To use this, create a new addSendingListener for PacketType.Status.Server.SERVER_INFO
+	 * and get the {@link WrappedServerPing} from event.getPacket().getServerPings().read(0)
+	 * then finallly call WrappedServerPing#setPlayers method
+	 *
+	 * @param hoverTexts
+	 */
+	public static List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
+		final List<WrappedGameProfile> profiles = new ArrayList<>();
+
+		int count = 0;
+		for (final String hoverText : hoverTexts)
+			profiles.add(new WrappedGameProfile(String.valueOf(count++), Common.colorize(hoverText)));
+
+		return profiles;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -149,7 +171,7 @@ public final class PacketUtil {
 		}
 
 		@Override
-		public void onPacketSending(PacketEvent event) {
+		public void onPacketSending(final PacketEvent event) {
 			if (event.getPlayer() == null)
 				return;
 
@@ -278,12 +300,12 @@ public final class PacketUtil {
 
 		/**
 		 * Called automatically when we receive and decipher a chat message packet.
-		 * 
+		 * <p>
 		 * You can use {@link #getEvent()} and {@link #getPlayer()} here.
 		 * The preferred way of cancelling the packet is throwing an {@link EventHandledException}
-		 * 
+		 * <p>
 		 * If you edit the message we automatically set it.
-		 * 
+		 *
 		 * @param message
 		 * @return
 		 */
@@ -292,12 +314,12 @@ public final class PacketUtil {
 		/**
 		 * Called automatically when we receive the chat message and decipher it into plain json.
 		 * You can use {@link #getEvent()} and {@link #getPlayer()} here.
-		 * 
+		 * <p>
 		 * If you edit the jsonMessage we do NOT set it back.
-		 * 
+		 *
 		 * @param jsonMessage
 		 */
-		protected void onJsonMessage(String jsonMessage) {
+		protected void onJsonMessage(final String jsonMessage) {
 		}
 	}
 
@@ -314,20 +336,20 @@ public final class PacketUtil {
 
 		/**
 		 * Create a new packet adapter for the given packet type
-		 * 
+		 *
 		 * @param type
 		 */
-		public SimpleAdapter(PacketType type) {
+		public SimpleAdapter(final PacketType type) {
 			this(ListenerPriority.NORMAL, type);
 		}
 
 		/**
 		 * Create a new packet adapter for the given packet type with the given priority
-		 * 
+		 *
 		 * @param priority
 		 * @param type
 		 */
-		public SimpleAdapter(ListenerPriority priority, PacketType type) {
+		public SimpleAdapter(final ListenerPriority priority, final PacketType type) {
 			super(SimplePlugin.getInstance(), priority, type);
 
 			this.type = type;
@@ -335,21 +357,21 @@ public final class PacketUtil {
 
 		/**
 		 * This method is automatically fired when the client sends the {@link #type} to the server.
-		 * 
+		 *
 		 * @param event
 		 */
 		@Override
-		public void onPacketReceiving(PacketEvent event) {
+		public void onPacketReceiving(final PacketEvent event) {
 			throw new FoException("Override onPacketReceiving to handle receiving client>server packet type " + this.type);
 		}
 
 		/**
 		 * This method is automatically fired when the server wants to send the {@link #type} to the client.
-		 * 
+		 *
 		 * @param event
 		 */
 		@Override
-		public void onPacketSending(PacketEvent event) {
+		public void onPacketSending(final PacketEvent event) {
 			throw new FoException("Override onPacketReceiving to handle sending server>client packet type " + this.type);
 		}
 	}
