@@ -88,14 +88,12 @@ public class SimpleScoreboard {
 	 * The title of this scoreboard
 	 */
 	@Getter
-	@Setter
 	private String title;
 
 	/**
 	 * The update tick delay
 	 */
 	@Getter
-	@Setter
 	private int updateDelayTicks;
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -400,6 +398,20 @@ public class SimpleScoreboard {
 	 */
 	public final boolean isRunning() {
 		return updateTask != null;
+	}
+
+	/**
+	 * @param updateDelayTicks the updateDelayTicks to set
+	 */
+	public final void setUpdateDelayTicks(int updateDelayTicks) {
+		this.updateDelayTicks = updateDelayTicks;
+	}
+
+	/**
+	 * @param title the title to set
+	 */
+	public final void setTitle(String title) {
+		this.title = title;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
