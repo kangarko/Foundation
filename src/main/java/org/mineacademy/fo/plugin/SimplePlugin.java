@@ -833,7 +833,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		BlockVisualizer.stopAll();
 		FolderWatcher.stopThreads();
 
-		DiscordListener.clearRegisteredListeners();
+		if (HookManager.isDiscordSRVLoaded())
+			DiscordListener.clearRegisteredListeners();
 
 		try {
 			HookManager.unloadDependencies(this);
@@ -1039,10 +1040,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Foundation automatically can filter console commands for you, including
 	 * messages from other plugins or the server itself, preventing unnecessary console spam.
-	 * 
+	 *
 	 * You can return a list of messages that will be matched using "startsWith OR contains" method
 	 * and will be filtered.
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<String> getConsoleFilter() {
