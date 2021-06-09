@@ -78,6 +78,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
@@ -2293,6 +2294,24 @@ public final class Remain {
 			version = version.split("\\-")[0];
 
 		return Integer.parseInt(version);
+	}
+
+	/**
+	 * Return the server's ticks per second (requires Paper otherwise we return 20)
+	 *
+	 * @return
+	 */
+	public static int getTPS() {
+
+		try {
+			final Method getTPS = Bukkit.class.getDeclaredMethod("getTPS", double[].class);
+
+			return (int) MathUtil.floor(getTPS == null ? 20 : ((double[]) getTPS.invoke(null))[0]);
+		} catch (final ReflectiveOperationException ex) {
+
+			// Unsupported
+			return 20;
+		}
 	}
 
 	// ----------------------------------------------------------------------------------------------------
