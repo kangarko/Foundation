@@ -17,12 +17,12 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
-import org.mineacademy.fo.remain.CompRunnable;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -183,7 +183,7 @@ public final class ToolsListener implements Listener {
 		final Player player = (Player) shooter;
 		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
 
-		if (tool != null && tool instanceof Rocket)
+		if (tool instanceof Rocket)
 			try {
 				final Rocket rocket = (Rocket) tool;
 
@@ -215,7 +215,7 @@ public final class ToolsListener implements Listener {
 						shotRockets.put(copy.getUniqueId(), new ShotRocket(player, rocket));
 						rocket.onLaunch(copy, player);
 
-						Common.runTimer(1, new CompRunnable() {
+						Common.runTimer(1, new BukkitRunnable() {
 
 							private long elapsedTicks = 0;
 
