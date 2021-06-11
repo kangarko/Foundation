@@ -52,7 +52,6 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
-import org.mineacademy.fo.remain.CompRunnable;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -497,7 +496,7 @@ public final class Common {
 		} else
 			for (final String part : splitNewline(message)) {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
-				final String prefix = (ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "");
+				final String prefix = ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
 
 				String toSend;
 
@@ -755,7 +754,7 @@ public final class Common {
 				lastColor = match.group(0);
 
 			if (lastColor != null)
-				if ((c == -1 || c < (message.lastIndexOf(lastColor) + lastColor.length())))
+				if (c == -1 || c < message.lastIndexOf(lastColor) + lastColor.length())
 					return lastColor;
 		}
 
@@ -1120,7 +1119,7 @@ public final class Common {
 
 	/**
 	 * Runs the given command (without /) as the console, replacing {player} with sender
-	 * 
+	 *
 	 * You can prefix the command with @(announce|warn|error|info|question|success) to send a formatted
 	 * message to playerReplacement directly.
 	 *
@@ -2367,7 +2366,7 @@ public final class Common {
 
 	/**
 	 * Create a new array list that is mutable
-	 * 
+	 *
 	 * @param <T>
 	 * @param keys
 	 * @return
@@ -2405,8 +2404,6 @@ public final class Common {
 	public static BukkitTask runLater(final int delayTicks, Runnable task) {
 		final BukkitScheduler scheduler = Bukkit.getScheduler();
 		final JavaPlugin instance = SimplePlugin.getInstance();
-
-		task = new CompRunnable.SafeRunnable(task);
 
 		try {
 			return runIfDisabled(task) ? null : delayTicks == 0 ? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTask(instance) : scheduler.runTask(instance, task) : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLater(instance, delayTicks) : scheduler.runTaskLater(instance, task, delayTicks);
@@ -2458,16 +2455,14 @@ public final class Common {
 		final BukkitScheduler scheduler = Bukkit.getScheduler();
 		final JavaPlugin instance = SimplePlugin.getInstance();
 
-		task = new CompRunnable.SafeRunnable(task);
-
 		try {
 			return runIfDisabled(task) ? null : delayTicks == 0 ? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskAsynchronously(instance) : scheduler.runTaskAsynchronously(instance, task) : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLaterAsynchronously(instance, delayTicks) : scheduler.runTaskLaterAsynchronously(instance, task, delayTicks);
 
 		} catch (final NoSuchMethodError err) {
 			return runIfDisabled(task) ? null
 					: delayTicks == 0
-							? task instanceof CompRunnable ? ((CompRunnable) task).runTaskAsynchronously(instance) : getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task))
-							: task instanceof CompRunnable ? ((CompRunnable) task).runTaskLaterAsynchronously(instance, delayTicks) : getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task, delayTicks));
+							? getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task))
+							: getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task, delayTicks));
 		}
 	}
 
@@ -2492,16 +2487,12 @@ public final class Common {
 	 */
 	public static BukkitTask runTimer(final int delayTicks, final int repeatTicks, Runnable task) {
 
-		task = new CompRunnable.SafeRunnable(task);
-
 		try {
 			return runIfDisabled(task) ? null : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks) : Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
 
 		} catch (final NoSuchMethodError err) {
 			return runIfDisabled(task) ? null
-					: task instanceof CompRunnable
-							? ((CompRunnable) task).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks)
-							: getTaskFromId(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
+					: getTaskFromId(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
 		}
 	}
 
@@ -2526,16 +2517,12 @@ public final class Common {
 	 */
 	public static BukkitTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable task) {
 
-		task = new CompRunnable.SafeRunnable(task);
-
 		try {
 			return runIfDisabled(task) ? null : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks) : Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
 
 		} catch (final NoSuchMethodError err) {
 			return runIfDisabled(task) ? null
-					: task instanceof CompRunnable
-							? ((CompRunnable) task).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks)
-							: getTaskFromId(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
+					: getTaskFromId(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
 		}
 	}
 
@@ -2558,7 +2545,7 @@ public final class Common {
 	// This is fail-safe to critical save-on-exit operations in case our plugin is improperly reloaded (PlugMan) or malfunctions
 	private static boolean runIfDisabled(final Runnable run) {
 		if (!SimplePlugin.getInstance().isEnabled()) {
-			new CompRunnable.SafeRunnable(run).run();
+			run.run();
 
 			return true;
 		}
