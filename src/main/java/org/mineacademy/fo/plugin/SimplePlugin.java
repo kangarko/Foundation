@@ -449,7 +449,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 										Common.registerEvents((Listener) instance);
 								}
 
-							} catch (final NoSuchFieldError ex) {
+							} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
+								Bukkit.getLogger().warning("Failed to auto register " + (isTool ? "tool" : "enchant") + " class " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
+
 								// Ignore if no field is present
 
 							} catch (final Throwable t) {
