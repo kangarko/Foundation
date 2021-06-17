@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
+import org.mineacademy.fo.command.ReloadCommand;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -15,7 +16,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  * file placed within in your plugins jar file.
  */
 @SuppressWarnings("unused")
-public abstract class SimpleLocalization extends YamlStaticConfig {
+public class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * A flag indicating that this class has been loaded
@@ -74,7 +75,9 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	 *
 	 * @return
 	 */
-	protected abstract int getConfigVersion();
+	protected int getConfigVersion() {
+		return 1;
+	}
 
 	// --------------------------------------------------------------------
 	// Shared values
@@ -189,7 +192,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 		public static ChatColor HEADER_COLOR = ChatColor.GOLD;
 
 		/**
-		 * The secondary color shown in the ----- COMMAND ----- header such as in /chc ? 
+		 * The secondary color shown in the ----- COMMAND ----- header such as in /chc ?
 		 */
 		public static ChatColor HEADER_SECONDARY_COLOR = ChatColor.RED;
 
@@ -594,7 +597,7 @@ public abstract class SimpleLocalization extends YamlStaticConfig {
 	/**
 	 * Denotes the "none" message
 	 */
-	public static String NONE;
+	public static String NONE = "None";
 
 	/**
 	 * The message for player if they lack a permission.
