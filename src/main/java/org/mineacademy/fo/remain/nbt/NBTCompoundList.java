@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.mineacademy.fo.exception.FoException;
 
 /**
  * {@link NBTListCompound} implementation for NBTLists
@@ -33,11 +32,11 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	 */
 	public NBTCompound addCompound(NBTCompound comp) {
 		try {
-			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId()) {
-				WrapperReflection.LIST_ADD.run(listObject, size(), compound);
+			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId()) {
+				ReflectionMethod.LIST_ADD.run(listObject, size(), compound);
 			} else {
-				WrapperReflection.LEGACY_LIST_ADD.run(listObject, compound);
+				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, compound);
 			}
 			getParent().saveCompound();
 			final NBTListCompound listcomp = new NBTListCompound(this, compound);
@@ -46,7 +45,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 			}
 			return listcomp;
 		} catch (final Exception ex) {
-			throw new FoException(ex);
+			throw new NbtApiException(ex);
 		}
 	}
 
@@ -70,25 +69,25 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 			throw new NotImplementedException("You need to pass null! ListCompounds from other lists won't work.");
 		}
 		try {
-			final Object compound = WrapperClass.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (WrapperVersion.getVersion().getVersionId() >= WrapperVersion.MC1_14_R1.getVersionId()) {
-				WrapperReflection.LIST_ADD.run(listObject, index, compound);
+			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId()) {
+				ReflectionMethod.LIST_ADD.run(listObject, index, compound);
 			} else {
-				WrapperReflection.LEGACY_LIST_ADD.run(listObject, compound);
+				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, compound);
 			}
 			super.getParent().saveCompound();
 		} catch (final Exception ex) {
-			throw new FoException(ex);
+			throw new NbtApiException(ex);
 		}
 	}
 
 	@Override
 	public NBTListCompound get(int index) {
 		try {
-			final Object compound = WrapperReflection.LIST_GET_COMPOUND.run(listObject, index);
+			final Object compound = ReflectionMethod.LIST_GET_COMPOUND.run(listObject, index);
 			return new NBTListCompound(this, compound);
 		} catch (final Exception ex) {
-			throw new FoException(ex);
+			throw new NbtApiException(ex);
 		}
 	}
 

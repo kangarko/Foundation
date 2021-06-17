@@ -7,7 +7,7 @@ import java.io.IOException;
 
 /**
  * {@link NBTCompound} implementation backed by a {@link File}
- *
+ * 
  * @author tr7zw
  *
  */
@@ -19,7 +19,7 @@ public class NBTFile extends NBTCompound {
 	/**
 	 * Creates a NBTFile that uses @param file to store it's data. If this file
 	 * exists, the data will be loaded.
-	 *
+	 * 
 	 * @param file
 	 * @throws IOException
 	 */
@@ -30,17 +30,17 @@ public class NBTFile extends NBTCompound {
 		}
 		this.file = file;
 		if (file.exists()) {
-			final FileInputStream inputsteam = new FileInputStream(file);
+			FileInputStream inputsteam = new FileInputStream(file);
 			nbt = NBTReflectionUtil.readNBT(inputsteam);
 		} else {
-			nbt = WrapperObject.NMS_NBTTAGCOMPOUND.getInstance();
+			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 			save();
 		}
 	}
 
 	/**
 	 * Saves the data to the file
-	 *
+	 * 
 	 * @throws IOException
 	 */
 	public void save() throws IOException {
@@ -51,7 +51,7 @@ public class NBTFile extends NBTCompound {
 				if (!file.createNewFile())
 					throw new IOException("Unable to create file at " + file.getAbsolutePath());
 			}
-			final FileOutputStream outStream = new FileOutputStream(file);
+			FileOutputStream outStream = new FileOutputStream(file);
 			NBTReflectionUtil.writeNBT(nbt, outStream);
 		} finally {
 			getWriteLock().unlock();

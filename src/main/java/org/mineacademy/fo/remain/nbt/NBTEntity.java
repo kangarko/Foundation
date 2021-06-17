@@ -1,6 +1,8 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.entity.Entity;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.exception.FoException;
 
 /**
  * NBT class to access vanilla tags from Entities. Entities don't support custom
@@ -34,4 +36,19 @@ public class NBTEntity extends NBTCompound {
 	protected void setCompound(Object compound) {
 		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
 	}
+
+	/**
+	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
+	 * available for 1.14+!
+	 *
+	 * @return NBTCompound containing the data of the PersistentDataAPI
+	 */
+	public NBTCompound getPersistentDataContainer() {
+
+		if (org.mineacademy.fo.MinecraftVersion.olderThan(V.v1_14))
+			throw new FoException("getPersistentDataContainer requires MC 1.14 or newer");
+
+		return new NBTPersistentDataContainer(ent.getPersistentDataContainer());
+	}
+
 }

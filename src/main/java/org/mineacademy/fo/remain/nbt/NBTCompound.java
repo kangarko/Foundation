@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
@@ -9,7 +10,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.exception.FoException;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -95,7 +95,7 @@ public class NBTCompound {
 	public void setString(String key, String value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_STRING, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_STRING, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -111,7 +111,7 @@ public class NBTCompound {
 	public String getString(String key) {
 		try {
 			readLock.lock();
-			return (String) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_STRING, key);
+			return (String) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_STRING, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -130,7 +130,7 @@ public class NBTCompound {
 	public void setInteger(String key, Integer value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_INT, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_INT, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -146,7 +146,7 @@ public class NBTCompound {
 	public Integer getInteger(String key) {
 		try {
 			readLock.lock();
-			return (Integer) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_INT, key);
+			return (Integer) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_INT, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -161,7 +161,7 @@ public class NBTCompound {
 	public void setDouble(String key, Double value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_DOUBLE, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_DOUBLE, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -177,7 +177,7 @@ public class NBTCompound {
 	public Double getDouble(String key) {
 		try {
 			readLock.lock();
-			return (Double) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_DOUBLE, key);
+			return (Double) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_DOUBLE, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -192,7 +192,7 @@ public class NBTCompound {
 	public void setByte(String key, Byte value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_BYTE, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_BYTE, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -208,7 +208,7 @@ public class NBTCompound {
 	public Byte getByte(String key) {
 		try {
 			readLock.lock();
-			return (Byte) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_BYTE, key);
+			return (Byte) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_BYTE, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -223,7 +223,7 @@ public class NBTCompound {
 	public void setShort(String key, Short value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_SHORT, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_SHORT, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -239,7 +239,7 @@ public class NBTCompound {
 	public Short getShort(String key) {
 		try {
 			readLock.lock();
-			return (Short) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_SHORT, key);
+			return (Short) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_SHORT, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -254,7 +254,7 @@ public class NBTCompound {
 	public void setLong(String key, Long value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_LONG, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONG, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -270,7 +270,7 @@ public class NBTCompound {
 	public Long getLong(String key) {
 		try {
 			readLock.lock();
-			return (Long) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_LONG, key);
+			return (Long) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_LONG, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -285,7 +285,7 @@ public class NBTCompound {
 	public void setFloat(String key, Float value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_FLOAT, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_FLOAT, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -301,7 +301,7 @@ public class NBTCompound {
 	public Float getFloat(String key) {
 		try {
 			readLock.lock();
-			return (Float) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_FLOAT, key);
+			return (Float) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_FLOAT, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -316,7 +316,7 @@ public class NBTCompound {
 	public void setByteArray(String key, byte[] value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_BYTEARRAY, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_BYTEARRAY, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -332,7 +332,7 @@ public class NBTCompound {
 	public byte[] getByteArray(String key) {
 		try {
 			readLock.lock();
-			return (byte[]) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_BYTEARRAY, key);
+			return (byte[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_BYTEARRAY, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -347,7 +347,7 @@ public class NBTCompound {
 	public void setIntArray(String key, int[] value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_INTARRAY, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_INTARRAY, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -363,7 +363,7 @@ public class NBTCompound {
 	public int[] getIntArray(String key) {
 		try {
 			readLock.lock();
-			return (int[]) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_INTARRAY, key);
+			return (int[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_INTARRAY, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -378,7 +378,7 @@ public class NBTCompound {
 	public void setBoolean(String key, Boolean value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_BOOLEAN, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_BOOLEAN, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -399,7 +399,7 @@ public class NBTCompound {
 	public Boolean getBoolean(String key) {
 		try {
 			readLock.lock();
-			return (Boolean) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_BOOLEAN, key);
+			return (Boolean) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_BOOLEAN, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -478,7 +478,7 @@ public class NBTCompound {
 	public void setUUID(String key, UUID value) {
 		try {
 			writeLock.lock();
-			NBTReflectionUtil.setData(this, WrapperReflection.COMPOUND_SET_UUID, key, value);
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_UUID, key, value);
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -494,7 +494,7 @@ public class NBTCompound {
 	public UUID getUUID(String key) {
 		try {
 			readLock.lock();
-			return (UUID) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_UUID, key);
+			return (UUID) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_UUID, key);
 		} finally {
 			readLock.unlock();
 		}
@@ -507,7 +507,7 @@ public class NBTCompound {
 	public Boolean hasKey(String key) {
 		try {
 			readLock.lock();
-			final Boolean b = (Boolean) NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_HAS_KEY, key);
+			final Boolean b = (Boolean) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_HAS_KEY, key);
 			if (b == null)
 				return false;
 			return b;
@@ -542,7 +542,7 @@ public class NBTCompound {
 	}
 
 	/**
-	 * Creates a subCompound
+	 * Creates a subCompound, or returns it if already provided
 	 *
 	 * @param name Key to use
 	 * @return The subCompound Object
@@ -555,7 +555,7 @@ public class NBTCompound {
 			NBTReflectionUtil.addNBTTagCompound(this, name);
 			final NBTCompound comp = getCompound(name);
 			if (comp == null)
-				throw new FoException("Error while adding Compound, got null!");
+				throw new NbtApiException("Error while adding Compound, got null!");
 			saveCompound();
 			return comp;
 		} finally {
@@ -579,6 +579,16 @@ public class NBTCompound {
 		} finally {
 			readLock.unlock();
 		}
+	}
+
+	/**
+	 * The same as addCompound, just with a name that better reflects what it does
+	 *
+	 * @param name
+	 * @return
+	 */
+	public NBTCompound getOrCreateCompound(String name) {
+		return addCompound(name);
 	}
 
 	/**
@@ -657,6 +667,23 @@ public class NBTCompound {
 	}
 
 	/**
+	 * Returns the type of the list, null if not a list
+	 *
+	 * @param name
+	 * @return
+	 */
+	public NBTType getListType(String name) {
+		try {
+			readLock.lock();
+			if (getType(name) != NBTType.NBTTagList)
+				return null;
+			return NBTReflectionUtil.getListType(this, name);
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	/**
 	 * @param name
 	 * @return The retrieved Compound List
 	 */
@@ -679,13 +706,13 @@ public class NBTCompound {
 	public NBTType getType(String name) {
 		try {
 			readLock.lock();
-			if (WrapperVersion.getVersion() == WrapperVersion.MC1_7_R4) {
-				final Object nbtbase = NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET, name);
+			if (MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4) {
+				final Object nbtbase = NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET, name);
 				if (nbtbase == null)
 					return null;
-				return NBTType.valueOf((byte) WrapperReflection.COMPOUND_OWN_TYPE.run(nbtbase));
+				return NBTType.valueOf((byte) ReflectionMethod.COMPOUND_OWN_TYPE.run(nbtbase));
 			}
-			final Object o = NBTReflectionUtil.getData(this, WrapperReflection.COMPOUND_GET_TYPE, name);
+			final Object o = NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_TYPE, name);
 			if (o == null)
 				return null;
 			return NBTType.valueOf((byte) o);
@@ -752,8 +779,7 @@ public class NBTCompound {
 	}
 
 	/**
-	 * Uses the nbt-string to match this compound with another object. This allows
-	 * two "technically" different Compounds to match, if they have the same content
+	 * Does a deep compare to check if everything is the same
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -761,7 +787,50 @@ public class NBTCompound {
 			return true;
 		if (obj == null)
 			return false;
-		return toString().equals(obj.toString());
+		if (obj instanceof NBTCompound) {
+			final NBTCompound other = (NBTCompound) obj;
+			if (getKeys().equals(other.getKeys())) {
+				for (final String key : getKeys()) {
+					if (!isEqual(this, other, key)) {
+						return false;
+					}
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	protected static boolean isEqual(NBTCompound compA, NBTCompound compB, String key) {
+		if (compA.getType(key) != compB.getType(key))
+			return false;
+		switch (compA.getType(key)) {
+			case NBTTagByte:
+				return compA.getByte(key).equals(compB.getByte(key));
+			case NBTTagByteArray:
+				return Arrays.equals(compA.getByteArray(key), compB.getByteArray(key));
+			case NBTTagCompound:
+				return compA.getCompound(key).equals(compB.getCompound(key));
+			case NBTTagDouble:
+				return compA.getDouble(key).equals(compB.getDouble(key));
+			case NBTTagEnd:
+				return true; //??
+			case NBTTagFloat:
+				return compA.getFloat(key).equals(compB.getFloat(key));
+			case NBTTagInt:
+				return compA.getInteger(key).equals(compB.getInteger(key));
+			case NBTTagIntArray:
+				return Arrays.equals(compA.getIntArray(key), compB.getIntArray(key));
+			case NBTTagList:
+				return NBTReflectionUtil.getEntry(compA, key).toString().equals(NBTReflectionUtil.getEntry(compB, key).toString()); // Just string compare the 2 lists
+			case NBTTagLong:
+				return compA.getLong(key).equals(compB.getLong(key));
+			case NBTTagShort:
+				return compA.getShort(key).equals(compB.getShort(key));
+			case NBTTagString:
+				return compA.getString(key).equals(compB.getString(key));
+		}
+		return false;
 	}
 
 }
