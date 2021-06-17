@@ -1,0 +1,28 @@
+package org.mineacademy.fo.remain.nbt;
+
+import java.util.Map;
+
+import org.bukkit.persistence.PersistentDataContainer;
+
+public class NBTPersistentDataContainer extends NBTCompound {
+
+	private final PersistentDataContainer container;
+
+	protected NBTPersistentDataContainer(PersistentDataContainer container) {
+		super(null, null);
+		this.container = container;
+	}
+
+	@Override
+	public Object getCompound() {
+		return ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_TO_TAG.run(container);
+	}
+
+	@Override
+	protected void setCompound(Object compound) {
+		final Map<Object, Object> map = (Map<Object, Object>) ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_GET_MAP.run(container);
+		map.clear();
+		ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_PUT_ALL.run(container, compound);
+	}
+
+}

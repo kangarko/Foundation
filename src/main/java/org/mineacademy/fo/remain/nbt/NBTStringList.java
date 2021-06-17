@@ -3,8 +3,6 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.mineacademy.fo.exception.FoException;
-
 /**
  * String implementation for NBTLists
  *
@@ -20,21 +18,21 @@ public class NBTStringList extends NBTList<String> {
 	@Override
 	public String get(int index) {
 		try {
-			return (String) WrapperReflection.LIST_GET_STRING.run(listObject, index);
+			return (String) ReflectionMethod.LIST_GET_STRING.run(listObject, index);
 		} catch (final Exception ex) {
-			throw new FoException(ex);
+			throw new NbtApiException(ex);
 		}
 	}
 
 	@Override
 	protected Object asTag(String object) {
 		try {
-			final Constructor<?> con = WrapperClass.NMS_NBTTAGSTRING.getClazz().getDeclaredConstructor(String.class);
+			final Constructor<?> con = ClassWrapper.NMS_NBTTAGSTRING.getClazz().getDeclaredConstructor(String.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
+			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
 		}
 	}
 

@@ -83,7 +83,9 @@ public enum ParticleInternals {
 	private static Class<?> nmsEnumParticle;
 
 	static {
-		nmsPacketPlayOutParticle = MinecraftVersion.atLeast(V.v1_7) ? ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles") : null;
+		nmsPacketPlayOutParticle = MinecraftVersion.atLeast(V.v1_17)
+				? ReflectionUtil.lookupClass("net.minecraft.network.protocol.game.PacketPlayOutWorldParticles")
+				: MinecraftVersion.atLeast(V.v1_7) ? ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles") : null;
 	}
 
 	//

@@ -140,7 +140,7 @@ public final class JavaScriptExecutor {
 		}
 
 		if (engine == null) {
-			Common.log("Warning: Not running script for " + sender.getName() + " because JavaScript library is missing (install Oracle Java 8 or 11): " + javascript);
+			Common.log("Warning: Not running script" + (sender == null ? "" : " for " + sender.getName()) + " because JavaScript library is missing (install Oracle Java 8, 11 or 16 with mineacademy.org/nashorn): " + javascript);
 
 			return null;
 		}
@@ -160,7 +160,7 @@ public final class JavaScriptExecutor {
 				while (matcher.find()) {
 
 					// We do not support variables when the message sender is Discord,
-					// so just replace those that were not translated earlier with false value. 
+					// so just replace those that were not translated earlier with false value.
 					javascript = javascript.replace(matcher.group(), "false");
 				}
 			}
@@ -184,12 +184,12 @@ public final class JavaScriptExecutor {
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
 				error = "Found invalid or unparsed variable in";
 
-			// Special support for throwing exceptions in the JS code so that users 
+			// Special support for throwing exceptions in the JS code so that users
 			// can send messages to player directly if upstream supports that
-			String cause = ex.getCause().toString();
+			final String cause = ex.getCause().toString();
 
 			if (ex.getCause() != null && cause.contains("event handled")) {
-				String[] errorMessageSplit = cause.contains("event handled: ") ? cause.split("event handled\\: ") : new String[0];
+				final String[] errorMessageSplit = cause.contains("event handled: ") ? cause.split("event handled\\: ") : new String[0];
 
 				if (errorMessageSplit.length == 2)
 					Common.tellNoPrefix(sender, errorMessageSplit[1]);

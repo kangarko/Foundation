@@ -255,7 +255,8 @@ public final class Remain {
 			for (final CompMaterial compMaterial : CompMaterial.values())
 				compMaterial.getMaterial();
 
-			getNMSClass("Entity");
+			if (MinecraftVersion.olderThan(V.v1_17))
+				getNMSClass("Entity");
 
 		} catch (final Throwable t) {
 			Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
@@ -1656,10 +1657,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
