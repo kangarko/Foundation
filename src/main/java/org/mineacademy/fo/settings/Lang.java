@@ -256,7 +256,7 @@ public final class Lang extends YamlConfig {
 				Object variable = variables[i];
 
 				variable = Common.getOrDefaultStrict(SerializeUtil.serialize(variable), SimpleLocalization.NONE);
-				Valid.checkNotNull(variable, "Failed to replace {" + i + "} as " + variable + "(raw = " + variables[i] + ")");
+				Valid.checkNotNull(variable, "Failed to replace {" + i + "} as " + variable + " (raw = " + variables[i] + ")");
 
 				key = key.replace("{" + i + "}", variable.toString());
 			}
@@ -269,5 +269,6 @@ public final class Lang extends YamlConfig {
 	 */
 	private static void checkInit() {
 		Valid.checkNotNull(instance, "Call init() method in your onPluginPreStart to use the Lang class!");
+		Common.runLater(() -> Valid.checkBoolean(SimpleLocalization.isLocalizationCalled(), "Load SimpleLocalization in your main plugin class, such as: https://i.imgur.com/HpINykd.png"));
 	}
 }
