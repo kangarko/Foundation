@@ -46,35 +46,35 @@ public class ChatInternals {
 	static {
 
 		// New MC versions have native API's
-		if (MinecraftVersion.olderThan(V.v1_12) && MinecraftVersion.newerThan(V.v1_6))
+		if (MinecraftVersion.newerThan(V.v1_6) && MinecraftVersion.olderThan(V.v1_12))
 			try {
 
-				final Class<?> chatBaseComponent = ReflectionUtil.getNMSClass("IChatBaseComponent");
+				final Class<?> chatBaseComponent = ReflectionUtil.getNMSClass("IChatBaseComponent", "N/A");
 
 				Class<?> serializer = null;
 				if (MinecraftVersion.newerThan(V.v1_7))
 					serializer = chatBaseComponent.getDeclaredClasses()[0];
 				else
-					serializer = ReflectionUtil.getNMSClass("ChatSerializer");
+					serializer = ReflectionUtil.getNMSClass("ChatSerializer", "N/A");
 
 				componentSerializer = serializer.getMethod("a", String.class);
 
-				final Class<?> chatPacket = ReflectionUtil.getNMSClass("PacketPlayOutChat");
+				final Class<?> chatPacket = ReflectionUtil.getNMSClass("PacketPlayOutChat", "N/A");
 
 				if (MinecraftVersion.newerThan(V.v1_11))
-					chatMessageConstructor = chatPacket.getConstructor(chatBaseComponent, ReflectionUtil.getNMSClass("ChatMessageType"));
+					chatMessageConstructor = chatPacket.getConstructor(chatBaseComponent, ReflectionUtil.getNMSClass("ChatMessageType", "N/A"));
 				else
 					chatMessageConstructor = MinecraftVersion.newerThan(V.v1_7) ? chatPacket.getConstructor(chatBaseComponent, byte.class) : chatPacket.getConstructor(chatBaseComponent);
 
 				if (MinecraftVersion.newerThan(V.v1_7)) {
-					final Class<?> titlePacket = ReflectionUtil.getNMSClass("PacketPlayOutTitle");
+					final Class<?> titlePacket = ReflectionUtil.getNMSClass("PacketPlayOutTitle", "N/A");
 					final Class<?> enumAction = titlePacket.getDeclaredClasses()[0];
 
 					enumTitle = enumAction.getField("TITLE").get(null);
 					enumSubtitle = enumAction.getField("SUBTITLE").get(null);
 					enumReset = enumAction.getField("RESET").get(null);
 
-					tabConstructor = ReflectionUtil.getNMSClass("PacketPlayOutPlayerListHeaderFooter").getConstructor(chatBaseComponent);
+					tabConstructor = ReflectionUtil.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A").getConstructor(chatBaseComponent);
 
 					titleTimesConstructor = titlePacket.getConstructor(int.class, int.class, int.class);
 					titleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
@@ -210,7 +210,7 @@ public class ChatInternals {
 			final Object packet;
 
 			if (MinecraftVersion.atLeast(V.v1_12)) {
-				final Class<?> chatMessageTypeEnum = ReflectionUtil.getNMSClass("ChatMessageType");
+				final Class<?> chatMessageTypeEnum = ReflectionUtil.getNMSClass("ChatMessageType", "net.minecraft.network.chat.ChatMessageType");
 
 				packet = chatMessageConstructor.newInstance(message, chatMessageTypeEnum.getMethod("a", byte.class).invoke(null, type));
 

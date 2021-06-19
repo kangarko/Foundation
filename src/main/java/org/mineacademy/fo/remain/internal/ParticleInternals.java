@@ -85,7 +85,7 @@ public enum ParticleInternals {
 	static {
 		nmsPacketPlayOutParticle = MinecraftVersion.atLeast(V.v1_17)
 				? ReflectionUtil.lookupClass("net.minecraft.network.protocol.game.PacketPlayOutWorldParticles")
-				: MinecraftVersion.atLeast(V.v1_7) ? ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles") : null;
+				: MinecraftVersion.atLeast(V.v1_7) ? ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "N/A") : null;
 	}
 
 	//
@@ -154,7 +154,7 @@ public enum ParticleInternals {
 
 		if (MinecraftVersion.equals(V.v1_8)) {
 			if (nmsEnumParticle == null)
-				nmsEnumParticle = ReflectionUtil.getNMSClass("EnumParticle");
+				nmsEnumParticle = ReflectionUtil.getNMSClass("EnumParticle", "N/A");
 
 			if (this == ParticleInternals.BLOCK_CRACK) {
 				int id = 0;

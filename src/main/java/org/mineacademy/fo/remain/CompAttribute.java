@@ -192,7 +192,7 @@ public enum CompAttribute {
 	private Object getLegacyAttributeInstance(final Entity entity) {
 		final Object nmsEntity = ReflectionUtil.invoke("getHandle", entity);
 
-		final Class<?> genericAttribute = ReflectionUtil.getNMSClass("GenericAttributes");
+		final Class<?> genericAttribute = ReflectionUtil.getNMSClass("GenericAttributes", "net.minecraft.world.entity.ai.attributes.GenericAttributes");
 		Object iAttribute;
 
 		try {
@@ -201,8 +201,8 @@ public enum CompAttribute {
 			iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.minecraftName);
 		}
 
-		final Class<?> nmsLiving = ReflectionUtil.getNMSClass("EntityLiving");
-		final Method method = ReflectionUtil.getMethod(nmsLiving, "getAttributeInstance", ReflectionUtil.getNMSClass("IAttribute"));
+		final Class<?> nmsLiving = ReflectionUtil.getNMSClass("EntityLiving", "N/A");
+		final Method method = ReflectionUtil.getMethod(nmsLiving, "getAttributeInstance", ReflectionUtil.getNMSClass("IAttribute", "N/A"));
 
 		final Object ret = ReflectionUtil.invoke(method, nmsEntity, iAttribute);
 

@@ -65,12 +65,30 @@ public final class ReflectionUtil {
 	private static final Collection<String> classNameGuard = ConcurrentHashMap.newKeySet();
 
 	/**
+	 * Find a class automatically for older MC version (such as type EntityPlayer for oldName
+	 * and we automatically find the proper NMS import) or if MC 1.17+ is used then type
+	 * the full class path such as net.minecraft.server.level.EntityPlayer and we use that instead.
+	 *
+	 * @param oldName
+	 * @param fullName1_17
+	 * @return
+	 */
+	@Deprecated
+	public static Class<?> getNMSClass(String oldName, String fullName1_17) {
+		return MinecraftVersion.atLeast(V.v1_17) ? lookupClass(fullName1_17) : getNMSClass(oldName);
+	}
+
+	/**
 	 * Find a class in net.minecraft.server package, adding the version
 	 * automatically
+	 *
+	 * @deprecated Minecraft 1.17 has a different path name,
+	 *             use {@link #getNMSClass(String, String)} instead
 	 *
 	 * @param name
 	 * @return
 	 */
+	@Deprecated
 	public static Class<?> getNMSClass(final String name) {
 		String version = MinecraftVersion.getServerVersion();
 
