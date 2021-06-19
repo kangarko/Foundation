@@ -79,6 +79,7 @@ import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
@@ -1374,14 +1375,21 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static void updateInventoryTitle(final Player player, String title) {
+
+		// TODO 1.17 compatibility
+		if (MinecraftVersion.atLeast(V.v1_17)) {
+			Messenger.info(player, title);
+
+			return;
+		}
+
 		try {
 			if (MinecraftVersion.olderThan(V.v1_9) && title.length() > 32)
 				title = title.substring(0, 32);
 
-			final Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
-
-			final Object activeContainer = entityPlayer.getClass().getField("activeContainer").get(entityPlayer);
-			final Object windowId = activeContainer.getClass().getField("windowId").get(activeContainer);
+			final Object entityPlayer = getHandleEntity(player);
+			final Object activeContainer = entityPlayer.getClass().getField(MinecraftVersion.atLeast(V.v1_17) ? "bU" : "activeContainer").get(entityPlayer);
+			final Object windowId = activeContainer.getClass().getField(MinecraftVersion.atLeast(V.v1_17) ? "j" : "windowId").get(activeContainer);
 
 			final Object packet;
 
@@ -1402,7 +1410,37 @@ public final class Remain {
 					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow", "net.minecraft.network.protocol.game.PacketPlayOutOpenWindow")
 							.getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent", "net.minecraft.network.chat.IChatBaseComponent"));
 
-					final Object container = containersClass.getField("GENERIC_9X" + inventorySize).get(null);
+					String containerName;
+
+					if (MinecraftVersion.atLeast(V.v1_17)) {
+
+						// Yes there's a higher quality way of doing this but field names
+						// are uncertain to future MC versions so I don't care
+
+						if (inventorySize == 1)
+							containerName = "a";
+
+						else if (inventorySize == 2)
+							containerName = "b";
+
+						else if (inventorySize == 3)
+							containerName = "c";
+
+						else if (inventorySize == 4)
+							containerName = "d";
+
+						else if (inventorySize == 5)
+							containerName = "e";
+
+						else if (inventorySize == 6)
+							containerName = "f";
+						else
+							throw new FoException("Cannot generate NMS container class to update inventory of size " + inventorySize);
+
+					} else
+						containerName = "GENERIC_9X" + inventorySize;
+
+					final Object container = containersClass.getField(containerName).get(null);
 
 					packet = packetConst.newInstance(windowId, container, chatMessage);
 
@@ -1420,7 +1458,19 @@ public final class Remain {
 
 			sendPacket(player, packet);
 
-			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container", "net.minecraft.world.inventory.Container")).invoke(entityPlayer, activeContainer);
+			if (MinecraftVersion.atLeast(V.v1_17)) {
+
+				// TODO Wrong position
+				final Object container = ReflectionUtil.getFieldContent(entityPlayer, "bV");
+
+				final Object packetWindowItems = getNMSClass("PacketPlayOutWindowItems", "net.minecraft.network.protocol.game.PacketPlayOutWindowItems")
+						.getConstructor(int.class, ReflectionUtil.lookupClass("net.minecraft.core.NonNullList"))
+						.newInstance(0, ReflectionUtil.invoke("c", container));
+
+				sendPacket(player, packetWindowItems);
+
+			} else
+				entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container", "net.minecraft.world.inventory.Container")).invoke(entityPlayer, activeContainer);
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
@@ -1665,10 +1715,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
