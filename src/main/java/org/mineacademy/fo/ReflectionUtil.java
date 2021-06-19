@@ -73,7 +73,6 @@ public final class ReflectionUtil {
 	 * @param fullName1_17
 	 * @return
 	 */
-	@Deprecated
 	public static Class<?> getNMSClass(String oldName, String fullName1_17) {
 		return MinecraftVersion.atLeast(V.v1_17) ? lookupClass(fullName1_17) : getNMSClass(oldName);
 	}
