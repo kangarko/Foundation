@@ -20,7 +20,7 @@ class v1_6 extends EnderDragonEntity {
 
 	@Override
 	public Object getSpawnPacket() {
-		final Class<?> mob_class = ReflectionUtil.getNMSClass("Packet24MobSpawn");
+		final Class<?> mob_class = ReflectionUtil.getNMSClass("Packet24MobSpawn", "N/A");
 		Object mobPacket = null;
 		try {
 			mobPacket = mob_class.newInstance();
@@ -73,7 +73,7 @@ class v1_6 extends EnderDragonEntity {
 
 	@Override
 	public Object getDestroyPacket() {
-		final Class<?> packet_class = ReflectionUtil.getNMSClass("Packet29DestroyEntity");
+		final Class<?> packet_class = ReflectionUtil.getNMSClass("Packet29DestroyEntity", "N/A");
 		Object packet = null;
 		try {
 			packet = packet_class.newInstance();
@@ -90,7 +90,7 @@ class v1_6 extends EnderDragonEntity {
 
 	@Override
 	public Object getMetaPacket(Object watcher) {
-		final Class<?> packet_class = ReflectionUtil.getNMSClass("Packet40EntityMetadata");
+		final Class<?> packet_class = ReflectionUtil.getNMSClass("Packet40EntityMetadata", "N/A");
 		Object packet = null;
 		try {
 			packet = packet_class.newInstance();
@@ -112,7 +112,7 @@ class v1_6 extends EnderDragonEntity {
 
 	@Override
 	public Object getTeleportPacket(Location loc) {
-		final Class<?> packet_class = ReflectionUtil.getNMSClass("Packet34EntityTeleport");
+		final Class<?> packet_class = ReflectionUtil.getNMSClass("Packet34EntityTeleport", "N/A");
 		Object packet = null;
 		try {
 			packet = packet_class.newInstance();
@@ -143,7 +143,7 @@ class v1_6 extends EnderDragonEntity {
 
 	@Override
 	public Object getWatcher() {
-		final Class<?> watcher_class = ReflectionUtil.getNMSClass("DataWatcher");
+		final Class<?> watcher_class = ReflectionUtil.getNMSClass("DataWatcher", "N/A");
 		Object watcher = null;
 		try {
 			watcher = watcher_class.newInstance();

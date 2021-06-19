@@ -20,12 +20,12 @@ class v1_8Hack extends EnderDragonEntity {
 
 	@Override
 	public Object getSpawnPacket() {
-		final Class<?> Entity = ReflectionUtil.getNMSClass("Entity");
-		final Class<?> EntityLiving = ReflectionUtil.getNMSClass("EntityLiving");
-		final Class<?> EntityEnderDragon = ReflectionUtil.getNMSClass("EntityEnderDragon");
+		final Class<?> Entity = ReflectionUtil.getNMSClass("Entity", "N/A");
+		final Class<?> EntityLiving = ReflectionUtil.getNMSClass("EntityLiving", "N/A");
+		final Class<?> EntityEnderDragon = ReflectionUtil.getNMSClass("EntityEnderDragon", "N/A");
 		Object packet = null;
 		try {
-			dragon = EntityEnderDragon.getConstructor(ReflectionUtil.getNMSClass("World")).newInstance(getWorld());
+			dragon = EntityEnderDragon.getConstructor(ReflectionUtil.getNMSClass("World", "N/A")).newInstance(getWorld());
 
 			final Method setLocation = ReflectionUtil.getMethod(EntityEnderDragon, "setLocation", double.class, double.class, double.class, float.class, float.class);
 			setLocation.invoke(dragon, getX(), getY(), getZ(), getPitch(), getYaw());
@@ -51,7 +51,7 @@ class v1_8Hack extends EnderDragonEntity {
 			final Method getId = ReflectionUtil.getMethod(EntityEnderDragon, "getId");
 			this.id = (Integer) getId.invoke(dragon);
 
-			final Class<?> PacketPlayOutSpawnEntityLiving = ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving");
+			final Class<?> PacketPlayOutSpawnEntityLiving = ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving", "N/A");
 
 			packet = PacketPlayOutSpawnEntityLiving.getConstructor(EntityLiving).newInstance(dragon);
 		} catch (final ReflectiveOperationException e) {
@@ -63,7 +63,7 @@ class v1_8Hack extends EnderDragonEntity {
 
 	@Override
 	public Object getDestroyPacket() {
-		final Class<?> PacketPlayOutEntityDestroy = ReflectionUtil.getNMSClass("PacketPlayOutEntityDestroy");
+		final Class<?> PacketPlayOutEntityDestroy = ReflectionUtil.getNMSClass("PacketPlayOutEntityDestroy", "N/A");
 
 		Object packet = null;
 		try {
@@ -80,9 +80,9 @@ class v1_8Hack extends EnderDragonEntity {
 
 	@Override
 	public Object getMetaPacket(Object watcher) {
-		final Class<?> DataWatcher = ReflectionUtil.getNMSClass("DataWatcher");
+		final Class<?> DataWatcher = ReflectionUtil.getNMSClass("DataWatcher", "N/A");
 
-		final Class<?> PacketPlayOutEntityMetadata = ReflectionUtil.getNMSClass("PacketPlayOutEntityMetadata");
+		final Class<?> PacketPlayOutEntityMetadata = ReflectionUtil.getNMSClass("PacketPlayOutEntityMetadata", "N/A");
 
 		Object packet = null;
 		try {
@@ -95,7 +95,7 @@ class v1_8Hack extends EnderDragonEntity {
 
 	@Override
 	public Object getTeleportPacket(Location loc) {
-		final Class<?> PacketPlayOutEntityTeleport = ReflectionUtil.getNMSClass("PacketPlayOutEntityTeleport");
+		final Class<?> PacketPlayOutEntityTeleport = ReflectionUtil.getNMSClass("PacketPlayOutEntityTeleport", "N/A");
 		Object packet = null;
 
 		try {
@@ -108,8 +108,8 @@ class v1_8Hack extends EnderDragonEntity {
 
 	@Override
 	public Object getWatcher() {
-		final Class<?> Entity = ReflectionUtil.getNMSClass("Entity");
-		final Class<?> DataWatcher = ReflectionUtil.getNMSClass("DataWatcher");
+		final Class<?> Entity = ReflectionUtil.getNMSClass("Entity", "N/A");
+		final Class<?> DataWatcher = ReflectionUtil.getNMSClass("DataWatcher", "N/A");
 
 		Object watcher = null;
 		try {

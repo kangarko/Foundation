@@ -255,8 +255,7 @@ public final class Remain {
 			for (final CompMaterial compMaterial : CompMaterial.values())
 				compMaterial.getMaterial();
 
-			if (MinecraftVersion.olderThan(V.v1_17))
-				getNMSClass("Entity");
+			getNMSClass("Entity", "net.minecraft.world.entity.Entity");
 
 		} catch (final Throwable t) {
 			Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
@@ -273,14 +272,19 @@ public final class Remain {
 
 			// Load optional parts
 			try {
+
 				getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
-				fieldPlayerConnection = getNMSClass("EntityPlayer").getField(hasNMS ? "playerConnection" : "netServerHandler");
-				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler").getMethod("sendPacket", getNMSClass("Packet"));
+
+				fieldPlayerConnection = getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
+						.getField(MinecraftVersion.atLeast(V.v1_17) ? "b" : hasNMS ? "playerConnection" : "netServerHandler");
+
+				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
+						.getMethod("sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 
 			} catch (final Throwable t) {
 				Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
 				Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
+				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibble.");
 
 				fieldPlayerConnection = null;
 				sendPacket = null;
@@ -426,7 +430,8 @@ public final class Remain {
 	 */
 	public static boolean isProtocol18Hack() {
 		try {
-			getNMSClass("PacketPlayOutEntityTeleport").getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class);
+			getNMSClass("PacketPlayOutEntityTeleport", "N/A").getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class);
+
 		} catch (final Throwable t) {
 			return false;
 		}
@@ -566,10 +571,11 @@ public final class Remain {
 	@Deprecated
 	public static Item spawnItem(final Location location, final ItemStack item, final Consumer<Item> modifier) {
 		try {
-			final Class<?> nmsWorldClass = getNMSClass("World");
-			final Class<?> nmsStackClass = getNMSClass("ItemStack");
-			final Class<?> nmsEntityClass = getNMSClass("Entity");
-			final Class<?> nmsItemClass = getNMSClass("EntityItem");
+
+			final Class<?> nmsWorldClass = getNMSClass("World", "net.minecraft.world.level.World");
+			final Class<?> nmsStackClass = getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
+			final Class<?> nmsEntityClass = getNMSClass("Entity", "net.minecraft.world.entity.Entity");
+			final Class<?> nmsItemClass = getNMSClass("EntityItem", "net.minecraft.world.entity.item.EntityItem");
 
 			final Constructor<?> entityConstructor = nmsItemClass.getConstructor(nmsWorldClass, double.class, double.class, double.class, nmsStackClass);
 
@@ -797,8 +803,8 @@ public final class Remain {
 		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
 
 		// NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
-		final Class<?> nmsItemStack = ReflectionUtil.getNMSClass("ItemStack");
-		final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound");
+		final Class<?> nmsItemStack = ReflectionUtil.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
+		final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
 		final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, "save", nbtTagCompound);
 
 		final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
@@ -1308,13 +1314,13 @@ public final class Remain {
 
 			} catch (final NoSuchMethodError err) {
 				try {
-					final Object respawnEnum = getNMSClass("EnumClientCommand").getEnumConstants()[0];
-					final Constructor<?>[] constructors = getNMSClass("PacketPlayInClientCommand").getConstructors();
+					final Object respawnEnum = getNMSClass("EnumClientCommand", "N/A").getEnumConstants()[0];
+					final Constructor<?>[] constructors = getNMSClass("PacketPlayInClientCommand", "N/A").getConstructors();
 
 					for (final Constructor<?> constructor : constructors) {
 						final Class<?>[] args = constructor.getParameterTypes();
 						if (args.length == 1 && args[0] == respawnEnum.getClass()) {
-							final Object packet = getNMSClass("PacketPlayInClientCommand").getConstructor(args).newInstance(respawnEnum);
+							final Object packet = getNMSClass("PacketPlayInClientCommand", "N/A").getConstructor(args).newInstance(respawnEnum);
 
 							sendPacket(player, packet);
 							break;
@@ -1380,7 +1386,7 @@ public final class Remain {
 			final Object packet;
 
 			if (MinecraftVersion.atLeast(V.v1_8)) {
-				final Constructor<?> chatMessageConst = getNMSClass("ChatMessage").getConstructor(String.class, Object[].class);
+				final Constructor<?> chatMessageConst = getNMSClass("ChatMessage", "net.minecraft.network.chat.ChatMessage").getConstructor(String.class, Object[].class);
 				final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
 
 				if (MinecraftVersion.newerThan(V.v1_13)) {
@@ -1392,27 +1398,29 @@ public final class Remain {
 						return;
 					}
 
-					final Class<?> containersClass = getNMSClass("Containers");
-					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent"));
+					final Class<?> containersClass = getNMSClass("Containers", "net.minecraft.world.inventory.Containers");
+					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow", "net.minecraft.network.protocol.game.PacketPlayOutOpenWindow")
+							.getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent", "net.minecraft.network.chat.IChatBaseComponent"));
+
 					final Object container = containersClass.getField("GENERIC_9X" + inventorySize).get(null);
 
 					packet = packetConst.newInstance(windowId, container, chatMessage);
 
 				} else {
-					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent"), int.class);
+					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow", "N/A").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent", "net.minecraft.network.chat.IChatBaseComponent"), int.class);
 
 					packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
 				}
 			} else {
 				final Constructor<?> openWindow = ReflectionUtil.getConstructor(
-						getNMSClass(MinecraftVersion.atLeast(V.v1_7) ? "PacketPlayOutOpenWindow" : "Packet100OpenWindow"), int.class, int.class, String.class, int.class, boolean.class);
+						getNMSClass(MinecraftVersion.atLeast(V.v1_7) ? "PacketPlayOutOpenWindow" : "Packet100OpenWindow", "N/A"), int.class, int.class, String.class, int.class, boolean.class);
 
 				packet = ReflectionUtil.instantiate(openWindow, windowId, 0, ChatColor.translateAlternateColorCodes('&', title), player.getOpenInventory().getTopInventory().getSize(), true);
 			}
 
 			sendPacket(player, packet);
 
-			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container")).invoke(entityPlayer, activeContainer);
+			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container", "net.minecraft.world.inventory.Container")).invoke(entityPlayer, activeContainer);
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
@@ -1694,7 +1702,7 @@ public final class Remain {
 	public static Object toIChatBaseComponent(String json) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "Serializing chat components requires Minecraft 1.7.10 and greater");
 
-		final Class<?> chatSerializer = ReflectionUtil.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer");
+		final Class<?> chatSerializer = ReflectionUtil.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.ChatSerializer");
 		final Method a = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
 		return ReflectionUtil.invoke(a, null, json);
@@ -2515,8 +2523,8 @@ class BungeeChatProvider {
 
 		try {
 			if (MinecraftVersion.equals(V.v1_7)) {
-				final Class<?> chatBaseComponentClass = ReflectionUtil.getNMSClass("IChatBaseComponent");
-				final Class<?> packetClass = ReflectionUtil.getNMSClass("PacketPlayOutChat");
+				final Class<?> chatBaseComponentClass = getNMSClass("IChatBaseComponent", "N/A");
+				final Class<?> packetClass = getNMSClass("PacketPlayOutChat", "N/A");
 
 				final Object chatBaseComponent = Remain.toIChatBaseComponent(comps);
 				final Object packet = ReflectionUtil.instantiate(ReflectionUtil.getConstructor(packetClass, chatBaseComponentClass), chatBaseComponent);

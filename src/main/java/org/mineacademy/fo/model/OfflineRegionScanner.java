@@ -302,9 +302,9 @@ class RegionAccessor {
 		saveMethodName = atleast1_13 ? "close" : "c";
 
 		try {
-			final Class<?> regionFileClass = ReflectionUtil.getNMSClass("RegionFile");
+			final Class<?> regionFileClass = ReflectionUtil.getNMSClass("RegionFile", "net.minecraft.world.level.chunk.storage.RegionFile");
 			regionFileConstructor = atleast1_16 ? regionFileClass.getConstructor(File.class, File.class, boolean.class) : atleast1_15 ? regionFileClass.getConstructor(File.class, File.class) : regionFileClass.getConstructor(File.class);
-			isChunkSaved = atleast1_14 ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair")) : regionFileClass.getMethod(atleast1_13 ? "b" : "c", int.class, int.class);
+			isChunkSaved = atleast1_14 ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair")) : regionFileClass.getMethod(atleast1_13 ? "b" : "c", int.class, int.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			Remain.sneaky(ex);
@@ -324,7 +324,7 @@ class RegionAccessor {
 	static boolean isChunkSaved(Object region, int x, int z) {
 		try {
 			if (MinecraftVersion.newerThan(V.v1_13)) {
-				final Object chunkCoordinates = ReflectionUtil.getNMSClass("ChunkCoordIntPair").getConstructor(int.class, int.class).newInstance(x, z);
+				final Object chunkCoordinates = ReflectionUtil.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair").getConstructor(int.class, int.class).newInstance(x, z);
 
 				return (boolean) isChunkSaved.invoke(region, chunkCoordinates);
 			}
