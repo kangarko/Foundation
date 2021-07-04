@@ -37,11 +37,13 @@ import org.bukkit.plugin.messaging.Messenger;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.SimpleBungee;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
+import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
@@ -854,6 +856,42 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 
 	/**
+	 * Convenience method for quickly registering events in all classes in your plugin that
+	 * extend the given class.
+	 *
+	 * NB: You must have a no arguments constructor otherwise it will not be registered
+	 *
+	 * TIP: Set your Debug key in your settings.yml to ["auto-register"] to see what is registered.
+	 *
+	 * @param extendingClass
+	 */
+	protected final <T extends Listener> void registerAllEvents(final Class<T> extendingClass) {
+
+		Valid.checkBoolean(!extendingClass.equals(Listener.class), "registerAllEvents does not support Listener.class due to conflicts, create your own middle class instead");
+
+		// Run after the plugin has loaded to prevent IllegalStateException: Initial initialization
+		Common.runLater(() -> {
+
+			classLookup:
+
+			for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+				for (final Constructor<?> con : pluginClass.getConstructors()) {
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
+
+						Debugger.debug("auto-register", "Auto-registering events in " + pluginClass);
+						registerEvents(instance);
+
+						continue classLookup;
+					}
+				}
+
+				Debugger.debug("auto-register", "Skipping auto-registering events in " + pluginClass + " because it lacks at least one no arguments constructor");
+			}
+		});
+	}
+
+	/**
 	 * Convenience method for quickly registering events if the condition is met
 	 *
 	 * @param listener
@@ -906,6 +944,54 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			reloadables.registerEvents(listener);
 		else
 			listener.register();
+	}
+
+	/**
+	 * Convenience method for quickly registering all command classes in your plugin that
+	 * extend the given class.
+	 *
+	 * NB: You must have a no arguments constructor otherwise it will not be registered
+	 *
+	 * TIP: Set your Debug key in your settings.yml to ["auto-register"] to see what is registered.
+	 *
+	 * @param extendingClass
+	 */
+	protected final <T extends Command> void registerAllCommands(final Class<T> extendingClass) {
+
+		Valid.checkBoolean(!extendingClass.equals(Command.class), "registerAllCommands does not support Command.class due to conflicts, create your own middle class instead");
+		Valid.checkBoolean(!extendingClass.equals(SimpleCommand.class), "registerAllCommands does not support SimpleCommand.class due to conflicts, create your own middle class instead");
+
+		// Run after the plugin has loaded to prevent IllegalStateException: Initial initialization
+		Common.runLater(() -> {
+
+			classLookup:
+			for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+
+				if (SimpleSubCommand.class.isAssignableFrom(pluginClass)) {
+					Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because sub-commands cannot be registered");
+
+					continue;
+				}
+
+				for (final Constructor<?> con : pluginClass.getConstructors()) {
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
+
+						Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
+
+						if (instance instanceof SimpleCommand)
+							registerCommand((SimpleCommand) instance);
+
+						else
+							registerCommand(instance);
+
+						continue classLookup;
+					}
+				}
+
+				Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because it lacks at least one no arguments constructor");
+			}
+		});
 	}
 
 	/**
