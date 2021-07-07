@@ -253,10 +253,10 @@ public final class HookManager {
 		if (Common.doesPluginExist("PlotSquared")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
 
-			if (ver.startsWith("5.") || ver.startsWith("3."))
+			if (ver.startsWith("6.") || ver.startsWith("5.") || ver.startsWith("3."))
 				plotSquaredHook = new PlotSquaredHook();
 			else
-				Common.log("&cWarning: &fCould not hook into PlotSquared, version 3.x or 5.x required, you have " + ver);
+				Common.log("&cWarning: &fCould not hook into PlotSquared, version 3.x, 5.x or 6.x required, you have " + ver);
 		}
 
 		if (Common.doesPluginExist("ProtocolLib")) {
@@ -1221,7 +1221,7 @@ public final class HookManager {
 	 * <p>
 	 * 		The value will be called against the given player
 	 * <p>
-	 * 
+	 *
 	 * 	 * ATTENTION: We now have a new system where you register variables through {@link Variables#addExpansion(SimpleExpansion)}
 	 * 			   instead. It gives you better flexibility and, like PlaceholderAPI, you can replace different variables on the fly.
 	 *
@@ -1531,7 +1531,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2894,12 +2894,20 @@ class PlotSquaredHook {
 
 		try {
 			wrap = plotPlayerClass.getMethod("wrap", Player.class);
+
 		} catch (final ReflectiveOperationException ex) {
+
 			try {
 				wrap = plotPlayerClass.getMethod("wrap", Object.class);
 
 			} catch (final ReflectiveOperationException ex2) {
-				throw new NullPointerException("PlotSquared could not convert " + player.getName() + " into PlotPlayer! Is the integration outdated?");
+
+				try {
+					wrap = plotPlayerClass.getMethod("from", Object.class);
+
+				} catch (final ReflectiveOperationException ex3) {
+					throw new FoException(ex3, "PlotSquared could not convert " + player.getName() + " into PlotPlayer! Is the integration outdated?");
+				}
 			}
 		}
 
@@ -3038,7 +3046,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3194,16 +3202,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
