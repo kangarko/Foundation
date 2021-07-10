@@ -29,7 +29,6 @@ enum MinecraftVersion {
 	MC1_17_R1(1171);
 
 	private static MinecraftVersion version;
-	private static Boolean hasGsonSupport;
 
 	private final int versionId;
 
@@ -85,15 +84,4 @@ enum MinecraftVersion {
 
 		return version;
 	}
-
-	/**
-	 * @return True, if Gson is usable
-	 */
-	public static boolean hasGsonSupport() {
-		if (hasGsonSupport != null)
-			return hasGsonSupport;
-
-		return hasGsonSupport;
-	}
-
 }

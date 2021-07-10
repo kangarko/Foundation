@@ -500,10 +500,9 @@ public class NBTReflectionUtil {
 	 * @param value
 	 */
 	public static void setObject(NBTCompound comp, String key, Object value) {
-		if (!MinecraftVersion.hasGsonSupport())
-			return;
 		try {
 			final String json = GsonWrapper.getString(value);
+
 			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
@@ -519,8 +518,6 @@ public class NBTReflectionUtil {
 	 * @return The loaded Object or null, if not found
 	 */
 	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
-		if (!MinecraftVersion.hasGsonSupport())
-			return null;
 		final String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
 		if (json == null) {
 			return null;
