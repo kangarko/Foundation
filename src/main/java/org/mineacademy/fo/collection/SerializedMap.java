@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -300,6 +301,27 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public String getString(final String key, final String def) {
 		return get(key, String.class, def);
+	}
+
+	/**
+	 * Returns a UUID from the map, or null if does not exist
+	 *
+	 * @param key
+	 * @return
+	 */
+	public UUID getUUID(final String key) {
+		return getUUID(key, null);
+	}
+
+	/**
+	 * Returns a UUID from the map, with an optional default
+	 *
+	 * @param key
+	 * @param def
+	 * @return
+	 */
+	public UUID getUUID(final String key, final UUID def) {
+		return get(key, UUID.class, def);
 	}
 
 	/**
