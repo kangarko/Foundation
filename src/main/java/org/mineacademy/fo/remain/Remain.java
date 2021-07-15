@@ -460,7 +460,7 @@ public final class Remain {
 			sendPacket.invoke(playerConnection, packet);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Could not send " + packet.getClass().getSimpleName() + " to " + player.getName(), ex);
+			throw new ReflectionException(ex, "Error sending packet " + packet.getClass() + " to player " + player.getName());
 		}
 	}
 
@@ -1715,10 +1715,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {

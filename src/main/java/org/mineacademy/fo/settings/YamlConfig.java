@@ -464,7 +464,7 @@ public class YamlConfig {
 	 * Called automatically on save, use this to put
 	 * things you want saved in your file and they will then be automatically
 	 * saved when call save() method
-	 * 
+	 *
 	 * @return
 	 */
 	protected SerializedMap serialize() {
@@ -694,7 +694,7 @@ public class YamlConfig {
 	protected final Boolean getBoolean(final String path, final boolean def) {
 		forceSingleDefaults(path);
 
-		boolean set = isSet(path);
+		final boolean set = isSet(path);
 		Debugger.debug("config", "\tGetting Boolean at '" + path + "', " + (set ? "set to = " + getBoolean(path) : "not set, returning default " + def));
 
 		return isSet(path) ? getBoolean(path) : def;
@@ -787,7 +787,7 @@ public class YamlConfig {
 	protected final Integer getInteger(final String path, final Integer def) {
 		forceSingleDefaults(path);
 
-		boolean set = isSet(path);
+		final boolean set = isSet(path);
 		Debugger.debug("config", "\tGetting Integer at '" + path + "', " + (set ? "set to = " + getInteger(path) : "not set, returning default " + def));
 
 		return isSet(path) ? getInteger(path) : def;

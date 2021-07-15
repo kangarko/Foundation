@@ -332,7 +332,7 @@ class RegionAccessor {
 			return (boolean) isChunkSaved.invoke(region, x, z);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Could not find if region file " + region + " has chunk at " + x + " " + z, ex);
+			throw new ReflectionException(ex, "Could not find if region file " + region + " has chunk at " + x + " " + z);
 		}
 	}
 
@@ -341,7 +341,7 @@ class RegionAccessor {
 			region.getClass().getDeclaredMethod(saveMethodName).invoke(region);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Error saving region " + region, ex);
+			throw new ReflectionException(ex, "Error saving region " + region);
 		}
 	}
 }
