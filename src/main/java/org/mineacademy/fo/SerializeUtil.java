@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
 import org.mineacademy.fo.collection.StrictMap;
@@ -59,7 +60,7 @@ public final class SerializeUtil {
 
 	/**
 	 * Add a custom serializer to the list
-	 * 
+	 *
 	 * @param <T>
 	 * @param fromClass
 	 * @param serializer
@@ -271,8 +272,14 @@ public final class SerializeUtil {
 		// Step 1 - Search for basic deserialize(SerializedMap) method
 		Method deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", SerializedMap.class);
 
-		if (deserializeMethod != null)
-			return ReflectionUtil.invokeStatic(deserializeMethod, map);
+		if (deserializeMethod != null) {
+			try {
+				return ReflectionUtil.invokeStatic(deserializeMethod, map);
+
+			} catch (final ReflectionException ex) {
+				Common.throwError(ex, "Could not deserialize " + classOf + " from data: " + map);
+			}
+		}
 
 		// Step 2 - Search for our deserialize(Params[], SerializedMap) method
 		if (deserializeParameters != null) {
@@ -468,7 +475,7 @@ public final class SerializeUtil {
 	/**
 	 * Converts a string into a location with decimal support
 	 * Unused but you can use this for your own parser storing exact decimals
-	 * 
+	 *
 	 * @param raw
 	 * @return
 	 */

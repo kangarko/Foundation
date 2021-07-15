@@ -381,7 +381,7 @@ public final class ReflectionUtil {
 			return (T) method.invoke(null, params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Could not invoke static method " + method + " with params " + StringUtils.join(params), ex);
+			throw new ReflectionException(ex, "Could not invoke static method " + method + " with params " + StringUtils.join(params));
 		}
 	}
 
@@ -414,7 +414,7 @@ public final class ReflectionUtil {
 			return (T) method.invoke(instance, params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Could not invoke method " + method + " on instance " + instance + " with params " + StringUtils.join(params), ex);
+			throw new ReflectionException(ex, "Could not invoke method " + method + " on instance " + instance + " with params " + StringUtils.join(params));
 		}
 	}
 
@@ -438,8 +438,8 @@ public final class ReflectionUtil {
 
 			return constructor.newInstance();
 
-		} catch (final ReflectiveOperationException e) {
-			throw new ReflectionException("Could not make instance of: " + clazz, e);
+		} catch (final ReflectiveOperationException ex) {
+			throw new ReflectionException(ex, "Could not make instance of: " + clazz);
 		}
 	}
 
@@ -477,8 +477,8 @@ public final class ReflectionUtil {
 
 			return constructor.newInstance(params);
 
-		} catch (final ReflectiveOperationException e) {
-			throw new ReflectionException("Could not make instance of: " + clazz, e);
+		} catch (final ReflectiveOperationException ex) {
+			throw new ReflectionException(ex, "Could not make instance of: " + clazz);
 		}
 	}
 
@@ -1051,15 +1051,15 @@ public final class ReflectionUtil {
 	/**
 	 * Represents an exception during reflection operation
 	 */
-	public static final class ReflectionException extends RuntimeException {
+	public static final class ReflectionException extends FoException {
 		private static final long serialVersionUID = 1L;
 
-		public ReflectionException(final String msg) {
-			super(msg);
+		public ReflectionException(final String message) {
+			super(message);
 		}
 
-		public ReflectionException(final String msg, final Exception ex) {
-			super(msg, ex);
+		public ReflectionException(final Exception ex, final String message) {
+			super(ex, message);
 		}
 	}
 

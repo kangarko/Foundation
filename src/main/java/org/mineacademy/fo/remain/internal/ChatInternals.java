@@ -82,14 +82,14 @@ public class ChatInternals {
 					resetTitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
 				}
 
-			} catch (final Exception t) {
+			} catch (final Exception ex) {
 				if (MinecraftVersion.olderThan(V.v1_8))
 					Common.log("Error initiating Chat/Title/ActionBAR API. Assuming Thermos or modded. Some features will not work.");
 
 				else {
-					t.printStackTrace();
+					ex.printStackTrace();
 
-					throw new ReflectionException("Error initiating Chat/Title/ActionBAR API (incompatible Craftbukkit? - " + Bukkit.getVersion() + " / " + Bukkit.getBukkitVersion() + " / " + MinecraftVersion.getServerVersion() + ")", t);
+					throw new ReflectionException(ex, "Error initiating Chat/Title/ActionBAR API (incompatible Craftbukkit? - " + Bukkit.getVersion() + " / " + Bukkit.getBukkitVersion() + " / " + MinecraftVersion.getServerVersion() + ")");
 				}
 			}
 	}
@@ -133,7 +133,7 @@ public class ChatInternals {
 				Remain.sendPacket(player, packet);
 			}
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException("Error sending title to: " + player.getName(), ex);
+			throw new ReflectionException(ex, "Error sending title to: " + player.getName() + ", title: " + title + ", subtitle: " + subtitle);
 		}
 	}
 
