@@ -18,6 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -27,6 +29,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.AccessLevel;
@@ -804,12 +807,11 @@ public final class ReflectionUtil {
 	 * @param extendingClass
 	 * @return
 	 */
-	public static <T> List<Class<? extends T>> getClasses(final Plugin plugin, @NonNull final Class<T> extendingClass) {
-		final List<Class<? extends T>> found = new ArrayList<>();
+	public static List<Class<?>> getClasses(final Plugin plugin) {
+		final List<Class<?>> found = new ArrayList<>();
 
-		for (final Class<?> clazz : getClasses(plugin))
-			if (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass)
-				found.add((Class<? extends T>) clazz);
+		for (final Class<?> clazz : getClasses(plugin, null))
+			found.add(clazz);
 
 		return found;
 	}
@@ -821,7 +823,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	@SneakyThrows
-	public static TreeSet<Class<?>> getClasses(final Plugin plugin) {
+	public static <T> TreeSet<Class<T>> getClasses(final Plugin plugin, @Nullable Class<T> extendingClass) {
 		Valid.checkNotNull(plugin, "Plugin is null!");
 		Valid.checkBoolean(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
 
@@ -831,7 +833,7 @@ public final class ReflectionUtil {
 
 		final File pluginFile = (File) getFileMethod.invoke(plugin);
 
-		final TreeSet<Class<?>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
+		final TreeSet<Class<T>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
 
 		try (final JarFile jarFile = new JarFile(pluginFile)) {
 			final Enumeration<JarEntry> entries = jarFile.entries();
@@ -845,18 +847,25 @@ public final class ReflectionUtil {
 					final Class<?> clazz;
 
 					try {
-						//YamlConfig.INVOKE_SAVE = false;
-
 						clazz = Class.forName(name);
 
+						if (extendingClass == null || (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass))
+							classes.add((Class<T>) clazz);
+
 					} catch (final Throwable throwable) {
+
+						try {
+							final Class<?> uninitClass = Class.forName(name, false, SimplePlugin.class.getClassLoader());
+
+							if (extendingClass != null && extendingClass.isAssignableFrom(uninitClass) && uninitClass != extendingClass)
+								Common.log("Unable to load class '" + name + "' due to error: " + throwable);
+
+						} catch (final Throwable t2) {
+							// Silence
+						}
+
 						continue;
-
-					} finally {
-						//YamlConfig.INVOKE_SAVE = true;
 					}
-
-					classes.add(clazz);
 				}
 			}
 		}
