@@ -270,6 +270,9 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkBoolean(!(this instanceof SimpleSubCommand), "Sub commands cannot be registered!");
 		Valid.checkBoolean(!registered, "The command /" + getLabel() + " has already been registered!");
 
+		if (!canRegister())
+			return;
+
 		final PluginCommand oldCommand = Bukkit.getPluginCommand(getLabel());
 
 		if (oldCommand != null && unregisterOldCommand) {
@@ -296,6 +299,16 @@ public abstract class SimpleCommand extends Command {
 
 		Remain.unregisterCommand(getLabel());
 		registered = false;
+	}
+
+	/**
+	 * Return true if this command can be registered through {@link #register()} methods.
+	 * By default true.
+	 *
+	 * @return
+	 */
+	protected boolean canRegister() {
+		return true;
 	}
 
 	// ----------------------------------------------------------------------
@@ -699,7 +712,7 @@ public abstract class SimpleCommand extends Command {
 		} catch (final Throwable t) {
 		}
 
-		checkNotNull(found, falseMessage.replace("{enum}", name));
+		checkNotNull(found, falseMessage.replace("{enum}", name).replace("{available}", Common.join(enumType.getEnumConstants())));
 		return found;
 	}
 
