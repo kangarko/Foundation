@@ -78,7 +78,8 @@ public abstract class SimpleEnchantment extends Enchantment {
 
 	// Convert a name into a namespace
 	private static NamespacedKey toKey(@NonNull String name) {
-		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_13), "Unfortunately, SimpleEnchantment requires Minecraft 1.13.2 or greater. Cannot make " + name);
+		if (!MinecraftVersion.atLeast(V.v1_13))
+			throw new RuntimeException("SimpleEnchantment requires Minecraft 1.13.2 or greater. Cannot make " + name);
 
 		name = new String(name);
 		name = name.toLowerCase().replace(" ", "_");
