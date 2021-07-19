@@ -430,6 +430,9 @@ public final class Remain {
 	 * @return
 	 */
 	public static boolean isProtocol18Hack() {
+		if (MinecraftVersion.newerThan(V.v1_9))
+			return false;
+
 		try {
 			getNMSClass("PacketPlayOutEntityTeleport", "N/A").getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class);
 
@@ -1715,10 +1718,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
