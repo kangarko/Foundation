@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -94,6 +95,28 @@ public final class BlockUtil {
 					return true;
 
 		return false;
+	}
+
+	/**
+	 * Return locations representing the bounding box of a chunk,
+	 * used when rendering particle effects for example.
+	 *
+	 * @param chunk
+	 * @return
+	 */
+	public static Set<Location> getBoundingBox(@NonNull Chunk chunk) {
+		final int minX = chunk.getX() << 4;
+		final int minY = 0;
+		final int minZ = chunk.getZ() << 4;
+
+		final int maxX = minX | 15;
+		final int maxY = chunk.getWorld().getMaxHeight();
+		final int maxZ = minZ | 15;
+
+		final Location primary = new Location(chunk.getWorld(), minX, minY, minZ);
+		final Location secondary = new Location(chunk.getWorld(), maxX, maxY, maxZ);
+
+		return getBoundingBox(primary, secondary);
 	}
 
 	/**
@@ -329,6 +352,30 @@ public final class BlockUtil {
 	}
 
 	/**
+	 * Return all blocks in the given chunk
+	 *
+	 * @param chunk
+	 * @return
+	 */
+	public static List<Block> getBlocks(@NonNull Chunk chunk) {
+		final List<Block> blocks = new ArrayList<>();
+
+		final int minX = chunk.getX() << 4;
+		final int minZ = chunk.getZ() << 4;
+
+		final int maxX = minX | 15;
+		final int maxY = chunk.getWorld().getMaxHeight();
+		final int maxZ = minZ | 15;
+
+		for (int x = minX; x <= maxX; ++x)
+			for (int y = 0; y <= maxY; ++y)
+				for (int z = minZ; z <= maxZ; ++z)
+					blocks.add(chunk.getBlock(x, y, z));
+
+		return blocks;
+	}
+
+	/**
 	 * Get all the blocks in a specific area centered around the Location passed in
 	 *
 	 * @param loc    Center of the search area
@@ -371,6 +418,25 @@ public final class BlockUtil {
 					addedChunks.add(world.getChunkAt(x, z));
 
 		return new ArrayList<>(addedChunks);
+	}
+
+	/**
+	 * Return all x-z locations within a chunk
+	 *
+	 * @param chunk
+	 * @return
+	 */
+	public static List<Location> getXZLocations(Chunk chunk) {
+		final List<Location> found = new ArrayList<>();
+
+		final int chunkX = chunk.getX() << 4;
+		final int chunkZ = chunk.getZ() << 4;
+
+		for (int x = chunkX; x < chunkX + 16; x++)
+			for (int z = chunkZ; z < chunkZ + 16; z++)
+				found.add(new Location(chunk.getWorld(), x, 0, z));
+
+		return found;
 	}
 
 	/**
