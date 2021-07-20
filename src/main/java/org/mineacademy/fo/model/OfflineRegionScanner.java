@@ -19,10 +19,12 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
-import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.event.RegionScanCompleteEvent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A class that has ability to scan saved regions on the disk and execute
@@ -43,27 +45,42 @@ public abstract class OfflineRegionScanner {
 	/**
 	 * Seconds between each file processing operation.
 	 */
-	private static int OPERATION_WAIT_SECONDS = 1;
+	private static int WAIT_TIME_BETWEEN_SCAN_SECONDS = 1;
 
 	/**
 	 * Changing flag: How many files processed out of total?
 	 */
-	private int done = 0;
+	private int processedFilesCount = 0;
 
 	/**
 	 * Changing flag: The total amount of region files to scan
 	 */
-	private int totalFiles = 0;
+	private int totalFilesCount = 0;
 
 	/**
 	 * Changing flag: The world we are scanning
 	 */
+	@Getter
 	private World world;
+
+	/**
+	 * Changing flag: The Spigot/Paper watch dog we need to temporarily suspend
+	 */
+	private Thread watchdog;
 
 	/**
 	 * Changing flag: Last time an operation was done successfully
 	 */
 	private long lastTick = System.currentTimeMillis();
+
+	/**
+	 * In fast mode we wont load chunks only return their x-z coordinates
+	 *
+	 * false = we call {@link #onChunkScan(Chunk)}
+	 * true = we call {@link #onChunkScanFast(int, int)}
+	 */
+	@Setter
+	private boolean fastMode = false;
 
 	/**
 	 * Starts the scan for the given world (warning: this operation is blocking
@@ -72,43 +89,35 @@ public abstract class OfflineRegionScanner {
 	 * @param world
 	 */
 	public final void scan(World world) {
-		scan0(world);
-	}
-
-	private final void scan0(World world) {
-		Thread watchdog = null;
+		final boolean hadAutoSave = world.isAutoSave();
 
 		try {
-			// Disable to prevent lag warnings since we scan chunks on the main thread
-			final Field f = Class.forName("org.spigotmc.WatchdogThread").getDeclaredField("instance");
+			world.setAutoSave(false);
+			scan0(world);
 
-			try {
-				f.setAccessible(true);
-
-				watchdog = (Thread) f.get(null);
-				watchdog.suspend();
-
-			} catch (final Throwable t) {
-				Bukkit.getLogger().severe("FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
-				Common.callEvent(new RegionScanCompleteEvent(world));
-
-				t.printStackTrace();
-				return;
-			}
-		} catch (final ReflectiveOperationException err) {
-			// pass through
+		} finally {
+			world.setAutoSave(hadAutoSave);
 		}
+	}
 
-		Bukkit.getLogger().info(Common.consoleLine());
-		Bukkit.getLogger().info("Scanning regions in " + world.getName());
-		Bukkit.getLogger().info(Common.consoleLine());
+	/*
+	 * Invoke the main scan of all chunks within this world on the disk, both loaded and unloaded
+	 */
+	private void scan0(World world) {
 
-		LagCatcher.start("Region scanner for " + world.getName());
+		Common.log(
+				Common.consoleLine(),
+				"Scanning regions in " + world.getName(),
+				Common.consoleLine());
 
+		// Disable watch dog
+		disableWatchdog();
+
+		// Collect files
 		final File[] files = getRegionFiles(world);
 
-		if (files == null) {
-			Bukkit.getLogger().warning("Unable to locate the region files for: " + world.getName());
+		if (files == null || files.length == 0) {
+			Common.log("&cWarning: &fUnable to locate the region files for: " + world.getName());
 
 			return;
 		}
@@ -116,25 +125,50 @@ public abstract class OfflineRegionScanner {
 		final Queue<File> queue = new LimitedQueue<>(files.length + 1);
 		queue.addAll(Arrays.asList(files));
 
-		this.totalFiles = files.length;
+		this.totalFilesCount = files.length;
 		this.world = world;
 
 		// Start the schedule
-		schedule(world.getName(), queue);
-
-		if (watchdog != null)
-			watchdog.resume();
-
-		LagCatcher.end("Region scanner for " + world.getName(), true);
+		schedule0(queue);
 	}
 
-	/**
+	/*
+	 * Disable to prevent lag warnings since we scan chunks on the main thread
+	 */
+	private void disableWatchdog() {
+		Thread watchdog = null;
+
+		try {
+			final Field instanceField = Class.forName("org.spigotmc.WatchdogThread").getDeclaredField("instance");
+
+			try {
+				instanceField.setAccessible(true);
+
+				watchdog = (Thread) instanceField.get(null);
+				watchdog.suspend();
+
+				this.watchdog = watchdog;
+
+			} catch (final Throwable t) {
+				Common.log("ERROR: FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
+				Common.callEvent(new RegionScanCompleteEvent(world));
+
+				t.printStackTrace();
+				this.finishScan();
+
+				return;
+			}
+
+		} catch (final ReflectiveOperationException err) {
+			// pass through, probably not using Paper
+		}
+	}
+
+	/*
 	 * Self-repeating cycle of loading chunks from the disk until
 	 * we reach the end of the queue
-	 *
-	 * @param queue
 	 */
-	private final void schedule(String worldName, Queue<File> queue) {
+	private void schedule0(Queue<File> queue) {
 		new BukkitRunnable() {
 
 			@Override
@@ -143,30 +177,28 @@ public abstract class OfflineRegionScanner {
 
 				// Queue finished
 				if (file == null) {
-					Bukkit.getLogger().info(Common.consoleLine());
-					Bukkit.getLogger().info("Region scanner finished.");
-					Bukkit.getLogger().info(Common.consoleLine());
+					Common.log(
+							Common.consoleLine(),
+							"Region scanner finished. World saved.",
+							Common.consoleLine());
 
 					Common.callEvent(new RegionScanCompleteEvent(world));
-					onScanFinished();
 
+					finishScan();
 					cancel();
+
 					return;
 				}
 
-				scanFile(worldName, file);
-
-				Common.runLater(20 * OPERATION_WAIT_SECONDS, () -> schedule(worldName, queue));
+				scanFile(file, queue);
 			}
 		}.runTask(SimplePlugin.getInstance());
 	}
 
-	/**
+	/*
 	 * Scans the given region file
-	 *
-	 * @param file
 	 */
-	private final void scanFile(String worldName, File file) {
+	private void scanFile(File file, Queue<File> queue) {
 		final Matcher matcher = FILE_PATTERN.matcher(file.getName());
 
 		if (!matcher.matches())
@@ -175,7 +207,7 @@ public abstract class OfflineRegionScanner {
 		final int regionX = Integer.parseInt(matcher.group(1));
 		final int regionZ = Integer.parseInt(matcher.group(2));
 
-		System.out.print("[" + Math.round((double) done++ / (double) totalFiles * 100) + "%] Processing " + file);
+		System.out.print("[" + Math.round((double) processedFilesCount++ / (double) totalFilesCount * 100) + "%] Processing " + file);
 
 		// Calculate time, collect memory and increase pauses in between if running out of memory
 		if (System.currentTimeMillis() - lastTick > 4000) {
@@ -184,7 +216,7 @@ public abstract class OfflineRegionScanner {
 			if (free < 200) {
 				System.out.print(" [Low memory (" + free + "Mb)! Running GC and increasing delay between operations ..]");
 
-				OPERATION_WAIT_SECONDS = +2;
+				WAIT_TIME_BETWEEN_SCAN_SECONDS = +2;
 
 				System.gc();
 				Common.sleep(5_000);
@@ -197,7 +229,7 @@ public abstract class OfflineRegionScanner {
 		System.out.println();
 
 		// Load the file
-		final Object region = RegionAccessor.getRegionFile(worldName, file);
+		final Object region = RegionAccessor.getRegionFile(this.world.getName(), file);
 
 		// Load each chunk within that file
 		for (int x = 0; x < 32; x++)
@@ -206,9 +238,14 @@ public abstract class OfflineRegionScanner {
 				final int chunkZ = z + (regionZ << 5);
 
 				if (RegionAccessor.isChunkSaved(region, x, z)) {
-					final Chunk chunk = world.getChunkAt(chunkX, chunkZ);
+					if (this.fastMode)
+						this.onChunkScanFast(chunkX, chunkZ);
 
-					onChunkScan(chunk);
+					else {
+						final Chunk chunk = world.getChunkAt(chunkX, chunkZ);
+
+						onChunkScan(chunk);
+					}
 				}
 			}
 
@@ -217,17 +254,47 @@ public abstract class OfflineRegionScanner {
 			RegionAccessor.save(region);
 
 		} catch (final Throwable t) {
-			Bukkit.getLogger().severe("Failed to save region " + file + ", operation stopped.");
+			Common.log("Failed to save region " + file + ", operation stopped.");
 			Remain.sneaky(t);
 		}
+
+		if (this.fastMode)
+			this.schedule0(queue);
+
+		else
+			Common.runLater(WAIT_TIME_BETWEEN_SCAN_SECONDS, () -> schedule0(queue));
+
 	}
 
 	/**
 	 * Called when a chunk is being scanned and loaded
+	 * ONLY CALLED WHEN FASTMODE IS NOT ENABLED (by default)
+	 * ELSE WE CALL THE {@link #onChunkScanFast(int, int)} method you need to override
 	 *
 	 * @param chunk
 	 */
 	protected abstract void onChunkScan(Chunk chunk);
+
+	/**
+	 * Called when a chunk is being scanned and loaded
+	 * ONLY CALLED WHEN FASTMODE IS ENABLED
+	 *
+	 * @param chunkX
+	 * @param chunkZ
+	 */
+	protected void onChunkScanFast(int chunkX, int chunkZ) {
+	}
+
+	/*
+	 * Called upon this scan being completed
+	 */
+	private void finishScan() {
+
+		if (watchdog != null)
+			watchdog.resume();
+
+		this.onScanFinished();
+	}
 
 	/**
 	 * Called when the scan is finished, after {@link RegionScanCompleteEvent}
@@ -258,8 +325,8 @@ public abstract class OfflineRegionScanner {
 	 * @return
 	 */
 	private static final File getRegionDirectory(World world) {
-		for (final String f : FOLDERS) {
-			final File file = new File(world.getWorldFolder(), f);
+		for (final String folder : FOLDERS) {
+			final File file = new File(world.getWorldFolder(), folder);
 
 			if (file.isDirectory())
 				return file;
@@ -278,7 +345,7 @@ public abstract class OfflineRegionScanner {
 	public static int getEstimatedWaitTimeSec(World world) {
 		final File[] files = getRegionFiles(world);
 
-		return (OPERATION_WAIT_SECONDS + 2) * files.length;
+		return (WAIT_TIME_BETWEEN_SCAN_SECONDS + 2) * files.length;
 	}
 }
 
@@ -290,7 +357,7 @@ class RegionAccessor {
 	private static Constructor<?> regionFileConstructor;
 	private static Method isChunkSaved;
 
-	private static boolean atleast1_13, atleast1_14, atleast1_15, atleast1_16;
+	private static final boolean atleast1_13, atleast1_14, atleast1_15, atleast1_16;
 	private static final String saveMethodName;
 
 	static {
