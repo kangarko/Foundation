@@ -1333,6 +1333,16 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Return true if this class equals the given block, comparing data and {@link Material} type
+	 *
+	 * @param block
+	 * @return
+	 */
+	public final boolean equals(Block block) {
+		return block.getData() == this.getData() && block.getType() == this.getMaterial();
+	}
+
+	/**
 	 * Returns true if the given material is damageable.
 	 *
 	 * @param type
