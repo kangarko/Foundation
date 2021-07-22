@@ -1731,10 +1731,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -1750,7 +1750,17 @@ public final class Remain {
 	}
 
 	/**
-	 * Return IChatBaseComponent from the given JSON
+	 * Return IChatBaseComponent from the given plain text
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static Object toIChatBaseComponentPlain(String text) {
+		return toIChatBaseComponent(TextComponent.fromLegacyText(text));
+	}
+
+	/**
+	 * Return IChatBaseComponent from the given component list
 	 *
 	 * @param baseComponents
 	 * @return
