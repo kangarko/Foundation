@@ -1346,8 +1346,21 @@ public final class Remain {
 	 */
 	public static void openBook(Player player, ItemStack book) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
+		Valid.checkBoolean(book.getItemMeta() instanceof BookMeta, "openBook method called for not a book item: " + book);
+
+		// Fix "Invalid book tag" error when author/title is empty
+		final BookMeta meta = (BookMeta) book.getItemMeta();
+
+		if (meta.getAuthor() == null)
+			meta.setAuthor("");
+
+		if (meta.getTitle() == null)
+			meta.setTitle("");
+
+		book.setItemMeta(meta);
 
 		try {
+
 			player.openBook(book);
 
 		} catch (final NoSuchMethodError ex) {
