@@ -98,7 +98,7 @@ public final class DiscordSender implements CommandSender {
 	}
 
 	@Override
-	public void sendMessage(String[] messages) {
+	public void sendMessage(String... messages) {
 		for (final String message : messages)
 			sendMessage(message);
 	}
@@ -108,9 +108,9 @@ public final class DiscordSender implements CommandSender {
 		final String finalMessage = Common.stripColors(message);
 
 		Common.runAsync(() -> {
-				final Message sentMessage = channel.sendMessage(finalMessage).complete();
+			final Message sentMessage = channel.sendMessage(finalMessage).complete();
 
-				try {
+			try {
 				// Automatically remove after a short while
 				channel.deleteMessageById(sentMessage.getIdLong()).completeAfter(4, TimeUnit.SECONDS);
 
@@ -156,7 +156,7 @@ public final class DiscordSender implements CommandSender {
 	 */
 	//@Override - Disable to prevent errors in older MC
 	@Override
-	public void sendMessage(UUID uuid, String[] messages) {
+	public void sendMessage(UUID uuid, String... messages) {
 		this.sendMessage(messages);
 	}
 }
