@@ -10,7 +10,7 @@
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>5.9.7</version>
+	<version>5.9.8</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
@@ -63,7 +63,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.17-R0.1-SNAPSHOT</version>
+			<version>1.17.1-R0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- MineAcademy guaranteed availability repos for plugins -->
