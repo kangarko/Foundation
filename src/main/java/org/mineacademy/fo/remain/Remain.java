@@ -1731,10 +1731,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
@@ -1768,7 +1768,7 @@ public final class Remain {
 	public static Object toIChatBaseComponent(String json) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "Serializing chat components requires Minecraft 1.7.10 and greater");
 
-		final Class<?> chatSerializer = ReflectionUtil.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.ChatSerializer");
+		final Class<?> chatSerializer = ReflectionUtil.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
 		final Method a = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
 		return ReflectionUtil.invoke(a, null, json);
