@@ -178,7 +178,7 @@ public enum CompMaterial {
 	 * @deprecated use CARROT_ITEM
 	 */
 	@Deprecated
-	CARROT("CARROT"),
+	CARROT("CARROT_ITEM"),
 	CARROT_ITEM("CARROT_ITEM", "CARROT", 0),
 	CARROTS("CARROT"),
 	CARROT_ON_A_STICK("CARROT_STICK"),
