@@ -79,7 +79,6 @@ import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
@@ -1392,22 +1391,59 @@ public final class Remain {
 	@Deprecated
 	public static void updateInventoryTitle(final Player player, String title) {
 
-		// TODO 1.17 compatibility
-		if (MinecraftVersion.atLeast(V.v1_17)) {
-			Messenger.info(player, title);
-
-			return;
-		}
-
 		try {
+			if (MinecraftVersion.atLeast(V.v1_17)) {
+				final Object nmsPlayer = Remain.getHandleEntity(player);
+				final Object chatComponent = toIChatBaseComponentPlain(title);
+
+				final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
+				String containerName;
+
+				if (inventorySize == 1)
+					containerName = "a";
+
+				else if (inventorySize == 2)
+					containerName = "b";
+
+				else if (inventorySize == 3)
+					containerName = "c";
+
+				else if (inventorySize == 4)
+					containerName = "d";
+
+				else if (inventorySize == 5)
+					containerName = "e";
+
+				else if (inventorySize == 6)
+					containerName = "f";
+				else
+					throw new FoException("Cannot generate NMS container class to update inventory of size " + inventorySize);
+
+				final Object container = ReflectionUtil.getStaticFieldContent(ReflectionUtil.lookupClass("net.minecraft.world.inventory.Containers"), containerName);
+
+				final Constructor<?> packetConstructor = ReflectionUtil.getConstructor(
+						"net.minecraft.network.protocol.game.PacketPlayOutOpenWindow",
+						int.class,
+						container.getClass(),
+						ReflectionUtil.lookupClass("net.minecraft.network.chat.IChatBaseComponent"));
+
+				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, "bV");
+				final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
+
+				Remain.sendPacket(player, ReflectionUtil.instantiate(packetConstructor, windowId, container, chatComponent));
+				ReflectionUtil.invoke("initMenu", nmsPlayer, activeContainer);
+
+				return;
+			}
+
 			if (MinecraftVersion.olderThan(V.v1_9) && title.length() > 32)
 				title = title.substring(0, 32);
 
 			final Object entityPlayer = getHandleEntity(player);
-			final Object activeContainer = entityPlayer.getClass().getField(MinecraftVersion.atLeast(V.v1_17) ? "bU" : "activeContainer").get(entityPlayer);
-			final Object windowId = activeContainer.getClass().getField(MinecraftVersion.atLeast(V.v1_17) ? "j" : "windowId").get(activeContainer);
+			final Object activeContainer = entityPlayer.getClass().getField("activeContainer").get(entityPlayer);
+			final Object windowId = activeContainer.getClass().getField("windowId").get(activeContainer);
 
-			final Object packet;
+			final Object packetOpenWindow;
 
 			if (MinecraftVersion.atLeast(V.v1_8)) {
 				final Constructor<?> chatMessageConst = getNMSClass("ChatMessage", "net.minecraft.network.chat.ChatMessage").getConstructor(String.class, Object[].class);
@@ -1426,67 +1462,26 @@ public final class Remain {
 					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow", "net.minecraft.network.protocol.game.PacketPlayOutOpenWindow")
 							.getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent", "net.minecraft.network.chat.IChatBaseComponent"));
 
-					String containerName;
-
-					if (MinecraftVersion.atLeast(V.v1_17)) {
-
-						// Yes there's a higher quality way of doing this but field names
-						// are uncertain to future MC versions so I don't care
-
-						if (inventorySize == 1)
-							containerName = "a";
-
-						else if (inventorySize == 2)
-							containerName = "b";
-
-						else if (inventorySize == 3)
-							containerName = "c";
-
-						else if (inventorySize == 4)
-							containerName = "d";
-
-						else if (inventorySize == 5)
-							containerName = "e";
-
-						else if (inventorySize == 6)
-							containerName = "f";
-						else
-							throw new FoException("Cannot generate NMS container class to update inventory of size " + inventorySize);
-
-					} else
-						containerName = "GENERIC_9X" + inventorySize;
+					final String containerName = "GENERIC_9X" + inventorySize;
 
 					final Object container = containersClass.getField(containerName).get(null);
 
-					packet = packetConst.newInstance(windowId, container, chatMessage);
+					packetOpenWindow = packetConst.newInstance(windowId, container, chatMessage);
 
 				} else {
 					final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow", "N/A").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent", "net.minecraft.network.chat.IChatBaseComponent"), int.class);
 
-					packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
+					packetOpenWindow = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
 				}
 			} else {
 				final Constructor<?> openWindow = ReflectionUtil.getConstructor(
 						getNMSClass(MinecraftVersion.atLeast(V.v1_7) ? "PacketPlayOutOpenWindow" : "Packet100OpenWindow", "N/A"), int.class, int.class, String.class, int.class, boolean.class);
 
-				packet = ReflectionUtil.instantiate(openWindow, windowId, 0, ChatColor.translateAlternateColorCodes('&', title), player.getOpenInventory().getTopInventory().getSize(), true);
+				packetOpenWindow = ReflectionUtil.instantiate(openWindow, windowId, 0, ChatColor.translateAlternateColorCodes('&', title), player.getOpenInventory().getTopInventory().getSize(), true);
 			}
 
-			sendPacket(player, packet);
-
-			if (MinecraftVersion.atLeast(V.v1_17)) {
-
-				// TODO Wrong position
-				final Object container = ReflectionUtil.getFieldContent(entityPlayer, "bV");
-
-				final Object packetWindowItems = getNMSClass("PacketPlayOutWindowItems", "net.minecraft.network.protocol.game.PacketPlayOutWindowItems")
-						.getConstructor(int.class, ReflectionUtil.lookupClass("net.minecraft.core.NonNullList"))
-						.newInstance(0, ReflectionUtil.invoke("c", container));
-
-				sendPacket(player, packetWindowItems);
-
-			} else
-				entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container", "net.minecraft.world.inventory.Container")).invoke(entityPlayer, activeContainer);
+			sendPacket(player, packetOpenWindow);
+			entityPlayer.getClass().getMethod("updateInventory", getNMSClass("Container", "net.minecraft.world.inventory.Container")).invoke(entityPlayer, activeContainer);
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
@@ -1731,10 +1726,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
