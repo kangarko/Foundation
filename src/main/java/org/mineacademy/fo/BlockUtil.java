@@ -521,7 +521,7 @@ public final class BlockUtil {
 				material == CompMaterial.COBWEB.getMaterial() ||
 				material == Material.DAYLIGHT_DETECTOR ||
 				CompMaterial.isTrapDoor(material) ||
-				material == CompMaterial.SIGN.getMaterial() ||
+				material == CompMaterial.OAK_SIGN.getMaterial() ||
 				CompMaterial.isWallSign(material) ||
 				// Match all slabs besides double slab
 				SLAB_PATTERN.matcher(material.name()).matches();
