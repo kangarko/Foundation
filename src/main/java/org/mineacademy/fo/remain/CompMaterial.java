@@ -824,7 +824,7 @@ public enum CompMaterial {
 	MYCELIUM("MYCEL"),
 	NAME_TAG,
 	NAUTILUS_SHELL(13),
-	NETHERITE_AXE(16),
+	NETHERITE_AXE(16, "GOLDEN_AXE", "GOLD_AXE"),
 	NETHERITE_BLOCK(16),
 	NETHERITE_BOOTS(16),
 	NETHERITE_CHESTPLATE(16),
@@ -1393,7 +1393,7 @@ public enum CompMaterial {
 	 *
 	 * @since 2.0.0
 	 */
-	public static final CompMaterial[] VALUES = values();
+	private static final CompMaterial[] VALUES = values();
 
 	/**
 	 * We don't want to use Enums#getIfPresent(Class, String) to avoid a few checks.
@@ -1481,7 +1481,6 @@ public enum CompMaterial {
 	 *
 	 * @see #getLegacy()
 	 */
-
 	private final String[] legacy;
 
 	/**
@@ -1490,7 +1489,6 @@ public enum CompMaterial {
 	 * @see #toMaterial()
 	 * @since 9.0.0
 	 */
-
 	@Getter
 	private final Material material;
 
@@ -1500,14 +1498,16 @@ public enum CompMaterial {
 		this.legacy = legacy;
 
 		Material mat = null;
-		if ((!Data.ISFLAT && this.isDuplicated()) || (mat = Material.getMaterial(this.name())) == null) {
+
+		if ((!Data.ISFLAT && this.isDuplicated()) || (mat = Material.getMaterial(this.name())) == null)
 			for (int i = legacy.length - 1; i >= 0; i--) {
 				mat = Material.getMaterial(legacy[i]);
+
 				if (mat != null)
 					break;
 			}
-		}
-		this.material = mat;
+
+		this.material = Common.getOrDefault(mat, Material.STONE);
 	}
 
 	CompMaterial(int data, String... legacy) {
@@ -2688,5 +2688,5 @@ class SoftMaterials {
 			"OBSERVER",
 			"PURPLE_SHULKER_BOX"
 
-	));
+			));
 }

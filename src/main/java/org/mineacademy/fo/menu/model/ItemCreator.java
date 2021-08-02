@@ -232,6 +232,7 @@ final @Builder public class ItemCreator {
 		// First, make sure the ItemStack is not null (it can be null if you create this class only using material)
 		//
 		Valid.checkBoolean(material != null || item != null, "Material or item must be set!");
+		Valid.checkNotNull(material.getMaterial(), "Material#getMaterial cannot be null for " + material);
 
 		ItemStack is = item != null ? item.clone() : new ItemStack(material.getMaterial(), amount);
 		final ItemMeta itemMeta = meta != null ? meta.clone() : is.getItemMeta();
@@ -246,29 +247,29 @@ final @Builder public class ItemCreator {
 
 		// Apply specific material color if possible
 		color:
-		if (MinecraftVersion.atLeast(V.v1_12) && color != null && !is.getType().toString().contains("LEATHER")) {
-			final String dye = color.getDye().toString();
-			final List<String> colorableMaterials = Arrays.asList("BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX", "STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
+			if (MinecraftVersion.atLeast(V.v1_12) && color != null && !is.getType().toString().contains("LEATHER")) {
+				final String dye = color.getDye().toString();
+				final List<String> colorableMaterials = Arrays.asList("BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX", "STAINED_GLASS", "STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
 
-			for (final String colorable : colorableMaterials) {
-				final String suffix = "_" + colorable;
+				for (final String colorable : colorableMaterials) {
+					final String suffix = "_" + colorable;
 
-				if (is.getType().toString().endsWith(suffix)) {
-					is.setType(Material.valueOf(dye + suffix));
+					if (is.getType().toString().endsWith(suffix)) {
+						is.setType(Material.valueOf(dye + suffix));
 
-					break color;
+						break color;
+					}
 				}
-			}
 
-			// If not revert to wool
-			if (MinecraftVersion.atLeast(V.v1_13))
-				is.setType(Material.valueOf(dye + "_WOOL"));
+				// If not revert to wool
+				if (MinecraftVersion.atLeast(V.v1_13))
+					is.setType(Material.valueOf(dye + "_WOOL"));
 
-			else
+				else
+					applyColors0(itemMeta, color, material, is);
+
+			} else
 				applyColors0(itemMeta, color, material, is);
-
-		} else
-			applyColors0(itemMeta, color, material, is);
 
 		// Fix monster eggs
 		if (is.getType().toString().endsWith("SPAWN_EGG")) {
