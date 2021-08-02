@@ -337,8 +337,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(this); // For convenience
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
-			registerEvents(new ToolsListener());
 			registerEvents(new EnchantmentListener());
+
+			if (areToolsEnabled())
+				registerEvents(new ToolsListener());
+
 
 			// Register our packet listener
 			FoundationPacketListener.addNativeListener();
@@ -871,20 +874,20 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		Valid.checkBoolean(!extendingClass.equals(SimpleListener.class), "registerAllEvents does not support SimpleListener.class due to conflicts, create your own middle class instead");
 
 		classLookup:
-		for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
-			for (final Constructor<?> con : pluginClass.getConstructors()) {
-				if (con.getParameterCount() == 0) {
-					final T instance = (T) ReflectionUtil.instantiate(con);
+			for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+				for (final Constructor<?> con : pluginClass.getConstructors()) {
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
 
-					Debugger.debug("auto-register", "Auto-registering events in " + pluginClass);
-					registerEvents(instance);
+						Debugger.debug("auto-register", "Auto-registering events in " + pluginClass);
+						registerEvents(instance);
 
-					continue classLookup;
+						continue classLookup;
+					}
 				}
-			}
 
-			Debugger.debug("auto-register", "Skipping auto-registering events in " + pluginClass + " because it lacks at least one no arguments constructor");
-		}
+				Debugger.debug("auto-register", "Skipping auto-registering events in " + pluginClass + " because it lacks at least one no arguments constructor");
+			}
 	}
 
 	/**
@@ -958,32 +961,32 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		Valid.checkBoolean(!extendingClass.equals(SimpleSubCommand.class), "registerAllCommands does not support SubCommand.class");
 
 		classLookup:
-		for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+			for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
 
-			if (SimpleSubCommand.class.isAssignableFrom(pluginClass)) {
-				Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because sub-commands cannot be registered");
+				if (SimpleSubCommand.class.isAssignableFrom(pluginClass)) {
+					Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because sub-commands cannot be registered");
 
-				continue;
-			}
-
-			for (final Constructor<?> con : pluginClass.getConstructors()) {
-				if (con.getParameterCount() == 0) {
-					final T instance = (T) ReflectionUtil.instantiate(con);
-
-					Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
-
-					if (instance instanceof SimpleCommand)
-						registerCommand((SimpleCommand) instance);
-
-					else
-						registerCommand(instance);
-
-					continue classLookup;
+					continue;
 				}
-			}
 
-			Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because it lacks at least one no arguments constructor");
-		}
+				for (final Constructor<?> con : pluginClass.getConstructors()) {
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
+
+						Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
+
+						if (instance instanceof SimpleCommand)
+							registerCommand((SimpleCommand) instance);
+
+						else
+							registerCommand(instance);
+
+						continue classLookup;
+					}
+				}
+
+				Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because it lacks at least one no arguments constructor");
+			}
 	}
 
 	/**
@@ -1209,6 +1212,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public boolean enforeNewLine() {
 		return false;
+	}
+
+	/**
+	 * Should we listen for {@link Tool} in this plugin and
+	 * handle clicking events automatically? Disable to increase performance
+	 * if you do not want to use our tool system. Enabled by default.
+	 *
+	 * @return
+	 */
+	public boolean areToolsEnabled() {
+		return true;
 	}
 
 	/**
