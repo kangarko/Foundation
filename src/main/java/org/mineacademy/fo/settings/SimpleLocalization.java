@@ -1,5 +1,6 @@
 package org.mineacademy.fo.settings;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
@@ -398,6 +399,11 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String NOT_ONLINE = "&cPlayer {player} &cis not online on this server.";
 
 		/**
+		 * Message shown when {@link Bukkit#getOfflinePlayer(String)} returns that the player has not played before
+		 */
+		public static String NOT_PLAYED_BEFORE = "&cPlayer {player} &chas not played before or we could not locate his disk data.";
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -405,6 +411,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Not_Online"))
 				NOT_ONLINE = getString("Not_Online");
+
+			if (isSetDefault("Not_Played_Before"))
+				NOT_PLAYED_BEFORE = getString("Not_Played_Before");
 		}
 	}
 
