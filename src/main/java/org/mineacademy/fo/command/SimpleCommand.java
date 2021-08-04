@@ -8,18 +8,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.PlayerUtil;
@@ -572,6 +575,25 @@ public abstract class SimpleCommand extends Command {
 	protected final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
 		if (value == null)
 			returnTell((USE_MESSENGER ? "" : "&c") + messageIfNull);
+	}
+
+	/**
+	 * Attempts to find the offline player by name, sends an error message to sender if he did not play before
+	 * or runs the specified callback.
+	 *
+	 * The offline player lookup is done async, the callback is synchronized.
+	 *
+	 * @param name
+	 * @param callback
+	 * @throws CommandException
+	 */
+	protected final void findOfflinePlayer(final String name, Consumer<OfflinePlayer> callback) throws CommandException {
+		runAsync(() -> {
+			final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
+			checkBoolean(targetPlayer.hasPlayedBefore(), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
+
+			runLater(() -> callback.accept(targetPlayer));
+		});
 	}
 
 	/**
@@ -1547,6 +1569,75 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void setAutoHandleHelp(final boolean autoHandleHelp) {
 		this.autoHandleHelp = autoHandleHelp;
+	}
+
+	// ----------------------------------------------------------------------
+	// Scheduling
+	// ----------------------------------------------------------------------
+
+	/**
+	 * Runs the given task later, this supports checkX methods
+	 * where we handle sending messages to player automatically
+	 *
+	 * @param runnable
+	 * @return
+	 */
+	protected final BukkitTask runLater(Runnable runnable) {
+		return Common.runLater(() -> this.delegateTask(runnable));
+	}
+
+	/**
+	 * Runs the given task later, this supports checkX methods
+	 * where we handle sending messages to player automatically
+	 *
+	 * @param delayTicks
+	 * @param runnable
+	 * @return
+	 */
+	protected final BukkitTask runLater(int delayTicks, Runnable runnable) {
+		return Common.runLater(delayTicks, () -> this.delegateTask(runnable));
+	}
+
+	/**
+	 * Runs the given task asynchronously, this supports checkX methods
+	 * where we handle sending messages to player automatically
+	 *
+	 * @param runnable
+	 * @return
+	 */
+	protected final BukkitTask runAsync(Runnable runnable) {
+		return Common.runAsync(() -> this.delegateTask(runnable));
+	}
+
+	/**
+	 * Runs the given task asynchronously, this supports checkX methods
+	 * where we handle sending messages to player automatically
+	 *
+	 * @param delayTicks
+	 * @param runnable
+	 * @return
+	 */
+	protected final BukkitTask runAsync(int delayTicks, Runnable runnable) {
+		return Common.runLaterAsync(delayTicks, () -> this.delegateTask(runnable));
+	}
+
+	/*
+	 * A helper method to catch command-related exceptions from runnables
+	 */
+	private void delegateTask(Runnable runnable) {
+		try {
+			runnable.run();
+
+		} catch (final CommandException ex) {
+			if (ex.getMessages() != null)
+				for (final String message : ex.getMessages())
+					Messenger.error(sender, message);
+
+		} catch (final Throwable t) {
+			Messenger.error(sender, SimpleLocalization.Commands.ERROR.replace("{error}", t.toString()));
+
+			throw t;
+		}
 	}
 
 	@Override
