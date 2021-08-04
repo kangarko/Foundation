@@ -1394,7 +1394,7 @@ public final class Remain {
 		try {
 			if (MinecraftVersion.atLeast(V.v1_17)) {
 				final Object nmsPlayer = Remain.getHandleEntity(player);
-				final Object chatComponent = toIChatBaseComponentPlain(title);
+				final Object chatComponent = toIChatBaseComponentPlain(ChatColor.translateAlternateColorCodes('&', title));
 
 				final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
 				String containerName;
@@ -1508,7 +1508,7 @@ public final class Remain {
 		try {
 			player.sendBlockChange(location, material.getMaterial().createBlockData());
 		} catch (final NoSuchMethodError ex) {
-			player.sendBlockChange(location, material.getMaterial(), (byte) material.getData());
+			player.sendBlockChange(location, material.getMaterial(), material.getData());
 		}
 	}
 
@@ -1726,10 +1726,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
