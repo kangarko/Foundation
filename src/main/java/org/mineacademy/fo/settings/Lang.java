@@ -268,7 +268,9 @@ public final class Lang extends YamlConfig {
 	 * Check if this class has properly been initialized
 	 */
 	private static void checkInit() {
-		Valid.checkNotNull(instance, "Call init() method in your onPluginPreStart to use the Lang class!");
-		Common.runLater(() -> Valid.checkBoolean(SimpleLocalization.isLocalizationCalled(), "Load SimpleLocalization in your main plugin class, such as: https://i.imgur.com/HpINykd.png"));
+
+		// Automatically load when not loaded in onPluginPreStart
+		if (instance == null)
+			init();
 	}
 }
