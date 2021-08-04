@@ -22,7 +22,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  */
 // Use for settings.yml
 @SuppressWarnings("unused")
-public abstract class SimpleSettings extends YamlStaticConfig {
+public class SimpleSettings extends YamlStaticConfig {
 
 	/**
 	 * A flag indicating that this class has been loaded
@@ -82,7 +82,9 @@ public abstract class SimpleSettings extends YamlStaticConfig {
 	 *
 	 * @return
 	 */
-	protected abstract int getConfigVersion();
+	protected int getConfigVersion() {
+		return 1;
+	}
 
 	// --------------------------------------------------------------------
 	// Settings we offer by default for your main config file
