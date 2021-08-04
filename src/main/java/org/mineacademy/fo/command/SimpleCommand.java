@@ -590,7 +590,7 @@ public abstract class SimpleCommand extends Command {
 	protected final void findOfflinePlayer(final String name, Consumer<OfflinePlayer> callback) throws CommandException {
 		runAsync(() -> {
 			final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
-			checkBoolean(targetPlayer.hasPlayedBefore(), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
+			checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
 
 			runLater(() -> callback.accept(targetPlayer));
 		});
