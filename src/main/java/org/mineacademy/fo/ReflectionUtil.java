@@ -847,7 +847,7 @@ public final class ReflectionUtil {
 					final Class<?> clazz;
 
 					try {
-						clazz = Class.forName(name);
+						clazz = Class.forName(name, false, SimplePlugin.class.getClassLoader());
 
 						if (extendingClass == null || (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass))
 							classes.add((Class<T>) clazz);
