@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -158,12 +159,16 @@ public final class SerializeUtil {
 			return SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue()).serialize();
 		}
 
+		else if (obj instanceof Path)
+			throw new FoException("Cannot serialize Path " + obj + ", did you mean to convert it into a name?");
+
 		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
 
 			if (obj instanceof Iterable || obj instanceof IsInList)
 				for (final Object element : obj instanceof IsInList ? ((IsInList<?>) obj).getList() : (Iterable<?>) obj)
 					serialized.add(serialize(element));
+
 			else
 				for (final Object element : (Object[]) obj)
 					serialized.add(serialize(element));
