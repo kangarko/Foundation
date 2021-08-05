@@ -497,7 +497,7 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Experimental - Shall we attempt to save comments into this yaml config
+	 * Shall we attempt to save comments into this yaml config
 	 * and enforce the file to always look like the default one?
 	 *
 	 * You can exclude sections you do not want to symlink in {@link #getUncommentedSections()}

@@ -185,7 +185,7 @@ public abstract class YamlStaticConfig {
 	 * @see YamlConfig#saveComments()
 	 */
 	protected boolean saveComments() {
-		return false;
+		return true;
 	}
 
 	/**
