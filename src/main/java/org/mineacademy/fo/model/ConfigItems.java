@@ -137,7 +137,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param name
 	 * @return
 	 */
-	private void loadOrCreateItem(final String name) {
+	public void loadOrCreateItem(final String name) {
 
 		try {
 			Constructor<T> constructor;
