@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public final class Variable extends YamlConfig {
 
 	/**
-	 * Return the prototype file path for the given variable fiel name
+	 * Return the prototype file path for the given variable field name
 	 */
 	public static Function<String, String> PROTOTYPE_PATH = t -> NO_DEFAULT;
 
@@ -317,6 +317,15 @@ public final class Variable extends YamlConfig {
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
 	// Static
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
+
+	/**
+	 * Creates a new variable and loads
+	 *
+	 * @param name
+	 */
+	public static void createVariable(String name) {
+		loadedVariables.loadOrCreateItem(name);
+	}
 
 	/**
 	 * Load all variables from variables/ folder
