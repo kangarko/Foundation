@@ -9,8 +9,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -88,7 +86,7 @@ public final class Variables {
 	 *
 	 * @return
 	 */
-	@Nullable
+
 	public static Function<CommandSender, String> getVariable(String key) {
 		return customVariables.get(key);
 	}
@@ -187,7 +185,7 @@ public final class Variables {
 	 * @param sender
 	 * @return
 	 */
-	public static List<String> replace(Iterable<String> messages, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements) {
+	public static List<String> replace(Iterable<String> messages, CommandSender sender, Map<String, Object> replacements) {
 
 		// Trick: Join the lines to only parse variables at once -- performance++ -- then split again
 		final String deliminer = "%FLVJ%";
@@ -205,7 +203,7 @@ public final class Variables {
 	 * @param sender
 	 * @return
 	 */
-	public static String replace(String message, @Nullable CommandSender sender) {
+	public static String replace(String message, CommandSender sender) {
 		return replace(message, sender, null);
 	}
 
@@ -219,7 +217,7 @@ public final class Variables {
 	 * @param sender
 	 * @return
 	 */
-	public static String replace(String message, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements) {
+	public static String replace(String message, CommandSender sender, Map<String, Object> replacements) {
 		return replace(message, sender, replacements, true);
 	}
 
@@ -234,7 +232,7 @@ public final class Variables {
 	 * @param colorize
 	 * @return
 	 */
-	public static String replace(String message, @Nullable CommandSender sender, @Nullable Map<String, Object> replacements, boolean colorize) {
+	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize) {
 		if (message == null || message.isEmpty())
 			return "";
 
@@ -295,7 +293,7 @@ public final class Variables {
 	/*
 	 * Replaces JavaScript variables in the message
 	 */
-	private static String replaceJavascriptVariables0(String message, CommandSender sender, @Nullable Map<String, Object> replacements) {
+	private static String replaceJavascriptVariables0(String message, CommandSender sender, Map<String, Object> replacements) {
 
 		final Matcher matcher = BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 
@@ -326,7 +324,7 @@ public final class Variables {
 	/*
 	 * Replaces our hardcoded variables in the message, using a cache for better performance
 	 */
-	private static String replaceHardVariables0(@Nullable CommandSender sender, String message) {
+	private static String replaceHardVariables0(CommandSender sender, String message) {
 		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
 		final Player player = sender instanceof Player ? (Player) sender : null;
 

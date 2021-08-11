@@ -136,6 +136,7 @@ enum ReflectionMethod {
 			method.setAccessible(true);
 			loaded = true;
 			methodName = targetVersion.name;
+
 		} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
 			System.out.println("[NBTAPI] Unable to find the method '" + targetVersion.name + "' in '" + (targetClass == null ? "null" : targetClass.getSimpleName()) + "' Enum: " + this); //NOSONAR This gets loaded before the logger is loaded
 		}

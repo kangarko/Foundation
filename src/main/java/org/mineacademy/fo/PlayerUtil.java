@@ -11,8 +11,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -447,7 +445,7 @@ public final class PlayerUtil {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static boolean isVanished(final Player player, @Nullable final Player otherPlayer) {
+	public static boolean isVanished(final Player player, final Player otherPlayer) {
 		if (otherPlayer != null && !otherPlayer.canSee(player))
 			return true;
 

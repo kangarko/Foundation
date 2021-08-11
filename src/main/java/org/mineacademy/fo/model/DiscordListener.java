@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -128,11 +126,10 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Retrieve a {@link TextChannel} from the given ID
-	 * 
+	 *
 	 * @param channelId
 	 * @return
 	 */
-	@Nullable
 	protected final TextChannel findChannel(long channelId) {
 		final JDA jda = DiscordUtil.getJda();
 
@@ -145,7 +142,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Retrieve a {@link TextChannel} list matching the given name
-	 * 
+	 *
 	 * @param channelId
 	 * @return
 	 */
@@ -264,7 +261,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Sends a webhook message from the given sender in case he's a valid Player
-	 * 
+	 *
 	 * @param sender
 	 * @param channelName
 	 * @param message
@@ -296,7 +293,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Send a message to the given channel for four seconds
-	 * 
+	 *
 	 * @param channel
 	 * @param message
 	 */
@@ -322,7 +319,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Remove the given message by ID
-	 * 
+	 *
 	 * @param channel
 	 * @param messageId
 	 */
@@ -350,7 +347,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Edit the given message by ID
-	 * 
+	 *
 	 * @param channel
 	 * @param messageId
 	 * @param newMessage
@@ -382,7 +379,7 @@ public abstract class DiscordListener implements Listener {
 
 	/**
 	 * Attempt to parse the sender's name into his Minecraft name in case he linked it
-	 * 
+	 *
 	 * @param member
 	 * @param author
 	 * @return
@@ -396,7 +393,7 @@ public abstract class DiscordListener implements Listener {
 		if (linkedId != null)
 
 			// You could potentially look this in offline players too
-			// using an async callback to prevent lag if there's tons 
+			// using an async callback to prevent lag if there's tons
 			// of players saved or in case of a HTTP request
 			player = Remain.getPlayerByUUID(linkedId);
 

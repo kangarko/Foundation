@@ -11,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -630,7 +628,7 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final Player findPlayerOrSelf(@Nullable final String name) throws CommandException {
+	protected final Player findPlayerOrSelf(final String name) throws CommandException {
 		if (name == null) {
 			checkBoolean(isPlayer(), SimpleLocalization.Commands.CONSOLE_MISSING_PLAYER_NAME);
 
@@ -847,7 +845,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(@Nullable String permission) {
+	protected final boolean hasPerm(String permission) {
 		return this.hasPerm(sender, permission);
 	}
 
@@ -862,7 +860,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(CommandSender sender, @Nullable String permission) {
+	protected final boolean hasPerm(CommandSender sender, String permission) {
 		return permission == null ? true : PlayerUtil.hasPerm(sender, permission.replace("{label}", getLabel()));
 	}
 
@@ -889,7 +887,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param components
 	 */
-	protected final void tell(@Nullable List<SimpleComponent> components) {
+	protected final void tell(List<SimpleComponent> components) {
 		if (components != null)
 			tell(components.toArray(new SimpleComponent[components.size()]));
 	}
@@ -901,7 +899,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param components
 	 */
-	protected final void tell(@Nullable SimpleComponent... components) {
+	protected final void tell(SimpleComponent... components) {
 		if (components != null)
 			for (final SimpleComponent component : components)
 				component.send(sender);
@@ -912,7 +910,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param replacer
 	 */
-	protected final void tell(@Nullable Replacer replacer) {
+	protected final void tell(Replacer replacer) {
 		if (replacer != null)
 			tell(replacer.getReplacedMessage());
 	}
@@ -922,7 +920,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tell(@Nullable Collection<String> messages) {
+	protected final void tell(Collection<String> messages) {
 		if (messages != null)
 			tell(messages.toArray(new String[messages.size()]));
 	}
@@ -932,7 +930,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param replacer
 	 */
-	protected final void tellNoPrefix(@Nullable Replacer replacer) {
+	protected final void tellNoPrefix(Replacer replacer) {
 		if (replacer != null)
 			tellNoPrefix(replacer.getReplacedMessage());
 	}
@@ -951,7 +949,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tellNoPrefix(@Nullable String... messages) {
+	protected final void tellNoPrefix(String... messages) {
 		final boolean tellPrefix = Common.ADD_TELL_PREFIX;
 		final boolean localPrefix = addTellPrefix;
 
@@ -969,7 +967,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tell(@Nullable String... messages) {
+	protected final void tell(String... messages) {
 		if (messages != null) {
 			messages = replacePlaceholders(messages);
 

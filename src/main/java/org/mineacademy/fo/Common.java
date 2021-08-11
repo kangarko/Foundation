@@ -638,7 +638,7 @@ public final class Common {
 				} catch (final IllegalArgumentException ex) {
 				}
 
-				result = result.replaceAll("#" + colorCode, replacement);
+				result = result.replaceAll("(&|)#" + colorCode, replacement);
 			}
 
 			result = result.replace("\\#", "#");

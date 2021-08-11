@@ -40,16 +40,6 @@
 			<version>1.18.20</version>
 		</dependency>
 
-		<!-- Solves a weird BUILD FAILURE problem, see https://www.spigotmc.org/threads/455923 
-			Apparently this is used somewhere in the other jars and causing issues if 
-			not stated explicitly -->
-		<!--<dependency>
-			<groupId>org.jetbrains</groupId>
-			<artifactId>annotations</artifactId>
-			<version>19.0.0</version>
-			<scope>provided</scope>
-		</dependency>-->
-
 		<!-- This is NOT used anywhere in Foundation, only here to prevent compile 
 			errors from missing the log4j dependency that is shipped in the server jar -->
 		<dependency>

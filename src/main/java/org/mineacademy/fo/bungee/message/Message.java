@@ -2,8 +2,6 @@ package org.mineacademy.fo.bungee.message;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
@@ -24,7 +22,6 @@ abstract class Message {
 	/**
 	 * The UUID of the sender who initiated the packet, can be null
 	 */
-	@Nullable
 	@Getter
 	private UUID senderUid;
 

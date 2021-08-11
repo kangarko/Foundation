@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -315,7 +313,7 @@ public class SimpleScoreboard {
 	 * @param primary
 	 * @param secondary
 	 */
-	public final void setTheme(@NonNull final ChatColor primary, @Nullable final ChatColor secondary) {
+	public final void setTheme(@NonNull final ChatColor primary, final ChatColor secondary) {
 		if (secondary != null) {
 			this.theme[0] = "&" + primary.getChar();
 			this.theme[1] = "&" + secondary.getChar();

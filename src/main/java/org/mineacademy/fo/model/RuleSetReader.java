@@ -5,8 +5,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
@@ -212,6 +210,5 @@ public abstract class RuleSetReader<T extends Rule> {
 	 *
 	 * @return the rule created, or null if the value is not valid
 	 */
-	@Nullable
 	protected abstract T createRule(File file, String value);
 }
