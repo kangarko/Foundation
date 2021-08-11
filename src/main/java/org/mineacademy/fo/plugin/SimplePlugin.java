@@ -963,20 +963,25 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				continue;
 			}
 
-			for (final Constructor<?> con : pluginClass.getConstructors()) {
-				if (con.getParameterCount() == 0) {
-					final T instance = (T) ReflectionUtil.instantiate(con);
+			try {
+				for (final Constructor<?> con : pluginClass.getConstructors()) {
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
 
-					Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
+						Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
 
-					if (instance instanceof SimpleCommand)
-						registerCommand((SimpleCommand) instance);
+						if (instance instanceof SimpleCommand)
+							registerCommand((SimpleCommand) instance);
 
-					else
-						registerCommand(instance);
+						else
+							registerCommand(instance);
 
-					continue classLookup;
+						continue classLookup;
+					}
 				}
+
+			} catch (final LinkageError ex) {
+				Common.log("Unable to register commands in '" + pluginClass.getSimpleName() + "' due to error: " + ex);
 			}
 
 			Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because it lacks at least one no arguments constructor");
