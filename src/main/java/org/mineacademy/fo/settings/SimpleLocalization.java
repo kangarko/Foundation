@@ -217,9 +217,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 */
 		public static String DEBUG_DESCRIPTION = "ZIP your settings for reporting bugs.";
 		public static String DEBUG_PREPARING = "&6Preparing debug log...";
-		public static String DEBUG_SUCCESS = "&2Successfuly copied {amount} file(s) to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via uploadfiles.io and send it to us for review.";
+		public static String DEBUG_SUCCESS = "&2Successfuly copied {amount} file(s) to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via ufile.io and send it to us for review.";
 		public static String DEBUG_COPY_FAIL = "&cCopying files failed on file {file} and it was stopped. See console for more information.";
-		public static String DEBUG_ZIP_FAIL = "&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via uploadfiles.io manually.";
+		public static String DEBUG_ZIP_FAIL = "&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via ufile.io manually.";
 
 		/**
 		 * The keys below are used in the {@link PermsCommand}
