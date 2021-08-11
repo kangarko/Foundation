@@ -18,8 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -823,7 +821,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	@SneakyThrows
-	public static <T> TreeSet<Class<T>> getClasses(final Plugin plugin, @Nullable Class<T> extendingClass) {
+	public static <T> TreeSet<Class<T>> getClasses(final Plugin plugin, Class<T> extendingClass) {
 		Valid.checkNotNull(plugin, "Plugin is null!");
 		Valid.checkBoolean(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
 
@@ -844,7 +842,7 @@ public final class ReflectionUtil {
 				if (name.endsWith(".class")) {
 					name = name.replace("/", ".").replaceFirst(".class", "");
 
-					final Class<?> clazz;
+					Class<?> clazz = null;
 
 					try {
 						clazz = Class.forName(name, false, SimplePlugin.class.getClassLoader());
@@ -854,15 +852,8 @@ public final class ReflectionUtil {
 
 					} catch (final Throwable throwable) {
 
-						try {
-							final Class<?> uninitClass = Class.forName(name, false, SimplePlugin.class.getClassLoader());
-
-							if (extendingClass != null && extendingClass.isAssignableFrom(uninitClass) && uninitClass != extendingClass)
-								Common.log("Unable to load class '" + name + "' due to error: " + throwable);
-
-						} catch (final Throwable t2) {
-							// Silence
-						}
+						if (extendingClass != null && (clazz != null && extendingClass.isAssignableFrom(clazz)) && clazz != extendingClass)
+							Common.log("Unable to load class '" + name + "' due to error: " + throwable);
 
 						continue;
 					}
