@@ -19,8 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -1126,7 +1124,7 @@ public final class Common {
 	 * @param playerReplacement
 	 * @param command
 	 */
-	public static void dispatchCommand(@Nullable final CommandSender playerReplacement, @NonNull String command) {
+	public static void dispatchCommand(final CommandSender playerReplacement, @NonNull String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
@@ -1853,7 +1851,7 @@ public final class Common {
 	 *
 	 * @return
 	 */
-	public static List<String> getPlayerNames(final boolean includeVanished, @Nullable Player otherPlayer) {
+	public static List<String> getPlayerNames(final boolean includeVanished, Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -1883,7 +1881,7 @@ public final class Common {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static List<String> getPlayerNicknames(final boolean includeVanished, @Nullable Player otherPlayer) {
+	public static List<String> getPlayerNicknames(final boolean includeVanished, Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -2298,7 +2296,7 @@ public final class Common {
 	 * @param it the iterable
 	 * @return the new list
 	 */
-	public static <T> List<T> toList(@Nullable final Iterable<T> it) {
+	public static <T> List<T> toList(final Iterable<T> it) {
 		final List<T> list = new ArrayList<>();
 
 		if (it != null)
