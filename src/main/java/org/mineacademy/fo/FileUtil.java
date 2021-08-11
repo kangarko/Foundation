@@ -28,8 +28,6 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.mineacademy.fo.exception.FoException;
@@ -613,7 +611,7 @@ public final class FileUtil {
 	 *
 	 * @return
 	 */
-	public static File decompressAndWrite(@Nullable File destination, @NonNull byte[] data) {
+	public static File decompressAndWrite(File destination, @NonNull byte[] data) {
 		final Tuple<File, List<String>> tuple = decompress(data);
 
 		if (destination == null)

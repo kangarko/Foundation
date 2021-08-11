@@ -4,8 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -37,7 +35,6 @@ public class Region implements ConfigSerializable {
 	 * The name of the region, or null if not given
 	 */
 	@Setter
-	@Nullable
 	private String name;
 
 	/**
@@ -56,7 +53,7 @@ public class Region implements ConfigSerializable {
 	 * @param primary
 	 * @param secondary
 	 */
-	public Region(@Nullable final Location primary, @Nullable final Location secondary) {
+	public Region(final Location primary, final Location secondary) {
 		this(null, primary, secondary);
 	}
 
@@ -67,7 +64,7 @@ public class Region implements ConfigSerializable {
 	 * @param primary
 	 * @param secondary
 	 */
-	public Region(@Nullable final String name, @Nullable final Location primary, @Nullable final Location secondary) {
+	public Region(final String name, final Location primary, final Location secondary) {
 		this.name = name;
 
 		if (primary != null) {

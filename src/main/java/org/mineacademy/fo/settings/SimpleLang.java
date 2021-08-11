@@ -3,8 +3,6 @@ package org.mineacademy.fo.settings;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
@@ -19,7 +17,7 @@ import org.mineacademy.fo.model.SimpleComponent;
  *
  * The downside is that keys are not checked during load so any
  * malformed or missing key will fail later and may be unnoticed.
- * 
+ *
  * Using the classic SimpleLocalization is still recommended to ensure
  * your users get notified when they malform their localization file early
  * on startup.
@@ -33,7 +31,7 @@ public final class SimpleLang extends YamlConfig {
 
 	/**
 	 * Set the instance in your plugin's onStart method.
-	 * 
+	 *
 	 * @param filePath
 	 */
 	public static void setInstance(String filePath) {
@@ -42,9 +40,9 @@ public final class SimpleLang extends YamlConfig {
 
 	/**
 	 * Set the instance in your plugin's onStart method.
-	 * 
+	 *
 	 * In this method we pull the locale file from localization/messages_{SimplePrefix.LOCALE_PREFIX}.yml file
-	 * 
+	 *
 	 * @param filePath
 	 */
 	public static void setInstance() {
@@ -52,8 +50,8 @@ public final class SimpleLang extends YamlConfig {
 	}
 
 	/**
-	 * Creates a new instance 
-	 * 
+	 * Creates a new instance
+	 *
 	 * @param path
 	 */
 	private SimpleLang(String path) {
@@ -104,7 +102,7 @@ public final class SimpleLang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static List<SimpleComponent> ofComponentList(String path, @Nullable Object... variables) {
+	public static List<SimpleComponent> ofComponentList(String path, Object... variables) {
 		return Common.convert(ofList(path, variables), item -> SimpleComponent.of(item));
 	}
 
@@ -115,7 +113,7 @@ public final class SimpleLang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static List<String> ofList(String path, @Nullable Object... variables) {
+	public static List<String> ofList(String path, Object... variables) {
 		return Arrays.asList(ofArray(path, variables));
 	}
 
@@ -126,7 +124,7 @@ public final class SimpleLang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String[] ofArray(String path, @Nullable Object... variables) {
+	public static String[] ofArray(String path, Object... variables) {
 		return of(path, variables).split("\n");
 	}
 
@@ -137,7 +135,7 @@ public final class SimpleLang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static SimpleComponent ofComponent(String path, @Nullable Object... variables) {
+	public static SimpleComponent ofComponent(String path, Object... variables) {
 		return SimpleComponent.of(of(path, variables));
 	}
 
@@ -183,7 +181,7 @@ public final class SimpleLang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String ofScript(String path, SerializedMap scriptVariables, @Nullable Object... variables) {
+	public static String ofScript(String path, SerializedMap scriptVariables, Object... variables) {
 		String script = of(path, variables);
 		Object result;
 
@@ -209,7 +207,7 @@ public final class SimpleLang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String of(String path, @Nullable Object... variables) {
+	public static String of(String path, Object... variables) {
 		synchronized (instance) {
 			final String key = instance.getStringStrict(path);
 
@@ -220,7 +218,7 @@ public final class SimpleLang extends YamlConfig {
 	/*
 	 * Replace placeholders in the message
 	 */
-	private static String translate(String key, @Nullable Object... variables) {
+	private static String translate(String key, Object... variables) {
 		if (variables != null)
 			for (int i = 0; i < variables.length; i++) {
 				Object variable = variables[i];

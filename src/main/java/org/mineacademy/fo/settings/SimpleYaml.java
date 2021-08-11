@@ -15,7 +15,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConstructor;
 import org.bukkit.configuration.file.YamlRepresenter;
-import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.ReflectionUtil;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -60,7 +59,6 @@ public final class SimpleYaml extends FileConfiguration {
 			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
 	}
 
-	@NotNull
 	@Override
 	public String saveToString() {
 		return this.saveToString(getValues(false));
@@ -84,7 +82,7 @@ public final class SimpleYaml extends FileConfiguration {
 	}
 
 	@Override
-	public void loadFromString(@NotNull String contents) throws InvalidConfigurationException {
+	public void loadFromString(String contents) throws InvalidConfigurationException {
 		Validate.notNull(contents, "Contents cannot be null");
 
 		Map<?, ?> input;
@@ -108,7 +106,7 @@ public final class SimpleYaml extends FileConfiguration {
 		}
 	}
 
-	protected void convertMapsToSections(@NotNull Map<?, ?> input, @NotNull ConfigurationSection section) {
+	protected void convertMapsToSections(Map<?, ?> input, ConfigurationSection section) {
 		for (final Map.Entry<?, ?> entry : input.entrySet()) {
 			final String key = entry.getKey().toString();
 			final Object value = entry.getValue();
@@ -121,8 +119,7 @@ public final class SimpleYaml extends FileConfiguration {
 		}
 	}
 
-	@NotNull
-	protected String parseHeader(@NotNull String input) {
+	protected String parseHeader(String input) {
 		final String[] lines = input.split("\r?\n", -1);
 		final StringBuilder result = new StringBuilder();
 		boolean readingHeader = true;
@@ -151,7 +148,6 @@ public final class SimpleYaml extends FileConfiguration {
 		return result.toString();
 	}
 
-	@NotNull
 	@Override
 	protected String buildHeader() {
 		final String header = options().header();
@@ -203,8 +199,8 @@ public final class SimpleYaml extends FileConfiguration {
 	 * @return Resulting configuration
 	 * @throws IllegalArgumentException Thrown if file is null
 	 */
-	@NotNull
-	public static SimpleYaml loadConfiguration(@NotNull File file) {
+
+	public static SimpleYaml loadConfiguration(File file) {
 		Validate.notNull(file, "File cannot be null");
 
 		final SimpleYaml config = new SimpleYaml();
@@ -232,8 +228,8 @@ public final class SimpleYaml extends FileConfiguration {
 	 * @return resulting configuration
 	 * @throws IllegalArgumentException Thrown if stream is null
 	 */
-	@NotNull
-	public static SimpleYaml loadConfiguration(@NotNull Reader reader) {
+
+	public static SimpleYaml loadConfiguration(Reader reader) {
 		Validate.notNull(reader, "Stream cannot be null");
 
 		final SimpleYaml config = new SimpleYaml();

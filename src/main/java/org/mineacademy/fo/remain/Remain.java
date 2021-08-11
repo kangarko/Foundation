@@ -28,8 +28,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -1267,7 +1265,7 @@ public final class Remain {
 	 * @param en
 	 * @return
 	 */
-	public static String getNMSStatisticName(final Statistic stat, @Nullable final Material mat, @Nullable final EntityType en) {
+	public static String getNMSStatisticName(final Statistic stat, final Material mat, final EntityType en) {
 		final Class<?> craftStatistic = getOBCClass("CraftStatistic");
 		Object nmsStatistic = null;
 

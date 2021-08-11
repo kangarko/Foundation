@@ -1,7 +1,5 @@
 package org.mineacademy.fo.model;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -101,7 +99,7 @@ public final class SimpleEquipment {
 	 * @param material
 	 * @param dropChance
 	 */
-	public void set(final CompEquipmentSlot slot, @Nullable final CompMaterial material, @Nullable final Float dropChance) {
+	public void set(final CompEquipmentSlot slot, final CompMaterial material, final Float dropChance) {
 		set(slot, material.toItem(), dropChance);
 	}
 
@@ -112,7 +110,7 @@ public final class SimpleEquipment {
 	 * @param builder
 	 * @param dropChance
 	 */
-	public void set(final CompEquipmentSlot slot, @Nullable final ItemCreator.ItemCreatorBuilder builder, @Nullable final Float dropChance) {
+	public void set(final CompEquipmentSlot slot, final ItemCreator.ItemCreatorBuilder builder, final Float dropChance) {
 		set(slot, builder.build().make(), dropChance);
 	}
 
@@ -123,7 +121,7 @@ public final class SimpleEquipment {
 	 * @param item
 	 * @param dropChance
 	 */
-	public void set(CompEquipmentSlot slot, @Nullable final ItemStack item, @Nullable final Float dropChance) {
+	public void set(CompEquipmentSlot slot, final ItemStack item, final Float dropChance) {
 		Valid.checkBoolean(item != null || dropChance != null, "Either item or drop chance must be given!");
 
 		if (slot.toString().equals("OFF_HAND") && MinecraftVersion.olderThan(V.v1_9))
