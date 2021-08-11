@@ -252,6 +252,9 @@ public final class PacketUtil {
 			}
 		}
 
+		/*
+		 * Read the chat message in unpacked format from the event
+		 */
 		private String compileChatMessage(PacketEvent event) {
 
 			// Reset
@@ -323,6 +326,9 @@ public final class PacketUtil {
 			return "";
 		}
 
+		/*
+		 * Writes the edited message as JSON format from the event
+		 */
 		private void writeEditedMessage(String message, PacketEvent event) {
 			final StructureModifier<Object> packet = event.getPacket().getModifier();
 
