@@ -116,7 +116,7 @@ public enum CompParticle {
 	 * @param location the location where to spawn
 	 */
 	public final void spawn(final Location location) {
-		spawn(location, null);
+		spawn(location, (Double) null);
 	}
 
 	/**
@@ -151,6 +151,29 @@ public enum CompParticle {
 		}
 	}
 
+	public final void spawnWithMaterial(final Location location, final CompMaterial extra) {
+		if (Remain.hasParticleAPI()) {
+			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
+
+			if (particle != null) {
+				if (MinecraftVersion.atLeast(V.v1_13))
+					if (particle.getDataType() == org.bukkit.block.data.BlockData.class) {
+						final org.bukkit.block.data.BlockData opt = extra.toMaterial().createBlockData(); // GRAVEL
+
+						location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, 0D, opt);
+						return;
+					}
+
+				location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
+			}
+		} else {
+			final ParticleInternals particle = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
+
+			if (particle != null)
+				particle.send(location, extra != null ? extra.getData() : 0F);
+		}
+	}
+
 	/**
 	 * Spawns the particle at the given location with extra material data
 	 *
@@ -165,13 +188,13 @@ public enum CompParticle {
 				if (hasNewMaterials)
 					location.getWorld().spawnParticle(particle, location, 1, data.getMaterial().createBlockData());
 				else
-					location.getWorld().spawnParticle(particle, location, 1, data.getMaterial().getNewData((byte) data.getData()));
+					location.getWorld().spawnParticle(particle, location, 1, data.getMaterial().getNewData(data.getData()));
 
 		} else {
 			final ParticleInternals particle = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
 
 			if (particle != null)
-				particle.sendColor(location, DyeColor.getByWoolData((byte) data.getData()).getColor());
+				particle.sendColor(location, DyeColor.getByWoolData(data.getData()).getColor());
 		}
 	}
 
