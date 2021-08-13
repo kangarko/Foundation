@@ -750,6 +750,16 @@ public final class ReflectionUtil {
 			} catch (final Throwable t) {
 			}
 
+			if (method == null)
+				try {
+					method = enumType.getDeclaredMethod("fromName", String.class);
+
+					if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
+						hasKey = true;
+
+				} catch (final Throwable t) {
+				}
+
 			if (hasKey)
 				return (E) method.invoke(null, name);
 
