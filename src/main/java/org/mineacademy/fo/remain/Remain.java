@@ -1724,10 +1724,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
@@ -1803,6 +1803,61 @@ public final class Remain {
 			en.setCustomNameVisible(true);
 			en.setCustomName(Common.colorize(name));
 		} catch (final NoSuchMethodError er) {
+		}
+	}
+
+	/**
+	 * Calls NMS to find out if the entity is invisible, works for any entity,
+	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static boolean isInvisible(Entity entity) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#isInvisible requires Minecraft 1.4.7 or greater");
+
+		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
+			return ((LivingEntity) entity).isInvisible();
+
+		else {
+			final Object nmsEntity = getHandleEntity(entity);
+
+			return (boolean) ReflectionUtil.invoke("isInvisible", nmsEntity);
+		}
+	}
+
+	/**
+	 * Calls NMS to set invisibility status of any entity,
+	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
+	 *
+	 * @param entity
+	 * @param invisible
+	 */
+	public static void setInvisible(Entity entity, boolean invisible) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#setInvisible requires Minecraft 1.4.7 or greater");
+
+		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
+			((LivingEntity) entity).setInvisible(invisible);
+
+		else {
+
+			// Minimize entity flicker when hiding two ticks later
+			// NOT USED : Potentially expensive for performance and hides the entity equipment which may be used purposefully
+			/*if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_7)) {
+				final Class<?> destroyPacketClass = ReflectionUtil.getNMSClass("PacketPlayOutEntityDestroy");
+				final Object destroyPacket = ReflectionUtil.instantiate(ReflectionUtil.getConstructor(destroyPacketClass, int[].class), new int[] { entity.getEntityId() });
+
+				final double range = 64;
+
+				for (final Entity nearby : entity.getWorld().getNearbyEntities(entity.getLocation(), range, range, range))
+					if (nearby instanceof Player)
+						Remain.sendPacket((Player) nearby, destroyPacket);
+			}*/
+
+			final Object nmsEntity = getHandleEntity(entity);
+
+			// https://www.spigotmc.org/threads/how-do-i-make-an-entity-go-invisible-without-using-potioneffects.321227/
+			Common.runLater(2, () -> ReflectionUtil.invoke("setInvisible", nmsEntity, invisible));
 		}
 	}
 
