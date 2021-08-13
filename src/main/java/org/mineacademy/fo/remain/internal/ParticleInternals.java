@@ -1,7 +1,10 @@
 package org.mineacademy.fo.remain.internal;
 
+import java.lang.reflect.Constructor;
+
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -79,24 +82,46 @@ public enum ParticleInternals {
 
 	//
 
-	private static final Class<?> nmsPacketPlayOutParticle;
+	private static Constructor<?> particlePacketConstructor;
 	private static Class<?> nmsEnumParticle;
 
 	static {
-		nmsPacketPlayOutParticle = MinecraftVersion.atLeast(V.v1_17)
-				? ReflectionUtil.lookupClass("net.minecraft.network.protocol.game.PacketPlayOutWorldParticles")
-				: MinecraftVersion.atLeast(V.v1_7) ? ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "N/A") : null;
+
+		// Minecraft 1.6.4 has no particle packet, MC 1.12+ has native compatibility
+		if (MinecraftVersion.atLeast(V.v1_7) && MinecraftVersion.olderThan(V.v1_12)) {
+
+			final Class<?> particlePacketClass = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "net.minecraft.network.protocol.game.PacketPlayOutWorldParticles");
+
+			try {
+				if (MinecraftVersion.atLeast(V.v1_8)) {
+					nmsEnumParticle = ReflectionUtil.getNMSClass("EnumParticle", "N/A");
+
+					particlePacketConstructor = particlePacketClass
+							.getConstructor(nmsEnumParticle, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class);
+				}
+
+				else {
+					particlePacketConstructor = particlePacketClass
+							.getConstructor(String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE);
+				}
+
+			} catch (final ReflectiveOperationException ex) {
+				// Fail silently
+
+				// TODO remove
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	//
 
 	private String name;
-	private String enumValue;
 	private boolean hasColor;
 
 	private ParticleInternals(final String particleName, final String enumValue, final boolean hasColor) {
 		this.name = particleName;
-		this.enumValue = enumValue;
+		//this.enumValue = enumValue;
 		this.hasColor = hasColor;
 	}
 
@@ -146,19 +171,24 @@ public enum ParticleInternals {
 	 * @param count
 	 * @param extra
 	 */
+	@SuppressWarnings("rawtypes")
 	public void send(final Player player, final Location location, final float offsetX, final float offsetY, final float offsetZ, final float speed, final int count, int... extra) {
 		if (MinecraftVersion.olderThan(V.v1_7))
 			return;
 
+		if (MinecraftVersion.atLeast(V.v1_12)) {
+			player.spawnParticle(Particle.valueOf(this.name()), location, count, offsetX, offsetY, offsetZ, 1, null);
+
+			return;
+		}
+
 		final Object packet;
 
-		if (MinecraftVersion.equals(V.v1_8)) {
-			if (nmsEnumParticle == null)
-				nmsEnumParticle = ReflectionUtil.getNMSClass("EnumParticle", "N/A");
-
+		if (MinecraftVersion.atLeast(V.v1_8)) {
 			if (this == ParticleInternals.BLOCK_CRACK) {
 				int id = 0;
 				int data = 0;
+
 				if (extra.length > 0)
 					id = extra[0];
 
@@ -169,9 +199,22 @@ public enum ParticleInternals {
 			}
 
 			try {
-				packet = ParticleInternals.nmsPacketPlayOutParticle.getConstructor(ParticleInternals.nmsEnumParticle, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class).newInstance(getEnum(ParticleInternals.nmsEnumParticle.getName() + "." + (this.enumValue != null ? this.enumValue : this.name().toUpperCase())), true, (float) location.getX(), (float) location.getY(),
-						(float) location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra);
+				packet = particlePacketConstructor.newInstance(
+						ReflectionUtil.lookupEnumSilent((Class<? extends Enum>) nmsEnumParticle, this.name()),
+						true,
+						(float) location.getX(),
+						(float) location.getY(),
+						(float) location.getZ(),
+						offsetX,
+						offsetY,
+						offsetZ,
+						speed,
+						count,
+						extra);
+
 			} catch (final ReflectiveOperationException ex) {
+				ex.printStackTrace();
+
 				return;
 			}
 
@@ -195,39 +238,25 @@ public enum ParticleInternals {
 			}
 
 			try {
-				packet = ParticleInternals.nmsPacketPlayOutParticle.getConstructor(String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE).newInstance(name, (float) location.getX(), (float) location.getY(), (float) location.getZ(), offsetX, offsetY, offsetZ, speed, count);
+				packet = particlePacketConstructor.newInstance(
+						name,
+						(float) location.getX(),
+						(float) location.getY(),
+						(float) location.getZ(),
+						offsetX,
+						offsetY,
+						offsetZ,
+						speed,
+						count);
+
 			} catch (final ReflectiveOperationException ex) {
+				ex.printStackTrace();
+
 				return;
 			}
 		}
 
 		Remain.sendPacket(player, packet);
-	}
-
-	/**
-	 * Advanced: Attempts to find an enum by its full qualified name
-	 *
-	 * @param enumFullName
-	 * @return
-	 */
-	@SuppressWarnings("rawtypes")
-	private static Enum<?> getEnum(final String enumFullName) {
-		final String[] x = enumFullName.split("\\.(?=[^\\.]+$)");
-
-		if (x.length == 2) {
-			final String enumClassName = x[0];
-			final String enumName = x[1];
-
-			try {
-				final Class<Enum> cl = (Class<Enum>) Class.forName(enumClassName);
-
-				return Enum.valueOf(cl, enumName);
-			} catch (final ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return null;
 	}
 
 	/**
@@ -249,16 +278,12 @@ public enum ParticleInternals {
 	 * @param color
 	 */
 	public void sendColor(final Player player, final Location location, final Color color) {
-		if (!this.hasColor)
-			return;
+		if (this.hasColor) {
+			final float red = color.getRed() == 0 ? Float.MIN_VALUE : color.getRed() / 255F;
+			final float green = color.getGreen() / 255F;
+			final float blue = color.getBlue() / 255F;
 
-		this.send(player, location, this.getColor(color.getRed()), this.getColor(color.getGreen()), this.getColor(color.getBlue()), 1.0f, 0);
-	}
-
-	private float getColor(float value) {
-		if (value <= 0.0f)
-			value = -1.0f;
-
-		return value / 255.0f;
+			this.send(player, location, red, green, blue, 1.0f, 0);
+		}
 	}
 }

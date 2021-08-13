@@ -1,10 +1,12 @@
 package org.mineacademy.fo.remain;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.mineacademy.fo.MinecraftVersion;
@@ -151,29 +153,6 @@ public enum CompParticle {
 		}
 	}
 
-	public final void spawnWithMaterial(final Location location, final CompMaterial extra) {
-		if (Remain.hasParticleAPI()) {
-			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
-
-			if (particle != null) {
-				if (MinecraftVersion.atLeast(V.v1_13))
-					if (particle.getDataType() == org.bukkit.block.data.BlockData.class) {
-						final org.bukkit.block.data.BlockData opt = extra.toMaterial().createBlockData(); // GRAVEL
-
-						location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, 0D, opt);
-						return;
-					}
-
-				location.getWorld().spawnParticle(particle, location, 1, 0D, 0D, 0D, extra != null ? extra : 0D);
-			}
-		} else {
-			final ParticleInternals particle = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
-
-			if (particle != null)
-				particle.send(location, extra != null ? extra.getData() : 0F);
-		}
-	}
-
 	/**
 	 * Spawns the particle at the given location with extra material data
 	 *
@@ -195,6 +174,22 @@ public enum CompParticle {
 
 			if (particle != null)
 				particle.sendColor(location, DyeColor.getByWoolData(data.getData()).getColor());
+		}
+	}
+
+	public final <T> void spawnWithColor(Location location, double speed, Color color, double particleSize) {
+
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			final org.bukkit.Particle particle = ReflectionUtil.lookupEnumSilent(org.bukkit.Particle.class, toString());
+
+			if (particle != null)
+				location.getWorld().spawnParticle(particle, location, 1, 0F, 0F, 0F, speed, new DustOptions(color, (float) particleSize));
+
+		} else {
+			final ParticleInternals nmsParticle = ReflectionUtil.lookupEnumSilent(ParticleInternals.class, toString());
+
+			if (nmsParticle != null)
+				nmsParticle.sendColor(location, color);
 		}
 	}
 
