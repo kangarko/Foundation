@@ -59,6 +59,7 @@ import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
+import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -293,6 +294,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Load legacy permanent metadata store
 			CompMetadata.MetadataFile.getInstance();
+
+			SimpleHologram.init();
 
 			// Register main command if it is set
 			if (getMainCommand() != null) {
@@ -789,6 +792,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			CompMetadata.MetadataFile.onReload();
 
 			FoundationPacketListener.addNativeListener();
+
+			SimpleHologram.init();
 
 			Lang.reloadFile();
 
