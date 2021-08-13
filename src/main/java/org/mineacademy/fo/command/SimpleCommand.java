@@ -730,6 +730,7 @@ public abstract class SimpleCommand extends Command {
 				found = null;
 
 		} catch (final Throwable t) {
+			// Not found, pass through below to error out
 		}
 
 		checkNotNull(found, falseMessage.replace("{enum}", name).replace("{available}", Common.join(enumType.getEnumConstants())));
