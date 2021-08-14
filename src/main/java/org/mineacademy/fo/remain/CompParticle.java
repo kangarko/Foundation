@@ -187,10 +187,12 @@ public enum CompParticle {
 				this.packetConstructor = null;
 			}
 
-			if (MinecraftVersion.atLeast(V.v1_12))
-				this.bukkitEnumParticle = ReflectionUtil.lookupEnumSilent(ReflectionUtil.lookupClass("org.bukkit.Particle"), this.name());
+			if (MinecraftVersion.atLeast(V.v1_12)) {
+				final Class<Enum> particleClass = ReflectionUtil.lookupClass("org.bukkit.Particle");
 
-			else
+				this.bukkitEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
+
+			} else
 				this.bukkitEnumParticle = null;
 
 		} catch (final Throwable t) {
