@@ -141,7 +141,7 @@ public final class VisualizedRegion extends Region {
 						final Location viewerLocation = viewer.getLocation();
 
 						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
-							particle.spawnFor(viewer, location);
+							particle.spawn(viewer, location);
 					}
 
 			}

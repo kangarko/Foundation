@@ -148,7 +148,7 @@ public abstract class SimpleHologram {
 			final Object extra = tuple.getValue();
 
 			if (extra instanceof CompMaterial)
-				particle.spawnWithData(this.getLocation(), (CompMaterial) extra);
+				particle.spawn(this.getLocation(), (CompMaterial) extra);
 
 			else if (extra instanceof Double)
 				particle.spawn(this.getLocation(), (double) extra);
