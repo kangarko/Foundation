@@ -187,7 +187,7 @@ public enum CompParticle {
 				this.packetConstructor = null;
 			}
 
-			if (Remain.hasParticleAPI())
+			if (MinecraftVersion.atLeast(V.v1_12))
 				this.bukkitEnumParticle = ReflectionUtil.lookupEnumSilent(ReflectionUtil.lookupClass("org.bukkit.Particle"), this.name());
 
 			else
