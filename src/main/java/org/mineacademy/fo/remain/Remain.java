@@ -90,7 +90,6 @@ import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
-import org.mineacademy.fo.remain.internal.ParticleInternals;
 import org.mineacademy.fo.remain.nbt.NBTInternals;
 import org.mineacademy.fo.settings.SimpleYaml;
 
@@ -245,7 +244,7 @@ public final class Remain {
 			if (MinecraftVersion.newerThan(V.v1_7))
 				NBTInternals.checkCompatible();
 
-			ParticleInternals.ANGRY_VILLAGER.getClass();
+			CompParticle.CRIT.getClass();
 
 			for (final Material bukkitMaterial : Material.values())
 				CompMaterial.fromString(bukkitMaterial.toString());
@@ -1724,10 +1723,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -1846,9 +1845,9 @@ public final class Remain {
 			/*if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_7)) {
 				final Class<?> destroyPacketClass = ReflectionUtil.getNMSClass("PacketPlayOutEntityDestroy");
 				final Object destroyPacket = ReflectionUtil.instantiate(ReflectionUtil.getConstructor(destroyPacketClass, int[].class), new int[] { entity.getEntityId() });
-
+			
 				final double range = 64;
-
+			
 				for (final Entity nearby : entity.getWorld().getNearbyEntities(entity.getLocation(), range, range, range))
 					if (nearby instanceof Player)
 						Remain.sendPacket((Player) nearby, destroyPacket);
