@@ -368,11 +368,14 @@ public class SimpleDatabase {
 			//Common.log("Updated " + processedCount + " database entries.");
 
 		} catch (final Throwable t) {
-			sqls = new ArrayList<>(sqls);
+			final List<String> errorLog = new ArrayList<>();
 
-			sqls.add(Common.consoleLine());
-			sqls.add(" [" + TimeUtil.getFormattedDateShort() + "] Encountered " + t + " trying to save batch sql, please contact the plugin author with this file content");
-			sqls.add(Common.consoleLine());
+			errorLog.add(Common.consoleLine());
+			errorLog.add(" [" + TimeUtil.getFormattedDateShort() + "] Failed to save batch sql, please contact the plugin author with this file content: " + t);
+			errorLog.add(Common.consoleLine());
+
+			for (final String statement : sqls)
+				errorLog.add(replaceVariables(statement));
 
 			FileUtil.write("sql-error.log", sqls);
 
