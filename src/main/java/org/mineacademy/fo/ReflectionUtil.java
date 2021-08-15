@@ -56,7 +56,7 @@ public final class ReflectionUtil {
 	 * plugin loads even on old MC versions where those types are non existent
 	 * but are present in plugin's default configuration files
 	 */
-	private static final Map<String, MinecraftVersion.V> legacyEntityTypes;
+	private static final Map<String, V> legacyEntityTypes;
 
 	/**
 	 * Reflection utilizes a simple cache for fastest performance
@@ -581,7 +581,7 @@ public final class ReflectionUtil {
 
 		} catch (final MissingEnumException ex) {
 			if (enumType == EntityType.class) {
-				final MinecraftVersion.V since = legacyEntityTypes.get(name.toUpperCase().replace(" ", "_"));
+				final V since = legacyEntityTypes.get(name.toUpperCase().replace(" ", "_"));
 
 				if (since != null && MinecraftVersion.olderThan(since))
 					return null;
@@ -750,7 +750,8 @@ public final class ReflectionUtil {
 			} catch (final Throwable t) {
 			}
 
-			if (method == null)
+			// Only invoke fromName from non-Bukkit API since this gives unexpected results
+			if (method == null && !enumType.getName().contains("org.bukkit"))
 				try {
 					method = enumType.getDeclaredMethod("fromName", String.class);
 
@@ -875,50 +876,55 @@ public final class ReflectionUtil {
 	}
 
 	static {
-		final Map<String, MinecraftVersion.V> map = new HashMap<>();
+		final Map<String, V> map = new HashMap<>();
 
-		map.put("TIPPED_ARROW", MinecraftVersion.V.v1_9);
-		map.put("SPECTRAL_ARROW", MinecraftVersion.V.v1_9);
-		map.put("SHULKER_BULLET", MinecraftVersion.V.v1_9);
-		map.put("DRAGON_FIREBALL", MinecraftVersion.V.v1_9);
-		map.put("SHULKER", MinecraftVersion.V.v1_9);
-		map.put("AREA_EFFECT_CLOUD", MinecraftVersion.V.v1_9);
-		map.put("LINGERING_POTION", MinecraftVersion.V.v1_9);
-		map.put("POLAR_BEAR", MinecraftVersion.V.v1_10);
-		map.put("HUSK", MinecraftVersion.V.v1_10);
-		map.put("ELDER_GUARDIAN", MinecraftVersion.V.v1_11);
-		map.put("WITHER_SKELETON", MinecraftVersion.V.v1_11);
-		map.put("STRAY", MinecraftVersion.V.v1_11);
-		map.put("DONKEY", MinecraftVersion.V.v1_11);
-		map.put("MULE", MinecraftVersion.V.v1_11);
-		map.put("EVOKER_FANGS", MinecraftVersion.V.v1_11);
-		map.put("EVOKER", MinecraftVersion.V.v1_11);
-		map.put("VEX", MinecraftVersion.V.v1_11);
-		map.put("VINDICATOR", MinecraftVersion.V.v1_11);
-		map.put("ILLUSIONER", MinecraftVersion.V.v1_12);
-		map.put("PARROT", MinecraftVersion.V.v1_12);
-		map.put("TURTLE", MinecraftVersion.V.v1_13);
-		map.put("PHANTOM", MinecraftVersion.V.v1_13);
-		map.put("TRIDENT", MinecraftVersion.V.v1_13);
-		map.put("COD", MinecraftVersion.V.v1_13);
-		map.put("SALMON", MinecraftVersion.V.v1_13);
-		map.put("PUFFERFISH", MinecraftVersion.V.v1_13);
-		map.put("TROPICAL_FISH", MinecraftVersion.V.v1_13);
-		map.put("DROWNED", MinecraftVersion.V.v1_13);
-		map.put("DOLPHIN", MinecraftVersion.V.v1_13);
-		map.put("CAT", MinecraftVersion.V.v1_14);
-		map.put("PANDA", MinecraftVersion.V.v1_14);
-		map.put("PILLAGER", MinecraftVersion.V.v1_14);
-		map.put("RAVAGER", MinecraftVersion.V.v1_14);
-		map.put("TRADER_LLAMA", MinecraftVersion.V.v1_14);
-		map.put("WANDERING_TRADER", MinecraftVersion.V.v1_14);
-		map.put("FOX", MinecraftVersion.V.v1_14);
-		map.put("BEE", MinecraftVersion.V.v1_15);
-		map.put("HOGLIN", MinecraftVersion.V.v1_16);
-		map.put("PIGLIN", MinecraftVersion.V.v1_16);
-		map.put("STRIDER", MinecraftVersion.V.v1_16);
-		map.put("ZOGLIN", MinecraftVersion.V.v1_16);
-		map.put("PIGLIN_BRUTE", MinecraftVersion.V.v1_16);
+		map.put("TIPPED_ARROW", V.v1_9);
+		map.put("SPECTRAL_ARROW", V.v1_9);
+		map.put("SHULKER_BULLET", V.v1_9);
+		map.put("DRAGON_FIREBALL", V.v1_9);
+		map.put("SHULKER", V.v1_9);
+		map.put("AREA_EFFECT_CLOUD", V.v1_9);
+		map.put("LINGERING_POTION", V.v1_9);
+		map.put("POLAR_BEAR", V.v1_10);
+		map.put("HUSK", V.v1_10);
+		map.put("ELDER_GUARDIAN", V.v1_11);
+		map.put("WITHER_SKELETON", V.v1_11);
+		map.put("STRAY", V.v1_11);
+		map.put("DONKEY", V.v1_11);
+		map.put("MULE", V.v1_11);
+		map.put("EVOKER_FANGS", V.v1_11);
+		map.put("EVOKER", V.v1_11);
+		map.put("VEX", V.v1_11);
+		map.put("VINDICATOR", V.v1_11);
+		map.put("ILLUSIONER", V.v1_12);
+		map.put("PARROT", V.v1_12);
+		map.put("TURTLE", V.v1_13);
+		map.put("PHANTOM", V.v1_13);
+		map.put("TRIDENT", V.v1_13);
+		map.put("COD", V.v1_13);
+		map.put("SALMON", V.v1_13);
+		map.put("PUFFERFISH", V.v1_13);
+		map.put("TROPICAL_FISH", V.v1_13);
+		map.put("DROWNED", V.v1_13);
+		map.put("DOLPHIN", V.v1_13);
+		map.put("CAT", V.v1_14);
+		map.put("PANDA", V.v1_14);
+		map.put("PILLAGER", V.v1_14);
+		map.put("RAVAGER", V.v1_14);
+		map.put("TRADER_LLAMA", V.v1_14);
+		map.put("WANDERING_TRADER", V.v1_14);
+		map.put("FOX", V.v1_14);
+		map.put("BEE", V.v1_15);
+		map.put("HOGLIN", V.v1_16);
+		map.put("PIGLIN", V.v1_16);
+		map.put("STRIDER", V.v1_16);
+		map.put("ZOGLIN", V.v1_16);
+		map.put("PIGLIN_BRUTE", V.v1_16);
+		map.put("AXOLOTL", V.v1_17);
+		map.put("GLOW_ITEM_FRAME", V.v1_17);
+		map.put("GLOW_SQUID", V.v1_17);
+		map.put("GOAT", V.v1_17);
+		map.put("MARKER", V.v1_17);
 
 		legacyEntityTypes = map;
 	}
