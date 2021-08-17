@@ -290,8 +290,12 @@ public enum CompParticle {
 	public void spawn(Location location, double offsetX, double offsetY, double offsetZ, double speed, int count, double extra, int... data) {
 
 		// Minecraft 1.12 and up
-		if (this.bukkitEnumParticle != null && this != REDSTONE)
-			location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
+		if (this.bukkitEnumParticle != null) {
+			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
+				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+			else
+				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
+		}
 
 		else if (this.packetConstructor != null) {
 			final Object packet = this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data);
