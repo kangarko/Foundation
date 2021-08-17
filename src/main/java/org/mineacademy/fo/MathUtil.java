@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.bukkit.util.Vector;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -223,6 +225,67 @@ public final class MathUtil {
 			sum += val;
 
 		return formatTwoDigitsD(sum / values.length);
+	}
+
+	// ----------------------------------------------------------------------------------------------------
+	// Vectors
+	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Rotates the given vector by the given amount of angles (in degrees)
+	 * Implementing a cache or precalculating this is recommended for best performance.
+	 *
+	 * @param vector
+	 * @param angle
+	 */
+	public static Vector rotateAroundAxisX(Vector v, double angle) {
+		angle = Math.toRadians(angle);
+
+		final double cos = Math.cos(angle);
+		final double sin = Math.sin(angle);
+		final double y = v.getY() * cos - v.getZ() * sin;
+		final double z = v.getY() * sin + v.getZ() * cos;
+
+		return v.setY(y).setZ(z);
+	}
+
+	/**
+	 * Rotates the given vector by the given amount of angles (in degrees)
+	 * Implementing a cache or precalculating this is recommended for best performance.
+	 *
+	 * @param v
+	 * @param angle
+	 * @return
+	 */
+	public static Vector rotateAroundAxisY(Vector v, double angle) {
+		angle = -angle;
+		angle = Math.toRadians(angle);
+
+		final double cos = Math.cos(angle);
+		final double sin = Math.sin(angle);
+		final double x = v.getX() * cos + v.getZ() * sin;
+		final double z = v.getX() * -sin + v.getZ() * cos;
+
+		return v.setX(x).setZ(z);
+	}
+
+	/**
+	 * Rotates the given vector by the given amount of angles (in degrees)
+	 * Implementing a cache or precalculating this is recommended for best performance.
+	 *
+	 * @param v
+	 * @param angle
+	 * @return
+	 */
+	public static Vector rotateAroundAxisZ(Vector v, double angle) {
+		angle = Math.toRadians(angle);
+
+		final double cos = Math.cos(angle);
+		final double sin = Math.sin(angle);
+		final double x = v.getX() * cos - v.getY() * sin;
+		final double y = v.getX() * sin + v.getY() * cos;
+
+		return v.setX(x).setY(y);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
