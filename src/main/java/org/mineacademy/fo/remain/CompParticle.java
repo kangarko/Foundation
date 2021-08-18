@@ -165,19 +165,22 @@ public enum CompParticle {
 
 			// Minecraft <1.7 lacks that class, Minecraft >1.13 already has native API
 			if (MinecraftVersion.atLeast(V.v1_7) && MinecraftVersion.olderThan(V.v1_13)) {
-				final Class<? extends Enum> particleClass = (Class<? extends Enum>) ReflectionUtil.getNMSClass("EnumParticle");
+
 				final Class<?> packetClass = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "net.minecraft.network.protocol.game.PacketPlayOutWorldParticles");
 
-				this.nmsEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
-
-				// Unsupported on current MC version
-				if (this.nmsEnumParticle == null)
-					this.packetConstructor = null;
+				if (MinecraftVersion.equals(V.v1_7)) {
+					this.nmsEnumParticle = null;
+					this.packetConstructor = ReflectionUtil.getConstructor(packetClass, String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE);
+				}
 
 				else {
-					if (MinecraftVersion.equals(V.v1_7))
-						this.packetConstructor = ReflectionUtil.getConstructor(packetClass, String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE);
+					final Class<? extends Enum> particleClass = (Class<? extends Enum>) ReflectionUtil.getNMSClass("EnumParticle");
 
+					this.nmsEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
+
+					// MC 1.8.8 or newer but lacks this given particle type
+					if (this.nmsEnumParticle == null)
+						this.packetConstructor = null;
 					else
 						this.packetConstructor = ReflectionUtil.getConstructor(packetClass, particleClass, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class);
 				}
@@ -221,7 +224,7 @@ public enum CompParticle {
 			final float green = color.getGreen() / 255F;
 			final float blue = color.getBlue() / 255F;
 
-			this.spawn(location, red, green, blue, 1, 0, 1);
+			this.spawn(location, red, green, blue, 1, 0, 1, null);
 		}
 	}
 
