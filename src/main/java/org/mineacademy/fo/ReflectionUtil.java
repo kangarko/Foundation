@@ -115,6 +115,17 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Return a constructor for the given NMS class name (such as EntityZombie)
+	 *
+	 * @param nmsClassPath
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getConstructorNMS(@NonNull final String nmsClassPath, final Class<?>... params) {
+		return getConstructor(getNMSClass(nmsClassPath), params);
+	}
+
+	/**
 	 * Return a constructor for the given fully qualified class path such as
 	 * org.mineacademy.boss.BossPlugin
 	 *
@@ -442,6 +453,18 @@ public final class ReflectionUtil {
 		} catch (final ReflectiveOperationException ex) {
 			throw new ReflectionException(ex, "Could not make instance of: " + clazz);
 		}
+	}
+
+	/**
+	 * Makes a new instanceo of the given NMS class with arguments,
+	 * NB: Does not work on Minecraft 1.17+
+	 *
+	 * @param nmsPath
+	 * @param params
+	 * @return
+	 */
+	public static <T> T instantiateNMS(final String nmsPath, final Object... params) {
+		return (T) instantiate(getNMSClass(nmsPath), params);
 	}
 
 	/**

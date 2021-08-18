@@ -42,6 +42,7 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
@@ -1073,6 +1074,55 @@ public final class Remain {
 	 */
 	public static void removeBar(final Player player) {
 		BossBarInternals.removeBar(player);
+	}
+
+	/**
+	 * Broadcast a chest open animation at the given block,
+	 * the block must be a chest!
+	 *
+	 * @param block
+	 */
+	public static void sendChestClose(Block block) {
+		sendChestAction(block, 0);
+	}
+
+	/**
+	 * Broadcast a chest open animation at the given block,
+	 * the block must be a chest!
+	 *
+	 * @param location
+	 */
+	public static void sendChestOpen(Block block) {
+		sendChestAction(block, 1);
+	}
+
+	/*
+	 * A helper method
+	 */
+	private static void sendChestAction(Block block, int action) {
+
+		final BlockState state = block.getState();
+		Valid.checkBoolean(state instanceof Chest, "You can only send chest action packet for chests not " + block);
+
+		try {
+			if (action == 1)
+				((Chest) state).open();
+			else
+				((Chest) state).close();
+
+		} catch (final NoSuchMethodError t) {
+			final Location location = block.getLocation();
+
+			final Class<?> blockClass = getNMSClass("Block");
+			final Class<?> blocks = getNMSClass("Blocks");
+
+			final Object position = ReflectionUtil.instantiate(ReflectionUtil.getConstructorNMS("BlockPosition", double.class, double.class, double.class), location.getX(), location.getY(), location.getZ());
+			final Object packet = ReflectionUtil.instantiate(ReflectionUtil.getConstructorNMS("PacketPlayOutBlockAction",
+					ReflectionUtil.getNMSClass("BlockPosition"), blockClass, int.class, int.class), position, ReflectionUtil.getStaticFieldContent(blocks, "CHEST"), 1, action);
+
+			for (final Player player : getOnlinePlayers())
+				sendPacket(player, packet);
+		}
 	}
 
 	/**
