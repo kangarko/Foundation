@@ -155,12 +155,12 @@ public abstract class YamlStaticConfig {
 			for (final Iterator<Class<? extends YamlStaticConfig>> it = foundClasses.iterator(); it.hasNext();) {
 				final Class<? extends YamlStaticConfig> settingsClass = it.next();
 
-				if (settingsClass.equals(SimpleSettings.class))
+				if (settingsClass.equals(SimpleSettings.class) || settingsClass.equals(SimpleLocalization.class))
 					it.remove();
 			}
 		}
 
-		Valid.checkBoolean(foundClasses.size() == 1, "Cannot have multiple classes in your plugin that extend " + classToPick);
+		Valid.checkBoolean(foundClasses.size() == 1, "Cannot have multiple classes in your plugin that extend " + classToPick + ", found: " + foundClasses);
 		manuallyLoadedClasses.add(foundClasses.get(0));
 
 		return manuallyLoadedClasses;
