@@ -25,6 +25,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.event.MenuOpenEvent;
+import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
@@ -598,7 +599,7 @@ public abstract class Menu {
 			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle(), titleAnimationDurationTicks);
 	}
 
-	protected final void animate(int periodTicks, Runnable task) {
+	protected final void animate(int periodTicks, MenuRunnable task) {
 		Common.runTimer(2, periodTicks, this.wrapAnimation(task));
 	}
 
@@ -609,14 +610,14 @@ public abstract class Menu {
 	 * @param periodTicks
 	 * @param task
 	 */
-	protected final void animateAsync(int periodTicks, Runnable task) {
+	protected final void animateAsync(int periodTicks, MenuRunnable task) {
 		Common.runTimerAsync(2, periodTicks, this.wrapAnimation(task));
 	}
 
 	/*
 	 * Helper method to create a bukkit runnable
 	 */
-	private BukkitRunnable wrapAnimation(Runnable task) {
+	private BukkitRunnable wrapAnimation(MenuRunnable task) {
 		return new BukkitRunnable() {
 
 			@Override
@@ -624,14 +625,32 @@ public abstract class Menu {
 
 				if (Menu.this.closed) {
 					this.cancel();
-					System.out.println("@animation stopped");
 
 					return;
 				}
 
-				task.run();
+				try {
+					task.run();
+
+				} catch (final EventHandledException ex) {
+					this.cancel();
+				}
 			}
 		};
+	}
+
+	/**
+	 * A special wrapper for animating menus
+	 */
+	@FunctionalInterface
+	public interface MenuRunnable extends Runnable {
+
+		/**
+		 * Cancel the menu animation
+		 */
+		default void cancel() {
+			throw new EventHandledException();
+		}
 	}
 
 	// --------------------------------------------------------------------------------
