@@ -119,7 +119,7 @@ public final class YamlComments {
 
 			backupConfig.save(backupFile);
 
-			Common.log("&cWarning: &fThe following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
+			Common.warning("The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
 		}
 
 		final DumperOptions dumperOptions = new DumperOptions();

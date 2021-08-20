@@ -153,6 +153,7 @@ public final class HookManager {
 	 * Detect various plugins and load their methods into this library so you can use it later
 	 */
 	public static void loadDependencies() {
+
 		if (Common.doesPluginExist("AuthMe"))
 			authMeHook = new AuthMeHook();
 
@@ -206,7 +207,7 @@ public final class HookManager {
 					factionsHook = new FactionsMassive();
 
 				} else
-					Common.log("&cWarning: &fRecognized MCore Factions, but not hooked! Check if you have the latest version!");
+					Common.warning("Recognized MCore Factions, but not hooked! Check if you have the latest version!");
 
 			}
 		}
@@ -232,7 +233,7 @@ public final class HookManager {
 			if (ver.startsWith("2."))
 				mcmmoHook = new McMMOHook();
 			else
-				Common.log("&cWarning: &fCould not hook into mcMMO, version 2.x required, you have " + ver);
+				Common.warning("Could not hook into mcMMO, version 2.x required, you have " + ver);
 		}
 
 		if (Common.doesPluginExist("Multiverse-Core"))
@@ -256,7 +257,7 @@ public final class HookManager {
 			if (ver.startsWith("6.") || ver.startsWith("5.") || ver.startsWith("3."))
 				plotSquaredHook = new PlotSquaredHook();
 			else
-				Common.log("&cWarning: &fCould not hook into PlotSquared, version 3.x, 5.x or 6.x required, you have " + ver);
+				Common.warning("Could not hook into PlotSquared, version 3.x, 5.x or 6.x required, you have " + ver);
 		}
 
 		if (Common.doesPluginExist("ProtocolLib")) {
@@ -2838,7 +2839,7 @@ class McMMOHook {
 
 		} catch (final Throwable throwable) {
 			if (!errorLogged) {
-				Common.log("&cWarning: &fFailed getting mcMMO party chat for " + player.getName() + " due to error. Returning null."
+				Common.warning("Failed getting mcMMO party chat for " + player.getName() + " due to error. Returning null."
 						+ " Ensure you have the latest mcMMO version, if so, contact plugin authors to update the integration. Error was: " + throwable);
 
 				errorLogged = true;
@@ -2861,7 +2862,7 @@ class McMMOHook {
 
 		} catch (final Throwable throwable) {
 			if (!errorLogged) {
-				Common.log("&cWarning: &fFailed getting mcMMO party recipients for " + bukkitPlayer.getName() + " due to error. Returning null."
+				Common.warning("Failed getting mcMMO party recipients for " + bukkitPlayer.getName() + " due to error. Returning null."
 						+ " Ensure you have the latest mcMMO version, if so, contact plugin authors to update the integration. Error was: " + throwable);
 
 				errorLogged = true;
