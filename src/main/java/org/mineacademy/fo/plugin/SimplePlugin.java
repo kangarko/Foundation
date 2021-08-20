@@ -260,6 +260,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Inject server-name to newer MC versions that lack it
 		Remain.injectServerName();
 
+		// Load our dependency system
+		try {
+			HookManager.loadDependencies();
+
+		} catch (final Throwable throwable) {
+			Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
+		}
+
 		// --------------------------------------------
 		// Call the main pre start method
 		// --------------------------------------------
@@ -280,14 +288,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Register classes
 			checkSingletons();
-
-			// Load our dependency system
-			try {
-				HookManager.loadDependencies();
-
-			} catch (final Throwable throwable) {
-				Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
-			}
 
 			if (!isEnabled || !isEnabled())
 				return;

@@ -432,10 +432,10 @@ public final class SimpleComponent implements ConfigSerializable {
 				final String legacy = Common.colorize(component.toLegacyText());
 
 				if (legacy.length() + 1 >= Short.MAX_VALUE)
-					Common.log("Warning: JSON Message to " + receiver.getName() + " was too large and could not be sent: '" + legacy + "'");
+					Common.warning("JSON Message to " + receiver.getName() + " was too large and could not be sent: '" + legacy + "'");
 
 				else {
-					Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: '" + legacy + "'");
+					Common.warning("JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: '" + legacy + "'");
 
 					receiver.sendMessage(legacy);
 				}

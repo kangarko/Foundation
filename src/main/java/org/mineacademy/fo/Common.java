@@ -506,7 +506,7 @@ public final class Common {
 				if (MinecraftVersion.olderThan(V.v1_9) && toSend.length() + 1 >= Short.MAX_VALUE) {
 					toSend = toSend.substring(0, Short.MAX_VALUE / 2);
 
-					Common.log("Warning: Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
+					Common.warning("Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
 				}
 
 				// Make player engaged in a server conversation still receive the message
@@ -1097,6 +1097,7 @@ public final class Common {
 		for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins())
 			if (otherPlugin.getName().equals(pluginName)) {
 				lookup = otherPlugin;
+
 				break;
 			}
 
@@ -1231,6 +1232,16 @@ public final class Common {
 		}
 
 		return String.format(format, args);
+	}
+
+	/**
+	 * A dummy helper method adding "&cWarning: &f" to the given message
+	 * and logging it.
+	 *
+	 * @param message
+	 */
+	public static void warning(String message) {
+		log("&cWarning: &f" + message);
 	}
 
 	/**

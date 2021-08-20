@@ -368,14 +368,6 @@ public final class Remain {
 				hasItemMeta = false;
 			}
 
-			// Initialize legacy material data now to avoid future lag
-			if (MinecraftVersion.atLeast(V.v1_16))
-				try {
-					Bukkit.getUnsafe().fromLegacy(Material.AIR);
-				} catch (final Throwable t) {
-					// Silence
-				}
-
 		} catch (final ReflectiveOperationException ex) {
 			throw new UnsupportedOperationException("Failed to set up reflection, " + SimplePlugin.getNamed() + " won't work properly", ex);
 		}
