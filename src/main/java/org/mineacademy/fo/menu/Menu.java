@@ -664,7 +664,7 @@ public abstract class Menu {
 	 * @return the item, or null if no icon at the given slot (default)
 	 */
 	public ItemStack getItemAt(final int slot) {
-		return null;
+		return NO_ITEM;
 	}
 
 	/**
