@@ -2401,7 +2401,7 @@ public final class Remain {
 			final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
 			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
-				Common.log("&eWarning: Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
+				Common.warning("Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
 						" It has been moved there and you can now delete this key from settings.yml if it was not deleted already.");
 
 				previousName = previousNameRaw;
