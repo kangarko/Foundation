@@ -344,15 +344,9 @@ public final class BossBarInternals implements Listener {
 		if (dragon instanceof NMSDragon_v1_9)
 			((NMSDragon_v1_9) dragon).addPlayer(player);
 
-		else {
+		else
 			Remain.sendPacket(player, dragon.getSpawnPacket());
 
-			Common.runLater(20, () -> {
-				Remain.setInvisible(dragon.getNMSEntity(), true);
-
-				System.out.println("made invisible: " + dragon.getNMSEntity());
-			});
-		}
 		this.players.put(player.getUniqueId(), dragon);
 
 		return dragon;
