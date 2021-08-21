@@ -10,11 +10,11 @@ import org.bukkit.entity.Player;
 /**
  * Represents the native boss bar api for Minecraft 1.9 and newer
  */
-class v1_9Native extends EnderDragonEntity {
+class NMSDragon_v1_9 extends NMSDragon {
 
 	private final BossBar bar;
 
-	public v1_9Native(String name, Location loc) {
+	public NMSDragon_v1_9(String name, Location loc) {
 		super(name, loc);
 
 		bar = Bukkit.createBossBar(name, BarColor.PINK, BarStyle.SOLID);
@@ -64,6 +64,11 @@ class v1_9Native extends EnderDragonEntity {
 
 	@Override
 	public Object getWatcher() {
+		return null;
+	}
+
+	@Override
+	Object getNMSEntity() {
 		return null;
 	}
 }

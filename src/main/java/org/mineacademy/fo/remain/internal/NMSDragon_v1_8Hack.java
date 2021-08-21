@@ -7,13 +7,14 @@ import org.bukkit.Location;
 import org.mineacademy.fo.ReflectionUtil;
 
 /**
- * Represents a fake dragon entity for Minecraft 1.7.x
+ * Represents a fake dragon entity for Minecraft 1.8 protocol hack
  */
-class v1_7 extends EnderDragonEntity {
+class NMSDragon_v1_8Hack extends NMSDragon {
+
 	private Object dragon;
 	private int id;
 
-	public v1_7(String name, Location loc) {
+	public NMSDragon_v1_8Hack(String name, Location loc) {
 		super(name, loc);
 	}
 
@@ -30,13 +31,13 @@ class v1_7 extends EnderDragonEntity {
 			setLocation.invoke(dragon, getX(), getY(), getZ(), getPitch(), getYaw());
 
 			final Method setInvisible = ReflectionUtil.getMethod(EntityEnderDragon, "setInvisible", boolean.class);
-			setInvisible.invoke(dragon, isVisible());
+			setInvisible.invoke(dragon, true);
 
 			final Method setCustomName = ReflectionUtil.getMethod(EntityEnderDragon, "setCustomName", String.class);
-			setCustomName.invoke(dragon, name);
+			setCustomName.invoke(dragon, getName());
 
 			final Method setHealth = ReflectionUtil.getMethod(EntityEnderDragon, "setHealth", float.class);
-			setHealth.invoke(dragon, health);
+			setHealth.invoke(dragon, getHealth());
 
 			final Field motX = ReflectionUtil.getDeclaredField(Entity, "motX");
 			motX.set(dragon, getXvel());
@@ -89,22 +90,19 @@ class v1_7 extends EnderDragonEntity {
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
-
 		return packet;
 	}
 
 	@Override
 	public Object getTeleportPacket(Location loc) {
 		final Class<?> PacketPlayOutEntityTeleport = ReflectionUtil.getNMSClass("PacketPlayOutEntityTeleport", "N/A");
-
 		Object packet = null;
 
 		try {
-			packet = PacketPlayOutEntityTeleport.getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class).newInstance(this.id, loc.getBlockX() * 32, loc.getBlockY() * 32, loc.getBlockZ() * 32, (byte) ((int) loc.getYaw() * 256 / 360), (byte) ((int) loc.getPitch() * 256 / 360));
+			packet = PacketPlayOutEntityTeleport.getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class).newInstance(this.id, loc.getBlockX() * 32, loc.getBlockY() * 32, loc.getBlockZ() * 32, (byte) ((int) loc.getYaw() * 256 / 360), (byte) ((int) loc.getPitch() * 256 / 360), false, false);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
-
 		return packet;
 	}
 
@@ -118,15 +116,21 @@ class v1_7 extends EnderDragonEntity {
 			watcher = DataWatcher.getConstructor(Entity).newInstance(dragon);
 			final Method a = ReflectionUtil.getMethod(DataWatcher, "a", int.class, Object.class);
 
-			a.invoke(watcher, 0, isVisible() ? (byte) 0 : (byte) 0x20);
-			a.invoke(watcher, 6, health);
+			a.invoke(watcher, 5, isVisible() ? (byte) 0 : (byte) 0x20);
+			a.invoke(watcher, 6, getHealth());
 			a.invoke(watcher, 7, 0);
 			a.invoke(watcher, 8, (byte) 0);
-			a.invoke(watcher, 10, name);
+			a.invoke(watcher, 10, getName());
 			a.invoke(watcher, 11, (byte) 1);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
+
 		return watcher;
+	}
+
+	@Override
+	Object getNMSEntity() {
+		return this.dragon;
 	}
 }
