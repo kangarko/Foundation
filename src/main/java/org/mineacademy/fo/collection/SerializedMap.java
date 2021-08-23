@@ -75,15 +75,15 @@ public final class SerializedMap extends StrictCollection {
 	 * <p>
 	 * If the key already exist, it is ignored
 	 *
-	 * @param map
+	 * @param anotherMap
 	 */
-	public void merge(final SerializedMap map) {
-		for (final Map.Entry<String, Object> entry : map.entrySet()) {
+	public void mergeFrom(final SerializedMap anotherMap) {
+		for (final Map.Entry<String, Object> entry : anotherMap.entrySet()) {
 			final String key = entry.getKey();
 			final Object value = entry.getValue();
 
-			if (key != null && value != null && !map.containsKey(key))
-				map.put(key, value);
+			if (key != null && value != null && !this.map.contains(key))
+				this.map.put(key, value);
 		}
 	}
 
@@ -247,6 +247,15 @@ public final class SerializedMap extends StrictCollection {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
 
 		map.override(key, value);
+	}
+
+	/**
+	 * Overrides all map values
+	 *
+	 * @param map
+	 */
+	public void overrideAll(SerializedMap map) {
+		map.forEach((key, value) -> override(key, value));
 	}
 
 	/**
