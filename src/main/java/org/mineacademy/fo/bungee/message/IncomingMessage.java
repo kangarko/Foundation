@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -78,7 +79,7 @@ public final class IncomingMessage extends Message {
 	public String readString() {
 		moveHead(String.class);
 
-		return input.readUTF();
+		return CompressUtil.decompressB64(input.readUTF());
 	}
 
 	/**
@@ -100,7 +101,7 @@ public final class IncomingMessage extends Message {
 	public SerializedMap readMap() {
 		moveHead(String.class);
 
-		return SerializedMap.fromJson(input.readUTF());
+		return SerializedMap.fromJson(CompressUtil.decompressB64(input.readUTF()));
 	}
 
 	/**
