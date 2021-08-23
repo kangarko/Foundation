@@ -114,13 +114,13 @@ public final class BungeeUtil {
 					Debugger.put("bungee", data.toString() + ", ");
 
 					moveHead(actionHead, action, String.class, datas);
-					out.writeUTF((String) data);
+					out.writeUTF(CompressUtil.compressB64((String) data));
 
 				} else if (data instanceof SerializedMap) {
 					Debugger.put("bungee", data.toString() + ", ");
 
 					moveHead(actionHead, action, String.class, datas);
-					out.writeUTF(((SerializedMap) data).toJson());
+					out.writeUTF(CompressUtil.compressB64(((SerializedMap) data).toJson()));
 
 				} else if (data instanceof UUID) {
 					Debugger.put("bungee", data.toString() + ", ");
@@ -154,12 +154,12 @@ public final class BungeeUtil {
 
 		Debugger.push("bungee");
 
-		byte[] byteArray = out.toByteArray();
+		final byte[] byteArray = out.toByteArray();
 
 		try {
 			recipient.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
 
-		} catch (MessageTooLargeException ex) {
+		} catch (final MessageTooLargeException ex) {
 			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
 		}
 

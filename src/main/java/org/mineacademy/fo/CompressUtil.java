@@ -1,72 +1,92 @@
 package org.mineacademy.fo;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
 
-import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 
-@UtilityClass
+/**
+ * A simple class to compress or decompress text
+ */
 public final class CompressUtil {
 
 	/**
-	 * Compress the given String into a byte array
+	 * Converts the text byte array into compressed data in base64 string format
 	 *
-	 * @param string
-	 * @return the byte array, or null if string is empty
+	 * @param text
+	 * @return
+	 * @throws IOException
 	 */
 	@SneakyThrows
-	public byte[] compress(@NonNull final String string) {
-		if (string.length() == 0)
-			return null;
+	public static String compressB64(String text) {
+		return text;
 
-		final ByteArrayOutputStream obj = new ByteArrayOutputStream();
-		final GZIPOutputStream gzip = new GZIPOutputStream(obj);
-
-		gzip.write(string.getBytes("UTF-8"));
-		gzip.flush();
-		gzip.close();
-
-		return obj.toByteArray();
+		//return new String(Base64.getEncoder().encode(compress(text.replace(String.valueOf(ChatColor.COLOR_CHAR), "%CLRCHAR%"))), StandardCharsets.UTF_8);
 	}
 
 	/**
-	 * Turn the compressed byte array into a String
+	 * Converts the compressed data from base64 into uncompressed text
 	 *
-	 * @param compressed
-	 * @return the decompressed string
+	 * @param b64Compressed
+	 * @return
+	 * @throws IOException
 	 */
 	@SneakyThrows
-	public String decompress(@NonNull final byte[] compressed) {
-		final StringBuilder outStr = new StringBuilder();
+	public static String decompressB64(String b64Compressed) {
+		return b64Compressed;
 
-		if (compressed.length == 0)
-			return "";
-
-		if (isCompressed(compressed)) {
-			final GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(compressed));
-			final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gis, "UTF-8"));
-
-			String line;
-
-			while ((line = bufferedReader.readLine()) != null)
-				outStr.append(line);
-
-		} else
-			outStr.append(compressed);
-
-		return outStr.toString();
+		//return decompress(Base64.getDecoder().decode(b64Compressed)).replace("%CLRCHAR%", String.valueOf(ChatColor.COLOR_CHAR));
 	}
 
-	/*
-	 * Check if the given byte array has been compressed
+	/**
+	 * Converts the text into compressed data
+	 *
+	 * @param text
+	 * @return
+	 * @throws IOException
 	 */
-	private boolean isCompressed(final byte[] compressed) {
-		return compressed[0] == (byte) GZIPInputStream.GZIP_MAGIC && compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8);
+	@SneakyThrows
+	public static byte[] compress(String text) {
+		return compress(text.getBytes());
+	}
+
+	/**
+	 * Converts the text byte array into compressed data
+	 *
+	 * @param byteArray
+	 * @return
+	 * @throws IOException
+	 */
+	@SneakyThrows
+	public static byte[] compress(byte[] byteArray) {
+		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+		try (DeflaterOutputStream deflater = new DeflaterOutputStream(stream)) {
+			deflater.write(byteArray);
+		}
+
+		return stream.toByteArray();
+	}
+
+	/**
+	 * Converts the given compressed data back into text
+	 *
+	 * @param compressedText
+	 * @return
+	 * @throws IOException
+	 */
+	@SneakyThrows
+	public static String decompress(byte[] compressedText) {
+		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+		try (OutputStream inflater = new InflaterOutputStream(stream)) {
+			inflater.write(compressedText);
+		}
+
+		return new String(stream.toByteArray(), StandardCharsets.UTF_8);
 	}
 }
