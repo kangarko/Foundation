@@ -355,17 +355,26 @@ public final class ReflectionUtil {
 	 * Get a declared class method
 	 *
 	 */
-	public static Method getDeclaredMethod(final Class<?> clazz, final String methodName, Class<?>... args) {
-		try {
-			if (reflectionDataCache.containsKey(clazz))
-				return reflectionDataCache.get(clazz).getDeclaredMethod(methodName, args);
+	public static Method getDeclaredMethod(Class<?> clazz, final String methodName, Class<?>... args) {
+		final Class<?> originalClass = clazz;
 
-			return reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new).getDeclaredMethod(methodName, args); // Cache the value.
+		while (!clazz.equals(Object.class)) {
 
-		} catch (final ReflectiveOperationException ex) {
-			ex.printStackTrace();
+			try {
+				final Method method = clazz.getDeclaredMethod(methodName, args);
+				method.setAccessible(true);
+
+				return method;
+
+			} catch (final NoSuchMethodException ex) {
+				clazz = clazz.getSuperclass();
+
+			} catch (final Throwable t) {
+				throw new ReflectionException(t, "Error lookup up method " + methodName + " in class " + originalClass + " and her subclasses");
+			}
 		}
-		return null;
+
+		throw new ReflectionException("Unable to find method " + methodName + " with params " + Common.join(args) + " in class " + originalClass + " and her subclasses");
 	}
 
 	/**
@@ -963,7 +972,7 @@ public final class ReflectionUtil {
 			this.clazz = clazz;
 		}
 
-		private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
+		//private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
 		private final Map<Integer, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 		private final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
 		private final Collection<String> fieldGuard = ConcurrentHashMap.newKeySet();
@@ -1036,11 +1045,11 @@ public final class ReflectionUtil {
 			}
 		}
 
-		public void cacheMethod(final Method method) {
+		/*public void cacheMethod(final Method method) {
 			methodCache.computeIfAbsent(method.getName(), unused -> ConcurrentHashMap.newKeySet()).add(method);
-		}
+		}*/
 
-		public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
+		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
 
@@ -1054,7 +1063,7 @@ public final class ReflectionUtil {
 			cacheMethod(method);
 
 			return method;
-		}
+		}*/
 
 		public void cacheField(final Field field) {
 			fieldCache.put(field.getName(), field);
@@ -1097,7 +1106,7 @@ public final class ReflectionUtil {
 			super(message);
 		}
 
-		public ReflectionException(final Exception ex, final String message) {
+		public ReflectionException(final Throwable ex, final String message) {
 			super(ex, message);
 		}
 	}
