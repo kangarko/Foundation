@@ -1444,7 +1444,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	@Override
 	public final String getPermissionMessage() {
-		return Common.getOrDefault(super.getPermissionMessage(), "&c" + SimpleLocalization.NO_PERMISSION);
+		return Common.getOrDefault(super.getPermissionMessage(), SimpleLocalization.NO_PERMISSION);
 	}
 
 	/**
