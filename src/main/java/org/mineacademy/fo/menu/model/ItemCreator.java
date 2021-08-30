@@ -209,7 +209,7 @@ final @Builder public class ItemCreator {
 		if (material != null)
 			Valid.checkNotNull(material.getMaterial(), "Material#getMaterial cannot be null for " + material);
 
-		final ItemStack compiledItem = item != null ? item.clone() : new ItemStack(material.getMaterial(), amount);
+		final ItemStack compiledItem = item != null ? item.clone() : material.toItem(amount);
 		ItemMeta compiledMeta = meta != null ? meta.clone() : compiledItem.getItemMeta();
 
 		// Skip if air
@@ -217,8 +217,12 @@ final @Builder public class ItemCreator {
 			return compiledItem;
 
 		// Override with given material
-		if (material != null)
+		if (material != null) {
 			compiledItem.setType(material.getMaterial());
+
+			if (MinecraftVersion.olderThan(V.v1_13))
+				compiledItem.setData(new MaterialData(material.getMaterial(), material.getData()));
+		}
 
 		// Apply specific material color if possible
 		color:
