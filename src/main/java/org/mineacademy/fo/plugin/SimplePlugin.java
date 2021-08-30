@@ -186,6 +186,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// Main methods
 	// ----------------------------------------------------------------------------------------
 
+	static {
+
+		// Add console filters early - no reload support
+		FoundationFilter.inject();
+	}
+
 	@Override
 	public final void onLoad() {
 
@@ -205,9 +211,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		named = instance.getName();
 		source = instance.getFile();
 		data = instance.getDataFolder();
-
-		// Add console filters early - no reload support
-		FoundationFilter.inject();
 
 		// Call parent
 		onPluginLoad();
