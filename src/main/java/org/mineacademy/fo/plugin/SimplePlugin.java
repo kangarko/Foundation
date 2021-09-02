@@ -72,6 +72,7 @@ import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents a basic Java plugin using enhanced library functionality
@@ -329,7 +330,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				return;
 
 			// Register BungeeCord when used
-			registerBungeeCord();
+			if (getBungeeCord() != null)
+				registerBungeeCord(getBungeeCord());
 
 			// Start update check
 			if (getUpdateCheck() != null)
@@ -378,19 +380,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Convenience method for registering channels to BungeeCord
+	 * Register a simple bungee class as a custom bungeecord listener,
+	 * for sample implementation you can see the SimpleBungee field at:
+	 * https://github.com/kangarko/PluginTemplate/blob/main/src/main/java/org/mineacademy/template/PluginTemplate.java
+	 *
+	 * DO NOT use this if you only have that one field there with a getter, we already register it automatically,
+	 * this method is intended to be used if you have multiple fields there and want to register multiple channels.
+	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
-	private final void registerBungeeCord() {
+	protected final void registerBungeeCord(@NonNull SimpleBungee bungee) {
 		final Messenger messenger = getServer().getMessenger();
-		final SimpleBungee bungee = getBungeeCord();
 
-		if (bungee != null) {
-			messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee.getListener());
-			messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
+		messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee.getListener());
+		messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
 
-			reloadables.registerEvents(bungee.getListener());
-			Debugger.debug("bungee", "Registered BungeeCord listener for " + bungee.getChannel());
-		}
+		reloadables.registerEvents(bungee.getListener());
+		Debugger.debug("bungee", "Registered BungeeCord listener on channel " + bungee.getChannel());
 	}
 
 	/**
@@ -820,7 +825,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
-			registerBungeeCord();
+			if (getBungeeCord() != null)
+				registerBungeeCord(getBungeeCord());
 
 			Common.log(Common.consoleLineSmooth());
 
