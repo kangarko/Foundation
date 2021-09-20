@@ -647,8 +647,9 @@ public final class PlayerUtil {
 	 * @param material
 	 */
 	public static boolean takeFirstOnePiece(final Player player, final CompMaterial material) {
+
 		for (final ItemStack item : player.getInventory().getContents())
-			if (item != null && CompMaterial.fromLegacy(item.getType().toString(), item.getData().getData()) == material) {
+			if (item != null && material.is(item)) {
 				takeOnePiece(player, item);
 
 				return true;
