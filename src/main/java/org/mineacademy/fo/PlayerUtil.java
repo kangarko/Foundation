@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -463,10 +464,11 @@ public final class PlayerUtil {
 		if (HookManager.isVanished(player))
 			return true;
 
-		if (player.hasMetadata("vanished"))
-			for (final MetadataValue meta : player.getMetadata("vanished"))
-				if (meta.asBoolean())
-					return true;
+		final List<MetadataValue> list = player.getMetadata("vanished");
+
+		for (final MetadataValue meta : list)
+			if (meta.asBoolean())
+				return true;
 
 		return false;
 	}
