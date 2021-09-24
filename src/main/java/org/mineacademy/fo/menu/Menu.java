@@ -381,7 +381,6 @@ public abstract class Menu {
 	public final void displayTo(final Player player) {
 		Valid.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
 		Valid.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
-		Valid.checkBoolean(!this.closed, "One menu instance can be shown to one player only, " + this + " is already visible for " + this.viewer);
 
 		viewer = player;
 		registerButtonsIfHasnt();
