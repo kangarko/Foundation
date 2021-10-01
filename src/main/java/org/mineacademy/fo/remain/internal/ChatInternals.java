@@ -105,7 +105,7 @@ public class ChatInternals {
 	 * @param subtitle
 	 */
 	public static void sendTitleLegacy(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (titleConstructor == null)
@@ -143,7 +143,7 @@ public class ChatInternals {
 	 * @param player
 	 */
 	public static void resetTitleLegacy(final Player player) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (resetTitleConstructor == null)
@@ -165,7 +165,7 @@ public class ChatInternals {
 	 * @param footerRaw
 	 */
 	public static void sendTablistLegacy(final Player player, final String headerRaw, final String footerRaw) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (tabConstructor == null)
@@ -196,7 +196,7 @@ public class ChatInternals {
 	 * @param message
 	 */
 	public static void sendActionBarLegacy(final Player player, final String message) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_12), "This method is unsupported on MC 1.13 and later");
+		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		sendChat(player, message, (byte) 2);
 	}
