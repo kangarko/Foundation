@@ -13,6 +13,7 @@ package org.mineacademy.fo.plugin;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -49,7 +51,6 @@ import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
-import org.mineacademy.fo.menu.tool.Rocket;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
@@ -59,9 +60,11 @@ import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
+import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
@@ -406,6 +409,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	private static void checkSingletons() {
 
+		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
+
 		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
 			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
 				final JarEntry jar = entry.nextElement();
@@ -423,10 +428,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 							continue;
 						}
 
-						final boolean isTool = Tool.class.isAssignableFrom(clazz) && !Tool.class.equals(clazz) && !Rocket.class.equals(clazz);
-						final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz) && !SimpleEnchantment.class.equals(clazz);
+						if (Modifier.isAbstract(clazz.getModifiers()))
+							continue;
 
-						if (isTool || isEnchant) {
+						System.out.println("@@@ iterating over " + className);
+
+						if (anonymousClassPattern.matcher(className).find()) {
+							System.out.println("@ignoring anonymous inner class " + className);
+
+							continue;
+						}
+
+						final boolean isTool = Tool.class.isAssignableFrom(clazz);
+						final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz);
+						final boolean isExpansion = SimpleExpansion.class.isAssignableFrom(clazz);
+
+						if (isTool || isEnchant || isExpansion) {
 
 							if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
 								Bukkit.getLogger().warning("**** WARNING ****");
@@ -439,12 +456,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 								Field instanceField = null;
 
 								for (final Field field : clazz.getDeclaredFields())
-									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
-											&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
+									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()) || SimpleExpansion.class.isAssignableFrom(field.getType()))
+											&& Modifier.isPrivate(field.getModifiers()) && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
 										instanceField = field;
 
-								if (SimpleEnchantment.class.isAssignableFrom(clazz))
-									Valid.checkNotNull(instanceField, "Your enchant class " + clazz.getSimpleName() + " must be a singleton and have static 'instance' field and private constructors!");
+								for (final Method method : clazz.getDeclaredMethods())
+									System.out.println("\tmethod " + method);
+
+								Valid.checkNotNull(instanceField, "Your class " + className + " must be a singleton and have 'private static final " + clazz.getSimpleName()
+										+ " instance' field and a private constructor!");
 
 								if (instanceField != null) {
 									instanceField.setAccessible(true);
@@ -453,15 +473,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 									// Enforce private constructors
 									for (final Constructor<?> con : instance.getClass().getDeclaredConstructors())
-										Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your tools class?");
+										Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your "
+												+ className + " class?");
+
+									// Register if expansion
+									if (isExpansion)
+										Variables.addExpansion((SimpleExpansion) instance);
 
 									// Finally register events
 									if (instance instanceof Listener)
 										Common.registerEvents((Listener) instance);
+
+									System.out.println("@auto registered class " + clazz);
 								}
 
 							} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
-								Bukkit.getLogger().warning("Failed to auto register " + (isTool ? "tool" : "enchant") + " class " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
+								Bukkit.getLogger().warning("Failed to auto register class " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
 
 								// Ignore if no field is present
 
@@ -476,7 +503,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 									else
 										Bukkit.getLogger().warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
 								} else
-									Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
+									Common.error(t, "Failed to auto register class " + clazz);
 							}
 						}
 					}

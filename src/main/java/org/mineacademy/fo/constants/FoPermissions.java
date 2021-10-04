@@ -1,6 +1,6 @@
 package org.mineacademy.fo.constants;
 
-import org.mineacademy.fo.command.annotation.Permission;
+import org.mineacademy.fo.annotation.Permission;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
