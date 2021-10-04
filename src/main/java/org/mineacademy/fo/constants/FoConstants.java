@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.settings.YamlConfig;
 
 /**
  * Stores constants for this plugin
@@ -85,6 +86,8 @@ public final class FoConstants {
 
 		/**
 		 * The header for data.db file
+		 *
+		 * Use {@link YamlConfig#setHeader()} to override this.
 		 */
 		public static final String[] DATA_FILE = new String[] {
 				"",
@@ -96,7 +99,9 @@ public final class FoConstants {
 
 		/**
 		 * The header that is put into the file that has been automatically
-		 * updated and comments were lost
+		 * updated and comments were lost.
+		 *
+		 * Use {@link YamlConfig#setHeader()} to override this.
 		 */
 		public static final String[] UPDATED_FILE = new String[] {
 				Common.configLine(),

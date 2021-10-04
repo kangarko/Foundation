@@ -1,7 +1,5 @@
 package org.mineacademy.fo.bungee;
 
-import org.mineacademy.fo.plugin.SimplePlugin;
-
 /**
  * Represents an action sent over BungeeCord containing
  * a set of data. We recommend you create an enum that implements this.
@@ -24,11 +22,13 @@ public interface BungeeAction {
 	/**
 	 * Retrieve BungeeAction by its name
 	 *
+	 * @param listener
 	 * @param name
+	 *
 	 * @return
 	 */
-	static BungeeAction getByName(String name) {
-		final BungeeAction[] actions = SimplePlugin.getInstance().getBungeeCord().getActions();
+	static BungeeAction getByName(BungeeListener listener, String name) {
+		final BungeeAction[] actions = listener.getActions();
 
 		for (final BungeeAction action : actions)
 			if (action.name().equals(name))

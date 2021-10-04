@@ -63,8 +63,8 @@ final class FoundationFilter {
 		if (message == null || message.isEmpty())
 			return false;
 
-		// Replace & color codes only if server is available
-		if (Bukkit.getServer() != null)
+		// Replace & color codes only if server is available and we are calling past our onLoad block
+		if (Bukkit.getServer() != null && SimplePlugin.getNamed() != null)
 			message = Common.stripColors(message);
 
 		// Filter a warning since we've already patched this with NashornPlus extension

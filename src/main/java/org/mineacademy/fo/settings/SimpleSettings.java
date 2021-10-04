@@ -7,6 +7,7 @@ import java.util.List;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
@@ -217,7 +218,7 @@ public class SimpleSettings extends YamlStaticConfig {
 
 			final boolean keySet = isSetDefault("Command_Aliases");
 
-			if (SimplePlugin.getInstance().getMainCommand() != null && !keySet)
+			if (SimpleCommandGroup.getMainGroup() != null && !keySet)
 				throw new FoException("Since you override getMainCommand in your main plugin class you must set the 'Command_Aliases' key in " + getFileName());
 
 			MAIN_COMMAND_ALIASES = keySet ? getCommandList("Command_Aliases") : MAIN_COMMAND_ALIASES;

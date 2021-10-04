@@ -186,16 +186,6 @@ final @Builder public class ItemCreator {
 	}
 
 	/**
-	 * @deprecated pending removal, this simply calls {@link #make()}
-	 *
-	 * @return
-	 */
-	@Deprecated
-	public ItemStack makeSurvival() {
-		return make();
-	}
-
-	/**
 	 * Construct a valid {@link ItemStack} from all parameters above.
 	 *
 	 * @return the finished item

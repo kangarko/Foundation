@@ -19,6 +19,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A simple class performing an update check for Spigot free and premium resources
@@ -47,6 +48,13 @@ public class SpigotUpdater implements Runnable {
 	 */
 	@Getter
 	private String newVersion = "";
+
+	/**
+	 * The permission required to receive the on-join warning that a new version is present.
+	 */
+	@Getter
+	@Setter
+	private String permission = "{plugin_name}.notify.update";
 
 	/**
 	 * Initializes the new instance to check but not to download updates

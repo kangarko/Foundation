@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public class Triple<A, B, C> {
+public final class Triple<A, B, C> {
 
 	/**
 	 * The first value we hold

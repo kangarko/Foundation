@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -28,7 +29,26 @@ public final class OutgoingMessage extends Message {
 	 */
 	private final List<Object> queue = new ArrayList<>();
 
+	/**
+	 * Create a new outgoing message, see header of this class
+	 *
+	 * @param senderUid
+	 * @param action
+	 */
 	public OutgoingMessage(UUID senderUid, BungeeAction action) {
+		this(SimplePlugin.getInstance().getDefaultBungeeListener(), senderUid, action);
+	}
+
+	/**
+	 * Create a new outgoing message, see header of this class
+	 *
+	 * @param listener
+	 * @param senderUid
+	 * @param action
+	 */
+	public OutgoingMessage(BungeeListener listener, UUID senderUid, BungeeAction action) {
+		super(listener);
+
 		setSenderUid(senderUid.toString());
 		setServerName(Remain.getServerName());
 		setAction(action);

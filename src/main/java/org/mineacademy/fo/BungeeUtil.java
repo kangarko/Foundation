@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.MessageTooLargeException;
 import org.mineacademy.fo.Common.Stringer;
 import org.mineacademy.fo.bungee.BungeeAction;
-import org.mineacademy.fo.bungee.SimpleBungee;
+import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -37,8 +37,8 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(BungeeAction action, T... datas) {
-		final SimpleBungee bungee = SimplePlugin.getInstance().getBungeeCord();
-		Valid.checkNotNull(bungee, SimplePlugin.getNamed() + " does not implement getBungeeCord()!");
+		final BungeeListener bungee = SimplePlugin.getInstance().getDefaultBungeeListener();
+		Valid.checkNotNull(bungee, "Cannot call tellBungee() without channel name because " + SimplePlugin.getInstance().getClass() + " does not implement getDefaultBungeeListener()!");
 
 		tellBungee(bungee.getChannel(), action, datas);
 	}

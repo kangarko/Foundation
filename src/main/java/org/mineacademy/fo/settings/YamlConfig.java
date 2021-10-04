@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
@@ -26,23 +25,18 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -62,7 +56,7 @@ import lombok.RequiredArgsConstructor;
  * @author kangarko
  * @version 5.0 (of the previous ConfHelper)
  */
-public class YamlConfig {
+public abstract class YamlConfig {
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Only allow one instance of file to be loaded for safety.
@@ -130,15 +124,6 @@ public class YamlConfig {
 	private final boolean checkAssignables = true;
 
 	protected YamlConfig() {
-	}
-
-	/**
-	 * Clear the list of loaded files
-	 */
-	public static final void clearLoadedFiles() {
-		synchronized (loadedFiles) {
-			loadedFiles.clear();
-		}
 	}
 
 	/**
@@ -669,20 +654,6 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Return an enum at this location
-	 *
-	 * @param path
-	 * @param type
-	 * @param <T>
-	 * @return
-	 * @deprecated use {@link #get(String, Class)}
-	 */
-	@Deprecated
-	protected final <T> T getEnum(final String path, final Class<T> type) {
-		return get(path, type);
-	}
-
-	/**
 	 * Get a boolean with a default value
 	 *
 	 * @param path
@@ -802,19 +773,6 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Get a double from any number, failsafe
-	 *
-	 * @param path
-	 * @return
-	 *
-	 * @deprecated use {@link #getDouble(String)}
-	 */
-	@Deprecated
-	protected final Double getDoubleSafe(final String path) {
-		return getDouble(path);
-	}
-
-	/**
 	 * Get a double with a default value
 	 *
 	 * @param path
@@ -837,29 +795,6 @@ public class YamlConfig {
 		final Object raw = getObject(path);
 
 		return raw != null ? Double.parseDouble(raw.toString()) : null;
-	}
-
-	/**
-	 * Return a replacer for localizable messages
-	 *
-	 * @param path
-	 * @param def
-	 * @return
-	 */
-	protected final Replacer getReplacer(final String path, final String def) {
-		forceSingleDefaults(path);
-
-		return isSet(path) ? getReplacer(path) : Replacer.of(def);
-	}
-
-	/**
-	 * Return a replacer for localizable messages
-	 *
-	 * @param path
-	 * @return
-	 */
-	protected final Replacer getReplacer(final String path) {
-		return Replacer.of(getString(path));
 	}
 
 	/**
@@ -974,10 +909,10 @@ public class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final <T extends SimpleTime> T getTime(final String path, final String def) {
+	protected final SimpleTime getTime(final String path, final String def) {
 		forceSingleDefaults(path);
 
-		return isSet(path) ? getTime(path) : def != null ? (T) SimpleTime.from(def) : null;
+		return isSet(path) ? getTime(path) : def != null ? SimpleTime.from(def) : null;
 	}
 
 	/**
@@ -986,10 +921,10 @@ public class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final <T extends SimpleTime> T getTime(final String path) {
+	protected final SimpleTime getTime(final String path) {
 		final Object obj = getObject(path);
 
-		return obj != null ? (T) SimpleTime.from(obj.toString()) : null;
+		return obj != null ? SimpleTime.from(obj.toString()) : null;
 	}
 
 	/**
@@ -1068,21 +1003,6 @@ public class YamlConfig {
 	 * @param key
 	 * @param type
 	 * @return
-	 * @see #getList(String, Class), except that this method never returns null,
-	 * instead, if the key is not present, we return an empty set instead of
-	 * null
-	 * @deprecated use {@link #getSet(String, Class)} for the same behavior
-	 */
-	@Deprecated
-	protected final <T> Set<T> getSetSafe(final String key, final Class<T> type) {
-		return getSet(key, type);
-	}
-
-	/**
-	 * @param <T>
-	 * @param key
-	 * @param type
-	 * @return
 	 * @see #getList(String, Class)
 	 */
 	protected final <T> Set<T> getSet(final String key, final Class<T> type) {
@@ -1131,47 +1051,6 @@ public class YamlConfig {
 				list.add(object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null);
 
 		return list;
-	}
-
-	/**
-	 * Return a list of enumerations that are checked for some special values
-	 * we use in our plugins that will break on older Minecraft versions, so we
-	 * just ignore them and do not throw any error.
-	 *
-	 * @param <T>
-	 * @param path
-	 * @param type
-	 *
-	 * @return
-	 * @deprecated this code is specifically targeted for our plugins only
-	 */
-	@Deprecated
-	protected final <T extends Enum<T>> List<T> getCompatibleEnumList(final String path, final Class<T> type) {
-		final StrictList<T> list = new StrictList<>();
-		final List<String> enumNames = getStringList(path);
-
-		if (enumNames.size() == 1 && "*".equals(enumNames.get(0)))
-			return list.getSource();
-
-		if (enumNames != null)
-			for (final String enumName : enumNames) {
-				T parsedEnum = null;
-
-				try {
-					parsedEnum = ReflectionUtil.lookupEnumSilent(type, enumName);
-
-				} catch (final IllegalArgumentException | MissingEnumException ex) {
-
-					// Only throw an exception if the user has put in malformed value
-					if (!LegacyEnum.isIncompatible(type, enumName))
-						throw ex;
-				}
-
-				if (parsedEnum != null)
-					list.add(parsedEnum);
-			}
-
-		return list.getSource();
 	}
 
 	/**
@@ -1557,12 +1436,9 @@ public class YamlConfig {
 	}
 
 	protected final <T> T getOrSetDefault(final String path, final T defaultValue) {
-		if (isSet(path)) {
-			if (defaultValue instanceof Replacer)
-				return (T) Replacer.of(getString(path));
-
+		if (isSet(path))
 			return (T) get(path, defaultValue.getClass());
-		}
+
 		save(path, defaultValue);
 		return defaultValue;
 	}
@@ -1743,38 +1619,6 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Get a map assuming each key contains a map of string and objects
-	 */
-	@Deprecated
-	protected final LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys_OLD(String path) {
-		Valid.checkNotNull(path, "Path cannot be null");
-		path = formPathPrefix(path);
-
-		// add default
-		if (getDefaults() != null && !getConfig().isSet(path)) {
-			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a section at " + path);
-
-			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
-				for (final String setting : getDefaults().getConfigurationSection(path + "." + name).getKeys(false))
-					addDefaultIfNotExist(path + "." + name + "." + setting, Object.class);
-		}
-
-		Valid.checkBoolean(getConfig().isSet(path), "Malfunction copying default section to " + path);
-
-		// key, values assigned to the key
-		final TreeMap<String, LinkedHashMap<String, Object>> groups = new TreeMap<>();
-
-		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
-			// type, value (UNPARSED)
-			final LinkedHashMap<String, Object> valuesRaw = getMap(path + "." + name, String.class, Object.class);
-
-			groups.put(name, valuesRaw);
-		}
-
-		return new LinkedHashMap<>(groups);
-	}
-
-	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -1793,30 +1637,6 @@ public class YamlConfig {
 	// ------------------------------------------------------------------------------------
 	// Classes helpers
 	// ------------------------------------------------------------------------------------
-
-	/**
-	 * @deprecated This class has been moved into {@link SimpleTime}.
-	 * 			   To migrate, simply rename TimeHelper into SimpleTime everywhere.
-	 */
-	@Deprecated
-	public static final class TimeHelper extends SimpleTime {
-
-		protected TimeHelper(String time) {
-			super(time);
-		}
-
-		/**
-		 * Generate new time. Valid examples: 15 ticks 1 second 25 minutes 3 hours etc.
-		 *
-		 * @deprecated use {@link SimpleTime#from(String)} that has now replaced this constructor
-		 * @param time
-		 * @return
-		 */
-		@Deprecated
-		public static TimeHelper from(final String time) {
-			return new TimeHelper(time);
-		}
-	}
 
 	/**
 	 * Represents a list of locations in the config
@@ -2197,40 +2017,12 @@ final class ConfigInstance {
 	public boolean equals(final Object obj) {
 		return obj instanceof ConfigInstance ? ((ConfigInstance) obj).file.getName().equals(file.getName()) : obj instanceof File ? ((File) obj).getName().equals(file.getName()) : obj instanceof String ? ((String) obj).equals(file.getName()) : false;
 	}
-}
-
-/**
- * A special class holding what enum values we have in our configuration
- * that are incompatible with older Minecraft version.
- * <p>
- * If those are loaded we just forgive them and do not throw an error.
- */
-final class LegacyEnum {
 
 	/**
-	 * The map list of backward-incompatible types
+	 * @see java.lang.Object#toString()
 	 */
-	private static final StrictMap<Class<? extends Enum<?>>, List<String>> INCOMPATIBLE_TYPES = new StrictMap<>();
-
-	/**
-	 * Load incompatible values to map
-	 */
-	static {
-		INCOMPATIBLE_TYPES.put(SpawnReason.class, Arrays.asList("DROWNED"));
-	}
-
-	/**
-	 * Return true if the given enum class and name type is known to be
-	 * backward incompatible.
-	 *
-	 * @param <T>
-	 * @param type
-	 * @param enumName
-	 * @return
-	 */
-	public static <T extends Enum<T>> boolean isIncompatible(Class<T> type, String enumName) {
-		final List<String> types = INCOMPATIBLE_TYPES.get(type);
-
-		return types != null && types.contains(enumName.toUpperCase().replace(" ", "_"));
+	@Override
+	public String toString() {
+		return this.file.toString() + (this.defaultConfig != null ? " with defaults " : "");
 	}
 }

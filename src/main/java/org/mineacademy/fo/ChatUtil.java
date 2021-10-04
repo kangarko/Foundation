@@ -588,7 +588,7 @@ public final class ChatUtil {
 /**
  * Contains information about all allowed Minecraft letters
  *
- * @deprecated new Minecraft versions support Unicode and a much broader range
+ * @deprecated does not properly format bold and new Minecraft unicode letters
  *
  */
 enum DefaultFontInfo {

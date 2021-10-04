@@ -242,21 +242,21 @@ public abstract class DiscordListener implements Listener {
 	 * Enhanced functionality is available for the player
 	 *
 	 * @param sender
-	 * @param channel
+	 * @param channelName
 	 * @param message
 	 */
-	protected final void sendMessage(Player sender, String channel, String message) {
-		HookManager.sendDiscordMessage(sender, channel, message);
+	protected final void sendMessage(Player sender, String channelName, String message) {
+		HookManager.sendDiscordMessage(sender, channelName, message);
 	}
 
 	/**
 	 * Convenience method for sending a message to a Discord channel
 	 *
-	 * @param channel
+	 * @param channelName
 	 * @param message
 	 */
-	protected final void sendMessage(String channel, String message) {
-		HookManager.sendDiscordMessage(channel, message);
+	protected final void sendMessage(String channelName, String message) {
+		HookManager.sendDiscordMessage(channelName, message);
 	}
 
 	/**

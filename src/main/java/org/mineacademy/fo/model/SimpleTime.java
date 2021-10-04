@@ -9,7 +9,7 @@ import lombok.NonNull;
  * A simple class holding time values in human readable form such as 1 second or 5 minutes
  */
 @Getter
-public class SimpleTime {
+public final class SimpleTime {
 
 	private final String raw;
 	private final long timeTicks;

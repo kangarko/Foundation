@@ -1,11 +1,12 @@
 package org.mineacademy.fo.command;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -14,7 +15,6 @@ import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
@@ -23,18 +23,24 @@ import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * A command group contains a set of different subcommands
  * associated with the main command, for example: /arena join, /arena leave etc.
  */
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class SimpleCommandGroup {
+
+	/**
+	 * If you use \@AutoRegister on a command group that has a no args constructor,
+	 * we use the label and aliases from {@link SimpleSettings#MAIN_COMMAND_ALIASES}
+	 * and associate it here for the record.
+	 */
+	@Getter
+	@Nullable
+	private static SimpleCommandGroup mainGroup = null;
 
 	/**
 	 * The list of sub-commands belonging to this command tree, for example
@@ -48,12 +54,54 @@ public abstract class SimpleCommandGroup {
 	private SimpleCommand mainCommand;
 
 	/**
-	 * How many commands shall we display per page by default?
-	 *
-	 * Defaults to 12
+	 * The label to execute subcommands in this group, example: for ChatControl it's /chatcontrol
 	 */
-	@Setter(value = AccessLevel.PROTECTED)
-	private int commandsPerPage = 12;
+	@Getter
+	private String label;
+
+	/**
+	 * What other commands trigger this command group? Example: for ChatControl it's /chc and /chatc
+	 */
+	@Getter
+	private List<String> aliases;
+
+	/**
+	 * Create a new simple command group using {@link SimpleSettings#MAIN_COMMAND_ALIASES}
+	 */
+	protected SimpleCommandGroup() {
+		this(findMainCommandAliases());
+
+		mainGroup = this;
+	}
+
+	/*
+	 * A helper method to aid developers implement this command properly.
+	 */
+	private static StrictList<String> findMainCommandAliases() {
+		final StrictList<String> aliases = SimpleSettings.MAIN_COMMAND_ALIASES;
+
+		Valid.checkBoolean(!aliases.isEmpty(), "Called SimpleCommandGroup with no args constructor which uses SimpleSettings' MAIN_COMMAND_ALIASES field."
+				+ " To make this work, make a settings class extending SimpleSettings and write 'Command_Aliases: [/yourmaincommand]' key-value pair with a list of aliases to your settings.yml file.");
+
+		Valid.checkBoolean(mainGroup == null, "Cannot have two command groups using main label and aliases: " + aliases);
+
+		return aliases;
+	}
+
+	/**
+	 * Create a new simple command group with the given label and aliases bundled in a list
+	 */
+	protected SimpleCommandGroup(StrictList<String> labelAndAliases) {
+		this(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictList<String>()).getSource());
+	}
+
+	/**
+	 * Create a new simple command group with the given label and aliases
+	 */
+	protected SimpleCommandGroup(String label, List<String> aliases) {
+		this.label = label;
+		this.aliases = aliases;
+	}
 
 	// ----------------------------------------------------------------------
 	// Main functions
@@ -61,20 +109,8 @@ public abstract class SimpleCommandGroup {
 
 	/**
 	 * Register this command group into Bukkit and start using it
-	 *
-	 * @param labelAndAliases
 	 */
-	public final void register(final StrictList<String> labelAndAliases) {
-		register(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictList<String>()).getSource());
-	}
-
-	/**
-	 * Register this command group into Bukkit and start using it
-	 *
-	 * @param label
-	 * @param aliases
-	 */
-	public final void register(final String label, final List<String> aliases) {
+	public final void register() {
 		Valid.checkBoolean(!isRegistered(), "Main command already registered as: " + mainCommand);
 
 		mainCommand = new MainCommand(label);
@@ -128,22 +164,6 @@ public abstract class SimpleCommandGroup {
 	}
 
 	/**
-	 * Scans all of your plugin's classes and registers commands extending the given class
-	 * automatically.
-	 *
-	 * @param <T>
-	 * @param ofClass
-	 *
-	 * @deprecated produces unexpected results if called more than once from your code, deal with caution!
-	 */
-	@Deprecated
-	protected final <T extends SimpleSubCommand> void autoRegisterSubcommands(final Class<T> ofClass) {
-		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), ofClass))
-			if (!Modifier.isAbstract(clazz.getModifiers()))
-				registerSubcommand(ReflectionUtil.instantiate(clazz));
-	}
-
-	/**
 	 * Extending method to register subcommands, call
 	 * {@link #registerSubcommand(SimpleSubCommand)} and {@link #registerHelpLine(String...)}
 	 * there for your command group.
@@ -175,27 +195,29 @@ public abstract class SimpleCommandGroup {
 	}
 
 	// ----------------------------------------------------------------------
-	// Shortcuts
+	// Setters
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Get the label for this command group, failing if not yet registered
+	 * Updates the command label, only works if the command is not registered
 	 *
-	 * @return
+	 * @param label the label to set
 	 */
-	public final String getLabel() {
-		Valid.checkBoolean(isRegistered(), "Main command has not yet been set!");
+	public void setLabel(String label) {
+		Valid.checkBoolean(!this.isRegistered(), "Cannot use setLabel(" + label + ") for already registered command /" + this.getLabel());
 
-		return mainCommand.getMainLabel();
+		this.label = label;
 	}
 
 	/**
-	 * Return aliases for the main command
+	 * Updates the command aliases, only works if the command is not registered
 	 *
-	 * @return
+	 * @param aliases the aliases to set
 	 */
-	public final List<String> getAliases() {
-		return mainCommand.getAliases();
+	public void setAliases(List<String> aliases) {
+		Valid.checkBoolean(!this.isRegistered(), "Cannot use setAliases(" + aliases + ") for already registered command /" + this.getLabel());
+
+		this.aliases = aliases;
 	}
 
 	// ----------------------------------------------------------------------
@@ -316,6 +338,15 @@ public abstract class SimpleCommandGroup {
 	 */
 	protected String getHeaderPrefix() {
 		return "" + ChatColor.GOLD + ChatColor.BOLD;
+	}
+
+	/**
+	 * How many commands shall we display per page by default?
+	 *
+	 * Defaults to 12
+	 */
+	protected int getCommandsPerPage() {
+		return 12;
 	}
 
 	// ----------------------------------------------------------------------
@@ -449,7 +480,7 @@ public abstract class SimpleCommandGroup {
 					}
 
 				if (!lines.isEmpty()) {
-					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), commandsPerPage), ChatColor.DARK_GRAY);
+					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), getCommandsPerPage()), ChatColor.DARK_GRAY);
 
 					if (getHelpHeader() != null)
 						pages.setHeader(getHelpHeader());

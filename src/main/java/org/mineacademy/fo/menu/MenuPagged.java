@@ -72,7 +72,7 @@ public abstract class MenuPagged<T> extends Menu {
 	private Button prevButton;
 
 	/**
-	 * Create a new paged menu where each page has 3 rows + 1 bottom bar
+	 * Create a new paged menu with automatic page size
 	 *
 	 * @param pages the pages
 	 */
@@ -81,7 +81,7 @@ public abstract class MenuPagged<T> extends Menu {
 	}
 
 	/**
-	 * Create a new paged menu
+	 * Create a new paged menu with automatic page size
 	 *
 	 * @param parent the parent menu
 	 * @param pages  the pages the pages
@@ -91,7 +91,7 @@ public abstract class MenuPagged<T> extends Menu {
 	}
 
 	/**
-	 * Create a new paged menu
+	 * Create a new paged menu with automatic page size
 	 *
 	 * @param parent
 	 * @param pages
@@ -107,10 +107,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add
 	 *                 1 row there)
 	 * @param pages    the pages
-	 * @deprecated we recommend you don't set the page size for the menu to
-	 * autocalculate
 	 */
-	@Deprecated
 	protected MenuPagged(final int pageSize, final Iterable<T> pages) {
 		this(pageSize, null, pages);
 	}
@@ -122,10 +119,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                 1 row there)
 	 * @param parent   the parent menu
 	 * @param pages    the pages the pages
-	 * @deprecated we recommend you don't set the page size for the menu to
-	 * autocalculate
 	 */
-	@Deprecated
 	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> pages) {
 		this(pageSize, parent, pages, false);
 	}
@@ -136,11 +130,8 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param pageSize
 	 * @param parent
 	 * @param pages
-	 * @param returnMakesNewInstance *
-	 * @deprecated we recommend you don't set the page size for the menu to
-	 * autocalculate
+	 * @param returnMakesNewInstance
 	 */
-	@Deprecated
 	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> pages, final boolean returnMakesNewInstance) {
 		this((Integer) pageSize, parent, pages, returnMakesNewInstance);
 	}

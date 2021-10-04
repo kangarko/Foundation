@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
@@ -218,6 +219,6 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 
 	@Override
 	public String toString() {
-		return "StrictSet{\n" + StringUtils.join(set, "\n") + "}";
+		return "StrictSet{\n\t" + Common.join(set, "\n\t") + "\n}";
 	}
 }

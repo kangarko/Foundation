@@ -2688,5 +2688,5 @@ class SoftMaterials {
 			"OBSERVER",
 			"PURPLE_SHULKER_BOX"
 
-			));
+	));
 }
