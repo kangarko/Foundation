@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 
 import lombok.SneakyThrows;
@@ -166,7 +167,20 @@ public enum CompParticle {
 			// Minecraft <1.7 lacks that class, Minecraft >1.13 already has native API
 			if (MinecraftVersion.atLeast(V.v1_7) && MinecraftVersion.olderThan(V.v1_13)) {
 
-				final Class<?> packetClass = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "net.minecraft.network.protocol.game.PacketPlayOutWorldParticles");
+				final Class<?> packetClass;
+
+				try {
+					packetClass = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "N/A");
+
+				} catch (final ReflectionException ex) {
+
+					// Likely 1.7.10 Thermos, unsupported
+					this.nmsEnumParticle = null;
+					this.packetConstructor = null;
+					this.bukkitEnumParticle = null;
+
+					return;
+				}
 
 				if (MinecraftVersion.equals(V.v1_7)) {
 					this.nmsEnumParticle = null;
