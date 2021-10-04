@@ -99,25 +99,6 @@ public final class Whiteblacklist {
 	}
 
 	/**
-	 * Return true if {@link Valid#isInListContains(String, Iterable)} returns true
-	 * inverting it according to the {@link #isWhitelist()} flag
-	 *
-	 * @param item
-	 * @return
-	 *
-	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
-	 */
-	@Deprecated
-	public boolean isInListContains(String item) {
-		if (entireList)
-			return true;
-
-		final boolean match = Valid.isInListContains(item, this.items);
-
-		return whitelist ? match : !match;
-	}
-
-	/**
 	 * Return true if {@link Valid#isInListStartsWith(String, Iterable)} returns true
 	 * inverting it according to the {@link #isWhitelist()} flag
 	 *

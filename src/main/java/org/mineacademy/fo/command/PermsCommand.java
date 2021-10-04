@@ -4,10 +4,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mineacademy.fo.annotation.Permission;
-import org.mineacademy.fo.annotation.PermissionGroup;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.constants.FoPermissions;
+import org.mineacademy.fo.command.annotation.Permission;
+import org.mineacademy.fo.command.annotation.PermissionGroup;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
@@ -26,7 +26,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	/*
 	 * Classes with permissions listed as fields
 	 */
-	private final Class<? extends FoPermissions> classToList;
+	private final Class<?> classToList;
 
 	/*
 	 * Special variables to replace in the annotation of each permission field in permissions class
@@ -35,11 +35,11 @@ public final class PermsCommand extends SimpleSubCommand {
 
 	/**
 	 * Create a new "permisions|perms" subcommand using the given class
-	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class. 
-	 * 
+	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class.
+	 *
 	 * @param classToList
 	 */
-	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList) {
+	public PermsCommand(@NonNull Class<?> classToList) {
 		this(classToList, SerializedMap
 				.of("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0)));
 	}
@@ -47,12 +47,12 @@ public final class PermsCommand extends SimpleSubCommand {
 	/**
 	 * Create a new "permisions|perms" subcommand using the given class
 	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class
-	 * and the given command permission. 
-	 * 
+	 * and the given command permission.
+	 *
 	 * @param classToList
 	 * @param permission
 	 */
-	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList, String permission) {
+	public PermsCommand(@NonNull Class<?> classToList, String permission) {
 		this(classToList, SerializedMap
 				.of("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0)));
 
@@ -62,11 +62,11 @@ public final class PermsCommand extends SimpleSubCommand {
 	/**
 	 * Create a new "permisions|perms" subcommand using the given class with
 	 * the given variables to replace in the \@PermissionGroup annotation in that class.
-	 * 
+	 *
 	 * @param classToList
 	 * @param variables
 	 */
-	public PermsCommand(@NonNull Class<? extends FoPermissions> classToList, SerializedMap variables) {
+	public PermsCommand(@NonNull Class<?> classToList, SerializedMap variables) {
 		super("permissions|perms");
 
 		this.classToList = classToList;
@@ -124,16 +124,14 @@ public final class PermsCommand extends SimpleSubCommand {
 	 */
 	private void listIn(Class<?> clazz, List<SimpleComponent> messages, String phrase) throws ReflectiveOperationException {
 
-		if (!clazz.isAssignableFrom(FoPermissions.class)) {
-			final PermissionGroup group = clazz.getAnnotation(PermissionGroup.class);
+		final PermissionGroup group = clazz.getAnnotation(PermissionGroup.class);
 
-			if (!messages.isEmpty() && !clazz.isAnnotationPresent(PermissionGroup.class))
-				throw new FoException("Please place @PermissionGroup over " + clazz);
+		if (!messages.isEmpty() && !clazz.isAnnotationPresent(PermissionGroup.class))
+			throw new FoException("Please place @PermissionGroup over " + clazz);
 
-			messages.add(SimpleComponent
-					.of("&7- " + (messages.isEmpty() ? Commands.PERMS_MAIN : group.value()) + " " + Commands.PERMS_PERMISSIONS)
-					.onClickOpenUrl(""));
-		}
+		messages.add(SimpleComponent
+				.of("&7- " + (messages.isEmpty() ? Commands.PERMS_MAIN : group.value()) + " " + Commands.PERMS_PERMISSIONS)
+				.onClickOpenUrl(""));
 
 		for (final Field field : clazz.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(Permission.class))
@@ -141,7 +139,7 @@ public final class PermsCommand extends SimpleSubCommand {
 
 			final Permission annotation = field.getAnnotation(Permission.class);
 
-			final String info = Replacer.replaceVariables(annotation.value(), variables);
+			final String info = Replacer.replaceVariables(String.join("\n", Common.split(annotation.value(), 50)), variables);
 			final boolean def = annotation.def();
 
 			if (info.contains("{") && info.contains("}"))

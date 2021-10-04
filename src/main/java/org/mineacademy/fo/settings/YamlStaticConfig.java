@@ -24,7 +24,6 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -417,10 +416,6 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getList(path, listType);
 	}
 
-	protected static final <E extends Enum<E>> List<E> getCompatibleEnumList(final String path, final Class<E> listType) {
-		return TEMPORARY_INSTANCE.getCompatibleEnumList(path, listType);
-	}
-
 	protected static final boolean getBoolean(final String path) {
 		return TEMPORARY_INSTANCE.getBoolean(path);
 	}
@@ -433,27 +428,12 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getString(path);
 	}
 
-	protected static final Replacer getReplacer(final String path) {
-		return TEMPORARY_INSTANCE.getReplacer(path);
-	}
-
 	protected static final int getInteger(final String path) {
 		return TEMPORARY_INSTANCE.getInteger(path);
 	}
 
 	protected static final int getInteger(final String path, int def) {
 		return TEMPORARY_INSTANCE.getInteger(path, def);
-	}
-
-	/**
-	 * @deprecated use {@link #getDouble(String)}
-	 *
-	 * @param path
-	 * @return
-	 */
-	@Deprecated
-	protected static final double getDoubleSafe(final String path) {
-		return TEMPORARY_INSTANCE.getDoubleSafe(path);
 	}
 
 	protected static final double getDouble(final String path) {
@@ -472,7 +452,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getTitle(path);
 	}
 
-	protected static final <T extends SimpleTime> T getTime(final String path) {
+	protected static final SimpleTime getTime(final String path) {
 		return TEMPORARY_INSTANCE.getTime(path);
 	}
 

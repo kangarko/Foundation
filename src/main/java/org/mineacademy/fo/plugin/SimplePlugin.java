@@ -12,17 +12,10 @@ package org.mineacademy.fo.plugin;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -30,19 +23,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
+import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.SimpleBungee;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.annotation.AutoRegister;
+import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
@@ -55,16 +48,13 @@ import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.EnchantmentListener;
 import org.mineacademy.fo.model.FolderWatcher;
+import org.mineacademy.fo.model.FoundationEnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
-import org.mineacademy.fo.model.SimpleEnchantment;
-import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
@@ -170,11 +160,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Is this plugin enabled? Checked for after {@link #onPluginPreStart()}
-	 */
-	protected boolean isEnabled = true;
-
-	/**
 	 * For your convenience, event listeners and timed tasks may be set here to stop/unregister
 	 * them automatically on reload
 	 */
@@ -237,12 +222,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Check if Foundation is correctly moved
 		checkShading();
 
-		if (!isEnabled)
+		if (!isEnabled())
 			return;
 
 		// Before all, check if necessary libraries and the minimum required MC version
 		if (!checkLibraries0() || !checkServerVersions0()) {
-			isEnabled = false;
 			setEnabled(false);
 
 			return;
@@ -251,11 +235,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Load debug mode early
 		Debugger.detectDebugMode();
 
-		// Disable logging prefix if logo is set
-		if (getStartupLogo() != null)
-			Common.ADD_LOG_PREFIX = false;
-
 		// Print startup logo early before onPluginPreStart
+		// Disable logging prefix if logo is set
 		if (getStartupLogo() != null) {
 			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
 
@@ -282,7 +263,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// --------------------------------------------
 
 		// Return if plugin pre start indicated a fatal problem
-		if (!isEnabled || !isEnabled())
+		if (!isEnabled())
 			return;
 
 		try {
@@ -290,51 +271,32 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Load our main static settings classes
 			YamlStaticConfig.load(getSettings());
 
-			if (!isEnabled || !isEnabled())
+			if (!isEnabled())
 				return;
-
-			// Register classes
-			checkSingletons();
-
-			if (!isEnabled || !isEnabled())
-				return;
-
-			// Load legacy permanent metadata store
-			CompMetadata.MetadataFile.getInstance();
 
 			SimpleHologram.init();
-
-			// Register main command if it is set
-			if (getMainCommand() != null) {
-				Valid.checkBoolean(!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty(), "Please make a settings class extending SimpleSettings and specify Command_Aliases in your settings file.");
-
-				reloadables.registerCommands(SimpleSettings.MAIN_COMMAND_ALIASES, getMainCommand());
-			}
 
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
-			if (!isEnabled || !isEnabled())
-				return;
 
 			// Hide plugin name before console messages
 			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
 			Common.ADD_LOG_PREFIX = false;
 
 			startingReloadables = true;
+
+			AutoRegisterScanner.scanAndRegister();
 			onReloadablesStart();
+
 			startingReloadables = false;
 
 			onPluginStart();
 			// --------------------------------------------
 
 			// Return if plugin start indicated a fatal problem
-			if (!isEnabled || !isEnabled())
+			if (!isEnabled())
 				return;
-
-			// Register BungeeCord when used
-			if (getBungeeCord() != null)
-				registerBungeeCord(getBungeeCord());
 
 			// Start update check
 			if (getUpdateCheck() != null)
@@ -344,13 +306,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(this); // For convenience
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
-			registerEvents(new EnchantmentListener());
+			registerEvents(new FoundationEnchantmentListener());
 
 			if (areToolsEnabled())
 				registerEvents(new ToolsListener());
-
-			// Register our packet listener
-			FoundationPacketListener.addNativeListener();
 
 			// Register DiscordSRV listener
 			if (HookManager.isDiscordSRVLoaded()) {
@@ -366,10 +325,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			JavaScriptExecutor.run("");
 
 			// Finish off by starting metrics (currently bStats)
-			final int pluginId = getMetricsPluginId();
-
-			if (pluginId != -1)
-				new Metrics(this, pluginId);
+			if (getMetricsPluginId() != -1)
+				new Metrics(this, getMetricsPluginId());
 
 			// Set the logging and tell prefix
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
@@ -391,133 +348,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * this method is intended to be used if you have multiple fields there and want to register multiple channels.
 	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
-	protected final void registerBungeeCord(@NonNull SimpleBungee bungee) {
+	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		final Messenger messenger = getServer().getMessenger();
 
-		messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee.getListener());
+		messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee);
 		messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
 
-		reloadables.registerEvents(bungee.getListener());
+		reloadables.registerEvents(bungee);
 		Debugger.debug("bungee", "Registered BungeeCord listener on channel " + bungee.getChannel());
-	}
-
-	/**
-	 * Scans your plugin and if your {@link Tool} or {@link SimpleEnchantment} class implements {@link Listener}
-	 * and has "instance" method to be a singleton, your events are registered there automatically
-	 * <p>
-	 * If not, we only call the instance constructor in case there is any underlying registration going on
-	 */
-	private static void checkSingletons() {
-
-		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
-
-		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
-				final JarEntry jar = entry.nextElement();
-				final String name = jar.getName().replace("/", ".");
-
-				try {
-
-					if (name.endsWith(".class")) {
-						final String className = name.substring(0, name.length() - 6);
-						Class<?> clazz = null;
-
-						try {
-							clazz = SimplePlugin.class.getClassLoader().loadClass(className);
-						} catch (final NoClassDefFoundError | ClassNotFoundException | IncompatibleClassChangeError error) {
-							continue;
-						}
-
-						if (Modifier.isAbstract(clazz.getModifiers()))
-							continue;
-
-						System.out.println("@@@ iterating over " + className);
-
-						if (anonymousClassPattern.matcher(className).find()) {
-							System.out.println("@ignoring anonymous inner class " + className);
-
-							continue;
-						}
-
-						final boolean isTool = Tool.class.isAssignableFrom(clazz);
-						final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz);
-						final boolean isExpansion = SimpleExpansion.class.isAssignableFrom(clazz);
-
-						if (isTool || isEnchant || isExpansion) {
-
-							if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
-								Bukkit.getLogger().warning("**** WARNING ****");
-								Bukkit.getLogger().warning("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
-
-								continue;
-							}
-
-							try {
-								Field instanceField = null;
-
-								for (final Field field : clazz.getDeclaredFields())
-									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()) || SimpleExpansion.class.isAssignableFrom(field.getType()))
-											&& Modifier.isPrivate(field.getModifiers()) && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
-										instanceField = field;
-
-								for (final Method method : clazz.getDeclaredMethods())
-									System.out.println("\tmethod " + method);
-
-								Valid.checkNotNull(instanceField, "Your class " + className + " must be a singleton and have 'private static final " + clazz.getSimpleName()
-										+ " instance' field and a private constructor!");
-
-								if (instanceField != null) {
-									instanceField.setAccessible(true);
-
-									final Object instance = instanceField.get(null);
-
-									// Enforce private constructors
-									for (final Constructor<?> con : instance.getClass().getDeclaredConstructors())
-										Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your "
-												+ className + " class?");
-
-									// Register if expansion
-									if (isExpansion)
-										Variables.addExpansion((SimpleExpansion) instance);
-
-									// Finally register events
-									if (instance instanceof Listener)
-										Common.registerEvents((Listener) instance);
-
-									System.out.println("@auto registered class " + clazz);
-								}
-
-							} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
-								Bukkit.getLogger().warning("Failed to auto register class " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
-
-								// Ignore if no field is present
-
-							} catch (final Throwable t) {
-								final String error = Common.getOrEmpty(t.getMessage());
-
-								if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
-									Bukkit.getLogger().warning("**** WARNING ****");
-
-									if (error.contains("DragonFireball"))
-										Bukkit.getLogger().warning("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
-									else
-										Bukkit.getLogger().warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
-								} else
-									Common.error(t, "Failed to auto register class " + clazz);
-							}
-						}
-					}
-
-				} catch (final Throwable t) {
-					if (t instanceof VerifyError) // Exception in other class we loaded
-						continue;
-
-					Common.error(t, "Failed to scan class '" + name + "' using Foundation!");
-				}
-			}
-		} catch (final Throwable t) {
-			Common.error(t, "Failed to scan classes using Foundation!");
-		}
 	}
 
 	/**
@@ -556,7 +394,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("Foundation package: " + SimplePlugin.class.getPackage().getName());
 				Bukkit.getLogger().severe(Common.consoleLine());
 
-				isEnabled = false;
+				throw new FoException("Shading exception, see above for details.");
 			}
 		}
 	}
@@ -700,10 +538,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	public final void onDisable() {
 
-		// If the early startup was interrupted, do not call shutdown methods
-		if (!isEnabled)
-			return;
-
 		try {
 			onPluginStop();
 		} catch (final Throwable t) {
@@ -821,12 +655,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			onPluginPreReload();
 			reloadables.reload();
 
-			YamlConfig.clearLoadedFiles();
 			YamlStaticConfig.load(getSettings());
 
-			CompMetadata.MetadataFile.onReload();
-
-			FoundationPacketListener.addNativeListener();
+			final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
+			metadata.save();
+			metadata.reload();
 
 			SimpleHologram.init();
 
@@ -836,14 +669,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			onPluginReload();
 
 			// Something went wrong in the reload pipeline
-			if (!isEnabled || !isEnabled())
+			if (!isEnabled())
 				return;
 
-			if (getMainCommand() != null)
-				reloadables.registerCommands(SimpleSettings.MAIN_COMMAND_ALIASES, getMainCommand());
-
 			startingReloadables = true;
+
+			// Register classes
+			AutoRegisterScanner.scanAndRegister();
+
 			onReloadablesStart();
+
 			startingReloadables = false;
 
 			if (HookManager.isDiscordSRVLoaded()) {
@@ -851,9 +686,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
-
-			if (getBungeeCord() != null)
-				registerBungeeCord(getBungeeCord());
 
 			Common.log(Common.consoleLineSmooth());
 
@@ -909,6 +741,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		classLookup:
 		for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+
+			// AutoRegister means the class is already being registered
+			if (pluginClass.isAnnotationPresent(AutoRegister.class))
+				continue;
+
 			for (final Constructor<?> con : pluginClass.getConstructors()) {
 				if (con.getParameterCount() == 0) {
 					final T instance = (T) ReflectionUtil.instantiate(con);
@@ -998,6 +835,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		classLookup:
 		for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
 
+			// AutoRegister means the class is already being registered
+			if (pluginClass.isAnnotationPresent(AutoRegister.class))
+				continue;
+
 			if (SimpleSubCommand.class.isAssignableFrom(pluginClass)) {
 				Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because sub-commands cannot be registered");
 
@@ -1048,28 +889,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(String, List))}
+	 * Shortcut for calling {@link SimpleCommandGroup#register()}
 	 *
 	 * @param labelAndAliases
 	 * @param group
 	 */
-	protected final void registerCommands(final String labelAndAliases, final SimpleCommandGroup group) {
-		this.registerCommands(new StrictList<>(labelAndAliases.split("\\|")), group);
-	}
+	protected final void registerCommands(final SimpleCommandGroup group) {
+		if (startingReloadables)
+			reloadables.registerCommands(group);
 
-	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register(StrictList)}
-	 *
-	 * @param labelAndAliases
-	 * @param group
-	 */
-	protected final void registerCommands(final StrictList<String> labelAndAliases, final SimpleCommandGroup group) {
-		Valid.checkBoolean(!labelAndAliases.isEmpty(), "Must specify at least label for command group: " + group);
-
-		if (getMainCommand() != null && getMainCommand().getLabel().equals(labelAndAliases.get(0)))
-			throw new FoException("Your main command group is registered automatically!");
-
-		reloadables.registerCommands(labelAndAliases, group);
+		else
+			group.register();
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -1123,14 +953,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Get your main command group, e.g. for ChatControl it's /chatcontrol
 	 *
+	 * @deprecated removed, use the @AutoRegister annotation on your SimpleCommandGroup class to make it register automatically
 	 * @return
 	 */
-	public SimpleCommandGroup getMainCommand() {
-		return null;
+	@Deprecated
+	public final SimpleCommandGroup getMainCommand() {
+		throw new FoException("getMainCommand has been removed, use the @AutoRegister annotation on your SimpleCommandGroup class which has a no args constructor. Then you can call SimpleCommandGroup#getMainGroup to get it.");
 	}
 
 	/**
-	 * Get the year of foundation displayed in {@link #getMainCommand()}
+	 * Get the year of foundation displayed in our {@link SimpleCommandGroup} on help
 	 *
 	 * @return -1 by default, or the founded year
 	 */
@@ -1240,7 +1072,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	public SimpleBungee getBungeeCord() {
+	public final BungeeListener getBungeeCord() {
+		throw new FoException("getBungeeCord() is no longer used, write @AutoRegister annotation over your class extending BungeeListener");
+	}
+
+	/**
+	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#tellBungee(org.mineacademy.fo.bungee.BungeeAction, Object...)}
+	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
+	 *
+	 * @return
+	 */
+	public BungeeListener getDefaultBungeeListener() {
 		return null;
 	}
 
@@ -1263,17 +1105,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public boolean areToolsEnabled() {
 		return true;
-	}
-
-	/**
-	 * Use JavaScript variables/javascript.txt file
-	 *
-	 * @return
-	 * @deprecated this feature has been removed
-	 */
-	@Deprecated
-	public boolean areScriptVariablesEnabled() {
-		return false;
 	}
 
 	// ----------------------------------------------------------------------------------------

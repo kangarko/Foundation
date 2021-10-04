@@ -490,28 +490,6 @@ public final class Valid {
 	}
 
 	/**
-	 * Return true if any element in the given list contains (case ignored) your given element
-	 *
-	 * @param element
-	 * @param list
-	 * @return
-	 *
-	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
-	 */
-	@Deprecated
-	public boolean isInListContains(final String element, final Iterable<String> list) {
-		try {
-			for (final String matched : list)
-				if (removeSlash(element).toLowerCase().contains(removeSlash(matched).toLowerCase()))
-					return true;
-
-		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
-		}
-
-		return false;
-	}
-
-	/**
 	 * Return true if any element in the given list matches your given element.
 	 *
 	 * A regular expression is compiled from that list element.
@@ -543,6 +521,28 @@ public final class Valid {
 		for (final Enum<?> constant : enumeration)
 			if (constant.name().equalsIgnoreCase(element))
 				return true;
+
+		return false;
+	}
+
+	/**
+	 * Return true if any element in the given list contains (case ignored) your given element
+	 *
+	 * @param element
+	 * @param list
+	 * @return
+	 *
+	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
+	 */
+	@Deprecated
+	public boolean isInListContains(final String element, final Iterable<String> list) {
+		try {
+			for (final String matched : list)
+				if (removeSlash(element).toLowerCase().contains(removeSlash(matched).toLowerCase()))
+					return true;
+
+		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
+		}
 
 		return false;
 	}

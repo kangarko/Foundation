@@ -29,6 +29,8 @@ public final class GeoAPI {
 
 	/**
 	 * Returns a {@link GeoResponse} with geographic data for the given IP address
+	 * THIS IS A BLOCKING OPERATION THAT SHOULD BE RUN ASYNC. We will cache the response
+	 * if it has been looked up for the given IP for maximum performance.
 	 *
 	 * @param ip
 	 * @return

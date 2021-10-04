@@ -1,4 +1,4 @@
-package org.mineacademy.fo.annotation;
+package org.mineacademy.fo.command.annotation;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

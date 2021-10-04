@@ -1,4 +1,4 @@
-package org.mineacademy.fo;
+package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,13 +7,15 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
-import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -35,15 +37,21 @@ import net.md_5.bungee.api.chat.BaseComponent;
 /**
  * Represents packet handling using ProtocolLib
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PacketUtil {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class PacketListener {
+
+	/**
+	 * Called automatically when you use \@AutoRegister, inject
+	 * your packet listeners here.
+	 */
+	public abstract void onRegister();
 
 	/**
 	 * A convenience shortcut to add packet listener
 	 *
 	 * @param adapter
 	 */
-	public static void addPacketListener(final SimpleAdapter adapter) {
+	protected void addPacketListener(final SimpleAdapter adapter) {
 		Valid.checkBoolean(HookManager.isVaultLoaded(), "ProtocolLib integration requires Vault to be installed. Please install that plugin before continuing.");
 
 		HookManager.addPacketListener(adapter);
@@ -59,7 +67,7 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
+	protected void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
 		addReceivingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
@@ -70,7 +78,7 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
+	protected void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
 		addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
@@ -95,7 +103,7 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
+	protected void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
 		addSendingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
@@ -106,7 +114,7 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
+	protected void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
 		addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
@@ -129,7 +137,7 @@ public final class PacketUtil {
 	 *
 	 * @param hoverTexts
 	 */
-	public static List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
+	protected List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
 		final List<WrappedGameProfile> profiles = new ArrayList<>();
 
 		int count = 0;
@@ -146,7 +154,7 @@ public final class PacketUtil {
 	/**
 	 * A convenience adapter for handling chat packets doing most of the heavy work for you.
 	 */
-	public static abstract class SimpleChatAdapter extends SimpleAdapter {
+	protected abstract class SimpleChatAdapter extends SimpleAdapter {
 
 		/**
 		 * Players being processed RIGHT NOW inside the method. Prevents dead loop.
@@ -374,7 +382,7 @@ public final class PacketUtil {
 	/**
 	 * A convenience class so that you don't have to specify which plugin is the owner of the packet adapter
 	 */
-	public static class SimpleAdapter extends PacketAdapter {
+	protected class SimpleAdapter extends PacketAdapter {
 
 		/**
 		 * The packet we're listening for

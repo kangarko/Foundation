@@ -62,7 +62,7 @@ public final class ToolsListener implements Listener {
 			return;
 
 		final Player player = event.getPlayer();
-		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
+		final Tool tool = Tool.getTool(player.getItemInHand());
 
 		if (tool != null)
 			try {
@@ -101,7 +101,7 @@ public final class ToolsListener implements Listener {
 	public void onToolPlaceBlock(final BlockPlaceEvent event) {
 
 		final Player player = event.getPlayer();
-		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
+		final Tool tool = Tool.getTool(player.getItemInHand());
 
 		if (tool != null)
 			try {
@@ -129,8 +129,8 @@ public final class ToolsListener implements Listener {
 	public void onHeltItem(final PlayerItemHeldEvent event) {
 		final Player player = event.getPlayer();
 
-		final Tool current = ToolRegistry.getTool(player.getInventory().getItem(event.getNewSlot()));
-		final Tool previous = ToolRegistry.getTool(player.getInventory().getItem(event.getPreviousSlot()));
+		final Tool current = Tool.getTool(player.getInventory().getItem(event.getNewSlot()));
+		final Tool previous = Tool.getTool(player.getInventory().getItem(event.getPreviousSlot()));
 
 		// Player has attained focus
 		if (current != null) {
@@ -181,7 +181,7 @@ public final class ToolsListener implements Listener {
 			return;
 
 		final Player player = (Player) shooter;
-		final Tool tool = ToolRegistry.getTool(player.getItemInHand());
+		final Tool tool = Tool.getTool(player.getItemInHand());
 
 		if (tool instanceof Rocket)
 			try {

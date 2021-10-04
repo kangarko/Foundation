@@ -54,15 +54,6 @@ import lombok.NonNull;
 public abstract class SimpleCommand extends Command {
 
 	/**
-	 * If this flag is true, we will use {@link Messenger} to send
-	 * messages (no prefix supported)
-	 *
-	 * @deprecated use {@link Messenger#ENABLED} instead
-	 */
-	@Deprecated
-	public static boolean USE_MESSENGER = Messenger.ENABLED;
-
-	/**
 	 * Denotes an empty list used to disable tab-completion
 	 */
 	protected static final List<String> NO_COMPLETE = Collections.unmodifiableList(new ArrayList<>());
@@ -442,7 +433,7 @@ public abstract class SimpleCommand extends Command {
 	 * otherwise we just send a normal message
 	 */
 	private void dynamicTellError(final String... messages) {
-		if (USE_MESSENGER)
+		if (Messenger.ENABLED)
 			for (final String message : messages)
 				tellError(message);
 		else
@@ -536,7 +527,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void checkArgs(final int minimumLength, final String falseMessage) throws CommandException {
 		if (args.length < minimumLength)
-			returnTell((USE_MESSENGER ? "" : "&c") + falseMessage);
+			returnTell((Messenger.ENABLED ? "" : "&c") + falseMessage);
 	}
 
 	/**
@@ -548,7 +539,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
 		if (!value)
-			returnTell((USE_MESSENGER ? "" : "&c") + falseMessage);
+			returnTell((Messenger.ENABLED ? "" : "&c") + falseMessage);
 	}
 
 	/**
@@ -572,7 +563,7 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
 		if (value == null)
-			returnTell((USE_MESSENGER ? "" : "&c") + messageIfNull);
+			returnTell((Messenger.ENABLED ? "" : "&c") + messageIfNull);
 	}
 
 	/**
@@ -810,7 +801,7 @@ public abstract class SimpleCommand extends Command {
 				e.printStackTrace();
 		}
 
-		throw new CommandException(replacePlaceholders((USE_MESSENGER ? "" : "&c") + falseMessage));
+		throw new CommandException(replacePlaceholders((Messenger.ENABLED ? "" : "&c") + falseMessage));
 	}
 
 	/**
@@ -829,7 +820,7 @@ public abstract class SimpleCommand extends Command {
 		else if (args[index].equalsIgnoreCase("false"))
 			return false;
 
-		throw new CommandException(replacePlaceholders((USE_MESSENGER ? "" : "&c") + invalidMessage));
+		throw new CommandException(replacePlaceholders((Messenger.ENABLED ? "" : "&c") + invalidMessage));
 	}
 
 	// ----------------------------------------------------------------------
@@ -907,16 +898,6 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Send the player a Replacer message
-	 *
-	 * @param replacer
-	 */
-	protected final void tell(Replacer replacer) {
-		if (replacer != null)
-			tell(replacer.getReplacedMessage());
-	}
-
-	/**
 	 * Send a list of messages to the player
 	 *
 	 * @param messages
@@ -924,16 +905,6 @@ public abstract class SimpleCommand extends Command {
 	protected final void tell(Collection<String> messages) {
 		if (messages != null)
 			tell(messages.toArray(new String[messages.size()]));
-	}
-
-	/**
-	 * Send the player a Replacer message
-	 *
-	 * @param replacer
-	 */
-	protected final void tellNoPrefix(Replacer replacer) {
-		if (replacer != null)
-			tellNoPrefix(replacer.getReplacedMessage());
 	}
 
 	/**
@@ -972,9 +943,9 @@ public abstract class SimpleCommand extends Command {
 		if (messages != null) {
 			messages = replacePlaceholders(messages);
 
-			if (!addTellPrefix || USE_MESSENGER || messages.length > 2) {
+			if (!addTellPrefix || Messenger.ENABLED || messages.length > 2) {
 
-				if (USE_MESSENGER && addTellPrefix) {
+				if (Messenger.ENABLED && addTellPrefix) {
 					tellInfo(messages[0]);
 
 					if (messages.length > 1)
@@ -1075,16 +1046,6 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void returnTell(final Collection<String> messages) throws CommandException {
 		returnTell(messages.toArray(new String[messages.size()]));
-	}
-
-	/**
-	 * Sends a message to the player and throws a message error, preventing further execution
-	 *
-	 * @param replacer
-	 * @throws CommandException
-	 */
-	protected final void returnTell(final Replacer replacer) throws CommandException {
-		returnTell(replacer.getReplacedMessage());
 	}
 
 	/**

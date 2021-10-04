@@ -351,17 +351,6 @@ public final class Common {
 	}
 
 	/**
-	 * Sends sender a message with {} variables replaced and colors supported
-	 * without the {@link #getTellPrefix()}
-	 *
-	 * @param sender
-	 * @param messages
-	 */
-	public static void tellNoPrefix(final CommandSender sender, final Replacer replacer) {
-		tellNoPrefix(sender, replacer.getReplacedMessage());
-	}
-
-	/**
 	 * Sends the sender a bunch of messages, colors & are supported
 	 * without {@link #getTellPrefix()} prefix
 	 *
@@ -1068,19 +1057,6 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 	// Plugins management
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * @see #doesPluginExist(String)
-	 *
-	 * @deprecated subject for removal, please use {@link #doesPluginExist(String)} because it now works the same
-	 *
-	 * @param pluginName
-	 * @return
-	 */
-	@Deprecated
-	public static boolean doesPluginExistSilently(final String pluginName) {
-		return doesPluginExist(pluginName);
-	}
 
 	/**
 	 * Checks if a plugin is enabled. We also schedule an async task to make
@@ -2095,8 +2071,8 @@ public final class Common {
 				lineLen = 0;
 			}
 
-			output.append(word);
-			lineLen += word.length();
+			output.append(word + " ");
+			lineLen += word.length() + 1;
 		}
 
 		return output.toString().split("\n");
@@ -2183,21 +2159,6 @@ public final class Common {
 	 */
 	public static String getOrNull(final String input) {
 		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? null : input;
-	}
-
-	/**
-	 * Returns the value or its default counterpart in case it is null
-	 *
-	 * @param value
-	 * @param def
-	 *
-	 * @deprecated subject for removal, use {@link #getOrDefault(Object, Object)}
-	 * 			   as it works exactly the same now
-	 * @return
-	 */
-	@Deprecated
-	public static String getOrSupply(String value, String def) {
-		return getOrDefault(value, def);
 	}
 
 	/**

@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.bungee.BungeeListener;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +17,11 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class Message {
+
+	/**
+	 * The listener associated with this message
+	 */
+	private final BungeeListener listener;
 
 	/**
 	 * The UUID of the sender who initiated the packet, can be null
@@ -75,7 +80,7 @@ abstract class Message {
 	 * @param action
 	 */
 	protected final void setAction(String actionName) {
-		final BungeeAction action = BungeeAction.getByName(actionName);
+		final BungeeAction action = BungeeAction.getByName(this.listener, actionName);
 
 		Valid.checkNotNull(action, "Unknown plugin action named: " + actionName + ". IF YOU UPDATED THE PLUGIN BY RELOADING, you need to stop your entire network, ensure all servers were updated and start it again.");
 		setAction(action);
@@ -129,6 +134,6 @@ abstract class Message {
 	 * @return
 	 */
 	public final String getChannel() {
-		return SimplePlugin.getInstance().getBungeeCord().getChannel();
+		return this.listener.getChannel();
 	}
 }

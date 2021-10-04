@@ -23,6 +23,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
@@ -32,7 +33,9 @@ import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlSectionConfig;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -42,16 +45,13 @@ import lombok.RequiredArgsConstructor;
  * We apply scoreboard tags to ensure permanent metadata storage
  * if supported, otherwise it is lost on reload
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CompMetadata {
 
 	/**
 	 * The tag delimiter
 	 */
 	private final static String DELIMITER = "%-%";
-
-	// Static access
-	private CompMetadata() {
-	}
 
 	// ----------------------------------------------------------------------------------------
 	// Setting metadata
@@ -379,6 +379,7 @@ public final class CompMetadata {
 	 * <p>
 	 * internal use only
 	 */
+	@AutoRegister
 	public static final class MetadataFile extends YamlSectionConfig {
 
 		private static volatile Object LOCK = new Object();
@@ -542,10 +543,6 @@ public final class CompMetadata {
 
 				return map;
 			}
-		}
-
-		public static void onReload() {
-			instance = new MetadataFile();
 		}
 	}
 }

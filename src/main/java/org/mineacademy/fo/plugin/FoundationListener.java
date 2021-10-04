@@ -17,7 +17,6 @@ import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.constants.FoPermissions;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -34,7 +33,7 @@ final class FoundationListener implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
 
-		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(event.getPlayer(), FoPermissions.NOTIFY_UPDATE))
+		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(event.getPlayer(), check.getPermission().replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase().replace(" ", "_"))))
 			Common.tellLater(4 * 20, event.getPlayer(), check.getNotifyMessage());
 	}
 

@@ -23,9 +23,10 @@ import org.mineacademy.fo.remain.Remain;
 /**
  * Listens and executes events for {@link SimpleEnchantment}
  * <p>
- * Internal use only!
+ * @deprecated Internal use only!
  */
-public final class EnchantmentListener implements Listener {
+@Deprecated
+public final class FoundationEnchantmentListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {

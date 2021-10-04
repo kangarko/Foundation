@@ -1,7 +1,5 @@
 package org.mineacademy.fo.plugin;
 
-import java.util.List;
-
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -83,20 +81,8 @@ final class Reloadables {
 	 * @param aliases
 	 * @param group
 	 */
-	void registerCommands(final String label, final List<String> aliases, final SimpleCommandGroup group) {
-		group.register(label, aliases);
-
-		commandGroups.add(group);
-	}
-
-	/**
-	 * Register the given command group
-	 *
-	 * @param labelAndAliases
-	 * @param group
-	 */
-	void registerCommands(final StrictList<String> labelAndAliases, final SimpleCommandGroup group) {
-		group.register(labelAndAliases);
+	void registerCommands(final SimpleCommandGroup group) {
+		group.register();
 
 		commandGroups.add(group);
 	}

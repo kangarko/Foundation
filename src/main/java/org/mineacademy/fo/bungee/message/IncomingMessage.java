@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -52,6 +53,22 @@ public final class IncomingMessage extends Message {
 	 * @param data
 	 */
 	public IncomingMessage(byte[] data) {
+		this(SimplePlugin.getInstance().getDefaultBungeeListener(), data);
+	}
+
+	/**
+	 * Create a new incoming message from the given array
+	 * <p>
+	 * NB: This uses the standardized Foundation model where the first
+	 * string is the server name and the second string is the
+	 * {@link BungeeAction} by its name *read automatically*.
+	 *
+	 * @param bungeeListener
+	 * @param data
+	 */
+	public IncomingMessage(BungeeListener listener, byte[] data) {
+		super(listener);
+
 		this.data = data;
 		this.stream = new ByteArrayInputStream(data);
 		this.input = ByteStreams.newDataInput(stream);

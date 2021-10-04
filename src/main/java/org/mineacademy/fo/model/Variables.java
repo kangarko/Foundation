@@ -22,7 +22,6 @@ import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -166,14 +165,6 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 	// Replacing
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * @deprecated, use {@link #replace(String, CommandSender)} as it will work the same
-	 */
-	@Deprecated
-	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
-		return replace(message, sender);
-	}
 
 	/**
 	 * Replaces variables in the messages using the message sender as an object to replace
@@ -457,7 +448,7 @@ public final class Variables {
 				return player == null ? "" : geoResponse.getIsp();
 
 			case "label":
-				return SimplePlugin.getInstance().getMainCommand() != null ? SimplePlugin.getInstance().getMainCommand().getLabel() : "noMainCommandLabel";
+				return SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty() ? "noMainCommandLabel" : SimpleSettings.MAIN_COMMAND_ALIASES.get(0);
 			case "sender_is_player":
 				return player != null ? "true" : "false";
 			case "sender_is_discord":
