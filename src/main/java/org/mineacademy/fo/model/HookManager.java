@@ -68,8 +68,6 @@ import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
-import com.griefcraft.lwc.LWC;
-import com.griefcraft.model.Protection;
 import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.MPlayer;
@@ -91,8 +89,6 @@ import github.scarsz.discordsrv.util.DiscordUtil;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import me.angeschossen.lands.api.integration.LandsIntegration;
-import me.angeschossen.lands.api.land.Land;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -2404,20 +2400,34 @@ class MVdWPlaceholderHook {
 
 class LWCHook {
 
+	private final Class<?> mainClass;
+	private final boolean enabled;
+
+	private final Object instance;
+	private final Method findProtection;
+
+	LWCHook() {
+		this.mainClass = ReflectionUtil.lookupClass("com.griefcraft.lwc.LWC");
+		this.enabled = (boolean) ReflectionUtil.getStaticFieldContent(this.mainClass, "ENABLED");
+
+		this.instance = ReflectionUtil.invokeStatic(this.mainClass, "getInstance");
+		this.findProtection = ReflectionUtil.getMethod(this.mainClass, "findProtection", Block.class);
+	}
+
 	String getOwner(final Block block) {
-		if (!LWC.ENABLED)
+		if (!this.enabled)
 			return null;
 
-		final Protection protection = LWC.getInstance().findProtection(block);
+		final Object protection = ReflectionUtil.invoke(this.findProtection, this.instance, block);
 
 		if (protection != null) {
-			final String uuid = protection.getOwner();
+			final Object ownerUid = ReflectionUtil.invoke("getOwner", protection);
 
-			if (uuid != null) {
-				final OfflinePlayer opl = Remain.getOfflinePlayerByUUID(UUID.fromString(uuid));
+			if (ownerUid != null) {
+				final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(UUID.fromString(ownerUid.toString()));
 
-				if (opl != null)
-					return opl.getName();
+				if (offlinePlayer != null)
+					return offlinePlayer.getName();
 			}
 		}
 
@@ -3177,17 +3187,22 @@ class MythicMobsHook {
 
 class LandsHook {
 
-	private final LandsIntegration lands;
+	private final Object lands;
+	private final Method getLand;
 
 	LandsHook() {
-		this.lands = new LandsIntegration(SimplePlugin.getInstance());
+		final Class<?> landsIntegration = ReflectionUtil.lookupClass("me.angeschossen.lands.api.integration.LandsIntegration");
+		final Constructor<?> con = ReflectionUtil.getConstructor(landsIntegration, Plugin.class);
+
+		this.lands = ReflectionUtil.instantiate(con, SimplePlugin.getInstance());
+		this.getLand = ReflectionUtil.getMethod(landsIntegration, "getLand", Location.class);
 	}
 
 	Collection<Player> getLandPlayers(Player player) {
-		final Land land = lands.getLand(player.getLocation());
+		final Object land = ReflectionUtil.invoke(this.getLand, this.lands, player.getLocation());
 
 		if (land != null)
-			return land.getOnlinePlayers();
+			return (Collection<Player>) ReflectionUtil.invoke("getOnlinePlayers", land);
 
 		return new ArrayList<>();
 	}
