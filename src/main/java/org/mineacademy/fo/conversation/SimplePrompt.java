@@ -8,11 +8,10 @@ import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.ValidatingPrompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.Variables;
-
-import lombok.SneakyThrows;
 
 /**
  * Represents one question for the player during a server conversation
@@ -59,7 +58,9 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	@Override
 	public final String getPromptText(final ConversationContext context) {
-		return String.join("\n", Common.splitNewline(Variables.replace(getPrompt(context), getPlayer(context))));
+		final String prompt = getPrompt(context);
+
+		return Variables.replace((Messenger.ENABLED && !prompt.contains(Messenger.getInfoPrefix()) ? Messenger.getInfoPrefix() : "") + prompt, getPlayer(context));
 	}
 
 	/**
@@ -165,7 +166,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			final String failPrompt = getFailedValidationText(context, input);
 
 			if (failPrompt != null)
-				tellLater(1, context.getForWhom(), Variables.replace("&c" + failPrompt, getPlayer(context)));
+				tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, getPlayer(context)));
 
 			// Redisplay this prompt to the user to re-collect input
 			return this;
