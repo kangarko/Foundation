@@ -53,7 +53,7 @@ public final class IncomingMessage extends Message {
 	 * @param data
 	 */
 	public IncomingMessage(byte[] data) {
-		this(SimplePlugin.getInstance().getDefaultBungeeListener(), data);
+		this(SimplePlugin.getInstance().getBungeeCord(), data);
 	}
 
 	/**

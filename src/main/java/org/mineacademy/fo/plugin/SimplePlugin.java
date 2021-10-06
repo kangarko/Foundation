@@ -1067,22 +1067,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Return the BungeeCord suite if you want this plugin
-	 * to send and receive messages from BungeeCord
-	 *
-	 * @return
-	 */
-	public final BungeeListener getBungeeCord() {
-		throw new FoException("getBungeeCord() is no longer used, write @AutoRegister annotation over your class extending BungeeListener");
-	}
-
-	/**
 	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#tellBungee(org.mineacademy.fo.bungee.BungeeAction, Object...)}
 	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
 	 *
 	 * @return
 	 */
-	public BungeeListener getDefaultBungeeListener() {
+	public BungeeListener getBungeeCord() {
 		return null;
 	}
 
