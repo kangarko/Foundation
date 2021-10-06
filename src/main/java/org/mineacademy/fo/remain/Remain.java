@@ -91,6 +91,7 @@ import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
+import org.mineacademy.fo.remain.nbt.NBTEntity;
 import org.mineacademy.fo.remain.nbt.NBTInternals;
 import org.mineacademy.fo.settings.SimpleYaml;
 
@@ -1615,6 +1616,10 @@ public final class Remain {
 	 * @return if the event was fired for main hand only
 	 */
 	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent e) {
+
+		if (MinecraftVersion.olderThan(V.v1_9))
+			return true;
+
 		try {
 			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
 
@@ -1630,8 +1635,13 @@ public final class Remain {
 	 * @return
 	 */
 	public static boolean isInteractEventPrimaryHand(final PlayerInteractEntityEvent e) {
+
+		if (MinecraftVersion.olderThan(V.v1_9))
+			return true;
+
 		try {
 			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
+
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
 		}
@@ -1836,14 +1846,21 @@ public final class Remain {
 	/**
 	 * Sets a custom name to entity
 	 *
-	 * @param en
+	 * @param entity
 	 * @param name
 	 */
-	public static void setCustomName(final Entity en, final String name) {
+	public static void setCustomName(final Entity entity, final String name) {
 		try {
-			en.setCustomNameVisible(true);
-			en.setCustomName(Common.colorize(name));
+			entity.setCustomNameVisible(true);
+			entity.setCustomName(Common.colorize(name));
+
 		} catch (final NoSuchMethodError er) {
+			Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "setCustomName requires Minecraft 1.7.10+");
+
+			final NBTEntity nbt = new NBTEntity(entity);
+
+			nbt.setInteger("CustomNameVisible", 1);
+			nbt.setString("CustomName", Common.colorize(name));
 		}
 	}
 
@@ -2064,7 +2081,7 @@ public final class Remain {
 		} catch (final Throwable t) {
 			final StrictMap<Material, Integer> cooldown = getCooldown(player);
 
-			return cooldown.contains(material);
+			return cooldown.containsKey(material);
 		}
 	}
 
