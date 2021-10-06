@@ -321,7 +321,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				// Save last prompt if it is our class
 				if (currentPrompt instanceof SimplePrompt)
-					lastSimplePrompt = ((SimplePrompt) currentPrompt).clone();
+					lastSimplePrompt = ((SimplePrompt) currentPrompt);
 
 				if (!currentPrompt.blocksForInput(context)) {
 					currentPrompt = currentPrompt.acceptInput(context, null);

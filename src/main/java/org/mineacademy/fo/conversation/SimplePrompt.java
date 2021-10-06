@@ -17,7 +17,7 @@ import lombok.SneakyThrows;
 /**
  * Represents one question for the player during a server conversation
  */
-public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable {
+public abstract class SimplePrompt extends ValidatingPrompt {
 
 	/**
 	 * Open the players menu back if any?
@@ -211,12 +211,6 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 		conversation.start(player);
 
 		return conversation;
-	}
-
-	@SneakyThrows
-	@Override
-	public SimplePrompt clone() {
-		return (SimplePrompt) super.clone();
 	}
 
 	/**
