@@ -1,6 +1,7 @@
 package org.mineacademy.fo.menu.button;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -137,7 +138,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(icon, title, "", label).build().makeMenuTool();
+				return ItemCreator.of(icon).name(title).lore("").lores(Arrays.asList(label.split("\n"))).build().make();
 			}
 
 			@Override
@@ -159,7 +160,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return builder.build().makeMenuTool();
+				return builder.build().make();
 			}
 
 			@Override

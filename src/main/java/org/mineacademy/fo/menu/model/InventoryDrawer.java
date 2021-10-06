@@ -6,6 +6,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.Getter;
@@ -155,6 +156,8 @@ public final class InventoryDrawer {
 	 * @return
 	 */
 	public Inventory build(InventoryHolder holder) {
+		Valid.checkBoolean(this.title.length() + 2 < 32, "Menu title cannot be longer than 32 characters: " + this.title);
+
 		// Automatically append the black color in the menu, can be overriden by colors
 		final Inventory inv = Bukkit.createInventory(holder, size, Common.colorize("&0" + title));
 

@@ -42,7 +42,7 @@ public class ButtonRemove extends Button {
 	/**
 	 * The action that triggers when the object is removed
 	 */
-	private final ButtonRemoveAction removeAction;
+	private final Runnable removeAction;
 
 	/**
 	 * The icon for this button
@@ -108,25 +108,10 @@ public class ButtonRemove extends Button {
 		@Override
 		public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 			player.closeInventory();
-			removeAction.remove(toRemoveName);
+			removeAction.run();
 
 			Common.tell(player, SimpleLocalization.Menu.ITEM_DELETED.replace("{item}", (!toRemoveType.isEmpty() ? toRemoveType + " " : "") + toRemoveName));
 		}
-	}
-
-	/**
-	 * Fires the action to remove the object
-	 */
-
-	@FunctionalInterface
-	public interface ButtonRemoveAction {
-
-		/**
-		 * Remove the object
-		 *
-		 * @param object the object's name, for example "Warrior" for class
-		 */
-		void remove(String object);
 	}
 
 	/**

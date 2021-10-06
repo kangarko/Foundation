@@ -429,7 +429,14 @@ public abstract class Menu {
 
 		// Register current menu
 		Common.runLater(1, () -> {
-			drawer.display(player);
+			try {
+				drawer.display(player);
+
+			} catch (final Throwable t) {
+				Common.error(t, "Error opening menu " + Menu.this);
+
+				return;
+			}
 
 			player.setMetadata(FoConstants.NBT.TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
 
