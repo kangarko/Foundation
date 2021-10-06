@@ -122,7 +122,7 @@ public final class Variables {
 	 * @return
 	 */
 	public static boolean hasVariable(String variable) {
-		return customVariables.contains(variable);
+		return customVariables.containsKey(variable);
 	}
 
 	/**

@@ -47,7 +47,7 @@ public final class CompBiome {
 	 * @return
 	 */
 	public static byte getBiomeID(final Biome biome) {
-		return map.contains(biome) ? map.get(biome).byteValue() : 0;
+		return map.containsKey(biome) ? map.get(biome).byteValue() : 0;
 	}
 
 	static {
