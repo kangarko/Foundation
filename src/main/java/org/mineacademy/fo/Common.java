@@ -481,7 +481,7 @@ public final class Common {
 			}
 
 		} else
-			for (final String part : splitNewline(message)) {
+			for (final String part : message.split("\n")) {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
 				final String prefix = ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
 
@@ -851,6 +851,19 @@ public final class Common {
 			fill += "-";
 
 		return "&m|" + fill + "|";
+	}
+
+	/**
+	 * Convenience method for printing count with what the list actually contains.
+	 * Example:
+	 * "X bosses: Creeper, Zombie
+	 *
+	 * @param iterable
+	 * @param ofWhat
+	 * @return
+	 */
+	public static <T> String plural(final List<T> iterable, final String ofWhat) {
+		return plural(iterable.size(), ofWhat) + ": " + join(iterable);
 	}
 
 	/**
@@ -1278,7 +1291,7 @@ public final class Common {
 					log(Remain.toLegacyText(stripped, false));
 
 			} else
-				for (final String part : splitNewline(message)) {
+				for (final String part : message.split("\n")) {
 					final String log = ((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
 
 					if (CONSOLE_SENDER != null)
@@ -2011,42 +2024,6 @@ public final class Common {
 			newList.add(converter.convert(old));
 
 		return newList;
-	}
-
-	/**
-	 * Attempts to split the message using the \n character. This is used in some plugins
-	 * since some OS's have a different method for splitting so we just go letter by letter
-	 * there and match \ and n and then split it.
-	 *
-	 * @param message
-	 * @return
-	 * @deprecated usage specific, also some operating systems seems to handle this poorly
-	 */
-	@Deprecated
-	public static String[] splitNewline(final String message) {
-		if (!SimplePlugin.getInstance().enforeNewLine())
-			return message.split("\n");
-
-		final String delimiter = "KANGARKOJESUUPER";
-
-		final char[] chars = message.toCharArray();
-		String parts = "";
-
-		for (int i = 0; i < chars.length; i++) {
-			final char c = chars[i];
-
-			if ('\\' == c)
-				if (i + 1 < chars.length)
-					if ('n' == chars[i + 1]) {
-						i++;
-
-						parts += delimiter;
-						continue;
-					}
-			parts += c;
-		}
-
-		return parts.split(delimiter);
 	}
 
 	/**
