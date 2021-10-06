@@ -1,15 +1,17 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.SerializeUtil.EnchantmentWrapper;
+import org.mineacademy.fo.SerializeUtil.PotionWrapper;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -17,7 +19,6 @@ import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for managing items.
@@ -27,52 +28,6 @@ public final class ItemUtil {
 
 	// Is Minecraft older than 1.13? Storing here for best performance.
 	private static final boolean LEGACY_MATERIALS = MinecraftVersion.olderThan(V.v1_13);
-
-	// ----------------------------------------------------------------------------------------------------
-	// Converting strings into Bukkit item-related classes
-	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Looks up a {@link PotionEffect} from the given name,
-	 * failing if not found
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static PotionEffectType findPotion(String name) {
-		name = PotionWrapper.getBukkitName(name);
-
-		final PotionEffectType potion = PotionEffectType.getByName(name);
-		Valid.checkNotNull(potion, "Invalid potion '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/potion/PotionEffectType.html");
-
-		return potion;
-	}
-
-	/**
-	 * Looks up an {@link Enchantment} from the given name,
-	 * failing if not found
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static Enchantment findEnchantment(String name) {
-		Enchantment enchant = Enchantment.getByName(name);
-
-		if (enchant == null)
-			enchant = Enchantment.getByName(name.toLowerCase());
-
-		if (enchant == null) {
-			name = EnchantmentWrapper.toBukkit(name);
-			enchant = Enchantment.getByName(name.toLowerCase());
-
-			if (enchant == null)
-				enchant = Enchantment.getByName(name);
-		}
-
-		Valid.checkNotNull(enchant, "Invalid enchantment '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html");
-
-		return enchant;
-	}
 
 	// ----------------------------------------------------------------------------------------------------
 	// Enumeration - fancy names
@@ -192,11 +147,13 @@ public final class ItemUtil {
 			if ((f == null && s != null) || (s == null && f != null))
 				return false;
 
-			final String fName = f == null ? "" : Common.stripColors(Common.getOrEmpty(f.getDisplayName()));
-			final String sName = s == null ? "" : Common.stripColors(Common.getOrEmpty(s.getDisplayName()));
+			if (f != null && s != null) {
+				final String fName = Common.stripColors(f.getDisplayName());
+				final String sName = Common.stripColors(s.getDisplayName());
 
-			if ((fName != null && !fName.equalsIgnoreCase(sName)) || !Valid.listEquals(f == null ? new ArrayList<>() : f.getLore(), s == null ? new ArrayList<>() : s.getLore()))
-				return false;
+				if ((fName != null && !fName.equals(sName)) || !listMatch(f.getLore(), s.getLore()))
+					return false;
+			}
 		}
 
 		if (MinecraftVersion.atLeast(V.v1_7)) {
@@ -204,6 +161,31 @@ public final class ItemUtil {
 			final NBTItem secondNbt = new NBTItem(second);
 
 			return matchNbt(SimplePlugin.getNamed(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getNamed() + "_Item", firstNbt, secondNbt);
+		}
+
+		return true;
+	}
+
+	private static boolean listMatch(List<String> first, List<String> second) {
+
+		if (first == null)
+			first = new ArrayList<>();
+
+		if (second == null)
+			second = new ArrayList<>();
+
+		if (first.isEmpty() && second.isEmpty())
+			return true;
+
+		if (first.size() != second.size())
+			return false;
+
+		for (int i = 0; i < first.size(); i++) {
+			final String firstString = first.get(i);
+			final String secondString = second.get(i);
+
+			if (!Common.stripColors(firstString).equals(Common.stripColors(secondString)))
+				return false;
 		}
 
 		return true;
@@ -221,108 +203,5 @@ public final class ItemUtil {
 			return false; // one has but another hasn't, cannot be same
 
 		return firstNbt.getString(key).equals(secondNbt.getString(key));
-	}
-}
-
-/**
- * A simple class holding some of the potion names
- */
-@RequiredArgsConstructor
-enum PotionWrapper {
-
-	SLOW("SLOW", "Slowness"),
-	STRENGTH("INCREASE_DAMAGE"),
-	JUMP_BOOST("JUMP"),
-	INSTANT_HEAL("INSTANT_HEALTH"),
-	REGEN("REGENERATION");
-
-	private final String bukkitName;
-	private final String minecraftName;
-
-	private PotionWrapper(String bukkitName) {
-		this(bukkitName, null);
-	}
-
-	protected static String getLocalizedName(String name) {
-		String localizedName = name;
-
-		for (final PotionWrapper e : values())
-			if (name.toUpperCase().replace(" ", "_").equals(e.bukkitName)) {
-				localizedName = e.getMinecraftName();
-
-				break;
-			}
-
-		return WordUtils.capitalizeFully(localizedName.replace("_", " "));
-	}
-
-	protected static String getBukkitName(String name) {
-		name = name.toUpperCase().replace(" ", "_");
-
-		for (final PotionWrapper e : values())
-			if (e.toString().equalsIgnoreCase(name) || e.minecraftName != null && e.minecraftName.equalsIgnoreCase(name))
-				return e.bukkitName;
-
-		return name;
-	}
-
-	public String getMinecraftName() {
-		return Common.getOrDefault(minecraftName, bukkitName);
-	}
-}
-
-/**
- * A simple class holding some of the enchantments names
- */
-@RequiredArgsConstructor
-enum EnchantmentWrapper {
-	PROTECTION("PROTECTION_ENVIRONMENTAL"),
-	FIRE_PROTECTION("PROTECTION_FIRE"),
-	FEATHER_FALLING("PROTECTION_FALL"),
-	BLAST_PROTECTION("PROTECTION_EXPLOSIONS"),
-	PROJECTILE_PROTECTION("PROTECTION_PROJECTILE"),
-	RESPIRATION("OXYGEN"),
-	AQUA_AFFINITY("WATER_WORKER"),
-	THORN("THORNS"),
-	CURSE_OF_VANISHING("VANISHING_CURSE"),
-	CURSE_OF_BINDING("BINDING_CURSE"),
-	SHARPNESS("DAMAGE_ALL"),
-	SMITE("DAMAGE_UNDEAD"),
-	BANE_OF_ARTHROPODS("DAMAGE_ARTHROPODS"),
-	LOOTING("LOOT_BONUS_MOBS"),
-	SWEEPING_EDGE("SWEEPING"),
-	EFFICIENCY("DIG_SPEED"),
-	UNBREAKING("DURABILITY"),
-	FORTUNE("LOOT_BONUS_BLOCKS"),
-	POWER("ARROW_DAMAGE"),
-	PUNCH("ARROW_KNOCKBACK"),
-	FLAME("ARROW_FIRE"),
-	INFINITY("ARROW_INFINITE"),
-	LUCK_OF_THE_SEA("LUCK");
-
-	private final String bukkitName;
-
-	protected static String toBukkit(String name) {
-		name = name.toUpperCase().replace(" ", "_");
-
-		for (final EnchantmentWrapper e : values())
-			if (e.toString().equals(name))
-				return e.bukkitName;
-
-		return name;
-	}
-
-	protected static String toMinecraft(String name) {
-		name = name.toUpperCase().replace(" ", "_");
-
-		for (final EnchantmentWrapper e : values())
-			if (name.equals(e.bukkitName))
-				return ItemUtil.bountifyCapitalized(e);
-
-		return WordUtils.capitalizeFully(name);
-	}
-
-	public String getBukkitName() {
-		return bukkitName != null ? bukkitName : name();
 	}
 }

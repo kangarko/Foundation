@@ -6,6 +6,9 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -75,13 +78,12 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * Load items from the given folder
 	 *
 	 * @param <P>
-	 * @param name - the name of what we are loading, used for error messages such as "class", "format"
 	 * @param folder
 	 * @param prototypeClass
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String name, String folder, Class<P> prototypeClass) {
-		return new ConfigItems<>(name, folder, prototypeClass, false);
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
+		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") ? 2 : 1)), folder, prototypeClass, false);
 	}
 
 	/**
@@ -137,39 +139,61 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param name
 	 * @return
 	 */
-	public T loadOrCreateItem(final String name) {
+	public T loadOrCreateItem(@NonNull final String name) {
+		return this.loadOrCreateItem(name, null);
+	}
+
+	/**
+	 * Create the class (make new instance of) by the given name,
+	 * the class must have a private constructor taking in the String (name) or nothing
+	 *
+	 * @param name
+	 * @param instantiator by default we create new instances of your item by calling its constructor,
+	 * 		  which either can be a no args one or one taking a single argument, the name. If that is not
+	 * 		  sufficient, you can supply your custom instantiator here.
+	 *
+	 * @return
+	 */
+	public T loadOrCreateItem(@NonNull final String name, @Nullable Supplier<T> instantiator) {
+		Valid.checkBoolean(!isItemLoaded(name), "Item " + (this.type == null ? "" : this.type + " ") + "named " + name + " already exists! Available: " + getItemNames());
 
 		// Create a new instance of our item
 		T item = null;
 
 		try {
-			Constructor<T> constructor;
-			boolean nameConstructor = true;
 
-			try {
-				constructor = prototypeClass.getDeclaredConstructor(String.class);
+			if (instantiator != null)
+				item = instantiator.get();
 
-			} catch (final Exception e) {
-				constructor = prototypeClass.getDeclaredConstructor();
-				nameConstructor = false;
+			else {
+				Constructor<T> constructor;
+				boolean nameConstructor = true;
+
+				try {
+					constructor = prototypeClass.getDeclaredConstructor(String.class);
+
+				} catch (final Exception e) {
+					constructor = prototypeClass.getDeclaredConstructor();
+					nameConstructor = false;
+				}
+
+				Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor taking a String or nothing!");
+				constructor.setAccessible(true);
+
+				if (nameConstructor)
+					item = constructor.newInstance(name);
+				else
+					item = constructor.newInstance();
 			}
-
-			Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor taking a String or nothing!");
-			constructor.setAccessible(true);
-
-			if (nameConstructor)
-				item = constructor.newInstance(name);
-			else
-				item = constructor.newInstance();
 
 			// Register
 			loadedItems.add(item);
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to load" + (type == null ? "" : " " + type) + " " + name + " from " + folder);
+			Common.throwError(t, "Failed to load" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + folder);
 		}
 
-		Valid.checkNotNull(item, "Failed to initiliaze" + (type == null ? "" : " " + type) + " " + name + " from " + folder);
+		Valid.checkNotNull(item, "Failed to initiliaze" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + folder);
 		return item;
 	}
 
