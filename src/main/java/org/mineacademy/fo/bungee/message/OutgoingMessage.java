@@ -36,7 +36,7 @@ public final class OutgoingMessage extends Message {
 	 * @param action
 	 */
 	public OutgoingMessage(UUID senderUid, BungeeAction action) {
-		this(SimplePlugin.getInstance().getDefaultBungeeListener(), senderUid, action);
+		this(SimplePlugin.getInstance().getBungeeCord(), senderUid, action);
 	}
 
 	/**

@@ -37,8 +37,8 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void tellBungee(BungeeAction action, T... datas) {
-		final BungeeListener bungee = SimplePlugin.getInstance().getDefaultBungeeListener();
-		Valid.checkNotNull(bungee, "Cannot call tellBungee() without channel name because " + SimplePlugin.getInstance().getClass() + " does not implement getDefaultBungeeListener()!");
+		final BungeeListener bungee = SimplePlugin.getInstance().getBungeeCord();
+		Valid.checkNotNull(bungee, "Cannot call tellBungee() without channel name because " + SimplePlugin.getInstance().getClass() + " does not implement getBungeeCord()!");
 
 		tellBungee(bungee.getChannel(), action, datas);
 	}
