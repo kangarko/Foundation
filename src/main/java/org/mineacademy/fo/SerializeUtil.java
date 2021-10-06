@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,6 +22,7 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -44,6 +46,7 @@ import org.mineacademy.fo.settings.YamlConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -316,7 +319,7 @@ public final class SerializeUtil {
 		}
 
 		// Step 3 - Search for "getByName" method used by us or some Bukkit classes such as Enchantment
-		if (deserializeMethod == null && object instanceof String) {
+		if (deserializeMethod == null && object instanceof String && (classOf != Enchantment.class && classOf != PotionEffectType.class)) {
 			deserializeMethod = ReflectionUtil.getMethod(classOf, "getByName", String.class);
 
 			if (deserializeMethod != null)
@@ -352,9 +355,6 @@ public final class SerializeUtil {
 
 			else if (classOf == PotionEffect.class)
 				object = deserializePotionEffect(object);
-
-			else if (classOf == CompMaterial.class)
-				object = CompMaterial.fromString(object.toString());
 
 			else if (classOf == SimpleTime.class)
 				object = SimpleTime.from(object.toString());
@@ -397,8 +397,36 @@ public final class SerializeUtil {
 				object = new ClickEvent(action, value);
 			}
 
-			else if (Enum.class.isAssignableFrom(classOf))
+			else if (Enchantment.class.isAssignableFrom(classOf)) {
+				String name = object.toString().toLowerCase();
+				Enchantment enchant = Enchantment.getByName(name);
+
+				if (enchant == null) {
+					name = EnchantmentWrapper.toBukkit(name);
+					enchant = Enchantment.getByName(name);
+
+					if (enchant == null)
+						enchant = Enchantment.getByName(name.toLowerCase());
+				}
+
+				Valid.checkNotNull(enchant, "Invalid enchantment '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html");
+				object = enchant;
+			}
+
+			else if (PotionEffectType.class.isAssignableFrom(classOf)) {
+				final String name = PotionWrapper.getBukkitName(object.toString());
+				final PotionEffectType potion = PotionEffectType.getByName(name);
+
+				Valid.checkNotNull(potion, "Invalid potion '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/potion/PotionEffectType.html");
+				object = potion;
+			}
+
+			else if (Enum.class.isAssignableFrom(classOf)) {
 				object = ReflectionUtil.lookupEnum((Class<Enum>) classOf, object.toString());
+
+				if (object == null)
+					return null;
+			}
 
 			else if (Color.class.isAssignableFrom(classOf)) {
 				object = CompChatColor.of(object.toString()).getColor();
@@ -607,6 +635,109 @@ public final class SerializeUtil {
 
 		public SerializeFailedException(String reason) {
 			super(reason);
+		}
+	}
+
+	/**
+	 * A simple class holding some of the potion names
+	 */
+	@RequiredArgsConstructor
+	protected static enum PotionWrapper {
+
+		SLOW("SLOW", "Slowness"),
+		STRENGTH("INCREASE_DAMAGE"),
+		JUMP_BOOST("JUMP"),
+		INSTANT_HEAL("INSTANT_HEALTH"),
+		REGEN("REGENERATION");
+
+		private final String bukkitName;
+		private final String minecraftName;
+
+		private PotionWrapper(String bukkitName) {
+			this(bukkitName, null);
+		}
+
+		protected static String getLocalizedName(String name) {
+			String localizedName = name;
+
+			for (final PotionWrapper e : values())
+				if (name.toUpperCase().replace(" ", "_").equals(e.bukkitName)) {
+					localizedName = e.getMinecraftName();
+
+					break;
+				}
+
+			return WordUtils.capitalizeFully(localizedName.replace("_", " "));
+		}
+
+		protected static String getBukkitName(String name) {
+			name = name.toUpperCase().replace(" ", "_");
+
+			for (final PotionWrapper wrapper : values())
+				if (wrapper.toString().equalsIgnoreCase(name) || wrapper.minecraftName != null && wrapper.minecraftName.equalsIgnoreCase(name))
+					return wrapper.bukkitName;
+
+			return name;
+		}
+
+		public String getMinecraftName() {
+			return Common.getOrDefault(minecraftName, bukkitName);
+		}
+	}
+
+	/**
+	 * A simple class holding some of the enchantments names
+	 */
+	@RequiredArgsConstructor
+	protected static enum EnchantmentWrapper {
+		PROTECTION("PROTECTION_ENVIRONMENTAL"),
+		FIRE_PROTECTION("PROTECTION_FIRE"),
+		FEATHER_FALLING("PROTECTION_FALL"),
+		BLAST_PROTECTION("PROTECTION_EXPLOSIONS"),
+		PROJECTILE_PROTECTION("PROTECTION_PROJECTILE"),
+		RESPIRATION("OXYGEN"),
+		AQUA_AFFINITY("WATER_WORKER"),
+		THORN("THORNS"),
+		CURSE_OF_VANISHING("VANISHING_CURSE"),
+		CURSE_OF_BINDING("BINDING_CURSE"),
+		SHARPNESS("DAMAGE_ALL"),
+		SMITE("DAMAGE_UNDEAD"),
+		BANE_OF_ARTHROPODS("DAMAGE_ARTHROPODS"),
+		LOOTING("LOOT_BONUS_MOBS"),
+		SWEEPING_EDGE("SWEEPING"),
+		EFFICIENCY("DIG_SPEED"),
+		UNBREAKING("DURABILITY"),
+		FORTUNE("LOOT_BONUS_BLOCKS"),
+		POWER("ARROW_DAMAGE"),
+		PUNCH("ARROW_KNOCKBACK"),
+		FLAME("ARROW_FIRE"),
+		INFINITY("ARROW_INFINITE"),
+		LUCK_OF_THE_SEA("LUCK");
+
+		private final String bukkitName;
+
+		protected static String toBukkit(String name) {
+			name = name.toUpperCase().replace(" ", "_");
+
+			for (final EnchantmentWrapper e : values())
+				if (e.toString().equals(name))
+					return e.bukkitName;
+
+			return name;
+		}
+
+		protected static String toMinecraft(String name) {
+			name = name.toUpperCase().replace(" ", "_");
+
+			for (final EnchantmentWrapper e : values())
+				if (name.equals(e.bukkitName))
+					return ItemUtil.bountifyCapitalized(e);
+
+			return WordUtils.capitalizeFully(name);
+		}
+
+		public String getBukkitName() {
+			return bukkitName != null ? bukkitName : name();
 		}
 	}
 }

@@ -41,7 +41,6 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.debug.Debugger;
 
 import lombok.Getter;
@@ -2204,27 +2203,6 @@ public enum CompMaterial {
 	}
 
 	/**
-	 * A special method for some of our plugins that by default include
-	 * materials in their config files that do not exist in older MC versions.
-	 * <p>
-	 * For these materials, we simply return null and do not add them to settings
-	 * instead of throwing an error.
-	 *
-	 * @param name
-	 * @return
-	 * @deprecated special usage only
-	 */
-	@Deprecated
-	public static CompMaterial fromStringCompat(final String name) {
-		final CompMaterial lookup = fromString(name);
-
-		if (lookup == null && SoftMaterials.MATERIALS.contains(name))
-			return null;
-
-		return fromStringStrict(name);
-	}
-
-	/**
 	 * The main method that parses the given material name and data value as an CompMaterial.
 	 * All the values passed to this method will not be null or empty and are formatted correctly.
 	 *
@@ -2600,93 +2578,4 @@ public enum CompMaterial {
 		 */
 		private static final boolean ISFLAT = supports(13);
 	}
-}
-
-/**
- * A special class for some of our plugins that by default include
- * materials in their config files that do not exist in older MC versions.
- * <p>
- * For these materials, we simply return null and do not add them to settings
- * instead of throwing an error.
- *
- * @deprecated special usage only, limited
- */
-@Deprecated
-class SoftMaterials {
-
-	final static StrictSet<String> MATERIALS = new StrictSet<>(Common.newSet(
-			"SKULL",
-			"ANVIL",
-			"TRAPPED_CHEST",
-			"GOLD_PLATE",
-			"IRON_PLATE",
-			"REDSTONE_COMPARATOR_OFF",
-			"REDSTONE_COMPARATOR_ON",
-			"DAYLIGHT_DETECTOR",
-			"REDSTONE_BLOCK",
-			"QUARTZ_ORE",
-			"HOPPER",
-			"QUARTZ_BLOCK",
-			"QUARTZ_STAIRS",
-			"ACTIVATOR_RAIL",
-			"DROPPER",
-			"STAINED_CLAY",
-			"STAINED_GLASS_PANE",
-			"LEAVES_2",
-			"LOG_2",
-			"ACACIA_STAIRS",
-			"DARK_OAK_STAIRS",
-			"SLIME_BLOCK",
-			"BARRIER",
-			"IRON_TRAPDOOR",
-			"PRISMARINE",
-			"SEA_LANTERN",
-			"HAY_BLOCK",
-			"CARPET",
-			"HARD_CLAY",
-			"COAL_BLOCK",
-			"PACKED_ICE",
-			"DOUBLE_PLANT",
-			"STANDING_BANNER",
-			"WALL_BANNER",
-			"DAYLIGHT_DETECTOR_INVERTED",
-			"RED_SANDSTONE",
-			"RED_SANDSTONE_STAIRS",
-			"DOUBLE_STONE_SLAB2",
-			"STONE_SLAB2",
-			"SPRUCE_FENCE_GATE",
-			"BIRCH_FENCE_GATE",
-			"JUNGLE_FENCE_GATE",
-			"DARK_OAK_FENCE_GATE",
-			"ACACIA_FENCE_GATE",
-			"SPRUCE_FENCE",
-			"BIRCH_FENCE",
-			"JUNGLE_FENCE",
-			"DARK_OAK_FENCE",
-			"ACACIA_FENCE",
-			"SPRUCE_DOOR",
-			"BIRCH_DOOR",
-			"JUNGLE_DOOR",
-			"ACACIA_DOOR",
-			"DARK_OAK_DOOR",
-			"END_ROD",
-			"CHORUS_PLANT",
-			"CHORUS_FLOWER",
-			"PURPUR_BLOCK",
-			"PURPUR_PILLAR",
-			"PURPUR_STAIRS",
-			"PURPUR_DOUBLE_SLAB",
-			"PURPUR_SLAB",
-			"END_BRICKS",
-			"GRASS_PATH",
-			"END_GATEWAY",
-			"FROSTED_ICE",
-			"MAGMA",
-			"NETHER_WART_BLOCK",
-			"RED_NETHER_BRICK",
-			"BONE_BLOCK",
-			"OBSERVER",
-			"PURPLE_SHULKER_BOX"
-
-	));
 }

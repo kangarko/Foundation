@@ -34,6 +34,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
+import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -388,9 +389,19 @@ final @Builder public class ItemCreator {
 		if (enchantedIs != null)
 			finalItem = enchantedIs;
 
+		// 1.7.10 hack to add glow, requires no enchants
+		if (glow && MinecraftVersion.equals(V.v1_7) && (enchants == null || enchants.isEmpty())) {
+			final NBTItem nbtItem = new NBTItem(compiledItem);
+
+			nbtItem.removeKey("ench");
+			nbtItem.addCompound("ench");
+
+			finalItem = nbtItem.getItem();
+		}
+
 		// Apply NBT tags
 		if (tags != null)
-			if (MinecraftVersion.atLeast(V.v1_8))
+			if (MinecraftVersion.atLeast(V.v1_7))
 				for (final Entry<String, String> entry : tags.entrySet())
 					finalItem = CompMetadata.setMetadata(finalItem, entry.getKey(), entry.getValue());
 
@@ -460,6 +471,28 @@ final @Builder public class ItemCreator {
 	 */
 	public static ItemCreatorBuilder ofWool(final CompColor color) {
 		return of(CompMaterial.makeWool(color, 1)).color(color);
+	}
+
+	/**
+	 * Convenience method to get monster eggs
+	 *
+	 * @param entityType
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofEgg(final EntityType entityType, String name, String... lore) {
+		return of(CompMonsterEgg.makeEgg(entityType)).name(name).lores(Arrays.asList(lore));
+	}
+
+	/**
+	 * Convenience method to get monster eggs
+	 *
+	 * @param entityType
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofEgg(final EntityType entityType) {
+		return of(CompMonsterEgg.makeEgg(entityType));
 	}
 
 	/**

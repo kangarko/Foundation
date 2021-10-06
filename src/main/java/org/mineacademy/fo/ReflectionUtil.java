@@ -18,10 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -52,11 +55,11 @@ public final class ReflectionUtil {
 	public static final String CRAFTBUKKIT = "org.bukkit.craftbukkit";
 
 	/**
-	 * Compatible {@link EntityType} classes that fail gracefully so that
+	 * Compatible enum classes that fail gracefully so that
 	 * plugin loads even on old MC versions where those types are non existent
 	 * but are present in plugin's default configuration files
 	 */
-	private static final Map<String, V> legacyEntityTypes;
+	private static final Map<Class<? extends Enum<?>>, Map<String, V>> legacyEnumTypes;
 
 	/**
 	 * Reflection utilizes a simple cache for fastest performance
@@ -596,44 +599,16 @@ public final class ReflectionUtil {
 	 * The field name is uppercased, spaces are replaced with underscores and even
 	 * plural S is added in attempts to detect the correct enum
 	 *
-	 * If the field is a type that is known not to be exist in current
-	 * MC version, we simply return null instead of {@link MissingEnumException} error
-	 *
-	 * @param <E>
-	 * @param enumType
-	 * @param name
-	 * @return
-	 */
-	public static <E extends Enum<E>> E lookupEnumCompat(final Class<E> enumType, final String name) {
-		try {
-			if (enumType == CompMaterial.class)
-				return (E) CompMaterial.fromStringCompat(name);
-
-			return lookupEnum(enumType, name);
-
-		} catch (final MissingEnumException ex) {
-			if (enumType == EntityType.class) {
-				final V since = legacyEntityTypes.get(name.toUpperCase().replace(" ", "_"));
-
-				if (since != null && MinecraftVersion.olderThan(since))
-					return null;
-			}
-
-			throw ex;
-		}
-	}
-
-	/**
-	 * Attempts to find an enum, throwing formatted error showing all available
-	 * values if not found
-	 *
-	 * The field name is uppercased, spaces are replaced with underscores and even
-	 * plural S is added in attempts to detect the correct enum
+	 * If the given type is known to be found in new MC versions, we may return null
+	 * instead of throwing an error. This is to prevent default configs containing
+	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
 	 * @param enumType
 	 * @param name
-	 * @return the enum or error
+	 *
+	 * @return the enum or error with exceptions, see above
 	 */
+	@Nullable
 	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, final String name) {
 		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + MinecraftVersion.getServerVersion() + "! Available values: {available}");
 	}
@@ -641,14 +616,19 @@ public final class ReflectionUtil {
 	/**
 	 * Attempts to find an enum, throwing formatted error showing all available
 	 * values if not found Use {available} in errMessage to get all enum values.
-	 * <p>
+	 *
 	 * The field name is uppercased, spaces are replaced with underscores and even
 	 * plural S is added in attempts to detect the correct enum
+	 *
+	 * If the given type is known to be found in new MC versions, we may return null
+	 * instead of throwing an error. This is to prevent default configs containing
+	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
 	 * @param enumType
 	 * @param name
 	 * @param errMessage
-	 * @return
+	 *
+	 * @return the enum or error with exceptions, see above
 	 */
 	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, String name, final String errMessage) {
 		Valid.checkNotNull(enumType, "Type missing for " + name);
@@ -744,16 +724,20 @@ public final class ReflectionUtil {
 		if (result == null)
 			result = lookupEnumSilent(enumType, name.replace("_", ""));
 
-		// Before giving up, see if we can translate legacy material names
-		if (result == null && enumType == Material.class) {
-			final CompMaterial compMaterial = CompMaterial.fromString(name);
+		if (result == null) {
 
-			if (compMaterial != null)
-				return (E) compMaterial.getMaterial();
-		}
+			// Return null for legacy types
+			final Map<String, V> legacyMap = legacyEnumTypes.get(enumType);
 
-		if (result == null)
+			if (legacyMap != null) {
+				final V since = legacyMap.get(rawName);
+
+				if (since != null && MinecraftVersion.olderThan(since))
+					return null;
+			}
+
 			throw new MissingEnumException(oldName, errMessage.replace("{available}", StringUtils.join(enumType.getEnumConstants(), ", ")));
+		}
 
 		return result;
 	}
@@ -767,6 +751,13 @@ public final class ReflectionUtil {
 	 */
 	public static <E extends Enum<E>> E lookupEnumSilent(final Class<E> enumType, final String name) {
 		try {
+
+			if (enumType == CompMaterial.class || enumType == Material.class) {
+				final CompMaterial material = CompMaterial.fromString(name);
+
+				if (material != null)
+					return enumType == CompMaterial.class ? (E) material : (E) material.getMaterial();
+			}
 
 			// Since we obfuscate our plugins, enum names are changed.
 			// Therefore we look up a special fromKey method in some of our enums
@@ -908,57 +899,64 @@ public final class ReflectionUtil {
 	}
 
 	static {
-		final Map<String, V> map = new HashMap<>();
 
-		map.put("TIPPED_ARROW", V.v1_9);
-		map.put("SPECTRAL_ARROW", V.v1_9);
-		map.put("SHULKER_BULLET", V.v1_9);
-		map.put("DRAGON_FIREBALL", V.v1_9);
-		map.put("SHULKER", V.v1_9);
-		map.put("AREA_EFFECT_CLOUD", V.v1_9);
-		map.put("LINGERING_POTION", V.v1_9);
-		map.put("POLAR_BEAR", V.v1_10);
-		map.put("HUSK", V.v1_10);
-		map.put("ELDER_GUARDIAN", V.v1_11);
-		map.put("WITHER_SKELETON", V.v1_11);
-		map.put("STRAY", V.v1_11);
-		map.put("DONKEY", V.v1_11);
-		map.put("MULE", V.v1_11);
-		map.put("EVOKER_FANGS", V.v1_11);
-		map.put("EVOKER", V.v1_11);
-		map.put("VEX", V.v1_11);
-		map.put("VINDICATOR", V.v1_11);
-		map.put("ILLUSIONER", V.v1_12);
-		map.put("PARROT", V.v1_12);
-		map.put("TURTLE", V.v1_13);
-		map.put("PHANTOM", V.v1_13);
-		map.put("TRIDENT", V.v1_13);
-		map.put("COD", V.v1_13);
-		map.put("SALMON", V.v1_13);
-		map.put("PUFFERFISH", V.v1_13);
-		map.put("TROPICAL_FISH", V.v1_13);
-		map.put("DROWNED", V.v1_13);
-		map.put("DOLPHIN", V.v1_13);
-		map.put("CAT", V.v1_14);
-		map.put("PANDA", V.v1_14);
-		map.put("PILLAGER", V.v1_14);
-		map.put("RAVAGER", V.v1_14);
-		map.put("TRADER_LLAMA", V.v1_14);
-		map.put("WANDERING_TRADER", V.v1_14);
-		map.put("FOX", V.v1_14);
-		map.put("BEE", V.v1_15);
-		map.put("HOGLIN", V.v1_16);
-		map.put("PIGLIN", V.v1_16);
-		map.put("STRIDER", V.v1_16);
-		map.put("ZOGLIN", V.v1_16);
-		map.put("PIGLIN_BRUTE", V.v1_16);
-		map.put("AXOLOTL", V.v1_17);
-		map.put("GLOW_ITEM_FRAME", V.v1_17);
-		map.put("GLOW_SQUID", V.v1_17);
-		map.put("GOAT", V.v1_17);
-		map.put("MARKER", V.v1_17);
+		final Map<Class<? extends Enum<?>>, Map<String, V>> legacyEnums = new HashMap<>();
 
-		legacyEntityTypes = map;
+		final Map<String, V> entities = new HashMap<>();
+		entities.put("TIPPED_ARROW", V.v1_9);
+		entities.put("SPECTRAL_ARROW", V.v1_9);
+		entities.put("SHULKER_BULLET", V.v1_9);
+		entities.put("DRAGON_FIREBALL", V.v1_9);
+		entities.put("SHULKER", V.v1_9);
+		entities.put("AREA_EFFECT_CLOUD", V.v1_9);
+		entities.put("LINGERING_POTION", V.v1_9);
+		entities.put("POLAR_BEAR", V.v1_10);
+		entities.put("HUSK", V.v1_10);
+		entities.put("ELDER_GUARDIAN", V.v1_11);
+		entities.put("WITHER_SKELETON", V.v1_11);
+		entities.put("STRAY", V.v1_11);
+		entities.put("DONKEY", V.v1_11);
+		entities.put("MULE", V.v1_11);
+		entities.put("EVOKER_FANGS", V.v1_11);
+		entities.put("EVOKER", V.v1_11);
+		entities.put("VEX", V.v1_11);
+		entities.put("VINDICATOR", V.v1_11);
+		entities.put("ILLUSIONER", V.v1_12);
+		entities.put("PARROT", V.v1_12);
+		entities.put("TURTLE", V.v1_13);
+		entities.put("PHANTOM", V.v1_13);
+		entities.put("TRIDENT", V.v1_13);
+		entities.put("COD", V.v1_13);
+		entities.put("SALMON", V.v1_13);
+		entities.put("PUFFERFISH", V.v1_13);
+		entities.put("TROPICAL_FISH", V.v1_13);
+		entities.put("DROWNED", V.v1_13);
+		entities.put("DOLPHIN", V.v1_13);
+		entities.put("CAT", V.v1_14);
+		entities.put("PANDA", V.v1_14);
+		entities.put("PILLAGER", V.v1_14);
+		entities.put("RAVAGER", V.v1_14);
+		entities.put("TRADER_LLAMA", V.v1_14);
+		entities.put("WANDERING_TRADER", V.v1_14);
+		entities.put("FOX", V.v1_14);
+		entities.put("BEE", V.v1_15);
+		entities.put("HOGLIN", V.v1_16);
+		entities.put("PIGLIN", V.v1_16);
+		entities.put("STRIDER", V.v1_16);
+		entities.put("ZOGLIN", V.v1_16);
+		entities.put("PIGLIN_BRUTE", V.v1_16);
+		entities.put("AXOLOTL", V.v1_17);
+		entities.put("GLOW_ITEM_FRAME", V.v1_17);
+		entities.put("GLOW_SQUID", V.v1_17);
+		entities.put("GOAT", V.v1_17);
+		entities.put("MARKER", V.v1_17);
+		legacyEnums.put(EntityType.class, entities);
+
+		final Map<String, V> spawnReasons = new HashMap<>();
+		spawnReasons.put("DROWNED", V.v1_13);
+		legacyEnums.put(SpawnReason.class, spawnReasons);
+
+		legacyEnumTypes = legacyEnums;
 	}
 
 	/* ------------------------------------------------------------------------------- */
@@ -1052,16 +1050,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 
