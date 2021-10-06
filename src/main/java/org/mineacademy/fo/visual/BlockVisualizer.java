@@ -107,6 +107,6 @@ public class BlockVisualizer {
 	 * @return
 	 */
 	public boolean isVisualized(@NonNull final Block block) {
-		return visualizedBlocks.contains(block.getLocation());
+		return visualizedBlocks.containsKey(block.getLocation());
 	}
 }

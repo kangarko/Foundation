@@ -165,7 +165,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @return
 	 */
 	public T getOrPut(E key, T defaultToPut) {
-		if (contains(key))
+		if (containsKey(key))
 			return get(key);
 
 		put(key, defaultToPut);
@@ -219,7 +219,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public boolean contains(E key) {
+	public boolean containsKey(E key) {
 		return key == null ? false : map.containsKey(key);
 	}
 
