@@ -6,8 +6,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
@@ -32,15 +30,6 @@ import lombok.Getter;
  * associated with the main command, for example: /arena join, /arena leave etc.
  */
 public abstract class SimpleCommandGroup {
-
-	/**
-	 * If you use \@AutoRegister on a command group that has a no args constructor,
-	 * we use the label and aliases from {@link SimpleSettings#MAIN_COMMAND_ALIASES}
-	 * and associate it here for the record.
-	 */
-	@Getter
-	@Nullable
-	private static SimpleCommandGroup mainGroup = null;
 
 	/**
 	 * The list of sub-commands belonging to this command tree, for example
@@ -71,7 +60,7 @@ public abstract class SimpleCommandGroup {
 	protected SimpleCommandGroup() {
 		this(findMainCommandAliases());
 
-		mainGroup = this;
+		SimplePlugin.getInstance().setMainCommand(this);
 	}
 
 	/*
@@ -82,8 +71,6 @@ public abstract class SimpleCommandGroup {
 
 		Valid.checkBoolean(!aliases.isEmpty(), "Called SimpleCommandGroup with no args constructor which uses SimpleSettings' MAIN_COMMAND_ALIASES field."
 				+ " To make this work, make a settings class extending SimpleSettings and write 'Command_Aliases: [/yourmaincommand]' key-value pair with a list of aliases to your settings.yml file.");
-
-		Valid.checkBoolean(mainGroup == null, "Cannot have two command groups using main label and aliases: " + aliases);
 
 		return aliases;
 	}
@@ -317,7 +304,7 @@ public abstract class SimpleCommandGroup {
 				getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion(),
 				" ",
 				"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
-				"&6  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
+				this.getTheme() + "  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
 				" "
 		};
 	}
@@ -337,7 +324,16 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected String getHeaderPrefix() {
-		return "" + ChatColor.GOLD + ChatColor.BOLD;
+		return this.getTheme() + "" + ChatColor.BOLD;
+	}
+
+	/**
+	 * Return the color used in some places of the automatically generated command help
+	 *
+	 * @return
+	 */
+	protected ChatColor getTheme() {
+		return ChatColor.GOLD;
 	}
 
 	/**
