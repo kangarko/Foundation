@@ -27,7 +27,7 @@ public final class Variable extends YamlConfig {
 	/**
 	 * A list of all loaded variables
 	 */
-	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class);
+	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variables", Variable.class);
 
 	/**
 	 * The kind of this variable
