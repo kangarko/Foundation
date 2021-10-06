@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -261,12 +263,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		} catch (final Throwable throwable) {
 			Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
 		}
-
-		// --------------------------------------------
-		// Call the main pre start method
-		// --------------------------------------------
-		onPluginPreStart();
-		// --------------------------------------------
 
 		// Return if plugin pre start indicated a fatal problem
 		if (!isEnabled())
@@ -590,12 +586,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Called before we start loading the plugin, but after {@link #onPluginLoad()}
-	 */
-	protected void onPluginPreStart() {
-	}
-
-	/**
 	 * The main loading method, called when we are ready to load
 	 */
 	protected abstract void onPluginStart();
@@ -768,20 +758,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Convenience method for quickly registering events if the condition is met
-	 *
-	 * @param listener
-	 * @param condition
-	 */
-	protected final void registerEventsIf(final Listener listener, final boolean condition) {
-		if (condition)
-			if (startingReloadables)
-				reloadables.registerEvents(listener);
-			else
-				registerEvents(listener);
-	}
-
-	/**
 	 * Convenience method for quickly registering events for this plugin
 	 *
 	 * @param listener
@@ -794,20 +770,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (listener instanceof DiscordListener)
 			((DiscordListener) listener).register();
-	}
-
-	/**
-	 * Convenience method for quickly registering an event if the condition is met
-	 *
-	 * @param listener
-	 * @param condition
-	 */
-	protected final void registerEventsIf(final SimpleListener<? extends Event> listener, final boolean condition) {
-		if (condition)
-			if (startingReloadables)
-				reloadables.registerEvents(listener);
-			else
-				registerEvents(listener);
 	}
 
 	/**
@@ -859,7 +821,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 						Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
 
 						if (instance instanceof SimpleCommand)
-							registerCommand((SimpleCommand) instance);
+							registerCommand(instance);
 
 						else
 							registerCommand(instance);
@@ -882,16 +844,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param command
 	 */
 	protected final void registerCommand(final Command command) {
-		Remain.registerCommand(command);
-	}
+		if (command instanceof SimpleCommand)
+			((SimpleCommand) command).register();
 
-	/**
-	 * Convenience shortcut for calling the register method in {@link SimpleCommand}
-	 *
-	 * @param command
-	 */
-	protected final void registerCommand(final SimpleCommand command) {
-		command.register();
+		else
+			Remain.registerCommand(command);
 	}
 
 	/**
@@ -1092,16 +1049,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public BungeeListener getBungeeCord() {
 		return null;
-	}
-
-	/**
-	 * Should every message be divided by \n by an own method (tends to work more
-	 * then split("\n"))
-	 *
-	 * @return
-	 */
-	public boolean enforeNewLine() {
-		return false;
 	}
 
 	/**
