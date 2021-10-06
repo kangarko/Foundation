@@ -298,7 +298,7 @@ public final class FileUtil {
 		message = Common.stripColors(message).trim();
 
 		if (!message.equalsIgnoreCase("none") && !message.isEmpty())
-			for (final String line : Common.splitNewline(message))
+			for (final String line : message.split("\n"))
 				if (!line.isEmpty())
 					write(to, "[" + TimeUtil.getFormattedDate() + "] " + (prefix != null ? prefix + ": " : "") + line);
 	}
@@ -468,7 +468,8 @@ public final class FileUtil {
 	 */
 	private static String replaceVariables(String line, String fileName) {
 		return line
-				.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase())
+				.replace("{plugin_name}", SimplePlugin.getNamed())
+				.replace("{plugin_name_lower}", SimplePlugin.getNamed().toLowerCase())
 				.replace("{file}", fileName)
 				.replace("{file_lowercase}", fileName);
 	}
