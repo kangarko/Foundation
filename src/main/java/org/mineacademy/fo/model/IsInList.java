@@ -1,9 +1,8 @@
 package org.mineacademy.fo.model;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
 
 import lombok.Getter;
@@ -32,39 +31,14 @@ public final class IsInList<T> {
 	private final boolean matchAll;
 
 	/**
-	 * Create a new matching list
+	 * Create a new is in list
 	 *
 	 * @param list
+	 * @param matchAll
 	 */
-	public IsInList(final StrictSet<T> list) {
-		this(list.getSource());
-	}
-
-	/**
-	 * Create a new matching list
-	 *
-	 * @param list
-	 */
-	public IsInList(final StrictList<T> list) {
-		this(list.getSource());
-	}
-
-	/**
-	 * Create a new matching list
-	 *
-	 * @param list
-	 */
-	public IsInList(final Collection<T> list) {
+	private IsInList(final Iterable<T> list, boolean matchAll) {
 		this.list = new StrictSet<>(list);
-
-		if (list.isEmpty())
-			matchAll = true;
-
-		else if (list.iterator().next().equals("*"))
-			matchAll = true;
-
-		else
-			matchAll = false;
+		this.matchAll = matchAll;
 	}
 
 	/**
@@ -74,6 +48,10 @@ public final class IsInList<T> {
 	 * @return
 	 */
 	public boolean contains(final T toEvaluateAgainst) {
+
+		if (list.isEmpty())
+			return false;
+
 		return matchAll || list.contains(toEvaluateAgainst);
 	}
 
@@ -93,4 +71,33 @@ public final class IsInList<T> {
 	public String toString() {
 		return "IsInList[is entire list = " + this.matchAll + ", list = " + Common.join(this.list) + "]";
 	}
+
+	/**
+	 * Create a new matching list from the given list
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static <T> IsInList<T> fromList(Iterable<T> list) {
+		boolean matchAll = false;
+
+		for (final T t : list)
+			if ("*".equals(t)) {
+				matchAll = true;
+
+				break;
+			}
+
+		return new IsInList<>(list, matchAll);
+	}
+
+	/**
+	 * Create a new matching list that is always true
+	 *
+	 * @return
+	 */
+	public static <T> IsInList<T> fromStar() {
+		return new IsInList<>(new ArrayList<T>(), true);
+	}
+
 }
