@@ -7,10 +7,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Ghast;
@@ -87,6 +89,40 @@ public final class EntityUtil {
 	 */
 	public static LivingEntity getTarget(Entity entity) {
 		return entity instanceof Creature ? ((Creature) entity).getTarget() : null;
+	}
+
+	/**
+	 * Attempts to spawn the entity for 1 tick at y=0 coordinate and then remove it
+	 * as means to getting its default health in Minecraft
+	 *
+	 * @param type
+	 * @return
+	 */
+	public static double getDefaultHealth(EntityType type) {
+		final Location location = Bukkit.getWorlds().get(0).getSpawnLocation();
+		location.setY(0);
+
+		final Entity entity = location.getWorld().spawnEntity(location, type);
+		Valid.checkBoolean(entity instanceof LivingEntity, "Cannot use getDefaultHealth for non-living entity: " + type);
+
+		final double health = Remain.getHealth((LivingEntity) entity);
+
+		System.out.println("@spawning " + type + " and found its default health: " + health);
+
+		entity.remove();
+		return health;
+	}
+
+	/**
+	 * Adjusts the given location to be facing the "facing" location
+	 *
+	 * @param location the origin location
+	 * @param facing where to face
+	 */
+	public static void rotateYaw(Location location, Location facing) {
+		final float yaw = (float) Math.toDegrees(Math.atan2(facing.getZ() - location.getZ(), facing.getX() - location.getX())) - 90;
+
+		location.setYaw(yaw);
 	}
 
 	/**
