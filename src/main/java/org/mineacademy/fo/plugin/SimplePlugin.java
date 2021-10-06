@@ -171,6 +171,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	private boolean startingReloadables = false;
 
+	/**
+	 * A temporary main command to be set in {@link #setMainCommand(SimpleCommandGroup)}
+	 * automatically by us.
+	 */
+	private SimpleCommandGroup mainCommand;
+
 	// ----------------------------------------------------------------------------------------
 	// Main methods
 	// ----------------------------------------------------------------------------------------
@@ -951,14 +957,26 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Get your main command group, e.g. for ChatControl it's /chatcontrol
+	 * If you use \@AutoRegister on a command group that has a no args constructor,
+	 * we use the label and aliases from {@link SimpleSettings#MAIN_COMMAND_ALIASES}
+	 * and associate it here for the record.
 	 *
-	 * @deprecated removed, use the @AutoRegister annotation on your SimpleCommandGroup class to make it register automatically
 	 * @return
 	 */
-	@Deprecated
+	@Nullable
 	public final SimpleCommandGroup getMainCommand() {
-		throw new FoException("getMainCommand has been removed, use the @AutoRegister annotation on your SimpleCommandGroup class which has a no args constructor. Then you can call SimpleCommandGroup#getMainGroup to get it.");
+		return mainCommand;
+	}
+
+	/**
+	 * @deprecated do not use, internal use only
+	 * @param group
+	 */
+	@Deprecated
+	public final void setMainCommand(SimpleCommandGroup group) {
+		Valid.checkBoolean(this.mainCommand == null, "Main command has already been set to " + this.mainCommand);
+
+		this.mainCommand = group;
 	}
 
 	/**
