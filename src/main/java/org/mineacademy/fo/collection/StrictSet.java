@@ -1,7 +1,6 @@
 package org.mineacademy.fo.collection;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -41,7 +40,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 *
 	 * @param oldList
 	 */
-	public StrictSet(Collection<E> oldList) {
+	public StrictSet(Iterable<E> oldList) {
 		this();
 
 		addAll(oldList);
@@ -85,7 +84,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 *
 	 * @param collection
 	 */
-	public void addAll(Collection<E> collection) {
+	public void addAll(Iterable<E> collection) {
 		for (final E val : collection)
 			add(val);
 	}
