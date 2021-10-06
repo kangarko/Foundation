@@ -174,8 +174,6 @@ final class AutoRegisterScanner {
 		}
 
 		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
-
 			plugin.registerCommands((SimpleCommandGroup) instance);
 		}
 
