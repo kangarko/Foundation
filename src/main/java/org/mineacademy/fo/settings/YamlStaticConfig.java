@@ -16,7 +16,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
@@ -24,6 +23,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -392,10 +392,6 @@ public abstract class YamlStaticConfig {
 	// Config manipulators
 	// -----------------------------------------------------------------------------------------------------
 
-	protected static final StrictList<Enchantment> getEnchantments(final String path) {
-		return TEMPORARY_INSTANCE.getEnchants(path);
-	}
-
 	protected static final StrictList<CompMaterial> getMaterialList(final String path) {
 		return TEMPORARY_INSTANCE.getMaterialList(path);
 	}
@@ -414,6 +410,10 @@ public abstract class YamlStaticConfig {
 
 	protected static final <E> List<E> getList(final String path, final Class<E> listType) {
 		return TEMPORARY_INSTANCE.getList(path, listType);
+	}
+
+	protected static final <E> IsInList<E> getIsInList(final String path, final Class<E> listType) {
+		return TEMPORARY_INSTANCE.getIsInList(path, listType);
 	}
 
 	protected static final boolean getBoolean(final String path) {

@@ -23,11 +23,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -37,6 +35,7 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -269,8 +268,8 @@ public abstract class YamlConfig {
 		synchronized (loadedFiles) {
 
 			Valid.checkBoolean(!loading, "Duplicate call to loadConfiguration (already loading)");
-			Valid.checkNotNull(to, "File to path cannot be null!");
-			Valid.checkBoolean(to.contains("."), "To path must contain file extension: " + to);
+			Valid.checkNotNull(to, "File 'to' path cannot be null!");
+			Valid.checkBoolean(to.contains("."), "'To' path must contain file extension: " + to);
 
 			if (from != null)
 				Valid.checkBoolean(from.contains("."), "From path must contain file extension: " + from);
@@ -1047,10 +1046,30 @@ public abstract class YamlConfig {
 		final List<Object> objects = getList(path);
 
 		if (objects != null)
-			for (final Object object : objects)
-				list.add(object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null);
+			for (Object object : objects) {
+				object = object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null;
+
+				if (object != null)
+					list.add((T) object);
+			}
 
 		return list;
+	}
+
+	/**
+	 * Get a matching list
+	 *
+	 * @param path
+	 * @param type
+	 * @return
+	 */
+	protected final <T> IsInList<T> getIsInList(String path, Class<T> type) {
+		final List<String> stringList = getStringList(path);
+
+		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
+			return IsInList.fromStar();
+
+		return IsInList.fromList(getList(path, type));
 	}
 
 	/**
@@ -1148,26 +1167,11 @@ public abstract class YamlConfig {
 		final StrictList<CompMaterial> list = new StrictList<>();
 
 		for (final String raw : getStringList(path)) {
-			final CompMaterial mat = CompMaterial.fromStringCompat(raw);
+			final CompMaterial mat = CompMaterial.fromString(raw);
 
 			if (mat != null)
 				list.add(mat);
 		}
-
-		return list;
-	}
-
-	/**
-	 * Get a list of enchantments
-	 *
-	 * @param path
-	 * @return
-	 */
-	protected final StrictList<Enchantment> getEnchants(final String path) {
-		final StrictList<Enchantment> list = new StrictList<>();
-
-		for (final String name : getStringList(path))
-			list.add(ItemUtil.findEnchantment(name));
 
 		return list;
 	}
