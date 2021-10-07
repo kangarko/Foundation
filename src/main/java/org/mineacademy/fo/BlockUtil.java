@@ -499,6 +499,9 @@ public final class BlockUtil {
 	 * @return if the bottom most connected block to the given block stays on {@link #TREE_GROUND_BLOCKS}
 	 */
 	public static boolean isLogOnGround(Block treeBaseBlock) {
+		// Validates the block passed in is actually a log
+		if (!(CompMaterial.isLog(treeBaseBlock.getType())))
+			return false;
 
 		// Reach for the bottom most tree-like block
 		while (CompMaterial.isLog(treeBaseBlock.getType()))
