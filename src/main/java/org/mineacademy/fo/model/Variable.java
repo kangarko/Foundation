@@ -312,6 +312,14 @@ public final class Variable extends YamlConfig {
 		return serialize().toStringFormatted();
 	}
 
+	/**
+	 * @see org.mineacademy.fo.settings.YamlConfig#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof Variable && this.key.equals(((Variable) obj).getKey());
+	}
+
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
 	// Static
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
