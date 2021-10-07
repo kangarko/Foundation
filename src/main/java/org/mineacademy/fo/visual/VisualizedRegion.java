@@ -20,7 +20,7 @@ import lombok.Setter;
 /**
  * A simply way to visualize two locations in the world
  */
-public final class VisualizedRegion extends Region {
+public class VisualizedRegion extends Region {
 
 	/**
 	 * A list of players who can see the particles
