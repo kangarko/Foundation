@@ -40,6 +40,7 @@ import org.bukkit.Statistic.Type;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -1070,6 +1071,23 @@ public final class Remain {
 	}
 
 	/**
+	 * Attempts to remove all passengers from the given entity
+	 *
+	 * @param entity
+	 */
+	public static void removePassengers(Entity entity) {
+
+		try {
+			for (final Entity passenger : entity.getPassengers())
+				entity.removePassenger(passenger);
+
+		} catch (final NoSuchMethodError err) {
+			if (entity.getPassenger() != null)
+				entity.getPassenger().remove();
+		}
+	}
+
+	/**
 	 * Broadcast a chest open animation at the given block,
 	 * the block must be a chest!
 	 *
@@ -1270,6 +1288,21 @@ public final class Remain {
 			}
 
 		return inv.getHolder() instanceof BlockState ? ((BlockState) inv.getHolder()).getLocation() : !inv.getViewers().isEmpty() ? inv.getViewers().iterator().next().getLocation() : null;
+	}
+
+	/**
+	 * Return the biome at the given location
+	 *
+	 * @param loc
+	 * @return
+	 */
+	public static Biome getBiome(Location loc) {
+		try {
+			return loc.getWorld().getBiome(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+
+		} catch (final NoSuchMethodError err) {
+			return loc.getWorld().getBiome(loc.getBlockX(), loc.getBlockZ());
+		}
 	}
 
 	/**
@@ -2142,9 +2175,9 @@ public final class Remain {
 		} catch (final Throwable t) {
 			final List<Entity> found = new ArrayList<>();
 
-			for (final Entity e : location.getWorld().getEntities())
-				if (e.getLocation().distance(location) <= radius)
-					found.add(e);
+			for (final Entity nearby : location.getWorld().getEntities())
+				if (nearby.getLocation().distance(location) <= radius)
+					found.add(nearby);
 
 			return found;
 		}
