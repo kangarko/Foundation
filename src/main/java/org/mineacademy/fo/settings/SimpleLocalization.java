@@ -3,6 +3,7 @@ package org.mineacademy.fo.settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.ConversationCommand;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.command.ReloadCommand;
@@ -115,6 +116,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
 		public static String INVALID_TIME = "Expected time such as '3 hours' or '15 minutes'. Got: '{input}'";
 		public static String INVALID_NUMBER = "The number must be a whole or a decimal number. Got: '{input}'";
+		public static String INVALID_WORLD = "Invalid world '{world}'. Available: {available}";
 
 		/**
 		 * The authors label
@@ -237,6 +239,11 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String PERMS_NO = "&cno";
 
 		/**
+		 * The keys below are used in the {@link ConversationCommand}
+		 */
+		public static String CONVERSATION_NOT_CONVERSING = "&cYou must be conversing with the server!";
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -265,6 +272,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Invalid_Number"))
 				INVALID_NUMBER = getString("Invalid_Number");
+
+			if (isSetDefault("Invalid_World"))
+				INVALID_NUMBER = getString("Invalid_World");
 
 			if (isSetDefault("Label_Authors"))
 				LABEL_AUTHORS = getString("Label_Authors");
@@ -385,6 +395,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Perms_No"))
 				PERMS_NO = getString("Perms_No");
+
+			if (isSetDefault("Conversation_No_Conversing"))
+				CONVERSATION_NOT_CONVERSING = getString("Conversation_No_Conversing");
 		}
 	}
 
