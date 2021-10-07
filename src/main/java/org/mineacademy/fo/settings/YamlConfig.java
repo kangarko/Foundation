@@ -316,8 +316,6 @@ public abstract class YamlConfig {
 						file = FileUtil.getOrMakeFile(to);
 
 					Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
-
-					System.out.println("Loading config from " + file);
 					config = FileUtil.loadConfigurationStrict(file);
 
 					instance = new ConfigInstance(file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
