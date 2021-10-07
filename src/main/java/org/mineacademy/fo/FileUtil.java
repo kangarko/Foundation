@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -33,7 +34,6 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleYaml;
 
 import lombok.AccessLevel;
@@ -216,10 +216,19 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static SimpleYaml loadInternalConfiguration(String internalFileName) {
-		final InputStream is = getInternalResource(internalFileName);
-		Valid.checkNotNull(is, "Failed getting internal configuration from " + internalFileName);
+		final List<String> lines = getInternalResource(internalFileName);
+		Valid.checkNotNull(lines, "Failed getting internal configuration from " + internalFileName);
 
-		return Remain.loadConfiguration(is);
+		final SimpleYaml yaml = new SimpleYaml();
+
+		try {
+			yaml.loadFromString(String.join("\n", lines));
+
+		} catch (final Exception ex) {
+			Common.error(ex, "Failed to load inbuilt config " + internalFileName);
+		}
+
+		return yaml;
 	}
 
 	/**
@@ -397,8 +406,8 @@ public final class FileUtil {
 	public static File extract(String from, String to) {
 		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
 
-		final InputStream is = FileUtil.getInternalResource("/" + from);
-		Valid.checkNotNull(is, "Inbuilt file not found: " + from);
+		final List<String> lines = getInternalResource(from);
+		Valid.checkNotNull(lines, "Inbuilt file not found: " + from);
 
 		if (file.exists())
 			return file;
@@ -406,19 +415,13 @@ public final class FileUtil {
 		file = createIfNotExists(to);
 
 		try {
-
-			final List<String> lines = new ArrayList<>();
 			final String fileName = getFileName(file);
 
-			// Load lines from internal file and replace them
-			try (final BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-				String line;
+			// Replace variables in lines
+			for (int i = 0; i < lines.size(); i++)
+				lines.set(i, replaceVariables(lines.get(i), fileName));
 
-				while ((line = br.readLine()) != null)
-					lines.add(replaceVariables(line, fileName));
-			}
-
-			Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(file.toPath(), lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
 
 		} catch (final IOException ex) {
 			Common.error(ex,
@@ -440,24 +443,38 @@ public final class FileUtil {
 	public static File extractRaw(String path) {
 		File file = new File(SimplePlugin.getInstance().getDataFolder(), path);
 
-		final InputStream is = FileUtil.getInternalResource("/" + path);
-		Valid.checkNotNull(is, "Inbuilt file not found: " + path);
+		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
 
-		if (file.exists())
-			return file;
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry entry = it.nextElement();
 
-		file = createIfNotExists(path);
+				if (entry.toString().equals(path)) {
+					final InputStream is = jarFile.getInputStream(entry);
 
-		try {
-			Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					if (file.exists())
+						return file;
 
-		} catch (final IOException ex) {
-			Common.error(ex,
-					"Failed to extract " + path,
-					"Error: %error");
+					file = createIfNotExists(path);
+
+					try {
+						Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+					} catch (final IOException ex) {
+						Common.error(ex,
+								"Failed to extract " + path,
+								"Error: %error");
+					}
+
+					return file;
+
+				}
+			}
+
+		} catch (final Throwable ex) {
+			ex.printStackTrace();
 		}
 
-		return file;
+		throw new FoException("Inbuilt file not found: " + path);
 	}
 
 	/*
@@ -509,27 +526,29 @@ public final class FileUtil {
 	 * @param path
 	 * @return the resource input stream, or null if not found
 	 */
-	public static InputStream getInternalResource(@NonNull String path) {
-		// First attempt
-		InputStream is = SimplePlugin.getInstance().getClass().getResourceAsStream(path);
+	public static List<String> getInternalResource(@NonNull String path) {
 
-		// Try using Bukkit
-		if (is == null)
-			is = SimplePlugin.getInstance().getResource(path);
+		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
 
-		// The hard way - go in the jar file
-		if (is == null)
-			try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
-				final JarEntry jarEntry = jarFile.getJarEntry(path);
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry entry = it.nextElement();
 
-				if (jarEntry != null)
-					is = jarFile.getInputStream(jarEntry);
+				if (entry.toString().equals(path)) {
 
-			} catch (final IOException ex) {
-				ex.printStackTrace();
+					final InputStream is = jarFile.getInputStream(entry);
+					final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+					final List<String> lines = reader.lines().collect(Collectors.toList());
+
+					reader.close();
+					return lines;
+				}
 			}
 
-		return is;
+		} catch (final Throwable ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
 	}
 
 	/**
