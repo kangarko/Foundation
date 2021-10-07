@@ -258,12 +258,23 @@ public final class Remain {
 			getNMSClass("Entity", "net.minecraft.world.entity.Entity");
 
 		} catch (final Throwable t) {
-			Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
-			Bukkit.getLogger().severe("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
+			boolean isThermos = false;
 
-			t.printStackTrace();
+			try {
+				Class.forName("thermos.ThermosRemapper");
 
-			Bukkit.getLogger().severe("***************************************************************");
+				isThermos = true;
+			} catch (final Throwable tt) {
+			}
+
+			if (!isThermos) {
+				Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
+				Bukkit.getLogger().severe("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
+
+				t.printStackTrace();
+
+				Bukkit.getLogger().severe("***************************************************************");
+			}
 		}
 
 		try {
