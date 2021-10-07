@@ -51,7 +51,6 @@ import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.FolderWatcher;
-import org.mineacademy.fo.model.FoundationEnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleHologram;
@@ -72,7 +71,7 @@ import lombok.NonNull;
 /**
  * Represents a basic Java plugin using enhanced library functionality
  */
-public abstract class SimplePlugin extends JavaPlugin implements Listener {
+public abstract class SimplePlugin extends JavaPlugin {
 
 	// ----------------------------------------------------------------------------------------
 	// Static
@@ -305,10 +304,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				getUpdateCheck().run();
 
 			// Register our listeners
-			registerEvents(this); // For convenience
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
-			registerEvents(new FoundationEnchantmentListener());
+
+			if (getUpdateCheck() != null)
+				registerEvents(new FoundationListener.UpdateCheckListener());
 
 			if (areToolsEnabled())
 				registerEvents(new ToolsListener());

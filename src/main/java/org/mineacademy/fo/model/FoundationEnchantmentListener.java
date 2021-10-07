@@ -20,13 +20,21 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * Listens and executes events for {@link SimpleEnchantment}
  * <p>
  * @deprecated Internal use only!
  */
 @Deprecated
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FoundationEnchantmentListener implements Listener {
+
+	@Getter
+	private static volatile Listener instance = new FoundationEnchantmentListener();
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
@@ -38,6 +46,9 @@ public final class FoundationEnchantmentListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
 	public void onInteract(PlayerInteractEvent event) {
+		if (!Remain.isInteractEventPrimaryHand(event))
+			return;
+
 		execute(event.getPlayer(), (enchant, level) -> enchant.onInteract(level, event));
 	}
 

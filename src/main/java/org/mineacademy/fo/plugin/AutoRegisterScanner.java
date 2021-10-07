@@ -2,6 +2,7 @@ package org.mineacademy.fo.plugin;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
@@ -9,6 +10,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -19,16 +21,19 @@ import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.model.DiscordListener;
+import org.mineacademy.fo.model.FoundationEnchantmentListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.PacketListener;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 
 /**
@@ -37,12 +42,20 @@ import org.mineacademy.fo.settings.YamlConfig;
 final class AutoRegisterScanner {
 
 	/**
+	 * Prevent duplicating registering of our {@link EnchantmentPacketListener}
+	 */
+	private static boolean enchantListenersRegistered = false;
+
+	/**
 	 * Scans your plugin and if your {@link Tool} or {@link SimpleEnchantment} class implements {@link Listener}
 	 * and has "instance" method to be a singleton, your events are registered there automatically
 	 * <p>
 	 * If not, we only call the instance constructor in case there is any underlying registration going on
 	 */
 	public static void scanAndRegister() {
+
+		// Reset
+		enchantListenersRegistered = false;
 
 		// Ignore anonymous inner classes
 		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
@@ -177,7 +190,14 @@ final class AutoRegisterScanner {
 		}
 
 		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
-			plugin.registerCommands((SimpleCommandGroup) instance);
+
+			final SimpleCommandGroup group = (SimpleCommandGroup) instance;
+			final boolean isMainCommand = group.getLabel().equals(SimpleSettings.MAIN_COMMAND_ALIASES.get(0));
+
+			if (isMainCommand)
+				SimplePlugin.getInstance().setMainCommand(group);
+
+			plugin.registerCommands(group);
 		}
 
 		else if (SimpleExpansion.class.isAssignableFrom(clazz)) {
@@ -215,6 +235,14 @@ final class AutoRegisterScanner {
 
 			// Automatically registered in its constructor
 			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+
+			if (!enchantListenersRegistered) {
+				plugin.registerEvents(FoundationEnchantmentListener.getInstance());
+
+				EnchantmentPacketListener.getInstance().onRegister();
+			}
+
+			enchantListenersRegistered = true;
 		}
 
 		else if (Tool.class.isAssignableFrom(clazz)) {
@@ -231,9 +259,10 @@ final class AutoRegisterScanner {
 			throw new FoException("@AutoRegister cannot be used on " + clazz);
 
 		// Register events if needed
-		if (!eventsRegistered && instance instanceof Listener) {
+		if (!eventsRegistered && instance instanceof Listener)
 			plugin.registerEvents((Listener) instance);
-		}
+
+		Debugger.debug("auto-register", "Automatically registered " + clazz);
 	}
 
 	private static Tuple<RegisterMode, Object> findInstance(Class<?> clazz) {

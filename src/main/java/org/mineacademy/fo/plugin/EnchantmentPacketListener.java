@@ -1,7 +1,6 @@
 package org.mineacademy.fo.plugin;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.model.PacketListener;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -16,15 +15,14 @@ import lombok.NoArgsConstructor;
 /**
  * Listens to and intercepts packets using Foundation inbuilt features
  */
-@AutoRegister
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class FoundationPacketListener extends PacketListener {
+final class EnchantmentPacketListener extends PacketListener {
 
 	/**
 	 * The singleton of this class to auto register it.
 	 */
 	@Getter(value = AccessLevel.MODULE)
-	private static final PacketListener instance = new FoundationPacketListener();
+	private static volatile PacketListener instance = new EnchantmentPacketListener();
 
 	/**
 	 * Registers our packet listener for some of the more advanced features of Foundation
@@ -33,7 +31,8 @@ final class FoundationPacketListener extends PacketListener {
 	public void onRegister() {
 
 		// Auto placement of our lore when items are custom enchanted
-		addSendingListener(PacketType.Play.Server.SET_SLOT, event -> {
+		this.addSendingListener(PacketType.Play.Server.SET_SLOT, event -> {
+
 			final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
 			ItemStack item = itemModifier.read(0);
 

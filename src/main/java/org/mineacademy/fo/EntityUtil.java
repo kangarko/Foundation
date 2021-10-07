@@ -28,7 +28,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.mineacademy.fo.EntityUtil.HitListener;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
@@ -43,9 +42,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EntityUtil {
 
-	static {
-		Common.registerEvents(new HitTracking());
-	}
+	/**
+	 * Used to prevent duplicate registering of {@link HitTracking} listener.
+	 */
+	private volatile static boolean registeredHitListener = false;
 
 	/**
 	 * Returns the closest entity to the center location within the given 3-dimensional range
@@ -99,6 +99,10 @@ public final class EntityUtil {
 	 * @return
 	 */
 	public static double getDefaultHealth(EntityType type) {
+
+		if (type == EntityType.PLAYER)
+			return 20;
+
 		final Location location = Bukkit.getWorlds().get(0).getSpawnLocation();
 		location.setY(0);
 
@@ -106,8 +110,6 @@ public final class EntityUtil {
 		Valid.checkBoolean(entity instanceof LivingEntity, "Cannot use getDefaultHealth for non-living entity: " + type);
 
 		final double health = Remain.getHealth((LivingEntity) entity);
-
-		System.out.println("@spawning " + type + " and found its default health: " + health);
 
 		entity.remove();
 		return health;
@@ -278,21 +280,14 @@ public final class EntityUtil {
 	 * @param projectile
 	 * @param hitTask
 	 */
-	public static void trackHit(Projectile projectile, HitListener hitTask) {
+	public static void trackHit(Projectile projectile, Consumer<ProjectileHitEvent> hitTask) {
 		HitTracking.addFlyingProjectile(projectile, hitTask);
-	}
 
-	/**
-	 * The class responsible for tracking projectile's impact
-	 */
-	public interface HitListener {
+		if (!registeredHitListener) {
+			Common.registerEvents(new HitTracking());
 
-		/**
-		 * What should happen when the projectile hits something?
-		 *
-		 * @param event
-		 */
-		void onHit(ProjectileHitEvent event);
+			registeredHitListener = true;
+		}
 	}
 }
 
@@ -305,7 +300,7 @@ class HitTracking implements Listener {
 	 * List of flying projectiles with code to run on impact,
 	 * stop tracking after 30 seconds to prevent overloading the map
 	 */
-	private static volatile ExpiringMap<UUID, List<HitListener>> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
+	private static volatile ExpiringMap<UUID, List<Consumer<ProjectileHitEvent>>> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
 
 	/**
 	 * Invoke the hit listener when the registered projectile hits something
@@ -316,11 +311,11 @@ class HitTracking implements Listener {
 	public void onHit(ProjectileHitEvent event) {
 
 		synchronized (flyingProjectiles) {
-			final List<HitListener> hitListeners = flyingProjectiles.remove(event.getEntity().getUniqueId());
+			final List<Consumer<ProjectileHitEvent>> hitListeners = flyingProjectiles.remove(event.getEntity().getUniqueId());
 
 			if (hitListeners != null)
-				for (final HitListener listener : hitListeners)
-					listener.onHit(event);
+				for (final Consumer<ProjectileHitEvent> listener : hitListeners)
+					listener.accept(event);
 		}
 	}
 
@@ -330,10 +325,10 @@ class HitTracking implements Listener {
 	 * @param projectile
 	 * @param hitTask
 	 */
-	static void addFlyingProjectile(Projectile projectile, HitListener hitTask) {
+	static void addFlyingProjectile(Projectile projectile, Consumer<ProjectileHitEvent> hitTask) {
 		synchronized (flyingProjectiles) {
 			final UUID uniqueId = projectile.getUniqueId();
-			final List<HitListener> listeners = flyingProjectiles.getOrDefault(uniqueId, new ArrayList<>());
+			final List<Consumer<ProjectileHitEvent>> listeners = flyingProjectiles.getOrDefault(uniqueId, new ArrayList<>());
 
 			listeners.add(hitTask);
 			flyingProjectiles.put(uniqueId, listeners);
