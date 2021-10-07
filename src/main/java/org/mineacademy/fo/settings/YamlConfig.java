@@ -229,6 +229,14 @@ public abstract class YamlConfig {
 					addConfig(instance, this);
 				}
 
+				else
+					try {
+						instance.reload();
+
+					} catch (final Exception ex) {
+						Common.error(ex, "Failed to reload localization " + localePrefix);
+					}
+
 				this.instance = instance;
 
 				onLoadFinish();
@@ -309,11 +317,21 @@ public abstract class YamlConfig {
 
 					Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
 
+					System.out.println("Loading config from " + file);
 					config = FileUtil.loadConfigurationStrict(file);
 
 					instance = new ConfigInstance(file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
 					addConfig(instance, this);
+
 				}
+
+				else
+					try {
+						instance.reload();
+
+					} catch (final Exception ex) {
+						Common.error(ex, "Failed to reload " + to);
+					}
 
 				this.instance = instance;
 
