@@ -31,7 +31,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -42,6 +41,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -1478,18 +1478,6 @@ public final class HookManager {
 	}
 
 	/**
-	 * Sends a message from the given sender to a certain channel on DiscordSRV
-	 *
-	 * @param senderName
-	 * @param channel
-	 * @param message
-	 */
-	/*public static void sendDiscordMessage(final String senderName, final String channel, final String message) {
-		if (isDiscordSRVLoaded())
-			discordSRVHook.sendMessage(senderName, channel, message);
-	}*/
-
-	/**
 	 * Sends a message from the given sender to a certain channel on Discord using DiscordSRV
 	 * <p>
 	 * Enhanced functionality is available if the sender is a player
@@ -1528,7 +1516,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1883,6 +1871,7 @@ class TownyHook {
 class ProtocolLibHook {
 
 	private final ProtocolManager manager;
+	private final StrictSet<Object> registeredListeners = new StrictSet<>();
 
 	ProtocolLibHook() {
 		manager = ProtocolLibrary.getProtocolManager();
@@ -1896,11 +1885,17 @@ class ProtocolLibHook {
 
 		} catch (final Throwable t) {
 			Common.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
+
+			return;
 		}
+
+		registeredListeners.add(listener);
 	}
 
 	final void removePacketListeners(final Plugin plugin) {
 		manager.removePacketListeners(plugin);
+
+		registeredListeners.clear();
 	}
 
 	final void sendPacket(final PacketContainer packet) {
@@ -3049,7 +3044,7 @@ class CitizensHook {
 	}
 }
 
-class DiscordSRVHook implements Listener {
+class DiscordSRVHook {
 
 	Set<String> getChannels() {
 		return DiscordSRV.getPlugin().getChannels().keySet();
@@ -3057,7 +3052,7 @@ class DiscordSRVHook implements Listener {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3218,16 +3213,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
