@@ -612,13 +612,24 @@ public abstract class Menu {
 			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle(), titleAnimationDurationTicks);
 	}
 
+	/**
+	 * Start a repetitive task with the given period in ticks on the main thread,
+	 * that is automatically stopped if the viewer no longer sees this menu.
+	 *
+	 * Can impose a performance penalty. Use cancel() to cancel.
+	 *
+	 * @param periodTicks
+	 * @param task
+	 */
 	protected final void animate(int periodTicks, MenuRunnable task) {
 		Common.runTimer(2, periodTicks, this.wrapAnimation(task));
 	}
 
 	/**
-	 * Start a repetitive task with the given period in ticks,
+	 * Start a repetitive task with the given period in ticks ASYNC,
 	 * that is automatically stopped if the viewer no longer sees this menu.
+	 *
+	 * Use cancel() to cancel.
 	 *
 	 * @param periodTicks
 	 * @param task
