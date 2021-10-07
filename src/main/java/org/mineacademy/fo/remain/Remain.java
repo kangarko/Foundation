@@ -1741,11 +1741,14 @@ public final class Remain {
 	 * Tries to find online player by uuid
 	 *
 	 * @param id
-	 * @return
+	 *
+	 * @return null if offline or player
 	 */
 	public static Player getPlayerByUUID(final UUID id) {
 		try {
-			return Bukkit.getPlayer(id);
+			final Player player = Bukkit.getPlayer(id);
+
+			return player != null && player.isOnline() ? player : null;
 
 		} catch (final NoSuchMethodError err) {
 			for (final Player online : getOnlinePlayers())
@@ -1759,15 +1762,15 @@ public final class Remain {
 	/**
 	 * Gets the final damage of an event
 	 *
-	 * @param e
+	 * @param event
 	 * @return
 	 */
-	public static double getFinalDamage(final EntityDamageEvent e) {
+	public static double getFinalDamage(final EntityDamageEvent event) {
 		try {
-			return e.getFinalDamage();
+			return event.getFinalDamage();
 
 		} catch (final NoSuchMethodError err) {
-			return e.getDamage();
+			return event.getDamage();
 		}
 	}
 
@@ -1819,10 +1822,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
