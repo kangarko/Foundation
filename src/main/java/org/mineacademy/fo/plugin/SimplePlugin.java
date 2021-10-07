@@ -714,6 +714,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		getServer().getMessenger().unregisterOutgoingPluginChannel(this);
 
 		getServer().getScheduler().cancelTasks(this);
+
+		mainCommand = null;
 	}
 
 	// ----------------------------------------------------------------------------------------
