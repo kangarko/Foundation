@@ -1,12 +1,9 @@
 package org.mineacademy.fo.settings;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,7 +20,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.remain.Remain;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -75,15 +70,10 @@ public final class YamlComments {
 	 */
 	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) throws IOException {
 
-		final InputStream internalResource = FileUtil.getInternalResource(jarPath);
-		Valid.checkNotNull(internalResource, "Failed getting internal resource: " + jarPath);
-
-		final BufferedReader newReader = new BufferedReader(new InputStreamReader(internalResource, StandardCharsets.UTF_8));
-		final List<String> newLines = newReader.lines().collect(Collectors.toList());
-		newReader.close();
+		final List<String> newLines = FileUtil.getInternalResource(jarPath);
 
 		final FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(diskFile);
-		final FileConfiguration newConfig = Remain.loadConfiguration(FileUtil.getInternalResource(jarPath));
+		final FileConfiguration newConfig = FileUtil.loadInternalConfiguration(jarPath);
 
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
 

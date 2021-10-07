@@ -3,7 +3,6 @@ package org.mineacademy.fo.settings;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -35,6 +35,7 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
@@ -197,8 +198,8 @@ public abstract class YamlConfig {
 				loading = true;
 
 				final String localePath = "localization/messages_" + localePrefix + ".yml";
-				final InputStream is = FileUtil.getInternalResource(localePath);
-				Valid.checkNotNull(is, SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
+				final List<String> lines = FileUtil.getInternalResource(localePath);
+				Valid.checkNotNull(lines, SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
 
 				final File file = new File(SimplePlugin.getData(), localePath);
 				ConfigInstance instance = findInstance(file.getName());
@@ -213,7 +214,14 @@ public abstract class YamlConfig {
 					}
 
 					final SimpleYaml config = FileUtil.loadConfigurationStrict(file);
-					final SimpleYaml defaultsConfig = Remain.loadConfiguration(is);
+					final SimpleYaml defaultsConfig = new SimpleYaml();
+
+					try {
+						defaultsConfig.loadFromString(String.join("\n", lines));
+
+					} catch (final Exception ex) {
+						Common.error(ex, "Failed to load inbuilt localization " + localePath);
+					}
 
 					Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
 
@@ -292,10 +300,8 @@ public abstract class YamlConfig {
 
 					// We will have the default file to return to
 					if (from != null) {
-						final InputStream is = FileUtil.getInternalResource(from);
-						Valid.checkNotNull(is, "Inbuilt resource not found: " + from);
+						defaultsConfig = FileUtil.loadInternalConfiguration(from);
 
-						defaultsConfig = Remain.loadConfiguration(is);
 						file = FileUtil.extract(from, to);
 
 					} else
@@ -1579,8 +1585,14 @@ public abstract class YamlConfig {
 	 * @param clazz
 	 */
 	private void checkAssignable(final boolean fromDefault, final String path, final Object value, final Class<?> clazz) {
-		if (checkAssignables && !clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName()))
+		if (checkAssignables && !clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName())) {
+
+			// Exception
+			if (ConfigSerializable.class.isAssignableFrom(clazz) && value instanceof MemorySection)
+				return;
+
 			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + getFileName() + " must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
+		}
 	}
 
 	// ------------------------------------------------------------------------------------
