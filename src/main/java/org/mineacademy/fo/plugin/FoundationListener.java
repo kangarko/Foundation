@@ -57,10 +57,11 @@ final class FoundationListener implements Listener {
 
 		final Player player = event.getPlayer();
 		final String message = event.getMessage();
-		final String[] args = message.split(" ");
 
 		if (!message.startsWith("/#flp"))
 			return;
+
+		final String[] args = message.split(" ");
 
 		if (args.length != 2) {
 			Common.tell(player, SimpleLocalization.Pages.NO_PAGE_NUMBER);
