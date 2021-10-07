@@ -204,11 +204,21 @@ public final class ChatPaginator {
 	}
 
 	/**
-	 * Show this page to the sender, either paginated or a full dumb when this is a console
+	 * Start showing the first page to the sender
 	 *
 	 * @param sender
 	 */
 	public void send(CommandSender sender) {
+		this.send(sender, 1);
+	}
+
+	/**
+	 * Show the given page to the sender, either paginated or a full dumb when this is a console
+	 *
+	 * @param sender
+	 * @param page
+	 */
+	public void send(CommandSender sender, int page) {
 		if (sender instanceof Player) {
 			final Player player = (Player) sender;
 
@@ -222,7 +232,7 @@ public final class ChatPaginator {
 			player.setMetadata("FoPages", new FixedMetadataValue(SimplePlugin.getInstance(), SimplePlugin.getNamed()));
 			player.setMetadata(getPageNbtTag(), new FixedMetadataValue(SimplePlugin.getInstance(), this));
 
-			player.chat("/#flp 1");
+			player.chat("/#flp " + page);
 		}
 
 		else {
