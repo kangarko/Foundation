@@ -117,12 +117,13 @@ public final class ChatUtil {
 
 		final int halvedMessageSize = messagePxSize / 2;
 		final int toCompensate = centerPx - halvedMessageSize;
-		final int spaceLength = DefaultFontInfo.getDefaultFontInfo(space).getLength() + (isBold ? 2 : 1);
+		final DefaultFontInfo font = DefaultFontInfo.getDefaultFontInfo(space);
+		final double spaceLength = isBold ? font.getBoldLength() : font.getLength();
 
-		int compensated = 0;
+		double compensated = 0;
 
 		while (compensated < toCompensate) {
-			builder.append(space);
+			builder.append(" ");
 
 			compensated += spaceLength;
 		}
@@ -687,7 +688,7 @@ enum DefaultFontInfo {
 	TICK('`', 2),
 	PERIOD('.', 1),
 	COMMA(',', 1),
-	SPACE(' ', 3),
+	SPACE(' ', 4),
 	DEFAULT('a', 4);
 
 	private final char character;
