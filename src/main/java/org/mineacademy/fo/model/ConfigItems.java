@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -15,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.NonNull;
@@ -32,7 +32,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	/**
 	 * A list of all loaded items
 	 */
-	private volatile List<T> loadedItems = new ArrayList<>();
+	private volatile StrictList<T> loadedItems = new StrictList<>();
 
 	/**
 	 * The item type this class stores, such as "variable, "format", or "arena class"
@@ -83,7 +83,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
-		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") ? 2 : 1)), folder, prototypeClass, false);
+		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : 1)), folder, prototypeClass, false);
 	}
 
 	/**
@@ -239,7 +239,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public List<T> getItems() {
-		return Collections.unmodifiableList(loadedItems);
+		return Collections.unmodifiableList(loadedItems.getSource());
 	}
 
 	/**
