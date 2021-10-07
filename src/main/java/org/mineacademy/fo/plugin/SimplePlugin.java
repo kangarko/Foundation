@@ -381,11 +381,30 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		final SimpleBungee bungee = getBungeeCord();
 
 		if (bungee != null) {
+			StringBuilder in = new StringBuilder(), out = new StringBuilder();
+
 			messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee.getListener());
 			messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
 
 			reloadables.registerEvents(bungee.getListener());
-			Debugger.debug("bungee", "Registered BungeeCord listener for " + bungee.getChannel());
+
+			//other incoming channels
+			for(String channel : getIncomingChannels()) {
+				messenger.registerIncomingPluginChannel(this, channel, bungee.getListener());
+
+				reloadables.registerEvents(bungee.getListener());
+				in.append(", ").append(channel);
+			}
+
+			//other outgoing channels
+			for(String channel : getOutgoingChannels()) {
+				messenger.registerOutgoingPluginChannel(this, channel);
+
+				reloadables.registerEvents(bungee.getListener());
+				out.append(", ").append(channel);
+			}
+
+			Debugger.debug("bungee", "Registered BungeeCord listener for " + bungee.getChannel()+ in + out);
 		}
 	}
 
@@ -1193,11 +1212,29 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Return the BungeeCord suite if you want this plugin
-	 * to send and receive messages from BungeeCord
+	 * to send and receive messages from BungeeCord.
+	 * This is considered as the plugin's BungeeCord, if you want to have additional incoming/outgoing channels,
+	 * please refer to {@link #getIncomingChannels()} and {@link #getOutgoingChannels()}.
 	 *
 	 * @return
 	 */
 	public SimpleBungee getBungeeCord() {
+		return null;
+	}
+
+	/**
+	 * Additional BungeeCord INCOMING channels in a List.
+	 * @return a List of incoming channels to be registered by the plugin.
+	 */
+	public List<String> getIncomingChannels(){
+		return null;
+	}
+
+	/**
+	 * Additional BungeeCord OUTGOING channels in a List.
+	 * @return a List of outgoing channels to be registered by the plugin.
+	 */
+	public List<String> getOutgoingChannels(){
 		return null;
 	}
 

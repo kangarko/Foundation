@@ -45,12 +45,14 @@ public final class BungeeUtil {
 
 	/**
 	 * Sends message via a channel to the bungee network (upstreams). You need an
-	 * implementation in bungee to handle it, otherwise nothing will happens.
+	 * implementation in bungee to handle it, otherwise nothing will happen.
 	 * <p>
 	 * OBS! The data written:
 	 * <p>
 	 * 1. This server name specified in {@link SimplePlugin#getServerName()} 2. The
 	 * datas in the data parameter.
+	 *
+	 * NOTE: channel must be included in {@link SimplePlugin#getOutgoingChannels()} to work!
 	 *
 	 * @param channel the name of channel in an enum object
 	 * @param datas   the data

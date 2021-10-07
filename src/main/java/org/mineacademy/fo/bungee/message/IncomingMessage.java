@@ -223,4 +223,15 @@ public final class IncomingMessage extends Message {
 
 		Debugger.debug("bungee", "Forwarding data on " + getChannel() + " channel from " + getAction() + " as " + player.getName() + " player to BungeeCord.");
 	}
+
+	/**
+	 * Forwards this message to a player
+	 *
+	 * @param connection
+	 */
+	public void forward(String channel, Player player) {
+		player.sendPluginMessage(SimplePlugin.getInstance(), channel, data);
+
+		Debugger.debug("bungee", "Forwarding data on " + channel + " channel from " + getAction() + " as " + player.getName() + " player to BungeeCord.");
+	}
 }

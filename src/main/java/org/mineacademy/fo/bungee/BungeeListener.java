@@ -34,7 +34,7 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 		if (Bukkit.getName().contains("Cauldron"))
 			return;
 
-		if (tag.equals(SimplePlugin.getInstance().getBungeeCord().getChannel())) {
+		if (tag.equals(SimplePlugin.getInstance().getBungeeCord().getChannel()) || SimplePlugin.getInstance().getIncomingChannels().contains(tag)) {
 			final IncomingMessage message = new IncomingMessage(data);
 
 			Debugger.debug("bungee", "Channel " + message.getChannel() + " received " + message.getAction() + " message from " + message.getServerName() + " server.");

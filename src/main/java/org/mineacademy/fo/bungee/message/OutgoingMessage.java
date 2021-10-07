@@ -144,6 +144,18 @@ public final class OutgoingMessage extends Message {
 	}
 
 	/**
+	 * Send this message with the current data for the given player!
+	 * NOTE: channel must be included in {@link SimplePlugin#getOutgoingChannels()} to work!
+	 *
+	 * @param connection
+	 */
+	public void send(String channel, Player player) {
+		player.sendPluginMessage(SimplePlugin.getInstance(), channel, compileData());
+
+		Debugger.debug("bungee", "Sending data on " + channel + " channel from " + getAction() + " as " + player.getName() + " player to BungeeCord.");
+	}
+
+	/**
 	 * Delegate write methods for the byte array data output
 	 * based on the queue
 	 *
