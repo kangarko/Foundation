@@ -59,8 +59,6 @@ public abstract class SimpleCommandGroup {
 	 */
 	protected SimpleCommandGroup() {
 		this(findMainCommandAliases());
-
-		SimplePlugin.getInstance().setMainCommand(this);
 	}
 
 	/*
