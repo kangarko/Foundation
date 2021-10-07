@@ -23,7 +23,6 @@ import lombok.Setter;
 /**
  * Represents a cuboid region
  */
-@Getter
 public class Region implements ConfigSerializable {
 
 	/**
@@ -34,6 +33,7 @@ public class Region implements ConfigSerializable {
 	/**
 	 * The name of the region, or null if not given
 	 */
+	@Getter
 	@Setter
 	private String name;
 
@@ -123,6 +123,24 @@ public class Region implements ConfigSerializable {
 				(primary.getX() + secondary.getX()) / 2,
 				(primary.getY() + secondary.getY()) / 2,
 				(primary.getZ() + secondary.getZ()) / 2);
+	}
+
+	/**
+	 * Return a close of the primary location
+	 *
+	 * @return the primary
+	 */
+	public final Location getPrimary() {
+		return primary == null ? null : primary.clone();
+	}
+
+	/**
+	 * Return a close of the secondary location
+	 *
+	 * @return the secondary
+	 */
+	public final Location getSecondary() {
+		return secondary == null ? null : secondary.clone();
 	}
 
 	/**
