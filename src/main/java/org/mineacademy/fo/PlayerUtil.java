@@ -15,12 +15,15 @@ import java.util.function.Consumer;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -714,6 +717,30 @@ public final class PlayerUtil {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Attempts to add items to player's inventory,
+	 * returns true if all items were added. If player's
+	 * inventory is full, we drop the items nearby and return false.
+	 *
+	 * @param player
+	 * @param items
+	 * @return false if inventory was full and some items were dropped at the floor, such as the mic
+	 */
+	public static boolean addItemsOrDrop(Player player, ItemStack... items) {
+		final Map<Integer, ItemStack> leftovers = addItems(player.getInventory(), items);
+
+		final World world = player.getWorld();
+		final Location location = player.getLocation();
+
+		for (final ItemStack leftover : leftovers.values()) {
+			final Item item = world.dropItem(location, leftover);
+
+			item.setPickupDelay(2 * 20);
+		}
+
+		return leftovers.isEmpty();
 	}
 
 	/**
