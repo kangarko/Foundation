@@ -521,7 +521,7 @@ public final class BlockUtil {
 				material == CompMaterial.COBWEB.getMaterial() ||
 				material == Material.DAYLIGHT_DETECTOR ||
 				CompMaterial.isTrapDoor(material) ||
-				material == CompMaterial.SIGN.getMaterial() ||
+				material == CompMaterial.OAK_SIGN.getMaterial() ||
 				CompMaterial.isWallSign(material) ||
 				// Match all slabs besides double slab
 				SLAB_PATTERN.matcher(material.name()).matches();
@@ -688,6 +688,9 @@ public final class BlockUtil {
 	 * Shoot the given block to the sky with the given velocity (maybe your arrow velocity?)
 	 * and can even make the block burn on impact. The shot block is set to air
 	 *
+	 * We adjust velocity a bit using random to add a bit for more realism, if you do not
+	 * want this, use {@link #spawnFallingBlock(Block, Vector)}
+	 *
 	 * @param block
 	 * @param velocity
 	 * @param burnOnFallChance from 0.0 to 1.0
@@ -697,7 +700,7 @@ public final class BlockUtil {
 		if (!canShootBlock(block))
 			return null;
 
-		final FallingBlock falling = Remain.spawnFallingBlock(block.getLocation(), block.getType());
+		final FallingBlock falling = Remain.spawnFallingBlock(block.getLocation().clone().add(0.5, 0, 0.5), block.getType());
 
 		{ // Set velocity to reflect the given velocity but change a bit for more realism
 			final double x = MathUtil.range(velocity.getX(), -2, 2) * 0.5D;
@@ -709,6 +712,28 @@ public final class BlockUtil {
 
 		if (RandomUtil.chanceD(burnOnFallChance) && block.getType().isBurnable())
 			scheduleBurnOnFall(falling);
+
+		// Prevent drop
+		falling.setDropItem(false);
+
+		// Remove the block
+		block.setType(Material.AIR);
+
+		return falling;
+	}
+
+	/**
+	 * Just spawns the falling block without adjusting its velocity
+	 *
+	 * @param block
+	 * @param velocity
+	 * @return
+	 */
+	public static FallingBlock spawnFallingBlock(final Block block, final Vector velocity) {
+		final FallingBlock falling = Remain.spawnFallingBlock(block.getLocation().clone().add(0.5, 0, 0.5), block.getType());
+
+		// Apply velocity
+		falling.setVelocity(velocity);
 
 		// Prevent drop
 		falling.setDropItem(false);

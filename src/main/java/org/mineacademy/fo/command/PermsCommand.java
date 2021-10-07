@@ -4,9 +4,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mineacademy.fo.annotation.Permission;
+import org.mineacademy.fo.annotation.PermissionGroup;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.command.annotation.Permission;
-import org.mineacademy.fo.command.annotation.PermissionGroup;
 import org.mineacademy.fo.constants.FoPermissions;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;

@@ -12,6 +12,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
@@ -136,12 +137,17 @@ final class NmsAccessor {
 	/**
 	 * The add entity method
 	 */
-	static final Method addEntity;
+	static Method addEntity;
 
 	/**
 	 * Does the {@link #addEntity} field have consumer function input?
 	 */
 	private static volatile boolean hasEntityConsumer = false;
+
+	/**
+	 * Does the {@link #addEntity} field have randomize data boolean? 1.17+
+	 */
+	private static volatile boolean hasRandomizeData = false;
 
 	/**
 	 * Is the current Minecraft version older than 1.8.8 ?
@@ -164,19 +170,30 @@ final class NmsAccessor {
 
 			olderThan18 = MinecraftVersion.olderThan(V.v1_8);
 
-			createEntity = MinecraftVersion.newerThan(V.v1_7) ? ofcWorld.getDeclaredMethod("createEntity", Location.class, Class.class) : null;
+			createEntity = MinecraftVersion.newerThan(V.v1_7) ? ReflectionUtil.getDeclaredMethod(ofcWorld, "createEntity", Location.class, Class.class) : null;
 			getBukkitEntity = nmsEntity.getMethod("getBukkitEntity");
 
 			if (MinecraftVersion.newerThan(V.v1_10)) {
 				hasEntityConsumer = true;
-				addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class, Class.forName("org.bukkit.util.Consumer"));
+
+				try {
+					addEntity = ReflectionUtil.getDeclaredMethod(ofcWorld, "addEntity", nmsEntity, SpawnReason.class, Class.forName("org.bukkit.util.Consumer"));
+
+				} catch (final ReflectionException ex) {
+					addEntity = ReflectionUtil.getDeclaredMethod(ofcWorld, "addEntity", nmsEntity, SpawnReason.class, Class.forName("org.bukkit.util.Consumer"), boolean.class);
+					hasRandomizeData = true;
+				}
 
 			} else if (MinecraftVersion.newerThan(V.v1_7))
-				addEntity = ofcWorld.getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
+				addEntity = ReflectionUtil.getDeclaredMethod(ofcWorld, "addEntity", nmsEntity, SpawnReason.class);
 			else
 				addEntity = ReflectionUtil.getNMSClass("World", "net.minecraft.world.level.World").getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
 
 		} catch (final ReflectiveOperationException ex) {
+			ex.printStackTrace();
+
+			Runtime.getRuntime().halt(-0__666_1);
+
 			throw new FoException(ex, "Error setting up nms entity accessor!");
 		}
 	}
@@ -198,7 +215,10 @@ final class NmsAccessor {
 		}
 
 		if (hasEntityConsumer)
-			return addEntity.invoke(bukkitWorld, nmsEntity, reason, null);
+			if (hasRandomizeData)
+				return addEntity.invoke(bukkitWorld, nmsEntity, reason, null, false);
+			else
+				return addEntity.invoke(bukkitWorld, nmsEntity, reason, null);
 
 		return addEntity.invoke(bukkitWorld, nmsEntity, reason);
 	}

@@ -28,8 +28,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -44,6 +42,7 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
@@ -92,7 +91,6 @@ import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
-import org.mineacademy.fo.remain.internal.ParticleInternals;
 import org.mineacademy.fo.remain.nbt.NBTInternals;
 import org.mineacademy.fo.settings.SimpleYaml;
 
@@ -247,7 +245,7 @@ public final class Remain {
 			if (MinecraftVersion.newerThan(V.v1_7))
 				NBTInternals.checkCompatible();
 
-			ParticleInternals.ANGRY_VILLAGER.getClass();
+			CompParticle.CRIT.getClass();
 
 			for (final Material bukkitMaterial : Material.values())
 				CompMaterial.fromString(bukkitMaterial.toString());
@@ -369,14 +367,6 @@ public final class Remain {
 			} catch (final Exception ex) {
 				hasItemMeta = false;
 			}
-
-			// Initialize legacy material data now to avoid future lag
-			if (MinecraftVersion.atLeast(V.v1_16))
-				try {
-					Bukkit.getUnsafe().fromLegacy(Material.AIR);
-				} catch (final Throwable t) {
-					// Silence
-				}
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new UnsupportedOperationException("Failed to set up reflection, " + SimplePlugin.getNamed() + " won't work properly", ex);
@@ -1040,7 +1030,7 @@ public final class Remain {
 	 * @param style
 	 */
 	public static void sendBossbarPercent(final Player player, final String message, final float percent, final CompBarColor color, final CompBarStyle style) {
-		BossBarInternals.setMessage(player, message, percent, color, style);
+		BossBarInternals.getInstance().setMessage(player, message, percent, color, style);
 	}
 
 	/**
@@ -1064,7 +1054,7 @@ public final class Remain {
 	 * @param style
 	 */
 	public static void sendBossbarTimed(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {
-		BossBarInternals.setMessage(player, message, seconds, color, style);
+		BossBarInternals.getInstance().setMessage(player, message, seconds, color, style);
 	}
 
 	/**
@@ -1075,7 +1065,56 @@ public final class Remain {
 	 * @param player
 	 */
 	public static void removeBar(final Player player) {
-		BossBarInternals.removeBar(player);
+		BossBarInternals.getInstance().removeBar(player);
+	}
+
+	/**
+	 * Broadcast a chest open animation at the given block,
+	 * the block must be a chest!
+	 *
+	 * @param block
+	 */
+	public static void sendChestClose(Block block) {
+		sendChestAction(block, 0);
+	}
+
+	/**
+	 * Broadcast a chest open animation at the given block,
+	 * the block must be a chest!
+	 *
+	 * @param location
+	 */
+	public static void sendChestOpen(Block block) {
+		sendChestAction(block, 1);
+	}
+
+	/*
+	 * A helper method
+	 */
+	private static void sendChestAction(Block block, int action) {
+
+		final BlockState state = block.getState();
+		Valid.checkBoolean(state instanceof Chest, "You can only send chest action packet for chests not " + block);
+
+		try {
+			if (action == 1)
+				((Chest) state).open();
+			else
+				((Chest) state).close();
+
+		} catch (final NoSuchMethodError t) {
+			final Location location = block.getLocation();
+
+			final Class<?> blockClass = getNMSClass("Block");
+			final Class<?> blocks = getNMSClass("Blocks");
+
+			final Object position = ReflectionUtil.instantiate(ReflectionUtil.getConstructorNMS("BlockPosition", double.class, double.class, double.class), location.getX(), location.getY(), location.getZ());
+			final Object packet = ReflectionUtil.instantiate(ReflectionUtil.getConstructorNMS("PacketPlayOutBlockAction",
+					ReflectionUtil.getNMSClass("BlockPosition"), blockClass, int.class, int.class), position, ReflectionUtil.getStaticFieldContent(blocks, "CHEST"), 1, action);
+
+			for (final Player player : getOnlinePlayers())
+				sendPacket(player, packet);
+		}
 	}
 
 	/**
@@ -1267,7 +1306,7 @@ public final class Remain {
 	 * @param en
 	 * @return
 	 */
-	public static String getNMSStatisticName(final Statistic stat, @Nullable final Material mat, @Nullable final EntityType en) {
+	public static String getNMSStatisticName(final Statistic stat, final Material mat, final EntityType en) {
 		final Class<?> craftStatistic = getOBCClass("CraftStatistic");
 		Object nmsStatistic = null;
 
@@ -1394,7 +1433,7 @@ public final class Remain {
 		try {
 			if (MinecraftVersion.atLeast(V.v1_17)) {
 				final Object nmsPlayer = Remain.getHandleEntity(player);
-				final Object chatComponent = toIChatBaseComponentPlain(title);
+				final Object chatComponent = toIChatBaseComponentPlain(ChatColor.translateAlternateColorCodes('&', title));
 
 				final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
 				String containerName;
@@ -1508,7 +1547,7 @@ public final class Remain {
 		try {
 			player.sendBlockChange(location, material.getMaterial().createBlockData());
 		} catch (final NoSuchMethodError ex) {
-			player.sendBlockChange(location, material.getMaterial(), (byte) material.getData());
+			player.sendBlockChange(location, material.getMaterial(), material.getData());
 		}
 	}
 
@@ -1805,6 +1844,48 @@ public final class Remain {
 			en.setCustomNameVisible(true);
 			en.setCustomName(Common.colorize(name));
 		} catch (final NoSuchMethodError er) {
+		}
+	}
+
+	/**
+	 * Calls NMS to find out if the entity is invisible, works for any entity,
+	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static boolean isInvisible(Entity entity) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#isInvisible requires Minecraft 1.4.7 or greater");
+
+		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
+			return ((LivingEntity) entity).isInvisible();
+
+		else {
+			final Object nmsEntity = getHandleEntity(entity);
+
+			return (boolean) ReflectionUtil.invoke("isInvisible", nmsEntity);
+		}
+	}
+
+	/**
+	 * Calls NMS to set invisibility status of any entity,
+	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
+	 *
+	 * @param entity
+	 * @param invisible
+	 */
+	public static void setInvisible(Object entity, boolean invisible) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#setInvisible requires Minecraft 1.4.7 or greater");
+
+		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
+			((LivingEntity) entity).setInvisible(invisible);
+
+		else {
+			final Object nmsEntity = entity.getClass().toString().contains("net.minecraft.server") ? entity : entity instanceof LivingEntity ? getHandleEntity((LivingEntity) entity) : null;
+			Valid.checkNotNull(nmsEntity, "setInvisible requires either a LivingEntity or a NMS Entity, got: " + entity.getClass());
+
+			// https://www.spigotmc.org/threads/how-do-i-make-an-entity-go-invisible-without-using-potioneffects.321227/
+			Common.runLater(2, () -> ReflectionUtil.invoke("setInvisible", nmsEntity, invisible));
 		}
 	}
 
@@ -2307,7 +2388,7 @@ public final class Remain {
 			final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
 			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
-				Common.log("&eWarning: Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
+				Common.warning("Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
 						" It has been moved there and you can now delete this key from settings.yml if it was not deleted already.");
 
 				previousName = previousNameRaw;

@@ -15,7 +15,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-abstract class EnderDragonEntity {
+abstract class NMSDragon {
 
 	private float maxHealth = 200;
 	private int x;
@@ -27,15 +27,15 @@ abstract class EnderDragonEntity {
 	private byte xvel = 0;
 	private byte yvel = 0;
 	private byte zvel = 0;
-	public float health = 0;
+	private float health = 0;
 	private boolean visible = false;
-	public String name;
+	private String name;
 	private Object world;
 
 	protected CompBarColor barColor;
 	protected CompBarStyle barStyle;
 
-	EnderDragonEntity(String name, Location loc, int percent) {
+	NMSDragon(String name, Location loc, int percent) {
 		this.name = name;
 		this.x = loc.getBlockX();
 		this.y = loc.getBlockY();
@@ -44,7 +44,7 @@ abstract class EnderDragonEntity {
 		this.world = Remain.getHandleWorld(loc.getWorld());
 	}
 
-	EnderDragonEntity(String name, Location loc) {
+	NMSDragon(String name, Location loc) {
 		this.name = name;
 		this.x = loc.getBlockX();
 		this.y = loc.getBlockY();
@@ -52,17 +52,23 @@ abstract class EnderDragonEntity {
 		this.world = Remain.getHandleWorld(loc.getWorld());
 	}
 
-	public void setHealth(int percent) {
+	void setHealth(int percent) {
 		this.health = percent / 100F * maxHealth;
 	}
 
-	public abstract Object getSpawnPacket();
+	void setHealthF(float health) {
+		this.health = health;
+	}
 
-	public abstract Object getDestroyPacket();
+	abstract Object getSpawnPacket();
 
-	public abstract Object getMetaPacket(Object watcher);
+	abstract Object getDestroyPacket();
 
-	public abstract Object getTeleportPacket(Location loc);
+	abstract Object getMetaPacket(Object watcher);
 
-	public abstract Object getWatcher();
+	abstract Object getTeleportPacket(Location loc);
+
+	abstract Object getWatcher();
+
+	abstract Object getNMSEntity();
 }

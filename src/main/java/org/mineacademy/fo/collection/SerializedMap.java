@@ -13,8 +13,6 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Location;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.enchantments.Enchantment;
@@ -33,7 +31,6 @@ import org.mineacademy.fo.remain.CompMaterial;
 import com.google.gson.Gson;
 
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * Serialized map enables you to save and retain values from your
@@ -55,7 +52,6 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * Should we remove entries on get for this map instance,
 	 */
-	@Setter
 	private boolean removeOnGet = false;
 
 	/**
@@ -79,15 +75,15 @@ public final class SerializedMap extends StrictCollection {
 	 * <p>
 	 * If the key already exist, it is ignored
 	 *
-	 * @param map
+	 * @param anotherMap
 	 */
-	public void merge(final SerializedMap map) {
-		for (final Map.Entry<String, Object> entry : map.entrySet()) {
+	public void mergeFrom(final SerializedMap anotherMap) {
+		for (final Map.Entry<String, Object> entry : anotherMap.entrySet()) {
 			final String key = entry.getKey();
 			final Object value = entry.getValue();
 
-			if (key != null && value != null && !map.containsKey(key))
-				map.put(key, value);
+			if (key != null && value != null && !this.map.contains(key))
+				this.map.put(key, value);
 		}
 	}
 
@@ -139,7 +135,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void putIfTrue(final String key, @Nullable final boolean value) {
+	public void putIfTrue(final String key, final boolean value) {
 		if (value)
 			put(key, value);
 	}
@@ -150,7 +146,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void putIfExist(final String key, @Nullable final Object value) {
+	public void putIfExist(final String key, final Object value) {
 		if (value != null)
 			put(key, value);
 	}
@@ -163,7 +159,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void putIf(final String key, @Nullable final Map<?, ?> value) {
+	public void putIf(final String key, final Map<?, ?> value) {
 		if (value != null && !value.isEmpty())
 			put(key, value);
 
@@ -181,7 +177,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void putIf(final String key, @Nullable final Collection<?> value) {
+	public void putIf(final String key, final Collection<?> value) {
 		if (value != null && !value.isEmpty())
 			put(key, value);
 
@@ -217,7 +213,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void putIf(final String key, @Nullable final Object value) {
+	public void putIf(final String key, final Object value) {
 		if (value != null)
 			put(key, value);
 
@@ -251,6 +247,15 @@ public final class SerializedMap extends StrictCollection {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
 
 		map.override(key, value);
+	}
+
+	/**
+	 * Overrides all map values
+	 *
+	 * @param map
+	 */
+	public void overrideAll(SerializedMap map) {
+		map.forEach((key, value) -> override(key, value));
 	}
 
 	/**
@@ -1011,6 +1016,13 @@ public final class SerializedMap extends StrictCollection {
 		return String.join("\n", lines);
 	}
 
+	/**
+	 * @param removeOnGet the removeOnGet to set
+	 */
+	public void setRemoveOnGet(boolean removeOnGet) {
+		this.removeOnGet = removeOnGet;
+	}
+
 	@Override
 	public String toString() {
 		return serialize().toString();
@@ -1115,7 +1127,7 @@ public final class SerializedMap extends StrictCollection {
 			serializedMap.map.putAll(map);
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to parse JSON from " + json);
+			Common.throwError(t, "Failed to parse JSON from input: ", json);
 		}
 
 		return serializedMap;

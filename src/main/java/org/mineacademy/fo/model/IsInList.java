@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.util.Collection;
 
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictSet;
 
@@ -83,5 +84,13 @@ public final class IsInList<T> {
 	 */
 	public boolean isEntireList() {
 		return matchAll;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "IsInList[is entire list = " + this.matchAll + ", list = " + Common.join(this.list) + "]";
 	}
 }

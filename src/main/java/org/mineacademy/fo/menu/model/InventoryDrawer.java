@@ -1,7 +1,5 @@
 package org.mineacademy.fo.menu.model;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -128,11 +126,11 @@ public final class InventoryDrawer {
 
 	/**
 	 * Display this inventory to the player, closing older inventory if already opened
-	 * 
+	 *
 	 * @param player
 	 */
 	public void display(Player player) {
-		Inventory inv = this.build(player);
+		final Inventory inv = this.build(player);
 
 		// Before opening make sure we close his old inventory if exist
 		if (player.getOpenInventory() != null)
@@ -143,7 +141,7 @@ public final class InventoryDrawer {
 
 	/**
 	 * Builds the inventory
-	 * 
+	 *
 	 * @return
 	 */
 	public Inventory build() {
@@ -152,11 +150,11 @@ public final class InventoryDrawer {
 
 	/**
 	 * Builds the inventory for the given holder
-	 * 
+	 *
 	 * @param holder
 	 * @return
 	 */
-	public Inventory build(@Nullable InventoryHolder holder) {
+	public Inventory build(InventoryHolder holder) {
 		// Automatically append the black color in the menu, can be overriden by colors
 		final Inventory inv = Bukkit.createInventory(holder, size, Common.colorize("&0" + title));
 

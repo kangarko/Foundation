@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -34,7 +32,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 public final class SimpleComponent implements ConfigSerializable {
 
 	/**
-	 * Prevent oversized JSON from kicking players by removing interactive elements from it?  
+	 * Prevent oversized JSON from kicking players by removing interactive elements from it?
 	 */
 	public static boolean STRIP_OVERSIZED_COMPONENTS = true;
 
@@ -51,7 +49,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The current component being created
 	 */
-	@Nullable
+
 	private Part currentComponent;
 
 	/**
@@ -422,7 +420,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param <T>
 	 * @param receiver
 	 */
-	public <T extends CommandSender> void sendAs(@Nullable CommandSender sender, Iterable<T> receivers) {
+	public <T extends CommandSender> void sendAs(CommandSender sender, Iterable<T> receivers) {
 		for (final CommandSender receiver : receivers) {
 			final TextComponent component = build(receiver);
 
@@ -431,13 +429,13 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			// Prevent clients being kicked out, so we just send plain message instead
 			if (STRIP_OVERSIZED_COMPONENTS && Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
-				String legacy = Common.colorize(component.toLegacyText());
+				final String legacy = Common.colorize(component.toLegacyText());
 
 				if (legacy.length() + 1 >= Short.MAX_VALUE)
-					Common.log("Warning: JSON Message to " + receiver.getName() + " was too large and could not be sent: '" + legacy + "'");
+					Common.warning("JSON Message to " + receiver.getName() + " was too large and could not be sent: '" + legacy + "'");
 
 				else {
-					Common.log("Warning: JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: '" + legacy + "'");
+					Common.warning("JSON Message to " + receiver.getName() + " was too large, removing interactive elements to avoid kick. Sending plain: '" + legacy + "'");
 
 					receiver.sendMessage(legacy);
 				}
@@ -540,7 +538,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param viewPermission
 	 * @return
 	 */
-	private static TextComponent[] toComponent(@NonNull String message, @Nullable BaseComponent inheritFormatting) {
+	private static TextComponent[] toComponent(@NonNull String message, BaseComponent inheritFormatting) {
 		final List<TextComponent> components = new ArrayList<>();
 
 		// Plot the previous formatting manually before the message to retain it
@@ -740,37 +738,37 @@ public final class SimpleComponent implements ConfigSerializable {
 		/**
 		 * The view permission
 		 */
-		@Nullable
+
 		private String viewPermission;
 
 		/**
 		 * The view JS condition
 		 */
-		@Nullable
+
 		private String viewCondition;
 
 		/**
 		 * The hover event
 		 */
-		@Nullable
+
 		private HoverEvent hoverEvent;
 
 		/**
 		 * The click event
 		 */
-		@Nullable
+
 		private ClickEvent clickEvent;
 
 		/**
 		 * The insertion
 		 */
-		@Nullable
+
 		private String insertion;
 
 		/**
 		 * What component to inherit colors/decoration from?
 		 */
-		@Nullable
+
 		private BaseComponent inheritFormatting;
 
 		/*
@@ -826,7 +824,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @param receiver
 		 * @return
 		 */
-		@Nullable
+
 		private TextComponent toTextComponent(CommandSender receiver) {
 			if (!canSendTo(receiver) || isEmpty())
 				return null;
@@ -857,7 +855,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		/*
 		 * Can this component be shown to the given sender?
 		 */
-		private boolean canSendTo(@Nullable CommandSender receiver) {
+		private boolean canSendTo(CommandSender receiver) {
 
 			if (this.viewPermission != null && !this.viewPermission.isEmpty() && (receiver == null || !PlayerUtil.hasPerm(receiver, this.viewPermission)))
 				return false;

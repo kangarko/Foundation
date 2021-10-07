@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
@@ -237,6 +238,29 @@ public final class ChatUtil {
 	}
 
 	/**
+	 * An improved version of {@link Matcher#quoteReplacement(String)}
+	 * where we quote additional letters such as ()+
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String quoteReplacement(String message) {
+
+		final StringBuilder builder = new StringBuilder();
+
+		for (int index = 0; index < message.length(); index++) {
+			final char c = message.charAt(index);
+
+			if (c == ' ' || c == '\\' || c == '$' || c == '(' || c == ')' || c == '+' || c == '.' || c == '-' || c == '_' || c == '^')
+				builder.append('\\');
+
+			builder.append(c);
+		}
+
+		return builder.toString();
+	}
+
+	/**
 	 * Attempts to remove all emojis from the given input
 	 *
 	 * @author https://stackoverflow.com/a/32101331
@@ -425,7 +449,7 @@ public final class ChatUtil {
 
 	/**
 	 * Automatically add gradient for the given string using the two colors as start/ending colors
-	 * 
+	 *
 	 * @param message
 	 * @param from
 	 * @param to

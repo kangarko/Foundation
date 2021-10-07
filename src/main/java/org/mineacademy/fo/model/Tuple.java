@@ -1,7 +1,5 @@
 package org.mineacademy.fo.model;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -77,7 +75,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @param valueType
 	 * @return tuple or null if line is null
 	 */
-	public static <K, V> Tuple<K, V> deserialize(@Nullable String line, Class<K> keyType, Class<V> valueType) {
+	public static <K, V> Tuple<K, V> deserialize(String line, Class<K> keyType, Class<V> valueType) {
 		if (line == null)
 			return null;
 

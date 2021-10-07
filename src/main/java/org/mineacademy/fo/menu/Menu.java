@@ -16,6 +16,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.Messenger;
@@ -24,6 +25,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.event.MenuOpenEvent;
+import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
@@ -39,6 +41,7 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -145,6 +148,16 @@ public abstract class Menu {
 	private boolean slotNumbersVisible;
 
 	/**
+	 * A one way boolean indicating this menu has been opened at least once
+	 */
+	private boolean opened = false;
+
+	/**
+	 * A one way boolean set to true in {@link #handleClose(Inventory)}
+	 */
+	private boolean closed = false;
+
+	/**
 	 * Create a new menu without parent menu with the size of 9*3
 	 *
 	 * <p>
@@ -234,7 +247,10 @@ public abstract class Menu {
 
 	/**
 	 * Scans the menu class this menu extends and registers buttons
+	 *
+	 * @deprecated internal use only
 	 */
+	@Deprecated
 	protected final void registerButtons() {
 		registeredButtons.clear();
 
@@ -363,8 +379,8 @@ public abstract class Menu {
 	 * @param player the player
 	 */
 	public final void displayTo(final Player player) {
-		Valid.checkNotNull(size, "Size not set in " + this + " (call setSize in your constructor)");
-		Valid.checkNotNull(title, "Title not set in " + this + " (call setTitle in your constructor)");
+		Valid.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
+		Valid.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
 
 		viewer = player;
 		registerButtonsIfHasnt();
@@ -416,6 +432,8 @@ public abstract class Menu {
 			drawer.display(player);
 
 			player.setMetadata(FoConstants.NBT.TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
+
+			opened = true;
 		});
 	}
 
@@ -503,6 +521,77 @@ public abstract class Menu {
 		return items;
 	}
 
+	// --------------------------------------------------------------------------------
+	// Convenience messenger functions
+	// --------------------------------------------------------------------------------
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param messages
+	 */
+	public final void tell(String... messages) {
+		Common.tell(this.viewer, messages);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public final void tellInfo(String message) {
+		Messenger.info(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public final void tellSuccess(String message) {
+		Messenger.success(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public final void tellWarn(String message) {
+		Messenger.warn(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public final void tellError(String message) {
+		Messenger.error(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public final void tellQuestion(String message) {
+		Messenger.question(this.viewer, message);
+	}
+
+	/**
+	 * Send a message to the {@link #getViewer()}
+	 *
+	 * @param message
+	 */
+	public final void tellAnnounce(String message) {
+		Messenger.announce(this.viewer, message);
+	}
+
+	// --------------------------------------------------------------------------------
+	// Animations
+	// --------------------------------------------------------------------------------
+
 	/**
 	 * Animate the title of this menu
 	 *
@@ -516,71 +605,58 @@ public abstract class Menu {
 			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle(), titleAnimationDurationTicks);
 	}
 
-	// --------------------------------------------------------------------------------
-	// Convenience messenger functions
-	// --------------------------------------------------------------------------------
-
-	/**
-	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param messages
-	 */
-	public void tell(String... messages) {
-		Common.tell(this.viewer, messages);
+	protected final void animate(int periodTicks, MenuRunnable task) {
+		Common.runTimer(2, periodTicks, this.wrapAnimation(task));
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Start a repetitive task with the given period in ticks,
+	 * that is automatically stopped if the viewer no longer sees this menu.
 	 *
-	 * @param message
+	 * @param periodTicks
+	 * @param task
 	 */
-	public void tellInfo(String message) {
-		Messenger.info(this.viewer, message);
+	protected final void animateAsync(int periodTicks, MenuRunnable task) {
+		Common.runTimerAsync(2, periodTicks, this.wrapAnimation(task));
+	}
+
+	/*
+	 * Helper method to create a bukkit runnable
+	 */
+	private BukkitRunnable wrapAnimation(MenuRunnable task) {
+		return new BukkitRunnable() {
+
+			@Override
+			public void run() {
+
+				if (Menu.this.closed) {
+					this.cancel();
+
+					return;
+				}
+
+				try {
+					task.run();
+
+				} catch (final EventHandledException ex) {
+					this.cancel();
+				}
+			}
+		};
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
+	 * A special wrapper for animating menus
 	 */
-	public void tellSuccess(String message) {
-		Messenger.success(this.viewer, message);
-	}
+	@FunctionalInterface
+	public interface MenuRunnable extends Runnable {
 
-	/**
-	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
-	 */
-	public void tellWarn(String message) {
-		Messenger.warn(this.viewer, message);
-	}
-
-	/**
-	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
-	 */
-	public void tellError(String message) {
-		Messenger.error(this.viewer, message);
-	}
-
-	/**
-	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
-	 */
-	public void tellQuestion(String message) {
-		Messenger.question(this.viewer, message);
-	}
-
-	/**
-	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
-	 */
-	public void tellAnnounce(String message) {
-		Messenger.announce(this.viewer, message);
+		/**
+		 * Cancel the menu animation
+		 */
+		default void cancel() {
+			throw new EventHandledException();
+		}
 	}
 
 	// --------------------------------------------------------------------------------
@@ -594,7 +670,7 @@ public abstract class Menu {
 	 * @return the item, or null if no icon at the given slot (default)
 	 */
 	public ItemStack getItemAt(final int slot) {
-		return null;
+		return NO_ITEM;
 	}
 
 	/**
@@ -677,13 +753,16 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Sets the title of this inventory, this change is not reflected in client, you
-	 * must call {@link #restartMenu()} to take change
+	 * Sets the title of this inventory, this change is reflected
+	 * when this menu is already displayed to a given player.
 	 *
 	 * @param title the new title
 	 */
 	protected final void setTitle(final String title) {
 		this.title = title;
+
+		if (this.viewer != null && this.opened)
+			PlayerUtil.updateInventoryTitle(this.viewer, title);
 	}
 
 	/**
@@ -741,7 +820,7 @@ public abstract class Menu {
 	 *
 	 * @param viewer
 	 */
-	protected final void setViewer(final Player viewer) {
+	protected final void setViewer(@NonNull final Player viewer) {
 		this.viewer = viewer;
 	}
 
@@ -781,6 +860,18 @@ public abstract class Menu {
 	}
 
 	/**
+	 * Updates a slot in this menu
+	 *
+	 * @param slot
+	 * @param item
+	 */
+	protected final void setItem(int slot, ItemStack item) {
+		final Inventory inventory = this.getInventory();
+
+		inventory.setItem(slot, item);
+	}
+
+	/**
 	 * If you wonder what slot numbers does each empty slot in your menu has then
 	 * set this to true in your constructor
 	 *
@@ -792,6 +883,19 @@ public abstract class Menu {
 	 */
 	protected final void setSlotNumbersVisible() {
 		this.slotNumbersVisible = true;
+	}
+
+	/**
+	 * Return if the given player is still viewing this menu, we compare
+	 * the menu class of the menu the player is viewing and return true if both equal.
+	 *
+	 * @param player
+	 * @return
+	 */
+	public final boolean isViewing(Player player) {
+		final Menu menu = Menu.getMenu(player);
+
+		return menu != null && menu.getClass().getName().equals(this.getClass().getName());
 	}
 
 	// --------------------------------------------------------------------------------
@@ -845,17 +949,27 @@ public abstract class Menu {
 	}
 
 	/**
+	 * Handles the menu close, this does not close the inventory, only cleans up internally,
+	 * do not use.
+	 *
+	 * @deprecated internal use only
+	 * @param inventory
+	 */
+	@Deprecated
+	protected final void handleClose(Inventory inventory) {
+		this.viewer.removeMetadata(FoConstants.NBT.TAG_MENU_CURRENT, SimplePlugin.getInstance());
+		this.closed = true;
+
+		this.onMenuClose(this.viewer, inventory);
+	}
+
+	/**
 	 * Called automatically when the menu is closed
 	 *
 	 * @param player    the player
 	 * @param inventory the menu inventory that is being closed
 	 */
 	protected void onMenuClose(final Player player, final Inventory inventory) {
-	}
-
-	@Override
-	public final boolean equals(final Object obj) {
-		return super.equals(obj);
 	}
 
 	@Override

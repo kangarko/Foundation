@@ -137,7 +137,10 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param name
 	 * @return
 	 */
-	private void loadOrCreateItem(final String name) {
+	public T loadOrCreateItem(final String name) {
+
+		// Create a new instance of our item
+		T item = null;
 
 		try {
 			Constructor<T> constructor;
@@ -154,9 +157,6 @@ public final class ConfigItems<T extends YamlConfig> {
 			Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor taking a String or nothing!");
 			constructor.setAccessible(true);
 
-			// Create a new instance of our item
-			final T item;
-
 			if (nameConstructor)
 				item = constructor.newInstance(name);
 			else
@@ -168,6 +168,9 @@ public final class ConfigItems<T extends YamlConfig> {
 		} catch (final Throwable t) {
 			Common.throwError(t, "Failed to load" + (type == null ? "" : " " + type) + " " + name + " from " + folder);
 		}
+
+		Valid.checkNotNull(item, "Failed to initiliaze" + (type == null ? "" : " " + type) + " " + name + " from " + folder);
+		return item;
 	}
 
 	/**

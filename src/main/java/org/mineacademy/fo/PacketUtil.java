@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
@@ -164,6 +166,21 @@ public final class PacketUtil {
 		private Player player;
 
 		/**
+		 * The currently filtered json message
+		 */
+		private String jsonMessage;
+
+		/**
+		 * Support md_5 BaseComponent API
+		 */
+		private boolean isBaseComponent = false;
+
+		/**
+		 * Support Adventure PaperSpigot library
+		 */
+		private boolean adventure = false;
+
+		/**
 		 * @param params
 		 */
 		public SimpleChatAdapter() {
@@ -201,6 +218,51 @@ public final class PacketUtil {
 			try {
 				this.processedPlayers.add(playerName);
 
+				final String legacyText = this.compileChatMessage(event);
+				String parsedText = legacyText;
+
+				try {
+					Debugger.debug("packet", "Chat packet parsed message: '" + Common.stripColors(parsedText) + "'");
+
+					parsedText = this.onMessage(parsedText);
+
+				} catch (final RegexTimeoutException ex) {
+					// Such errors mean the parsed message took too long to process.
+					// Only show such errors every 30 minutes to prevent console spam
+					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(jsonMessage, 500)
+							+ "' (possibly longer) took too long time to edit received message and was ignored."
+							+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
+
+					return;
+
+				} catch (final EventHandledException ex) {
+					event.setCancelled(true);
+
+					return;
+				}
+
+				if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
+					this.onJsonMessage(jsonMessage);
+
+				if (!Common.stripColors(legacyText).equals(Common.stripColors(parsedText)))
+					this.writeEditedMessage(parsedText, event);
+
+			} finally {
+				this.processedPlayers.remove(this.player.getName());
+			}
+		}
+
+		/*
+		 * Read the chat message in unpacked format from the event
+		 */
+		private String compileChatMessage(PacketEvent event) {
+
+			// Reset
+			jsonMessage = null;
+
+			// No components for this MC version
+			if (MinecraftVersion.atLeast(V.v1_7)) {
+
 				final StructureModifier<Object> packet = event.getPacket().getModifier();
 				final StructureModifier<WrappedChatComponent> chat = event.getPacket().getChatComponents();
 				final WrappedChatComponent component = chat.read(0);
@@ -209,15 +271,11 @@ public final class PacketUtil {
 					final ChatType chatType = event.getPacket().getChatTypes().readSafely(0);
 
 					if (chatType == ChatType.GAME_INFO)
-						return;
+						return "";
 
 				} catch (final NoSuchMethodError t) {
 					// Silence on legacy MC
 				}
-
-				boolean isBaseComponent = false;
-				boolean adventure = false;
-				String jsonMessage = null;
 
 				if (component != null)
 					jsonMessage = component.getJson();
@@ -240,61 +298,51 @@ public final class PacketUtil {
 						isBaseComponent = true;
 					}
 				}
+			}
 
-				if (jsonMessage != null && !jsonMessage.isEmpty()) {
+			else
+				jsonMessage = event.getPacket().getStrings().read(0);
 
-					// Only check valid messages, skipping those over 50k since it would cause rules
-					// to take too long and overflow. 99% packets are below this size, it may even be
-					// that such oversized packets are maliciously sent so we protect the server from freeze
-					if (jsonMessage.length() < 50_000) {
-						final String legacyText;
+			if (jsonMessage != null && !jsonMessage.isEmpty()) {
 
-						// Catch errors from other plugins and silence them
-						try {
-							legacyText = Remain.toLegacyText(jsonMessage, false);
+				// Only check valid messages, skipping those over 50k since it would cause rules
+				// to take too long and overflow. 99% packets are below this size, it may even be
+				// that such oversized packets are maliciously sent so we protect the server from freeze
+				if (jsonMessage.length() < 50_000) {
+					final String legacyText;
 
-						} catch (final Throwable t) {
-							return;
-						}
+					// Catch errors from other plugins and silence them
+					try {
+						legacyText = Remain.toLegacyText(jsonMessage, false);
 
-						final String parsedText = legacyText;
-
-						try {
-							Debugger.debug("packet", "Chat packet parsed message: '" + Common.stripColors(parsedText) + "'");
-
-							this.onMessage(parsedText);
-
-						} catch (final RegexTimeoutException ex) {
-							// Such errors mean the parsed message took too long to process.
-							// Only show such errors every 30 minutes to prevent console spam
-							Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(jsonMessage, 500)
-									+ "' (possibly longer) took too long time to edit received message and was ignored."
-									+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
-
-							return;
-
-						} catch (final EventHandledException ex) {
-							event.setCancelled(true);
-
-							return;
-						}
-
-						if (!Common.stripColors(legacyText).equals(Common.stripColors(parsedText))) {
-							jsonMessage = Remain.toJson(parsedText);
-
-							if (isBaseComponent)
-								packet.writeSafely(adventure ? 2 : 1, Remain.toComponent(jsonMessage));
-
-							else
-								chat.writeSafely(0, WrappedChatComponent.fromJson(jsonMessage));
-						}
+					} catch (final Throwable t) {
+						return "";
 					}
 
-					this.onJsonMessage(jsonMessage);
+					return legacyText;
 				}
+			}
 
-			} finally {
-				this.processedPlayers.remove(this.player.getName());
+			return "";
+		}
+
+		/*
+		 * Writes the edited message as JSON format from the event
+		 */
+		private void writeEditedMessage(String message, PacketEvent event) {
+			final StructureModifier<Object> packet = event.getPacket().getModifier();
+
+			jsonMessage = Remain.toJson(message);
+
+			if (isBaseComponent)
+				packet.writeSafely(adventure ? 2 : 1, Remain.toComponent(jsonMessage));
+
+			else {
+				if (MinecraftVersion.atLeast(V.v1_7))
+					event.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(jsonMessage));
+
+				else
+					event.getPacket().getStrings().writeSafely(0, SerializedMap.of("text", jsonMessage.substring(1, jsonMessage.length() - 1)).toJson());
 			}
 		}
 

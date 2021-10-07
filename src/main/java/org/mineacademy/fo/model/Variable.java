@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public final class Variable extends YamlConfig {
 
 	/**
-	 * Return the prototype file path for the given variable fiel name
+	 * Return the prototype file path for the given variable field name
 	 */
 	public static Function<String, String> PROTOTYPE_PATH = t -> NO_DEFAULT;
 
@@ -52,28 +50,28 @@ public final class Variable extends YamlConfig {
 	/**
 	 * The JavaScript condition that must return TRUE for this variable to be shown
 	 */
-	@Nullable
+
 	@Getter
 	private String senderCondition;
 
 	/**
 	 * The JavaScript condition that must return TRUE for this variable to be shown to a receiver
 	 */
-	@Nullable
+
 	@Getter
 	private String receiverCondition;
 
 	/**
 	 * The permission the sender must have to show the part
 	 */
-	@Nullable
+
 	@Getter
 	private String senderPermission;
 
 	/**
 	 * The permission receiver must have to see the part
 	 */
-	@Nullable
+
 	@Getter
 	private String receiverPermission;
 
@@ -81,35 +79,35 @@ public final class Variable extends YamlConfig {
 	 * The hover text or null if not set
 	 */
 	@Getter
-	@Nullable
+
 	private List<String> hoverText;
 
 	/**
 	 * The JavaScript pointing to a particular {@link ItemStack}
 	 */
 	@Getter
-	@Nullable
+
 	private String hoverItem;
 
 	/**
 	 * What URL should be opened on click? Null if none
 	 */
 	@Getter
-	@Nullable
+
 	private String openUrl;
 
 	/**
 	 * What command should be suggested on click? Null if none
 	 */
 	@Getter
-	@Nullable
+
 	private String suggestCommand;
 
 	/**
 	 * What command should be run on click? Null if none
 	 */
 	@Getter
-	@Nullable
+
 	private String runCommand;
 
 	/*
@@ -228,7 +226,7 @@ public final class Variable extends YamlConfig {
 	 * @param replacements
 	 * @return
 	 */
-	public String getValue(CommandSender sender, @Nullable Map<String, Object> replacements) {
+	public String getValue(CommandSender sender, Map<String, Object> replacements) {
 		Variables.REPLACE_JAVASCRIPT = false;
 
 		try {
@@ -258,7 +256,7 @@ public final class Variable extends YamlConfig {
 	 * @param existingComponent
 	 * @return
 	 */
-	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent, @Nullable Map<String, Object> replacements) {
+	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent, Map<String, Object> replacements) {
 
 		if (this.senderPermission != null && !this.senderPermission.isEmpty() && !PlayerUtil.hasPerm(sender, this.senderPermission))
 			return SimpleComponent.of("");
@@ -317,6 +315,15 @@ public final class Variable extends YamlConfig {
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
 	// Static
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
+
+	/**
+	 * Creates a new variable and loads
+	 *
+	 * @param name
+	 */
+	public static void createVariable(String name) {
+		loadedVariables.loadOrCreateItem(name);
+	}
 
 	/**
 	 * Load all variables from variables/ folder

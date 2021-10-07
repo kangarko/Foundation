@@ -2,9 +2,6 @@ package org.mineacademy.fo.bungee.message;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -24,7 +21,6 @@ abstract class Message {
 	/**
 	 * The UUID of the sender who initiated the packet, can be null
 	 */
-	@Nullable
 	@Getter
 	private UUID senderUid;
 
@@ -81,7 +77,7 @@ abstract class Message {
 	protected final void setAction(String actionName) {
 		final BungeeAction action = BungeeAction.getByName(actionName);
 
-		Valid.checkNotNull(action, "Unknown action named: " + actionName + ". Available: " + Common.join(SimplePlugin.getInstance().getBungeeCord().getActions()));
+		Valid.checkNotNull(action, "Unknown plugin action named: " + actionName + ". IF YOU UPDATED THE PLUGIN BY RELOADING, you need to stop your entire network, ensure all servers were updated and start it again.");
 		setAction(action);
 	}
 

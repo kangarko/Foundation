@@ -5,13 +5,12 @@ import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -447,7 +446,7 @@ public final class PlayerUtil {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static boolean isVanished(final Player player, @Nullable final Player otherPlayer) {
+	public static boolean isVanished(final Player player, final Player otherPlayer) {
 		if (otherPlayer != null && !otherPlayer.canSee(player))
 			return true;
 
@@ -465,10 +464,11 @@ public final class PlayerUtil {
 		if (HookManager.isVanished(player))
 			return true;
 
-		if (player.hasMetadata("vanished"))
-			for (final MetadataValue meta : player.getMetadata("vanished"))
-				if (meta.asBoolean())
-					return true;
+		final List<MetadataValue> list = player.getMetadata("vanished");
+
+		for (final MetadataValue meta : list)
+			if (meta.asBoolean())
+				return true;
 
 		return false;
 	}
@@ -649,8 +649,9 @@ public final class PlayerUtil {
 	 * @param material
 	 */
 	public static boolean takeFirstOnePiece(final Player player, final CompMaterial material) {
+
 		for (final ItemStack item : player.getInventory().getContents())
-			if (item != null && CompMaterial.fromLegacy(item.getType().toString(), item.getData().getData()) == material) {
+			if (item != null && material.is(item)) {
 				takeOnePiece(player, item);
 
 				return true;

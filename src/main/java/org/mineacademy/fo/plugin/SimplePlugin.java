@@ -13,6 +13,7 @@ package org.mineacademy.fo.plugin;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -49,7 +51,6 @@ import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
-import org.mineacademy.fo.menu.tool.Rocket;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
@@ -59,8 +60,11 @@ import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleEnchantment;
+import org.mineacademy.fo.model.SimpleExpansion;
+import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
@@ -71,6 +75,7 @@ import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents a basic Java plugin using enhanced library functionality
@@ -185,6 +190,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// Main methods
 	// ----------------------------------------------------------------------------------------
 
+	static {
+
+		// Add console filters early - no reload support
+		FoundationFilter.inject();
+	}
+
 	@Override
 	public final void onLoad() {
 
@@ -205,9 +216,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
-		// Add console filters early - no reload support
-		FoundationFilter.inject();
-
 		// Call parent
 		onPluginLoad();
 	}
@@ -218,7 +226,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Solve reloading issues with PlugMan
 		for (final StackTraceElement element : new Throwable().getStackTrace()) {
 			if (element.toString().contains("com.rylinaux.plugman.util.PluginUtil.load")) {
-				Common.log("&cWarning: &fDetected PlugMan reload, which is poorly designed. "
+				Common.warning("Detected PlugMan reload, which is poorly designed. "
 						+ "It causes Bukkit not able to get our plugin from a static initializer."
 						+ " It may or may not run. Use our own reload command or do a clean restart!");
 
@@ -259,6 +267,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Inject server-name to newer MC versions that lack it
 		Remain.injectServerName();
 
+		// Load our dependency system
+		try {
+			HookManager.loadDependencies();
+
+		} catch (final Throwable throwable) {
+			Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
+		}
+
 		// --------------------------------------------
 		// Call the main pre start method
 		// --------------------------------------------
@@ -272,11 +288,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		try {
 
 			// Load our main static settings classes
-			if (getSettings() != null) {
-				YamlStaticConfig.load(getSettings());
-
-				Valid.checkBoolean(SimpleSettings.isSettingsCalled() != null && SimpleLocalization.isLocalizationCalled() != null, "Developer forgot to call Settings or Localization");
-			}
+			YamlStaticConfig.load(getSettings());
 
 			if (!isEnabled || !isEnabled())
 				return;
@@ -284,19 +296,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Register classes
 			checkSingletons();
 
-			// Load our dependency system
-			try {
-				HookManager.loadDependencies();
-
-			} catch (final Throwable throwable) {
-				Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
-			}
-
 			if (!isEnabled || !isEnabled())
 				return;
 
 			// Load legacy permanent metadata store
 			CompMetadata.MetadataFile.getInstance();
+
+			SimpleHologram.init();
 
 			// Register main command if it is set
 			if (getMainCommand() != null) {
@@ -327,7 +333,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				return;
 
 			// Register BungeeCord when used
-			registerBungeeCord();
+			if (getBungeeCord() != null)
+				registerBungeeCord(getBungeeCord());
 
 			// Start update check
 			if (getUpdateCheck() != null)
@@ -337,8 +344,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(this); // For convenience
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
-			registerEvents(new ToolsListener());
 			registerEvents(new EnchantmentListener());
+
+			if (areToolsEnabled())
+				registerEvents(new ToolsListener());
 
 			// Register our packet listener
 			FoundationPacketListener.addNativeListener();
@@ -374,11 +383,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Convenience method for registering channels to BungeeCord
+	 * Register a simple bungee class as a custom bungeecord listener,
+	 * for sample implementation you can see the SimpleBungee field at:
+	 * https://github.com/kangarko/PluginTemplate/blob/main/src/main/java/org/mineacademy/template/PluginTemplate.java
+	 *
+	 * DO NOT use this if you only have that one field there with a getter, we already register it automatically,
+	 * this method is intended to be used if you have multiple fields there and want to register multiple channels.
+	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
-	private final void registerBungeeCord() {
+	protected final void registerBungeeCord(@NonNull SimpleBungee bungee) {
 		final Messenger messenger = getServer().getMessenger();
-		final SimpleBungee bungee = getBungeeCord();
 
 		if (bungee != null) {
 			StringBuilder in = new StringBuilder(), out = new StringBuilder();
@@ -416,6 +430,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	private static void checkSingletons() {
 
+		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
+
 		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
 			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
 				final JarEntry jar = entry.nextElement();
@@ -433,10 +449,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 							continue;
 						}
 
-						final boolean isTool = Tool.class.isAssignableFrom(clazz) && !Tool.class.equals(clazz) && !Rocket.class.equals(clazz);
-						final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz) && !SimpleEnchantment.class.equals(clazz);
+						if (Modifier.isAbstract(clazz.getModifiers()))
+							continue;
 
-						if (isTool || isEnchant) {
+						System.out.println("@@@ iterating over " + className);
+
+						if (anonymousClassPattern.matcher(className).find()) {
+							System.out.println("@ignoring anonymous inner class " + className);
+
+							continue;
+						}
+
+						final boolean isTool = Tool.class.isAssignableFrom(clazz);
+						final boolean isEnchant = SimpleEnchantment.class.isAssignableFrom(clazz);
+						final boolean isExpansion = SimpleExpansion.class.isAssignableFrom(clazz);
+
+						if (isTool || isEnchant || isExpansion) {
 
 							if (isEnchant && MinecraftVersion.olderThan(V.v1_13)) {
 								Bukkit.getLogger().warning("**** WARNING ****");
@@ -449,12 +477,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 								Field instanceField = null;
 
 								for (final Field field : clazz.getDeclaredFields())
-									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()))
-											&& Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
+									if ((Tool.class.isAssignableFrom(field.getType()) || Enchantment.class.isAssignableFrom(field.getType()) || SimpleExpansion.class.isAssignableFrom(field.getType()))
+											&& Modifier.isPrivate(field.getModifiers()) && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
 										instanceField = field;
 
-								if (SimpleEnchantment.class.isAssignableFrom(clazz))
-									Valid.checkNotNull(instanceField, "Your enchant class " + clazz.getSimpleName() + " must be a singleton and have static 'instance' field and private constructors!");
+								for (final Method method : clazz.getDeclaredMethods())
+									System.out.println("\tmethod " + method);
+
+								Valid.checkNotNull(instanceField, "Your class " + className + " must be a singleton and have 'private static final " + clazz.getSimpleName()
+										+ " instance' field and a private constructor!");
 
 								if (instanceField != null) {
 									instanceField.setAccessible(true);
@@ -463,15 +494,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 									// Enforce private constructors
 									for (final Constructor<?> con : instance.getClass().getDeclaredConstructors())
-										Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your tools class?");
+										Valid.checkBoolean(Modifier.isPrivate(con.getModifiers()), "Constructor " + con + " not private! Did you put '@NoArgsConstructor(access = AccessLevel.PRIVATE)' in your "
+												+ className + " class?");
+
+									// Register if expansion
+									if (isExpansion)
+										Variables.addExpansion((SimpleExpansion) instance);
 
 									// Finally register events
 									if (instance instanceof Listener)
 										Common.registerEvents((Listener) instance);
+
+									System.out.println("@auto registered class " + clazz);
 								}
 
 							} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
-								Bukkit.getLogger().warning("Failed to auto register " + (isTool ? "tool" : "enchant") + " class " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
+								Bukkit.getLogger().warning("Failed to auto register class " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
 
 								// Ignore if no field is present
 
@@ -486,7 +524,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 									else
 										Bukkit.getLogger().warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
 								} else
-									Common.error(t, "Failed to register events in " + clazz.getSimpleName() + " class " + clazz);
+									Common.error(t, "Failed to auto register class " + clazz);
 							}
 						}
 					}
@@ -805,13 +843,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			reloadables.reload();
 
 			YamlConfig.clearLoadedFiles();
-
-			if (getSettings() != null)
-				YamlStaticConfig.load(getSettings());
+			YamlStaticConfig.load(getSettings());
 
 			CompMetadata.MetadataFile.onReload();
 
 			FoundationPacketListener.addNativeListener();
+
+			SimpleHologram.init();
 
 			Lang.reloadFile();
 
@@ -835,7 +873,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
-			registerBungeeCord();
+			if (getBungeeCord() != null)
+				registerBungeeCord(getBungeeCord());
 
 			Common.log(Common.consoleLineSmooth());
 
@@ -957,6 +996,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerEvents(final SimpleListener<? extends Event> listener) {
 		if (startingReloadables)
 			reloadables.registerEvents(listener);
+
 		else
 			listener.register();
 	}
@@ -985,20 +1025,25 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				continue;
 			}
 
-			for (final Constructor<?> con : pluginClass.getConstructors()) {
-				if (con.getParameterCount() == 0) {
-					final T instance = (T) ReflectionUtil.instantiate(con);
+			try {
+				for (final Constructor<?> con : pluginClass.getConstructors()) {
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
 
-					Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
+						Debugger.debug("auto-register", "Auto-registering command " + pluginClass);
 
-					if (instance instanceof SimpleCommand)
-						registerCommand((SimpleCommand) instance);
+						if (instance instanceof SimpleCommand)
+							registerCommand((SimpleCommand) instance);
 
-					else
-						registerCommand(instance);
+						else
+							registerCommand(instance);
 
-					continue classLookup;
+						continue classLookup;
+					}
 				}
+
+			} catch (final LinkageError ex) {
+				Common.log("Unable to register commands in '" + pluginClass.getSimpleName() + "' due to error: " + ex);
 			}
 
 			Debugger.debug("auto-register", "Skipping auto-registering command " + pluginClass + " because it lacks at least one no arguments constructor");
@@ -1246,6 +1291,17 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public boolean enforeNewLine() {
 		return false;
+	}
+
+	/**
+	 * Should we listen for {@link Tool} in this plugin and
+	 * handle clicking events automatically? Disable to increase performance
+	 * if you do not want to use our tool system. Enabled by default.
+	 *
+	 * @return
+	 */
+	public boolean areToolsEnabled() {
+		return true;
 	}
 
 	/**

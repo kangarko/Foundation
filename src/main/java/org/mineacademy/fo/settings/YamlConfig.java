@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -381,7 +379,7 @@ public class YamlConfig {
 	 *
 	 * @return
 	 */
-	@Nullable
+
 	protected final SimpleYaml getDefaults() {
 		Valid.checkNotNull(instance, "Cannot call getDefaults when no instance is set!");
 
@@ -497,7 +495,7 @@ public class YamlConfig {
 	}
 
 	/**
-	 * Experimental - Shall we attempt to save comments into this yaml config
+	 * Shall we attempt to save comments into this yaml config
 	 * and enforce the file to always look like the default one?
 	 *
 	 * You can exclude sections you do not want to symlink in {@link #getUncommentedSections()}
@@ -2026,7 +2024,7 @@ public class YamlConfig {
 			this.play(player, fadeIn, stay, fadeOut, null);
 		}
 
-		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut, @Nullable Function<String, String> replacer) {
+		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut, Function<String, String> replacer) {
 			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer != null ? replacer.apply(title) : title, replacer != null ? replacer.apply(subtitle) : subtitle);
 		}
 	}

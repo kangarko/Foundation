@@ -7,6 +7,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,6 +19,8 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
+import lombok.Setter;
+
 /**
  * A sample sub-command that you can automatically add
  * to your main command group to help collect debugging information
@@ -26,8 +29,14 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 public final class DebugCommand extends SimpleSubCommand {
 
 	/**
+	 * Set the custom debug lines you would like to add to the debug file
+	 */
+	@Setter
+	private static Consumer<List<String>> debugLines;
+
+	/**
 	 * Create a new sub-command with the given permission.
-	 * 
+	 *
 	 * @param permission
 	 */
 	public DebugCommand(String permission) {
@@ -68,16 +77,22 @@ public final class DebugCommand extends SimpleSubCommand {
 	 * Write our own debug information
 	 */
 	private void writeDebugInformation() {
-		FileUtil.write("debug/general.txt",
-				Common.consoleLine(),
+
+		final List<String> lines = Common.toList(Common.consoleLine(),
 				" Debug log generated " + TimeUtil.getFormattedDate(),
 				Common.consoleLine(),
 				"Plugin: " + SimplePlugin.getInstance().getDescription().getFullName(),
 				"Server Version: " + Bukkit.getName() + " " + MinecraftVersion.getServerVersion(),
 				"Java: " + System.getProperty("java.version") + " (" + System.getProperty("java.specification.vendor") + "/" + System.getProperty("java.vm.vendor") + ")",
 				"OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"),
+				"Online mode: " + Bukkit.getOnlineMode(),
 				"Players Online: " + Remain.getOnlinePlayers().size(),
 				"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", ", plugin -> plugin.getDescription().getFullName()));
+
+		if (debugLines != null)
+			debugLines.accept(lines);
+
+		FileUtil.write("debug/general.txt", lines);
 	}
 
 	/*

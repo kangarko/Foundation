@@ -18,8 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
@@ -58,7 +56,7 @@ public final class ReflectionUtil {
 	 * plugin loads even on old MC versions where those types are non existent
 	 * but are present in plugin's default configuration files
 	 */
-	private static final Map<String, MinecraftVersion.V> legacyEntityTypes;
+	private static final Map<String, V> legacyEntityTypes;
 
 	/**
 	 * Reflection utilizes a simple cache for fastest performance
@@ -114,6 +112,17 @@ public final class ReflectionUtil {
 			version += ".";
 
 		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + version + name);
+	}
+
+	/**
+	 * Return a constructor for the given NMS class name (such as EntityZombie)
+	 *
+	 * @param nmsClassPath
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getConstructorNMS(@NonNull final String nmsClassPath, final Class<?>... params) {
+		return getConstructor(getNMSClass(nmsClassPath), params);
 	}
 
 	/**
@@ -346,17 +355,26 @@ public final class ReflectionUtil {
 	 * Get a declared class method
 	 *
 	 */
-	public static Method getDeclaredMethod(final Class<?> clazz, final String methodName, Class<?>... args) {
-		try {
-			if (reflectionDataCache.containsKey(clazz))
-				return reflectionDataCache.get(clazz).getDeclaredMethod(methodName, args);
+	public static Method getDeclaredMethod(Class<?> clazz, final String methodName, Class<?>... args) {
+		final Class<?> originalClass = clazz;
 
-			return reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new).getDeclaredMethod(methodName, args); // Cache the value.
+		while (!clazz.equals(Object.class)) {
 
-		} catch (final ReflectiveOperationException ex) {
-			ex.printStackTrace();
+			try {
+				final Method method = clazz.getDeclaredMethod(methodName, args);
+				method.setAccessible(true);
+
+				return method;
+
+			} catch (final NoSuchMethodException ex) {
+				clazz = clazz.getSuperclass();
+
+			} catch (final Throwable t) {
+				throw new ReflectionException(t, "Error lookup up method " + methodName + " in class " + originalClass + " and her subclasses");
+			}
 		}
-		return null;
+
+		throw new ReflectionException("Unable to find method " + methodName + " with params " + Common.join(args) + " in class " + originalClass + " and her subclasses");
 	}
 
 	/**
@@ -444,6 +462,18 @@ public final class ReflectionUtil {
 		} catch (final ReflectiveOperationException ex) {
 			throw new ReflectionException(ex, "Could not make instance of: " + clazz);
 		}
+	}
+
+	/**
+	 * Makes a new instanceo of the given NMS class with arguments,
+	 * NB: Does not work on Minecraft 1.17+
+	 *
+	 * @param nmsPath
+	 * @param params
+	 * @return
+	 */
+	public static <T> T instantiateNMS(final String nmsPath, final Object... params) {
+		return (T) instantiate(getNMSClass(nmsPath), params);
 	}
 
 	/**
@@ -583,7 +613,7 @@ public final class ReflectionUtil {
 
 		} catch (final MissingEnumException ex) {
 			if (enumType == EntityType.class) {
-				final MinecraftVersion.V since = legacyEntityTypes.get(name.toUpperCase().replace(" ", "_"));
+				final V since = legacyEntityTypes.get(name.toUpperCase().replace(" ", "_"));
 
 				if (since != null && MinecraftVersion.olderThan(since))
 					return null;
@@ -752,6 +782,17 @@ public final class ReflectionUtil {
 			} catch (final Throwable t) {
 			}
 
+			// Only invoke fromName from non-Bukkit API since this gives unexpected results
+			if (method == null && !enumType.getName().contains("org.bukkit"))
+				try {
+					method = enumType.getDeclaredMethod("fromName", String.class);
+
+					if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
+						hasKey = true;
+
+				} catch (final Throwable t) {
+				}
+
 			if (hasKey)
 				return (E) method.invoke(null, name);
 
@@ -823,7 +864,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	@SneakyThrows
-	public static <T> TreeSet<Class<T>> getClasses(final Plugin plugin, @Nullable Class<T> extendingClass) {
+	public static <T> TreeSet<Class<T>> getClasses(final Plugin plugin, Class<T> extendingClass) {
 		Valid.checkNotNull(plugin, "Plugin is null!");
 		Valid.checkBoolean(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
 
@@ -844,25 +885,18 @@ public final class ReflectionUtil {
 				if (name.endsWith(".class")) {
 					name = name.replace("/", ".").replaceFirst(".class", "");
 
-					final Class<?> clazz;
+					Class<?> clazz = null;
 
 					try {
-						clazz = Class.forName(name);
+						clazz = Class.forName(name, false, SimplePlugin.class.getClassLoader());
 
 						if (extendingClass == null || (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass))
 							classes.add((Class<T>) clazz);
 
 					} catch (final Throwable throwable) {
 
-						try {
-							final Class<?> uninitClass = Class.forName(name, false, SimplePlugin.class.getClassLoader());
-
-							if (extendingClass != null && extendingClass.isAssignableFrom(uninitClass) && uninitClass != extendingClass)
-								Common.log("Unable to load class '" + name + "' due to error: " + throwable);
-
-						} catch (final Throwable t2) {
-							// Silence
-						}
+						if (extendingClass != null && (clazz != null && extendingClass.isAssignableFrom(clazz)) && clazz != extendingClass)
+							Common.log("Unable to load class '" + name + "' due to error: " + throwable);
 
 						continue;
 					}
@@ -874,50 +908,55 @@ public final class ReflectionUtil {
 	}
 
 	static {
-		final Map<String, MinecraftVersion.V> map = new HashMap<>();
+		final Map<String, V> map = new HashMap<>();
 
-		map.put("TIPPED_ARROW", MinecraftVersion.V.v1_9);
-		map.put("SPECTRAL_ARROW", MinecraftVersion.V.v1_9);
-		map.put("SHULKER_BULLET", MinecraftVersion.V.v1_9);
-		map.put("DRAGON_FIREBALL", MinecraftVersion.V.v1_9);
-		map.put("SHULKER", MinecraftVersion.V.v1_9);
-		map.put("AREA_EFFECT_CLOUD", MinecraftVersion.V.v1_9);
-		map.put("LINGERING_POTION", MinecraftVersion.V.v1_9);
-		map.put("POLAR_BEAR", MinecraftVersion.V.v1_10);
-		map.put("HUSK", MinecraftVersion.V.v1_10);
-		map.put("ELDER_GUARDIAN", MinecraftVersion.V.v1_11);
-		map.put("WITHER_SKELETON", MinecraftVersion.V.v1_11);
-		map.put("STRAY", MinecraftVersion.V.v1_11);
-		map.put("DONKEY", MinecraftVersion.V.v1_11);
-		map.put("MULE", MinecraftVersion.V.v1_11);
-		map.put("EVOKER_FANGS", MinecraftVersion.V.v1_11);
-		map.put("EVOKER", MinecraftVersion.V.v1_11);
-		map.put("VEX", MinecraftVersion.V.v1_11);
-		map.put("VINDICATOR", MinecraftVersion.V.v1_11);
-		map.put("ILLUSIONER", MinecraftVersion.V.v1_12);
-		map.put("PARROT", MinecraftVersion.V.v1_12);
-		map.put("TURTLE", MinecraftVersion.V.v1_13);
-		map.put("PHANTOM", MinecraftVersion.V.v1_13);
-		map.put("TRIDENT", MinecraftVersion.V.v1_13);
-		map.put("COD", MinecraftVersion.V.v1_13);
-		map.put("SALMON", MinecraftVersion.V.v1_13);
-		map.put("PUFFERFISH", MinecraftVersion.V.v1_13);
-		map.put("TROPICAL_FISH", MinecraftVersion.V.v1_13);
-		map.put("DROWNED", MinecraftVersion.V.v1_13);
-		map.put("DOLPHIN", MinecraftVersion.V.v1_13);
-		map.put("CAT", MinecraftVersion.V.v1_14);
-		map.put("PANDA", MinecraftVersion.V.v1_14);
-		map.put("PILLAGER", MinecraftVersion.V.v1_14);
-		map.put("RAVAGER", MinecraftVersion.V.v1_14);
-		map.put("TRADER_LLAMA", MinecraftVersion.V.v1_14);
-		map.put("WANDERING_TRADER", MinecraftVersion.V.v1_14);
-		map.put("FOX", MinecraftVersion.V.v1_14);
-		map.put("BEE", MinecraftVersion.V.v1_15);
-		map.put("HOGLIN", MinecraftVersion.V.v1_16);
-		map.put("PIGLIN", MinecraftVersion.V.v1_16);
-		map.put("STRIDER", MinecraftVersion.V.v1_16);
-		map.put("ZOGLIN", MinecraftVersion.V.v1_16);
-		map.put("PIGLIN_BRUTE", MinecraftVersion.V.v1_16);
+		map.put("TIPPED_ARROW", V.v1_9);
+		map.put("SPECTRAL_ARROW", V.v1_9);
+		map.put("SHULKER_BULLET", V.v1_9);
+		map.put("DRAGON_FIREBALL", V.v1_9);
+		map.put("SHULKER", V.v1_9);
+		map.put("AREA_EFFECT_CLOUD", V.v1_9);
+		map.put("LINGERING_POTION", V.v1_9);
+		map.put("POLAR_BEAR", V.v1_10);
+		map.put("HUSK", V.v1_10);
+		map.put("ELDER_GUARDIAN", V.v1_11);
+		map.put("WITHER_SKELETON", V.v1_11);
+		map.put("STRAY", V.v1_11);
+		map.put("DONKEY", V.v1_11);
+		map.put("MULE", V.v1_11);
+		map.put("EVOKER_FANGS", V.v1_11);
+		map.put("EVOKER", V.v1_11);
+		map.put("VEX", V.v1_11);
+		map.put("VINDICATOR", V.v1_11);
+		map.put("ILLUSIONER", V.v1_12);
+		map.put("PARROT", V.v1_12);
+		map.put("TURTLE", V.v1_13);
+		map.put("PHANTOM", V.v1_13);
+		map.put("TRIDENT", V.v1_13);
+		map.put("COD", V.v1_13);
+		map.put("SALMON", V.v1_13);
+		map.put("PUFFERFISH", V.v1_13);
+		map.put("TROPICAL_FISH", V.v1_13);
+		map.put("DROWNED", V.v1_13);
+		map.put("DOLPHIN", V.v1_13);
+		map.put("CAT", V.v1_14);
+		map.put("PANDA", V.v1_14);
+		map.put("PILLAGER", V.v1_14);
+		map.put("RAVAGER", V.v1_14);
+		map.put("TRADER_LLAMA", V.v1_14);
+		map.put("WANDERING_TRADER", V.v1_14);
+		map.put("FOX", V.v1_14);
+		map.put("BEE", V.v1_15);
+		map.put("HOGLIN", V.v1_16);
+		map.put("PIGLIN", V.v1_16);
+		map.put("STRIDER", V.v1_16);
+		map.put("ZOGLIN", V.v1_16);
+		map.put("PIGLIN_BRUTE", V.v1_16);
+		map.put("AXOLOTL", V.v1_17);
+		map.put("GLOW_ITEM_FRAME", V.v1_17);
+		map.put("GLOW_SQUID", V.v1_17);
+		map.put("GOAT", V.v1_17);
+		map.put("MARKER", V.v1_17);
 
 		legacyEntityTypes = map;
 	}
@@ -933,7 +972,7 @@ public final class ReflectionUtil {
 			this.clazz = clazz;
 		}
 
-		private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
+		//private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
 		private final Map<Integer, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 		private final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
 		private final Collection<String> fieldGuard = ConcurrentHashMap.newKeySet();
@@ -1006,11 +1045,11 @@ public final class ReflectionUtil {
 			}
 		}
 
-		public void cacheMethod(final Method method) {
+		/*public void cacheMethod(final Method method) {
 			methodCache.computeIfAbsent(method.getName(), unused -> ConcurrentHashMap.newKeySet()).add(method);
-		}
+		}*/
 
-		public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
+		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
 
@@ -1024,7 +1063,7 @@ public final class ReflectionUtil {
 			cacheMethod(method);
 
 			return method;
-		}
+		}*/
 
 		public void cacheField(final Field field) {
 			fieldCache.put(field.getName(), field);
@@ -1067,7 +1106,7 @@ public final class ReflectionUtil {
 			super(message);
 		}
 
-		public ReflectionException(final Exception ex, final String message) {
+		public ReflectionException(final Throwable ex, final String message) {
 			super(ex, message);
 		}
 	}

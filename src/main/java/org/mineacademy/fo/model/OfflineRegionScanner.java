@@ -117,7 +117,7 @@ public abstract class OfflineRegionScanner {
 		final File[] files = getRegionFiles(world);
 
 		if (files == null || files.length == 0) {
-			Common.log("&cWarning: &fUnable to locate the region files for: " + world.getName());
+			Common.warning("Unable to locate the region files for: " + world.getName());
 
 			return;
 		}

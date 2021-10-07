@@ -12,9 +12,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
@@ -42,7 +44,7 @@ public class SimpleDatabase {
 	 * The established connection, or null if none
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
-	private Connection connection;
+	private volatile Connection connection;
 
 	/**
 	 * The last credentials from the connect function, or null if never called
@@ -188,13 +190,11 @@ public class SimpleDatabase {
 	 */
 	public final void close() {
 		if (connection != null)
-			synchronized (connection) {
-				try {
-					connection.close();
+			try {
+				connection.close();
 
-				} catch (final SQLException e) {
-					Common.error(e, "Error closing MySQL connection!");
-				}
+			} catch (final SQLException e) {
+				Common.error(e, "Error closing MySQL connection!");
 			}
 	}
 
@@ -271,24 +271,22 @@ public class SimpleDatabase {
 	protected final void update(String sql) {
 		checkEstablished();
 
-		synchronized (connection) {
-			if (!isConnected())
-				connectUsingLastCredentials();
+		if (!isConnected())
+			connectUsingLastCredentials();
 
-			sql = replaceVariables(sql);
-			Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
+		sql = replaceVariables(sql);
+		Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
 
-			Debugger.debug("mysql", "Updating MySQL with: " + sql);
+		Debugger.debug("mysql", "Updating MySQL with: " + sql);
 
-			try {
-				final Statement statement = connection.createStatement();
+		try {
+			final Statement statement = connection.createStatement();
 
-				statement.executeUpdate(sql);
-				statement.close();
+			statement.executeUpdate(sql);
+			statement.close();
 
-			} catch (final SQLException e) {
-				handleError(e, "Error on updating MySQL with: " + sql);
-			}
+		} catch (final SQLException e) {
+			handleError(e, "Error on updating MySQL with: " + sql);
 		}
 	}
 
@@ -303,23 +301,21 @@ public class SimpleDatabase {
 	protected final ResultSet query(String sql) {
 		checkEstablished();
 
-		synchronized (connection) {
-			if (!isConnected())
-				connectUsingLastCredentials();
+		if (!isConnected())
+			connectUsingLastCredentials();
 
-			sql = replaceVariables(sql);
+		sql = replaceVariables(sql);
 
-			Debugger.debug("mysql", "Querying MySQL with: " + sql);
+		Debugger.debug("mysql", "Querying MySQL with: " + sql);
 
-			try {
-				final Statement statement = connection.createStatement();
-				final ResultSet resultSet = statement.executeQuery(sql);
+		try {
+			final Statement statement = connection.createStatement();
+			final ResultSet resultSet = statement.executeQuery(sql);
 
-				return resultSet;
+			return resultSet;
 
-			} catch (final SQLException ex) {
-				handleError(ex, "Error on querying MySQL with: " + sql);
-			}
+		} catch (final SQLException ex) {
+			handleError(ex, "Error on querying MySQL with: " + sql);
 		}
 
 		return null;
@@ -334,58 +330,67 @@ public class SimpleDatabase {
 		if (sqls.size() == 0)
 			return;
 
-		synchronized (connection) {
-			try {
-				final Statement batchStatement = getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-				final int processedCount = sqls.size();
+		try {
+			final Statement batchStatement = getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			final int processedCount = sqls.size();
 
-				// Prevent automatically sending db instructions
-				getConnection().setAutoCommit(false);
+			// Prevent automatically sending db instructions
+			getConnection().setAutoCommit(false);
 
-				for (final String sql : sqls)
-					batchStatement.addBatch(replaceVariables(sql));
+			for (final String sql : sqls)
+				batchStatement.addBatch(replaceVariables(sql));
 
-				if (processedCount > 10_000)
-					Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
-							+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
+			if (processedCount > 10_000)
+				Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
+						+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
 
-				// Set the flag to start time notifications timer
-				batchUpdateGoingOn = true;
+			// Set the flag to start time notifications timer
+			batchUpdateGoingOn = true;
 
-				// Notify console that progress still is being made
-				new Timer().scheduleAtFixedRate(new TimerTask() {
+			// Notify console that progress still is being made
+			new Timer().scheduleAtFixedRate(new TimerTask() {
 
-					@Override
-					public void run() {
-						if (batchUpdateGoingOn)
-							Common.log("Still executing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
-						else
-							cancel();
-					}
-				}, 1000 * 30, 1000 * 30);
-
-				// Execute
-				batchStatement.executeBatch();
-
-				// This will block the thread
-				getConnection().commit();
-
-				//Common.log("Updated " + processedCount + " database entries.");
-
-			} catch (final Throwable t) {
-				t.printStackTrace();
-
-			} finally {
-				try {
-					getConnection().setAutoCommit(true);
-
-				} catch (final SQLException ex) {
-					ex.printStackTrace();
+				@Override
+				public void run() {
+					if (batchUpdateGoingOn)
+						Common.log("Still executing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
+					else
+						cancel();
 				}
+			}, 1000 * 30, 1000 * 30);
 
-				// Even in case of failure, cancel
-				batchUpdateGoingOn = false;
+			// Execute
+			batchStatement.executeBatch();
+
+			// This will block the thread
+			getConnection().commit();
+
+			//Common.log("Updated " + processedCount + " database entries.");
+
+		} catch (final Throwable t) {
+			final List<String> errorLog = new ArrayList<>();
+
+			errorLog.add(Common.consoleLine());
+			errorLog.add(" [" + TimeUtil.getFormattedDateShort() + "] Failed to save batch sql, please contact the plugin author with this file content: " + t);
+			errorLog.add(Common.consoleLine());
+
+			for (final String statement : sqls)
+				errorLog.add(replaceVariables(statement));
+
+			FileUtil.write("sql-error.log", sqls);
+
+			t.printStackTrace();
+
+		} finally {
+			try {
+				getConnection().setAutoCommit(true);
+
+			} catch (final SQLException ex) {
+				ex.printStackTrace();
 			}
+
+			// Even in case of failure, cancel
+			batchUpdateGoingOn = false;
 		}
 	}
 
@@ -401,16 +406,14 @@ public class SimpleDatabase {
 	protected final java.sql.PreparedStatement prepareStatement(String sql) throws SQLException {
 		checkEstablished();
 
-		synchronized (connection) {
-			if (!isConnected())
-				connectUsingLastCredentials();
+		if (!isConnected())
+			connectUsingLastCredentials();
 
-			sql = replaceVariables(sql);
+		sql = replaceVariables(sql);
 
-			Debugger.debug("mysql", "Preparing statement: " + sql);
+		Debugger.debug("mysql", "Preparing statement: " + sql);
 
-			return connection.prepareStatement(sql);
-		}
+		return connection.prepareStatement(sql);
 	}
 
 	/**
@@ -423,13 +426,11 @@ public class SimpleDatabase {
 		if (!isLoaded())
 			return false;
 
-		synchronized (connection) {
-			try {
-				return connection != null && !connection.isClosed() && connection.isValid(0);
+		try {
+			return !connection.isClosed() && connection.isValid(0);
 
-			} catch (final SQLException ex) {
-				return false;
-			}
+		} catch (final SQLException ex) {
+			return false;
 		}
 	}
 

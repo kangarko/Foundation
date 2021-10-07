@@ -176,7 +176,9 @@ public final class ItemUtil {
 			return true;
 
 		final boolean idMatch = first.getType() == second.getType();
-		boolean dataMatch = !LEGACY_MATERIALS || first.getData().getData() == second.getData().getData();
+
+		final boolean isSkull = CompMaterial.isSkull(first.getType()) && CompMaterial.isSkull(second.getType());
+		boolean dataMatch = !LEGACY_MATERIALS || isSkull || first.getData().getData() == second.getData().getData();
 		final boolean metaMatch = first.hasItemMeta() == second.hasItemMeta();
 
 		if (!idMatch || !metaMatch || !(dataMatch || (dataMatch = first.getType() == Material.BOW)))

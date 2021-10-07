@@ -14,8 +14,6 @@ import org.apache.logging.log4j.message.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
@@ -50,8 +48,12 @@ final class FoundationFilter {
 		Bukkit.getLogger().setFilter(filter);
 
 		// Set Log4j filter
-		if (MinecraftVersion.atLeast(V.v1_7))
+		try {
 			FilterLog4j.inject();
+
+		} catch (final Throwable t) {
+			// Ignore for legacy MC
+		}
 	}
 
 	/*
@@ -61,14 +63,12 @@ final class FoundationFilter {
 		if (message == null || message.isEmpty())
 			return false;
 
-		message = Common.stripColors(message);
+		// Replace & color codes only if server is available
+		if (Bukkit.getServer() != null)
+			message = Common.stripColors(message);
 
 		// Filter a warning since we've already patched this with NashornPlus extension
 		if (message.equals("Warning: Nashorn engine is planned to be removed from a future JDK release"))
-			return true;
-
-		// Filter spam
-		if (message.equals("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!"))
 			return true;
 
 		// One less spammy message for server owners

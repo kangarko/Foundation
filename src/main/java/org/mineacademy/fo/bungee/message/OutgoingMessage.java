@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.debug.Debugger;
@@ -49,7 +50,7 @@ public final class OutgoingMessage extends Message {
 	 */
 	public void writeString(String... messages) {
 		for (final String message : messages)
-			write(message, String.class);
+			write(CompressUtil.compressB64(message), String.class);
 	}
 
 	/**
@@ -113,6 +114,15 @@ public final class OutgoingMessage extends Message {
 	 */
 	public void writeShort(short number) {
 		write(number, Short.class);
+	}
+
+	/**
+	 * Write an uuid into the message
+	 *
+	 * @param uuid
+	 */
+	public void writeUUID(UUID uuid) {
+		write(uuid, UUID.class);
 	}
 
 	/**

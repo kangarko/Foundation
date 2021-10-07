@@ -19,8 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -508,7 +506,7 @@ public final class Common {
 				if (MinecraftVersion.olderThan(V.v1_9) && toSend.length() + 1 >= Short.MAX_VALUE) {
 					toSend = toSend.substring(0, Short.MAX_VALUE / 2);
 
-					Common.log("Warning: Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
+					Common.warning("Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
 				}
 
 				// Make player engaged in a server conversation still receive the message
@@ -638,7 +636,7 @@ public final class Common {
 				} catch (final IllegalArgumentException ex) {
 				}
 
-				result = result.replaceAll("#" + colorCode, replacement);
+				result = result.replaceAll("(&|)#" + colorCode, replacement);
 			}
 
 			result = result.replace("\\#", "#");
@@ -1099,6 +1097,7 @@ public final class Common {
 		for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins())
 			if (otherPlugin.getName().equals(pluginName)) {
 				lookup = otherPlugin;
+
 				break;
 			}
 
@@ -1126,7 +1125,7 @@ public final class Common {
 	 * @param playerReplacement
 	 * @param command
 	 */
-	public static void dispatchCommand(@Nullable final CommandSender playerReplacement, @NonNull String command) {
+	public static void dispatchCommand(final CommandSender playerReplacement, @NonNull String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
@@ -1233,6 +1232,16 @@ public final class Common {
 		}
 
 		return String.format(format, args);
+	}
+
+	/**
+	 * A dummy helper method adding "&cWarning: &f" to the given message
+	 * and logging it.
+	 *
+	 * @param message
+	 */
+	public static void warning(String message) {
+		log("&cWarning: &f" + message);
 	}
 
 	/**
@@ -1821,7 +1830,12 @@ public final class Common {
 	 * @return
 	 */
 	public static List<String> getWorldNames() {
-		return convert(Bukkit.getWorlds(), World::getName);
+		final List<String> worlds = new ArrayList<>();
+
+		for (final World world : Bukkit.getWorlds())
+			worlds.add(world.getName());
+
+		return worlds;
 	}
 
 	/**
@@ -1853,7 +1867,7 @@ public final class Common {
 	 *
 	 * @return
 	 */
-	public static List<String> getPlayerNames(final boolean includeVanished, @Nullable Player otherPlayer) {
+	public static List<String> getPlayerNames(final boolean includeVanished, Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -1883,7 +1897,7 @@ public final class Common {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static List<String> getPlayerNicknames(final boolean includeVanished, @Nullable Player otherPlayer) {
+	public static List<String> getPlayerNicknames(final boolean includeVanished, Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -2298,7 +2312,7 @@ public final class Common {
 	 * @param it the iterable
 	 * @return the new list
 	 */
-	public static <T> List<T> toList(@Nullable final Iterable<T> it) {
+	public static <T> List<T> toList(final Iterable<T> it) {
 		final List<T> list = new ArrayList<>();
 
 		if (it != null)

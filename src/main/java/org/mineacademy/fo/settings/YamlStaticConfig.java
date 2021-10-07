@@ -1,16 +1,24 @@
 package org.mineacademy.fo.settings;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
@@ -79,20 +87,83 @@ public abstract class YamlStaticConfig {
 	/**
 	 * Load all given static config classes
 	 *
-	 * @param classes
+	 * @param classesRaw
 	 * @throws Exception
 	 */
-	public static final void load(final List<Class<? extends YamlStaticConfig>> classes) throws Exception {
-		if (classes == null)
-			return;
+	public static final void load(List<Class<? extends YamlStaticConfig>> classesRaw) throws Exception {
+		final List<Class<? extends YamlStaticConfig>> classes = new ArrayList<>();
+
+		if (classesRaw != null)
+			classes.addAll(classesRaw);
+
+		loadAutomatically(classes, "settings\\.yml", SimpleSettings.class);
+		loadAutomatically(classes, "localization\\/messages\\_(.*)\\.yml", SimpleLocalization.class);
 
 		for (final Class<? extends YamlStaticConfig> clazz : classes) {
-			final YamlStaticConfig config = clazz.newInstance();
+			try {
+				final YamlStaticConfig config = clazz.newInstance();
 
-			config.load();
+				config.load();
 
-			TEMPORARY_INSTANCE = null;
+				TEMPORARY_INSTANCE = null;
+
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to load static settings " + clazz);
+			}
 		}
+	}
+
+	private static List<Class<? extends YamlStaticConfig>> loadAutomatically(List<Class<? extends YamlStaticConfig>> manuallyLoadedClasses, String nameMatcher, Class<? extends YamlStaticConfig> classToPick) {
+		boolean loadedManually = false;
+		boolean fileExists = false;
+
+		// Step 1: See if the plugin author added the class to getSettings in SimplePlugin
+		for (final Class<? extends YamlStaticConfig> clazz : manuallyLoadedClasses)
+			if (classToPick.isAssignableFrom(clazz))
+				loadedManually = true;
+
+		// Step 2: See if there is a file found in the plugin jar
+		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
+
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry type = it.nextElement();
+				final String name = type.getName();
+
+				if (name.matches(nameMatcher))
+					fileExists = true;
+			}
+
+		} catch (final IOException ex) {
+		}
+
+		// If there is no file or it has been loaded manually, skip
+		if (loadedManually || !fileExists)
+			return manuallyLoadedClasses;
+
+		// Otherwise scan through all plugin classe
+		final List<Class<? extends YamlStaticConfig>> foundClasses = new ArrayList<>();
+
+		for (final Class<? extends YamlStaticConfig> configClass : ReflectionUtil.getClasses(SimplePlugin.getInstance(), YamlStaticConfig.class))
+			if (classToPick.isAssignableFrom(configClass))
+				foundClasses.add(configClass);
+
+		// Clean potential conflicts: such as Settings and SimpleSettings, in this case we only select Settings.
+		// If there is only SimpleSettings, we select that instead.
+		if (foundClasses.size() > 1) {
+
+			// Assuming one is the core class from Foundation and other one(s) are from the specific plugin
+			for (final Iterator<Class<? extends YamlStaticConfig>> it = foundClasses.iterator(); it.hasNext();) {
+				final Class<? extends YamlStaticConfig> settingsClass = it.next();
+
+				if (settingsClass.equals(SimpleSettings.class) || settingsClass.equals(SimpleLocalization.class))
+					it.remove();
+			}
+		}
+
+		Valid.checkBoolean(foundClasses.size() == 1, "Cannot have multiple classes in your plugin that extend " + classToPick + ", found: " + foundClasses);
+		manuallyLoadedClasses.add(foundClasses.get(0));
+
+		return manuallyLoadedClasses;
 	}
 
 	/**
@@ -114,7 +185,7 @@ public abstract class YamlStaticConfig {
 	 * @see YamlConfig#saveComments()
 	 */
 	protected boolean saveComments() {
-		return false;
+		return true;
 	}
 
 	/**
@@ -368,6 +439,10 @@ public abstract class YamlStaticConfig {
 
 	protected static final int getInteger(final String path) {
 		return TEMPORARY_INSTANCE.getInteger(path);
+	}
+
+	protected static final int getInteger(final String path, int def) {
+		return TEMPORARY_INSTANCE.getInteger(path, def);
 	}
 
 	/**

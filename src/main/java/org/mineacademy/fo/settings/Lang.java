@@ -3,8 +3,6 @@ package org.mineacademy.fo.settings;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.SerializeUtil;
@@ -130,7 +128,7 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static List<SimpleComponent> ofComponentList(String path, @Nullable Object... variables) {
+	public static List<SimpleComponent> ofComponentList(String path, Object... variables) {
 		return Common.convert(ofList(path, variables), SimpleComponent::of);
 	}
 
@@ -141,7 +139,7 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static List<String> ofList(String path, @Nullable Object... variables) {
+	public static List<String> ofList(String path, Object... variables) {
 		return Arrays.asList(ofArray(path, variables));
 	}
 
@@ -152,7 +150,7 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String[] ofArray(String path, @Nullable Object... variables) {
+	public static String[] ofArray(String path, Object... variables) {
 		return of(path, variables).split("\n");
 	}
 
@@ -163,7 +161,7 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static SimpleComponent ofComponent(String path, @Nullable Object... variables) {
+	public static SimpleComponent ofComponent(String path, Object... variables) {
 		return SimpleComponent.of(of(path, variables));
 	}
 
@@ -209,7 +207,7 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String ofScript(String path, SerializedMap scriptVariables, @Nullable Object... variables) {
+	public static String ofScript(String path, SerializedMap scriptVariables, Object... variables) {
 		String script = of(path, variables);
 		Object result;
 
@@ -235,7 +233,7 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String of(String path, @Nullable Object... variables) {
+	public static String of(String path, Object... variables) {
 		checkInit();
 
 		synchronized (instance) {
@@ -248,7 +246,7 @@ public final class Lang extends YamlConfig {
 	/*
 	 * Replace placeholders in the message
 	 */
-	private static String translate(String key, @Nullable Object... variables) {
+	private static String translate(String key, Object... variables) {
 		Valid.checkNotNull(key, "Cannot translate a null key with variables " + Common.join(variables));
 
 		if (variables != null)
@@ -268,7 +266,9 @@ public final class Lang extends YamlConfig {
 	 * Check if this class has properly been initialized
 	 */
 	private static void checkInit() {
-		Valid.checkNotNull(instance, "Call init() method in your onPluginPreStart to use the Lang class!");
-		Common.runLater(() -> Valid.checkBoolean(SimpleLocalization.isLocalizationCalled(), "Load SimpleLocalization in your main plugin class, such as: https://i.imgur.com/HpINykd.png"));
+
+		// Automatically load when not loaded in onPluginPreStart
+		if (instance == null)
+			init();
 	}
 }
