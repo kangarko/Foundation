@@ -29,14 +29,6 @@ import org.mineacademy.fo.settings.SimpleLocalization;
  */
 final class FoundationListener implements Listener {
 
-	@EventHandler(priority = EventPriority.LOW)
-	public void onJoin(PlayerJoinEvent event) {
-		final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
-
-		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(event.getPlayer(), check.getPermission().replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase().replace(" ", "_"))))
-			Common.tellLater(4 * 20, event.getPlayer(), check.getNotifyMessage());
-	}
-
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent event) {
 		SimpleScoreboard.clearBoardsFor(event.getPlayer());
@@ -169,5 +161,19 @@ final class FoundationListener implements Listener {
 
 		// Prevent "Unknown command message"
 		event.setCancelled(true);
+	}
+
+	/**
+	 * A separate listener for handling update check
+	 */
+	final static class UpdateCheckListener implements Listener {
+
+		@EventHandler(priority = EventPriority.LOW)
+		public void onJoin(PlayerJoinEvent event) {
+			final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
+
+			if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(event.getPlayer(), check.getPermission().replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase().replace(" ", "_"))))
+				Common.tellLater(4 * 20, event.getPlayer(), check.getNotifyMessage());
+		}
 	}
 }
