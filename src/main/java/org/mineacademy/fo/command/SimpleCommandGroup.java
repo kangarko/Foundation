@@ -407,8 +407,9 @@ public abstract class SimpleCommandGroup {
 			}
 
 			// Handle help argument
-			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel()))
+			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel())) {
 				tellSubcommandsHelp();
+			}
 
 			// Handle unknown argument
 			else
@@ -483,8 +484,11 @@ public abstract class SimpleCommandGroup {
 
 					pages.setPages(lines);
 
+					// Allow "? <page>" page parameter
+					final int page = (args.length > 1 && Valid.isInteger(args[1]) ? Integer.parseInt(args[1]) : 1);
+
 					// Send the component on the main thread
-					Common.runLater(() -> pages.send(sender));
+					Common.runLater(() -> pages.send(sender, page));
 
 				} else
 					tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS_PERMISSION);
