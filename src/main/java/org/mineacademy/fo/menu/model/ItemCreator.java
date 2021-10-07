@@ -61,7 +61,7 @@ final @Builder public class ItemCreator {
 	 * The amount of the item
 	 */
 	@Builder.Default
-	private final int amount = 1;
+	private final int amount = -1;
 
 	/**
 	 * The item damage
@@ -200,7 +200,7 @@ final @Builder public class ItemCreator {
 		if (material != null)
 			Valid.checkNotNull(material.getMaterial(), "Material#getMaterial cannot be null for " + material);
 
-		final ItemStack compiledItem = item != null ? item.clone() : material.toItem(amount);
+		final ItemStack compiledItem = item != null ? item.clone() : material.toItem();
 		ItemMeta compiledMeta = meta != null ? meta.clone() : compiledItem.getItemMeta();
 
 		// Skip if air
@@ -374,6 +374,10 @@ final @Builder public class ItemCreator {
 				compiledMeta.addItemFlags(ItemFlag.valueOf(flag.toString()));
 			} catch (final Throwable t) {
 			}
+
+		// Override with custom amount if set
+		if (amount != -1)
+			compiledItem.setAmount(amount);
 
 		// Apply Bukkit metadata
 		compiledItem.setItemMeta(compiledMeta);
