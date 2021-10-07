@@ -87,9 +87,7 @@ public final class PlayerUtil {
 	 * @return
 	 */
 	public static int getPing(final Player player) {
-		final Object entityPlayer = Remain.getHandleEntity(player);
-
-		return (int) ReflectionUtil.getFieldContent(entityPlayer, "ping");
+		return Remain.getPing(player);
 	}
 
 	/**
