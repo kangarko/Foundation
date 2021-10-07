@@ -85,6 +85,18 @@ final class AutoRegisterScanner {
 
 					// Ignore abstract or anonymous classes
 					if (!Modifier.isAbstract(clazz.getModifiers()) && !anonymousClassPattern.matcher(className).find()) {
+
+						// Prevent beginner programmer mistake of forgetting to implement listener
+						try {
+							for (final Method method : clazz.getMethods())
+								if (method.isAnnotationPresent(EventHandler.class))
+									Valid.checkBoolean(Listener.class.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
+
+						} catch (final Error err) {
+							// Ignore, likely caused by missing plugins
+						}
+
+						// Auto register classes
 						final AutoRegister autoRegister = clazz.getAnnotation(AutoRegister.class);
 
 						// Require our annotation to be used, or support legacy classes from Foundation 5
