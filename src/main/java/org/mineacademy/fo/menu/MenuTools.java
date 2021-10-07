@@ -190,6 +190,7 @@ final class ToggleableTool {
 	 * @param unparsed the object to parse, see {@link MenuTools#compileTools()}
 	 */
 	ToggleableTool(final Object unparsed) {
+
 		if (unparsed != null) {
 			if (unparsed instanceof ItemStack)
 				this.item = (ItemStack) unparsed;
@@ -199,6 +200,9 @@ final class ToggleableTool {
 
 			else if (unparsed instanceof Number && ((Number) unparsed).intValue() == 0)
 				this.item = new ItemStack(Material.AIR);
+
+			else if (unparsed instanceof Class && Tool.class.isAssignableFrom((Class<?>) unparsed))
+				this.item = ((Tool) ReflectionUtil.invokeStatic((Class<?>) unparsed, "getInstance")).getItem();
 
 			else
 				throw new FoException("Unknown tool: " + unparsed + " (we only accept ItemStack, Tool's instance or 0 for air)");
