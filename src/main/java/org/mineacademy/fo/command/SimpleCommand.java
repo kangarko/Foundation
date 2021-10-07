@@ -14,6 +14,7 @@ import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -661,6 +662,20 @@ public abstract class SimpleCommand extends Command {
 
 			return null;
 		}
+	}
+
+	/**
+	 * Attempts to convert the given name into a bukkit world,
+	 * sending localized error message if such world does not exist.
+	 *
+	 * @param name
+	 * @return
+	 */
+	protected final World findWorld(String name) {
+		final World world = Bukkit.getWorld(name);
+
+		checkNotNull(world, SimpleLocalization.Commands.INVALID_WORLD.replace("{world}", name).replace("{available}", Common.join(Bukkit.getWorlds())));
+		return world;
 	}
 
 	/**
