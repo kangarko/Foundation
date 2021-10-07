@@ -67,7 +67,7 @@ public abstract class BlockTool extends Tool {
 	 * @see org.mineacademy.fo.menu.tool.Tool#ignoreCancelled()
 	 */
 	@Override
-	protected final boolean ignoreCancelled() {
+	protected boolean ignoreCancelled() {
 		return false;
 	}
 }
