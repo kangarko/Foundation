@@ -275,8 +275,6 @@ public abstract class SimplePlugin extends JavaPlugin {
 			if (!isEnabled())
 				return;
 
-			SimpleHologram.init();
-
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
@@ -657,8 +655,7 @@ public abstract class SimplePlugin extends JavaPlugin {
 			metadata.save();
 			metadata.reload();
 
-			SimpleHologram.init();
-
+			SimpleHologram.onReload();
 			Lang.reloadFile();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
