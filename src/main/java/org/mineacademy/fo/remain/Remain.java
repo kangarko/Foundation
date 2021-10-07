@@ -1808,10 +1808,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -2142,6 +2142,25 @@ public final class Remain {
 	// Internal method to get a players cooldown map
 	private static StrictMap<Material, Integer> getCooldown(final Player player) {
 		return cooldowns.getOrDefault(player.getUniqueId(), new StrictMap<>());
+	}
+
+	/**
+	 * Return the player ping
+	 *
+	 * @deprecated use {@link PlayerUtil#getPing(Player)}
+	 * @param player
+	 * @return
+	 */
+	@Deprecated
+	public static int getPing(Player player) {
+		try {
+			return player.getPing();
+
+		} catch (final NoSuchMethodError err) {
+			final Object entityPlayer = Remain.getHandleEntity(player);
+
+			return (int) ReflectionUtil.getFieldContent(entityPlayer, "ping");
+		}
 	}
 
 	/**
