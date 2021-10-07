@@ -123,7 +123,8 @@ final class AutoRegisterScanner {
 		if (SimpleEnchantment.class.isAssignableFrom(clazz) && MinecraftVersion.olderThan(V.v1_13)) {
 			if (printWarnings) {
 				Bukkit.getLogger().warning("**** WARNING ****");
-				Bukkit.getLogger().warning("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName());
+				Bukkit.getLogger().warning("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName()
+						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
@@ -132,7 +133,8 @@ final class AutoRegisterScanner {
 		if (DiscordListener.class.isAssignableFrom(clazz) && !HookManager.isDiscordSRVLoaded()) {
 			if (printWarnings) {
 				Bukkit.getLogger().warning("**** WARNING ****");
-				Bukkit.getLogger().warning("DiscordListener requires DiscordSRV. The following class will not be registered: " + clazz.getName());
+				Bukkit.getLogger().warning("DiscordListener requires DiscordSRV. The following class will not be registered: " + clazz.getName()
+						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
@@ -141,7 +143,8 @@ final class AutoRegisterScanner {
 		if (PacketListener.class.isAssignableFrom(clazz) && !HookManager.isProtocolLibLoaded()) {
 			if (printWarnings) {
 				Bukkit.getLogger().warning("**** WARNING ****");
-				Bukkit.getLogger().warning("PacketListener requires ProtocolLib. The following class will not be registered: " + clazz.getName());
+				Bukkit.getLogger().warning("PacketListener requires ProtocolLib. The following class will not be registered: " + clazz.getName()
+						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
