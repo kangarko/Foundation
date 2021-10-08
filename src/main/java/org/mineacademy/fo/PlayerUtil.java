@@ -21,7 +21,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -369,12 +368,7 @@ public final class PlayerUtil {
 			if (player.isInsideVehicle())
 				player.getVehicle().remove();
 
-			try {
-				for (final Entity passenger : player.getPassengers())
-					player.removePassenger(passenger);
-			} catch (final NoSuchMethodError err) {
-				/* old MC */
-			}
+			Remain.removePassengers(player);
 
 			if (removeVanish)
 				try {
@@ -403,6 +397,7 @@ public final class PlayerUtil {
 	private static void cleanInventoryAndFood(final Player player) {
 		player.getInventory().setArmorContents(null);
 		player.getInventory().setContents(new ItemStack[player.getInventory().getContents().length]);
+
 		try {
 			player.getInventory().setExtraContents(new ItemStack[player.getInventory().getExtraContents().length]);
 		} catch (final NoSuchMethodError err) {
