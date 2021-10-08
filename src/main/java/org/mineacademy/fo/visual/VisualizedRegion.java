@@ -1,9 +1,11 @@
 package org.mineacademy.fo.visual;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -12,20 +14,22 @@ import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompParticle;
 
+import lombok.Getter;
 import lombok.Setter;
 
 /**
  * A simply way to visualize two locations in the world
  */
-public class VisualizedRegion extends Region {
+public final class VisualizedRegion extends Region {
 
 	/**
-	 * A list of players who can see the particles
+	 * A list of players who can see the particles, along with the particle color (requires {@link #particle} to be REDSTONE)
 	 */
-	private final List<Player> viewers = new ArrayList<>();
+	private final StrictMap<Player, Color> viewers = new StrictMap<>();
 
 	/**
 	 * The task responsible for sending particles
@@ -35,8 +39,16 @@ public class VisualizedRegion extends Region {
 	/**
 	 * The particle that is being sent out
 	 */
+	@Getter
 	@Setter
 	private CompParticle particle = CompParticle.VILLAGER_HAPPY;
+
+	/**
+	 * The delay between each particle shows when visualizing the region, the lower, the better visibility but more CPU drain
+	 */
+	@Getter
+	@Setter
+	private int delayTicks = 23;
 
 	/**
 	 * Create a new visualizable region
@@ -71,7 +83,19 @@ public class VisualizedRegion extends Region {
 	 * @param durationTicks
 	 */
 	public void showParticles(Player player, int durationTicks) {
-		showParticles(player);
+		this.showParticles(player, null, durationTicks);
+	}
+
+	/**
+	 * Shows the region to the given player for the given duration,
+	 * the hides it
+	 *
+	 * @param player
+	 * @param color
+	 * @param durationTicks
+	 */
+	public void showParticles(Player player, @Nullable Color color, int durationTicks) {
+		showParticles(player, color);
 
 		Common.runLater(durationTicks, () -> {
 			if (canSeeParticles(player))
@@ -85,10 +109,20 @@ public class VisualizedRegion extends Region {
 	 * @param player
 	 */
 	public void showParticles(final Player player) {
+		this.showParticles(player, null);
+	}
+
+	/**
+	 * Shows the region to the given player
+	 *
+	 * @param player
+	 * @param color
+	 */
+	public void showParticles(final Player player, @Nullable Color color) {
 		Valid.checkBoolean(!canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
 		Valid.checkBoolean(isWhole(), "Cannot show particles of an incomplete region " + this);
 
-		viewers.add(player);
+		viewers.put(player, color);
 
 		if (task == null)
 			startVisualizing();
@@ -115,7 +149,7 @@ public class VisualizedRegion extends Region {
 	 * @return
 	 */
 	public boolean canSeeParticles(final Player player) {
-		return viewers.contains(player);
+		return viewers.containsKey(player);
 	}
 
 	/*
@@ -125,7 +159,7 @@ public class VisualizedRegion extends Region {
 		Valid.checkBoolean(task == null, "Already visualizing region " + this + "!");
 		Valid.checkBoolean(isWhole(), "Cannot visualize incomplete region " + this + "!");
 
-		task = Common.runTimer(23, new BukkitRunnable() {
+		task = Common.runTimer(delayTicks, new BukkitRunnable() {
 			@Override
 			public void run() {
 				if (viewers.isEmpty()) {
@@ -137,11 +171,18 @@ public class VisualizedRegion extends Region {
 				final Set<Location> blocks = BlockUtil.getBoundingBox(getPrimary(), getSecondary());
 
 				for (final Location location : blocks)
-					for (final Player viewer : viewers) {
+					for (final Map.Entry<Player, Color> entry : viewers.entrySet()) {
+						final Player viewer = entry.getKey();
+						final Color color = entry.getValue();
 						final Location viewerLocation = viewer.getLocation();
 
-						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
-							particle.spawn(viewer, location);
+						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100) {
+							if (color != null)
+								CompParticle.REDSTONE.spawn(viewer, location, color, 0.5F);
+
+							else
+								particle.spawn(viewer, location);
+						}
 					}
 
 			}
