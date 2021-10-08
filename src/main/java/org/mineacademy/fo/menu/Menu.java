@@ -1,8 +1,6 @@
 package org.mineacademy.fo.menu;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +28,8 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.menu.button.ButtonReturnBack;
+import org.mineacademy.fo.menu.button.StartPosition;
+import org.mineacademy.fo.menu.button.annotation.Position;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
@@ -39,7 +39,6 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -99,7 +98,7 @@ public abstract class Menu {
 	/**
 	 * Automatically registered Buttons in this menu (using reflection)
 	 */
-	private final List<Button> registeredButtons = new ArrayList<>();
+	private final Map<Button, Position> registeredButtons = new HashMap<>();
 
 	/**
 	 * The registrator responsible for scanning the class and making buttons
@@ -130,12 +129,6 @@ public abstract class Menu {
 	 * The size of the menu
 	 */
 	private Integer size = 9 * 3;
-
-	/**
-	 * The description of the menu
-	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private String[] info = null;
 
 	/**
 	 * The viewer of this menu, is null until {@link #displayTo(Player)} is called
@@ -258,8 +251,14 @@ public abstract class Menu {
 		{
 			final List<Button> buttons = getButtonsToAutoRegister();
 
-			if (buttons != null)
-				registeredButtons.addAll(buttons);
+			if (buttons != null) {
+				final Map<Button, Position> buttonsRemapped = new HashMap<>();
+
+				for (final Button button : buttons)
+					buttonsRemapped.put(button, null);
+
+				registeredButtons.putAll(buttonsRemapped);
+			}
 		}
 
 		// Register buttons declared as fields
@@ -283,14 +282,17 @@ public abstract class Menu {
 			final Button button = (Button) ReflectionUtil.getFieldContent(field, this);
 
 			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
-			registeredButtons.add(button);
+			final Position position = field.getAnnotation(Position.class);
+
+			registeredButtons.put(button, position);
 
 		} else if (Button[].class.isAssignableFrom(type)) {
-			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
+			/*Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
-
+			
 			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
-			registeredButtons.addAll(Arrays.asList(buttons));
+			registeredButtons.addAll(Arrays.asList(buttons));*/
+			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
 		}
 	}
 
@@ -330,7 +332,7 @@ public abstract class Menu {
 		registerButtonsIfHasnt();
 
 		if (fromItem != null)
-			for (final Button button : registeredButtons) {
+			for (final Button button : registeredButtons.keySet()) {
 				Valid.checkNotNull(button, "Menu button is null at " + getClass().getSimpleName());
 				Valid.checkNotNull(button.getItem(), "Menu " + getTitle() + " contained button " + button + " with empty item!");
 
@@ -397,6 +399,33 @@ public abstract class Menu {
 
 			if (item != null && !drawer.isSet(i))
 				drawer.setItem(i, item);
+		}
+
+		// Set items defined by buttons if not yet set
+		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
+			final Button button = entry.getKey();
+			final Position position = entry.getValue();
+
+			if (position == null)
+				continue;
+
+			int slot = position.value();
+			final StartPosition startPosition = position.start();
+
+			if (startPosition == StartPosition.CENTER)
+				slot += this.getCenterSlot();
+
+			else if (startPosition == StartPosition.BOTTOM_CENTER)
+				slot += this.getSize() - 5;
+
+			else if (startPosition == StartPosition.TOP_LEFT) {
+				if (slot == 0)
+					slot += 1;
+			} else
+				throw new FoException("Does not know how to implement button position's Slot." + startPosition);
+
+			if (!drawer.isSet(slot))
+				drawer.setItem(slot, button.getItem());
 		}
 
 		// Allow last minute modifications
@@ -818,10 +847,10 @@ public abstract class Menu {
 	 * Used to create an info bottom in bottom left corner, see
 	 * {@link Button#makeInfo(String...)}
 	 *
-	 * @param info the info to set
+	 * return info the info to set
 	 */
-	protected final void setInfo(final String... info) {
-		this.info = info;
+	protected String[] getInfo() {
+		return null;
 	}
 
 	/**
