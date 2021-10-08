@@ -3,7 +3,6 @@ package org.mineacademy.fo.settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.command.ConversationCommand;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.command.ReloadCommand;
@@ -116,6 +115,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
 		public static String INVALID_TIME = "Expected time such as '3 hours' or '15 minutes'. Got: '{input}'";
 		public static String INVALID_NUMBER = "The number must be a whole or a decimal number. Got: '{input}'";
+		public static String INVALID_STRING = "Invalid string. Got: '{input}'";
 		public static String INVALID_WORLD = "Invalid world '{world}'. Available: {available}";
 
 		/**
@@ -239,11 +239,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String PERMS_NO = "&cno";
 
 		/**
-		 * The keys below are used in the {@link ConversationCommand}
-		 */
-		public static String CONVERSATION_NOT_CONVERSING = "&cYou must be conversing with the server!";
-
-		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -273,8 +268,11 @@ public class SimpleLocalization extends YamlStaticConfig {
 			if (isSetDefault("Invalid_Number"))
 				INVALID_NUMBER = getString("Invalid_Number");
 
+			if (isSetDefault("Invalid_String"))
+				INVALID_STRING = getString("Invalid_String");
+
 			if (isSetDefault("Invalid_World"))
-				INVALID_NUMBER = getString("Invalid_World");
+				INVALID_WORLD = getString("Invalid_World");
 
 			if (isSetDefault("Label_Authors"))
 				LABEL_AUTHORS = getString("Label_Authors");
@@ -395,9 +393,40 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Perms_No"))
 				PERMS_NO = getString("Perms_No");
+		}
+	}
 
-			if (isSetDefault("Conversation_No_Conversing"))
-				CONVERSATION_NOT_CONVERSING = getString("Conversation_No_Conversing");
+	/**
+	 * Strings related to player-server conversation waiting for his chat input
+	 */
+	public static final class Conversation {
+
+		/**
+		 * The key used when the player wants to converse but he is not conversing.
+		 */
+		public static String CONVERSATION_NOT_CONVERSING = "&cYou must be conversing with the server!";
+
+		/**
+		 * Called when console attempts to start conversing
+		 */
+		public static String CONVERSATION_REQUIRES_PLAYER = "Only players may enter this conversation.";
+
+		/**
+		 * Called in the try-catch handling when an error occurs
+		 */
+		public static String CONVERSATION_ERROR = "&cOups! There was a problem in this conversation! Please contact the administrator to review the console for details.";
+
+		private static void init() {
+			pathPrefix("Conversation");
+
+			if (isSetDefault("Not_Conversing"))
+				CONVERSATION_NOT_CONVERSING = getString("Not_Conversing");
+
+			if (isSetDefault("Requires_Player"))
+				CONVERSATION_REQUIRES_PLAYER = getString("Requires_Player");
+
+			if (isSetDefault("Conversation_Error"))
+				CONVERSATION_ERROR = getString("Error");
 		}
 	}
 
@@ -644,11 +673,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 	public static String DATA_MISSING = "&c{name} lacks database information! Please only create {type} in-game! Skipping..";
 
 	/**
-	 * The message when the console attempts to start a server conversation which is prevented.
-	 */
-	public static String CONVERSATION_REQUIRES_PLAYER = "Only players may enter this conversation.";
-
-	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
@@ -666,9 +690,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 		if (isSetDefault("Data_Missing"))
 			DATA_MISSING = getString("Data_Missing");
-
-		if (isSetDefault("Conversation_Requires_Player"))
-			CONVERSATION_REQUIRES_PLAYER = getString("Conversation_Requires_Player");
 
 		if (isSetDefault("None"))
 			NONE = getString("None");

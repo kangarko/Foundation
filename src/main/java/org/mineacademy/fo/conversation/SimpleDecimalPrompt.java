@@ -34,6 +34,15 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	private Consumer<Double> successAction;
 
 	/**
+	 * Create a new prompt with bare question
+	 *
+	 * @param question
+	 */
+	public SimpleDecimalPrompt(String question) {
+		this(question, null);
+	}
+
+	/**
 	 * The menu question
 	 *
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#getPrompt(org.bukkit.conversations.ConversationContext)
@@ -42,7 +51,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	protected String getPrompt(final ConversationContext ctx) {
 		Valid.checkNotNull(question, "Please either call setQuestion or override getPrompt");
 
-		return "&6" + question;
+		return question;
 	}
 
 	/**
@@ -52,7 +61,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected boolean isInputValid(final ConversationContext context, final String input) {
-		return Valid.isDecimal(input) || Valid.isInteger(input);
+		return Valid.isDecimal(input);
 	}
 
 	/**
@@ -82,11 +91,24 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 * @param input
 	 * @return the next prompt, or {@link Prompt#END_OF_CONVERSATION} (that is actualy null) to exit
 	 */
-	protected Prompt acceptValidatedInput(final ConversationContext context, final double input) {
+	protected final Prompt acceptValidatedInput(final ConversationContext context, final double input) {
 		Valid.checkNotNull(question, "Please either call setSuccessAction or override acceptValidatedInput");
 
-		successAction.accept(input);
+		if (this.successAction != null)
+			this.successAction.accept(input);
+		else
+			this.onValidatedInput(context, input);
+
 		return Prompt.END_OF_CONVERSATION;
+	}
+
+	/**
+	 * Override this if you want a single question prompt and we have reached the end
+	 *
+	 * @param context
+	 * @param input
+	 */
+	protected void onValidatedInput(ConversationContext context, double input) {
 	}
 
 	/**
