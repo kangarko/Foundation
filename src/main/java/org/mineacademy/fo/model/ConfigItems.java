@@ -3,8 +3,9 @@ package org.mineacademy.fo.model;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -14,7 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.NonNull;
@@ -32,7 +33,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	/**
 	 * A list of all loaded items
 	 */
-	private volatile StrictList<T> loadedItems = new StrictList<>();
+	private volatile StrictMap<String, T> loadedItemsMap = new StrictMap<>();
 
 	/**
 	 * The item type this class stores, such as "variable, "format", or "arena class"
@@ -105,7 +106,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	public void loadItems() {
 
 		// Clear old items
-		loadedItems.clear();
+		loadedItemsMap.clear();
 
 		if (singleFile) {
 			final File file = FileUtil.extract(this.folder);
@@ -188,7 +189,7 @@ public final class ConfigItems<T extends YamlConfig> {
 			}
 
 			// Register
-			loadedItems.add(item);
+			loadedItemsMap.put(name, item);
 
 		} catch (final Throwable t) {
 			Common.throwError(t, "Failed to load" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + folder);
@@ -204,10 +205,11 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param item
 	 */
 	public void removeItem(@NonNull final T item) {
-		Valid.checkBoolean(isItemLoaded(item.getName()), WordUtils.capitalize(type) + " " + item.getName() + " not loaded. Available: " + getItemNames());
+		final String name = item.getName();
+		Valid.checkBoolean(isItemLoaded(name), WordUtils.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
 
 		item.delete();
-		loadedItems.remove(item);
+		loadedItemsMap.remove(name);
 	}
 
 	/**
@@ -227,11 +229,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public T findItem(@NonNull final String name) {
-		for (final T item : loadedItems)
-			if (item.getName().equalsIgnoreCase(name))
-				return item;
-
-		return null;
+		return loadedItemsMap.get(name);
 	}
 
 	/**
@@ -239,8 +237,8 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @return
 	 */
-	public List<T> getItems() {
-		return Collections.unmodifiableList(loadedItems.getSource());
+	public Collection<T> getItems() {
+		return Collections.unmodifiableCollection(loadedItemsMap.values());
 	}
 
 	/**
@@ -248,7 +246,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @return
 	 */
-	public List<String> getItemNames() {
-		return Common.convert(loadedItems, T::getName);
+	public Set<String> getItemNames() {
+		return loadedItemsMap.keySet();
 	}
 }
