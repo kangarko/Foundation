@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -16,9 +15,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
@@ -230,7 +227,11 @@ final class ToggleableTool {
 
 	// Return the dummy placeholder tool when the player already has it
 	private ItemStack getToolWhenHas() {
-		return ItemCreator.of(item).enchant(new SimpleEnchant(Enchantment.ARROW_INFINITE, 1)).flag(CompItemFlag.HIDE_ENCHANTS).lores(Arrays.asList("", "&cYou already have this item.", "&7Click to take it away.")).build().make();
+		return ItemCreator
+				.of(item)
+				.glow(true)
+				.lores(Arrays.asList("", "&6You already have this item.", "&6Click to take it away."))
+				.build().makeMenuTool();
 	}
 
 	// Return the actual working tool in case player does not have it yet
