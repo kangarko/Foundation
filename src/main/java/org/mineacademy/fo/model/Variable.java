@@ -1,7 +1,9 @@
 package org.mineacademy.fo.model;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.bukkit.command.CommandSender;
@@ -378,7 +380,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static List<Variable> getVariables() {
+	public static Collection<Variable> getVariables() {
 		return loadedVariables.getItems();
 	}
 
@@ -387,7 +389,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static List<String> getVariableNames() {
+	public static Set<String> getVariableNames() {
 		return loadedVariables.getItemNames();
 	}
 

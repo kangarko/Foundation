@@ -862,7 +862,7 @@ public final class Common {
 	 * @param ofWhat
 	 * @return
 	 */
-	public static <T> String plural(final List<T> iterable, final String ofWhat) {
+	public static <T> String plural(final Collection<T> iterable, final String ofWhat) {
 		return plural(iterable.size(), ofWhat) + ": " + join(iterable);
 	}
 
