@@ -25,7 +25,7 @@ public final class ConversationCommand extends SimpleSubCommand {
 	@Override
 	protected void onCommand() {
 		checkConsole();
-		checkBoolean(getPlayer().isConversing(), SimpleLocalization.Commands.CONVERSATION_NOT_CONVERSING);
+		checkBoolean(getPlayer().isConversing(), SimpleLocalization.Conversation.CONVERSATION_NOT_CONVERSING);
 
 		getPlayer().acceptConversationInput(Common.joinRange(0, args));
 	}

@@ -13,6 +13,7 @@ import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
@@ -20,6 +21,7 @@ import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -298,7 +300,12 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		@Override
 		public void outputNextPrompt() {
 			if (currentPrompt == null)
-				abandon(new ConversationAbandonedEvent(this));
+				try {
+					abandon(new ConversationAbandonedEvent(this));
+
+				} catch (final Throwable t) {
+					tell(context.getForWhom(), Messenger.getErrorPrefix() + SimpleLocalization.Conversation.CONVERSATION_ERROR);
+				}
 
 			else {
 				// Save the time when we showed the question to the player

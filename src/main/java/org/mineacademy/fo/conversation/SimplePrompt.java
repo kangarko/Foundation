@@ -58,9 +58,13 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	@Override
 	public final String getPromptText(final ConversationContext context) {
-		final String prompt = getPrompt(context);
+		String prompt = getPrompt(context);
 
-		return Variables.replace((Messenger.ENABLED && !prompt.contains(Messenger.getInfoPrefix()) ? Messenger.getInfoPrefix() : "") + prompt, getPlayer(context));
+		if (Messenger.ENABLED && !prompt.contains(Messenger.getAnnouncePrefix()) && !prompt.contains(Messenger.getErrorPrefix()) && !prompt.contains(Messenger.getInfoPrefix())
+				&& !prompt.contains(Messenger.getQuestionPrefix()) && !prompt.contains(Messenger.getSuccessPrefix()) && !prompt.contains(Messenger.getWarnPrefix()))
+			prompt = Messenger.getQuestionPrefix() + prompt;
+
+		return Variables.replace(prompt, getPlayer(context));
 	}
 
 	/**
