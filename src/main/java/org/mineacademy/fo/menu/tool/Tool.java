@@ -99,7 +99,7 @@ public abstract class Tool {
 	 * @param item the itemstack
 	 * @return true if this tool is the given itemstack
 	 */
-	public boolean isTool(final ItemStack item) {
+	public final boolean isTool(final ItemStack item) {
 		return ItemUtil.isSimilar(getItem(), item);
 	}
 
@@ -109,8 +109,22 @@ public abstract class Tool {
 	 * @param player
 	 * @return
 	 */
-	public boolean hasToolInHand(final Player player) {
+	public final boolean hasToolInHand(final Player player) {
 		return isTool(player.getItemInHand());
+	}
+
+	/**
+	 * Return true if the player already contains this tool
+	 *
+	 * @param player
+	 * @return
+	 */
+	public final boolean hasTool(Player player) {
+		for (final ItemStack item : player.getInventory().getContents())
+			if (isTool(item))
+				return true;
+
+		return false;
 	}
 
 	/**
@@ -176,6 +190,20 @@ public abstract class Tool {
 	 */
 	protected boolean autoCancel() {
 		return false;
+	}
+
+	/**
+	 * Gives this tool to player is he does not have it yet
+	 *
+	 * @param player
+	 * @return true if tool was given, false if player already has it
+	 */
+	public final boolean giveIfHasnt(Player player) {
+		if (hasTool(player))
+			return false;
+
+		give(player);
+		return true;
 	}
 
 	/**
