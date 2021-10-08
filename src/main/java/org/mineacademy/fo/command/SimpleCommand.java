@@ -1276,6 +1276,27 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Convenience method for completing all player names that the sender can see
+	 * and that are not vanished
+	 * <p>
+	 * TIP: You can simply return null for the same behaviour
+	 *
+	 * @return
+	 */
+	protected List<String> completeLastWordPlayerNames() {
+		return TabUtil.complete(getLastArg(), isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames());
+	}
+
+	/**
+	 * Convenience method for completing all world names
+	 *
+	 * @return
+	 */
+	protected List<String> completeLastWordWorldNames() {
+		return this.completeLastWord(Common.getWorldNames());
+	}
+
+	/**
 	 * Convenience method for automatically completing the last word
 	 * with the given suggestions. We sort them and only select ones
 	 * that the last word starts with.
@@ -1323,18 +1344,6 @@ public abstract class SimpleCommand extends Command {
 			list.add(toString.apply(suggestion));
 
 		return TabUtil.complete(getLastArg(), list.toArray());
-	}
-
-	/**
-	 * Convenience method for completing all player names that the sender can see
-	 * and that are not vanished
-	 * <p>
-	 * TIP: You can simply return null for the same behaviour
-	 *
-	 * @return
-	 */
-	protected List<String> completeLastWordPlayerNames() {
-		return TabUtil.complete(getLastArg(), isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames());
 	}
 
 	// ----------------------------------------------------------------------
