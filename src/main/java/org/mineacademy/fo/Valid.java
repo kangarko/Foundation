@@ -33,7 +33,7 @@ public final class Valid {
 	/**
 	 * Matching valid whole numbers
 	 */
-	private final Pattern PATTERN_DECIMAL = Pattern.compile("-?\\d+.\\d+");
+	private final Pattern PATTERN_DECIMAL = Pattern.compile("([0-9]+\\.?[0-9]*|\\.[0-9]+)");
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Checking for validity and throwing errors if false or null
@@ -165,7 +165,7 @@ public final class Valid {
 	public boolean isInteger(final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is an integer!");
 
-		return Valid.PATTERN_INTEGER.matcher(raw).find();
+		return Valid.PATTERN_INTEGER.matcher(raw).matches();
 	}
 
 	/**
@@ -177,7 +177,7 @@ public final class Valid {
 	public boolean isDecimal(final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is a decimal!");
 
-		return Valid.PATTERN_DECIMAL.matcher(raw).find();
+		return Valid.PATTERN_DECIMAL.matcher(raw).matches();
 	}
 
 	/**
