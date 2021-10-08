@@ -1077,7 +1077,7 @@ public final class Remain {
 	 *
 	 * @param player
 	 */
-	public static void removeBar(final Player player) {
+	public static void removeBossBar(final Player player) {
 		BossBarInternals.getInstance().removeBar(player);
 	}
 
@@ -1822,10 +1822,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
