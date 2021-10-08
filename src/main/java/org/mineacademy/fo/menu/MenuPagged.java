@@ -270,6 +270,16 @@ public abstract class MenuPagged<T> extends Menu {
 	@Override
 	protected final void onDisplay(final InventoryDrawer drawer) {
 		drawer.setTitle(compileTitle0());
+
+		this.onPostDisplay(drawer);
+	}
+
+	/**
+	 * Called before the menu is displayed
+	 *
+	 * @param drawer
+	 */
+	protected void onPostDisplay(InventoryDrawer drawer) {
 	}
 
 	/**
@@ -322,6 +332,9 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * Automatically get the correct item from the actual page, including
 	 * prev/next buttons
+	 *
+	 * WHEN OVERRIDING, MAKE SURE YOU CALL super.getItemAt OTHERWISE
+	 * THIS MENU WILL NOT GENERATE PAGES NOR NAVIGATION BUTTONS
 	 *
 	 * @param slot the slot
 	 * @return the item, or null
