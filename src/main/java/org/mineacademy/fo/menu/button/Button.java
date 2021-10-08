@@ -138,7 +138,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(icon).name(title).lore("").lores(Arrays.asList(label.split("\n"))).build().make();
+				return ItemCreator.of(icon).name(title).lore("").lores(Arrays.asList(label.split("\n"))).build().makeMenuTool();
 			}
 
 			@Override
@@ -160,7 +160,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return builder.build().make();
+				return builder.build().makeMenuTool();
 			}
 
 			@Override
@@ -206,7 +206,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return builder.build().make();
+				return builder.build().makeMenuTool();
 			}
 
 			@Override
