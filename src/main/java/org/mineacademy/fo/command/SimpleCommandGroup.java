@@ -467,6 +467,12 @@ public abstract class SimpleCommandGroup {
 							} else
 								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage));
 
+							for (int i = 0; i < hover.size(); i++) {
+								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 60));
+
+								hover.set(i, hoverLine);
+							}
+
 							line.onHover(hover);
 							line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());
 						}
