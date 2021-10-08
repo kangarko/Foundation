@@ -232,6 +232,7 @@ public abstract class OfflineRegionScanner {
 		final Object region = RegionAccessor.getRegionFile(this.world.getName(), file);
 
 		// Load each chunk within that file
+		scan:
 		for (int x = 0; x < 32; x++)
 			for (int z = 0; z < 32; z++) {
 				final int chunkX = x + (regionX << 5);
@@ -244,7 +245,14 @@ public abstract class OfflineRegionScanner {
 					else {
 						final Chunk chunk = world.getChunkAt(chunkX, chunkZ);
 
-						onChunkScan(chunk);
+						try {
+							onChunkScan(chunk);
+
+						} catch (final Throwable t) {
+							Common.error(t, "Failed to scan chunk " + chunk + ", aborting for safety");
+
+							break scan;
+						}
 					}
 				}
 			}
