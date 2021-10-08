@@ -1090,10 +1090,11 @@ public final class Remain {
 
 		try {
 			for (final Entity passenger : entity.getPassengers())
-				entity.removePassenger(passenger);
+				if (!(passenger instanceof Player))
+					entity.removePassenger(passenger);
 
 		} catch (final NoSuchMethodError err) {
-			if (entity.getPassenger() != null)
+			if (entity.getPassenger() != null && !(entity.getPassenger() instanceof Player))
 				entity.getPassenger().remove();
 		}
 	}
@@ -1822,10 +1823,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
