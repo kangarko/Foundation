@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -233,7 +234,15 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public T findItem(@NonNull final String name) {
-		return loadedItemsMap.get(name);
+		final T item = loadedItemsMap.get(name);
+
+		// Fallback to case insensitive
+		if (item == null)
+			for (final Map.Entry<String, T> entry : loadedItemsMap.entrySet())
+				if (entry.getKey().equalsIgnoreCase(name))
+					return entry.getValue();
+
+		return item;
 	}
 
 	/**
