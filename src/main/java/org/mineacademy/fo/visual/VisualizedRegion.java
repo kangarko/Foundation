@@ -136,7 +136,7 @@ public final class VisualizedRegion extends Region {
 	public void hideParticles(final Player player) {
 		Valid.checkBoolean(canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
 
-		viewers.remove(player);
+		viewers.removeWeak(player);
 
 		if (viewers.isEmpty() && task != null)
 			stopVisualizing();
