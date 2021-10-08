@@ -177,10 +177,9 @@ final @Builder public class ItemCreator {
 	/**
 	 * Make an unbreakable item with all attributes hidden, suitable for menu use.
 	 *
-	 * @return the new menu tool, unbreakable with all attributes hidden
+	 * @return the new menu tool with all attributes hidden
 	 */
 	public ItemStack makeMenuTool() {
-		unbreakable = true;
 		hideTags = true;
 
 		return make();
