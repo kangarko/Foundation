@@ -1,4 +1,4 @@
-package org.mineacademy.fo.model;
+package org.mineacademy.fo.settings;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -16,7 +16,6 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictMap;
-import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.NonNull;
 
@@ -208,7 +207,12 @@ public final class ConfigItems<T extends YamlConfig> {
 		final String name = item.getName();
 		Valid.checkBoolean(isItemLoaded(name), WordUtils.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
 
-		item.delete();
+		if (this.singleFile) {
+			item.save("", null);
+
+		} else
+			item.delete();
+
 		loadedItemsMap.remove(name);
 	}
 

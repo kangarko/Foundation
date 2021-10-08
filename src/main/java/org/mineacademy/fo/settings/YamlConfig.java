@@ -455,6 +455,10 @@ public abstract class YamlConfig {
 					setNoSave(entry.getKey(), entry.getValue());
 		}
 
+		saveWithoutSerializing();
+	}
+
+	private void saveWithoutSerializing() {
 		instance.save(header != null ? header : getFileName().equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
 	}
 
@@ -1323,7 +1327,12 @@ public abstract class YamlConfig {
 	protected final void save(final String path, final Object value) {
 		setNoSave(path, value);
 
-		save();
+		// Edge case: We want to remove the whole section
+		if (path.isEmpty() && value == null)
+			saveWithoutSerializing();
+
+		else
+			save();
 	}
 
 	/**
