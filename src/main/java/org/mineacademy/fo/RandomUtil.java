@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 
@@ -120,7 +121,7 @@ public final class RandomUtil {
 	/**
 	 * Generates random text, like lorem ipsum but completely
 	 * different.
-	 * 
+	 *
 	 * @param length
 	 * @return
 	 */
@@ -142,6 +143,15 @@ public final class RandomUtil {
 		final char letter = CHAT_COLORS[nextInt(CHAT_COLORS.length)];
 
 		return ChatColor.getByChar(letter);
+	}
+
+	/**
+	 * Return a random bright bukkit color, 7 colors are selected
+	 *
+	 * @return
+	 */
+	public static Color nextColor() {
+		return nextItem(Color.AQUA, Color.ORANGE, Color.WHITE, Color.YELLOW, Color.RED, Color.GREEN, Color.BLUE);
 	}
 
 	/**
