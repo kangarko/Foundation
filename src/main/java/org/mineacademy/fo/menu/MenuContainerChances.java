@@ -1,8 +1,5 @@
 package org.mineacademy.fo.menu;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -17,7 +14,6 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
 import org.mineacademy.fo.menu.model.MenuQuantity;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompMaterial;
 
@@ -40,11 +36,6 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * Temporary store of the edited drop chances here
 	 */
 	private final StrictMap<Integer, Double> editedDropChances = new StrictMap<>();
-
-	/**
-	 * The button to edit quantity of the item chances, if menu is in said mode.
-	 */
-	private final Button editQuantityButton;
 
 	/**
 	 * The button to switch between menu modes.
@@ -74,8 +65,6 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 
 		// Default the size to 3 rows (+ 1 bottom row is added automatically)
 		this.setSize(9 * 3);
-
-		this.editQuantityButton = getEditQuantityButton(this);
 
 		this.changeModeButton = new Button() {
 
@@ -114,6 +103,14 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		};
 	}
 
+	/**
+	 * @see org.mineacademy.fo.menu.MenuQuantitable#getQuantityButtonPosition()
+	 */
+	@Override
+	public int getQuantityButtonPosition() {
+		return this.mode == EditMode.ITEM ? -1 : MenuQuantitable.super.getQuantityButtonPosition(); // TODO was this.getSize() - 6
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Getting items
 	// ------------------------------------------------------------------------------------------------------------
@@ -132,9 +129,6 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		if (slot == this.getSize() - 4)
 			return this.changeModeButton.getItem();
 
-		if (this.mode == EditMode.CHANCE && slot == this.getSize() - 6)
-			return this.editQuantityButton.getItem();
-
 		final ItemStack customDrop = this.getDropAt(slot);
 
 		if (customDrop != null) {
@@ -143,13 +137,9 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 				return customDrop;
 
 			final double dropChance = this.mode == EditMode.ITEM ? this.getDropChance(slot) : this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
+			final String level = MathUtil.formatTwoDigits(100 * dropChance) + "%";
 
-			// Paint the item with the drop chance lore
-			final List<String> dropChanceLore = Replacer.replaceArray(this.getDropChanceLore(customDrop),
-					"dropChance", MathUtil.formatTwoDigits(100 * dropChance) + "%",
-					"quantity", getCurrentEditAmountPercent());
-
-			return ItemCreator.of(customDrop.clone()).lores(dropChanceLore).build().makeMenuTool();
+			return addLevelToItem(customDrop, level);
 		}
 
 		if (slot > this.getSize() - 9)
@@ -159,18 +149,19 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	}
 
 	/**
-	 * Return the lore for the item when its drop chance is being edited.
-	 *
-	 * @param item
-	 * @return
+	 * @see org.mineacademy.fo.menu.MenuQuantitable#getLevelLoreLabel()
 	 */
-	protected List<String> getDropChanceLore(ItemStack item) {
-		return Arrays.asList(
-				"",
-				"&7Drop chance: &6{dropChance}",
-				"",
-				"   &8(Mouse click)",
-				"  &7&l< &4-{quantity}%    &2+{quantity}% &7&l>");
+	@Override
+	public String getLevelLoreLabel() {
+		return "Drop chance";
+	}
+
+	/**
+	 * @see org.mineacademy.fo.menu.MenuQuantitable#quantitiesArePercents()
+	 */
+	@Override
+	public final boolean quantitiesArePercents() {
+		return true;
 	}
 
 	/**
@@ -257,7 +248,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			Valid.checkNotNull(clicked, "Should have not called onMenuClick for null clicked item at slot " + slot);
 
 			final double chance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
-			final double next = this.getNextQuantity(click);
+			final double next = this.getNextQuantityDouble(click);
 			final double newChance = MathUtil.range(chance + next, 0.D, 1.D);
 
 			// Save drop chance
