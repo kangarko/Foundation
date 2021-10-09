@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -74,10 +75,29 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * Create a new paged menu with automatic page size
 	 *
+	 * @param pages
+	 */
+	protected MenuPagged(final T... pages) {
+		this(null, Arrays.asList(pages));
+	}
+
+	/**
+	 * Create a new paged menu with automatic page size
+	 *
 	 * @param pages the pages
 	 */
 	protected MenuPagged(final Iterable<T> pages) {
 		this(null, pages);
+	}
+
+	/**
+	 * Create a new paged menu with automatic page size
+	 *
+	 * @param parent the parent menu
+	 * @param pages  the pages the pages
+	 */
+	protected MenuPagged(final Menu parent, final T... pages) {
+		this(null, parent, Arrays.asList(pages), false);
 	}
 
 	/**
@@ -108,8 +128,31 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                 1 row there)
 	 * @param pages    the pages
 	 */
+	protected MenuPagged(final int pageSize, final T... pages) {
+		this(pageSize, null, Arrays.asList(pages));
+	}
+
+	/**
+	 * Create a new paged menu
+	 *
+	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add
+	 *                 1 row there)
+	 * @param pages    the pages
+	 */
 	protected MenuPagged(final int pageSize, final Iterable<T> pages) {
 		this(pageSize, null, pages);
+	}
+
+	/**
+	 * Create a new paged menu
+	 *
+	 * @param pageSize size of the menu, a multiple of 9 (keep in mind we already add
+	 *                 1 row there)
+	 * @param parent   the parent menu
+	 * @param pages    the pages the pages
+	 */
+	protected MenuPagged(final int pageSize, final Menu parent, T... pages) {
+		this(pageSize, parent, Arrays.asList(pages), false);
 	}
 
 	/**
