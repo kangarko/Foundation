@@ -365,10 +365,7 @@ public final class PlayerUtil {
 			player.setVelocity(new Vector(0, 0, 0));
 			player.eject();
 
-			if (player.isInsideVehicle())
-				player.getVehicle().remove();
-
-			Remain.removePassengers(player);
+			EntityUtil.removeVehiclesAndPassengers(player);
 
 			if (removeVanish)
 				try {
