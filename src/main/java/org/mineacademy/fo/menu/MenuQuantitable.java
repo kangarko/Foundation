@@ -3,10 +3,14 @@ package org.mineacademy.fo.menu;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuQuantity;
 import org.mineacademy.fo.remain.CompMaterial;
+
+import lombok.NonNull;
 
 /**
  * Advanced menu concept allowing to change quality of an item by more than 1 on
@@ -25,6 +29,7 @@ public interface MenuQuantitable {
 	 *
 	 * @return the quantity edit
 	 */
+	@NonNull
 	MenuQuantity getQuantity();
 
 	/**
@@ -32,7 +37,17 @@ public interface MenuQuantitable {
 	 *
 	 * @param newQuantity the new quantity
 	 */
-	void setQuantity(MenuQuantity newQuantity);
+	void setQuantity(@NonNull MenuQuantity newQuantity);
+
+	/**
+	 * Should we allow editing quantities below 1% such as 0.5%?
+	 * Do not use for itemstack amounts.
+	 *
+	 * @return
+	 */
+	default boolean allowDecimalQuantities() {
+		return false;
+	}
 
 	/**
 	 * Get the next edit quantity from click
@@ -40,8 +55,8 @@ public interface MenuQuantitable {
 	 * @param clickType the click type
 	 * @return the next quantity (higher or lower depending on the click)
 	 */
-	default int getNextQuantity(ClickType clickType) {
-		return clickType == ClickType.LEFT ? -+getQuantity().getAmount() : getQuantity().getAmount();
+	default double getNextQuantity(ClickType clickType) {
+		return clickType == ClickType.LEFT ? -+getQuantity().getAmountDouble() : getQuantity().getAmountDouble();
 	}
 
 	/**
@@ -55,11 +70,14 @@ public interface MenuQuantitable {
 		return new Button() {
 
 			@Override
-			public final void onClickedInMenu(Player pl, Menu clickedMenu, ClickType click) {
-				setQuantity(click == ClickType.LEFT ? getQuantity().previous() : getQuantity().next());
-				menu.drawBottomAndSetSlots();
+			public final void onClickedInMenu(Player player, Menu clickedMenu, ClickType clickType) {
+				final MenuQuantity nextQuantity = clickType == ClickType.LEFT ? getQuantity().previous(allowDecimalQuantities()) : getQuantity().next(allowDecimalQuantities());
+				Valid.checkNotNull(nextQuantity, "Next quantity cannot be null. Current: " + getQuantity() + " Click: " + clickType);
 
-				menu.animateTitle("&9Editing quantity set to " + getQuantity().getAmount());
+				setQuantity(nextQuantity);
+
+				menu.drawBottomAndSetSlots();
+				menu.animateTitle("&9Editing quantity set to " + getCurrentEditAmountPercent());
 			}
 
 			@Override
@@ -67,12 +85,24 @@ public interface MenuQuantitable {
 				return ItemCreator
 						.of(
 								CompMaterial.STRING,
-								"Edit Quantity: &7" + getQuantity().getAmount(),
+								"Edit Quantity: &7" + getCurrentEditAmountPercent(),
 								"",
 								"&8< &7Left click to decrease",
 								"&8> &7Right click to increase")
 						.build().make();
 			}
 		};
+	}
+
+	/**
+	 * A utility method to get the chance quantity we are changing with each click,
+	 * formatted with % sign appended.
+	 *
+	 * @return
+	 */
+	default String getCurrentEditAmountPercent() {
+		final double percent = getQuantity().getAmountPercent();
+
+		return (allowDecimalQuantities() ? MathUtil.formatTwoDigits(percent) : String.valueOf((int) percent)) + "%";
 	}
 }
