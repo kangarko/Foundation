@@ -34,7 +34,17 @@ public final class ItemUtil {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
-	 * See {@link #bountifyCapitalized(CompChatColor)}
+	 * See {@link #bountifyCapitalized(String)}
+	 *
+	 * @param type
+	 * @return
+	 */
+	public static String bountifyCapitalized(PotionEffectType type) {
+		return PotionWrapper.getLocalizedName(type.getName());
+	}
+
+	/**
+	 * See {@link #bountifyCapitalized(String)}
 	 *
 	 * @param color
 	 * @return
@@ -86,11 +96,11 @@ public final class ItemUtil {
 	/**
 	 * Returns a human readable fancy potion effect type
 	 *
-	 * @param enumeration
+	 * @param type
 	 * @return
 	 */
-	public static String bountify(PotionEffectType enumeration) {
-		return PotionWrapper.getLocalizedName(enumeration.getName());
+	public static String bountify(PotionEffectType type) {
+		return PotionWrapper.getLocalizedName(type.getName()).toLowerCase();
 	}
 
 	/**
