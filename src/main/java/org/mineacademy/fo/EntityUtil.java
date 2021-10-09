@@ -128,6 +128,34 @@ public final class EntityUtil {
 	}
 
 	/**
+	 * Attempts to remove all vehicles and passengers stack from the given entity
+	 *
+	 * @param entity
+	 */
+	public static void removeVehiclesAndPassengers(Entity entity) {
+
+		Entity vehicle = entity.getVehicle();
+
+		while (vehicle != null) {
+			final Entity copyOf = vehicle;
+			vehicle = vehicle.getVehicle();
+
+			copyOf.remove();
+		}
+
+		try {
+			for (final Entity passenger : entity.getPassengers())
+				passenger.remove();
+
+		} catch (final NoSuchMethodError err) {
+			final Entity passenger = entity.getPassenger();
+
+			if (passenger != null)
+				passenger.remove();
+		}
+	}
+
+	/**
 	 * Return if this entity is creature and aggressive (not an animal)
 	 *
 	 * @param entity

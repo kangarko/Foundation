@@ -1082,24 +1082,6 @@ public final class Remain {
 	}
 
 	/**
-	 * Attempts to remove all passengers from the given entity
-	 *
-	 * @param entity
-	 */
-	public static void removePassengers(Entity entity) {
-
-		try {
-			for (final Entity passenger : entity.getPassengers())
-				if (!(passenger instanceof Player))
-					entity.removePassenger(passenger);
-
-		} catch (final NoSuchMethodError err) {
-			if (entity.getPassenger() != null && !(entity.getPassenger() instanceof Player))
-				entity.getPassenger().remove();
-		}
-	}
-
-	/**
 	 * Broadcast a chest open animation at the given block,
 	 * the block must be a chest!
 	 *
@@ -1823,10 +1805,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
