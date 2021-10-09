@@ -432,6 +432,10 @@ public abstract class SimpleCommandGroup {
 
 				for (final SimpleSubCommand subcommand : subcommands)
 					if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
+
+						// Simulate the sender to enable permission checks in getMultilineHelp for ex.
+						subcommand.sender = sender;
+
 						if (subcommand instanceof FillerSubCommand) {
 							tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
 
@@ -468,7 +472,7 @@ public abstract class SimpleCommandGroup {
 								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage));
 
 							for (int i = 0; i < hover.size(); i++) {
-								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 60));
+								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 65));
 
 								hover.set(i, hoverLine);
 							}
