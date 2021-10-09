@@ -122,7 +122,7 @@ public abstract class MenuTools extends Menu {
 		if (tool != null) {
 			tool.giveOrTake(pl);
 
-			redraw();
+			drawBottomAndSetSlots();
 		}
 	}
 

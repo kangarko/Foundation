@@ -240,11 +240,8 @@ public abstract class Menu {
 
 	/**
 	 * Scans the menu class this menu extends and registers buttons
-	 *
-	 * @deprecated internal use only
 	 */
-	@Deprecated
-	protected final void registerButtons() {
+	final void registerButtons() {
 		registeredButtons.clear();
 
 		// Register buttons explicitly given
@@ -516,7 +513,7 @@ public abstract class Menu {
 	 */
 	public final void restartMenu(final String animatedTitle) {
 		registerButtons();
-		redraw();
+		drawBottomAndSetSlots();
 
 		if (animatedTitle != null)
 			animateTitle(animatedTitle);
@@ -525,7 +522,7 @@ public abstract class Menu {
 	/**
 	 * Redraws the bottom bar and updates inventory
 	 */
-	protected final void redraw() {
+	final void drawBottomAndSetSlots() {
 		final Inventory inv = getViewer().getOpenInventory().getTopInventory();
 		Valid.checkBoolean(inv.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
 

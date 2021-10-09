@@ -244,7 +244,7 @@ public abstract class MenuPagged<T> extends Menu {
 	// Reinits the menu and plays the anvil sound
 	private void updatePage() {
 		setButtons();
-		redraw();
+		drawBottomAndSetSlots();
 		registerButtons();
 
 		Menu.getSound().play(getViewer());
