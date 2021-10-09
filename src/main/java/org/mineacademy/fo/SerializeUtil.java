@@ -275,12 +275,13 @@ public final class SerializeUtil {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static <T> T deserialize(@NonNull final Class<T> classOf, @NonNull Object object, final Object... deserializeParameters) {
+
 		final SerializedMap map = SerializedMap.of(object);
 
 		// Step 1 - Search for basic deserialize(SerializedMap) method
 		Method deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", SerializedMap.class);
 
-		if (deserializeMethod != null) {
+		if (deserializeMethod != null && deserializeParameters == null) {
 			try {
 				return ReflectionUtil.invokeStatic(deserializeMethod, map);
 
@@ -336,7 +337,7 @@ public final class SerializeUtil {
 				object = Double.valueOf(object.toString()).intValue();
 
 			else if (classOf == Long.class)
-				object = Double.valueOf(object.toString()).longValue();
+				object = Long.valueOf(object.toString()).longValue();
 
 			else if (classOf == Double.class)
 				object = Double.valueOf(object.toString());
