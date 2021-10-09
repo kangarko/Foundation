@@ -18,7 +18,7 @@ import lombok.NonNull;
  * <p>
  * For example: You want to chance the spawn percentage from 1% to 100% so you
  * set the editing quantity to 20 and you only need to click the item 5 times
- * instead of 99 times.
+ * instead of 99999 times.
  * <p>
  * We added this as an interface so you can extend all other kinds of menus
  */
