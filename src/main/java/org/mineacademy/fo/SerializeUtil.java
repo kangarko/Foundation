@@ -334,7 +334,7 @@ public final class SerializeUtil {
 				object = object.toString();
 
 			else if (classOf == Integer.class)
-				object = Double.valueOf(object.toString()).intValue();
+				object = Integer.valueOf(object.toString()).intValue();
 
 			else if (classOf == Long.class)
 				object = Long.valueOf(object.toString()).longValue();
