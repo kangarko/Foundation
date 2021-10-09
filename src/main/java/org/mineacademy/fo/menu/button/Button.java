@@ -96,6 +96,18 @@ public abstract class Button {
 	/**
 	 * Creates a dummy button that does nothing when clicked
 	 *
+	 * @param material
+	 * @param title
+	 * @param lore
+	 * @return
+	 */
+	public static final DummyButton makeDummy(final CompMaterial material, String title, String... lore) {
+		return makeDummy(ItemCreator.of(material).name(title).lores(Arrays.asList(lore)));
+	}
+
+	/**
+	 * Creates a dummy button that does nothing when clicked
+	 *
 	 * @param builder the icon builder
 	 * @return the button
 	 */
@@ -127,6 +139,9 @@ public abstract class Button {
 	 * Creates a lazy button having the given icon, title, label (the second lore row) and the click function
 	 * taking in the player who damn clicked
 	 *
+	 * IMPORTANT: Changing the icon won't work when calling {@link Menu#restartMenu()}, you must create
+	 * an anonymous {@link Button} class for that to work.
+	 *
 	 * @param icon
 	 * @param title
 	 * @param label
@@ -151,6 +166,9 @@ public abstract class Button {
 	/**
 	 * Creates a lazy button with the given builder and action when clicked
 	 *
+	 * IMPORTANT: Changing the icon won't work when calling {@link Menu#restartMenu()}, you must create
+	 * an anonymous {@link Button} class for that to work.
+	 *
 	 * @param builder
 	 * @param onClickFunction
 	 * @return
@@ -173,6 +191,9 @@ public abstract class Button {
 	/**
 	 * Creates a lazy button having the given icon, title, label (the second lore row) and the click function
 	 * taking in the player and the click type
+	 *
+	 * IMPORTANT: Changing the icon won't work when calling {@link Menu#restartMenu()}, you must create
+	 * an anonymous {@link Button} class for that to work.
 	 *
 	 * @param icon
 	 * @param title
