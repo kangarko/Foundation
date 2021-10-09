@@ -126,6 +126,9 @@ public final class SerializeUtil {
 		else if (obj instanceof World)
 			return ((World) obj).getName();
 
+		else if (obj instanceof PotionEffectType)
+			return ((PotionEffectType) obj).getName();
+
 		else if (obj instanceof PotionEffect)
 			return serializePotionEffect((PotionEffect) obj);
 
@@ -353,6 +356,9 @@ public final class SerializeUtil {
 
 			else if (classOf == Location.class)
 				object = deserializeLocation(object);
+
+			else if (classOf == PotionEffectType.class)
+				object = PotionEffectType.getByName(object.toString());
 
 			else if (classOf == PotionEffect.class)
 				object = deserializePotionEffect(object);
