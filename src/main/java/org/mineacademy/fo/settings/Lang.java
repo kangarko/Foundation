@@ -73,32 +73,35 @@ public final class Lang extends YamlConfig {
 	public static void init(String filePath) {
 		instance = new Lang(filePath);
 
-		if (instance.isSet("Prefix.Announce"))
-			Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
-
-		if (instance.isSet("Prefix.Error"))
-			Messenger.setErrorPrefix(Lang.of("Prefix.Error"));
-
-		if (instance.isSet("Prefix.Info"))
-			Messenger.setInfoPrefix(Lang.of("Prefix.Info"));
-
-		if (instance.isSet("Prefix.Question"))
-			Messenger.setQuestionPrefix(Lang.of("Prefix.Question"));
-
-		if (instance.isSet("Prefix.Success"))
-			Messenger.setSuccessPrefix(Lang.of("Prefix.Success"));
-
-		if (instance.isSet("Prefix.Warn"))
-			Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
+		loadPrefixes();
 	}
 
 	/**
-	 * Reload this file
+	 * Reload prefixes from the locale file
+	 *
+	 * @deprecated internal use only
 	 */
-	public static void reloadFile() {
+	@Deprecated
+	public static void loadPrefixes() {
 		if (instance != null) {
 			synchronized (instance) {
-				instance.reload();
+				if (instance.isSet("Prefix.Announce"))
+					Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
+
+				if (instance.isSet("Prefix.Error"))
+					Messenger.setErrorPrefix(Lang.of("Prefix.Error"));
+
+				if (instance.isSet("Prefix.Info"))
+					Messenger.setInfoPrefix(Lang.of("Prefix.Info"));
+
+				if (instance.isSet("Prefix.Question"))
+					Messenger.setQuestionPrefix(Lang.of("Prefix.Question"));
+
+				if (instance.isSet("Prefix.Success"))
+					Messenger.setSuccessPrefix(Lang.of("Prefix.Success"));
+
+				if (instance.isSet("Prefix.Warn"))
+					Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
 			}
 		}
 	}
