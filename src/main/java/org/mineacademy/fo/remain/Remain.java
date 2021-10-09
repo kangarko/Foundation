@@ -1823,10 +1823,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -2291,6 +2291,8 @@ public final class Remain {
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
 		if (hasItemMeta)
 			PotionSetter.setPotion(item, type, level);
+		else
+			throw new FoException("setPotion is unsupported for Minecraft " + MinecraftVersion.getServerVersion());
 	}
 
 	/**
