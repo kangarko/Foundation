@@ -57,7 +57,7 @@ public interface MenuQuantitable {
 			@Override
 			public final void onClickedInMenu(Player pl, Menu clickedMenu, ClickType click) {
 				setQuantity(click == ClickType.LEFT ? getQuantity().previous() : getQuantity().next());
-				menu.redraw();
+				menu.drawBottomAndSetSlots();
 
 				menu.animateTitle("&9Editing quantity set to " + getQuantity().getAmount());
 			}
