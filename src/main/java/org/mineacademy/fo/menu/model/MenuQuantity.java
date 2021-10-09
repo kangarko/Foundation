@@ -1,8 +1,11 @@
 package org.mineacademy.fo.menu.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.menu.MenuQuantitable;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -12,49 +15,73 @@ import lombok.RequiredArgsConstructor;
  * For example use, see {@link MenuQuantitable}
  */
 @RequiredArgsConstructor
-@Getter
 public enum MenuQuantity {
 
 	/**
-	 * Change ItemStack size by 1
+	 * Chance drop chance by 0.1%
+	 */
+	ONE_TENTH(0.1),
+
+	/**
+	 * Chance drop chance by 0.5%
+	 */
+	HALF(0.5),
+
+	/**
+	 * Chance drop chance by 1%
 	 */
 	ONE(1),
 
 	/**
-	 * Change ItemStack size by 2
+	 * Change drop chance by 2%
 	 */
 	TWO(2),
 
 	/**
-	 * Change ItemStack size by 5
+	 * Change drop chance by 5%
 	 */
 	FIVE(5),
 
 	/**
-	 * Change ItemStack size by 10
+	 * Change drop chance by 10%
 	 */
 	TEN(10),
 
 	/**
-	 * Change ItemStack size by 20
+	 * Change drop chance by 20%
 	 */
 	TWENTY(20);
 
 	/**
 	 * The amount to change
 	 */
-	private final int amount;
+	private final double amountPercent;
+
+	/**
+	 * Get the amount from 0.00 to 1.00
+	 *
+	 * @return
+	 */
+	public double getAmountDouble() {
+		return this.amountPercent / 100.D;
+	}
+
+	/**
+	 * Get the amount from 0.00% to 100.0%
+	 *
+	 * @return
+	 */
+	public double getAmountPercent() {
+		return this.amountPercent;
+	}
 
 	/**
 	 * Rotates the enum backwards
 	 *
 	 * @return the previous enum ordinal, or last if overflows
 	 */
-	public final MenuQuantity previous() {
-		final int next = ordinal() - 1;
-		final MenuQuantity[] values = MenuQuantity.values();
-
-		return next >= 0 ? values[next] : values[values.length - 1];
+	public final MenuQuantity previous(boolean allowDecimals) {
+		return Common.getNext(this, compileQuantities(allowDecimals), false);
 	}
 
 	/**
@@ -62,10 +89,20 @@ public enum MenuQuantity {
 	 *
 	 * @return the next enum ordinal, or first if overflows
 	 */
-	public final MenuQuantity next() {
-		final int next = ordinal() + 1;
-		final MenuQuantity[] values = MenuQuantity.values();
+	public final MenuQuantity next(boolean allowDecimals) {
+		return Common.getNext(this, compileQuantities(allowDecimals), true);
+	}
 
-		return next >= values.length ? values[0] : values[next];
+	/*
+	 * Helper to compile quantities including below 1%
+	 */
+	private List<MenuQuantity> compileQuantities(boolean includeDecimals) {
+		final List<MenuQuantity> available = new ArrayList<>();
+
+		for (final MenuQuantity quantity : values())
+			if (includeDecimals || quantity.getAmountPercent() >= 1.00)
+				available.add(quantity);
+
+		return available;
 	}
 }
