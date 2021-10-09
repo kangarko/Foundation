@@ -1,5 +1,8 @@
 package org.mineacademy.fo.menu;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -8,6 +11,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuQuantity;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.NonNull;
@@ -23,6 +27,10 @@ import lombok.NonNull;
  * We added this as an interface so you can extend all other kinds of menus
  */
 public interface MenuQuantitable {
+
+	/* ------------------------------------------------------------------------------- */
+	/* Quantity */
+	/* ------------------------------------------------------------------------------- */
 
 	/**
 	 * Get the current quantity of editing
@@ -40,23 +48,35 @@ public interface MenuQuantitable {
 	void setQuantity(@NonNull MenuQuantity newQuantity);
 
 	/**
-	 * Should we allow editing quantities below 1% such as 0.5%?
-	 * Do not use for itemstack amounts.
+	 * A utility method to get the chance quantity we are changing with each click,
+	 * formatted with % sign appended.
 	 *
 	 * @return
 	 */
-	default boolean allowDecimalQuantities() {
-		return false;
+	default String getCurrentQuantityPercent() {
+		final double percent = getQuantity().getAmountPercent();
+
+		return (allowDecimalQuantities() ? MathUtil.formatTwoDigits(percent) : String.valueOf((int) percent)) + (quantitiesArePercents() ? "%" : "");
 	}
 
 	/**
-	 * Get the next edit quantity from click
+	 * Get the next edit quantity from click from 0.0 to 1.0
 	 *
 	 * @param clickType the click type
 	 * @return the next quantity (higher or lower depending on the click)
 	 */
-	default double getNextQuantity(ClickType clickType) {
-		return clickType == ClickType.LEFT ? -+getQuantity().getAmountDouble() : getQuantity().getAmountDouble();
+	default double getNextQuantityDouble(ClickType clickType) {
+		return clickType == ClickType.LEFT ? -getQuantity().getAmountDouble() : getQuantity().getAmountDouble();
+	}
+
+	/**
+	 * Get the next edit quantity from click from 0.0 to 100.0
+	 *
+	 * @param clickType the click type
+	 * @return the next quantity (higher or lower depending on the click)
+	 */
+	default double getNextQuantityPercent(ClickType clickType) {
+		return clickType == ClickType.LEFT ? -getQuantity().getAmountPercent() : getQuantity().getAmountPercent();
 	}
 
 	/**
@@ -66,7 +86,7 @@ public interface MenuQuantitable {
 	 * @param menu the menu
 	 * @return the button that is responsible for setting the quantity edit
 	 */
-	default Button getEditQuantityButton(Menu menu) {
+	default Button getQuantityButton(Menu menu) {
 		return new Button() {
 
 			@Override
@@ -77,7 +97,7 @@ public interface MenuQuantitable {
 				setQuantity(nextQuantity);
 
 				menu.drawBottomAndSetSlots();
-				menu.animateTitle("&9Editing quantity set to " + getCurrentEditAmountPercent());
+				menu.animateTitle("&9Editing quantity set to " + getCurrentQuantityPercent());
 			}
 
 			@Override
@@ -85,7 +105,7 @@ public interface MenuQuantitable {
 				return ItemCreator
 						.of(
 								CompMaterial.STRING,
-								"Edit Quantity: &7" + getCurrentEditAmountPercent(),
+								"Edit Quantity: &7" + getCurrentQuantityPercent(),
 								"",
 								"&8< &7Left click to decrease",
 								"&8> &7Right click to increase")
@@ -95,14 +115,65 @@ public interface MenuQuantitable {
 	}
 
 	/**
-	 * A utility method to get the chance quantity we are changing with each click,
-	 * formatted with % sign appended.
+	 * Return where we should put the button to edit how much we want to add/remove
+	 * from container items in one click. Defaults to the bottom center slot.
+	 *
+	 * Return -1 to hide the button.
 	 *
 	 * @return
 	 */
-	default String getCurrentEditAmountPercent() {
-		final double percent = getQuantity().getAmountPercent();
+	default int getQuantityButtonPosition() {
+		return ((Menu) this).getBottomCenterSlot();
+	}
 
-		return (allowDecimalQuantities() ? MathUtil.formatTwoDigits(percent) : String.valueOf((int) percent)) + "%";
+	/**
+	 * Should we allow editing quantities below 1% such as 0.5%?
+	 * Do not use for itemstack amounts.
+	 *
+	 * @return
+	 */
+	default boolean allowDecimalQuantities() {
+		return false;
+	}
+
+	/**
+	 * Are quantities in percents? We simply use this to append % after them
+	 * in item lores.
+	 *
+	 * @return
+	 */
+	default boolean quantitiesArePercents() {
+		return false;
+	}
+
+	/* ------------------------------------------------------------------------------- */
+	/* Level-related */
+	/* ------------------------------------------------------------------------------- */
+
+	default ItemStack addLevelToItem(ItemStack item, int level) {
+		return this.addLevelToItem(item, String.valueOf(level));
+	}
+
+	default ItemStack addLevelToItem(ItemStack item, String level) {
+
+		// Paint the item with the drop chance lore
+		final List<String> dropChanceLore = Replacer.replaceArray(Arrays.asList(
+
+				// Lore
+				"",
+				"&7" + getLevelLoreLabel() + ": &6{level}",
+				"",
+				"   &8(Mouse click)",
+				"  &7&l< &4-{quantity}    &2+{quantity} &7&l>"),
+
+				// Variables
+				"level", level,
+				"quantity", getCurrentQuantityPercent());
+
+		return ItemCreator.of(item.clone()).lores(dropChanceLore).build().makeMenuTool();
+	}
+
+	default String getLevelLoreLabel() {
+		return "Current level";
 	}
 }

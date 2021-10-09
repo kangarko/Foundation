@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -151,6 +153,12 @@ public abstract class Menu {
 	private boolean closed = false;
 
 	/**
+	 * Special case button only registered if this menu is {@link MenuQuantitable}
+	 */
+	@Nullable
+	private final Button quantityButton;
+
+	/**
 	 * Create a new menu without parent menu with the size of 9*3
 	 *
 	 * <p>
@@ -200,6 +208,7 @@ public abstract class Menu {
 	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
 		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
+		this.quantityButton = this instanceof MenuQuantitable ? ((MenuQuantitable) this).getQuantityButton(this) : Button.makeEmpty();
 	}
 
 	/**
@@ -286,7 +295,7 @@ public abstract class Menu {
 		} else if (Button[].class.isAssignableFrom(type)) {
 			/*Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
-			
+
 			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
 			registeredButtons.addAll(Arrays.asList(buttons));*/
 			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
@@ -388,7 +397,7 @@ public abstract class Menu {
 		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
 
 		// Compile bottom bar
-		compileBottomBar0().forEach((slot, item) -> drawer.setItem(slot, item));
+		compileBasicItems0().forEach((slot, item) -> drawer.setItem(slot, item));
 
 		// Set items defined by classes upstream
 		for (int i = 0; i < drawer.getSize(); i++) {
@@ -396,33 +405,6 @@ public abstract class Menu {
 
 			if (item != null && !drawer.isSet(i))
 				drawer.setItem(i, item);
-		}
-
-		// Set items defined by buttons if not yet set
-		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
-			final Button button = entry.getKey();
-			final Position position = entry.getValue();
-
-			if (position == null)
-				continue;
-
-			int slot = position.value();
-			final StartPosition startPosition = position.start();
-
-			if (startPosition == StartPosition.CENTER)
-				slot += this.getCenterSlot();
-
-			else if (startPosition == StartPosition.BOTTOM_CENTER)
-				slot += this.getSize() - 5;
-
-			else if (startPosition == StartPosition.TOP_LEFT) {
-				if (slot == 0)
-					slot += 1;
-			} else
-				throw new FoException("Does not know how to implement button position's Slot." + startPosition);
-
-			if (!drawer.isSet(slot))
-				drawer.setItem(slot, button.getItem());
 		}
 
 		// Allow last minute modifications
@@ -533,7 +515,7 @@ public abstract class Menu {
 			inv.setItem(i, item);
 		}
 
-		compileBottomBar0().forEach((slot, item) -> inv.setItem(slot, item));
+		compileBasicItems0().forEach((slot, item) -> inv.setItem(slot, item));
 		getViewer().updateInventory();
 	}
 
@@ -542,8 +524,42 @@ public abstract class Menu {
 	 *
 	 * @return
 	 */
-	private Map<Integer, ItemStack> compileBottomBar0() {
+	private Map<Integer, ItemStack> compileBasicItems0() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
+
+		// Set items defined by buttons if not yet set
+		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
+			final Button button = entry.getKey();
+			final Position position = entry.getValue();
+
+			if (position == null)
+				continue;
+
+			int slot = position.value();
+			final StartPosition startPosition = position.start();
+
+			if (startPosition == StartPosition.CENTER)
+				slot += this.getCenterSlot();
+
+			else if (startPosition == StartPosition.BOTTOM_CENTER)
+				slot += this.getSize() - 5;
+
+			else if (startPosition == StartPosition.TOP_LEFT) {
+				if (slot == 0)
+					slot += 1;
+			} else
+				throw new FoException("Does not know how to implement button position's Slot." + startPosition);
+
+			items.put(slot, button.getItem());
+		}
+
+		// Add quantity edit button
+		if (this instanceof MenuQuantitable) {
+			final int slot = ((MenuQuantitable) this).getQuantityButtonPosition();
+
+			if (slot != -1)
+				items.put(slot, this.quantityButton.getItem());
+		}
 
 		if (addInfoButton() && getInfo() != null)
 			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
@@ -767,6 +783,15 @@ public abstract class Menu {
 		final int pos = size / 2;
 
 		return size % 2 == 1 ? pos : pos - 5;
+	}
+
+	/**
+	 * Return the middle slot in the last menu row (in the hotbar)
+	 *
+	 * @return
+	 */
+	protected final int getBottomCenterSlot() {
+		return this.size - 5;
 	}
 
 	/**
