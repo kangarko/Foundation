@@ -94,7 +94,7 @@ public final class CompMonsterEgg {
 		if (type == null && acceptUnsafeEggs)
 			type = EntityType.UNKNOWN;
 
-		Valid.checkNotNull(type, "Could not detect monster type from " + item + " (data = " + item.getData() + ", dura = " + item.getDurability() + ")");
+		Valid.checkNotNull(type, "Could not detect monster type from " + item + ")");
 		return type;
 	}
 

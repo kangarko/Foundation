@@ -86,10 +86,13 @@ public abstract class MenuContainer extends Menu {
 		if (location != MenuClickLocation.MENU)
 			return true;
 
+		if (slot >= getSize() - 9)
+			return false;
+
 		if (!this.canEditItem(location, slot, clicked, cursor))
 			return false;
 
-		return slot < getSize() - 9;
+		return true;
 	}
 
 	/**
@@ -116,9 +119,7 @@ public abstract class MenuContainer extends Menu {
 	 * @param slot
 	 * @return
 	 */
-	protected ItemStack getDropAt(int slot) {
-		return NO_ITEM;
-	}
+	protected abstract ItemStack getDropAt(int slot);
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Handling clicking
@@ -130,15 +131,13 @@ public abstract class MenuContainer extends Menu {
 	@Override
 	protected final void onMenuClick(Player player, int slot, InventoryAction action, ClickType clickType, ItemStack cursor, ItemStack clicked, boolean cancelled) {
 
-		if (this.canEditItem(slot)) {
-
-			ItemStack item = this.getItemAt(slot);
+		if (this.canEditItem(slot) && slot < this.getSize() - 9) {
 
 			// Call our handler
-			item = this.onItemClick(slot, clickType, item);
+			clicked = this.onItemClick(slot, clickType, clicked);
 
 			// Update item
-			this.setItem(slot, item);
+			this.setItem(slot, clicked);
 		}
 	}
 

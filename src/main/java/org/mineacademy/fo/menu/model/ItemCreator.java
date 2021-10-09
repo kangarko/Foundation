@@ -453,7 +453,7 @@ final @Builder public class ItemCreator {
 	 * @return new item creator
 	 */
 	public static ItemCreatorBuilder of(final CompMaterial material, final String name, @NonNull final String... lore) {
-		return ItemCreator.builder().material(material).name("&r" + name).lores(Arrays.asList(lore)).hideTags(true);
+		return ItemCreator.builder().material(material).name(name).lores(Arrays.asList(lore)).hideTags(true);
 	}
 
 	/**
@@ -465,7 +465,7 @@ final @Builder public class ItemCreator {
 	 * @return new item creator
 	 */
 	public static ItemCreatorBuilder of(final String material, final String name, @NonNull final String... lore) {
-		return ItemCreator.builder().material(CompMaterial.valueOf(material)).name("&r" + name).lores(Arrays.asList(lore)).hideTags(true);
+		return ItemCreator.builder().material(CompMaterial.valueOf(material)).name(name).lores(Arrays.asList(lore)).hideTags(true);
 	}
 
 	/**
