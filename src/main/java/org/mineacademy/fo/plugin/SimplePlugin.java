@@ -650,13 +650,13 @@ public abstract class SimplePlugin extends JavaPlugin {
 			reloadables.reload();
 
 			YamlStaticConfig.load(getSettings());
+			Lang.loadPrefixes();
 
 			final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
 			metadata.save();
 			metadata.reload();
 
 			SimpleHologram.onReload();
-			Lang.reloadFile();
 
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 			onPluginReload();
