@@ -1711,6 +1711,16 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Returns if the given item stack is air
+	 *
+	 * @param item
+	 * @return
+	 */
+	public static boolean isAir(final ItemStack item) {
+		return isAir(item.getType());
+	}
+
+	/**
 	 * Returns if the given material is air
 	 *
 	 * @param material
