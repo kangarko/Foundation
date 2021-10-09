@@ -19,6 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
+import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -34,6 +35,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.Builder;
@@ -496,6 +498,63 @@ final @Builder public class ItemCreator {
 	 */
 	public static ItemCreatorBuilder ofEgg(final EntityType entityType) {
 		return of(CompMonsterEgg.makeEgg(entityType));
+	}
+
+	/**
+	 * Convenience method for creation potions
+	 *
+	 * @param potionEffect
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofPotion(final PotionEffectType potionEffect) {
+		return ofPotion(potionEffect, 1);
+	}
+
+	/**
+	 * Convenience method for creation potions
+	 *
+	 * @param potionEffect
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofPotion(final PotionEffectType potionEffect, String name, String... lore) {
+		return ofPotion(potionEffect, 1, name, lore);
+	}
+
+	/**
+	 * Convenience method for creation potions
+	 *
+	 * @param potionEffect
+	 * @param level
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofPotion(final PotionEffectType potionEffect, int level) {
+		return ofPotion(potionEffect, level, null);
+	}
+
+	/**
+	 * Convenience method for creation potions
+	 *
+	 * @param potionEffect
+	 * @param level
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofPotion(final PotionEffectType potionEffect, int level, String name, String... lore) {
+		final ItemStack item = new ItemStack(CompMaterial.POTION.getMaterial());
+		Remain.setPotion(item, potionEffect, level);
+
+		final ItemCreator.ItemCreatorBuilder builder = of(item);
+
+		if (name != null)
+			builder.name(name);
+
+		if (lore != null)
+			builder.lores(Arrays.asList(lore));
+
+		return builder;
 	}
 
 	/**
