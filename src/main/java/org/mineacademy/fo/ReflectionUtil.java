@@ -32,6 +32,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -250,8 +251,8 @@ public final class ReflectionUtil {
 
 			return field;
 
-		} catch (final ReflectiveOperationException e) {
-			e.printStackTrace();
+		} catch (final ReflectiveOperationException ex) {
+			Remain.sneaky(ex);
 		}
 
 		return null;
@@ -1050,16 +1051,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 
