@@ -231,6 +231,23 @@ public abstract class Menu {
 		return getMenu0(player, FoConstants.NBT.TAG_MENU_PREVIOUS);
 	}
 
+	/**
+	 * Returns the last closed menu, null if does not exist.
+	 *
+	 * @param player
+	 * @return
+	 */
+	@Nullable
+	public static final Menu getLastClosedMenu(final Player player) {
+		if (player.hasMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED)) {
+			final Menu menu = (Menu) player.getMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED).get(0).value();
+
+			return menu;
+		}
+
+		return null;
+	}
+
 	// Returns the menu associated with the players metadata, or null
 	private static Menu getMenu0(final Player player, final String tag) {
 		if (player.hasMetadata(tag)) {
@@ -1027,6 +1044,7 @@ public abstract class Menu {
 	@Deprecated
 	protected final void handleClose(Inventory inventory) {
 		this.viewer.removeMetadata(FoConstants.NBT.TAG_MENU_CURRENT, SimplePlugin.getInstance());
+		this.viewer.setMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED, new FixedMetadataValue(SimplePlugin.getInstance(), this));
 		this.closed = true;
 
 		this.onMenuClose(this.viewer, inventory);
