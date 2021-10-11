@@ -129,7 +129,7 @@ public final class FoConstants {
 		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
 
 		/**
-		 * An internal metadata tag the player gets when he opens the menu
+		 * An internal metadata tag the player gets when he opens the menu.
 		 *
 		 * <p>
 		 * Used in {@link #getMenu(Player)}
@@ -137,11 +137,20 @@ public final class FoConstants {
 		public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
 
 		/**
-		 * An internal metadata tag the player gets when he opens another menu
+		 * An internal metadata tag the player gets when he opens another menu.
 		 *
 		 * <p>
 		 * Used in {@link #getPreviousMenu(Player)}
 		 */
 		public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
+
+		/**
+		 * An internal metadata tag the player gets when he closes our menu so you can
+		 * reopen last closed menu manually.
+		 *
+		 * <p>
+		 * Used in {@link #getPreviousMenu(Player)}
+		 */
+		public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getNamed() + "_Last_Closed_Menu";
 	}
 }
