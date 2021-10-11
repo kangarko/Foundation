@@ -353,7 +353,8 @@ final @Builder public class ItemCreator {
 			final List<String> coloredLores = new ArrayList<>();
 
 			for (final String lore : lores)
-				coloredLores.add(Common.colorize("&7" + lore));
+				for (final String subLore : lore.split("\n"))
+					coloredLores.add(Common.colorize("&7" + subLore));
 
 			compiledMeta.setLore(coloredLores);
 		}
