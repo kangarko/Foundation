@@ -1,6 +1,7 @@
 package org.mineacademy.fo.menu.button;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -8,13 +9,16 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Represents a standardized remove button that opens the remove confirmation dialog.
@@ -23,6 +27,23 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class ButtonRemove extends Button {
+
+	/**
+	 * The remove button item name
+	 */
+	@Getter
+	@Setter
+	private static String title = "&4&lRemove {name}";
+
+	/**
+	 * The remove button item lore
+	 */
+	@Getter
+	@Setter
+	private static List<String> lore = Arrays.asList(
+			"&r",
+			"&7The selected {type} will",
+			"&7be removed permanently.");
 
 	/**
 	 * The parent menu
@@ -52,17 +73,21 @@ public class ButtonRemove extends Button {
 		return ItemCreator
 
 				.of(CompMaterial.LAVA_BUCKET)
-				.name("&4&lRemove " + toRemoveName)
+				.name(title.replace("{name}", toRemoveName))
 
-				.lores(Arrays.asList(
-						"&r",
-						"&7The selected " + toRemoveType + " will",
-						"&7be removed permanently."))
+				.lores(Replacer.replaceArray(lore,
+						"name", toRemoveName,
+						"type", toRemoveType))
 
 				.flag(CompItemFlag.HIDE_ATTRIBUTES)
 				.build().make();
 	}
 
+	/**
+	 * The icon to confirm removal
+	 *
+	 * @return
+	 */
 	public ItemStack getRemoveConfirmItem() {
 		return ItemCreator
 
