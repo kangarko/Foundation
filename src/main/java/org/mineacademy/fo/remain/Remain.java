@@ -1805,10 +1805,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -1891,6 +1891,26 @@ public final class Remain {
 
 			nbt.setInteger("CustomNameVisible", 1);
 			nbt.setString("CustomName", Common.colorize(name));
+		}
+	}
+
+	/**
+	 * Removes a custom name if the entity had it
+	 *
+	 * @param entity
+	 */
+	public static void removeCustomName(final Entity entity) {
+		try {
+			entity.setCustomNameVisible(false);
+			entity.setCustomName(null);
+
+		} catch (final NoSuchMethodError er) {
+			Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "setCustomName requires Minecraft 1.7.10+");
+
+			final NBTEntity nbt = new NBTEntity(entity);
+
+			nbt.removeKey("CustomNameVisible");
+			nbt.removeKey("CustomName");
 		}
 	}
 
