@@ -96,8 +96,7 @@ public interface MenuQuantitable {
 
 				setQuantity(nextQuantity);
 
-				menu.drawBottomAndSetSlots();
-				menu.animateTitle("&9Editing quantity set to " + getCurrentQuantityPercent());
+				menu.restartMenu("&9Editing quantity set to " + getCurrentQuantityPercent());
 			}
 
 			@Override

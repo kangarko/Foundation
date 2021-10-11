@@ -413,22 +413,14 @@ public abstract class Menu {
 		// Draw the menu
 		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
 
-		// Compile bottom bar
-		compileBasicItems0().forEach((slot, item) -> drawer.setItem(slot, item));
-
-		// Set items defined by classes upstream
-		for (int i = 0; i < drawer.getSize(); i++) {
-			final ItemStack item = getItemAt(i);
-
-			if (item != null && !drawer.isSet(i))
-				drawer.setItem(i, item);
-		}
+		// Allocate items
+		this.compileItems().forEach((slot, item) -> drawer.setItem(slot, item));
 
 		// Allow last minute modifications
-		onDisplay(drawer);
+		this.onDisplay(drawer);
 
 		// Render empty slots as slot numbers if enabled
-		debugSlotNumbers(drawer);
+		this.debugSlotNumbers(drawer);
 
 		// Call event after items have been set to allow to get them
 		if (!Common.callEvent(new MenuOpenEvent(this, drawer, player)))
@@ -511,29 +503,24 @@ public abstract class Menu {
 	 * @param animatedTitle the animated title
 	 */
 	public final void restartMenu(final String animatedTitle) {
-		registerButtons();
-		drawBottomAndSetSlots();
+
+		final Inventory inventory = getViewer().getOpenInventory().getTopInventory();
+		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
+
+		this.registerButtons();
+
+		// Call before calling getItemAt
+		this.onRestart();
+
+		this.compileItems().forEach((slot, item) -> inventory.setItem(slot, item));
+		this.getViewer().updateInventory();
 
 		if (animatedTitle != null)
 			animateTitle(animatedTitle);
 	}
 
-	/**
-	 * Redraws the bottom bar and updates inventory
-	 */
-	final void drawBottomAndSetSlots() {
-		final Inventory inv = getViewer().getOpenInventory().getTopInventory();
-		Valid.checkBoolean(inv.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inv.getType() + ").");
+	void onRestart() {
 
-		for (int i = 0; i < size; i++) {
-			final ItemStack item = getItemAt(i);
-
-			Valid.checkBoolean(i < inv.getSize(), "Item (" + (item != null ? item.getType() : "null") + ") position (" + i + ") > inv size (" + inv.getSize() + ")");
-			inv.setItem(i, item);
-		}
-
-		compileBasicItems0().forEach((slot, item) -> inv.setItem(slot, item));
-		getViewer().updateInventory();
 	}
 
 	/**
@@ -541,10 +528,22 @@ public abstract class Menu {
 	 *
 	 * @return
 	 */
-	private Map<Integer, ItemStack> compileBasicItems0() {
+	private Map<Integer, ItemStack> compileItems() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
 
-		// Set items defined by buttons if not yet set
+		final boolean hasReturnButton = addReturnButton() && !(returnButton instanceof DummyButton);
+
+		// Begin with basic items
+		for (int slot = 0; slot < this.size; slot++) {
+			ItemStack item = this.getItemAt(slot);
+
+			if (item != null && CompMaterial.isAir(item))
+				item = null;
+
+			items.put(slot, item);
+		}
+
+		// Override by buttons
 		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
 			final Button button = entry.getKey();
 			final Position position = entry.getValue();
@@ -560,6 +559,9 @@ public abstract class Menu {
 
 			else if (startPosition == StartPosition.BOTTOM_CENTER)
 				slot += this.getSize() - 5;
+
+			else if (startPosition == StartPosition.BOTTOM_LEFT)
+				slot += this.getSize() - (hasReturnButton ? 2 : 1);
 
 			else if (startPosition == StartPosition.TOP_LEFT) {
 				if (slot == 0)
@@ -578,13 +580,17 @@ public abstract class Menu {
 				items.put(slot, this.quantityButton.getItem());
 		}
 
-		if (addInfoButton() && getInfo() != null)
-			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
+		// Override by hotbar
+		{
+			if (addInfoButton() && getInfo() != null)
+				items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
 
-		if (addReturnButton() && !(returnButton instanceof DummyButton))
-			items.put(getReturnButtonPosition(), returnButton.getItem());
+			if (hasReturnButton)
+				items.put(getReturnButtonPosition(), returnButton.getItem());
+		}
 
 		return items;
+
 	}
 
 	// --------------------------------------------------------------------------------
