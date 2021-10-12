@@ -225,7 +225,7 @@ public abstract class YamlConfig {
 
 					Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
 
-					instance = new ConfigInstance(file, config, defaultsConfig, saveComments(), getUncommentedSections(), localePath);
+					instance = new ConfigInstance(localePath, file, config, defaultsConfig, saveComments(), getUncommentedSections(), localePath);
 					addConfig(instance, this);
 				}
 
@@ -318,7 +318,7 @@ public abstract class YamlConfig {
 					Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
 					config = FileUtil.loadConfigurationStrict(file);
 
-					instance = new ConfigInstance(file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
+					instance = new ConfigInstance(to, file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
 					addConfig(instance, this);
 
 				}
@@ -1899,9 +1899,13 @@ public abstract class YamlConfig {
  * <p>
  * This represents the access to that file.
  */
-//@Getter(value = AccessLevel.PROTECTED)
 @RequiredArgsConstructor
 final class ConfigInstance {
+
+	/**
+	 * The original path to file, used to recreate the file if removed during reload
+	 */
+	private final String to;
 
 	/**
 	 * The file this configuration belongs to.
@@ -2003,6 +2007,7 @@ final class ConfigInstance {
 	 */
 	public boolean writeComments() throws IOException {
 		if (this.commentsFilePath != null && this.saveComments) {
+			FileUtil.createIfNotExists(to);
 			YamlComments.writeComments(this.commentsFilePath, this.file, Common.getOrDefault(this.uncommentedSections, new ArrayList<>()));
 
 			return true;
@@ -2017,6 +2022,8 @@ final class ConfigInstance {
 	 * @throws Exception
 	 */
 	protected void reload() throws IOException, InvalidConfigurationException {
+		FileUtil.createIfNotExists(to);
+
 		config.load(file);
 	}
 
