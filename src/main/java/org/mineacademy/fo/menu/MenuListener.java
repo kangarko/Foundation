@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
@@ -9,6 +10,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
@@ -21,6 +23,19 @@ import org.mineacademy.fo.settings.SimpleLocalization;
  * The bukkit listener responsible for menus to function.
  */
 public final class MenuListener implements Listener {
+
+	/**
+	 *
+	 */
+	public MenuListener() {
+		try {
+			Class.forName("org.bukkit.event.player.PlayerSwapHandItemsEvent");
+
+			Common.registerEvents(new OffHandListener());
+		} catch (final Throwable t) {
+			// Legacy MC
+		}
+	}
 
 	/**
 	 * Handles closing menus
@@ -87,9 +102,27 @@ public final class MenuListener implements Listener {
 
 			} else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY || whereClicked != MenuClickLocation.PLAYER_INVENTORY) {
 				event.setResult(Result.DENY);
-
 				player.updateInventory();
+
+				// Spigot bug
+				if (player.getGameMode() == GameMode.CREATIVE && event.getClick().toString().equals("SWAP_OFFHAND"))
+					player.getInventory().setItemInOffHand(null);
+
 			}
+		}
+	}
+
+	static final class OffHandListener implements Listener {
+
+		/**
+		 * Prevent swapping items when menu is opened to avoid duplication.
+		 *
+		 * @param event
+		 */
+		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+		public void onSwapItems(PlayerSwapHandItemsEvent event) {
+			if (Menu.getMenu(event.getPlayer()) != null)
+				event.setCancelled(true);
 		}
 	}
 }
