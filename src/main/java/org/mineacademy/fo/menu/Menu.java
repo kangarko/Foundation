@@ -24,6 +24,7 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.event.MenuCloseEvent;
 import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
@@ -1054,6 +1055,9 @@ public abstract class Menu {
 		this.closed = true;
 
 		this.onMenuClose(this.viewer, inventory);
+
+		// End by calling API
+		Common.callEvent(new MenuCloseEvent(this, inventory, this.viewer));
 	}
 
 	/**
