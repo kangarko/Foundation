@@ -444,7 +444,12 @@ public class SimpleDatabase {
 			Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable MySQL connection or update your driver to fix this.");
 		}
 
-		else
+		else if (t.toString().contains("Incorrect string value")) {
+			Common.log("Attempted to save unicode letters (e.g. coors) to your database with invalid encoding, see https://stackoverflow.com/a/10959780 and adjust it. MariaDB may cause issues, use MySQL 8.0 for best results.");
+
+			t.printStackTrace();
+
+		} else
 			Common.throwError(t, fallbackMessage);
 	}
 
