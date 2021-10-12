@@ -127,7 +127,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				newMenu.displayTo(player);
 
 				if (this.menuAnimatedTitle != null)
-					newMenu.animateTitle(this.menuAnimatedTitle);
+					Common.runLater(2, () -> newMenu.animateTitle(this.menuAnimatedTitle));
 			}
 		}
 	}
