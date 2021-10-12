@@ -133,10 +133,6 @@ public final class InventoryDrawer {
 	public void display(Player player) {
 		final Inventory inv = this.build(player);
 
-		// Before opening make sure we close his old inventory if exist
-		if (player.getOpenInventory() != null)
-			player.closeInventory();
-
 		player.openInventory(inv);
 	}
 
