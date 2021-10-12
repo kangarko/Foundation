@@ -161,6 +161,7 @@ public enum CompAttribute {
 			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(toString()));
 
 			instance.setBaseValue(value);
+
 		} catch (NullPointerException | NoSuchMethodError | NoClassDefFoundError ex) {
 			try {
 				if (hasLegacy())

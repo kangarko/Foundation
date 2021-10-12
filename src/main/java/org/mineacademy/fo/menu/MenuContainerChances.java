@@ -17,6 +17,7 @@ import org.mineacademy.fo.menu.model.MenuQuantity;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompMaterial;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -52,6 +53,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	/*
 	 * The current menu mode stored here.
 	 */
+	@Getter(AccessLevel.PROTECTED)
 	private EditMode mode = EditMode.ITEM;
 
 	/**
@@ -126,7 +128,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 */
 	@Override
 	public final ItemStack getItemAt(int slot) {
-		if (slot == this.getSize() - 4)
+		if (slot == this.getChangeModeButtonPosition())
 			return this.changeModeButton.getItem();
 
 		final ItemStack customDrop = this.getDropAt(slot);
@@ -146,6 +148,15 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			return MenuContainer.BOTTOM_BAR_FILLER_ITEM;
 
 		return NO_ITEM;
+	}
+
+	/**
+	 * Returns the {@link #changeModeButton} position, defaults to (getSize() - 4)
+	 *
+	 * @return
+	 */
+	protected int getChangeModeButtonPosition() {
+		return this.getSize() - 4;
 	}
 
 	/**
@@ -171,9 +182,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param slot
 	 * @return
 	 */
-	protected ItemStack getDropAt(int slot) {
-		return NO_ITEM;
-	}
+	protected abstract ItemStack getDropAt(int slot);
 
 	/**
 	 * Return the item's drop chance loaded from the disk or cache here.
