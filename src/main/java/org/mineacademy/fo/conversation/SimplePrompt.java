@@ -51,6 +51,15 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	}
 
 	/**
+	 * @see SimpleConversation#setMenuAnimatedTitle(String)
+	 *
+	 * @return
+	 */
+	protected String getMenuAnimatedTitle() {
+		return null;
+	}
+
+	/**
 	 * Return the question, implemented in own way using colors
 	 *
 	 * @param
@@ -209,8 +218,12 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 		if (openMenu) {
 			final Menu menu = Menu.getMenu(player);
 
-			if (menu != null)
+			if (menu != null) {
 				conversation.setMenuToReturnTo(menu);
+
+				if (getMenuAnimatedTitle() != null)
+					conversation.setMenuAnimatedTitle(getMenuAnimatedTitle());
+			}
 		}
 
 		conversation.start(player);
