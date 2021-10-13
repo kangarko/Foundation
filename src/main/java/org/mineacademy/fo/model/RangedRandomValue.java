@@ -9,17 +9,6 @@ import org.mineacademy.fo.Valid;
 public final class RangedRandomValue extends RangedValue {
 
 	/**
-	 * Create a new ranged random value converted into ticks from strings,
-	 * such as "1 minute" or "6 seconds"
-	 *
-	 * @param min
-	 * @param max
-	 */
-	public RangedRandomValue(String min, String max) {
-		this(SimpleTime.from(min).getTimeTicks(), SimpleTime.from(max).getTimeTicks());
-	}
-
-	/**
 	 * Make a new ranged value with a fixed range
 	 *
 	 * @param value the fixed range
@@ -49,6 +38,7 @@ public final class RangedRandomValue extends RangedValue {
 	 */
 	public static RangedRandomValue parse(final String line) {
 		final RangedValue random = RangedValue.parse(line);
+		System.out.println("Parsed values: " + random.getMinInt() + " to " + random.getMaxInt());
 
 		return new RangedRandomValue(random.getMinInt(), random.getMaxInt());
 	}

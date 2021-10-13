@@ -150,7 +150,9 @@ public final class TimeUtil {
 		long seconds = 0L;
 
 		final String[] split = humanReadableTime.split(" ");
-		Valid.checkBoolean(split.length > 1, "Expected human readable time like '1 second', got '" + humanReadableTime + "' instead");
+
+		if (split.length < 2)
+			throw new IllegalArgumentException("Expected human readable time like '1 second', got '" + humanReadableTime + "' instead");
 
 		for (int i = 1; i < split.length; i++) {
 			final String sub = split[i].toLowerCase();

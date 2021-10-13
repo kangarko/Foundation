@@ -36,6 +36,7 @@ import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
+import org.mineacademy.fo.model.RangedSimpleTime;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompChatColor;
@@ -146,6 +147,9 @@ public final class SerializeUtil {
 
 		else if (obj instanceof Color)
 			return "#" + ((Color) obj).getRGB();
+
+		else if (obj instanceof RangedSimpleTime)
+			return ((RangedSimpleTime) obj).toRaw();
 
 		else if (obj instanceof BaseComponent)
 			return Remain.toJson((BaseComponent) obj);
@@ -369,6 +373,9 @@ public final class SerializeUtil {
 			else if (classOf == SimpleSound.class)
 				object = new SimpleSound(object.toString());
 
+			else if (classOf == RangedSimpleTime.class)
+				object = RangedSimpleTime.parse(object.toString());
+
 			else if (classOf == net.md_5.bungee.api.ChatColor.class)
 				throw new FoException("Instead of net.md_5.bungee.api.ChatColor, use our CompChatColor");
 
@@ -576,7 +583,6 @@ public final class SerializeUtil {
 	 * @param asWhat
 	 * @return
 	 */
-	@Deprecated
 	public static <T extends ConfigSerializable> List<T> deserializeMapList(final Object listOfObjects, final Class<T> asWhat) {
 		if (listOfObjects == null)
 			return null;
