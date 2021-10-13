@@ -19,6 +19,7 @@ import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for managing items.
@@ -39,7 +40,7 @@ public final class ItemUtil {
 	 * @param type
 	 * @return
 	 */
-	public static String bountifyCapitalized(PotionEffectType type) {
+	public static String bountifyCapitalized(@NonNull PotionEffectType type) {
 		return PotionWrapper.getLocalizedName(type.getName());
 	}
 

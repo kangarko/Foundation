@@ -19,6 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -500,6 +501,18 @@ final @Builder public class ItemCreator {
 	 */
 	public static ItemCreatorBuilder ofEgg(final EntityType entityType) {
 		return of(CompMonsterEgg.makeEgg(entityType));
+	}
+
+	/**
+	 * Convenience method for creation potions
+	 *
+	 * @param effect
+	 * @param name
+	 * @param lore
+	 * @return
+	 */
+	public static ItemCreatorBuilder ofPotion(final PotionEffect effect, String name, String... lore) {
+		return ofPotion(effect.getType(), effect.getAmplifier() + 1, name, lore);
 	}
 
 	/**
