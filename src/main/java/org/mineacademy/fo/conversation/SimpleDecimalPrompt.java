@@ -91,7 +91,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 * @param input
 	 * @return the next prompt, or {@link Prompt#END_OF_CONVERSATION} (that is actualy null) to exit
 	 */
-	protected final Prompt acceptValidatedInput(final ConversationContext context, final double input) {
+	protected Prompt acceptValidatedInput(final ConversationContext context, final double input) {
 		Valid.checkNotNull(question, "Please either call setSuccessAction or override acceptValidatedInput");
 
 		if (this.successAction != null)

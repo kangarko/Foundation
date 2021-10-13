@@ -43,6 +43,15 @@ public class SimpleStringPrompt extends SimplePrompt {
 	}
 
 	/**
+	 * Create a new simple prompt with optionally returning to previous menu
+	 *
+	 * @param openMenu
+	 */
+	public SimpleStringPrompt(boolean openMenu) {
+		super(openMenu);
+	}
+
+	/**
 	 * The menu question
 	 *
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#getPrompt(org.bukkit.conversations.ConversationContext)
@@ -80,11 +89,10 @@ public class SimpleStringPrompt extends SimplePrompt {
 	 * @see org.bukkit.conversations.ValidatingPrompt#acceptValidatedInput(org.bukkit.conversations.ConversationContext, java.lang.String)
 	 */
 	@Override
-	protected final Prompt acceptValidatedInput(@NonNull final ConversationContext context, @NonNull final String input) {
-		Valid.checkNotNull(question, "Please either call setSuccessAction or override acceptValidatedInput");
-
+	protected Prompt acceptValidatedInput(@NonNull final ConversationContext context, @NonNull final String input) {
 		if (this.successAction != null)
 			this.successAction.accept(input);
+
 		else
 			this.onValidatedInput(context, input);
 

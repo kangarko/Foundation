@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.Variables;
 
@@ -172,17 +173,25 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	// Do not allow superclasses to modify this since we have isInputValid here
 	@Override
 	public final Prompt acceptInput(final ConversationContext context, final String input) {
-		if (isInputValid(context, input))
-			return acceptValidatedInput(context, input);
+		try {
+			// Since developers use try-catch blocks to validate input, do not save this as error
+			FoException.setErrorSavedAutomatically(false);
 
-		else {
-			final String failPrompt = getFailedValidationText(context, input);
+			if (isInputValid(context, input))
+				return acceptValidatedInput(context, input);
 
-			if (failPrompt != null)
-				tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, getPlayer(context)));
+			else {
+				final String failPrompt = getFailedValidationText(context, input);
 
-			// Redisplay this prompt to the user to re-collect input
-			return this;
+				if (failPrompt != null)
+					tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, getPlayer(context)));
+
+				// Redisplay this prompt to the user to re-collect input
+				return this;
+			}
+
+		} finally {
+			FoException.setErrorSavedAutomatically(true);
 		}
 	}
 

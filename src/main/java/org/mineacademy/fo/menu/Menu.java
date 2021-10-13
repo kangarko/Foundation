@@ -313,7 +313,7 @@ public abstract class Menu {
 		} else if (Button[].class.isAssignableFrom(type)) {
 			/*Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
-			
+
 			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
 			registeredButtons.addAll(Arrays.asList(buttons));*/
 			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
@@ -565,8 +565,8 @@ public abstract class Menu {
 				slot += this.getSize() - (hasReturnButton ? 2 : 1);
 
 			else if (startPosition == StartPosition.TOP_LEFT) {
-				if (slot == 0)
-					slot += 1;
+				slot += 0;
+
 			} else
 				throw new FoException("Does not know how to implement button position's Slot." + startPosition);
 
