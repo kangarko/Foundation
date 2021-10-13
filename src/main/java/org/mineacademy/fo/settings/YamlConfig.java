@@ -1027,10 +1027,11 @@ public abstract class YamlConfig {
 	 * @param <T>
 	 * @param key
 	 * @param type
+	 * @param deserializeParameters
 	 * @return
 	 * @see #getList(String, Class)
 	 */
-	protected final <T> Set<T> getSet(final String key, final Class<T> type) {
+	protected final <T> Set<T> getSet(final String key, final Class<T> type, final Object... deserializeParameters) {
 		final List<T> list = getList(key, type);
 
 		return list == null ? new HashSet<>() : new HashSet<>(list);
