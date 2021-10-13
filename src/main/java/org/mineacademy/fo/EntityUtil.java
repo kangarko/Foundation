@@ -78,7 +78,10 @@ public final class EntityUtil {
 	public static Player getTargetPlayer(Entity entity) {
 		final LivingEntity target = getTarget(entity);
 
-		return target instanceof Player && !HookManager.isNPC(target) ? (Player) target : null;
+		if (target == null)
+			return null;
+
+		return target instanceof Player && target.getLocation().getWorld().equals(entity.getWorld()) && !HookManager.isNPC(target) ? (Player) target : null;
 	}
 
 	/**
