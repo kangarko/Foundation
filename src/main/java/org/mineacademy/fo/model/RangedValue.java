@@ -98,7 +98,7 @@ public class RangedValue {
 	 * @return
 	 */
 	public final String toLine() {
-		return min + " - " + max;
+		return min.intValue() + " - " + max.intValue();
 	}
 
 	/**
@@ -112,8 +112,6 @@ public class RangedValue {
 	 * 10 seconds - 20 minutes (will be converted to seconds)
 	 */
 	public static RangedValue parse(String line) {
-		line = line.replace(" ", "");
-
 		final String[] parts = line.split("\\-");
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 

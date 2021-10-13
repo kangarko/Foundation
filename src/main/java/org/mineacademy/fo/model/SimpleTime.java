@@ -65,8 +65,21 @@ public final class SimpleTime {
 		return (int) this.timeTicks;
 	}
 
+	/**
+	 * Return the human readable representation of this time, such as 69 seconds (no pun intended)
+	 *
+	 * @return
+	 */
 	public String getRaw() {
 		return this.timeTicks == 0 ? "0" : this.raw;
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof SimpleTime && ((SimpleTime) obj).timeTicks == this.timeTicks;
 	}
 
 	@Override
