@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -731,6 +732,18 @@ public final class PlayerUtil {
 		}
 
 		return leftovers.isEmpty();
+	}
+
+	/**
+	 * Attempts to add items into the inventory,
+	 * returning what it couldn't store
+	 *
+	 * @param inventory
+	 * @param items
+	 * @return
+	 */
+	public static Map<Integer, ItemStack> addItems(final Inventory inventory, final Collection<ItemStack> items) {
+		return addItems(inventory, items.toArray(new ItemStack[items.size()]));
 	}
 
 	/**
