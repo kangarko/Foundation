@@ -328,6 +328,8 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				} catch (final Throwable t) {
 					tell(context.getForWhom(), Messenger.getErrorPrefix() + SimpleLocalization.Conversation.CONVERSATION_ERROR);
+
+					t.printStackTrace();
 				}
 
 			else {
