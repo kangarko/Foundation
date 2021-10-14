@@ -463,7 +463,7 @@ public final class PlayerUtil {
 			if (meta.asBoolean())
 				return true;
 
-		return false;
+		return Remain.isInvisible(player);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
