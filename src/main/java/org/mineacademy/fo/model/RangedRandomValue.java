@@ -38,7 +38,6 @@ public final class RangedRandomValue extends RangedValue {
 	 */
 	public static RangedRandomValue parse(final String line) {
 		final RangedValue random = RangedValue.parse(line);
-		System.out.println("Parsed values: " + random.getMinInt() + " to " + random.getMaxInt());
 
 		return new RangedRandomValue(random.getMinInt(), random.getMaxInt());
 	}
