@@ -23,6 +23,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.val;
 
@@ -91,7 +92,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *
 	 * @param items
 	 */
-	protected MenuPagged(final T... items) {
+	protected MenuPagged(@NonNull final T... items) {
 		this(null, Arrays.asList(items));
 	}
 
@@ -110,7 +111,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param parent the parent menu
 	 * @param items  the pages the pages
 	 */
-	protected MenuPagged(final Menu parent, final T... items) {
+	protected MenuPagged(final Menu parent, @NonNull final T... items) {
 		this(null, parent, Arrays.asList(items), false);
 	}
 
@@ -142,7 +143,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                 1 row there)
 	 * @param items    the pages
 	 */
-	protected MenuPagged(final int pageSize, final T... items) {
+	protected MenuPagged(final int pageSize, @NonNull final T... items) {
 		this(pageSize, null, Arrays.asList(items));
 	}
 
@@ -165,7 +166,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param parent   the parent menu
 	 * @param items    the pages the pages
 	 */
-	protected MenuPagged(final int pageSize, final Menu parent, T... items) {
+	protected MenuPagged(final int pageSize, final Menu parent, @NonNull T... items) {
 		this(pageSize, parent, Arrays.asList(items), false);
 	}
 

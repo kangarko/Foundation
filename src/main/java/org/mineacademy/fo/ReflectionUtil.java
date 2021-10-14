@@ -406,7 +406,7 @@ public final class ReflectionUtil {
 			return (T) method.invoke(null, params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException(ex, "Could not invoke static method " + method + " with params " + StringUtils.join(params));
+			throw new ReflectionException(ex, "Could not invoke static method " + method + " with params " + Common.join(params, ", ", Common::simplify));
 		}
 	}
 
