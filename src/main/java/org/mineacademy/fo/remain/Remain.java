@@ -147,6 +147,11 @@ public final class Remain {
 	private static Field fieldPlayerConnection;
 
 	/**
+	 * Get if entity is invulnerable on legacy MC
+	 */
+	private static Field fieldEntityInvulnerable;
+
+	/**
 	 * The PlayerConnection.sendPacket method
 	 */
 	private static Method sendPacket;
@@ -296,6 +301,12 @@ public final class Remain {
 
 				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
 						.getMethod("sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+
+				if (MinecraftVersion.olderThan(V.v1_12)) {
+					fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
+					fieldEntityInvulnerable.setAccessible(true);
+				} else
+					fieldEntityInvulnerable = null;
 
 			} catch (final Throwable t) {
 				Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
@@ -1979,9 +1990,15 @@ public final class Remain {
 			return entity.isInvulnerable();
 
 		} catch (final NoSuchMethodError ex) {
-			final Object nmsEntity = getHandleEntity(entity);
 
-			return ReflectionUtil.invoke("isInvulnerable", nmsEntity);
+			if (fieldEntityInvulnerable != null)
+				try {
+					return (boolean) fieldEntityInvulnerable.get(getHandleEntity(entity));
+
+				} catch (final ReflectiveOperationException exx) {
+				}
+
+			return false;
 		}
 	}
 
