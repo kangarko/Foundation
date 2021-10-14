@@ -1255,6 +1255,7 @@ public abstract class YamlConfig {
 
 		if (configSection != null)
 			for (final Map.Entry<String, Object> entry : configSection.getValues(false).entrySet()) {
+
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue(), valueDeserializeParams);
 

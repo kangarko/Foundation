@@ -169,7 +169,7 @@ public interface MenuQuantitable {
 				"level", level,
 				"quantity", getCurrentQuantityPercent());
 
-		return ItemCreator.of(item.clone()).lores(dropChanceLore).build().makeMenuTool();
+		return ItemCreator.of(item.clone()).clearLores().lores(dropChanceLore).build().makeMenuTool();
 	}
 
 	default String getLevelLoreLabel() {

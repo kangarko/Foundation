@@ -60,10 +60,20 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * Create a new menu that can edit chances of the items you put inside.
 	 *
 	 * @param parent
-	 * @param startMode
 	 */
 	protected MenuContainerChances(Menu parent) {
-		super(parent);
+		this(parent, false);
+	}
+
+	/**
+	 * Create a new menu that can edit chances of the items you put inside.
+	 *
+	 * @param parent
+	 * @param startMode
+	 * @param returnMakesNewInstance
+	 */
+	protected MenuContainerChances(Menu parent, boolean returnMakesNewInstance) {
+		super(parent, returnMakesNewInstance);
 
 		// Default the size to 3 rows (+ 1 bottom row is added automatically)
 		this.setSize(9 * 3);
@@ -293,8 +303,11 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 				final ItemStack item = this.mode == EditMode.ITEM ? inventory.getItem(slot) : this.getDropAt(slot);
 				final Double dropChance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
 
-				Valid.checkNotNull(dropChance, "Drop chances cannot be null on slot " + slot + " for " + item);
-				items.put(slot, new Tuple<>(item, dropChance));
+				if (item != null && !CompMaterial.isAir(item)) {
+					Valid.checkNotNull(dropChance, "Drop chances cannot be null on slot " + slot + " for " + item);
+
+					items.put(slot, new Tuple<>(item, dropChance));
+				}
 			}
 		}
 
