@@ -221,6 +221,11 @@ public final class Remain {
 	private static boolean hasItemMeta = true;
 
 	/**
+	 * Return if the {@link Entity#addPassenger(Entity)} method is available.
+	 */
+	private static boolean hasAddPassenger = true;
+
+	/**
 	 * Stores player cooldowns for old MC versions
 	 */
 	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
@@ -379,6 +384,13 @@ public final class Remain {
 
 			} catch (final Exception ex) {
 				hasItemMeta = false;
+			}
+
+			try {
+				Entity.class.getMethod("addPassenger", Entity.class);
+
+			} catch (final Exception ex) {
+				hasAddPassenger = false;
 			}
 
 		} catch (final ReflectiveOperationException ex) {
@@ -1957,6 +1969,23 @@ public final class Remain {
 	}
 
 	/**
+	 * Return if the given entity is invulnerable
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static boolean isInvulnerable(Entity entity) {
+		try {
+			return entity.isInvulnerable();
+
+		} catch (final NoSuchMethodError ex) {
+			final Object nmsEntity = getHandleEntity(entity);
+
+			return ReflectionUtil.invoke("isInvulnerable", nmsEntity);
+		}
+	}
+
+	/**
 	 * Tries to get the first material, or return the second as fall back
 	 *
 	 * @param material
@@ -2667,6 +2696,15 @@ public final class Remain {
 	 */
 	public static boolean hasHexColors() {
 		return MinecraftVersion.atLeast(V.v1_16);
+	}
+
+	/**
+	 * Return if the Entity class has the addPassenger method
+	 *
+	 * @return
+	 */
+	public static boolean hasAddPassenger() {
+		return hasAddPassenger;
 	}
 
 	// ------------------------ Legacy ------------------------
