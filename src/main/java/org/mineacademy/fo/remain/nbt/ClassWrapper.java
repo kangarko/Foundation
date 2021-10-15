@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion.V;
 
 /**
  * Wraps NMS and CRAFT classes
@@ -69,7 +70,8 @@ enum ClassWrapper {
 				clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Exception ex) {
-			Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
+			if (org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_7))
+				Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
 		}
 	}
 
