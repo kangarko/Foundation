@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -84,7 +85,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
-		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : 1)), folder, prototypeClass, false);
+		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeClass, false);
 	}
 
 	/**
@@ -104,6 +105,15 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * Load all item classes by creating a new instance of them and copying their folder from JAR to disk
 	 */
 	public void loadItems() {
+		this.loadItems(null);
+	}
+
+	/**
+	 * Load all item classes by creating a new instance of them and copying their folder from JAR to disk
+	 *
+	 * @param loader for advanced loading mechanisms, most people wont use this
+	 */
+	public void loadItems(@Nullable Function<File, T> loader) {
 
 		// Clear old items
 		loadedItemsMap.clear();
@@ -127,9 +137,14 @@ public final class ConfigItems<T extends YamlConfig> {
 			final File[] files = FileUtil.getFiles(folder, "yml");
 
 			for (final File file : files) {
-				final String name = FileUtil.getFileName(file);
+				if (loader != null)
+					loader.apply(file);
 
-				loadOrCreateItem(name);
+				else {
+					final String name = FileUtil.getFileName(file);
+
+					loadOrCreateItem(name);
+				}
 			}
 		}
 	}
@@ -182,10 +197,15 @@ public final class ConfigItems<T extends YamlConfig> {
 				Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor taking a String or nothing!");
 				constructor.setAccessible(true);
 
-				if (nameConstructor)
-					item = constructor.newInstance(name);
-				else
-					item = constructor.newInstance();
+				try {
+					if (nameConstructor)
+						item = constructor.newInstance(name);
+					else
+						item = constructor.newInstance();
+
+				} catch (final InstantiationException ex) {
+					Common.throwError(ex, "Failed to create new" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + constructor);
+				}
 			}
 
 			// Register
