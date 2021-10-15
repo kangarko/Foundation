@@ -39,6 +39,7 @@ import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -998,6 +999,31 @@ public abstract class YamlConfig {
 		final String name = getString(path);
 
 		return name == null ? null : CompMaterial.fromStringStrict(name);
+	}
+
+	/**
+	 * Return a tuple
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param key
+	 * @return
+	 */
+	protected final <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
+		return getTuple(key, null, keyType, valueType);
+	}
+
+	/**
+	 * Return a tuple or default
+	 *
+	 * @param key
+	 * @param def
+	 * @return
+	 */
+	protected final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
+		final SerializedMap map = getMap(key);
+
+		return !map.isEmpty() ? Tuple.deserialize(map, keyType, valueType) : def;
 	}
 
 	/**
