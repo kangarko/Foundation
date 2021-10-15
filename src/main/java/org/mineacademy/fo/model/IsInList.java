@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.collection.StrictSet;
@@ -17,7 +18,7 @@ import lombok.Getter;
  *
  * @param <T>
  */
-public final class IsInList<T> {
+public final class IsInList<T> implements Iterable<T> {
 
 	/**
 	 * The internal set for matching
@@ -49,7 +50,8 @@ public final class IsInList<T> {
 	 */
 	public boolean contains(final T toEvaluateAgainst) {
 
-		if (list.isEmpty())
+		// Return false when list is empty and we are not always true
+		if (!matchAll && list.isEmpty())
 			return false;
 
 		return matchAll || list.contains(toEvaluateAgainst);
@@ -62,6 +64,14 @@ public final class IsInList<T> {
 	 */
 	public boolean isEntireList() {
 		return matchAll;
+	}
+
+	/**
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<T> iterator() {
+		return this.list.iterator();
 	}
 
 	/**
