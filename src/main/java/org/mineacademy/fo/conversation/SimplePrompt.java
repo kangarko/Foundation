@@ -222,6 +222,12 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 
 				return prefix != null ? new SimplePrefix(prefix) : super.getPrefix();
 			}
+
+			@Override
+			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
+				if (!event.gracefulExit())
+					Messenger.warn(getPlayer(event.getContext()), "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".");
+			}
 		};
 
 		if (openMenu) {
