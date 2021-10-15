@@ -27,6 +27,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.jsonsimple.JSONObject;
 import org.mineacademy.fo.jsonsimple.JSONParseException;
 import org.mineacademy.fo.jsonsimple.JSONParser;
+import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -582,8 +583,8 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public <K, V> Tuple<K, V> getTuple(final String key) {
-		return getTuple(key, null);
+	public <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
+		return getTuple(key, null, keyType, valueType);
 	}
 
 	/**
@@ -593,8 +594,8 @@ public final class SerializedMap extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def) {
-		return get(key, Tuple.class, def);
+	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
+		return get(key, Tuple.class, def, keyType, valueType);
 	}
 
 	/**
@@ -631,36 +632,9 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	/**
-	 * @param <T>
-	 * @param key
-	 * @param type
-	 * @return
-	 * @see #getList(String, Class), except that this method
-	 * never returns null, instead, if the key is not present,
-	 * we return an empty list instead of null
-	 */
-	public <T> List<T> getListSafe(final String key, final Class<T> type) {
-		final List<T> list = getList(key, type);
-
-		return Common.getOrDefault(list, new ArrayList<>());
-	}
-
-	/**
-	 * @param <T>
-	 * @param key
-	 * @param type
-	 * @return
-	 * @see #getList(String, Class), except that this method
-	 * never returns null, instead, if the key is not present,
-	 * we return an empty set instead of null
-	 */
-	public <T> Set<T> getSetSafe(final String key, final Class<T> type) {
-		final Set<T> list = getSet(key, type);
-
-		return Common.getOrDefault(list, new HashSet<>());
-	}
-
-	/**
+	 * Return a set from the map, or an empty set if the map does not
+	 * contain the given key.
+	 *
 	 * @param <T>
 	 * @param key
 	 * @param type
@@ -670,11 +644,28 @@ public final class SerializedMap extends StrictCollection {
 	public <T> Set<T> getSet(final String key, final Class<T> type) {
 		final List<T> list = getList(key, type);
 
-		return list == null ? null : new HashSet<>(list);
+		return new HashSet<>(list);
 	}
 
 	/**
-	 * Return a list of objects of the given type
+	 * Return {@link IsInList} implementation, of a list that is always
+	 * returning true, if the given key equals to ["*"]
+	 *
+	 * @param path
+	 * @param type
+	 * @return
+	 */
+	public <T> IsInList<T> getIsInList(String path, Class<T> type) {
+		final List<String> stringList = getStringList(path);
+
+		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
+			return IsInList.fromStar();
+
+		return IsInList.fromList(getList(path, type));
+	}
+
+	/**
+	 * Return a list of objects of the given type, or empty list if map does not contains key.
 	 * <p>
 	 * If the type is your own class make sure to put public static deserialize(SerializedMap)
 	 * method into it that returns the class object from the map!
@@ -843,9 +834,10 @@ public final class SerializedMap extends StrictCollection {
 	 * @param key
 	 * @param type
 	 * @param def
+	 * @param deserializeParameters
 	 * @return
 	 */
-	public <T> T get(final String key, final Class<T> type, final T def) {
+	public <T> T get(final String key, final Class<T> type, final T def, Object... deserializeParameters) {
 		Object raw = removeOnGet ? map.removeWeak(key) : map.get(key);
 
 		// Try to get the value by key with ignoring case
@@ -856,7 +848,7 @@ public final class SerializedMap extends StrictCollection {
 		if ("".equals(raw) && Enum.class.isAssignableFrom(type))
 			return def;
 
-		return raw == null ? def : SerializeUtil.deserialize(type, raw);
+		return raw == null ? def : SerializeUtil.deserialize(type, raw, deserializeParameters);
 	}
 
 	/**
