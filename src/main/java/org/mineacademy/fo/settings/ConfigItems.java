@@ -212,7 +212,7 @@ public final class ConfigItems<T extends YamlConfig> {
 			loadedItemsMap.put(name, item);
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to load" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + folder);
+			Common.throwError(t, "Failed to load" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + (this.singleFile ? "" : " from " + folder));
 		}
 
 		Valid.checkNotNull(item, "Failed to initiliaze" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + folder);

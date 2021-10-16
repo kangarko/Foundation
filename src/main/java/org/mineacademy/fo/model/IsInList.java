@@ -79,7 +79,7 @@ public final class IsInList<T> implements Iterable<T> {
 	 */
 	@Override
 	public String toString() {
-		return "IsInList[is entire list = " + this.matchAll + ", list = " + Common.join(this.list) + "]";
+		return "IsInList[entire=" + this.matchAll + ", list=" + Common.join(this.list) + "]";
 	}
 
 	/**
