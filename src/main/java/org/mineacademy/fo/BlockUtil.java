@@ -612,7 +612,7 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlockNoSnow(final World world, final int x, final int z) {
-		for (int y = world.getMaxHeight(); y > 0; y--) {
+		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
 			if (block != null && !CompMaterial.isAir(block) && block.getType() != CompMaterial.SNOW.getMaterial())
@@ -645,7 +645,7 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
-		for (int y = world.getMaxHeight(); y > 0; y--) {
+		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
 			if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
