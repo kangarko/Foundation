@@ -609,10 +609,11 @@ public abstract class YamlConfig {
 	 * @param <T>
 	 * @param path
 	 * @param type
+	 * @param deserializeParams
 	 * @return
 	 */
-	protected final <T> T get(final String path, final Class<T> type) {
-		return get(path, type, null);
+	protected final <T> T get(final String path, final Class<T> type, Object... deserializeParams) {
+		return get(path, type, null, deserializeParams);
 	}
 
 	/**
@@ -631,12 +632,13 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @param type
 	 * @param def
+	 * @param deserializeParams
 	 * @return
 	 */
-	protected final <T> T get(final String path, final Class<T> type, final T def) {
+	protected final <T> T get(final String path, final Class<T> type, final T def, Object... deserializeParams) {
 		final Object object = getT(path, Object.class);
 
-		return object != null ? SerializeUtil.deserialize(type, object) : def;
+		return object != null ? SerializeUtil.deserialize(type, object, deserializeParams) : def;
 	}
 
 	/**
