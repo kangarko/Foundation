@@ -39,12 +39,6 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	private Menu menuToReturnTo;
 
 	/**
-	 * If {@link #menuToReturnTo} is set, you can specify what message flashes
-	 * when opening the menu in the title.
-	 */
-	private String menuAnimatedTitle;
-
-	/**
 	 * Creates a simple conversation
 	 */
 	protected SimpleConversation() {
@@ -126,8 +120,10 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				newMenu.displayTo(player);
 
-				if (this.menuAnimatedTitle != null)
-					Common.runLater(2, () -> newMenu.animateTitle(this.menuAnimatedTitle));
+				final String title = this.getMenuAnimatedTitle();
+
+				if (title != null)
+					Common.runLater(2, () -> newMenu.animateTitle(title));
 			}
 		}
 	}
@@ -220,14 +216,12 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	}
 
 	/**
-	 * Sets the message that flashes in the menu title when opening it back to player
+	 * The message that flashes in the menu title when opening it back to player
 	 *
-	 * @param menuAnimatedTitle the menuAnimatedMessage to set
+	 * @return the menuAnimatedTitle
 	 */
-	public final void setMenuAnimatedTitle(String menuAnimatedTitle) {
-		Valid.checkNotNull(this.menuToReturnTo, "Cannot set menu message when there is no menu!");
-
-		this.menuAnimatedTitle = menuAnimatedTitle;
+	public String getMenuAnimatedTitle() {
+		return null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
