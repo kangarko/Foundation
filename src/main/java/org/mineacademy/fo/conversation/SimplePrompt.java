@@ -224,6 +224,11 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			}
 
 			@Override
+			public String getMenuAnimatedTitle() {
+				return SimplePrompt.this.getMenuAnimatedTitle();
+			}
+
+			@Override
 			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
 				if (!event.gracefulExit())
 					Messenger.warn(getPlayer(event.getContext()), "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".");
@@ -233,12 +238,8 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 		if (openMenu) {
 			final Menu menu = Menu.getMenu(player);
 
-			if (menu != null) {
+			if (menu != null)
 				conversation.setMenuToReturnTo(menu);
-
-				if (getMenuAnimatedTitle() != null)
-					conversation.setMenuAnimatedTitle(getMenuAnimatedTitle());
-			}
 		}
 
 		conversation.start(player);
