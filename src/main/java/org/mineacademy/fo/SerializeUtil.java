@@ -37,6 +37,7 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.RangedSimpleTime;
+import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompChatColor;
@@ -148,8 +149,11 @@ public final class SerializeUtil {
 		else if (obj instanceof Color)
 			return "#" + ((Color) obj).getRGB();
 
+		else if (obj instanceof RangedValue)
+			return ((RangedValue) obj).toLine();
+
 		else if (obj instanceof RangedSimpleTime)
-			return ((RangedSimpleTime) obj).toRaw();
+			return ((RangedSimpleTime) obj).toLine();
 
 		else if (obj instanceof BaseComponent)
 			return Remain.toJson((BaseComponent) obj);
@@ -372,6 +376,9 @@ public final class SerializeUtil {
 
 			else if (classOf == SimpleSound.class)
 				object = new SimpleSound(object.toString());
+
+			else if (classOf == RangedValue.class)
+				object = RangedValue.parse(object.toString());
 
 			else if (classOf == RangedSimpleTime.class)
 				object = RangedSimpleTime.parse(object.toString());
