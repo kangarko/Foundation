@@ -83,7 +83,12 @@ public final class RangedSimpleTime {
 		return seconds >= this.min.getTimeSeconds() && seconds <= this.min.getTimeSeconds();
 	}
 
-	public String toRaw() {
+	/**
+	 * Return a formatted line such as '1 ticks - 2 minutes'
+	 *
+	 * @return
+	 */
+	public String toLine() {
 		return (this.min.getRaw() + (this.min.equals(this.max) ? "" : " - " + this.max.getRaw())).replace("  ", " ");
 	}
 
@@ -105,8 +110,8 @@ public final class RangedSimpleTime {
 		final String[] parts = line.split("\\-");
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed RangedSimpleTime " + line);
 
-		final String min = parts[0];
-		final String max = parts.length == 2 ? parts[1] : min;
+		final String min = parts[0].trim();
+		final String max = (parts.length == 2 ? parts[1] : min).trim();
 
 		return new RangedSimpleTime(SimpleTime.from(min), SimpleTime.from(max));
 	}

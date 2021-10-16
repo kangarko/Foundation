@@ -1,7 +1,7 @@
 package org.mineacademy.fo.model;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
@@ -10,7 +10,7 @@ import lombok.Getter;
  * A class holding a minimum and a maximum
  */
 @Getter
-public class RangedValue {
+public final class RangedValue {
 
 	/**
 	 * The minimum
@@ -48,39 +48,58 @@ public class RangedValue {
 	/**
 	 * Get the minimum as an integer
 	 */
-	public final int getMinInt() {
+	public int getMinInt() {
 		return min.intValue();
 	}
 
 	/**
 	 * Get the maximum as an integer
 	 */
-	public final int getMaxInt() {
+	public int getMaxInt() {
 		return max.intValue();
 	}
 
 	/**
 	 * Get the minimum as an long
 	 */
-	public final long getMinLong() {
+	public long getMinLong() {
 		return min.longValue();
 	}
 
 	/**
 	 * Get the maximum as an long
 	 */
-	public final long getMaxLong() {
+	public long getMaxLong() {
 		return max.longValue();
 	}
 
 	/**
-	 * Get if the number is within {@link #getMin()} and {@link #getMax()}
+	 * Get if the number is within the bounds
 	 *
 	 * @param value the number to compare
-	 * @return if the number is within {@link #getMin()} and {@link #getMax()}
+	 * @return
 	 */
-	public boolean isWithin(Number value) {
-		return value.longValue() >= min.longValue() && value.longValue() <= max.longValue();
+	public boolean isInRangeLong(long value) {
+		return value >= min.longValue() && value <= max.longValue();
+	}
+
+	/**
+	 * Get if the number is within the bounds
+	 *
+	 * @param value the number to compare
+	 * @return
+	 */
+	public boolean isInRangeDouble(double value) {
+		return value >= min.doubleValue() && value <= max.doubleValue();
+	}
+
+	/**
+	 * Get a value in range between {@link #min} and {@link #max}
+	 *
+	 * @return a random value
+	 */
+	public int getRandomInt() {
+		return RandomUtil.nextBetween(getMinInt(), getMaxInt());
 	}
 
 	/**
@@ -88,7 +107,7 @@ public class RangedValue {
 	 *
 	 * @return
 	 */
-	public final boolean isStatic() {
+	public boolean isStatic() {
 		return min == max;
 	}
 
@@ -97,7 +116,7 @@ public class RangedValue {
 	 *
 	 * @return
 	 */
-	public final String toLine() {
+	public String toLine() {
 		return min.intValue() + " - " + max.intValue();
 	}
 
@@ -115,18 +134,33 @@ public class RangedValue {
 		final String[] parts = line.split("\\-");
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 
-		final String first = parts[0];
-		final Integer min = NumberUtils.isNumber(first) ? Integer.parseInt(first) : (int) (TimeUtil.toTicks(first) / 20);
+		final String first = parts[0].trim();
+		final String second = parts.length == 2 ? parts[1].trim() : "";
 
-		final String second = parts.length == 2 ? parts[1] : "";
-		final Integer max = parts.length == 2 ? NumberUtils.isNumber(second) ? Integer.parseInt(second) : (int) (TimeUtil.toTicks(second) / 20) : min;
-		Valid.checkBoolean(min != null && max != null, "Malformed value " + line);
+		// Check if valid numbers
+		Valid.checkBoolean(NumberUtils.isNumber(first),
+				"Invalid ranged value 1. input: '" + first + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
 
-		return new RangedValue(min, max);
+		Valid.checkBoolean(NumberUtils.isNumber(second),
+				"Invalid ranged value 2. input: '" + second + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
+
+		final Number firstNumber = first.contains(".") ? Double.parseDouble(first) : Long.parseLong(first);
+		final Number secondNumber = second.contains(".") ? Double.parseDouble(second) : Long.parseLong(second);
+
+		// Check if 1<2
+		if (first.contains("."))
+			Valid.checkBoolean(firstNumber.longValue() <= secondNumber.longValue(),
+					"First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
+
+		else
+			Valid.checkBoolean(firstNumber.doubleValue() <= secondNumber.doubleValue(),
+					"First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
+
+		return new RangedValue(firstNumber, secondNumber);
 	}
 
 	@Override
-	public final String toString() {
-		return isStatic() ? min + "" : min + " - " + max;
+	public String toString() {
+		return isStatic() ? min.longValue() + "" : min.longValue() + " - " + max.longValue();
 	}
 }
