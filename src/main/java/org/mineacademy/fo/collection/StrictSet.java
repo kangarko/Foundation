@@ -1,8 +1,8 @@
 package org.mineacademy.fo.collection;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,7 +21,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	/**
 	 * The internal set
 	 */
-	private final Set<E> set = new HashSet<>();
+	private final Set<E> set = new LinkedHashSet<>();
 
 	/**
 	 * Create a new set from the given elements
