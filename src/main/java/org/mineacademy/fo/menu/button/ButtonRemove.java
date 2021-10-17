@@ -75,12 +75,12 @@ public class ButtonRemove extends Button {
 				.of(CompMaterial.LAVA_BUCKET)
 				.name(title.replace("{name}", toRemoveName))
 
-				.lores(Replacer.replaceArray(lore,
+				.lore(Replacer.replaceArray(lore,
 						"name", toRemoveName,
 						"type", toRemoveType))
 
-				.flag(CompItemFlag.HIDE_ATTRIBUTES)
-				.build().make();
+				.flags(CompItemFlag.HIDE_ATTRIBUTES)
+				.make();
 	}
 
 	/**
@@ -94,14 +94,14 @@ public class ButtonRemove extends Button {
 				.ofWool(CompColor.RED)
 				.name("&6&lRemove " + toRemoveName)
 
-				.lores(Arrays.asList(
+				.lore(Arrays.asList(
 						"&r",
 						"&7Confirm that this " + toRemoveType + " will",
 						"&7be removed permanently.",
 						"&cCannot be undone."))
 
-				.flag(CompItemFlag.HIDE_ATTRIBUTES)
-				.build().make();
+				.flags(CompItemFlag.HIDE_ATTRIBUTES)
+				.make();
 	}
 
 	public String getMenuTitle() {

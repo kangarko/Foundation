@@ -1,7 +1,6 @@
 package org.mineacademy.fo.menu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -141,6 +140,14 @@ public abstract class MenuTools extends Menu {
 	}
 
 	/**
+	 * @see org.mineacademy.fo.menu.Menu#getInfo()
+	 */
+	@Override
+	protected String[] getInfo() {
+		return null;
+	}
+
+	/**
 	 * Compiles an automated tools menu.
 	 *
 	 * @param pluginToolClasses We will scan your plugin for this kind of class and
@@ -230,8 +237,8 @@ final class ToggleableTool {
 		return ItemCreator
 				.of(item)
 				.glow(true)
-				.lores(Arrays.asList("", "&6You already have this item.", "&6Click to take it away."))
-				.build().makeMenuTool();
+				.lore("", "&6You already have this item.", "&6Click to take it away.")
+				.makeMenuTool();
 	}
 
 	// Return the actual working tool in case player does not have it yet

@@ -1,17 +1,23 @@
 package org.mineacademy.fo.menu.button;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.conversation.SimpleDecimalPrompt;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.conversation.SimplePrompt;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
+import org.mineacademy.fo.model.RangedValue;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -81,7 +87,7 @@ public abstract class Button {
 		for (final String line : description)
 			lores.add("&7" + line);
 
-		return makeDummy(ItemCreator.of(infoButtonMaterial).name(infoButtonTitle).hideTags(true).lores(lores));
+		return makeDummy(ItemCreator.of(infoButtonMaterial).name(infoButtonTitle).hideTags(true).lore(lores));
 	}
 
 	/**
@@ -102,17 +108,7 @@ public abstract class Button {
 	 * @return
 	 */
 	public static final DummyButton makeDummy(final CompMaterial material, String title, String... lore) {
-		return makeDummy(ItemCreator.of(material).name(title).lores(Arrays.asList(lore)));
-	}
-
-	/**
-	 * Creates a dummy button that does nothing when clicked
-	 *
-	 * @param builder the icon builder
-	 * @return the button
-	 */
-	public static final DummyButton makeDummy(final ItemCreator.ItemCreatorBuilder builder) {
-		return makeDummy(builder.build());
+		return makeDummy(ItemCreator.of(material).name(title).lore(lore));
 	}
 
 	/**
@@ -153,7 +149,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(icon).name(title).lore("").lores(Arrays.asList(label.split("\n"))).build().makeMenuTool();
+				return ItemCreator.of(icon).name(title).lore("").lore(label.split("\n")).makeMenuTool();
 			}
 
 			@Override
@@ -173,12 +169,12 @@ public abstract class Button {
 	 * @param onClickFunction
 	 * @return
 	 */
-	public static final Button makeSimple(ItemCreator.ItemCreatorBuilder builder, final Consumer<Player> onClickFunction) {
+	public static final Button makeSimple(ItemCreator builder, final Consumer<Player> onClickFunction) {
 		return new Button() {
 
 			@Override
 			public ItemStack getItem() {
-				return builder.build().makeMenuTool();
+				return builder.makeMenuTool();
 			}
 
 			@Override
@@ -206,7 +202,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(icon, title, "", label).build().makeMenuTool();
+				return ItemCreator.of(icon, title, "", label).makeMenuTool();
 			}
 
 			@Override
@@ -217,22 +213,175 @@ public abstract class Button {
 	}
 
 	/**
-	 * Create a button that shows the decimal prompt to the player when clicked
+	 * Creates a functional button that will toggle on/off state, typically
+	 * used to toggle a file setting, such as a Boss dropping items or not, etc.
 	 *
-	 * @param question
-	 * @param successAction
+	 * @param creator
+	 * @param getter
+	 * @param setter
+	 * @return
 	 */
-	public static Button makeDecimalPrompt(final ItemCreator.ItemCreatorBuilder builder, final String question, final Consumer<Double> successAction) {
+	public static final Button makeBoolean(ItemCreator creator, Supplier<Boolean> getter, Consumer<Boolean> setter) {
+		final String menuTitle = creator.getName().toLowerCase();
+
 		return new Button() {
 
 			@Override
-			public ItemStack getItem() {
-				return builder.build().makeMenuTool();
+			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+				final boolean has = getter.get();
+
+				setter.accept(!has);
+				menu.restartMenu((has ? "&4Disabled" : "&2Enabled") + " " + menuTitle + "!");
 			}
 
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
-				SimpleDecimalPrompt.show(player, question, successAction);
+			public ItemStack getItem() {
+				final boolean has = getter.get();
+				final ItemStack item = creator.glow(has).make();
+				final ItemMeta meta = item.getItemMeta();
+
+				meta.setLore(Replacer.replaceArray(meta.getLore(), "status", has ? "&aEnabled" : "&cDisabled"));
+				item.setItemMeta(meta);
+
+				return item;
+			}
+		};
+	}
+
+	/**
+	 * A convenience method for creating integer prompts
+	 *
+	 * @param item
+	 * @param question
+	 * @param minMaxRange
+	 * @param getter
+	 * @param setter
+	 * @return
+	 */
+	public static Button makeIntegerPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Integer> getter, Consumer<Integer> setter) {
+		return makeIntegerPrompt(item, question, null, minMaxRange, getter, setter);
+	}
+
+	/**
+	 * A convenience method for creating integer prompts
+	 *
+	 * @param item
+	 * @param question
+	 * @param menuTitle
+	 * @param minMaxRange
+	 * @param getter
+	 * @param setter
+	 * @return
+	 */
+	public static Button makeIntegerPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, Supplier<Integer> getter, Consumer<Integer> setter) {
+		return new Button() {
+
+			@Override
+			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+				new SimplePrompt() {
+
+					@Override
+					protected String getPrompt(ConversationContext ctx) {
+						return question.replace("{current}", getter.get().toString());
+					}
+
+					@Override
+					protected boolean isInputValid(ConversationContext context, String input) {
+						return Valid.isInteger(input) && Valid.isInRange(Integer.parseInt(input), minMaxRange.getMinLong(), minMaxRange.getMaxLong());
+					}
+
+					@Override
+					protected String getFailedValidationText(ConversationContext context, String invalidInput) {
+						return "Invalid input '" + invalidInput + "'! Enter a whole number from " + minMaxRange.getMinLong() + " to " + minMaxRange.getMaxLong() + ".";
+					}
+
+					@Override
+					protected String getMenuAnimatedTitle() {
+						return menuTitle != null ? "&9" + menuTitle.substring(0, 1).toUpperCase() + menuTitle.substring(1) + " set to " + getter.get() + "!" : null;
+					}
+
+					@Override
+					protected Prompt acceptValidatedInput(ConversationContext context, String input) {
+						setter.accept(Integer.parseInt(input));
+
+						return END_OF_CONVERSATION;
+					}
+
+				}.show(player);
+			}
+
+			@Override
+			public ItemStack getItem() {
+				return item.make();
+			}
+		};
+	}
+
+	/**
+	 * A convenience method for creating decimal prompts
+	 *
+	 * @param item
+	 * @param question
+	 * @param minMaxRange
+	 * @param getter
+	 * @param setter
+	 * @return
+	 */
+	public static Button makeDecimalPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Double> getter, Consumer<Double> setter) {
+		return makeDecimalPrompt(item, question, null, minMaxRange, getter, setter);
+	}
+
+	/**
+	 * A convenience method for creating decimal prompts
+	 *
+	 * @param item
+	 * @param question
+	 * @param menuTitle
+	 * @param minMaxRange
+	 * @param getter
+	 * @param setter
+	 * @return
+	 */
+	public static Button makeDecimalPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, Supplier<Double> getter, Consumer<Double> setter) {
+		return new Button() {
+
+			@Override
+			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+				new SimplePrompt() {
+
+					@Override
+					protected String getPrompt(ConversationContext ctx) {
+						return question.replace("{current}", getter.get().toString());
+					}
+
+					@Override
+					protected boolean isInputValid(ConversationContext context, String input) {
+						return Valid.isDecimal(input) && Valid.isInRange(Double.parseDouble(input), minMaxRange.getMinDouble(), minMaxRange.getMaxDouble());
+					}
+
+					@Override
+					protected String getFailedValidationText(ConversationContext context, String invalidInput) {
+						return "Invalid input '" + invalidInput + "'! Enter a whole number from " + minMaxRange.getMinDouble() + " to " + minMaxRange.getMaxDouble() + ".";
+					}
+
+					@Override
+					protected String getMenuAnimatedTitle() {
+						return menuTitle != null ? "&9" + menuTitle.substring(0, 1).toUpperCase() + menuTitle.substring(1) + " set to " + getter.get() + "!" : null;
+					}
+
+					@Override
+					protected Prompt acceptValidatedInput(ConversationContext context, String input) {
+						setter.accept(Double.parseDouble(input));
+
+						return END_OF_CONVERSATION;
+					}
+
+				}.show(player);
+			}
+
+			@Override
+			public ItemStack getItem() {
+				return item.make();
 			}
 		};
 	}

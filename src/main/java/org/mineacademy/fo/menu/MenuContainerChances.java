@@ -110,7 +110,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 						"",
 						"&7Click to edit " + mode.next().getKey().toLowerCase() + ".")
 						.glow(chances)
-						.build().make();
+						.make();
 			}
 		};
 	}

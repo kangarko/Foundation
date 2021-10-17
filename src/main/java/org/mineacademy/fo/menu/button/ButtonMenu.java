@@ -51,7 +51,7 @@ public final class ButtonMenu extends Button {
 	 * @param lore
 	 */
 	public ButtonMenu(final Class<? extends Menu> menuClass, final CompMaterial material, final String name, final String... lore) {
-		this(null, () -> ReflectionUtil.instantiate(menuClass), ItemCreator.of(material, name, lore).hideTags(true).build().make(), false);
+		this(null, () -> ReflectionUtil.instantiate(menuClass), ItemCreator.of(material, name, lore).hideTags(true).make(), false);
 	}
 
 	/**
@@ -60,8 +60,8 @@ public final class ButtonMenu extends Button {
 	 * @param menuLateBind
 	 * @param item
 	 */
-	public ButtonMenu(final Callable<Menu> menuLateBind, final ItemCreator.ItemCreatorBuilder item) {
-		this(null, menuLateBind, item.hideTags(true).build().make(), false);
+	public ButtonMenu(final Callable<Menu> menuLateBind, final ItemCreator item) {
+		this(null, menuLateBind, item.hideTags(true).make(), false);
 	}
 
 	/**
@@ -92,8 +92,8 @@ public final class ButtonMenu extends Button {
 	 * @param menu
 	 * @param item
 	 */
-	public ButtonMenu(final Menu menu, final ItemCreator.ItemCreatorBuilder item) {
-		this(menu, null, item.hideTags(true).build().make(), false);
+	public ButtonMenu(final Menu menu, final ItemCreator item) {
+		this(menu, null, item.hideTags(true).make(), false);
 	}
 
 	/**

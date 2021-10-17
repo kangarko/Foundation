@@ -108,7 +108,7 @@ public interface MenuQuantitable {
 								"",
 								"&8< &7Left click to decrease",
 								"&8> &7Right click to increase")
-						.build().make();
+						.make();
 			}
 		};
 	}
@@ -169,7 +169,7 @@ public interface MenuQuantitable {
 				"level", level,
 				"quantity", getCurrentQuantityPercent());
 
-		return ItemCreator.of(item.clone()).clearLores().lores(dropChanceLore).build().makeMenuTool();
+		return ItemCreator.of(item.clone()).clearLore().lore(dropChanceLore).makeMenuTool();
 	}
 
 	default String getLevelLoreLabel() {
