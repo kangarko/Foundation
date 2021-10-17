@@ -586,7 +586,7 @@ public abstract class YamlConfig {
 
 			// Retype manually
 			if (type == Long.class && raw instanceof Integer)
-				raw = (long) raw;
+				raw = (long) Integer.parseInt(raw.toString());
 
 			checkAssignable(false, path, raw, type);
 		}
