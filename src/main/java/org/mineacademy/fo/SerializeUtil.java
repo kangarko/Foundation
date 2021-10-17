@@ -134,9 +134,6 @@ public final class SerializeUtil {
 		else if (obj instanceof PotionEffect)
 			return serializePotionEffect((PotionEffect) obj);
 
-		else if (obj instanceof ItemCreator.ItemCreatorBuilder)
-			return ((ItemCreator.ItemCreatorBuilder) obj).build().make();
-
 		else if (obj instanceof ItemCreator)
 			return ((ItemCreator) obj).make();
 

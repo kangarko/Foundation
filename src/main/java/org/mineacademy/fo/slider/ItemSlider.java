@@ -90,8 +90,8 @@ public final class ItemSlider implements Slider<List<ItemStack>> {
 	 * @param highlighted
 	 * @return
 	 */
-	public static ItemSlider from(ItemCreator.ItemCreatorBuilder filler, ItemCreator.ItemCreatorBuilder highlighted) {
-		return from(filler.build().make(), highlighted.build().make());
+	public static ItemSlider from(ItemCreator filler, ItemCreator highlighted) {
+		return from(filler.make(), highlighted.make());
 	}
 
 	/**

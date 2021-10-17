@@ -24,7 +24,7 @@ public abstract class MenuContainer extends Menu {
 	/**
 	 * The filler item we fill the bottom bar with for safety.
 	 */
-	protected static final ItemStack BOTTOM_BAR_FILLER_ITEM = ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, " ").build().make();
+	protected static final ItemStack BOTTOM_BAR_FILLER_ITEM = ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, " ").make();
 
 	/**
 	 * Create a new menu that can edit chances of the items you put inside.
