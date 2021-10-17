@@ -456,6 +456,10 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getTime(path);
 	}
 
+	protected static final double getPercentage(String path) {
+		return TEMPORARY_INSTANCE.getPercentage(path);
+	}
+
 	protected static final CompMaterial getMaterial(final String path) {
 		return TEMPORARY_INSTANCE.getMaterial(path);
 	}

@@ -956,6 +956,22 @@ public abstract class YamlConfig {
 	}
 
 	/**
+	 * Get a percentage from 0% to 100%
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected final double getPercentage(String path) {
+		final String raw = getObject(path).toString();
+		Valid.checkBoolean(raw.endsWith("%"), "Your " + path + " key in " + getPathPrefix() + "." + path + " must end with %! Got: " + raw);
+
+		final String rawNumber = raw.substring(0, raw.length() - 1);
+		Valid.checkInteger(rawNumber, "Your " + path + " key in " + getPathPrefix() + "." + path + " must be a whole number! Got: " + raw);
+
+		return Integer.parseInt(rawNumber) / 100D;
+	}
+
+	/**
 	 * Get a boxed message having full-width top and bottom lines in chat
 	 *
 	 * @param path
