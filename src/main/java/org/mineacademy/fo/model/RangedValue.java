@@ -1,6 +1,12 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.math.NumberUtils;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
 
@@ -38,7 +44,6 @@ public final class RangedValue {
 	 * @param max the maximum value
 	 */
 	public RangedValue(Number min, Number max) {
-		Valid.checkBoolean(min.longValue() >= 0 && max.longValue() >= 0, "Values may not be negative");
 		Valid.checkBoolean(min.longValue() <= max.longValue(), "Minimum must be lower or equal maximum");
 
 		this.min = min;
@@ -46,17 +51,17 @@ public final class RangedValue {
 	}
 
 	/**
-	 * Get the minimum as an integer
+	 * Get the minimum as double
 	 */
-	public int getMinInt() {
-		return min.intValue();
+	public double getMinDouble() {
+		return min.doubleValue();
 	}
 
 	/**
-	 * Get the maximum as an integer
+	 * Get the maximum as double
 	 */
-	public int getMaxInt() {
-		return max.intValue();
+	public double getMaxDouble() {
+		return max.doubleValue();
 	}
 
 	/**
@@ -99,7 +104,7 @@ public final class RangedValue {
 	 * @return a random value
 	 */
 	public int getRandomInt() {
-		return RandomUtil.nextBetween(getMinInt(), getMaxInt());
+		return RandomUtil.nextBetween((int) getMinLong(), (int) getMaxLong());
 	}
 
 	/**
@@ -117,7 +122,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public String toLine() {
-		return min.intValue() + " - " + max.intValue();
+		return min.longValue() + " - " + max.longValue();
 	}
 
 	/**
@@ -131,7 +136,16 @@ public final class RangedValue {
 	 * 10 seconds - 20 minutes (will be converted to seconds)
 	 */
 	public static RangedValue parse(String line) {
-		final String[] parts = line.split("\\-");
+
+		// Support negative values
+		final Pattern pattern = Pattern.compile("(-|)[0-9]{1,}");
+		final Matcher matcher = pattern.matcher(line);
+		final List<String> found = new ArrayList<>();
+
+		while (matcher.find())
+			found.add(matcher.group());
+
+		final String parts[] = Common.toArray(found);
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 
 		final String first = parts[0].trim();
