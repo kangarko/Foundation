@@ -84,6 +84,6 @@ public final class SimpleTime {
 
 	@Override
 	public String toString() {
-		return this.raw;
+		return this.getRaw();
 	}
 }
