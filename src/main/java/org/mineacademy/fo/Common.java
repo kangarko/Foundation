@@ -1137,7 +1137,7 @@ public final class Common {
 			Messenger.success(playerReplacement, command.replace("@success ", ""));
 
 		else {
-			command = command.startsWith("/") ? command.substring(1) : command;
+			command = command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command;
 			command = command.replace("{player}", playerReplacement == null ? "" : resolveSenderName(playerReplacement));
 
 			// Workaround for JSON in tellraw getting HEX colors replaced
@@ -1160,7 +1160,13 @@ public final class Common {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		runLater(() -> playerSender.performCommand(colorize(command.replace("{player}", resolveSenderName(playerSender)))));
+		// Remove trailing /
+		if (command.startsWith("/") && !command.startsWith("//"))
+			command = command.substring(1);
+
+		final String finalCommand = command;
+
+		runLater(() -> playerSender.performCommand(colorize(finalCommand.replace("{player}", resolveSenderName(playerSender)))));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
