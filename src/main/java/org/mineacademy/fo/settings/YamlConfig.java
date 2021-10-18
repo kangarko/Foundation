@@ -1321,11 +1321,12 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @param keyType
 	 * @param setType
+	 * @param setDeserializeParameters
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull String path, final Class<Key> keyType, final Class<Value> setType) {
+	protected final <Key, Value> LinkedHashMap<Key, List<Value>> getMapList(@NonNull String path, final Class<Key> keyType, final Class<Value> setType, Object... setDeserializeParameters) {
 		// The map we are creating, preserve order
-		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
+		final LinkedHashMap<Key, List<Value>> map = new LinkedHashMap<>();
 
 		final SimpleYaml config = getConfig();
 		final SimpleYaml defaults = getDefaults();
@@ -1347,7 +1348,7 @@ public abstract class YamlConfig {
 		if (configSection != null)
 			for (final Map.Entry<String, Object> entry : configSection.getValues(false).entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
-				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue());
+				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue(), setDeserializeParameters);
 
 				// Ensure the pair values are valid for the given paramenters
 				checkAssignable(false, path, key, keyType);
@@ -1356,7 +1357,7 @@ public abstract class YamlConfig {
 					for (final Value item : value)
 						checkAssignable(false, path, item, setType);
 
-				map.put(key, new HashSet<>(value));
+				map.put(key, value);
 			}
 
 		return map;
