@@ -25,7 +25,6 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.jsonsimple.JSONObject;
-import org.mineacademy.fo.jsonsimple.JSONParseException;
 import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.Tuple;
@@ -1123,15 +1122,22 @@ public final class SerializedMap extends StrictCollection {
 
 		try {
 			final Object parsed = jsonSimple.parse(json);
-			Valid.checkBoolean(parsed instanceof JSONObject, "SerializedMap.fromJson got unrecognizable json: " + json);
-
 			final JSONObject jsonObject = (JSONObject) parsed;
 
 			for (final Map.Entry<Object, Object> entry : jsonObject.entrySet())
 				serializedMap.map.put(entry.getKey().toString(), entry.getValue());
 
-		} catch (final JSONParseException t) {
-			Common.throwError(t, "Failed to parse JSON from input: ", json);
+		} catch (final Throwable throwable) {
+
+			// Fallback to Google
+			try {
+				final Map<String, Object> map = gson.fromJson(json, Map.class);
+
+				serializedMap.map.putAll(map);
+
+			} catch (final Throwable secondThrowable) {
+				Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
+			}
 		}
 
 		return serializedMap;
