@@ -467,6 +467,31 @@ public final class PlayerUtil {
 		return Remain.isInvisible(player);
 	}
 
+	/**
+	 * Updates vanish status for player using metadata, Essentials, CMI and NMS invisibility.
+	 *
+	 * @param player
+	 * @param vanished
+	 */
+	public static void setVanished(Player player, boolean vanished) {
+
+		// Hook into other plugins
+		HookManager.setVanished(player, false);
+
+		// Remove metadata
+		final List<MetadataValue> list = player.getMetadata("vanished");
+
+		for (final MetadataValue meta : list)
+			if (meta.asBoolean()) {
+				player.removeMetadata("vanished", meta.getOwningPlugin());
+
+				break;
+			}
+
+		// NMS
+		Remain.setInvisible(player, false);
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Nicks
 	// ------------------------------------------------------------------------------------------------------------
