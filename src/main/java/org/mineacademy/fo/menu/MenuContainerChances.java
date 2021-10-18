@@ -264,7 +264,10 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	protected final void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
 
 		if (this.mode == EditMode.CHANCE && this.canEditItem(slot) && slot < this.getSize() - 9) {
-			Valid.checkNotNull(clicked, "Should have not called onMenuClick for null clicked item at slot " + slot);
+
+			// Prevent exploiting chances menu holding an item
+			if (clicked == null)
+				return;
 
 			final double chance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
 			final double next = this.getNextQuantityDouble(click);
