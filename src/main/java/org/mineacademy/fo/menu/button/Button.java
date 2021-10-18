@@ -6,6 +6,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
@@ -14,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.conversation.SimplePrompt;
+import org.mineacademy.fo.conversation.SimpleStringPrompt;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.RangedValue;
@@ -231,7 +234,11 @@ public abstract class Button {
 				final boolean has = getter.get();
 
 				setter.accept(!has);
-				menu.restartMenu((has ? "&4Disabled" : "&2Enabled") + " " + menuTitle + "!");
+
+				final Menu newMenu = menu.newInstance();
+
+				newMenu.displayTo(player);
+				newMenu.restartMenu((has ? "&4Disabled" : "&2Enabled") + " " + menuTitle + "!");
 			}
 
 			@Override
@@ -258,7 +265,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeIntegerPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Integer> getter, Consumer<Integer> setter) {
+	public static Button makeIntegerPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Object> getter, Consumer<Integer> setter) {
 		return makeIntegerPrompt(item, question, null, minMaxRange, getter, setter);
 	}
 
@@ -273,7 +280,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeIntegerPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, Supplier<Integer> getter, Consumer<Integer> setter) {
+	public static Button makeIntegerPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, Supplier<Object> getter, Consumer<Integer> setter) {
 		return new Button() {
 
 			@Override
@@ -323,11 +330,24 @@ public abstract class Button {
 	 * @param item
 	 * @param question
 	 * @param minMaxRange
+	 * @param setter
+	 * @return
+	 */
+	public static Button makeDecimalPrompt(ItemCreator item, String question, RangedValue minMaxRange, Consumer<Double> setter) {
+		return makeDecimalPrompt(item, question, minMaxRange, null, setter);
+	}
+
+	/**
+	 * A convenience method for creating decimal prompts
+	 *
+	 * @param item
+	 * @param question
+	 * @param minMaxRange
 	 * @param getter
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeDecimalPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Double> getter, Consumer<Double> setter) {
+	public static Button makeDecimalPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Object> getter, Consumer<Double> setter) {
 		return makeDecimalPrompt(item, question, null, minMaxRange, getter, setter);
 	}
 
@@ -342,7 +362,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeDecimalPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, Supplier<Double> getter, Consumer<Double> setter) {
+	public static Button makeDecimalPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, @Nullable Supplier<Object> getter, Consumer<Double> setter) {
 		return new Button() {
 
 			@Override
@@ -351,7 +371,7 @@ public abstract class Button {
 
 					@Override
 					protected String getPrompt(ConversationContext ctx) {
-						return question.replace("{current}", getter.get().toString());
+						return question.replace("{current}", getter != null ? getter.get().toString() : "");
 					}
 
 					@Override
@@ -381,7 +401,61 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return item.make();
+				final ItemStack itemstack = item.make();
+				final ItemMeta meta = itemstack.getItemMeta();
+
+				meta.setLore(Replacer.replaceArray(meta.getLore(), "current", getter != null ? getter.get().toString() : ""));
+				itemstack.setItemMeta(meta);
+
+				return itemstack;
+			}
+		};
+	}
+
+	/**
+	 * A convenience method for creating string prompts
+	 *
+	 * @param creator
+	 * @param question
+	 * @param onPromptFinish
+	 * @return
+	 */
+	public static Button makeStringPrompt(ItemCreator creator, String question, Consumer<String> onPromptFinish) {
+		return makeStringPrompt(creator, question, null, onPromptFinish);
+	}
+
+	/**
+	 * A convenience method for creating string prompts
+	 *
+	 * @param creator
+	 * @param question
+	 * @param menuTitle
+	 * @param onPromptFinish
+	 * @return
+	 */
+	public static Button makeStringPrompt(ItemCreator creator, String question, @Nullable String menuTitle, Consumer<String> onPromptFinish) {
+		return new Button() {
+
+			@Override
+			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+				new SimpleStringPrompt(question) {
+
+					@Override
+					protected String getMenuAnimatedTitle() {
+						return menuTitle;
+					}
+
+					@Override
+					protected void onValidatedInput(ConversationContext context, String input) {
+						onPromptFinish.accept(input);
+					}
+
+				}.show(player);
+			}
+
+			@Override
+			public ItemStack getItem() {
+				return creator.make();
 			}
 		};
 	}
