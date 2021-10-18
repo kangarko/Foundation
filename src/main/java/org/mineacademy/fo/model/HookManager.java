@@ -686,7 +686,7 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is vanished in EssentialsX or CMI, or false if neither plugin is present
 	 *
-	 * @deprecated this does not call metadata check in most plugins, see {@link PlayerUtil#isVanished(Player)}
+	 * @deprecated this does not call metadata check for most plugins nor NMS check, see {@link PlayerUtil#isVanished(Player)}
 	 * @param player
 	 * @return
 	 */
@@ -699,6 +699,22 @@ public final class HookManager {
 			return true;
 
 		return false;
+	}
+
+	/**
+	 * Sets the vanish status for player in CMI and Essentials
+	 *
+	 * @deprecated this does not remove vanish metadata and NMS invisibility, use {@link PlayerUtil#isVanished(Player)} for that
+	 * @param player
+	 * @param vanished
+	 */
+	@Deprecated
+	public static void setVanished(Player player, boolean vanished) {
+		if (isEssentialsLoaded())
+			essentialsHook.setVanished(player.getName(), vanished);
+
+		if (isCMILoaded())
+			CMIHook.setVanished(player, vanished);
 	}
 
 	/**
@@ -744,6 +760,19 @@ public final class HookManager {
 	public static void setLiteBansUnmute(Player player) {
 		if (isLiteBansLoaded())
 			Common.dispatchCommand(player, "lunmute {player}");
+	}
+
+	/**
+	 * Returns if the player has god mode either from Essentials or CMI
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static boolean hasGodMode(final Player player) {
+		final boolean essGodMode = isEssentialsLoaded() && essentialsHook.hasGodMode(player);
+		final boolean cmiGodMode = isCMILoaded() && CMIHook.hasGodMode(player);
+
+		return essGodMode || cmiGodMode;
 	}
 
 	/**
@@ -1516,7 +1545,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -1548,6 +1577,12 @@ class EssentialsHook {
 
 	EssentialsHook() {
 		ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+	}
+
+	boolean hasGodMode(final Player player) {
+		final User user = getUser(player.getName());
+
+		return user != null ? user.isGodModeEnabled() : false;
 	}
 
 	void setGodMode(final Player player, final boolean godMode) {
@@ -1591,6 +1626,13 @@ class EssentialsHook {
 		final IUser user = getUser(pl);
 
 		return user != null ? user.isVanished() : false;
+	}
+
+	void setVanished(final String playerName, boolean vanished) {
+		final IUser user = getUser(playerName);
+
+		if (user != null && user.isVanished() != vanished)
+			user.setVanished(false);
 	}
 
 	boolean isMuted(final String pl) {
@@ -2943,6 +2985,13 @@ class CMIHook {
 		return user != null && user.isVanished();
 	}
 
+	void setVanished(Player player, boolean vanished) {
+		final CMIUser user = getUser(player);
+
+		if (user != null && user.isVanished() != vanished)
+			user.setVanished(false);
+	}
+
 	boolean isAfk(final Player player) {
 		final CMIUser user = getUser(player);
 
@@ -2960,10 +3009,17 @@ class CMIHook {
 		}
 	}
 
+	boolean hasGodMode(final Player player) {
+		final CMIUser user = getUser(player);
+
+		return user != null ? user.isGod() : false;
+	}
+
 	void setGodMode(final Player player, final boolean godMode) {
 		final CMIUser user = getUser(player);
 
-		user.setGod(godMode);
+		if (user != null)
+			user.setGod(godMode);
 	}
 
 	void setLastTeleportLocation(final Player player, final Location location) {
@@ -3052,7 +3108,7 @@ class DiscordSRVHook {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3213,16 +3269,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
