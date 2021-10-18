@@ -1941,9 +1941,12 @@ public final class Remain {
 	 * Calls NMS to find out if the entity is invisible, works for any entity,
 	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
 	 *
+	 * @deprecated use {@link PlayerUtil#isVanished(Player)} to check for vanish from other plugins also
+	 *
 	 * @param entity
 	 * @return
 	 */
+	@Deprecated
 	public static boolean isInvisible(Entity entity) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#isInvisible requires Minecraft 1.4.7 or greater");
 
@@ -1963,7 +1966,10 @@ public final class Remain {
 	 *
 	 * @param entity
 	 * @param invisible
+	 *
+	 * @deprecated use {@link PlayerUtil#setVanished(Player, boolean)} to disable vanish for plugins also
 	 */
+	@Deprecated
 	public static void setInvisible(Object entity, boolean invisible) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#setInvisible requires Minecraft 1.4.7 or greater");
 
@@ -2000,6 +2006,17 @@ public final class Remain {
 
 			return false;
 		}
+	}
+
+	/**
+	 * Set the invulnerable status for an entity,
+	 * this may fail on old Minecraft versions such as 1.7.10.
+	 *
+	 * @param entity
+	 * @param invulnerable
+	 */
+	public static void setInvulnerable(Entity entity, boolean invulnerable) {
+		CompProperty.INVULNERABLE.apply(entity, invulnerable);
 	}
 
 	/**
