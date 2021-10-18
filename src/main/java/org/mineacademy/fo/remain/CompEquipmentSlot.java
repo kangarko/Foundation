@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -56,13 +57,14 @@ public enum CompEquipmentSlot {
 	 */
 	public void applyTo(LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
 		final EntityEquipment equip = entity.getEquipment();
+		final boolean isHuman = entity instanceof HumanEntity;
 
 		switch (this) {
 
 			case HAND:
 				equip.setItemInHand(item);
 
-				if (dropChance != null)
+				if (dropChance != null && !isHuman)
 					equip.setItemInHandDropChance(dropChance.floatValue());
 
 				break;
@@ -72,7 +74,7 @@ public enum CompEquipmentSlot {
 
 				equip.setItemInOffHand(item);
 
-				if (dropChance != null)
+				if (dropChance != null && !isHuman)
 					equip.setItemInOffHandDropChance(dropChance.floatValue());
 
 				break;
@@ -80,7 +82,7 @@ public enum CompEquipmentSlot {
 			case HEAD:
 				equip.setHelmet(item);
 
-				if (dropChance != null)
+				if (dropChance != null && !isHuman)
 					equip.setHelmetDropChance(dropChance.floatValue());
 
 				break;
@@ -88,7 +90,7 @@ public enum CompEquipmentSlot {
 			case CHEST:
 				equip.setChestplate(item);
 
-				if (dropChance != null)
+				if (dropChance != null && !isHuman)
 					equip.setChestplateDropChance(dropChance.floatValue());
 
 				break;
@@ -96,7 +98,7 @@ public enum CompEquipmentSlot {
 			case LEGS:
 				equip.setLeggings(item);
 
-				if (dropChance != null)
+				if (dropChance != null && !isHuman)
 					equip.setLeggingsDropChance(dropChance.floatValue());
 
 				break;
@@ -104,7 +106,7 @@ public enum CompEquipmentSlot {
 			case FEET:
 				equip.setBoots(item);
 
-				if (dropChance != null)
+				if (dropChance != null && !isHuman)
 					equip.setBootsDropChance(dropChance.floatValue());
 
 				break;
