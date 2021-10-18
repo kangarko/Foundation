@@ -137,15 +137,23 @@ public final class RangedValue {
 	 */
 	public static RangedValue parse(String line) {
 
+		String parts[];
+
 		// Support negative values
-		final Pattern pattern = Pattern.compile("(-|)[0-9]{1,}");
-		final Matcher matcher = pattern.matcher(line);
-		final List<String> found = new ArrayList<>();
+		if (line.split("\\-").length != 2) {
+			final Pattern pattern = Pattern.compile("(-|)[0-9]{1,}");
+			final Matcher matcher = pattern.matcher(line);
+			final List<String> found = new ArrayList<>();
 
-		while (matcher.find())
-			found.add(matcher.group());
+			while (matcher.find())
+				found.add(matcher.group());
 
-		final String parts[] = Common.toArray(found);
+			parts = Common.toArray(found);
+		}
+
+		else
+			parts = line.split("\\-");
+
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 
 		final String first = parts[0].trim();
