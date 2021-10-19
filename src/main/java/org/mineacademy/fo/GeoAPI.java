@@ -8,8 +8,9 @@ import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
-import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,9 +24,9 @@ import lombok.RequiredArgsConstructor;
 public final class GeoAPI {
 
 	/**
-	 * The cached responses per IP addresses
+	 * The cached responses per IP addresses, records removed after 1 hour to prevent them stacking up in memory.
 	 */
-	private static final StrictMap<String, GeoResponse> cache = new StrictMap<>();
+	private static final ExpiringMap<String, GeoResponse> cache = ExpiringMap.builder().expiration(1, TimeUnit.HOURS).build();
 
 	/**
 	 * Returns a {@link GeoResponse} with geographic data for the given IP address
