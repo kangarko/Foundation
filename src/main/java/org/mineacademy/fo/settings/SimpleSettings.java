@@ -97,6 +97,11 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static DateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 	/**
+	 * The {location} format.
+	 */
+	public static String LOCATION_FORMAT = "{world} [{x}, {y}, {z}]";
+
+	/**
 	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
 	 * those that are specified in this settings are logged into the console, otherwise no message is shown.
 	 * <p>
@@ -181,6 +186,9 @@ public class SimpleSettings extends YamlStaticConfig {
 			} catch (final IllegalArgumentException ex) {
 				Common.throwError(ex, "Wrong 'Timestamp_Format '" + getString("Timestamp_Format") + "', see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for examples'");
 			}
+
+		if (isSetDefault("Location_Format"))
+			LOCATION_FORMAT = getString("Location_Format");
 
 		if (isSetDefault("Prefix"))
 			PLUGIN_PREFIX = getString("Prefix");
