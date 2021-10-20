@@ -558,13 +558,9 @@ public abstract class YamlConfig {
 	 */
 	private <T> T getT(String path, final Class<T> type) {
 
-		Debugger.debug("config", "Called get() '" + path + "' = '" + this.getConfig().get(path) + "' " + (this.getDefaults() != null ? "vs def = '" + this.getDefaults().get(path) + "'" : "no defaults") + ". Disk config contains: " + this.getConfig().getValues(true));
-
 		Valid.checkNotNull(path, "Path cannot be null");
 		path = formPathPrefix(path);
 
-		// Commented out : players with their names starting with a dot will cause plugins malfunction
-		//Valid.checkBoolean(!path.contains(".."), "Path must not contain '..' or more: " + path);
 		Valid.checkBoolean(!path.endsWith("."), "Path must not end with '.': " + path);
 
 		// Copy defaults if not set
