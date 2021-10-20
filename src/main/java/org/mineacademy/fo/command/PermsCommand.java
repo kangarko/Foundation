@@ -12,6 +12,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -37,24 +38,24 @@ public final class PermsCommand extends SimpleSubCommand {
 	 * Create a new "permisions|perms" subcommand using the given class
 	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class.
 	 *
+	 * We set the permission for this command to "{yourPluginName}.command.permissions".
+	 *
 	 * @param classToList
 	 */
 	public PermsCommand(@NonNull Class<?> classToList) {
-		this(classToList, SerializedMap
-				.of("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0)));
+		this(classToList, new SerializedMap());
 	}
 
 	/**
 	 * Create a new "permisions|perms" subcommand using the given class
 	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class
-	 * and the given command permission.
+	 * and your own permission to use this command.
 	 *
 	 * @param classToList
 	 * @param permission
 	 */
 	public PermsCommand(@NonNull Class<?> classToList, String permission) {
-		this(classToList, SerializedMap
-				.of("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0)));
+		this(classToList, new SerializedMap());
 
 		setPermission(permission);
 	}
@@ -62,6 +63,9 @@ public final class PermsCommand extends SimpleSubCommand {
 	/**
 	 * Create a new "permisions|perms" subcommand using the given class with
 	 * the given variables to replace in the \@PermissionGroup annotation in that class.
+	 *
+	 * We attempt to replace {label} with your main command alias. And we set the permission
+	 * for this command to "{yourPluginName}.command.permissions".
 	 *
 	 * @param classToList
 	 * @param variables
@@ -72,6 +76,10 @@ public final class PermsCommand extends SimpleSubCommand {
 		this.classToList = classToList;
 		this.variables = variables;
 
+		if (!this.variables.containsKey("label") && SimplePlugin.getInstance().getMainCommand() != null)
+			this.variables.put("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0));
+
+		setPermission(SimplePlugin.getNamed().toLowerCase() + ".command.permissions");
 		setDescription(Commands.PERMS_DESCRIPTION);
 		setUsage(Commands.PERMS_USAGE);
 
