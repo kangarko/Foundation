@@ -1029,7 +1029,11 @@ public final class Common {
 
 		Valid.checkNotNull(loc.getWorld(), "Cannot shorten a location with null world!");
 
-		return loc.getWorld().getName() + " [" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "]";
+		return Replacer.replaceArray(SimpleSettings.LOCATION_FORMAT,
+				"world", loc.getWorld().getName(),
+				"x", loc.getBlockX(),
+				"y", loc.getBlockY(),
+				"z", loc.getBlockZ());
 	}
 
 	/**
