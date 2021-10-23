@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
@@ -25,7 +26,7 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 public final class MenuListener implements Listener {
 
 	/**
-	 *
+	 * Create a new menu listener
 	 */
 	public MenuListener() {
 		try {
@@ -112,7 +113,39 @@ public final class MenuListener implements Listener {
 		}
 	}
 
-	static final class OffHandListener implements Listener {
+	/**
+	 * Prevents players from putting disallowed items into slots, apparently Bukkit fires a drag event if the slot
+	 * is clicked rapidly. Thanks to ItsRozzaDev for help!
+	 *
+	 * @param event
+	 */
+	@EventHandler
+	public void onInventoryDragTop(final InventoryDragEvent event) {
+		if (!(event.getWhoClicked() instanceof Player))
+			return;
+
+		final Player player = (Player) event.getWhoClicked();
+		final Menu menu = Menu.getMenu(player);
+
+		if (menu != null && event.getView().getType() == InventoryType.CHEST) {
+			final int size = event.getView().getTopInventory().getSize();
+
+			for (final int slot : event.getRawSlots()) {
+				if (slot > size)
+					continue;
+
+				final ItemStack cursor = Common.getOrDefault(event.getCursor(), event.getOldCursor());
+
+				if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor)) {
+					event.setCancelled(true);
+
+					return;
+				}
+			}
+		}
+	}
+
+	private static final class OffHandListener implements Listener {
 
 		/**
 		 * Prevent swapping items when menu is opened to avoid duplication.
