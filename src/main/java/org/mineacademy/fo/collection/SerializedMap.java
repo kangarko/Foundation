@@ -1117,23 +1117,26 @@ public final class SerializedMap extends StrictCollection {
 	 * @param json
 	 * @return
 	 */
-	public static SerializedMap fromJson(final String json) {
+	public static SerializedMap fromJson(@NonNull final String json) {
 		final SerializedMap serializedMap = new SerializedMap();
 
-		try {
-			final Object parsed = jsonSimple.parse(json);
-			final JSONObject jsonObject = (JSONObject) parsed;
+		if (json.isEmpty() || "[]".equals(json) || "{}".equals(json))
+			return serializedMap;
 
-			for (final Map.Entry<Object, Object> entry : jsonObject.entrySet())
-				serializedMap.map.put(entry.getKey().toString(), entry.getValue());
+		try {
+			final Map<String, Object> map = gson.fromJson(json, Map.class);
+
+			serializedMap.map.putAll(map);
 
 		} catch (final Throwable throwable) {
 
-			// Fallback to Google
+			// Fallback to simple
 			try {
-				final Map<String, Object> map = gson.fromJson(json, Map.class);
+				final Object parsed = jsonSimple.parse(json);
+				final JSONObject jsonObject = (JSONObject) parsed;
 
-				serializedMap.map.putAll(map);
+				for (final Map.Entry<Object, Object> entry : jsonObject.entrySet())
+					serializedMap.map.put(entry.getKey().toString(), entry.getValue());
 
 			} catch (final Throwable secondThrowable) {
 				Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
