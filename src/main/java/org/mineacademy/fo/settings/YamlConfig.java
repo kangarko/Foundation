@@ -50,6 +50,7 @@ import com.google.common.io.Files;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * The core configuration class. Manages all settings files.
@@ -123,6 +124,12 @@ public abstract class YamlConfig {
 	 * Should we check for validity of the config key-value pair?
 	 */
 	private final boolean checkAssignables = true;
+
+	/**
+	 * Load when we have updated a config key?
+	 */
+	@Setter
+	private boolean logUpdates = true;
 
 	protected YamlConfig() {
 	}
@@ -1408,7 +1415,11 @@ public abstract class YamlConfig {
 		path = formPathPrefix(path);
 		value = SerializeUtil.serialize(value);
 
-		getConfig().set(path, value);
+		// We want to clear all values
+		if (path.isEmpty())
+			getConfig().clear();
+		else
+			getConfig().set(path, value);
 
 		save = true; // Schedule save for later anyways
 	}
@@ -1441,7 +1452,8 @@ public abstract class YamlConfig {
 		checkAndFlagForSave(toPathAbs, value, false);
 		getConfig().set(toPathAbs, value);
 
-		Common.log("&7Update " + getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
+		if (this.logUpdates)
+			Common.log("&7Update " + getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
 
 		pathPrefix = oldPathPrefix; // and reset back to whatever it was
 	}
@@ -1506,12 +1518,14 @@ public abstract class YamlConfig {
 
 				save(path, newCollection);
 
-				Common.log("&7Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
+				if (this.logUpdates)
+					Common.log("&7Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
 
 			} else if (from.isAssignableFrom(old.getClass())) {
 				save(path, converter.apply((O) old));
 
-				Common.log("&7Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
+				if (this.logUpdates)
+					Common.log("&7Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
 			}
 	}
 
@@ -1640,7 +1654,7 @@ public abstract class YamlConfig {
 		if (getDefaults() != null)
 			Valid.checkNotNull(def, "Inbuilt config " + getFileName() + " lacks " + (def == null ? "key" : def.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
 
-		if (logUpdate)
+		if (logUpdate && this.logUpdates)
 			Common.log("&7Update " + getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
 
 		save = true;
