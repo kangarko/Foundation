@@ -21,21 +21,27 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CompEquipmentSlot {
 
-	HAND("HAND"),
+	HAND("HAND", "HAND"),
 	/**
 	 * Requires Minecraft 1.9+
 	 */
-	OFF_HAND("OFF_HAND"),
-	HEAD("HEAD"),
-	CHEST("CHEST"),
-	LEGS("LEGS"),
-	FEET("FEET");
+	OFF_HAND("OFF_HAND", "OFF_HAND"),
+	HEAD("HEAD", "HELMET"),
+	CHEST("CHEST", "CHESTPLATE"),
+	LEGS("LEGS", "LEGGINGS"),
+	FEET("FEET", "BOOTS");
 
 	/**
 	 * The localizable key
 	 */
 	@Getter
 	private final String key;
+
+	/**
+	 * The alternative Bukkit name.
+	 */
+	@Getter
+	private final String bukkitName;
 
 	/**
 	 * Applies this equipment slot to the given entity with the given item
@@ -121,8 +127,10 @@ public enum CompEquipmentSlot {
 	 * @return
 	 */
 	public static CompEquipmentSlot fromKey(String key) {
+		key = key.toUpperCase().replace(" ", "_");
+
 		for (final CompEquipmentSlot slot : values())
-			if (slot.key.equalsIgnoreCase(key.replace(" ", "_")))
+			if (slot.key.equals(key) || slot.bukkitName.equals(key))
 				return slot;
 
 		throw new FoException("No such equipment slot from key: " + key);
