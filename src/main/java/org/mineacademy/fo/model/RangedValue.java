@@ -113,7 +113,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public boolean isStatic() {
-		return min == max;
+		return min.longValue() == max.longValue();
 	}
 
 	/**
@@ -152,12 +152,12 @@ public final class RangedValue {
 		}
 
 		else
-			parts = line.split("\\-");
+			parts = line.startsWith("-") ? new String[] { line } : line.split("\\-");
 
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 
 		final String first = parts[0].trim();
-		final String second = parts.length == 2 ? parts[1].trim() : "";
+		final String second = parts.length == 2 ? parts[1].trim() : first;
 
 		// Check if valid numbers
 		Valid.checkBoolean(NumberUtils.isNumber(first),
