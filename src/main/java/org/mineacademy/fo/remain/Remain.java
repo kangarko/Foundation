@@ -1784,13 +1784,13 @@ public final class Remain {
 	 * Return the correct inventory that was clicked (either bottom or top inventory
 	 * or null if clicked outside)
 	 *
-	 * @param e the inventory click event
+	 * @param event the inventory click event
 	 * @return the actual inventory clicked, either bottom or top, or null if
 	 * clicked outside
 	 */
-	public static Inventory getClickedInventory(final InventoryClickEvent e) {
-		final int slot = e.getRawSlot();
-		final InventoryView view = e.getView();
+	public static Inventory getClickedInventory(final InventoryClickEvent event) {
+		final int slot = event.getRawSlot();
+		final InventoryView view = event.getView();
 
 		return slot < 0 ? null : view.getTopInventory() != null && slot < view.getTopInventory().getSize() ? view.getTopInventory() : view.getBottomInventory();
 	}
@@ -1828,10 +1828,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
