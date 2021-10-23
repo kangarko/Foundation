@@ -214,7 +214,7 @@ public abstract class YamlConfig {
 							save = true;
 					}
 
-					final SimpleYaml config = FileUtil.loadConfigurationStrict(file);
+					final SimpleYaml config = SimpleYaml.loadConfiguration(file);
 					final SimpleYaml defaultsConfig = new SimpleYaml();
 
 					try {
@@ -309,7 +309,7 @@ public abstract class YamlConfig {
 
 					// We will have the default file to return to
 					if (from != null) {
-						defaultsConfig = FileUtil.loadInternalConfiguration(from);
+						defaultsConfig = SimpleYaml.loadInternalConfiguration(from);
 
 						file = FileUtil.extract(from, to);
 
@@ -317,7 +317,7 @@ public abstract class YamlConfig {
 						file = FileUtil.getOrMakeFile(to);
 
 					Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
-					config = FileUtil.loadConfigurationStrict(file);
+					config = SimpleYaml.loadConfiguration(file);
 
 					instance = new ConfigInstance(to, file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
 					addConfig(instance, this);

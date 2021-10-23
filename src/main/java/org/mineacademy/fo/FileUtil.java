@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,11 +29,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.settings.SimpleYaml;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -207,74 +204,6 @@ public final class FileUtil {
 		} catch (final IOException ee) {
 			throw new FoException(ee, "Could not read lines from " + file.getName());
 		}
-	}
-
-	/**
-	 * Attempts to load a yaml configuration from the given path inside of your plugin's JAR
-	 *
-	 * @param internalFileName
-	 * @return
-	 */
-	public static SimpleYaml loadInternalConfiguration(String internalFileName) {
-		final List<String> lines = getInternalResource(internalFileName);
-		Valid.checkNotNull(lines, "Failed getting internal configuration from " + internalFileName);
-
-		final SimpleYaml yaml = new SimpleYaml();
-
-		try {
-			yaml.loadFromString(String.join("\n", lines));
-
-		} catch (final Exception ex) {
-			Common.error(ex, "Failed to load inbuilt config " + internalFileName);
-		}
-
-		return yaml;
-	}
-
-	/**
-	 * Loads YAML configuration from file, failing if anything happens or the file does not exist
-	 *
-	 * FIX FOR PROJECT ORION STUDENTS IN ARENA MANAGER, SIMPLY RENAME YamlConfiguration TO FileConfiguration
-	 *
-	 * @param file
-	 * @return
-	 * @throws RuntimeException
-	 */
-	public static SimpleYaml loadConfigurationStrict(File file) throws RuntimeException {
-		Valid.checkNotNull(file, "File is null!");
-		Valid.checkBoolean(file.exists(), "File " + file.getName() + " does not exists");
-
-		final SimpleYaml conf = new SimpleYaml();
-
-		try {
-			if (file.exists())
-				checkFileForKnownErrors(file);
-
-			conf.load(file);
-
-		} catch (final FileNotFoundException ex) {
-			throw new IllegalArgumentException("Configuration file missing: " + file.getName(), ex);
-
-		} catch (final IOException ex) {
-			throw new IllegalArgumentException("IO exception opening " + file.getName(), ex);
-
-		} catch (final InvalidConfigurationException ex) {
-			throw new IllegalArgumentException("Malformed YAML file " + file.getName() + " - use services like yaml-online-parser.appspot.com to check and fix it", ex);
-
-		} catch (final Throwable t) {
-			throw new IllegalArgumentException("Error reading YAML file " + file.getName(), t);
-		}
-
-		return conf;
-	}
-
-	/*
-	 * Check file for known errors
-	 */
-	private static void checkFileForKnownErrors(File file) throws IllegalArgumentException {
-		for (final String line : readLines(file))
-			if (line.contains("[*]"))
-				throw new IllegalArgumentException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
 	}
 
 	// ----------------------------------------------------------------------------------------------------

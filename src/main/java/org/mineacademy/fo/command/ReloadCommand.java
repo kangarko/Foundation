@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
+import org.mineacademy.fo.settings.SimpleYaml;
 
 /**
  * A simple predefined sub-command for quickly reloading the plugin
@@ -17,7 +17,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 	/**
 	 * Create a new reload sub-command with the given permission.
-	 * 
+	 *
 	 * @param permission
 	 */
 	public ReloadCommand(String permission) {
@@ -49,7 +49,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			for (final File file : yamlFiles) {
 				try {
-					FileUtil.loadConfigurationStrict(file);
+					SimpleYaml.loadConfiguration(file);
 
 				} catch (final Throwable t) {
 					t.printStackTrace();
