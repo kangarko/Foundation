@@ -59,8 +59,8 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @return
 	 */
 	public static <K, V> Tuple<K, V> deserialize(SerializedMap map, Class<K> keyType, Class<V> valueType) {
-		final K key = SerializeUtil.deserialize(keyType, map.getObject("Key"));
-		final V value = SerializeUtil.deserialize(valueType, map.getObject("Value"));
+		final K key = map.containsKey("Key") ? SerializeUtil.deserialize(keyType, map.getObject("Key")) : null;
+		final V value = map.containsKey("Value") ? SerializeUtil.deserialize(valueType, map.getObject("Value")) : null;
 
 		return new Tuple<>(key, value);
 	}
