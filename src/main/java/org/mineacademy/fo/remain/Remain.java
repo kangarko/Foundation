@@ -3,17 +3,13 @@ package org.mineacademy.fo.remain;
 import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
 import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,7 +45,6 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -2379,75 +2374,6 @@ public final class Remain {
 	}
 
 	/**
-	 * Load YAML configuration from stream, throwing any errors
-	 *
-	 * @param is the input stream
-	 * @return the configuration
-	 */
-	public static SimpleYaml loadConfiguration(final InputStream is) {
-		Valid.checkNotNull(is, "Could not load configuration from a null input stream!");
-
-		SimpleYaml conf = null;
-
-		try {
-			conf = loadConfigurationStrict(is);
-
-		} catch (final Throwable ex) {
-			ex.printStackTrace();
-		}
-
-		Valid.checkNotNull(conf, "Could not load configuration from " + is);
-		return conf;
-	}
-
-	/**
-	 * Load YAML configuration from stream as unicode, throwing any errors
-	 *
-	 * @param is the input stream
-	 * @return the configuration
-	 * @throws Throwable when any error occurs
-	 */
-	public static SimpleYaml loadConfigurationStrict(final InputStream is) throws Throwable {
-		final SimpleYaml conf = new SimpleYaml();
-
-		try {
-			conf.load(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-		} catch (final NoSuchMethodError ex) {
-			loadConfigurationFromString(is, conf);
-		}
-
-		return conf;
-	}
-
-	/**
-	 * Load the YAML configuration from stream
-	 *
-	 * @param stream
-	 * @param conf
-	 * @throws IOException
-	 * @throws InvalidConfigurationException
-	 */
-	public static SimpleYaml loadConfigurationFromString(final InputStream stream, final SimpleYaml conf) throws IOException, InvalidConfigurationException {
-		Valid.checkNotNull(stream, "Stream cannot be null");
-
-		final StringBuilder builder = new StringBuilder();
-		final InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
-
-		try (final BufferedReader input = new BufferedReader(reader)) {
-			String line;
-
-			while ((line = input.readLine()) != null) {
-				builder.append(line);
-				builder.append('\n');
-			}
-		}
-
-		conf.loadFromString(builder.toString());
-		return conf;
-	}
-
-	/**
 	 * Return the max health configure from spigot
 	 *
 	 * @return max health, or 2048 if not found
@@ -2535,7 +2461,7 @@ public final class Remain {
 		String previousName = null;
 
 		if (settingsFile.exists()) {
-			final SimpleYaml settings = FileUtil.loadConfigurationStrict(settingsFile);
+			final SimpleYaml settings = SimpleYaml.loadConfiguration(settingsFile);
 			final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
 			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {

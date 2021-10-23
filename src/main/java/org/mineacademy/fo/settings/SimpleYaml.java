@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -15,7 +16,10 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConstructor;
 import org.bukkit.configuration.file.YamlRepresenter;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -187,37 +191,6 @@ public final class SimpleYaml extends FileConfiguration {
 	}
 
 	/**
-	 * Creates a new {@link SimpleYaml}, loading from the given file.
-	 * <p>
-	 * Any errors loading the Configuration will be logged and then ignored.
-	 * If the specified input is not a valid config, a blank config will be
-	 * returned.
-	 * <p>
-	 * The encoding used may follow the system dependent default.
-	 *
-	 * @param file Input file
-	 * @return Resulting configuration
-	 * @throws IllegalArgumentException Thrown if file is null
-	 */
-
-	public static SimpleYaml loadConfiguration(File file) {
-		Validate.notNull(file, "File cannot be null");
-
-		final SimpleYaml config = new SimpleYaml();
-
-		try {
-			config.load(file);
-		} catch (final FileNotFoundException ex) {
-		} catch (final IOException ex) {
-			Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + file, ex);
-		} catch (final InvalidConfigurationException ex) {
-			Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + file, ex);
-		}
-
-		return config;
-	}
-
-	/**
 	 * Creates a new {@link SimpleYaml}, loading from the given reader.
 	 * <p>
 	 * Any errors loading the Configuration will be logged and then ignored.
@@ -243,5 +216,72 @@ public final class SimpleYaml extends FileConfiguration {
 		}
 
 		return config;
+	}
+
+	/**
+	 * Loads YAML configuration from file, failing if anything happens or the file does not exist
+	 *
+	 *
+	 * @param file
+	 * @return
+	 * @throws RuntimeException
+	 */
+	public static SimpleYaml loadConfiguration(File file) throws RuntimeException {
+		Valid.checkNotNull(file, "File is null!");
+		Valid.checkBoolean(file.exists(), "File " + file.getName() + " does not exists");
+
+		final SimpleYaml conf = new SimpleYaml();
+
+		try {
+			if (file.exists())
+				checkFileForKnownErrors(file);
+
+			conf.load(file);
+
+		} catch (final FileNotFoundException ex) {
+			throw new IllegalArgumentException("Configuration file missing: " + file.getName(), ex);
+
+		} catch (final IOException ex) {
+			throw new IllegalArgumentException("IO exception opening " + file.getName(), ex);
+
+		} catch (final InvalidConfigurationException ex) {
+			throw new IllegalArgumentException("Malformed YAML file " + file.getName() + " - use services like yaml-online-parser.appspot.com to check and fix it", ex);
+
+		} catch (final Throwable t) {
+			throw new IllegalArgumentException("Error reading YAML file " + file.getName(), t);
+		}
+
+		return conf;
+	}
+
+	/*
+	 * Check file for known errors
+	 */
+	private static void checkFileForKnownErrors(File file) throws IllegalArgumentException {
+		for (final String line : FileUtil.readLines(file))
+			if (line.contains("[*]"))
+				throw new IllegalArgumentException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
+	}
+
+	/**
+	 * Attempts to load a yaml configuration from the given path inside of your plugin's JAR
+	 *
+	 * @param internalFileName
+	 * @return
+	 */
+	public static SimpleYaml loadInternalConfiguration(String internalFileName) {
+		final List<String> lines = FileUtil.getInternalResource(internalFileName);
+		Valid.checkNotNull(lines, "Failed getting internal configuration from " + internalFileName);
+
+		final SimpleYaml yaml = new SimpleYaml();
+
+		try {
+			yaml.loadFromString(String.join("\n", lines));
+
+		} catch (final Exception ex) {
+			Common.error(ex, "Failed to load inbuilt config " + internalFileName);
+		}
+
+		return yaml;
 	}
 }

@@ -18,6 +18,7 @@ import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.SimpleYaml;
 
 import lombok.Setter;
 
@@ -111,8 +112,8 @@ public final class DebugCommand extends SimpleSubCommand {
 
 				// Strip sensitive keys from .YML files
 				if (file.getName().endsWith(".yml")) {
-					final FileConfiguration config = FileUtil.loadConfigurationStrict(file);
-					final FileConfiguration copyConfig = FileUtil.loadConfigurationStrict(copy);
+					final FileConfiguration config = SimpleYaml.loadConfiguration(file);
+					final FileConfiguration copyConfig = SimpleYaml.loadConfiguration(copy);
 
 					for (final Map.Entry<String, Object> entry : config.getValues(true).entrySet()) {
 						final String key = entry.getKey();

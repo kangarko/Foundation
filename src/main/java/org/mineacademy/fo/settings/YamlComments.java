@@ -72,8 +72,8 @@ public final class YamlComments {
 
 		final List<String> newLines = FileUtil.getInternalResource(jarPath);
 
-		final FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(diskFile);
-		final FileConfiguration newConfig = FileUtil.loadInternalConfiguration(jarPath);
+		final SimpleYaml oldConfig = SimpleYaml.loadConfiguration(diskFile);
+		final SimpleYaml newConfig = SimpleYaml.loadInternalConfiguration(jarPath);
 
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
 
