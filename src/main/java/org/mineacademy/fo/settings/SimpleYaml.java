@@ -63,6 +63,24 @@ public final class SimpleYaml extends FileConfiguration {
 			this.yaml = new Yaml(new YamlConstructor(), yamlRepresenter, yamlOptions);
 	}
 
+	/**
+	 * Removes all keys from our map
+	 */
+	public void clear() {
+		this.map.clear();
+	}
+
+	/**
+	 * Return the internal map with all value-key pairs stored in the memory
+	 *
+	 * @deprecated potentially dangerous
+	 * @return
+	 */
+	@Deprecated
+	public Map<String, Object> getMap() {
+		return this.map;
+	}
+
 	@Override
 	public String saveToString() {
 		return this.saveToString(getValues(false));
