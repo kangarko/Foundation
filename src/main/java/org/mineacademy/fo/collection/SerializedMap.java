@@ -32,6 +32,8 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.LongSerializationPolicy;
 
 import lombok.NonNull;
 
@@ -45,7 +47,15 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * The Google Json instance
 	 */
-	private final static Gson gson = new Gson();
+	private final static Gson gson;
+
+	static {
+		// Fix google complicating things and breaking long formatting
+		final GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING);
+
+		gson = gsonBuilder.create();
+	}
 
 	/**
 	 * A fallback Json parser
