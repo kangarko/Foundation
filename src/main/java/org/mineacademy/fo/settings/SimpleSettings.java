@@ -57,7 +57,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	/**
 	 * The configuration version number, found in the "Version" key in the file.,
 	 */
-	protected static Integer VERSION;
+	public static Integer VERSION;
 
 	/**
 	 * Set and update the config version automatically, however the {@link #VERSION} will

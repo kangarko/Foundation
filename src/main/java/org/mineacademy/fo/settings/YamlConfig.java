@@ -20,7 +20,6 @@ import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
@@ -1298,20 +1297,18 @@ public abstract class YamlConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		final ConfigurationSection configSection = config.getConfigurationSection(path);
+		final SerializedMap configSection = SerializedMap.of(config.get(path));
 
-		if (configSection != null)
-			for (final Map.Entry<String, Object> entry : configSection.getValues(false).entrySet()) {
+		for (final Map.Entry<String, Object> entry : configSection.entrySet()) {
+			final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+			final Value value = SerializeUtil.deserialize(valueType, entry.getValue(), valueDeserializeParams);
 
-				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
-				final Value value = SerializeUtil.deserialize(valueType, entry.getValue(), valueDeserializeParams);
+			// Ensure the pair values are valid for the given paramenters
+			checkAssignable(false, path, key, keyType);
+			checkAssignable(false, path, value, valueType);
 
-				// Ensure the pair values are valid for the given paramenters
-				checkAssignable(false, path, key, keyType);
-				checkAssignable(false, path, value, valueType);
-
-				map.put(key, value);
-			}
+			map.put(key, value);
+		}
 
 		return map;
 	}
@@ -1346,22 +1343,21 @@ public abstract class YamlConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		final ConfigurationSection configSection = config.getConfigurationSection(path);
+		final SerializedMap configSection = SerializedMap.of(config.get(path));
 
-		if (configSection != null)
-			for (final Map.Entry<String, Object> entry : configSection.getValues(false).entrySet()) {
-				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
-				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue(), setDeserializeParameters);
+		for (final Map.Entry<String, Object> entry : configSection.entrySet()) {
+			final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
+			final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue(), setDeserializeParameters);
 
-				// Ensure the pair values are valid for the given paramenters
-				checkAssignable(false, path, key, keyType);
+			// Ensure the pair values are valid for the given paramenters
+			checkAssignable(false, path, key, keyType);
 
-				if (!value.isEmpty())
-					for (final Value item : value)
-						checkAssignable(false, path, item, setType);
+			if (!value.isEmpty())
+				for (final Value item : value)
+					checkAssignable(false, path, item, setType);
 
-				map.put(key, value);
-			}
+			map.put(key, value);
+		}
 
 		return map;
 	}
@@ -2027,16 +2023,20 @@ final class ConfigInstance {
 
 		try {
 
-			// Either use write method for comments or the one from Bukkit
-			if (!writeComments()) {
+			// Pull the data on the main thread
+			final Map<String, Object> values = config.getValues(false);
 
-				// Pull the data on the main thread
-				final Map<String, Object> values = config.getValues(false);
+			// Yaml#dump should be save async... note that this also builds header
+			final String data = config.saveToString(values);
 
+			if (this.commentsFilePath != null && this.saveComments) {
+				FileUtil.createIfNotExists(to);
+
+				YamlComments.writeComments(this.commentsFilePath, this.file, data, Common.getOrDefault(this.uncommentedSections, new ArrayList<>()));
+			}
+
+			else
 				try {
-
-					// Yaml#dump should be save async... note that this also builds header
-					final String data = config.saveToString(values);
 					Files.createParentDirs(file);
 
 					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
@@ -2050,27 +2050,10 @@ final class ConfigInstance {
 				} catch (final Throwable t) {
 					Common.error(t);
 				}
-			}
 
 		} catch (final Exception ex) {
 			Common.error(ex, "Failed to save " + file.getName());
 		}
-	}
-
-	/**
-	 * Attempts to save configuration comments using default file
-	 *
-	 * @throws IOException
-	 */
-	public boolean writeComments() throws IOException {
-		if (this.commentsFilePath != null && this.saveComments) {
-			FileUtil.createIfNotExists(to);
-			YamlComments.writeComments(this.commentsFilePath, this.file, Common.getOrDefault(this.uncommentedSections, new ArrayList<>()));
-
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
