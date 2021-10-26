@@ -342,19 +342,19 @@ public final class SerializeUtil {
 				object = object.toString();
 
 			else if (classOf == Integer.class)
-				object = Integer.valueOf(object.toString()).intValue();
+				object = Integer.parseInt(object.toString());
 
 			else if (classOf == Long.class)
-				object = Long.valueOf(object.toString()).longValue();
+				object = Long.decode(object.toString());
 
 			else if (classOf == Double.class)
-				object = Double.valueOf(object.toString());
+				object = Double.parseDouble(object.toString());
 
 			else if (classOf == Float.class)
-				object = Float.valueOf(object.toString());
+				object = Float.parseFloat(object.toString());
 
 			else if (classOf == Boolean.class)
-				object = Boolean.valueOf(object.toString());
+				object = Boolean.parseBoolean(object.toString());
 
 			else if (classOf == SerializedMap.class)
 				object = SerializedMap.of(object);
