@@ -32,6 +32,8 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig.CasusHelper;
 import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
 
+import lombok.Setter;
+
 /**
  * A special case {@link YamlConfig} that allows static access to this config. This is unsafe
  * however this is only to be used in two config instances - the main settings.yml file and
@@ -43,6 +45,13 @@ import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
  * Also keep in mind that all static fields must be set after the class has finished loading!
  */
 public abstract class YamlStaticConfig {
+
+	/**
+	 * By default we always scan for a "settings.yml" file and "localization/messages_X.yml" files
+	 * and try to load them. Set this to false to prevent this behavior.
+	 */
+	@Setter
+	private static boolean autoloadSettingsAndLocalization;
 
 	/**
 	 * The temporary {@link YamlConfig} instance we store here to get values from
@@ -95,8 +104,10 @@ public abstract class YamlStaticConfig {
 		if (classesRaw != null)
 			classes.addAll(classesRaw);
 
-		loadAutomatically(classes, "settings\\.yml", SimpleSettings.class);
-		loadAutomatically(classes, "localization\\/messages\\_(.*)\\.yml", SimpleLocalization.class);
+		if (autoloadSettingsAndLocalization) {
+			loadAutomatically(classes, "settings\\.yml", SimpleSettings.class);
+			loadAutomatically(classes, "localization\\/messages\\_(.*)\\.yml", SimpleLocalization.class);
+		}
 
 		for (final Class<? extends YamlStaticConfig> clazz : classes) {
 			try {
