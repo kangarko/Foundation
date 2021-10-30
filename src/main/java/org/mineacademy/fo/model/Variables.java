@@ -409,8 +409,13 @@ public final class Variables {
 				return player == null ? "" : String.valueOf(player.getLocation().getBlockZ());
 
 			case "player":
-			case "player_name":
+			case "player_name": {
+				if (console == null)
+					return null;
+
 				return player == null ? Common.resolveSenderName(console) : player.getName();
+			}
+
 			case "tab_name":
 				return player == null ? Common.resolveSenderName(console) : player.getPlayerListName();
 			case "display_name":

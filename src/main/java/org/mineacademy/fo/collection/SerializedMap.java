@@ -32,6 +32,8 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.LongSerializationPolicy;
 
 import lombok.NonNull;
 
@@ -45,7 +47,16 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * The Google Json instance
 	 */
-	private final static Gson gson = new Gson();
+	private final static Gson gson;
+
+	static {
+		// Fix google complicating things and breaking long formatting
+		final GsonBuilder gsonBuilder = new GsonBuilder();
+
+		gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING);
+
+		gson = gsonBuilder.create();
+	}
 
 	/**
 	 * A fallback Json parser
@@ -113,7 +124,7 @@ public final class SerializedMap extends StrictCollection {
 
 		for (final Object obj : associativeArray) {
 			if (string) {
-				Valid.checkBoolean(obj instanceof String, "Expected String at " + obj + ", got " + obj.getClass().getSimpleName());
+				Valid.checkBoolean(obj instanceof String, "Expected String, got " + obj.getClass().getSimpleName() + ": " + SerializeUtil.serialize(obj));
 
 				lastKey = (String) obj;
 
@@ -1118,31 +1129,23 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	public static SerializedMap fromJson(@NonNull final String json) {
-		final SerializedMap serializedMap = new SerializedMap();
 
 		if (json.isEmpty() || "[]".equals(json) || "{}".equals(json))
-			return serializedMap;
+			return new SerializedMap();
 
+		// Fallback to simple
 		try {
-			final Map<String, Object> map = gson.fromJson(json, Map.class);
+			final Object parsed = jsonSimple.parse(json);
 
-			serializedMap.map.putAll(map);
+			if (parsed instanceof JSONObject)
+				return SerializedMap.of(parsed);
 
-		} catch (final Throwable throwable) {
+			throw new FoException("Unable to deserialize " + (parsed != null ? parsed.getClass() : "unknown class") + " from: " + json);
 
-			// Fallback to simple
-			try {
-				final Object parsed = jsonSimple.parse(json);
-				final JSONObject jsonObject = (JSONObject) parsed;
+		} catch (final Throwable secondThrowable) {
+			Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
 
-				for (final Map.Entry<Object, Object> entry : jsonObject.entrySet())
-					serializedMap.map.put(entry.getKey().toString(), entry.getValue());
-
-			} catch (final Throwable secondThrowable) {
-				Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
-			}
+			return null;
 		}
-
-		return serializedMap;
 	}
 }
