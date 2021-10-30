@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,6 +22,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.remain.Remain;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -49,7 +52,7 @@ public final class YamlComments {
 	 */
 	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile) {
 		try {
-			writeComments(jarPath, diskFile, new ArrayList<>());
+			writeComments(jarPath, diskFile, null, new ArrayList<>());
 
 		} catch (final IOException ex) {
 			Common.error(ex,
@@ -64,15 +67,27 @@ public final class YamlComments {
 	 *
 	 * @param jarPath The yaml file name to update from, typically config.yml
 	 * @param diskFile The yaml file to update
+	 * @param oldContents the actual yaml content from the old file, to prevent overriding values
 	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
 	 *
 	 * @throws IOException If an IOException occurs
 	 */
-	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) throws IOException {
+	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @Nullable String oldContents, @NonNull List<String> ignoredSections) throws IOException {
 
 		final List<String> newLines = FileUtil.getInternalResource(jarPath);
 
-		final SimpleYaml oldConfig = SimpleYaml.loadConfiguration(diskFile);
+		final SimpleYaml oldConfig = new SimpleYaml();
+
+		try {
+			if (oldContents != null)
+				oldConfig.loadFromString(oldContents);
+			else
+				oldConfig.load(diskFile);
+
+		} catch (final Throwable t) {
+			Remain.sneaky(t);
+		}
+
 		final SimpleYaml newConfig = SimpleYaml.loadInternalConfiguration(jarPath);
 
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
@@ -183,6 +198,7 @@ public final class YamlComments {
 	}
 
 	private static void write0(String key, boolean forceNew, FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
+
 		final String[] keys = key.split("\\.");
 		final String actualKey = keys[keys.length - 1];
 		final String comment = comments.remove(key);
@@ -214,12 +230,12 @@ public final class YamlComments {
 		// Write new object
 		else
 			write(newObj, actualKey, prefixSpaces, yaml, writer);
-
 	}
 
 	// Doesn't work with configuration sections, must be an actual object
 	// Auto checks if it is serializable and writes to file
 	private static void write(Object obj, String actualKey, String prefixSpaces, Yaml yaml, BufferedWriter writer) throws IOException {
+
 		if (obj instanceof ConfigurationSerializable)
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(((ConfigurationSerializable) obj).serialize()));
 
