@@ -1048,7 +1048,7 @@ public abstract class Menu {
 	 * @param inventory
 	 */
 	@Deprecated
-	protected final void handleClose(Inventory inventory) {
+	public final void handleClose(Inventory inventory) {
 		this.viewer.removeMetadata(FoConstants.NBT.TAG_MENU_CURRENT, SimplePlugin.getInstance());
 		this.viewer.setMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED, new FixedMetadataValue(SimplePlugin.getInstance(), this));
 		this.closed = true;
