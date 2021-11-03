@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -70,11 +71,22 @@ public final class ButtonReturnBack extends Button {
 	 * Open the parent menu when clicked
 	 */
 	@Override
-	public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
-		if (makeNewInstance)
-			parentMenu.newInstance().displayTo(pl);
+	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
 
-		else
-			parentMenu.displayTo(pl);
+		if (makeNewInstance) {
+
+			// Flush data so that the parent menu can call the saved data in the current menu
+			//
+			// Example: In the Boss plugin, players can create new submenus and returning back to the main
+			// menu they were not able to see the new submenus in the list before this change.
+			final Inventory currentChestInventory = player.getOpenInventory().getTopInventory();
+
+			if (currentChestInventory != null)
+				menu.handleClose(currentChestInventory);
+
+			parentMenu.newInstance().displayTo(player);
+
+		} else
+			parentMenu.displayTo(player);
 	}
 }
