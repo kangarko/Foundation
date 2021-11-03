@@ -67,7 +67,7 @@ public abstract class SimpleCommandGroup {
 	private static StrictList<String> findMainCommandAliases() {
 		final StrictList<String> aliases = SimpleSettings.MAIN_COMMAND_ALIASES;
 
-		Valid.checkBoolean(!aliases.isEmpty(), "Called SimpleCommandGroup with no args constructor which uses SimpleSettings' MAIN_COMMAND_ALIASES field."
+		Valid.checkBoolean(!aliases.isEmpty(), "Called SimpleCommandGroup with no args constructor which uses SimpleSettings' MAIN_COMMAND_ALIASES field WHICH WAS EMPTY."
 				+ " To make this work, make a settings class extending SimpleSettings and write 'Command_Aliases: [/yourmaincommand]' key-value pair with a list of aliases to your settings.yml file.");
 
 		return aliases;
