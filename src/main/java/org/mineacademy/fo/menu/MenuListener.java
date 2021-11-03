@@ -51,7 +51,7 @@ public final class MenuListener implements Listener {
 		final Player player = (Player) event.getPlayer();
 		final Menu menu = Menu.getMenu(player);
 
-		if (menu != null)
+		if (menu != null && !menu.isClosed())
 			menu.handleClose(event.getInventory());
 	}
 
