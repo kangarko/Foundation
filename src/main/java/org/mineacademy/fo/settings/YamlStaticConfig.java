@@ -51,7 +51,7 @@ public abstract class YamlStaticConfig {
 	 * and try to load them. Set this to false to prevent this behavior.
 	 */
 	@Setter
-	private static boolean autoloadSettingsAndLocalization;
+	private static boolean autoloadSettingsAndLocalization = true;
 
 	/**
 	 * The temporary {@link YamlConfig} instance we store here to get values from
