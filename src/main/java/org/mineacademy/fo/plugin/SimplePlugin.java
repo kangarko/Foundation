@@ -285,7 +285,15 @@ public abstract class SimplePlugin extends JavaPlugin {
 
 			startingReloadables = true;
 
-			AutoRegisterScanner.scanAndRegister();
+			try {
+				AutoRegisterScanner.scanAndRegister();
+
+			} catch (final Throwable t) {
+				Remain.sneaky(t);
+
+				return;
+			}
+
 			onReloadablesStart();
 
 			startingReloadables = false;
