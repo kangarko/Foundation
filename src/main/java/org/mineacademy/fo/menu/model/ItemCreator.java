@@ -469,7 +469,8 @@ public final class ItemCreator {
 		Valid.checkBoolean(this.material != null || this.item != null, "Material or item must be set!");
 
 		ItemStack compiledItem = this.item != null ? this.item.clone() : this.material.toItem();
-		ItemMeta compiledMeta = this.meta != null ? this.meta.clone() : compiledItem.getItemMeta();
+
+		Object compiledMeta = Remain.hasItemMeta() ? this.meta != null ? this.meta.clone() : compiledItem.getItemMeta() : null;
 
 		// Override with given material
 		if (this.material != null) {
@@ -515,10 +516,15 @@ public final class ItemCreator {
 				}
 
 				else {
-					final byte dataValue = this.color.getDye().getWoolData();
+					try {
+						final byte dataValue = this.color.getDye().getWoolData();
 
-					compiledItem.setData(new MaterialData(compiledItem.getType(), dataValue));
-					compiledItem.setDurability(dataValue);
+						compiledItem.setData(new MaterialData(compiledItem.getType(), dataValue));
+						compiledItem.setDurability(dataValue);
+
+					} catch (final NoSuchMethodError err) {
+						// Ancient MC, ignore
+					}
 				}
 			}
 		}
@@ -605,35 +611,37 @@ public final class ItemCreator {
 				bookMeta.setTitle("Book");
 		}
 
-		if (this.glow && this.enchants.isEmpty()) {
-			compiledMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+		if (compiledMeta instanceof ItemMeta) {
+			if (this.glow && this.enchants.isEmpty()) {
+				((ItemMeta) compiledMeta).addEnchant(Enchantment.DURABILITY, 1, true);
 
-			this.flags.add(CompItemFlag.HIDE_ENCHANTS);
-		}
+				this.flags.add(CompItemFlag.HIDE_ENCHANTS);
+			}
 
-		for (final Map.Entry<Enchantment, Integer> entry : this.enchants.entrySet()) {
-			final Enchantment enchant = entry.getKey();
-			final int level = entry.getValue();
+			for (final Map.Entry<Enchantment, Integer> entry : this.enchants.entrySet()) {
+				final Enchantment enchant = entry.getKey();
+				final int level = entry.getValue();
 
-			if (compiledMeta instanceof EnchantmentStorageMeta)
-				((EnchantmentStorageMeta) compiledMeta).addStoredEnchant(enchant, level, true);
+				if (compiledMeta instanceof EnchantmentStorageMeta)
+					((EnchantmentStorageMeta) compiledMeta).addStoredEnchant(enchant, level, true);
 
-			else
-				compiledMeta.addEnchant(enchant, level, true);
-		}
+				else
+					((ItemMeta) compiledMeta).addEnchant(enchant, level, true);
+			}
 
-		if (this.name != null && !"".equals(this.name))
-			compiledMeta.setDisplayName(Common.colorize("&r&f" + name));
+			if (this.name != null && !"".equals(this.name))
+				((ItemMeta) compiledMeta).setDisplayName(Common.colorize("&r&f" + name));
 
-		if (!this.lores.isEmpty()) {
-			final List<String> coloredLores = new ArrayList<>();
+			if (!this.lores.isEmpty()) {
+				final List<String> coloredLores = new ArrayList<>();
 
-			for (final String lore : this.lores)
-				if (lore != null)
-					for (final String subLore : lore.split("\n"))
-						coloredLores.add(Common.colorize("&7" + subLore));
+				for (final String lore : this.lores)
+					if (lore != null)
+						for (final String subLore : lore.split("\n"))
+							coloredLores.add(Common.colorize("&7" + subLore));
 
-			compiledMeta.setLore(coloredLores);
+				((ItemMeta) compiledMeta).setLore(coloredLores);
+			}
 		}
 
 		if (this.unbreakable) {
@@ -650,7 +658,7 @@ public final class ItemCreator {
 
 		for (final CompItemFlag flag : this.flags)
 			try {
-				compiledMeta.addItemFlags(ItemFlag.valueOf(flag.toString()));
+				((ItemMeta) compiledMeta).addItemFlags(ItemFlag.valueOf(flag.toString()));
 			} catch (final Throwable t) {
 			}
 
@@ -659,7 +667,8 @@ public final class ItemCreator {
 			compiledItem.setAmount(this.amount);
 
 		// Apply Bukkit metadata
-		compiledItem.setItemMeta(compiledMeta);
+		if (compiledMeta instanceof ItemMeta)
+			compiledItem.setItemMeta((ItemMeta) compiledMeta);
 
 		//
 		// From now on we have to re-set the item
