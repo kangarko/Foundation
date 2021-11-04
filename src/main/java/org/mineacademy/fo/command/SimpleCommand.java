@@ -1614,11 +1614,20 @@ public abstract class SimpleCommand extends Command {
 
 		} catch (final CommandException ex) {
 			if (ex.getMessages() != null)
-				for (final String message : ex.getMessages())
-					Messenger.error(sender, message);
+				for (final String message : ex.getMessages()) {
+					if (Messenger.ENABLED)
+						Messenger.error(sender, message);
+					else
+						Common.tell(sender, message);
+				}
 
 		} catch (final Throwable t) {
-			Messenger.error(sender, SimpleLocalization.Commands.ERROR.replace("{error}", t.toString()));
+			final String errorMessage = SimpleLocalization.Commands.ERROR.replace("{error}", t.toString());
+
+			if (Messenger.ENABLED)
+				Messenger.error(sender, errorMessage);
+			else
+				Common.tell(sender, errorMessage);
 
 			throw t;
 		}

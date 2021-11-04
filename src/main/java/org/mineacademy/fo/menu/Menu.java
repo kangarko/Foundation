@@ -317,7 +317,7 @@ public abstract class Menu {
 		} else if (Button[].class.isAssignableFrom(type)) {
 			/*Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
 			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
-
+			
 			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
 			registeredButtons.addAll(Arrays.asList(buttons));*/
 			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
@@ -413,7 +413,12 @@ public abstract class Menu {
 		Valid.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
 
 		if (MinecraftVersion.olderThan(V.v1_5)) {
-			Messenger.error(player, "Displaying menus require Minecraft 1.5.2 or greater.");
+			final String error = "Displaying menus require Minecraft 1.5.2 or greater.";
+
+			if (Messenger.ENABLED)
+				Messenger.error(player, error);
+			else
+				Common.tell(player, error);
 
 			return;
 		}
