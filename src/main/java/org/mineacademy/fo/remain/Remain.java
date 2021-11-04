@@ -304,9 +304,12 @@ public final class Remain {
 					fieldEntityInvulnerable = null;
 
 			} catch (final Throwable t) {
-				Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
-				Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibble.");
+
+				if (MinecraftVersion.atLeast(V.v1_7)) {
+					Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
+					Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+					Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibble.");
+				}
 
 				fieldPlayerConnection = null;
 				sendPacket = null;
@@ -386,7 +389,7 @@ public final class Remain {
 			}
 
 			try {
-				Class.forName("org.bukkit.inventory.meta.ItemMeta");
+				org.bukkit.inventory.ItemStack.class.getMethod("getItemMeta");
 
 			} catch (final Exception ex) {
 				hasItemMeta = false;
@@ -1823,10 +1826,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -1943,16 +1946,16 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static boolean isInvisible(Entity entity) {
-		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#isInvisible requires Minecraft 1.4.7 or greater");
-
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
 			return ((LivingEntity) entity).isInvisible();
 
-		else {
+		else if (MinecraftVersion.atLeast(V.v1_4)) {
 			final Object nmsEntity = getHandleEntity(entity);
 
 			return (boolean) ReflectionUtil.invoke("isInvisible", nmsEntity);
 		}
+
+		return false;
 	}
 
 	/**

@@ -283,8 +283,13 @@ public final class CompChatColor {
 	public static CompChatColor of(@NonNull String string) {
 
 		if (string.startsWith("#") && string.length() == 7) {
+
+			// Default to white on ancient MC versions
+			if (MinecraftVersion.olderThan(V.v1_7))
+				return CompChatColor.WHITE;
+
 			if (!MinecraftVersion.atLeast(V.v1_16))
-				throw new IllegalArgumentException("Only Minecraft 1.16+ supports # HEX color codes!");
+				throw new IllegalArgumentException("Only Minecraft 1.16+ supports # HEX color codes! Got: " + string);
 
 			int rgb;
 
