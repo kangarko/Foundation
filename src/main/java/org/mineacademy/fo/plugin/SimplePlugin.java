@@ -184,6 +184,13 @@ public abstract class SimplePlugin extends JavaPlugin {
 
 	static {
 
+		if (MinecraftVersion.olderThan(V.v1_4) && !ReflectionUtil.isClassAvailable("org.bukkit.Sound")) {
+			Bukkit.getLogger().severe("Ancient MC version detected, please follow install steps here: https://mineacademy.org/oldmcsupport");
+			Bukkit.getLogger().severe("Please note that many features won't work and due to time constraints we can't provide support for such old Minecraft versions.");
+
+			throw new RuntimeException("Ancient MC detected, see above for installation steps.");
+		}
+
 		// Add console filters early - no reload support
 		FoundationFilter.inject();
 	}
@@ -414,6 +421,7 @@ public abstract class SimplePlugin extends JavaPlugin {
 	 * @return
 	 */
 	private final boolean checkLibraries0() {
+
 		boolean md_5 = false;
 		boolean gson = false;
 

@@ -140,7 +140,11 @@ public final class SimpleSound {
 		if (enabled) {
 			Valid.checkNotNull(sound);
 
-			player.playSound(player.getLocation(), sound, volume, getPitch());
+			try {
+				player.playSound(player.getLocation(), sound, volume, getPitch());
+			} catch (final NoSuchMethodError err) {
+				// Legacy MC
+			}
 		}
 	}
 
@@ -153,7 +157,11 @@ public final class SimpleSound {
 		if (enabled) {
 			Valid.checkNotNull(sound);
 
-			location.getWorld().playSound(location, sound, volume, getPitch());
+			try {
+				location.getWorld().playSound(location, sound, volume, getPitch());
+			} catch (final NoSuchMethodError err) {
+				// Legacy MC
+			}
 		}
 	}
 
