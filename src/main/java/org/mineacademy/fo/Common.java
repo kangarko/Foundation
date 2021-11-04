@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -503,7 +504,13 @@ public final class Common {
 					((Conversable) sender).sendRawMessage(toSend);
 
 				else
-					sender.sendMessage(toSend);
+					try {
+						sender.sendMessage(toSend);
+					} catch (final Throwable t) {
+						Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
+
+						t.printStackTrace();
+					}
 			}
 	}
 
@@ -2336,8 +2343,7 @@ public final class Common {
 	public static <T> List<T> newList(final T... keys) {
 		final List<T> list = new ArrayList<>();
 
-		for (final T key : keys)
-			list.add(key);
+		Collections.addAll(list, keys);
 
 		return list;
 	}
