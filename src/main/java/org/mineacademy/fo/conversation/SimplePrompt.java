@@ -230,8 +230,15 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 
 			@Override
 			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
-				if (!event.gracefulExit())
-					Messenger.warn(getPlayer(event.getContext()), "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".");
+				final String message = "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".";
+				final Player player = getPlayer(event.getContext());
+
+				if (!event.gracefulExit()) {
+					if (Messenger.ENABLED)
+						Messenger.warn(player, message);
+					else
+						Common.tell(player, message);
+				}
 			}
 		};
 
