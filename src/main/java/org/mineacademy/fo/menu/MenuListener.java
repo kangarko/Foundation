@@ -36,6 +36,14 @@ public final class MenuListener implements Listener {
 		} catch (final Throwable t) {
 			// Legacy MC
 		}
+
+		try {
+			Class.forName("org.bukkit.event.inventory.InventoryDragEvent");
+
+			Common.registerEvents(new DragListener());
+		} catch (final Throwable t) {
+			// Legacy MC
+		}
 	}
 
 	/**
@@ -113,38 +121,6 @@ public final class MenuListener implements Listener {
 		}
 	}
 
-	/**
-	 * Prevents players from putting disallowed items into slots, apparently Bukkit fires a drag event if the slot
-	 * is clicked rapidly. Thanks to ItsRozzaDev for help!
-	 *
-	 * @param event
-	 */
-	@EventHandler
-	public void onInventoryDragTop(final InventoryDragEvent event) {
-		if (!(event.getWhoClicked() instanceof Player))
-			return;
-
-		final Player player = (Player) event.getWhoClicked();
-		final Menu menu = Menu.getMenu(player);
-
-		if (menu != null && event.getView().getType() == InventoryType.CHEST) {
-			final int size = event.getView().getTopInventory().getSize();
-
-			for (final int slot : event.getRawSlots()) {
-				if (slot > size)
-					continue;
-
-				final ItemStack cursor = Common.getOrDefault(event.getCursor(), event.getOldCursor());
-
-				if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor)) {
-					event.setCancelled(true);
-
-					return;
-				}
-			}
-		}
-	}
-
 	private static final class OffHandListener implements Listener {
 
 		/**
@@ -156,6 +132,41 @@ public final class MenuListener implements Listener {
 		public void onSwapItems(PlayerSwapHandItemsEvent event) {
 			if (Menu.getMenu(event.getPlayer()) != null)
 				event.setCancelled(true);
+		}
+	}
+
+	private static final class DragListener implements Listener {
+
+		/**
+		 * Prevents players from putting disallowed items into slots, apparently Bukkit fires a drag event if the slot
+		 * is clicked rapidly. Thanks to ItsRozzaDev for help!
+		 *
+		 * @param event
+		 */
+		@EventHandler
+		public void onInventoryDragTop(final InventoryDragEvent event) {
+			if (!(event.getWhoClicked() instanceof Player))
+				return;
+
+			final Player player = (Player) event.getWhoClicked();
+			final Menu menu = Menu.getMenu(player);
+
+			if (menu != null && event.getView().getType() == InventoryType.CHEST) {
+				final int size = event.getView().getTopInventory().getSize();
+
+				for (final int slot : event.getRawSlots()) {
+					if (slot > size)
+						continue;
+
+					final ItemStack cursor = Common.getOrDefault(event.getCursor(), event.getOldCursor());
+
+					if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor)) {
+						event.setCancelled(true);
+
+						return;
+					}
+				}
+			}
 		}
 	}
 }
