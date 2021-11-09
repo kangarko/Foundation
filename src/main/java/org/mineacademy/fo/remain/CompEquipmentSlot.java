@@ -63,14 +63,14 @@ public enum CompEquipmentSlot {
 	 */
 	public void applyTo(LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
 		final EntityEquipment equip = entity.getEquipment();
-		final boolean isHuman = entity instanceof HumanEntity;
+		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND");
 
 		switch (this) {
 
 			case HAND:
 				equip.setItemInHand(item);
 
-				if (dropChance != null && !isHuman)
+				if (dropChance != null && !lacksDropChance)
 					equip.setItemInHandDropChance(dropChance.floatValue());
 
 				break;
@@ -80,7 +80,7 @@ public enum CompEquipmentSlot {
 
 				equip.setItemInOffHand(item);
 
-				if (dropChance != null && !isHuman)
+				if (dropChance != null && !lacksDropChance)
 					equip.setItemInOffHandDropChance(dropChance.floatValue());
 
 				break;
@@ -88,7 +88,7 @@ public enum CompEquipmentSlot {
 			case HEAD:
 				equip.setHelmet(item);
 
-				if (dropChance != null && !isHuman)
+				if (dropChance != null && !lacksDropChance)
 					equip.setHelmetDropChance(dropChance.floatValue());
 
 				break;
@@ -96,7 +96,7 @@ public enum CompEquipmentSlot {
 			case CHEST:
 				equip.setChestplate(item);
 
-				if (dropChance != null && !isHuman)
+				if (dropChance != null && !lacksDropChance)
 					equip.setChestplateDropChance(dropChance.floatValue());
 
 				break;
@@ -104,7 +104,7 @@ public enum CompEquipmentSlot {
 			case LEGS:
 				equip.setLeggings(item);
 
-				if (dropChance != null && !isHuman)
+				if (dropChance != null && !lacksDropChance)
 					equip.setLeggingsDropChance(dropChance.floatValue());
 
 				break;
@@ -112,7 +112,7 @@ public enum CompEquipmentSlot {
 			case FEET:
 				equip.setBoots(item);
 
-				if (dropChance != null && !isHuman)
+				if (dropChance != null && !lacksDropChance)
 					equip.setBootsDropChance(dropChance.floatValue());
 
 				break;
