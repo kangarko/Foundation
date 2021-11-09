@@ -202,13 +202,19 @@ public class Messenger {
 			return;
 
 		final String colorless = Common.stripColors(message);
-		final boolean foundElements = ChatUtil.isInteractive(colorless);
+		boolean noPrefix = ChatUtil.isInteractive(colorless);
 
 		// Special case: Send the prefix for actionbar
 		if (colorless.startsWith("<actionbar>"))
 			message = message.replace("<actionbar>", "<actionbar>" + prefix);
 
+		if (colorless.startsWith("@noprefix")) {
+			message = message.replace("@noprefix", "");
+
+			noPrefix = true;
+		}
+
 		// Only insert prefix if the message is sent through the normal chat
-		Common.tellNoPrefix(player, (foundElements ? "" : prefix) + message);
+		Common.tellNoPrefix(player, (noPrefix ? "" : prefix) + message);
 	}
 }
