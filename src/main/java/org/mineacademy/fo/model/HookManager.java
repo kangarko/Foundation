@@ -882,6 +882,20 @@ public final class HookManager {
 	}
 
 	/**
+	 * Attempts to find a nick from the given player name, defaulting to the given name if null
+	 * We support EssentialsX and CMI only.
+	 *
+	 * @param playerName
+	 * @return
+	 */
+	public static String getNickFromName(final String playerName) {
+		final String essNick = isEssentialsLoaded() ? essentialsHook.getNick(playerName) : null;
+		final String cmiNick = isCMILoaded() ? CMIHook.getNick(playerName) : null;
+
+		return cmiNick != null ? cmiNick : essNick != null ? essNick : playerName;
+	}
+
+	/**
 	 * Sets the nickname for Essentials and CMI if installed for the given target player
 	 *
 	 * @param playerId
@@ -1545,7 +1559,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -3059,6 +3073,13 @@ class CMIHook {
 		return nick == null || "".equals(nick) ? null : nick;
 	}
 
+	String getNick(final String playerName) {
+		final CMIUser user = getUser(playerName);
+		final String nick = user == null ? null : user.getNickName();
+
+		return nick == null || "".equals(nick) ? null : nick;
+	}
+
 	void setNick(final UUID uniqueId, String nick) {
 		final CMIUser user = getUser(uniqueId);
 		final TabListManager tabManager = CMI.getInstance().getTabListManager();
@@ -3089,6 +3110,10 @@ class CMIHook {
 	private CMIUser getUser(final UUID uniqueId) {
 		return CMI.getInstance().getPlayerManager().getUser(uniqueId);
 	}
+
+	private CMIUser getUser(final String name) {
+		return CMI.getInstance().getPlayerManager().getUser(name);
+	}
 }
 
 class CitizensHook {
@@ -3108,7 +3133,7 @@ class DiscordSRVHook {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3269,16 +3294,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
