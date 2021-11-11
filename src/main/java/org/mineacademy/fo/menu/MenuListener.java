@@ -68,7 +68,7 @@ public final class MenuListener implements Listener {
 	 *
 	 * @param event the event
 	 */
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
 	public void onMenuClick(final InventoryClickEvent event) {
 		if (!(event.getWhoClicked() instanceof Player))
 			return;
