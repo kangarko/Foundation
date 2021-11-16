@@ -1054,9 +1054,11 @@ public abstract class YamlConfig {
 	 * @return
 	 */
 	protected final List<Object> getList(final String path) {
-		final List<Object> list = getT(path, List.class);
+		final Object obj = getObject(path);
 
-		return Common.getOrDefault(list, new ArrayList<>());
+		// Allow one values instead of lists, such as Apply_On: timed instead of Apply_On: [timed] for
+		// maximum user convenience
+		return obj instanceof List ? (List<Object>) obj : obj != null ? Arrays.asList(obj) : new ArrayList<>();
 	}
 
 	/**
