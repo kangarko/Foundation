@@ -101,7 +101,7 @@ final class AutoRegisterScanner {
 
 						// Require our annotation to be used, or support legacy classes from Foundation 5
 						if (autoRegister != null || Tool.class.isAssignableFrom(clazz) || SimpleEnchantment.class.isAssignableFrom(clazz)) {
-							Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for @AutoRegister to work");
+							Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for it to be registered automatically (or via @AutoRegister)");
 
 							try {
 								scan(clazz, autoRegister == null || !autoRegister.hideIncompatibilityWarnings());
