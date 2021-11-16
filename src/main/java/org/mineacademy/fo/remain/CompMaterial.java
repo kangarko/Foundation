@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -1716,7 +1718,10 @@ public enum CompMaterial {
 	 * @param item
 	 * @return
 	 */
-	public static boolean isAir(final ItemStack item) {
+	public static boolean isAir(@Nullable ItemStack item) {
+		if (item == null)
+			return true;
+
 		return isAir(item.getType());
 	}
 
@@ -1727,7 +1732,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static boolean isAir(final Material material) {
-		return nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR", "LEGACY_AIR");
+		return material == null || nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR", "LEGACY_AIR");
 	}
 
 	/**
