@@ -47,6 +47,7 @@ public abstract class SimpleHologram {
 	/**
 	 * The armor stand names, each line spawns another invisible stand
 	 */
+	@Getter
 	private final List<ArmorStand> loreEntities = new ArrayList<>();
 
 	/**
@@ -217,7 +218,7 @@ public abstract class SimpleHologram {
 	 * Deletes all text that the armor stand has
 	 */
 	public final void removeLore() {
-		this.loreEntities.forEach(stand -> stand.remove());
+		this.loreEntities.forEach(ArmorStand::remove);
 	}
 
 	/**
