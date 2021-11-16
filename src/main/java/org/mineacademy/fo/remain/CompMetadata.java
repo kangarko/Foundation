@@ -315,7 +315,7 @@ public final class CompMetadata {
 	 * @param tag
 	 */
 	public static void setTempMetadata(final Entity entity, final String tag) {
-		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), tag));
+		entity.setMetadata(tag, new FixedMetadataValue(SimplePlugin.getInstance(), tag));
 	}
 
 	/**
@@ -329,7 +329,7 @@ public final class CompMetadata {
 	 * @param key
 	 */
 	public static void setTempMetadata(final Entity entity, final String tag, final Object key) {
-		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), key));
+		entity.setMetadata(tag, new FixedMetadataValue(SimplePlugin.getInstance(), key));
 	}
 
 	/**
@@ -342,14 +342,19 @@ public final class CompMetadata {
 	 * @param tag
 	 * @return
 	 */
-	public static MetadataValue getTempMetadata(final Entity entity, final String tag) {
-		final String key = createTempMetadataKey(tag);
-
+	public static MetadataValue getTempMetadata(final Entity entity, final String key) {
 		return entity.hasMetadata(key) ? entity.getMetadata(key).get(0) : null;
 	}
 
+	/**
+	 * Return true if player has the given temporary metadata
+	 *
+	 * @param player
+	 * @param tag
+	 * @return
+	 */
 	public static boolean hasTempMetadata(final Entity player, final String tag) {
-		return player.hasMetadata(createTempMetadataKey(tag));
+		return player.hasMetadata(tag);
 	}
 
 	/**
@@ -358,18 +363,9 @@ public final class CompMetadata {
 	 * @param player
 	 * @param tag
 	 */
-	public static void removeTempMetadata(final Entity player, final String tag) {
-		final String key = createTempMetadataKey(tag);
-
+	public static void removeTempMetadata(final Entity player, final String key) {
 		if (player.hasMetadata(key))
 			player.removeMetadata(key, SimplePlugin.getInstance());
-	}
-
-	/*
-	 * Create a new temporary metadata key
-	 */
-	private static String createTempMetadataKey(final String tag) {
-		return SimplePlugin.getNamed() + "_" + tag;
 	}
 
 	/**
