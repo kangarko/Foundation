@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.bukkit.ChatColor;
@@ -107,7 +108,7 @@ public abstract class SimpleCommandGroup {
 		registerSubcommands();
 
 		// Sort A-Z
-		Collections.sort(subcommands.getSource(), (f, s) -> f.getSublabel().compareTo(s.getSublabel()));
+		Collections.sort(subcommands.getSource(), Comparator.comparing(SimpleSubCommand::getSublabel));
 
 		// Check for collision
 		checkSubCommandAliasesCollision();
