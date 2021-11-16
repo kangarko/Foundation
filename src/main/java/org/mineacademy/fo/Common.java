@@ -78,13 +78,10 @@ public final class Common {
 
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
+	 *
+	 * Matches {#CCCCCC} or &#CCCCCC or #CCCCCC
 	 */
-	public static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)(&|)#((?:[0-9a-fA-F]{3}){1,2})");
-
-	/**
-	 * Pattern used to match colors with {#HEX} code for MC 1.16+
-	 */
-	public static final Pattern RGB_HEX_BRACKET_COLOR_REGEX = Pattern.compile("\\{#((?:[0-9a-fA-F]{3}){1,2})\\}");
+	public static final Pattern HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|)");
 
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
@@ -605,24 +602,10 @@ public final class Common {
 		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
 
 			// Preserve compatibility with former systems
-			Matcher match = RGB_HEX_BRACKET_COLOR_REGEX.matcher(result);
+			final Matcher match = HEX_COLOR_REGEX.matcher(result);
 
 			while (match.find()) {
-				final String colorCode = match.group(1);
-				String replacement = "";
-
-				try {
-					replacement = CompChatColor.of("#" + colorCode).toString();
-
-				} catch (final IllegalArgumentException ex) {
-				}
-
-				result = result.replaceAll("\\{#" + colorCode + "\\}", replacement);
-			}
-
-			match = RGB_HEX_COLOR_REGEX.matcher(result);
-
-			while (match.find()) {
+				final String matched = match.group();
 				final String colorCode = match.group(2);
 				String replacement = "";
 
@@ -632,7 +615,7 @@ public final class Common {
 				} catch (final IllegalArgumentException ex) {
 				}
 
-				result = result.replaceAll("(&|)#" + colorCode, replacement);
+				result = result.replaceAll(Pattern.quote(matched), replacement);
 			}
 
 			result = result.replace("\\#", "#");
@@ -693,7 +676,7 @@ public final class Common {
 
 		// Replace hex colors, both raw and parsed
 		if (Remain.hasHexColors()) {
-			matcher = RGB_HEX_COLOR_REGEX.matcher(message);
+			matcher = HEX_COLOR_REGEX.matcher(message);
 
 			while (matcher.find())
 				message = matcher.replaceAll("");
