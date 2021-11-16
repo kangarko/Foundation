@@ -464,7 +464,8 @@ public final class PlayerUtil {
 			if (meta.asBoolean())
 				return true;
 
-		return Remain.isInvisible(player);
+		// Remain.isInvisible(player); --> do not use, apparently return true for vanish potion and spectator mode
+		return false;
 	}
 
 	/**
