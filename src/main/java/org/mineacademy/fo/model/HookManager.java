@@ -2548,11 +2548,11 @@ class WorldGuardHook {
 		legacy = !wg.getDescription().getVersion().startsWith("7") || we != null && we.legacy;
 	}
 
-	public List<String> getRegionsAt(final Location loc) {
+	public List<String> getRegionsAt(final Location location) {
 		final List<String> list = new ArrayList<>();
 
-		getApplicableRegions(loc).forEach(reg -> {
-			final String name = Common.stripColors(reg.getId());
+		getApplicableRegions(location).forEach(region -> {
+			final String name = Common.stripColors(region.getId());
 
 			if (!name.startsWith("__"))
 				list.add(name);
