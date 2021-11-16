@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.TimeUtil;
@@ -346,6 +347,8 @@ public final class Variables {
 			}
 		}
 
+		message = Messenger.replacePrefixes(message);
+
 		return message;
 	}
 
@@ -460,27 +463,6 @@ public final class Variables {
 				return console instanceof DiscordSender ? "true" : "false";
 			case "sender_is_console":
 				return console instanceof ConsoleCommandSender ? "true" : "false";
-
-			case "plugin_prefix":
-				return SimpleSettings.PLUGIN_PREFIX;
-			case "info_prefix":
-			case "prefix_info":
-				return org.mineacademy.fo.Messenger.getInfoPrefix();
-			case "success_prefix":
-			case "prefix_success":
-				return org.mineacademy.fo.Messenger.getSuccessPrefix();
-			case "warn_prefix":
-			case "prefix_warn":
-				return org.mineacademy.fo.Messenger.getWarnPrefix();
-			case "error_prefix":
-			case "prefix_error":
-				return org.mineacademy.fo.Messenger.getErrorPrefix();
-			case "question_prefix":
-			case "prefix_question":
-				return org.mineacademy.fo.Messenger.getQuestionPrefix();
-			case "announce_prefix":
-			case "prefix_announce":
-				return org.mineacademy.fo.Messenger.getAnnouncePrefix();
 		}
 
 		return null;
