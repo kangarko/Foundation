@@ -11,7 +11,6 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.model.Variables;
 
 /**
  * Represents the new way of internalization, with the greatest
@@ -243,8 +242,7 @@ public final class Lang extends YamlConfig {
 		synchronized (instance) {
 			String key = instance.getStringStrict(path);
 
-			// Replace inbuilt placeholders
-			key = Variables.replace(key, null);
+			key = Messenger.replacePrefixes(key);
 			key = translate(key, variables);
 
 			return key;

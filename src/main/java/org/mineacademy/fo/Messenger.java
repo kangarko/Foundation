@@ -2,7 +2,9 @@ package org.mineacademy.fo;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -216,5 +218,29 @@ public class Messenger {
 
 		// Only insert prefix if the message is sent through the normal chat
 		Common.tellNoPrefix(player, (noPrefix ? "" : prefix) + message);
+	}
+
+	/**
+	 * Replace {plugin_prefix} and {X_prefix} and {prefix_X} with respective messenger variables
+	 * such as {warn_prefix} with {@link #getWarnPrefix()} etc.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String replacePrefixes(String message) {
+		return Replacer.replaceArray(message,
+				"plugin_prefix", SimpleSettings.PLUGIN_PREFIX,
+				"info_prefix", infoPrefix,
+				"prefix_info", infoPrefix,
+				"success_prefix", successPrefix,
+				"prefix_success", successPrefix,
+				"warn_prefix", warnPrefix,
+				"prefix_warn", warnPrefix,
+				"error_prefix", errorPrefix,
+				"prefix_error", errorPrefix,
+				"question_prefix", questionPrefix,
+				"prefix_question", questionPrefix,
+				"announce_prefix", announcePrefix,
+				"prefix_announce", announcePrefix);
 	}
 }
