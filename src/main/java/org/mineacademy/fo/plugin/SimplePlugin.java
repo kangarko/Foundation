@@ -431,11 +431,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 						if (Modifier.isAbstract(clazz.getModifiers()))
 							continue;
 
-						System.out.println("@@@ iterating over " + className);
-
 						if (anonymousClassPattern.matcher(className).find()) {
-							System.out.println("@ignoring anonymous inner class " + className);
-
 							continue;
 						}
 
@@ -460,9 +456,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 											&& Modifier.isPrivate(field.getModifiers()) && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()))
 										instanceField = field;
 
-								for (final Method method : clazz.getDeclaredMethods())
-									System.out.println("\tmethod " + method);
-
 								Valid.checkNotNull(instanceField, "Your class " + className + " must be a singleton and have 'private static final " + clazz.getSimpleName()
 										+ " instance' field and a private constructor!");
 
@@ -483,8 +476,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 									// Finally register events
 									if (instance instanceof Listener)
 										Common.registerEvents((Listener) instance);
-
-									System.out.println("@auto registered class " + clazz);
 								}
 
 							} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
