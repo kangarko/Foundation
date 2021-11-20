@@ -261,6 +261,28 @@ public final class TimeUtil {
 	}
 
 	/**
+	 * Format the time in seconds delimited by colon, for example: 01:20:00 for 1 hour 20 minutes
+	 * If the seconds are zero, an output 00:00 is given
+	 *
+	 * @param seconds
+	 * @return
+	 */
+	public static String formatTimeColon(long seconds) {
+		long minutes = seconds / 60;
+		long hours = minutes / 60;
+		final long days = hours / 24;
+
+		hours = hours % 24;
+		minutes = minutes % 60;
+		seconds = seconds % 60;
+
+		return (days > 0 ? (days < 10 ? "0" : "") + days + ":" : "") +
+				(hours > 0 ? (hours < 10 ? "0" : "") + hours + ":" : "") +
+				(minutes > 0 ? (minutes < 10 ? "0" : "") + minutes + ":" : "00") +
+				(seconds < 10 ? "0" : "") + seconds;
+	}
+
+	/**
 	 * Convert the given string token into milliseconds
 	 *
 	 * Example: 1y, 1mo, 1w, 1d, 1h, 1m, 1s and these can all be combined together
