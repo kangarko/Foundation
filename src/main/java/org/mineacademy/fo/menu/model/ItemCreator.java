@@ -772,11 +772,23 @@ public final class ItemCreator {
 	 * Convenience method for creation potions
 	 *
 	 * @param potionEffect
+	 * @param durationTicks
+	 * @param level
+	 * @return
+	 */
+	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int durationTicks, int level) {
+		return ofPotion(potionEffect, durationTicks, level, null);
+	}
+
+	/**
+	 * Convenience method for creation potions
+	 *
+	 * @param potionEffect
 	 * @param level
 	 * @return
 	 */
 	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int level) {
-		return ofPotion(potionEffect, level, null);
+		return ofPotion(potionEffect, Integer.MAX_VALUE, level, null);
 	}
 
 	/**
@@ -788,7 +800,7 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreator ofPotion(final PotionEffectType potionEffect, String name, String... lore) {
-		return ofPotion(potionEffect, 1, name, lore);
+		return ofPotion(potionEffect, Integer.MAX_VALUE, 1, name, lore);
 	}
 
 	/**
@@ -800,7 +812,7 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreator ofPotion(final PotionEffect effect, String name, String... lore) {
-		return ofPotion(effect.getType(), effect.getAmplifier() + 1, name, lore);
+		return ofPotion(effect.getType(), Integer.MAX_VALUE, effect.getAmplifier() + 1, name, lore);
 	}
 
 	/**
@@ -812,9 +824,9 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int level, String name, String... lore) {
+	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int durationTicks, int level, String name, String... lore) {
 		final ItemStack item = new ItemStack(CompMaterial.POTION.getMaterial());
-		Remain.setPotion(item, potionEffect, level);
+		Remain.setPotion(item, potionEffect, durationTicks, level);
 
 		final ItemCreator builder = of(item);
 
