@@ -121,6 +121,11 @@ public final class ItemCreator {
 	private boolean hideTags = false;
 
 	/**
+	 * The custom model data of the item
+	 */
+	private int modelData;
+
+	/**
 	 * Should we add glow to the item? (adds a fake enchant and uses {@link ItemFlag}
 	 * to hide it). The enchant is visible on older MC versions.
 	 */
@@ -339,6 +344,18 @@ public final class ItemCreator {
 	 */
 	public ItemCreator hideTags(boolean hideTags) {
 		this.hideTags = hideTags;
+
+		return this;
+	}
+
+	/**
+	 * Set the Custom Model Data of this item, compatible with +1.14.x
+	 *
+	 * @param modelData
+	 * @return
+	 */
+	public ItemCreator modelData(int modelData) {
+		this.modelData = modelData;
 
 		return this;
 	}
@@ -676,6 +693,14 @@ public final class ItemCreator {
 
 		// Apply custom enchantment lores
 		compiledItem = Common.getOrDefault(SimpleEnchantment.addEnchantmentLores(compiledItem), compiledItem);
+
+		// Set custom model data
+		if (this.modelData > 0 && MinecraftVersion.atLeast(V.v1_14))
+			try {
+				((ItemMeta) compiledMeta).setCustomModelData(this.modelData);
+			} catch (final Throwable t) {
+			}
+
 
 		// 1.7.10 hack to add glow, requires no enchants
 		if (this.glow && MinecraftVersion.equals(V.v1_7) && (this.enchants == null || this.enchants.isEmpty())) {
