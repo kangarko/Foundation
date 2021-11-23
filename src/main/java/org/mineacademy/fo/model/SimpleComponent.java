@@ -217,6 +217,21 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * Append text to this simple component
 	 *
+	 * @param strings
+	 * @return
+	 */
+	public SimpleComponent append(String... strings) {
+		String text = null;
+		for (String string : strings) {
+			text = text + string + "\n";
+		}
+		return this.append(text);
+
+	}
+
+	/**
+	 * Append text to this simple component
+	 *
 	 * @param text
 	 * @return
 	 */
@@ -696,6 +711,21 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public static SimpleComponent empty() {
 		return of(true, "");
+	}
+
+	/**
+	 * Create a new interactive chat component
+	 * You can then build upon your text to add interactive elements
+	 *
+	 * @param strings
+	 * @return
+	 */
+	public static SimpleComponent of(String... strings) {
+		String text = null;
+		for (String string : strings) {
+			text = text + string + "\n";
+		}
+		return of(text);
 	}
 
 	/**
