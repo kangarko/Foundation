@@ -123,7 +123,8 @@ public final class ItemCreator {
 	/**
 	 * The custom model data of the item
 	 */
-	private int modelData;
+	@Nullable
+	private Integer modelData;
 
 	/**
 	 * Should we add glow to the item? (adds a fake enchant and uses {@link ItemFlag}
@@ -349,7 +350,7 @@ public final class ItemCreator {
 	}
 
 	/**
-	 * Set the Custom Model Data of this item, compatible with +1.14.x
+	 * Set the Custom Model Data of this item, compatible with MC 1.14+
 	 *
 	 * @param modelData
 	 * @return
@@ -695,12 +696,11 @@ public final class ItemCreator {
 		compiledItem = Common.getOrDefault(SimpleEnchantment.addEnchantmentLores(compiledItem), compiledItem);
 
 		// Set custom model data
-		if (this.modelData > 0 && MinecraftVersion.atLeast(V.v1_14))
+		if (this.modelData != null && MinecraftVersion.atLeast(V.v1_14))
 			try {
 				((ItemMeta) compiledMeta).setCustomModelData(this.modelData);
 			} catch (final Throwable t) {
 			}
-
 
 		// 1.7.10 hack to add glow, requires no enchants
 		if (this.glow && MinecraftVersion.equals(V.v1_7) && (this.enchants == null || this.enchants.isEmpty())) {
