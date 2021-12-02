@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.17.1-R0.1-SNAPSHOT</version>
+			<version>1.18-R0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- MineAcademy guaranteed availability repos for plugins -->

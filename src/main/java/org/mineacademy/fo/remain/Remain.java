@@ -55,6 +55,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -89,7 +90,6 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
-import org.mineacademy.fo.remain.nbt.NBTInternals;
 import org.mineacademy.fo.settings.SimpleYaml;
 
 import com.google.gson.Gson;
@@ -250,9 +250,6 @@ public final class Remain {
 		try {
 			ChatInternals.callStatic();
 
-			if (MinecraftVersion.newerThan(V.v1_7))
-				NBTInternals.checkCompatible();
-
 			CompParticle.CRIT.getClass();
 
 			for (final Material bukkitMaterial : Material.values())
@@ -296,7 +293,7 @@ public final class Remain {
 						.getField(MinecraftVersion.atLeast(V.v1_17) ? "b" : hasNMS ? "playerConnection" : "netServerHandler");
 
 				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
-						.getMethod("sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 
 				if (MinecraftVersion.olderThan(V.v1_12)) {
 					fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
@@ -305,6 +302,8 @@ public final class Remain {
 					fieldEntityInvulnerable = null;
 
 			} catch (final Throwable t) {
+
+				t.printStackTrace();
 
 				if (MinecraftVersion.atLeast(V.v1_7)) {
 					Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
@@ -1827,10 +1826,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-
+			
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-
+			
 			meta.setPages(list);*/
 
 			try {
@@ -2255,6 +2254,33 @@ public final class Remain {
 			for (final Entity entity : world.getEntities())
 				if (entity.getUniqueId().equals(uuid))
 					return entity;
+
+		return null;
+	}
+
+	/**
+	 * Attempts to find the hit entity from the projectile hit event.
+	 *
+	 * @param event
+	 * @return
+	 */
+	public static LivingEntity getHitEntity(ProjectileHitEvent event) {
+		try {
+
+			// Try getting the hit entity directly
+			if (event.getHitEntity() instanceof LivingEntity)
+				return (LivingEntity) event.getHitEntity();
+
+		} catch (final Throwable t) {
+
+			// If this fails, try getting the entity to which the projectile was attached,
+			// imperfect, but mostly works.
+			final double radius = 0.01;
+
+			for (final Entity nearby : event.getEntity().getNearbyEntities(radius, radius, radius))
+				if (nearby instanceof LivingEntity)
+					return (LivingEntity) nearby;
+		}
 
 		return null;
 	}

@@ -3,6 +3,8 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * Double implementation for NBTLists
  *
@@ -23,7 +25,7 @@ public class NBTDoubleList extends NBTList<Double> {
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
+			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
 		}
 	}
 
@@ -35,7 +37,7 @@ public class NBTDoubleList extends NBTList<Double> {
 		} catch (final NumberFormatException nf) {
 			return 0d;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		}
 	}
 
