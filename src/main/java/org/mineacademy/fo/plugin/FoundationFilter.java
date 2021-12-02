@@ -12,8 +12,8 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.message.Message;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
@@ -63,9 +63,11 @@ final class FoundationFilter {
 		if (message == null || message.isEmpty())
 			return false;
 
-		// Replace & color codes only if server is available and we are calling past our onLoad block
-		if (Bukkit.getServer() != null && SimplePlugin.getNamed() != null)
-			message = Common.stripColors(message);
+		// Replace & color codes
+		for (final ChatColor color : ChatColor.values()) {
+			message = message.replace("&" + color.getChar(), "");
+			message = message.replace(color.toString(), "");
+		}
 
 		// Filter a warning since we've already patched this with NashornPlus extension
 		if (message.equals("Warning: Nashorn engine is planned to be removed from a future JDK release"))
