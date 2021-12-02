@@ -12,6 +12,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.FallingBlock;
@@ -645,12 +646,25 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
-		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
-			final Block block = world.getBlockAt(x, y, z);
 
-			if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
-				return y + 1;
+		// Look for the first highest block from the bottom in the nether
+		if (world.getEnvironment() == Environment.NETHER) {
+			for (int y = 0; y < world.getMaxHeight(); y++) {
+				final Block block = world.getBlockAt(x, y, z);
+
+				if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
+					return y + 1;
+			}
 		}
+
+		// Otherwise start looking at the top and count down
+		else
+			for (int y = world.getMaxHeight() - 1; y > 0; y--) {
+				final Block block = world.getBlockAt(x, y, z);
+
+				if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
+					return y + 1;
+			}
 
 		return -1;
 
