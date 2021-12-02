@@ -1,6 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.mineacademy.fo.exception.FoException;
 
 /**
  * {@link NBTListCompound} implementation for NBTLists
@@ -45,7 +45,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 			}
 			return listcomp;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		}
 	}
 
@@ -66,7 +66,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	@Override
 	public void add(int index, NBTListCompound element) {
 		if (element != null) {
-			throw new NotImplementedException("You need to pass null! ListCompounds from other lists won't work.");
+			throw new FoException("You need to pass null! ListCompounds from other lists won't work.");
 		}
 		try {
 			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
@@ -77,7 +77,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 			}
 			super.getParent().saveCompound();
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		}
 	}
 
@@ -87,13 +87,13 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 			final Object compound = ReflectionMethod.LIST_GET_COMPOUND.run(listObject, index);
 			return new NBTListCompound(this, compound);
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		}
 	}
 
 	@Override
 	public NBTListCompound set(int index, NBTListCompound element) {
-		throw new NotImplementedException("This method doesn't work in the ListCompound context.");
+		throw new FoException("This method doesn't work in the ListCompound context.");
 	}
 
 	@Override

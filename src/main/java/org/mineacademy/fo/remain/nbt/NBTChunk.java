@@ -1,8 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Chunk;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.exception.FoException;
 
 public class NBTChunk {
 
@@ -18,11 +16,8 @@ public class NBTChunk {
 	 *
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
+	@AvailableSince(version = MinecraftVersion.MC1_16_R3)
 	public NBTCompound getPersistentDataContainer() {
-
-		if (org.mineacademy.fo.MinecraftVersion.olderThan(V.v1_16))
-			throw new FoException("getPersistentDataContainer requires MC 1.16 or newer");
-
 		return new NBTPersistentDataContainer(chunk.getPersistentDataContainer());
 	}
 
