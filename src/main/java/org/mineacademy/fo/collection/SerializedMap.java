@@ -274,7 +274,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param map
 	 */
 	public void overrideAll(SerializedMap map) {
-		map.forEach((key, value) -> override(key, value));
+		map.forEach(this::override);
 	}
 
 	/**
@@ -1130,22 +1130,24 @@ public final class SerializedMap extends StrictCollection {
 	 */
 	public static SerializedMap fromJson(@NonNull final String json) {
 
-		if (json.isEmpty() || "[]".equals(json) || "{}".equals(json))
-			return new SerializedMap();
+		synchronized (jsonSimple) {
+			if (json.isEmpty() || "[]".equals(json) || "{}".equals(json))
+				return new SerializedMap();
 
-		// Fallback to simple
-		try {
-			final Object parsed = jsonSimple.parse(json);
+			// Fallback to simple
+			try {
+				final Object parsed = jsonSimple.parse(json);
 
-			if (parsed instanceof JSONObject)
-				return SerializedMap.of(parsed);
+				if (parsed instanceof JSONObject)
+					return SerializedMap.of(parsed);
 
-			throw new FoException("Unable to deserialize " + (parsed != null ? parsed.getClass() : "unknown class") + " from: " + json);
+				throw new FoException("Unable to deserialize " + (parsed != null ? parsed.getClass() : "unknown class") + " from: " + json);
 
-		} catch (final Throwable secondThrowable) {
-			Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
+			} catch (final Throwable secondThrowable) {
+				Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
 
-			return null;
+				return null;
+			}
 		}
 	}
 }
