@@ -1,6 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.block.Block;
+import org.mineacademy.fo.exception.FoException;
 
 public class NBTBlock {
 
@@ -10,7 +11,7 @@ public class NBTBlock {
 	public NBTBlock(Block block) {
 		this.block = block;
 		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3)) {
-			throw new NbtApiException("NBTBlock is only working for 1.16.4+!");
+			throw new FoException("NBTBlock is only working for 1.16.4+!");
 		}
 		nbtChunk = new NBTChunk(block.getChunk());
 	}

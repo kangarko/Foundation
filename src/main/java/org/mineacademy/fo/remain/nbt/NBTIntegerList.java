@@ -3,9 +3,11 @@ package org.mineacademy.fo.remain.nbt;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * Integer implementation for NBTLists
- * 
+ *
  * @author tr7zw
  *
  */
@@ -18,24 +20,24 @@ public class NBTIntegerList extends NBTList<Integer> {
 	@Override
 	protected Object asTag(Integer object) {
 		try {
-			Constructor<?> con = ClassWrapper.NMS_NBTTAGINT.getClazz().getDeclaredConstructor(int.class);
+			final Constructor<?> con = ClassWrapper.NMS_NBTTAGINT.getClazz().getDeclaredConstructor(int.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
+			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
 		}
 	}
 
 	@Override
 	public Integer get(int index) {
 		try {
-			Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
 			return Integer.valueOf(obj.toString());
-		} catch (NumberFormatException nf) {
+		} catch (final NumberFormatException nf) {
 			return 0;
-		} catch (Exception ex) {
-			throw new NbtApiException(ex);
+		} catch (final Exception ex) {
+			throw new FoException(ex);
 		}
 	}
 

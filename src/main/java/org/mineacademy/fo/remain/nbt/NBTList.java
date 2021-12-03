@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * Abstract List implementation for ListCompounds
  *
@@ -61,7 +63,7 @@ public abstract class NBTList<T> implements List<T> {
 			save();
 			return true;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
@@ -78,7 +80,7 @@ public abstract class NBTList<T> implements List<T> {
 			}
 			save();
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
@@ -93,7 +95,7 @@ public abstract class NBTList<T> implements List<T> {
 			save();
 			return prev;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
@@ -108,7 +110,7 @@ public abstract class NBTList<T> implements List<T> {
 			save();
 			return old;
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
 		}
@@ -120,7 +122,7 @@ public abstract class NBTList<T> implements List<T> {
 			parent.getReadLock().lock();
 			return (int) ReflectionMethod.LIST_SIZE.run(listObject);
 		} catch (final Exception ex) {
-			throw new NbtApiException(ex);
+			throw new FoException(ex);
 		} finally {
 			parent.getReadLock().unlock();
 		}

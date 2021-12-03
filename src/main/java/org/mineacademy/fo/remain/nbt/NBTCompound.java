@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.exception.FoException;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -555,7 +556,7 @@ public class NBTCompound {
 			NBTReflectionUtil.addNBTTagCompound(this, name);
 			final NBTCompound comp = getCompound(name);
 			if (comp == null)
-				throw new NbtApiException("Error while adding Compound, got null!");
+				throw new FoException("Error while adding Compound, got null!");
 			saveCompound();
 			return comp;
 		} finally {
@@ -573,7 +574,7 @@ public class NBTCompound {
 			if (getType(name) != NBTType.NBTTagCompound)
 				return null;
 			final NBTCompound next = new NBTCompound(this, name);
-			if (NBTReflectionUtil.valideCompound(next))
+			if (NBTReflectionUtil.validateCompound(next))
 				return next;
 			return null;
 		} finally {
@@ -764,7 +765,7 @@ public class NBTCompound {
 	public String asNBTString() {
 		try {
 			readLock.lock();
-			final Object comp = NBTReflectionUtil.gettoCompount(getCompound(), this);
+			final Object comp = NBTReflectionUtil.getToCompound(getCompound(), this);
 			if (comp == null)
 				return "{}";
 			return comp.toString();
@@ -794,8 +795,8 @@ public class NBTCompound {
 					if (!isEqual(this, other, key)) {
 						return false;
 					}
-					return true;
 				}
+				return true;
 			}
 		}
 		return false;

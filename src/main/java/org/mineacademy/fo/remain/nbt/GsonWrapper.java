@@ -1,5 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
+import org.mineacademy.fo.exception.FoException;
+
 import com.google.gson.Gson;
 
 /**
@@ -44,8 +46,9 @@ class GsonWrapper {
 
 			final T obj = gson.fromJson(json, type);
 			return type.cast(obj);
+
 		} catch (final Exception ex) {
-			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
+			throw new FoException(ex, "Error while converting json to " + type.getName());
 		}
 	}
 
