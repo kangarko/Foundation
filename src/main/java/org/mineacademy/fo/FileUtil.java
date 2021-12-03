@@ -182,6 +182,16 @@ public final class FileUtil {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return all lines from file in a path in our plugin folder, file must exists.
+	 *
+	 * @param fileName
+	 * @return
+	 */
+	public static List<String> readLines(String fileName) {
+		return readLines(getFile(fileName));
+	}
+
+	/**
 	 * Return all lines in the file, failing if the file does not exists
 	 *
 	 * @param file
