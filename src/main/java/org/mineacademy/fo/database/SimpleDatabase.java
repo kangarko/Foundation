@@ -135,8 +135,14 @@ public class SimpleDatabase {
 		close();
 
 		try {
-			if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+			if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+				Class.forName("com.mysql.cj.jdbc.Driver");
+
+			else {
+				Common.warning("Your database driver is outdated, MySQL 8.0 is unsupported. If you encounter issues, use MariaDB instead.");
+
 				Class.forName("com.mysql.jdbc.Driver");
+			}
 
 			this.lastCredentials = new LastCredentials(url, user, password, table);
 			this.connection = DriverManager.getConnection(url, user, password);
