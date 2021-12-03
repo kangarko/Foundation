@@ -1,6 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
+import org.mineacademy.fo.Common;
 
 /**
  * This class acts as the "Brain" of the NBTApi. It contains the main logger for
@@ -11,6 +12,7 @@ import org.bukkit.Bukkit;
  *
  */
 enum MinecraftVersion {
+
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
 	MC1_8_R3(183),
@@ -26,14 +28,21 @@ enum MinecraftVersion {
 	MC1_16_R1(1161),
 	MC1_16_R2(1162),
 	MC1_16_R3(1163),
-	MC1_17_R1(1171);
+	MC1_17_R1(1171),
+	MC1_18_R1(1181, true);
 
 	private static MinecraftVersion version;
 
 	private final int versionId;
+	private final boolean mojangMapping;
 
 	MinecraftVersion(int versionId) {
+		this(versionId, false);
+	}
+
+	MinecraftVersion(int versionId, boolean mojangMapping) {
 		this.versionId = versionId;
+		this.mojangMapping = mojangMapping;
 	}
 
 	/**
@@ -41,6 +50,20 @@ enum MinecraftVersion {
 	 */
 	public int getVersionId() {
 		return versionId;
+	}
+
+	/**
+	 * @return True if method names are in Mojang format and need to be remapped internally
+	 */
+	public boolean isMojangMapping() {
+		return mojangMapping;
+	}
+
+	public String getPackageName() {
+		if (this == UNKNOWN) {
+			return values()[values().length - 1].name().replace("MC", "v");
+		}
+		return this.name().replace("MC", "v");
 	}
 
 	/**
@@ -70,17 +93,20 @@ enum MinecraftVersion {
 	 * @return The enum for the MinecraftVersion this server is running
 	 */
 	public static MinecraftVersion getVersion() {
-		if (version != null) {
+		if (version != null)
 			return version;
-		}
 
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
+
 		} catch (final IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
 		}
+
+		if (version == UNKNOWN)
+			Common.log("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
 
 		return version;
 	}

@@ -13,7 +13,7 @@ enum PackageWrapper {
 
 	private final String uri;
 
-	private PackageWrapper(String uri) {
+	PackageWrapper(String uri) {
 		this.uri = uri;
 	}
 

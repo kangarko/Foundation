@@ -2,6 +2,8 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.io.InputStream;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * A Standalone {@link NBTCompound} implementation. All data is just kept inside
  * this Object.
@@ -32,7 +34,7 @@ public class NBTContainer extends NBTCompound {
 			throw new NullPointerException("The NBT-Object can't be null!");
 		}
 		if (!ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass())) {
-			throw new NbtApiException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
+			throw new FoException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
 		}
 		this.nbt = nbt;
 	}
@@ -49,7 +51,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
-	 * {@link NbtApiException} in case something goes wrong.
+	 * {@link FoException} in case something goes wrong.
 	 *
 	 * @param nbtString
 	 */
@@ -60,8 +62,9 @@ public class NBTContainer extends NBTCompound {
 		}
 		try {
 			nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
+
 		} catch (final Exception ex) {
-			throw new NbtApiException("Unable to parse Malformed Json!", ex);
+			throw new FoException(ex, "Unable to parse Malformed Json!");
 		}
 	}
 
