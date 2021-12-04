@@ -350,9 +350,9 @@ public abstract class DiscordListener implements Listener {
 	 *
 	 * @param channel
 	 * @param messageId
-	 * @param newMessage
+	 * @param format
 	 */
-	protected final void editMessageById(TextChannel channel, long messageId, String newMessage) {
+	protected final void editMessageById(TextChannel channel, long messageId, String format) {
 		Common.runAsync(() -> {
 			try {
 				final Message message = channel.retrieveMessageById(messageId).complete();
@@ -364,7 +364,7 @@ public abstract class DiscordListener implements Listener {
 
 					// Send a new one
 					final Message newSentMessage = channel
-							.sendMessage(message.getAuthor().getName() + ": " + newMessage.replace("*", "\\*").replace("_", "\\_").replace("@", "\\@"))
+							.sendMessage(format.replace("{player}", message.getAuthor().getName()).replace("*", "\\*").replace("_", "\\_").replace("@", "\\@"))
 							.complete();
 
 					this.editedMessages.put(messageId, newSentMessage.getIdLong());
