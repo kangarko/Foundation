@@ -85,6 +85,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -1478,6 +1479,14 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static void updateInventoryTitle(final Player player, String title) {
+
+		// TODO Workaround
+		if (MinecraftVersion.atLeast(V.v1_18)) {
+			CompSound.SUCCESSFUL_HIT.play(player);
+			BoxedMessage.tell(player, title);
+
+			return;
+		}
 
 		try {
 			if (MinecraftVersion.atLeast(V.v1_17)) {
