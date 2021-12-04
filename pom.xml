@@ -170,12 +170,12 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.2.8-SNAPSHOT-6003</version>
+			<version>7.3.0-SNAPSHOT-5758</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldGuard</artifactId>
-			<version>7.0.7-SNAPSHOT-2165</version>
+			<version>7.0.6</version>
 		</dependency>
 	</dependencies>
 	<build>
