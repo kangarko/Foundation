@@ -175,7 +175,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldGuard</artifactId>
-			<version>7.0.6</version>
+			<version>7.0.5-SNAPSHOT-2109</version>
 		</dependency>
 	</dependencies>
 	<build>
