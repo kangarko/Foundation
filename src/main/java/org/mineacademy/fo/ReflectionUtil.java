@@ -316,6 +316,12 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Method getMethod(final Class<?> clazz, final String methodName, final Class<?>... args) {
+		try {
+			Method method = clazz.getMethod(methodName, args);
+			method.setAccessible(true);
+			return method;
+		} catch (NoSuchMethodException e) {}
+
 		Method[] methods = methodCache.computeIfAbsent(clazz, k -> clazz.getMethods());
 		for (final Method method : methods)
 			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes())) {
