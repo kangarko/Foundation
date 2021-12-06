@@ -1,5 +1,6 @@
 package org.mineacademy.fo.remain;
 
+<<<<<<< Updated upstream
 import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
 import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
@@ -32,27 +33,35 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
+=======
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
+import org.bukkit.*;
+>>>>>>> Stashed changes
 import org.bukkit.Statistic.Type;
-import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+<<<<<<< Updated upstream
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+=======
+import org.bukkit.command.*;
+import org.bukkit.configuration.InvalidConfigurationException;
+>>>>>>> Stashed changes
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -70,22 +79,17 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.EntityUtil;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
+<<<<<<< Updated upstream
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
+=======
+>>>>>>> Stashed changes
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -93,13 +97,19 @@ import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 import org.mineacademy.fo.settings.SimpleYaml;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
+import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
+import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 /**
  * Our main cross-version compatibility class.
@@ -1482,10 +1492,48 @@ public final class Remain {
 
 		// TODO Workaround
 		if (MinecraftVersion.atLeast(V.v1_18)) {
-			CompSound.SUCCESSFUL_HIT.play(player);
-			BoxedMessage.tell(player, title);
+			final Object nmsPlayer = Remain.getHandleEntity(player);
+			final Object chatComponent = toIChatBaseComponentPlain(ChatColor.translateAlternateColorCodes('&', title));
+
+			final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
+			String containerName;
+
+			if (inventorySize == 1)
+				containerName = "a";
+
+			else if (inventorySize == 2)
+				containerName = "b";
+
+			else if (inventorySize == 3)
+				containerName = "c";
+
+			else if (inventorySize == 4)
+				containerName = "d";
+
+			else if (inventorySize == 5)
+				containerName = "e";
+
+			else if (inventorySize == 6)
+				containerName = "f";
+			else
+				throw new FoException("Cannot generate NMS container class to update inventory of size " + inventorySize);
+
+			final Object container = ReflectionUtil.getStaticFieldContent(ReflectionUtil.lookupClass("net.minecraft.world.inventory.Containers"), containerName);
+
+			final Constructor<?> packetConstructor = ReflectionUtil.getConstructor(
+					"net.minecraft.network.protocol.game.PacketPlayOutOpenWindow",
+					int.class,
+					container.getClass(),
+					ReflectionUtil.lookupClass("net.minecraft.network.chat.IChatBaseComponent"));
+
+			final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, "bW");
+			final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
+
+			Remain.sendPacket(player, ReflectionUtil.instantiate(packetConstructor, windowId, container, chatComponent));
+			ReflectionUtil.invoke("a", nmsPlayer, activeContainer);
 
 			return;
+
 		}
 
 		try {
@@ -2122,11 +2170,11 @@ public final class Remain {
 	/**
 	 * Send a "toast" notification to the given receivers. This is an advancement notification that cannot
 	 * be modified that much. It imposes a slight performance penalty the more players to send to.
-	 *
+	 * <p>
 	 * Each player sending is delayed by 0.1s
 	 *
 	 * @param receiver
-	 * @param message you can replace player-specific variables in the message here
+	 * @param message  you can replace player-specific variables in the message here
 	 * @param icon
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
@@ -2359,7 +2407,7 @@ public final class Remain {
 				else if (MinecraftVersion.atLeast(V.v1_9))
 					item.setAmount(0);
 
-				// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
+					// Explanation: For some weird reason there is a bug not removing 1 piece of ItemStack in 1.8.8
 				else {
 					final ItemStack[] content = player.getInventory().getContents();
 
