@@ -67,6 +67,7 @@ public final class ReflectionUtil {
 	 */
 	private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, Method[]> methodCache = new ConcurrentHashMap<>();
 	private static final Collection<String> classNameGuard = ConcurrentHashMap.newKeySet();
 
 	/**
@@ -315,7 +316,14 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Method getMethod(final Class<?> clazz, final String methodName, final Class<?>... args) {
-		for (final Method method : clazz.getMethods())
+		try {
+			Method method = clazz.getMethod(methodName, args);
+			method.setAccessible(true);
+			return method;
+		} catch (NoSuchMethodException e) {}
+
+		Method[] methods = methodCache.computeIfAbsent(clazz, k -> clazz.getMethods());
+		for (final Method method : methods)
 			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes())) {
 				method.setAccessible(true);
 
