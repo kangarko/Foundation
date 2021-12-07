@@ -1,39 +1,5 @@
 package org.mineacademy.fo.remain;
 
-<<<<<<< Updated upstream
-import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
-import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameRule;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Statistic;
-=======
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import net.md_5.bungee.api.ChatMessageType;
@@ -41,7 +7,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.*;
->>>>>>> Stashed changes
 import org.bukkit.Statistic.Type;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -49,16 +14,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
-<<<<<<< Updated upstream
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.SimpleCommandMap;
-=======
 import org.bukkit.command.*;
-import org.bukkit.configuration.InvalidConfigurationException;
->>>>>>> Stashed changes
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -82,11 +38,6 @@ import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
-<<<<<<< Updated upstream
-import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.Valid;
-=======
->>>>>>> Stashed changes
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
@@ -97,11 +48,13 @@ import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 import org.mineacademy.fo.settings.SimpleYaml;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -1802,7 +1755,6 @@ public final class Remain {
 	 * Tries to find online player by uuid
 	 *
 	 * @param id
-	 *
 	 * @return null if offline or player
 	 */
 	public static Player getPlayerByUUID(final UUID id) {
@@ -1996,10 +1948,9 @@ public final class Remain {
 	 * Calls NMS to find out if the entity is invisible, works for any entity,
 	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
 	 *
-	 * @deprecated use {@link PlayerUtil#isVanished(Player)} to check for vanish from other plugins also
-	 *
 	 * @param entity
 	 * @return
+	 * @deprecated use {@link PlayerUtil#isVanished(Player)} to check for vanish from other plugins also
 	 */
 	@Deprecated
 	public static boolean isInvisible(Entity entity) {
@@ -2021,7 +1972,6 @@ public final class Remain {
 	 *
 	 * @param entity
 	 * @param invisible
-	 *
 	 * @deprecated use {@link PlayerUtil#setVanished(Player, boolean)} to disable vanish for plugins also
 	 */
 	@Deprecated
@@ -2282,9 +2232,9 @@ public final class Remain {
 	/**
 	 * Return the player ping
 	 *
-	 * @deprecated use {@link PlayerUtil#getPing(Player)}
 	 * @param player
 	 * @return
+	 * @deprecated use {@link PlayerUtil#getPing(Player)}
 	 */
 	@Deprecated
 	public static int getPing(Player player) {
