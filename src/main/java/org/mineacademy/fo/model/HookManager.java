@@ -743,23 +743,23 @@ public final class HookManager {
 	/**
 	 * If litebans is loaded, mute player - this expects you having /lmute command installed!
 	 *
-	 * @param player
+	 * @param targetPlayerName
 	 * @param durationTokenized
 	 * @param reason
 	 */
-	public static void setLiteBansMute(Player player, String durationTokenized, String reason) {
+	public static void setLiteBansMute(String targetPlayerName, String durationTokenized, String reason) {
 		if (isLiteBansLoaded())
-			Common.dispatchCommand(player, "lmute {player} " + durationTokenized + (reason == null || reason.isEmpty() ? "" : " " + reason));
+			Common.dispatchCommand(Bukkit.getConsoleSender(), "lmute " + targetPlayerName + " " + durationTokenized + (reason == null || reason.isEmpty() ? "" : " " + reason));
 	}
 
 	/**
 	 * If litebans is loaded, unmute player - this expects you having /lunmute command installed!
 	 *
-	 * @param player
+	 * @param targetPlayerName
 	 */
-	public static void setLiteBansUnmute(Player player) {
+	public static void setLiteBansUnmute(String targetPlayerName) {
 		if (isLiteBansLoaded())
-			Common.dispatchCommand(player, "lunmute {player}");
+			Common.dispatchCommand(Bukkit.getConsoleSender(), "lunmute " + targetPlayerName);
 	}
 
 	/**
