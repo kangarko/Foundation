@@ -91,7 +91,7 @@ public final class Common {
 	/**
 	 * We use this to send messages with colors to your console
 	 */
-	private static final CommandSender CONSOLE_SENDER = Bukkit.getServer() != null ? Bukkit.getServer().getConsoleSender() : null;
+	private static final CommandSender CONSOLE_SENDER = Bukkit.getServer().getConsoleSender();
 
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
@@ -1269,15 +1269,15 @@ public final class Common {
 		if (messages == null)
 			return;
 
+		if (CONSOLE_SENDER == null)
+			throw new FoException("Failed to initialize Console Sender, are you running Foundation under a Bukkit/Spigot server?");
+
 		for (String message : messages) {
 			if (message.equals("none"))
 				continue;
 
 			if (stripColors(message).replace(" ", "").isEmpty()) {
-				if (CONSOLE_SENDER == null)
-					System.out.println(" ");
-				else
-					CONSOLE_SENDER.sendMessage("  ");
+				CONSOLE_SENDER.sendMessage("  ");
 
 				continue;
 			}
@@ -1294,10 +1294,7 @@ public final class Common {
 				for (final String part : message.split("\n")) {
 					final String log = ((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
 
-					if (CONSOLE_SENDER != null)
-						CONSOLE_SENDER.sendMessage(log);
-					else
-						System.out.println("[" + SimplePlugin.getNamed() + "] " + stripColors(log));
+					CONSOLE_SENDER.sendMessage(log);
 				}
 		}
 	}
