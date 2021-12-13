@@ -85,7 +85,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -1480,16 +1479,11 @@ public final class Remain {
 	@Deprecated
 	public static void updateInventoryTitle(final Player player, String title) {
 
-		// TODO Workaround
-		if (MinecraftVersion.atLeast(V.v1_18)) {
-			CompSound.SUCCESSFUL_HIT.play(player);
-			BoxedMessage.tell(player, title);
-
-			return;
-		}
-
 		try {
-			if (MinecraftVersion.atLeast(V.v1_17)) {
+
+			if (MinecraftVersion.atLeast(V.v1_17) || MinecraftVersion.atLeast(V.v1_18)) {
+				final boolean is1_18 = MinecraftVersion.atLeast(V.v1_18);
+
 				final Object nmsPlayer = Remain.getHandleEntity(player);
 				final Object chatComponent = toIChatBaseComponentPlain(ChatColor.translateAlternateColorCodes('&', title));
 
@@ -1524,11 +1518,18 @@ public final class Remain {
 						container.getClass(),
 						ReflectionUtil.lookupClass("net.minecraft.network.chat.IChatBaseComponent"));
 
-				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, "bV");
+				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, is1_18 ? "bW" : "bV");
 				final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
 
+				final Method method = is1_18 ? ReflectionUtil.getMethod(nmsPlayer.getClass(), "a", ReflectionUtil.lookupClass("net.minecraft.world.inventory.Container")) : null;
+
 				Remain.sendPacket(player, ReflectionUtil.instantiate(packetConstructor, windowId, container, chatComponent));
-				ReflectionUtil.invoke("initMenu", nmsPlayer, activeContainer);
+
+				if (is1_18)
+					ReflectionUtil.invoke(method, nmsPlayer, activeContainer);
+
+				else
+					ReflectionUtil.invoke("initMenu", nmsPlayer, activeContainer);
 
 				return;
 			}
