@@ -2284,7 +2284,7 @@ public final class Remain {
 
 			// If this fails, try getting the entity to which the projectile was attached,
 			// imperfect, but mostly works.
-			final double radius = 0.01;
+			final double radius = 0.5;
 
 			for (final Entity nearby : event.getEntity().getNearbyEntities(radius, radius, radius))
 				if (nearby instanceof LivingEntity)
