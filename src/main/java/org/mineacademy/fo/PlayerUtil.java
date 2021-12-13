@@ -36,13 +36,11 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.jsonsimple.JSONObject;
 import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.menu.Menu;
-import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompAttribute;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
-import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -566,14 +564,6 @@ public final class PlayerUtil {
 		Valid.checkNotNull(player, "Player == null");
 		Valid.checkNotNull(temporaryTitle, "Title == null");
 		Valid.checkNotNull(oldTitle, "Old Title == null");
-
-		// TODO Workaround
-		if (MinecraftVersion.atLeast(V.v1_18)) {
-			CompSound.SUCCESSFUL_HIT.play(player);
-			BoxedMessage.tell(player, temporaryTitle);
-
-			return;
-		}
 
 		// Send the packet
 		updateInventoryTitle(player, MinecraftVersion.atLeast(V.v1_13) ? temporaryTitle.replace("%", "%%") : temporaryTitle);
