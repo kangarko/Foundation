@@ -637,7 +637,7 @@ public final class BlockUtil {
 
 	/**
 	 * Scans the location from top to bottom to find the highest Y non-air coordinate that matches
-	 * the given predicate.
+	 * the given predicate. For nether worlds, we recommend you see {@link #findHighestNetherAirBlock(World, int, int)}
 	 *
 	 * @param world
 	 * @param x
@@ -646,28 +646,49 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
+		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
+			final Block block = world.getBlockAt(x, y, z);
 
-		// Look for the first highest block from the bottom in the nether
-		if (world.getEnvironment() == Environment.NETHER) {
-			for (int y = 0; y < world.getMaxHeight(); y++) {
-				final Block block = world.getBlockAt(x, y, z);
-
-				if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
-					return y + 1;
-			}
+			if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
+				return y + 1;
 		}
-
-		// Otherwise start looking at the top and count down
-		else
-			for (int y = world.getMaxHeight() - 1; y > 0; y--) {
-				final Block block = world.getBlockAt(x, y, z);
-
-				if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
-					return y + 1;
-			}
 
 		return -1;
 
+	}
+
+	/**
+	 * @see #findHighestNetherAirBlock(World, int, int)
+	 *
+	 * @param location
+	 * @return
+	 */
+	public static int findHighestNetherAirBlock(@NonNull Location location) {
+		return findHighestNetherAirBlock(location.getWorld(), location.getBlockX(), location.getBlockZ());
+	}
+
+	/**
+	 * Returns the first air block that has air block above it and a solid block below. Useful for finding
+	 * nether location from the bottom up to spawn mobs (not spawning them on the top bedrock as per {@link #findHighestBlock(Location, Predicate)}).
+	 *
+	 * @param world
+	 * @param x
+	 * @param z
+	 * @return
+	 */
+	public static int findHighestNetherAirBlock(@NonNull World world, int x, int z) {
+		Valid.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
+
+		for (int y = 0; y < world.getMaxHeight(); y++) {
+			final Block block = world.getBlockAt(x, y, z);
+			final Block above = block.getRelative(BlockFace.UP);
+			final Block below = block.getRelative(BlockFace.DOWN);
+
+			if (block != null && CompMaterial.isAir(block) && CompMaterial.isAir(above) && !CompMaterial.isAir(below) && below.getType().isSolid())
+				return y;
+		}
+
+		return -1;
 	}
 
 	/**
