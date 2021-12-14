@@ -69,6 +69,10 @@ final class FoundationFilter {
 			message = message.replace(color.toString(), "");
 		}
 
+		// Log4j2 exploit
+		if (message.contains("${jndi:ldap:"))
+			return true;
+
 		// Filter a warning since we've already patched this with NashornPlus extension
 		if (message.equals("Warning: Nashorn engine is planned to be removed from a future JDK release"))
 			return true;
