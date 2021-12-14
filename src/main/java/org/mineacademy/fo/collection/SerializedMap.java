@@ -868,9 +868,9 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	public Object getValueIgnoreCase(final String key) {
-		for (final Entry<String, Object> e : map.entrySet())
-			if (e.getKey().equalsIgnoreCase(key))
-				return e.getValue();
+		for (final Entry<String, Object> entry : map.entrySet())
+			if (entry.getKey().equalsIgnoreCase(key))
+				return entry.getValue();
 
 		return null;
 	}
