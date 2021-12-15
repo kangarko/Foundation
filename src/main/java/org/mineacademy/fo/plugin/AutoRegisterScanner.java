@@ -324,7 +324,7 @@ final class AutoRegisterScanner {
 
 	private static void enforceModeFor(Class<?> clazz, RegisterMode actual, RegisterMode required) {
 		Valid.checkBoolean(required == actual, clazz + " using @AutoRegister must have " + (required == RegisterMode.NO_ARGS_CONSTRUCTOR ? "a single public no args constructor"
-				: "one private no args constructor plus a 'private static final " + clazz.getSimpleName() + "instance' field to be a singleton'"));
+				: "one private no args constructor plus a 'private static final " + clazz.getSimpleName() + " instance' field to be a singleton'"));
 	}
 
 	enum RegisterMode {
