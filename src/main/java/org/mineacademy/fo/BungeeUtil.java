@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.messaging.ChannelNotRegisteredException;
 import org.bukkit.plugin.messaging.MessageTooLargeException;
 import org.mineacademy.fo.Common.Stringer;
 import org.mineacademy.fo.bungee.BungeeAction;
@@ -158,6 +159,10 @@ public final class BungeeUtil {
 
 		try {
 			recipient.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+
+		} catch (final ChannelNotRegisteredException ex) {
+			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "
+					+ "Use @AutoRegister above your class extending BungeeListener and return its instance in getBungeeCord in your main plugin class.");
 
 		} catch (final MessageTooLargeException ex) {
 			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
