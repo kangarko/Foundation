@@ -276,9 +276,14 @@ public final class SimpleYaml extends FileConfiguration {
 	 * Check file for known errors
 	 */
 	private static void checkFileForKnownErrors(File file) throws IllegalArgumentException {
-		for (final String line : FileUtil.readLines(file))
-			if (line.contains("[*]"))
-				throw new IllegalArgumentException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
+		int lineNumber = 0;
+
+		for (final String line : FileUtil.readLines(file)) {
+			lineNumber++;
+
+			if (line.contains("[*]") && !line.trim().startsWith("#"))
+				throw new IllegalArgumentException("Found [*] in your .yml file " + file + " line " + lineNumber + ". Please replace it with ['*'] instead.");
+		}
 	}
 
 	/**
