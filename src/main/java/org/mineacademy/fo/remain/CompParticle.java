@@ -151,7 +151,7 @@ public enum CompParticle {
 	/*
 	 * Construct a new compatible particle class
 	 */
-	private CompParticle() {
+	CompParticle() {
 		this(null);
 	}
 
@@ -159,7 +159,7 @@ public enum CompParticle {
 	 * Construct a new compatible particle class
 	 */
 	@SuppressWarnings("rawtypes")
-	private CompParticle(String name1_7) {
+	CompParticle(String name1_7) {
 		this.name1_7 = name1_7;
 
 		try {
@@ -370,6 +370,7 @@ public enum CompParticle {
 	/**
 	 * Spawns the particle only shown to the given player at the given location with extra material data
 	 *
+	 * @param player
 	 * @param location
 	 * @param data
 	 */

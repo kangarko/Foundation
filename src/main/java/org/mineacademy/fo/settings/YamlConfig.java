@@ -134,7 +134,7 @@ public abstract class YamlConfig {
 	}
 
 	/**
-	 * Remove a loaded file from {@link #loadedFiles}
+	 * Remove a loaded file from our internal loaded files map
 	 *
 	 * @param file
 	 */
@@ -282,9 +282,9 @@ public abstract class YamlConfig {
 	 * <p>
 	 * Both paths must include file extension
 	 *
-	 * @param from, the origin path within the plugin jar, if null, no defaults are
+	 * @param from the origin path within the plugin jar, if null, no defaults are
 	 *              used
-	 * @param to,   the destination path in plugins/ThisPlugin/
+	 * @param to   the destination path in plugins/ThisPlugin/
 	 */
 	public final void loadConfiguration(final String from, final String to) {
 
@@ -1538,7 +1538,7 @@ public abstract class YamlConfig {
 	/**
 	 * Return whether a key exists or not at the given path
 	 *
-	 * @param path, the path to the key with path prefix added automatically
+	 * @param path the path to the key with path prefix added automatically
 	 * @return
 	 */
 	protected final boolean isSet(final String path) {
@@ -1548,7 +1548,7 @@ public abstract class YamlConfig {
 	/**
 	 * Return whether a key exists or not at the given absolute path
 	 *
-	 * @param path, the path to the key without adding path prefix automatically
+	 * @param path the path to the key without adding path prefix automatically
 	 * @return
 	 */
 	protected final boolean isSetAbsolute(final String path) {
@@ -1926,6 +1926,8 @@ public abstract class YamlConfig {
 
 		/**
 		 * Duration: 4 seconds + 2 second fade in
+		 * @param player
+		 * @param replacer
 		 */
 		public void playLong(final Player player, final Function<String, String> replacer) {
 			play(player, 5, 4 * 20, 15, replacer);
@@ -1933,6 +1935,8 @@ public abstract class YamlConfig {
 
 		/**
 		 * Duration: 2 seconds + 1 second fade in
+		 * @param player
+		 * @param replacer
 		 */
 		public void playShort(final Player player, final Function<String, String> replacer) {
 			play(player, 3, 2 * 20, 5, replacer);

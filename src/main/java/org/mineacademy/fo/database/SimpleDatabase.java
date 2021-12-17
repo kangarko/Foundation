@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * Before running queries make sure to call connect() methods.
  * <p>
- * You can also override {@link #onConnected()} to run your code after the
+ * You can also override onConnected() to run your code after the
  * connection has been established.
  * <p>
  * To use this class you must know the MySQL command syntax!

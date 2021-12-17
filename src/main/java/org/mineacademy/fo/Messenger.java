@@ -64,7 +64,7 @@ public class Messenger {
 	private String announcePrefix = "&8&l[&5&l!&l&8]&d ";
 
 	/**
-	 * Send a message prepended with the {@link #infoPrefix}
+	 * Send a message prepended with the {@link #getInfoPrefix()}
 	 *
 	 * @param message
 	 */
@@ -74,7 +74,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #successPrefix}
+	 * Send a message prepended with the {@link #getSuccessPrefix()}
 	 *
 	 * @param message
 	 */
@@ -84,7 +84,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #warnPrefix}
+	 * Send a message prepended with the {@link #getWarnPrefix()}
 	 *
 	 * @param message
 	 */
@@ -94,7 +94,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #errorPrefix}
+	 * Send a message prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param message
 	 */
@@ -104,7 +104,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #questionPrefix}
+	 * Send a message prepended with the {@link #getQuestionPrefix()}
 	 *
 	 * @param message
 	 */
@@ -114,7 +114,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #announcePrefix}
+	 * Send a message prepended with the {@link #getAnnouncePrefix()}
 	 *
 	 * @param message
 	 */
@@ -124,7 +124,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #infoPrefix}
+	 * Send a message prepended with the {@link #getInfoPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -134,7 +134,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #successPrefix}
+	 * Send a message prepended with the {@link #getSuccessPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -144,7 +144,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #warnPrefix}
+	 * Send a message prepended with the {@link #getWarnPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -154,7 +154,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send messages prepended with the {@link #errorPrefix}
+	 * Send messages prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param player
 	 * @param messages
@@ -165,7 +165,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #errorPrefix}
+	 * Send a message prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -175,7 +175,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #questionPrefix}
+	 * Send a message prepended with the {@link #getQuestionPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -185,7 +185,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #announcePrefix}
+	 * Send a message prepended with the {@link #getAnnouncePrefix()}
 	 *
 	 * @param player
 	 * @param message

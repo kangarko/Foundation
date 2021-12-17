@@ -667,6 +667,7 @@ public final class PlayerUtil {
 	 *
 	 * @param player
 	 * @param material
+	 * @return
 	 */
 	public static boolean takeFirstOnePiece(final Player player, final CompMaterial material) {
 

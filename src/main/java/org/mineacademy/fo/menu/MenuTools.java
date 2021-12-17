@@ -99,7 +99,7 @@ public abstract class MenuTools extends Menu {
 	}
 
 	/**
-	 * Returns the {@link #compileTools()} at their respective positions for each
+	 * Returns the compileTools() at their respective positions for each
 	 * slot
 	 *
 	 * @param slot the slot

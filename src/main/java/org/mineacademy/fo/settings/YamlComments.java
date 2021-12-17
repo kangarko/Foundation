@@ -47,8 +47,6 @@ public final class YamlComments {
 	 *
 	 * @param jarPath The yaml file name to update from, typically config.yml
 	 * @param diskFile The yaml file to update
-	 *
-	 * @throws IOException If an IOException occurs
 	 */
 	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile) {
 		try {

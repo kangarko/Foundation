@@ -174,7 +174,6 @@ public final class LagCatcher {
 	 * it will continue being measure
 	 *
 	 * @param section
-	 * @return
 	 */
 	public static void took(String section) {
 		final Long nanoTime = startTimesMap.get(section);

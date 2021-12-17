@@ -32,7 +32,7 @@ public class BlockVisualizer {
 	/**
 	 * Starts visualizing the block at the given location
 	 *
-	 * @param location
+	 * @param block
 	 * @param mask
 	 * @param blockName
 	 */
@@ -72,7 +72,7 @@ public class BlockVisualizer {
 	/**
 	 * Stops visualizing the block at the given location
 	 *
-	 * @param location
+	 * @param block
 	 */
 	public void stopVisualizing(@NonNull final Block block) {
 		Valid.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");

@@ -238,7 +238,7 @@ public final class RandomUtil {
 	 *
 	 * @param origin
 	 * @param radius
-	 * @param is3D,  true for sphere, false for cylinder search
+	 * @param is3D true for sphere, false for cylinder search
 	 * @return
 	 */
 	public static Location nextLocation(final Location origin, final double radius, final boolean is3D) {

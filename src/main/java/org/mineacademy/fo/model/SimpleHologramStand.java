@@ -69,6 +69,7 @@ public class SimpleHologramStand extends SimpleHologram {
 
 	/**
 	 * @param small the small to set
+	 * @return
 	 */
 	public final SimpleHologram setSmall(boolean small) {
 		this.small = small;

@@ -220,9 +220,9 @@ public class SpigotUpdater implements Runnable {
 	}
 
 	/**
-	 * Returns the update message, by default {@link SimpleLocalization.Update#AVAILABLE}
+	 * Returns the update message, by default {@link org.mineacademy.fo.settings.SimpleLocalization.Update#AVAILABLE}
 	 * <p>
-	 * To change this message change your localization and refer to {@link #replaceVariables(String)} method
+	 * To change this message change your localization and refer to the replaceVariables method
 	 *
 	 * @return
 	 */
@@ -231,9 +231,9 @@ public class SpigotUpdater implements Runnable {
 	}
 
 	/**
-	 * Returns the download success message, by default {@link SimpleLocalization.Update#DOWNLOADED}
+	 * Returns the download success message, by default {@link org.mineacademy.fo.settings.SimpleLocalization.Update#DOWNLOADED}
 	 * <p>
-	 * To change this message change your localization and refer to {@link #replaceVariables(String)} method
+	 * To change this message change your localization and refer to the replaceVariables method
 	 *
 	 * @return
 	 */

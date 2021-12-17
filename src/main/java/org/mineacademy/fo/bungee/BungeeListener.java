@@ -12,7 +12,7 @@ import org.mineacademy.fo.debug.Debugger;
 import lombok.Getter;
 
 /**
- * Represents a BungeeCord listener using a {@link BungeeChannel} channel
+ * Represents a BungeeCord listener using a bungee channel
  * on which you can listen to receiving messages
  * <p>
  * This class is also a Listener for Bukkit events for your convenience

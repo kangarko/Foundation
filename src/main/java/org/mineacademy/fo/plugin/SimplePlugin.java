@@ -84,32 +84,24 @@ public abstract class SimplePlugin extends JavaPlugin {
 
 	/**
 	 * Shortcut for getDescription().getVersion()
-	 *
-	 * @return plugin's version
 	 */
 	@Getter
 	private static String version;
 
 	/**
 	 * Shortcut for getName()
-	 *
-	 * @return plugin's name
 	 */
 	@Getter
 	private static String named;
 
 	/**
 	 * Shortcut for getFile()
-	 *
-	 * @return plugin's jar file
 	 */
 	@Getter
 	private static File source;
 
 	/**
 	 * Shortcut for getDataFolder()
-	 *
-	 * @return plugins' data folder in plugins/
 	 */
 	@Getter
 	private static File data;

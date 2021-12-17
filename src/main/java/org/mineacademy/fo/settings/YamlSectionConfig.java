@@ -24,7 +24,7 @@ public abstract class YamlSectionConfig extends YamlConfig {
 	 * Create a new section config with a section prefix,
 	 * for example Players for storing player data.
 	 *
-	 * @param sectionPrefix, the section prefix, or null if not used
+	 * @param sectionPrefix the section prefix, or null if not used
 	 */
 	protected YamlSectionConfig(String sectionPrefix) {
 		super.pathPrefix(sectionPrefix);

@@ -62,9 +62,6 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 
 	/**
 	 * Return the question, implemented in own way using colors
-	 *
-	 * @param
-	 * @return
 	 */
 	@Override
 	public final String getPromptText(final ConversationContext context) {
@@ -162,7 +159,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	}
 
 	/**
-	 * Called when the whole conversation is over. This is called before {@link SimpleConversation#onConversationEnd(ConversationAbandonedEvent)}
+	 * Called when the whole conversation is over. This is called before onConversationEnd
 	 *
 	 * @param conversation
 	 * @param event
@@ -199,10 +196,11 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * Shows this prompt as a conversation to the player
 	 * <p>
 	 * NB: Do not call this as a means to showing this prompt DURING AN EXISTING
-	 * conversation as it will fail! Use {@link #acceptValidatedInput(ConversationContext, String)} instead
+	 * conversation as it will fail! Use acceptValidatedInput instead
 	 * to show the next prompt
 	 *
 	 * @param player
+	 * @return
 	 */
 	public final SimpleConversation show(final Player player) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + getClass().getSimpleName() + " instead!");

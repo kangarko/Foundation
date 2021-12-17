@@ -108,6 +108,9 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#containsKey(Object)
+	 *
+	 * @param key
+	 * @return
 	 */
 	public boolean containsKey(final String key) {
 		return map.containsKey(key);
@@ -117,6 +120,7 @@ public final class SerializedMap extends StrictCollection {
 	 * Puts a key:value pair into the map only if the values are not null
 	 *
 	 * @param associativeArray
+	 * @return
 	 */
 	public SerializedMap putArray(final Object... associativeArray) {
 		boolean string = true;
@@ -141,6 +145,7 @@ public final class SerializedMap extends StrictCollection {
 	 * Add another map to this map
 	 *
 	 * @param anotherMap
+	 * @return this
 	 */
 	public SerializedMap put(@NonNull SerializedMap anotherMap) {
 		map.putAll(anotherMap.asMap());
@@ -591,6 +596,8 @@ public final class SerializedMap extends StrictCollection {
 	 * @param <K>
 	 * @param <V>
 	 * @param key
+	 * @param keyType
+	 * @param valueType
 	 * @return
 	 */
 	public <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
@@ -600,8 +607,12 @@ public final class SerializedMap extends StrictCollection {
 	/**
 	 * Return a tuple or default
 	 *
+	 * @param <K>
+	 * @param <V>
 	 * @param key
 	 * @param def
+	 * @param keyType
+	 * @param valueType
 	 * @return
 	 */
 	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
@@ -730,7 +741,6 @@ public final class SerializedMap extends StrictCollection {
 	 * @param path
 	 * @param keyType
 	 * @param valueType
-	 * @param valueParameter
 	 * @return
 	 */
 	public <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
@@ -877,6 +887,8 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#forEach(BiConsumer)
+	 *
+	 * @param consumer
 	 */
 	public void forEach(final BiConsumer<String, Object> consumer) {
 		for (final Entry<String, Object> e : map.entrySet())
@@ -894,6 +906,8 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#keySet()
+	 *
+	 * @return
 	 */
 	public Set<String> keySet() {
 		return map.keySet();
@@ -901,6 +915,8 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#values()
+	 *
+	 * @return
 	 */
 	public Collection<Object> values() {
 		return map.values();
@@ -908,6 +924,8 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#entrySet()
+	 *
+	 * @return
 	 */
 	public Set<Entry<String, Object>> entrySet() {
 		return map.entrySet();
@@ -915,6 +933,8 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#size()
+	 *
+	 * @return
 	 */
 	public int size() {
 		return map.size();
@@ -957,6 +977,8 @@ public final class SerializedMap extends StrictCollection {
 
 	/**
 	 * @see Map#isEmpty()
+	 *
+	 * @return
 	 */
 	public boolean isEmpty() {
 		return map.isEmpty();

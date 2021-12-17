@@ -128,8 +128,7 @@ abstract class Message {
 	}
 
 	/**
-	 * Return the bungee channel, always returns
-	 * {@link SimplePlugin#getBungee()#getChannel()}
+	 * Return the bungee channel this message is coming from
 	 *
 	 * @return
 	 */

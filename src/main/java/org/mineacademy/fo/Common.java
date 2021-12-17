@@ -196,7 +196,7 @@ public final class Common {
 	/**
 	 * Broadcast the message to everyone and logs it
 	 *
-	 * @param message
+	 * @param messages
 	 */
 	public static void broadcast(final String... messages) {
 		if (!Valid.isNullOrEmpty(messages))
@@ -265,10 +265,8 @@ public final class Common {
 	 * Sends a message to the player and saves the time when it was sent.
 	 * The delay in seconds is the delay between which we won't send player the
 	 * same message, in case you call this method again.
-	 * <p>
+	 *
 	 * Does not prepend the message with {@link #getTellPrefix()}
-	 * <p>
-	 * See {@link #TIMED_TELL_CACHE} for more explanation.
 	 *
 	 * @param delaySeconds
 	 * @param sender
@@ -287,8 +285,6 @@ public final class Common {
 	 * Sends a message to the player and saves the time when it was sent.
 	 * The delay in seconds is the delay between which we won't send player the
 	 * same message, in case you call this method again.
-	 * <p>
-	 * See {@link #TIMED_TELL_CACHE} for more explanation.
 	 *
 	 * @param delaySeconds
 	 * @param sender
@@ -512,7 +508,7 @@ public final class Common {
 	}
 
 	/**
-	 * Return the sender's name if it's a player or discord sender, or simply {@link SimplePlugin#getConsoleName()} if it is a console
+	 * Return the sender's name if it's a player or discord sender, or simply {@link SimpleLocalization#CONSOLE_NAME} if it is a console
 	 *
 	 * @param sender
 	 * @return
@@ -557,7 +553,7 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
 	 *
 	 * @param messages the messages to replace color codes with '&'
 	 * @return the colored message
@@ -567,7 +563,7 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
 	 *
 	 * @param messages the messages to replace color codes with '&'
 	 * @return the colored message
@@ -581,9 +577,9 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
 	 * <p>
-	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimplePlugin#getServerPrefix()}
+	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimpleLocalization#SERVER_PREFIX}
 	 *
 	 * @param message the message to replace color codes with '&'
 	 * @return the colored message
@@ -715,7 +711,7 @@ public final class Common {
 	/**
 	 * Returns the last color, either & or {@link ChatColor#COLOR_CHAR} from the given message
 	 *
-	 * @param message, or empty if none
+	 * @param message or empty if none
 	 * @return
 	 */
 	public static String lastColor(final String message) {
@@ -1755,8 +1751,10 @@ public final class Common {
 	/**
 	 * Dynamically populates pages, used for pagination in commands or menus
 	 *
-	 * @param allItems all items that will be split
-	 * @return the map containing pages and their items
+	 * @param <T>
+	 * @param cellSize
+	 * @param items
+	 * @return
 	 */
 	public static <T> Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
 		final List<T> allItems = Common.toList(items);
@@ -2483,7 +2481,6 @@ public final class Common {
 			if (task.getTaskId() == taskId)
 				return task;
 
-		// TODO Fix for MC 1.2.5
 		return null;
 	}
 
@@ -2691,7 +2688,7 @@ final class TimedCharSequence implements CharSequence {
 
 	/**
 	 * Gets a character at the given index, or throws an error if
-	 * this is called too late after the constructor, see {@link #futureTimestampLimit}
+	 * this is called too late after the constructor.
 	 */
 	@Override
 	public char charAt(final int index) {

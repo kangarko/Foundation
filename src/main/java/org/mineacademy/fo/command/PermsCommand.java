@@ -20,7 +20,7 @@ import lombok.NonNull;
 
 /**
  * A simple predefined command for quickly listing all permissions
- * the plugin uses, given they are stored in a {@link FoPermissions} class.
+ * the plugin uses, given they are stored in a class.
  */
 public final class PermsCommand extends SimpleSubCommand {
 

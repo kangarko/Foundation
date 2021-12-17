@@ -330,6 +330,8 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	/**
 	 * Builds ExpiringMap instances. Defaults to ExpirationPolicy.CREATED,
 	 * expiration of 60 TimeUnit.SECONDS and a maxSize of Integer.MAX_VALUE.
+	 * @param <K>
+	 * @param <V>
 	 */
 	public static final class Builder<K, V> {
 		private ExpirationPolicy expirationPolicy = ExpirationPolicy.CREATED;
@@ -353,8 +355,8 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 *
 		 * @param <K1> Key type
 		 * @param <V1> Value type
+		 * @return
 		 */
-
 		public <K1 extends K, V1 extends V> ExpiringMap<K1, V1> build() {
 			return new ExpiringMap<>((Builder<K1, V1>) this);
 		}
@@ -365,6 +367,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * @param duration the length of time after an entry is created that it should
 		 *                 be removed
 		 * @param timeUnit the unit that {@code duration} is expressed in
+		 * @return
 		 * @throws NullPointerException if {@code timeUnit} is null
 		 */
 		public Builder<K, V> expiration(long duration, @NonNull TimeUnit timeUnit) {
@@ -379,6 +382,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * the expiration policy.
 		 *
 		 * @param maxSize The maximum size of the map.
+		 * @return
 		 */
 		public Builder<K, V> maxSize(int maxSize) {
 			Valid.checkBoolean(maxSize > 0, "maxSize");
@@ -395,8 +399,9 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * @throws IllegalStateException if an
 		 *                               {@link #expiringEntryLoader(ExpiringEntryLoader)
 		 *                               ExpiringEntryLoader} is set
+		 *
+		 * @return
 		 */
-
 		public <K1 extends K, V1 extends V> Builder<K1, V1> entryLoader(@NonNull EntryLoader<? super K1, ? super V1> loader) {
 			assertNoLoaderSet();
 			entryLoader = (EntryLoader<K, V>) loader;
@@ -407,8 +412,11 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * Sets the ExpiringEntryLoader to use when loading entries and configures
 		 * {@link #variableExpiration() variable expiration}. Either an EntryLoader or
 		 * ExpiringEntryLoader may be set, not both.
+		 * @param <K1>
+		 * @param <V1>
 		 *
 		 * @param loader to set
+		 * @return
 		 * @throws NullPointerException  if {@code loader} is null
 		 * @throws IllegalStateException if an {@link #entryLoader(EntryLoader)
 		 *                               EntryLoader} is set
@@ -424,8 +432,11 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * Configures the expiration listener that will receive notifications upon each
 		 * map entry's expiration. Notifications are delivered synchronously and block
 		 * map write operations.
+		 * @param <K1>
+		 * @param <V1>
 		 *
 		 * @param listener to set
+		 * @return
 		 * @throws NullPointerException if {@code listener} is null
 		 */
 		public <K1 extends K, V1 extends V> Builder<K1, V1> expirationListener(
@@ -441,8 +452,11 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * Configures the expiration listeners which will receive notifications upon
 		 * each map entry's expiration. Notifications are delivered synchronously and
 		 * block map write operations.
+		 * @param <K1>
+		 * @param <V1>
 		 *
 		 * @param listeners to set
+		 * @return
 		 * @throws NullPointerException if {@code listener} is null
 		 */
 
@@ -459,8 +473,11 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		/**
 		 * Configures the expiration listener which will receive asynchronous
 		 * notifications upon each map entry's expiration.
+		 * @param <K1>
+		 * @param <V1>
 		 *
 		 * @param listener to set
+		 * @return
 		 * @throws NullPointerException if {@code listener} is null
 		 */
 		public <K1 extends K, V1 extends V> Builder<K1, V1> asyncExpirationListener(
@@ -475,8 +492,11 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		/**
 		 * Configures the expiration listeners which will receive asynchronous
 		 * notifications upon each map entry's expiration.
+		 * @param <K1>
+		 * @param <V1>
 		 *
 		 * @param listeners to set
+		 * @return
 		 * @throws NullPointerException if {@code listener} is null
 		 */
 		public <K1 extends K, V1 extends V> Builder<K1, V1> asyncExpirationListeners(
@@ -493,6 +513,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * Configures the map entry expiration policy.
 		 *
 		 * @param expirationPolicy
+		 * @return
 		 * @throws NullPointerException if {@code expirationPolicy} is null
 		 */
 		public Builder<K, V> expirationPolicy(@NonNull ExpirationPolicy expirationPolicy) {
@@ -503,6 +524,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		/**
 		 * Allows for map entries to have individual expirations and for expirations to
 		 * be changed.
+		 * @return
 		 */
 		public Builder<K, V> variableExpiration() {
 			variableExpiration = true;
@@ -521,6 +543,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	private interface EntryMap<K, V> extends Map<K, ExpiringEntry<K, V>> {
 		/**
 		 * Returns the first entry in the map or null if the map is empty.
+		 * @return
 		 */
 		ExpiringEntry<K, V> first();
 
@@ -533,6 +556,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 
 		/**
 		 * Returns a values iterator.
+		 * @return
 		 */
 		Iterator<ExpiringEntry<K, V>> valuesIterator();
 	}
@@ -851,6 +875,9 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	/**
 	 * Creates a new instance of ExpiringMap with ExpirationPolicy.CREATED and an
 	 * expiration of 60 seconds.
+	 * @param <K>
+	 * @param <V>
+	 * @return
 	 */
 
 	public static <K, V> ExpiringMap<K, V> create() {
@@ -1143,6 +1170,10 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	}
 
 	/**
+	 * @param key
+	 * @param value
+	 * @param expirationPolicy
+	 * @return
 	 * @see #put(Object, Object, ExpirationPolicy, long, TimeUnit)
 	 */
 	public V put(K key, V value, ExpirationPolicy expirationPolicy) {
@@ -1150,6 +1181,11 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	}
 
 	/**
+	 * @param key
+	 * @param value
+	 * @param duration
+	 * @param timeUnit
+	 * @return
 	 * @see #put(Object, Object, ExpirationPolicy, long, TimeUnit)
 	 */
 	public V put(K key, V value, long duration, TimeUnit timeUnit) {
@@ -1163,6 +1199,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	 *
 	 * @param key      Key to put value for
 	 * @param value    Value to put for key
+	 * @param expirationPolicy
 	 * @param duration the length of time after an entry is created that it should
 	 *                 be removed
 	 * @param timeUnit the unit that {@code duration} is expressed in

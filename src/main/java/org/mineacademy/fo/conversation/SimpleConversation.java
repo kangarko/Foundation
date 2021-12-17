@@ -277,8 +277,6 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	private final class CustomCanceller extends InactivityConversationCanceller {
 
 		/**
-		 * @param plugin
-		 * @param timeoutSeconds
 		 */
 		public CustomCanceller() {
 			super(SimplePlugin.getInstance(), getTimeout());

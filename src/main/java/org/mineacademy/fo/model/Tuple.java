@@ -9,6 +9,8 @@ import lombok.Data;
 
 /**
  * Simple tuple for key-value pairs
+ * @param <K>
+ * @param <V>
  */
 @Data
 public final class Tuple<K, V> implements ConfigSerializable {

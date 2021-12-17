@@ -18,7 +18,7 @@ import lombok.NonNull;
 
 /**
  * Represents a simple database where values are flattened and stored
- * by {@link UUID} from the given {@link Identifiable} interface.
+ * by {@link UUID}.
  * <p>
  * The table structure is as follows:
  * <p>
@@ -27,10 +27,9 @@ import lombok.NonNull;
  * Player's uuid    | Last known name | {json data}    | Date of last save call
  * <p>
  * We use JSON to flatten those values and provide convenience methods
- * {@link #onLoad(SerializedMap, Identifiable)} and {@link #onSave(Identifiable)}
- * for you to override so that you can easily save/load data to MySQL.
+ * onLoad and onSave for you to override so that you can easily save/load data to MySQL.
  * <p>
- * Also see {@link #getExpirationDays()}, by default we remove values not touched
+ * Also see getExpirationDays(), by default we remove values not touched
  * within the last 90 days.
  * <p>
  * For a less-restricting solution see {@link SimpleDatabase} however you will

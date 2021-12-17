@@ -13,6 +13,7 @@ public final class NamedThreadFactory implements ThreadFactory {
 	/**
 	 * Creates a thread factory that names threads according to the {@code nameFormat} by supplying a
 	 * single argument to the format representing the thread number.
+	 * @param nameFormat
 	 */
 	public NamedThreadFactory(String nameFormat) {
 		this.nameFormat = nameFormat;

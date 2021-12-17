@@ -467,8 +467,15 @@ public class AnimationUtil {
 
 	@RequiredArgsConstructor
 	public static class CountdownBar {
-		final long duration;
-		final boolean isSmooth;
-		final boolean goUp;
+
+		/**
+		 * The duration
+		 */
+		private final long duration;
+
+		/**
+		 * Is smooth?
+		 */
+		private final boolean isSmooth;
 	}
 }

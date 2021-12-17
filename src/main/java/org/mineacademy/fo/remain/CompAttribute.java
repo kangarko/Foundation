@@ -103,9 +103,9 @@ public enum CompAttribute {
 	 * Construct a new Attribute.
 	 *
 	 * @param name              the generic name
-	 * @param genericFieldName, see {@link #genericFieldName}
+	 * @param genericFieldName see {@link #genericFieldName}
 	 */
-	private CompAttribute(final String name, final String genericFieldName) {
+	CompAttribute(final String name, final String genericFieldName) {
 		this.minecraftName = name;
 		this.genericFieldName = genericFieldName;
 	}

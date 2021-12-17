@@ -5,8 +5,9 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.remain.CompMetadata;
 
 /**
  * Stores constants for this plugin
@@ -87,7 +88,7 @@ public final class FoConstants {
 		/**
 		 * The header for data.db file
 		 *
-		 * Use {@link YamlConfig#setHeader()} to override this.
+		 * Use YamlConfig/setHeader() to override this.
 		 */
 		public static final String[] DATA_FILE = new String[] {
 				"",
@@ -101,7 +102,7 @@ public final class FoConstants {
 		 * The header that is put into the file that has been automatically
 		 * updated and comments were lost.
 		 *
-		 * Use {@link YamlConfig#setHeader()} to override this.
+		 * Use Use YamlConfig/setHeader() to override this.
 		 */
 		public static final String[] UPDATED_FILE = new String[] {
 				Common.configLine(),
@@ -124,7 +125,7 @@ public final class FoConstants {
 	public static final class NBT {
 
 		/**
-		 * Represents our NBT tag used in {@link NBTUtil}
+		 * Represents our NBT tag used in {@link CompMetadata}
 		 */
 		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
 
@@ -132,7 +133,7 @@ public final class FoConstants {
 		 * An internal metadata tag the player gets when he opens the menu.
 		 *
 		 * <p>
-		 * Used in {@link #getMenu(Player)}
+		 * Used in {@link Menu#getMenu(Player)}
 		 */
 		public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
 
@@ -140,7 +141,7 @@ public final class FoConstants {
 		 * An internal metadata tag the player gets when he opens another menu.
 		 *
 		 * <p>
-		 * Used in {@link #getPreviousMenu(Player)}
+		 * Used in {@link Menu#getPreviousMenu(Player)}
 		 */
 		public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
 
@@ -149,7 +150,7 @@ public final class FoConstants {
 		 * reopen last closed menu manually.
 		 *
 		 * <p>
-		 * Used in {@link #getPreviousMenu(Player)}
+		 * Used in {@link Menu#getLastClosedMenu(Player)}
 		 */
 		public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getNamed() + "_Last_Closed_Menu";
 	}

@@ -6,7 +6,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.command.ReloadCommand;
-import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -139,7 +138,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String LABEL_REQUIRED_ARGS = "required arguments";
 
 		/**
-		 * The multiline usages label, see {@link SimpleCommand#getMultilineUsageMessage()}
+		 * The multiline usages label
 		 */
 		public static String LABEL_USAGES = "&c&lUsages:";
 
@@ -463,10 +462,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 * Keys related to {@link ChatPaginator}
 	 */
 	public static final class Pages {
-
-		/**
-		 * Below you find different keys called from {@link FoundationListener}
-		 */
 
 		public static String NO_PAGE_NUMBER = "&cPlease specify the page number for this command.";
 		public static String NO_PAGES = "&cYou do not have any pages saved to show.";

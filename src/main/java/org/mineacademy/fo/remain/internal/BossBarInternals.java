@@ -187,6 +187,8 @@ public final class BossBarInternals implements Listener {
 	 * @param percent The percentage of the health bar filled.<br>
 	 *                This value must be between 0F (inclusive) and 100F
 	 *                (inclusive).
+	 * @param color
+	 * @param style
 	 * @throws IllegalArgumentException If the percentage is not within valid
 	 *                                  bounds.
 	 */
@@ -231,6 +233,8 @@ public final class BossBarInternals implements Listener {
 	 *                It will be cut to that size automatically.
 	 * @param seconds The amount of seconds displayed by the timer.<br>
 	 *                Supports values above 1 (inclusive).
+	 * @param color
+	 * @param style
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
 	public void setMessage(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {

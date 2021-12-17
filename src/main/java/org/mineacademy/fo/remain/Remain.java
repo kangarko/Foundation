@@ -697,6 +697,7 @@ public final class Remain {
 	 * @param block
 	 * @param material
 	 * @param data
+	 * @param physics
 	 */
 	public static void setTypeAndData(final Block block, final Material material, final byte data, final boolean physics) {
 		if (MinecraftVersion.atLeast(V.v1_13)) {
@@ -726,9 +727,11 @@ public final class Remain {
 	 * Converts chat message in JSON (IChatBaseComponent) to one lined old style
 	 * message with color codes. e.g. {text:"Hello world",color="red"} converts to
 	 * &cHello world
+	 * @param json
 	 *
 	 * @param denyEvents if an exception should be thrown if hover/click event is
 	 *                   found.
+	 * @return
 	 * @throws InteractiveTextFoundException if click/hover event are found. Such
 	 *                                       events would be removed, and therefore
 	 *                                       message containing them shall not be
@@ -779,7 +782,6 @@ public final class Remain {
 	 * Convert the given json into list
 	 *
 	 * @param json
-	 * @param typeOf
 	 * @return
 	 */
 	public static List<String> fromJsonList(String json) {
@@ -789,6 +791,8 @@ public final class Remain {
 	/**
 	 * Converts chat message with color codes to Json chat components e.g. &6Hello
 	 * world converts to {text:"Hello world",color="gold"}
+	 * @param message
+	 * @return
 	 */
 	public static String toJson(final String message) {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
@@ -1116,7 +1120,7 @@ public final class Remain {
 	 * Broadcast a chest open animation at the given block,
 	 * the block must be a chest!
 	 *
-	 * @param location
+	 * @param block
 	 */
 	public static void sendChestOpen(Block block) {
 		sendChestAction(block, 1);
@@ -1208,7 +1212,7 @@ public final class Remain {
 	 * aliases
 	 *
 	 * @param label          the label
-	 * @param removeAliases, also remove aliases?
+	 * @param removeAliases also remove aliases?
 	 */
 	public static void unregisterCommand(final String label, final boolean removeAliases) {
 		try {
@@ -1670,16 +1674,16 @@ public final class Remain {
 	 * <p>
 	 * Backwards compatible.
 	 *
-	 * @param e, the event
+	 * @param event the event
 	 * @return if the event was fired for main hand only
 	 */
-	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent e) {
+	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent event) {
 
 		if (MinecraftVersion.olderThan(V.v1_9))
 			return true;
 
 		try {
-			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
+			return event.getHand() != null && event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
 
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
@@ -1836,10 +1840,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
@@ -2126,7 +2130,7 @@ public final class Remain {
 	 *
 	 * Each player sending is delayed by 0.1s
 	 *
-	 * @param receiver
+	 * @param receivers
 	 * @param message you can replace player-specific variables in the message here
 	 * @param icon
 	 */
@@ -2397,6 +2401,7 @@ public final class Remain {
 	 *
 	 * @param item
 	 * @param type
+	 * @param durationTicks
 	 * @param level
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int durationTicks, final int level) {

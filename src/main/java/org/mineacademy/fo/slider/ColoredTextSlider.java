@@ -5,6 +5,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
  *
  * Example use: Animated scoreboards, menu titles, etc.
  */
+@Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ColoredTextSlider implements Slider<String> {
 
@@ -44,7 +46,7 @@ public final class ColoredTextSlider implements Slider<String> {
 
 	/**
 	 * Set the amount of letters of the text we apply
-	 * {@link #secondaryColor} to.
+	 * {@link #getSecondaryColor()} to.
 	 *
 	 * @param width
 	 * @return

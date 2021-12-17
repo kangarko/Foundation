@@ -189,7 +189,7 @@ public abstract class PacketListener {
 		private boolean adventure = false;
 
 		/**
-		 * @param params
+		 * Create new chat listener
 		 */
 		public SimpleChatAdapter() {
 			super(ListenerPriority.HIGHEST, PacketType.Play.Server.CHAT);
