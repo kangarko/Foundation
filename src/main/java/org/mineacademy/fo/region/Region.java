@@ -260,7 +260,7 @@ public class Region implements ConfigSerializable {
 	/**
 	 * Set the secondary region point
 	 *
-	 * @param primary
+	 * @param secondary
 	 */
 	public final void setSecondary(final Location secondary) {
 		this.secondary = secondary;

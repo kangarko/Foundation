@@ -11,6 +11,7 @@ import org.mineacademy.fo.Valid;
 
 /**
  * An engine that reads rule set from a file such as in ChatControl.
+ * @param <T>
  */
 public abstract class RuleSetReader<T extends Rule> {
 
@@ -57,7 +58,7 @@ public abstract class RuleSetReader<T extends Rule> {
 			final String line = lines.get(i);
 
 			// Found our rule
-			if (line.equals(this.newKeyword + " " + rule.getUid()))
+			if (line.equals(this.newKeyword + " " + rule.getGroupName()))
 				found = true;
 
 			// Found something else

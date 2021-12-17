@@ -69,6 +69,7 @@ public final class Lang extends YamlConfig {
 	 * the Lang class will use the given file in the given path.
 	 *
 	 * Example: "localization/messages_" + SimpleSettings.LOCALE_PREFIX ".yml"
+	 * @param filePath
 	 */
 	public static void init(String filePath) {
 		instance = new Lang(filePath);

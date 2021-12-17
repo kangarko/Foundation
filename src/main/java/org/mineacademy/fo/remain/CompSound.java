@@ -240,7 +240,6 @@ public enum CompSound {
 	 * Plays a sound for the given player
 	 *
 	 * @param player
-	 * @param sound
 	 * @param volume
 	 * @param pitch
 	 */
@@ -265,7 +264,6 @@ public enum CompSound {
 	 * Plays a sound on a specific location
 	 *
 	 * @param loc
-	 * @param sound
 	 * @param volume
 	 * @param pitch
 	 */

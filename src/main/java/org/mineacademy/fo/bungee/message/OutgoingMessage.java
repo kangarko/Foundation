@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.bungee.BungeeListener;
@@ -70,7 +69,7 @@ public final class OutgoingMessage extends Message {
 	 */
 	public void writeString(String... messages) {
 		for (final String message : messages)
-			write(CompressUtil.compressB64(message), String.class);
+			write(message, String.class);
 	}
 
 	/**
@@ -165,7 +164,7 @@ public final class OutgoingMessage extends Message {
 	/**
 	 * Send this message with the current data for the given player!
 	 *
-	 * @param connection
+	 * @param player
 	 */
 	public void send(Player player) {
 		player.sendPluginMessage(SimplePlugin.getInstance(), getChannel(), compileData());

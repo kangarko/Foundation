@@ -335,7 +335,7 @@ public final class BoxedMessage {
 		private final String[] variables;
 
 		/**
-		 * Replace {@link #variables} with the given object replacements
+		 * Replace the variables we store with the given object replacements
 		 *
 		 * @param replacements
 		 * @return

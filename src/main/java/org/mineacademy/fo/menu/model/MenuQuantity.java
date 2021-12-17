@@ -77,6 +77,7 @@ public enum MenuQuantity {
 
 	/**
 	 * Rotates the enum backwards
+	 * @param allowDecimals
 	 *
 	 * @return the previous enum ordinal, or last if overflows
 	 */
@@ -86,6 +87,7 @@ public enum MenuQuantity {
 
 	/**
 	 * Rotates the enum forward
+	 * @param allowDecimals
 	 *
 	 * @return the next enum ordinal, or first if overflows
 	 */

@@ -11,7 +11,7 @@ public interface Rule {
 	 *
 	 * @return
 	 */
-	String getUid();
+	String getGroupName();
 
 	/**
 	 * Return the file this rule residues in

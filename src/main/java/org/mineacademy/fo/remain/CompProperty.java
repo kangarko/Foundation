@@ -71,11 +71,11 @@ public enum CompProperty {
 	 */
 	private final Class<?> setterMethodType;
 
-	private Map<Class<?>, Boolean> isAvailable = new HashMap<>();
-	private Map<Class<?>, Method> cachedMethods = new HashMap<>();
+	private final Map<Class<?>, Boolean> isAvailable = new HashMap<>();
+	private final Map<Class<?>, Method> cachedMethods = new HashMap<>();
 
 	/**
-	 * Apply the property to the entity. Class must be compatible with {@link #requiredClass}
+	 * Apply the property to the entity. Class must be compatible with the {@link #getRequiredClass()} of this property.
 	 * <p>
 	 * Example: SILENT.apply(myZombieEntity, true)
 	 *
@@ -143,7 +143,7 @@ public enum CompProperty {
 	}
 
 	/**
-	 * Can this property be used on this server for the given class? Class must be compatible with {@link #requiredClass}
+	 * Can this property be used on this server for the given class? Class must be compatible with {@link #getRequiredClass()}
 	 * <p>
 	 * Class is for example {@link Entity}
 	 *

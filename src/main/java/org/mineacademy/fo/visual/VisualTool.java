@@ -15,8 +15,6 @@ import lombok.NonNull;
 
 /**
  * A class that can visualize selection of blocks in the arena
- *
- * @param <T>
  */
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class VisualTool extends BlockTool {

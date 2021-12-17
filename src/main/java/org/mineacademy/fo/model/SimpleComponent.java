@@ -77,7 +77,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Add a show text ; event for the {@link #currentComponents}
+	 * Add a show text event
 	 *
 	 * @param texts
 	 * @return
@@ -87,7 +87,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Add a show text hover event for the {@link #currentComponents}
+	 * Add a show text hover event
 	 *
 	 * @param lines
 	 * @return
@@ -143,7 +143,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Add a run command event for the {@link #currentComponents}
+	 * Add a run command event
 	 *
 	 * @param text
 	 * @return
@@ -153,7 +153,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Add a suggest command event for the {@link #currentComponents}
+	 * Add a suggest command event
 	 *
 	 * @param text
 	 * @return
@@ -163,7 +163,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Open the given URL for the {@link #currentComponents}
+	 * Open the given URL
 	 *
 	 * @param url
 	 * @return
@@ -173,7 +173,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Add a command event for the {@link #currentComponents}
+	 * Add a command event
 	 *
 	 * @param action
 	 * @param text
@@ -186,7 +186,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Invoke {@link TextComponent#setInsertion(String)} for {@link #currentComponents}
+	 * Invoke {@link TextComponent#setInsertion(String)}
 	 *
 	 * @param insertion
 	 * @return
@@ -254,6 +254,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * specified here
 	 *
 	 * @param text
+	 * @param inheritFormatting
 	 * @param colorize
 	 * @return
 	 */
@@ -389,8 +390,8 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * command senders. If they are players, we send them interactive elements.
 	 * <p>
 	 * If they are console, they receive a plain text message.
-	 *
-	 * @param receiver
+	 * @param receivers
+	 * @param <T>
 	 */
 	public <T extends CommandSender> void send(T... receivers) {
 		this.send(Arrays.asList(receivers));
@@ -403,7 +404,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * If they are console, they receive a plain text message.
 	 *
 	 * @param <T>
-	 * @param receiver
+	 * @param receivers
 	 */
 	public <T extends CommandSender> void send(Iterable<T> receivers) {
 		this.sendAs(null, receivers);
@@ -418,7 +419,8 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * We will also replace relation placeholders if the sender is set and is player.
 	 *
 	 * @param <T>
-	 * @param receiver
+	 * @param sender
+	 * @param receivers
 	 */
 	public <T extends CommandSender> void sendAs(CommandSender sender, Iterable<T> receivers) {
 		for (final CommandSender receiver : receivers) {
@@ -691,7 +693,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * Create a new interactive chat component
 	 * You can then build upon your text to add interactive elements
 	 *
-	 * @param text
 	 * @return
 	 */
 	public static SimpleComponent empty() {

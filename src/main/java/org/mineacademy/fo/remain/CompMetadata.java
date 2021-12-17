@@ -61,7 +61,6 @@ public final class CompMetadata {
 	 * A shortcut for setting a tag with key-value pair on an item
 	 *
 	 * @param item
-	 * @param compoundTag
 	 * @param key
 	 * @param value
 	 * @return
@@ -152,7 +151,6 @@ public final class CompMetadata {
 	 * A shortcut from reading a certain key from an item's given compound tag
 	 *
 	 * @param item
-	 * @param compoundTag
 	 * @param key
 	 * @return
 	 */
@@ -205,7 +203,7 @@ public final class CompMetadata {
 	 * Return saved tile entity metadata, or null if none
 	 *
 	 * @param tileEntity
-	 * @param key,       or null if none
+	 * @param key       or null if none
 	 * @return
 	 */
 	public static String getMetadata(final BlockState tileEntity, final String key) {
@@ -235,7 +233,7 @@ public final class CompMetadata {
 
 	/**
 	 * Return true if the given itemstack has the given key stored at its compound
-	 * tag {@link FoConstants.NBT#TAG}
+	 * tag {@link org.mineacademy.fo.constants.FoConstants.NBT#TAG}
 	 *
 	 * @param item
 	 * @param key
@@ -339,7 +337,7 @@ public final class CompMetadata {
 	 * because otherwise the tag is the same as the value we return
 	 *
 	 * @param entity
-	 * @param tag
+	 * @param key
 	 * @return
 	 */
 	public static MetadataValue getTempMetadata(final Entity entity, final String key) {
@@ -361,7 +359,7 @@ public final class CompMetadata {
 	 * Remove temporary metadata from the entity
 	 *
 	 * @param player
-	 * @param tag
+	 * @param key
 	 */
 	public static void removeTempMetadata(final Entity player, final String key) {
 		if (player.hasMetadata(key))

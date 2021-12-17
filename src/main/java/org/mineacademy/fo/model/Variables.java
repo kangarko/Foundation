@@ -83,10 +83,10 @@ public final class Variables {
 	/**
 	 * Return the variable for the given key that is a function of replacing
 	 * itself for the player. Returns null if no such variable by key is present.
+	 * @param key
 	 *
 	 * @return
 	 */
-
 	public static Function<CommandSender, String> getVariable(String key) {
 		return customVariables.get(key);
 	}
@@ -175,6 +175,7 @@ public final class Variables {
 	 *
 	 * @param messages
 	 * @param sender
+	 * @param replacements
 	 * @return
 	 */
 	public static List<String> replace(Iterable<String> messages, CommandSender sender, Map<String, Object> replacements) {
@@ -207,6 +208,7 @@ public final class Variables {
 	 *
 	 * @param message
 	 * @param sender
+	 * @param replacements
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender, Map<String, Object> replacements) {
@@ -221,6 +223,7 @@ public final class Variables {
 	 *
 	 * @param message
 	 * @param sender
+	 * @param replacements
 	 * @param colorize
 	 * @return
 	 */

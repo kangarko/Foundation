@@ -17,6 +17,8 @@ import org.mineacademy.fo.Valid;
  * Strict map that only allows to remove elements that are contained within, or add elements that are not.
  * <p>
  * Failing to do so results in an error, with optional error message.
+ * @param <E>
+ * @param <T>
  */
 public final class StrictMap<E, T> extends StrictCollection {
 
@@ -197,6 +199,9 @@ public final class StrictMap<E, T> extends StrictCollection {
 
 	/**
 	 * Return the key from the map, or null if not set
+	 *
+	 * @param key
+	 * @return
 	 */
 	public T get(E key) {
 		return map.get(key);

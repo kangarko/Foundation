@@ -257,6 +257,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @param sender
 	 * @param existingComponent
+	 * @param replacements
 	 * @return
 	 */
 	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent, Map<String, Object> replacements) {

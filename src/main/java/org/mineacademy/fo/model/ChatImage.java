@@ -142,6 +142,7 @@ public final class ChatImage {
 	 * @param height
 	 * @param characterType
 	 * @return
+	 * @throws IOException
 	 */
 	public static ChatImage fromFile(@NonNull File file, int height, Type characterType) throws IOException {
 		Valid.checkBoolean(file.exists(), "Cannot load image from non existing file " + file.toPath());
@@ -309,7 +310,7 @@ public final class ChatImage {
 		@Getter
 		private char character;
 
-		private Type(char c) {
+		Type(char c) {
 			this.character = c;
 		}
 

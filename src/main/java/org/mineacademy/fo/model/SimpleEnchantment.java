@@ -229,7 +229,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	/**
 	 * What other enchants this one conflicts with? Defaults to false for all
 	 *
-	 * @param
+	 * @param other
 	 * @return
 	 */
 	@Override
@@ -240,7 +240,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	/**
 	 * What items can be enchanted? Defaults to true for all
 	 *
-	 * @param
+	 * @param item
 	 * @return
 	 */
 	@Override

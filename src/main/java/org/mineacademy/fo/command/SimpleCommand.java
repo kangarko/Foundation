@@ -309,7 +309,7 @@ public abstract class SimpleCommand extends Command {
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Execute this command, updates the {@link #sender}, {@link #label} and {@link #args} variables,
+	 * Execute this command, updates the sender, label and args variables,
 	 * checks permission and returns if the sender lacks it,
 	 * checks minimum arguments and finally passes the command to the child class.
 	 * <p>
@@ -1464,7 +1464,7 @@ public abstract class SimpleCommand extends Command {
 	 * Sets the permission required for this command to run. If you set the
 	 * permission to null we will not require any permission (unsafe).
 	 *
-	 * @param
+	 * @param permission
 	 */
 	@Override
 	public final void setPermission(final String permission) {

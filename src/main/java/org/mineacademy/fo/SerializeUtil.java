@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -278,7 +279,7 @@ public final class SerializeUtil {
 	 * @param <T>
 	 * @param classOf
 	 * @param object
-	 * @param deserializeParameters, use more variables in the deserialize method
+	 * @param deserializeParameters
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
@@ -316,8 +317,7 @@ public final class SerializeUtil {
 			{ // Build parameter instances
 				joinedParams.add(map);
 
-				for (final Object param : deserializeParameters)
-					joinedParams.add(param);
+				Collections.addAll(joinedParams, deserializeParameters);
 			}
 
 			if (deserializeMethod != null) {
@@ -659,7 +659,7 @@ public final class SerializeUtil {
 	 * A simple class holding some of the potion names
 	 */
 	@RequiredArgsConstructor
-	protected static enum PotionWrapper {
+	protected enum PotionWrapper {
 
 		SLOW("SLOW", "Slowness"),
 		STRENGTH("INCREASE_DAMAGE"),
@@ -670,7 +670,7 @@ public final class SerializeUtil {
 		private final String bukkitName;
 		private final String minecraftName;
 
-		private PotionWrapper(String bukkitName) {
+		PotionWrapper(String bukkitName) {
 			this(bukkitName, null);
 		}
 
@@ -706,7 +706,7 @@ public final class SerializeUtil {
 	 * A simple class holding some of the enchantments names
 	 */
 	@RequiredArgsConstructor
-	protected static enum EnchantmentWrapper {
+	protected enum EnchantmentWrapper {
 		PROTECTION("PROTECTION_ENVIRONMENTAL"),
 		FIRE_PROTECTION("PROTECTION_FIRE"),
 		FEATHER_FALLING("PROTECTION_FALL"),

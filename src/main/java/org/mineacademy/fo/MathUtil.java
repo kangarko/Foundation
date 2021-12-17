@@ -237,16 +237,17 @@ public final class MathUtil {
 	 *
 	 * @param vector
 	 * @param angle
+	 * @return
 	 */
-	public static Vector rotateAroundAxisX(Vector v, double angle) {
+	public static Vector rotateAroundAxisX(Vector vector, double angle) {
 		angle = Math.toRadians(angle);
 
 		final double cos = Math.cos(angle);
 		final double sin = Math.sin(angle);
-		final double y = v.getY() * cos - v.getZ() * sin;
-		final double z = v.getY() * sin + v.getZ() * cos;
+		final double y = vector.getY() * cos - vector.getZ() * sin;
+		final double z = vector.getY() * sin + vector.getZ() * cos;
 
-		return v.setY(y).setZ(z);
+		return vector.setY(y).setZ(z);
 	}
 
 	/**

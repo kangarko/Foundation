@@ -35,7 +35,7 @@ public final class Replacer {
 	 * adding {} to them if they do not contain it already
 	 *
 	 * @param message
-	 * @param associativeArray
+	 * @param replacements
 	 * @return
 	 */
 	public static String replaceArray(String message, Object... replacements) {

@@ -191,7 +191,7 @@ public final class ItemCreator {
 	}
 
 	/**
-	 * Set the Material for the item. If {@link #item} is set,
+	 * Set the Material for the item. If an itemstack has already been set,
 	 * this material will take priority.
 	 *
 	 * @param material
@@ -244,7 +244,7 @@ public final class ItemCreator {
 
 	/**
 	 * Remove any previous lore from the item. Useful if you initiated this
-	 * class with an ItemStack or set {@link #item} already, to clear old lore off of it.
+	 * class with an ItemStack or set the itemstack already, to clear old lore off of it.
 	 *
 	 * @return
 	 */
@@ -844,6 +844,7 @@ public final class ItemCreator {
 	 * Convenience method for creation potions
 	 *
 	 * @param potionEffect
+	 * @param durationTicks
 	 * @param level
 	 * @param name
 	 * @param lore

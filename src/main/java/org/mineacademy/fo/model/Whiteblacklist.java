@@ -41,6 +41,7 @@ public final class Whiteblacklist {
 	 *
 	 * If the first line equals to '@blacklist', matching will be
 	 * blacklisting (only rules), otherwise this will be a whitelist (except rules)
+	 * @param items
 	 */
 	public Whiteblacklist(@NonNull List<String> items) {
 		if (!items.isEmpty()) {

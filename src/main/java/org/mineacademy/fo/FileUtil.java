@@ -49,7 +49,7 @@ public final class FileUtil {
 	 * <p>
 	 * Example: classes/Archer.yml will only return Archer
 	 *
-	 * @param path
+	 * @param file
 	 * @return
 	 */
 	public static String getFileName(File file) {
@@ -226,7 +226,6 @@ public final class FileUtil {
 	 * The line will be as follows: [date] msg
 	 *
 	 * @param to
-	 * @param prefix
 	 * @param message
 	 */
 	public static void writeFormatted(String to, String message) {
@@ -336,7 +335,6 @@ public final class FileUtil {
 	 * Copy file from our plugin jar to destination - customizable destination file
 	 * name.
 	 *
-	 * @param override always extract file even if already exists?
 	 * @param from     the path to the file inside the plugin
 	 * @param to       the path where the file will be copyed inside the plugin
 	 *                 folder
@@ -375,8 +373,7 @@ public final class FileUtil {
 	 * Similar to {@link #extract(String, String)} but intended
 	 * for non-text file types such as images etc.
 	 *
-	 * @param from
-	 * @param to
+	 * @param path
 	 * @return
 	 */
 	public static File extractRaw(String path) {
@@ -520,7 +517,7 @@ public final class FileUtil {
 	 * @param file
 	 * @return filepath from server root with the byte compressed file content array
 	 */
-	public static Tuple<String, byte[]> compress(@NonNull File file) {
+	public static Tuple<String, byte[]> _compress(@NonNull File file) {
 		Valid.checkBoolean(!file.isDirectory(), "Cannot compress a directory: " + file.getPath());
 		final List<String> lines = new ArrayList<>(readLines(file)); // ensure modifiable
 
@@ -544,34 +541,30 @@ public final class FileUtil {
 		// Join using our custom deliminer
 		final String joinedLines = String.join("%CMPRSDBF%", lines);
 
-		return new Tuple<>(filePath, CompressUtil.compress(joinedLines));
+		return new Tuple<>(filePath, CompressUtil._compress(joinedLines));
 	}
 
 	/**
 	 * Decompresses and writes all content to the file from the data array
 	 *
-	 * see {@link #compress(File)}
-	 *
 	 * @param data
 	 *
 	 * @return
 	 */
-	public static File decompressAndWrite(@NonNull byte[] data) {
-		return decompressAndWrite(null, data);
+	public static File _decompressAndWrite(@NonNull byte[] data) {
+		return _decompressAndWrite(null, data);
 	}
 
 	/**
-	 * Decompresses and writes all content to the file,
-	 *
-	 * see {@link #compress(File)}
+	 * Decompresses and writes all content to the file
 	 *
 	 * @param destination
 	 * @param data
 	 *
 	 * @return
 	 */
-	public static File decompressAndWrite(File destination, @NonNull byte[] data) {
-		final Tuple<File, List<String>> tuple = decompress(data);
+	public static File _decompressAndWrite(File destination, @NonNull byte[] data) {
+		final Tuple<File, List<String>> tuple = _decompress(data);
 
 		if (destination == null)
 			destination = tuple.getKey();
@@ -591,14 +584,13 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Decompresses the given data array into a file-lines tuple,
-	 * see {@link #compress(File)}
+	 * Decompresses the given data array into a file-lines tuple
 	 *
 	 * @param data
 	 * @return
 	 */
-	public static Tuple<File, List<String>> decompress(@NonNull byte[] data) {
-		final String decompressed = CompressUtil.decompress(data);
+	public static Tuple<File, List<String>> _decompress(@NonNull byte[] data) {
+		final String decompressed = CompressUtil._decompress(data);
 		final String[] linesRaw = decompressed.split("%CMPRSDBF%");
 		Valid.checkBoolean(linesRaw.length > 0, "Received empty lines to decompress into a file!");
 

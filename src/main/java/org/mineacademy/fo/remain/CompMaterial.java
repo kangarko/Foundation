@@ -2099,11 +2099,10 @@ public enum CompMaterial {
 
 	/**
 	 * Parses the given material name as an CompMaterial with a given data
-	 * value in the string if attached. Check {@link #matchWithData(String)} for more info.
+	 * value in the string if attached. See matchWithData for more info.
 	 *
-	 * @see #matchWithData(String)
-	 * @see #fromLegacy(String, byte)
-	 * @since 2.0.0
+	 * @param key
+	 * @return
 	 */
 	public static CompMaterial fromString(String key) {
 
@@ -2191,10 +2190,8 @@ public enum CompMaterial {
 	/**
 	 * Parses the given material as an CompMaterial.
 	 *
-	 * @throws IllegalArgumentException may be thrown as an unexpected exception.
-	 * @see #fromLegacy(String, byte)
-	 * @see #fromItem(ItemStack)
-	 * @since 2.0.0
+	 * @param material
+	 * @return
 	 */
 	public static CompMaterial fromMaterial(@NonNull Material material) {
 		final CompMaterial compmaterial = fromLegacy(material.name(), UNKNOWN_DATA_VALUE);
@@ -2221,14 +2218,9 @@ public enum CompMaterial {
 	 * The main method that parses the given material name and data value as an CompMaterial.
 	 * All the values passed to this method will not be null or empty and are formatted correctly.
 	 *
-	 * @param name the formatted name of the material.
-	 * @param data the data value of the material. Is always 0 or {@link #UNKNOWN_DATA_VALUE} when {@link Data#ISFLAT}
-	 *
-	 * @return an CompMaterial (with the same data value if specified)
-	 * @see #fromMaterial(Material)
-	 * @see #matchCompMaterial(int, byte)
-	 * @see #fromItem(ItemStack)
-	 * @since 3.0.0
+	 * @param name
+	 * @param data
+	 * @return
 	 */
 	public static CompMaterial fromLegacy(String name, int data) {
 
@@ -2469,11 +2461,11 @@ public enum CompMaterial {
 	 * Use {@link #toItem()} instead when creating new ItemStacks.
 	 *
 	 * @param item the item to change its type.
+	 * @return
 	 *
 	 * @see #toItem()
 	 * @since 3.0.0
 	 */
-
 	public ItemStack setType(ItemStack item) {
 		Objects.requireNonNull(item, "Cannot set material for null ItemStack");
 		final Material material = this.toMaterial();
@@ -2527,6 +2519,8 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * @param item
+	 * @return
 	 * @see ItemUtil#isSimilar(ItemStack, ItemStack)
 	 */
 	public boolean isSimilar(ItemStack item) {

@@ -378,7 +378,7 @@ public abstract class Menu {
 	 * You must override this in certain cases
 	 *
 	 * @return the new instance, of null
-	 * @throws if new instance could not be made, for example when the menu is
+	 * @throws FoException if new instance could not be made, for example when the menu is
 	 *            taking constructor params
 	 */
 	public Menu newInstance() {
@@ -614,7 +614,7 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param messages
 	 */
@@ -623,7 +623,7 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param message
 	 */
@@ -632,7 +632,7 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param message
 	 */
@@ -641,7 +641,7 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param message
 	 */
@@ -650,7 +650,7 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param message
 	 */
@@ -659,7 +659,7 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param message
 	 */
@@ -668,7 +668,7 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Send a message to the {@link #getViewer()}
+	 * Send a message to the viewer
 	 *
 	 * @param message
 	 */

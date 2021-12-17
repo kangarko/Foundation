@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeAction;
 import org.mineacademy.fo.bungee.BungeeListener;
@@ -63,7 +62,7 @@ public final class IncomingMessage extends Message {
 	 * string is the server name and the second string is the
 	 * {@link BungeeAction} by its name *read automatically*.
 	 *
-	 * @param bungeeListener
+	 * @param listener
 	 * @param data
 	 */
 	public IncomingMessage(BungeeListener listener, byte[] data) {
@@ -96,7 +95,7 @@ public final class IncomingMessage extends Message {
 	public String readString() {
 		moveHead(String.class);
 
-		return CompressUtil.decompressB64(input.readUTF());
+		return input.readUTF();
 	}
 
 	/**
@@ -118,7 +117,7 @@ public final class IncomingMessage extends Message {
 	public SerializedMap readMap() {
 		moveHead(String.class);
 
-		return SerializedMap.fromJson(CompressUtil.decompressB64(input.readUTF()));
+		return SerializedMap.fromJson(input.readUTF());
 	}
 
 	/**
@@ -234,7 +233,7 @@ public final class IncomingMessage extends Message {
 	/**
 	 * Forwards this message to a player
 	 *
-	 * @param connection
+	 * @param player
 	 */
 	public void forward(Player player) {
 		player.sendPluginMessage(SimplePlugin.getInstance(), getChannel(), data);

@@ -124,6 +124,7 @@ public final class ToolsListener implements Listener {
 
 	/**
 	 * Handles hotbar focus/defocus for tools
+	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onHeltItem(final PlayerItemHeldEvent event) {

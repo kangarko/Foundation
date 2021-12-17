@@ -147,6 +147,9 @@ public final class ReflectionUtil {
 	/**
 	 * Return a constructor for the given class
 	 *
+	 * @param clazz
+	 * @param params
+	 * @return
 	 */
 	public static Constructor<?> getConstructor(@NonNull final Class<?> clazz, final Class<?>... params) {
 		try {
@@ -240,6 +243,9 @@ public final class ReflectionUtil {
 	/**
 	 * Gets the declared field in class by its name
 	 *
+	 * @param clazz
+	 * @param fieldName
+	 * @return
 	 */
 	public static Field getDeclaredField(final Class<?> clazz, final String fieldName) {
 		try {
@@ -317,12 +323,13 @@ public final class ReflectionUtil {
 	 */
 	public static Method getMethod(final Class<?> clazz, final String methodName, final Class<?>... args) {
 		try {
-			Method method = clazz.getMethod(methodName, args);
+			final Method method = clazz.getMethod(methodName, args);
 			method.setAccessible(true);
 			return method;
-		} catch (NoSuchMethodException e) {}
+		} catch (final NoSuchMethodException e) {
+		}
 
-		Method[] methods = methodCache.computeIfAbsent(clazz, k -> clazz.getMethods());
+		final Method[] methods = methodCache.computeIfAbsent(clazz, k -> clazz.getMethods());
 		for (final Method method : methods)
 			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes())) {
 				method.setAccessible(true);
@@ -366,6 +373,10 @@ public final class ReflectionUtil {
 	/**
 	 * Get a declared class method
 	 *
+	 * @param clazz
+	 * @param methodName
+	 * @param args
+	 * @return
 	 */
 	public static Method getDeclaredMethod(Class<?> clazz, final String methodName, Class<?>... args) {
 		final Class<?> originalClass = clazz;
@@ -393,6 +404,7 @@ public final class ReflectionUtil {
 	 * Invoke a static method
 	 *
 	 * @param <T>
+	 * @param cl
 	 * @param methodName
 	 * @param params
 	 * @return
@@ -567,8 +579,9 @@ public final class ReflectionUtil {
 
 	/**
 	 * Wrapper for Class.forName
-	 * @param <T>
 	 *
+	 * @param <T>
+	 * @param path
 	 * @return
 	 */
 	public static <T> Class<T> lookupClass(final String path) {
@@ -842,17 +855,13 @@ public final class ReflectionUtil {
 	/**
 	 * Return a tree set of classes from the plugin that extend the given class
 	 *
-	 * @param <T>
-	 * @param <T>
 	 * @param plugin
-	 * @param extendingClass
 	 * @return
 	 */
 	public static List<Class<?>> getClasses(final Plugin plugin) {
 		final List<Class<?>> found = new ArrayList<>();
 
-		for (final Class<?> clazz : getClasses(plugin, null))
-			found.add(clazz);
+		found.addAll(getClasses(plugin, null));
 
 		return found;
 	}
@@ -860,7 +869,9 @@ public final class ReflectionUtil {
 	/**
 	 * Get all classes in the java plugin
 	 *
+	 * @param <T>
 	 * @param plugin
+	 * @param extendingClass
 	 * @return
 	 */
 	@SneakyThrows
