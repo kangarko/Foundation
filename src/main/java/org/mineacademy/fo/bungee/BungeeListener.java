@@ -7,7 +7,6 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.message.IncomingMessage;
-import org.mineacademy.fo.debug.Debugger;
 
 import lombok.Getter;
 
@@ -73,10 +72,7 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 		if (Bukkit.getName().contains("Cauldron"))
 			return;
 
-		final IncomingMessage message = new IncomingMessage(data);
-
-		Debugger.debug("bungee", "Channel " + message.getChannel() + " received " + message.getAction() + " message from " + message.getServerName() + " server.");
-		onMessageReceived(player, message);
+		onMessageReceived(player, new IncomingMessage(data));
 	}
 
 	/**
