@@ -69,7 +69,8 @@ public final class BungeeUtil {
 		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs needed: " + action.getContent().length);
 		Valid.checkBoolean(Remain.isServerNameChanged(), "Please configure your 'server-name' in server.properties according to mineacademy.org/server-properties first before using BungeeCord features");
 
-		Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
+		if (!action.name().equals("PLAYERS_CLUSTER_DATA"))
+			Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
 
 		final Player recipient = getThroughWhomSendMessage();
 
