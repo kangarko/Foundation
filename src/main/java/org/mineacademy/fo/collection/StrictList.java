@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 
@@ -285,7 +285,7 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 * @return
 	 */
 	public String join(String separator) {
-		return StringUtils.join(list, separator);
+		return Common.join(list, separator);
 	}
 
 	/**

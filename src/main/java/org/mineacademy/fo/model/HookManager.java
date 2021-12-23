@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -2112,7 +2111,7 @@ class VaultHook {
 					list.add(part);
 			}
 
-		return StringUtils.join(list, vaultPart == VaultPart.GROUP ? ", " : "");
+		return Common.join(list, vaultPart == VaultPart.GROUP ? ", " : "");
 	}
 
 	enum VaultPart {

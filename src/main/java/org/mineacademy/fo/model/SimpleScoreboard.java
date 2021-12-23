@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -329,7 +328,7 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	private final String fixDuplicates(final StrictList<String> duplicates, String message) {
-		message = StringUtils.substring(message, 0, 40);
+		message = message.substring(0, 40);
 
 		final boolean cut = MinecraftVersion.olderThan(V.v1_8);
 

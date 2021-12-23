@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
@@ -188,7 +187,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public String join(String separator) {
-		return StringUtils.join(set, separator);
+		return Common.join(set, separator);
 	}
 
 	/**

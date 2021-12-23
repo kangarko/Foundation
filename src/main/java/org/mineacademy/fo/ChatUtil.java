@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.model.Whiteblacklist;
@@ -551,7 +550,7 @@ public final class ChatUtil {
 			if (isDomain(parts[i]))
 				parts[i] = parts[i].toLowerCase();
 
-		final String msg = StringUtils.join(parts, " ");
+		final String msg = String.join(" ", parts);
 
 		for (int i = 0; i < msg.length(); i++)
 			if (Character.isUpperCase(msg.charAt(i)) && Character.isLetter(msg.charAt(i)))
@@ -573,7 +572,7 @@ public final class ChatUtil {
 			if (isDomain(parts[i]))
 				parts[i] = parts[i].toLowerCase();
 
-		final String msg = StringUtils.join(parts, " ");
+		final String msg = String.join(" ", parts);
 
 		for (int i = 0; i < msg.length(); i++)
 			if (Character.isUpperCase(msg.charAt(i)) && Character.isLetter(msg.charAt(i)))
