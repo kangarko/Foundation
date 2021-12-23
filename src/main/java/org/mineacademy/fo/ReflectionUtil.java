@@ -21,7 +21,6 @@ import java.util.jar.JarFile;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -459,7 +458,7 @@ public final class ReflectionUtil {
 			return (T) method.invoke(instance, params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException(ex, "Could not invoke method " + method + " on instance " + instance + " with params " + StringUtils.join(params));
+			throw new ReflectionException(ex, "Could not invoke method " + method + " on instance " + instance + " with params " + Common.join(params, ", "));
 		}
 	}
 
@@ -758,7 +757,7 @@ public final class ReflectionUtil {
 					return null;
 			}
 
-			throw new MissingEnumException(oldName, errMessage.replace("{available}", StringUtils.join(enumType.getEnumConstants(), ", ")));
+			throw new MissingEnumException(oldName, errMessage.replace("{available}", Common.join(enumType.getEnumConstants(), ", ")));
 		}
 
 		return result;

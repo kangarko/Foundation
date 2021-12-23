@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -117,7 +116,7 @@ public final class Debugger {
 		if (parts == null)
 			return;
 
-		final String whole = StringUtils.join(parts, "");
+		final String whole = String.join("", parts);
 
 		for (final String message : whole.split("\n"))
 			debug(section, message);
@@ -160,11 +159,11 @@ public final class Debugger {
 				"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
 				header,
 				"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
-				"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),
+				"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", "),
 				"----------------------------------------------------------------------------------------------");
 
 		// Write additional data
-		if (messages != null && !StringUtils.join(messages, "").isEmpty()) {
+		if (messages != null && !String.join("", messages).isEmpty()) {
 			fill(lines, "\nMore Information: ");
 			fill(lines, messages);
 		}
