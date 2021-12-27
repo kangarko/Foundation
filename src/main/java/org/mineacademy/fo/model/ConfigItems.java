@@ -3,10 +3,10 @@ package org.mineacademy.fo.model;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -75,6 +75,20 @@ public final class ConfigItems<T extends YamlConfig> {
 		this.folder = folder;
 		this.prototypeClass = prototypeClass;
 		this.singleFile = singleFile;
+	}
+
+	/**
+	 * @deprecated use fromFolder without the middle parameter instead, works the same
+	 * 
+	 * @param <P>
+	 * @param folder
+	 * @param deprecatedParam
+	 * @param prototypeClass
+	 * @return
+	 */
+	@Deprecated
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, String deprecatedParam, Class<P> prototypeClass) {
+		return fromFolder(folder, prototypeClass);
 	}
 
 	/**
@@ -271,8 +285,8 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @return
 	 */
-	public Collection<T> getItems() {
-		return Collections.unmodifiableCollection(loadedItemsMap.values());
+	public List<T> getItems() {
+		return Collections.unmodifiableList(new ArrayList<>(loadedItemsMap.values()));
 	}
 
 	/**
@@ -280,7 +294,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @return
 	 */
-	public Set<String> getItemNames() {
-		return loadedItemsMap.keySet();
+	public List<String> getItemNames() {
+		return Collections.unmodifiableList(new ArrayList<>(loadedItemsMap.keySet()));
 	}
 }
