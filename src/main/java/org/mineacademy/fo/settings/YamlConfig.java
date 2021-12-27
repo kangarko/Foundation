@@ -1415,7 +1415,7 @@ public class YamlConfig {
 	 * @param path
 	 * @param value
 	 */
-	protected final void save(final String path, final Object value) {
+	public final void save(final String path, final Object value) {
 		setNoSave(path, value);
 
 		save();
