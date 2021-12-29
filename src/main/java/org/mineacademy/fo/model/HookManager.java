@@ -2554,7 +2554,7 @@ class WorldGuardHook {
 			final String name = Common.stripColors(region.getId());
 
 			if (!name.startsWith("__"))
-				list.add(name);
+			list.add(name);
 		});
 
 		return list;
