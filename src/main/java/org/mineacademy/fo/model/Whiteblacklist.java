@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,18 +47,26 @@ public final class Whiteblacklist {
 	public Whiteblacklist(@NonNull List<String> items) {
 		if (!items.isEmpty()) {
 			final String firstLine = items.get(0);
+			final String secondLine = items.size() > 1 ? items.get(1) : "";
 
-			// Identify if the first line contains our flags
-			this.entireList = firstLine.equals("*");
-			this.whitelist = !firstLine.equals("@blacklist") && !entireList;
+			boolean entireList = false;
+			boolean whitelist = true;
 
-			final List<String> newItems = new ArrayList<>(items);
+			if ("*".equals(firstLine) || "*".equals(secondLine))
+				entireList = true;
 
-			// If yes, remove it from the list
-			if (this.entireList || firstLine.equals("@blacklist"))
-				newItems.remove(0);
+			if ("@blacklist".equals(firstLine) || "@blacklist".equals(secondLine))
+				whitelist = false;
 
-			this.items = new HashSet<>(this.whitelist ? items : newItems);
+			final List<String> copyList = new ArrayList<>();
+
+			for (final String oldItem : items)
+				if (!"*".equals(oldItem) && !"@blacklist".equals(oldItem))
+					copyList.add(oldItem);
+
+			this.items = new HashSet<>(copyList);
+			this.whitelist = whitelist;
+			this.entireList = entireList;
 		}
 
 		else {
@@ -65,6 +74,28 @@ public final class Whiteblacklist {
 			this.whitelist = true;
 			this.entireList = false;
 		}
+	}
+
+	/**
+	 * Evaluates if the given collection contains at least one match
+	 * 
+	 * @param items
+	 * @return
+	 */
+	public boolean isInList(Collection<String> items) {
+		if (entireList) {
+			if (whitelist && !items.isEmpty())
+				return true;
+
+			else if (!whitelist && items.isEmpty())
+				return true;
+		}
+
+		for (final String item : items)
+			if (isInList(item))
+				return true;
+
+		return false;
 	}
 
 	/**
@@ -76,7 +107,7 @@ public final class Whiteblacklist {
 	 */
 	public boolean isInList(String item) {
 		if (entireList)
-			return true;
+			return whitelist;
 
 		final boolean match = Valid.isInList(item, this.items);
 
@@ -92,7 +123,7 @@ public final class Whiteblacklist {
 	 */
 	public boolean isInListRegex(String item) {
 		if (entireList)
-			return true;
+			return whitelist;
 
 		final boolean match = Valid.isInListRegex(item, this.items);
 
@@ -108,7 +139,7 @@ public final class Whiteblacklist {
 	 */
 	public boolean isInListStartsWith(String item) {
 		if (entireList)
-			return true;
+			return whitelist;
 
 		final boolean match = Valid.isInListStartsWith(item, this.items);
 
