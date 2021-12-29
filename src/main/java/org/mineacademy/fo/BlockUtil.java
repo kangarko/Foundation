@@ -613,8 +613,16 @@ public final class BlockUtil {
 		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
-			if (!CompMaterial.isAir(block) && !block.getType().toString().contains("SNOW"))
+			if (!CompMaterial.isAir(block)) {
+
+				if (block.getType() == CompMaterial.SNOW_BLOCK.getMaterial())
+					return -1;
+
+				if (block.getType() == CompMaterial.SNOW.getMaterial())
+					continue;
+
 				return y + 1;
+			}
 		}
 
 		return -1;
