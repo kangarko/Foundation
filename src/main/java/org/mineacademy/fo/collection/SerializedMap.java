@@ -30,6 +30,7 @@ import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -702,7 +703,7 @@ public final class SerializedMap extends StrictCollection {
 		if (!map.containsKey(key))
 			return list;
 
-		final Object rawList = this.removeOnGet ? map.removeWeak(key) : map.get(key);
+		final Object rawList = Remain.getRootOfSectionPathData(this.removeOnGet ? map.removeWeak(key) : map.get(key));
 
 		// Forgive if string used instead of string list
 		if (type == String.class && rawList instanceof String) {
@@ -748,9 +749,7 @@ public final class SerializedMap extends StrictCollection {
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 		final Object raw = this.map.get(path);
 
-		if (raw != null) {
-			Valid.checkBoolean(raw instanceof Map || raw instanceof MemorySection, "Expected Map<" + keyType.getSimpleName() + ", " + valueType.getSimpleName() + "> at " + path + ", got " + raw.getClass());
-
+		if (raw != null)
 			for (final Entry<?, ?> entry : Common.getMapFromSection(raw).entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
@@ -761,7 +760,6 @@ public final class SerializedMap extends StrictCollection {
 
 				map.put(key, value);
 			}
-		}
 
 		return map;
 	}
@@ -783,7 +781,7 @@ public final class SerializedMap extends StrictCollection {
 
 		if (raw != null) {
 
-			if (raw instanceof MemorySection)
+			if (raw instanceof MemorySection || Remain.isMemorySection(raw))
 				raw = Common.getMapFromSection(raw);
 
 			Valid.checkBoolean(raw instanceof Map, "Expected Map<" + keyType.getSimpleName() + ", Set<" + setType.getSimpleName() + ">> at " + path + ", got " + raw.getClass());
@@ -1116,7 +1114,11 @@ public final class SerializedMap extends StrictCollection {
 	 * @param object
 	 * @return the serialized map, or an empty map if object could not be parsed
 	 */
-	public static SerializedMap of(final Object object) {
+	public static SerializedMap of(Object object) {
+
+		if (object != null)
+			object = Remain.getRootOfSectionPathData(object);
+
 		if (object instanceof SerializedMap)
 			return (SerializedMap) object;
 

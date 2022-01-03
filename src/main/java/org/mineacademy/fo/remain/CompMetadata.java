@@ -95,9 +95,9 @@ public final class CompMetadata {
 	public static void setMetadata(final Entity entity, final String key, final String value) {
 		Valid.checkNotNull(entity);
 
-		final String tag = format(key, value);
-
 		if (Remain.hasScoreboardTags()) {
+			final String tag = format(key, value);
+
 			if (!entity.getScoreboardTags().contains(tag))
 				entity.addScoreboardTag(tag);
 
