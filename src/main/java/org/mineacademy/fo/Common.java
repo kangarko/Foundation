@@ -1542,9 +1542,7 @@ public final class Common {
 
 	/**
 	 * <p>Capitalizes all the delimiter separated words in a String.
-	 * Only the first letter of each word is changed. To convert the 
-	 * rest of each word to lowercase at the same time, 
-	 * use {@link #capitalizeFully(String, char[])}.</p>
+	 * Only the first letter of each word is changed.</p>
 	 *
 	 * <p>The delimiters represent a set of characters understood to separate words.
 	 * The first string character and the first non-delimiter character after a
@@ -1561,9 +1559,9 @@ public final class Common {
 	 * WordUtils.capitalize("i am fine", null)  = "I Am Fine"
 	 * WordUtils.capitalize("i aM.fine", {'.'}) = "I aM.Fine"
 	 * </pre>
-	 * 
+	 *
 	 * @param message  the String to capitalize, may be null
-	 * 
+	 *
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
 	public static String capitalize(String message) {
@@ -1707,7 +1705,7 @@ public final class Common {
 	/**
 	 * A convenience method for converting list of objects into array of strings
 	 * We invoke "toString" for each object given it is not null, or return "" if it is
-	 * 
+	 *
 	 * @param <T>
 	 * @param array
 	 * @param delimiter
@@ -2596,11 +2594,22 @@ public final class Common {
 	 * @param mapOrSection
 	 * @return
 	 */
-	public static Map<String, Object> getMapFromSection(@NonNull final Object mapOrSection) {
+	public static Map<String, Object> getMapFromSection(@NonNull Object mapOrSection) {
+		mapOrSection = Remain.getRootOfSectionPathData(mapOrSection);
+
 		final Map<String, Object> map = mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection : mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
-		return map;
+		final Map<String, Object> copy = new HashMap<>();
+
+		for (final Map.Entry<String, Object> entry : map.entrySet()) {
+			final String key = entry.getKey();
+			final Object value = entry.getValue();
+
+			copy.put(key, Remain.getRootOfSectionPathData(value));
+		}
+
+		return copy;
 	}
 
 	/**

@@ -83,112 +83,114 @@ public final class SerializeUtil {
 	/**
 	 * Converts the given object into something you can safely save in file as a string
 	 *
-	 * @param obj
+	 * @param object
 	 * @return
 	 */
-	public static Object serialize(final Object obj) {
-		if (obj == null)
+	public static Object serialize(Object object) {
+		if (object == null)
 			return null;
 
-		if (serializers.containsKey(obj.getClass()))
-			return serializers.get(obj.getClass()).apply(obj);
+		object = Remain.getRootOfSectionPathData(object);
 
-		if (obj instanceof ConfigSerializable)
-			return serialize(((ConfigSerializable) obj).serialize().serialize());
+		if (serializers.containsKey(object.getClass()))
+			return serializers.get(object.getClass()).apply(object);
 
-		else if (obj instanceof StrictCollection)
-			return serialize(((StrictCollection) obj).serialize());
+		if (object instanceof ConfigSerializable)
+			return serialize(((ConfigSerializable) object).serialize().serialize());
 
-		else if (obj instanceof ChatColor)
-			return ((ChatColor) obj).name();
+		else if (object instanceof StrictCollection)
+			return serialize(((StrictCollection) object).serialize());
 
-		else if (obj instanceof CompChatColor)
-			return ((CompChatColor) obj).getName();
+		else if (object instanceof ChatColor)
+			return ((ChatColor) object).name();
 
-		else if (obj instanceof net.md_5.bungee.api.ChatColor) {
-			final net.md_5.bungee.api.ChatColor color = ((net.md_5.bungee.api.ChatColor) obj);
+		else if (object instanceof CompChatColor)
+			return ((CompChatColor) object).getName();
+
+		else if (object instanceof net.md_5.bungee.api.ChatColor) {
+			final net.md_5.bungee.api.ChatColor color = ((net.md_5.bungee.api.ChatColor) object);
 
 			return MinecraftVersion.atLeast(V.v1_16) ? color.toString() : color.name();
 		}
 
-		else if (obj instanceof CompMaterial)
-			return obj.toString();
+		else if (object instanceof CompMaterial)
+			return object.toString();
 
-		else if (obj instanceof Location)
-			return serializeLoc((Location) obj);
+		else if (object instanceof Location)
+			return serializeLoc((Location) object);
 
-		else if (obj instanceof UUID)
-			return obj.toString();
+		else if (object instanceof UUID)
+			return object.toString();
 
-		else if (obj instanceof Enum<?>)
-			return obj.toString();
+		else if (object instanceof Enum<?>)
+			return object.toString();
 
-		else if (obj instanceof CommandSender)
-			return ((CommandSender) obj).getName();
+		else if (object instanceof CommandSender)
+			return ((CommandSender) object).getName();
 
-		else if (obj instanceof World)
-			return ((World) obj).getName();
+		else if (object instanceof World)
+			return ((World) object).getName();
 
-		else if (obj instanceof PotionEffectType)
-			return ((PotionEffectType) obj).getName();
+		else if (object instanceof PotionEffectType)
+			return ((PotionEffectType) object).getName();
 
-		else if (obj instanceof PotionEffect)
-			return serializePotionEffect((PotionEffect) obj);
+		else if (object instanceof PotionEffect)
+			return serializePotionEffect((PotionEffect) object);
 
-		else if (obj instanceof ItemCreator)
-			return ((ItemCreator) obj).make();
+		else if (object instanceof ItemCreator)
+			return ((ItemCreator) object).make();
 
-		else if (obj instanceof SimpleTime)
-			return ((SimpleTime) obj).getRaw();
+		else if (object instanceof SimpleTime)
+			return ((SimpleTime) object).getRaw();
 
-		else if (obj instanceof SimpleSound)
-			return ((SimpleSound) obj).toString();
+		else if (object instanceof SimpleSound)
+			return ((SimpleSound) object).toString();
 
-		else if (obj instanceof Color)
-			return "#" + ((Color) obj).getRGB();
+		else if (object instanceof Color)
+			return "#" + ((Color) object).getRGB();
 
-		else if (obj instanceof RangedValue)
-			return ((RangedValue) obj).toLine();
+		else if (object instanceof RangedValue)
+			return ((RangedValue) object).toLine();
 
-		else if (obj instanceof RangedSimpleTime)
-			return ((RangedSimpleTime) obj).toLine();
+		else if (object instanceof RangedSimpleTime)
+			return ((RangedSimpleTime) object).toLine();
 
-		else if (obj instanceof BaseComponent)
-			return Remain.toJson((BaseComponent) obj);
+		else if (object instanceof BaseComponent)
+			return Remain.toJson((BaseComponent) object);
 
-		else if (obj instanceof BaseComponent[])
-			return Remain.toJson((BaseComponent[]) obj);
+		else if (object instanceof BaseComponent[])
+			return Remain.toJson((BaseComponent[]) object);
 
-		else if (obj instanceof HoverEvent) {
-			final HoverEvent event = (HoverEvent) obj;
-
-			return SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue()).serialize();
-		}
-
-		else if (obj instanceof ClickEvent) {
-			final ClickEvent event = (ClickEvent) obj;
+		else if (object instanceof HoverEvent) {
+			final HoverEvent event = (HoverEvent) object;
 
 			return SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue()).serialize();
 		}
 
-		else if (obj instanceof Path)
-			throw new FoException("Cannot serialize Path " + obj + ", did you mean to convert it into a name?");
+		else if (object instanceof ClickEvent) {
+			final ClickEvent event = (ClickEvent) object;
 
-		else if (obj instanceof Iterable || obj.getClass().isArray() || obj instanceof IsInList) {
+			return SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue()).serialize();
+		}
+
+		else if (object instanceof Path)
+			throw new FoException("Cannot serialize Path " + object + ", did you mean to convert it into a name?");
+
+		else if (object instanceof Iterable || object.getClass().isArray() || object instanceof IsInList) {
 			final List<Object> serialized = new ArrayList<>();
 
-			if (obj instanceof Iterable || obj instanceof IsInList)
-				for (final Object element : obj instanceof IsInList ? ((IsInList<?>) obj).getList() : (Iterable<?>) obj)
+			if (object instanceof Iterable || object instanceof IsInList)
+				for (final Object element : object instanceof IsInList ? ((IsInList<?>) object).getList() : (Iterable<?>) object)
 					serialized.add(serialize(element));
 
 			else
-				for (final Object element : (Object[]) obj)
+				for (final Object element : (Object[]) object)
 					serialized.add(serialize(element));
 
 			return serialized;
 
-		} else if (obj instanceof StrictMap) {
-			final StrictMap<Object, Object> oldMap = (StrictMap<Object, Object>) obj;
+		} else if (object instanceof StrictMap) {
+			final StrictMap<Object, Object> oldMap = (StrictMap<Object, Object>) object;
 			final StrictMap<Object, Object> newMap = new StrictMap<>();
 
 			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
@@ -196,8 +198,8 @@ public final class SerializeUtil {
 
 			return newMap;
 
-		} else if (obj instanceof Map) {
-			final Map<Object, Object> oldMap = (Map<Object, Object>) obj;
+		} else if (object instanceof Map) {
+			final Map<Object, Object> oldMap = (Map<Object, Object>) object;
 			final Map<Object, Object> newMap = new LinkedHashMap<>();
 
 			for (final Map.Entry<Object, Object> entry : oldMap.entrySet())
@@ -205,21 +207,21 @@ public final class SerializeUtil {
 
 			return newMap;
 
-		} else if (obj instanceof YamlConfig)
-			throw new SerializeFailedException("Called serialize for YamlConfig's '" + obj.getClass().getSimpleName()
+		} else if (object instanceof YamlConfig)
+			throw new SerializeFailedException("Called serialize for YamlConfig's '" + object.getClass().getSimpleName()
 					+ "' but failed, if you're trying to save it make it implement ConfigSerializable!");
 
-		else if (obj instanceof Integer || obj instanceof Double || obj instanceof Float || obj instanceof Long || obj instanceof Short
-				|| obj instanceof String || obj instanceof Boolean || obj instanceof Map
-				|| obj instanceof ItemStack
-				|| obj instanceof MemorySection
-				|| obj instanceof Pattern)
-			return obj;
+		else if (object instanceof Integer || object instanceof Double || object instanceof Float || object instanceof Long || object instanceof Short
+				|| object instanceof String || object instanceof Boolean || object instanceof Map
+				|| object instanceof ItemStack
+				|| object instanceof MemorySection
+				|| object instanceof Pattern)
+			return object;
 
-		else if (obj instanceof ConfigurationSerializable)
-			return ((ConfigurationSerializable) obj).serialize();
+		else if (object instanceof ConfigurationSerializable)
+			return ((ConfigurationSerializable) object).serialize();
 
-		throw new SerializeFailedException("Does not know how to serialize " + obj.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + obj);
+		throw new SerializeFailedException("Does not know how to serialize " + object.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + object);
 	}
 
 	/**
@@ -284,6 +286,7 @@ public final class SerializeUtil {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static <T> T deserialize(@NonNull final Class<T> classOf, @NonNull Object object, final Object... deserializeParameters) {
+		object = Remain.getRootOfSectionPathData(object);
 
 		final SerializedMap map = SerializedMap.of(object);
 
