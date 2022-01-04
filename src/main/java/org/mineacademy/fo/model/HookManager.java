@@ -1558,7 +1558,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2058,15 +2058,28 @@ class VaultHook {
 	}
 
 	Boolean hasPerm(@NonNull final String player, final String perm) {
-		return permissions != null ? perm != null ? permissions.has((String) null, player, perm) : true : null;
+		try {
+			return permissions != null ? perm != null ? permissions.has((String) null, player, perm) : true : null;
+		} catch (final UnsupportedOperationException t) {
+			return false; // No supported plugin installed
+		}
 	}
 
 	Boolean hasPerm(@NonNull final String world, @NonNull final String player, final String perm) {
-		return permissions != null ? perm != null ? permissions.has(world, player, perm) : true : null;
+		try {
+			return permissions != null ? perm != null ? permissions.has(world, player, perm) : true : null;
+		} catch (final UnsupportedOperationException t) {
+			return false; // No supported plugin installed
+		}
 	}
 
 	String getPrimaryGroup(final Player player) {
-		return permissions != null ? permissions.getPrimaryGroup(player) : "";
+		try {
+			return permissions != null ? permissions.getPrimaryGroup(player) : "";
+
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	// ------------------------------------------------------------------------------
@@ -2074,15 +2087,27 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 
 	String getPlayerPrefix(final Player player) {
-		return lookupVault(player, VaultPart.PREFIX);
+		try {
+			return lookupVault(player, VaultPart.PREFIX);
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	String getPlayerSuffix(final Player player) {
-		return lookupVault(player, VaultPart.SUFFIX);
+		try {
+			return lookupVault(player, VaultPart.SUFFIX);
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	String getPlayerGroup(final Player player) {
-		return lookupVault(player, VaultPart.GROUP);
+		try {
+			return lookupVault(player, VaultPart.GROUP);
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	private String lookupVault(final Player player, final VaultPart vaultPart) {
@@ -2554,7 +2579,7 @@ class WorldGuardHook {
 			final String name = Common.stripColors(region.getId());
 
 			if (!name.startsWith("__"))
-			list.add(name);
+				list.add(name);
 		});
 
 		return list;
@@ -3132,7 +3157,7 @@ class DiscordSRVHook {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3293,16 +3318,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
