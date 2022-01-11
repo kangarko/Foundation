@@ -1324,7 +1324,7 @@ public final class Remain {
 				return f.get(nmsStatistic).toString();
 			}
 
-			return (String) nmsStatistic.getClass().getMethod("getName").invoke(nmsStatistic);
+			return (String) nmsStatistic.getClass().getMethod(MinecraftVersion.atLeast(V.v1_18) ? "d" : "getName").invoke(nmsStatistic);
 		} catch (final Throwable t) {
 			throw new FoException(t, "Error getting NMS statistic name from " + stat);
 		}
@@ -1771,10 +1771,10 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError ex) {
 			/*final List<String> list = new ArrayList<>();
-			
+
 			for (final BaseComponent[] page : pages)
 				list.add(TextComponent.toLegacyText(page));
-			
+
 			meta.setPages(list);*/
 
 			try {
