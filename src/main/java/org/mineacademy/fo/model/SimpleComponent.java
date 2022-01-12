@@ -49,7 +49,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The current component being created
 	 */
-
 	private Part currentComponent;
 
 	/**
@@ -261,12 +260,12 @@ public final class SimpleComponent implements ConfigSerializable {
 	public SimpleComponent append(String text, BaseComponent inheritFormatting, boolean colorize) {
 
 		// Get the last extra
-		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent(null);
+		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent(false, null);
 
 		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
 
-		// Center text for each line separatelly if replacing colors
+		// Center text for each line separately if replacing colors
 		if (colorize) {
 			final List<String> formatContents = Arrays.asList(text.split("\n"));
 
@@ -299,7 +298,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		this.pastComponents.addAll(component.pastComponents);
 
 		// Get the last extra
-		BaseComponent inherit = Common.getOrDefault(component.currentComponent.inheritFormatting, this.currentComponent.toTextComponent(null));
+		BaseComponent inherit = Common.getOrDefault(component.currentComponent.inheritFormatting, this.currentComponent.toTextComponent(false, null));
 
 		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
@@ -339,7 +338,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		TextComponent preparedComponent = null;
 
 		for (final Part part : this.pastComponents) {
-			final TextComponent component = part.toTextComponent(receiver);
+			final TextComponent component = part.toTextComponent(true, receiver);
 
 			if (component != null)
 				if (preparedComponent == null)
@@ -348,7 +347,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					preparedComponent.addExtra(component);
 		}
 
-		final TextComponent currentComponent = this.currentComponent.toTextComponent(receiver);
+		final TextComponent currentComponent = this.currentComponent.toTextComponent(true, receiver);
 
 		if (currentComponent != null)
 			if (preparedComponent == null)
@@ -822,12 +821,12 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * Turn this part of the components into a {@link TextComponent}
 		 * for the given receiver
 		 *
+		 * @param checkForReceiver
 		 * @param receiver
 		 * @return
 		 */
-
-		private TextComponent toTextComponent(CommandSender receiver) {
-			if (!canSendTo(receiver) || isEmpty())
+		private TextComponent toTextComponent(boolean checkForReceiver, CommandSender receiver) {
+			if ((checkForReceiver && !canSendTo(receiver)) || isEmpty())
 				return null;
 
 			final List<BaseComponent> base = toComponent(this.text, this.inheritFormatting)[0].getExtra();
