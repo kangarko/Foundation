@@ -1120,6 +1120,9 @@ public abstract class YamlConfig {
 		final List<T> list = new ArrayList<>();
 		final List<Object> objects = getList(path);
 
+		if (type == Map.class && deserializeParameters != null & deserializeParameters.length > 0 && deserializeParameters[0] != String.class)
+			throw new FoException("getList('" + path + "') that returns Map must have String.class as key, not " + deserializeParameters[0]);
+
 		if (objects != null)
 			for (Object object : objects) {
 				object = object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null;
