@@ -28,7 +28,6 @@ import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
-import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.menu.button.ButtonReturnBack;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -206,7 +205,7 @@ public abstract class Menu {
 	 */
 	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
-		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
+		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : null;
 	}
 
 	/**
@@ -515,7 +514,7 @@ public abstract class Menu {
 		if (addInfoButton() && getInfo() != null)
 			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
 
-		if (addReturnButton() && !(returnButton instanceof DummyButton))
+		if (addReturnButton() && returnButton != null)
 			items.put(getReturnButtonPosition(), returnButton.getItem());
 
 		return items;
