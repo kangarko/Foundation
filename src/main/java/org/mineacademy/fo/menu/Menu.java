@@ -28,6 +28,7 @@ import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
+import org.mineacademy.fo.menu.button.Button.DummyButton;
 import org.mineacademy.fo.menu.button.ButtonReturnBack;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -205,7 +206,7 @@ public abstract class Menu {
 	 */
 	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
-		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : null;
+		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
 	}
 
 	/**
@@ -282,7 +283,9 @@ public abstract class Menu {
 			final Button button = (Button) ReflectionUtil.getFieldContent(field, this);
 
 			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
-			registeredButtons.add(button);
+
+			if (!(button instanceof DummyButton))
+				registeredButtons.add(button);
 
 		} else if (Button[].class.isAssignableFrom(type)) {
 			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
@@ -514,7 +517,7 @@ public abstract class Menu {
 		if (addInfoButton() && getInfo() != null)
 			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
 
-		if (addReturnButton() && returnButton != null)
+		if (addReturnButton() && !(returnButton instanceof DummyButton))
 			items.put(getReturnButtonPosition(), returnButton.getItem());
 
 		return items;
