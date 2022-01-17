@@ -312,14 +312,10 @@ public abstract class Menu {
 			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
 			final Position position = field.getAnnotation(Position.class);
 
-			registeredButtons.put(button, position);
+			if (!(button instanceof DummyButton))
+				registeredButtons.put(button, position);
 
 		} else if (Button[].class.isAssignableFrom(type)) {
-			/*Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
-			final Button[] buttons = (Button[]) ReflectionUtil.getFieldContent(field, this);
-			
-			Valid.checkBoolean(buttons != null && buttons.length > 0, "Null " + field.getName() + "[] in " + this);
-			registeredButtons.addAll(Arrays.asList(buttons));*/
 			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
 		}
 	}
