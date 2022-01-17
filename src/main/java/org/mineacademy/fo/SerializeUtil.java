@@ -105,7 +105,7 @@ public final class SerializeUtil {
 			return ((ChatColor) object).name();
 
 		else if (object instanceof CompChatColor)
-			return ((CompChatColor) object).getName();
+			return ((CompChatColor) object).toSaveableString();
 
 		else if (object instanceof net.md_5.bungee.api.ChatColor) {
 			final net.md_5.bungee.api.ChatColor color = ((net.md_5.bungee.api.ChatColor) object);
