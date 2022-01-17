@@ -283,7 +283,9 @@ public abstract class Menu {
 			final Button button = (Button) ReflectionUtil.getFieldContent(field, this);
 
 			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
-			registeredButtons.add(button);
+
+			if (!(button instanceof DummyButton))
+				registeredButtons.add(button);
 
 		} else if (Button[].class.isAssignableFrom(type)) {
 			Valid.checkBoolean(Modifier.isFinal(field.getModifiers()), "Report / Button[] field must be final: " + field);
