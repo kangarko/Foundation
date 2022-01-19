@@ -208,11 +208,11 @@ public final class Lang extends YamlConfig {
 	 *
 	 * @param path
 	 * @param scriptVariables
-	 * @param variables
+	 * @param stringVariables
 	 * @return
 	 */
-	public static String ofScript(String path, SerializedMap scriptVariables, Object... variables) {
-		String script = of(path, variables);
+	public static String ofScript(String path, SerializedMap scriptVariables, Object... stringVariables) {
+		String script = of(path, stringVariables);
 		Object result;
 
 		// Our best guess is that the user has removed the script completely but forgot to put the entire message in '',
