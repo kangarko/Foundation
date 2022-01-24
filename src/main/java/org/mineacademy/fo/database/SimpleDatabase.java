@@ -139,7 +139,7 @@ public class SimpleDatabase {
 				Class.forName("com.mysql.cj.jdbc.Driver");
 
 			else {
-				Common.warning("Your database driver is outdated, MySQL 8.0 is unsupported. If you encounter issues, use MariaDB instead.");
+				Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead.");
 
 				Class.forName("com.mysql.jdbc.Driver");
 			}
