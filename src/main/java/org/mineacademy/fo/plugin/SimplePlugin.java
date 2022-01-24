@@ -69,9 +69,10 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Represents a basic Java plugin using enhanced library functionality
+ * Represents a basic Java plugin using enhanced library functionality,
+ * implementing a listener for easy use
  */
-public abstract class SimplePlugin extends JavaPlugin {
+public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	// ----------------------------------------------------------------------------------------
 	// Static
@@ -309,6 +310,7 @@ public abstract class SimplePlugin extends JavaPlugin {
 				getUpdateCheck().run();
 
 			// Register our listeners
+			registerEvents(this);
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
 
