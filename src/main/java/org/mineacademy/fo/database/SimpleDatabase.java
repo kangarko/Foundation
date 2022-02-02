@@ -139,7 +139,7 @@ public class SimpleDatabase {
 				Class.forName("com.mysql.cj.jdbc.Driver");
 
 			else {
-				Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead.");
+				Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
 
 				Class.forName("com.mysql.jdbc.Driver");
 			}
@@ -149,9 +149,9 @@ public class SimpleDatabase {
 
 			onConnected();
 
-		} catch (final Exception e) {
+		} catch (final Exception ex) {
 
-			if (Common.getOrEmpty(e.getMessage()).contains("No suitable driver found"))
+			if (Common.getOrEmpty(ex.getMessage()).contains("No suitable driver found"))
 				Common.logFramed(true,
 						"Failed to look up MySQL driver",
 						"If you had MySQL disabled, then enabled it and reload,",
@@ -166,9 +166,9 @@ public class SimpleDatabase {
 				Common.logFramed(true,
 						"Failed to connect to MySQL database",
 						"URL: " + url,
-						"Error: " + e.getMessage());
+						"Error: " + ex.getMessage());
 
-			Remain.sneaky(e);
+			Remain.sneaky(ex);
 		}
 	}
 
