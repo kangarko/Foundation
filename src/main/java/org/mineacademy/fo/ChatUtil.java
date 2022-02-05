@@ -274,7 +274,7 @@ public final class ChatUtil {
 		for (int i = 0; i < message.length(); i++) {
 
 			// Emojis are two characters long in java, e.g. a rocket emoji is "\uD83D\uDE80";
-			if (i < (message.length() - 1)) {
+			if (i < message.length() - 1) {
 
 				if (Character.isSurrogatePair(message.charAt(i), message.charAt(i + 1))) {
 					// also skip the second character of the emoji
@@ -589,6 +589,7 @@ public final class ChatUtil {
  * @deprecated does not properly format bold and new Minecraft unicode letters
  *
  */
+@Deprecated
 enum DefaultFontInfo {
 
 	A('A', 5),
