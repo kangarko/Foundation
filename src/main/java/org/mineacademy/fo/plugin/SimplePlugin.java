@@ -166,6 +166,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private boolean startingReloadables = false;
 
 	/**
+	 * Internal boolean indicating if we can proceed to loading the plugin.
+	 */
+	private boolean canLoad = true;
+
+	/**
 	 * A temporary main command to be set in {@link #setMainCommand(SimpleCommandGroup)}
 	 * automatically by us.
 	 */
@@ -191,24 +196,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	public final void onLoad() {
 
-		if (!Bukkit.getVersion().contains("Paper") && MinecraftVersion.atLeast(V.v1_8)) {
-			Bukkit.getLogger().warning("WARNING: You are not using Paper!");
-			Bukkit.getLogger().warning("");
-			Bukkit.getLogger().warning("Third party forks such as BeerSpigot are known to alter");
-			Bukkit.getLogger().warning("server's behavior. If you have issues with this plugin,");
-			Bukkit.getLogger().warning("please test using Paper from PaperMC.io first!");
-
-			if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit")) {
-				Bukkit.getLogger().severe("ERROR: Unsupported server software");
-				Bukkit.getLogger().severe("");
-				Bukkit.getLogger().severe("Minecraft 1.18+ require Paper from PaperMC.io");
-				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
-				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
-
-				throw new RuntimeException("Unsupported server version, see above.");
-			}
-		}
-
 		// Set the instance
 		try {
 			getInstance();
@@ -226,12 +213,43 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
+		if (!Bukkit.getVersion().contains("Paper") && MinecraftVersion.atLeast(V.v1_8)) {
+
+			if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit") || Bukkit.getVersion().contains("-Spigot-")) {
+				Bukkit.getLogger().severe(Common.consoleLine());
+				Bukkit.getLogger().severe("Error loading " + named + ": Unsupported server software");
+				Bukkit.getLogger().severe("");
+				Bukkit.getLogger().severe("Minecraft 1.18+ require Paper from PaperMC.io");
+				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
+				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
+				Bukkit.getLogger().severe(Common.consoleLine());
+
+				this.canLoad = false;
+				throw new RuntimeException("Unsupported server version, see above.");
+			}
+
+			Bukkit.getLogger().severe(Common.consoleLine());
+			Bukkit.getLogger().warning("Warning about " + named + ": You are not using Paper!");
+			Bukkit.getLogger().warning("");
+			Bukkit.getLogger().warning("Third party forks such as BeerSpigot are known to alter");
+			Bukkit.getLogger().warning("server's behavior. If you have issues with this plugin,");
+			Bukkit.getLogger().warning("please test using Paper from PaperMC.io first!");
+			Bukkit.getLogger().severe(Common.consoleLine());
+		}
+
 		// Call parent
 		onPluginLoad();
 	}
 
 	@Override
 	public final void onEnable() {
+
+		// Disabled upstream
+		if (!this.canLoad) {
+			Bukkit.getLogger().severe("Not loading, the plugin is disabled (look for console errors above)");
+
+			return;
+		}
 
 		// Solve reloading issues with PlugMan
 		for (final StackTraceElement element : new Throwable().getStackTrace()) {
