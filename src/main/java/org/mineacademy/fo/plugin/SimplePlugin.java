@@ -192,20 +192,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	public final void onLoad() {
 
 		if (!Bukkit.getVersion().contains("Paper") && MinecraftVersion.atLeast(V.v1_8)) {
-			Common.logFramed(
-					"WARNING: You are not using Paper!",
-					"",
-					"Third party forks such as BeerSpigot are known to alter",
-					"server's behavior. If you have issues with this plugin,",
-					"please test using Paper from PaperMC.io first!");
+			Bukkit.getLogger().warning("WARNING: You are not using Paper!");
+			Bukkit.getLogger().warning("");
+			Bukkit.getLogger().warning("Third party forks such as BeerSpigot are known to alter");
+			Bukkit.getLogger().warning("server's behavior. If you have issues with this plugin,");
+			Bukkit.getLogger().warning("please test using Paper from PaperMC.io first!");
 
 			if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit")) {
-				Common.logFramed(
-						"ERROR: Unsupported server software",
-						"",
-						"Minecraft 1.18+ require Paper from PaperMC.io",
-						"to run our software properly. Shutting down...",
-						"Your version: " + Bukkit.getVersion());
+				Bukkit.getLogger().severe("ERROR: Unsupported server software");
+				Bukkit.getLogger().severe("");
+				Bukkit.getLogger().severe("Minecraft 1.18+ require Paper from PaperMC.io");
+				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
+				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
 
 				throw new RuntimeException("Unsupported server version, see above.");
 			}
