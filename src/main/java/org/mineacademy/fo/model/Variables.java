@@ -260,11 +260,12 @@ public final class Variables {
 			}
 		}
 
-		if (senderIsPlayer) {
-
-			// PlaceholderAPI and MvdvPlaceholderAPI
+		// PlaceholderAPI and MvdvPlaceholderAPI
+		if (senderIsPlayer)
 			message = HookManager.replacePlaceholders((Player) sender, message);
-		}
+
+		else if (sender instanceof DiscordSender)
+			message = HookManager.replacePlaceholders(((DiscordSender) sender).getOfflinePlayer(), message);
 
 		// Default
 		message = replaceHardVariables0(sender, message);

@@ -1224,7 +1224,7 @@ public final class HookManager {
 	 * @param message
 	 * @return
 	 */
-	public static String replacePlaceholders(final Player player, String message) {
+	public static String replacePlaceholders(final @Nullable OfflinePlayer player, String message) {
 		if (message == null || "".equals(message.trim()))
 			return message;
 
@@ -1558,7 +1558,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-
+	
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -2170,14 +2170,14 @@ class PlaceholderAPIHook {
 			}
 	}
 
-	final String replacePlaceholders(final Player pl, final String msg) {
+	final String replacePlaceholders(final OfflinePlayer player, final String msg) {
 		try {
-			return setPlaceholders(pl, msg);
+			return setPlaceholders(player, msg);
 
 		} catch (final Throwable t) {
 			Common.error(t,
 					"PlaceholderAPI failed to replace variables!",
-					"Player: " + pl.getName(),
+					"Player: " + (player == null ? "none" : player.getName()),
 					"Message: " + msg,
 					"Error: %error");
 
@@ -2185,7 +2185,7 @@ class PlaceholderAPIHook {
 		}
 	}
 
-	private String setPlaceholders(final Player player, String text) {
+	private String setPlaceholders(final OfflinePlayer player, String text) {
 		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
 		if (hooks.isEmpty())
@@ -2233,7 +2233,7 @@ class PlaceholderAPIHook {
 							"our end, please contact the expansion author.",
 							"",
 							"Variable: " + identifier,
-							"Player: " + player.getName());
+							"Player: " + (player == null ? "none" : player.getName()));
 
 					currentThread.stop();
 				});
@@ -2442,7 +2442,11 @@ class MVdWPlaceholderHook {
 	MVdWPlaceholderHook() {
 	}
 
-	String replacePlaceholders(final Player player, final String message) {
+	String replacePlaceholders(@Nullable OfflinePlayer player, final String message) {
+
+		if (player == null)
+			return message;
+
 		try {
 			final Class<?> placeholderAPI = ReflectionUtil.lookupClass("be.maximvdw.placeholderapi.PlaceholderAPI");
 			Valid.checkNotNull(placeholderAPI, "Failed to look up class be.maximvdw.placeholderapi.PlaceholderAPI");
@@ -3157,7 +3161,7 @@ class DiscordSRVHook {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-
+	
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3318,16 +3322,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}

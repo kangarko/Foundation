@@ -21,6 +21,7 @@ import org.mineacademy.fo.remain.Remain;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.api.ListenerPriority;
 import github.scarsz.discordsrv.api.Subscribe;
+import github.scarsz.discordsrv.api.events.DiscordGuildMessagePostProcessEvent;
 import github.scarsz.discordsrv.api.events.DiscordGuildMessagePreProcessEvent;
 import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.JDA;
@@ -81,15 +82,22 @@ public abstract class DiscordListener implements Listener {
 			registeredListeners.add(this);
 	}
 
-	/**
+	/*
 	 * Called automatically when someone writes a message in a Discord channel
-	 *
-	 * @param event
 	 */
 	private final void handleMessageReceived(DiscordGuildMessagePreProcessEvent event) {
 		this.message = event.getMessage();
 
 		onMessageReceived(event);
+	}
+
+	/*
+	 * Called automatically when someone writes a message in a Discord channel
+	 */
+	private final void handleMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
+		this.message = event.getMessage();
+
+		onMessageReceivedLate(event);
 	}
 
 	/**
@@ -98,6 +106,16 @@ public abstract class DiscordListener implements Listener {
 	 * @param event
 	 */
 	protected abstract void onMessageReceived(DiscordGuildMessagePreProcessEvent event);
+
+	/**
+	 * Override this to run code when someone writes a message in a Discord channel
+	 * after it has been processed by DiscordSRV (variables replaced etc.).
+	 *
+	 * @param event
+	 */
+	protected void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
+
+	}
 
 	/**
 	 * Called automatically when someone writes a message in Minecraft and DiscordSRV
@@ -490,7 +508,30 @@ public abstract class DiscordListener implements Listener {
 
 				} catch (final Throwable t) {
 					Common.error(t,
-							"Failed to handle DiscordSRV->Minecraft message!",
+							"Failed to handle DiscordSRV->Minecraft message (pre process)!",
+							"Sender: " + event.getAuthor().getName(),
+							"Channel: " + event.getChannel().getName(),
+							"Message: " + event.getMessage().getContentDisplay());
+				}
+		}
+
+		/**
+		 * Distribute this message evenly across all listeners
+		 *
+		 * @param event
+		 */
+		@Subscribe(priority = ListenerPriority.HIGHEST)
+		public void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
+			for (final DiscordListener listener : registeredListeners)
+				try {
+					listener.handleMessageReceivedLate(event);
+
+				} catch (final RemovedMessageException ex) {
+					// Fail through since we handled that
+
+				} catch (final Throwable t) {
+					Common.error(t,
+							"Failed to handle DiscordSRV->Minecraft message (post process)!",
 							"Sender: " + event.getAuthor().getName(),
 							"Channel: " + event.getChannel().getName(),
 							"Message: " + event.getMessage().getContentDisplay());
