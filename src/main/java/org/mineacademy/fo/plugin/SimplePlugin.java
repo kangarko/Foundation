@@ -191,6 +191,26 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	public final void onLoad() {
 
+		if (!Bukkit.getVersion().contains("Paper") && MinecraftVersion.atLeast(V.v1_8)) {
+			Common.logFramed(
+					"WARNING: You are not using Paper!",
+					"",
+					"Third party forks such as BeerSpigot are known to alter",
+					"server's behavior. If you have issues with this plugin,",
+					"please test using Paper from PaperMC.io first!");
+
+			if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit")) {
+				Common.logFramed(
+						"ERROR: Unsupported server software",
+						"",
+						"Minecraft 1.18+ require Paper from PaperMC.io",
+						"to run our software properly. Shutting down...",
+						"Your version: " + Bukkit.getVersion());
+
+				throw new RuntimeException("Unsupported server version, see above.");
+			}
+		}
+
 		// Set the instance
 		try {
 			getInstance();
