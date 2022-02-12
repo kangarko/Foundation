@@ -12,8 +12,6 @@ import javax.imageio.ImageIO;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.ChatPaginator;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompChatColor;
 
@@ -34,28 +32,6 @@ public final class ChatImage {
 	 * Represents empty char
 	 */
 	private final static char TRANSPARENT_CHAR = ' ';
-
-	/**
-	 * Represents colors we can use for MC before 1.16
-	 */
-	private final static Color[] LEGACY_COLORS = {
-			new Color(0, 0, 0),
-			new Color(0, 0, 170),
-			new Color(0, 170, 0),
-			new Color(0, 170, 170),
-			new Color(170, 0, 0),
-			new Color(170, 0, 170),
-			new Color(255, 170, 0),
-			new Color(170, 170, 170),
-			new Color(85, 85, 85),
-			new Color(85, 85, 255),
-			new Color(85, 255, 85),
-			new Color(85, 255, 255),
-			new Color(255, 85, 85),
-			new Color(255, 85, 255),
-			new Color(255, 255, 85),
-			new Color(255, 255, 255),
-	};
 
 	/**
 	 * Represents the currently loaded lines
@@ -189,7 +165,7 @@ public final class ChatImage {
 		for (int x = 0; x < resized.getWidth(); x++)
 			for (int y = 0; y < resized.getHeight(); y++) {
 				final int rgb = resized.getRGB(x, y);
-				final CompChatColor closest = getClosestChatColor(new Color(rgb, true));
+				final CompChatColor closest = CompChatColor.getClosestLegacyColor(new Color(rgb, true));
 
 				chatImg[x][y] = closest;
 			}
@@ -213,62 +189,6 @@ public final class ChatImage {
 	}
 
 	/*
-	 * Returns the closes chat color from the given color
-	 */
-	private static CompChatColor getClosestChatColor(Color color) {
-		if (MinecraftVersion.olderThan(V.v1_16)) {
-			if (color.getAlpha() < 128)
-				return null;
-
-			int index = 0;
-			double best = -1;
-
-			for (int i = 0; i < LEGACY_COLORS.length; i++)
-				if (areSimilar(LEGACY_COLORS[i], color))
-					return CompChatColor.getColors().get(i);
-
-			for (int i = 0; i < LEGACY_COLORS.length; i++) {
-				final double distance = getDistance(color, LEGACY_COLORS[i]);
-
-				if (distance < best || best == -1) {
-					best = distance;
-					index = i;
-				}
-			}
-
-			return CompChatColor.getColors().get(index);
-		}
-
-		return CompChatColor.of(color);
-	}
-
-	/*
-	 * Return if colors are nearly identical
-	 */
-	private static boolean areSimilar(Color first, Color second) {
-		return Math.abs(first.getRed() - second.getRed()) <= 5 &&
-				Math.abs(first.getGreen() - second.getGreen()) <= 5 &&
-				Math.abs(first.getBlue() - second.getBlue()) <= 5;
-
-	}
-
-	/*
-	 * Returns how different two colors are
-	 */
-	private static double getDistance(Color first, Color second) {
-		final double rmean = (first.getRed() + second.getRed()) / 2.0;
-		final double r = first.getRed() - second.getRed();
-		final double g = first.getGreen() - second.getGreen();
-		final int b = first.getBlue() - second.getBlue();
-
-		final double weightR = 2 + rmean / 256.0;
-		final double weightG = 4.0;
-		final double weightB = 2 + (255 - rmean) / 256.0;
-
-		return weightR * r * r + weightG * g * g + weightB * b * b;
-	}
-
-	/*
 	 * Parse the given 2D colors to fit lines
 	 */
 	private static String[] parseColors(CompChatColor[][] colors, Type imgchar) {
@@ -280,7 +200,7 @@ public final class ChatImage {
 			for (int x = 0; x < colors.length; x++) {
 				final CompChatColor color = colors[x][y];
 
-				line += (color != null) ? colors[x][y].toString() + imgchar : TRANSPARENT_CHAR;
+				line += color != null ? colors[x][y].toString() + imgchar : TRANSPARENT_CHAR;
 			}
 
 			lines[y] = line + ChatColor.RESET;
