@@ -1,7 +1,7 @@
 <p align="center">
   Do you want to learn Java and code highly-customized Minecraft plugins? I've made a training for you!
-  <a href="https://mineacademy.org/project-orion">
-    <img src="https://i.imgur.com/OJuN0qP.png" />
+  <a href="https://bit.ly/3GHdIQI">
+    <img src="https://i.imgur.com/lpZ2pJN.jpg" />
   </a>
 </p>
 
