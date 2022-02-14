@@ -1,7 +1,7 @@
 <p align="center">
-  Do you want to code using this library?
-  <a href="https://mineacademy.org/gh-join">
-    <img src="https://i.imgur.com/SuIyaDV.png" />
+  Do you want to learn Java and code highly-customized Minecraft plugins? I've made a training for you!
+  <a href="https://bit.ly/3GHdIQI">
+    <img src="https://i.imgur.com/lpZ2pJN.jpg" />
   </a>
 </p>
 
