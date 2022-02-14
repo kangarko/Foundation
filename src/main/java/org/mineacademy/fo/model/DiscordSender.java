@@ -138,7 +138,6 @@ public final class DiscordSender implements CommandSender {
 		return Bukkit.getServer();
 	}
 
-	@Override
 	public Spigot spigot() {
 		throw unsupported("spigot");
 	}
@@ -150,8 +149,6 @@ public final class DiscordSender implements CommandSender {
 	/**
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String)
 	 */
-	//@Override - Disable to prevent errors in older MC
-	@Override
 	public void sendMessage(UUID uuid, String message) {
 		this.sendMessage(message);
 	}
@@ -159,8 +156,6 @@ public final class DiscordSender implements CommandSender {
 	/**
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String[])
 	 */
-	//@Override - Disable to prevent errors in older MC
-	@Override
 	public void sendMessage(UUID uuid, String... messages) {
 		this.sendMessage(messages);
 	}
