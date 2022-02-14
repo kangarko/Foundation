@@ -614,6 +614,28 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Attempts to lookup an enum by its multiple names, typically the case for
+	 * multiple MC versions where names have changed but enum class stayed the same.
+	 *
+	 * NOTE: For Material class, use our dedicated CompMaterial instead of this method.
+	 *
+	 * @param enumClass
+	 * @param names
+	 * @return
+	 */
+	public static <T extends Enum<T>> T lookupLegacyEnum(final Class<T> enumClass, String... names) {
+
+		for (String name : names) {
+			T foundEnum = lookupEnumSilent(enumClass, name);
+
+			if (foundEnum != null)
+				return foundEnum;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Attempts to find an enum, throwing formatted error showing all available
 	 * values if not found
 	 *
@@ -1069,16 +1091,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-		
+
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-		
+
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
+
 			cacheMethod(method);
-		
+
 			return method;
 		}*/
 
