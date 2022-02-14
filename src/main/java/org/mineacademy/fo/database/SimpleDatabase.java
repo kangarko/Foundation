@@ -1,7 +1,6 @@
 package org.mineacademy.fo.database;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.RandomUtil;
@@ -20,6 +21,7 @@ import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.remain.Remain;
 
@@ -45,6 +47,8 @@ public class SimpleDatabase {
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
 	private volatile Connection connection;
+
+	private HikariDataSource hikariDataSource;
 
 	/**
 	 * The last credentials from the connect function, or null if never called
@@ -134,9 +138,19 @@ public class SimpleDatabase {
 		// Close any open connection
 		close();
 
+		HikariConfig hikariConfig = new HikariConfig();
+
 		try {
-			if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+			if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
+				Class.forName("org.mariadb.jdbc.Driver");
+				hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
+			}
+
+
+			else if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver")) {
 				Class.forName("com.mysql.cj.jdbc.Driver");
+				hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+			}
 
 			else {
 				Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
@@ -144,8 +158,15 @@ public class SimpleDatabase {
 				Class.forName("com.mysql.jdbc.Driver");
 			}
 
+			hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+
+			hikariConfig.setJdbcUrl(url);
+			hikariConfig.setUsername(user);
+			hikariConfig.setPassword(password);
+
+			hikariDataSource = new HikariDataSource(hikariConfig);
 			this.lastCredentials = new LastCredentials(url, user, password, table);
-			this.connection = DriverManager.getConnection(url, user, password);
+			this.connection = hikariDataSource.getConnection();
 
 			onConnected();
 
@@ -158,7 +179,9 @@ public class SimpleDatabase {
 						"this is normal - just restart.",
 						"",
 						"You have have access to your server machine, try installing",
-						"https://dev.mysql.com/downloads/connector/j/5.1.html#downloads",
+						"https://dev.mysql.com/downloads/connector/j/ - IF USING MYSQL",
+						"",
+						"Or use https://mariadb.com/downloads/connectors/ - IF USING MARIADB",
 						"",
 						"If this problem persists after a restart, please contact",
 						"your hosting provider.");
@@ -195,13 +218,8 @@ public class SimpleDatabase {
 	 * Attempts to close the connection, if not null
 	 */
 	public final void close() {
-		if (connection != null)
-			try {
-				connection.close();
-
-			} catch (final SQLException e) {
-				Common.error(e, "Error closing MySQL connection!");
-			}
+		if (hikariDataSource != null)
+			hikariDataSource.close();
 	}
 
 	// --------------------------------------------------------------------
