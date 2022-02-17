@@ -159,7 +159,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @return
 	 */
 	protected ConversationPrefix getPrefix() {
-		return new SimplePrefix(Common.ADD_TELL_PREFIX ? addLastSpace(Common.getTellPrefix()) : "");
+		return new SimplePrefix(!Common.getTellPrefix().isEmpty() ? addLastSpace(Common.getTellPrefix()) : "");
 	}
 
 	/*
@@ -345,7 +345,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 				// Save last prompt if it is our class
 				if (currentPrompt instanceof SimplePrompt)
-					lastSimplePrompt = ((SimplePrompt) currentPrompt);
+					lastSimplePrompt = (SimplePrompt) currentPrompt;
 
 				if (!currentPrompt.blocksForInput(context)) {
 					currentPrompt = currentPrompt.acceptInput(context, null);

@@ -89,16 +89,10 @@ public abstract class SimpleCommand extends Command {
 	private boolean registered = false;
 
 	/**
-	 * Should we add {@link Common#getTellPrefix()} automatically when calling tell and returnTell methods
-	 * from this command?
-	 */
-	private boolean addTellPrefix = true;
-
-	/**
 	 * The {@link Common#getTellPrefix()} custom prefix only used for sending messages in {@link #onCommand()} method
-	 * for this command, empty by default, then we use the one in Common
+	 * for this command, null to use the one in Common#getTellPrefix or empty to force no prefix.
 	 */
-	private String tellPrefix = "";
+	private String tellPrefix = null;
 
 	/**
 	 * Minimum arguments required to run this command
@@ -330,9 +324,10 @@ public abstract class SimpleCommand extends Command {
 		this.args = args;
 
 		// Set tell prefix only if the parent setting was on
-		final boolean hadTellPrefix = Common.ADD_TELL_PREFIX;
-		if (hadTellPrefix)
-			Common.ADD_TELL_PREFIX = addTellPrefix;
+		final String oldTellPrefix = Common.getTellPrefix();
+
+		if (this.tellPrefix != null)
+			Common.setTellPrefix(this.tellPrefix);
 
 		// Optional sublabel if this is a sub command
 		final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
@@ -419,7 +414,7 @@ public abstract class SimpleCommand extends Command {
 			Common.error(t, "Failed to execute command /" + getLabel() + sublabel + " " + String.join(" ", args));
 
 		} finally {
-			Common.ADD_TELL_PREFIX = hadTellPrefix;
+			Common.setTellPrefix(oldTellPrefix);
 
 			// Prevent duplication since MainCommand delegates this
 			if (!(this instanceof MainCommand))
@@ -937,16 +932,13 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 */
 	protected final void tellNoPrefix(String... messages) {
-		final boolean tellPrefix = Common.ADD_TELL_PREFIX;
-		final boolean localPrefix = addTellPrefix;
+		final String oldLocalPrefix = this.tellPrefix;
 
-		Common.ADD_TELL_PREFIX = false;
-		addTellPrefix = false;
+		this.tellPrefix = "";
 
 		tell(messages);
 
-		Common.ADD_TELL_PREFIX = tellPrefix;
-		addTellPrefix = localPrefix;
+		this.tellPrefix = oldLocalPrefix;
 	}
 
 	/**
@@ -955,26 +947,26 @@ public abstract class SimpleCommand extends Command {
 	 * @param messages
 	 */
 	protected final void tell(String... messages) {
-		if (messages != null) {
+
+		if (messages == null)
+			return;
+
+		final String oldTellPrefix = Common.getTellPrefix();
+
+		if (this.tellPrefix != null)
+			Common.setTellPrefix(this.tellPrefix);
+
+		try {
 			messages = replacePlaceholders(messages);
 
-			if (!addTellPrefix || Messenger.ENABLED || messages.length > 2) {
+			if (messages.length > 2) {
+				Common.tellNoPrefix(sender, messages);
 
-				if (Messenger.ENABLED && addTellPrefix) {
-					tellInfo(messages[0]);
-
-					if (messages.length > 1)
-						for (int i = 1; i < messages.length; i++)
-							Common.tellNoPrefix(sender, messages[i]);
-
-				} else
-					Common.tellNoPrefix(sender, messages);
-
-			} else if (tellPrefix.isEmpty())
+			} else
 				Common.tell(sender, messages);
-			else
-				for (final String message : messages)
-					Common.tellNoPrefix(sender, (tellPrefix.isEmpty() ? "" : tellPrefix + " ") + message);
+
+		} finally {
+			Common.setTellPrefix(oldTellPrefix);
 		}
 	}
 
@@ -1368,16 +1360,6 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final boolean isPlayer() {
 		return sender instanceof Player;
-	}
-
-	/**
-	 * Should we add {@link Common#getTellPrefix()} automatically when calling tell and returnTell methods
-	 * from this command?
-	 *
-	 * @param addTellPrefix
-	 */
-	protected final void addTellPrefix(final boolean addTellPrefix) {
-		this.addTellPrefix = addTellPrefix;
 	}
 
 	/**
