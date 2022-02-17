@@ -14,7 +14,7 @@
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
-	<description>Create complex and unique plugins easily and fast.</description>
+	<description>A framework for easy creation of rich Bukkit plugins.</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -180,7 +180,7 @@
 					<target>${java.version}</target>
 				</configuration>
 			</plugin>
-			<plugin>
+			<!--<plugin>
 			    <groupId>org.projectlombok</groupId>
 			    <artifactId>lombok-maven-plugin</artifactId>
 			    <version>1.18.20.0</version>
@@ -213,7 +213,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
 </project>

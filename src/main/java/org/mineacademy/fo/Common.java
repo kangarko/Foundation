@@ -111,27 +111,13 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Should we add a prefix to the messages we send to players using tell() methods?
-	 * <p>
-	 * False by default
-	 */
-	public static boolean ADD_TELL_PREFIX = false;
-
-	/**
-	 * Should we add a prefix to the messages we send to the console?
-	 * <p>
-	 * True by default
-	 */
-	public static boolean ADD_LOG_PREFIX = true;
-
-	/**
-	 * The tell prefix applied on tell() methods
+	 * The tell prefix applied on tell() methods, defaults to empty
 	 */
 	@Getter
-	private static String tellPrefix = "[" + SimplePlugin.getNamed() + "]";
+	private static String tellPrefix = "";
 
 	/**
-	 * The log prefix applied on log() methods
+	 * The log prefix applied on log() methods, defaults to [PluginName]
 	 */
 	@Getter
 	private static String logPrefix = "[" + SimplePlugin.getNamed() + "]";
@@ -144,7 +130,7 @@ public final class Common {
 	 * @param prefix
 	 */
 	public static void setTellPrefix(final String prefix) {
-		tellPrefix = colorize(prefix);
+		tellPrefix = prefix == null ? "" : colorize(prefix);
 	}
 
 	/**
@@ -155,7 +141,7 @@ public final class Common {
 	 * @param prefix
 	 */
 	public static void setLogPrefix(final String prefix) {
-		logPrefix = colorize(prefix);
+		logPrefix = prefix == null ? "" : colorize(prefix);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -273,12 +259,11 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellTimedNoPrefix(final int delaySeconds, final CommandSender sender, final String message) {
-		final boolean hadPrefix = ADD_TELL_PREFIX;
-		ADD_TELL_PREFIX = false;
+		final String oldPrefix = getTellPrefix();
+		setTellPrefix("");
 
 		tellTimed(delaySeconds, sender, message);
-
-		ADD_TELL_PREFIX = hadPrefix;
+		setTellPrefix(oldPrefix);
 	}
 
 	/**
@@ -325,7 +310,7 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellConversing(final Conversable conversable, final String message) {
-		conversable.sendRawMessage(colorize((ADD_TELL_PREFIX ? tellPrefix : "") + removeFirstSpaces(message)).trim());
+		conversable.sendRawMessage(colorize(addLastSpace(tellPrefix) + removeFirstSpaces(message)).trim());
 	}
 
 	/**
@@ -352,11 +337,11 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void tellNoPrefix(final CommandSender sender, final String... messages) {
-		final boolean was = ADD_TELL_PREFIX;
+		final String oldPrefix = getTellPrefix();
 
-		ADD_TELL_PREFIX = false;
+		setTellPrefix("");
 		tell(sender, messages);
-		ADD_TELL_PREFIX = was;
+		setTellPrefix(oldPrefix);
 	}
 
 	/**
@@ -477,7 +462,7 @@ public final class Common {
 		} else
 			for (final String part : message.split("\n")) {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
-				final String prefix = ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
+				final String prefix = !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
 
 				String toSend;
 
@@ -523,6 +508,16 @@ public final class Common {
 
 		while (message.startsWith(" "))
 			message = message.substring(1);
+
+		return message;
+	}
+
+	// Helper method used to add spaces between tell/log prefix and the message
+	private static String addLastSpace(String message) {
+		message = message.trim();
+
+		if (!message.endsWith(" "))
+			message = message + " ";
 
 		return message;
 	}
@@ -1288,7 +1283,7 @@ public final class Common {
 
 			} else
 				for (final String part : message.split("\n")) {
-					final String log = ((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
+					final String log = ((addLogPrefix && !logPrefix.isEmpty() ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
 
 					CONSOLE_SENDER.sendMessage(log);
 				}

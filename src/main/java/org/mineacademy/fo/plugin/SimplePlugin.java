@@ -281,11 +281,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Print startup logo early before onPluginPreStart
 		// Disable logging prefix if logo is set
 		if (getStartupLogo() != null) {
-			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
+			final String oldLogPrefix = Common.getLogPrefix();
 
-			Common.ADD_LOG_PREFIX = false;
+			Common.setLogPrefix("");
 			Common.log(getStartupLogo());
-			Common.ADD_LOG_PREFIX = hadLogPrefix;
+			Common.setLogPrefix(oldLogPrefix);
 		}
 
 		// Inject server-name to newer MC versions that lack it
@@ -316,8 +316,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// --------------------------------------------
 
 			// Hide plugin name before console messages
-			final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
-			Common.ADD_LOG_PREFIX = false;
+			final String oldLogPrefix = Common.getLogPrefix();
+			Common.setLogPrefix("");
 
 			startingReloadables = true;
 
@@ -377,7 +377,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.setTellPrefix(SimpleSettings.PLUGIN_PREFIX);
 
 			// Finally, place plugin name before console messages after plugin has (re)loaded
-			Common.runLater(() -> Common.ADD_LOG_PREFIX = hadLogPrefix);
+			Common.runLater(() -> Common.setLogPrefix(oldLogPrefix));
 
 		} catch (final Throwable t) {
 			displayError0(t);
@@ -669,8 +669,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Attempts to reload the plugin
 	 */
 	public final void reload() {
-		final boolean hadLogPrefix = Common.ADD_LOG_PREFIX;
-		Common.ADD_LOG_PREFIX = false;
+		final String oldLogPrefix = Common.getLogPrefix();
+		Common.setLogPrefix("");
 
 		Common.log(Common.consoleLineSmooth());
 		Common.log(" ");
@@ -732,7 +732,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.throwError(t, "Error reloading " + getName() + " " + getVersion());
 
 		} finally {
-			Common.ADD_LOG_PREFIX = hadLogPrefix;
+			Common.setLogPrefix(oldLogPrefix);
 
 			reloading = false;
 		}
