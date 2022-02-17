@@ -72,12 +72,12 @@ public final class BoxedMessage {
 
 	private void launch() {
 		Common.runLater(2, () -> {
-			final boolean tellPrefixState = Common.ADD_TELL_PREFIX;
-			Common.ADD_TELL_PREFIX = false;
+			final String oldTellPrefix = Common.getTellPrefix();
+			Common.setTellPrefix("");
 
 			sendFrame();
 
-			Common.ADD_TELL_PREFIX = tellPrefixState;
+			Common.setTellPrefix(oldTellPrefix);
 		});
 	}
 
