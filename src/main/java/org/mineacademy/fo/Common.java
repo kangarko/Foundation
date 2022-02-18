@@ -589,28 +589,24 @@ public final class Common {
 				.replace("{plugin_name}", SimplePlugin.getNamed())
 				.replace("{plugin_version}", SimplePlugin.getVersion()));
 
-		// RGB colors
-		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
+		// RGB colors - return the closest color for legacy MC versions
+		final Matcher match = HEX_COLOR_REGEX.matcher(result);
 
-			// Preserve compatibility with former systems
-			final Matcher match = HEX_COLOR_REGEX.matcher(result);
+		while (match.find()) {
+			final String matched = match.group();
+			final String colorCode = match.group(2);
+			String replacement = "";
 
-			while (match.find()) {
-				final String matched = match.group();
-				final String colorCode = match.group(2);
-				String replacement = "";
+			try {
+				replacement = CompChatColor.of("#" + colorCode).toString();
 
-				try {
-					replacement = CompChatColor.of("#" + colorCode).toString();
-
-				} catch (final IllegalArgumentException ex) {
-				}
-
-				result = result.replaceAll(Pattern.quote(matched), replacement);
+			} catch (final IllegalArgumentException ex) {
 			}
 
-			result = result.replace("\\#", "#");
+			result = result.replaceAll(Pattern.quote(matched), replacement);
 		}
+
+		result = result.replace("\\#", "#");
 
 		return result;
 	}
@@ -2770,7 +2766,13 @@ final class TimedCharSequence implements CharSequence {
 		//if (System.currentTimeMillis() > futureTimestampLimit)
 		//	throw new RegexTimeoutException(message, futureTimestampLimit);
 
-		return message.charAt(index);
+		try {
+			return message.charAt(index);
+		} catch (final StringIndexOutOfBoundsException ex) {
+
+			// Odd case: Java 8 seems to overflow for too-long unicode characters, security feature
+			return ' ';
+		}
 	}
 
 	@Override

@@ -4,7 +4,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
@@ -47,6 +49,11 @@ final class AutoRegisterScanner {
 	private static boolean enchantListenersRegistered = false;
 
 	/**
+	 * Automatically register the main command group if there is only one in the code
+	 */
+	private static List<SimpleCommandGroup> registeredCommandGroups = new ArrayList<>();
+
+	/**
 	 * Scans your plugin and if your {@link Tool} or {@link SimpleEnchantment} class implements {@link Listener}
 	 * and has "instance" method to be a singleton, your events are registered there automatically
 	 * <p>
@@ -56,6 +63,7 @@ final class AutoRegisterScanner {
 
 		// Reset
 		enchantListenersRegistered = false;
+		registeredCommandGroups.clear();
 
 		// Ignore anonymous inner classes
 		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
@@ -137,6 +145,23 @@ final class AutoRegisterScanner {
 				}
 			}
 
+			boolean mainCommandGroupFound = false;
+
+			for (final SimpleCommandGroup group : registeredCommandGroups) {
+
+				// Register if main command or there is only one command group, then assume main
+				if (group.getLabel().equals(SimpleSettings.MAIN_COMMAND_ALIASES.first()) || registeredCommandGroups.size() == 1) {
+					Valid.checkBoolean(!mainCommandGroupFound, "Found 2 or more command groups that do not specify label in their constructor."
+							+ " (We can only automatically use one of such groups as the main one using Command_Aliases as command label(s)"
+							+ " from settings.yml but not more.");
+
+					SimplePlugin.getInstance().setMainCommand(group);
+					mainCommandGroupFound = true;
+				}
+
+				SimplePlugin.getInstance().registerCommands(group);
+			}
+
 		} catch (final Throwable t) {
 			Common.error(t, "Failed to scan classes to register - your classes using @AutoRegister will not function!");
 		}
@@ -202,14 +227,10 @@ final class AutoRegisterScanner {
 		}
 
 		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
-
 			final SimpleCommandGroup group = (SimpleCommandGroup) instance;
-			final boolean isMainCommand = group.getLabel().equals(SimpleSettings.MAIN_COMMAND_ALIASES.get(0));
 
-			if (isMainCommand)
-				SimplePlugin.getInstance().setMainCommand(group);
-
-			plugin.registerCommands(group);
+			// Special case, do it at the end
+			registeredCommandGroups.add(group);
 		}
 
 		else if (SimpleExpansion.class.isAssignableFrom(clazz)) {

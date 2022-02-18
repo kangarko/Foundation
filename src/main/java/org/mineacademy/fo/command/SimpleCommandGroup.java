@@ -1,11 +1,14 @@
 package org.mineacademy.fo.command;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -14,6 +17,7 @@ import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
@@ -56,6 +60,14 @@ public abstract class SimpleCommandGroup {
 	private List<String> aliases;
 
 	/**
+	 * The temporary sender that is currently about to see the command group, mostly used in
+	 * compiling info messages such as in {@link #getNoParamsHeader()}
+	 */
+	@Nullable
+	@Getter
+	protected CommandSender sender;
+
+	/**
 	 * Create a new simple command group using {@link SimpleSettings#MAIN_COMMAND_ALIASES}
 	 */
 	protected SimpleCommandGroup() {
@@ -87,6 +99,19 @@ public abstract class SimpleCommandGroup {
 	protected SimpleCommandGroup(String label, List<String> aliases) {
 		this.label = label;
 		this.aliases = aliases;
+	}
+
+	/**
+	 * Create a new simple command group with the given label and aliases automatically
+	 * separated by | or /
+	 *
+	 * Example: channel|ch will create a /channel command group that can also be called by using /ch
+	 */
+	protected SimpleCommandGroup(String labelAndAliases) {
+		final String[] split = labelAndAliases.split("(\\||\\/)");
+
+		this.label = split[0];
+		this.aliases = split.length > 0 ? Arrays.asList(Arrays.copyOfRange(split, 1, split.length)) : new ArrayList<>();
 	}
 
 	// ----------------------------------------------------------------------
@@ -169,6 +194,22 @@ public abstract class SimpleCommandGroup {
 	}
 
 	/**
+	 * Automatically registers all extending classes for the given parent class into this command group.
+	 * We automatically ignore abstract classes for you. ENSURE TO MAKE YOUR CHILDREN CLASSES FINAL.
+	 *
+	 * @param parentClass
+	 */
+	protected final void registerSubcommand(Class<? extends SimpleSubCommand> parentClass) {
+		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), parentClass)) {
+			if (Modifier.isAbstract(clazz.getModifiers()))
+				continue;
+
+			Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Make child of " + parentClass.getSimpleName() + " class " + clazz.getSimpleName() + " final to auto register it!");
+			registerSubcommand(ReflectionUtil.instantiate(clazz));
+		}
+	}
+
+	/**
 	 * Registers a simple help message for this group, used in /{label} help|?
 	 * since we add help for all subcommands automatically
 	 *
@@ -221,7 +262,7 @@ public abstract class SimpleCommandGroup {
 	 *               may be null
 	 * @return
 	 */
-	protected List<SimpleComponent> getNoParamsHeader(CommandSender sender) {
+	protected List<SimpleComponent> getNoParamsHeader() {
 		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -375,12 +416,15 @@ public abstract class SimpleCommandGroup {
 		@Override
 		protected void onCommand() {
 
+			// Pass through sender to the command group itself
+			SimpleCommandGroup.this.sender = this.sender;
+
 			// Print a special message on no arguments
 			if (args.length == 0) {
 				if (sendHelpIfNoArgs())
 					tellSubcommandsHelp();
 				else
-					tell(getNoParamsHeader(sender));
+					tell(getNoParamsHeader());
 
 				return;
 			}
