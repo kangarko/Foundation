@@ -213,7 +213,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
-		if (!Bukkit.getVersion().contains("Paper") && MinecraftVersion.atLeast(V.v1_8)) {
+		if (!Bukkit.getVersion().contains("Paper") && !Bukkit.getVersion().contains("NachoSpigot") && MinecraftVersion.atLeast(V.v1_8)) {
 
 			if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit") || Bukkit.getVersion().contains("-Spigot-")) {
 				Bukkit.getLogger().severe(Common.consoleLine());
@@ -229,7 +229,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			}
 
 			Bukkit.getLogger().severe(Common.consoleLine());
-			Bukkit.getLogger().warning("Warning about " + named + ": You are not using Paper!");
+			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper! (Detected: " + Bukkit.getVersion() + ")");
 			Bukkit.getLogger().warning("");
 			Bukkit.getLogger().warning("Third party forks such as BeerSpigot are known to alter");
 			Bukkit.getLogger().warning("server's behavior. If you have issues with this plugin,");
