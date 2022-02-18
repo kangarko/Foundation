@@ -91,6 +91,19 @@ public abstract class SimpleCommandGroup {
 		this.aliases = aliases;
 	}
 
+	/**
+	 * Create a new simple command group with the given label and aliases automatically
+	 * separated by | or /
+	 *
+	 * Example: channel|ch will create a /channel command group that can also be called by using /ch
+	 */
+	protected SimpleCommandGroup(String labelAndAliases) {
+		final String[] split = labelAndAliases.split("(\\||\\/)");
+
+		this.label = split[0];
+		this.aliases = split.length > 0 ? Arrays.asList(Arrays.copyOfRange(split, 1, split.length)) : new ArrayList<>();
+	}
+
 	// ----------------------------------------------------------------------
 	// Main functions
 	// ----------------------------------------------------------------------
