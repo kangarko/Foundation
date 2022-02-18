@@ -1,5 +1,6 @@
 package org.mineacademy.fo.command;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -14,6 +15,7 @@ import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
@@ -166,6 +168,22 @@ public abstract class SimpleCommandGroup {
 		Valid.checkBoolean(!subcommands.contains(command), "Subcommand /" + mainCommand.getLabel() + " " + command.getSublabel() + " already registered when trying to add " + command.getClass());
 
 		subcommands.add(command);
+	}
+
+	/**
+	 * Automatically registers all extending classes for the given parent class into this command group.
+	 * We automatically ignore abstract classes for you. ENSURE TO MAKE YOUR CHILDREN CLASSES FINAL.
+	 *
+	 * @param parentClass
+	 */
+	protected final void registerSubcommand(Class<? extends SimpleSubCommand> parentClass) {
+		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), parentClass)) {
+			if (Modifier.isAbstract(clazz.getModifiers()))
+				continue;
+
+			Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Make child of " + parentClass.getSimpleName() + " class " + clazz.getSimpleName() + " final to auto register it!");
+			registerSubcommand(ReflectionUtil.instantiate(clazz));
+		}
 	}
 
 	/**
