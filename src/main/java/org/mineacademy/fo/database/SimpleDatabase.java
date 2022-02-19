@@ -125,7 +125,7 @@ public class SimpleDatabase {
 	 * @param password
 	 * @param table
 	 */
-	public final void connect(final String url, final String user, final String password, final String table, final String type, final int poolMaxConnections, final int poolTimeout, final int poolIdleTimeout, final int poolKeepalive, final int poolMaxLifetime) {
+	public final void connect(final String url, final String user, final String password, final String table) {
 
 		// Close any open connection
 		close();
@@ -133,40 +133,14 @@ public class SimpleDatabase {
 		HikariConfig hikariConfig = new HikariConfig();
 
 		try {
-			if (type.equalsIgnoreCase("MariaDB")) {
+			if (!ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
 				Class.forName("org.mariadb.jdbc.Driver");
-				hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
 
-
-			}
-
-			else if (type.equalsIgnoreCase("MySQL")) {
-				Class.forName("com.mysql.cj.jdbc.Driver");
-				hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
-
-
-			}
-
-			else {
-				Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
-
-				Class.forName("com.mysql.jdbc.Driver");
-			}
-
-			// Manually declaring which jdbc driver to use until we can use the 'Type' setting in the mysql.yml file
-			//hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
-			//hikariConfig.setDriverClassName(com.mysql.cj.jdbc.Driver");
+			hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
 
 			hikariConfig.setJdbcUrl(url);
 			hikariConfig.setUsername(user);
 			hikariConfig.setPassword(password);
-
-			// HikariCP pool configuration
-			hikariConfig.setMaximumPoolSize(poolMaxConnections);
-			hikariConfig.setConnectionTimeout(poolTimeout);
-			hikariConfig.setIdleTimeout(poolIdleTimeout);
-			hikariConfig.setKeepaliveTime(poolKeepalive);
-			hikariConfig.setMaxLifetime(poolMaxLifetime);
 
 			hikariDataSource = new HikariDataSource(hikariConfig);
 			this.lastCredentials = new LastCredentials(url, user, password, table);
@@ -183,10 +157,7 @@ public class SimpleDatabase {
 						"this is normal - just restart.",
 						"",
 						"You have have access to your server machine, try installing",
-						"https://dev.mysql.com/downloads/connector/j/ - IF USING MYSQL",
-						"",
-						"Or use https://mariadb.com/downloads/connectors/ - IF USING MARIADB",
-						"",
+						"https://mariadb.com/downloads/connectors/",
 						"If this problem persists after a restart, please contact",
 						"your hosting provider.");
 			else
