@@ -2766,7 +2766,13 @@ final class TimedCharSequence implements CharSequence {
 		//if (System.currentTimeMillis() > futureTimestampLimit)
 		//	throw new RegexTimeoutException(message, futureTimestampLimit);
 
-		return message.charAt(index);
+		try {
+			return message.charAt(index);
+		} catch (final StringIndexOutOfBoundsException ex) {
+
+			// Odd case: Java 8 seems to overflow for too-long unicode characters, security feature
+			return ' ';
+		}
 	}
 
 	@Override
