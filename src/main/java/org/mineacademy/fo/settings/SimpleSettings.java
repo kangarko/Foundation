@@ -222,17 +222,12 @@ public class SimpleSettings extends YamlStaticConfig {
 		}
 
 		{ // Load main command alias
-
 			final boolean keySet = isSetDefault("Command_Aliases");
-
-			if (SimplePlugin.getInstance().getMainCommand() != null && !keySet)
-				throw new FoException("Since you override getMainCommand in your main plugin class you must set the 'Command_Aliases' key in " + getFileName());
 
 			MAIN_COMMAND_ALIASES = keySet ? getCommandList("Command_Aliases") : MAIN_COMMAND_ALIASES;
 		}
 
 		{ // Load updates notifier
-
 			final boolean keySet = isSetDefault("Notify_Updates");
 
 			NOTIFY_UPDATES = keySet ? getBoolean("Notify_Updates") : NOTIFY_UPDATES;

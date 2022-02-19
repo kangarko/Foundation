@@ -14,7 +14,6 @@ import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.NonNull;
 
@@ -77,7 +76,7 @@ public final class PermsCommand extends SimpleSubCommand {
 		this.variables = variables;
 
 		if (!this.variables.containsKey("label") && SimplePlugin.getInstance().getMainCommand() != null)
-			this.variables.put("label", SimpleSettings.MAIN_COMMAND_ALIASES.get(0));
+			this.variables.put("label", SimplePlugin.getInstance().getMainCommand().getLabel());
 
 		setPermission(SimplePlugin.getNamed().toLowerCase() + ".command.permissions");
 		setDescription(Commands.PERMS_DESCRIPTION);
