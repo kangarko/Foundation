@@ -14,7 +14,6 @@ import org.apache.logging.log4j.message.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -84,10 +83,10 @@ final class FoundationFilter {
 		message = message.toLowerCase();
 
 		// Only filter this after plugin has been fully enabled
-		if (!SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty()) {
+		if (SimplePlugin.hasInstance() && SimplePlugin.getInstance().getMainCommand() != null) {
 
 			// Filter inbuilt Foundation or ChatControl commands
-			if (message.contains("issued server command: /" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " internal") || message.contains("issued server command: /#flp"))
+			if (message.contains("issued server command: /" + SimplePlugin.getInstance().getMainCommand().getLabel() + " internal") || message.contains("issued server command: /#flp"))
 				return true;
 
 			// Filter user-defined commands
