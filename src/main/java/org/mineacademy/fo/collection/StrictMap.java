@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import javax.annotation.Nullable;
+
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 
@@ -17,15 +19,15 @@ import org.mineacademy.fo.Valid;
  * Strict map that only allows to remove elements that are contained within, or add elements that are not.
  * <p>
  * Failing to do so results in an error, with optional error message.
- * @param <E>
- * @param <T>
+ * @param <K>
+ * @param <V>
  */
-public final class StrictMap<E, T> extends StrictCollection {
+public final class StrictMap<K, V> extends StrictCollection {
 
 	/**
 	 * The internal map holding value-key pairs
 	 */
-	private final Map<E, T> map = new LinkedHashMap<>();
+	private final Map<K, V> map = new LinkedHashMap<>();
 
 	/**
 	 * Create a new strict map
@@ -49,7 +51,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param copyOf
 	 */
-	public StrictMap(Map<E, T> copyOf) {
+	public StrictMap(Map<K, V> copyOf) {
 		this();
 
 		putAll(copyOf);
@@ -64,8 +66,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param value
 	 */
-	public void removeByValue(T value) {
-		for (final Entry<E, T> e : map.entrySet())
+	public void removeByValue(V value) {
+		for (final Entry<K, V> e : map.entrySet())
 			if (e.getValue().equals(value)) {
 				map.remove(e.getKey());
 				return;
@@ -80,10 +82,10 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param keys
 	 * @return
 	 */
-	public Object[] removeAll(Collection<E> keys) {
-		final List<T> removedKeys = new ArrayList<>();
+	public Object[] removeAll(Collection<K> keys) {
+		final List<V> removedKeys = new ArrayList<>();
 
-		for (final E key : keys)
+		for (final K key : keys)
 			removedKeys.add(remove(key));
 
 		return removedKeys.toArray();
@@ -95,8 +97,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public T remove(E key) {
-		final T removed = removeWeak(key);
+	public V remove(K key) {
+		final V removed = removeWeak(key);
 		Valid.checkNotNull(removed, String.format(getCannotRemoveMessage(), key));
 
 		return removed;
@@ -108,7 +110,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void put(E key, T value) {
+	public void put(K key, V value) {
 		Valid.checkBoolean(!map.containsKey(key), String.format(getCannotAddMessage(), key, map.get(key)));
 
 		override(key, value);
@@ -119,8 +121,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param m
 	 */
-	public void putAll(Map<? extends E, ? extends T> m) {
-		for (final Map.Entry<? extends E, ? extends T> e : m.entrySet())
+	public void putAll(Map<? extends K, ? extends V> m) {
+		for (final Map.Entry<? extends K, ? extends V> e : m.entrySet())
 			Valid.checkBoolean(!map.containsKey(e.getKey()), String.format(getCannotAddMessage(), e.getKey(), map.get(e.getKey())));
 
 		override(m);
@@ -136,7 +138,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public T removeWeak(E value) {
+	public V removeWeak(K value) {
 		return map.remove(value);
 	}
 
@@ -146,7 +148,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void override(E key, T value) {
+	public void override(K key, V value) {
 		map.put(key, value);
 	}
 
@@ -155,7 +157,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param m
 	 */
-	public void override(Map<? extends E, ? extends T> m) {
+	public void override(Map<? extends K, ? extends V> m) {
 		map.putAll(m);
 	}
 
@@ -166,7 +168,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param defaultToPut
 	 * @return
 	 */
-	public T getOrPut(E key, T defaultToPut) {
+	public V getOrPut(K key, V defaultToPut) {
 		if (containsKey(key))
 			return get(key);
 
@@ -180,21 +182,12 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public E getKeyFromValue(T value) {
-		for (final Entry<E, T> e : map.entrySet())
+	public K getKeyFromValue(V value) {
+		for (final Entry<K, V> e : map.entrySet())
 			if (e.getValue().equals(value))
 				return e.getKey();
 
 		return null;
-	}
-
-	/**
-	 * Get the first key or null if none
-	 *
-	 * @return
-	 */
-	public E getFirstKey() {
-		return map.isEmpty() ? null : map.keySet().iterator().next();
 	}
 
 	/**
@@ -203,7 +196,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public T get(E key) {
+	public V get(K key) {
 		return map.get(key);
 	}
 
@@ -214,8 +207,28 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public T getOrDefault(E key, T def) {
+	public V getOrDefault(K key, V def) {
 		return map.getOrDefault(key, def);
+	}
+
+	/**
+	 * Returns the first key value from the first pair in map or null if the map is empty
+	 *
+	 * @return
+	 */
+	@Nullable
+	public K firstKey() {
+		return map.isEmpty() ? null : map.keySet().iterator().next();
+	}
+
+	/**
+	 * Returns the first value from the first pair in the map or null if the map is empty
+	 *
+	 * @return
+	 */
+	@Nullable
+	public V firstValue() {
+		return map.isEmpty() ? null : map.values().iterator().next();
 	}
 
 	/**
@@ -224,7 +237,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public boolean containsKey(E key) {
+	public boolean containsKey(K key) {
 		return key == null ? false : map.containsKey(key);
 	}
 
@@ -234,7 +247,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public boolean containsValue(T value) {
+	public boolean containsValue(V value) {
 		return value == null ? false : map.containsValue(value);
 	}
 
@@ -243,9 +256,9 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param consumer
 	 */
-	public void forEachIterate(BiConsumer<E, T> consumer) {
-		for (final Iterator<Map.Entry<E, T>> it = entrySet().iterator(); it.hasNext();) {
-			final Map.Entry<E, T> entry = it.next();
+	public void forEachIterate(BiConsumer<K, V> consumer) {
+		for (final Iterator<Map.Entry<K, V>> it = entrySet().iterator(); it.hasNext();) {
+			final Map.Entry<K, V> entry = it.next();
 
 			consumer.accept(entry.getKey(), entry.getValue());
 		}
@@ -256,7 +269,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Set<Entry<E, T>> entrySet() {
+	public Set<Entry<K, V>> entrySet() {
 		return map.entrySet();
 	}
 
@@ -265,7 +278,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Set<E> keySet() {
+	public Set<K> keySet() {
 		return map.keySet();
 	}
 
@@ -274,7 +287,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Collection<T> values() {
+	public Collection<V> values() {
 		return map.values();
 	}
 
@@ -299,7 +312,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Map<E, T> getSource() {
+	public Map<K, V> getSource() {
 		return map;
 	}
 
@@ -317,8 +330,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 		if (!map.isEmpty()) {
 			final Map<Object, Object> copy = new LinkedHashMap<>();
 
-			for (final Entry<E, T> entry : entrySet()) {
-				final T val = entry.getValue();
+			for (final Entry<K, V> entry : entrySet()) {
+				final V val = entry.getValue();
 
 				if (val != null)
 					copy.put(SerializeUtil.serialize(entry.getKey()), SerializeUtil.serialize(val));

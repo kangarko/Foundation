@@ -5,10 +5,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 
 /**
  * Strict set that only allows to remove elements that are contained within, or add elements that are not.
@@ -112,24 +113,13 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	}
 
 	/**
-	 * Return the element at the given index
+	 * Returns the first value or null if the list is empty
 	 *
-	 * @param index
 	 * @return
 	 */
-	public E getAt(int index) {
-		int i = 0;
-
-		final Iterator<E> it = set.iterator();
-
-		while (it.hasNext()) {
-			final E e = it.next();
-
-			if (i++ == index)
-				return e;
-		}
-
-		throw new FoException("Index (" + index + ") + out of size (" + set.size() + ")");
+	@Nullable
+	public E first() {
+		return set.isEmpty() ? null : set.iterator().next();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
