@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
@@ -56,6 +58,14 @@ public abstract class SimpleCommandGroup {
 	 */
 	@Getter
 	private List<String> aliases;
+
+	/**
+	 * The temporary sender that is currently about to see the command group, mostly used in
+	 * compiling info messages such as in {@link #getNoParamsHeader()}
+	 */
+	@Nullable
+	@Getter
+	protected CommandSender sender;
 
 	/**
 	 * Create a new simple command group using {@link SimpleSettings#MAIN_COMMAND_ALIASES}
@@ -252,7 +262,7 @@ public abstract class SimpleCommandGroup {
 	 *               may be null
 	 * @return
 	 */
-	protected List<SimpleComponent> getNoParamsHeader(CommandSender sender) {
+	protected List<SimpleComponent> getNoParamsHeader() {
 		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -406,12 +416,15 @@ public abstract class SimpleCommandGroup {
 		@Override
 		protected void onCommand() {
 
+			// Pass through sender to the command group itself
+			SimpleCommandGroup.this.sender = this.sender;
+
 			// Print a special message on no arguments
 			if (args.length == 0) {
 				if (sendHelpIfNoArgs())
 					tellSubcommandsHelp();
 				else
-					tell(getNoParamsHeader(sender));
+					tell(getNoParamsHeader());
 
 				return;
 			}
