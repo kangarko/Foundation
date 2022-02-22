@@ -59,9 +59,9 @@ import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
+import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
-import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
@@ -209,7 +209,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		// Cache results for best performance
 		version = instance.getDescription().getVersion();
-		named = instance.getName();
+		named = instance.getDataFolder().getName();
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
@@ -296,7 +296,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			HookManager.loadDependencies();
 
 		} catch (final Throwable throwable) {
-			Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
+			Common.throwError(throwable, "Error while loading " + getDataFolder().getName() + " dependencies!");
 		}
 
 		// Return if plugin pre start indicated a fatal problem
@@ -471,7 +471,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (!md_5 || !gson) {
 			Bukkit.getLogger().severe(Common.consoleLine());
 			Bukkit.getLogger().severe("Your Minecraft version (" + MinecraftVersion.getCurrent() + ")");
-			Bukkit.getLogger().severe("lacks libraries " + getName() + " needs:");
+			Bukkit.getLogger().severe("lacks libraries " + getDataFolder().getName() + " needs:");
 			Bukkit.getLogger().severe("JSON Chat (by md_5) found: " + md_5);
 			Bukkit.getLogger().severe("Gson (by Google) found: " + gson);
 			Bukkit.getLogger().severe(" ");
@@ -506,7 +506,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (minimumVersion != null && MinecraftVersion.olderThan(minimumVersion)) {
 			Common.logFramed(false,
-					getName() + " requires Minecraft " + minimumVersion + " or newer to run.",
+					getDataFolder().getName() + " requires Minecraft " + minimumVersion + " or newer to run.",
 					"Please upgrade your server.");
 
 			return false;
@@ -517,7 +517,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (maximumVersion != null && MinecraftVersion.newerThan(maximumVersion)) {
 			Common.logFramed(false,
-					getName() + " requires Minecraft " + maximumVersion + " or older to run.",
+					getDataFolder().getName() + " requires Minecraft " + maximumVersion + " or older to run.",
 					"Please downgrade your server or",
 					"wait for the new version.");
 
@@ -615,7 +615,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			t.printStackTrace();
 		}
 
-		Objects.requireNonNull(instance, "Instance of " + getName() + " already nulled!");
+		Objects.requireNonNull(instance, "Instance of " + getDataFolder().getName() + " already nulled!");
 		instance = null;
 	}
 
@@ -674,7 +674,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		Common.log(Common.consoleLineSmooth());
 		Common.log(" ");
-		Common.log("Reloading plugin " + this.getName() + " v" + getVersion());
+		Common.log("Reloading plugin " + getDataFolder().getName() + " v" + getVersion());
 		Common.log(" ");
 
 		reloading = true;
@@ -689,7 +689,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				HookManager.loadDependencies();
 
 			} catch (final Throwable throwable) {
-				Common.throwError(throwable, "Error while loading " + getName() + " dependencies!");
+				Common.throwError(throwable, "Error while loading " + getDataFolder().getName() + " dependencies!");
 			}
 
 			onPluginPreReload();
@@ -729,7 +729,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.log(Common.consoleLineSmooth());
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Error reloading " + getName() + " " + getVersion());
+			Common.throwError(t, "Error reloading " + getDataFolder().getName() + " " + getVersion());
 
 		} finally {
 			Common.setLogPrefix(oldLogPrefix);
@@ -1180,10 +1180,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Deprecated
 	@Override
 	public final void reloadConfig() {
-		throw new FoException("Cannot call reloadConfig in " + getName() + ", use reload()!");
+		throw new FoException("Cannot call reloadConfig in " + getDataFolder().getName() + ", use reload()!");
 	}
 
 	private final FoException unsupported(final String method) {
-		return new FoException("Cannot call " + method + " in " + getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
+		return new FoException("Cannot call " + method + " in " + getDataFolder().getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
 	}
 }

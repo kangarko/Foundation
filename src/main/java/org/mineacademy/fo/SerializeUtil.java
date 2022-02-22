@@ -44,7 +44,6 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -206,10 +205,7 @@ public final class SerializeUtil {
 				newMap.put(serialize(entry.getKey()), serialize(entry.getValue()));
 
 			return newMap;
-
-		} else if (object instanceof YamlConfig)
-			throw new SerializeFailedException("Called serialize for YamlConfig's '" + object.getClass().getSimpleName()
-					+ "' but failed, if you're trying to save it make it implement ConfigSerializable!");
+		}
 
 		else if (object instanceof Integer || object instanceof Double || object instanceof Float || object instanceof Long || object instanceof Short
 				|| object instanceof String || object instanceof Boolean || object instanceof Map

@@ -1,37 +1,47 @@
 package org.mineacademy.fo.settings;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.bukkit.Bukkit;
+import javax.annotation.Nullable;
+
 import org.bukkit.Location;
-import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.collection.StrictSet;
-import org.mineacademy.fo.constants.FoConstants;
-import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -39,29 +49,40 @@ import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.error.YAMLException;
+import org.yaml.snakeyaml.nodes.AnchorNode;
+import org.yaml.snakeyaml.nodes.MappingNode;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.reader.UnicodeReader;
+import org.yaml.snakeyaml.representer.Representer;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 /**
- * The core configuration class. Manages all settings files.
+ * An enhanced base of the MemorySection and other classes in Bukkit adjusted
+ * for maximum compatibility (should even work on 1.1, to the latest one),
+ * unicode support, comments support, safety and automatic config updating
+ * if default file is provided.
  *
- * @author kangarko
- * @version 5.0 (of the previous ConfHelper)
+ * You can either call {@link #fromFile(File)} or extend this class. If you extend
+ * this class, make sure to use {@link #loadConfiguration(File)} and then
+ * load your fields using {@link #onLoadFinish()} and save them in {@link #onSerialize()}.
+ *
+ * @version 6.0
+ *
+ * @author kangarko, Spigot/Bukkit team, https://github.com/tchristofferson/Config-Updater for comments support
  */
-public abstract class YamlConfig {
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Only allow one instance of file to be loaded for safety.
-	// ------------------------------------------------------------------------------------------------------------
+public class YamlConfig implements ConfigSerializable {
 
 	/**
 	 * A null flag indicating there is no default 'to' config file
@@ -72,511 +93,214 @@ public abstract class YamlConfig {
 	 */
 	public static final String NO_DEFAULT = null;
 
-	/**
-	 * All files that are currently loaded
+	/*
+	 * All currently loaded configurations, stored by disk file name.
 	 */
-	private static volatile StrictSet<ConfigInstance> loadedFiles = new StrictSet<>();
+	private static final StrictMap<String, YamlConfig> loadedConfigs = new StrictMap<>();
 
-	/**
-	 * The config file instance this config belongs to.
+	/*
+	 * The SnakeYAML constructor.
 	 */
-	private ConfigInstance instance;
+	private final YamlConstructor constructor;
 
-	/**
-	 * The config header
+	/*
+	 * The SnakeYAML instance.
 	 */
-	private String[] header;
+	private final Yaml yaml;
 
-	/**
-	 * The local path prefix to make things easier.
+	/*
+	 * Stores all loaded values in our memory
+	 */
+	private final Map<String, Object> map = new LinkedHashMap<>();
+
+	/*
+	 * The root of this yaml config.
+	 */
+	private final YamlConfig root;
+
+	/*
+	 * The parent object of this yaml config.
+	 */
+	private final YamlConfig parent;
+
+	/*
+	 * The paths stored in the map, delimited by "." such as "Player.Properties.Color"
+	 */
+	private final String path;
+	private final String fullPath;
+
+	/*
+	 * The file associated with this config, set if loaded through a {@link #loadConfiguration(File)}.
+	 */
+	@Nullable
+	private File file;
+
+	/*
+	 * The default file from which we pick comments and order when saving,
+	 * please see {@link #getUncommentedSections()} to return a list of sections
+	 * where users are able to write maps otherwise those maps will be removed upon reload.
+	 */
+	@Getter
+	@Nullable
+	private YamlConfig defaults;
+
+	/*
+	 * The path to defaults file
+	 */
+	@Nullable
+	private String defaultsPath;
+
+	/*
+	 * A custom header (only works when no defaults are set)
+	 */
+	private List<String> header = new ArrayList<>();
+
+	/*
+	 * A temporary path prefix placed upon path and fullpath to save your time calling getX methods:
+	 *
+	 * get("Player.Properties.Color")
+	 * get("Player.Properties.Chat")
+	 * get("Player.Properties.Decoration")
+	 * etc.
+	 *
+	 * Becomes just get("Color") etc. if you use {@link #setPathPrefix(String)} to set "Player.Properties"
 	 */
 	private String pathPrefix = null;
 
-	// ------------------------------------------------------------------------------------------------------------
-	// Static end /
-	// ------------------------------------------------------------------------------------------------------------
-
 	/**
-	 * Internal flag whether to save the file after loading, set to true
-	 * automatically when we edit it
+	 * Create a new unloaded yaml configuration
 	 */
-	private boolean save = false;
-
-	/**
-	 * Internal flag that can be toggled to disable working with default files.
-	 *
-	 */
-	private boolean useDefaults = true;
-
-	/**
-	 * Internal flag to indicate whether you are calling this from
-	 * {@link #loadConfiguration(String, String)}
-	 */
-	private boolean loading = false;
-
-	/**
-	 * Internal flag to indicate whether {@link #loadConfiguration(String)} has been called
-	 */
-	private boolean loaded = false;
-
-	/**
-	 * Should we check for validity of the config key-value pair?
-	 */
-	private final boolean checkAssignables = true;
-
-	/**
-	 * Load when we have updated a config key?
-	 */
-	@Setter
-	private boolean logUpdates = true;
-
 	protected YamlConfig() {
+		this(null, "");
 	}
 
-	/**
-	 * Remove a loaded file from our internal loaded files map
-	 *
-	 * @param file
+	/*
+	 * Load and prepare configuration, super compatible down to Minecraft 1.2.5.
 	 */
-	public static final void unregisterLoadedFile(final File file) {
-		synchronized (loadedFiles) {
-			for (final ConfigInstance instance : loadedFiles)
-				if (instance.equals(file)) {
-					loadedFiles.remove(instance);
+	private YamlConfig(YamlConfig parent, String path) {
+		this.constructor = new YamlConstructor();
 
-					break;
-				}
-		}
-	}
+		final YamlRepresenter representer = new YamlRepresenter();
+		representer.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
-	/**
-	 * Looks up a {@link ConfigInstance} for the given file name.
-	 *
-	 * @param fileName
-	 * @return
-	 */
-	protected static final ConfigInstance findInstance(final String fileName) {
-		synchronized (loadedFiles) {
-			for (final ConfigInstance instance : loadedFiles)
-				if (instance.equals(fileName))
-					return instance;
+		final DumperOptions dumperOptions = new DumperOptions();
+		dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+		dumperOptions.setIndent(2);
+		dumperOptions.setWidth(4096); // Do not wrap long lines
 
-			return null;
-		}
-	}
-
-	/**
-	 * Add new {@link ConfigInstance}, used internally
-	 *
-	 * @param instance
-	 * @param config
-	 */
-	private static void addConfig(final ConfigInstance instance, final YamlConfig config) {
-		synchronized (loadedFiles) {
-			Valid.checkBoolean(!config.loaded, "Config " + config.getClass() + " for file " + instance.getFile() + " has already been loaded: " + Debugger.traceRoute(true));
-
-			loadedFiles.add(instance);
-		}
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Main loading methods.
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Loads up the localization file. These are stored in the localization/ folder
-	 * and have the syntax "messages_" + prefix + ".yml".
-	 *
-	 * <p>
-	 * If the folder does not exists with the given file, we create it.
-	 *
-	 * <p>
-	 * This method is intended to be called from the static config!
-	 *
-	 * @param localePrefix
-	 * @throws Exception
-	 */
-	protected final void loadLocalization(final String localePrefix) throws Exception {
-
-		synchronized (loadedFiles) {
-			Valid.checkNotNull(localePrefix, "locale cannot be null!");
+		// Load options only if available
+		if (ReflectionUtil.isClassAvailable("org.yaml.snakeyaml.LoaderOptions")) {
+			Yaml yaml;
 
 			try {
-				loading = true;
+				final LoaderOptions loaderOptions = new LoaderOptions();
+				loaderOptions.setMaxAliasesForCollections(512);
 
-				final String localePath = "localization/messages_" + localePrefix + ".yml";
-				final List<String> lines = FileUtil.getInternalResource(localePath);
-				Valid.checkNotNull(lines, SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
+				yaml = new Yaml(this.constructor, representer, dumperOptions, loaderOptions);
 
-				final File file = new File(SimplePlugin.getData(), localePath);
-				ConfigInstance instance = findInstance(file.getName());
-
-				if (instance == null) {
-					if (!file.exists()) {
-						FileUtil.extract(localePath);
-
-						// Reformat afterwards with comments engine
-						if (saveComments())
-							save = true;
-					}
-
-					final SimpleYaml config = SimpleYaml.loadConfiguration(file);
-					final SimpleYaml defaultsConfig = new SimpleYaml();
-
-					try {
-						defaultsConfig.loadFromString(String.join("\n", lines));
-
-					} catch (final Exception ex) {
-						Common.error(ex, "Failed to load inbuilt localization " + localePath);
-					}
-
-					Valid.checkBoolean(file != null && file.exists(), "Failed to load " + localePath + " from " + file);
-
-					instance = new ConfigInstance(localePath, file, config, defaultsConfig, saveComments(), getUncommentedSections(), localePath);
-					addConfig(instance, this);
-				}
-
-				else
-					try {
-						instance.reload();
-
-					} catch (final Exception ex) {
-						Common.error(ex, "Failed to reload localization " + localePrefix);
-					}
-
-				this.instance = instance;
-
-				onLoadFinish();
-
-				loaded = true;
-
-			} finally {
-				loading = false;
+			} catch (final NoSuchMethodError ex) {
+				yaml = new Yaml(this.constructor, representer, dumperOptions);
 			}
 
-			saveIfNecessary0();
+			this.yaml = yaml;
 		}
+
+		else
+			this.yaml = new Yaml(this.constructor, representer, dumperOptions);
+
+		this.root = path == null || parent == null ? this : parent.root;
+		this.parent = parent;
+		this.path = path;
+		this.fullPath = path.isEmpty() || parent == null ? "" : createPath(parent, path);
 	}
 
-	/**
-	 * Load configuration from the give file name.
-	 *
-	 * <p>
-	 * The file must exist within out plugin at the same path since it will be
-	 * copied to the plugin folder if it does not exist, and it will be used to
-	 * server as the default config to serve updates from.
-	 *
-	 * @param file
-	 */
-	protected final void loadConfiguration(final String file) {
-		loadConfiguration(file, file);
-	}
+	// ------------------------------------------------------------------------------------
+	// Options
+	// ------------------------------------------------------------------------------------
 
 	/**
-	 * Load configuration from the given path to another path.
-	 *
-	 * <p>
-	 * If the file does not exist, we create a new file. If you set "from" to null,
-	 * no defaults will be used.
-	 *
-	 * <p>
-	 * Both paths must include file extension
-	 *
-	 * @param from the origin path within the plugin jar, if null, no defaults are
-	 *              used
-	 * @param to   the destination path in plugins/ThisPlugin/
-	 */
-	public final void loadConfiguration(final String from, final String to) {
-
-		synchronized (loadedFiles) {
-
-			Valid.checkBoolean(!loading, "Duplicate call to loadConfiguration (already loading)");
-			Valid.checkNotNull(to, "File 'to' path cannot be null!");
-			Valid.checkBoolean(to.contains("."), "'To' path must contain file extension: " + to);
-
-			if (from != null)
-				Valid.checkBoolean(from.contains("."), "From path must contain file extension: " + from);
-			else
-				useDefaults = false;
-
-			try {
-				loading = true;
-
-				ConfigInstance instance = findInstance(to);
-
-				if (instance == null) {
-					final File file;
-					final SimpleYaml config;
-					SimpleYaml defaultsConfig = null;
-
-					// Reformat afterwards with comments engine
-					if (!new File(SimplePlugin.getInstance().getDataFolder(), to).exists() && saveComments())
-						save = true;
-
-					// We will have the default file to return to
-					if (from != null) {
-						defaultsConfig = SimpleYaml.loadInternalConfiguration(from);
-
-						file = FileUtil.extract(from, to);
-
-					} else
-						file = FileUtil.getOrMakeFile(to);
-
-					Valid.checkNotNull(file, "Failed to " + (from != null ? "copy settings from " + from + " to " : "read settings from ") + to);
-					config = SimpleYaml.loadConfiguration(file);
-
-					instance = new ConfigInstance(to, file, config, defaultsConfig, saveComments(), getUncommentedSections(), from == null ? to : from);
-					addConfig(instance, this);
-
-				}
-
-				else
-					try {
-						instance.reload();
-
-					} catch (final Exception ex) {
-						Common.error(ex, "Failed to reload " + to);
-					}
-
-				this.instance = instance;
-
-				try {
-					onLoadFinish();
-
-				} catch (final Exception ex) {
-					Common.throwError(ex, "Error loading configuration in " + getFileName() + "!", "Problematic section: " + Common.getOrDefault(getPathPrefix(), "''"), "Problem: " + ex + " (see below for more)");
-				}
-
-				loaded = true;
-
-			} finally {
-				loading = false;
-			}
-
-			saveIfNecessary0();
-		}
-	}
-
-	/**
-	 * Saves the file if changes have been made
-	 */
-	private void saveIfNecessary0() {
-
-		// We want to save the file if the save is pending or if there are no defaults
-		if (save || saveComments()) {
-			save();
-
-			save = false;
-		}
-	}
-
-	/**
-	 * Called after the settings file has been loaded.
+	 * Called automatically after loading methods.
 	 */
 	protected void onLoadFinish() {
 	}
 
 	/**
-	 * Return the Bukkit YAML instance of the config file
+	 * Called automatically on save, return your custom fields data here
 	 *
 	 * @return
 	 */
-	protected final SimpleYaml getConfig() {
-		Valid.checkNotNull(instance, "Cannot call getConfig when no instance is set!");
-
-		return instance.getConfig();
+	protected SerializedMap onSerialize() {
+		return new SerializedMap();
 	}
 
 	/**
-	 * Return the Bukkit YAML instance of defaults file, or null if not set
-	 *
-	 * @return
-	 */
-
-	protected final SimpleYaml getDefaults() {
-		Valid.checkNotNull(instance, "Cannot call getDefaults when no instance is set!");
-
-		return instance.getDefaultConfig();
-	}
-
-	/**
-	 * Return the file name of this config
-	 *
-	 * @return
-	 */
-	protected final String getFileName() {
-		Valid.checkNotNull(instance, "Instance for " + getClass() + " is null");
-		Valid.checkNotNull(instance.getFile(), "Instance file in " + getClass() + " is null");
-
-		return instance.getFile().getName();
-	}
-
-	/**
-	 * Set the header of this configuration, use {@link #save()} to save
-	 *
-	 * @param header
-	 */
-	protected final void setHeader(final String... header) {
-		this.header = header;
-	}
-
-	/**
-	 * Return the name of this file without the extension
-	 *
-	 * @return
-	 */
-	public String getName() {
-		return FileUtil.getFileName(instance.getFile());
-	}
-
-	/**
-	 * Return the file corresponding with these settings
-	 *
-	 * @return
-	 */
-	public final File getFile() {
-		return instance.getFile();
-	}
-
-	// ------------------------------------------------------------------------------------
-	// Main manipulation methods
-	// ------------------------------------------------------------------------------------
-
-	/**
-	 * Saves the content of this config into the file
-	 */
-	public void save() {
-		if (loading) {
-			save = true;
-
-			return;
-		}
-
-		onSave();
-
-		{ // Save automatically
-			final SerializedMap map = serialize();
-
-			if (map != null)
-				for (final Map.Entry<String, Object> entry : map.entrySet())
-					setNoSave(entry.getKey(), entry.getValue());
-		}
-
-		saveWithoutSerializing();
-	}
-
-	private void saveWithoutSerializing() {
-		instance.save(header != null ? header : getFileName().equals(FoConstants.File.DATA) ? FoConstants.Header.DATA_FILE : FoConstants.Header.UPDATED_FILE);
-	}
-
-	/**
-	 * Called automatically when the file is saved
+	 * Called right before any save call.
 	 */
 	protected void onSave() {
 	}
 
 	/**
-	 * Called automatically on save, use this to put
-	 * things you want saved in your file and they will then be automatically
-	 * saved when call save() method
-	 *
-	 * @return
-	 */
-	protected SerializedMap serialize() {
-		return null;
-	}
-
-	/**
-	 * Removes the file on the disk
-	 */
-	public final void delete() {
-		instance.delete();
-	}
-
-	/**
-	 * Without saving changes, load the file from this disk and load its
-	 * configuration again
-	 */
-	public final void reload() {
-		try {
-			instance.reload();
-
-			save = true;
-
-			onLoadFinish();
-			saveIfNecessary0();
-
-		} catch (final Exception e) {
-			Common.error(e, "Failed to reload " + getFileName());
-		}
-	}
-
-	/**
-	 * Shall we attempt to save comments into this yaml config
-	 * and enforce the file to always look like the default one?
-	 *
-	 * You can exclude sections you do not want to symlink in {@link #getUncommentedSections()}
-	 *
-	 * Defaults to false.
-	 *
-	 * @return
-	 */
-	protected boolean saveComments() {
-		return false;
-	}
-
-	/**
-	 * If {@link #SAVE_COMMENTS} is on, what sections should we ignore from
-	 * being updated/enforced commands?
-	 *
-	 * E.g. In ChatControl people can add their own channels so we make the
-	 * "Channels.List" ignored so that peoples' channels (new sections) won't get
-	 * remove.
-	 *
-	 * None by default.
+	 * Override this with paths to sections where users are able to create their own maps,
+	 * example: In ChatControl you are able to write your own key-values in Channels.List so we
+	 * place "Channels.List" to the list here.
 	 *
 	 * @return
 	 */
 	protected List<String> getUncommentedSections() {
-		return null;
+		return new ArrayList<>();
+	}
+
+	/**
+	 * Return true if this section of the config file exists
+	 *
+	 * @return
+	 */
+	public boolean isValid() {
+		return this.getObject("") instanceof YamlConfig;
 	}
 
 	// ------------------------------------------------------------------------------------
-	// Configuration Getters
+	// Miscellaneous
 	// ------------------------------------------------------------------------------------
 
 	/**
-	 * Main configuration getter. Retrieve a value at a certain path, using type
-	 * safety and default configuration.
+	 * Return the file name, with extension.
 	 *
-	 * <p>
-	 * The type safety checks if the value is actually of the requested type,
-	 * throwing errors if not.
-	 *
-	 * <p>
-	 * If {@link #getDefaults()} is set, and the value does not exist, we update the
-	 * config file automatically.
-	 *
-	 * @param <T>
-	 * @param path
-	 * @param type
 	 * @return
 	 */
-	private <T> T getT(String path, final Class<T> type) {
+	public final String getFileName() {
+		return this.file == null ? null : this.file.getName();
+	}
 
-		Valid.checkNotNull(path, "Path cannot be null");
-		path = formPathPrefix(path);
+	// ------------------------------------------------------------------------------------------------------------
+	// Getting values
+	// ------------------------------------------------------------------------------------------------------------
 
+	/*
+	 * Retrieve an object at the given config path, attempting to cast it using vanilla java
+	 * or return null if not set. If defaults file exists, we attempt to copy the
+	 * default value to the file.
+	 */
+	private final <T> T getT(@NonNull String path, Class<T> type) {
+		return this.getT(path, type, this.getDefault(path));
+	}
+
+	/*
+	 * Retrieve an object at the given config path, attempting to cast it using vanilla java
+	 * and supply with default if set. If defaults file exists, we attempt to copy the
+	 * default value to the file.
+	 */
+	private final <T> T getT(@NonNull String path, Class<T> type, Object def) {
+		path = this.compilePathPrefix(path);
 		Valid.checkBoolean(!path.endsWith("."), "Path must not end with '.': " + path);
 
-		// Copy defaults if not set
-		// Also logs out the console message about when we save this change
-		addDefaultIfNotExist(path, type);
+		// Copy defaults if not set and log about this change
+		this.addDefaultIfNotExist(path, type);
 
-		Object raw = getConfig().get(path);
+		Object raw = this.getFast0(path, def);
 
 		// Ensure that the default config actually did have the value, if used
-		if (useDefaults && getDefaults() != null)
+		if (this.defaults != null)
 			Valid.checkNotNull(raw, "Failed to insert value at '" + path + "' from default config");
 
 		// Ensure the value is of the given type
@@ -590,10 +314,56 @@ public abstract class YamlConfig {
 			if (type == Long.class && raw instanceof Integer)
 				raw = (long) Integer.parseInt(raw.toString());
 
-			checkAssignable(false, path, raw, type);
+			this.checkAssignable(false, path, raw, type);
 		}
 
 		return (T) raw;
+	}
+
+	/*
+	 * Fast lookup of a section in our map with out default object as fallback
+	 * Credits to Spigot/Bukkit team
+	 */
+	private final Object getFast0(String path) {
+		return this.getFast0(path, this.getDefault(path));
+	}
+
+	/*
+	 * Fast lookup of a section in our map with out default object as fallback
+	 * Credits to Spigot/Bukkit team
+	 */
+	private final Object getFast0(String path, Object def) {
+
+		if (path.isEmpty())
+			return this;
+
+		if (this.root == null)
+			throw new IllegalStateException("Cannot access section without a root");
+
+		int leadingIndex = -1;
+		int lowerIndex;
+		YamlConfig section = this;
+
+		while ((leadingIndex = path.indexOf('.', lowerIndex = leadingIndex + 1)) != -1) {
+			final String currentPath = path.substring(lowerIndex, leadingIndex);
+			if (!section.contains(currentPath, true))
+				return def;
+
+			section = section.getConfigurationSection(currentPath);
+
+			if (section == null)
+				return def;
+		}
+
+		final String key = path.substring(lowerIndex);
+
+		if (section == this) {
+			final Object result = this.map.get(key);
+
+			return result == null ? def : result;
+		}
+
+		return section.getFast0(key, def);
 	}
 
 	/**
@@ -614,7 +384,7 @@ public abstract class YamlConfig {
 	 * @param deserializeParams
 	 * @return
 	 */
-	protected final <T> T get(final String path, final Class<T> type, Object... deserializeParams) {
+	public final <T> T get(final String path, final Class<T> type, Object... deserializeParams) {
 		return get(path, type, null, deserializeParams);
 	}
 
@@ -637,27 +407,10 @@ public abstract class YamlConfig {
 	 * @param deserializeParams
 	 * @return
 	 */
-	protected final <T> T get(final String path, final Class<T> type, final T def, Object... deserializeParams) {
+	public final <T> T get(final String path, final Class<T> type, final T def, Object... deserializeParams) {
 		final Object object = getT(path, Object.class);
 
 		return object != null ? SerializeUtil.deserialize(type, object, deserializeParams) : def;
-	}
-
-	/**
-	 * Basically the same as {@link #get(String, Class)} however you can pass your
-	 * own deserialize arguments here, see
-	 * {@link SerializeUtil#deserialize(Class, Object, Object...)}
-	 *
-	 * @param <T>
-	 * @param path
-	 * @param type
-	 * @param deserializeArguments
-	 * @return
-	 */
-	protected final <T> T getWithData(final String path, final Class<T> type, final Object... deserializeArguments) {
-		final Object object = getT(path, Object.class);
-
-		return object != null ? SerializeUtil.deserialize(type, object, deserializeArguments) : null;
 	}
 
 	/**
@@ -667,9 +420,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final Object getObject(final String path, final Object def) {
-		forceSingleDefaults(path);
-
+	public final Object getObject(final String path, final Object def) {
 		return isSet(path) ? getObject(path) : def;
 	}
 
@@ -679,7 +430,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final Object getObject(final String path) {
+	public final Object getObject(final String path) {
 		return getT(path, Object.class);
 	}
 
@@ -690,12 +441,8 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final Boolean getBoolean(final String path, final boolean def) {
-		forceSingleDefaults(path);
-
-		final boolean set = isSet(path);
-		Debugger.debug("config", "\tGetting Boolean at '" + path + "', " + (set ? "set to = " + getBoolean(path) : "not set, returning default " + def));
-
+	@Nullable
+	public final Boolean getBoolean(final String path, final boolean def) {
 		return isSet(path) ? getBoolean(path) : def;
 	}
 
@@ -705,7 +452,8 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final Boolean getBoolean(final String path) {
+	@Nullable
+	public final Boolean getBoolean(final String path) {
 		return getT(path, Boolean.class);
 	}
 
@@ -716,9 +464,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final String getString(final String path, final String def) {
-		forceSingleDefaults(path);
-
+	public final String getString(final String path, final String def) {
 		return isSet(path) ? getString(path) : def;
 	}
 
@@ -728,7 +474,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final String getString(final String path) {
+	public final String getString(final String path) {
 		final Object object = getObject(path);
 
 		if (object == null)
@@ -761,8 +507,6 @@ public abstract class YamlConfig {
 	 * @return
 	 */
 	protected final Long getLong(final String path, final Long def) {
-		forceSingleDefaults(path);
-
 		return isSet(path) ? getLong(path) : def;
 	}
 
@@ -772,7 +516,8 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final Long getLong(final String path) {
+	@Nullable
+	public final Long getLong(final String path) {
 		return getT(path, Long.class);
 	}
 
@@ -783,12 +528,8 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final Integer getInteger(final String path, final Integer def) {
-		forceSingleDefaults(path);
-
-		final boolean set = isSet(path);
-		Debugger.debug("config", "\tGetting Integer at '" + path + "', " + (set ? "set to = " + getInteger(path) : "not set, returning default " + def));
-
+	@Nullable
+	public final Integer getInteger(final String path, final Integer def) {
 		return isSet(path) ? getInteger(path) : def;
 	}
 
@@ -798,7 +539,8 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final Integer getInteger(final String path) {
+	@Nullable
+	public final Integer getInteger(final String path) {
 		return getT(path, Integer.class);
 	}
 
@@ -809,9 +551,8 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final Double getDouble(final String path, final Double def) {
-		forceSingleDefaults(path);
-
+	@Nullable
+	public final Double getDouble(final String path, final Double def) {
 		return isSet(path) ? getDouble(path) : def;
 	}
 
@@ -821,20 +562,11 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final Double getDouble(final String path) {
+	@Nullable
+	public final Double getDouble(final String path) {
 		final Object raw = getObject(path);
 
 		return raw != null ? Double.parseDouble(raw.toString()) : null;
-	}
-
-	/**
-	 * Get location list at the given config path
-	 *
-	 * @param path
-	 * @return
-	 */
-	protected final LocationList getLocations(final String path) {
-		return new LocationList(this, getList(path, Location.class));
 	}
 
 	/**
@@ -844,9 +576,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final Location getLocation(final String path, final Location def) {
-		forceSingleDefaults(path);
-
+	public final Location getLocation(final String path, final Location def) {
 		return isSet(path) ? getLocation(path) : def;
 	}
 
@@ -856,8 +586,29 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final Location getLocation(final String path) {
+	public final Location getLocation(final String path) {
 		return get(path, Location.class);
+	}
+
+	/**
+	 * Get an offline player, using Bukkit's serialization method
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	public final OfflinePlayer getOfflinePlayer(final String path, final OfflinePlayer def) {
+		return isSet(path) ? getOfflinePlayer(path) : def;
+	}
+
+	/**
+	 * Get an offline player, using Bukkit's serialization method
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final OfflinePlayer getOfflinePlayer(final String path) {
+		return getT(path, OfflinePlayer.class);
 	}
 
 	/**
@@ -867,9 +618,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final SimpleSound getSound(final String path, final SimpleSound def) {
-		forceSingleDefaults(path);
-
+	public final SimpleSound getSound(final String path, final SimpleSound def) {
 		return isSet(path) ? getSound(path) : def;
 	}
 
@@ -879,33 +628,49 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final SimpleSound getSound(final String path) {
-		return new SimpleSound(getString(path));
+	@Nullable
+	public final SimpleSound getSound(final String path) {
+		return isSet(path) ? new SimpleSound(getString(path)) : null;
 	}
 
 	/**
-	 * Get a casus for those human languages that support it, mainly used for
-	 * numbers
+	 * Returns a time period denoted in the Accusative case for languages that support that.
+	 * Used in messages such as "Please wait X seconds before chatting" where Slavic and many
+	 * other languages support three forms, 1 second, 2-5 seconds and 0 or 5+ seconds have
+	 * different formats.
+	 *
+	 * This allows you to format your message automatically, example in Slovak:
+	 *
+	 * (čakajte...) 1 sekundu
+	 * 2 sekundy
+	 * 0/5 sekúnd
 	 *
 	 * @param path
 	 * @param def
 	 * @return
 	 */
-	protected final CasusHelper getCasus(final String path, final CasusHelper def) {
-		forceSingleDefaults(path);
-
-		return isSet(path) ? getCasus(path) : def;
+	public final AccusativeHelper getAccusativePeriod(final String path, final AccusativeHelper def) {
+		return isSet(path) ? getAccusativePeriod(path) : def;
 	}
 
 	/**
-	 * Get a casus for those human languages that support it, mainly used for
-	 * numbers
+	 * Returns a time period denoted in the Accusative case for languages that support that.
+	 * Used in messages such as "Please wait X seconds before chatting" where Slavic and many
+	 * other languages support three forms, 1 second, 2-5 seconds and 0 or 5+ seconds have
+	 * different formats.
+	 *
+	 * This allows you to format your message automatically, example in Slovak:
+	 *
+	 * (čakajte...) 1 sekundu
+	 * 2 sekundy
+	 * 0/5 sekúnd
 	 *
 	 * @param path
 	 * @return
 	 */
-	protected final CasusHelper getCasus(final String path) {
-		return new CasusHelper(getString(path));
+	@Nullable
+	public final AccusativeHelper getAccusativePeriod(final String path) {
+		return isSet(path) ? new AccusativeHelper(getString(path)) : null;
 	}
 
 	/**
@@ -916,9 +681,7 @@ public abstract class YamlConfig {
 	 * @param defSubtitle
 	 * @return
 	 */
-	protected final TitleHelper getTitle(final String path, final String defTitle, final String defSubtitle) {
-		forceSingleDefaults(path);
-
+	public final TitleHelper getTitle(final String path, final String defTitle, final String defSubtitle) {
 		return isSet(path) ? getTitle(path) : new TitleHelper(defTitle, defSubtitle);
 	}
 
@@ -928,8 +691,12 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final TitleHelper getTitle(final String path) {
-		return new TitleHelper(path);
+	@Nullable
+	public final TitleHelper getTitle(final String path) {
+		final String title = this.getString(path + ".Title");
+		final String subtitle = this.getString(path + ".Subtitle");
+
+		return isSet(path) ? new TitleHelper(title, subtitle) : null;
 	}
 
 	/**
@@ -939,9 +706,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final SimpleTime getTime(final String path, final String def) {
-		forceSingleDefaults(path);
-
+	public final SimpleTime getTime(final String path, final String def) {
 		return isSet(path) ? getTime(path) : def != null ? SimpleTime.from(def) : null;
 	}
 
@@ -951,7 +716,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final SimpleTime getTime(final String path) {
+	public final SimpleTime getTime(final String path) {
 		final Object obj = getObject(path);
 
 		return obj != null ? SimpleTime.from(obj.toString()) : null;
@@ -963,14 +728,19 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final double getPercentage(String path) {
-		final String raw = getObject(path).toString();
-		Valid.checkBoolean(raw.endsWith("%"), "Your " + path + " key in " + getPathPrefix() + "." + path + " must end with %! Got: " + raw);
+	@Nullable
+	public final Double getPercentage(String path) {
+		if (isSet(path)) {
+			final String raw = getObject(path).toString();
+			Valid.checkBoolean(raw.endsWith("%"), "Your " + path + " key in " + getPathPrefix() + "." + path + " must end with %! Got: " + raw);
 
-		final String rawNumber = raw.substring(0, raw.length() - 1);
-		Valid.checkInteger(rawNumber, "Your " + path + " key in " + getPathPrefix() + "." + path + " must be a whole number! Got: " + raw);
+			final String rawNumber = raw.substring(0, raw.length() - 1);
+			Valid.checkInteger(rawNumber, "Your " + path + " key in " + getPathPrefix() + "." + path + " must be a whole number! Got: " + raw);
 
-		return Integer.parseInt(rawNumber) / 100D;
+			return Integer.parseInt(rawNumber) / 100D;
+		}
+
+		return null;
 	}
 
 	/**
@@ -980,9 +750,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final BoxedMessage getBoxedMessage(final String path, final String def) {
-		forceSingleDefaults(path);
-
+	public final BoxedMessage getBoxedMessage(final String path, final String def) {
 		return isSet(path) ? getBoxedMessage(path) : new BoxedMessage(def);
 	}
 
@@ -992,7 +760,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final BoxedMessage getBoxedMessage(final String path) {
+	public final BoxedMessage getBoxedMessage(final String path) {
 		return new BoxedMessage(getString(path));
 	}
 
@@ -1003,9 +771,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final CompMaterial getMaterial(final String path, final CompMaterial def) {
-		forceSingleDefaults(path);
-
+	public final CompMaterial getMaterial(final String path, final CompMaterial def) {
 		return isSet(path) ? getMaterial(path) : def;
 	}
 
@@ -1015,7 +781,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final CompMaterial getMaterial(final String path) {
+	public final CompMaterial getMaterial(final String path) {
 		final String name = getString(path);
 
 		return name == null ? null : CompMaterial.fromStringStrict(name);
@@ -1029,7 +795,7 @@ public abstract class YamlConfig {
 	 * @param key
 	 * @return
 	 */
-	protected final <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
+	public final <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
 		return getTuple(key, null, keyType, valueType);
 	}
 
@@ -1040,20 +806,54 @@ public abstract class YamlConfig {
 	 * @param def
 	 * @return
 	 */
-	protected final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
+	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
 		final SerializedMap map = getMap(key);
 
 		return !map.isEmpty() ? Tuple.deserialize(map, keyType, valueType) : def;
 	}
 
 	/**
+	 * Returns an ItemStack or null if not set
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final ItemStack getItemStack(@NonNull String path) {
+		return this.getItemStack(path, null);
+	}
+
+	/**
+	 * Returns an ItemStack or default if not set
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
+	public final ItemStack getItemStack(@NonNull String path, ItemStack def) {
+		return isSet(path) ? get(path, ItemStack.class) : def;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Getting lists
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Get location list at the given config path
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final LocationList getLocationList(final String path) {
+		return new LocationList(this, this.getList(path, Location.class));
+	}
+
+	/**
 	 * Get a list of unknown values
 	 *
 	 * @param path
-	 * @param of
 	 * @return
 	 */
-	protected final List<Object> getList(final String path) {
+	public final List<Object> getList(final String path) {
 		final Object obj = getObject(path);
 
 		// Allow one values instead of lists, such as Apply_On: timed instead of Apply_On: [timed] for
@@ -1067,7 +867,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return list of maps, or empty map if not set
 	 */
-	protected final List<SerializedMap> getMapList(final String path) {
+	public final List<SerializedMap> getMapList(final String path) {
 		return getList(path, SerializedMap.class);
 	}
 
@@ -1079,7 +879,7 @@ public abstract class YamlConfig {
 	 * @return
 	 * @see #getList(String, Class)
 	 */
-	protected final <T> Set<T> getSet(final String key, final Class<T> type, final Object... deserializeParameters) {
+	public final <T> Set<T> getSet(final String key, final Class<T> type, final Object... deserializeParameters) {
 		final List<T> list = getList(key, type);
 
 		return list == null ? new HashSet<>() : new HashSet<>(list);
@@ -1098,7 +898,7 @@ public abstract class YamlConfig {
 	 * @param type
 	 * @return
 	 */
-	protected final <T> List<T> getList(final String path, final Class<T> type) {
+	public final <T> List<T> getList(final String path, final Class<T> type) {
 		return getList(path, type, (Object[]) null);
 	}
 
@@ -1116,7 +916,7 @@ public abstract class YamlConfig {
 	 * @param deserializeParameters
 	 * @return
 	 */
-	protected final <T> List<T> getList(final String path, final Class<T> type, final Object... deserializeParameters) {
+	public final <T> List<T> getList(final String path, final Class<T> type, final Object... deserializeParameters) {
 		final List<T> list = new ArrayList<>();
 		final List<Object> objects = getList(path);
 
@@ -1141,7 +941,7 @@ public abstract class YamlConfig {
 	 * @param type
 	 * @return
 	 */
-	protected final <T> IsInList<T> getIsInList(String path, Class<T> type) {
+	public final <T> IsInList<T> getIsInList(String path, Class<T> type) {
 		final List<String> stringList = getStringList(path);
 
 		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
@@ -1156,23 +956,23 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return the given array, or an empty array
 	 */
-	protected final String[] getStringArray(final String path) {
+	/*public final String[] getStringArray(final String path) {
 		final Object array = getObject(path);
-
+	
 		if (array == null)
 			return new String[0];
-
+	
 		else if (array instanceof String)
 			return ((String) array).split("\n");
-
+	
 		else if (array instanceof List)
 			return Common.join((List<?>) array, "\n").split("\n");
-
+	
 		else if (array instanceof String[])
 			return (String[]) array;
-
+	
 		throw new FoException("Excepted string or string list at '" + path + "' in " + getFileName() + ", got (" + array.getClass() + "): " + array);
-	}
+	}*/
 
 	/**
 	 * Get a string list
@@ -1180,7 +980,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return the found list, or an empty list
 	 */
-	protected final List<String> getStringList(final String path) {
+	public final List<String> getStringList(final String path) {
 		final Object raw = getObject(path);
 
 		if (raw == null)
@@ -1198,12 +998,9 @@ public abstract class YamlConfig {
 		throw new FoException("Excepted a list at '" + path + "' in " + getFileName() + ", got (" + raw.getClass() + "): " + raw);
 	}
 
-	/**
+	/*
 	 * Attempts to convert objects into strings, since SnakeYAML parser interprets
 	 * "true" and "yes" as boolean types
-	 *
-	 * @param list
-	 * @return
 	 */
 	private List<String> fixYamlBooleansInList(@NonNull final Iterable<Object> list) {
 		final List<String> newList = new ArrayList<>();
@@ -1221,7 +1018,13 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final StrictList<String> getCommandList(final String path) {
+	@Nullable
+	public final StrictList<String> getCommandList(final String path) {
+
+		// Nowhere to copy from
+		if (!isSet(path) && this.defaults == null)
+			return null;
+
 		final List<String> list = getStringList(path);
 		Valid.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + getFileName() + ") for this will be used as your main command!");
 
@@ -1241,7 +1044,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected final StrictList<CompMaterial> getMaterialList(final String path) {
+	public final StrictList<CompMaterial> getMaterialList(final String path) {
 		final StrictList<CompMaterial> list = new StrictList<>();
 
 		for (final String raw : getStringList(path)) {
@@ -1260,7 +1063,7 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return map, or empty map
 	 */
-	protected final SerializedMap getMap(final String path) {
+	public final SerializedMap getMap(final String path) {
 		final LinkedHashMap<?, ?> map = getMap(path, Object.class, Object.class);
 
 		return SerializedMap.of(map);
@@ -1277,24 +1080,20 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @param keyType
 	 * @param valueType
-	 * @param valueParameter
 	 * @param valueDeserializeParams
 	 *
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType, Object... valueDeserializeParams) {
+	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType, Object... valueDeserializeParams) {
 
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 
-		final SimpleYaml config = getConfig();
-		final SimpleYaml defaults = getDefaults();
-
 		// Add path prefix right away
-		path = formPathPrefix(path);
+		path = compilePathPrefix(path);
 
 		// Add defaults
-		if (defaults != null && !config.isSet(path)) {
+		if (defaults != null && !this.isSet(path)) {
 			Valid.checkBoolean(defaults.isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
 
 			for (final String key : defaults.getConfigurationSection(path).getKeys(false))
@@ -1302,7 +1101,7 @@ public abstract class YamlConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		final SerializedMap configSection = SerializedMap.of(config.get(path));
+		final SerializedMap configSection = SerializedMap.of(this.getObject(path));
 
 		for (final Map.Entry<String, Object> entry : configSection.entrySet()) {
 			final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
@@ -1329,18 +1128,15 @@ public abstract class YamlConfig {
 	 * @param setDeserializeParameters
 	 * @return
 	 */
-	protected final <Key, Value> LinkedHashMap<Key, List<Value>> getMapList(@NonNull String path, final Class<Key> keyType, final Class<Value> setType, Object... setDeserializeParameters) {
+	public final <Key, Value> LinkedHashMap<Key, List<Value>> getMapList(@NonNull String path, final Class<Key> keyType, final Class<Value> setType, Object... setDeserializeParameters) {
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, List<Value>> map = new LinkedHashMap<>();
 
-		final SimpleYaml config = getConfig();
-		final SimpleYaml defaults = getDefaults();
-
 		// Add path prefix right away
-		path = formPathPrefix(path);
+		path = compilePathPrefix(path);
 
 		// Add defaults
-		if (defaults != null && !config.isSet(path)) {
+		if (defaults != null && !this.isSet(path)) {
 			Valid.checkBoolean(defaults.isSet(path), "Default '" + getFileName() + "' lacks a map at " + path);
 
 			for (final String key : defaults.getConfigurationSection(path).getKeys(false))
@@ -1348,7 +1144,7 @@ public abstract class YamlConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		final SerializedMap configSection = SerializedMap.of(config.get(path));
+		final SerializedMap configSection = SerializedMap.of(this.getObject(path));
 
 		for (final Map.Entry<String, Object> entry : configSection.entrySet()) {
 			final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
@@ -1367,265 +1163,219 @@ public abstract class YamlConfig {
 		return map;
 	}
 
-	// ------------------------------------------------------------------------------------
-	// Configuration Setters
-	// ------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
+	// Getting sections
+	// ------------------------------------------------------------------------------------------------------------
 
-	/**
-	 * Sets a certain key with value and saves the file
-	 *
-	 * @param path
-	 * @param value
-	 */
-	protected final void save(final String path, final Object value) {
-		setNoSave(path, value);
+	public final YamlConfig getConfigurationSection(@NonNull String path) {
+		Object val = this.getFast0(path, null);
 
-		// Edge case: We want to remove the whole section
-		if (path.isEmpty() && value == null)
-			saveWithoutSerializing();
+		if (val != null)
+			return val instanceof YamlConfig ? (YamlConfig) val : null;
 
-		else
-			save();
+		val = this.getFast0(path, this.getDefault(path));
+
+		return val instanceof YamlConfig ? this.createSection(path) : null;
 	}
 
-	/**
-	 * Set a default key-value pair to the used file (not the default one) if it
-	 * does not exist
-	 *
-	 * @param path
-	 * @param value
-	 */
-	protected final void setIfNotExist(final String path, final Object value) {
-		if (!isSet(path))
-			setNoSave(path, value);
+	@NonNull
+	public final Set<String> getKeys(boolean deep) {
+		final Set<String> result = new LinkedHashSet<>();
 
-	}
+		final YamlConfig root = this.root;
+		if (root != null) {
+			final YamlConfig defaults = this.getDefaultSection();
 
-	/**
-	 * Sets a certain key with value, serialized
-	 *
-	 * <p>
-	 * The file is not saved, however it is marked for save so it is saved at the
-	 * end of a loading cycle, if you call {@link #loadConfiguration(String)} or
-	 * {@link #loadLocalization(String)}
-	 *
-	 * @param path
-	 * @param value
-	 */
-	protected final void setNoSave(String path, Object value) {
-		path = formPathPrefix(path);
-		value = SerializeUtil.serialize(value);
-
-		// We want to clear all values
-		if (path.isEmpty())
-			getConfig().clear();
-		else
-			getConfig().set(path, value);
-
-		save = true; // Schedule save for later anyways
-	}
-
-	/**
-	 * Moves a certain config key or section from one path to another
-	 *
-	 * @param fromRelative
-	 * @param toAbsolute
-	 */
-	protected final void move(final String fromRelative, final String toAbsolute) {
-		move(getObject(fromRelative), fromRelative, toAbsolute);
-	}
-
-	/**
-	 * Moves a certain config key from one path to another
-	 *
-	 * @param value
-	 * @param fromPathRel
-	 * @param toPathAbs
-	 */
-	protected final void move(final Object value, String fromPathRel, final String toPathAbs) {
-		final String oldPathPrefix = pathPrefix;
-
-		fromPathRel = formPathPrefix(fromPathRel);
-		getConfig().set(fromPathRel, null);
-
-		pathPrefix = oldPathPrefix; // set to previous
-
-		checkAndFlagForSave(toPathAbs, value, false);
-		getConfig().set(toPathAbs, value);
-
-		if (this.logUpdates)
-			Common.log("&7Update " + getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
-
-		pathPrefix = oldPathPrefix; // and reset back to whatever it was
-	}
-
-	/**
-	 * A special method that converts a section within a SerializedMap to a
-	 * different type.
-	 *
-	 * <p>
-	 * Automatically saves the config at the end
-	 *
-	 * @param <O>
-	 * @param <N>
-	 * @param path
-	 * @param mapSection
-	 * @param from
-	 * @param to
-	 * @param converter
-	 */
-	protected final <O, N> void convertMapList(final String path, final String mapSection, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
-		final List<SerializedMap> list = new ArrayList<>();
-
-		for (final SerializedMap classMap : getMapList(path)) {
-			classMap.convert(mapSection, from, to, converter);
-
-			list.add(classMap);
+			if (defaults != null)
+				result.addAll(defaults.getKeys(deep));
 		}
 
-		save(path, list);
+		this.mapChildrenKeys(result, this, deep);
+
+		return result;
 	}
 
-	/**
-	 * Convert the given config section to an alternative type
-	 *
-	 * <p>
-	 * Automatically saves the config at the end
-	 *
-	 * @param <O>
-	 * @param <N>
-	 * @param path
-	 * @param from
-	 * @param to
-	 * @param converter
-	 */
-	@SuppressWarnings("rawtypes")
-	protected final <O, N> void convert(final String path, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
-		final Object old = getObject(path);
+	@NonNull
+	public final Map<String, Object> getValues(boolean deep) {
+		final Map<String, Object> result = new LinkedHashMap<>();
 
-		if (old != null)
-			// If the old is a collection check if the first value is old, assume the rest
-			// is old as well
-			if (old instanceof Collection) {
-				final Collection<?> collection = (Collection) old;
+		final YamlConfig root = this.root;
 
-				if (collection.isEmpty() || !from.isAssignableFrom(collection.iterator().next().getClass()))
-					return;
+		if (root != null) {
+			final YamlConfig defaults = this.getDefaultSection();
 
-				final List<N> newCollection = new ArrayList<>();
+			if (defaults != null)
+				result.putAll(defaults.getValues(deep));
+		}
 
-				for (final O oldItem : (Collection<O>) collection)
-					newCollection.add(converter.apply(oldItem));
+		this.mapChildrenValues(result, this, deep);
 
-				save(path, newCollection);
+		return result;
+	}
 
-				if (this.logUpdates)
-					Common.log("&7Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
+	// ------------------------------------------------------------------------------------------------------------
+	// Loading
+	// ------------------------------------------------------------------------------------------------------------
 
-			} else if (from.isAssignableFrom(old.getClass())) {
-				save(path, converter.apply((O) old));
+	public final void reload() {
+		Valid.checkNotNull(this.file, "Cannot call reload() before loading since we lack a file to load from yet!");
 
-				if (this.logUpdates)
-					Common.log("&7Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
+		this.loadConfiguration(this.defaultsPath, this.file);
+	}
+
+	public final void loadConfiguration(String defaultPath) {
+		this.loadConfiguration(defaultPath, defaultPath);
+	}
+
+	public final void loadConfiguration(File file) {
+		this.loadConfiguration(null, file);
+	}
+
+	public final void loadConfiguration(@Nullable String from, @NonNull String to) {
+		final File toFile = from != null ? FileUtil.extract(from, to) : FileUtil.getOrMakeFile(to);
+
+		this.loadConfiguration(from, toFile);
+	}
+
+	public final void loadConfiguration(@Nullable String from, @NonNull File toFile) {
+
+		try {
+			final InputStreamReader stream = new InputStreamReader(new FileInputStream(toFile), StandardCharsets.UTF_8);
+
+			this.file = toFile;
+			this.defaultsPath = from;
+
+			// Handle defaults
+			if (from != null) {
+				this.defaults = new YamlConfig();
+
+				final List<String> lines = FileUtil.getInternalResource(from);
+				Valid.checkNotNull("Failed to find default configuration at path " + from + " (did you reload?)");
+
+				this.defaults.loadFromString(String.join("\n", lines));
 			}
+
+			this.loadConfiguration(stream);
+
+		} catch (final IOException ex) {
+			throw new FoException(ex, "Unable to load configuration from file " + this.file);
+		}
 	}
 
-	protected final <T> T getOrSetDefault(final String path, final T defaultValue) {
-		if (isSet(path))
-			return (T) get(path, defaultValue.getClass());
+	public final void loadConfiguration(@NonNull Reader reader) throws IOException {
+		final BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
+		final StringBuilder builder = new StringBuilder();
 
-		save(path, defaultValue);
-		return defaultValue;
+		try {
+			String line;
+
+			while ((line = input.readLine()) != null) {
+				builder.append(line);
+				builder.append('\n');
+			}
+
+		} finally {
+			input.close();
+		}
+
+		this.loadFromString(builder.toString());
 	}
+
+	public final void loadFromString(@NonNull String contents) {
+
+		MappingNode node;
+
+		try (Reader reader = new UnicodeReader(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)))) {
+			node = (MappingNode) this.yaml.compose(reader);
+
+		} catch (YAMLException | IOException e) {
+			throw new FoException(e);
+
+		} catch (final ClassCastException e) {
+			throw new FoException("Top level is not a Map.");
+		}
+
+		this.map.clear();
+
+		if (node != null)
+			this.fromNodeTree(node, this);
+
+		this.onLoadFinish();
+	}
+
+	// ------------------------------------------------------------------------------------
+	// Checking for validity and defaults
+	// ------------------------------------------------------------------------------------
 
 	/**
-	 * Return whether a key exists or not at the given path
-	 *
-	 * @param path the path to the key with path prefix added automatically
-	 * @return
-	 */
-	protected final boolean isSet(final String path) {
-		return isSetAbsolute(formPathPrefix(path));
-	}
-
-	/**
-	 * Return whether a key exists or not at the given absolute path
-	 *
-	 * @param path the path to the key without adding path prefix automatically
-	 * @return
-	 */
-	protected final boolean isSetAbsolute(final String path) {
-		return getConfig().isSet(path);
-	}
-
-	/**
-	 * Return whether the default config exist in your plugins jar and contains the
-	 * given relative path using {@link #getPathPrefix()} feature
+	 * Return true if the given path exists, excluding {@link #getPathPrefix()}
 	 *
 	 * @param path
 	 * @return
 	 */
-	protected final boolean isSetDefault(final String path) {
-		return isSetDefaultAbsolute(formPathPrefix(path));
+	public final boolean isSetAbsolute(@NonNull String path) {
+		return this.root != null && this.contains(path);
 	}
 
 	/**
-	 * Return whether the default config exist in your plugins jar and contains the
-	 * given absolute path
+	 * Return true if the given path exists, including {@link #getPathPrefix()}
 	 *
 	 * @param path
 	 * @return
 	 */
-	protected final boolean isSetDefaultAbsolute(final String path) {
-		return getDefaults() != null && getDefaults().isSet(path);
+	public final boolean isSet(@NonNull String path) {
+		path = this.compilePathPrefix(path);
+
+		return this.root != null && this.contains(path);
 	}
 
-	// ------------------------------------------------------------------------------------
-	// Lazy helpers
-	// ------------------------------------------------------------------------------------
+	private boolean contains(@NonNull String path) {
+		return this.contains(path, false);
+	}
 
-	/**
+	private boolean contains(@NonNull String path, boolean ignoreDefault) {
+		return (ignoreDefault ? this.getFast0(path, null) : this.getFast0(path)) != null;
+	}
+
+	private final Object getDefault(@NonNull String path) {
+		path = this.compilePathPrefix(path);
+
+		final YamlConfig defaults = this.root == null ? null : this.root.getDefaults();
+
+		return defaults == null ? null : defaults.getFast0(createPath(this, path));
+	}
+
+	private YamlConfig getDefaultSection() {
+		final YamlConfig defaults = this.root == null ? null : this.root.getDefaults();
+
+		if (defaults != null)
+			if (defaults.getFast0(this.fullPath) instanceof YamlConfig)
+				return defaults.getConfigurationSection(this.fullPath);
+
+		return null;
+	}
+
+	/*
 	 * Place the key from the default settings if those are set and the key does not
 	 * exists
-	 *
-	 * @param pathAbs
 	 */
-	protected final void addDefaultIfNotExist(final String pathAbs) {
+	/*private void addDefaultIfNotExist(final String pathAbs) {
 		addDefaultIfNotExist(pathAbs, Object.class);
-	}
+	}*/
 
-	/**
+	/*
 	 * Places a key from the default config into the current config file
-	 *
-	 * @param pathAbs
-	 * @param type
 	 */
-	protected void addDefaultIfNotExist(final String pathAbs, final Class<?> type) {
-		if (useDefaults && getDefaults() != null && !isSetAbsolute(pathAbs)) {
-			final Object object = getDefaults().get(pathAbs);
+	private void addDefaultIfNotExist(final String pathAbs, final Class<?> type) {
+		if (this.defaults != null && !this.isSetAbsolute(pathAbs)) {
+			final Object object = this.defaults.get(pathAbs, Object.class);
 
-			Valid.checkNotNull(object, "Default '" + getFileName() + "' lacks " + Common.article(type.getSimpleName()) + " at '" + pathAbs + "'");
-			checkAssignable(true, pathAbs, object, type);
+			Valid.checkNotNull(object, "Default '" + this.getFileName() + "' lacks " + Common.article(type.getSimpleName()) + " at '" + pathAbs + "'");
+			this.checkAssignable(true, pathAbs, object, type);
 
-			checkAndFlagForSave(pathAbs, object);
-			getConfig().set(pathAbs, object);
+			this.checkAndFlagForSave(pathAbs, object);
+			this.setNoSave(pathAbs, object);
 		}
-	}
-
-	/**
-	 * Throws an error if using default settings AND defining the def parameter at
-	 * the same time.
-	 *
-	 * <p>
-	 * We do not allow that, please call methods without the def parameter when
-	 * using default config as the default key will be fetched directly from the
-	 * default config.
-	 *
-	 * @param path
-	 */
-	private void forceSingleDefaults(final String path) {
-		if (useDefaults && getDefaults() != null)
-			throw new FoException("Cannot use get method with default when getting " + formPathPrefix(path) + " and using a default config for " + getFileName());
 	}
 
 	/**
@@ -1637,7 +1387,7 @@ public abstract class YamlConfig {
 	 * @param def
 	 */
 	private <T> void checkAndFlagForSave(final String path, final T def) {
-		checkAndFlagForSave(path, def, true);
+		this.checkAndFlagForSave(path, def, true);
 	}
 
 	/**
@@ -1650,15 +1400,11 @@ public abstract class YamlConfig {
 	 * @param logUpdate
 	 */
 	private <T> void checkAndFlagForSave(final String path, final T def, final boolean logUpdate) {
-		Valid.checkBoolean(instance.getFile() != null && instance.getFile().exists() && instance.getConfig() != null, "Inbuilt file or config is null! File: " + instance.getFile() + ", config: " + instance.getConfig());
+		if (this.defaults != null)
+			Valid.checkNotNull(def, "Inbuilt config " + this.getFileName() + " lacks " + (def == null ? "key" : def.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
 
-		if (getDefaults() != null)
-			Valid.checkNotNull(def, "Inbuilt config " + getFileName() + " lacks " + (def == null ? "key" : def.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
-
-		if (logUpdate && this.logUpdates)
-			Common.log("&7Update " + getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
-
-		save = true;
+		if (logUpdate)
+			Common.log("&7Update " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
 	}
 
 	/**
@@ -1670,14 +1416,515 @@ public abstract class YamlConfig {
 	 * @param clazz
 	 */
 	private void checkAssignable(final boolean fromDefault, final String path, final Object value, final Class<?> clazz) {
-		if (checkAssignables && !clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName())) {
+		if (!clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName())) {
 
 			// Exception
 			if (ConfigSerializable.class.isAssignableFrom(clazz) && value instanceof MemorySection)
 				return;
 
-			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + getFileName() + " must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
+			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + this.getFileName() + " must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
 		}
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Saving
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Moves a certain config key or section from one path to another
+	 *
+	 * @param fromRelative
+	 * @param toAbsolute
+	 */
+	protected final void move(final String fromRelative, final String toAbsolute) {
+		this.move(this.getFast0(fromRelative), fromRelative, toAbsolute);
+	}
+
+	/**
+	 * Moves a certain config key from one path to another
+	 *
+	 * @param value
+	 * @param fromPathRel
+	 * @param toPathAbs
+	 */
+	protected final void move(final Object value, String fromPathRel, final String toPathAbs) {
+		final String oldPathPrefix = this.pathPrefix;
+
+		fromPathRel = this.compilePathPrefix(fromPathRel);
+
+		this.setNoSave(fromPathRel, null);
+		this.pathPrefix = oldPathPrefix; // set to previous
+
+		this.setNoSave(toPathAbs, value);
+
+		Common.log("&7Update " + this.getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
+
+		this.pathPrefix = oldPathPrefix; // and reset back to whatever it was
+	}
+
+	public final void save(@NonNull String path, Object value) {
+		this.setNoSave(path, value);
+
+		this.save();
+	}
+
+	public final void setNoSave(@NonNull String path, Object value) {
+		Valid.checkNotEmpty(path, "Cannot set to an empty path");
+
+		final YamlConfig root = this.root;
+
+		if (root == null)
+			throw new IllegalStateException("Cannot use section without a root");
+
+		// i1 is the leading (higher) index
+		// i2 is the trailing (lower) index
+		int i1 = -1, i2;
+		YamlConfig section = this;
+
+		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
+			final String node = path.substring(i2, i1);
+			final YamlConfig subSection = section.getConfigurationSection(node);
+			if (subSection == null) {
+				if (value == null)
+					// no need to create missing sub-sections if we want to remove the value:
+					return;
+				section = section.createSection(node);
+			} else
+				section = subSection;
+		}
+
+		final String key = path.substring(i2);
+
+		if (section == this) {
+			if (value == null)
+				this.map.remove(key);
+
+			else
+				this.map.put(key, value);
+
+		} else
+			section.setNoSave(key, value);
+	}
+
+	/**
+	 * Permanently removes the disk file and unloads configuration
+	 *
+	 * @return
+	 */
+	public final boolean deleteFile() {
+		if (this.file.exists()) {
+			this.file.delete();
+			unregisterLoadedFile(this.file);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Deletes all data from the relevant part of the file depending on {@link #getPathPrefix()}, keeping the file.
+	 */
+	public final void clear() {
+		this.save("", null);
+	}
+
+	/**
+	 * Saves the content of the file (must be loaded first using load(File)
+	 */
+	public final void save() {
+		Valid.checkNotNull(this.file, "Cannot call save() method when no file was set (did you call load(File)?)");
+
+		this.save(this.file);
+	}
+
+	/**
+	 * Saves the content of this config to the given file path in your plugin's folder
+	 *
+	 * @param filePath
+	 */
+	public final void save(@NonNull String filePath) {
+		this.save(FileUtil.getFile(filePath));
+	}
+
+	/**
+	 * Saves the content of this config to the given file in your plugin's folder
+	 *
+	 * @param file
+	 */
+	public final void save(@NonNull File file) {
+
+		try {
+			this.onSave();
+
+			if (this.defaults == null) {
+
+				final File parent = file.getCanonicalFile().getParentFile();
+
+				// Create parent dirs
+				if (parent != null)
+					parent.mkdirs();
+
+				// Dump to file
+				final String data = this.saveToString();
+				final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+
+				try {
+					writer.write(data);
+
+				} finally {
+					writer.close();
+				}
+
+				return;
+			}
+
+			final List<String> newLines = FileUtil.getInternalResource(this.defaultsPath);
+			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.file), StandardCharsets.UTF_8));
+
+			// ignoredSections can ONLY contain configurations sections
+			for (final String ignoredSection : this.getUncommentedSections())
+				if (this.defaults.isSet(ignoredSection))
+					Valid.checkBoolean(this.defaults.getFast0(ignoredSection) instanceof YamlConfig, "Can only ignore config sections in " + this.defaultsPath + " (file " + this.file + ")" + " not '" + ignoredSection + "' that is " + this.defaults.getFast0(ignoredSection));
+
+			// Save keys added to config that are not in default and would otherwise be lost
+			final Set<String> newKeys = this.defaults.getKeys(true);
+			final Map<String, Object> removedKeys = new LinkedHashMap<>();
+
+			outerLoop:
+			for (final Map.Entry<String, Object> oldEntry : this.getValues(true).entrySet()) {
+				final String oldKey = oldEntry.getKey();
+
+				for (final String ignoredKey : this.getUncommentedSections())
+					if (oldKey.startsWith(ignoredKey))
+						continue outerLoop;
+
+				if (!newKeys.contains(oldKey))
+					removedKeys.put(oldKey, oldEntry.getValue());
+			}
+
+			// Move to unused/ folder and retain old path
+			if (!removedKeys.isEmpty()) {
+				final YamlConfig backupConfig = new YamlConfig();
+
+				backupConfig.loadConfiguration(NO_DEFAULT, "unused/" + this.file.getName());
+
+				for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
+					backupConfig.setNoSave(entry.getKey(), entry.getValue());
+
+				backupConfig.save();
+
+				Common.warning("The following entries in " + this.file.getName() + " are unused and were moved into " + backupConfig.file.getName() + ": " + removedKeys.keySet());
+			}
+
+			final Map<String, String> comments = this.dumpComments(newLines);
+
+			this.write(comments, writer);
+
+		} catch (final IOException ex) {
+			throw new FoException(ex, "Unable to save configuration to file " + file);
+		}
+	}
+
+	/**
+	 * Dumps the entire content of this config into a saveable yaml string
+	 *
+	 * @return
+	 */
+	@NonNull
+	public final String saveToString() {
+		final Map<String, Object> values = this.getValues(false);
+		final String header = this.buildHeader();
+
+		String dump = this.yaml.dump(SerializeUtil.serialize(values));
+
+		if (dump.equals("{}\n")) // empty config
+			dump = "";
+
+		return header + dump;
+	}
+
+	// It checks if key has a comment associated with it and writes comment then the key and value
+	// Notice: Various authors, original credit lost. Please contact us for crediting you.
+	private void write(Map<String, String> comments, BufferedWriter writer) throws IOException {
+
+		final Set<String> copyAllowed = new HashSet<>();
+		final Set<String> reverseCopy = new HashSet<>();
+
+		outerloop:
+		for (final String key : this.defaults.getKeys(true)) {
+
+			checkIgnore:
+			{
+
+				for (final String allowed : copyAllowed)
+					if (key.startsWith(allowed))
+						break checkIgnore;
+
+				// These keys are already written below
+				for (final String allowed : reverseCopy)
+					if (key.startsWith(allowed))
+						continue outerloop;
+
+				for (final String ignoredSection : this.getUncommentedSections()) {
+					if (key.equals(ignoredSection))
+						// Write from new to old config
+						if (!this.isSet(ignoredSection) || this.getConfigurationSection(ignoredSection).getKeys(false).isEmpty()) {
+							copyAllowed.add(ignoredSection);
+
+							break;
+						}
+
+						// Write from old to new, copying all keys and subkeys manually
+						else {
+							this.write0(key, true, comments, writer);
+
+							for (final String oldKey : this.getConfigurationSection(ignoredSection).getKeys(true))
+								this.write0(ignoredSection + "." + oldKey, true, comments, writer);
+
+							reverseCopy.add(ignoredSection);
+							continue outerloop;
+						}
+
+					if (key.startsWith(ignoredSection))
+						continue outerloop;
+				}
+			}
+
+			this.write0(key, false, comments, writer);
+		}
+
+		final String danglingComments = comments.get(null);
+
+		if (danglingComments != null)
+			writer.write(danglingComments);
+
+		writer.close();
+	}
+
+	private void write0(String key, boolean forceNew, Map<String, String> comments, BufferedWriter writer) throws IOException {
+
+		final String[] keys = key.split("\\.");
+		final String actualKey = keys[keys.length - 1];
+		final String comment = comments.remove(key);
+
+		final StringBuilder prefixBuilder = new StringBuilder();
+		final int indents = keys.length - 1;
+		this.appendPrefixSpaces(prefixBuilder, indents);
+		final String prefixSpaces = prefixBuilder.toString();
+
+		// No \n character necessary, new line is automatically at end of comment
+		if (comment != null)
+			writer.write(comment);
+
+		final Object newObj = this.defaults.getFast0(key);
+		final Object oldObj = this.getFast0(key);
+
+		// Write the old section
+		if (newObj instanceof YamlConfig && !forceNew && oldObj instanceof YamlConfig)
+			this.writeSection(writer, actualKey, prefixSpaces, (YamlConfig) oldObj);
+
+		// Write the new section, old value is no more
+		else if (newObj instanceof YamlConfig)
+			this.writeSection(writer, actualKey, prefixSpaces, (YamlConfig) newObj);
+
+		// Write the old object
+		else if (oldObj != null && !forceNew)
+			this.write(oldObj, actualKey, prefixSpaces, writer);
+
+		// Write new object
+		else
+			this.write(newObj, actualKey, prefixSpaces, writer);
+	}
+
+	// Doesn't work with configuration sections, must be an actual object
+	// Auto checks if it is serializable and writes to file
+	private void write(Object obj, String actualKey, String prefixSpaces, BufferedWriter writer) throws IOException {
+
+		if (obj instanceof String || obj instanceof Character) {
+			if (obj instanceof String) {
+				final String string = (String) obj;
+
+				// Split multi line strings using |-
+				if (string.contains("\n")) {
+					writer.write(prefixSpaces + actualKey + ": |-\n");
+
+					for (final String line : string.split("\n"))
+						writer.write(prefixSpaces + "    " + line + "\n");
+
+					return;
+				}
+			}
+
+			writer.write(prefixSpaces + actualKey + ": " + this.yaml.dump(SerializeUtil.serialize(obj)));
+
+		} else if (obj instanceof List)
+			this.writeList((List<?>) obj, actualKey, prefixSpaces, writer);
+
+		else
+			writer.write(prefixSpaces + actualKey + ": " + this.yaml.dump(SerializeUtil.serialize(obj)));
+
+	}
+
+	// Writes a configuration section
+	private void writeSection(BufferedWriter writer, String actualKey, String prefixSpaces, YamlConfig section) throws IOException {
+		if (section.getKeys(false).isEmpty())
+			writer.write(prefixSpaces + actualKey + ":");
+
+		else
+			writer.write(prefixSpaces + actualKey + ":");
+
+		writer.write("\n");
+	}
+
+	// Writes a list of any object
+	private void writeList(List<?> list, String actualKey, String prefixSpaces, BufferedWriter writer) throws IOException {
+		writer.write(this.dumpListAsString(list, actualKey, prefixSpaces));
+	}
+
+	private String dumpListAsString(List<?> list, String actualKey, String prefixSpaces) {
+		final StringBuilder builder = new StringBuilder(prefixSpaces).append(actualKey).append(":");
+
+		if (list.isEmpty()) {
+			builder.append(" []\n");
+			return builder.toString();
+		}
+
+		builder.append("\n");
+
+		for (int i = 0; i < list.size(); i++) {
+			final Object o = list.get(i);
+
+			if (o instanceof String || o instanceof Character)
+				builder.append(prefixSpaces).append("- '").append(o.toString().replace("'", "''")).append("'");
+			else if (o instanceof List)
+				builder.append(prefixSpaces).append("- '").append(this.yaml.dump(SerializeUtil.serialize(o)));
+			else
+				builder.append(prefixSpaces).append("- ").append(SerializeUtil.serialize(o));
+
+			if (i != list.size())
+				builder.append("\n");
+		}
+
+		return builder.toString();
+	}
+
+	// Key is the config key, value = comment and/or ignored sections
+	// Parses comments, blank lines, and ignored sections
+	private Map<String, String> dumpComments(List<String> lines) {
+		final Map<String, String> comments = new LinkedHashMap<>();
+		final StringBuilder builder = new StringBuilder();
+		final StringBuilder keyBuilder = new StringBuilder();
+		int lastLineIndentCount = 0;
+
+		//outer:
+		for (final String line : lines) {
+			if (line != null && line.trim().startsWith("-"))
+				continue;
+
+			if (line == null || line.trim().equals("") || line.trim().startsWith("#"))
+				builder.append(line).append("\n");
+			else {
+				lastLineIndentCount = this.setFullKey(keyBuilder, line, lastLineIndentCount);
+
+				if (keyBuilder.length() > 0) {
+					comments.put(keyBuilder.toString(), builder.toString());
+					builder.setLength(0);
+				}
+			}
+		}
+
+		if (builder.length() > 0)
+			comments.put(null, builder.toString());
+
+		return comments;
+	}
+
+	// Counts spaces in front of key and divides by 2 since 1 indent = 2 spaces
+	private int countIndents(String s) {
+		int spaces = 0;
+
+		for (final char c : s.toCharArray())
+			if (c == ' ')
+				spaces += 1;
+			else
+				break;
+
+		return spaces / 2;
+	}
+
+	// Ex. keyBuilder = key1.key2.key3 --> key1.key2
+	private void removeLastKey(StringBuilder keyBuilder) {
+		String temp = keyBuilder.toString();
+		final String[] keys = temp.split("\\.");
+
+		if (keys.length == 1) {
+			keyBuilder.setLength(0);
+			return;
+		}
+
+		temp = temp.substring(0, temp.length() - keys[keys.length - 1].length() - 1);
+		keyBuilder.setLength(temp.length());
+	}
+
+	// Updates the keyBuilder and returns configLines number of indents
+	private int setFullKey(StringBuilder keyBuilder, String configLine, int lastLineIndentCount) {
+		final int currentIndents = this.countIndents(configLine);
+		final String key = configLine.trim().split(":")[0];
+
+		if (keyBuilder.length() == 0)
+			keyBuilder.append(key);
+
+		else if (currentIndents == lastLineIndentCount) {
+			// Replace the last part of the key with current key
+			this.removeLastKey(keyBuilder);
+
+			if (keyBuilder.length() > 0)
+				keyBuilder.append(".");
+
+			keyBuilder.append(key);
+		} else if (currentIndents > lastLineIndentCount)
+			// Append current key to the keyBuilder
+			keyBuilder.append(".").append(key);
+
+		else {
+			final int difference = lastLineIndentCount - currentIndents;
+
+			for (int i = 0; i < difference + 1; i++)
+				this.removeLastKey(keyBuilder);
+
+			if (keyBuilder.length() > 0)
+				keyBuilder.append(".");
+
+			keyBuilder.append(key);
+		}
+
+		return currentIndents;
+	}
+
+	private String getPrefixSpaces(int indents) {
+		final StringBuilder builder = new StringBuilder();
+
+		for (int i = 0; i < indents; i++)
+			builder.append("  ");
+
+		return builder.toString();
+	}
+
+	private void appendPrefixSpaces(StringBuilder builder, int indents) {
+		builder.append(this.getPrefixSpaces(indents));
+	}
+
+	/**
+	 * See {@link ConfigSerializable#serialize()}
+	 */
+	@Override
+	public final SerializedMap serialize() {
+		final SerializedMap map = SerializedMap.of(this.map);
+
+		map.overrideAll(this.onSerialize());
+
+		return map;
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1690,8 +1937,8 @@ public abstract class YamlConfig {
 	 * @param path
 	 * @return
 	 */
-	protected String formPathPrefix(@NonNull final String path) {
-		final String prefixed = pathPrefix != null ? pathPrefix + (!path.isEmpty() ? "." + path : "") : path;
+	protected String compilePathPrefix(@NonNull final String path) {
+		final String prefixed = this.pathPrefix != null ? this.pathPrefix + (!path.isEmpty() ? "." + path : "") : path;
 
 		return prefixed.endsWith(".") ? prefixed.substring(0, prefixed.length() - 1) : prefixed;
 	}
@@ -1701,7 +1948,7 @@ public abstract class YamlConfig {
 	 *
 	 * @param pathPrefix
 	 */
-	protected void pathPrefix(final String pathPrefix) {
+	protected void setPathPrefix(final String pathPrefix) {
 		if (pathPrefix != null) {
 			Valid.checkBoolean(!pathPrefix.endsWith("."), "Path prefix must not end with a dot: " + pathPrefix);
 			Valid.checkBoolean(!pathPrefix.endsWith(".yml"), "Path prefix must not end with .yml!");
@@ -1716,23 +1963,291 @@ public abstract class YamlConfig {
 	 * @return
 	 */
 	protected final String getPathPrefix() {
-		return pathPrefix;
+		return this.pathPrefix;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Header
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Set the header of this file. DOES NOT SAVE THE FILE. Must be done before calling save().
+	 * Only works when default file DOES NOT EXIST, otherwise we use its header and comments instead.
+	 *
+	 * @param value
+	 */
+	public final void setHeader(String... value) {
+		this.setHeader(Arrays.asList(value));
 	}
 
 	/**
-	 * @see java.lang.Object#toString()
+	 * Set the header of this file. DOES NOT SAVE THE FILE. Must be done before calling save().
+	 * Only works when default file DOES NOT EXIST, otherwise we use its header and comments instead.
+	 *
+	 * @param value
 	 */
+	@NonNull
+	public final void setHeader(List<String> value) {
+		Valid.checkBoolean(this.defaults == null, "Cannot use setHeader when defaults are set (we then automatically pull the header from default: " + this.defaultsPath + ")");
+
+		this.header = value == null ? Collections.emptyList() : Collections.unmodifiableList(value);
+	}
+
+	private final String buildHeader() {
+		List<String> header = this.header;
+
+		if (header.isEmpty() && this.defaults != null && !this.defaults.header.isEmpty())
+			header = this.defaults.header;
+
+		if (header.isEmpty())
+			return "";
+
+		final StringBuilder builder = new StringBuilder();
+		boolean startedHeader = false;
+
+		for (int i = header.size() - 1; i >= 0; i--) {
+			builder.insert(0, "\n");
+
+			if (startedHeader || header.get(i).length() != 0) {
+				builder.insert(0, header.get(i));
+				builder.insert(0, '#');
+
+				startedHeader = true;
+			}
+		}
+
+		return builder.toString();
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Utils
+	// ------------------------------------------------------------------------------------------------------------
+
+	@NonNull
+	private YamlConfig createSection(@NonNull String path) {
+		Valid.checkNotEmpty(path, "Cannot create section at empty path");
+		final YamlConfig root = this.root;
+
+		if (root == null)
+			throw new IllegalStateException("Cannot create section without a root");
+
+		int leadingIndex = -1;
+		int trailingIndex;
+		YamlConfig section = this;
+
+		while ((leadingIndex = path.indexOf('.', trailingIndex = leadingIndex + 1)) != -1) {
+			final String node = path.substring(trailingIndex, leadingIndex);
+			final YamlConfig subSection = section.getConfigurationSection(node);
+			if (subSection == null)
+				section = section.createSection(node);
+			else
+				section = subSection;
+		}
+
+		final String key = path.substring(trailingIndex);
+		if (section == this) {
+			final YamlConfig result = new YamlConfig(this, key);
+			this.map.put(key, result);
+
+			return result;
+		}
+		return section.createSection(key);
+	}
+
+	@NonNull
+	private YamlConfig createSection(@NonNull String path, @NonNull Map<?, ?> map) {
+		final YamlConfig section = this.createSection(path);
+
+		for (final Map.Entry<?, ?> entry : map.entrySet())
+			if (entry.getValue() instanceof Map)
+				section.createSection(entry.getKey().toString(), (Map<?, ?>) entry.getValue());
+			else
+				section.setNoSave(entry.getKey().toString(), entry.getValue());
+
+		return section;
+	}
+
+	private void fromNodeTree(@NonNull MappingNode input, @NonNull YamlConfig section) {
+		this.constructor.flattenMapping(input);
+
+		for (final NodeTuple nodeTuple : input.getValue()) {
+			final Node key = nodeTuple.getKeyNode();
+			final String keyString = String.valueOf(this.constructor.construct(key));
+			Node value = nodeTuple.getValueNode();
+
+			while (value instanceof AnchorNode)
+				value = ((AnchorNode) value).getRealNode();
+
+			if (value instanceof MappingNode && !this.hasSerializedTypeKey((MappingNode) value))
+				this.fromNodeTree((MappingNode) value, section.createSection(keyString));
+			else
+				section.setNoSave(keyString, this.constructor.construct(value));
+		}
+	}
+
+	private boolean hasSerializedTypeKey(MappingNode node) {
+		for (final NodeTuple nodeTuple : node.getValue()) {
+			final Node keyNode = nodeTuple.getKeyNode();
+			if (!(keyNode instanceof ScalarNode))
+				continue;
+			final String key = ((ScalarNode) keyNode).getValue();
+			if (key.equals(ConfigurationSerialization.SERIALIZED_TYPE_KEY))
+				return true;
+		}
+		return false;
+	}
+
+	private void mapChildrenKeys(@NonNull Set<String> output, @NonNull YamlConfig section, boolean deep) {
+		if (section instanceof YamlConfig) {
+			final YamlConfig sec = section;
+
+			for (final Map.Entry<String, Object> entry : sec.map.entrySet()) {
+				output.add(createPath(section, entry.getKey(), this));
+
+				if (deep && entry.getValue() instanceof YamlConfig) {
+					final YamlConfig subsection = (YamlConfig) entry.getValue();
+					this.mapChildrenKeys(output, subsection, deep);
+				}
+			}
+		} else {
+			final Set<String> keys = section.getKeys(deep);
+
+			for (final String key : keys)
+				output.add(createPath(section, key, this));
+		}
+	}
+
+	private void mapChildrenValues(@NonNull Map<String, Object> output, @NonNull YamlConfig section, boolean deep) {
+		if (section instanceof YamlConfig) {
+			final YamlConfig sec = section;
+
+			for (final Map.Entry<String, Object> entry : sec.map.entrySet()) {
+				// Because of the copyDefaults call potentially copying out of order, we must remove and then add in our saved order
+				// This means that default values we haven't set end up getting placed first
+				// See SPIGOT-4558 for an example using spigot.yml - watch subsections move around to default order
+				final String childPath = createPath(section, entry.getKey(), this);
+
+				output.remove(childPath);
+				output.put(childPath, entry.getValue());
+
+				if (entry.getValue() instanceof YamlConfig)
+					if (deep)
+						this.mapChildrenValues(output, (YamlConfig) entry.getValue(), deep);
+			}
+		} else {
+			final Map<String, Object> values = section.getValues(deep);
+
+			for (final Map.Entry<String, Object> entry : values.entrySet())
+				output.put(createPath(section, entry.getKey(), this), entry.getValue());
+		}
+	}
+
 	@Override
 	public String toString() {
-		return "YamlConfig{file=" + getFileName() + ", path prefix=" + this.pathPrefix + "}";
+		return "YamlConfig{file=" + this.getFileName() + ", defaults=" + this.defaultsPath + ", keys=" + this.serialize().keySet() + "}";
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Static
+	// ------------------------------------------------------------------------------------------------------------
+
+	@NonNull
+	private static String createPath(@NonNull YamlConfig section, String key) {
+		return createPath(section, key, section == null ? null : section.root);
+	}
+
+	@NonNull
+	private static String createPath(@NonNull YamlConfig section, String key, YamlConfig relativeTo) {
+		final YamlConfig root = section.root;
+
+		if (root == null)
+			throw new IllegalStateException("Cannot create path without a root");
+
+		final StringBuilder builder = new StringBuilder();
+
+		for (YamlConfig parent = section; parent != null && parent != relativeTo; parent = parent.parent) {
+			if (builder.length() > 0)
+				builder.insert(0, '.');
+
+			builder.insert(0, parent.path);
+		}
+
+		if (key != null && key.length() > 0) {
+			if (builder.length() > 0)
+				builder.append('.');
+
+			builder.append(key);
+		}
+
+		return builder.toString();
 	}
 
 	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * Remove a loaded file from our internal loaded files map
+	 *
+	 * @param file
 	 */
-	@Override
-	public boolean equals(Object obj) {
-		throw new RuntimeException("Please implement your own equals() method for " + getClass());
+	public static final void unregisterLoadedFile(final File file) {
+		synchronized (loadedConfigs) {
+			loadedConfigs.removeWeak(file.getAbsolutePath());
+		}
+	}
+
+	/**
+	 * Loads the configuration without defaults from the given file.
+	 *
+	 * @param file
+	 * @return
+	 */
+	public static YamlConfig fromFile(File file) {
+		synchronized (loadedConfigs) {
+			final String path = file.getAbsolutePath();
+			YamlConfig config = loadedConfigs.get(path);
+
+			if (config == null) {
+				config = new YamlConfig();
+				config.loadConfiguration(file);
+
+				loadedConfigs.put(path, config);
+			}
+
+			return config;
+		}
+	}
+
+	/**
+	 * Loads the configuration trying to copy the internal path from
+	 * your JAR file to the same path in plugins, i.e. "settings.yml"
+	 *
+	 * @param internalPath
+	 * @return
+	 */
+	public static YamlConfig fromInternalPath(String internalPath) {
+		return fromPath(internalPath, internalPath);
+	}
+
+	/**
+	 * Loads the configuration trying to copy the internal path from
+	 * your JAR file to a path in plugins, i.e. "prototype/arena.yml"
+	 * to arenas/{yourArena}.yml
+	 *
+	 * @param internalPath
+	 * @param diskPath
+	 * @return
+	 */
+	public static YamlConfig fromPath(String internalPath, String diskPath) {
+		synchronized (loadedConfigs) {
+			YamlConfig config = loadedConfigs.get(internalPath);
+
+			if (config == null) {
+				config = new YamlConfig();
+				config.loadConfiguration(internalPath, diskPath);
+
+				loadedConfigs.put(internalPath, config);
+			}
+
+			return config;
+		}
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1773,16 +2288,16 @@ public abstract class YamlConfig {
 		 * @return
 		 */
 		public boolean toggle(final Location location) {
-			for (final Location point : points)
+			for (final Location point : this.points)
 				if (Valid.locationEquals(point, location)) {
-					points.remove(point);
+					this.points.remove(point);
 
-					settings.save();
+					this.settings.save();
 					return false;
 				}
 
-			points.add(location);
-			settings.save();
+			this.points.add(location);
+			this.settings.save();
 
 			return true;
 		}
@@ -1793,10 +2308,10 @@ public abstract class YamlConfig {
 		 * @param location
 		 */
 		public void add(final Location location) {
-			Valid.checkBoolean(!hasLocation(location), "Location at " + location + " already exists!");
+			Valid.checkBoolean(!this.hasLocation(location), "Location at " + location + " already exists!");
 
-			points.add(location);
-			settings.save();
+			this.points.add(location);
+			this.settings.save();
 		}
 
 		/**
@@ -1805,11 +2320,11 @@ public abstract class YamlConfig {
 		 * @param location
 		 */
 		public void remove(final Location location) {
-			final Location point = find(location);
+			final Location point = this.find(location);
 			Valid.checkNotNull(point, "Location at " + location + " does not exist!");
 
-			points.remove(point);
-			settings.save();
+			this.points.remove(point);
+			this.settings.save();
 		}
 
 		/**
@@ -1819,7 +2334,7 @@ public abstract class YamlConfig {
 		 * @return
 		 */
 		public boolean hasLocation(final Location location) {
-			return find(location) != null;
+			return this.find(location) != null;
 		}
 
 		/**
@@ -1830,7 +2345,7 @@ public abstract class YamlConfig {
 		 * @return
 		 */
 		public Location find(final Location location) {
-			for (final Location entrance : points)
+			for (final Location entrance : this.points)
 				if (Valid.locationEquals(entrance, location))
 					return entrance;
 
@@ -1843,7 +2358,7 @@ public abstract class YamlConfig {
 		 * @return all locations
 		 */
 		public List<Location> getLocations() {
-			return Collections.unmodifiableList(points);
+			return Collections.unmodifiableList(this.points);
 		}
 
 		/**
@@ -1853,7 +2368,7 @@ public abstract class YamlConfig {
 		 */
 		@Override
 		public Iterator<Location> iterator() {
-			return points.iterator();
+			return this.points.iterator();
 		}
 
 		/**
@@ -1862,65 +2377,88 @@ public abstract class YamlConfig {
 		 * @return
 		 */
 		public int size() {
-			return points.size();
+			return this.points.size();
 		}
 	}
 
 	/**
-	 * A simple helper class for some language-specific values when creating
-	 * localization for numbers.
+	 * Helps to accurately display periods for languages with cases, i.e. English vs Slovak/other langs.
+	 * in messages set in the accusative case (example: "Please wait 1 second before chatting again")
+	 * where as the "1 second" is in accusative (i.e. "Prosím počkajte 1 sekundu")
+	 *
+	 * 1 second (sekundu)
+	 * 2 seconds (sekundy)
+	 * 0 or 5+ seconds (sekúnd)
 	 */
-	public final class CasusHelper {
-		private final String akuzativSg; // 1 second (Slovak case - sekundu, not in English)
-		private final String akuzativPl; // 2-4 seconds (Slovak case - sekundy)
-		private final String genitivPl; // 5+ seconds (Slovak case - sekund)
+	public static final class AccusativeHelper {
 
-		private CasusHelper(final String raw) {
+		private final String accusativeSingural; // 1 second (Slovak case - sekundu)
+		private final String accusativePlural; // 2-4 seconds (Slovak case - sekundy, not in English)
+		private final String genitivePlural; // 0 or 5+ seconds (Slovak case - sekund)
+
+		private AccusativeHelper(final String raw) {
 			final String[] values = raw.split(", ");
 
 			if (values.length == 2) {
-				akuzativSg = values[0];
-				akuzativPl = values[1];
-				genitivPl = akuzativPl;
+				this.accusativeSingural = values[0];
+				this.accusativePlural = values[1];
+				this.genitivePlural = this.accusativePlural;
+
 				return;
 			}
 
 			if (values.length != 3)
 				throw new FoException("Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
 
-			akuzativSg = values[0];
-			akuzativPl = values[1];
-			genitivPl = values[2];
+			this.accusativeSingural = values[0];
+			this.accusativePlural = values[1];
+			this.genitivePlural = values[2];
 		}
 
 		public String getPlural() {
-			return genitivPl;
+			return this.genitivePlural;
 		}
 
+		/**
+		 * Formats the given number with an appropriate case
+		 *
+		 * I.e. "5 sekúnd"
+		 *
+		 * @param count
+		 * @return
+		 */
 		public String formatWithCount(final long count) {
-			return count + " " + formatWithoutCount(count);
+			return count + " " + this.formatWithoutCount(count);
 		}
 
+		/**
+		 * Just returns the given duration in the specific case for the number.
+		 *
+		 * I.e. "sekúnd"
+		 *
+		 * @param count
+		 * @return
+		 */
 		public String formatWithoutCount(final long count) {
 			if (count == 1)
-				return akuzativSg;
+				return this.accusativeSingural;
 
 			if (count > 1 && count < 5)
-				return akuzativPl;
+				return this.accusativePlural;
 
-			return genitivPl;
+			return this.genitivePlural;
 		}
 	}
 
 	/**
 	 * A simple helper class for storing title messages
 	 */
-	public final class TitleHelper {
-		private final String title, subtitle;
+	public static final class TitleHelper {
 
-		private TitleHelper(final String path) {
-			this(getString(path + ".Title"), getString(path + ".Subtitle"));
-		}
+		/**
+		 * Stores the title and the subtitle
+		 */
+		private final String title, subtitle;
 
 		private TitleHelper(final String title, final String subtitle) {
 			this.title = Common.colorize(title);
@@ -1928,200 +2466,146 @@ public abstract class YamlConfig {
 		}
 
 		/**
-		 * Duration: 4 seconds + 2 second fade in
+		 * Sends the title and subtitle to the player for around 6 seconds.
+		 *
+		 * @param player
+		 */
+		public void playLong(final Player player) {
+			this.playLong(player, null);
+		}
+
+		/**
+		 * Sends the title and subtitle to the player for around 6 seconds,
+		 * using the replacer function so you can replace variables.
+		 *
 		 * @param player
 		 * @param replacer
 		 */
 		public void playLong(final Player player, final Function<String, String> replacer) {
-			play(player, 5, 4 * 20, 15, replacer);
+			this.play(player, 5, 4 * 20, 15, replacer);
 		}
 
 		/**
-		 * Duration: 2 seconds + 1 second fade in
+		 * Sends the title and subtitle to the player for around 3 seconds,
+		 * using the replacer function so you can replace variables.
+		 *
+		 * @param player
+		 */
+		public void playShort(final Player player) {
+			this.playShort(player, null);
+		}
+
+		/**
+		 * Sends the title and subtitle to the player for around 3 seconds,
+		 * using the replacer function so you can replace variables.
+		 *
 		 * @param player
 		 * @param replacer
 		 */
 		public void playShort(final Player player, final Function<String, String> replacer) {
-			play(player, 3, 2 * 20, 5, replacer);
+			this.play(player, 3, 2 * 20, 5, replacer);
 		}
 
+		/**
+		 * Plays this title for player with the given fadeIn, stay and fadeOut periods (in ticks).
+		 *
+		 * @param player
+		 * @param fadeIn
+		 * @param stay
+		 * @param fadeOut
+		 */
 		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut) {
 			this.play(player, fadeIn, stay, fadeOut, null);
 		}
 
+		/**
+		 * Plays this title for player with the given fadeIn, stay and fadeOut periods (in ticks)
+		 * using the replacer function so you can replace variables.
+		 *
+		 * @param player
+		 * @param fadeIn
+		 * @param stay
+		 * @param fadeOut
+		 * @param replacer
+		 */
 		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut, Function<String, String> replacer) {
-			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer != null ? replacer.apply(title) : title, replacer != null ? replacer.apply(subtitle) : subtitle);
+			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer != null ? replacer.apply(this.title) : this.title, replacer != null ? replacer.apply(this.subtitle) : this.subtitle);
 		}
 	}
 }
 
 /**
- * For safe read-write access we only store one opened file of the same name.
- *
- * <p>
- * This represents the access to that file.
+ * Backport support for serialization of Bukkit values (and those used by plugin authors
+ * using {@link ConfigurationSerializable} from Bukkit.
  */
-@RequiredArgsConstructor
-final class ConfigInstance {
+final class YamlConstructor extends SafeConstructor {
 
-	/**
-	 * The original path to file, used to recreate the file if removed during reload
-	 */
-	private final String to;
+	public YamlConstructor() {
+		this.yamlConstructors.put(Tag.MAP, new ConstructYamlMap() {
 
-	/**
-	 * The file this configuration belongs to.
-	 */
-	@Getter
-	private final File file;
+			@Override
+			public Object construct(@NonNull Node node) {
+				if (node.isTwoStepsConstruction())
+					throw new YAMLException("Unexpected referential mapping structure. Node: " + node);
 
-	/**
-	 * Our config we are manipulating.
-	 */
-	private final SimpleYaml config;
+				final Map<Object, Object> raw = (Map<Object, Object>) super.construct(node);
 
-	/**
-	 * @return the config
-	 */
-	public SimpleYaml getConfig() {
-		return config;
-	}
+				if (raw.containsKey(ConfigurationSerialization.SERIALIZED_TYPE_KEY)) {
+					final Map<String, Object> typed = new LinkedHashMap<>(raw.size());
 
-	/**
-	 * The default config we reach out to fill values from.
-	 */
-	@Getter
-	private final SimpleYaml defaultConfig;
-
-	/**
-	 * Experimental - Should we save comments for this config instance?
-	 */
-	private final boolean saveComments;
-
-	/**
-	 * If {@link YamlConfig#SAVE_COMMENTS} is on, we'll ignore these sections
-	 * from comments being set
-	 */
-	private final List<String> uncommentedSections;
-
-	/**
-	 * Wherefrom shall we save o' mighty comments?
-	 */
-	private final String commentsFilePath;
-
-	/**
-	 * Saves the config instance with the given header, can be null
-	 *
-	 * @param header
-	 */
-	protected void save(final String[] header) {
-
-		if (header != null) {
-			config.options().copyHeader(true);
-			config.options().header(String.join("\n", header));
-		}
-
-		if (Bukkit.isPrimaryThread())
-			this.save0();
-
-		else
-			Common.runLater(this::save0);
-	}
-
-	private void save0() {
-
-		try {
-
-			// Pull the data on the main thread
-			final Map<String, Object> values = config.getValues(false);
-
-			// Yaml#dump should be save async... note that this also builds header
-			final String data = config.saveToString(values);
-
-			if (this.commentsFilePath != null && this.saveComments) {
-				FileUtil.createIfNotExists(to);
-
-				YamlComments.writeComments(this.commentsFilePath, this.file, data, Common.getOrDefault(this.uncommentedSections, new ArrayList<>()));
-			}
-
-			else
-				try {
-					Files.createParentDirs(file);
-
-					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
+					for (final Map.Entry<Object, Object> entry : raw.entrySet())
+						typed.put(entry.getKey().toString(), entry.getValue());
 
 					try {
-						writer.write(data);
-					} finally {
-						writer.close();
-					}
+						return ConfigurationSerialization.deserializeObject(typed);
 
-				} catch (final Throwable t) {
-					Common.error(t);
+					} catch (final IllegalArgumentException ex) {
+						throw new YAMLException("Could not deserialize object", ex);
+					}
 				}
 
-		} catch (final Exception ex) {
-			Common.error(ex, "Failed to save " + file.getName());
-		}
+				return raw;
+			}
+
+			@Override
+			public final void construct2ndStep(@NonNull Node node, @NonNull Object object) {
+				throw new YAMLException("Unexpected mapping structure. Node: " + node);
+			}
+		});
 	}
 
-	/**
-	 * Loads the config file again without saving changes
-	 *
-	 * @throws Exception
-	 */
-	protected void reload() throws IOException, InvalidConfigurationException {
-		FileUtil.createIfNotExists(to);
-
-		config.load(file);
+	public Object construct(@NonNull Node node) {
+		return this.constructObject(node);
 	}
 
-	/**
-	 * Removes the config file from the disk
-	 */
-	protected void delete() {
-		YamlConfig.unregisterLoadedFile(file);
-
-		file.delete();
-	}
-
-	/**
-	 * Returns true if the given file name equals to the one we store here
-	 *
-	 * @param file
-	 * @return
-	 */
-	public boolean equals(final File file) {
-		return equals((Object) file);
-	}
-
-	/**
-	 * Returns true if the given file name equals to the one we store here
-	 *
-	 * @param fileName
-	 * @return
-	 */
-	public boolean equals(final String fileName) {
-		return equals((Object) fileName);
-	}
-
-	/**
-	 * Returns true if the given object is a ConfigInstance having the same file
-	 * name, or a file with the same name as this config instance
-	 *
-	 * @param obj
-	 * @return
-	 */
 	@Override
-	public boolean equals(final Object obj) {
-		return obj instanceof ConfigInstance ? ((ConfigInstance) obj).file.getName().equals(file.getName()) : obj instanceof File ? ((File) obj).getName().equals(file.getName()) : obj instanceof String ? ((String) obj).equals(file.getName()) : false;
+	public void flattenMapping(@NonNull final MappingNode node) {
+		super.flattenMapping(node);
 	}
+}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return this.file.toString() + (this.defaultConfig != null ? " with defaults " : "");
+/**
+ * Backport support for serialization of Bukkit values (and those used by plugin authors
+ * using {@link ConfigurationSerializable} from Bukkit.
+ */
+final class YamlRepresenter extends Representer {
+
+	public YamlRepresenter() {
+		this.multiRepresenters.put(ConfigurationSerialization.class, new RepresentMap() {
+
+			@Override
+			@NonNull
+			public Node representData(@NonNull Object data) {
+				final ConfigurationSerializable serializable = (ConfigurationSerializable) data;
+				final Map<String, Object> values = new LinkedHashMap<>();
+
+				values.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY, serializable.getClass().getName());
+				values.putAll(serializable.serialize());
+
+				return super.representData(values);
+			}
+		});
+
+		this.multiRepresenters.remove(Enum.class);
 	}
 }

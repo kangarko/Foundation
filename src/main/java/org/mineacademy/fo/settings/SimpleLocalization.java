@@ -2,6 +2,7 @@ package org.mineacademy.fo.settings;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
@@ -13,7 +14,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
  * A simple implementation of a basic localization file.
  * We create the localization/messages_LOCALEPREFIX.yml file
  * automatically and fill it with values from your localization/messages_LOCALEPREFIX.yml
- * file placed within in your plugins jar file.
+ * file placed within in your plugin's jar file.
  */
 @SuppressWarnings("unused")
 public class SimpleLocalization extends YamlStaticConfig {
@@ -39,8 +40,8 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 * if it does not exists, or updated if it is out of date.
 	 */
 	@Override
-	protected final void load() throws Exception {
-		createLocalizationFile(SimpleSettings.LOCALE_PREFIX);
+	protected final void onLoadFinish() throws Exception {
+		loadLocalization(SimpleSettings.LOCALE_PREFIX);
 	}
 
 	// --------------------------------------------------------------------
@@ -62,10 +63,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 	@Override
 	protected final void preLoad() {
 		// Load version first so we can use it later
-		pathPrefix(null);
+		setPathPrefix(null);
 
 		if ((VERSION = getInteger("Version")) != getConfigVersion())
-			set("Version", getConfigVersion());
+			setNoSave("Version", getConfigVersion());
 	}
 
 	/**
@@ -241,7 +242,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Commands");
+			setPathPrefix("Commands");
 
 			if (isSetDefault("No_Console"))
 				NO_CONSOLE = getString("No_Console");
@@ -416,7 +417,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String CONVERSATION_ERROR = "&cOups! There was a problem in this conversation! Please contact the administrator to review the console for details.";
 
 		private static void init() {
-			pathPrefix("Conversation");
+			setPathPrefix("Conversation");
 
 			if (isSetDefault("Not_Conversing"))
 				CONVERSATION_NOT_CONVERSING = getString("Not_Conversing");
@@ -448,7 +449,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Player");
+			setPathPrefix("Player");
 
 			if (isSetDefault("Not_Online"))
 				NOT_ONLINE = getString("Not_Online");
@@ -469,7 +470,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String INVALID_PAGE = "&cYour input '{input}' is not a valid number.";
 		public static String GO_TO_PAGE = "&7Go to page {page}";
 		public static String GO_TO_FIRST_PAGE = "&7Go to the first page";
-		public static String[] TOOLTIP = new String[] {
+		public static String[] TOOLTIP = {
 				"&7You can also navigate using the",
 				"&7hidden /#flp <page> command."
 		};
@@ -478,7 +479,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Pages");
+			setPathPrefix("Pages");
 
 			if (isSetDefault("No_Page_Number"))
 				NO_PAGE_NUMBER = getString("No_Page_Number");
@@ -499,7 +500,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 				GO_TO_FIRST_PAGE = getString("Go_To_First_Page");
 
 			if (isSetDefault("Tooltip"))
-				TOOLTIP = getStringArray("Tooltip");
+				TOOLTIP = Common.toArray(getStringList("Tooltip"));
 		}
 	}
 
@@ -537,13 +538,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String TITLE_TOOLS = "Tools Menu";
 		public static String TOOLTIP_INFO = "&fMenu Information";
 		public static String BUTTON_RETURN_TITLE = "&4&lReturn";
-		public static String[] BUTTON_RETURN_LORE = new String[] { "", "Return back." };
+		public static String[] BUTTON_RETURN_LORE = { "", "Return back." };
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Menu");
+			setPathPrefix("Menu");
 
 			if (isSetDefault("Item_Deleted"))
 				ITEM_DELETED = getString("Item_Deleted");
@@ -576,7 +577,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 				BUTTON_RETURN_TITLE = getString("Button_Return_Title");
 
 			if (isSetDefault("Button_Return_Lore"))
-				BUTTON_RETURN_LORE = getStringArray("Button_Return_Lore");
+				BUTTON_RETURN_LORE = Common.toArray(getStringList("Button_Return_Lore"));
 		}
 	}
 
@@ -594,7 +595,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Tool");
+			setPathPrefix("Tool");
 
 			if (isSetDefault("Error"))
 				ERROR = getString("Error");
@@ -624,13 +625,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix(null);
+			setPathPrefix(null);
 
 			// Upgrade from old path
 			if (isSetAbsolute("Update_Available"))
 				move("Update_Available", "Update.Available");
 
-			pathPrefix("Update");
+			setPathPrefix("Update");
 
 			if (isSetDefault("Available"))
 				AVAILABLE = getString("Available");
@@ -671,7 +672,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
-		pathPrefix(null);
+		setPathPrefix(null);
 		Valid.checkBoolean(!localizationClassCalled, "Localization class already loaded!");
 
 		if (isSetDefault("No_Permission"))

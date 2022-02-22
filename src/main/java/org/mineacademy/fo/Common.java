@@ -336,6 +336,17 @@ public final class Common {
 	 * @param sender
 	 * @param messages
 	 */
+	public static void tellNoPrefix(final CommandSender sender, final Collection<String> messages) {
+		tellNoPrefix(sender, Common.toArray(messages));
+	}
+
+	/**
+	 * Sends the sender a bunch of messages, colors & are supported
+	 * without {@link #getTellPrefix()} prefix
+	 *
+	 * @param sender
+	 * @param messages
+	 */
 	public static void tellNoPrefix(final CommandSender sender, final String... messages) {
 		final String oldPrefix = getTellPrefix();
 

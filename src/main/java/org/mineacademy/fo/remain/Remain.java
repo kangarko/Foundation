@@ -91,7 +91,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
-import org.mineacademy.fo.settings.SimpleYaml;
+import org.mineacademy.fo.settings.YamlConfig;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -2515,7 +2515,7 @@ public final class Remain {
 		String previousName = null;
 
 		if (settingsFile.exists()) {
-			final SimpleYaml settings = SimpleYaml.loadConfiguration(settingsFile);
+			final YamlConfig settings = YamlConfig.fromFile(settingsFile);
 			final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
 			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {

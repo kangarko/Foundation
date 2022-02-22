@@ -75,8 +75,7 @@ public final class SimpleSound {
 	 *
 	 * @param line
 	 */
-	public SimpleSound(String line) {
-		Valid.checkNotNull(line);
+	public SimpleSound(@NonNull String line) {
 
 		if ("none".equals(line)) {
 			this.sound = CompSound.CLICK.getSound();

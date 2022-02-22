@@ -114,26 +114,12 @@ public final class Variable extends YamlConfig {
 	private String runCommand;
 
 	/*
-	 * Shall we save comments for this file?
-	 */
-	private final boolean saveComments;
-
-	/*
 	 * Create and load a new variable (automatically called)
 	 */
 	private Variable(String file) {
 		final String prototypePath = PROTOTYPE_PATH.apply(file);
 
-		this.saveComments = prototypePath != null;
 		this.loadConfiguration(prototypePath, "variables/" + file + ".yml");
-	}
-
-	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#saveComments()
-	 */
-	@Override
-	protected boolean saveComments() {
-		return saveComments;
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -183,14 +169,14 @@ public final class Variable extends YamlConfig {
 
 		// Check for known mistakes
 		if (this.key == null || this.key.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile());
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFileName());
 
 		if (this.value == null || this.value.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFile() + " (this can be a JavaScript code)");
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFileName() + " (this can be a JavaScript code)");
 
 		// Test for key validity
 		if (!Common.regExMatch("^\\w+$", this.key))
-			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFileName() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 	}
 
 	/**
@@ -199,7 +185,7 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	@Override
-	public SerializedMap serialize() {
+	public SerializedMap onSerialize() {
 		final SerializedMap map = new SerializedMap();
 
 		map.putIf("Type", this.type);
@@ -269,7 +255,7 @@ public final class Variable extends YamlConfig {
 			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
 
 			if (result != null) {
-				Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+				Valid.checkBoolean(result instanceof Boolean, "Variable '" + getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
 
 				if ((boolean) result == false)
 					return SimpleComponent.of("");
@@ -291,7 +277,7 @@ public final class Variable extends YamlConfig {
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements), sender);
-			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getName() + "' option Hover_Item must return ItemStack not " + result.getClass());
+			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
 			component.onHover((ItemStack) result);
 		}

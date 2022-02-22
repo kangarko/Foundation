@@ -33,20 +33,12 @@ public final class Lang extends YamlConfig {
 		this.loadConfiguration(filePath);
 	}
 
-	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#saveComments()
-	 */
-	@Override
-	protected boolean saveComments() {
-		return true;
-	}
-
 	/*
 	 * Return a key from our localization, failing if not exists
 	 */
 	private String getStringStrict(String path) {
 		final String key = getString(path);
-		Valid.checkNotNull(key, "Missing localization key '" + path + "' from " + getFileName());
+		Valid.checkNotNull(key, "Missing localization key '" + path + "' from " + this.getFileName());
 
 		return key;
 	}
@@ -84,8 +76,8 @@ public final class Lang extends YamlConfig {
 	 */
 	@Deprecated
 	public static void loadPrefixes() {
-		if (instance != null) {
-			synchronized (instance) {
+		synchronized (instance) {
+			if (instance != null) {
 				if (instance.isSet("Prefix.Announce"))
 					Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
 
