@@ -11,17 +11,15 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
@@ -29,7 +27,7 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlConfig.CasusHelper;
+import org.mineacademy.fo.settings.YamlConfig.AccusativeHelper;
 import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
 
 import lombok.Setter;
@@ -70,11 +68,6 @@ public abstract class YamlStaticConfig {
 			}
 
 			@Override
-			protected boolean saveComments() {
-				return YamlStaticConfig.this.saveComments();
-			}
-
-			@Override
 			protected List<String> getUncommentedSections() {
 				return YamlStaticConfig.this.getUncommentedSections();
 			}
@@ -84,8 +77,6 @@ public abstract class YamlStaticConfig {
 				loadViaReflection();
 			}
 		};
-
-		TEMPORARY_INSTANCE.setHeader(getHeader());
 	}
 
 	// -----------------------------------------------------------------------------------------------------
@@ -113,7 +104,7 @@ public abstract class YamlStaticConfig {
 			try {
 				final YamlStaticConfig config = clazz.newInstance();
 
-				config.load();
+				config.onLoadFinish();
 
 				TEMPORARY_INSTANCE = null;
 
@@ -177,28 +168,6 @@ public abstract class YamlStaticConfig {
 	}
 
 	/**
-	 * Return the default header used when the file is being written to and saved. YAML files do not
-	 * remember # comments. All of them will be lost and the file will be "crunched" together when you
-	 * save it, with the only exception being the header. Use the header to display important
-	 * information such as where your users can find the documented version of your file (such as on
-	 * GitHub).
-	 * <p>
-	 * Set to null to disable, defaults to {@link FoConstants.Header#UPDATED_FILE}
-	 *
-	 * @return the header
-	 */
-	protected String[] getHeader() {
-		return FoConstants.Header.UPDATED_FILE;
-	}
-
-	/**
-	 * @see YamlConfig#saveComments()
-	 */
-	protected boolean saveComments() {
-		return true;
-	}
-
-	/**
 	 * @see YamlConfig#getUncommentedSections()
 	 */
 	protected List<String> getUncommentedSections() {
@@ -226,14 +195,13 @@ public abstract class YamlStaticConfig {
 	 *
 	 * @throws Exception
 	 */
-	protected abstract void load() throws Exception;
+	protected abstract void onLoadFinish() throws Exception;
 
 	/**
 	 * Loads the class via reflection, scanning for "private static void init()" methods to run
 	 */
 	private final void loadViaReflection() {
 		Valid.checkNotNull(TEMPORARY_INSTANCE, "Instance cannot be null " + getFileName());
-		Valid.checkNotNull(TEMPORARY_INSTANCE.getConfig(), "Config cannot be null for " + getFileName());
 		Valid.checkNotNull(TEMPORARY_INSTANCE.getDefaults(), "Default config cannot be null for " + getFileName());
 
 		try {
@@ -327,11 +295,15 @@ public abstract class YamlStaticConfig {
 	// Delegate methods
 	// -----------------------------------------------------------------------------------------------------
 
-	protected final void createLocalizationFile(final String localePrefix) throws Exception {
-		TEMPORARY_INSTANCE.loadLocalization(localePrefix);
+	protected final void loadLocalization(String localePrefix) throws Exception {
+		final String localePath = "localization/messages_" + localePrefix + ".yml";
+		final List<String> lines = FileUtil.getInternalResource(localePath);
+		Valid.checkNotNull(lines, SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
+
+		TEMPORARY_INSTANCE.loadConfiguration(localePath);
 	}
 
-	protected final void createFileAndLoad(final String path) throws Exception {
+	protected final void loadConfiguration(final String path) throws Exception {
 		TEMPORARY_INSTANCE.loadConfiguration(path, path);
 	}
 
@@ -343,8 +315,19 @@ public abstract class YamlStaticConfig {
 	 * @param path
 	 * @param value
 	 */
-	protected static final void set(final String path, final Object value) {
+	protected static final void setNoSave(final String path, final Object value) {
 		TEMPORARY_INSTANCE.setNoSave(path, value);
+	}
+
+	/**
+	 * @deprecated can only be called during startup, you cannot save items later
+	 *
+	 * @param path
+	 * @param value
+	 */
+	@Deprecated
+	protected static final void save(final String path, final Object value) {
+		TEMPORARY_INSTANCE.save(path, value);
 	}
 
 	protected static final boolean isSetAbsolute(final String path) {
@@ -356,11 +339,11 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final boolean isSetDefault(final String path) {
-		return TEMPORARY_INSTANCE.isSetDefault(path);
+		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isSet(path);
 	}
 
 	protected static final boolean isSetDefaultAbsolute(final String path) {
-		return TEMPORARY_INSTANCE.isSetDefaultAbsolute(path);
+		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isSetAbsolute(path);
 	}
 
 	protected static final void move(final String fromRelative, final String toAbsolute) {
@@ -371,33 +354,33 @@ public abstract class YamlStaticConfig {
 		TEMPORARY_INSTANCE.move(value, fromPath, toPath);
 	}
 
-	protected static final String formPathPrefix(final String path) {
-		return TEMPORARY_INSTANCE.formPathPrefix(path);
+	protected static final String addPathPrefix(final String path) {
+		return TEMPORARY_INSTANCE.compilePathPrefix(path);
 	}
 
-	protected static final void pathPrefix(final String pathPrefix) {
-		TEMPORARY_INSTANCE.pathPrefix(pathPrefix);
+	protected static final void setPathPrefix(final String pathPrefix) {
+		TEMPORARY_INSTANCE.setPathPrefix(pathPrefix);
 	}
 
 	protected static final String getPathPrefix() {
 		return TEMPORARY_INSTANCE.getPathPrefix();
 	}
 
-	protected static final void addDefaultIfNotExist(final String path) {
+	/*protected static final void addDefaultIfNotExist(final String path) {
 		TEMPORARY_INSTANCE.addDefaultIfNotExist(path);
-	}
+	}*/
 
 	protected static final String getFileName() {
 		return TEMPORARY_INSTANCE.getFileName();
 	}
 
-	protected static final FileConfiguration getConfig() {
+	/*protected static final FileConfiguration getConfig() {
 		return TEMPORARY_INSTANCE.getConfig();
 	}
 
 	protected static final FileConfiguration getDefaults() {
 		return TEMPORARY_INSTANCE.getDefaults();
-	}
+	}*/
 
 	// -----------------------------------------------------------------------------------------------------
 	// Config manipulators
@@ -431,9 +414,9 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getBoolean(path);
 	}
 
-	protected static final String[] getStringArray(final String path) {
+	/*protected static final String[] getStringArray(final String path) {
 		return TEMPORARY_INSTANCE.getStringArray(path);
-	}
+	}*/
 
 	protected static final String getString(final String path) {
 		return TEMPORARY_INSTANCE.getString(path);
@@ -455,8 +438,8 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getSound(path);
 	}
 
-	protected static final CasusHelper getCasus(final String path) {
-		return TEMPORARY_INSTANCE.getCasus(path);
+	protected static final AccusativeHelper getCasus(final String path) {
+		return TEMPORARY_INSTANCE.getAccusativePeriod(path);
 	}
 
 	protected static final TitleHelper getTitle(final String path) {
@@ -483,17 +466,17 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.get(path, typeOf);
 	}
 
-	protected static final <E> E getWithData(final String path, final Class<E> typeOf, Object... deserializeArguments) {
-		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
-	}
-
 	protected static final Object getObject(final String path) {
 		return TEMPORARY_INSTANCE.getObject(path);
 	}
 
-	protected static final <T> T getOrSetDefault(final String path, final T defaultValue) {
-		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
+	/*protected static final <E> E getWithData(final String path, final Class<E> typeOf, Object... deserializeArguments) {
+		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
 	}
+
+	/*protected static final <T> T getOrSetDefault(final String path, final T defaultValue) {
+		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
+	}*/
 
 	protected static final SerializedMap getMap(final String path) {
 		return TEMPORARY_INSTANCE.getMap(path);
@@ -503,7 +486,7 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getMap(path, keyType, valueType);
 	}
 
-	protected static LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(final String path) {
+	/*protected static LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(final String path) {
 		Valid.checkNotNull(path, "Path cannot be null");
 
 		// add default
@@ -521,7 +504,7 @@ public abstract class YamlStaticConfig {
 		final TreeMap<String, LinkedHashMap<String, Object>> groups = new TreeMap<>();
 
 		final String old = TEMPORARY_INSTANCE.getPathPrefix();
-		TEMPORARY_INSTANCE.pathPrefix(null);
+		TEMPORARY_INSTANCE.setPathPrefix(null);
 		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
 			// type, value (UNPARSED)
 
@@ -530,8 +513,8 @@ public abstract class YamlStaticConfig {
 			groups.put(name, valuesRaw);
 		}
 
-		TEMPORARY_INSTANCE.pathPrefix(old);
+		TEMPORARY_INSTANCE.setPathPrefix(old);
 
 		return new LinkedHashMap<>(groups);
-	}
+	}*/
 }

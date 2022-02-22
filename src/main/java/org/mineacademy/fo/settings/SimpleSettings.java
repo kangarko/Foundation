@@ -37,8 +37,8 @@ public class SimpleSettings extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	@Override
-	protected final void load() throws Exception {
-		createFileAndLoad(getSettingsFileName());
+	protected final void onLoadFinish() throws Exception {
+		loadConfiguration(getSettingsFileName());
 	}
 
 	/**
@@ -69,10 +69,10 @@ public class SimpleSettings extends YamlStaticConfig {
 	@Override
 	protected void preLoad() {
 		// Load version first so we can use it later
-		pathPrefix(null);
+		setPathPrefix(null);
 
 		if ((VERSION = getInteger("Version")) != getConfigVersion())
-			set("Version", getConfigVersion());
+			setNoSave("Version", getConfigVersion());
 	}
 
 	/**
@@ -110,8 +110,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static StrictList<String> DEBUG_SECTIONS = new StrictList<>();
 
 	/**
-	 * The plugin prefix in front of chat/console messages, added automatically unless
-	 * disabled in {@link Common#ADD_LOG_PREFIX} and {@link Common#ADD_TELL_PREFIX}.
+	 * The plugin prefix in front of chat/console messages.
 	 * <p>
 	 * Typically for ChatControl:
 	 * <p>
@@ -176,7 +175,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	private static void init() {
 		Valid.checkBoolean(!settingsClassCalled, "Settings class already loaded!");
 
-		pathPrefix(null);
+		setPathPrefix(null);
 		upgradeOldSettings();
 
 		if (isSetDefault("Timestamp_Format"))
@@ -273,7 +272,7 @@ public class SimpleSettings extends YamlStaticConfig {
 
 			// Archaic
 			if (isSetAbsolute("Debug") && !(getObject("Debug") instanceof List))
-				set("Debug", null);
+				setNoSave("Debug", null);
 		}
 
 		{ // Prefix

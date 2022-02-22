@@ -35,8 +35,8 @@ import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
-import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
  * Utilizes \@AutoRegister annotation to add auto registration support for commands, events and much more.

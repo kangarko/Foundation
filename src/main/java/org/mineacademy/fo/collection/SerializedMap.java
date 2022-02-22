@@ -124,11 +124,11 @@ public final class SerializedMap extends StrictCollection {
 	 * @return
 	 */
 	public SerializedMap putArray(final Object... associativeArray) {
-		boolean string = true;
+		boolean nextIsString = true;
 		String lastKey = null;
 
 		for (final Object obj : associativeArray) {
-			if (string) {
+			if (nextIsString) {
 				Valid.checkBoolean(obj instanceof String, "Expected String, got " + obj.getClass().getSimpleName() + ": " + SerializeUtil.serialize(obj));
 
 				lastKey = (String) obj;
@@ -136,7 +136,7 @@ public final class SerializedMap extends StrictCollection {
 			} else
 				map.override(lastKey, obj);
 
-			string = !string;
+			nextIsString = !nextIsString;
 		}
 
 		return this;
@@ -269,7 +269,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param value
 	 */
 	public void override(final String key, final Object value) {
-		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
+		//Valid.checkNotNull(value, "Cannot put null values into SerializedMap! Value with key '" + key + "' is null!");
 
 		map.override(key, value);
 	}

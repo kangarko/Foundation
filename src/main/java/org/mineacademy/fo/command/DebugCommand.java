@@ -10,15 +10,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.SimpleLocalization;
-import org.mineacademy.fo.settings.SimpleYaml;
 
 import lombok.Setter;
 
@@ -112,14 +111,14 @@ public final class DebugCommand extends SimpleSubCommand {
 
 				// Strip sensitive keys from .YML files
 				if (file.getName().endsWith(".yml")) {
-					final FileConfiguration config = SimpleYaml.loadConfiguration(file);
-					final FileConfiguration copyConfig = SimpleYaml.loadConfiguration(copy);
+					final YamlConfig config = YamlConfig.fromFile(file);
+					final YamlConfig copyConfig = YamlConfig.fromFile(copy);
 
 					for (final Map.Entry<String, Object> entry : config.getValues(true).entrySet()) {
 						final String key = entry.getKey();
 
 						if (!key.contains("MySQL"))
-							copyConfig.set(key, entry.getValue());
+							copyConfig.setNoSave(key, entry.getValue());
 					}
 
 					copyConfig.save(copy);
