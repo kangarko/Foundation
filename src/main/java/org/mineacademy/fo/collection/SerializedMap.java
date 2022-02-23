@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ import lombok.NonNull;
  * configuration easily, such as locations, other maps or lists and
  * much more.
  */
-public final class SerializedMap extends StrictCollection {
+public final class SerializedMap extends StrictCollection implements Iterable<Map.Entry<String, Object>> {
 
 	/**
 	 * The Google Json instance
@@ -51,7 +52,7 @@ public final class SerializedMap extends StrictCollection {
 	private final static Gson gson;
 
 	static {
-		// Fix google complicating things and breaking long formatting
+		// Fix Google complicating things and breaking long formatting
 		final GsonBuilder gsonBuilder = new GsonBuilder();
 
 		gsonBuilder.setLongSerializationPolicy(LongSerializationPolicy.STRING);
@@ -1054,6 +1055,11 @@ public final class SerializedMap extends StrictCollection {
 	}
 
 	@Override
+	public Iterator<Entry<String, Object>> iterator() {
+		return this.map.entrySet().iterator();
+	}
+
+	@Override
 	public String toString() {
 		return serialize().toString();
 	}
@@ -1114,7 +1120,7 @@ public final class SerializedMap extends StrictCollection {
 	 * @param object
 	 * @return the serialized map, or an empty map if object could not be parsed
 	 */
-	public static SerializedMap of(Object object) {
+	public static SerializedMap of(@NonNull Object object) {
 
 		if (object != null)
 			object = Remain.getRootOfSectionPathData(object);
@@ -1125,7 +1131,7 @@ public final class SerializedMap extends StrictCollection {
 		if (object instanceof Map || object instanceof MemorySection)
 			return of(Common.getMapFromSection(object));
 
-		return new SerializedMap();
+		throw new FoException("SerializedMap does not know how to convert " + object.getClass().getSimpleName() + ": " + object);
 	}
 
 	/**
