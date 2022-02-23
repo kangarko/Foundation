@@ -2612,7 +2612,10 @@ public final class Remain {
 	 *
 	 * @param objectOrSectionPathData
 	 * @return
+	 *
+	 * @deprecated legacy code, will be removed
 	 */
+	@Deprecated
 	public static Object getRootOfSectionPathData(Object objectOrSectionPathData) {
 		if (objectOrSectionPathData != null && objectOrSectionPathData.getClass() == sectionPathDataClass)
 			objectOrSectionPathData = ReflectionUtil.invoke("getData", objectOrSectionPathData);
