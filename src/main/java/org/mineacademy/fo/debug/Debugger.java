@@ -330,13 +330,20 @@ public final class Debugger {
 	}
 
 	/**
-	 * Returns whether a line is suitable for printing as an error line - we ignore stuff from NMS and OBF as this is not needed
+	 * Returns whether a line is suitable for printing as an error line - we ignore stuff from NMS and other spam as this is not needed
 	 *
 	 * @param message
 	 * @return
 	 */
 	private static boolean canPrint(String message) {
-		return !message.contains("net.minecraft") && !message.contains("org.bukkit.craftbukkit") && !message.contains("nashorn") && !message.contains("javax.script") && !message.contains("org.yaml.snakeyaml");
+		return !message.contains("net.minecraft") &&
+				!message.contains("org.bukkit.craftbukkit") &&
+				!message.contains("nashorn") &&
+				!message.contains("javax.script") &&
+				!message.contains("org.yaml.snakeyaml") &&
+				!message.contains("sun.reflect") &&
+				!message.contains("sun.misc") &&
+				!message.contains("java.lang.Thread.run");
 	}
 
 	// Print a simple console message
