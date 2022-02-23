@@ -10,6 +10,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -49,7 +50,7 @@ public final class BoxedMessage {
 	 *
 	 * @param messages
 	 */
-	public BoxedMessage(String... messages) {
+	public BoxedMessage(@NonNull String... messages) {
 		this(null, null, messages);
 	}
 
@@ -60,7 +61,7 @@ public final class BoxedMessage {
 	 * @param sender
 	 * @param messages
 	 */
-	private BoxedMessage(Iterable<? extends CommandSender> recipients, Player sender, String[] messages) {
+	private BoxedMessage(Iterable<? extends CommandSender> recipients, Player sender, @NonNull String[] messages) {
 		this.recipients = recipients == null ? null : Common.toList(recipients); // Make a copy to prevent changes in the list on send
 		this.sender = sender;
 		this.messages = messages;
@@ -184,7 +185,7 @@ public final class BoxedMessage {
 	}
 
 	public String getMessage() {
-		return String.join("\n", messages);
+		return messages.length == 0 ? "" : String.join("\n", messages);
 	}
 
 	@Override
