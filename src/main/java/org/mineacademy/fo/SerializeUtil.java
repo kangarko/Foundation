@@ -2,6 +2,7 @@ package org.mineacademy.fo;
 
 import java.awt.Color;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
@@ -24,7 +25,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -35,12 +38,14 @@ import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.menu.model.ItemCreator;
+import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.RangedSimpleTime;
 import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -118,7 +123,12 @@ public final class SerializeUtil {
 		else if (object instanceof Location)
 			return serializeLoc((Location) object);
 
-		else if (object instanceof UUID)
+		else if (object instanceof BoxedMessage) {
+			final String message = ((BoxedMessage) object).getMessage();
+
+			return message == null || "".equals(message) || "null".equals(message) ? null : message;
+
+		} else if (object instanceof UUID)
 			return object.toString();
 
 		else if (object instanceof Enum<?>)
@@ -137,7 +147,7 @@ public final class SerializeUtil {
 			return serializePotionEffect((PotionEffect) object);
 
 		else if (object instanceof ItemCreator)
-			return ((ItemCreator) object).make();
+			return serialize(((ItemCreator) object).make());
 
 		else if (object instanceof SimpleTime)
 			return ((SimpleTime) object).getRaw();
@@ -207,11 +217,14 @@ public final class SerializeUtil {
 			return newMap;
 		}
 
+		else if (object instanceof MemorySection)
+			return Common.getMapFromSection(object);
+
+		else if (object instanceof Pattern)
+			return ((Pattern) object).pattern();
+
 		else if (object instanceof Integer || object instanceof Double || object instanceof Float || object instanceof Long || object instanceof Short
-				|| object instanceof String || object instanceof Boolean || object instanceof Map
-				|| object instanceof ItemStack
-				|| object instanceof MemorySection
-				|| object instanceof Pattern)
+				|| object instanceof String || object instanceof Boolean || object instanceof Character)
 			return object;
 
 		else if (object instanceof ConfigurationSerializable)
@@ -284,19 +297,16 @@ public final class SerializeUtil {
 	public static <T> T deserialize(@NonNull final Class<T> classOf, @NonNull Object object, final Object... deserializeParameters) {
 		object = Remain.getRootOfSectionPathData(object);
 
-		final SerializedMap map = SerializedMap.of(object);
-
 		// Step 1 - Search for basic deserialize(SerializedMap) method
 		Method deserializeMethod = ReflectionUtil.getMethod(classOf, "deserialize", SerializedMap.class);
 
-		if (deserializeMethod != null && deserializeParameters == null) {
+		if (deserializeMethod != null && deserializeParameters == null)
 			try {
-				return ReflectionUtil.invokeStatic(deserializeMethod, map);
+				return ReflectionUtil.invokeStatic(deserializeMethod, SerializedMap.of(object));
 
 			} catch (final ReflectionException ex) {
-				Common.throwError(ex, "Could not deserialize " + classOf + " from data: " + map);
+				Common.throwError(ex, "Could not deserialize " + classOf + " from data: " + object);
 			}
-		}
 
 		// Step 2 - Search for our deserialize(Params[], SerializedMap) method
 		if (deserializeParameters != null) {
@@ -314,7 +324,7 @@ public final class SerializeUtil {
 			final List<Object> joinedParams = new ArrayList<>();
 
 			{ // Build parameter instances
-				joinedParams.add(map);
+				joinedParams.add(SerializedMap.of(object));
 
 				Collections.addAll(joinedParams, deserializeParameters);
 			}
@@ -358,6 +368,9 @@ public final class SerializeUtil {
 			else if (classOf == SerializedMap.class)
 				object = SerializedMap.of(object);
 
+			else if (classOf == BoxedMessage.class)
+				object = new BoxedMessage(object.toString());
+
 			else if (classOf == Location.class)
 				object = deserializeLocation(object);
 
@@ -384,6 +397,9 @@ public final class SerializeUtil {
 
 			else if (classOf == CompChatColor.class)
 				object = CompChatColor.of(object.toString());
+
+			else if (classOf == ItemStack.class)
+				object = deserializeItemStack(object);
 
 			else if (classOf == UUID.class)
 				object = UUID.fromString(object.toString());
@@ -640,6 +656,89 @@ public final class SerializeUtil {
 
 		Valid.checkBoolean(invoked.getClass().isAssignableFrom(asWhat), invoked.getClass().getSimpleName() + " != " + asWhat.getSimpleName());
 		return (T) invoked;
+	}
+
+	/**
+	 * Attempts to turn the given item or map into an item
+	 *
+	 * @param obj
+	 * @return
+	 */
+	public static ItemStack deserializeItemStack(@NonNull Object obj) {
+		if (obj instanceof ItemStack)
+			return (ItemStack) obj;
+
+		Valid.checkBoolean(obj instanceof Map, "Expected Map<String, Object> when deserializing ItemStack, got: " + obj.getClass().getSimpleName());
+
+		final Map<String, Object> map = (Map<String, Object>) obj;
+		final ItemStack item = ItemStack.deserialize(map);
+
+		final Object raw = map.get("meta");
+
+		if (raw != null)
+			if (raw instanceof ItemMeta)
+				item.setItemMeta((ItemMeta) raw);
+
+			else if (raw instanceof Map) {
+				final Map<String, Object> meta = (Map<String, Object>) raw;
+
+				try {
+					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (meta.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
+					final Constructor<?> c = cl.getDeclaredConstructor(Map.class);
+					c.setAccessible(true);
+
+					final Object craftMeta = c.newInstance((Map<String, ?>) raw);
+
+					if (craftMeta instanceof ItemMeta)
+						item.setItemMeta((ItemMeta) craftMeta);
+
+				} catch (final Throwable t) {
+
+					// We have to manually deserialize metadata :(
+					final ItemMeta itemMeta = item.getItemMeta();
+
+					final String display = meta.containsKey("display-name") ? (String) meta.get("display-name") : null;
+
+					if (display != null)
+						itemMeta.setDisplayName(display);
+
+					final List<String> lore = meta.containsKey("lore") ? (List<String>) meta.get("lore") : null;
+
+					if (lore != null)
+						itemMeta.setLore(lore);
+
+					final SerializedMap enchants = meta.containsKey("enchants") ? SerializedMap.of(meta.get("enchants")) : null;
+
+					if (enchants != null)
+						for (final Map.Entry<String, Object> entry : enchants.entrySet()) {
+							final Enchantment enchantment = Enchantment.getByName(entry.getKey());
+							final int level = (int) entry.getValue();
+
+							itemMeta.addEnchant(enchantment, level, true);
+						}
+
+					final List<String> itemFlags = meta.containsKey("ItemFlags") ? (List<String>) meta.get("ItemFlags") : null;
+
+					if (itemFlags != null)
+						for (final String flag : itemFlags)
+							try {
+								itemMeta.addItemFlags(ItemFlag.valueOf(flag));
+							} catch (final Exception ex) {
+								// Likely not MC compatible, ignore
+							}
+
+					Common.log(
+							"**************** NOTICE ****************",
+							SimplePlugin.getNamed() + " manually deserialized your item.",
+							"Item: " + item,
+							"This is ONLY supported for basic items, items having",
+							"special flags like monster eggs will NOT function.");
+
+					item.setItemMeta(itemMeta);
+				}
+			}
+
+		return item;
 	}
 
 	/**
