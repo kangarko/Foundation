@@ -59,9 +59,9 @@ import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
-import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
+import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
@@ -168,7 +168,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Internal boolean indicating if we can proceed to loading the plugin.
 	 */
-	private boolean canLoad = true;
+	private final boolean canLoad = true;
 
 	/**
 	 * A temporary main command to be set in {@link #setMainCommand(SimpleCommandGroup)}
@@ -215,7 +215,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		if (!Bukkit.getVersion().contains("Paper") && !Bukkit.getVersion().contains("NachoSpigot") && MinecraftVersion.atLeast(V.v1_8)) {
 
-			if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit") || Bukkit.getVersion().contains("-Spigot-")) {
+			/*if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit") || Bukkit.getVersion().contains("-Spigot-")) {
 				Bukkit.getLogger().severe(Common.consoleLine());
 				Bukkit.getLogger().severe("Error loading " + named + ": Unsupported server software");
 				Bukkit.getLogger().severe("");
@@ -223,10 +223,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
 				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
 				Bukkit.getLogger().severe(Common.consoleLine());
-
+			
 				this.canLoad = false;
 				throw new RuntimeException("Unsupported server version, see above.");
-			}
+			}*/
 
 			Bukkit.getLogger().severe(Common.consoleLine());
 			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper! (Detected: " + Bukkit.getVersion() + ")");
