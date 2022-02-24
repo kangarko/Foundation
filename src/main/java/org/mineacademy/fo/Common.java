@@ -2,6 +2,7 @@ package org.mineacademy.fo;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -1334,15 +1335,19 @@ public final class Common {
 	 * Saves the error, prints the stack trace and logs it in frame.
 	 * Possible to use %error variable
 	 *
-	 * @param t
+	 * @param throwable
 	 * @param messages
 	 */
-	public static void error(final Throwable t, final String... messages) {
-		if (!(t instanceof FoException))
-			Debugger.saveError(t, messages);
+	public static void error(@NonNull Throwable throwable, String... messages) {
 
-		Debugger.printStackTrace(t);
-		logFramed(replaceErrorVariable(t, messages));
+		if (throwable instanceof InvocationTargetException && throwable.getCause() != null)
+			throwable = throwable.getCause();
+
+		if (!(throwable instanceof FoException))
+			Debugger.saveError(throwable, messages);
+
+		Debugger.printStackTrace(throwable);
+		logFramed(replaceErrorVariable(throwable, messages));
 	}
 
 	/**
