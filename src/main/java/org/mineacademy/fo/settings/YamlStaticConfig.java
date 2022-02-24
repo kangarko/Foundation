@@ -171,7 +171,7 @@ public abstract class YamlStaticConfig {
 	 * @see YamlConfig#getUncommentedSections()
 	 */
 	protected List<String> getUncommentedSections() {
-		return null;
+		return new ArrayList<>();
 	}
 
 	/**
@@ -316,7 +316,7 @@ public abstract class YamlStaticConfig {
 	 * @param value
 	 */
 	protected static final void setNoSave(final String path, final Object value) {
-		TEMPORARY_INSTANCE.setNoSave(path, value);
+		TEMPORARY_INSTANCE.set(path, value);
 	}
 
 	/**
@@ -354,8 +354,8 @@ public abstract class YamlStaticConfig {
 		TEMPORARY_INSTANCE.move(value, fromPath, toPath);
 	}
 
-	protected static final String addPathPrefix(final String path) {
-		return TEMPORARY_INSTANCE.compilePathPrefix(path);
+	protected static final String buildPathPrefix(final String path) {
+		return TEMPORARY_INSTANCE.buildPathPrefix(path);
 	}
 
 	protected static final void setPathPrefix(final String pathPrefix) {
@@ -377,7 +377,7 @@ public abstract class YamlStaticConfig {
 	/*protected static final FileConfiguration getConfig() {
 		return TEMPORARY_INSTANCE.getConfig();
 	}
-
+	
 	protected static final FileConfiguration getDefaults() {
 		return TEMPORARY_INSTANCE.getDefaults();
 	}*/
@@ -473,7 +473,7 @@ public abstract class YamlStaticConfig {
 	/*protected static final <E> E getWithData(final String path, final Class<E> typeOf, Object... deserializeArguments) {
 		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
 	}
-
+	
 	/*protected static final <T> T getOrSetDefault(final String path, final T defaultValue) {
 		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
 	}*/
@@ -488,33 +488,33 @@ public abstract class YamlStaticConfig {
 
 	/*protected static LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(final String path) {
 		Valid.checkNotNull(path, "Path cannot be null");
-
+	
 		// add default
 		if (getDefaults() != null && !getConfig().isSet(path)) {
 			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a section at " + path);
-
+	
 			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
 				for (final String setting : getDefaults().getConfigurationSection(path + "." + name).getKeys(false))
 					TEMPORARY_INSTANCE.addDefaultIfNotExist(path + "." + name + "." + setting, Object.class);
 		}
-
+	
 		Valid.checkBoolean(getConfig().isSet(path), "Malfunction copying default section to " + path);
-
+	
 		// key, values assigned to the key
 		final TreeMap<String, LinkedHashMap<String, Object>> groups = new TreeMap<>();
-
+	
 		final String old = TEMPORARY_INSTANCE.getPathPrefix();
 		TEMPORARY_INSTANCE.setPathPrefix(null);
 		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
 			// type, value (UNPARSED)
-
+	
 			final LinkedHashMap<String, Object> valuesRaw = getMap(path + "." + name, String.class, Object.class);
-
+	
 			groups.put(name, valuesRaw);
 		}
-
+	
 		TEMPORARY_INSTANCE.setPathPrefix(old);
-
+	
 		return new LinkedHashMap<>(groups);
 	}*/
 }

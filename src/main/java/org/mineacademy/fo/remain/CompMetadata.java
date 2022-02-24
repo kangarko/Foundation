@@ -409,7 +409,7 @@ public final class CompMetadata {
 
 					// Remove broken key
 					if (!(getObject("Entity." + uuidName) instanceof List)) {
-						setNoSave("Entity." + uuidName, null);
+						set("Entity." + uuidName, null);
 
 						continue;
 					}
@@ -508,7 +508,7 @@ public final class CompMetadata {
 
 				{ // Save
 					for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
-						setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+						set("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
 
 					save();
 				}

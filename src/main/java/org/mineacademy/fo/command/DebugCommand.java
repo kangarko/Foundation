@@ -118,7 +118,7 @@ public final class DebugCommand extends SimpleSubCommand {
 						final String key = entry.getKey();
 
 						if (!key.contains("MySQL"))
-							copyConfig.setNoSave(key, entry.getValue());
+							copyConfig.set(key, entry.getValue());
 					}
 
 					copyConfig.save(copy);

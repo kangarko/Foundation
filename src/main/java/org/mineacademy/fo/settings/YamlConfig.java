@@ -30,7 +30,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
@@ -66,6 +65,7 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.reader.UnicodeReader;
 import org.yaml.snakeyaml.representer.Representer;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -141,7 +141,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * please see {@link #getUncommentedSections()} to return a list of sections
 	 * where users are able to write maps otherwise those maps will be removed upon reload.
 	 */
-	@Getter
+	@Getter(value = AccessLevel.PACKAGE)
 	@Nullable
 	private YamlConfig defaults;
 
@@ -284,20 +284,11 @@ public class YamlConfig implements ConfigSerializable {
 
 	/*
 	 * Retrieve an object at the given config path, attempting to cast it using vanilla java
-	 * or return null if not set. If defaults file exists, we attempt to copy the
-	 * default value to the file.
-	 */
-	private final <T> T getT(@NonNull String path, Class<T> type) {
-		return this.getT(path, type, this.getDefault(path));
-	}
-
-	/*
-	 * Retrieve an object at the given config path, attempting to cast it using vanilla java
 	 * and supply with default if set. If defaults file exists, we attempt to copy the
 	 * default value to the file.
 	 */
-	private final <T> T getT(@NonNull String path, Class<T> type, Object def) {
-		path = this.compilePathPrefix(path);
+	private <T> T getT(@NonNull String path, Class<T> type, Object def) {
+		path = this.buildPathPrefix(path);
 		Valid.checkBoolean(!path.endsWith("."), "Path must not end with '.': " + path);
 
 		// Copy defaults if not set and log about this change
@@ -307,7 +298,7 @@ public class YamlConfig implements ConfigSerializable {
 
 		// Ensure that the default config actually did have the value, if used
 		if (this.defaults != null)
-			Valid.checkNotNull(raw, "Failed to insert value at '" + path + "' from default config");
+			Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.getFast0(path));
 
 		// Ensure the value is of the given type
 		if (raw != null) {
@@ -331,7 +322,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * Credits to Spigot/Bukkit team
 	 */
 	private final Object getFast0(String path) {
-		return this.getFast0(path, this.getDefault(path));
+		return this.getFast0(path, this.getDefaultNoPrefix(path));
 	}
 
 	/*
@@ -352,10 +343,10 @@ public class YamlConfig implements ConfigSerializable {
 
 		while ((leadingIndex = path.indexOf('.', lowerIndex = leadingIndex + 1)) != -1) {
 			final String currentPath = path.substring(lowerIndex, leadingIndex);
-			if (!section.contains(currentPath, true))
+			if (!section.isSetFast0(currentPath, true))
 				return def;
 
-			section = section.getConfigurationSection(currentPath);
+			section = section.getSectionNoPrefix(currentPath);
 
 			if (section == null)
 				return def;
@@ -414,7 +405,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	public final <T> T get(final String path, final Class<T> type, final T def, Object... deserializeParams) {
-		final Object object = this.getT(path, Object.class);
+		final Object object = this.getT(path, Object.class, def);
 
 		return object != null ? SerializeUtil.deserialize(type, object, deserializeParams) : def;
 	}
@@ -437,7 +428,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	public final Object getObject(final String path) {
-		return this.getT(path, Object.class);
+		return this.getT(path, Object.class, null);
 	}
 
 	/**
@@ -460,7 +451,7 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	@Nullable
 	public final Boolean getBoolean(final String path) {
-		return this.getT(path, Boolean.class);
+		return this.getT(path, Boolean.class, null);
 	}
 
 	/**
@@ -492,12 +483,18 @@ public class YamlConfig implements ConfigSerializable {
 		else if (object instanceof String[])
 			return Common.join(Arrays.asList((String[]) object), "\n");
 
+		else if (object.getClass().isArray())
+			return Common.join((Object[]) object);
+
 		else if (object instanceof Boolean
 				|| object instanceof Integer
 				|| object instanceof Long
 				|| object instanceof Double
 				|| object instanceof Float)
 			return Objects.toString(object);
+
+		else if (object instanceof Number)
+			return ((Number) object).toString();
 
 		else if (object instanceof String)
 			return (String) object;
@@ -512,7 +509,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param def
 	 * @return
 	 */
-	protected final Long getLong(final String path, final Long def) {
+	public final Long getLong(final String path, final Long def) {
 		return this.isSet(path) ? this.getLong(path) : def;
 	}
 
@@ -524,7 +521,7 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	@Nullable
 	public final Long getLong(final String path) {
-		return this.getT(path, Long.class);
+		return this.getT(path, Long.class, null);
 	}
 
 	/**
@@ -547,7 +544,7 @@ public class YamlConfig implements ConfigSerializable {
 	 */
 	@Nullable
 	public final Integer getInteger(final String path) {
-		return this.getT(path, Integer.class);
+		return this.getT(path, Integer.class, null);
 	}
 
 	/**
@@ -614,7 +611,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @return
 	 */
 	public final OfflinePlayer getOfflinePlayer(final String path) {
-		return this.getT(path, OfflinePlayer.class);
+		return this.getT(path, OfflinePlayer.class, null);
 	}
 
 	/**
@@ -863,8 +860,8 @@ public class YamlConfig implements ConfigSerializable {
 	public final List<Object> getList(final String path) {
 		final Object obj = this.getObject(path);
 
-		// Allow one values instead of lists, such as Apply_On: timed instead of Apply_On: [timed] for
-		// maximum user convenience
+		// Allow one values instead of lists, such as
+		// "Apply_On: timed" instead of "Apply_On: [timed]" for convenience
 		return obj instanceof List ? (List<Object>) obj : obj != null ? Arrays.asList(obj) : new ArrayList<>();
 	}
 
@@ -956,30 +953,6 @@ public class YamlConfig implements ConfigSerializable {
 
 		return IsInList.fromList(this.getList(path, type));
 	}
-
-	/**
-	 * Get a simple string array
-	 *
-	 * @param path
-	 * @return the given array, or an empty array
-	 */
-	/*public final String[] getStringArray(final String path) {
-		final Object array = getObject(path);
-
-		if (array == null)
-			return new String[0];
-
-		else if (array instanceof String)
-			return ((String) array).split("\n");
-
-		else if (array instanceof List)
-			return Common.join((List<?>) array, "\n").split("\n");
-
-		else if (array instanceof String[])
-			return (String[]) array;
-
-		throw new FoException("Excepted string or string list at '" + path + "' in " + getFileName() + ", got (" + array.getClass() + "): " + array);
-	}*/
 
 	/**
 	 * Get a string list
@@ -1098,13 +1071,13 @@ public class YamlConfig implements ConfigSerializable {
 		final boolean exists = this.isSet(path);
 
 		// Add path prefix right away
-		path = this.compilePathPrefix(path);
+		path = this.buildPathPrefix(path);
 
 		// Add defaults
 		if (this.defaults != null && !exists) {
 			Valid.checkBoolean(this.defaults.isSet(path), "Default '" + this.getFileName() + "' lacks a map at " + path);
 
-			for (final String key : this.defaults.getConfigurationSection(path).getKeys(false))
+			for (final String key : this.defaults.getSectionNoPrefix(path).getKeys(false))
 				this.addDefaultIfNotExist(path + "." + key, valueType);
 		}
 
@@ -1146,13 +1119,13 @@ public class YamlConfig implements ConfigSerializable {
 		final boolean exists = this.isSet(path);
 
 		// Add path prefix right away
-		path = this.compilePathPrefix(path);
+		path = this.buildPathPrefix(path);
 
 		// Add defaults
 		if (this.defaults != null && !exists) {
 			Valid.checkBoolean(this.defaults.isSet(path), "Default '" + this.getFileName() + "' lacks a map at " + path);
 
-			for (final String key : this.defaults.getConfigurationSection(path).getKeys(false))
+			for (final String key : this.defaults.getSectionNoPrefix(path).getKeys(false))
 				this.addDefaultIfNotExist(path + "." + key, setType);
 		}
 
@@ -1183,13 +1156,19 @@ public class YamlConfig implements ConfigSerializable {
 	// Getting sections
 	// ------------------------------------------------------------------------------------------------------------
 
+	@Nullable
 	public final YamlConfig getConfigurationSection(@NonNull String path) {
+		return this.getSectionNoPrefix(this.buildPathPrefix(path));
+	}
+
+	@Nullable
+	public final YamlConfig getSectionNoPrefix(@NonNull String path) {
 		Object val = this.getFast0(path, null);
 
 		if (val != null)
 			return val instanceof YamlConfig ? (YamlConfig) val : null;
 
-		val = this.getFast0(path, this.getDefault(path));
+		val = this.getFast0(path, this.getDefaultNoPrefix(path));
 
 		return val instanceof YamlConfig ? this.createSection(path) : null;
 	}
@@ -1200,7 +1179,7 @@ public class YamlConfig implements ConfigSerializable {
 
 		final YamlConfig root = this.root;
 		if (root != null) {
-			final YamlConfig defaults = this.getDefaultSection();
+			final YamlConfig defaults = this.getDefaultSectionNoPrefix();
 
 			if (defaults != null)
 				result.addAll(defaults.getKeys(deep));
@@ -1218,7 +1197,7 @@ public class YamlConfig implements ConfigSerializable {
 		final YamlConfig root = this.root;
 
 		if (root != null) {
-			final YamlConfig defaults = this.getDefaultSection();
+			final YamlConfig defaults = this.getDefaultSectionNoPrefix();
 
 			if (defaults != null)
 				result.putAll(defaults.getValues(deep));
@@ -1368,49 +1347,45 @@ public class YamlConfig implements ConfigSerializable {
 	// ------------------------------------------------------------------------------------
 
 	/**
-	 * Return true if the given path exists, excluding {@link #getPathPrefix()}
-	 *
-	 * @param path
-	 * @return
-	 */
-	public final boolean isSetAbsolute(@NonNull String path) {
-		return this.root != null && this.contains(path);
-	}
-
-	/**
 	 * Return true if the given path exists, including {@link #getPathPrefix()}
 	 *
 	 * @param path
 	 * @return
 	 */
 	public final boolean isSet(@NonNull String path) {
-		path = this.compilePathPrefix(path);
-
-		return this.root != null && this.contains(path);
+		return this.isSetAbsolute(this.buildPathPrefix(path));
 	}
 
-	private boolean contains(@NonNull String path) {
-		return this.contains(path, false);
+	/**
+	 * Return true if the given path exists, excluding {@link #getPathPrefix()}
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final boolean isSetAbsolute(@NonNull String path) {
+		return this.root != null && this.isSetFast0(path);
 	}
 
-	private boolean contains(@NonNull String path, boolean ignoreDefault) {
+	private boolean isSetFast0(@NonNull String path) {
+		return this.isSetFast0(path, false);
+	}
+
+	private boolean isSetFast0(@NonNull String path, boolean ignoreDefault) {
 		return (ignoreDefault ? this.getFast0(path, null) : this.getFast0(path)) != null;
 	}
 
-	private final Object getDefault(@NonNull String path) {
-		path = this.compilePathPrefix(path);
-
+	private final Object getDefaultNoPrefix(@NonNull String path) {
 		final YamlConfig defaults = this.root == null ? null : this.root.getDefaults();
 
 		return defaults == null ? null : defaults.getFast0(createPath(this, path));
 	}
 
-	private YamlConfig getDefaultSection() {
+	private YamlConfig getDefaultSectionNoPrefix() {
 		final YamlConfig defaults = this.root == null ? null : this.root.getDefaults();
 
 		if (defaults != null)
 			if (defaults.getFast0(this.fullPath) instanceof YamlConfig)
-				return defaults.getConfigurationSection(this.fullPath);
+				return defaults.getSectionNoPrefix(this.fullPath);
 
 		return null;
 	}
@@ -1426,7 +1401,7 @@ public class YamlConfig implements ConfigSerializable {
 			this.checkAssignable(true, pathAbs, object, type);
 
 			this.checkAndFlagForSave(pathAbs, object);
-			this.setNoSave(pathAbs, object);
+			this.set(pathAbs, object);
 		}
 	}
 
@@ -1439,24 +1414,10 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param def
 	 */
 	private <T> void checkAndFlagForSave(final String path, final T def) {
-		this.checkAndFlagForSave(path, def, true);
-	}
-
-	/**
-	 * Checks if the file instance exists and is a valid file, checks if default
-	 * exists, sets the save flag to true and logs the update
-	 *
-	 * @param <T>
-	 * @param path
-	 * @param def
-	 * @param logUpdate
-	 */
-	private <T> void checkAndFlagForSave(final String path, final T def, final boolean logUpdate) {
 		if (this.defaults != null)
 			Valid.checkNotNull(def, "Inbuilt config " + this.getFileName() + " lacks " + (def == null ? "key" : def.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
 
-		if (logUpdate)
-			Common.log("&7Update " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
+		Common.log("&7Update " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (def == null ? "&ckey removed" : "&b\'&f" + def + "&b\'") + "&r");
 	}
 
 	/**
@@ -1471,8 +1432,8 @@ public class YamlConfig implements ConfigSerializable {
 		if (!clazz.isAssignableFrom(value.getClass()) && !clazz.getSimpleName().equals(value.getClass().getSimpleName())) {
 
 			// Exception
-			if (ConfigSerializable.class.isAssignableFrom(clazz) && value instanceof MemorySection)
-				return;
+			//if (ConfigSerializable.class.isAssignableFrom(clazz) && value instanceof MemorySection)
+			//	return;
 
 			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + this.getFileName() + " must be " + clazz.getSimpleName() + " but got " + value.getClass().getSimpleName() + ": '" + value + "'");
 		}
@@ -1488,7 +1449,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param fromRelative
 	 * @param toAbsolute
 	 */
-	protected final void move(final String fromRelative, final String toAbsolute) {
+	public final void move(final String fromRelative, final String toAbsolute) {
 		this.move(this.getFast0(fromRelative), fromRelative, toAbsolute);
 	}
 
@@ -1499,15 +1460,15 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param fromPathRel
 	 * @param toPathAbs
 	 */
-	protected final void move(final Object value, String fromPathRel, final String toPathAbs) {
+	public final void move(final Object value, String fromPathRel, final String toPathAbs) {
 		final String oldPathPrefix = this.pathPrefix;
 
-		fromPathRel = this.compilePathPrefix(fromPathRel);
+		fromPathRel = this.buildPathPrefix(fromPathRel);
 
-		this.setNoSave(fromPathRel, null);
+		this.set(fromPathRel, null);
 		this.pathPrefix = oldPathPrefix; // set to previous
 
-		this.setNoSave(toPathAbs, value);
+		this.set(toPathAbs, value);
 
 		Common.log("&7Update " + this.getFileName() + ". Move &b\'&f" + fromPathRel + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
 
@@ -1515,12 +1476,12 @@ public class YamlConfig implements ConfigSerializable {
 	}
 
 	public final void save(@NonNull String path, Object value) {
-		this.setNoSave(path, value);
+		this.set(path, value);
 
 		this.save();
 	}
 
-	public final void setNoSave(@NonNull String path, @Nullable Object value) {
+	public final void set(@NonNull String path, @Nullable Object value) {
 
 		Valid.checkBoolean(!this.onSerialize().keySet().contains(path), "Cannot set a config path '" + path + "' that's specified in onSerialize() method, this causes conflicts!"
 				+ " Only call save() and we call onSerialize() automatically");
@@ -1528,10 +1489,10 @@ public class YamlConfig implements ConfigSerializable {
 		// Turn into something we can save
 		value = SerializeUtil.serialize(value);
 
-		this.set0(path, value);
+		this.setNoSerializeNoPrefix(path, value);
 	}
 
-	private void set0(@NonNull String path, @Nullable Object value) {
+	private void setNoSerializeNoPrefix(@NonNull String path, @Nullable Object value) {
 		Valid.checkNotEmpty(path, "Cannot set to an empty path");
 
 		final YamlConfig root = this.root;
@@ -1544,7 +1505,7 @@ public class YamlConfig implements ConfigSerializable {
 
 		while ((leadingIndex = path.indexOf('.', trailingIndex = leadingIndex + 1)) != -1) {
 			final String node = path.substring(trailingIndex, leadingIndex);
-			final YamlConfig subSection = section.getConfigurationSection(node);
+			final YamlConfig subSection = section.getSectionNoPrefix(node);
 			if (subSection == null) {
 				if (value == null)
 					// no need to create missing sub-sections if we want to remove the value:
@@ -1564,7 +1525,7 @@ public class YamlConfig implements ConfigSerializable {
 				this.map.put(key, value);
 
 		} else
-			section.set0(key, value);
+			section.setNoSerializeNoPrefix(key, value);
 	}
 
 	/**
@@ -1608,38 +1569,6 @@ public class YamlConfig implements ConfigSerializable {
 		this.save(FileUtil.getFile(filePath));
 	}
 
-	private static void removeNuls(Map<String, Object> map) {
-
-		for (final Iterator<Entry<String, Object>> it = map.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, Object> entry = it.next();
-			//final String key = entry.getKey();
-			final Object value = entry.getValue();
-
-			//System.out.println("Trying to remove " + key + " -> (" + (value == null ? "null" : value.getClass().getSimpleName()) + ") " + value);
-
-			if (value instanceof YamlConfig) {
-				final Map<String, Object> childMap = ((YamlConfig) value).map;
-
-				removeNuls(childMap);
-
-				if (childMap.isEmpty())
-					it.remove();
-			}
-
-			if (value == null
-					|| (value instanceof Iterable<?> && !((Iterable<?>) value).iterator().hasNext())
-					|| (value.getClass().isArray() && ((Object[]) value).length == 0)
-					|| (value instanceof Map<?, ?>) && ((Map<?, ?>) value).isEmpty()) {
-
-				it.remove();
-				//System.out.println("\tremoving");
-
-				continue;
-			}
-
-		}
-	}
-
 	/**
 	 * Saves the content of this config to the given file in your plugin's folder
 	 *
@@ -1658,7 +1587,7 @@ public class YamlConfig implements ConfigSerializable {
 
 			// Copy serialized values to our internal map
 			for (final Map.Entry<String, Object> entry : this.serialize())
-				this.set0(entry.getKey(), entry.getValue());
+				this.setNoSerializeNoPrefix(entry.getKey(), SerializeUtil.serialize(entry.getValue()));
 
 			// Hacky: a professional method to remove all null values
 			removeNuls(this.map);
@@ -1698,6 +1627,8 @@ public class YamlConfig implements ConfigSerializable {
 				return;
 			}
 
+			Valid.checkNotNull(this.getUncommentedSections(), "getUncommentedSections() cannot be null, return an empty list instead in " + this);
+
 			final List<String> newLines = FileUtil.getInternalResource(this.defaultsPath);
 			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.file), StandardCharsets.UTF_8));
 
@@ -1729,7 +1660,7 @@ public class YamlConfig implements ConfigSerializable {
 				backupConfig.loadConfiguration(NO_DEFAULT, "unused/" + this.file.getName());
 
 				for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
-					backupConfig.setNoSave(entry.getKey(), entry.getValue());
+					backupConfig.set(entry.getKey(), entry.getValue());
 
 				backupConfig.save();
 
@@ -1742,6 +1673,38 @@ public class YamlConfig implements ConfigSerializable {
 
 		} catch (final IOException ex) {
 			throw new FoException(ex, "Unable to save configuration to file " + file);
+		}
+	}
+
+	private static void removeNuls(Map<String, Object> map) {
+
+		for (final Iterator<Entry<String, Object>> it = map.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, Object> entry = it.next();
+			//final String key = entry.getKey();
+			final Object value = entry.getValue();
+
+			//System.out.println("Trying to remove " + key + " -> (" + (value == null ? "null" : value.getClass().getSimpleName()) + ") " + value);
+
+			if (value instanceof YamlConfig) {
+				final Map<String, Object> childMap = ((YamlConfig) value).map;
+
+				removeNuls(childMap);
+
+				if (childMap.isEmpty())
+					it.remove();
+			}
+
+			if (value == null
+					|| (value instanceof Iterable<?> && !((Iterable<?>) value).iterator().hasNext())
+					|| (value.getClass().isArray() && ((Object[]) value).length == 0)
+					|| (value instanceof Map<?, ?>) && ((Map<?, ?>) value).isEmpty()) {
+
+				it.remove();
+				//System.out.println("\tremoving");
+
+				continue;
+			}
+
 		}
 	}
 
@@ -1767,11 +1730,14 @@ public class YamlConfig implements ConfigSerializable {
 					if (key.startsWith(allowed))
 						continue outerloop;
 
-				for (final String ignoredSection : this.getUncommentedSections()) {
-					if (key.equals(ignoredSection))
+				for (final String ignoredKey : this.getUncommentedSections()) {
+					if (key.equals(ignoredKey)) {
+						final YamlConfig ignoredSection = this.getSectionNoPrefix(ignoredKey);
+						final boolean sectionExists = ignoredSection != null;
+
 						// Write from new to old config
-						if (!this.isSet(ignoredSection) || this.getConfigurationSection(ignoredSection).getKeys(false).isEmpty()) {
-							copyAllowed.add(ignoredSection);
+						if (!this.isSet(ignoredKey) || (sectionExists && ignoredSection.getKeys(false).isEmpty())) {
+							copyAllowed.add(ignoredKey);
 
 							break;
 						}
@@ -1780,14 +1746,16 @@ public class YamlConfig implements ConfigSerializable {
 						else {
 							this.write0(key, true, comments, writer);
 
-							for (final String oldKey : this.getConfigurationSection(ignoredSection).getKeys(true))
-								this.write0(ignoredSection + "." + oldKey, true, comments, writer);
+							if (sectionExists)
+								for (final String oldKey : ignoredSection.getKeys(true))
+									this.write0(ignoredKey + "." + oldKey, true, comments, writer);
 
-							reverseCopy.add(ignoredSection);
+							reverseCopy.add(ignoredKey);
 							continue outerloop;
 						}
+					}
 
-					if (key.startsWith(ignoredSection))
+					if (key.startsWith(ignoredKey))
 						continue outerloop;
 				}
 			}
@@ -2038,7 +2006,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param path
 	 * @return
 	 */
-	protected String compilePathPrefix(@NonNull final String path) {
+	final String buildPathPrefix(@NonNull final String path) {
 		final String prefixed = this.pathPrefix != null ? this.pathPrefix + (!path.isEmpty() ? "." + path : "") : path;
 
 		return prefixed.endsWith(".") ? prefixed.substring(0, prefixed.length() - 1) : prefixed;
@@ -2049,7 +2017,7 @@ public class YamlConfig implements ConfigSerializable {
 	 *
 	 * @param pathPrefix
 	 */
-	protected void setPathPrefix(final String pathPrefix) {
+	protected final void setPathPrefix(final String pathPrefix) {
 		if (pathPrefix != null) {
 			Valid.checkBoolean(!pathPrefix.endsWith("."), "Path prefix must not end with a dot: " + pathPrefix);
 			Valid.checkBoolean(!pathPrefix.endsWith(".yml"), "Path prefix must not end with .yml!");
@@ -2138,7 +2106,7 @@ public class YamlConfig implements ConfigSerializable {
 
 		while ((leadingIndex = path.indexOf('.', trailingIndex = leadingIndex + 1)) != -1) {
 			final String node = path.substring(trailingIndex, leadingIndex);
-			final YamlConfig subSection = section.getConfigurationSection(node);
+			final YamlConfig subSection = section.getSectionNoPrefix(node);
 			if (subSection == null)
 				section = section.createSection(node);
 			else
@@ -2163,7 +2131,7 @@ public class YamlConfig implements ConfigSerializable {
 			if (entry.getValue() instanceof Map)
 				section.createSection(entry.getKey().toString(), (Map<?, ?>) entry.getValue());
 			else
-				section.setNoSave(entry.getKey().toString(), entry.getValue());
+				section.set(entry.getKey().toString(), entry.getValue());
 
 		return section;
 	}
@@ -2182,7 +2150,7 @@ public class YamlConfig implements ConfigSerializable {
 			if (value instanceof MappingNode && !this.hasSerializedTypeKey((MappingNode) value))
 				this.fromNodeTree((MappingNode) value, section.createSection(keyString));
 			else
-				section.setNoSave(keyString, this.constructor.construct(value));
+				section.setNoSerializeNoPrefix(keyString, this.constructor.construct(value));
 		}
 	}
 
@@ -2300,7 +2268,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param file
 	 * @return
 	 */
-	public static YamlConfig fromFile(File file) {
+	public static final YamlConfig fromFile(File file) {
 		synchronized (loadedConfigs) {
 			final String path = file.getAbsolutePath();
 			YamlConfig config = loadedConfigs.get(path);
@@ -2323,7 +2291,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param internalPath
 	 * @return
 	 */
-	public static YamlConfig fromInternalPath(String internalPath) {
+	public static final YamlConfig fromInternalPath(String internalPath) {
 		return fromPath(internalPath, internalPath);
 	}
 
@@ -2336,7 +2304,7 @@ public class YamlConfig implements ConfigSerializable {
 	 * @param diskPath
 	 * @return
 	 */
-	public static YamlConfig fromPath(String internalPath, String diskPath) {
+	public static final YamlConfig fromPath(String internalPath, String diskPath) {
 		synchronized (loadedConfigs) {
 			YamlConfig config = loadedConfigs.get(internalPath);
 
