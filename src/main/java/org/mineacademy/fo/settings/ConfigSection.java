@@ -5,25 +5,28 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
+
 import lombok.NonNull;
 
-public class StorageSection {
+public class ConfigSection {
 
 	final Map<String, Object> map = new LinkedHashMap<>();
 
-	private final FileStorage root;
-	private final StorageSection parent;
+	private final ConfigSection root;
+	private final ConfigSection parent;
 	private final String path;
 	private final String fullPath;
 
-	StorageSection() {
+	ConfigSection() {
 		this.path = "";
 		this.fullPath = "";
 		this.parent = null;
-		this.root = (FileStorage) this;
+		this.root = this;
 	}
 
-	StorageSection(@NonNull StorageSection parent, @NonNull String path) {
+	ConfigSection(@NonNull ConfigSection parent, @NonNull String path) {
 		this.path = path;
 		this.parent = parent;
 		this.root = parent.getRoot();
@@ -51,8 +54,12 @@ public class StorageSection {
 		return result;
 	}
 
+	public final void clear() {
+		this.map.clear();
+	}
+
 	final boolean isStored(@NonNull String path) {
-		final FileStorage root = this.getRoot();
+		final ConfigSection root = this.getRoot();
 
 		if (root == null)
 			return false;
@@ -65,17 +72,17 @@ public class StorageSection {
 		if (path.isEmpty())
 			throw new IllegalArgumentException("Cannot set to an empty path");
 
-		final FileStorage root = this.getRoot();
+		final ConfigSection root = this.getRoot();
 		if (root == null)
 			throw new IllegalStateException("Cannot use section without a root");
 
 		// i1 is the leading (higher) index
 		// i2 is the trailing (lower) index
 		int i1 = -1, i2;
-		StorageSection section = this;
+		ConfigSection section = this;
 		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
 			final String node = path.substring(i2, i1);
-			final StorageSection subSection = section.retrieveConfigurationSection(node);
+			final ConfigSection subSection = section.retrieveConfigurationSection(node);
 			if (subSection == null) {
 				if (value == null)
 					// no need to create missing sub-sections if we want to remove the value:
@@ -100,14 +107,14 @@ public class StorageSection {
 		if (path.length() == 0)
 			return this;
 
-		final FileStorage root = this.getRoot();
+		final ConfigSection root = this.getRoot();
 		if (root == null)
 			throw new IllegalStateException("Cannot access section without a root");
 
 		// i1 is the leading (higher) index
 		// i2 is the trailing (lower) index
 		int i1 = -1, i2;
-		StorageSection section = this;
+		ConfigSection section = this;
 		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
 			final String currentPath = path.substring(i2, i1);
 
@@ -129,11 +136,11 @@ public class StorageSection {
 	}
 
 	@NonNull
-	final StorageSection createSection(@NonNull String path) {
+	final ConfigSection createSection(@NonNull String path) {
 		if (path.isEmpty())
 			throw new IllegalArgumentException("Cannot create section at empty path");
 
-		final FileStorage root = this.getRoot();
+		final ConfigSection root = this.getRoot();
 
 		if (root == null)
 			throw new IllegalStateException("Cannot create section without a root");
@@ -141,10 +148,10 @@ public class StorageSection {
 		// i1 is the leading (higher) index
 		// i2 is the trailing (lower) index
 		int i1 = -1, i2;
-		StorageSection section = this;
+		ConfigSection section = this;
 		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
 			final String node = path.substring(i2, i1);
-			final StorageSection subSection = section.retrieveConfigurationSection(node);
+			final ConfigSection subSection = section.retrieveConfigurationSection(node);
 			if (subSection == null)
 				section = section.createSection(node);
 			else
@@ -153,31 +160,31 @@ public class StorageSection {
 
 		final String key = path.substring(i2);
 		if (section == this) {
-			final StorageSection result = new StorageSection(this, key);
+			final ConfigSection result = new ConfigSection(this, key);
 			this.map.put(key, result);
 			return result;
 		}
 		return section.createSection(key);
 	}
 
-	final StorageSection retrieveConfigurationSection(@NonNull String path) {
+	final ConfigSection retrieveConfigurationSection(@NonNull String path) {
 		final Object val = this.retrieve(path);
 
 		if (val != null)
-			return (val instanceof StorageSection) ? (StorageSection) val : null;
+			return (val instanceof ConfigSection) ? (ConfigSection) val : null;
 
-		return (val instanceof StorageSection) ? this.createSection(path) : null;
+		return (val instanceof ConfigSection) ? this.createSection(path) : null;
 	}
 
-	private void mapChildrenKeys(@NonNull Set<String> output, @NonNull StorageSection section, boolean deep) {
-		if (section instanceof StorageSection) {
-			final StorageSection sec = section;
+	private void mapChildrenKeys(@NonNull Set<String> output, @NonNull ConfigSection section, boolean deep) {
+		if (section instanceof ConfigSection) {
+			final ConfigSection sec = section;
 
 			for (final Map.Entry<String, Object> entry : sec.map.entrySet()) {
 				output.add(createPath(section, entry.getKey(), this));
 
-				if ((deep) && (entry.getValue() instanceof StorageSection)) {
-					final StorageSection subsection = (StorageSection) entry.getValue();
+				if ((deep) && (entry.getValue() instanceof ConfigSection)) {
+					final ConfigSection subsection = (ConfigSection) entry.getValue();
 					this.mapChildrenKeys(output, subsection, deep);
 				}
 			}
@@ -189,18 +196,18 @@ public class StorageSection {
 		}
 	}
 
-	private void mapChildrenValues(@NonNull Map<String, Object> output, @NonNull StorageSection section, boolean deep) {
-		if (section instanceof StorageSection) {
-			final StorageSection sec = section;
+	private void mapChildrenValues(@NonNull Map<String, Object> output, @NonNull ConfigSection section, boolean deep) {
+		if (section instanceof ConfigSection) {
+			final ConfigSection sec = section;
 
 			for (final Map.Entry<String, Object> entry : sec.map.entrySet()) {
 				final String childPath = createPath(section, entry.getKey(), this);
 				output.remove(childPath);
 				output.put(childPath, entry.getValue());
 
-				if (entry.getValue() instanceof StorageSection)
+				if (entry.getValue() instanceof ConfigSection)
 					if (deep)
-						this.mapChildrenValues(output, (StorageSection) entry.getValue(), deep);
+						this.mapChildrenValues(output, (ConfigSection) entry.getValue(), deep);
 			}
 		} else {
 			final Map<String, Object> values = section.getValues(deep);
@@ -211,20 +218,20 @@ public class StorageSection {
 	}
 
 	@NonNull
-	private static String createPath(@NonNull StorageSection section, String key) {
+	private static String createPath(@NonNull ConfigSection section, String key) {
 		return createPath(section, key, (section == null) ? null : section.getRoot());
 	}
 
 	@NonNull
-	private static String createPath(@NonNull StorageSection section, String key, StorageSection relativeTo) {
-		final FileStorage root = section.getRoot();
+	private static String createPath(@NonNull ConfigSection section, String key, ConfigSection relativeTo) {
+		final ConfigSection root = section.getRoot();
 
 		if (root == null)
 			throw new IllegalStateException("Cannot create path without a root");
 
 		final StringBuilder builder = new StringBuilder();
 		if (section != null)
-			for (StorageSection parent = section; (parent != null) && (parent != relativeTo); parent = parent.getParent()) {
+			for (ConfigSection parent = section; (parent != null) && (parent != relativeTo); parent = parent.getParent()) {
 				if (builder.length() > 0)
 					builder.insert(0, '.');
 
@@ -245,22 +252,30 @@ public class StorageSection {
 	// Getters
 	// ------------------------------------------------------------------------------------
 
+	public final SerializedMap serialize() {
+		return SerializedMap.of(this.getValues(true));
+	}
+
+	public final boolean isEmpty() {
+		return Valid.isNullOrEmptyValues(this.map);
+	}
+
 	@NonNull
 	private String getName() {
 		return this.path;
 	}
 
-	private FileStorage getRoot() {
+	private ConfigSection getRoot() {
 		return this.root;
 	}
 
-	private StorageSection getParent() {
+	private ConfigSection getParent() {
 		return this.parent;
 	}
 
 	@Override
 	public String toString() {
-		final FileStorage root = this.getRoot();
+		final ConfigSection root = this.getRoot();
 		return new StringBuilder()
 				.append(this.getClass().getSimpleName())
 				.append("[path='")

@@ -67,9 +67,17 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	public final String getPromptText(final ConversationContext context) {
 		String prompt = getPrompt(context);
 
-		if (Messenger.ENABLED && !prompt.contains(Messenger.getAnnouncePrefix()) && !prompt.contains(Messenger.getErrorPrefix()) && !prompt.contains(Messenger.getInfoPrefix())
-				&& !prompt.contains(Messenger.getQuestionPrefix()) && !prompt.contains(Messenger.getSuccessPrefix()) && !prompt.contains(Messenger.getWarnPrefix()))
+		if (Common.getTellPrefix().isEmpty() /* ignore since we can default to this when no custom prefix is set */
+				&& Messenger.ENABLED
+				&& !prompt.contains(Messenger.getAnnouncePrefix())
+				&& !prompt.contains(Messenger.getErrorPrefix())
+				&& !prompt.contains(Messenger.getInfoPrefix())
+				&& !prompt.contains(Messenger.getQuestionPrefix())
+				&& !prompt.contains(Messenger.getSuccessPrefix())
+				&& !prompt.contains(Messenger.getWarnPrefix())) {
+
 			prompt = Messenger.getQuestionPrefix() + prompt;
+		}
 
 		return Variables.replace(prompt, getPlayer(context));
 	}

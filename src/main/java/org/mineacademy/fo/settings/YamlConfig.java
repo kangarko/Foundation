@@ -2,12 +2,13 @@ package org.mineacademy.fo.settings;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,14 +32,14 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import lombok.NonNull;
 
-public class YamlStorage extends FileStorage {
+public class YamlConfig extends FileConfig {
 
 	private static final String COMMENT_PREFIX = "# ";
 	private static final String BLANK_CONFIG = "{}\n";
 
 	private final Yaml yaml;
 
-	protected YamlStorage() {
+	protected YamlConfig() {
 		final YamlConstructor constructor = new YamlConstructor();
 
 		final YamlRepresenter representer = new YamlRepresenter();
@@ -76,7 +77,7 @@ public class YamlStorage extends FileStorage {
 	}
 
 	public boolean isValid() {
-		return this.getObject("") instanceof StorageSection;
+		return this.getObject("") instanceof ConfigSection;
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -97,12 +98,12 @@ public class YamlStorage extends FileStorage {
 			file = FileUtil.extract(from, to);
 
 			// Keep a loaded copy to copy default values from
-			final YamlStorage storage = new YamlStorage();
-			final String content = FileUtil.getInternalFileContent(from);
+			final YamlConfig defaultConfig = new YamlConfig();
+			final String defaultContent = FileUtil.getInternalFileContent(from);
 
-			storage.loadFromString(content);
+			defaultConfig.loadFromString(defaultContent);
 
-			this.defaults = storage;
+			this.defaults = defaultConfig.section;
 			this.defaultsPath = from;
 		}
 
@@ -117,7 +118,11 @@ public class YamlStorage extends FileStorage {
 	final String saveToString() {
 		if (this.defaults == null) {
 			final String header = this.buildHeader();
-			String dump = this.yaml.dump(this.getValues(false));
+			final Map<String, Object> values = this.section.getValues(false);
+
+			removeNuls(values);
+
+			String dump = this.yaml.dump(values);
 
 			if (dump.equals(BLANK_CONFIG))
 				dump = "";
@@ -126,6 +131,33 @@ public class YamlStorage extends FileStorage {
 		}
 
 		return this.saveCommentedString();
+	}
+
+	private static void removeNuls(Map<String, Object> map) {
+		for (final Iterator<Entry<String, Object>> it = map.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, Object> entry = it.next();
+			//final String key = entry.getKey();
+			final Object value = entry.getValue();
+
+			if (value instanceof ConfigSection) {
+				final Map<String, Object> childMap = ((ConfigSection) value).map;
+
+				removeNuls(childMap);
+
+				if (childMap.isEmpty())
+					it.remove();
+			}
+
+			if (value == null
+					|| (value instanceof Iterable<?> && !((Iterable<?>) value).iterator().hasNext())
+					|| (value.getClass().isArray() && ((Object[]) value).length == 0)
+					|| (value instanceof Map<?, ?>) && ((Map<?, ?>) value).isEmpty()) {
+
+				it.remove();
+
+				continue;
+			}
+		}
 	}
 
 	private String saveCommentedString() {
@@ -137,7 +169,7 @@ public class YamlStorage extends FileStorage {
 		// ignoredSections can ONLY contain configurations sections
 		for (final String ignoredSection : this.getUncommentedSections())
 			if (this.defaults.isStored(ignoredSection))
-				Valid.checkBoolean(this.defaults.retrieve(ignoredSection) instanceof StorageSection,
+				Valid.checkBoolean(this.defaults.retrieve(ignoredSection) instanceof ConfigSection,
 						"Can only ignore config sections in " + this.defaultsPath + " (file " + this.getFileName() + ")" + " not '" + ignoredSection + "' that is " + this.defaults.retrieve(ignoredSection));
 
 		// Save keys added to config that are not in default and would otherwise be lost
@@ -145,7 +177,7 @@ public class YamlStorage extends FileStorage {
 		final Map<String, Object> removedKeys = new LinkedHashMap<>();
 
 		outerLoop:
-		for (final Map.Entry<String, Object> oldEntry : this.getValues(true).entrySet()) {
+		for (final Map.Entry<String, Object> oldEntry : this.section.getValues(true).entrySet()) {
 			final String oldKey = oldEntry.getKey();
 
 			for (final String ignoredKey : this.getUncommentedSections())
@@ -158,7 +190,7 @@ public class YamlStorage extends FileStorage {
 
 		// Move to unused/ folder and retain old path
 		if (!removedKeys.isEmpty()) {
-			final YamlStorage backupConfig = new YamlStorage();
+			final YamlConfig backupConfig = new YamlConfig();
 
 			backupConfig.loadConfiguration(NO_DEFAULT, "unused/" + getFileName());
 
@@ -205,7 +237,7 @@ public class YamlStorage extends FileStorage {
 
 				for (final String ignoredKey : this.getUncommentedSections()) {
 					if (key.equals(ignoredKey)) {
-						final StorageSection ignoredSection = this.retrieveConfigurationSection(ignoredKey);
+						final ConfigSection ignoredSection = this.section.retrieveConfigurationSection(ignoredKey);
 						final boolean sectionExists = ignoredSection != null;
 
 						// Write from new to old config
@@ -258,15 +290,15 @@ public class YamlStorage extends FileStorage {
 			writer.append(comment);
 
 		final Object newObj = this.defaults.retrieve(key);
-		final Object oldObj = this.retrieve(key);
+		final Object oldObj = this.section.retrieve(key);
 
 		// Write the old section
-		if (newObj instanceof StorageSection && !forceNew && oldObj instanceof StorageSection)
-			this.writeSection(writer, actualKey, prefixSpaces, (StorageSection) oldObj);
+		if (newObj instanceof ConfigSection && !forceNew && oldObj instanceof ConfigSection)
+			this.writeSection(writer, actualKey, prefixSpaces, (ConfigSection) oldObj);
 
 		// Write the new section, old value is no more
-		else if (newObj instanceof StorageSection)
-			this.writeSection(writer, actualKey, prefixSpaces, (StorageSection) newObj);
+		else if (newObj instanceof ConfigSection)
+			this.writeSection(writer, actualKey, prefixSpaces, (ConfigSection) newObj);
 
 		// Write the old object
 		else if (oldObj != null && !forceNew)
@@ -307,7 +339,7 @@ public class YamlStorage extends FileStorage {
 	}
 
 	// Writes a configuration section
-	private void writeSection(StringBuilder writer, String actualKey, String prefixSpaces, StorageSection section) throws IOException {
+	private void writeSection(StringBuilder writer, String actualKey, String prefixSpaces, ConfigSection section) throws IOException {
 		if (section.getKeys(false).isEmpty())
 			writer.append(prefixSpaces + actualKey + ":");
 
@@ -351,7 +383,7 @@ public class YamlStorage extends FileStorage {
 
 	// Key is the config key, value = comment and/or ignored sections
 	// Parses comments, blank lines, and ignored sections
-	private Map<String, String> dumpComments(String[] lines) {
+	private static Map<String, String> dumpComments(String[] lines) {
 		final Map<String, String> comments = new LinkedHashMap<>();
 		final StringBuilder builder = new StringBuilder();
 		final StringBuilder keyBuilder = new StringBuilder();
@@ -365,7 +397,7 @@ public class YamlStorage extends FileStorage {
 			if (line == null || line.trim().equals("") || line.trim().startsWith("#"))
 				builder.append(line).append("\n");
 			else {
-				lastLineIndentCount = this.setFullKey(keyBuilder, line, lastLineIndentCount);
+				lastLineIndentCount = setFullKey(keyBuilder, line, lastLineIndentCount);
 
 				if (keyBuilder.length() > 0) {
 					comments.put(keyBuilder.toString(), builder.toString());
@@ -381,7 +413,7 @@ public class YamlStorage extends FileStorage {
 	}
 
 	// Counts spaces in front of key and divides by 2 since 1 indent = 2 spaces
-	private int countIndents(String s) {
+	private static int countIndents(String s) {
 		int spaces = 0;
 
 		for (final char c : s.toCharArray())
@@ -394,7 +426,7 @@ public class YamlStorage extends FileStorage {
 	}
 
 	// Ex. keyBuilder = key1.key2.key3 --> key1.key2
-	private void removeLastKey(StringBuilder keyBuilder) {
+	private static void removeLastKey(StringBuilder keyBuilder) {
 		String temp = keyBuilder.toString();
 		final String[] keys = temp.split("\\.");
 
@@ -408,8 +440,8 @@ public class YamlStorage extends FileStorage {
 	}
 
 	// Updates the keyBuilder and returns configLines number of indents
-	private int setFullKey(StringBuilder keyBuilder, String configLine, int lastLineIndentCount) {
-		final int currentIndents = this.countIndents(configLine);
+	private static int setFullKey(StringBuilder keyBuilder, String configLine, int lastLineIndentCount) {
+		final int currentIndents = countIndents(configLine);
 		final String key = configLine.trim().split(":")[0];
 
 		if (keyBuilder.length() == 0)
@@ -417,7 +449,7 @@ public class YamlStorage extends FileStorage {
 
 		else if (currentIndents == lastLineIndentCount) {
 			// Replace the last part of the key with current key
-			this.removeLastKey(keyBuilder);
+			removeLastKey(keyBuilder);
 
 			if (keyBuilder.length() > 0)
 				keyBuilder.append(".");
@@ -431,7 +463,7 @@ public class YamlStorage extends FileStorage {
 			final int difference = lastLineIndentCount - currentIndents;
 
 			for (int i = 0; i < difference + 1; i++)
-				this.removeLastKey(keyBuilder);
+				removeLastKey(keyBuilder);
 
 			if (keyBuilder.length() > 0)
 				keyBuilder.append(".");
@@ -442,7 +474,7 @@ public class YamlStorage extends FileStorage {
 		return currentIndents;
 	}
 
-	private String getPrefixSpaces(int indents) {
+	private static String getPrefixSpaces(int indents) {
 		final StringBuilder builder = new StringBuilder();
 
 		for (int i = 0; i < indents; i++)
@@ -451,8 +483,8 @@ public class YamlStorage extends FileStorage {
 		return builder.toString();
 	}
 
-	private void appendPrefixSpaces(StringBuilder builder, int indents) {
-		builder.append(this.getPrefixSpaces(indents));
+	private static void appendPrefixSpaces(StringBuilder builder, int indents) {
+		builder.append(getPrefixSpaces(indents));
 	}
 
 	@Override
@@ -474,13 +506,13 @@ public class YamlStorage extends FileStorage {
 		if (header.length() > 0)
 			this.setHeader(header);
 
-		this.map.clear();
+		this.section.map.clear();
 
 		if (input != null)
-			this.convertMapsToSections(input, this);
+			this.convertMapsToSections(input, this.section);
 	}
 
-	private void convertMapsToSections(@NonNull Map<?, ?> input, @NonNull StorageSection section) {
+	private void convertMapsToSections(@NonNull Map<?, ?> input, @NonNull ConfigSection section) {
 		for (final Map.Entry<?, ?> entry : input.entrySet()) {
 			final String key = entry.getKey().toString();
 			final Object value = entry.getValue();
@@ -544,9 +576,24 @@ public class YamlStorage extends FileStorage {
 	}
 
 	@NonNull
-	public static final YamlStorage fromFile(@NonNull File file) {
+	public static final YamlConfig fromInternalPath(@NonNull String path) {
 
-		final YamlStorage config = new YamlStorage();
+		final YamlConfig config = new YamlConfig();
+
+		try {
+			config.loadConfiguration(path);
+
+		} catch (final Exception ex) {
+			Logger.getGlobal().log(Level.SEVERE, "Cannot load " + path, ex);
+		}
+
+		return config;
+	}
+
+	@NonNull
+	public static final YamlConfig fromFile(@NonNull File file) {
+
+		final YamlConfig config = new YamlConfig();
 
 		try {
 			config.load(file);
@@ -557,20 +604,20 @@ public class YamlStorage extends FileStorage {
 		return config;
 	}
 
-	@NonNull
-	public static final YamlStorage fromReader(@NonNull Reader reader) {
-
-		final YamlStorage config = new YamlStorage();
-
+	/*@NonNull
+	public static final YamlConfig fromReader(@NonNull Reader reader) {
+	
+		final YamlConfig config = new YamlConfig();
+	
 		try {
 			config.load(reader);
-
+	
 		} catch (final Exception ex) {
 			Logger.getGlobal().log(Level.SEVERE, "Cannot load configuration from stream", ex);
 		}
-
+	
 		return config;
-	}
+	}*/
 
 	private final static class YamlConstructor extends SafeConstructor {
 
@@ -612,7 +659,7 @@ public class YamlStorage extends FileStorage {
 	private final static class YamlRepresenter extends Representer {
 
 		public YamlRepresenter() {
-			this.multiRepresenters.put(StorageSection.class, new RepresentConfigurationSection());
+			this.multiRepresenters.put(ConfigSection.class, new RepresentConfigurationSection());
 			this.multiRepresenters.put(ConfigurationSerializable.class, new RepresentConfigurationSerializable());
 			this.multiRepresenters.remove(Enum.class);
 		}
@@ -622,7 +669,7 @@ public class YamlStorage extends FileStorage {
 			@NonNull
 			@Override
 			public Node representData(@NonNull Object data) {
-				return super.representData(((StorageSection) data).getValues(false));
+				return super.representData(((ConfigSection) data).getValues(false));
 			}
 		}
 

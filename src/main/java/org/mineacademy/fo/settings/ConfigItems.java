@@ -22,14 +22,14 @@ import org.mineacademy.fo.collection.StrictMap;
 import lombok.NonNull;
 
 /**
- * A special class that can store loaded {@link YamlStorage} files
+ * A special class that can store loaded {@link YamlConfig} files
  *
- * DOES NOT INVOKE {@link YamlStorage#loadConfiguration(String, String)}
+ * DOES NOT INVOKE {@link YamlConfig#loadConfiguration(String, String)}
  * for you, you must invoke it by yourself as you otherwise normally would!
  *
  * @param <T>
  */
-public final class ConfigItems<T extends YamlStorage> {
+public final class ConfigItems<T extends YamlConfig> {
 
 	/**
 	 * A list of all loaded items
@@ -84,7 +84,7 @@ public final class ConfigItems<T extends YamlStorage> {
 	 * @param prototypeClass
 	 * @return
 	 */
-	public static <P extends YamlStorage> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
 		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeClass, false);
 	}
 
@@ -97,7 +97,7 @@ public final class ConfigItems<T extends YamlStorage> {
 	 * @param prototypeClass
 	 * @return
 	 */
-	public static <P extends YamlStorage> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
 		return new ConfigItems<>(path, file, prototypeClass, true);
 	}
 

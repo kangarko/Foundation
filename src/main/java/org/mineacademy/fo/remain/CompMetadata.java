@@ -31,7 +31,7 @@ import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
-import org.mineacademy.fo.settings.YamlStorage;
+import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -374,7 +374,7 @@ public final class CompMetadata {
 	 * internal use only
 	 */
 	@AutoRegister
-	public static final class MetadataFile extends YamlStorage {
+	public static final class MetadataFile extends YamlConfig {
 
 		private static volatile Object LOCK = new Object();
 

@@ -61,7 +61,7 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
-import org.mineacademy.fo.settings.YamlStorage;
+import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
@@ -213,7 +213,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
-		if (!Bukkit.getVersion().contains("Paper") && !Bukkit.getVersion().contains("NachoSpigot") && MinecraftVersion.atLeast(V.v1_8)) {
+		if (!Bukkit.getVersion().contains("Paper") && !Bukkit.getVersion().contains("NachoSpigot") && !Bukkit.getVersion().contains("-Spigot") && MinecraftVersion.atLeast(V.v1_8)) {
 
 			/*if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit") || Bukkit.getVersion().contains("-Spigot-")) {
 				Bukkit.getLogger().severe(Common.consoleLine());
@@ -223,17 +223,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
 				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
 				Bukkit.getLogger().severe(Common.consoleLine());
-			
+
 				this.canLoad = false;
 				throw new RuntimeException("Unsupported server version, see above.");
 			}*/
 
 			Bukkit.getLogger().severe(Common.consoleLine());
-			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper! (Detected: " + Bukkit.getVersion() + ")");
+			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper!");
+			Bukkit.getLogger().warning("Detected: " + Bukkit.getVersion());
 			Bukkit.getLogger().warning("");
-			Bukkit.getLogger().warning("Third party forks such as BeerSpigot are known to alter");
-			Bukkit.getLogger().warning("server's behavior. If you have issues with this plugin,");
-			Bukkit.getLogger().warning("please test using Paper from PaperMC.io first!");
+			Bukkit.getLogger().warning("Third party forks are known to alter server in unwanted");
+			Bukkit.getLogger().warning("ways. If you have issues with " + named + " use Paper");
+			Bukkit.getLogger().warning("from PaperMC.io otherwise you may not receive our support.");
 			Bukkit.getLogger().severe(Common.consoleLine());
 		}
 
@@ -698,7 +699,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			YamlStaticConfig.load(getSettings());
 			Lang.loadPrefixes();
 
-			final YamlStorage metadata = CompMetadata.MetadataFile.getInstance();
+			final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
 			metadata.save();
 			metadata.reload();
 

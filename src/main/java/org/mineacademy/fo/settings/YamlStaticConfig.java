@@ -26,13 +26,13 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.FileStorage.AccusativeHelper;
-import org.mineacademy.fo.settings.FileStorage.TitleHelper;
+import org.mineacademy.fo.settings.FileConfig.AccusativeHelper;
+import org.mineacademy.fo.settings.FileConfig.TitleHelper;
 
 import lombok.Setter;
 
 /**
- * A special case {@link YamlStorage} that allows static access to this config. This is unsafe
+ * A special case {@link YamlConfig} that allows static access to this config. This is unsafe
  * however this is only to be used in two config instances - the main settings.yml file and
  * localization file, which allow static access from anywhere for convenience.
  * <p>
@@ -51,16 +51,16 @@ public abstract class YamlStaticConfig {
 	private static boolean autoloadSettingsAndLocalization = true;
 
 	/**
-	 * The temporary {@link YamlStorage} instance we store here to get values from
+	 * The temporary {@link YamlConfig} instance we store here to get values from
 	 */
-	private static YamlStorage TEMPORARY_INSTANCE;
+	private static YamlConfig TEMPORARY_INSTANCE;
 
 	/**
-	 * Internal use only: Create a new {@link YamlStorage} instance and link it to load fields via
+	 * Internal use only: Create a new {@link YamlConfig} instance and link it to load fields via
 	 * reflection.
 	 */
 	protected YamlStaticConfig() {
-		TEMPORARY_INSTANCE = new YamlStorage() {
+		TEMPORARY_INSTANCE = new YamlConfig() {
 
 			{
 				beforeLoad();
@@ -167,7 +167,7 @@ public abstract class YamlStaticConfig {
 	}
 
 	/**
-	 * @see YamlStorage#getUncommentedSections()
+	 * @see YamlConfig#getUncommentedSections()
 	 */
 	protected List<String> getUncommentedSections() {
 		return new ArrayList<>();
@@ -190,7 +190,7 @@ public abstract class YamlStaticConfig {
 
 	/**
 	 * Called automatically in {@link #load(List)}, you should call the standard load method from
-	 * {@link YamlStorage} here
+	 * {@link YamlConfig} here
 	 *
 	 * @throws Exception
 	 */
@@ -201,7 +201,7 @@ public abstract class YamlStaticConfig {
 	 */
 	private final void loadViaReflection() {
 		Valid.checkNotNull(TEMPORARY_INSTANCE, "Instance cannot be null " + getFileName());
-		Valid.checkNotNull(TEMPORARY_INSTANCE.getDefaults(), "Default config cannot be null for " + getFileName());
+		Valid.checkNotNull(TEMPORARY_INSTANCE.defaults, "Default config cannot be null for " + getFileName());
 
 		try {
 			preLoad();
@@ -322,7 +322,7 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final boolean isSetAbsolute(final String path) {
-		return TEMPORARY_INSTANCE.isStored(path);
+		return TEMPORARY_INSTANCE.section.isStored(path);
 	}
 
 	protected static final boolean isSet(final String path) {
@@ -330,11 +330,11 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final boolean isSetDefault(final String path) {
-		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isStored(TEMPORARY_INSTANCE.buildPathPrefix(path));
+		return TEMPORARY_INSTANCE.defaults != null && TEMPORARY_INSTANCE.defaults.isStored(TEMPORARY_INSTANCE.buildPathPrefix(path));
 	}
 
 	protected static final boolean isSetDefaultAbsolute(final String path) {
-		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isStored(path);
+		return TEMPORARY_INSTANCE.defaults != null && TEMPORARY_INSTANCE.defaults.isStored(path);
 	}
 
 	protected static final void move(final String fromRelative, final String toAbsolute) {

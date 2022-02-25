@@ -32,7 +32,7 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlStorage;
+import org.mineacademy.fo.settings.ConfigSection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -730,7 +730,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	public SerializedMap getMap(final String key) {
 		final Object raw = get(key, Object.class);
 
-		return raw != null ? SerializedMap.of(Common.getMapFromSection(raw)) : new SerializedMap();
+		return raw != null ? SerializedMap.of(raw) : new SerializedMap();
 	}
 
 	/**
@@ -752,7 +752,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		final Object raw = this.map.get(path);
 
 		if (raw != null)
-			for (final Entry<?, ?> entry : Common.getMapFromSection(raw).entrySet()) {
+			for (final Entry<?, ?> entry : SerializedMap.of(raw).entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
 
@@ -782,13 +782,9 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		Object raw = this.map.get(path);
 
 		if (raw != null) {
+			raw = SerializedMap.of(raw);
 
-			if (raw instanceof MemorySection || Remain.isMemorySection(raw))
-				raw = Common.getMapFromSection(raw);
-
-			Valid.checkBoolean(raw instanceof Map, "Expected Map<" + keyType.getSimpleName() + ", Set<" + setType.getSimpleName() + ">> at " + path + ", got " + raw.getClass());
-
-			for (final Entry<?, ?> entry : ((Map<?, ?>) raw).entrySet()) {
+			for (final Entry<String, Object> entry : ((SerializedMap) raw).entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue());
 
@@ -1129,8 +1125,8 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (object instanceof Map || object instanceof MemorySection)
 			return of(Common.getMapFromSection(object));
 
-		if (object instanceof YamlStorage)
-			return of(((YamlStorage) object).getValues(true));
+		if (object instanceof ConfigSection)
+			return of(((ConfigSection) object).getValues(true));
 
 		throw new FoException("SerializedMap does not know how to convert " + object.getClass().getSimpleName() + ": " + object);
 	}

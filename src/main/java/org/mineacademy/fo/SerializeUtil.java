@@ -48,6 +48,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.ConfigSection;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -217,7 +218,10 @@ public final class SerializeUtil {
 		}
 
 		else if (object instanceof MemorySection)
-			return Common.getMapFromSection(object);
+			return serialize(Common.getMapFromSection(object));
+
+		else if (object instanceof ConfigSection)
+			return serialize(((ConfigSection) object).getValues(true));
 
 		else if (object instanceof Pattern)
 			return ((Pattern) object).pattern();
