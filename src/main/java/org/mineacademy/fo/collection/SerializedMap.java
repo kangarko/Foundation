@@ -32,7 +32,7 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlStorage;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -1129,8 +1129,8 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (object instanceof Map || object instanceof MemorySection)
 			return of(Common.getMapFromSection(object));
 
-		if (object instanceof YamlConfig)
-			return of(((YamlConfig) object).getValues(true));
+		if (object instanceof YamlStorage)
+			return of(((YamlStorage) object).getValues(true));
 
 		throw new FoException("SerializedMap does not know how to convert " + object.getClass().getSimpleName() + ": " + object);
 	}

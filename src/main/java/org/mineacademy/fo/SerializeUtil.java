@@ -331,6 +331,9 @@ public final class SerializeUtil {
 		else if (classOf == SimpleTime.class)
 			object = SimpleTime.from(object.toString());
 
+		else if (classOf == CompMaterial.class)
+			object = CompMaterial.fromStringStrict(object.toString());
+
 		else if (classOf == SimpleSound.class)
 			object = new SimpleSound(object.toString());
 

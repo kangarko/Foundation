@@ -35,7 +35,7 @@ import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlStorage;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
@@ -239,14 +239,14 @@ final class AutoRegisterScanner {
 			Variables.addExpansion((SimpleExpansion) instance);
 		}
 
-		else if (YamlConfig.class.isAssignableFrom(clazz)) {
+		else if (YamlStorage.class.isAssignableFrom(clazz)) {
 
 			// Automatically called onLoadFinish when getting instance
 			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
 
 			if (SimplePlugin.isReloading()) {
-				((YamlConfig) instance).save();
-				((YamlConfig) instance).reload();
+				((YamlStorage) instance).save();
+				((YamlStorage) instance).reload();
 			}
 		}
 

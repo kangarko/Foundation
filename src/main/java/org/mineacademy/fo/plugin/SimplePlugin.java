@@ -61,7 +61,7 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlStorage;
 import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
@@ -698,7 +698,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			YamlStaticConfig.load(getSettings());
 			Lang.loadPrefixes();
 
-			final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
+			final YamlStorage metadata = CompMetadata.MetadataFile.getInstance();
 			metadata.save();
 			metadata.reload();
 

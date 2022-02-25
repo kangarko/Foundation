@@ -19,7 +19,7 @@ import org.mineacademy.fo.model.SimpleComponent;
  * The downside is that keys are not checked during load so any
  * malformed or missing key will fail later and may be unnoticed.
  */
-public final class Lang extends YamlConfig {
+public final class Lang extends YamlStorage {
 
 	/**
 	 * The instance of this class

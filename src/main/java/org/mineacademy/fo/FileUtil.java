@@ -341,8 +341,8 @@ public final class FileUtil {
 	public static File extract(String from, String to) {
 		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
 
-		final List<String> lines = getInternalResource(from);
-		Valid.checkNotNull(lines, "Inbuilt file not found: " + from);
+		final String content = getInternalFileContent(from);
+		Valid.checkNotNull(content, "Inbuilt " + from + " not found! Did you reload?");
 
 		if (file.exists())
 			return file;
@@ -350,13 +350,14 @@ public final class FileUtil {
 		file = createIfNotExists(to);
 
 		try {
+			final String[] lines = content.split("\n");
 			final String fileName = getFileName(file);
 
 			// Replace variables in lines
-			for (int i = 0; i < lines.size(); i++)
-				lines.set(i, replaceVariables(lines.get(i), fileName));
+			for (int i = 0; i < lines.length; i++)
+				lines[i] = replaceVariables(lines[i], fileName);
 
-			Files.write(file.toPath(), lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(file.toPath(), Arrays.asList(lines), StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
 
 		} catch (final IOException ex) {
 			Common.error(ex,
@@ -458,9 +459,9 @@ public final class FileUtil {
 	 * Return an internal resource within our plugin's jar file
 	 *
 	 * @param path
-	 * @return the resource input stream, or null if not found
+	 * @return the content of the internal file
 	 */
-	public static List<String> getInternalResource(@NonNull String path) {
+	public static String getInternalFileContent(@NonNull String path) {
 
 		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
 
@@ -474,7 +475,7 @@ public final class FileUtil {
 					final List<String> lines = reader.lines().collect(Collectors.toList());
 
 					reader.close();
-					return lines;
+					return String.join("\n", lines);
 				}
 			}
 
