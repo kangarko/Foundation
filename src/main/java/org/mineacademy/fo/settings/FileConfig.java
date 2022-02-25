@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,6 +35,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
@@ -41,28 +43,39 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.Getter;
 import lombok.NonNull;
 
-public abstract class FileStorage extends StorageSection {
+public abstract class FileConfig {
+
+	private static final Map<String, ConfigSection> loadedSections = new HashMap<>();
 
 	public static final String NO_DEFAULT = null;
 
 	private File file;
 	private String header = null;
 
-	@Getter
-	StorageSection defaults;
+	ConfigSection section = new ConfigSection(); // overridden in load(File)
+	ConfigSection defaults;
 	String defaultsPath;
 
 	private String pathPrefix = null;
 
-	public FileStorage() {
+	protected FileConfig() {
 	}
 
 	// ------------------------------------------------------------------------------------
 	// Getting fields
 	// ------------------------------------------------------------------------------------
+
+	@NonNull
+	public final Set<String> getKeys(boolean deep) {
+		return this.section.getKeys(deep);
+	}
+
+	@NonNull
+	public final Map<String, Object> getValues(boolean deep) {
+		return this.section.getValues(deep);
+	}
 
 	public final <T> T get(final String path, final Class<T> type, Object... deserializeParams) {
 		return this.get(path, type, null, deserializeParams);
@@ -75,10 +88,10 @@ public abstract class FileStorage extends StorageSection {
 		// Copy defaults if not set and log about this change
 		this.copyDefault(path, type);
 
-		Object raw = this.retrieve(path);
+		Object raw = this.section.retrieve(path);
 
 		if (this.defaults != null && def == null)
-			Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.retrieve(path) + ", has values: " + this.map.keySet());
+			Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.retrieve(path) + ", has values: " + this.section.map.keySet());
 
 		if (raw != null) {
 
@@ -90,29 +103,38 @@ public abstract class FileStorage extends StorageSection {
 			if (type == Long.class && raw instanceof Integer)
 				raw = ((Integer) raw).longValue();
 
+			raw = SerializeUtil.deserialize(type, raw, deserializeParams);
 			this.checkAssignable(false, path, raw, type);
 
-			return SerializeUtil.deserialize(type, raw, deserializeParams);
+			return (T) raw;
 		}
 
 		return def;
 	}
 
 	private void copyDefault(final String path, final Class<?> type) {
-		if (this.defaults != null && !this.isStored(path)) {
-			final Object object = this.defaults.retrieve(path);
+		if (this.defaults != null && !this.section.isStored(path)) {
+			Object object = this.defaults.retrieve(path);
 
 			Valid.checkNotNull(object, "Inbuilt config " + this.getFileName() + " lacks " + (object == null ? "key" : object.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
 			this.checkAssignable(true, path, object, type);
 
+			object = SerializeUtil.serialize(object);
+
 			Common.log("&7Updating " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (object == null ? "&ckey removed" : "&b\'&f" + object + "&b\'") + "&r");
-			this.store(path, object);
+			this.section.store(path, object);
 		}
 	}
 
 	private void checkAssignable(final boolean fromDefault, final String path, final Object object, final Class<?> type) {
-		if (!type.isAssignableFrom(object.getClass()) && !type.getSimpleName().equals(object.getClass().getSimpleName()))
+		if (!type.isAssignableFrom(object.getClass()) && !type.getSimpleName().equals(object.getClass().getSimpleName())) {
+
+			// Exception
+			if (ConfigSerializable.class.isAssignableFrom(type) && object instanceof ConfigSection)
+				return;
+
 			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + this.getFileName() + " must be " + type.getSimpleName() + " but got " + object.getClass().getSimpleName() + ": '" + object + "'");
+		}
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -294,15 +316,7 @@ public abstract class FileStorage extends StorageSection {
 	}
 
 	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
-		final Object obj = this.getObject(key, def);
-
-		if (obj != null) {
-			final SerializedMap map = SerializedMap.of(obj);
-
-			return !map.isEmpty() ? Tuple.deserialize(map, keyType, valueType) : def;
-		}
-
-		return null;
+		return this.get(key, Tuple.class, def, keyType, valueType);
 	}
 
 	public final Object getObject(final String path) {
@@ -451,10 +465,10 @@ public abstract class FileStorage extends StorageSection {
 
 		// Load key-value pairs from config to our map
 		if (exists) {
-			final Object object = this.retrieve(path);
-			Valid.checkBoolean(object instanceof StorageSection, "Expected a map at '" + path + "', got " + object.getClass().getSimpleName() + ": " + object);
+			final Object object = this.section.retrieve(path);
+			Valid.checkBoolean(object instanceof ConfigSection, "Expected a map at '" + path + "', got " + object.getClass().getSimpleName() + ": " + object);
 
-			for (final Map.Entry<String, Object> entry : ((StorageSection) object).map.entrySet()) {
+			for (final Map.Entry<String, Object> entry : ((ConfigSection) object).map.entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue(), valueDeserializeParams);
 
@@ -488,10 +502,10 @@ public abstract class FileStorage extends StorageSection {
 
 		// Load key-value pairs from config to our map
 		if (exists) {
-			final Object object = this.retrieve(path);
-			Valid.checkBoolean(object instanceof StorageSection, "Expected a map at '" + path + "', got " + object.getClass().getSimpleName() + ": " + object);
+			final Object object = this.section.retrieve(path);
+			Valid.checkBoolean(object instanceof ConfigSection, "Expected a map at '" + path + "', got " + object.getClass().getSimpleName() + ": " + object);
 
-			for (final Map.Entry<String, Object> entry : ((StorageSection) object).map.entrySet()) {
+			for (final Map.Entry<String, Object> entry : ((ConfigSection) object).map.entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue(), setDeserializeParameters);
 
@@ -523,13 +537,13 @@ public abstract class FileStorage extends StorageSection {
 		path = this.buildPathPrefix(path);
 		value = SerializeUtil.serialize(value);
 
-		this.store(path, value);
+		this.section.store(path, value);
 	}
 
 	public final boolean isSet(String path) {
 		path = this.buildPathPrefix(path);
 
-		return this.isStored(path);
+		return this.section.isStored(path);
 	}
 
 	public void move(final String fromRelative, final String toAbsolute) {
@@ -554,18 +568,32 @@ public abstract class FileStorage extends StorageSection {
 	}
 
 	final void load(@NonNull File file) {
-		try {
-			final FileInputStream stream = new FileInputStream(file);
+		synchronized (loadedSections) {
+			try {
+				final FileInputStream stream = new FileInputStream(file);
+				final String path = file.getAbsolutePath();
+				ConfigSection section = loadedSections.get(path);
 
-			this.file = file;
-			this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+				if (section == null) {
+					section = new ConfigSection();
 
-		} catch (final Exception ex) {
-			Remain.sneaky(ex);
+					loadedSections.put(path, section);
+				}
+
+				this.section = section;
+				this.file = file;
+
+				this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+				this.onLoad();
+				this.save();
+
+			} catch (final Exception ex) {
+				Remain.sneaky(ex);
+			}
 		}
 	}
 
-	final void load(@NonNull Reader reader) {
+	private final void load(@NonNull Reader reader) {
 
 		try {
 			final BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
@@ -583,7 +611,6 @@ public abstract class FileStorage extends StorageSection {
 			}
 
 			this.loadFromString(builder.toString());
-			this.onLoad();
 
 		} catch (final Exception ex) {
 			Remain.sneaky(ex);
@@ -602,25 +629,28 @@ public abstract class FileStorage extends StorageSection {
 	}
 
 	public final void save(@NonNull File file) {
-		try {
-			this.onSave();
-
-			final File parent = file.getCanonicalFile().getParentFile();
-
-			if (parent != null)
-				parent.mkdirs();
-
-			final String data = this.saveToString();
-			final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
-
+		synchronized (loadedSections) {
 			try {
-				writer.write(data);
-			} finally {
-				writer.close();
-			}
+				this.onSave();
 
-		} catch (final Exception ex) {
-			Remain.sneaky(ex);
+				final File parent = file.getCanonicalFile().getParentFile();
+
+				if (parent != null)
+					parent.mkdirs();
+
+				final String data = this.saveToString();
+				final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+
+				try {
+					writer.write(data);
+
+				} finally {
+					writer.close();
+				}
+
+			} catch (final Exception ex) {
+				Remain.sneaky(ex);
+			}
 		}
 	}
 
@@ -634,8 +664,14 @@ public abstract class FileStorage extends StorageSection {
 		if (this.file.exists()) {
 
 			this.file.delete();
-			//unregisterLoadedFile(this.file);
+			this.unregister();
 		}
+	}
+
+	public final void unregister() {
+		Valid.checkNotNull(this.file, "Cannot unregister null file before settings were loaded!");
+
+		loadedSections.remove(this.file.getAbsolutePath());
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -668,6 +704,10 @@ public abstract class FileStorage extends StorageSection {
 	// Getters
 	// ------------------------------------------------------------------------------------
 
+	public final void clear() {
+		this.section.clear();
+	}
+
 	public final String getFileName() {
 		return this.file == null ? "null" : this.file.getName();
 	}
@@ -678,6 +718,14 @@ public abstract class FileStorage extends StorageSection {
 
 	public final void setHeader(String... value) {
 		this.header = String.join("\n", value);
+	}
+
+	public final boolean isEmpty() {
+		return this.section.isEmpty();
+	}
+
+	public final SerializedMap serialize() {
+		return this.section.serialize();
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -764,11 +812,11 @@ public abstract class FileStorage extends StorageSection {
 
 	public static final class LocationList implements Iterable<Location> {
 
-		private final FileStorage settings;
+		private final FileConfig settings;
 
 		private final List<Location> points;
 
-		private LocationList(final FileStorage settings, final List<Location> points) {
+		private LocationList(final FileConfig settings, final List<Location> points) {
 			this.settings = settings;
 			this.points = points;
 		}

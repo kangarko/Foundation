@@ -13,13 +13,13 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.settings.ConfigItems;
-import org.mineacademy.fo.settings.YamlStorage;
+import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-public final class Variable extends YamlStorage {
+public final class Variable extends YamlConfig {
 
 	/**
 	 * Return the prototype file path for the given variable field name
@@ -126,7 +126,7 @@ public final class Variable extends YamlStorage {
 	// ----------------------------------------------------------------------------------
 
 	/**
-	 * @see org.mineacademy.fo.settings.YamlStorage#onLoad()
+	 * @see org.mineacademy.fo.settings.YamlConfig#onLoad()
 	 */
 	@Override
 	protected void onLoad() {
@@ -285,7 +285,7 @@ public final class Variable extends YamlStorage {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.settings.YamlStorage#equals(java.lang.Object)
+	 * @see org.mineacademy.fo.settings.YamlConfig#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {

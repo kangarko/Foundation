@@ -78,8 +78,20 @@ public final class Valid {
 	 * @param replacements
 	 */
 	public void checkBoolean(final boolean expression, final String falseMessage, final Object... replacements) {
-		if (!expression)
-			throw new FoException(String.format(falseMessage, replacements));
+		if (!expression) {
+
+			System.out.println("False message: " + falseMessage);
+
+			String message = falseMessage;
+
+			try {
+				message = String.format(falseMessage, replacements);
+
+			} catch (final Throwable t) {
+			}
+
+			throw new FoException(message);
+		}
 	}
 
 	/**

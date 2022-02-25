@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.settings.YamlStorage;
+import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 
@@ -49,7 +49,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			for (final File file : yamlFiles) {
 				try {
-					YamlStorage.fromFile(file);
+					YamlConfig.fromFile(file);
 
 				} catch (final Throwable t) {
 					t.printStackTrace();
