@@ -15,7 +15,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -27,13 +26,13 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlConfig.AccusativeHelper;
-import org.mineacademy.fo.settings.YamlConfig.TitleHelper;
+import org.mineacademy.fo.settings.FileStorage.AccusativeHelper;
+import org.mineacademy.fo.settings.FileStorage.TitleHelper;
 
 import lombok.Setter;
 
 /**
- * A special case {@link YamlConfig} that allows static access to this config. This is unsafe
+ * A special case {@link YamlStorage} that allows static access to this config. This is unsafe
  * however this is only to be used in two config instances - the main settings.yml file and
  * localization file, which allow static access from anywhere for convenience.
  * <p>
@@ -52,16 +51,16 @@ public abstract class YamlStaticConfig {
 	private static boolean autoloadSettingsAndLocalization = true;
 
 	/**
-	 * The temporary {@link YamlConfig} instance we store here to get values from
+	 * The temporary {@link YamlStorage} instance we store here to get values from
 	 */
-	private static YamlConfig TEMPORARY_INSTANCE;
+	private static YamlStorage TEMPORARY_INSTANCE;
 
 	/**
-	 * Internal use only: Create a new {@link YamlConfig} instance and link it to load fields via
+	 * Internal use only: Create a new {@link YamlStorage} instance and link it to load fields via
 	 * reflection.
 	 */
 	protected YamlStaticConfig() {
-		TEMPORARY_INSTANCE = new YamlConfig() {
+		TEMPORARY_INSTANCE = new YamlStorage() {
 
 			{
 				beforeLoad();
@@ -73,7 +72,7 @@ public abstract class YamlStaticConfig {
 			}
 
 			@Override
-			protected void onLoadFinish() {
+			protected void onLoad() {
 				loadViaReflection();
 			}
 		};
@@ -168,7 +167,7 @@ public abstract class YamlStaticConfig {
 	}
 
 	/**
-	 * @see YamlConfig#getUncommentedSections()
+	 * @see YamlStorage#getUncommentedSections()
 	 */
 	protected List<String> getUncommentedSections() {
 		return new ArrayList<>();
@@ -191,7 +190,7 @@ public abstract class YamlStaticConfig {
 
 	/**
 	 * Called automatically in {@link #load(List)}, you should call the standard load method from
-	 * {@link YamlConfig} here
+	 * {@link YamlStorage} here
 	 *
 	 * @throws Exception
 	 */
@@ -295,14 +294,6 @@ public abstract class YamlStaticConfig {
 	// Delegate methods
 	// -----------------------------------------------------------------------------------------------------
 
-	protected final void loadLocalization(String localePrefix) throws Exception {
-		final String localePath = "localization/messages_" + localePrefix + ".yml";
-		final List<String> lines = FileUtil.getInternalResource(localePath);
-		Valid.checkNotNull(lines, SimplePlugin.getNamed() + " does not support the localization: messages_" + localePrefix + ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
-
-		TEMPORARY_INSTANCE.loadConfiguration(localePath);
-	}
-
 	protected final void loadConfiguration(final String path) throws Exception {
 		TEMPORARY_INSTANCE.loadConfiguration(path, path);
 	}
@@ -331,7 +322,7 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final boolean isSetAbsolute(final String path) {
-		return TEMPORARY_INSTANCE.isSetAbsolute(path);
+		return TEMPORARY_INSTANCE.isStored(path);
 	}
 
 	protected static final boolean isSet(final String path) {
@@ -339,11 +330,11 @@ public abstract class YamlStaticConfig {
 	}
 
 	protected static final boolean isSetDefault(final String path) {
-		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isSet(path);
+		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isStored(TEMPORARY_INSTANCE.buildPathPrefix(path));
 	}
 
 	protected static final boolean isSetDefaultAbsolute(final String path) {
-		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isSetAbsolute(path);
+		return TEMPORARY_INSTANCE.getDefaults() != null && TEMPORARY_INSTANCE.getDefaults().isStored(path);
 	}
 
 	protected static final void move(final String fromRelative, final String toAbsolute) {
@@ -386,7 +377,7 @@ public abstract class YamlStaticConfig {
 	// Config manipulators
 	// -----------------------------------------------------------------------------------------------------
 
-	protected static final StrictList<CompMaterial> getMaterialList(final String path) {
+	protected static final List<CompMaterial> getMaterialList(final String path) {
 		return TEMPORARY_INSTANCE.getMaterialList(path);
 	}
 

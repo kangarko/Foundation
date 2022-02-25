@@ -16,7 +16,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlStorage;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Setter;
@@ -111,8 +111,8 @@ public final class DebugCommand extends SimpleSubCommand {
 
 				// Strip sensitive keys from .YML files
 				if (file.getName().endsWith(".yml")) {
-					final YamlConfig config = YamlConfig.fromFile(file);
-					final YamlConfig copyConfig = YamlConfig.fromFile(copy);
+					final YamlStorage config = YamlStorage.fromFile(file);
+					final YamlStorage copyConfig = YamlStorage.fromFile(copy);
 
 					for (final Map.Entry<String, Object> entry : config.getValues(true).entrySet()) {
 						final String key = entry.getKey();

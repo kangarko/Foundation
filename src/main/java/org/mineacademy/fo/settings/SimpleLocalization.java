@@ -3,6 +3,7 @@ package org.mineacademy.fo.settings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
@@ -41,7 +42,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 */
 	@Override
 	protected final void onLoadFinish() throws Exception {
-		loadLocalization(SimpleSettings.LOCALE_PREFIX);
+		final String localePath = "localization/messages_" + SimpleSettings.LOCALE_PREFIX + ".yml";
+		final String content = FileUtil.getInternalFileContent(localePath);
+
+		Valid.checkNotNull(content, SimplePlugin.getNamed() + " does not support the localization: messages_" + SimpleSettings.LOCALE_PREFIX
+				+ ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
+
+		this.loadConfiguration(localePath);
 	}
 
 	// --------------------------------------------------------------------

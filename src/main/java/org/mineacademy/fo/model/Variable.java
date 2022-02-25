@@ -12,15 +12,14 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.settings.ConfigItems;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlStorage;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-public final class Variable extends YamlConfig {
+public final class Variable extends YamlStorage {
 
 	/**
 	 * Return the prototype file path for the given variable field name
@@ -127,10 +126,10 @@ public final class Variable extends YamlConfig {
 	// ----------------------------------------------------------------------------------
 
 	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#onLoadFinish()
+	 * @see org.mineacademy.fo.settings.YamlStorage#onLoad()
 	 */
 	@Override
-	protected void onLoadFinish() {
+	protected void onLoad() {
 
 		this.type = get("Type", Type.class);
 		this.key = getString("Key");
@@ -179,28 +178,19 @@ public final class Variable extends YamlConfig {
 			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFileName() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 	}
 
-	/**
-	 * Return this class as a map
-	 *
-	 * @return
-	 */
 	@Override
-	public SerializedMap onSerialize() {
-		final SerializedMap map = new SerializedMap();
-
-		map.putIf("Type", this.type);
-		map.putIf("Key", this.key);
-		map.putIf("Sender_Condition", this.senderCondition);
-		map.putIf("Receiver_Condition", this.receiverCondition);
-		map.putIf("Hover", this.hoverText);
-		map.putIf("Hover_Item", this.hoverItem);
-		map.putIf("Open_Url", this.openUrl);
-		map.putIf("Suggest_Command", this.suggestCommand);
-		map.putIf("Run_Command", this.runCommand);
-		map.putIf("Sender_Permission", this.senderPermission);
-		map.putIf("Receiver_Permission", this.receiverPermission);
-
-		return map;
+	public void onSave() {
+		this.set("Type", this.type);
+		this.set("Key", this.key);
+		this.set("Sender_Condition", this.senderCondition);
+		this.set("Receiver_Condition", this.receiverCondition);
+		this.set("Hover", this.hoverText);
+		this.set("Hover_Item", this.hoverItem);
+		this.set("Open_Url", this.openUrl);
+		this.set("Suggest_Command", this.suggestCommand);
+		this.set("Run_Command", this.runCommand);
+		this.set("Sender_Permission", this.senderPermission);
+		this.set("Receiver_Permission", this.receiverPermission);
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -295,15 +285,7 @@ public final class Variable extends YamlConfig {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#toString()
-	 */
-	@Override
-	public String toString() {
-		return serialize().toStringFormatted();
-	}
-
-	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#equals(java.lang.Object)
+	 * @see org.mineacademy.fo.settings.YamlStorage#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
