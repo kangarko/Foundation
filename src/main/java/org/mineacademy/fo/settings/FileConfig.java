@@ -51,7 +51,7 @@ public abstract class FileConfig {
 
 	public static final String NO_DEFAULT = null;
 
-	private File file;
+	File file;
 	private String header = null;
 
 	ConfigSection section = new ConfigSection(); // overridden in load(File)
@@ -91,7 +91,7 @@ public abstract class FileConfig {
 		Object raw = this.section.retrieve(path);
 
 		if (this.defaults != null && def == null)
-			Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.retrieve(path) + ", has values: " + this.section.map.keySet());
+			Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.retrieve(path));
 
 		if (raw != null) {
 
@@ -448,6 +448,8 @@ public abstract class FileConfig {
 
 	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType, Object... valueDeserializeParams) {
 
+		//System.out.println("Getting map at '" + path + "' -> " + this.section.retrieve(path));
+
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 		final boolean exists = this.isSet(path);
@@ -584,6 +586,7 @@ public abstract class FileConfig {
 				this.file = file;
 
 				this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+
 				this.onLoad();
 				this.save();
 
@@ -639,13 +642,16 @@ public abstract class FileConfig {
 					parent.mkdirs();
 
 				final String data = this.saveToString();
-				final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
 
-				try {
-					writer.write(data);
+				if (data != null) {
+					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
 
-				} finally {
-					writer.close();
+					try {
+						writer.write(data);
+
+					} finally {
+						writer.close();
+					}
 				}
 
 			} catch (final Exception ex) {
