@@ -79,9 +79,6 @@ public final class Valid {
 	 */
 	public void checkBoolean(final boolean expression, final String falseMessage, final Object... replacements) {
 		if (!expression) {
-
-			System.out.println("False message: " + falseMessage);
-
 			String message = falseMessage;
 
 			try {
