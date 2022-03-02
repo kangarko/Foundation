@@ -76,8 +76,8 @@ public final class Lang extends YamlConfig {
 	 */
 	@Deprecated
 	public static void loadPrefixes() {
-		synchronized (instance) {
-			if (instance != null) {
+		if (instance != null) {
+			synchronized (instance) {
 				if (instance.isSet("Prefix.Announce"))
 					Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
 
@@ -97,6 +97,7 @@ public final class Lang extends YamlConfig {
 					Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
 			}
 		}
+
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

@@ -52,11 +52,11 @@ public abstract class FileConfig {
 	public static final String NO_DEFAULT = null;
 
 	File file;
-	private String header = null;
 
 	ConfigSection section = new ConfigSection(); // overridden in load(File)
 	ConfigSection defaults;
 	String defaultsPath;
+	String header = null;
 
 	private String pathPrefix = null;
 
@@ -104,7 +104,7 @@ public abstract class FileConfig {
 				raw = ((Integer) raw).longValue();
 
 			raw = SerializeUtil.deserialize(type, raw, deserializeParams);
-			this.checkAssignable(false, path, raw, type);
+			this.checkAssignable(path, raw, type);
 
 			return (T) raw;
 		}
@@ -114,26 +114,22 @@ public abstract class FileConfig {
 
 	private void copyDefault(final String path, final Class<?> type) {
 		if (this.defaults != null && !this.section.isStored(path)) {
-			Object object = this.defaults.retrieve(path);
-
+			final Object object = this.defaults.retrieve(path);
 			Valid.checkNotNull(object, "Inbuilt config " + this.getFileName() + " lacks " + (object == null ? "key" : object.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
-			this.checkAssignable(true, path, object, type);
 
-			object = SerializeUtil.serialize(object);
-
-			Common.log("&7Updating " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (object == null ? "&ckey removed" : "&b\'&f" + object + "&b\'") + "&r");
+			Common.log("&7Updating " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (object == null ? "&ckey removed" : "&b\'&f" + object.toString().replace("\n", ", ") + "&b\'") + "&r");
 			this.section.store(path, object);
 		}
 	}
 
-	private void checkAssignable(final boolean fromDefault, final String path, final Object object, final Class<?> type) {
+	private void checkAssignable(final String path, final Object object, final Class<?> type) {
 		if (!type.isAssignableFrom(object.getClass()) && !type.getSimpleName().equals(object.getClass().getSimpleName())) {
 
-			// Exception
+			// Exceptions
 			if (ConfigSerializable.class.isAssignableFrom(type) && object instanceof ConfigSection)
 				return;
 
-			throw new FoException("Malformed configuration! Key '" + path + "' in " + (fromDefault ? "inbuilt " : "") + this.getFileName() + " must be " + type.getSimpleName() + " but got " + object.getClass().getSimpleName() + ": '" + object + "'");
+			throw new FoException("Malformed configuration! Key '" + path + "' in " + this.getFileName() + " must be " + type.getSimpleName() + " but got " + object.getClass().getSimpleName() + ": '" + object + "'");
 		}
 	}
 
@@ -397,11 +393,11 @@ public abstract class FileConfig {
 		if (raw instanceof String) {
 			final String output = (String) raw;
 
-			return "'[]'".equals(output) || "[]".equals(output) ? new ArrayList<>() : Arrays.asList(output);
+			return "'[]'".equals(output) || "[]".equals(output) ? new ArrayList<>() : this.fixYamlBooleansInList((Object[]) output.split("\n"));
 		}
 
 		if (raw instanceof List)
-			return this.fixYamlBooleansInList((List<Object>) raw);
+			return this.fixYamlBooleansInList(((List<Object>) raw).toArray());
 
 		throw new FoException("Excepted a list at '" + path + "' in " + this.getFileName() + ", got (" + raw.getClass() + "): " + raw);
 	}
@@ -410,7 +406,7 @@ public abstract class FileConfig {
 	 * Attempts to convert objects into strings, since SnakeYAML parser interprets
 	 * "true" and "yes" as boolean types
 	 */
-	private List<String> fixYamlBooleansInList(@NonNull final Iterable<Object> list) {
+	private List<String> fixYamlBooleansInList(@NonNull final Object... list) {
 		final List<String> newList = new ArrayList<>();
 
 		for (final Object obj : list)
@@ -448,8 +444,6 @@ public abstract class FileConfig {
 
 	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType, Object... valueDeserializeParams) {
 
-		//System.out.println("Getting map at '" + path + "' -> " + this.section.retrieve(path));
-
 		// The map we are creating, preserve order
 		final LinkedHashMap<Key, Value> map = new LinkedHashMap<>();
 		final boolean exists = this.isSet(path);
@@ -475,8 +469,8 @@ public abstract class FileConfig {
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue(), valueDeserializeParams);
 
 				// Ensure the pair values are valid for the given paramenters
-				this.checkAssignable(false, path, key, keyType);
-				this.checkAssignable(false, path, value, valueType);
+				this.checkAssignable(path, key, keyType);
+				this.checkAssignable(path, value, valueType);
 
 				map.put(key, value);
 			}
@@ -511,12 +505,12 @@ public abstract class FileConfig {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue(), setDeserializeParameters);
 
-				// Ensure the pair values are valid for the given paramenters
-				this.checkAssignable(false, path, key, keyType);
+				// Ensure the pair values are valid for the given parameters
+				this.checkAssignable(path, key, keyType);
 
 				if (!value.isEmpty())
 					for (final Value item : value)
-						this.checkAssignable(false, path, item, setType);
+						this.checkAssignable(path, item, setType);
 
 				map.put(key, value);
 			}
@@ -720,10 +714,11 @@ public abstract class FileConfig {
 
 	public final String getHeader() {
 		return this.header;
+
 	}
 
-	public final void setHeader(String... value) {
-		this.header = String.join("\n", value);
+	public final void setHeader(String... values) {
+		this.header = String.join("\n", values);
 	}
 
 	public final boolean isEmpty() {

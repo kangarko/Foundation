@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +19,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -38,61 +40,86 @@ import lombok.SneakyThrows;
  * Source: https://github.com/tchristofferson/Config-Updater
  * Modified by MineAcademy.org
  */
-final class YamlComments {
+public final class YamlComments {
 
+	/**
+	 * Update a yaml file from a resource inside your plugin jar
+	 *
+	 * @param jarPath The yaml file name to update from, typically config.yml
+	 * @param diskFile The yaml file to update
+	 */
+	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile) {
+		writeComments(jarPath, diskFile, new ArrayList<>());
+	}
+
+	/**
+	 * Update a yaml file from a resource inside your plugin jar
+	 *
+	 * @param jarPath The yaml file name to update from, typically config.yml
+	 * @param diskFile The yaml file to update
+	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
+	 */
 	@SneakyThrows
-	static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) {
-		final List<String> defaultContent = Arrays.asList(FileUtil.getInternalFileContent(jarPath).split("\n"));
+	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) {
+		try {
+			final List<String> internalResourceContent = FileUtil.getInternalFileContent(jarPath);
 
-		final YamlConfiguration oldConfig = new YamlConfiguration();
-		oldConfig.load(diskFile);
+			final FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(diskFile);
+			final FileConfiguration newConfig = new YamlConfiguration();
 
-		final YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(diskFile);
+			newConfig.loadFromString(String.join("\n", internalResourceContent));
 
-		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
+			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
 
-		// ignoredSections can ONLY contain configurations sections
-		for (final String ignoredSection : ignoredSections)
-			if (defaultConfig.isSet(ignoredSection))
-				Valid.checkBoolean(defaultConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections in " + jarPath + " (file " + diskFile + ")" + " not '" + ignoredSection + "' that is " + defaultConfig.get(ignoredSection));
+			// ignoredSections can ONLY contain configurations sections
+			for (final String ignoredSection : ignoredSections)
+				if (newConfig.isSet(ignoredSection))
+					Valid.checkBoolean(newConfig.isConfigurationSection(ignoredSection), "Can only ignore config sections in " + jarPath + " (file " + diskFile + ")" + " not '" + ignoredSection + "' that is " + newConfig.get(ignoredSection));
 
-		// Save keys added to config that are not in default and would otherwise be lost
-		final Set<String> newKeys = defaultConfig.getKeys(true);
-		final Map<String, Object> removedKeys = new HashMap<>();
+			// Save keys added to config that are not in default and would otherwise be lost
+			final Set<String> newKeys = newConfig.getKeys(true);
+			final Map<String, Object> removedKeys = new HashMap<>();
 
-		outerLoop:
-		for (final Map.Entry<String, Object> oldEntry : oldConfig.getValues(true).entrySet()) {
-			final String oldKey = oldEntry.getKey();
+			outerLoop:
+			for (final Map.Entry<String, Object> oldEntry : oldConfig.getValues(true).entrySet()) {
+				final String oldKey = oldEntry.getKey();
 
-			for (final String ignoredKey : ignoredSections)
-				if (oldKey.startsWith(ignoredKey))
-					continue outerLoop;
+				for (final String ignoredKey : ignoredSections)
+					if (oldKey.startsWith(ignoredKey))
+						continue outerLoop;
 
-			if (!newKeys.contains(oldKey))
-				removedKeys.put(oldKey, oldEntry.getValue());
+				if (!newKeys.contains(oldKey))
+					removedKeys.put(oldKey, oldEntry.getValue());
+			}
+
+			// Move to unused/ folder and retain old path
+			if (!removedKeys.isEmpty()) {
+				final File backupFile = FileUtil.getOrMakeFile("unused/" + diskFile.getName());
+
+				final FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
+
+				for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
+					backupConfig.set(entry.getKey(), entry.getValue());
+
+				backupConfig.save(backupFile);
+
+				Common.warning("The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
+			}
+
+			final DumperOptions dumperOptions = new DumperOptions();
+			dumperOptions.setWidth(4096);
+
+			final Yaml yaml = new Yaml(dumperOptions);
+			final Map<String, String> comments = parseComments(internalResourceContent, ignoredSections, oldConfig, yaml);
+
+			write(newConfig, oldConfig, comments, ignoredSections, writer, yaml);
+
+		} catch (final IOException ex) {
+			Common.error(ex,
+					"Failed writing comments!",
+					"Path in plugin jar wherefrom comments are fetched: " + jarPath,
+					"Disk file where comments are written: " + diskFile);
 		}
-
-		// Move to unused/ folder and retain old path
-		if (!removedKeys.isEmpty()) {
-			final File backupFile = FileUtil.getOrMakeFile("unused/" + diskFile.getName());
-
-			final FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
-
-			for (final Map.Entry<String, Object> entry : removedKeys.entrySet())
-				backupConfig.set(entry.getKey(), entry.getValue());
-
-			backupConfig.save(backupFile);
-
-			Common.warning("The following entries in " + diskFile.getName() + " are unused and were moved into " + backupFile.getName() + ": " + removedKeys.keySet());
-		}
-
-		final DumperOptions dumperOptions = new DumperOptions();
-		dumperOptions.setWidth(4096);
-
-		final Yaml yaml = new Yaml(dumperOptions);
-		final Map<String, String> comments = parseComments(defaultContent, ignoredSections, oldConfig, yaml);
-
-		write(defaultConfig, oldConfig, comments, ignoredSections, writer, yaml);
 	}
 
 	// Write method doing the work.
@@ -157,7 +184,6 @@ final class YamlComments {
 	}
 
 	private static void write0(String key, boolean forceNew, FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
-
 		final String[] keys = key.split("\\.");
 		final String actualKey = keys[keys.length - 1];
 		final String comment = comments.remove(key);
@@ -189,12 +215,12 @@ final class YamlComments {
 		// Write new object
 		else
 			write(newObj, actualKey, prefixSpaces, yaml, writer);
+
 	}
 
 	// Doesn't work with configuration sections, must be an actual object
 	// Auto checks if it is serializable and writes to file
 	private static void write(Object obj, String actualKey, String prefixSpaces, Yaml yaml, BufferedWriter writer) throws IOException {
-
 		if (obj instanceof ConfigurationSerializable)
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(((ConfigurationSerializable) obj).serialize()));
 
@@ -244,6 +270,7 @@ final class YamlComments {
 
 		if (list.isEmpty()) {
 			builder.append(" []\n");
+
 			return builder.toString();
 		}
 
@@ -251,18 +278,32 @@ final class YamlComments {
 
 		for (int i = 0; i < list.size(); i++) {
 			final Object o = list.get(i);
+			boolean wasMap = false;
 
 			if (o instanceof String || o instanceof Character) {
 				builder.append(prefixSpaces).append("- '").append(o.toString().replace("'", "''")).append("'");
 
 			} else if (o instanceof List) {
-				builder.append(prefixSpaces).append("- ").append(yaml.dump(o));
+				builder.append(prefixSpaces).append("- ").append(yaml.dump(SerializeUtil.serialize(o)));
+
+			} else if (o instanceof Map || o instanceof ConfigSection) {
+
+				final SerializedMap map = SerializedMap.of(o);
+				boolean first = true;
+
+				for (final Map.Entry<String, Object> entry : map.entrySet()) {
+					builder.append(prefixSpaces).append(first ? "- " : "  ").append(entry.getKey()).append(": ").append(yaml.dump(SerializeUtil.serialize(entry.getValue())));
+
+					first = false;
+				}
+
+				wasMap = true;
 
 			} else {
-				builder.append(prefixSpaces).append("- ").append(o);
+				builder.append(prefixSpaces).append("- ").append(SerializeUtil.serialize(o));
 			}
 
-			if (i != list.size()) {
+			if (i != list.size() && !wasMap) {
 				builder.append("\n");
 			}
 		}

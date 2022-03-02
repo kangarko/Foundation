@@ -394,10 +394,15 @@ public final class CompMetadata {
 		protected void onLoad() {
 			synchronized (LOCK) {
 				loadEntities();
-				loadBlockStates();
 
-				save();
+				loadBlockStates();
 			}
+		}
+
+		@Override
+		protected void onSave() {
+			this.set("Entity", this.entityMetadataMap);
+			this.set("Block", this.blockMetadataMap);
 		}
 
 		private void loadEntities() {
@@ -425,7 +430,7 @@ public final class CompMetadata {
 					}
 				}
 
-				save("Entity", this.entityMetadataMap);
+				set("Entity", this.entityMetadataMap);
 			}
 		}
 
@@ -447,7 +452,7 @@ public final class CompMetadata {
 					}
 				}
 
-				save("Block", this.blockMetadataMap);
+				set("Block", this.blockMetadataMap);
 			}
 		}
 

@@ -44,7 +44,6 @@ import org.mineacademy.fo.model.RangedSimpleTime;
 import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.model.SimpleTime;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -669,12 +668,10 @@ public final class SerializeUtil {
 		if (obj instanceof ItemStack)
 			return (ItemStack) obj;
 
-		Valid.checkBoolean(obj instanceof Map, "Expected Map<String, Object> when deserializing ItemStack, got: " + obj.getClass().getSimpleName());
+		final SerializedMap map = SerializedMap.of(obj);
+		final ItemStack item = ItemStack.deserialize(map.asMap());
 
-		final Map<String, Object> map = (Map<String, Object>) obj;
-		final ItemStack item = ItemStack.deserialize(map);
-
-		final Object raw = map.get("meta");
+		final Object raw = map.get("meta", Object.class);
 
 		if (raw != null)
 			if (raw instanceof ItemMeta)
@@ -728,12 +725,12 @@ public final class SerializeUtil {
 								// Likely not MC compatible, ignore
 							}
 
-					Common.log(
+					/*Common.log(
 							"**************** NOTICE ****************",
 							SimplePlugin.getNamed() + " manually deserialized your item.",
 							"Item: " + item,
 							"This is ONLY supported for basic items, items having",
-							"special flags like monster eggs will NOT function.");
+							"special flags like monster eggs will NOT function.");*/
 
 					item.setItemMeta(itemMeta);
 				}
