@@ -212,11 +212,11 @@ public class SimpleScoreboard {
 					update();
 
 				} catch (final Throwable t) {
-					final String lines = String.join(" ", rows);
 
 					Common.error(t,
 							"Error displaying " + SimpleScoreboard.this,
-							"Entries: " + lines,
+							"Entries: ",
+							String.join("\n", rows),
 							"%error",
 							"Stopping rendering for safety.");
 
@@ -328,7 +328,7 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	private final String fixDuplicates(final StrictList<String> duplicates, String message) {
-		message = message.substring(0, 40);
+		message = message.length() > 40 ? message.substring(0, 40) : message;
 
 		final boolean cut = MinecraftVersion.olderThan(V.v1_8);
 
