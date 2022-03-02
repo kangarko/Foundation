@@ -1606,10 +1606,7 @@ public final class Remain {
 	 * @param material   the material
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Location location, final CompMaterial material) {
-		if (delayTicks > 0)
-			Common.runLater(delayTicks, () -> sendBlockChange0(player, location, material));
-		else
-			sendBlockChange0(player, location, material);
+		Common.runLater(delayTicks, () -> sendBlockChange0(player, location, material));
 	}
 
 	private static void sendBlockChange0(final Player player, final Location location, final CompMaterial material) {
@@ -1629,10 +1626,7 @@ public final class Remain {
 	 * @param block
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Block block) {
-		if (delayTicks > 0)
-			Common.runLater(delayTicks, () -> sendBlockChange0(player, block));
-		else
-			sendBlockChange0(player, block);
+		Common.runLater(delayTicks, () -> sendBlockChange0(player, block));
 	}
 
 	private static void sendBlockChange0(final Player player, final Block block) {
