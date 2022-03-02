@@ -88,10 +88,14 @@ public class YamlConfig extends FileConfig {
 			// Copy if not exists yet
 			file = FileUtil.extract(from, to);
 
+			// Initialize file early
+			this.file = file;
+
 			// Keep a loaded copy to copy default values from
 			final YamlConfig defaultConfig = new YamlConfig();
-			final String defaultContent = FileUtil.getInternalFileContent(from);
+			final String defaultContent = String.join("\n", FileUtil.getInternalFileContent(from));
 
+			defaultConfig.file = file;
 			defaultConfig.loadFromString(defaultContent);
 
 			this.defaults = defaultConfig.section;
@@ -107,8 +111,9 @@ public class YamlConfig extends FileConfig {
 	@NonNull
 	@Override
 	final String saveToString() {
+
 		if (this.defaults == null) {
-			final String header = this.buildHeader();
+			final String header = this.getHeader() == null ? "" : "# " + String.join("\n# ", this.getHeader().split("\n")) + "\n\n";
 			final Map<String, Object> values = this.section.getValues(false);
 
 			String dump = this.yaml.dump(values);
@@ -120,7 +125,7 @@ public class YamlConfig extends FileConfig {
 		}
 
 		// Special case, write using comments engine
-		YamlComments.writeComments(this.defaultsPath, this.file, getUncommentedSections());
+		YamlComments.writeComments(this.defaultsPath, this.file, this.getUncommentedSections());
 
 		return null;
 	}
@@ -133,15 +138,16 @@ public class YamlConfig extends FileConfig {
 		try {
 			input = (Map<?, ?>) this.yaml.load(contents);
 
-		} catch (final YAMLException e) {
-			throw e;
+		} catch (final YAMLException ex) {
+			throw ex;
 
 		} catch (final ClassCastException e) {
 			throw new IllegalArgumentException("Top level is not a Map.");
 		}
 
 		final String header = this.parseHeader(contents);
-		if (header.length() > 0)
+
+		if (header.trim().length() > 0)
 			this.setHeader(header);
 
 		this.section.map.clear();
@@ -170,9 +176,9 @@ public class YamlConfig extends FileConfig {
 		boolean foundHeader = false;
 
 		for (int i = 0; (i < lines.length) && (readingHeader); i++) {
-			final String line = lines[i];
+			final String line = lines[i].trim();
 
-			if (line.startsWith(COMMENT_PREFIX)) {
+			if (line.startsWith(COMMENT_PREFIX) || line.equals("#")) {
 				if (i > 0)
 					result.append("\n");
 
@@ -180,37 +186,17 @@ public class YamlConfig extends FileConfig {
 					result.append(line.substring(COMMENT_PREFIX.length()));
 
 				foundHeader = true;
-			} else if ((foundHeader) && (line.length() == 0))
+
+			} else if (foundHeader && line.length() == 0)
 				result.append("\n");
+
 			else if (foundHeader)
 				readingHeader = false;
 		}
 
-		return result.toString();
-	}
+		final String string = result.toString();
 
-	@NonNull
-	private String buildHeader() {
-		final String header = this.getHeader();
-
-		if (header == null)
-			return "";
-
-		final StringBuilder builder = new StringBuilder();
-		final String[] lines = header.split("\r?\n", -1);
-		boolean startedHeader = false;
-
-		for (int i = lines.length - 1; i >= 0; i--) {
-			builder.insert(0, "\n");
-
-			if ((startedHeader) || (lines[i].length() != 0)) {
-				builder.insert(0, lines[i]);
-				builder.insert(0, COMMENT_PREFIX);
-				startedHeader = true;
-			}
-		}
-
-		return builder.toString();
+		return string.trim().isEmpty() ? "" : string + "\n";
 	}
 
 	@NonNull
@@ -244,16 +230,16 @@ public class YamlConfig extends FileConfig {
 
 	/*@NonNull
 	public static final YamlConfig fromReader(@NonNull Reader reader) {
-	
+
 		final YamlConfig config = new YamlConfig();
-	
+
 		try {
 			config.load(reader);
-	
+
 		} catch (final Exception ex) {
 			Logger.getGlobal().log(Level.SEVERE, "Cannot load configuration from stream", ex);
 		}
-	
+
 		return config;
 	}*/
 

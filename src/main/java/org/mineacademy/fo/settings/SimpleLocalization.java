@@ -43,7 +43,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 	@Override
 	protected final void onLoadFinish() throws Exception {
 		final String localePath = "localization/messages_" + SimpleSettings.LOCALE_PREFIX + ".yml";
-		final String content = FileUtil.getInternalFileContent(localePath);
+		final Object content = FileUtil.getInternalFileContent(localePath);
 
 		Valid.checkNotNull(content, SimplePlugin.getNamed() + " does not support the localization: messages_" + SimpleSettings.LOCALE_PREFIX
 				+ ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");

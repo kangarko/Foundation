@@ -1,6 +1,5 @@
 package org.mineacademy.fo.collection;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,12 +15,8 @@ import java.util.function.Function;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
@@ -502,7 +497,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @param key
 	 * @return
 	 */
-	public ItemStack getItem(final String key) {
+	public ItemStack getItemStack(final String key) {
 		return getItem(key, null);
 	}
 
@@ -519,78 +514,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (obj == null)
 			return def;
 
-		if (obj instanceof ItemStack)
-			return (ItemStack) obj;
-
-		final Map<String, Object> map = (Map<String, Object>) obj;
-		final ItemStack item = ItemStack.deserialize(map);
-
-		final Object raw = map.get("meta");
-
-		if (raw != null)
-			if (raw instanceof ItemMeta)
-				item.setItemMeta((ItemMeta) raw);
-
-			else if (raw instanceof Map) {
-				final Map<String, Object> meta = (Map<String, Object>) raw;
-
-				try {
-					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (meta.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
-					final Constructor<?> c = cl.getDeclaredConstructor(Map.class);
-					c.setAccessible(true);
-
-					final Object craftMeta = c.newInstance((Map<String, ?>) raw);
-
-					if (craftMeta instanceof ItemMeta)
-						item.setItemMeta((ItemMeta) craftMeta);
-
-				} catch (final Throwable t) {
-
-					// We have to manually deserialize metadata :(
-					final ItemMeta itemMeta = item.getItemMeta();
-
-					final String display = meta.containsKey("display-name") ? (String) meta.get("display-name") : null;
-
-					if (display != null)
-						itemMeta.setDisplayName(display);
-
-					final List<String> lore = meta.containsKey("lore") ? (List<String>) meta.get("lore") : null;
-
-					if (lore != null)
-						itemMeta.setLore(lore);
-
-					final SerializedMap enchants = meta.containsKey("enchants") ? SerializedMap.of(meta.get("enchants")) : null;
-
-					if (enchants != null)
-						for (final Map.Entry<String, Object> entry : enchants.entrySet()) {
-							final Enchantment enchantment = Enchantment.getByName(entry.getKey());
-							final int level = (int) entry.getValue();
-
-							itemMeta.addEnchant(enchantment, level, true);
-						}
-
-					final List<String> itemFlags = meta.containsKey("ItemFlags") ? (List<String>) meta.get("ItemFlags") : null;
-
-					if (itemFlags != null)
-						for (final String flag : itemFlags)
-							try {
-								itemMeta.addItemFlags(ItemFlag.valueOf(flag));
-							} catch (final Exception ex) {
-								// Likely not MC compatible, ignore
-							}
-
-					Common.log(
-							"**************** NOTICE ****************",
-							SimplePlugin.getNamed() + " manually deserialized your item.",
-							"Item: " + item,
-							"This is ONLY supported for basic items, items having",
-							"special flags like monster eggs will NOT function.");
-
-					item.setItemMeta(itemMeta);
-				}
-			}
-
-		return item;
+		return SerializeUtil.deserializeItemStack(obj);
 	}
 
 	/**
@@ -1099,7 +1023,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 				return (SerializedMap) firstArgument;
 
 			if (firstArgument instanceof Map)
-				return SerializedMap.of((Map<String, Object>) firstArgument);
+				return SerializedMap.of(firstArgument);
 
 			if (firstArgument instanceof StrictMap)
 				return SerializedMap.of(((StrictMap<String, Object>) firstArgument).getSource());
@@ -1122,28 +1046,47 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (object instanceof SerializedMap)
 			return (SerializedMap) object;
 
-		if (object instanceof Map || object instanceof MemorySection)
+		if (object instanceof Map) {
+			final Map<String, Object> copyOf = new LinkedHashMap<>();
+
+			for (final Map.Entry<?, ?> entry : ((Map<String, Object>) object).entrySet()) {
+				final Object key = entry.getKey();
+
+				if (key == null)
+					copyOf.put(null, entry.getValue());
+
+				else {
+					final String stringKey = key.toString();
+					final Object value = entry.getValue();
+
+					final String[] split = stringKey.split("\\=");
+
+					// Spigot's special way of storing maps 'key=value'
+					if (split.length == 2 && value == null) {
+						final String actualKey = split[0];
+						final String actualValue = split[1];
+
+						copyOf.put(actualKey, actualValue);
+					}
+
+					else
+						copyOf.put(stringKey, value);
+				}
+			}
+
+			final SerializedMap serialized = new SerializedMap();
+			serialized.map.putAll(copyOf);
+
+			return serialized;
+		}
+
+		if (object instanceof MemorySection)
 			return of(Common.getMapFromSection(object));
 
 		if (object instanceof ConfigSection)
 			return of(((ConfigSection) object).getValues(true));
 
 		throw new FoException("SerializedMap does not know how to convert " + object.getClass().getSimpleName() + ": " + object);
-	}
-
-	/**
-	 * Converts the given Map into a serializable map
-	 *
-	 * @param map
-	 * @return
-	 */
-	public static SerializedMap of(final Map<String, Object> map) {
-		final SerializedMap serialized = new SerializedMap();
-
-		serialized.map.clear();
-		serialized.map.putAll(map);
-
-		return serialized;
 	}
 
 	/**
