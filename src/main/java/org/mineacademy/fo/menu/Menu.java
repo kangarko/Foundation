@@ -44,7 +44,6 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -154,7 +153,6 @@ public abstract class Menu {
 	/**
 	 * A one way boolean set to true in {@link #handleClose(Inventory)}
 	 */
-	@Getter(value = AccessLevel.PACKAGE)
 	private boolean closed = false;
 
 	/**
