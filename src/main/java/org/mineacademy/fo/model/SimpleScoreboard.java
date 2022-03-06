@@ -26,6 +26,11 @@ public class SimpleScoreboard {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Fixes problems with Java character conversation (toString())
+	 */
+	private static final String COLOR_CHAR = "\u00A7";
+
+	/**
 	 * Unique chatcolor identifiers for specific team entries
 	 */
 	private static final Map<Integer, String> lineEntries;
@@ -34,14 +39,14 @@ public class SimpleScoreboard {
 		lineEntries = new HashMap<>();
 
 		for(int i = 0; i < 10; i++)
-			lineEntries.put(i, ChatColor.COLOR_CHAR + i + ChatColor.COLOR_CHAR + "r");
+			lineEntries.put(i, COLOR_CHAR + i + COLOR_CHAR + "r");
 
-		lineEntries.put(10, ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "r");
-		lineEntries.put(11, ChatColor.COLOR_CHAR + "b" + ChatColor.COLOR_CHAR + "r");
-		lineEntries.put(12, ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "r");
-		lineEntries.put(13, ChatColor.COLOR_CHAR + "d" + ChatColor.COLOR_CHAR + "r");
-		lineEntries.put(14, ChatColor.COLOR_CHAR + "e" + ChatColor.COLOR_CHAR + "r");
-		lineEntries.put(15, ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "r");
+		lineEntries.put(10, COLOR_CHAR + "a" + COLOR_CHAR + "r");
+		lineEntries.put(11, COLOR_CHAR + "b" + COLOR_CHAR + "r");
+		lineEntries.put(12, COLOR_CHAR + "c" + COLOR_CHAR + "r");
+		lineEntries.put(13, COLOR_CHAR + "d" + COLOR_CHAR + "r");
+		lineEntries.put(14, COLOR_CHAR + "e" + COLOR_CHAR + "r");
+		lineEntries.put(15, COLOR_CHAR + "f" + COLOR_CHAR + "r");
 	}
 
 	/**
@@ -261,7 +266,7 @@ public class SimpleScoreboard {
 			Team line = scoreboard.getTeam("line" + scoreboardLine);
 
 			//31 or 30 is the maximum, depends on the chatcolor from the previous line
-			//16 for prefix, ChatColor.COLOR_CHAR + chatcolor and 14 more characters
+			//16 for prefix, COLOR_CHAR + chatcolor and 14 more characters
 			//Maybe there is a way to get more characters, but then you have to play with the entries
 			//(Team.addEntry() and add the same entry on the scoreboard)
 			//Refer to https://www.spigotmc.org/wiki/making-scoreboard-with-teams-no-flicker/ for more information
@@ -271,11 +276,11 @@ public class SimpleScoreboard {
 				String text = replaceTheme(replaceVariables(viewedScoreboard.getViewer(), sidebarEntry));
 				String prefix = text.substring(0, Math.min(16, text.length()));
 				//Copying over the chatcolor from the prefix
-				String suffix = text.length() > 16 ? text.substring(16, Math.min(prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR)) ? 31 : 30, text.length())) : "";
+				String suffix = text.length() > 16 ? text.substring(16, Math.min(prefix.endsWith(COLOR_CHAR) ? 31 : 30, text.length())) : "";
 
-				if (prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
+				if (prefix.endsWith(COLOR_CHAR)) {
 					prefix = prefix.substring(0, prefix.length() - 1);
-					suffix = ChatColor.COLOR_CHAR + suffix;
+					suffix = COLOR_CHAR + suffix;
 				} else {
 					suffix = ChatColor.getLastColors(prefix) + suffix;
 				}
