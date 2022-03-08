@@ -36,7 +36,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	@Override
-	protected final void onLoadFinish() throws Exception {
+	protected final void onLoad() throws Exception {
 		loadConfiguration(getSettingsFileName());
 	}
 
@@ -71,7 +71,7 @@ public class SimpleSettings extends YamlStaticConfig {
 		setPathPrefix(null);
 
 		if ((VERSION = getInteger("Version")) != getConfigVersion())
-			setNoSave("Version", getConfigVersion());
+			set("Version", getConfigVersion());
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class SimpleSettings extends YamlStaticConfig {
 
 			// Archaic
 			if (isSetAbsolute("Debug") && !(getObject("Debug") instanceof List))
-				setNoSave("Debug", null);
+				set("Debug", null);
 		}
 
 		{ // Prefix
