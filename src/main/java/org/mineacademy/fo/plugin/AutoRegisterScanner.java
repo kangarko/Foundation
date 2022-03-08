@@ -1,5 +1,6 @@
 package org.mineacademy.fo.plugin;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -35,8 +36,11 @@ import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
+import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.YamlStaticConfig;
 
 /**
  * Utilizes \@AutoRegister annotation to add auto registration support for commands, events and much more.
@@ -65,109 +69,162 @@ final class AutoRegisterScanner {
 		enchantListenersRegistered = false;
 		registeredCommandGroups.clear();
 
-		// Ignore anonymous inner classes
-		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
+		// Find all plugin classes that can be autoregistered
+		final List<Class<?>> classes = findValidClasses();
 
-		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
+		// Register settings early to be used later
+		registerSettings(classes);
 
-			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
-				final JarEntry jar = entry.nextElement();
-				final String name = jar.getName().replace("/", ".");
+		for (final Class<?> clazz : classes)
+			try {
 
-				// Ignore files such as settings.yml
-				if (!name.endsWith(".class"))
+				// Prevent beginner programmer mistake of forgetting to implement listener
+				try {
+					for (final Method method : clazz.getMethods())
+						if (method.isAnnotationPresent(EventHandler.class))
+							Valid.checkBoolean(Listener.class.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
+
+				} catch (final Error err) {
+					// Ignore, likely caused by missing plugins
+				}
+
+				// Handled above
+				if (YamlStaticConfig.class.isAssignableFrom(clazz))
 					continue;
 
-				try {
-					final String className = name.substring(0, name.length() - 6);
+				// Auto register classes
+				final AutoRegister autoRegister = clazz.getAnnotation(AutoRegister.class);
 
-					Class<?> clazz = null;
+				// Require our annotation to be used, or support legacy classes from Foundation 5
+				if (autoRegister != null || Tool.class.isAssignableFrom(clazz) || SimpleEnchantment.class.isAssignableFrom(clazz)) {
+					Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for it to be registered automatically (or via @AutoRegister)");
 
-					// Look up the Java class, silently ignore if failing
 					try {
-						clazz = SimplePlugin.class.getClassLoader().loadClass(className);
+						autoRegister(clazz, autoRegister == null || !autoRegister.hideIncompatibilityWarnings());
 
-					} catch (final NoClassDefFoundError | ClassNotFoundException | IncompatibleClassChangeError error) {
-						continue;
+					} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
+						Bukkit.getLogger().warning("Failed to auto register " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
+
+					} catch (final Throwable t) {
+						final String error = Common.getOrEmpty(t.getMessage());
+
+						if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
+							Bukkit.getLogger().warning("**** WARNING ****");
+
+							if (error.contains("DragonFireball"))
+								Bukkit.getLogger().warning("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
+							else
+								Bukkit.getLogger().warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
+						} else
+							Common.error(t, "Failed to auto register class " + clazz);
 					}
-
-					// Ignore abstract or anonymous classes
-					if (!Modifier.isAbstract(clazz.getModifiers()) && !anonymousClassPattern.matcher(className).find()) {
-
-						// Prevent beginner programmer mistake of forgetting to implement listener
-						try {
-							for (final Method method : clazz.getMethods())
-								if (method.isAnnotationPresent(EventHandler.class))
-									Valid.checkBoolean(Listener.class.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
-
-						} catch (final Error err) {
-							// Ignore, likely caused by missing plugins
-						}
-
-						// Auto register classes
-						final AutoRegister autoRegister = clazz.getAnnotation(AutoRegister.class);
-
-						// Require our annotation to be used, or support legacy classes from Foundation 5
-						if (autoRegister != null || Tool.class.isAssignableFrom(clazz) || SimpleEnchantment.class.isAssignableFrom(clazz)) {
-							Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for it to be registered automatically (or via @AutoRegister)");
-
-							try {
-								scan(clazz, autoRegister == null || !autoRegister.hideIncompatibilityWarnings());
-
-							} catch (final NoClassDefFoundError | NoSuchFieldError ex) {
-								Bukkit.getLogger().warning("Failed to auto register " + clazz + " due to it requesting missing fields/classes: " + ex.getMessage());
-
-								// Ignore if no field is present
-
-							} catch (final Throwable t) {
-								final String error = Common.getOrEmpty(t.getMessage());
-
-								if (t instanceof NoClassDefFoundError && error.contains("org/bukkit/entity")) {
-									Bukkit.getLogger().warning("**** WARNING ****");
-
-									if (error.contains("DragonFireball"))
-										Bukkit.getLogger().warning("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
-									else
-										Bukkit.getLogger().warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
-								} else
-									Common.error(t, "Failed to auto register class " + clazz);
-							}
-						}
-					}
-
-				} catch (final Throwable t) {
-
-					// Ignore exception in other class we loaded
-					if (t instanceof VerifyError)
-						continue;
-
-					Common.error(t, "Failed to scan class '" + name + "' using Foundation!");
-				}
-			}
-
-			boolean mainCommandGroupFound = false;
-
-			for (final SimpleCommandGroup group : registeredCommandGroups) {
-
-				// Register if main command or there is only one command group, then assume main
-				if (group.getLabel().equals(SimpleSettings.MAIN_COMMAND_ALIASES.first()) || registeredCommandGroups.size() == 1) {
-					Valid.checkBoolean(!mainCommandGroupFound, "Found 2 or more command groups that do not specify label in their constructor."
-							+ " (We can only automatically use one of such groups as the main one using Command_Aliases as command label(s)"
-							+ " from settings.yml but not more.");
-
-					SimplePlugin.getInstance().setMainCommand(group);
-					mainCommandGroupFound = true;
 				}
 
-				SimplePlugin.getInstance().registerCommands(group);
+			} catch (final Throwable t) {
+
+				// Ignore exception in other class we loaded
+				if (t instanceof VerifyError)
+					continue;
+
+				Common.error(t, "Failed to scan class '" + clazz + "' using Foundation!");
 			}
 
-		} catch (final Throwable t) {
-			Common.error(t, "Failed to scan classes to register - your classes using @AutoRegister will not function!");
+		// Register command groups later
+		registerCommandGroup(classes);
+	}
+
+	/*
+	 * Registers settings and localization classes, either automatically if
+	 * a class is detected, or forced if settings/localization files are found
+	 */
+	private static void registerSettings(List<Class<?>> classes) {
+		final List<Class<?>> staticSettingsFound = new ArrayList<>();
+		final List<Class<?>> staticLocalizations = new ArrayList<>();
+
+		for (final Class<?> clazz : classes) {
+			boolean load = false;
+
+			if (clazz == SimpleLocalization.class || clazz == SimpleSettings.class || clazz == YamlStaticConfig.class)
+				continue;
+
+			if (SimpleSettings.class.isAssignableFrom(clazz)) {
+				staticSettingsFound.add(clazz);
+
+				load = true;
+			}
+
+			if (SimpleLocalization.class.isAssignableFrom(clazz)) {
+				staticLocalizations.add(clazz);
+
+				load = true;
+			}
+
+			if (load || (!load && YamlStaticConfig.class.isAssignableFrom(clazz))) {
+				System.out.println("REGISTERING " + clazz);
+
+				YamlStaticConfig.load((Class<? extends YamlStaticConfig>) clazz);
+			}
+		}
+
+		boolean staticSettingsFileExist = false;
+		boolean staticLocalizationFileExist = false;
+
+		try (final JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry type = it.nextElement();
+				final String name = type.getName();
+
+				if (name.matches("settings\\.yml"))
+					staticSettingsFileExist = true;
+
+				else if (name.matches("localization\\/messages\\_(.*)\\.yml"))
+					staticLocalizationFileExist = true;
+			}
+		} catch (final IOException ex) {
+		}
+
+		Valid.checkBoolean(staticSettingsFound.size() < 2, "Cannot have more than one class extend SimpleSettings: " + staticSettingsFound);
+		Valid.checkBoolean(staticLocalizations.size() < 2, "Cannot have more than one class extend SimpleLocalization: " + staticLocalizations);
+
+		if (staticSettingsFound.isEmpty() && staticSettingsFileExist) {
+			System.out.println("REGISTERING NATIVE SIMPLESETTINGS");
+
+			YamlStaticConfig.load(SimpleSettings.class);
+		}
+
+		if (staticLocalizations.isEmpty() && staticLocalizationFileExist) {
+			System.out.println("REGISTERING NATIVE SIMPLELOCALIZATION");
+
+			YamlStaticConfig.load(SimpleLocalization.class);
 		}
 	}
 
-	private static void scan(Class<?> clazz, boolean printWarnings) {
+	/*
+	 * Registers command groups, automatically assuming the main command group from the main command label
+	 */
+	private static void registerCommandGroup(List<Class<?>> classes) {
+		boolean mainCommandGroupFound = false;
+
+		for (final SimpleCommandGroup group : registeredCommandGroups) {
+
+			// Register if main command or there is only one command group, then assume main
+			if (group.getLabel().equals(SimpleSettings.MAIN_COMMAND_ALIASES.first()) || registeredCommandGroups.size() == 1) {
+				Valid.checkBoolean(!mainCommandGroupFound, "Found 2 or more command groups that do not specify label in their constructor."
+						+ " (We can only automatically use one of such groups as the main one using Command_Aliases as command label(s)"
+						+ " from settings.yml but not more.");
+
+				SimplePlugin.getInstance().setMainCommand(group);
+				mainCommandGroupFound = true;
+			}
+
+			SimplePlugin.getInstance().registerCommands(group);
+		}
+	}
+
+	/*
+	 * Automatically registers the given class, printing console warnings
+	 */
+	private static void autoRegister(Class<?> clazz, boolean printWarnings) {
 
 		// Special case: Prevent class init error
 		if (SimpleEnchantment.class.isAssignableFrom(clazz) && MinecraftVersion.olderThan(V.v1_13)) {
@@ -201,22 +258,22 @@ final class AutoRegisterScanner {
 		}
 
 		final SimplePlugin plugin = SimplePlugin.getInstance();
-		final Tuple<RegisterMode, Object> tuple = findInstance(clazz);
+		final Tuple<FindInstance, Object> tuple = findInstance(clazz);
 
-		final RegisterMode mode = tuple.getKey();
+		final FindInstance mode = tuple.getKey();
 		final Object instance = tuple.getValue();
 
 		boolean eventsRegistered = false;
 
 		if (SimpleListener.class.isAssignableFrom(clazz)) {
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			plugin.registerEvents((SimpleListener<?>) instance);
 			eventsRegistered = true;
 		}
 
 		else if (BungeeListener.class.isAssignableFrom(clazz)) {
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			plugin.registerBungeeCord((BungeeListener) instance);
 			eventsRegistered = true;
@@ -234,7 +291,7 @@ final class AutoRegisterScanner {
 		}
 
 		else if (SimpleExpansion.class.isAssignableFrom(clazz)) {
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			Variables.addExpansion((SimpleExpansion) instance);
 		}
@@ -242,7 +299,7 @@ final class AutoRegisterScanner {
 		else if (YamlConfig.class.isAssignableFrom(clazz)) {
 
 			// Automatically called onLoadFinish when getting instance
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			if (SimplePlugin.isReloading()) {
 				((YamlConfig) instance).save();
@@ -253,7 +310,7 @@ final class AutoRegisterScanner {
 		else if (PacketListener.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered by means of adding packet adapters
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			((PacketListener) instance).onRegister();
 		}
@@ -261,13 +318,13 @@ final class AutoRegisterScanner {
 		else if (DiscordListener.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered in its constructor
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 		}
 
 		else if (SimpleEnchantment.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered in its constructor
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			if (!enchantListenersRegistered) {
 				plugin.registerEvents(FoundationEnchantmentListener.getInstance());
@@ -281,7 +338,7 @@ final class AutoRegisterScanner {
 		else if (Tool.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered in its constructor
-			enforceModeFor(clazz, mode, RegisterMode.SINGLETON);
+			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 		}
 
 		else if (instance instanceof Listener) {
@@ -298,11 +355,56 @@ final class AutoRegisterScanner {
 		Debugger.debug("auto-register", "Automatically registered " + clazz);
 	}
 
-	private static Tuple<RegisterMode, Object> findInstance(Class<?> clazz) {
+	/*
+	 * Compiles valid classes from our plugin that can be autoregistered
+	 */
+	private static List<Class<?>> findValidClasses() {
+		final List<Class<?>> classes = new ArrayList<>();
+
+		// Ignore anonymous inner classes
+		final Pattern anonymousClassPattern = Pattern.compile("\\w+\\$[0-9]$");
+
+		try (final JarFile file = new JarFile(SimplePlugin.getSource())) {
+			for (final Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements();) {
+				final JarEntry jar = entry.nextElement();
+				final String name = jar.getName().replace("/", ".");
+
+				// Ignore files such as settings.yml
+				if (!name.endsWith(".class"))
+					continue;
+
+				final String className = name.substring(0, name.length() - 6);
+				Class<?> clazz = null;
+
+				// Look up the Java class, silently ignore if failing
+				try {
+					clazz = SimplePlugin.class.getClassLoader().loadClass(className);
+
+				} catch (final VerifyError | NoClassDefFoundError | ClassNotFoundException | IncompatibleClassChangeError error) {
+					continue;
+				}
+
+				// Ignore abstract or anonymous classes
+				if (!Modifier.isAbstract(clazz.getModifiers()) && !anonymousClassPattern.matcher(className).find())
+					classes.add(clazz);
+			}
+
+		} catch (final Throwable t) {
+			Remain.sneaky(t);
+		}
+
+		return classes;
+	}
+
+	/*
+	 * Tries to return instance of the given class, either by returning its singleon
+	 * or creating a new instance from constructor if valid
+	 */
+	private static Tuple<FindInstance, Object> findInstance(Class<?> clazz) {
 		final Constructor<?>[] constructors = clazz.getDeclaredConstructors();
 
 		Object instance = null;
-		RegisterMode mode = null;
+		FindInstance mode = null;
 
 		// Strictly limit the class to one no args constructor
 		if (constructors.length == 1) {
@@ -314,7 +416,7 @@ final class AutoRegisterScanner {
 				// Case 1: Public constructor
 				if (Modifier.isPublic(modifiers)) {
 					instance = ReflectionUtil.instantiate(constructor);
-					mode = RegisterMode.NO_ARGS_CONSTRUCTOR;
+					mode = FindInstance.NEW_FROM_CONSTRUCTOR;
 				}
 
 				// Case 2: Singleton
@@ -330,7 +432,7 @@ final class AutoRegisterScanner {
 
 					if (instanceField != null) {
 						instance = ReflectionUtil.getFieldContent(instanceField, (Object) null);
-						mode = RegisterMode.SINGLETON;
+						mode = FindInstance.SINGLETON;
 					}
 				}
 			}
@@ -343,13 +445,19 @@ final class AutoRegisterScanner {
 		return new Tuple<>(mode, instance);
 	}
 
-	private static void enforceModeFor(Class<?> clazz, RegisterMode actual, RegisterMode required) {
-		Valid.checkBoolean(required == actual, clazz + " using @AutoRegister must have " + (required == RegisterMode.NO_ARGS_CONSTRUCTOR ? "a single public no args constructor"
+	/*
+	 * Checks if the way the given class can be made a new instance of, correspond with the required way
+	 */
+	private static void enforceModeFor(Class<?> clazz, FindInstance actual, FindInstance required) {
+		Valid.checkBoolean(required == actual, clazz + " using @AutoRegister must have " + (required == FindInstance.NEW_FROM_CONSTRUCTOR ? "a single public no args constructor"
 				: "one private no args constructor plus a 'private static final " + clazz.getSimpleName() + " instance' field to be a singleton'"));
 	}
 
-	enum RegisterMode {
-		NO_ARGS_CONSTRUCTOR,
+	/*
+	 * How a new instance can be made to autoregister
+	 */
+	enum FindInstance {
+		NEW_FROM_CONSTRUCTOR,
 		SINGLETON
 	}
 }

@@ -59,6 +59,7 @@ public abstract class FileConfig {
 	String header = null;
 
 	private String pathPrefix = null;
+	private boolean shouldSave = false;
 
 	protected FileConfig() {
 	}
@@ -119,6 +120,7 @@ public abstract class FileConfig {
 
 			Common.log("&7Updating " + this.getFileName() + " at &b\'&f" + path + "&b\' &7-> " + (object == null ? "&ckey removed" : "&b\'&f" + object.toString().replace("\n", ", ") + "&b\'") + "&r");
 			this.section.store(path, object);
+			this.shouldSave = true;
 		}
 	}
 
@@ -418,11 +420,6 @@ public abstract class FileConfig {
 
 	@Nullable
 	public final StrictList<String> getCommandList(final String path) {
-
-		// Nowhere to copy from
-		//if (!this.isSet(path) && this.defaults == null)
-		//	return null;
-
 		final List<String> list = this.getStringList(path);
 		Valid.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + this.getFileName() + ") for this will be used as your main command!");
 
@@ -460,11 +457,8 @@ public abstract class FileConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		if (exists) {
-			final Object object = this.section.retrieve(path);
-			Valid.checkBoolean(object instanceof ConfigSection, "Expected a map at '" + path + "', got " + object.getClass().getSimpleName() + ": " + object);
-
-			for (final Map.Entry<String, Object> entry : ((ConfigSection) object).map.entrySet()) {
+		if (exists)
+			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final Value value = SerializeUtil.deserialize(valueType, entry.getValue(), valueDeserializeParams);
 
@@ -474,7 +468,6 @@ public abstract class FileConfig {
 
 				map.put(key, value);
 			}
-		}
 
 		return map;
 	}
@@ -497,11 +490,8 @@ public abstract class FileConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		if (exists) {
-			final Object object = this.section.retrieve(path);
-			Valid.checkBoolean(object instanceof ConfigSection, "Expected a map at '" + path + "', got " + object.getClass().getSimpleName() + ": " + object);
-
-			for (final Map.Entry<String, Object> entry : ((ConfigSection) object).map.entrySet()) {
+		if (exists)
+			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path)).entrySet()) {
 				final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 				final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue(), setDeserializeParameters);
 
@@ -514,7 +504,6 @@ public abstract class FileConfig {
 
 				map.put(key, value);
 			}
-		}
 
 		return map;
 	}
@@ -534,6 +523,7 @@ public abstract class FileConfig {
 		value = SerializeUtil.serialize(value);
 
 		this.section.store(path, value);
+		this.shouldSave = true;
 	}
 
 	public final boolean isSet(String path) {
@@ -580,9 +570,13 @@ public abstract class FileConfig {
 				this.file = file;
 
 				this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
-
 				this.onLoad();
-				this.save();
+
+				if (this.shouldSave) {
+					this.save();
+
+					this.shouldSave = false;
+				}
 
 			} catch (final Exception ex) {
 				Remain.sneaky(ex);
@@ -669,9 +663,17 @@ public abstract class FileConfig {
 	}
 
 	public final void unregister() {
-		Valid.checkNotNull(this.file, "Cannot unregister null file before settings were loaded!");
+		synchronized (loadedSections) {
+			Valid.checkNotNull(this.file, "Cannot unregister null file before settings were loaded!");
 
-		loadedSections.remove(this.file.getAbsolutePath());
+			loadedSections.remove(this.file.getAbsolutePath());
+		}
+	}
+
+	public static final void clearLoadedSections() {
+		synchronized (loadedSections) {
+			loadedSections.clear();
+		}
 	}
 
 	// ------------------------------------------------------------------------------------

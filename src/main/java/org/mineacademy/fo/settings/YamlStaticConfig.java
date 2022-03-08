@@ -1,21 +1,15 @@
 package org.mineacademy.fo.settings;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
@@ -29,8 +23,6 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.FileConfig.AccusativeHelper;
 import org.mineacademy.fo.settings.FileConfig.TitleHelper;
 
-import lombok.Setter;
-
 /**
  * A special case {@link YamlConfig} that allows static access to this config. This is unsafe
  * however this is only to be used in two config instances - the main settings.yml file and
@@ -42,13 +34,6 @@ import lombok.Setter;
  * Also keep in mind that all static fields must be set after the class has finished loading!
  */
 public abstract class YamlStaticConfig {
-
-	/**
-	 * By default we always scan for a "settings.yml" file and "localization/messages_X.yml" files
-	 * and try to load them. Set this to false to prevent this behavior.
-	 */
-	@Setter
-	private static boolean autoloadSettingsAndLocalization = true;
 
 	/**
 	 * The temporary {@link YamlConfig} instance we store here to get values from
@@ -83,87 +68,21 @@ public abstract class YamlStaticConfig {
 	// -----------------------------------------------------------------------------------------------------
 
 	/**
-	 * Load all given static config classes
+	 * Load the given static config class
 	 *
-	 * @param classesRaw
-	 * @throws Exception
+	 * @param clazz
 	 */
-	public static final void load(List<Class<? extends YamlStaticConfig>> classesRaw) throws Exception {
-		final List<Class<? extends YamlStaticConfig>> classes = new ArrayList<>();
+	public static final void load(Class<? extends YamlStaticConfig> clazz) {
+		try {
+			final YamlStaticConfig config = clazz.newInstance();
 
-		if (classesRaw != null)
-			classes.addAll(classesRaw);
+			config.onLoad();
 
-		if (autoloadSettingsAndLocalization) {
-			loadAutomatically(classes, "settings\\.yml", SimpleSettings.class);
-			loadAutomatically(classes, "localization\\/messages\\_(.*)\\.yml", SimpleLocalization.class);
+			TEMPORARY_INSTANCE = null;
+
+		} catch (final Throwable t) {
+			Common.throwError(t, "Failed to load static settings " + clazz);
 		}
-
-		for (final Class<? extends YamlStaticConfig> clazz : classes) {
-			try {
-				final YamlStaticConfig config = clazz.newInstance();
-
-				config.onLoadFinish();
-
-				TEMPORARY_INSTANCE = null;
-
-			} catch (final Throwable t) {
-				Common.throwError(t, "Failed to load static settings " + clazz);
-			}
-		}
-	}
-
-	private static List<Class<? extends YamlStaticConfig>> loadAutomatically(List<Class<? extends YamlStaticConfig>> manuallyLoadedClasses, String nameMatcher, Class<? extends YamlStaticConfig> classToPick) {
-		boolean loadedManually = false;
-		boolean fileExists = false;
-
-		// Step 1: See if the plugin author added the class to getSettings in SimplePlugin
-		for (final Class<? extends YamlStaticConfig> clazz : manuallyLoadedClasses)
-			if (classToPick.isAssignableFrom(clazz))
-				loadedManually = true;
-
-		// Step 2: See if there is a file found in the plugin jar
-		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
-
-			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
-				final JarEntry type = it.nextElement();
-				final String name = type.getName();
-
-				if (name.matches(nameMatcher))
-					fileExists = true;
-			}
-
-		} catch (final IOException ex) {
-		}
-
-		// If there is no file or it has been loaded manually, skip
-		if (loadedManually || !fileExists)
-			return manuallyLoadedClasses;
-
-		// Otherwise scan through all plugin classe
-		final List<Class<? extends YamlStaticConfig>> foundClasses = new ArrayList<>();
-
-		for (final Class<? extends YamlStaticConfig> configClass : ReflectionUtil.getClasses(SimplePlugin.getInstance(), YamlStaticConfig.class))
-			if (classToPick.isAssignableFrom(configClass))
-				foundClasses.add(configClass);
-
-		// Clean potential conflicts: such as Settings and SimpleSettings, in this case we only select Settings.
-		// If there is only SimpleSettings, we select that instead.
-		if (foundClasses.size() > 1) {
-
-			// Assuming one is the core class from Foundation and other one(s) are from the specific plugin
-			for (final Iterator<Class<? extends YamlStaticConfig>> it = foundClasses.iterator(); it.hasNext();) {
-				final Class<? extends YamlStaticConfig> settingsClass = it.next();
-
-				if (settingsClass.equals(SimpleSettings.class) || settingsClass.equals(SimpleLocalization.class))
-					it.remove();
-			}
-		}
-
-		Valid.checkBoolean(foundClasses.size() == 1, "Cannot have multiple classes in your plugin that extend " + classToPick + ", found: " + foundClasses);
-		manuallyLoadedClasses.add(foundClasses.get(0));
-
-		return manuallyLoadedClasses;
 	}
 
 	/**
@@ -194,7 +113,7 @@ public abstract class YamlStaticConfig {
 	 *
 	 * @throws Exception
 	 */
-	protected abstract void onLoadFinish() throws Exception;
+	protected abstract void onLoad() throws Exception;
 
 	/**
 	 * Loads the class via reflection, scanning for "private static void init()" methods to run
@@ -368,7 +287,7 @@ public abstract class YamlStaticConfig {
 	/*protected static final FileConfiguration getConfig() {
 		return TEMPORARY_INSTANCE.getConfig();
 	}
-
+	
 	protected static final FileConfiguration getDefaults() {
 		return TEMPORARY_INSTANCE.getDefaults();
 	}*/
@@ -464,7 +383,7 @@ public abstract class YamlStaticConfig {
 	/*protected static final <E> E getWithData(final String path, final Class<E> typeOf, Object... deserializeArguments) {
 		return TEMPORARY_INSTANCE.getWithData(path, typeOf, deserializeArguments);
 	}
-
+	
 	/*protected static final <T> T getOrSetDefault(final String path, final T defaultValue) {
 		return TEMPORARY_INSTANCE.getOrSetDefault(path, defaultValue);
 	}*/
@@ -479,33 +398,33 @@ public abstract class YamlStaticConfig {
 
 	/*protected static LinkedHashMap<String, LinkedHashMap<String, Object>> getValuesAndKeys(final String path) {
 		Valid.checkNotNull(path, "Path cannot be null");
-
+	
 		// add default
 		if (getDefaults() != null && !getConfig().isSet(path)) {
 			Valid.checkBoolean(getDefaults().isSet(path), "Default '" + getFileName() + "' lacks a section at " + path);
-
+	
 			for (final String name : getDefaults().getConfigurationSection(path).getKeys(false))
 				for (final String setting : getDefaults().getConfigurationSection(path + "." + name).getKeys(false))
 					TEMPORARY_INSTANCE.addDefaultIfNotExist(path + "." + name + "." + setting, Object.class);
 		}
-
+	
 		Valid.checkBoolean(getConfig().isSet(path), "Malfunction copying default section to " + path);
-
+	
 		// key, values assigned to the key
 		final TreeMap<String, LinkedHashMap<String, Object>> groups = new TreeMap<>();
-
+	
 		final String old = TEMPORARY_INSTANCE.getPathPrefix();
 		TEMPORARY_INSTANCE.setPathPrefix(null);
 		for (final String name : getConfig().getConfigurationSection(path).getKeys(false)) {
 			// type, value (UNPARSED)
-
+	
 			final LinkedHashMap<String, Object> valuesRaw = getMap(path + "." + name, String.class, Object.class);
-
+	
 			groups.put(name, valuesRaw);
 		}
-
+	
 		TEMPORARY_INSTANCE.setPathPrefix(old);
-
+	
 		return new LinkedHashMap<>(groups);
 	}*/
 }

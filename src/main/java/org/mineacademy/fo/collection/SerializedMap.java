@@ -1046,6 +1046,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (object instanceof SerializedMap)
 			return (SerializedMap) object;
 
+		if (object instanceof MemorySection)
+			return of(Common.getMapFromSection(object));
+
+		if (object instanceof ConfigSection)
+			return of(((ConfigSection) object).getValues(false));
+
 		if (object instanceof Map) {
 			final Map<String, Object> copyOf = new LinkedHashMap<>();
 
@@ -1079,12 +1085,6 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 
 			return serialized;
 		}
-
-		if (object instanceof MemorySection)
-			return of(Common.getMapFromSection(object));
-
-		if (object instanceof ConfigSection)
-			return of(((ConfigSection) object).getValues(true));
 
 		throw new FoException("SerializedMap does not know how to convert " + object.getClass().getSimpleName() + ": " + object);
 	}

@@ -1,10 +1,13 @@
 package org.mineacademy.fo.settings;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,7 +24,9 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.Setter;
 
 public class YamlConfig extends FileConfig {
 
@@ -29,6 +34,9 @@ public class YamlConfig extends FileConfig {
 	private static final String BLANK_CONFIG = "{}\n";
 
 	private final Yaml yaml;
+
+	@Setter(value = AccessLevel.PROTECTED)
+	private boolean saveEmptyValues = true;
 
 	protected YamlConfig() {
 		final YamlConstructor constructor = new YamlConstructor();
@@ -116,6 +124,9 @@ public class YamlConfig extends FileConfig {
 			final String header = this.getHeader() == null ? "" : "# " + String.join("\n# ", this.getHeader().split("\n")) + "\n\n";
 			final Map<String, Object> values = this.section.getValues(false);
 
+			if (!this.saveEmptyValues)
+				removeEmptyValues(values);
+
 			String dump = this.yaml.dump(values);
 
 			if (dump.equals(BLANK_CONFIG))
@@ -125,9 +136,40 @@ public class YamlConfig extends FileConfig {
 		}
 
 		// Special case, write using comments engine
-		YamlComments.writeComments(this.defaultsPath, this.file, this.getUncommentedSections());
+		try {
+			YamlComments.writeComments(this.defaultsPath, this.file, null, this.getUncommentedSections());
+
+		} catch (final IOException ex) {
+			ex.printStackTrace();
+		}
 
 		return null;
+	}
+
+	private static void removeEmptyValues(Map<String, Object> map) {
+		for (final Iterator<Entry<String, Object>> it = map.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, Object> entry = it.next();
+			final Object value = entry.getValue();
+
+			if (value instanceof ConfigSection) {
+				final Map<String, Object> childMap = ((ConfigSection) value).map;
+
+				removeEmptyValues(childMap);
+
+				if (childMap.isEmpty())
+					it.remove();
+			}
+
+			if (value == null
+					|| (value instanceof Iterable<?> && !((Iterable<?>) value).iterator().hasNext())
+					|| (value.getClass().isArray() && ((Object[]) value).length == 0)
+					|| (value instanceof Map<?, ?>) && ((Map<?, ?>) value).isEmpty()) {
+
+				it.remove();
+
+				continue;
+			}
+		}
 	}
 
 	@Override
@@ -230,16 +272,16 @@ public class YamlConfig extends FileConfig {
 
 	/*@NonNull
 	public static final YamlConfig fromReader(@NonNull Reader reader) {
-
+	
 		final YamlConfig config = new YamlConfig();
-
+	
 		try {
 			config.load(reader);
-
+	
 		} catch (final Exception ex) {
 			Logger.getGlobal().log(Level.SEVERE, "Cannot load configuration from stream", ex);
 		}
-
+	
 		return config;
 	}*/
 
