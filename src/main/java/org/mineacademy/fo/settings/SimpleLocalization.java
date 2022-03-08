@@ -41,7 +41,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 * if it does not exists, or updated if it is out of date.
 	 */
 	@Override
-	protected final void onLoadFinish() throws Exception {
+	protected final void onLoad() throws Exception {
 		final String localePath = "localization/messages_" + SimpleSettings.LOCALE_PREFIX + ".yml";
 		final Object content = FileUtil.getInternalFileContent(localePath);
 
@@ -73,7 +73,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		setPathPrefix(null);
 
 		if ((VERSION = getInteger("Version")) != getConfigVersion())
-			setNoSave("Version", getConfigVersion());
+			set("Version", getConfigVersion());
 	}
 
 	/**

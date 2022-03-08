@@ -225,7 +225,7 @@ public abstract class YamlStaticConfig {
 	 * @param path
 	 * @param value
 	 */
-	protected static final void setNoSave(final String path, final Object value) {
+	protected static final void set(final String path, final Object value) {
 		TEMPORARY_INSTANCE.set(path, value);
 	}
 
