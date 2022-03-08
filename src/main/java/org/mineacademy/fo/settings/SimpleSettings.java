@@ -10,7 +10,6 @@ import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -211,11 +210,7 @@ public class SimpleSettings extends YamlStaticConfig {
 		// -------------------------------------------------------------------
 
 		{ // Load localization
-			final boolean hasLocalization = hasLocalization();
 			final boolean keySet = isSetDefault("Locale");
-
-			if (hasLocalization && !keySet)
-				throw new FoException("Since you have your Localization class you must set the 'Locale' key in " + getFileName());
 
 			LOCALE_PREFIX = keySet ? getString("Locale") : LOCALE_PREFIX;
 		}
@@ -233,24 +228,6 @@ public class SimpleSettings extends YamlStaticConfig {
 		}
 
 		settingsClassCalled = true;
-	}
-
-	/**
-	 * Inspect if some settings classes extend localization and make sure only one does, if any
-	 *
-	 * @return
-	 */
-	private static boolean hasLocalization() {
-		final SimplePlugin plugin = SimplePlugin.getInstance();
-		int localeClasses = 0;
-
-		if (plugin.getSettings() != null)
-			for (final Class<?> clazz : plugin.getSettings())
-				if (SimpleLocalization.class.isAssignableFrom(clazz))
-					localeClasses++;
-
-		Valid.checkBoolean(localeClasses < 2, "You cannot have more than 1 class extend SimpleLocalization!");
-		return localeClasses == 1;
 	}
 
 	/**

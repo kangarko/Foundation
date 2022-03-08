@@ -58,11 +58,11 @@ import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.FileConfig;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
-import org.mineacademy.fo.settings.YamlStaticConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
@@ -223,7 +223,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
 				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
 				Bukkit.getLogger().severe(Common.consoleLine());
-
+			
 				this.canLoad = false;
 				throw new RuntimeException("Unsupported server version, see above.");
 			}*/
@@ -305,9 +305,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			return;
 
 		try {
-
-			// Load our main static settings classes
-			YamlStaticConfig.load(getSettings());
 
 			if (!isEnabled())
 				return;
@@ -685,6 +682,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			unregisterReloadables();
 
+			FileConfig.clearLoadedSections();
+
 			// Load our dependency system
 			try {
 				HookManager.loadDependencies();
@@ -695,9 +694,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			onPluginPreReload();
 			reloadables.reload();
-
-			YamlStaticConfig.load(getSettings());
-			Lang.loadPrefixes();
 
 			final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
 			metadata.save();
@@ -716,6 +712,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Register classes
 			AutoRegisterScanner.scanAndRegister();
+
+			Lang.loadPrefixes();
 
 			onReloadablesStart();
 
@@ -945,17 +943,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @return
 	 */
 	public MinecraftVersion.V getMaximumVersion() {
-		return null;
-	}
-
-	/**
-	 * Return your main setting classes extending {@link YamlStaticConfig}.
-	 * <p>
-	 * TIP: Extend {@link SimpleSettings} and {@link SimpleLocalization}
-	 *
-	 * @return
-	 */
-	public List<Class<? extends YamlStaticConfig>> getSettings() {
 		return null;
 	}
 
