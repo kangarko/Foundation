@@ -10,13 +10,36 @@ import org.mineacademy.fo.collection.SerializedMap;
 
 import lombok.NonNull;
 
+/**
+ * Represents the internal data map a configuration section has.
+ * Credits goes to the original Bukkit/Spigot team, enhanced by MineAcademy.
+ */
 public class ConfigSection {
 
+	/**
+	 * The data map holding keys and values of this config section. A
+	 * value can be another config section.
+	 */
 	final Map<String, Object> map = new LinkedHashMap<>();
 
+	/**
+	 * The root of this configuration
+	 */
 	private final ConfigSection root;
+
+	/**
+	 * The parent of this configuration, if any.
+	 */
 	private final ConfigSection parent;
+
+	/**
+	 * The current path for this configuration.
+	 */
 	private final String path;
+
+	/**
+	 * The full path for this configuration.
+	 */
 	private final String fullPath;
 
 	ConfigSection() {
@@ -29,7 +52,7 @@ public class ConfigSection {
 	ConfigSection(@NonNull ConfigSection parent, @NonNull String path) {
 		this.path = path;
 		this.parent = parent;
-		this.root = parent.getRoot();
+		this.root = parent.root;
 		this.fullPath = createPath(parent, path);
 	}
 
@@ -37,6 +60,17 @@ public class ConfigSection {
 	// Getting values
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Gets a set containing all keys in this section.
+	 *
+	 * If deep is set to true, then this will contain all the keys within any child config sections (and their children, etc).
+	 * These will be in a valid path notation for you to use.
+	 *
+	 * If deep is set to false, then this will contain only the keys of any direct children, and not their own children.
+	 *
+	 * @param deep
+	 * @return
+	 */
 	@NonNull
 	public final Set<String> getKeys(boolean deep) {
 		final Set<String> result = new LinkedHashSet<>();
@@ -45,6 +79,17 @@ public class ConfigSection {
 		return result;
 	}
 
+	/**
+	 * Gets a Map containing all keys and their values for this section.
+	 *
+	 * If deep is set to true, then this will contain all the keys and values within any child config sections (and their children, etc).
+	 * These keys will be in a valid path notation for you to use.
+	 *
+	 * If deep is set to false, then this will contain only the keys and values of any direct children, and not their own children.
+	 *
+	 * @param deep
+	 * @return
+	 */
 	@NonNull
 	public final Map<String, Object> getValues(boolean deep) {
 		final Map<String, Object> result = new LinkedHashMap<>();
@@ -54,34 +99,45 @@ public class ConfigSection {
 		return result;
 	}
 
+	/**
+	 * Clears all keys in this config section
+	 */
 	public final void clear() {
 		this.map.clear();
 	}
 
-	final boolean isStored(@NonNull String path) {
-		final ConfigSection root = this.getRoot();
+	/**
+	 * Returns true if the given path contains a valid value
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final boolean isStored(@NonNull String path) {
 
-		if (root == null)
+		if (this.root == null)
 			return false;
 
 		return this.retrieve(path) != null;
 	}
 
-	final void store(@NonNull String path, Object value) {
+	/**
+	 * Overrides the given path with the new value, set value to null to remove
+	 *
+	 * @param path
+	 * @param value
+	 */
+	public final void store(@NonNull String path, Object value) {
 
 		if (path.isEmpty())
 			throw new IllegalArgumentException("Cannot set to an empty path");
 
-		final ConfigSection root = this.getRoot();
-		if (root == null)
+		if (this.root == null)
 			throw new IllegalStateException("Cannot use section without a root");
 
-		// i1 is the leading (higher) index
-		// i2 is the trailing (lower) index
-		int i1 = -1, i2;
+		int leadingIndex = -1, trailingIndex;
 		ConfigSection section = this;
-		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
-			final String node = path.substring(i2, i1);
+		while ((leadingIndex = path.indexOf('.', trailingIndex = leadingIndex + 1)) != -1) {
+			final String node = path.substring(trailingIndex, leadingIndex);
 			final ConfigSection subSection = section.retrieveConfigurationSection(node);
 			if (subSection == null) {
 				if (value == null)
@@ -92,7 +148,7 @@ public class ConfigSection {
 				section = subSection;
 		}
 
-		final String key = path.substring(i2);
+		final String key = path.substring(trailingIndex);
 		if (section == this) {
 			if (value == null)
 				this.map.remove(key);
@@ -102,21 +158,24 @@ public class ConfigSection {
 			section.store(key, value);
 	}
 
-	final Object retrieve(@NonNull String path) {
+	/**
+	 * Gets a key (or null if not set) at the given path
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final Object retrieve(@NonNull String path) {
 
 		if (path.length() == 0)
 			return this;
 
-		final ConfigSection root = this.getRoot();
-		if (root == null)
+		if (this.root == null)
 			throw new IllegalStateException("Cannot access section without a root");
 
-		// i1 is the leading (higher) index
-		// i2 is the trailing (lower) index
-		int i1 = -1, i2;
+		int leadingIndex = -1, trailingIndex;
 		ConfigSection section = this;
-		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
-			final String currentPath = path.substring(i2, i1);
+		while ((leadingIndex = path.indexOf('.', trailingIndex = leadingIndex + 1)) != -1) {
+			final String currentPath = path.substring(trailingIndex, leadingIndex);
 
 			if (section.retrieve(currentPath) == null)
 				return null;
@@ -127,7 +186,7 @@ public class ConfigSection {
 				return null;
 		}
 
-		final String key = path.substring(i2);
+		final String key = path.substring(trailingIndex);
 
 		if (section == this)
 			return this.map.get(key);
@@ -135,39 +194,13 @@ public class ConfigSection {
 		return section.retrieve(key);
 	}
 
-	@NonNull
-	final ConfigSection createSection(@NonNull String path) {
-		if (path.isEmpty())
-			throw new IllegalArgumentException("Cannot create section at empty path");
-
-		final ConfigSection root = this.getRoot();
-
-		if (root == null)
-			throw new IllegalStateException("Cannot create section without a root");
-
-		// i1 is the leading (higher) index
-		// i2 is the trailing (lower) index
-		int i1 = -1, i2;
-		ConfigSection section = this;
-		while ((i1 = path.indexOf('.', i2 = i1 + 1)) != -1) {
-			final String node = path.substring(i2, i1);
-			final ConfigSection subSection = section.retrieveConfigurationSection(node);
-			if (subSection == null)
-				section = section.createSection(node);
-			else
-				section = subSection;
-		}
-
-		final String key = path.substring(i2);
-		if (section == this) {
-			final ConfigSection result = new ConfigSection(this, key);
-			this.map.put(key, result);
-			return result;
-		}
-		return section.createSection(key);
-	}
-
-	final ConfigSection retrieveConfigurationSection(@NonNull String path) {
+	/**
+	 * Returns a config section on the given path, or null if not set
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final ConfigSection retrieveConfigurationSection(@NonNull String path) {
 		final Object val = this.retrieve(path);
 
 		if (val != null)
@@ -176,6 +209,40 @@ public class ConfigSection {
 		return (val instanceof ConfigSection) ? this.createSection(path) : null;
 	}
 
+	/*
+	 * Helper to create a new config section at the given path
+	 */
+	@NonNull
+	final ConfigSection createSection(@NonNull String path) {
+		if (path.isEmpty())
+			throw new IllegalArgumentException("Cannot create section at empty path");
+
+		if (this.root == null)
+			throw new IllegalStateException("Cannot create section without a root");
+
+		int leadingIndex = -1, trailingIndex;
+		ConfigSection section = this;
+		while ((leadingIndex = path.indexOf('.', trailingIndex = leadingIndex + 1)) != -1) {
+			final String node = path.substring(trailingIndex, leadingIndex);
+			final ConfigSection subSection = section.retrieveConfigurationSection(node);
+			if (subSection == null)
+				section = section.createSection(node);
+			else
+				section = subSection;
+		}
+
+		final String key = path.substring(trailingIndex);
+		if (section == this) {
+			final ConfigSection result = new ConfigSection(this, key);
+			this.map.put(key, result);
+			return result;
+		}
+		return section.createSection(key);
+	}
+
+	/*
+	 * Helper to map children keys to the given output
+	 */
 	private void mapChildrenKeys(@NonNull Set<String> output, @NonNull ConfigSection section, boolean deep) {
 		if (section instanceof ConfigSection) {
 			final ConfigSection sec = section;
@@ -196,6 +263,9 @@ public class ConfigSection {
 		}
 	}
 
+	/*
+	 * Helper to map children keys to the given output
+	 */
 	private void mapChildrenValues(@NonNull Map<String, Object> output, @NonNull ConfigSection section, boolean deep) {
 		if (section instanceof ConfigSection) {
 			final ConfigSection sec = section;
@@ -217,25 +287,31 @@ public class ConfigSection {
 		}
 	}
 
+	/*
+	 * Helper to create a new config section
+	 */
 	@NonNull
 	private static String createPath(@NonNull ConfigSection section, String key) {
-		return createPath(section, key, (section == null) ? null : section.getRoot());
+		return createPath(section, key, (section == null) ? null : section.root);
 	}
 
+	/*
+	 * Helper to create a new config section
+	 */
 	@NonNull
 	private static String createPath(@NonNull ConfigSection section, String key, ConfigSection relativeTo) {
-		final ConfigSection root = section.getRoot();
+		final ConfigSection root = section.root;
 
 		if (root == null)
 			throw new IllegalStateException("Cannot create path without a root");
 
 		final StringBuilder builder = new StringBuilder();
 		if (section != null)
-			for (ConfigSection parent = section; (parent != null) && (parent != relativeTo); parent = parent.getParent()) {
+			for (ConfigSection parent = section; (parent != null) && (parent != relativeTo); parent = parent.parent) {
 				if (builder.length() > 0)
 					builder.insert(0, '.');
 
-				builder.insert(0, parent.getName());
+				builder.insert(0, parent.path);
 			}
 
 		if ((key != null) && (key.length() > 0)) {
@@ -252,30 +328,27 @@ public class ConfigSection {
 	// Getters
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Converts all values in this section into a saveable map
+	 *
+	 * @return
+	 */
 	public final SerializedMap serialize() {
 		return SerializedMap.of(this.getValues(true));
 	}
 
+	/**
+	 * Returns true if there are no keys in this section
+	 *
+	 * @return
+	 */
 	public final boolean isEmpty() {
 		return Valid.isNullOrEmptyValues(this.map);
 	}
 
-	@NonNull
-	private String getName() {
-		return this.path;
-	}
-
-	private ConfigSection getRoot() {
-		return this.root;
-	}
-
-	private ConfigSection getParent() {
-		return this.parent;
-	}
-
 	@Override
 	public String toString() {
-		final ConfigSection root = this.getRoot();
+		final ConfigSection root = this.root;
 		return new StringBuilder()
 				.append(this.getClass().getSimpleName())
 				.append("[path='")

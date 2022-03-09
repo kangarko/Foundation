@@ -635,7 +635,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 			setPathPrefix(null);
 
 			// Upgrade from old path
-			if (isSetAbsolute("Update_Available"))
+			if (isSet("Update_Available"))
 				move("Update_Available", "Update.Available");
 
 			setPathPrefix("Update");

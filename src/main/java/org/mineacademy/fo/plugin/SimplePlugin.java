@@ -223,7 +223,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
 				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
 				Bukkit.getLogger().severe(Common.consoleLine());
-			
+
 				this.canLoad = false;
 				throw new RuntimeException("Unsupported server version, see above.");
 			}*/
@@ -713,6 +713,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Register classes
 			AutoRegisterScanner.scanAndRegister();
 
+			Lang.reloadLang();
 			Lang.loadPrefixes();
 
 			onReloadablesStart();

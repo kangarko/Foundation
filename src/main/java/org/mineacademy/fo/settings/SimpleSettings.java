@@ -234,29 +234,30 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * Upgrade some of the old and ancient settings from our premium plugins.
 	 */
 	private static void upgradeOldSettings() {
+
 		{ // Debug
-			if (isSetAbsolute("Debugger"))
+			if (isSet("Debugger"))
 				move("Debugger", "Debug");
 
-			if (isSetAbsolute("Serialization_Number"))
+			if (isSet("Serialization_Number"))
 				move("Serialization_Number", "Serialization");
 
 			// ChatControl
-			if (isSetAbsolute("Debugger.Keys")) {
+			if (isSet("Debugger.Keys")) {
 				move("Debugger.Keys", "Serialization");
 				move("Debugger.Sections", "Debug");
 			}
 
 			// Archaic
-			if (isSetAbsolute("Debug") && !(getObject("Debug") instanceof List))
+			if (isSet("Debug") && !(getObject("Debug") instanceof List))
 				set("Debug", null);
 		}
 
 		{ // Prefix
-			if (isSetAbsolute("Plugin_Prefix"))
+			if (isSet("Plugin_Prefix"))
 				move("Plugin_Prefix", "Prefix");
 
-			if (isSetAbsolute("Check_Updates"))
+			if (isSet("Check_Updates"))
 				move("Check_Updates", "Notify_Updates");
 		}
 	}

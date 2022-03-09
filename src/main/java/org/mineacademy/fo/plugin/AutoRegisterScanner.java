@@ -159,11 +159,8 @@ final class AutoRegisterScanner {
 				load = true;
 			}
 
-			if (load || (!load && YamlStaticConfig.class.isAssignableFrom(clazz))) {
-				System.out.println("REGISTERING " + clazz);
-
+			if (load || (!load && YamlStaticConfig.class.isAssignableFrom(clazz)))
 				YamlStaticConfig.load((Class<? extends YamlStaticConfig>) clazz);
-			}
 		}
 
 		boolean staticSettingsFileExist = false;
@@ -186,17 +183,11 @@ final class AutoRegisterScanner {
 		Valid.checkBoolean(staticSettingsFound.size() < 2, "Cannot have more than one class extend SimpleSettings: " + staticSettingsFound);
 		Valid.checkBoolean(staticLocalizations.size() < 2, "Cannot have more than one class extend SimpleLocalization: " + staticLocalizations);
 
-		if (staticSettingsFound.isEmpty() && staticSettingsFileExist) {
-			System.out.println("REGISTERING NATIVE SIMPLESETTINGS");
-
+		if (staticSettingsFound.isEmpty() && staticSettingsFileExist)
 			YamlStaticConfig.load(SimpleSettings.class);
-		}
 
-		if (staticLocalizations.isEmpty() && staticLocalizationFileExist) {
-			System.out.println("REGISTERING NATIVE SIMPLELOCALIZATION");
-
+		if (staticLocalizations.isEmpty() && staticLocalizationFileExist)
 			YamlStaticConfig.load(SimpleLocalization.class);
-		}
 	}
 
 	/*

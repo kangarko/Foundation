@@ -33,6 +33,8 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -45,20 +47,62 @@ import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
 
+/**
+ * Represents any configuration that can be stored in a file
+ */
 public abstract class FileConfig {
 
+	/**
+	 * Used to synchronize loading/saving and forces multiple instances that all
+	 * use the same file use the same content to set/save it.
+	 */
 	private static final Map<String, ConfigSection> loadedSections = new HashMap<>();
 
+	/**
+	 * Represents "null" which you can use as convenience shortcut in loading config
+	 * that has no internal from path.
+	 */
 	public static final String NO_DEFAULT = null;
 
+	/*
+	 * The file that is being used
+	 */
+	@Nullable
 	File file;
 
-	ConfigSection section = new ConfigSection(); // overridden in load(File)
-	ConfigSection defaults;
-	String defaultsPath;
-	String header = null;
+	/*
+	 * The main config section, overridden in load(File)
+	 */
+	ConfigSection section = new ConfigSection();
 
+	/*
+	 * Optional defaults section to copy values from
+	 */
+	@Nullable
+	ConfigSection defaults;
+
+	/*
+	 * Defaults path in your JAR file, if any
+	 */
+	@Nullable
+	String defaultsPath;
+
+	/**
+	 * Optional config header
+	 */
+	@Nullable
+	private String header;
+
+	/**
+	 * Path prefix to automatically append when calling any getX method
+	 * to save your time.
+	 */
 	private String pathPrefix = null;
+
+	/*
+	 * Internal flag to only save once during loading and save automatically
+	 * after loading if any changes were made.
+	 */
 	private boolean shouldSave = false;
 
 	protected FileConfig() {
@@ -68,20 +112,63 @@ public abstract class FileConfig {
 	// Getting fields
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Return all keys in the current section.
+	 *
+	 * @param deep
+	 * @return
+	 */
 	@NonNull
 	public final Set<String> getKeys(boolean deep) {
 		return this.section.getKeys(deep);
 	}
 
+	/**
+	 * Return all values in the current section. Values can be another {@link ConfigSection}
+	 *
+	 * @param deep
+	 * @return
+	 */
 	@NonNull
 	public final Map<String, Object> getValues(boolean deep) {
 		return this.section.getValues(deep);
 	}
 
+	/**
+	 * Returns a value at the given path. Path prefix is added automatically, see {@link #setPathPrefix(String)}.
+	 * If default config exists within your JAR, we copy the value and save the file if it does not exist.
+	 * Specify the type to automatically convert the value into. If you are getting a value that is a custom class,
+	 * and your deserialize method has custom parameters in it, pass it here. Example: your custom class
+	 * has deserialize(SerializedMap, Player) method, then pass the player instance in deserializeParams
+	 *
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @param deserializeParams
+	 * @return
+	 */
 	public final <T> T get(final String path, final Class<T> type, Object... deserializeParams) {
 		return this.get(path, type, null, deserializeParams);
 	}
 
+	/**
+	 * Returns a value at the given path. Path prefix is added automatically, see {@link #setPathPrefix(String)}.
+	 * If default config exists within your JAR, we copy the value and save the file if it does not exist.
+	 * Specify the type to automatically convert the value into. If you are getting a value that is a custom class,
+	 * and your deserialize method has custom parameters in it, pass it here. Example: your custom class
+	 * has deserialize(SerializedMap, Player) method, then pass the player instance in deserializeParams
+	 *
+	 * The def value you specify here is NOT copied/saved if key does not exist, we try to copy it from the
+	 * default file from your JAR instead. It is only returned if nor JAR file or the key exist.
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @param def
+	 * @param deserializeParams
+	 * @return
+	 */
 	public final <T> T get(@NonNull String path, Class<T> type, T def, Object... deserializeParams) {
 
 		path = this.buildPathPrefix(path);
@@ -113,6 +200,9 @@ public abstract class FileConfig {
 		return def;
 	}
 
+	/*
+	 * Attempts to copy a key at the given path from inbuilt JAR to the disk.
+	 */
 	private void copyDefault(final String path, final Class<?> type) {
 		if (this.defaults != null && !this.section.isStored(path)) {
 			final Object object = this.defaults.retrieve(path);
@@ -124,6 +214,10 @@ public abstract class FileConfig {
 		}
 	}
 
+	/*
+	 * Attempts to force a certain class type for the given object, used to prevent mistakes
+	 * such as putting "Enabled: truee" (which is a String) instead of "Enabled: true" (which is a Boolean)
+	 */
 	private void checkAssignable(final String path, final Object object, final Class<?> type) {
 		if (!type.isAssignableFrom(object.getClass()) && !type.getSimpleName().equals(object.getClass().getSimpleName())) {
 
@@ -139,10 +233,29 @@ public abstract class FileConfig {
 	// Getting values helpers
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Return a String value from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This will work even if the key is a list that only has one value, or a number or boolean.
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final String getString(final String path) {
 		return this.getString(path, null);
 	}
 
+	/**
+	 * Return a String value from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This will work even if the key is a list that only has one value, or a number or boolean.
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final String getString(final String path, final String def) {
 		final Object object = this.getObject(path, def);
 
@@ -174,34 +287,94 @@ public abstract class FileConfig {
 		throw new FoException("Excepted string at '" + path + "' in " + this.getFileName() + ", got (" + object.getClass() + "): " + object);
 	}
 
+	/**
+	 * Return a String value from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Boolean getBoolean(final String path) {
 		return this.getBoolean(path, null);
 	}
 
+	/**
+	 * Return a Boolean value from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Boolean getBoolean(final String path, final Boolean def) {
 		return this.get(path, Boolean.class, def);
 	}
 
+	/**
+	 * Return an Integer value from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Integer getInteger(final String path) {
 		return this.getInteger(path, null);
 	}
 
+	/**
+	 * Return a Integer value from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Integer getInteger(final String path, final Integer def) {
 		return this.get(path, Integer.class, def);
 	}
 
+	/**
+	 * Return a Long value from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Long getLong(final String path) {
 		return this.getLong(path, null);
 	}
 
+	/**
+	 * Return a Long value from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Long getLong(final String path, final Long def) {
 		return this.get(path, Long.class, def);
 	}
 
+	/**
+	 * Return a Double value from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Double getDouble(final String path) {
 		return this.getDouble(path, null);
 	}
 
+	/**
+	 * Return a Double value from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Double getDouble(final String path, final Double def) {
 		final Object raw = this.getObject(path, def);
 
@@ -211,44 +384,130 @@ public abstract class FileConfig {
 		return raw != null ? ((Number) raw).doubleValue() : null;
 	}
 
+	/**
+	 * Return a Location from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * We use a custom method to store location on one line, this won't work
+	 * when using Bukkit's getLocation since Bukkit stores in using multiple keys.
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Location getLocation(final String path) {
 		return this.getLocation(path, null);
 	}
 
+	/**
+	 * Return a Location from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * We use a custom method to store location on one line, this won't work
+	 * when using Bukkit's getLocation since Bukkit stores in using multiple keys.
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Location getLocation(final String path, final Location def) {
 		return this.get(path, Location.class, def);
 	}
 
+	/**
+	 * Return a OfflinePlayer from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final OfflinePlayer getOfflinePlayer(final String path) {
 		return this.getOfflinePlayer(path, null);
 	}
 
+	/**
+	 * Return a OfflinePlayer from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final OfflinePlayer getOfflinePlayer(final String path, final OfflinePlayer def) {
 		return this.get(path, OfflinePlayer.class, def);
 	}
 
+	/**
+	 * Return a sound from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final SimpleSound getSound(final String path) {
 		return this.getSound(path, null);
 	}
 
+	/**
+	 * Return a sound from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final SimpleSound getSound(final String path, final SimpleSound def) {
 		return this.get(path, SimpleSound.class, def);
 	}
 
+	/**
+	 * Return a "case" from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * See {@link AccusativeHelper} header docs for what this is.
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final AccusativeHelper getAccusativePeriod(final String path) {
 		return this.getAccusativePeriod(path, null);
 	}
 
+	/**
+	 * Return a "case" from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * See {@link AccusativeHelper} header docs for what this is.
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final AccusativeHelper getAccusativePeriod(final String path, final String def) {
 		final String rawLine = this.getString(path, def);
 
 		return rawLine != null ? new AccusativeHelper(rawLine) : null;
 	}
 
+	/**
+	 * Return a title from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final TitleHelper getTitle(final String path) {
 		return this.getTitle(path, null, null);
 	}
 
+	/**
+	 * Return a title from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param defTitle
+	 * @param defSubtitle
+	 * @return
+	 */
 	public final TitleHelper getTitle(final String path, final String defTitle, final String defSubtitle) {
 		final String title = this.getString(path + ".Title", defTitle);
 		final String subtitle = this.getString(path + ".Subtitle", defSubtitle);
@@ -256,18 +515,52 @@ public abstract class FileConfig {
 		return title != null ? new TitleHelper(title, subtitle) : null;
 	}
 
+	/**
+	 * Return a time from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final SimpleTime getTime(final String path) {
 		return this.getTime(path, null);
 	}
 
+	/**
+	 * Return a time from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final SimpleTime getTime(final String path, final SimpleTime def) {
 		return this.get(path, SimpleTime.class, def);
 	}
 
+	/**
+	 * Return a double percentage from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This is stored as a string such as 85%
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Double getPercentage(String path) {
 		return this.getPercentage(path, null);
 	}
 
+	/**
+	 * Return a double percentage from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This is stored as a string such as 85%
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Double getPercentage(String path, Double def) {
 
 		final Object object = this.getObject(path, def);
@@ -285,42 +578,129 @@ public abstract class FileConfig {
 		return null;
 	}
 
+	/**
+	 * Return a message that can be formatted nicely from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final BoxedMessage getBoxedMessage(final String path) {
 		return this.getBoxedMessage(path, null);
 	}
 
+	/**
+	 * Return a message that can be formatted nicely from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final BoxedMessage getBoxedMessage(final String path, final BoxedMessage def) {
 		return this.get(path, BoxedMessage.class, def);
 	}
 
+	/**
+	 * Return material from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final CompMaterial getMaterial(final String path) {
 		return this.getMaterial(path, null);
 	}
 
+	/**
+	 * Return material from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final CompMaterial getMaterial(final String path, CompMaterial def) {
 		return this.get(path, CompMaterial.class, def);
 	}
 
+	/**
+	 * Return an item from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final ItemStack getItemStack(@NonNull String path) {
 		return this.getItemStack(path, null);
 	}
 
+	/**
+	 * Return an item from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final ItemStack getItemStack(@NonNull String path, ItemStack def) {
 		return this.get(path, ItemStack.class, def);
 	}
 
+	/**
+	 * Return an tuple from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This is stored as a map that has two sub-keys, one for the first value, second for the latter
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param key
+	 * @param keyType
+	 * @param valueType
+	 * @return
+	 */
 	public final <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
 		return this.getTuple(key, null, keyType, valueType);
 	}
 
+	/**
+	 * Return an tuple from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This is stored as a map that has two sub-keys, one for the first value, second for the latter
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param key
+	 * @param def
+	 * @param keyType
+	 * @param valueType
+	 * @return
+	 */
 	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
 		return this.get(key, Tuple.class, def, keyType, valueType);
 	}
 
+	/**
+	 * Return an unspecified object from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final Object getObject(final String path) {
 		return this.getObject(path, null);
 	}
 
+	/**
+	 * Return an unspecified object from the key at the given path, or supply with default
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final Object getObject(final String path, final Object def) {
 		return this.get(path, Object.class, def);
 	}
@@ -329,54 +709,40 @@ public abstract class FileConfig {
 	// Getting lists
 	// ------------------------------------------------------------------------------------------------------------
 
+	/**
+	 * Return a special location list from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 * (see {@link LocationList})
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final LocationList getLocationList(final String path) {
 		return new LocationList(this, this.getList(path, Location.class));
 	}
 
-	public final List<Object> getList(final String path) {
-		final Object obj = this.getObject(path);
-
-		// Allow one values instead of lists, such as
-		// "Apply_On: timed" instead of "Apply_On: [timed]" for convenience
-		return obj instanceof List ? (List<Object>) obj : obj != null ? Arrays.asList(obj) : new ArrayList<>();
-	}
-
+	/**
+	 * Return a list of maps\<string, object\> list from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final List<SerializedMap> getMapList(final String path) {
 		return this.getList(path, SerializedMap.class);
 	}
 
-	public final <T> Set<T> getSet(final String key, final Class<T> type, final Object... deserializeParameters) {
-		final List<T> list = this.getList(key, type);
-
-		return list == null ? new HashSet<>() : new HashSet<>(list);
-	}
-
-	public final List<CompMaterial> getMaterialList(final String path) {
-		return this.getList(path, CompMaterial.class);
-	}
-
-	public final <T> List<T> getList(final String path, final Class<T> type) {
-		return this.getList(path, type, (Object[]) null);
-	}
-
-	public final <T> List<T> getList(final String path, final Class<T> type, final Object... deserializeParameters) {
-		final List<T> list = new ArrayList<>();
-		final List<Object> objects = this.getList(path);
-
-		if (type == Map.class && deserializeParameters != null & deserializeParameters.length > 0 && deserializeParameters[0] != String.class)
-			throw new FoException("getList('" + path + "') that returns Map must have String.class as key, not " + deserializeParameters[0]);
-
-		if (objects != null)
-			for (Object object : objects) {
-				object = object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null;
-
-				if (object != null)
-					list.add((T) object);
-			}
-
-		return list;
-	}
-
+	/**
+	 * Return a special {@link IsInList} list from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * It is a list used to check if a value is in it, it can contain ["*"] to match all.
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @return
+	 */
 	public final <T> IsInList<T> getIsInList(String path, Class<T> type) {
 		final List<String> stringList = this.getStringList(path);
 
@@ -386,6 +752,13 @@ public abstract class FileConfig {
 		return IsInList.fromList(this.getList(path, type));
 	}
 
+	/**
+	 * Return a list of strings from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final List<String> getStringList(final String path) {
 		final Object raw = this.getObject(path);
 
@@ -418,6 +791,18 @@ public abstract class FileConfig {
 		return newList;
 	}
 
+	/**
+	 * Return a list of strings used as commands from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * This is a basic string list, however we enforce at least one value (the first -> the
+	 * main command label) and we remove the initial / from each item.
+	 *
+	 * Usable in {@link SimpleCommandGroup} or {@link SimpleCommand}
+	 *
+	 * @param path
+	 * @return
+	 */
 	@Nullable
 	public final StrictList<String> getCommandList(final String path) {
 		final List<String> list = this.getStringList(path);
@@ -433,12 +818,106 @@ public abstract class FileConfig {
 		return new StrictList<>(list);
 	}
 
+	/**
+	 * Return a list of materials from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final List<CompMaterial> getMaterialList(final String path) {
+		return this.getList(path, CompMaterial.class);
+	}
+
+	/**
+	 * Return a set of the given type from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @param deserializeParameters
+	 * @return
+	 */
+	public final <T> Set<T> getSet(final String key, final Class<T> type, final Object... deserializeParameters) {
+		final List<T> list = this.getList(key, type);
+
+		return list == null ? new HashSet<>() : new HashSet<>(list);
+	}
+
+	/**
+	 * Return a list of the given type from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param type
+	 * @param deserializeParameters
+	 * @return
+	 */
+	public final <T> List<T> getList(final String path, final Class<T> type, final Object... deserializeParameters) {
+		final List<T> list = new ArrayList<>();
+		final List<Object> objects = this.getList(path);
+
+		if (type == Map.class && deserializeParameters != null & deserializeParameters.length > 0 && deserializeParameters[0] != String.class)
+			throw new FoException("getList('" + path + "') that returns Map must have String.class as key, not " + deserializeParameters[0]);
+
+		if (objects != null)
+			for (Object object : objects) {
+				object = object != null ? SerializeUtil.deserialize(type, object, deserializeParameters) : null;
+
+				if (object != null)
+					list.add((T) object);
+			}
+
+		return list;
+	}
+
+	/**
+	 * Return a list (or empty if not set) from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * We allow one values instead of lists, such as
+	 * "Apply_On: timed" instead of "Apply_On: [timed]" for convenience
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final List<Object> getList(final String path) {
+		final Object obj = this.getObject(path);
+
+		return obj instanceof List ? (List<Object>) obj : obj != null ? Arrays.asList(obj) : new ArrayList<>();
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Getting maps
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return a map\<string, object\> from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final SerializedMap getMap(final String path) {
 		final LinkedHashMap<?, ?> map = this.getMap(path, Object.class, Object.class);
 
 		return SerializedMap.of(map);
 	}
 
+	/**
+	 * Return a map of the given key and value types from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param valueType
+	 * @param valueDeserializeParams
+	 * @return
+	 */
 	public final <Key, Value> LinkedHashMap<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType, Object... valueDeserializeParams) {
 
 		// The map we are creating, preserve order
@@ -472,6 +951,18 @@ public abstract class FileConfig {
 		return map;
 	}
 
+	/**
+	 * Return a list of a map of the given types from the key at the given path
+	 * (see {@link #get(String, Class, Object, Object...)}).
+	 *
+	 * @param <Key>
+	 * @param <Value>
+	 * @param path
+	 * @param keyType
+	 * @param setType
+	 * @param setDeserializeParameters
+	 * @return
+	 */
 	public final <Key, Value> LinkedHashMap<Key, List<Value>> getMapList(@NonNull String path, final Class<Key> keyType, final Class<Value> setType, Object... setDeserializeParameters) {
 
 		// The map we are creating, preserve order
@@ -512,12 +1003,31 @@ public abstract class FileConfig {
 	// Setting values
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Sets the given value to the given path (set the value to null to remove it)
+	 * and then saves the file immediately.
+	 *
+	 * Path prefix is added automatically, see {@link #getPathPrefix()}
+	 * The value is serialized using {@link SerializeUtil}
+	 *
+	 * @param path
+	 * @param value
+	 */
 	public final void save(String path, Object value) {
 		this.set(path, value);
 
 		this.save();
 	}
 
+	/**
+	 * Sets the given value to the given path (set the value to null to remove it).
+	 *
+	 * Path prefix is added automatically, see {@link #getPathPrefix()}
+	 * The value is serialized using {@link SerializeUtil}
+	 *
+	 * @param path
+	 * @param value
+	 */
 	public final void set(String path, Object value) {
 		path = this.buildPathPrefix(path);
 		value = SerializeUtil.serialize(value);
@@ -526,33 +1036,70 @@ public abstract class FileConfig {
 		this.shouldSave = true;
 	}
 
+	/**
+	 * Returns true if the given path contains a non-null value
+	 *
+	 * Path prefix is added automatically, see {@link #getPathPrefix()}
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final boolean isSet(String path) {
 		path = this.buildPathPrefix(path);
 
 		return this.section.isStored(path);
 	}
 
-	public void move(final String fromRelative, final String toAbsolute) {
-		this.move(this.getObject(fromRelative), fromRelative, toAbsolute);
+	/**
+	 * Returns true if defaults are set and contain a non-null value
+	 * at the given path
+	 *
+	 * Path prefix is added automatically, see {@link #getPathPrefix()}
+	 *
+	 * @param path
+	 * @return
+	 */
+	public final boolean isSetDefault(String path) {
+		path = this.buildPathPrefix(path);
+
+		return this.defaults != null && this.defaults.isStored(path);
 	}
 
-	public void move(final Object value, String fromPathRel, final String toPathAbs) {
-		this.set(fromPathRel, null);
-		this.set(toPathAbs, value);
+	/**
+	 * Attempts to move the given key from the relative path (path prefix is added)
+	 * to the absolute new path (path prefix not added)
+	 *
+	 * @param fromPathRel
+	 * @param toPathAbs
+	 */
+	public final void move(String fromPathRel, final String toPathAbs) {
+		final Object oldObject = this.getObject(fromPathRel);
 
-		Common.log("&7Update " + this.getFileName() + ". Move &b\'&f" + this.buildPathPrefix(fromPathRel) + "&b\' &7(was \'" + value + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
+		// Remove the old object
+		this.set(fromPathRel, null);
+
+		// Set it as absolute, do not add path prefix
+		this.section.store(toPathAbs, oldObject);
+
+		Common.log("&7Update " + this.getFileName() + ". Move &b\'&f" + this.buildPathPrefix(fromPathRel) + "&b\' &7(was \'" + oldObject + "&7\') to " + "&b\'&f" + toPathAbs + "&b\'" + "&r");
 	}
 
 	// ------------------------------------------------------------------------------------
 	// File manipulation
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Attempts to load the file configuration, not saving any changes made since last loading it.
+	 */
 	public final void reload() {
 		Valid.checkNotNull(this.file, "Cannot call reload() before loading a file!");
 
 		this.load(this.file);
 	}
 
+	/*
+	 * Helper to load configuration from a file
+	 */
 	final void load(@NonNull File file) {
 		synchronized (loadedSections) {
 			try {
@@ -584,8 +1131,10 @@ public abstract class FileConfig {
 		}
 	}
 
+	/*
+	 * Helper to load configuration from a reader
+	 */
 	private final void load(@NonNull Reader reader) {
-
 		try {
 			final BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
 			final StringBuilder builder = new StringBuilder();
@@ -597,6 +1146,7 @@ public abstract class FileConfig {
 					builder.append(line);
 					builder.append('\n');
 				}
+
 			} finally {
 				input.close();
 			}
@@ -608,17 +1158,34 @@ public abstract class FileConfig {
 		}
 	}
 
+	/**
+	 * Implementation by specific configuration type to load configuration from the given string contents.
+	 *
+	 * @param contents
+	 */
 	abstract void loadFromString(@NonNull String contents);
 
+	/**
+	 * Called automatically when the configuration has been loaded, used to load your
+	 * fields in your class here.
+	 */
 	protected void onLoad() {
 	}
 
+	/**
+	 * Save the configuration to the file immediately (you need to call loadConfiguration(File) first)
+	 */
 	public final void save() {
 		Valid.checkNotNull(this.file, "Cannot call save() for " + this + " when no file was set! Call load first!");
 
 		this.save(file);
 	}
 
+	/**
+	 * Saves the configuration to the given file, updating the file stored in this configuration.
+	 *
+	 * @param file
+	 */
 	public final void save(@NonNull File file) {
 		synchronized (loadedSections) {
 			try {
@@ -642,37 +1209,40 @@ public abstract class FileConfig {
 					}
 				}
 
+				this.file = file;
+
 			} catch (final Exception ex) {
 				Remain.sneaky(ex);
 			}
 		}
 	}
 
+	/**
+	 * Called automatically on saving the configuration, you can call "set(path, value)" methods here
+	 * to save your class fields.
+	 */
 	protected void onSave() {
 	}
 
+	/**
+	 * Implementation by specific configurations to generate file contents to save.
+	 *
+	 * @return
+	 */
 	@NonNull
 	abstract String saveToString();
 
+	/**
+	 * Removes the loaded file configuration from the disk.
+	 */
 	public final void deleteFile() {
-		if (this.file.exists()) {
-
-			this.file.delete();
-			this.unregister();
-		}
-	}
-
-	public final void unregister() {
 		synchronized (loadedSections) {
 			Valid.checkNotNull(this.file, "Cannot unregister null file before settings were loaded!");
 
-			loadedSections.remove(this.file.getAbsolutePath());
-		}
-	}
+			if (this.file.exists())
+				this.file.delete();
 
-	public static final void clearLoadedSections() {
-		synchronized (loadedSections) {
-			loadedSections.clear();
+			loadedSections.remove(this.file.getAbsolutePath());
 		}
 	}
 
@@ -680,15 +1250,29 @@ public abstract class FileConfig {
 	// Path prefix
 	// ------------------------------------------------------------------------------------
 
-	final String buildPathPrefix(@NonNull final String path) {
-		final String prefixed = this.pathPrefix != null ? this.pathPrefix + (!path.isEmpty() ? "." + path : "") : path;
-		final String newPath = prefixed.endsWith(".") ? prefixed.substring(0, prefixed.length() - 1) : prefixed;
-
-		// Check for a case where there is multiple dots at the end... #somePeople
-		Valid.checkBoolean(!newPath.endsWith("."), "Path '" + path + "' must not end with '.' after path prefix '" + this.pathPrefix + "': " + newPath);
-		return newPath;
+	/**
+	 * Returns the current path prefix. See {@link #setPathPrefix(String)} for explainer.
+	 *
+	 * @return
+	 */
+	protected final String getPathPrefix() {
+		return this.pathPrefix;
 	}
 
+	/**
+	 * Sets the given path prefix, set to null to remove.
+	 *
+	 * Path prefix is used as convenience to prevent duplicate
+	 * section calls such as:
+	 *
+	 * get("Player.Name")
+	 * get("Player.Health")
+	 *
+	 * You can set the path prefix to "Player" and then simply call get("Name") and get("Health") instead
+	 * and we place "Player." before each path call automatically.
+	 *
+	 * @param pathPrefix
+	 */
 	protected final void setPathPrefix(final String pathPrefix) {
 		if (pathPrefix != null) {
 			Valid.checkBoolean(!pathPrefix.endsWith("."), "Path prefix must not end with a dot: " + pathPrefix);
@@ -698,43 +1282,103 @@ public abstract class FileConfig {
 		this.pathPrefix = pathPrefix != null && !pathPrefix.isEmpty() ? pathPrefix : null;
 	}
 
-	protected final String getPathPrefix() {
-		return this.pathPrefix;
+	/*
+	 * Helper method to add path prefix
+	 */
+	private final String buildPathPrefix(@NonNull final String path) {
+		final String prefixed = this.pathPrefix != null ? this.pathPrefix + (!path.isEmpty() ? "." + path : "") : path;
+		final String newPath = prefixed.endsWith(".") ? prefixed.substring(0, prefixed.length() - 1) : prefixed;
+
+		// Check for a case where there is multiple dots at the end... #somePeople
+		Valid.checkBoolean(!newPath.endsWith("."), "Path '" + path + "' must not end with '.' after path prefix '" + this.pathPrefix + "': " + newPath);
+		return newPath;
 	}
 
 	// ------------------------------------------------------------------------------------
-	// Getters
+	// Final getters
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Return the comments header of the file, can be null
+	 *
+	 * @return
+	 */
+	public final String getHeader() {
+		return this.header;
+	}
+
+	/**
+	 * Set the comments header of the file, set to null to remove.
+	 * Only works if defaults are not set, or if saving comments is disabled for supported configurations
+	 *
+	 * @param values
+	 */
+	public final void setHeader(String... values) {
+		this.header = values == null ? null : String.join("\n", values);
+	}
+
+	/**
+	 * Removes all keys in the entire configuration section
+	 */
 	public final void clear() {
 		this.section.clear();
 	}
 
+	/**
+	 * Return the file name, if set
+	 *
+	 * @return
+	 */
 	public final String getFileName() {
 		return this.file == null ? "null" : this.file.getName();
 	}
 
-	public final String getHeader() {
-		return this.header;
-
-	}
-
-	public final void setHeader(String... values) {
-		this.header = String.join("\n", values);
-	}
-
+	/**
+	 * Return if there are any keys set in this configuration
+	 *
+	 * @return
+	 */
 	public final boolean isEmpty() {
 		return this.section.isEmpty();
 	}
 
+	/**
+	 * Turns this entire configuration into a saveable map
+	 *
+	 * @return
+	 */
 	public final SerializedMap serialize() {
 		return this.section.serialize();
 	}
 
 	// ------------------------------------------------------------------------------------
-	// Class
+	// Static
 	// ------------------------------------------------------------------------------------
 
+	@Deprecated // internal use only
+	public static final void clearLoadedSections() {
+		synchronized (loadedSections) {
+			loadedSections.clear();
+		}
+	}
+
+	// ------------------------------------------------------------------------------------
+	// Classes
+	// ------------------------------------------------------------------------------------
+
+	/**
+	 * Language-specific helper to deal with different cases when i.e. counting:
+	 *
+	 * "Please wait 1 second before your next message."
+	 *
+	 * In flexible languages such as Slovak, the case is changed three times:
+	 * 0 or 5+ seconds = 5 sekúnd
+	 * 1 = 1 sekundu
+	 * 2-4 = 2 sekundy
+	 *
+	 * This helper is used to automatically determine and get the right case. We
+	 * save all three values on a single line split by a comma.
+	 */
 	public static final class AccusativeHelper {
 
 		private final String accusativeSingural; // 1 second (Slovak case - sekundu)
@@ -779,6 +1423,9 @@ public abstract class FileConfig {
 		}
 	}
 
+	/**
+	 * A helper to automatically send titles and subtitles to players.
+	 */
 	public static final class TitleHelper {
 
 		private final String title, subtitle;
@@ -813,10 +1460,13 @@ public abstract class FileConfig {
 		}
 	}
 
+	/**
+	 * A helper to store a list of location points and be able to remove/add them with
+	 * one click, automatically saving your configuration.
+	 */
 	public static final class LocationList implements Iterable<Location> {
 
 		private final FileConfig settings;
-
 		private final List<Location> points;
 
 		private LocationList(final FileConfig settings, final List<Location> points) {

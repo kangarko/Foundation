@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.mineacademy.fo.FileUtil;
@@ -24,23 +26,30 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
-import lombok.AccessLevel;
 import lombok.NonNull;
-import lombok.Setter;
 
+/**
+ * The core settings class. Fully compatible with Minecraft 1.7.10 to the
+ * latest one, including comments support (default file required, see {@link #saveComments()})
+ * and automatic config upgrading if we request a value that only exist in the default file.
+ */
 public class YamlConfig extends FileConfig {
 
-	private static final String COMMENT_PREFIX = "# ";
-	private static final String BLANK_CONFIG = "{}\n";
-
+	/**
+	 * The Yaml instance
+	 */
 	private final Yaml yaml;
 
-	@Setter(value = AccessLevel.PROTECTED)
+	/**
+	 * Should we save empty sections or null values (requires NO default file)
+	 */
 	private boolean saveEmptyValues = true;
 
+	/**
+	 * Create a new instance (do not load it, use {@link #load(File)} to load)
+	 */
 	protected YamlConfig() {
 		final YamlConstructor constructor = new YamlConstructor();
-
 		final YamlRepresenter representer = new YamlRepresenter();
 		representer.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
@@ -68,27 +77,75 @@ public class YamlConfig extends FileConfig {
 
 		else
 			this.yaml = new Yaml(constructor, representer, dumperOptions);
-
 	}
 
+	/**
+	 * Return true if you have a default file and want to save comments from it
+	 *
+	 * Any user-generated comments will be lost, any user-written values will be lost.
+	 *
+	 * Please see {@link #getUncommentedSections()} to write sections containing maps users
+	 * can create to prevent losing them.
+	 *
+	 * @return
+	 */
+	protected boolean saveComments() {
+		return true;
+	}
+
+	/**
+	 * See {@link #saveComments()}
+	 *
+	 * @return
+	 */
 	protected List<String> getUncommentedSections() {
 		return new ArrayList<>();
 	}
 
+	/**
+	 * (Requires no default file or {@link #saveComments()} on false)
+	 * Set if we should remove empty lists or sections when saving.
+	 * Defaults to true, that means that empty sections will be saved.
+	 *
+	 * @param saveEmptyValues
+	 */
+	public final void setSaveEmptyValues(boolean saveEmptyValues) {
+		this.saveEmptyValues = saveEmptyValues;
+	}
+
+	/**
+	 * Returns true if this config contains any keys what so ever. Override for
+	 * custom logic.
+	 *
+	 * @return
+	 */
 	public boolean isValid() {
-		return this.getObject("") instanceof ConfigSection;
+		return !this.section.map.isEmpty();
 	}
 
 	// ------------------------------------------------------------------------------------
 	// File manipulation
 	// ------------------------------------------------------------------------------------
 
+	/**
+	 * Attempts to load configuration from the given internal path in your JAR.
+	 * We automatically move the file to your plugin's folder if it does not exist.
+	 * Subfolders are supported, example: localization/messages_en.yml
+	 *
+	 * @param internalPath
+	 */
 	public final void loadConfiguration(String internalPath) {
 		this.loadConfiguration(internalPath, internalPath);
 	}
 
-	public final void loadConfiguration(String from, String to) {
-
+	/**
+	 * Load configuration from the optional from path in your JAR file,
+	 * extracting it to the given path in your plugin's folder if it does not exist.
+	 *
+	 * @param from
+	 * @param to
+	 */
+	public final void loadConfiguration(@Nullable String from, String to) {
 		File file;
 
 		if (from != null) {
@@ -116,11 +173,15 @@ public class YamlConfig extends FileConfig {
 		this.load(file);
 	}
 
+	/*
+	 * Dumps all values in this config into a saveable format
+	 */
 	@NonNull
 	@Override
 	final String saveToString() {
 
-		if (this.defaults == null) {
+		// Do not use comments
+		if (this.defaults == null || !this.saveComments()) {
 			final String header = this.getHeader() == null ? "" : "# " + String.join("\n# ", this.getHeader().split("\n")) + "\n\n";
 			final Map<String, Object> values = this.section.getValues(false);
 
@@ -129,7 +190,8 @@ public class YamlConfig extends FileConfig {
 
 			String dump = this.yaml.dump(values);
 
-			if (dump.equals(BLANK_CONFIG))
+			// Blank config
+			if (dump.equals("{}\n"))
 				dump = "";
 
 			return header + dump;
@@ -146,6 +208,9 @@ public class YamlConfig extends FileConfig {
 		return null;
 	}
 
+	/*
+	 * Attempts to remove empty maps, lists or arrays from the given map
+	 */
 	private static void removeEmptyValues(Map<String, Object> map) {
 		for (final Iterator<Entry<String, Object>> it = map.entrySet().iterator(); it.hasNext();) {
 			final Entry<String, Object> entry = it.next();
@@ -172,6 +237,9 @@ public class YamlConfig extends FileConfig {
 		}
 	}
 
+	/*
+	 * Loads configuration from the given string contents
+	 */
 	@Override
 	final void loadFromString(@NonNull String contents) {
 
@@ -198,6 +266,9 @@ public class YamlConfig extends FileConfig {
 			this.convertMapsToSections(input, this.section);
 	}
 
+	/*
+	 * Converts the given maps to sections
+	 */
 	private void convertMapsToSections(@NonNull Map<?, ?> input, @NonNull ConfigSection section) {
 		for (final Map.Entry<?, ?> entry : input.entrySet()) {
 			final String key = entry.getKey().toString();
@@ -210,22 +281,27 @@ public class YamlConfig extends FileConfig {
 		}
 	}
 
+	/*
+	 * Converts the given input to header
+	 */
 	@NonNull
 	private String parseHeader(@NonNull String input) {
+		final String commentPrefix = "# ";
 		final String[] lines = input.split("\r?\n", -1);
 		final StringBuilder result = new StringBuilder();
+
 		boolean readingHeader = true;
 		boolean foundHeader = false;
 
 		for (int i = 0; (i < lines.length) && (readingHeader); i++) {
 			final String line = lines[i].trim();
 
-			if (line.startsWith(COMMENT_PREFIX) || line.equals("#")) {
+			if (line.startsWith(commentPrefix) || line.equals("#")) {
 				if (i > 0)
 					result.append("\n");
 
-				if (line.length() > COMMENT_PREFIX.length())
-					result.append(line.substring(COMMENT_PREFIX.length()));
+				if (line.length() > commentPrefix.length())
+					result.append(line.substring(commentPrefix.length()));
 
 				foundHeader = true;
 
@@ -241,6 +317,16 @@ public class YamlConfig extends FileConfig {
 		return string.trim().isEmpty() ? "" : string + "\n";
 	}
 
+	// -----------------------------------------------------------------------------------------------------
+	// Static
+	// -----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Loads configuration from the internal JAR path, extracting it if needed.
+	 *
+	 * @param path
+	 * @return
+	 */
 	@NonNull
 	public static final YamlConfig fromInternalPath(@NonNull String path) {
 
@@ -256,6 +342,12 @@ public class YamlConfig extends FileConfig {
 		return config;
 	}
 
+	/**
+	 * Loads configuration from the file in your plugin's folder.
+	 *
+	 * @param file
+	 * @return
+	 */
 	@NonNull
 	public static final YamlConfig fromFile(@NonNull File file) {
 
@@ -270,21 +362,13 @@ public class YamlConfig extends FileConfig {
 		return config;
 	}
 
-	/*@NonNull
-	public static final YamlConfig fromReader(@NonNull Reader reader) {
-	
-		final YamlConfig config = new YamlConfig();
-	
-		try {
-			config.load(reader);
-	
-		} catch (final Exception ex) {
-			Logger.getGlobal().log(Level.SEVERE, "Cannot load configuration from stream", ex);
-		}
-	
-		return config;
-	}*/
+	// -----------------------------------------------------------------------------------------------------
+	// Classes
+	// -----------------------------------------------------------------------------------------------------
 
+	/**
+	 * Helper class, credits to the original Bukkit/Spigot team, enhanced by MineAcademy
+	 */
 	private final static class YamlConstructor extends SafeConstructor {
 
 		public YamlConstructor() {
@@ -322,6 +406,9 @@ public class YamlConfig extends FileConfig {
 		}
 	}
 
+	/**
+	 * Helper class, credits to the original Bukkit/Spigot team, enhanced by MineAcademy
+	 */
 	private final static class YamlRepresenter extends Representer {
 
 		public YamlRepresenter() {
@@ -353,5 +440,4 @@ public class YamlConfig extends FileConfig {
 			}
 		}
 	}
-
 }
