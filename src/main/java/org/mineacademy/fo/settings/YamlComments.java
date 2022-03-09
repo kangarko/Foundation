@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,30 +46,12 @@ final class YamlComments {
 	 *
 	 * @param jarPath The yaml file name to update from, typically config.yml
 	 * @param diskFile The yaml file to update
-	 */
-	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile) {
-		try {
-			writeComments(jarPath, diskFile, null, new ArrayList<>());
-
-		} catch (final IOException ex) {
-			Common.error(ex,
-					"Failed writing comments!",
-					"Path in plugin jar wherefrom comments are fetched: " + jarPath,
-					"Disk file where comments are written: " + diskFile);
-		}
-	}
-
-	/**
-	 * Update a yaml file from a resource inside your plugin jar
-	 *
-	 * @param jarPath The yaml file name to update from, typically config.yml
-	 * @param diskFile The yaml file to update
 	 * @param oldContents the actual yaml content from the old file, to prevent overriding values
 	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
 	 *
 	 * @throws IOException If an IOException occurs
 	 */
-	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @Nullable String oldContents, @NonNull List<String> ignoredSections) throws IOException {
+	static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @Nullable String oldContents, @NonNull List<String> ignoredSections) throws IOException {
 
 		final List<String> newLines = FileUtil.getInternalFileContent(jarPath);
 

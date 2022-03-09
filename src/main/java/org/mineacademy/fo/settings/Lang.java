@@ -70,13 +70,26 @@ public final class Lang extends YamlConfig {
 	}
 
 	/**
+	 * Reload the language file
+	 *
+	 * @deprecated internal use only
+	 */
+	@Deprecated
+	public static void reloadLang() {
+		if (instance != null)
+			synchronized (instance) {
+				instance.reload();
+			}
+	}
+
+	/**
 	 * Reload prefixes from the locale file
 	 *
 	 * @deprecated internal use only
 	 */
 	@Deprecated
 	public static void loadPrefixes() {
-		if (instance != null) {
+		if (instance != null)
 			synchronized (instance) {
 				if (instance.isSet("Prefix.Announce"))
 					Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
@@ -96,8 +109,6 @@ public final class Lang extends YamlConfig {
 				if (instance.isSet("Prefix.Warn"))
 					Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
 			}
-		}
-
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

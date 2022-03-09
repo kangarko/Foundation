@@ -421,8 +421,17 @@ public final class SerializeUtil {
 		} else if (List.class.isAssignableFrom(classOf) && object instanceof List) {
 			// Good
 
-		} else if (Map.class.isAssignableFrom(classOf) && object instanceof Map) {
-			// Good
+		} else if (Map.class.isAssignableFrom(classOf)) {
+			if (object instanceof Map)
+				return (T) object;
+
+			if (object instanceof MemorySection)
+				return (T) Common.getMapFromSection(object);
+
+			if (object instanceof ConfigSection)
+				return (T) ((ConfigSection) object).getValues(false);
+
+			throw new SerializeFailedException("Does not know how to turn " + object.getClass().getSimpleName() + " into a Map! (Keep in mind we can only serialize into Map<Object/String, Object> Data: " + object);
 
 		} else if (ConfigurationSerializable.class.isAssignableFrom(classOf) && object instanceof ConfigurationSerializable) {
 			// Good
