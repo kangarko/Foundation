@@ -12,7 +12,6 @@ import org.mineacademy.fo.Common;
  *
  */
 enum MinecraftVersion {
-
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
 	MC1_8_R3(183),
@@ -29,7 +28,8 @@ enum MinecraftVersion {
 	MC1_16_R2(1162),
 	MC1_16_R3(1163),
 	MC1_17_R1(1171),
-	MC1_18_R1(1181, true);
+	MC1_18_R1(1181, true),
+	MC1_18_R2(1182, true);
 
 	private static MinecraftVersion version;
 
@@ -49,20 +49,25 @@ enum MinecraftVersion {
 	 * @return A simple comparable Integer, representing the version.
 	 */
 	public int getVersionId() {
-		return versionId;
+		return this.versionId;
 	}
 
 	/**
 	 * @return True if method names are in Mojang format and need to be remapped internally
 	 */
 	public boolean isMojangMapping() {
-		return mojangMapping;
+		return this.mojangMapping;
 	}
 
+	/**
+	 * This method is required to hot-wire the plugin during mappings generation for newer mc versions thanks to md_5 not used mojmap.
+	 *
+	 * @return
+	 */
 	public String getPackageName() {
-		if (this == UNKNOWN) {
-			return values()[values().length - 1].name().replace("MC", "v");
-		}
+		if (this == UNKNOWN)
+			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+
 		return this.name().replace("MC", "v");
 	}
 
@@ -106,7 +111,7 @@ enum MinecraftVersion {
 		}
 
 		if (version == UNKNOWN)
-			Common.log("[NBTAPI] Wasn't able to find NMS Support! Some functions may not work!");
+			Common.warning("[NBT-API] Your server version " + ver + " is not supported by NBT-API. Some functions will not be available.");
 
 		return version;
 	}

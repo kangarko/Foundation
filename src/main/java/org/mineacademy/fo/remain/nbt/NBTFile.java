@@ -25,16 +25,15 @@ public class NBTFile extends NBTCompound {
 	 */
 	public NBTFile(File file) throws IOException {
 		super(null, null);
-		if (file == null) {
+		if (file == null)
 			throw new NullPointerException("File can't be null!");
-		}
 		this.file = file;
 		if (file.exists()) {
 			final FileInputStream inputsteam = new FileInputStream(file);
-			nbt = NBTReflectionUtil.readNBT(inputsteam);
+			this.nbt = NBTReflectionUtil.readNBT(inputsteam);
 		} else {
-			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
-			save();
+			this.nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
+			this.save();
 		}
 	}
 
@@ -45,16 +44,16 @@ public class NBTFile extends NBTCompound {
 	 */
 	public void save() throws IOException {
 		try {
-			getWriteLock().lock();
-			if (!file.exists()) {
-				file.getParentFile().mkdirs();
-				if (!file.createNewFile())
-					throw new IOException("Unable to create file at " + file.getAbsolutePath());
+			this.getWriteLock().lock();
+			if (!this.file.exists()) {
+				this.file.getParentFile().mkdirs();
+				if (!this.file.createNewFile())
+					throw new IOException("Unable to create file at " + this.file.getAbsolutePath());
 			}
-			final FileOutputStream outStream = new FileOutputStream(file);
-			NBTReflectionUtil.writeNBT(nbt, outStream);
+			final FileOutputStream outStream = new FileOutputStream(this.file);
+			NBTReflectionUtil.writeNBT(this.nbt, outStream);
 		} finally {
-			getWriteLock().unlock();
+			this.getWriteLock().unlock();
 		}
 	}
 
@@ -62,17 +61,17 @@ public class NBTFile extends NBTCompound {
 	 * @return The File used to store the data
 	 */
 	public File getFile() {
-		return file;
+		return this.file;
 	}
 
 	@Override
 	public Object getCompound() {
-		return nbt;
+		return this.nbt;
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		nbt = compound;
+		this.nbt = compound;
 	}
 
 }

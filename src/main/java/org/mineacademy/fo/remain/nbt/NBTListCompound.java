@@ -16,17 +16,17 @@ public class NBTListCompound extends NBTCompound {
 
 	protected NBTListCompound(NBTList<?> parent, Object obj) {
 		super(null, null);
-		owner = parent;
-		compound = obj;
+		this.owner = parent;
+		this.compound = obj;
 	}
 
 	public NBTList<?> getListParent() {
-		return owner;
+		return this.owner;
 	}
 
 	@Override
 	public Object getCompound() {
-		return compound;
+		return this.compound;
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class NBTListCompound extends NBTCompound {
 
 	@Override
 	protected void saveCompound() {
-		owner.save();
+		this.owner.save();
 	}
 
 }
