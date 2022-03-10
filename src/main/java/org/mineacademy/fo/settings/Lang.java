@@ -79,6 +79,7 @@ public final class Lang extends YamlConfig {
 		if (instance != null)
 			synchronized (instance) {
 				instance.reload();
+				instance.save();
 			}
 	}
 
@@ -108,6 +109,8 @@ public final class Lang extends YamlConfig {
 
 				if (instance.isSet("Prefix.Warn"))
 					Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
+
+				instance.save();
 			}
 	}
 
