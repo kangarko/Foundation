@@ -1272,7 +1272,7 @@ public final class Common {
 			throw new FoException("Failed to initialize Console Sender, are you running Foundation under a Bukkit/Spigot server?");
 
 		for (String message : messages) {
-			if (message.equals("none"))
+			if (message == null || message.equals("none"))
 				continue;
 
 			if (stripColors(message).replace(" ", "").isEmpty()) {
