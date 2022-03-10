@@ -34,6 +34,12 @@ import org.mineacademy.fo.settings.FileConfig.TitleHelper;
 public abstract class YamlStaticConfig {
 
 	/**
+	 * Represents "null" which you can use as convenience shortcut in loading config
+	 * that has no internal from path.
+	 */
+	public static final String NO_DEFAULT = null;
+
+	/**
 	 * The temporary {@link YamlConfig} instance we store here to get values from
 	 */
 	private static YamlConfig TEMPORARY_INSTANCE;
@@ -208,6 +214,10 @@ public abstract class YamlStaticConfig {
 	 * Safety check whether all fields have been set
 	 */
 	private void checkFields(final Class<?> clazz) throws Exception {
+
+		if (clazz == YamlStaticConfig.class)
+			return;
+
 		for (final Field field : clazz.getDeclaredFields()) {
 			field.setAccessible(true);
 
@@ -227,8 +237,12 @@ public abstract class YamlStaticConfig {
 	// Delegate methods
 	// -----------------------------------------------------------------------------------------------------
 
-	protected final void loadConfiguration(final String path) throws Exception {
-		TEMPORARY_INSTANCE.loadConfiguration(path, path);
+	protected final void loadConfiguration(String internalPath) {
+		TEMPORARY_INSTANCE.loadConfiguration(internalPath, internalPath);
+	}
+
+	protected final void loadConfiguration(String from, String to) {
+		TEMPORARY_INSTANCE.loadConfiguration(from, to);
 	}
 
 	protected static final void set(final String path, final Object value) {
