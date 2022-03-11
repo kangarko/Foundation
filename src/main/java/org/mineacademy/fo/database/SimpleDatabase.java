@@ -61,6 +61,11 @@ public class SimpleDatabase {
 	 */
 	private boolean batchUpdateGoingOn = false;
 
+	/**
+	 * Optional Hikari data source (you plugin needs to include com.zaxxer.HikariCP library in its plugin.yml (MC 1.16+ required)
+	 */
+	private Object hikariDataSource;
+
 	// --------------------------------------------------------------------
 	// Connecting
 	// --------------------------------------------------------------------
@@ -134,7 +139,33 @@ public class SimpleDatabase {
 		// Close any open connection
 		close();
 
+		final boolean useHikari = true;
+
 		try {
+
+			if (useHikari) {
+				if (!ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
+					Class.forName("org.mariadb.jdbc.Driver");
+				} else {
+					Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
+
+					Class.forName("com.mysql.jdbc.Driver");
+				}
+
+				// TODO remove imports, use reflection
+				final com.zaxxer.hikari.HikariConfig hikariConfig = new com.zaxxer.hikari.HikariConfig();
+
+				hikariConfig.setDriverClassName("org.mariadb.jdbc.Driver");
+				hikariConfig.setJdbcUrl(url);
+				hikariConfig.setUsername(user);
+				hikariConfig.setPassword(password);
+
+				final com.zaxxer.hikari.HikariDataSource hikariSource = new com.zaxxer.hikari.HikariDataSource(hikariConfig);
+
+				this.hikariDataSource = hikariSource;
+				this.connection = hikariSource.getConnection();
+			}
+
 			if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
 				Class.forName("com.mysql.cj.jdbc.Driver");
 
@@ -145,7 +176,9 @@ public class SimpleDatabase {
 			}
 
 			this.lastCredentials = new LastCredentials(url, user, password, table);
-			this.connection = DriverManager.getConnection(url, user, password);
+
+			if (!useHikari)
+				this.connection = DriverManager.getConnection(url, user, password);
 
 			onConnected();
 
@@ -158,7 +191,7 @@ public class SimpleDatabase {
 						"this is normal - just restart.",
 						"",
 						"You have have access to your server machine, try installing",
-						"https://dev.mysql.com/downloads/connector/j/5.1.html#downloads",
+						(useHikari ? "https://mariadb.com/downloads/connectors/" : "https://dev.mysql.com/downloads/connector/j/5.1.html#downloads"),
 						"",
 						"If this problem persists after a restart, please contact",
 						"your hosting provider.");
@@ -195,13 +228,16 @@ public class SimpleDatabase {
 	 * Attempts to close the connection, if not null
 	 */
 	public final void close() {
-		if (connection != null)
-			try {
+		try {
+			if (connection != null)
 				connection.close();
 
-			} catch (final SQLException e) {
-				Common.error(e, "Error closing MySQL connection!");
-			}
+			if (hikariDataSource != null)
+				ReflectionUtil.invoke("close", hikariDataSource);
+
+		} catch (final SQLException e) {
+			Common.error(e, "Error closing MySQL connection!");
+		}
 	}
 
 	// --------------------------------------------------------------------
