@@ -18,6 +18,8 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -290,6 +292,7 @@ public class SimpleScoreboard {
 				final String sidebarEntry = this.rows.get(lineNumber);
 				final String text = this.replaceTheme(this.replaceVariables(viewedScoreboard.getViewer(), sidebarEntry));
 				String prefix = text.substring(0, Math.min(16, text.length()));
+
 				// Copying over the chatcolor from the prefix
 				String suffix = text.length() > 16 ? text.substring(16, Math.min(prefix.endsWith(COLOR_CHAR) ? 31 : 30, text.length())) : "";
 
@@ -298,6 +301,11 @@ public class SimpleScoreboard {
 					suffix = COLOR_CHAR + suffix;
 				} else
 					suffix = ChatColor.getLastColors(prefix) + suffix;
+
+				if (MinecraftVersion.olderThan(V.v1_13)) {
+					prefix = prefix.length() > 16 ? prefix.substring(0, 16) : prefix;
+					suffix = suffix.length() > 16 ? suffix.substring(0, 16) : suffix;
+				}
 
 				if (line == null)
 					line = scoreboard.registerNewTeam("line" + scoreboardLine);
