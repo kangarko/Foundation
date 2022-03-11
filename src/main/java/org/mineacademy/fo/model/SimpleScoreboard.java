@@ -186,7 +186,7 @@ public class SimpleScoreboard {
 	 * @param entries
 	 */
 	public final void addRows(final List<String> entries) {
-		this.rows.addAll(entries);
+		this.rows.addAll(Common.colorize(entries));
 	}
 
 	/**
