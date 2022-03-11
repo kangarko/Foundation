@@ -21,7 +21,7 @@ enum PackageWrapper {
 	 * @return The Uri for that package
 	 */
 	public String getUri() {
-		return uri;
+		return this.uri;
 	}
 
 }

@@ -25,14 +25,14 @@ public class NBTFloatList extends NBTList<Float> {
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
+			throw new FoException("Error while wrapping the Object " + object + " to it's NMS object!", e);
 		}
 	}
 
 	@Override
 	public Float get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Float.valueOf(obj.toString());
 		} catch (final NumberFormatException nf) {
 			return 0f;

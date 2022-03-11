@@ -16,9 +16,8 @@ public class NBTChunk {
 	 *
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
-	@AvailableSince(version = MinecraftVersion.MC1_16_R3)
 	public NBTCompound getPersistentDataContainer() {
-		return new NBTPersistentDataContainer(chunk.getPersistentDataContainer());
+		return new NBTPersistentDataContainer(this.chunk.getPersistentDataContainer());
 	}
 
 }

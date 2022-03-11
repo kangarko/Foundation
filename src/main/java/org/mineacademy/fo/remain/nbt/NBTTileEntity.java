@@ -20,20 +20,19 @@ public class NBTTileEntity extends NBTCompound {
 	 */
 	public NBTTileEntity(BlockState tile) {
 		super(null, null);
-		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced())) {
+		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced()))
 			throw new NullPointerException("Tile can't be null/not placed!");
-		}
 		this.tile = tile;
 	}
 
 	@Override
 	public Object getCompound() {
-		return NBTReflectionUtil.getTileEntityNBTTagCompound(tile);
+		return NBTReflectionUtil.getTileEntityNBTTagCompound(this.tile);
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, compound);
+		NBTReflectionUtil.setTileEntityNBTTagCompound(this.tile, compound);
 	}
 
 	/**
@@ -42,16 +41,15 @@ public class NBTTileEntity extends NBTCompound {
 	 *
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
-	@AvailableSince(version = MinecraftVersion.MC1_14_R1)
 	public NBTCompound getPersistentDataContainer() {
-		if (hasKey("PublicBukkitValues")) {
-			return getCompound("PublicBukkitValues");
-		} else {
+		if (this.hasKey("PublicBukkitValues"))
+			return this.getCompound("PublicBukkitValues");
+		else {
 			final NBTContainer container = new NBTContainer();
 			container.addCompound("PublicBukkitValues").setString("__nbtapi",
 					"Marker to make the PersistentDataContainer have content");
-			mergeCompound(container);
-			return getCompound("PublicBukkitValues");
+			this.mergeCompound(container);
+			return this.getCompound("PublicBukkitValues");
 		}
 	}
 
