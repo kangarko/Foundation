@@ -36,26 +36,24 @@ public class NBTItem extends NBTCompound {
 	 */
 	public NBTItem(ItemStack item, boolean directApply) {
 		super(null, null);
-		if (item == null || item.getType() == Material.AIR) {
-			throw new NullPointerException("ItemStack can't be null/Air!");
-		}
+		if (item == null || item.getType() == Material.AIR)
+			throw new NullPointerException("ItemStack can't be null/Air! This is not a NBTAPI bug!");
 		this.directApply = directApply;
-		bukkitItem = item.clone();
-		if (directApply) {
+		this.bukkitItem = item.clone();
+		if(directApply)
 			this.originalSrcStack = item;
-		}
 	}
 
 	@Override
 	public Object getCompound() {
-		return NBTReflectionUtil.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
+		return NBTReflectionUtil.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+		final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem);
 		ReflectionMethod.ITEMSTACK_SET_TAG.run(stack, compound);
-		bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
+		this.bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
 	}
 
 	/**
@@ -68,9 +66,8 @@ public class NBTItem extends NBTCompound {
 	 * @param item ItemStack that should get the new NBT data
 	 */
 	public void applyNBT(ItemStack item) {
-		if (item == null || item.getType() == Material.AIR) {
-			throw new NullPointerException("ItemStack can't be null/Air!");
-		}
+		if (item == null || item.getType() == Material.AIR)
+			throw new NullPointerException("ItemStack can't be null/Air! This is not a NBTAPI bug!");
 		final NBTItem nbti = new NBTItem(new ItemStack(item.getType()));
 		nbti.mergeCompound(this);
 		item.setItemMeta(nbti.getItem().getItemMeta());
@@ -93,13 +90,13 @@ public class NBTItem extends NBTCompound {
 	 * @param item ItemStack that should get the new NBT data
 	 */
 	public void mergeCustomNBT(ItemStack item) {
-		if (item == null || item.getType() == Material.AIR) {
+		if (item == null || item.getType() == Material.AIR)
 			throw new NullPointerException("ItemStack can't be null/Air!");
-		}
 		final ItemMeta meta = item.getItemMeta();
-		NBTReflectionUtil.getUnhandledNBTTags(meta).putAll(NBTReflectionUtil.getUnhandledNBTTags(bukkitItem.getItemMeta()));
+		NBTReflectionUtil.getUnhandledNBTTags(meta).putAll(NBTReflectionUtil.getUnhandledNBTTags(this.bukkitItem.getItemMeta()));
 		item.setItemMeta(meta);
 	}
+
 
 	/**
 	 * True, if the item has any tags now known for this item type.
@@ -107,28 +104,28 @@ public class NBTItem extends NBTCompound {
 	 * @return true when custom tags are present
 	 */
 	public boolean hasCustomNbtData() {
-		final ItemMeta meta = bukkitItem.getItemMeta();
-		return !NBTReflectionUtil.getUnhandledNBTTags(meta).isEmpty();
+        final ItemMeta meta = this.bukkitItem.getItemMeta();
+        return !NBTReflectionUtil.getUnhandledNBTTags(meta).isEmpty();
 	}
 
 	/**
 	 * Remove all custom (non-vanilla) NBT tags from the NBTItem.
 	 */
 	public void clearCustomNBT() {
-		final ItemMeta meta = bukkitItem.getItemMeta();
+		final ItemMeta meta = this.bukkitItem.getItemMeta();
 		NBTReflectionUtil.getUnhandledNBTTags(meta).clear();
-		bukkitItem.setItemMeta(meta);
+		this.bukkitItem.setItemMeta(meta);
 	}
 
 	/**
 	 * @return The modified ItemStack
 	 */
 	public ItemStack getItem() {
-		return bukkitItem;
+		return this.bukkitItem;
 	}
 
 	protected void setItem(ItemStack item) {
-		bukkitItem = item;
+		this.bukkitItem = item;
 	}
 
 	/**
@@ -137,7 +134,7 @@ public class NBTItem extends NBTCompound {
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
 	public boolean hasNBTData() {
-		return getCompound() != null;
+		return this.getCompound() != null;
 	}
 
 	/**
@@ -165,9 +162,8 @@ public class NBTItem extends NBTCompound {
 
 	@Override
 	protected void saveCompound() {
-		if (directApply) {
-			applyNBT(originalSrcStack);
-		}
+		if(this.directApply)
+			this.applyNBT(this.originalSrcStack);
 	}
 
 }

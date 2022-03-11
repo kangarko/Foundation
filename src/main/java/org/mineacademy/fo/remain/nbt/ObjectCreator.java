@@ -26,8 +26,8 @@ enum ObjectCreator {
 			return;
 		try {
 			this.targetClass = clazz;
-			construct = clazz.getDeclaredConstructor(args);
-			construct.setAccessible(true);
+			this.construct = clazz.getDeclaredConstructor(args);
+			this.construct.setAccessible(true);
 		} catch (final Exception ex) {
 			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
@@ -41,9 +41,9 @@ enum ObjectCreator {
 	 */
 	public Object getInstance(Object... args) {
 		try {
-			return construct.newInstance(args);
+			return this.construct.newInstance(args);
 		} catch (final Exception ex) {
-			throw new FoException(ex, "Exception while creating a new instance of '" + targetClass + "'");
+			throw new FoException("Exception while creating a new instance of '" + this.targetClass + "'", ex);
 		}
 	}
 

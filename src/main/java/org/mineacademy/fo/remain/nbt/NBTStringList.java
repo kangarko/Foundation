@@ -20,7 +20,7 @@ public class NBTStringList extends NBTList<String> {
 	@Override
 	public String get(int index) {
 		try {
-			return (String) ReflectionMethod.LIST_GET_STRING.run(listObject, index);
+			return (String) ReflectionMethod.LIST_GET_STRING.run(this.listObject, index);
 		} catch (final Exception ex) {
 			throw new FoException(ex);
 		}
@@ -34,7 +34,7 @@ public class NBTStringList extends NBTList<String> {
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new FoException(e, "Error while wrapping the Object " + object + " to it's NMS object!");
+			throw new FoException("Error while wrapping the Object " + object + " to it's NMS object!", e);
 		}
 	}
 

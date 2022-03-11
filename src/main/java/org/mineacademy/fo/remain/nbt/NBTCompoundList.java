@@ -20,7 +20,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	 * @return The added {@link NBTListCompound}
 	 */
 	public NBTListCompound addCompound() {
-		return (NBTListCompound) addCompound(null);
+		return (NBTListCompound) this.addCompound(null);
 	}
 
 	/**
@@ -33,16 +33,14 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	public NBTCompound addCompound(NBTCompound comp) {
 		try {
 			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId()) {
-				ReflectionMethod.LIST_ADD.run(listObject, size(), compound);
-			} else {
-				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, compound);
-			}
-			getParent().saveCompound();
+			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId())
+				ReflectionMethod.LIST_ADD.run(this.listObject, this.size(), compound);
+			else
+				ReflectionMethod.LEGACY_LIST_ADD.run(this.listObject, compound);
+			this.getParent().saveCompound();
 			final NBTListCompound listcomp = new NBTListCompound(this, compound);
-			if (comp != null) {
+			if(comp != null)
 				listcomp.mergeCompound(comp);
-			}
 			return listcomp;
 		} catch (final Exception ex) {
 			throw new FoException(ex);
@@ -60,21 +58,19 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	@Override
 	@Deprecated
 	public boolean add(NBTListCompound empty) {
-		return addCompound(empty) != null;
+		return this.addCompound(empty) != null;
 	}
 
 	@Override
 	public void add(int index, NBTListCompound element) {
-		if (element != null) {
+		if (element != null)
 			throw new FoException("You need to pass null! ListCompounds from other lists won't work.");
-		}
 		try {
 			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId()) {
-				ReflectionMethod.LIST_ADD.run(listObject, index, compound);
-			} else {
-				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, compound);
-			}
+			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId())
+				ReflectionMethod.LIST_ADD.run(this.listObject, index, compound);
+			else
+				ReflectionMethod.LEGACY_LIST_ADD.run(this.listObject, compound);
 			super.getParent().saveCompound();
 		} catch (final Exception ex) {
 			throw new FoException(ex);
@@ -84,7 +80,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 	@Override
 	public NBTListCompound get(int index) {
 		try {
-			final Object compound = ReflectionMethod.LIST_GET_COMPOUND.run(listObject, index);
+			final Object compound = ReflectionMethod.LIST_GET_COMPOUND.run(this.listObject, index);
 			return new NBTListCompound(this, compound);
 		} catch (final Exception ex) {
 			throw new FoException(ex);
