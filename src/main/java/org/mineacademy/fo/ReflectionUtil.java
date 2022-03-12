@@ -463,6 +463,19 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Makes a new instance of a class by its full path name
+	 *
+	 * @param <T>
+	 * @param classPath
+	 * @return
+	 */
+	public static <T> T instantiate(final String classPath) {
+		final Class<T> clazz = lookupClass(classPath);
+
+		return instantiate(clazz);
+	}
+
+	/**
 	 * Makes a new instance of a class
 	 *
 	 * @param clazz
@@ -1091,16 +1104,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-		
+
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-		
+
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
+
 			cacheMethod(method);
-		
+
 			return method;
 		}*/
 
