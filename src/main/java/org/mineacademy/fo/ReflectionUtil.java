@@ -86,7 +86,7 @@ public final class ReflectionUtil {
 	 * Find a class in net.minecraft.server package, adding the version
 	 * automatically
 	 *
-	 * @deprecated Minecraft 1.17 has a different path name,
+	 * @deprecated Minecraft 1.17+ has a different path name,
 	 *             use {@link #getNMSClass(String, String)} instead
 	 *
 	 * @param name
@@ -1104,16 +1104,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 
