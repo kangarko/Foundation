@@ -190,7 +190,7 @@ public class SimpleDatabase {
 						"this is normal - just restart.",
 						"",
 						"You have have access to your server machine, try installing",
-						"https://dev.mysql.com/downloads/connector/j/5.1.html#downloads",
+						"https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector",
 						"",
 						"If this problem persists after a restart, please contact",
 						"your hosting provider.");
