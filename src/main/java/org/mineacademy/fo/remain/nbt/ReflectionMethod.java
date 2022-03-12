@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.exception.FoException;
 
@@ -155,7 +156,7 @@ enum ReflectionMethod {
 				this.methodName = this.targetVersion.name;
 
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				System.out.println("[NBT-API] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this); //NOSONAR This gets loaded before the logger is loaded
+				Bukkit.getLogger().info("[NBT-API] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
 			}
 		}
 	}
