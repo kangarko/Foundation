@@ -1211,7 +1211,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param args
 	 * @param location
 	 * @return
-	 * @deprecated location is not used
+	 * @deprecated do not use
 	 */
 	@Deprecated
 	@Override
