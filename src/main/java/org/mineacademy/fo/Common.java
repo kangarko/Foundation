@@ -1361,10 +1361,6 @@ public final class Common {
 	 */
 	public static void throwError(Throwable t, final String... messages) {
 
-		// Get to the root cause of this problem
-		while (t.getCause() != null)
-			t = t.getCause();
-
 		// Delegate to only print out the relevant stuff
 		if (t instanceof FoException)
 			throw (FoException) t;
