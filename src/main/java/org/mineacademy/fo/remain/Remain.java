@@ -1946,12 +1946,11 @@ public final class Remain {
 	 * Calls NMS to find out if the entity is invisible, works for any entity,
 	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
 	 *
-	 * @deprecated use {@link PlayerUtil#isVanished(Player)} to check for vanish from other plugins also
+	 * USE WITH CAUTION, returns true for spectator mode and vanish potions
 	 *
 	 * @param entity
 	 * @return
 	 */
-	@Deprecated
 	public static boolean isInvisible(Entity entity) {
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
 			return ((LivingEntity) entity).isInvisible();
