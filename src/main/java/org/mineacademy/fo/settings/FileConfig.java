@@ -1132,13 +1132,9 @@ public abstract class FileConfig {
 
 				if (loadedBefore && !this.alwaysLoad) {
 					// Do not load
-					System.out.println("LOGIC: Skipping loading " + file);
-
-				} else {
-					System.out.println("LOGIC: loading " + file);
-
+				} else
 					this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
-				}
+
 				this.onLoad();
 
 				if (this.shouldSave) {
