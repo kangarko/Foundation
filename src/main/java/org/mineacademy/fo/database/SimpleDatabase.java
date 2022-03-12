@@ -162,8 +162,18 @@ public class SimpleDatabase {
 
 				this.hikariDataSource = hikariSource;
 
-				final Method getConnection = ReflectionUtil.getMethod(hikariSource.getClass(), "getConnection");
-				this.connection = ReflectionUtil.invoke(getConnection, hikariSource);
+				final Method getConnection = hikariSource.getClass().getDeclaredMethod("getConnection");
+
+				try {
+					this.connection = ReflectionUtil.invoke(getConnection, hikariSource);
+
+				} catch (final Throwable t) {
+					Common.warning("Could not get HikariCP connection, please report this with the information below to github.com/kangarko/foundation");
+					Common.warning("Method: " + getConnection);
+					Common.warning("Arguments: " + Common.join(getConnection.getParameters()));
+
+					t.printStackTrace();
+				}
 			}
 
 			else {
