@@ -53,6 +53,7 @@ import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.ConfigSection;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -2601,7 +2602,10 @@ public final class Common {
 	public static Map<String, Object> getMapFromSection(@NonNull Object mapOrSection) {
 		mapOrSection = Remain.getRootOfSectionPathData(mapOrSection);
 
-		final Map<String, Object> map = mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection : mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
+		final Map<String, Object> map = mapOrSection instanceof ConfigSection ? ((ConfigSection) mapOrSection).getValues(false)
+				: mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection
+						: mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
+
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
 		final Map<String, Object> copy = new LinkedHashMap<>();
