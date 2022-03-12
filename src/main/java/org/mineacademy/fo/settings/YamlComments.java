@@ -287,7 +287,27 @@ public final class YamlComments {
 		for (int i = 0; i < list.size(); i++) {
 			final Object o = list.get(i);
 
-			if (o instanceof String || o instanceof Character) {
+			if (o instanceof Map) {
+				int entryIndex = 0;
+				int mapSize = ((Map<?, ?>) o).size();
+
+				for (Map.Entry<?, ?> entry : ((Map<?, ?>) o).entrySet()) {
+					builder.append(prefixSpaces);
+					if (entryIndex == 0) {
+						builder.append("- ");
+					} else {
+						builder.append("  ");
+					}
+
+					builder.append(entry.getKey()).append(": ").append(entry.getValue());
+
+					entryIndex++;
+					if (entryIndex != mapSize) {
+						builder.append("\n");
+					}
+				}
+
+			} else if (o instanceof String || o instanceof Character) {
 				builder.append(prefixSpaces).append("- '").append(o.toString().replace("'", "''")).append("'");
 
 			} else if (o instanceof List) {
