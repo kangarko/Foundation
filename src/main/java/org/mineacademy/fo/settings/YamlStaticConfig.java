@@ -273,6 +273,16 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getFileName();
 	}
 
+	/**
+	 * @deprecated ugly workaround for some of our older plugins, do not use
+	 *
+	 * @return
+	 */
+	@Deprecated
+	protected static YamlConfig getInstance() {
+		return TEMPORARY_INSTANCE;
+	}
+
 	// -----------------------------------------------------------------------------------------------------
 	// Config manipulators
 	// -----------------------------------------------------------------------------------------------------
