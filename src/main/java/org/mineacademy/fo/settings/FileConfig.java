@@ -45,7 +45,9 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Represents any configuration that can be stored in a file
@@ -98,6 +100,14 @@ public abstract class FileConfig {
 	 * to save your time.
 	 */
 	private String pathPrefix = null;
+
+	/**
+	 * Should we always reload the file even if it was loaded previously when calling {@link #load(File)}?
+	 *
+	 * Defaults to true
+	 */
+	@Setter(value = AccessLevel.PROTECTED)
+	private boolean alwaysLoad = true;
 
 	/*
 	 * Internal flag to only save once during loading and save automatically
@@ -1105,6 +1115,7 @@ public abstract class FileConfig {
 			try {
 				final FileInputStream stream = new FileInputStream(file);
 				final String path = file.getAbsolutePath();
+				boolean loadedBefore = false;
 				ConfigSection section = loadedSections.get(path);
 
 				if (section == null) {
@@ -1113,10 +1124,21 @@ public abstract class FileConfig {
 					loadedSections.put(path, section);
 				}
 
+				else
+					loadedBefore = true;
+
 				this.section = section;
 				this.file = file;
 
-				this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+				if (loadedBefore && !this.alwaysLoad) {
+					// Do not load
+					System.out.println("LOGIC: Skipping loading " + file);
+
+				} else {
+					System.out.println("LOGIC: loading " + file);
+
+					this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+				}
 				this.onLoad();
 
 				if (this.shouldSave) {
@@ -1126,7 +1148,7 @@ public abstract class FileConfig {
 				}
 
 			} catch (final Exception ex) {
-				Remain.sneaky(ex);
+				Common.throwError(ex, "Error loading " + file + ": " + ex);
 			}
 		}
 	}
