@@ -1528,7 +1528,8 @@ public final class Remain {
 						container.getClass(),
 						ReflectionUtil.lookupClass("net.minecraft.network.chat.IChatBaseComponent"));
 
-				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, is1_18 ? "bW" : "bV");
+				final String version = MinecraftVersion.getServerVersion(); // special fix for MC 1.18.2
+				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, is1_18 ? version.contains("R2") ? "bV" : "bW" : "bV");
 				final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
 
 				final Method method = is1_18 ? ReflectionUtil.getMethod(nmsPlayer.getClass(), "a", ReflectionUtil.lookupClass("net.minecraft.world.inventory.Container")) : null;
