@@ -451,6 +451,8 @@ public final class PlayerUtil {
 	 * Return true if the player is vanished. We check for Essentials and CMI vanish and also "vanished"
 	 * metadata value which is supported by most plugins
 	 *
+	 * Does NOT return true for vanish potions or spectator mode.
+	 *
 	 * @param player
 	 * @return
 	 */
@@ -464,7 +466,6 @@ public final class PlayerUtil {
 			if (meta.asBoolean())
 				return true;
 
-		// Remain.isInvisible(player); --> do not use, apparently return true for vanish potion and spectator mode
 		return false;
 	}
 
