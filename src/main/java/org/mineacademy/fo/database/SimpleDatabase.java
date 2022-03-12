@@ -1,34 +1,23 @@
 package org.mineacademy.fo.database;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.RandomUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.Valid;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Represents a simple MySQL database
@@ -152,7 +141,7 @@ public class SimpleDatabase {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
-				ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
+				ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
 				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
 				ReflectionUtil.invoke("setUsername", hikariConfig, user);
 				ReflectionUtil.invoke("setPassword", hikariConfig, password);
@@ -177,13 +166,13 @@ public class SimpleDatabase {
 			}
 
 			else {
-				if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
-					Class.forName("com.mysql.cj.jdbc.Driver");
+				if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
+					Class.forName("org.mariadb.jdbc.Driver");
 
 				else {
 					Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
 
-					Class.forName("com.mysql.jdbc.Driver");
+					Class.forName("org.mariadb.jdbc.Driver");
 				}
 
 				this.connection = DriverManager.getConnection(url, user, password);
