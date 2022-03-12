@@ -34,12 +34,6 @@
 
 	<dependencies>
 	
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-			<version>4.0.3</version>
-		</dependency>
-	
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
