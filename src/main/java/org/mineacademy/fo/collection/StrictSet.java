@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -78,6 +79,10 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	public void removeWeak(E value) {
 		set.remove(value);
+	}
+
+	public void removeIf(Predicate<E> filter) {
+		set.removeIf(filter);
 	}
 
 	/**

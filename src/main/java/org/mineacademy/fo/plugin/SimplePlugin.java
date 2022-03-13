@@ -145,7 +145,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return if the instance has been set.
 	 */
-	public static final boolean hasInstance() {
+	public static boolean hasInstance() {
 		return instance != null;
 	}
 
@@ -164,11 +164,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * block. We register things using {@link #reloadables} during this block
 	 */
 	private boolean startingReloadables = false;
-
-	/**
-	 * Internal boolean indicating if we can proceed to loading the plugin.
-	 */
-	private final boolean canLoad = true;
 
 	/**
 	 * A temporary main command to be set in {@link #setMainCommand(SimpleCommandGroup)}
@@ -246,7 +241,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	public final void onEnable() {
 
 		// Disabled upstream
-		if (!this.canLoad) {
+		// Internal boolean indicating if we can proceed to loading the plugin.
+
+		boolean canLoad = true;
+		if (!canLoad) {
 			Bukkit.getLogger().severe("Not loading, the plugin is disabled (look for console errors above)");
 
 			return;
@@ -306,7 +304,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		try {
 
-			if (!isEnabled())
+			if (!isEnabled()) //TODO
 				return;
 
 			// --------------------------------------------
@@ -901,7 +899,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Shortcut for calling {@link SimpleCommandGroup#register()}
 	 *
-	 * @param labelAndAliases
 	 * @param group
 	 */
 	protected final void registerCommands(final SimpleCommandGroup group) {

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -102,6 +104,10 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 
 		Valid.checkNotNull(removed, String.format(getCannotRemoveMessage(), "index: " + index));
 		return removed;
+	}
+
+	public void removeIf(Predicate<E> filter) {
+		list.removeIf(filter);
 	}
 
 	/**
