@@ -52,6 +52,7 @@ class NMSDragon_v1_8 extends NMSDragon {
 			this.id = (Integer) getId.invoke(dragon);
 
 			packet = ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving", "N/A").getConstructor(EntityLiving).newInstance(dragon);
+
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}

@@ -2083,25 +2083,55 @@ public final class Remain {
 	}
 
 	/**
-	 * Send a "toast" notification. This is an advancement notification that cannot
-	 * be modified that much. It imposes a slight performance penalty.
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
 	 *
 	 * @param receiver
 	 * @param message
 	 */
-	public static void sendToast(final Player receiver, final String message) {
-		sendToast(receiver, message, CompMaterial.BOOK);
+	public static void sendToast(Player receiver, String message) {
+		sendToast(receiver, message, CompMaterial.BOOK, CompToastStyle.TASK);
+	}
+
+	/**
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
+	 *
+	 * You can pick the first screen from precreated Minecraft screens here.
+	 *
+	 * @param receiver
+	 * @param message
+	 * @param toastStyle
+	 */
+	public static void sendToast(Player receiver, String message, CompToastStyle toastStyle) {
+		sendToast(receiver, message, CompMaterial.BOOK, toastStyle);
+	}
+
+	/**
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
+	 *
+	 * You can change the icon appearing on the first screen here.
+	 *
+	 * @param receiver
+	 * @param message
+	 */
+	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
+		sendToast(receiver, message, icon, CompToastStyle.TASK);
 	}
 
 	/**
 	 * Send a "toast" notification. This is an advancement notification that cannot
 	 * be modified that much. It imposes a slight performance penalty.
 	 *
+	 * You can change the icon appearing on the first screen here.
+	 * You can also pick the first screen from precreated Minecraft screens here.
+	 *
 	 * @param receiver
 	 * @param message
 	 * @param icon
 	 */
-	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
+	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
@@ -2109,7 +2139,7 @@ public final class Remain {
 				Valid.checkSync("Toasts may only be sent from the main thread");
 
 				if (hasAdvancements)
-					new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
+					new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver);
 
 				else
 					receiver.sendMessage(colorized);
@@ -2140,7 +2170,7 @@ public final class Remain {
 						final String colorized = Common.colorize(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase());
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), CompToastStyle.GOAL);
 
 							if (receiver.isOnline())
 								accessor.show(receiver);
@@ -2878,11 +2908,13 @@ class AdvancementAccessor {
 	private final NamespacedKey key;
 	private final String icon;
 	private final String message;
+	private final CompToastStyle toastStyle;
 
-	AdvancementAccessor(final String message, final String icon) {
+	AdvancementAccessor(final String message, final String icon, CompToastStyle toastStyle) {
 		this.key = new NamespacedKey(SimplePlugin.getInstance(), UUID.randomUUID().toString());
 		this.message = message;
 		this.icon = icon;
+		this.toastStyle = toastStyle;
 	}
 
 	public void show(final Player player) {
@@ -2910,7 +2942,7 @@ class AdvancementAccessor {
 		display.addProperty("title", message);
 		display.addProperty("description", "");
 		display.addProperty("background", "minecraft:textures/gui/advancements/backgrounds/adventure.png");
-		display.addProperty("frame", "goal");
+		display.addProperty("frame", this.toastStyle.getKey());
 		display.addProperty("announce_to_chat", false);
 		display.addProperty("show_toast", true);
 		display.addProperty("hidden", true);
