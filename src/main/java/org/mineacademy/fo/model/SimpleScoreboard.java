@@ -16,7 +16,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -116,7 +115,6 @@ public class SimpleScoreboard {
 	/**
 	 * The title of this scoreboard
 	 */
-	@Getter
 	private String title;
 
 	/**
@@ -284,7 +282,7 @@ public class SimpleScoreboard {
 
 			if (lineNumber < this.rows.size()) {
 				final String sidebarEntry = this.rows.get(lineNumber);
-				final String text = this.replaceTheme(this.replaceVariables(viewedScoreboard.getViewer(), sidebarEntry));
+				final String text = Common.colorize(this.replaceTheme(this.replaceVariables(viewedScoreboard.getViewer(), sidebarEntry)));
 
 				final int lineSize = MinecraftVersion.olderThan(V.v1_13) ? 16 : 31;
 
@@ -373,7 +371,7 @@ public class SimpleScoreboard {
 	 * @param message
 	 * @return
 	 */
-	protected @NotNull String replaceVariables(final @NonNull Player player, final @NonNull String message) {
+	protected String replaceVariables(final @NonNull Player player, final @NonNull String message) {
 		return message;
 	}
 
@@ -424,11 +422,15 @@ public class SimpleScoreboard {
 		this.updateDelayTicks = updateDelayTicks;
 	}
 
+	public final String getTitle() {
+		return title;
+	}
+
 	/**
 	 * @param title the title to set
 	 */
 	public final void setTitle(String title) {
-		this.title = title;
+		this.title = Common.colorize(title);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
