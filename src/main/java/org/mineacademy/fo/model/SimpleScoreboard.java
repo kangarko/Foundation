@@ -282,19 +282,14 @@ public class SimpleScoreboard {
 			final String teamEntry = lineEntries.get(lineNumber);
 			Team line = scoreboard.getTeam("line" + scoreboardLine);
 
-			// 31 or 30 is the maximum, depends on the chatcolor from the previous line
-			// 16 for prefix, COLOR_CHAR + chatcolor and 14 more characters
-			// Maybe there is a way to get more characters, but then you have to play with the entries
-			// (Team.addEntry() and add the same entry on the scoreboard)
-			// Refer to https://www.spigotmc.org/wiki/making-scoreboard-with-teams-no-flicker/ for more information
-
 			if (lineNumber < this.rows.size()) {
 				final String sidebarEntry = this.rows.get(lineNumber);
 				final String text = this.replaceTheme(this.replaceVariables(viewedScoreboard.getViewer(), sidebarEntry));
-				String prefix = text.substring(0, Math.min(16, text.length()));
 
-				// Copying over the chatcolor from the prefix
-				String suffix = text.length() > 16 ? text.substring(16, Math.min(prefix.endsWith(COLOR_CHAR) ? 31 : 30, text.length())) : "";
+				final int lineSize = MinecraftVersion.olderThan(V.v1_13) ? 16 : 31;
+
+				String prefix = text.substring(0, Math.min(lineSize, text.length()));
+				String suffix = text.length() > lineSize ? text.substring(lineSize, Math.min(prefix.endsWith(COLOR_CHAR) ? (lineSize * 2) - 1 : (lineSize * 2), text.length())) : "";
 
 				if (prefix.endsWith(COLOR_CHAR)) {
 					prefix = prefix.substring(0, prefix.length() - 1);
@@ -320,6 +315,7 @@ public class SimpleScoreboard {
 					line.addEntry(teamEntry);
 
 				Remain.getScore(mainboard, teamEntry).setScore(scoreboardLine);
+
 			} else {
 				// If the line is removed, you have to unregister the team
 				scoreboard.resetScores(teamEntry);
