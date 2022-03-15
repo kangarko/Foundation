@@ -192,7 +192,7 @@ public final class BossBarInternals implements Listener {
 	 * @throws IllegalArgumentException If the percentage is not within valid
 	 *                                  bounds.
 	 */
-	public void setMessage(final Player player, final String message, final float percent, final CompBarColor color, final CompBarStyle style) {
+	public void setMessage(Player player, String message, float percent, CompBarColor color, CompBarStyle style) {
 		Valid.checkBoolean(0F <= percent && percent <= 100F, "Percent must be between 0F and 100F, but was: " + percent);
 
 		if (this.entityClass == null)
@@ -200,6 +200,8 @@ public final class BossBarInternals implements Listener {
 
 		if (hasBar(player))
 			removeBar(player);
+
+		message = Common.colorize(message);
 
 		final NMSDragon dragon = getDragon(player, message);
 
@@ -326,6 +328,8 @@ public final class BossBarInternals implements Listener {
 			bar.setProgress(dragon.getHealth() / dragon.getMaxHealth());
 
 		} else {
+			System.out.println("Sending two packets");
+
 			Remain.sendPacket(player, dragon.getMetaPacket(dragon.getWatcher()));
 			Remain.sendPacket(player, dragon.getTeleportPacket(getDragonLocation(player.getLocation())));
 		}
@@ -357,21 +361,16 @@ public final class BossBarInternals implements Listener {
 	}
 
 	private Location getDragonLocation(Location loc) {
-		if (this.isBelowGround) {
-			loc.subtract(0, 300, 0);
-			return loc;
-		}
-
 		final float pitch = loc.getPitch();
 
 		if (pitch >= 55)
-			loc.add(0, -300, 0);
+			loc.add(0, -3, 0);
 		else if (pitch <= -55)
-			loc.add(0, 300, 0);
+			loc.add(0, 3, 0);
 		else
 			loc = loc.getBlock().getRelative(getDirection(loc), Bukkit.getViewDistance() * 16).getLocation();
 
-		loc.subtract(0, 150, 0);
+		loc.subtract(0, 10, 0);
 
 		return loc;
 	}
