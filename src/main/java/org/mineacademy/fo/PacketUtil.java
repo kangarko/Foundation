@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -132,9 +133,9 @@ public final class PacketUtil {
 	public static List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
 		final List<WrappedGameProfile> profiles = new ArrayList<>();
 
-		int count = 0;
+
 		for (final String hoverText : hoverTexts)
-			profiles.add(new WrappedGameProfile(String.valueOf(count++), Common.colorize(hoverText)));
+			profiles.add(new WrappedGameProfile(UUID.randomUUID(), Common.colorize(hoverText)));
 
 		return profiles;
 	}
