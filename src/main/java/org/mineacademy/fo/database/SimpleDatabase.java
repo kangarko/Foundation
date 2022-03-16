@@ -1,23 +1,34 @@
 package org.mineacademy.fo.database;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.mineacademy.fo.*;
-import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.StrictMap;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.remain.Remain;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.RandomUtil;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.remain.Remain;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a simple MySQL database
