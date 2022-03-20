@@ -386,6 +386,7 @@ public final class CompMetadata {
 
 		private MetadataFile() {
 			setPathPrefix("Metadata");
+			setSaveEmptyValues(false);
 
 			loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
 		}
