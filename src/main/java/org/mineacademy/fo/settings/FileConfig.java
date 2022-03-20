@@ -1237,9 +1237,13 @@ public abstract class FileConfig {
 
 	/**
 	 * Called automatically on saving the configuration, you can call "set(path, value)" methods here
-	 * to save your class fields.
+	 * to save your class fields. We automatically save what you have in {@link #saveToMap()} if not null.
 	 */
 	protected void onSave() {
+		final SerializedMap map = this.saveToMap();
+
+		if (map != null)
+			this.set("", map);
 	}
 
 	/**
@@ -1249,6 +1253,18 @@ public abstract class FileConfig {
 	 */
 	@NonNull
 	abstract String saveToString();
+
+	/**
+	 * Override to implement custom saving mechanism, used automatically in {@link #onSave()}
+	 * you can return only the data you actually want to save here.
+	 *
+	 * Returns null by default!
+	 *
+	 * @return
+	 */
+	public SerializedMap saveToMap() {
+		return null;
+	}
 
 	/**
 	 * Removes the loaded file configuration from the disk.
@@ -1361,12 +1377,13 @@ public abstract class FileConfig {
 	}
 
 	/**
-	 * Turns this entire configuration into a saveable map
+	 * @deprecated unused, see {@link #saveToMap()}
 	 *
 	 * @return
 	 */
+	@Deprecated
 	public final SerializedMap serialize() {
-		return this.section.serialize();
+		throw new RuntimeException("serialize() is no longer used, override saveToMap() and use it manually instead. If you absolutely must use serialize, call getMap(\"\").serialize()");
 	}
 
 	// ------------------------------------------------------------------------------------
