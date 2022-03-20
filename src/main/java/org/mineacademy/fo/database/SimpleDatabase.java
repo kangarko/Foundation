@@ -176,16 +176,24 @@ public class SimpleDatabase {
 				}
 			}
 
+			/*
+			Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
+			 */
 			else {
 				if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
 					Class.forName("org.mariadb.jdbc.Driver");
 
-				else {
-					Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
+				else if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
+					Common.warning("You are not using MariaDB, switching to MySQL JDBC Driver. You can safely ignore this warning.");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
-				}
 
+				} else {
+					Common.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your database or switching to MariaDB. You can safely ignore this warning");
+
+					Class.forName("com.mysql.jdbc.Driver");
+
+				}
 				this.connection = DriverManager.getConnection(url, user, password);
 			}
 
