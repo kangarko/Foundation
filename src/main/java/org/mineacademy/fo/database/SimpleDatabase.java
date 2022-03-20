@@ -183,7 +183,7 @@ public class SimpleDatabase {
 				if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
 					Class.forName("org.mariadb.jdbc.Driver");
 
-				else if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
+				else if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver")) {
 					Common.warning("You are not using MariaDB, switching to MySQL JDBC Driver. You can safely ignore this warning.");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
