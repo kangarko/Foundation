@@ -389,11 +389,20 @@ public final class SerializeUtil {
 			Enchantment enchant = Enchantment.getByName(name);
 
 			if (enchant == null) {
+				name = name.toUpperCase();
+
+				enchant = Enchantment.getByName(name);
+			}
+
+			if (enchant == null) {
 				name = EnchantmentWrapper.toBukkit(name);
 				enchant = Enchantment.getByName(name);
 
 				if (enchant == null)
 					enchant = Enchantment.getByName(name.toLowerCase());
+
+				if (enchant == null)
+					enchant = Enchantment.getByName(name.toUpperCase());
 			}
 
 			Valid.checkNotNull(enchant, "Invalid enchantment '" + name + "'! For valid names, see: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/enchantments/Enchantment.html");
@@ -674,27 +683,24 @@ public final class SerializeUtil {
 	 * @return
 	 */
 	public static ItemStack deserializeItemStack(@NonNull Object obj) {
+
 		if (obj instanceof ItemStack)
 			return (ItemStack) obj;
 
-		final SerializedMap map = SerializedMap.of(obj);
-		final ItemStack item = ItemStack.deserialize(map.asMap());
+		try {
+			final SerializedMap map = SerializedMap.of(obj);
 
-		final Object raw = map.get("meta", Object.class);
+			final ItemStack item = ItemStack.deserialize(map.asMap());
+			final SerializedMap meta = map.getMap("meta");
 
-		if (raw != null)
-			if (raw instanceof ItemMeta)
-				item.setItemMeta((ItemMeta) raw);
-
-			else if (raw instanceof Map) {
-				final Map<String, Object> meta = (Map<String, Object>) raw;
+			if (meta != null) {
 
 				try {
 					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (meta.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
 					final Constructor<?> c = cl.getDeclaredConstructor(Map.class);
 					c.setAccessible(true);
 
-					final Object craftMeta = c.newInstance((Map<String, ?>) raw);
+					final Object craftMeta = c.newInstance((Map<String, ?>) meta.serialize());
 
 					if (craftMeta instanceof ItemMeta)
 						item.setItemMeta((ItemMeta) craftMeta);
@@ -704,17 +710,17 @@ public final class SerializeUtil {
 					// We have to manually deserialize metadata :(
 					final ItemMeta itemMeta = item.getItemMeta();
 
-					final String display = meta.containsKey("display-name") ? (String) meta.get("display-name") : null;
+					final String display = meta.containsKey("display-name") ? meta.getString("display-name") : null;
 
 					if (display != null)
 						itemMeta.setDisplayName(display);
 
-					final List<String> lore = meta.containsKey("lore") ? (List<String>) meta.get("lore") : null;
+					final List<String> lore = meta.containsKey("lore") ? meta.getStringList("lore") : null;
 
 					if (lore != null)
 						itemMeta.setLore(lore);
 
-					final SerializedMap enchants = meta.containsKey("enchants") ? SerializedMap.of(meta.get("enchants")) : null;
+					final SerializedMap enchants = meta.containsKey("enchants") ? meta.getMap("enchants") : null;
 
 					if (enchants != null)
 						for (final Map.Entry<String, Object> entry : enchants.entrySet()) {
@@ -724,7 +730,7 @@ public final class SerializeUtil {
 							itemMeta.addEnchant(enchantment, level, true);
 						}
 
-					final List<String> itemFlags = meta.containsKey("ItemFlags") ? (List<String>) meta.get("ItemFlags") : null;
+					final List<String> itemFlags = meta.containsKey("ItemFlags") ? meta.getStringList("ItemFlags") : null;
 
 					if (itemFlags != null)
 						for (final String flag : itemFlags)
@@ -734,18 +740,17 @@ public final class SerializeUtil {
 								// Likely not MC compatible, ignore
 							}
 
-					/*Common.log(
-							"**************** NOTICE ****************",
-							SimplePlugin.getNamed() + " manually deserialized your item.",
-							"Item: " + item,
-							"This is ONLY supported for basic items, items having",
-							"special flags like monster eggs will NOT function.");*/
-
 					item.setItemMeta(itemMeta);
 				}
 			}
 
-		return item;
+			return item;
+
+		} catch (final Throwable t) {
+			t.printStackTrace();
+
+			return null;
+		}
 	}
 
 	/**
