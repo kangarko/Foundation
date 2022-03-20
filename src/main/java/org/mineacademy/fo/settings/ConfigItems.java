@@ -225,7 +225,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param item
 	 */
 	public void removeItem(@NonNull final T item) {
-		final String name = item.getFileName();
+		final String name = item.getName();
 		Valid.checkBoolean(isItemLoaded(name), WordUtils.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
 
 		if (this.singleFile) {
