@@ -115,6 +115,11 @@ public abstract class FileConfig {
 	 */
 	private boolean shouldSave = false;
 
+	/*
+	 * Internal flag to avoid duplicate save calls during loading
+	 */
+	private boolean loading = false;
+
 	protected FileConfig() {
 	}
 
@@ -1113,6 +1118,9 @@ public abstract class FileConfig {
 	final void load(@NonNull File file) {
 		synchronized (loadedSections) {
 			try {
+				Valid.checkBoolean(!this.loading, "Called load(" + file + ") on already being loaded configuration!");
+				this.loading = true;
+
 				final FileInputStream stream = new FileInputStream(file);
 				final String path = file.getAbsolutePath();
 				boolean loadedBefore = false;
@@ -1138,6 +1146,7 @@ public abstract class FileConfig {
 				this.onLoad();
 
 				if (this.shouldSave) {
+					this.loading = false;
 					this.save();
 
 					this.shouldSave = false;
@@ -1145,6 +1154,9 @@ public abstract class FileConfig {
 
 			} catch (final Exception ex) {
 				Common.throwError(ex, "Error loading " + file + ": " + ex);
+
+			} finally {
+				this.loading = false;
 			}
 		}
 	}
@@ -1207,6 +1219,12 @@ public abstract class FileConfig {
 	public final void save(@NonNull File file) {
 		synchronized (loadedSections) {
 			try {
+				if (this.loading) {
+					this.shouldSave = true;
+
+					return;
+				}
+
 				this.onSave();
 
 				final File parent = file.getCanonicalFile().getParentFile();
@@ -1356,6 +1374,24 @@ public abstract class FileConfig {
 	 */
 	public final void clear() {
 		this.section.clear();
+	}
+
+	/**
+	 * Return the name of the file (if any), without file extension
+	 *
+	 * @return
+	 */
+	public String getName() {
+		final String fileName = this.getFileName();
+
+		if (fileName != null) {
+			final int lastDot = fileName.lastIndexOf(".");
+
+			if (lastDot != -1)
+				return fileName.substring(0, lastDot);
+		}
+
+		return null;
 	}
 
 	/**
