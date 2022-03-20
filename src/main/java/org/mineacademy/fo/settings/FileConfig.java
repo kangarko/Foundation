@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -114,6 +115,11 @@ public abstract class FileConfig {
 	 * after loading if any changes were made.
 	 */
 	private boolean shouldSave = false;
+
+	/*
+	 * Internal flag to avoid duplicate save calls during loading
+	 */
+	private boolean loading = false;
 
 	protected FileConfig() {
 	}
@@ -896,7 +902,7 @@ public abstract class FileConfig {
 	public final List<Object> getList(final String path) {
 		final Object obj = this.getObject(path);
 
-		return obj instanceof List ? (List<Object>) obj : obj != null ? Arrays.asList(obj) : new ArrayList<>();
+		return obj instanceof Collection<?> ? new ArrayList<>((Collection<Object>) obj) : obj != null ? Arrays.asList(obj) : new ArrayList<>();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1113,6 +1119,9 @@ public abstract class FileConfig {
 	final void load(@NonNull File file) {
 		synchronized (loadedSections) {
 			try {
+				Valid.checkBoolean(!this.loading, "Called load(" + file + ") on already being loaded configuration!");
+				this.loading = true;
+
 				final FileInputStream stream = new FileInputStream(file);
 				final String path = file.getAbsolutePath();
 				boolean loadedBefore = false;
@@ -1138,6 +1147,7 @@ public abstract class FileConfig {
 				this.onLoad();
 
 				if (this.shouldSave) {
+					this.loading = false;
 					this.save();
 
 					this.shouldSave = false;
@@ -1145,6 +1155,9 @@ public abstract class FileConfig {
 
 			} catch (final Exception ex) {
 				Common.throwError(ex, "Error loading " + file + ": " + ex);
+
+			} finally {
+				this.loading = false;
 			}
 		}
 	}
@@ -1207,6 +1220,12 @@ public abstract class FileConfig {
 	public final void save(@NonNull File file) {
 		synchronized (loadedSections) {
 			try {
+				if (this.loading) {
+					this.shouldSave = true;
+
+					return;
+				}
+
 				this.onSave();
 
 				final File parent = file.getCanonicalFile().getParentFile();
@@ -1237,9 +1256,13 @@ public abstract class FileConfig {
 
 	/**
 	 * Called automatically on saving the configuration, you can call "set(path, value)" methods here
-	 * to save your class fields.
+	 * to save your class fields. We automatically save what you have in {@link #saveToMap()} if not null.
 	 */
 	protected void onSave() {
+		final SerializedMap map = this.saveToMap();
+
+		if (map != null)
+			this.set("", map);
 	}
 
 	/**
@@ -1249,6 +1272,18 @@ public abstract class FileConfig {
 	 */
 	@NonNull
 	abstract String saveToString();
+
+	/**
+	 * Override to implement custom saving mechanism, used automatically in {@link #onSave()}
+	 * you can return only the data you actually want to save here.
+	 *
+	 * Returns null by default!
+	 *
+	 * @return
+	 */
+	public SerializedMap saveToMap() {
+		return null;
+	}
 
 	/**
 	 * Removes the loaded file configuration from the disk.
@@ -1343,6 +1378,24 @@ public abstract class FileConfig {
 	}
 
 	/**
+	 * Return the name of the file (if any), without file extension
+	 *
+	 * @return
+	 */
+	public String getName() {
+		final String fileName = this.getFileName();
+
+		if (fileName != null) {
+			final int lastDot = fileName.lastIndexOf(".");
+
+			if (lastDot != -1)
+				return fileName.substring(0, lastDot);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Return the file name, if set
 	 *
 	 * @return
@@ -1361,12 +1414,13 @@ public abstract class FileConfig {
 	}
 
 	/**
-	 * Turns this entire configuration into a saveable map
+	 * @deprecated unused, see {@link #saveToMap()}
 	 *
 	 * @return
 	 */
+	@Deprecated
 	public final SerializedMap serialize() {
-		return this.section.serialize();
+		throw new RuntimeException("serialize() is no longer used, override saveToMap() and use it manually instead. If you absolutely must use serialize, call getMap(\"\").serialize()");
 	}
 
 	// ------------------------------------------------------------------------------------
