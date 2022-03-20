@@ -183,7 +183,7 @@ public class SimpleDatabase {
 				else {
 					Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
 
-					Class.forName("org.mariadb.jdbc.Driver");
+					Class.forName("com.mysql.cj.jdbc.Driver");
 				}
 
 				this.connection = DriverManager.getConnection(url, user, password);
