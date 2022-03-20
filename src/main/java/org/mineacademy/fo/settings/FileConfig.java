@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -901,7 +902,7 @@ public abstract class FileConfig {
 	public final List<Object> getList(final String path) {
 		final Object obj = this.getObject(path);
 
-		return obj instanceof List ? (List<Object>) obj : obj != null ? Arrays.asList(obj) : new ArrayList<>();
+		return obj instanceof Collection<?> ? new ArrayList<>((Collection<Object>) obj) : obj != null ? Arrays.asList(obj) : new ArrayList<>();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
