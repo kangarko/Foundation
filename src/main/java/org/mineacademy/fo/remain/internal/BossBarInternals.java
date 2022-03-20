@@ -328,8 +328,6 @@ public final class BossBarInternals implements Listener {
 			bar.setProgress(dragon.getHealth() / dragon.getMaxHealth());
 
 		} else {
-			System.out.println("Sending two packets");
-
 			Remain.sendPacket(player, dragon.getMetaPacket(dragon.getWatcher()));
 			Remain.sendPacket(player, dragon.getTeleportPacket(getDragonLocation(player.getLocation())));
 		}
