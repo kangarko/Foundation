@@ -85,7 +85,7 @@ public final class MenuListener implements Listener {
 			final InventoryAction action = event.getAction();
 			final MenuClickLocation whereClicked = clickedInv != null ? clickedInv.getType() == InventoryType.CHEST ? MenuClickLocation.MENU : MenuClickLocation.PLAYER_INVENTORY : MenuClickLocation.OUTSIDE;
 
-			final boolean allowed = menu.isActionAllowed(whereClicked, event.getSlot(), slotItem, cursor);
+			final boolean allowed = menu.isActionAllowed(whereClicked, event.getSlot(), slotItem, cursor, action);
 
 			if (action.toString().contains("PICKUP") || action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR") || action == InventoryAction.CLONE_STACK) {
 				if (whereClicked == MenuClickLocation.MENU)
@@ -161,7 +161,7 @@ public final class MenuListener implements Listener {
 
 					final ItemStack cursor = Common.getOrDefault(event.getCursor(), event.getOldCursor());
 
-					if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor)) {
+					if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor, InventoryAction.PLACE_SOME)) {
 						event.setCancelled(true);
 
 						return;
