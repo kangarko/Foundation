@@ -1454,10 +1454,12 @@ public final class Remain {
 		if (meta.getTitle() == null)
 			meta.setTitle("");
 
+		if (meta.getPageCount() == 0)
+			meta.setPages(""); // Empty book
+
 		book.setItemMeta(meta);
 
 		try {
-
 			player.openBook(book);
 
 		} catch (final NoSuchMethodError ex) {
