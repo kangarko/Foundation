@@ -46,11 +46,6 @@ public final class BossBarInternals implements Listener {
 	private final Class<?> entityClass;
 
 	/**
-	 * Does the current MC version require us to spawn the dragon below ground?
-	 */
-	private final boolean isBelowGround;
-
-	/**
 	 * The player currently viewing the boss bar
 	 */
 	private final HashMap<UUID, NMSDragon> players = new HashMap<>();
@@ -63,31 +58,23 @@ public final class BossBarInternals implements Listener {
 	// Singleton
 	private BossBarInternals() {
 
-		if (MinecraftVersion.olderThan(V.v1_6)) {
+		if (MinecraftVersion.olderThan(V.v1_6))
 			this.entityClass = null;
-			this.isBelowGround = false;
-		}
 
-		else if (Remain.isProtocol18Hack()) {
+		else if (Remain.isProtocol18Hack())
 			this.entityClass = NMSDragon_v1_8Hack.class;
-			this.isBelowGround = false;
 
-		} else if (MinecraftVersion.equals(V.v1_6)) {
+		else if (MinecraftVersion.equals(V.v1_6))
 			this.entityClass = NMSDragon_v1_6.class;
-			this.isBelowGround = true;
 
-		} else if (MinecraftVersion.equals(V.v1_7)) {
+		else if (MinecraftVersion.equals(V.v1_7))
 			this.entityClass = NMSDragon_v1_7.class;
-			this.isBelowGround = true;
 
-		} else if (MinecraftVersion.equals(V.v1_8)) {
+		else if (MinecraftVersion.equals(V.v1_8))
 			this.entityClass = NMSDragon_v1_8.class;
-			this.isBelowGround = false;
 
-		} else {
+		else
 			this.entityClass = NMSDragon_v1_9.class;
-			this.isBelowGround = true;
-		}
 
 		if (MinecraftVersion.atLeast(V.v1_6)) {
 			Valid.checkNotNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
