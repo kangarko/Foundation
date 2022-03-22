@@ -166,7 +166,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @return
 	 */
 	protected int getChangeModeButtonPosition() {
-		return this.getSize() - 4;
+		return this.getSize() - 2;
 	}
 
 	/**
