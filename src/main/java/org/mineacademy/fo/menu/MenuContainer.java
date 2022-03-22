@@ -60,19 +60,6 @@ public abstract class MenuContainer extends Menu {
 		return NO_ITEM;
 	}
 
-	/**
-	 * Return the slot numbers for which you want to allow
-	 * items to get edited in your menu (if you do not want
-	 * to allow editing the entire container window).
-	 *
-	 * If you want users to edit chances for all items except
-	 * bottom bar, simply always return true here.
-	 *
-	 * @param slot
-	 * @return
-	 */
-	protected abstract boolean canEditItem(int slot);
-
 	// ------------------------------------------------------------------------------------------------------------
 	// Allowing clicking
 	// ------------------------------------------------------------------------------------------------------------
@@ -112,6 +99,21 @@ public abstract class MenuContainer extends Menu {
 	 */
 	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
 		return this.canEditItem(slot);
+	}
+
+	/**
+	 * Return the slot numbers for which you want to allow
+	 * items to get edited in your menu (if you do not want
+	 * to allow editing the entire container window).
+	 *
+	 * If you want users to edit chances for all items except
+	 * bottom bar, simply always return true here.
+	 *
+	 * @param slot
+	 * @return
+	 */
+	protected boolean canEditItem(int slot) {
+		return true;
 	}
 
 	/**
@@ -160,7 +162,9 @@ public abstract class MenuContainer extends Menu {
 	 * @param item
 	 * @return
 	 */
-	protected abstract ItemStack onItemClick(int slot, ClickType clickType, @Nullable ItemStack item);
+	protected ItemStack onItemClick(int slot, ClickType clickType, @Nullable ItemStack item) {
+		return item;
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Handling saving
