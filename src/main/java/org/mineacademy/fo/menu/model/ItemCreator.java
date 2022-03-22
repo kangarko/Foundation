@@ -876,8 +876,11 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int durationTicks, int level, String name, String... lore) {
-		final ItemStack item = new ItemStack(CompMaterial.POTION.getMaterial());
-		Remain.setPotion(item, potionEffect, durationTicks, level);
+		final boolean noLevel = level == 0;
+		final ItemStack item = new ItemStack(level == 0 ? CompMaterial.GLASS_BOTTLE.getMaterial() : CompMaterial.POTION.getMaterial());
+
+		if (!noLevel)
+			Remain.setPotion(item, potionEffect, durationTicks, level);
 
 		final ItemCreator builder = of(item);
 
