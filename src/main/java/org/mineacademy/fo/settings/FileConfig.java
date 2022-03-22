@@ -875,9 +875,14 @@ public abstract class FileConfig {
 		final List<Tuple<K, V>> list = new ArrayList<>();
 
 		for (final Object object : this.getList(path)) {
-			final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.of(object), tupleKey, tupleValue);
 
-			list.add(tuple);
+			if (object == null)
+				list.add(null);
+			else {
+				final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.of(object), tupleKey, tupleValue);
+
+				list.add(tuple);
+			}
 		}
 
 		return list;
