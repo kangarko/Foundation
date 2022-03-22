@@ -303,6 +303,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		final StrictMap<Integer, Tuple<ItemStack, Double>> items = new StrictMap<>();
 
 		for (int slot = 0; slot < this.getSize() - 9; slot++) {
+			boolean placed = false;
 
 			if (this.canEditItem(slot)) {
 				final ItemStack item = this.mode == EditMode.ITEM ? inventory.getItem(slot) : this.getDropAt(slot);
@@ -312,8 +313,12 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 					Valid.checkNotNull(dropChance, "Drop chances cannot be null on slot " + slot + " for " + item);
 
 					items.put(slot, new Tuple<>(item, dropChance));
+					placed = true;
 				}
 			}
+
+			if (!placed)
+				items.put(slot, null);
 		}
 
 		this.onMenuClose(items);
