@@ -131,7 +131,9 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @see org.mineacademy.fo.menu.MenuQuantitable#allowDecimalQuantities()
 	 */
 	@Override
-	public abstract boolean allowDecimalQuantities();
+	public boolean allowDecimalQuantities() {
+		return false;
+	}
 
 	/*
 	 * @see org.mineacademy.fo.menu.Menu#getItemAt(int)
@@ -253,7 +255,9 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param slot
 	 * @return
 	 */
-	protected abstract boolean canEditItem(int slot);
+	protected boolean canEditItem(int slot) {
+		return true;
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Handling clicking
