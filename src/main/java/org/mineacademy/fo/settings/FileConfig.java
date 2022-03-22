@@ -906,6 +906,9 @@ public abstract class FileConfig {
 
 				if (object != null)
 					list.add((T) object);
+
+				else if (!type.isPrimitive() && type != String.class)
+					list.add(null);
 			}
 
 		return list;
