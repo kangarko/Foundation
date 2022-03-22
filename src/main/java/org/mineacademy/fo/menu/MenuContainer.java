@@ -81,7 +81,7 @@ public abstract class MenuContainer extends Menu {
 	 * @see org.mineacademy.fo.menu.Menu#isActionAllowed(org.mineacademy.fo.menu.model.MenuClickLocation, int, org.bukkit.inventory.ItemStack, org.bukkit.inventory.ItemStack)
 	 */
 	@Override
-	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
 
 		if (location != MenuClickLocation.MENU)
 			return true;
@@ -89,7 +89,7 @@ public abstract class MenuContainer extends Menu {
 		if (slot >= getSize() - 9)
 			return false;
 
-		if (!this.canEditItem(location, slot, clicked, cursor))
+		if (!this.canEditItem(location, slot, clicked, cursor, action))
 			return false;
 
 		return true;
@@ -106,9 +106,11 @@ public abstract class MenuContainer extends Menu {
 	 * @param slot
 	 * @param clicked
 	 * @param cursor
+	 * @param action
+	 *
 	 * @return
 	 */
-	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
 		return this.canEditItem(slot);
 	}
 

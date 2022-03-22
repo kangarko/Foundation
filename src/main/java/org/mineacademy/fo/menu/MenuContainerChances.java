@@ -210,14 +210,14 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @see org.mineacademy.fo.menu.Menu#isActionAllowed(org.mineacademy.fo.menu.model.MenuClickLocation, int, org.bukkit.inventory.ItemStack, org.bukkit.inventory.ItemStack)
 	 */
 	@Override
-	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
 		if (mode == EditMode.CHANCE)
 			return false;
 
 		if (location != MenuClickLocation.MENU)
 			return true;
 
-		if (!this.canEditItem(location, slot, clicked, cursor))
+		if (!this.canEditItem(location, slot, clicked, cursor, action))
 			return false;
 
 		return slot < getSize() - 9;
@@ -234,9 +234,11 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param slot
 	 * @param clicked
 	 * @param cursor
+	 * @param action
+	 *
 	 * @return
 	 */
-	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
 		return this.canEditItem(slot);
 	}
 
@@ -361,7 +363,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * The menu edit mode
 	 */
 	@RequiredArgsConstructor
-	public static enum EditMode {
+	public enum EditMode {
 
 		/**
 		 * We want to allow player to place items in the menu container,
