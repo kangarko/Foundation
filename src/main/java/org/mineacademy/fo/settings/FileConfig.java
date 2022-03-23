@@ -862,6 +862,33 @@ public abstract class FileConfig {
 	}
 
 	/**
+	 * Return a list of tuples with the given key-value
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param path
+	 * @param tupleKey
+	 * @param tupleValue
+	 * @return
+	 */
+	public final <K, V> List<Tuple<K, V>> getTupleList(final String path, final Class<K> tupleKey, final Class<V> tupleValue) {
+		final List<Tuple<K, V>> list = new ArrayList<>();
+
+		for (final Object object : this.getList(path)) {
+
+			if (object == null)
+				list.add(null);
+			else {
+				final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.of(object), tupleKey, tupleValue);
+
+				list.add(tuple);
+			}
+		}
+
+		return list;
+	}
+
+	/**
 	 * Return a list of the given type from the key at the given path
 	 * (see {@link #get(String, Class, Object, Object...)}).
 	 *
@@ -884,6 +911,9 @@ public abstract class FileConfig {
 
 				if (object != null)
 					list.add((T) object);
+
+				else if (!type.isPrimitive() && type != String.class)
+					list.add(null);
 			}
 
 		return list;

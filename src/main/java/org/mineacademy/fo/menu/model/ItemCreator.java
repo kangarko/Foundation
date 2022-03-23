@@ -139,6 +139,12 @@ public final class ItemCreator {
 	private String skullOwner;
 
 	/**
+	 * The skull URL, in case the item is a skull.
+	 */
+	@Nullable
+	private String skullUrl;
+
+	/**
 	 * The list of custom hidden data injected to the item.
 	 */
 	private final Map<String, String> tags = new HashMap<>();
@@ -389,6 +395,20 @@ public final class ItemCreator {
 	}
 
 	/**
+	 * Set the skull owner for this item, only works if the item is a skull.
+	 *
+	 * See {@link SkullCreator}
+	 *
+	 * @param skullUrl
+	 * @return
+	 */
+	public ItemCreator skullUrl(String skullUrl) {
+		this.skullUrl = skullUrl;
+
+		return this;
+	}
+
+	/**
 	 * Places an invisible custom tag to the item, for most server instances it
 	 * will persist across saves/restarts (you should check just to be safe).
 	 *
@@ -603,8 +623,13 @@ public final class ItemCreator {
 			}
 		}
 
-		if (this.skullOwner != null && compiledMeta instanceof SkullMeta)
-			((SkullMeta) compiledMeta).setOwner(this.skullOwner);
+		if (compiledMeta instanceof SkullMeta) {
+			if (this.skullOwner != null)
+				((SkullMeta) compiledMeta).setOwner(this.skullOwner);
+
+			if (this.skullUrl != null)
+				compiledMeta = SkullCreator.metaWithUrl(((SkullMeta) compiledMeta), this.skullUrl);
+		}
 
 		if (compiledMeta instanceof BookMeta) {
 			final BookMeta bookMeta = (BookMeta) compiledMeta;
@@ -851,8 +876,11 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int durationTicks, int level, String name, String... lore) {
-		final ItemStack item = new ItemStack(CompMaterial.POTION.getMaterial());
-		Remain.setPotion(item, potionEffect, durationTicks, level);
+		final boolean noLevel = level == 0;
+		final ItemStack item = new ItemStack(level == 0 ? CompMaterial.GLASS_BOTTLE.getMaterial() : CompMaterial.POTION.getMaterial());
+
+		if (!noLevel)
+			Remain.setPotion(item, potionEffect, durationTicks, level);
 
 		final ItemCreator builder = of(item);
 

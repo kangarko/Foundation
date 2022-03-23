@@ -131,7 +131,9 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @see org.mineacademy.fo.menu.MenuQuantitable#allowDecimalQuantities()
 	 */
 	@Override
-	public abstract boolean allowDecimalQuantities();
+	public boolean allowDecimalQuantities() {
+		return false;
+	}
 
 	/*
 	 * @see org.mineacademy.fo.menu.Menu#getItemAt(int)
@@ -166,7 +168,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @return
 	 */
 	protected int getChangeModeButtonPosition() {
-		return this.getSize() - 4;
+		return this.getSize() - 2;
 	}
 
 	/**
@@ -210,14 +212,14 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @see org.mineacademy.fo.menu.Menu#isActionAllowed(org.mineacademy.fo.menu.model.MenuClickLocation, int, org.bukkit.inventory.ItemStack, org.bukkit.inventory.ItemStack)
 	 */
 	@Override
-	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
 		if (mode == EditMode.CHANCE)
 			return false;
 
 		if (location != MenuClickLocation.MENU)
 			return true;
 
-		if (!this.canEditItem(location, slot, clicked, cursor))
+		if (!this.canEditItem(location, slot, clicked, cursor, action))
 			return false;
 
 		return slot < getSize() - 9;
@@ -234,9 +236,11 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param slot
 	 * @param clicked
 	 * @param cursor
+	 * @param action
+	 *
 	 * @return
 	 */
-	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
+	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
 		return this.canEditItem(slot);
 	}
 
@@ -251,7 +255,9 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param slot
 	 * @return
 	 */
-	protected abstract boolean canEditItem(int slot);
+	protected boolean canEditItem(int slot) {
+		return true;
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Handling clicking
@@ -301,6 +307,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		final StrictMap<Integer, Tuple<ItemStack, Double>> items = new StrictMap<>();
 
 		for (int slot = 0; slot < this.getSize() - 9; slot++) {
+			boolean placed = false;
 
 			if (this.canEditItem(slot)) {
 				final ItemStack item = this.mode == EditMode.ITEM ? inventory.getItem(slot) : this.getDropAt(slot);
@@ -310,8 +317,12 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 					Valid.checkNotNull(dropChance, "Drop chances cannot be null on slot " + slot + " for " + item);
 
 					items.put(slot, new Tuple<>(item, dropChance));
+					placed = true;
 				}
 			}
+
+			if (!placed)
+				items.put(slot, null);
 		}
 
 		this.onMenuClose(items);
@@ -361,7 +372,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * The menu edit mode
 	 */
 	@RequiredArgsConstructor
-	public static enum EditMode {
+	public enum EditMode {
 
 		/**
 		 * We want to allow player to place items in the menu container,

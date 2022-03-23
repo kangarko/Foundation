@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -162,6 +163,21 @@ public class SkullCreator {
 	}
 
 	/**
+	 * Modifies a skull meta to use the skin at the given Mojang URL.
+	 *
+	 * @param meta
+	 * @param url The URL of the Mojang skin.
+	 * @return
+	 */
+	public static SkullMeta metaWithUrl(@NonNull SkullMeta meta, @NonNull String url) {
+		final String base64 = urlToBase64(url);
+
+		mutateItemMeta(meta, base64);
+
+		return meta;
+	}
+
+	/**
 	 * Sets the block to a skull with the given UUID.
 	 *
 	 * @param block The block to set.
@@ -221,6 +237,7 @@ public class SkullCreator {
 	}
 
 	private static String urlToBase64(String url) {
+		Valid.checkBoolean(url.startsWith("http://") || url.startsWith("https://"), "URL for skull must start with http:// or https://, given: " + url);
 
 		URI actualUrl;
 		try {

@@ -514,7 +514,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (obj == null)
 			return def;
 
-		return SerializeUtil.deserializeItemStack(obj);
+		return SerializeUtil.deserialize(ItemStack.class, obj);
 	}
 
 	/**

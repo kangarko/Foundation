@@ -51,6 +51,13 @@ public final class VisualizedRegion extends Region {
 	private int delayTicks = 23;
 
 	/**
+	 * Create a new visualizable empty region
+	 */
+	public VisualizedRegion() {
+		this(null, null);
+	}
+
+	/**
 	 * Create a new visualizable region
 	 *
 	 * @param primary
