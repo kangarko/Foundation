@@ -9,12 +9,12 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.ConfigSerializable;
-import org.mineacademy.fo.visual.VisualizedRegion;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,11 +24,6 @@ import lombok.Setter;
  * Represents a cuboid region
  */
 public class Region implements ConfigSerializable {
-
-	/**
-	 * Represents an empty region
-	 */
-	public static final VisualizedRegion EMPTY = new VisualizedRegion(null, null);
 
 	/**
 	 * The name of the region, or null if not given
@@ -84,14 +79,14 @@ public class Region implements ConfigSerializable {
 	 * Change primary/secondary around to make secondary always the lowest point
 	 */
 	private Location[] getCorrectedPoints() {
-		if (primary == null || secondary == null)
+		if (this.primary == null || this.secondary == null)
 			return null;
 
-		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Points must be in one world! Primary: " + primary + " != secondary: " + secondary);
+		Valid.checkBoolean(this.primary.getWorld().getName().equals(this.secondary.getWorld().getName()), "Points must be in one world! Primary: " + this.primary + " != secondary: " + this.secondary);
 
-		final int x1 = primary.getBlockX(), x2 = secondary.getBlockX(),
-				y1 = primary.getBlockY(), y2 = secondary.getBlockY(),
-				z1 = primary.getBlockZ(), z2 = secondary.getBlockZ();
+		final int x1 = this.primary.getBlockX(), x2 = this.secondary.getBlockX(),
+				y1 = this.primary.getBlockY(), y2 = this.secondary.getBlockY(),
+				z1 = this.primary.getBlockZ(), z2 = this.secondary.getBlockZ();
 
 		final Location primary = this.primary.clone();
 		final Location secondary = this.secondary.clone();
@@ -113,9 +108,9 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final Location getCenter() {
-		Valid.checkBoolean(isWhole(), "Cannot perform getCenter on a non-complete region: " + toString());
+		Valid.checkBoolean(this.isWhole(), "Cannot perform getCenter on a non-complete region: " + this.toString());
 
-		final Location[] centered = getCorrectedPoints();
+		final Location[] centered = this.getCorrectedPoints();
 		final Location primary = centered[0];
 		final Location secondary = centered[1];
 
@@ -126,12 +121,52 @@ public class Region implements ConfigSerializable {
 	}
 
 	/**
+	 * Return true if the primary location has been set
+	 *
+	 * @return
+	 */
+	public final boolean hasPrimary() {
+		return this.primary != null;
+	}
+
+	/**
+	 * Return true if the secondary location has been set
+	 *
+	 * @return
+	 */
+	public final boolean hasSecondary() {
+		return this.secondary != null;
+	}
+
+	/**
+	 * Return if the given location equals to the primary location.
+	 * Returns false if this region has no primary location set.
+	 *
+	 * @param location
+	 * @return
+	 */
+	public final boolean isPrimary(Location location) {
+		return this.primary != null && Valid.locationEquals(this.primary, location);
+	}
+
+	/**
+	 * Return if the given location equals to the secondary location.
+	 * Returns false if this region has no secondary location set.
+	 *
+	 * @param location
+	 * @return
+	 */
+	public final boolean isSecondary(Location location) {
+		return this.secondary != null && Valid.locationEquals(this.secondary, location);
+	}
+
+	/**
 	 * Return a close of the primary location
 	 *
 	 * @return the primary
 	 */
 	public final Location getPrimary() {
-		return primary == null ? null : primary.clone();
+		return this.primary == null ? null : this.primary.clone();
 	}
 
 	/**
@@ -140,7 +175,7 @@ public class Region implements ConfigSerializable {
 	 * @return the secondary
 	 */
 	public final Location getSecondary() {
-		return secondary == null ? null : secondary.clone();
+		return this.secondary == null ? null : this.secondary.clone();
 	}
 
 	/**
@@ -149,8 +184,8 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final List<Block> getBlocks() {
-		Valid.checkBoolean(isWhole(), "Cannot perform getBlocks on a non-complete region: " + toString());
-		final Location[] centered = getCorrectedPoints();
+		Valid.checkBoolean(this.isWhole(), "Cannot perform getBlocks on a non-complete region: " + this.toString());
+		final Location[] centered = this.getCorrectedPoints();
 
 		return BlockUtil.getBlocks(centered[0], centered[1]);
 	}
@@ -162,9 +197,9 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final Set<Location> getBoundingBox() {
-		Valid.checkBoolean(isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + toString());
+		Valid.checkBoolean(this.isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + this.toString());
 
-		return BlockUtil.getBoundingBox(primary, secondary);
+		return BlockUtil.getBoundingBox(this.primary, this.secondary);
 	}
 
 	/**
@@ -173,11 +208,11 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final List<Entity> getEntities() {
-		Valid.checkBoolean(isWhole(), "Cannot perform getEntities on a non-complete region: " + toString());
+		Valid.checkBoolean(this.isWhole(), "Cannot perform getEntities on a non-complete region: " + this.toString());
 
 		final List<Entity> found = new LinkedList<>();
 
-		final Location[] centered = getCorrectedPoints();
+		final Location[] centered = this.getCorrectedPoints();
 		final Location primary = centered[0];
 		final Location secondary = centered[1];
 
@@ -188,8 +223,8 @@ public class Region implements ConfigSerializable {
 
 		for (int cx = xMin; cx <= xMax; ++cx)
 			for (int cz = zMin; cz <= zMax; ++cz)
-				for (final Entity entity : getWorld().getChunkAt(cx, cz).getEntities())
-					if (entity.isValid() && entity.getLocation() != null && isWithin(entity.getLocation()))
+				for (final Entity entity : this.getWorld().getChunkAt(cx, cz).getEntities())
+					if (entity.isValid() && entity.getLocation() != null && this.isWithin(entity.getLocation()))
 						found.add(entity);
 
 		return found;
@@ -201,17 +236,17 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final World getWorld() {
-		if (!isWhole())
+		if (!this.isWhole())
 			return null;
 
-		if (primary != null && secondary == null)
-			return Bukkit.getWorld(primary.getWorld().getName());
+		if (this.primary != null && this.secondary == null)
+			return Bukkit.getWorld(this.primary.getWorld().getName());
 
-		if (secondary != null && primary == null)
-			return Bukkit.getWorld(secondary.getWorld().getName());
+		if (this.secondary != null && this.primary == null)
+			return Bukkit.getWorld(this.secondary.getWorld().getName());
 
-		Valid.checkBoolean(primary.getWorld().getName().equals(secondary.getWorld().getName()), "Worlds of this region not the same: " + primary.getWorld() + " != " + secondary.getWorld());
-		return Bukkit.getWorld(primary.getWorld().getName());
+		Valid.checkBoolean(this.primary.getWorld().getName().equals(this.secondary.getWorld().getName()), "Worlds of this region not the same: " + this.primary.getWorld() + " != " + this.secondary.getWorld());
+		return Bukkit.getWorld(this.primary.getWorld().getName());
 	}
 
 	/**
@@ -221,12 +256,12 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final boolean isWithin(@NonNull final Location location) {
-		Valid.checkBoolean(isWhole(), "Cannot perform isWithin on a non-complete region: " + toString());
+		Valid.checkBoolean(this.isWhole(), "Cannot perform isWithin on a non-complete region: " + this.toString());
 
-		if (!location.getWorld().getName().equals(primary.getWorld().getName()))
+		if (!location.getWorld().getName().equals(this.primary.getWorld().getName()))
 			return false;
 
-		final Location[] centered = getCorrectedPoints();
+		final Location[] centered = this.getCorrectedPoints();
 		final Location primary = centered[0];
 		final Location secondary = centered[1];
 
@@ -245,7 +280,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final boolean isWhole() {
-		return primary != null && secondary != null;
+		return this.primary != null && this.secondary != null;
 	}
 
 	/**
@@ -267,23 +302,64 @@ public class Region implements ConfigSerializable {
 	}
 
 	/**
-	 * Sets a new primary and secondary locations,
-	 * preserving old keys if the new are not given
+	 * Sets the location from the click type. LEFT = primary, RIGHT = secondary
 	 *
-	 * @param primary
-	 * @param secondary
+	 * @param location
+	 * @param click
 	 */
-	public final void updateLocationsWeak(final Location primary, final Location secondary) {
-		if (primary != null)
-			this.primary = primary;
+	public final void setLocation(Location location, ClickType click) {
+		this.setLocation(location, click, false);
+	}
 
-		if (secondary != null)
-			this.secondary = secondary;
+	/**
+	 * Sets the location from the click type. LEFT = primary, RIGHT = secondary
+	 *
+	 * If the given location point exists, it will get removed. If it does
+	 * not exist, it will get placed, creating a toggle on - toggle off effect.
+	 *
+	 * @param location
+	 * @param click
+	 * @return true if the location was set, null if it was removed (or location param is null)
+	 */
+	public final boolean toggleLocation(Location location, ClickType click) {
+		return this.setLocation(location, click, true);
+	}
+
+	/*
+	 * Helper method to set location from click type, removing old one if toggle mode
+	 */
+	private boolean setLocation(Location location, ClickType click, boolean toggle) {
+		final boolean isPrimary = click == ClickType.LEFT;
+
+		if (isPrimary) {
+			if (location == null || (this.hasPrimary() && this.isPrimary(location) && toggle)) {
+				this.setPrimary(null);
+
+				return false;
+
+			} else {
+				this.setPrimary(location);
+
+				return true;
+			}
+
+		} else {
+			if (location == null || (this.hasSecondary() && this.isSecondary(location) && toggle)) {
+				this.setSecondary(null);
+
+				return false;
+
+			} else {
+				this.setSecondary(location);
+
+				return true;
+			}
+		}
 	}
 
 	@Override
 	public final String toString() {
-		return getClass().getSimpleName() + "{name=" + name + ",location=" + Common.shortLocation(primary) + " - " + Common.shortLocation(secondary) + "}";
+		return this.getClass().getSimpleName() + "{name=" + this.name + ",location=" + Common.shortLocation(this.primary) + " - " + Common.shortLocation(this.secondary) + "}";
 	}
 
 	/**
@@ -293,9 +369,9 @@ public class Region implements ConfigSerializable {
 	public final SerializedMap serialize() {
 		final SerializedMap map = new SerializedMap();
 
-		map.putIfExist("Name", name);
-		map.putIfExist("Primary", primary);
-		map.putIfExist("Secondary", secondary);
+		map.putIfExist("Name", this.name);
+		map.putIfExist("Primary", this.primary);
+		map.putIfExist("Secondary", this.secondary);
 
 		return map;
 	}

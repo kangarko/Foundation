@@ -834,11 +834,12 @@ public abstract class Menu {
 	 * @param slot     the slot
 	 * @param clicked  the clicked item
 	 * @param cursor   the cursor
+	 * @param action   the inventory action
 	 *
 	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
 	 * by default
 	 */
-	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor) {
+	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor, InventoryAction action) {
 		return false;
 	}
 
