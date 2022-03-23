@@ -1,12 +1,16 @@
 package org.mineacademy.fo.visual;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.mineacademy.fo.Messenger;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.tool.BlockTool;
+import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.AccessLevel;
@@ -45,7 +49,24 @@ public abstract class VisualTool extends BlockTool {
 	 * @param click
 	 * @param block
 	 */
-	protected abstract void handleBlockClick(Player player, ClickType click, Block block);
+	protected void handleBlockClick(Player player, ClickType click, Block block) {
+		final boolean isPrimary = click == ClickType.LEFT;
+		final Location location = block.getLocation();
+
+		final Region region = this.getVisualizedRegion(player);
+		Valid.checkNotNull(region, "Got null region on block clicking for player " + player.getName());
+
+		// If you place primary location over a secondary location point, remove secondary
+		if (!isPrimary && region.hasPrimary() && region.isPrimary(location))
+			region.setPrimary(null);
+
+		// ...and vice versa
+		if (isPrimary && region.hasSecondary() && region.isSecondary(location))
+			region.setSecondary(null);
+
+		final boolean removed = !region.toggleLocation(location, click);
+		Messenger.success(player, (isPrimary ? "&cPrimary" : "&6Secondary") + " &7location has been " + (removed ? "&cremoved" : "&2set") + "&7.");
+	}
 
 	/**
 	 * @see org.mineacademy.arena.tool.ArenaTool#onAirClick(org.bukkit.entity.Player, org.bukkit.event.inventory.ClickType)
@@ -94,7 +115,20 @@ public abstract class VisualTool extends BlockTool {
 	 *
 	 * @return
 	 */
-	protected abstract List<Location> getVisualizedPoints(Player player);
+	protected List<Location> getVisualizedPoints(Player player) {
+		final Region region = this.getVisualizedRegion(player);
+		final List<Location> points = new ArrayList<>();
+
+		if (region != null) {
+			if (region.hasPrimary())
+				points.add(region.getPrimary());
+
+			if (region.hasSecondary())
+				points.add(region.getSecondary());
+		}
+
+		return points;
+	}
 
 	/**
 	 * Return a region that this tool should draw particles around
@@ -114,7 +148,18 @@ public abstract class VisualTool extends BlockTool {
 	 * @param player
 	 * @return
 	 */
-	protected abstract String getBlockName(Block block, Player player);
+	protected String getBlockName(Block block, Player player) {
+		final Region region = this.getVisualizedRegion(player);
+		String name = "&7Point";
+
+		if (region != null) {
+			final Location location = block.getLocation();
+
+			name = region.isPrimary(location) ? "&cPrimary" : region.isSecondary(location) ? "&6Secondary" : name;
+		}
+
+		return "&8[" + name + "&8]";
+	}
 
 	/**
 	 * Return the block mask for the given parameters
@@ -124,6 +169,26 @@ public abstract class VisualTool extends BlockTool {
 	 * @return
 	 */
 	protected abstract CompMaterial getBlockMask(Block block, Player player);
+
+	/**
+	 * Returns an example lore you can apply to item
+	 *
+	 * @return
+	 */
+	protected final String[] getItemLore() {
+		return new String[] {
+				"",
+				"&6&l<- &7(left) Primary",
+				"Secondary (right) &6&l->",
+				"",
+				"Click a block to set."
+		};
+	}
+
+	@Override
+	protected boolean autoCancel() {
+		return true; // Cancel the event so that we don't destroy blocks when selecting them
+	}
 
 	/*
 	 * Visualize the region and points if exist
