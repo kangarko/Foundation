@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +31,34 @@ public abstract class ChunkedTask {
 	@Getter
 	private int currentIndex = 0;
 
+	/*
+	 * Private flag to prevent dupe executions and cancel running tasks
+	 */
+	@Getter
+	private boolean processing = false;
+	private boolean firstLaunch = false;
+
 	/**
 	 * Start the chain, will run several sync tasks until done
 	 */
 	public final void startChain() {
+
+		if (!this.firstLaunch) {
+			this.processing = true;
+
+			this.firstLaunch = true;
+		}
+
 		Common.runLater(() -> {
+
+			// Cancelled prematurely
+			if (!processing) {
+				onFinish(false);
+				firstLaunch = false;
+
+				return;
+			}
+
 			final long now = System.currentTimeMillis();
 
 			boolean finished = false;
@@ -59,9 +83,22 @@ public abstract class ChunkedTask {
 
 				Common.runLaterAsync(waitPeriodTicks, this::startChain);
 
-			} else
-				onFinish();
+			} else {
+				processing = false;
+				firstLaunch = false;
+
+				onFinish(true);
+			}
 		});
+	}
+
+	/**
+	 * Attempts to cancel this running task, throwing error if it is not running (use {@link #isProcessing()}
+	 */
+	public final void cancel() {
+		Valid.checkBoolean(this.processing, "Chunked task is not running: " + this);
+
+		this.processing = false;
 	}
 
 	/**
@@ -92,8 +129,10 @@ public abstract class ChunkedTask {
 
 	/**
 	 * Called when the processing is finished
+	 *
+	 * @param gracefully true if natural end, false if {@link #cancel()} used
 	 */
-	protected void onFinish() {
+	protected void onFinish(boolean gracefully) {
 	}
 
 	/**
