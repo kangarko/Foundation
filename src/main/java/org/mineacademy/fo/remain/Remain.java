@@ -673,6 +673,7 @@ public final class Remain {
 	public static void setData(final Block block, final int data) {
 		try {
 			Block.class.getMethod("setData", byte.class).invoke(block, (byte) data);
+
 		} catch (final NoSuchMethodException ex) {
 			block.setBlockData(Bukkit.getUnsafe().fromLegacy(block.getType(), (byte) data), true);
 
@@ -688,19 +689,8 @@ public final class Remain {
 	 * @param material
 	 * @param data
 	 */
-	public static void setTypeAndData(final Block block, final CompMaterial material, final byte data) {
-		setTypeAndData(block, material.getMaterial(), data);
-	}
-
-	/**
-	 * Sets a block type and its data, applying physics.
-	 *
-	 * @param block
-	 * @param material
-	 * @param data
-	 */
 	public static void setTypeAndData(final Block block, final Material material, final byte data) {
-		setTypeAndData(block, material, data, true);
+		setTypeAndData(block, CompMaterial.fromLegacy(material.name(), data));
 	}
 
 	/**
@@ -708,17 +698,14 @@ public final class Remain {
 	 *
 	 * @param block
 	 * @param material
-	 * @param data
-	 * @param physics
 	 */
-	public static void setTypeAndData(final Block block, final Material material, final byte data, final boolean physics) {
+	public static void setTypeAndData(final Block block, final CompMaterial material) {
 		if (MinecraftVersion.atLeast(V.v1_13)) {
-			block.setType(material);
-			block.setBlockData(Bukkit.getUnsafe().fromLegacy(material, data), physics);
+			block.setType(material.getMaterial());
 
 		} else
 			try {
-				block.getClass().getMethod("setTypeIdAndData", int.class, byte.class, boolean.class).invoke(block, material.getId(), data, physics);
+				block.getClass().getMethod("setTypeIdAndData", int.class, byte.class, boolean.class).invoke(block, material.getId(), material.getData(), true);
 			} catch (final ReflectiveOperationException ex) {
 				ex.printStackTrace();
 			}
