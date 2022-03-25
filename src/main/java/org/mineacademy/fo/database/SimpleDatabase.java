@@ -113,7 +113,7 @@ public class SimpleDatabase {
 	 * @param autoReconnect
 	 */
 	public final void connect(final String host, final int port, final String database, final String user, final String password, final String table, final boolean autoReconnect) {
-		connect("jdbc:mariadb://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=" + autoReconnect, user, password, table);
+		connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=" + autoReconnect, user, password, table);
 	}
 
 	/**
@@ -152,7 +152,20 @@ public class SimpleDatabase {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
-				ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
+
+				if (url.startsWith("jdbc:mysql://")) {
+					Common.warning("Not using MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
+
+					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
+				}
+
+				if (url.startsWith("jdbc:mariadb://")) {
+					Common.warning("Using MariaDB JDBC Driver. You can safely ignore this warning.");
+
+					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
+				}
+
+
 				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
 				ReflectionUtil.invoke("setUsername", hikariConfig, user);
 				ReflectionUtil.invoke("setPassword", hikariConfig, password);
@@ -180,11 +193,14 @@ public class SimpleDatabase {
 			Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
 			 */
 			else {
-				if (ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
-					Class.forName("org.mariadb.jdbc.Driver");
+				if (url.startsWith("jdbc:mariadb://") && ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
+					Common.warning("Using MariaDB JDBC Driver. You can safely ignore this warning.");
 
-				else if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver")) {
-					Common.warning("You are not using MariaDB, switching to MySQL JDBC Driver. You can safely ignore this warning.");
+					Class.forName("org.mariadb.jdbc.Driver");
+				}
+
+				if (url.startsWith("jdbc:mysql://") && ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver")) {
+					Common.warning("Can't use MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
 
