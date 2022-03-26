@@ -152,7 +152,20 @@ public class SimpleDatabase {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
-				ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
+
+				if (url.startsWith("jdbc:mysql://")) {
+					Common.warning("Not using MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
+
+					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
+				}
+
+				if (url.startsWith("jdbc:mariadb://")) {
+					Common.warning("Using MariaDB JDBC Driver. You can safely ignore this warning.");
+
+					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
+				}
+
+
 				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
 				ReflectionUtil.invoke("setUsername", hikariConfig, user);
 				ReflectionUtil.invoke("setPassword", hikariConfig, password);
@@ -176,16 +189,27 @@ public class SimpleDatabase {
 				}
 			}
 
+			/*
+			Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
+			 */
 			else {
-				if (ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
-					Class.forName("com.mysql.cj.jdbc.Driver");
+				if (url.startsWith("jdbc:mariadb://") && ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
+					Common.warning("Using MariaDB JDBC Driver. You can safely ignore this warning.");
 
-				else {
-					Common.warning("Your database driver is outdated. If you encounter issues, use MariaDB instead. You can safely ignore this warning.");
-
-					Class.forName("com.mysql.jdbc.Driver");
+					Class.forName("org.mariadb.jdbc.Driver");
 				}
 
+				if (url.startsWith("jdbc:mysql://") && ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver")) {
+					Common.warning("Can't use MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
+
+					Class.forName("com.mysql.cj.jdbc.Driver");
+
+				} else {
+					Common.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your database or switching to MariaDB. You can safely ignore this warning");
+
+					Class.forName("com.mysql.jdbc.Driver");
+
+				}
 				this.connection = DriverManager.getConnection(url, user, password);
 			}
 
@@ -201,7 +225,7 @@ public class SimpleDatabase {
 						"this is normal - just restart.",
 						"",
 						"You have have access to your server machine, try installing",
-						"https://dev.mysql.com/downloads/connector/j/5.1.html#downloads",
+						"https://mariadb.com/downloads/connectors/connectors-data-access/",
 						"",
 						"If this problem persists after a restart, please contact",
 						"your hosting provider.");
