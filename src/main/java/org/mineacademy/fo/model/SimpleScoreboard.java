@@ -503,7 +503,7 @@ public class SimpleScoreboard {
 	 * @param splitPoints The points to split the text
 	 * @return The method will split the text at the given splitPoints and will copy the colors over
 	 */
-	public static List<String> copyColors(String text, int maxLength, int... splitPoints) {
+	private static List<String> copyColors(String text, int maxLength, int... splitPoints) {
 		if (maxLength < 1)
 			return new ArrayList<>();
 
@@ -579,7 +579,7 @@ public class SimpleScoreboard {
 		return splitText;
 	}
 
-	public static int getStringLength(List<String> text) {
+	private static int getStringLength(List<String> text) {
 		int length = 0;
 
 		for (final String line : text)
@@ -588,7 +588,7 @@ public class SimpleScoreboard {
 		return length;
 	}
 
-	public static List<String> passMergeThrough(String marge, List<String> text, int maxLength) {
+	private static List<String> passMergeThrough(String marge, List<String> text, int maxLength) {
 		final StringBuilder textBuilder = new StringBuilder(marge == null ? "" : marge);
 		final List<Integer> stringLengths = new ArrayList<>();
 		final List<String> newSplitText = new ArrayList<>();
