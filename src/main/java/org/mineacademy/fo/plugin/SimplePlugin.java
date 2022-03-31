@@ -223,7 +223,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
 				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
 				Bukkit.getLogger().severe(Common.consoleLine());
-
+			
 				this.canLoad = false;
 				throw new RuntimeException("Unsupported server version, see above.");
 			}*/
@@ -544,7 +544,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				"&4             |_|          ",
 				"&4!-----------------------------------------------------!",
 				" &cError loading " + getDescription().getName() + " v" + getDescription().getVersion() + ", plugin is disabled!",
-				(privateDistro ? null : " &cRunning on " + getServer().getBukkitVersion() + " (" + MinecraftVersion.getServerVersion() + ") & Java " + System.getProperty("java.version")),
+				privateDistro ? null : " &cRunning on " + getServer().getBukkitVersion() + " (" + MinecraftVersion.getServerVersion() + ") & Java " + System.getProperty("java.version"),
 				"&4!-----------------------------------------------------!");
 
 		if (throwable instanceof InvalidConfigurationException) {
