@@ -1256,27 +1256,30 @@ public abstract class FileConfig {
 					return;
 				}
 
-				this.onSave();
+				if (this.canSaveFile()) {
+					this.onSave();
 
-				final File parent = file.getCanonicalFile().getParentFile();
+					final File parent = file.getCanonicalFile().getParentFile();
 
-				if (parent != null)
-					parent.mkdirs();
+					if (parent != null)
+						parent.mkdirs();
 
-				final String data = this.saveToString();
+					final String data = this.saveToString();
 
-				if (data != null) {
-					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+					if (data != null) {
+						final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
 
-					try {
-						writer.write(data);
+						try {
+							writer.write(data);
 
-					} finally {
-						writer.close();
+						} finally {
+							writer.close();
+						}
 					}
-				}
 
-				this.file = file;
+					// Update file
+					this.file = file;
+				}
 
 			} catch (final Exception ex) {
 				Remain.sneaky(ex);
@@ -1293,6 +1296,15 @@ public abstract class FileConfig {
 
 		if (map != null)
 			this.set("", map);
+	}
+
+	/**
+	 * Return if the file can be saved when calling {@link #save()}e
+	 *
+	 * @return
+	 */
+	protected boolean canSaveFile() {
+		return true;
 	}
 
 	/**
