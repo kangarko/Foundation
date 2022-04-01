@@ -152,7 +152,6 @@ public class SimpleDatabase {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
-
 				if (url.startsWith("jdbc:mysql://")) {
 					Common.warning("Not using MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
 
@@ -164,7 +163,6 @@ public class SimpleDatabase {
 
 					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
 				}
-
 
 				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
 				ReflectionUtil.invoke("setUsername", hikariConfig, user);
@@ -190,7 +188,7 @@ public class SimpleDatabase {
 			}
 
 			/*
-			Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
+			 * Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
 			 */
 			else {
 				if (url.startsWith("jdbc:mariadb://") && ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
