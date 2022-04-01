@@ -12,6 +12,7 @@ package org.mineacademy.fo.plugin;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -214,20 +215,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		data = instance.getDataFolder();
 
 		if (!Bukkit.getVersion().contains("Paper") && !Bukkit.getVersion().contains("NachoSpigot") && !Bukkit.getVersion().contains("-Spigot") && MinecraftVersion.atLeast(V.v1_8)) {
-
-			/*if (MinecraftVersion.atLeast(V.v1_18) && Bukkit.getVersion().contains("CraftBukkit") || Bukkit.getVersion().contains("-Spigot-")) {
-				Bukkit.getLogger().severe(Common.consoleLine());
-				Bukkit.getLogger().severe("Error loading " + named + ": Unsupported server software");
-				Bukkit.getLogger().severe("");
-				Bukkit.getLogger().severe("Minecraft 1.18+ require Paper from PaperMC.io");
-				Bukkit.getLogger().severe("to run our software properly. Shutting down...");
-				Bukkit.getLogger().severe("Your version: " + Bukkit.getVersion());
-				Bukkit.getLogger().severe(Common.consoleLine());
-			
-				this.canLoad = false;
-				throw new RuntimeException("Unsupported server version, see above.");
-			}*/
-
 			Bukkit.getLogger().severe(Common.consoleLine());
 			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper!");
 			Bukkit.getLogger().warning("Detected: " + Bukkit.getVersion());
@@ -237,6 +224,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Bukkit.getLogger().warning("from PaperMC.io otherwise you may not receive our support.");
 			Bukkit.getLogger().severe(Common.consoleLine());
 		}
+
+		// Load libraries where Spigot does not do this automatically
+		if (MinecraftVersion.olderThan(V.v1_16))
+			loadLibraries();
 
 		// Call parent
 		onPluginLoad();
@@ -382,6 +373,28 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 	}
 
+	/*
+	 * Loads libraries from plugin.yml or from getLibraries()
+	 */
+	private void loadLibraries() {
+		final List<Library> libraries = new ArrayList<>();
+		final YamlConfig pluginFile = YamlConfig.fromInternalPathFast("plugin.yml");
+
+		for (final String libraryPath : pluginFile.getStringList("legacy-libraries")) {
+
+			if (Remain.getJavaVersion() < 15 && libraryPath.contains("org.openjdk.nashorn:nashorn-core"))
+				continue;
+
+			final Library library = Library.fromMavenRepo(libraryPath);
+
+			libraries.add(library);
+		}
+
+		// Load normally
+		for (final Library library : libraries)
+			library.load();
+	}
+
 	/**
 	 * Register a simple bungee class as a custom bungeecord listener,
 	 * for sample implementation you can see the SimpleBungee field at:
@@ -404,7 +417,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * A dirty way of checking if Foundation has been shaded correctly
 	 */
-	private final void checkShading() {
+	private void checkShading() {
 		try {
 			throw new ShadingException();
 		} catch (final Throwable t) {
@@ -419,7 +432,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * <p>
 	 * Or, this is caused by a PlugMan, and we have no mercy for that.
 	 */
-	private final class ShadingException extends Throwable {
+	private class ShadingException extends Throwable {
 		private static final long serialVersionUID = 1L;
 
 		public ShadingException() {
@@ -448,7 +461,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	private final boolean checkLibraries0() {
+	private boolean checkLibraries0() {
 
 		boolean md_5 = false;
 		boolean gson = false;
@@ -486,7 +499,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	private final boolean checkServerVersions0() {
+	private boolean checkServerVersions0() {
 
 		// Call the static block to test compatibility early
 		if (!MinecraftVersion.getCurrent().isTested())
@@ -740,7 +753,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 	}
 
-	private final void unregisterReloadables() {
+	private void unregisterReloadables() {
 		SimpleSettings.resetSettingsCall();
 		SimpleLocalization.resetLocalizationCall();
 
@@ -1174,7 +1187,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		throw new FoException("Cannot call reloadConfig in " + getDataFolder().getName() + ", use reload()!");
 	}
 
-	private final FoException unsupported(final String method) {
+	private FoException unsupported(final String method) {
 		return new FoException("Cannot call " + method + " in " + getDataFolder().getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
 	}
 }
