@@ -165,7 +165,7 @@ public class SimpleDatabase {
 					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
 
 				else
-					throw new FoException("Illegal database driver, expected jdbc:mysqlf or jdbc:mariadb for Hikari, got: " + url);
+					throw new FoException("Unknown database driver, expected jdbc:mysql or jdbc:mariadb, got: " + url);
 
 				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
 				ReflectionUtil.invoke("setUsername", hikariConfig, user);
