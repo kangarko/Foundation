@@ -23,6 +23,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -144,25 +145,27 @@ public class SimpleDatabase {
 		try {
 
 			// Avoid using imports so that Foundation users don't have to include Hikari, you can
-			// optionally load the library using "libraries" feature in plugin.yml such as the below (requires MC 1.16+)
+			// optionally load the library using "libraries" and "legacy-libraries" feature in plugin.yml:
 			//
 			// libraries:
 			// - com.zaxxer:HikariCP:5.0.1
+			// legacy-libraries:
+			//  - org.slf4j:slf4j-simple:1.7.36
+			//  - org.slf4j:slf4j-api:1.7.36
+			//  - com.zaxxer:HikariCP:4.0.3
+			//
 			if (ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig")) {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
-				if (url.startsWith("jdbc:mysql://")) {
-					Common.warning("Not using MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
-
+				if (url.startsWith("jdbc:mysql://"))
 					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
-				}
 
-				if (url.startsWith("jdbc:mariadb://")) {
-					Common.warning("Using MariaDB JDBC Driver. You can safely ignore this warning.");
-
+				else if (url.startsWith("jdbc:mariadb://"))
 					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
-				}
+
+				else
+					throw new FoException("Illegal database driver, expected jdbc:mysqlf or jdbc:mariadb for Hikari, got: " + url);
 
 				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
 				ReflectionUtil.invoke("setUsername", hikariConfig, user);
@@ -191,23 +194,18 @@ public class SimpleDatabase {
 			 * Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
 			 */
 			else {
-				if (url.startsWith("jdbc:mariadb://") && ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver")) {
-					Common.warning("Using MariaDB JDBC Driver. You can safely ignore this warning.");
-
+				if (url.startsWith("jdbc:mariadb://") && ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
 					Class.forName("org.mariadb.jdbc.Driver");
-				}
 
-				if (url.startsWith("jdbc:mysql://") && ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver")) {
-					Common.warning("Can't use MariaDB JDBC Driver, switching to MySQL JDBC Driver. You can safely ignore this warning.");
-
+				else if (url.startsWith("jdbc:mysql://") && ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
 					Class.forName("com.mysql.cj.jdbc.Driver");
 
-				} else {
+				else {
 					Common.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your database or switching to MariaDB. You can safely ignore this warning");
 
 					Class.forName("com.mysql.jdbc.Driver");
-
 				}
+
 				this.connection = DriverManager.getConnection(url, user, password);
 			}
 
