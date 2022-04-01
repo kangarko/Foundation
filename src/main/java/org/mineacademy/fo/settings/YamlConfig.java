@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.mineacademy.fo.FileUtil;
@@ -173,6 +173,18 @@ public class YamlConfig extends FileConfig {
 		this.load(file);
 	}
 
+	/**
+	 * Loads the configuration from the internal path WITHOUT calling {@link #onLoad()},
+	 * without setting defaults and without extracting the file.
+	 *
+	 * @param internalPath
+	 */
+	public final void loadInternal(String internalPath) {
+		final String content = String.join("\n", FileUtil.getInternalFileContent(internalPath));
+
+		this.loadFromString(content);
+	}
+
 	/*
 	 * Dumps all values in this config into a saveable format
 	 */
@@ -226,9 +238,9 @@ public class YamlConfig extends FileConfig {
 			}
 
 			if (value == null
-					|| (value instanceof Iterable<?> && !((Iterable<?>) value).iterator().hasNext())
-					|| (value.getClass().isArray() && ((Object[]) value).length == 0)
-					|| (value instanceof Map<?, ?>) && ((Map<?, ?>) value).isEmpty()) {
+					|| value instanceof Iterable<?> && !((Iterable<?>) value).iterator().hasNext()
+					|| value.getClass().isArray() && ((Object[]) value).length == 0
+					|| value instanceof Map<?, ?> && ((Map<?, ?>) value).isEmpty()) {
 
 				it.remove();
 
@@ -293,7 +305,7 @@ public class YamlConfig extends FileConfig {
 		boolean readingHeader = true;
 		boolean foundHeader = false;
 
-		for (int i = 0; (i < lines.length) && (readingHeader); i++) {
+		for (int i = 0; i < lines.length && readingHeader; i++) {
 			final String line = lines[i].trim();
 
 			if (line.startsWith(commentPrefix) || line.equals("#")) {
@@ -336,7 +348,29 @@ public class YamlConfig extends FileConfig {
 			config.loadConfiguration(path);
 
 		} catch (final Exception ex) {
-			Logger.getGlobal().log(Level.SEVERE, "Cannot load " + path, ex);
+			Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + path, ex);
+		}
+
+		return config;
+	}
+
+	/**
+	 * Loads configuration from the internal JAR path without setting the file,
+	 * without extracting it and without defaults.
+	 *
+	 * @param path
+	 * @return
+	 */
+	@NonNull
+	public static final YamlConfig fromInternalPathFast(@NonNull String path) {
+
+		final YamlConfig config = new YamlConfig();
+
+		try {
+			config.loadInternal(path);
+
+		} catch (final Exception ex) {
+			Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + path, ex);
 		}
 
 		return config;
@@ -356,7 +390,7 @@ public class YamlConfig extends FileConfig {
 		try {
 			config.load(file);
 		} catch (final Exception ex) {
-			Logger.getGlobal().log(Level.SEVERE, "Cannot load " + file, ex);
+			Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + file, ex);
 		}
 
 		return config;
