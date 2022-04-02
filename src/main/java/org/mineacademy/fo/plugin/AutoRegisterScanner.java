@@ -53,6 +53,11 @@ final class AutoRegisterScanner {
 	private static boolean enchantListenersRegistered = false;
 
 	/**
+	 * Prevents overriding {@link BungeeListener} in case of having multiple
+	 */
+	private static boolean bungeeListenerRegistered = false;
+
+	/**
 	 * Automatically register the main command group if there is only one in the code
 	 */
 	private static List<SimpleCommandGroup> registeredCommandGroups = new ArrayList<>();
@@ -67,6 +72,7 @@ final class AutoRegisterScanner {
 
 		// Reset
 		enchantListenersRegistered = false;
+		bungeeListenerRegistered = false;
 		registeredCommandGroups.clear();
 
 		// Find all plugin classes that can be autoregistered
@@ -96,7 +102,13 @@ final class AutoRegisterScanner {
 				final AutoRegister autoRegister = clazz.getAnnotation(AutoRegister.class);
 
 				// Require our annotation to be used, or support legacy classes from Foundation 5
-				if (autoRegister != null || Tool.class.isAssignableFrom(clazz) || SimpleEnchantment.class.isAssignableFrom(clazz)) {
+				if (autoRegister != null || Tool.class.isAssignableFrom(clazz)
+						|| SimpleEnchantment.class.isAssignableFrom(clazz)
+						|| BungeeListener.class.isAssignableFrom(clazz)
+						|| SimpleExpansion.class.isAssignableFrom(clazz)
+						|| PacketListener.class.isAssignableFrom(clazz)
+						|| DiscordListener.class.isAssignableFrom(clazz)) {
+
 					Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for it to be registered automatically (or via @AutoRegister)");
 
 					try {
@@ -159,7 +171,7 @@ final class AutoRegisterScanner {
 				load = true;
 			}
 
-			if (load || (!load && YamlStaticConfig.class.isAssignableFrom(clazz)))
+			if (load || !load && YamlStaticConfig.class.isAssignableFrom(clazz))
 				YamlStaticConfig.load((Class<? extends YamlStaticConfig>) clazz);
 		}
 
@@ -265,6 +277,12 @@ final class AutoRegisterScanner {
 
 		else if (BungeeListener.class.isAssignableFrom(clazz)) {
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+
+			if (!bungeeListenerRegistered) {
+				bungeeListenerRegistered = true;
+
+				plugin.setBungeeCord((BungeeListener) instance);
+			}
 
 			plugin.registerBungeeCord((BungeeListener) instance);
 			eventsRegistered = true;
