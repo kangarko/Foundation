@@ -177,6 +177,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	private SimpleCommandGroup mainCommand;
 
+	/**
+	 * A temporary bungee listener, see {@link #setBungeeCord(BungeeListener)}
+	 * set automatically by us.
+	 */
+	private BungeeListener bungeeListener;
+
 	// ----------------------------------------------------------------------------------------
 	// Main methods
 	// ----------------------------------------------------------------------------------------
@@ -1094,10 +1100,23 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#tellBungee(org.mineacademy.fo.bungee.BungeeAction, Object...)}
 	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
 	 *
+	 * @deprecated only returns the first found bungee listener, if you have multiple, do not use, order not guaranteed
 	 * @return
 	 */
-	public BungeeListener getBungeeCord() {
-		return null;
+	@Deprecated
+	public final BungeeListener getBungeeCord() {
+		return this.bungeeListener;
+	}
+
+	/**
+	 * Sets the first valid bungee listener
+	 *
+	 * @deprecated INTERNAL USE ONLY, DO NOT USE! can only set one bungee listener, if you have multiple, order not guaranteed
+	 * @param bungeeListener
+	 */
+	@Deprecated
+	public final void setBungeeCord(BungeeListener bungeeListener) {
+		this.bungeeListener = bungeeListener;
 	}
 
 	/**
