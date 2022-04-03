@@ -3263,11 +3263,38 @@ class BossHook {
 
 class MythicMobsHook {
 
+	private Boolean legacyVersion = null;
+
+	MythicMobsHook() {
+		final Plugin mythicMobs = Bukkit.getPluginManager().getPlugin("MythicMobs");
+		final String version = mythicMobs.getDescription().getVersion();
+
+		if (version.startsWith("4."))
+			legacyVersion = true;
+
+		else if (version.startsWith("5."))
+			legacyVersion = false;
+
+		else
+			Common.warning("Skipping hooking into unsupported MythicMob version " + version + "! Only 4.X.X and 5.X.X are supported.");
+
+	}
+
 	/*
 	 * Attempt to return a MythicMob name from the given entity
 	 * or null if the entity is not a MythicMob
 	 */
-	final String getBossName(Entity entity) {
+	String getBossName(Entity entity) {
+		if (legacyVersion == null)
+			return null;
+
+		if (legacyVersion)
+			return getBossNameV4(entity);
+
+		return getBossNameV5(entity);
+	}
+
+	private String getBossNameV4(Entity entity) {
 		try {
 			final Class<?> mythicMobs = ReflectionUtil.lookupClass("io.lumine.xikage.mythicmobs.MythicMobs");
 			final Object instance = ReflectionUtil.invokeStatic(mythicMobs, "inst");
@@ -3283,6 +3310,22 @@ class MythicMobsHook {
 			}
 
 		} catch (final NoSuchElementException ex) {
+		}
+
+		return null;
+	}
+
+	private String getBossNameV5(Entity entity) {
+
+		final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
+		final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
+		final Collection<?> activeMobs = ReflectionUtil.invoke("getActiveMobs", mobManager);
+
+		for (final Object mob : activeMobs) {
+			final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
+
+			if (uniqueId.equals(entity.getUniqueId()))
+				return ReflectionUtil.invoke("getName", mob);
 		}
 
 		return null;
