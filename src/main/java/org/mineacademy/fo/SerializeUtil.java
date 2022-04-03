@@ -100,7 +100,10 @@ public final class SerializeUtil {
 			if (serializers.containsKey(object.getClass()))
 				return serializers.get(object.getClass()).apply(object);
 
-			if (object instanceof ConfigSerializable)
+			if (object instanceof ConfigurationSerializable)
+				return object;
+
+			else if (object instanceof ConfigSerializable)
 				return serialize(((ConfigSerializable) object).serialize().serialize());
 
 			else if (object instanceof StrictCollection)
@@ -113,7 +116,7 @@ public final class SerializeUtil {
 				return ((CompChatColor) object).toSaveableString();
 
 			else if (object instanceof net.md_5.bungee.api.ChatColor) {
-				final net.md_5.bungee.api.ChatColor color = ((net.md_5.bungee.api.ChatColor) object);
+				final net.md_5.bungee.api.ChatColor color = (net.md_5.bungee.api.ChatColor) object;
 
 				return MinecraftVersion.atLeast(V.v1_16) ? color.toString() : color.name();
 			}
@@ -230,9 +233,6 @@ public final class SerializeUtil {
 			else if (object instanceof Integer || object instanceof Double || object instanceof Float || object instanceof Long || object instanceof Short
 					|| object instanceof String || object instanceof Boolean || object instanceof Character)
 				return object;
-
-			else if (object instanceof ConfigurationSerializable)
-				return ((ConfigurationSerializable) object).serialize();
 
 			throw new SerializeFailedException("Does not know how to serialize " + object.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + object);
 		}
