@@ -1500,7 +1500,7 @@ public enum CompMaterial {
 
 		Material mat = null;
 
-		if ((!Data.ISFLAT && this.isDuplicated()) || (mat = Material.getMaterial(this.name())) == null)
+		if (!Data.ISFLAT && this.isDuplicated() || (mat = Material.getMaterial(this.name())) == null)
 			for (int i = legacy.length - 1; i >= 0; i--) {
 				mat = Material.getMaterial(legacy[i]);
 
@@ -2234,7 +2234,7 @@ public enum CompMaterial {
 		final boolean isAMap = name.equalsIgnoreCase("MAP");
 
 		// Do basic number and boolean checks before accessing more complex enum stuff.
-		if (Data.ISFLAT || (!isAMap && data <= 0 && !(duplicated = isDuplicated(name)))) {
+		if (Data.ISFLAT || !isAMap && data <= 0 && !(duplicated = isDuplicated(name))) {
 			final CompMaterial compmaterial = getIfPresent(name);
 
 			if (compmaterial != null)
@@ -2246,7 +2246,7 @@ public enum CompMaterial {
 
 		if (oldCompmaterial == null) {
 			// Special case. Refer to FILLED_MAP for more info.
-			return (data >= 0 && isAMap) ? FILLED_MAP : null;
+			return data >= 0 && isAMap ? FILLED_MAP : null;
 		}
 
 		if (!Data.ISFLAT && oldCompmaterial.isPlural() && (duplicated == null ? isDuplicated(name) : duplicated))
@@ -2319,7 +2319,7 @@ public enum CompMaterial {
 			else {
 				boolean number = false;
 				// Old materials have numbers in them.
-				if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (number = (ch >= '0' && ch <= '9'))) {
+				if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || (number = ch >= '0' && ch <= '9')) {
 					if (appendUnderline) {
 						chs[count++] = '_';
 						appendUnderline = false;
