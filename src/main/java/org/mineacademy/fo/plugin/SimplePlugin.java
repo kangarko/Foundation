@@ -310,6 +310,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Call the main start method
 			// --------------------------------------------
 
+			final Messenger messenger = getServer().getMessenger();
+			if (!messenger.isOutgoingChannelRegistered(this, "BungeeCord"))
+				messenger.registerOutgoingPluginChannel(this, "BungeeCord");
+
 			// Hide plugin name before console messages
 			final String oldLogPrefix = Common.getLogPrefix();
 			Common.setLogPrefix("");
