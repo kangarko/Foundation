@@ -683,27 +683,33 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return true if the given player is vanished in EssentialsX or CMI, or false if neither plugin is present
+	 * Return true if the given player is vanished in EssentialsX
 	 *
 	 * @deprecated this does not call metadata check for most plugins nor NMS check, see {@link PlayerUtil#isVanished(Player)}
 	 * @param player
 	 * @return
 	 */
 	@Deprecated
-	public static boolean isVanished(final Player player) {
-		if (isEssentialsLoaded() && essentialsHook.isVanished(player.getName()))
-			return true;
+	public static boolean isVanishedEssentials(final Player player) {
+		return isEssentialsLoaded() && essentialsHook.isVanished(player.getName());
+	}
 
-		if (isCMILoaded() && CMIHook.isVanished(player))
-			return true;
-
-		return false;
+	/**
+	 * Return true if the given player is vanished in CMI
+	 *
+	 * @deprecated this does not call metadata check for most plugins nor NMS check, see {@link PlayerUtil#isVanished(Player)}
+	 * @param player
+	 * @return
+	 */
+	@Deprecated
+	public static boolean isVanishedCMI(final Player player) {
+		return isCMILoaded() && CMIHook.isVanished(player);
 	}
 
 	/**
 	 * Sets the vanish status for player in CMI and Essentials
 	 *
-	 * @deprecated this does not remove vanish metadata and NMS invisibility, use {@link PlayerUtil#isVanished(Player)} for that
+	 * @deprecated this does not remove vanish metadata and NMS invisibility, use {@link PlayerUtil#setVanished(Player, boolean)} for that
 	 * @param player
 	 * @param vanished
 	 */
@@ -1558,7 +1564,7 @@ public final class HookManager {
 	 */
 	/*@Data
 	static class PAPIPlaceholder {
-	
+
 		private final String variable;
 		private final BiFunction<Player, String, String> value;
 	}*/
@@ -3161,7 +3167,7 @@ class DiscordSRVHook {
 
 	/*boolean sendMessage(final String sender, final String channel, final String message) {
 		final DiscordSender discordSender = new DiscordSender(sender);
-	
+
 		return sendMessage(discordSender, channel, message);
 	}*/
 
@@ -3365,16 +3371,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
