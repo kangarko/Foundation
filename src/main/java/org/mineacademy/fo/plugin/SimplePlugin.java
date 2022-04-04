@@ -401,8 +401,20 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 
 		// Load normally
-		for (final Library library : libraries)
-			library.load();
+		if (!libraries.isEmpty() && Remain.getJavaVersion() >= 15)
+			Common.logFramed(
+					"Warning: Unsupported Java version: " + Remain.getJavaVersion() + " for your server",
+					"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
+					"and we're unable unable to load 'legacy-libraries'",
+					"that this plugin uses:",
+					Common.join(libraries, ", ", Library::getGroupId),
+					"",
+					"To fix this, start your server using Java 8 or",
+					"upgrade to Minecraft 1.16 or greater.");
+
+		else
+			for (final Library library : libraries)
+				library.load();
 	}
 
 	/**
