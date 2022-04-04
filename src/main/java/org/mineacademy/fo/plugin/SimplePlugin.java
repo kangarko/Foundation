@@ -394,7 +394,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 
 		// Load normally
-		if (!libraries.isEmpty() && Remain.getJavaVersion() >= 15)
+		if (!libraries.isEmpty() && Remain.getJavaVersion() >= 9)
 			Common.logFramed(
 					"Warning: Unsupported Java version: " + Remain.getJavaVersion() + " for your server",
 					"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
