@@ -338,12 +338,14 @@ public final class Debugger {
 	private static boolean canPrint(String message) {
 		return !message.contains("net.minecraft") &&
 				!message.contains("org.bukkit.craftbukkit") &&
+				!message.contains("org.github.paperspigot.ServerScheduler") &&
 				!message.contains("nashorn") &&
 				!message.contains("javax.script") &&
 				!message.contains("org.yaml.snakeyaml") &&
 				!message.contains("sun.reflect") &&
 				!message.contains("sun.misc") &&
-				!message.contains("java.lang.Thread.run");
+				!message.contains("java.lang.Thread.run") &&
+				!message.contains("java.util.concurrent.ThreadPoolExecutor");
 	}
 
 	// Print a simple console message
