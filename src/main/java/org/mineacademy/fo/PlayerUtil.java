@@ -448,8 +448,8 @@ public final class PlayerUtil {
 	}
 
 	/**
-	 * Return true if the player is vanished. We check for Essentials and CMI vanish and also "vanished"
-	 * metadata value which is supported by most plugins
+	 * Return true if the player is vanished. We check for "vanished"
+	 * metadata value which is supported by most plugins (CMI, Essentials, etc.)
 	 *
 	 * Does NOT return true for vanish potions or spectator mode.
 	 *
@@ -457,9 +457,6 @@ public final class PlayerUtil {
 	 * @return
 	 */
 	public static boolean isVanished(final Player player) {
-		if (HookManager.isVanished(player))
-			return true;
-
 		final List<MetadataValue> list = player.getMetadata("vanished");
 
 		for (final MetadataValue meta : list)
