@@ -303,9 +303,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		try {
 
-			if (!isEnabled())
-				return;
-
 			// --------------------------------------------
 			// Call the main start method
 			// --------------------------------------------
@@ -349,9 +346,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			registerEvents(new MenuListener());
 			registerEvents(new FoundationListener());
 
-			if (getUpdateCheck() != null)
-				registerEvents(new FoundationListener.UpdateCheckListener());
-
 			if (areToolsEnabled())
 				registerEvents(new ToolsListener());
 
@@ -391,7 +385,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		final YamlConfig pluginFile = YamlConfig.fromInternalPathFast("plugin.yml");
 
 		for (final String libraryPath : pluginFile.getStringList("legacy-libraries")) {
-
 			if (Remain.getJavaVersion() < 15 && libraryPath.contains("org.openjdk.nashorn:nashorn-core"))
 				continue;
 
