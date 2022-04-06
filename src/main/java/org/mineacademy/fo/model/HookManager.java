@@ -1549,25 +1549,6 @@ public final class HookManager {
 		if (isDiscordSRVLoaded() && !Common.stripColors(message).isEmpty())
 			discordSRVHook.sendMessage(channel, message);
 	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Class helpers
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Represents a PlaceholderAPI placeholder replacer with the given
-	 * variable (will be prepended with the name of your plugin, such as
-	 * <p>
-	 * chatcontrol_ + this variable
-	 * <p>
-	 * and the value that is callable so that you can return updated value each time.
-	 */
-	/*@Data
-	static class PAPIPlaceholder {
-
-		private final String variable;
-		private final BiFunction<Player, String, String> value;
-	}*/
 }
 
 // ------------------------------------------------------------------------------------------------------------
@@ -3165,12 +3146,6 @@ class DiscordSRVHook {
 		return DiscordSRV.getPlugin().getChannels().keySet();
 	}
 
-	/*boolean sendMessage(final String sender, final String channel, final String message) {
-		final DiscordSender discordSender = new DiscordSender(sender);
-
-		return sendMessage(discordSender, channel, message);
-	}*/
-
 	boolean sendMessage(final String channel, final String message) {
 		return sendMessage((CommandSender) null, channel, message);
 	}
@@ -3371,16 +3346,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
