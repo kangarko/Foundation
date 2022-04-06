@@ -103,6 +103,7 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * The command cooldown before we can run this command again
 	 */
+	@Getter
 	private int cooldownSeconds = 0;
 
 	/**
