@@ -232,8 +232,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 
 		// Load libraries where Spigot does not do this automatically
-		if (MinecraftVersion.olderThan(V.v1_16))
-			loadLibraries();
+		loadLibraries();
 
 		// Call parent
 		onPluginLoad();
@@ -382,32 +381,72 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	private void loadLibraries() {
 		final List<Library> libraries = new ArrayList<>();
-		final YamlConfig pluginFile = YamlConfig.fromInternalPathFast("plugin.yml");
 
-		for (final String libraryPath : pluginFile.getStringList("legacy-libraries")) {
-			if (Remain.getJavaVersion() < 15 && libraryPath.contains("org.openjdk.nashorn:nashorn-core"))
-				continue;
+		if (MinecraftVersion.olderThan(V.v1_16)) {
+			final YamlConfig pluginFile = YamlConfig.fromInternalPathFast("plugin.yml");
 
-			final Library library = Library.fromMavenRepo(libraryPath);
+			for (final String libraryPath : pluginFile.getStringList("legacy-libraries")) {
+				if (Remain.getJavaVersion() < 15 && libraryPath.contains("org.openjdk.nashorn:nashorn-core"))
+					continue;
 
-			libraries.add(library);
+				final Library library = Library.fromMavenRepo(libraryPath);
+
+				libraries.add(library);
+			}
+
+			// Load normally
+			if (!libraries.isEmpty() && Remain.getJavaVersion() >= 9)
+				Common.logFramed(
+						"Warning: Unsupported Java version: " + Remain.getJavaVersion() + " for your server",
+						"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
+						"and we're unable unable to load 'legacy-libraries'",
+						"that this plugin uses:",
+						Common.join(libraries, ", ", Library::getGroupId),
+						"",
+						"To fix this, start your server using Java 8 or",
+						"upgrade to Minecraft 1.16 or greater.");
+
+			else
+				for (final Library library : libraries)
+					library.load();
 		}
 
-		// Load normally
-		if (!libraries.isEmpty() && Remain.getJavaVersion() >= 15)
-			Common.logFramed(
-					"Warning: Unsupported Java version: " + Remain.getJavaVersion() + " for your server",
-					"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
-					"and we're unable unable to load 'legacy-libraries'",
-					"that this plugin uses:",
-					Common.join(libraries, ", ", Library::getGroupId),
-					"",
-					"To fix this, start your server using Java 8 or",
-					"upgrade to Minecraft 1.16 or greater.");
+		// Always load user-defined libraries
+		final List<Library> manualLibraries = getLibraries();
+
+		// But only on Java 8 (for now)
+		if (!manualLibraries.isEmpty() && Remain.getJavaVersion() > 8)
+			Common.warning("The getLibraries() feature only supports Java 8 for now and does not work on Java " + Remain.getJavaVersion() + ". To load the following libraries, "
+					+ "install Java 8 or upgrade to Minecraft 16 where you use the 'libraries' feature of plugin.yml to load. Skipping loading: " + manualLibraries);
 
 		else
-			for (final Library library : libraries)
+			methodLibraryLoader:
+			for (final Library library : manualLibraries) {
+
+				// Detect conflicts
+				for (final Library otherLibrary : libraries)
+					if (library.getArtifactId().equals(otherLibrary.getArtifactId()) && library.getGroupId().equals(otherLibrary.getGroupId())) {
+						Common.warning("Detected library conflict: '" + library.getGroupId() + "." + library.getArtifactId() + "' is defined both in getLibraries() and plugin.yml! "
+								+ "We'll prefer the version from plugin.yml, if you want to use the one from getLibraries() then remove it from your plugin.yml file.");
+
+						continue methodLibraryLoader;
+					}
+
 				library.load();
+			}
+	}
+
+	/**
+	 * A list of libraries to automatically download and load.
+	 *
+	 * **REQUIRES JAVA 8 FOR THE TIME BEING**
+	 *
+	 * @deprecated requires Java 8 thus only works on Minecraft 1.16 or lower with such Java version installed
+	 * @return
+	 */
+	@Deprecated
+	protected List<Library> getLibraries() {
+		return new ArrayList<>();
 	}
 
 	/**
@@ -1142,6 +1181,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	// ----------------------------------------------------------------------------------------
 	// Prevention
 	// ----------------------------------------------------------------------------------------
+
+	public final ClassLoader getClazzLoader() {
+		return this.getClassLoader();
+	}
 
 	/**
 	 * Get the plugins jar file
