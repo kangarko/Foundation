@@ -143,6 +143,22 @@ public final class PlayerUtil {
 	}
 
 	/**
+	 * Return the total amount of time the player has spent on the server.
+	 * This will get reset if you delete the playerdata folder inside your main world folder.
+	 *
+	 * **For Minecraft 1.12 and older this returns a tick value, otherwise this returns the
+	 * amount of minutes!**
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static long getPlayTimeTicksOrSeconds(OfflinePlayer player) {
+		final Statistic playTime = Remain.getPlayTimeStatisticName();
+
+		return getStatistic(player, playTime);
+	}
+
+	/**
 	 * Return a statistic of an online player
 	 *
 	 * @param player
