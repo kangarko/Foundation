@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
@@ -166,10 +165,10 @@ public final class RangedValue {
 		final String second = parts.length == 2 ? parts[1].trim() : first;
 
 		// Check if valid numbers
-		Valid.checkBoolean(NumberUtils.isNumber(first),
+		Valid.checkBoolean(Valid.isNumber(first),
 				"Invalid ranged value 1. input: '" + first + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
 
-		Valid.checkBoolean(NumberUtils.isNumber(second),
+		Valid.checkBoolean(Valid.isNumber(second),
 				"Invalid ranged value 2. input: '" + second + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
 
 		final Number firstNumber = first.contains(".") ? Double.parseDouble(first) : Long.parseLong(first);
