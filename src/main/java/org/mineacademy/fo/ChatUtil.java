@@ -187,7 +187,7 @@ public final class ChatUtil {
 	 * @param message the message to check
 	 * @return capitalized message
 	 */
-	public static String capitalize(final String message) {
+	public static String capitalizeFirst(final String message) {
 		if (message.isEmpty())
 			return "";
 
@@ -208,6 +208,70 @@ public final class ChatUtil {
 		}
 
 		return tempMessage.trim();
+	}
+
+	/**
+	 * <p>Converts all the whitespace separated words in a String into capitalized words, 
+	 * that is each word is made up of a titlecase character and then a series of 
+	 * lowercase characters.  </p>
+	 *
+	 * <p>Whitespace is defined by {@link Character#isWhitespace(char)}.
+	 * A <code>null</code> input String returns <code>null</code>.
+	 * Capitalization uses the unicode title case, normally equivalent to
+	 * upper case.</p>
+	 *
+	 * <pre>
+	 * capitalizeFully(null)        = null
+	 * capitalizeFully("")          = ""
+	 * capitalizeFully("i am FINE") = "I Am Fine"
+	 * </pre>
+	 * 
+	 * @param message  the String to capitalize, may be null
+	 * @return capitalized String, <code>null</code> if null String input
+	 */
+	public static String capitalizeFully(String message) {
+		return capitalize(message == null ? null : message.toLowerCase());
+	}
+
+	/**
+	 * <p>Capitalizes all the whitespace separated words in a String.
+	 * Only the first letter of each word is changed.
+	 *
+	 * <p>Whitespace is defined by {@link Character#isWhitespace(char)}.
+	 * A <code>null</code> input String returns <code>null</code>.
+	 * Capitalization uses the unicode title case, normally equivalent to
+	 * upper case.</p>
+	 *
+	 * <pre>
+	 * capitalize(null)        = null
+	 * capitalize("")          = ""
+	 * capitalize("i am FINE") = "I Am FINE"
+	 * </pre>
+	 *
+	 * @author Apache Commons - WordUtils
+	 * @param message  the String to capitalize, may be null
+	 * @return capitalized String, <code>null</code> if null String input
+	 */
+	public static String capitalize(String message) {
+		if (message == null || message.length() == 0)
+			return message;
+
+		final int length = message.length();
+		final StringBuffer buffer = new StringBuffer(length);
+		boolean next = true;
+
+		for (int i = 0; i < length; i++) {
+			final char letter = message.charAt(i);
+
+			if (next) {
+				buffer.append(Character.toTitleCase(letter));
+				next = false;
+
+			} else
+				buffer.append(letter);
+		}
+
+		return buffer.toString();
 	}
 
 	/**
