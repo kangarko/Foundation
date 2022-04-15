@@ -16,6 +16,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -189,6 +190,128 @@ public final class Valid {
 		Valid.checkNotNull(raw, "Cannot check if null is a decimal!");
 
 		return Valid.PATTERN_DECIMAL.matcher(raw).matches();
+	}
+
+	/**
+	 * <p>Checks whether the String a valid Java number.</p>
+	 *
+	 * <p>Valid numbers include hexadecimal marked with the <code>0x</code>
+	 * qualifier, scientific notation and numbers marked with a type
+	 * qualifier (e.g. 123L).</p>
+	 *
+	 * <p><code>Null</code> and empty String will return
+	 * <code>false</code>.</p>
+	 *
+	 * @author Apache Commons NumberUtils
+	 * @param raw  the <code>String</code> to check
+	 * @return <code>true</code> if the string is a correctly formatted number
+	 */
+	public static boolean isNumber(@NonNull String raw) {
+		Valid.checkNotNull(raw, "Cannot check if null is a Number!");
+
+		if (raw.isEmpty())
+			return false;
+
+		final char[] letters = raw.toCharArray();
+		int length = letters.length;
+		boolean hasExp = false;
+		boolean hasDecPoint = false;
+		boolean allowSigns = false;
+		boolean foundDigit = false;
+
+		// deal with any possible sign up front
+		final int start = (letters[0] == '-') ? 1 : 0;
+
+		if (length > start + 1) {
+			if (letters[start] == '0' && letters[start + 1] == 'x') {
+				int i = start + 2;
+				if (i == length) {
+					return false; // str == "0x"
+				}
+				// checking hex (it can't be anything else)
+				for (; i < letters.length; i++) {
+					if ((letters[i] < '0' || letters[i] > '9')
+							&& (letters[i] < 'a' || letters[i] > 'f')
+							&& (letters[i] < 'A' || letters[i] > 'F')) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		length--; // don't want to loop to the last char, check it afterwords
+		// for type qualifiers
+		int i = start;
+		// loop to the next to last char or to the last char if we need another digit to
+		// make a valid number (e.g. chars[0..5] = "1234E")
+		while (i < length || (i < length + 1 && allowSigns && !foundDigit)) {
+			if (letters[i] >= '0' && letters[i] <= '9') {
+				foundDigit = true;
+				allowSigns = false;
+
+			} else if (letters[i] == '.') {
+				if (hasDecPoint || hasExp) {
+					// two decimal points or dec in exponent
+					return false;
+				}
+				hasDecPoint = true;
+			} else if (letters[i] == 'e' || letters[i] == 'E') {
+				// we've already taken care of hex.
+				if (hasExp) {
+					// two E's
+					return false;
+				}
+				if (!foundDigit) {
+					return false;
+				}
+				hasExp = true;
+				allowSigns = true;
+			} else if (letters[i] == '+' || letters[i] == '-') {
+				if (!allowSigns) {
+					return false;
+				}
+				allowSigns = false;
+				foundDigit = false; // we need a digit after the E
+			} else {
+				return false;
+			}
+			i++;
+		}
+		if (i < letters.length) {
+			if (letters[i] >= '0' && letters[i] <= '9') {
+				// no type qualifier, OK
+				return true;
+			}
+			if (letters[i] == 'e' || letters[i] == 'E') {
+				// can't have an E at the last byte
+				return false;
+			}
+			if (letters[i] == '.') {
+				if (hasDecPoint || hasExp) {
+					// two decimal points or dec in exponent
+					return false;
+				}
+				// single trailing decimal point after non-exponent is ok
+				return foundDigit;
+			}
+			if (!allowSigns
+					&& (letters[i] == 'd'
+							|| letters[i] == 'D'
+							|| letters[i] == 'f'
+							|| letters[i] == 'F')) {
+				return foundDigit;
+			}
+			if (letters[i] == 'l'
+					|| letters[i] == 'L') {
+				// not allowing L with an exponent
+				return foundDigit && !hasExp;
+			}
+			// last character is illegal
+			return false;
+		}
+		// allowSigns is true iff the val ends in 'E'
+		// found digit it to make sure weird stuff like '.' and '1E-' doesn't pass
+		return !allowSigns && foundDigit;
 	}
 
 	/**
