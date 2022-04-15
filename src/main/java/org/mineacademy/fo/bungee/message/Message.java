@@ -3,7 +3,7 @@ package org.mineacademy.fo.bungee.message;
 import java.util.UUID;
 
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.bungee.BungeeListener;
 
 import lombok.AccessLevel;
@@ -38,11 +38,11 @@ abstract class Message {
 	/**
 	 * The action
 	 */
-	private BungeeAction action;
+	private BungeeMessageType action;
 
 	/**
 	 * The current position of writing the data based on the
-	 * {@link BungeeAction#getContent()}
+	 * {@link BungeeMessageType#getContent()}
 	 */
 	private int actionHead = 0;
 
@@ -80,7 +80,7 @@ abstract class Message {
 	 * @param action
 	 */
 	protected final void setAction(String actionName) {
-		final BungeeAction action = BungeeAction.getByName(this.listener, actionName);
+		final BungeeMessageType action = BungeeMessageType.getByName(this.listener, actionName);
 
 		Valid.checkNotNull(action, "Unknown plugin action named: " + actionName + ". IF YOU UPDATED THE PLUGIN BY RELOADING, you need to stop your entire network, ensure all servers were updated and start it again.");
 		setAction(action);
@@ -92,7 +92,7 @@ abstract class Message {
 	 *
 	 * @param action
 	 */
-	protected final void setAction(BungeeAction action) {
+	protected final void setAction(BungeeMessageType action) {
 		Valid.checkBoolean(this.action == null, "Action already set");
 
 		this.action = action;
@@ -104,13 +104,13 @@ abstract class Message {
 	 * @param <T>
 	 * @return
 	 */
-	public <T extends BungeeAction> T getAction() {
+	public <T extends BungeeMessageType> T getAction() {
 		return (T) action;
 	}
 
 	/**
-	 * Ensures we are reading in the correct order as the given {@link BungeeAction}
-	 * specifies in its {@link BungeeAction#getContent()} getter.
+	 * Ensures we are reading in the correct order as the given {@link BungeeMessageType}
+	 * specifies in its {@link BungeeMessageType#getContent()} getter.
 	 * <p>
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).

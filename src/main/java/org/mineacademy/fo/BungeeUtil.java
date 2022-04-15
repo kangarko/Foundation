@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.ChannelNotRegisteredException;
 import org.bukkit.plugin.messaging.MessageTooLargeException;
 import org.mineacademy.fo.Common.Stringer;
-import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
@@ -31,7 +31,7 @@ import lombok.NonNull;
 public final class BungeeUtil {
 
 	/**
-	 * See {@link #tellBungee(String, BungeeAction, Object...)}
+	 * See {@link #sendPluginMessage(String, BungeeMessageType, Object...)}
 	 * <p>
 	 * NB: This one uses the default channel name specified in {@link SimplePlugin}. By
 	 * default, nothing is specified there and so an exception will be thrown.
@@ -41,11 +41,11 @@ public final class BungeeUtil {
 	 * @param datas
 	 */
 	@SafeVarargs
-	public static <T> void tellBungee(BungeeAction action, T... datas) {
+	public static <T> void sendPluginMessage(BungeeMessageType action, T... datas) {
 		final BungeeListener bungee = SimplePlugin.getInstance().getBungeeCord();
 		Valid.checkNotNull(bungee, "Cannot call tellBungee() without channel name because " + SimplePlugin.getInstance().getClass() + " does not implement getBungeeCord()!");
 
-		tellBungee(bungee.getChannel(), action, datas);
+		sendPluginMessage(bungee.getChannel(), action, datas);
 	}
 
 	/**
@@ -62,17 +62,17 @@ public final class BungeeUtil {
 	 * @param <T>
 	 * @param channel
 	 * @param action
-	 * @param datas
+	 * @param data
 	 */
 	@SafeVarargs
-	public static <T> void tellBungee(String channel, BungeeAction action, T... datas) {
-		Valid.checkBoolean(datas.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + datas.length + " vs needed: " + action.getContent().length);
+	public static <T> void sendPluginMessage(String channel, BungeeMessageType action, T... data) {
+		Valid.checkBoolean(data.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + data.length + " vs needed: " + action.getContent().length);
 		Valid.checkBoolean(Remain.isServerNameChanged(), "Please configure your 'server-name' in server.properties according to mineacademy.org/server-properties first before using BungeeCord features");
 
 		if (!action.name().equals("PLAYERS_CLUSTER_DATA"))
 			Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
 
-		final Player recipient = getThroughWhomSendMessage();
+		final Player recipient = findFirstPlayer();
 
 		// This server is empty, do not send
 		if (recipient == null) {
@@ -89,69 +89,69 @@ public final class BungeeUtil {
 
 		int actionHead = 0;
 
-		for (Object data : datas) {
+		for (Object datum : data) {
 			try {
-				Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + " (" + t.getClass().getSimpleName() + ")"));
+				Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + " (" + t.getClass().getSimpleName() + ")"));
 
-				if (data instanceof CommandSender)
-					data = ((CommandSender) data).getName();
+				if (datum instanceof CommandSender)
+					datum = ((CommandSender) datum).getName();
 
-				if (data instanceof Integer) {
-					Debugger.put("bungee", data.toString() + ", ");
+				if (datum instanceof Integer) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, Integer.class, datas);
-					out.writeInt((Integer) data);
+					moveHead(actionHead, action, Integer.class, data);
+					out.writeInt((Integer) datum);
 
-				} else if (data instanceof Double) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof Double) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, Double.class, datas);
-					out.writeDouble((Double) data);
+					moveHead(actionHead, action, Double.class, data);
+					out.writeDouble((Double) datum);
 
-				} else if (data instanceof Long) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof Long) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, Long.class, datas);
-					out.writeLong((Long) data);
+					moveHead(actionHead, action, Long.class, data);
+					out.writeLong((Long) datum);
 
-				} else if (data instanceof Boolean) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof Boolean) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, Boolean.class, datas);
-					out.writeBoolean((Boolean) data);
+					moveHead(actionHead, action, Boolean.class, data);
+					out.writeBoolean((Boolean) datum);
 
-				} else if (data instanceof String) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof String) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, String.class, datas);
-					out.writeUTF((String) data);
+					moveHead(actionHead, action, String.class, data);
+					out.writeUTF((String) datum);
 
-				} else if (data instanceof SerializedMap) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof SerializedMap) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, String.class, datas);
-					out.writeUTF(((SerializedMap) data).toJson());
+					moveHead(actionHead, action, String.class, data);
+					out.writeUTF(((SerializedMap) datum).toJson());
 
-				} else if (data instanceof UUID) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof UUID) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, UUID.class, datas);
-					out.writeUTF(((UUID) data).toString());
+					moveHead(actionHead, action, UUID.class, data);
+					out.writeUTF(((UUID) datum).toString());
 
-				} else if (data instanceof Enum) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof Enum) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, Enum.class, datas);
-					out.writeUTF(((Enum<?>) data).toString());
+					moveHead(actionHead, action, Enum.class, data);
+					out.writeUTF(((Enum<?>) datum).toString());
 
-				} else if (data instanceof byte[]) {
-					Debugger.put("bungee", data.toString() + ", ");
+				} else if (datum instanceof byte[]) {
+					Debugger.put("bungee", datum.toString() + ", ");
 
-					moveHead(actionHead, action, String.class, datas);
-					out.write((byte[]) data);
+					moveHead(actionHead, action, String.class, data);
+					out.write((byte[]) datum);
 
 				} else
-					throw new FoException("Unknown type of data: " + data + " (" + data.getClass().getSimpleName() + ")");
+					throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
 
 				actionHead++;
 
@@ -183,35 +183,35 @@ public final class BungeeUtil {
 	/**
 	 * Sends message via a channel to the bungee network (upstreams). You need an
 	 * implementation in bungee to handle it, otherwise nothing will happen.
-	 * <p>
-	 * OBS! The data written:
-	 * <p>
-	 * 1. This server name specified in {@link Remain#getServerName()} 2. The
-	 * datas in the data parameter.
+	 *
+	 * Please see the link below for what data to write:
+	 * https://www.spigotmc.org/wiki/bukkit-bungee-plugin-messaging-channel/
 	 *
 	 * @param sender the player to send the message as
-	 * @param datas  the data
+	 * @param data  the data
 	 */
-	public static void tellNative(Player sender, Object... datas) {
+	public static void sendPluginMessage(@NonNull Player sender, Object... data) {
+		Valid.checkBoolean(data != null && data.length >= 1, "");
+
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-		for (final Object data : datas) {
-			Valid.checkNotNull(data, "Bungee object in array is null! Array: " + Common.join(datas, ", ", t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
+		for (final Object datum : data) {
+			Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
 
-			if (data instanceof Integer)
-				out.writeInt((Integer) data);
+			if (datum instanceof Integer)
+				out.writeInt((Integer) datum);
 
-			else if (data instanceof Double)
-				out.writeDouble((Double) data);
+			else if (datum instanceof Double)
+				out.writeDouble((Double) datum);
 
-			else if (data instanceof Boolean)
-				out.writeBoolean((Boolean) data);
+			else if (datum instanceof Boolean)
+				out.writeBoolean((Boolean) datum);
 
-			else if (data instanceof String)
-				out.writeUTF((String) data);
+			else if (datum instanceof String)
+				out.writeUTF((String) datum);
 
 			else
-				throw new FoException("Unknown type of data: " + data + " (" + data.getClass().getSimpleName() + ")");
+				throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
 		}
 
 		sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", out.toByteArray());
@@ -246,23 +246,23 @@ public final class BungeeUtil {
 	 *
 	 * @return
 	 */
-	private static Player getThroughWhomSendMessage() {
+	private static Player findFirstPlayer() {
 		return Remain.getOnlinePlayers().isEmpty() ? null : Remain.getOnlinePlayers().iterator().next();
 	}
 
 	/**
-	 * Ensures we are reading in the correct order as the given {@link BungeeAction}
-	 * specifies in its {@link BungeeAction#getContent()} getter.
+	 * Ensures we are reading in the correct order as the given {@link BungeeMessageType}
+	 * specifies in its {@link BungeeMessageType#getContent()} getter.
 	 * <p>
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).
 	 *
 	 * @param typeOf
 	 */
-	private static void moveHead(int actionHead, BungeeAction action, Class<?> typeOf, Object[] datas) throws Throwable {
+	private static void moveHead(int actionHead, BungeeMessageType action, Class<?> typeOf, Object[] data) throws Throwable {
 		Valid.checkNotNull(action, "Action not set!");
 
 		final Class<?>[] content = action.getContent();
-		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length + "! Set Debug to [bungee] in settings.yml and report. Data length: " + datas.length + " data: " + Common.join(datas));
+		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length + "! Set Debug to [bungee] in settings.yml and report. Data length: " + data.length + " data: " + Common.join(data));
 	}
 }
