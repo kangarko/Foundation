@@ -15,7 +15,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -736,7 +735,7 @@ public final class SerializeUtil {
 					break;
 				}
 
-			return WordUtils.capitalizeFully(localizedName.replace("_", " "));
+			return ChatUtil.capitalizeFully(localizedName.replace("_", " "));
 		}
 
 		protected static String getBukkitName(String name) {
@@ -802,7 +801,7 @@ public final class SerializeUtil {
 				if (name.equals(e.bukkitName))
 					return ItemUtil.bountifyCapitalized(e);
 
-			return WordUtils.capitalizeFully(name);
+			return ChatUtil.capitalizeFully(name);
 		}
 
 		public String getBukkitName() {

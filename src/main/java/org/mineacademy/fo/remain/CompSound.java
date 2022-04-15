@@ -1,9 +1,9 @@
 package org.mineacademy.fo.remain;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 
@@ -224,7 +224,7 @@ public enum CompSound {
 		this.versionDependentNames = versionDependentNames;
 
 		// Assume most servers use the latest version so reverse for performance
-		ArrayUtils.reverse(this.versionDependentNames);
+		Common.reverse(this.versionDependentNames);
 	}
 
 	/**

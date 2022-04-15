@@ -3,7 +3,6 @@ package org.mineacademy.fo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -61,7 +60,7 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static String bountifyCapitalized(Enum<?> enumeration) {
-		return WordUtils.capitalizeFully(bountify(enumeration.toString().toLowerCase()));
+		return ChatUtil.capitalizeFully(bountify(enumeration.toString().toLowerCase()));
 	}
 
 	/**
@@ -71,7 +70,7 @@ public final class ItemUtil {
 	 * @return
 	 */
 	public static String bountifyCapitalized(String name) {
-		return WordUtils.capitalizeFully(bountify(name));
+		return ChatUtil.capitalizeFully(bountify(name));
 	}
 
 	/**

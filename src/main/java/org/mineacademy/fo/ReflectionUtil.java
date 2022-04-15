@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -20,7 +21,6 @@ import java.util.jar.JarFile;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.ClassUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -68,6 +68,16 @@ public final class ReflectionUtil {
 	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new ConcurrentHashMap<>();
 	private static final Map<Class<?>, Method[]> methodCache = new ConcurrentHashMap<>();
 	private static final Collection<String> classNameGuard = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Maps primitive <code>Class</code>es to their corresponding wrapper <code>Class</code>.
+	 */
+	private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
+
+	/**
+	 * Maps wrapper <code>Class</code>es to their corresponding primitive types.
+	 */
+	private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap = new HashMap<>();
 
 	/**
 	 * Find a class automatically for older MC version (such as type EntityPlayer for oldName
@@ -527,7 +537,7 @@ public final class ReflectionUtil {
 				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
 				final Class<?> paramClass = param.getClass();
 
-				classes.add(paramClass.isPrimitive() ? ClassUtils.wrapperToPrimitive(paramClass) : paramClass);
+				classes.add(paramClass.isPrimitive() ? wrapperToPrimitive(paramClass) : paramClass);
 			}
 
 			final Class<?>[] paramArr = classes.toArray(new Class<?>[0]);
@@ -952,6 +962,30 @@ public final class ReflectionUtil {
 		return classes;
 	}
 
+	// ------------------------------------------------------------------------------------------
+	// Misc
+	// ------------------------------------------------------------------------------------------
+
+	/**
+	 * <p>Converts the specified wrapper class to its corresponding primitive
+	 * class.</p>
+	 *
+	 * <p>This method is the counter part of <code>primitiveToWrapper()</code>.
+	 * If the passed in class is a wrapper class for a primitive type, this
+	 * primitive type will be returned (e.g. <code>Integer.TYPE</code> for
+	 * <code>Integer.class</code>). For other classes, or if the parameter is
+	 * <b>null</b>, the return value is <b>null</b>.</p>
+	 *
+	 * @param cls the class to convert, may be <b>null</b>
+	 * @return the corresponding primitive type if <code>cls</code> is a
+	 * wrapper class, <b>null</b> otherwise
+	 *
+	 * @author Apache Commons ClassUtils
+	 */
+	public static Class<?> wrapperToPrimitive(Class<?> cls) {
+		return wrapperPrimitiveMap.get(cls);
+	}
+
 	static {
 
 		final Map<Class<? extends Enum<?>>, Map<String, V>> legacyEnums = new HashMap<>();
@@ -1011,6 +1045,26 @@ public final class ReflectionUtil {
 		legacyEnums.put(SpawnReason.class, spawnReasons);
 
 		legacyEnumTypes = legacyEnums;
+
+		// Load wrappers
+
+		primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
+		primitiveWrapperMap.put(Byte.TYPE, Byte.class);
+		primitiveWrapperMap.put(Character.TYPE, Character.class);
+		primitiveWrapperMap.put(Short.TYPE, Short.class);
+		primitiveWrapperMap.put(Integer.TYPE, Integer.class);
+		primitiveWrapperMap.put(Long.TYPE, Long.class);
+		primitiveWrapperMap.put(Double.TYPE, Double.class);
+		primitiveWrapperMap.put(Float.TYPE, Float.class);
+		primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
+
+		for (final Iterator<Class<?>> it = primitiveWrapperMap.keySet().iterator(); it.hasNext();) {
+			final Class<?> primitiveClass = it.next();
+			final Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
+
+			if (!primitiveClass.equals(wrapperClass))
+				wrapperPrimitiveMap.put(wrapperClass, primitiveClass);
+		}
 	}
 
 	/* ------------------------------------------------------------------------------- */
@@ -1104,16 +1158,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 

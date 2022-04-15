@@ -4,9 +4,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
@@ -168,7 +168,7 @@ public enum CompProperty {
 
 		if (method == null)
 			try {
-				method = clazz.getMethod("set" + (toString().equals("AI") ? "AI" : WordUtils.capitalize(toString().toLowerCase())), setterMethodType);
+				method = clazz.getMethod("set" + (toString().equals("AI") ? "AI" : ChatUtil.capitalize(toString().toLowerCase())), setterMethodType);
 				method.setAccessible(true);
 
 				this.isAvailable.put(clazz, true);

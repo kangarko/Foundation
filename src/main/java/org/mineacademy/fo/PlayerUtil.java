@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -436,7 +435,7 @@ public final class PlayerUtil {
 		final ItemStack[] inv = player.getInventory().getContents();
 		final ItemStack[] armor = player.getInventory().getArmorContents();
 
-		final ItemStack[] everything = (ItemStack[]) ArrayUtils.addAll(inv, armor);
+		final ItemStack[] everything = (ItemStack[]) Common.joinArrays(inv, armor);
 
 		for (final ItemStack i : everything)
 			if (i != null && i.getType() != Material.AIR)

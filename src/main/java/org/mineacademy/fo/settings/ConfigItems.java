@@ -12,8 +12,8 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
@@ -226,7 +226,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 */
 	public void removeItem(@NonNull final T item) {
 		final String name = item.getName();
-		Valid.checkBoolean(isItemLoaded(name), WordUtils.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
+		Valid.checkBoolean(isItemLoaded(name), ChatUtil.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
 
 		if (this.singleFile) {
 			item.save("", null);
