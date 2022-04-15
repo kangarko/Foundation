@@ -9,6 +9,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.message.IncomingMessage;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents a BungeeCord listener using a bungee channel
@@ -27,7 +28,7 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	/**
 	 * The actions
 	 */
-	private final BungeeAction[] actions;
+	private final BungeeMessageType[] actions;
 
 	/**
 	 * Create a new bungee suite with the given params
@@ -36,27 +37,19 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	 * @param listener
 	 * @param actions
 	 */
-	protected BungeeListener(String channel, Class<? extends BungeeAction> actionEnum) {
-		Valid.checkNotNull(channel, "Channel cannot be null!");
-
+	protected BungeeListener(@NonNull String channel, Class<? extends BungeeMessageType> actionEnum) {
 		this.channel = channel;
-
-		final BungeeAction[] actions = toActions(actionEnum);
-		Valid.checkNotNull(actions, "Actions cannot be null!");
-
-		this.actions = actions;
+		this.actions = toActions(actionEnum);
 	}
 
-	private static BungeeAction[] toActions(Class<? extends BungeeAction> actionEnum) {
-		Valid.checkNotNull(actionEnum);
-		Valid.checkBoolean(actionEnum.isEnum(), "Enum expected, given: " + actionEnum);
+	private static BungeeMessageType[] toActions(@NonNull Class<? extends BungeeMessageType> actionEnum) {
+		Valid.checkBoolean(actionEnum.isEnum(), "BungeeListener expects BungeeMessageType to be an enum, given: " + actionEnum);
 
 		try {
-			return (BungeeAction[]) actionEnum.getMethod("values").invoke(null);
+			return (BungeeMessageType[]) actionEnum.getMethod("values").invoke(null);
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.log("Unable to get values() of " + actionEnum + ", ensure it is an enum!");
-			ex.printStackTrace();
+			Common.throwError(ex, "Unable to get values() of " + actionEnum + ", ensure it is an enum!");
 
 			return null;
 		}
@@ -68,7 +61,7 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	@Override
 	public final void onPluginMessageReceived(String channelName, Player player, byte[] data) {
 
-		// Cauldron/Thermos is unsupported for bungee
+		// Cauldron/Thermos is unsupported for Bungee
 		if (Bukkit.getName().contains("Cauldron"))
 			return;
 

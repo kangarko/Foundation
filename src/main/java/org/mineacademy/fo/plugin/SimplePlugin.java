@@ -450,9 +450,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Register a simple bungee class as a custom bungeecord listener,
-	 * for sample implementation you can see the SimpleBungee field at:
-	 * https://github.com/kangarko/PluginTemplate/blob/main/src/main/java/org/mineacademy/template/PluginTemplate.java
+	 * Register a simple bungee class as a custom bungeecord listener.
 	 *
 	 * DO NOT use this if you only have that one field there with a getter, we already register it automatically,
 	 * this method is intended to be used if you have multiple fields there and want to register multiple channels.
@@ -1145,7 +1143,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#tellBungee(org.mineacademy.fo.bungee.BungeeAction, Object...)}
+	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#sendPluginMessage(org.mineacademy.fo.bungee.BungeeMessageType, Object...)}
 	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
 	 *
 	 * @deprecated only returns the first found bungee listener, if you have multiple, do not use, order not guaranteed

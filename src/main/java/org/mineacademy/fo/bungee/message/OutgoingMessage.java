@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -19,7 +19,7 @@ import com.google.common.io.ByteStreams;
 /**
  * NB: This uses the standardized Foundation model where the first
  * String is the server name and the second String is the
- * {@link BungeeAction} by its name *written automatically*.
+ * {@link BungeeMessageType} by its name *written automatically*.
  */
 public final class OutgoingMessage extends Message {
 
@@ -34,7 +34,7 @@ public final class OutgoingMessage extends Message {
 	 * @param senderUid
 	 * @param action
 	 */
-	public OutgoingMessage(UUID senderUid, BungeeAction action) {
+	public OutgoingMessage(UUID senderUid, BungeeMessageType action) {
 		this(SimplePlugin.getInstance().getBungeeCord(), senderUid, action);
 	}
 
@@ -45,7 +45,7 @@ public final class OutgoingMessage extends Message {
 	 * @param senderUid
 	 * @param action
 	 */
-	public OutgoingMessage(BungeeListener listener, UUID senderUid, BungeeAction action) {
+	public OutgoingMessage(BungeeListener listener, UUID senderUid, BungeeMessageType action) {
 		super(listener);
 
 		setSenderUid(senderUid.toString());
@@ -148,7 +148,7 @@ public final class OutgoingMessage extends Message {
 	 * Write an object of the given type into the message
 	 * <p>
 	 * We move the head and ensure writing safety in accordance
-	 * to the {@link BungeeAction#getContent()} length and
+	 * to the {@link BungeeMessageType#getContent()} length and
 	 * data type at the given position
 	 *
 	 * @param object

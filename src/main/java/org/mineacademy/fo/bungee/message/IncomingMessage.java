@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
@@ -22,7 +22,7 @@ import lombok.Getter;
  * <p>
  * NB: This uses the standardized Foundation model where the first
  * string is the server name and the second string is the
- * {@link BungeeAction} by its name *read automatically*.
+ * {@link BungeeMessageType} by its name *read automatically*.
  */
 public final class IncomingMessage extends Message {
 
@@ -47,7 +47,7 @@ public final class IncomingMessage extends Message {
 	 * <p>
 	 * NB: This uses the standardized Foundation model where the first
 	 * string is the server name and the second string is the
-	 * {@link BungeeAction} by its name *read automatically*.
+	 * {@link BungeeMessageType} by its name *read automatically*.
 	 *
 	 * @param data
 	 */
@@ -60,7 +60,7 @@ public final class IncomingMessage extends Message {
 	 * <p>
 	 * NB: This uses the standardized Foundation model where the first
 	 * string is the server name and the second string is the
-	 * {@link BungeeAction} by its name *read automatically*.
+	 * {@link BungeeMessageType} by its name *read automatically*.
 	 *
 	 * @param listener
 	 * @param data
