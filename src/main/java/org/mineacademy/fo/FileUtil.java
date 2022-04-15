@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.bukkit.Bukkit;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -122,7 +121,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File createIfNotExists(String path) {
-		final File datafolder = SimplePlugin.getInstance().getDataFolder();
+		final File datafolder = SimplePlugin.getData();
 		final int lastIndex = path.lastIndexOf('/');
 		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
 
@@ -134,9 +133,7 @@ public final class FileUtil {
 			destination.createNewFile();
 
 		} catch (final IOException ex) {
-			Bukkit.getLogger().severe("Failed to create a new file " + path);
-
-			ex.printStackTrace();
+			Common.error(ex, "Failed to create a new file " + path);
 		}
 
 		return destination;
@@ -149,7 +146,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File getFile(String path) {
-		return new File(SimplePlugin.getInstance().getDataFolder(), path);
+		return new File(SimplePlugin.getData(), path);
 	}
 
 	/**
@@ -308,9 +305,9 @@ public final class FileUtil {
 			}
 
 		} catch (final Exception ex) {
-			Bukkit.getLogger().severe("Failed to write to " + to);
 
-			ex.printStackTrace(); // do not throw our exception since it would cause an infinite loop if there is a problem due to error writing
+			// do not throw our exception since it would cause an infinite loop if there is a problem due to error writing
+			Common.error(ex, "Failed to write to " + to);
 		}
 	}
 
@@ -339,7 +336,7 @@ public final class FileUtil {
 	 * @return the extracted file
 	 */
 	public static File extract(String from, String to) {
-		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
+		File file = new File(SimplePlugin.getData(), to);
 
 		final List<String> lines = getInternalFileContent(from);
 		Valid.checkNotNull(lines, "Inbuilt " + from + " not found! Did you reload?");
@@ -375,7 +372,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File extractRaw(String path) {
-		File file = new File(SimplePlugin.getInstance().getDataFolder(), path);
+		File file = new File(SimplePlugin.getData(), path);
 
 		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
 
@@ -508,7 +505,7 @@ public final class FileUtil {
 	 * @throws IOException
 	 */
 	public static void zip(String sourceDirectory, String to) throws IOException {
-		final File parent = SimplePlugin.getInstance().getDataFolder().getParentFile().getParentFile();
+		final File parent = SimplePlugin.getData().getParentFile().getParentFile();
 		final File toFile = new File(parent, to + ".zip");
 
 		if (toFile.exists())

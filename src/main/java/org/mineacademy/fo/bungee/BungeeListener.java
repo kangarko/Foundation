@@ -76,4 +76,5 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	 * @param message
 	 */
 	public abstract void onMessageReceived(Player player, IncomingMessage message);
+
 }
