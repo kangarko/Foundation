@@ -6,8 +6,9 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.BungeeMessageType;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -59,7 +60,16 @@ public final class OutgoingMessage extends Message {
 
 		queue.add(senderUid);
 		queue.add(getServerName());
-		queue.add(getAction());
+		queue.add(getAction().name());
+	}
+
+	/**
+	 * Write the map into the message
+	 *
+	 * @param map
+	 */
+	public void writeMap(SerializedMap map) {
+		write(map.toJson(), String.class);
 	}
 
 	/**
@@ -208,6 +218,9 @@ public final class OutgoingMessage extends Message {
 
 			else if (object instanceof byte[])
 				out.write((byte[]) object);
+
+			else if (object instanceof UUID)
+				out.writeUTF(object.toString());
 
 			else
 				throw new FoException("Unsupported write of " + object.getClass().getSimpleName() + " to channel " + getChannel() + " with action " + getAction().toString());
