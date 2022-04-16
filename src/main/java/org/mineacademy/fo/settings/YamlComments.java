@@ -67,7 +67,7 @@ final class YamlComments {
 			Remain.sneaky(t);
 		}
 
-		final YamlConfiguration newConfig = new YamlConfiguration(); //.loadInternalConfiguration(jarPath);
+		final YamlConfiguration newConfig = new YamlConfiguration();
 
 		try {
 			newConfig.loadFromString(String.join("\n", newLines));
