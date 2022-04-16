@@ -146,6 +146,13 @@ public final class Variable extends YamlConfig {
 			save();
 		}
 
+		// Check for known mistakes
+		if (this.key == null || this.key.isEmpty())
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFileName());
+
+		if (this.value == null || this.value.isEmpty())
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFileName() + " (this can be a JavaScript code)");
+
 		if (this.key.startsWith("{") || this.key.startsWith("[")) {
 			this.key = this.key.substring(1);
 
@@ -165,13 +172,6 @@ public final class Variable extends YamlConfig {
 			this.suggestCommand = getString("Suggest_Command");
 			this.runCommand = getString("Run_Command");
 		}
-
-		// Check for known mistakes
-		if (this.key == null || this.key.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFileName());
-
-		if (this.value == null || this.value.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFileName() + " (this can be a JavaScript code)");
 
 		// Test for key validity
 		if (!Common.regExMatch("^\\w+$", this.key))
