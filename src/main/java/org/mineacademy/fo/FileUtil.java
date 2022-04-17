@@ -192,8 +192,7 @@ public final class FileUtil {
 	 * @param file
 	 * @return
 	 */
-	public static List<String> readLines(File file) {
-		Valid.checkNotNull(file, "File cannot be null");
+	public static List<String> readLines(@NonNull File file) {
 		Valid.checkBoolean(file.exists(), "File: " + file + " does not exists!");
 
 		// Older method, missing libraries

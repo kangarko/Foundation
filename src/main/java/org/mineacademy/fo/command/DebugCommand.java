@@ -7,7 +7,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -16,8 +15,8 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Setter;
 
@@ -32,7 +31,7 @@ public final class DebugCommand extends SimpleSubCommand {
 	 * Set the custom debug lines you would like to add to the debug file
 	 */
 	@Setter
-	private static Consumer<List<String>> debugLines;
+	private static List<String> debugLines = new ArrayList<>();
 
 	/**
 	 * Create a new sub-command with the given permission.
@@ -89,9 +88,7 @@ public final class DebugCommand extends SimpleSubCommand {
 				"Players Online: " + Remain.getOnlinePlayers().size(),
 				"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", ", plugin -> plugin.getDescription().getFullName()));
 
-		if (debugLines != null)
-			debugLines.accept(lines);
-
+		lines.addAll(debugLines);
 		FileUtil.write("debug/general.txt", lines);
 	}
 
@@ -177,5 +174,15 @@ public final class DebugCommand extends SimpleSubCommand {
 	@Override
 	protected List<String> tabComplete() {
 		return NO_COMPLETE;
+	}
+
+	/**
+	 * Add custom debug lines to the general.txt file in the compressed ZIP file.
+	 *
+	 * @param lines
+	 */
+	public static void addDebugLines(String... lines) {
+		for (final String line : lines)
+			debugLines.add(line);
 	}
 }
