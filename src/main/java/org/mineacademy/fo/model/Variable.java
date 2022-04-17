@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -52,28 +53,24 @@ public final class Variable extends YamlConfig {
 	/**
 	 * The JavaScript condition that must return TRUE for this variable to be shown
 	 */
-
 	@Getter
 	private String senderCondition;
 
 	/**
 	 * The JavaScript condition that must return TRUE for this variable to be shown to a receiver
 	 */
-
 	@Getter
 	private String receiverCondition;
 
 	/**
 	 * The permission the sender must have to show the part
 	 */
-
 	@Getter
 	private String senderPermission;
 
 	/**
 	 * The permission receiver must have to see the part
 	 */
-
 	@Getter
 	private String receiverPermission;
 
@@ -81,35 +78,30 @@ public final class Variable extends YamlConfig {
 	 * The hover text or null if not set
 	 */
 	@Getter
-
 	private List<String> hoverText;
 
 	/**
 	 * The JavaScript pointing to a particular {@link ItemStack}
 	 */
 	@Getter
-
 	private String hoverItem;
 
 	/**
 	 * What URL should be opened on click? Null if none
 	 */
 	@Getter
-
 	private String openUrl;
 
 	/**
 	 * What command should be suggested on click? Null if none
 	 */
 	@Getter
-
 	private String suggestCommand;
 
 	/**
 	 * What command should be run on click? Null if none
 	 */
 	@Getter
-
 	private String runCommand;
 
 	/*
@@ -118,6 +110,7 @@ public final class Variable extends YamlConfig {
 	private Variable(String file) {
 		final String prototypePath = PROTOTYPE_PATH.apply(file);
 
+		this.setHeader(FoConstants.Header.VARIABLE_FILE);
 		this.loadConfiguration(prototypePath, "variables/" + file + ".yml");
 	}
 
@@ -182,6 +175,7 @@ public final class Variable extends YamlConfig {
 	public void onSave() {
 		this.set("Type", this.type);
 		this.set("Key", this.key);
+		this.set("Value", this.value);
 		this.set("Sender_Condition", this.senderCondition);
 		this.set("Receiver_Condition", this.receiverCondition);
 		this.set("Hover", this.hoverText);

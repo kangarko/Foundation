@@ -3,8 +3,6 @@ package org.mineacademy.fo.constants;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -90,7 +88,7 @@ public final class FoConstants {
 		 *
 		 * Use YamlConfig/setHeader() to override this.
 		 */
-		public static final String[] DATA_FILE = new String[] {
+		public static final String[] DATA_FILE = {
 				"",
 				"This file stores various data you create via the plugin.",
 				"",
@@ -99,26 +97,19 @@ public final class FoConstants {
 		};
 
 		/**
-		 * The header that is put into the file that has been automatically
-		 * updated and comments were lost.
-		 *
-		 * Use Use YamlConfig/setHeader() to override this.
+		 * The header for a variable file that does not have a default prototype.
 		 */
-		public static final String[] UPDATED_FILE = new String[] {
-				Common.configLine(),
+		public static final String[] VARIABLE_FILE = {
+				"-------------------------------------------------------------------------------------------------",
+				SimplePlugin.getNamed() + " supports dynamic, high performance JavaScript variables! They will",
+				"automatically be used when calling Variables#replace for your messages.",
 				"",
-				" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
-				" to " + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion(),
+				"Because variables return a JavaScript value, you can sneak in code to play sounds or spawn",
+				"monsters directly in your variable instead of it just displaying text!",
 				"",
-				" Unfortunatelly, due to how Bukkit saves all .yml files, it was not possible",
-				" preserve the documentation comments in your file. We apologize.",
-				"",
-				" If you'd like to view the default file, you can either:",
-				" a) Open the " + SimplePlugin.getSource().getName() + " with a WinRar or similar",
-				" b) or, visit: https://github.com/kangarko/" + SimplePlugin.getNamed() + "/wiki",
-				"",
-				Common.configLine(),
-				""
+				"For example of how variables can be used, see our plugin ChatControl's wikipedia article:",
+				"https://github.com/kangarko/ChatControl-Red/wiki/JavaScript-Variables",
+				" -------------------------------------------------------------------------------------------------",
 		};
 	}
 
