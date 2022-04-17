@@ -1,14 +1,14 @@
 package org.mineacademy.fo.slider;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.slider.Slider;
 
-import java.util.HashMap;
-import java.util.Map;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemFrameClockwiseSlider implements Slider<Map<Integer, ItemStack>> {
@@ -64,6 +64,7 @@ public class ItemFrameClockwiseSlider implements Slider<Map<Integer, ItemStack>>
 
 		if (this.currentPointer < 8)
 			this.currentPointer++;
+
 		else if (this.currentPointer == 8)
 			this.currentPointer = 17;
 
@@ -74,23 +75,34 @@ public class ItemFrameClockwiseSlider implements Slider<Map<Integer, ItemStack>>
 			this.currentPointer = 0;
 
 		else if (rowCount >= 3) {
+
 			if (this.currentPointer == 17)
 				this.currentPointer = 26;
+
 			else if (this.currentPointer == 18)
 				this.currentPointer = 9;
+
 			else if (rowCount >= 4) {
+
 				if (this.currentPointer == 26)
 					this.currentPointer = 35;
+
 				else if (this.currentPointer == 27)
 					this.currentPointer = 18;
+
 				else if (rowCount >= 5) {
+
 					if (this.currentPointer == 35)
 						this.currentPointer = 44;
+
 					else if (this.currentPointer == 36)
 						this.currentPointer = 27;
+
 					else if (rowCount == 6) {
+
 						if (this.currentPointer == 44)
 							this.currentPointer = 53;
+
 						else if (this.currentPointer == 45)
 							this.currentPointer = 36;
 					}
