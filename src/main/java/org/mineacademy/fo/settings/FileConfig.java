@@ -1295,7 +1295,8 @@ public abstract class FileConfig {
 		final SerializedMap map = this.saveToMap();
 
 		if (map != null)
-			this.set("", map);
+			for (final Map.Entry<String, Object> entry : map.entrySet())
+				this.set(entry.getKey(), entry.getValue());
 	}
 
 	/**
