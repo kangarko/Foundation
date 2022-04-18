@@ -375,6 +375,15 @@ public final class TimeUtil {
 	}
 
 	/**
+	 * Convert the current time into one that is recognized by MySQL
+	 *
+	 * @return
+	 */
+	public static String toSQLTimestamp() {
+		return toSQLTimestamp(System.currentTimeMillis());
+	}
+
+	/**
 	 * Convert the given long timestamp into one that is recognized by MySQL
 	 *
 	 * @param timestamp
