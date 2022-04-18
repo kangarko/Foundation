@@ -26,6 +26,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -33,6 +34,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
@@ -380,13 +382,26 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Loads libraries from plugin.yml or from getLibraries()
 	 */
 	private void loadLibraries() {
+		final int javaVersion = getJavaVersion();
 		final List<Library> libraries = new ArrayList<>();
 
+		// Force add md_5 bungee chat since it's needed
+		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.api.ChatColor"))
+			libraries.add(Library.fromMavenRepo("net.md-5", "bungeecord-chat", "1.16-R0.4"));
+
 		if (MinecraftVersion.olderThan(V.v1_16)) {
-			final YamlConfig pluginFile = YamlConfig.fromInternalPathFast("plugin.yml");
+			final YamlConfiguration pluginFile = new YamlConfiguration();
+
+			// We have to load it using the legacy way for ancient MC versions
+			try {
+				pluginFile.loadFromString(String.join("\n", FileUtil.getInternalFileContent("plugin.yml")));
+
+			} catch (final Throwable t) {
+				throw new RuntimeException(t);
+			}
 
 			for (final String libraryPath : pluginFile.getStringList("legacy-libraries")) {
-				if (Remain.getJavaVersion() < 15 && libraryPath.contains("org.openjdk.nashorn:nashorn-core"))
+				if (javaVersion < 15 && libraryPath.contains("org.openjdk.nashorn:nashorn-core"))
 					continue;
 
 				final Library library = Library.fromMavenRepo(libraryPath);
@@ -395,9 +410,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			}
 
 			// Load normally
-			if (!libraries.isEmpty() && Remain.getJavaVersion() >= 9)
+			if (!libraries.isEmpty() && javaVersion >= 9)
 				Common.logFramed(
-						"Warning: Unsupported Java version: " + Remain.getJavaVersion() + " for your server",
+						"Warning: Unsupported Java version: " + javaVersion + " for your server",
 						"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
 						"and we're unable unable to load 'legacy-libraries'",
 						"that this plugin uses:",
@@ -415,8 +430,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		final List<Library> manualLibraries = getLibraries();
 
 		// But only on Java 8 (for now)
-		if (!manualLibraries.isEmpty() && Remain.getJavaVersion() > 8)
-			Common.warning("The getLibraries() feature only supports Java 8 for now and does not work on Java " + Remain.getJavaVersion() + ". To load the following libraries, "
+		if (!manualLibraries.isEmpty() && javaVersion > 8)
+			Common.warning("The getLibraries() feature only supports Java 8 for now and does not work on Java " + javaVersion + ". To load the following libraries, "
 					+ "install Java 8 or upgrade to Minecraft 16 where you use the 'libraries' feature of plugin.yml to load. Skipping loading: " + manualLibraries);
 
 		else
@@ -434,6 +449,30 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 				library.load();
 			}
+	}
+
+	/**
+	 * Return the corresponding major Java version such as 8 for Java 1.8, or 11 for Java 11.
+	 *
+	 * @return
+	 */
+	public static int getJavaVersion() {
+		String version = System.getProperty("java.version");
+
+		if (version.startsWith("1."))
+			version = version.substring(2, 3);
+
+		else {
+			final int dot = version.indexOf(".");
+
+			if (dot != -1)
+				version = version.substring(0, dot);
+		}
+
+		if (version.contains("-"))
+			version = version.split("\\-")[0];
+
+		return Integer.parseInt(version);
 	}
 
 	/**

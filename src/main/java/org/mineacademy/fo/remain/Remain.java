@@ -63,8 +63,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -301,8 +299,13 @@ public final class Remain {
 						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 
 				if (MinecraftVersion.olderThan(V.v1_12)) {
-					fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
-					fieldEntityInvulnerable.setAccessible(true);
+					try {
+						fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
+						fieldEntityInvulnerable.setAccessible(true);
+					} catch (final Throwable t) {
+						// Unavailable
+					}
+
 				} else
 					fieldEntityInvulnerable = null;
 
@@ -332,13 +335,13 @@ public final class Remain {
 
 			try {
 				World.class.getMethod("spawnParticle", org.bukkit.Particle.class, Location.class, int.class);
-			} catch (final NoClassDefFoundError | ReflectiveOperationException ex) {
+			} catch (final Throwable ex) {
 				hasParticleAPI = false;
 			}
 
 			try {
 				Class.forName("net.md_5.bungee.chat.ComponentSerializer");
-			} catch (final ClassNotFoundException ex) {
+			} catch (final Throwable ex) {
 				bungeeApiPresent = false;
 
 				throw new FoException(
@@ -350,67 +353,62 @@ public final class Remain {
 
 			try {
 				Objective.class.getMethod("getScore", String.class);
-			} catch (final NoClassDefFoundError | NoSuchMethodException e) {
+			} catch (final Throwable e) {
 				newScoreboardAPI = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.event.player.PlayerEditBookEvent").getName();
-			} catch (final ClassNotFoundException ex) {
+			} catch (final Throwable ex) {
 				hasBookEvent = false;
 			}
 
 			try {
 				Inventory.class.getMethod("getLocation");
-			} catch (final ReflectiveOperationException ex) {
+			} catch (final Throwable ex) {
 				hasInventoryLocation = false;
 			}
 
 			try {
 				Entity.class.getMethod("getScoreboardTags");
-			} catch (final ReflectiveOperationException ex) {
+			} catch (final Throwable ex) {
 				hasScoreboardTags = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.inventory.meta.SpawnEggMeta");
-			} catch (final ClassNotFoundException err) {
+			} catch (final Throwable err) {
 				hasSpawnEggMeta = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.advancement.Advancement");
 				Class.forName("org.bukkit.NamespacedKey");
-
-			} catch (final ClassNotFoundException err) {
+			} catch (final Throwable err) {
 				hasAdvancements = false;
 			}
 
 			try {
 				YamlConfiguration.class.getMethod("load", java.io.Reader.class);
-
-			} catch (final NoSuchMethodException err) {
+			} catch (final Throwable err) {
 				hasYamlReaderLoad = false;
 			}
 
 			try {
 				org.bukkit.inventory.ItemStack.class.getMethod("getItemMeta");
-
-			} catch (final Exception ex) {
+			} catch (final Throwable ex) {
 				hasItemMeta = false;
 			}
 
 			try {
 				Entity.class.getMethod("addPassenger", Entity.class);
-
-			} catch (final Exception ex) {
+			} catch (final Throwable ex) {
 				hasAddPassenger = false;
 			}
 
 			try {
 				sectionPathDataClass = ReflectionUtil.lookupClass("org.bukkit.configuration.SectionPathData");
-
-			} catch (final ReflectionException ex) {
+			} catch (final Throwable ex) {
 				// unsupported
 			}
 
@@ -1244,11 +1242,19 @@ public final class Remain {
 	 * @return
 	 */
 	public static SimpleCommandMap getCommandMap() {
+		final Class<?> craftServer = getOBCClass("CraftServer");
+
 		try {
-			return (SimpleCommandMap) getOBCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
+			return (SimpleCommandMap) craftServer.getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Unable to get the command map");
+
+			try {
+				return ReflectionUtil.getFieldContent(Bukkit.getServer(), "commandMap");
+
+			} catch (final Throwable ex2) {
+				throw new FoException(ex2, "Unable to get the command map");
+			}
 		}
 	}
 
@@ -1430,10 +1436,10 @@ public final class Remain {
 	 */
 	public static void openBook(Player player, ItemStack book) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
-		Valid.checkBoolean(book.getItemMeta() instanceof BookMeta, "openBook method called for not a book item: " + book);
+		Valid.checkBoolean(book.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta, "openBook method called for not a book item: " + book);
 
 		// Fix "Invalid book tag" error when author/title is empty
-		final BookMeta meta = (BookMeta) book.getItemMeta();
+		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) book.getItemMeta();
 
 		if (meta.getAuthor() == null)
 			meta.setAuthor("");
@@ -1801,10 +1807,13 @@ public final class Remain {
 	 * Return a list of pages (new MC also will expose interactive elements)
 	 * in a book
 	 *
-	 * @param meta
+	 * @param metaObject
 	 * @return
 	 */
-	public static List<BaseComponent[]> getPages(BookMeta meta) {
+	public static List<BaseComponent[]> getPages(Object metaObject) {
+		Valid.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta);
+		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
+
 		try {
 			return meta.spigot().getPages();
 
@@ -1821,10 +1830,13 @@ public final class Remain {
 	/**
 	 * Attempts to set the book pages from the given list
 	 *
-	 * @param meta
+	 * @param metaObject
 	 * @param pages
 	 */
-	public static void setPages(BookMeta meta, List<BaseComponent[]> pages) {
+	public static void setPages(Object metaObject, List<BaseComponent[]> pages) {
+		Valid.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta);
+		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
+
 		try {
 			meta.spigot().setPages(pages);
 
@@ -2582,22 +2594,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static int getJavaVersion() {
-		String version = System.getProperty("java.version");
-
-		if (version.startsWith("1."))
-			version = version.substring(2, 3);
-
-		else {
-			final int dot = version.indexOf(".");
-
-			if (dot != -1)
-				version = version.substring(0, dot);
-		}
-
-		if (version.contains("-"))
-			version = version.split("\\-")[0];
-
-		return Integer.parseInt(version);
+		return SimplePlugin.getJavaVersion(); // The reason we have one in SimplePlugin is to NOT invoke the Remain class when calling
 	}
 
 	/**
@@ -2715,7 +2712,7 @@ public final class Remain {
 	}
 
 	/**
-	 * Return if the server version supports {@link SpawnEggMeta}
+	 * Return if the server version supports SpawnEggMeta
 	 *
 	 * @return true if egg meta are supported
 	 */

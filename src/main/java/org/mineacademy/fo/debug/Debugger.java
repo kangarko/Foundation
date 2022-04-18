@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -148,57 +149,64 @@ public final class Debugger {
 	 * @param messages
 	 */
 	public static void saveError(Throwable t, String... messages) {
+
 		if (Bukkit.getServer() == null) // Instance not set, e.g. when not using Bukkit
 			return;
 
-		final List<String> lines = new ArrayList<>();
-		final String header = SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + " encountered " + Common.article(t.getClass().getSimpleName());
+		try {
+			final List<String> lines = new ArrayList<>();
+			final String header = SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + " encountered " + Common.article(t.getClass().getSimpleName());
 
-		// Write out header and server info
-		fill(lines,
-				"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
-				header,
-				"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
-				"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", "),
-				"----------------------------------------------------------------------------------------------");
+			// Write out header and server info
+			fill(lines,
+					"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+					header,
+					"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
+					"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", "),
+					"----------------------------------------------------------------------------------------------");
 
-		// Write additional data
-		if (messages != null && !String.join("", messages).isEmpty()) {
-			fill(lines, "\nMore Information: ");
-			fill(lines, messages);
+			// Write additional data
+			if (messages != null && !String.join("", messages).isEmpty()) {
+				fill(lines, "\nMore Information: ");
+				fill(lines, messages);
+			}
+
+			{ // Write the stack trace
+
+				do {
+					// Write the error header
+					fill(lines, t == null ? "Unknown error" : t.getClass().getSimpleName() + " " + Common.getOrDefault(t.getMessage(), Common.getOrDefault(t.getLocalizedMessage(), "(Unknown cause)")));
+
+					int count = 0;
+
+					for (final StackTraceElement el : t.getStackTrace()) {
+						count++;
+
+						final String trace = el.toString();
+
+						if (trace.contains("sun.reflect"))
+							continue;
+
+						if (count > 6 && trace.startsWith("net.minecraft.server"))
+							break;
+
+						fill(lines, "\t at " + el.toString());
+					}
+				} while ((t = t.getCause()) != null);
+			}
+
+			fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
+
+			// Log to the console
+			Bukkit.getLogger().severe(header + "! Please check your error.log and report this issue with the information in that file.");
+
+			// Finally, save the error file
+			FileUtil.write(FoConstants.File.ERRORS, lines);
+
+		} catch (final Throwable secondError) {
+			Bukkit.getLogger().log(Level.SEVERE, "Got error when saving another error! Saving error:", secondError);
+			Bukkit.getLogger().log(Level.SEVERE, "Original error that is not saved:", t);
 		}
-
-		{ // Write the stack trace
-
-			do {
-				// Write the error header
-				fill(lines, t == null ? "Unknown error" : t.getClass().getSimpleName() + " " + Common.getOrDefault(t.getMessage(), Common.getOrDefault(t.getLocalizedMessage(), "(Unknown cause)")));
-
-				int count = 0;
-
-				for (final StackTraceElement el : t.getStackTrace()) {
-					count++;
-
-					final String trace = el.toString();
-
-					if (trace.contains("sun.reflect"))
-						continue;
-
-					if (count > 6 && trace.startsWith("net.minecraft.server"))
-						break;
-
-					fill(lines, "\t at " + el.toString());
-				}
-			} while ((t = t.getCause()) != null);
-		}
-
-		fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
-
-		// Log to the console
-		Common.log(header + "! Please check your error.log and report this issue with the information in that file.");
-
-		// Finally, save the error file
-		FileUtil.write(FoConstants.File.ERRORS, lines);
 	}
 
 	private static void fill(List<String> list, String... messages) {
