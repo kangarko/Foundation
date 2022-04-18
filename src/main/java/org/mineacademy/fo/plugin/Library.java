@@ -12,11 +12,9 @@ import java.nio.file.StandardCopyOption;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -34,7 +32,7 @@ public final class Library {
 	/*
 	 * Stored for convenience and performance purposes
 	 */
-	private static final int JAVA_VERSION = Remain.getJavaVersion();
+	private static final int JAVA_VERSION = SimplePlugin.getJavaVersion();
 
 	/**
 	 * The groupID as per maven standards such as "org.mineacademy"
@@ -152,7 +150,7 @@ public final class Library {
 			ReflectionUtil.invoke(method, classLoader, url);
 
 		} catch (final Throwable throwable) {
-			Common.throwError(throwable, "Unable to load library " + this.getName() + ".");
+			throw new RuntimeException("Unable to load library " + this.getName() + ".", throwable);
 		}
 
 		return true;

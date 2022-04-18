@@ -261,7 +261,7 @@ public class AnimationUtil {
 
 		final int finalSmoothnessLevel = smoothnessLevel;
 
-		return SimplePlugin.getInstance().getServer().getScheduler().runTaskTimer(SimplePlugin.getInstance(), new Runnable() {
+		return new BukkitRunnable() {
 			boolean run = true;
 			int frame = 0;
 			float health = 1F;
@@ -299,7 +299,7 @@ public class AnimationUtil {
 					}
 				}
 			}
-		}, delay, period / smoothnessLevel);
+		}.runTaskTimer(SimplePlugin.getInstance(), delay, period / smoothnessLevel);
 	}
 
 	/**
