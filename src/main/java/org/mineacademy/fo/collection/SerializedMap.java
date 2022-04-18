@@ -615,6 +615,33 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	}
 
 	/**
+	 * Return a list of tuples with the given key-value
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param path
+	 * @param tupleKey
+	 * @param tupleValue
+	 * @return
+	 */
+	public <K, V> List<Tuple<K, V>> getTupleList(final String path, final Class<K> tupleKey, final Class<V> tupleValue) {
+		final List<Tuple<K, V>> list = new ArrayList<>();
+
+		for (final Object object : this.getList(path, Object.class)) {
+
+			if (object == null)
+				list.add(null);
+			else {
+				final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.of(object), tupleKey, tupleValue);
+
+				list.add(tuple);
+			}
+		}
+
+		return list;
+	}
+
+	/**
 	 * Return a list of objects of the given type, or empty list if map does not contains key.
 	 * <p>
 	 * If the type is your own class make sure to put public static deserialize(SerializedMap)
@@ -891,7 +918,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 			return gson.toJson(map);
 
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to serialize to json, data: " + map);
+			Common.error(t, "Failed to serialize to json, unparsed data: " + map);
 
 			return "{}";
 		}
