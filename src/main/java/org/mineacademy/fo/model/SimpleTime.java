@@ -66,6 +66,15 @@ public final class SimpleTime {
 	}
 
 	/**
+	 * Get the time specified in ms (ticks * 20)
+	 *
+	 * @return
+	 */
+	public long getTimeMilliseconds() {
+		return this.timeTicks * 50;
+	}
+
+	/**
 	 * Return the human readable representation of this time, such as 69 seconds (no pun intended)
 	 *
 	 * @return
