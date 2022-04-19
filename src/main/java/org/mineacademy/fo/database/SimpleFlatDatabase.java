@@ -212,6 +212,9 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 			else
 				update("INSERT INTO {table}(UUID, Name, Data, Updated) VALUES ('" + uuid + "', '" + name + "', '" + data.toJson() + "', '" + System.currentTimeMillis() + "');");
 
+			if (runAfterSave != null)
+				Common.runLater(() -> runAfterSave.run());
+
 		} catch (final Throwable ex) {
 			Common.error(ex,
 					"Failed to save data to MySQL!",
