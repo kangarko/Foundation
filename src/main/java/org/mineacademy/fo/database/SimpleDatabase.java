@@ -664,6 +664,17 @@ public class SimpleDatabase {
 	// --------------------------------------------------------------------
 
 	/**
+	 * Return if the developer called {@link #addVariable(String, String)} early enough
+	 * to be registered
+	 *
+	 * @param key
+	 * @return
+	 */
+	final boolean hasVariable(String key) {
+		return this.sqlVariables.containsKey(key);
+	}
+
+	/**
 	 * Return the table from last connection, throwing an error if never connected
 	 *
 	 * @return
@@ -678,7 +689,7 @@ public class SimpleDatabase {
 	 * Checks if the connect() function was called
 	 */
 	private final void checkEstablished() {
-		Valid.checkBoolean(this.isLoaded(), "Connection was never established");
+		Valid.checkBoolean(this.isLoaded(), "Connection was never established, did you call connect() on " + this + "? Use isLoaded() to check.");
 	}
 
 	/**

@@ -8,9 +8,11 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
@@ -56,6 +58,8 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	@Override
 	protected final void onConnected() {
 
+		Valid.checkBoolean(this.hasVariable("table"), "Please call addVariable in the constructor of your " + this);
+
 		// First, see if the database exists, create it if not
 		update("CREATE TABLE IF NOT EXISTS {table}(UUID varchar(64), Name text, Data text, Updated bigint)");
 
@@ -99,6 +103,27 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	/**
 	 * Load the data for the given unique ID and his cache
 	 *
+	 * @param player
+	 * @param cache
+	 */
+	public final void load(final Player player, final T cache) {
+		this.load(player.getUniqueId(), cache, null);
+	}
+
+	/**
+	 * Load the data for the given unique ID and his cache
+	 *
+	 * @param player
+	 * @param cache
+	 * @param runAfterLoad callback synced on the main thread
+	 */
+	public final void load(final Player player, final T cache, @Nullable Runnable runAfterLoad) {
+		this.load(player.getUniqueId(), cache, runAfterLoad);
+	}
+
+	/**
+	 * Load the data for the given unique ID and his cache
+	 *
 	 * @param uuid
 	 * @param cache
 	 */
@@ -107,7 +132,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	}
 
 	/**
-	 * Load the data for the given unique ID and his cache
+	 * Load the data for the given unique ID and his cache async.
 	 *
 	 * @param uuid
 	 * @param cache
@@ -117,40 +142,53 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 		if (!isLoaded() || isQuerying)
 			return;
 
-		try {
-			LagCatcher.start("mysql");
-			isQuerying = true;
+		LagCatcher.start("mysql");
+		isQuerying = true;
 
-			Debugger.debug("mysql", "---------------- MySQL - Loading data for " + uuid);
+		Debugger.debug("mysql", "---------------- MySQL - Loading data for " + uuid);
 
-			final ResultSet resultSet = query("SELECT * FROM {table} WHERE UUID='" + uuid + "'");
-			final String dataRaw = resultSet.next() ? resultSet.getString("Data") : "{}";
-			Debugger.debug("mysql", "JSON: " + dataRaw);
+		Common.runAsync(() -> {
 
-			final SerializedMap data = SerializedMap.fromJson(dataRaw);
-			Debugger.debug("mysql", "Deserialized data: " + data);
+			try {
+				final ResultSet resultSet = query("SELECT * FROM {table} WHERE UUID='" + uuid + "'");
+				final String dataRaw = resultSet.next() ? resultSet.getString("Data") : "{}";
+				Debugger.debug("mysql", "JSON: " + dataRaw);
 
-			// Call the user specified load method
-			onLoad(data, cache);
+				Common.runLater(() -> {
 
-			// Close connection at the end
-			resultSet.close();
+					try {
+						final SerializedMap data = SerializedMap.fromJson(dataRaw);
+						Debugger.debug("mysql", "Deserialized data: " + data);
 
-			// Invoke sync callback when load finish
-			if (runAfterLoad != null)
-				Common.runLater(() -> runAfterLoad.run());
+						// Call the user specified load method
+						onLoad(data, cache);
 
-		} catch (final Throwable t) {
-			Common.error(t,
-					"Failed to load data from MySQL!",
-					"UUID: " + uuid,
-					"Error: %error");
+						// Invoke sync callback when load finish
+						if (runAfterLoad != null)
+							runAfterLoad.run();
 
-		} finally {
-			isQuerying = false;
+					} catch (final Throwable t) {
+						Common.error(t,
+								"Failed to parse loaded data from MySQL!",
+								"UUID: " + uuid,
+								"Raw data: " + dataRaw,
+								"Error: %error");
 
-			logPerformance("loading");
-		}
+					}
+				});
+
+			} catch (final Throwable t) {
+				Common.error(t,
+						"Failed to load data from MySQL!",
+						"UUID: " + uuid,
+						"Error: %error");
+
+			} finally {
+				isQuerying = false;
+
+				logPerformance("loading");
+			}
+		});
 	}
 
 	/**
@@ -161,6 +199,18 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * @param data the data you want to fill out to
 	 */
 	protected abstract void onLoad(SerializedMap map, T data);
+
+	/**
+	 * Save the data for the given name, unique ID and his cache
+	 * <p>
+	 * If the onSave returns empty data we delete the row
+	 *
+	 * @param player
+	 * @param cache
+	 */
+	public final void save(final Player player, final T cache) {
+		this.save(player.getName(), player.getUniqueId(), cache);
+	}
 
 	/**
 	 * Save the data for the given name, unique ID and his cache
@@ -180,6 +230,19 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * <p>
 	 * If the onSave returns empty data we delete the row
 	 *
+	 * @param player
+	 * @param cache
+	 * @param runAfterSave sync callback to be run when save is done
+	 */
+	public final void save(final Player player, final T cache, @Nullable final Runnable runAfterSave) {
+		this.save(player.getName(), player.getUniqueId(), cache, runAfterSave);
+	}
+
+	/**
+	 * Save the data for the given name, unique ID and his cache async.
+	 *
+	 * If the onSave returns empty data we delete the row
+	 *
 	 * @param name
 	 * @param uuid
 	 * @param cache
@@ -189,43 +252,46 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 		if (!isLoaded() || isQuerying)
 			return;
 
-		try {
-			LagCatcher.start("mysql");
-			isQuerying = true;
+		LagCatcher.start("mysql");
+		isQuerying = true;
 
-			// Save using the user configured save method
-			final SerializedMap data = onSave(cache);
+		// Save using the user configured save method
+		final SerializedMap data = onSave(cache);
 
-			Debugger.debug("mysql", "---------------- MySQL - Saving data for " + uuid);
-			Debugger.debug("mysql", "Raw data: " + data);
-			Debugger.debug("mysql", "JSON: " + (data == null ? "null" : data.toJson()));
+		Debugger.debug("mysql", "---------------- MySQL - Saving data for " + uuid);
+		Debugger.debug("mysql", "Raw data: " + data);
+		Debugger.debug("mysql", "JSON: " + (data == null ? "null" : data.toJson()));
 
-			// Remove data if empty
-			if (data == null || data.isEmpty()) {
-				update("DELETE FROM {table} WHERE UUID= '" + uuid + "';");
+		Common.runAsync(() -> {
 
-				if (Debugger.isDebugged("mysql"))
-					Debugger.debug("mysql", "Data was empty, row has been removed.");
+			try {
+				// Remove data if empty
+				if (data == null || data.isEmpty()) {
+					update("DELETE FROM {table} WHERE UUID= '" + uuid + "';");
 
-			} else if (isStored(uuid))
-				update("UPDATE {table} SET Data='" + data.toJson() + "', Updated='" + System.currentTimeMillis() + "' WHERE UUID='" + uuid + "';");
-			else
-				update("INSERT INTO {table}(UUID, Name, Data, Updated) VALUES ('" + uuid + "', '" + name + "', '" + data.toJson() + "', '" + System.currentTimeMillis() + "');");
+					if (Debugger.isDebugged("mysql"))
+						Debugger.debug("mysql", "Data was empty, row has been removed.");
 
-			if (runAfterSave != null)
-				Common.runLater(() -> runAfterSave.run());
+				} else if (isStored(uuid))
+					update("UPDATE {table} SET Data='" + data.toJson() + "', Updated='" + System.currentTimeMillis() + "' WHERE UUID='" + uuid + "';");
+				else
+					update("INSERT INTO {table}(UUID, Name, Data, Updated) VALUES ('" + uuid + "', '" + name + "', '" + data.toJson() + "', '" + System.currentTimeMillis() + "');");
 
-		} catch (final Throwable ex) {
-			Common.error(ex,
-					"Failed to save data to MySQL!",
-					"UUID: " + uuid,
-					"Error: %error");
+				if (runAfterSave != null)
+					Common.runLater(() -> runAfterSave.run());
 
-		} finally {
-			isQuerying = false;
+			} catch (final Throwable ex) {
+				Common.error(ex,
+						"Failed to save data to MySQL!",
+						"UUID: " + uuid,
+						"Error: %error");
 
-			logPerformance("saving");
-		}
+			} finally {
+				isQuerying = false;
+
+				logPerformance("saving");
+			}
+		});
 	}
 
 	/*
