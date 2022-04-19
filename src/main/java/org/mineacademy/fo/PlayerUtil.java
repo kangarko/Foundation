@@ -363,12 +363,8 @@ public final class PlayerUtil {
 			player.setFallDistance(0);
 
 			CompProperty.INVULNERABLE.apply(player, false);
-
-			try {
-				player.setGlowing(false);
-				player.setSilent(false);
-			} catch (final NoSuchMethodError err) {
-			}
+			CompProperty.GLOWING.apply(player, false);
+			CompProperty.SILENT.apply(player, false);
 
 			player.setAllowFlight(false);
 			player.setFlying(false);

@@ -2512,8 +2512,11 @@ public enum CompMaterial {
 		if (material == null)
 			return -1;
 
-		if (Data.ISFLAT && !material.isLegacy())
-			return -1;
+		try {
+			if (Data.ISFLAT && !material.isLegacy())
+				return -1;
+		} catch (final Throwable t) {
+		}
 
 		return material.getId();
 	}
