@@ -71,7 +71,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	protected void onConnectFinish() {
 	}
 
-	/**
+	/*
 	 * Remove entries that have not been updated (called {@link #save(Identifiable)} method) for the
 	 * last given X amount of days
 	 */
@@ -101,6 +101,17 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * @param cache
 	 */
 	public final void load(final UUID uuid, final T cache) {
+		this.load(uuid, cache, null);
+	}
+
+	/**
+	 * Load the data for the given unique ID and his cache
+	 *
+	 * @param uuid
+	 * @param cache
+	 * @param runAfterLoad callback synced on the main thread
+	 */
+	public final void load(final UUID uuid, final T cache, @Nullable Runnable runAfterLoad) {
 		if (!isLoaded() || isQuerying)
 			return;
 
@@ -122,6 +133,10 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 
 			// Close connection at the end
 			resultSet.close();
+
+			// Invoke sync callback when load finish
+			if (runAfterLoad != null)
+				Common.runLater(() -> runAfterLoad.run());
 
 		} catch (final Throwable t) {
 			Common.error(t,
@@ -150,11 +165,25 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 	 * <p>
 	 * If the onSave returns empty data we delete the row
 	 *
-	 * @param name  last known name - players may change those
+	 * @param name
 	 * @param uuid
 	 * @param cache
 	 */
 	public final void save(final String name, final UUID uuid, final T cache) {
+		this.save(name, uuid, cache, null);
+	}
+
+	/**
+	 * Save the data for the given name, unique ID and his cache
+	 * <p>
+	 * If the onSave returns empty data we delete the row
+	 *
+	 * @param name
+	 * @param uuid
+	 * @param cache
+	 * @param runAfterSave sync callback to be run when save is done
+	 */
+	public final void save(final String name, final UUID uuid, final T cache, @Nullable final Runnable runAfterSave) {
 		if (!isLoaded() || isQuerying)
 			return;
 
@@ -194,7 +223,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 		}
 	}
 
-	/**
+	/*
 	 * Utility method to finish LagCatcher mysql measure and log
 	 * if there was some lag, or if we detected mysql being run
 	 * from the main thread.
@@ -208,7 +237,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 				ChatUtil.capitalize(operation) + " data to MySQL took {time} ms" + (isMainThread ? " - To prevent slowing the server, " + operation + " can be made async (carefully)" : ""));
 	}
 
-	/**
+	/*
 	 * Checks if the given unique id is stored in the database
 	 *
 	 * @param uuid
