@@ -61,7 +61,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 		Valid.checkBoolean(this.hasVariable("table"), "Please call addVariable in the constructor of your " + this);
 
 		// First, see if the database exists, create it if not
-		update("CREATE TABLE IF NOT EXISTS {table}(UUID varchar(64), Name text, Data text, Updated bigint)");
+		update("CREATE TABLE IF NOT EXISTS {table}(UUID varchar(64), Name text, Data text, Updated bigint, PRIMARY KEY (`UUID`))");
 
 		// Remove entries that have not been updated in the last X days
 		removeOldEntries();
