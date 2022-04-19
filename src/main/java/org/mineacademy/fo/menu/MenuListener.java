@@ -117,7 +117,6 @@ public final class MenuListener implements Listener {
 				// Spigot bug
 				if (player.getGameMode() == GameMode.CREATIVE && event.getClick().toString().equals("SWAP_OFFHAND"))
 					player.getInventory().setItemInOffHand(null);
-
 			}
 		}
 	}
