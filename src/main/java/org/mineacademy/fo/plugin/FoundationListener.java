@@ -166,7 +166,7 @@ final class FoundationListener implements Listener {
 		event.setCancelled(true);
 	}
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onJoin(PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
 		final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
