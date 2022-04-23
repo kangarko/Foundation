@@ -21,6 +21,7 @@ import java.util.jar.JarFile;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -706,6 +707,9 @@ public final class ReflectionUtil {
 		// having these values in their default config. This prevents
 		// malfunction on plugin's first load, in case it is loaded on an older MC version.
 		{
+			if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + ""))
+				return (E) ChatColor.getByChar(name.charAt(1));
+
 			if (enumType == org.bukkit.block.Biome.class) {
 				if (MinecraftVersion.atLeast(V.v1_13))
 					if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
