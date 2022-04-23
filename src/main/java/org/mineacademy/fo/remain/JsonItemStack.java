@@ -30,12 +30,14 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.jsonsimple.JSONArray;
+import org.mineacademy.fo.jsonsimple.JSONObject;
+import org.mineacademy.fo.jsonsimple.JSONParseException;
+import org.mineacademy.fo.jsonsimple.JSONParser;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 /**
@@ -47,7 +49,7 @@ public class JsonItemStack {
 
 	private static final String[] BYPASS_CLASS = {
 			"CraftMetaBlockState",
-			"CraftMetaItem",
+			//"CraftMetaItem",
 			"GlowMetaItem" // Glowstone Support
 	};
 
@@ -67,229 +69,260 @@ public class JsonItemStack {
 	/**
 	 * Parse the {@link ItemStack} to JSON
 	 *
-	 * @param itemStack The {@link ItemStack} instance
+	 * @param item The {@link ItemStack} instance
 	 *
 	 * @return The JSON object
 	 */
-	public static JsonObject toJson(@Nullable ItemStack itemStack) {
+	public static JSONObject toJson(@Nullable ItemStack item) {
 
-		if (itemStack == null)
+		if (item == null)
 			return null;
 
-		final JsonObject itemJson = new JsonObject();
+		final JSONObject json = new JSONObject();
 
-		itemJson.addProperty("type", itemStack.getType().name());
-		if (itemStack.getDurability() > 0)
-			itemJson.addProperty("data", itemStack.getDurability());
-		if (itemStack.getAmount() != 1)
-			itemJson.addProperty("amount", itemStack.getAmount());
+		json.put("type", item.getType().name());
 
-		if (itemStack.hasItemMeta()) {
-			final JsonObject metaJson = new JsonObject();
+		if (item.getDurability() > 0)
+			json.put("data", item.getDurability());
 
-			final ItemMeta meta = itemStack.getItemMeta();
+		if (item.getAmount() != 1)
+			json.put("amount", item.getAmount());
+
+		if (item.hasItemMeta()) {
+			final JSONObject metaJson = new JSONObject();
+			final ItemMeta meta = item.getItemMeta();
 
 			if (meta.hasDisplayName())
-				metaJson.addProperty("displayname", meta.getDisplayName());
+				metaJson.put("displayname", meta.getDisplayName());
+
 			if (meta.hasLore()) {
-				final JsonArray lore = new JsonArray();
-				meta.getLore().forEach(str -> lore.add(new JsonPrimitive(str)));
-				metaJson.add("lore", lore);
+				final JSONArray lore = new JSONArray();
+
+				meta.getLore().forEach(line -> lore.add(line));
+				metaJson.put("lore", lore);
 			}
+
 			if (meta.hasEnchants()) {
-				final JsonArray enchants = new JsonArray();
+				final JSONArray enchants = new JSONArray();
+
 				meta.getEnchants().forEach((enchantment, integer) -> {
-					enchants.add(new JsonPrimitive(enchantment.getName() + ":" + integer));
+					enchants.add(enchantment.getName() + ":" + integer);
 				});
-				metaJson.add("enchants", enchants);
+
+				metaJson.put("enchants", enchants);
 			}
 			if (!meta.getItemFlags().isEmpty()) {
-				final JsonArray flags = new JsonArray();
-				meta.getItemFlags().stream().map(ItemFlag::name).forEach(str -> flags.add(new JsonPrimitive(str)));
-				metaJson.add("flags", flags);
+				final JSONArray flags = new JSONArray();
+
+				meta.getItemFlags().stream().map(ItemFlag::name).forEach(flag -> flags.add(flag));
+				metaJson.put("flags", flags);
 			}
 
 			for (final String clazz : BYPASS_CLASS)
 				if (meta.getClass().getSimpleName().equals(clazz)) {
-					itemJson.add("item-meta", metaJson);
+					json.put("item-meta", metaJson);
 
-					return itemJson;
+					return json;
 				}
 
 			if (meta instanceof SkullMeta) {
 				final SkullMeta skullMeta = (SkullMeta) meta;
 
 				if (skullMeta.hasOwner()) {
-					final JsonObject extraMeta = new JsonObject();
-					extraMeta.addProperty("owner", skullMeta.getOwner());
-					metaJson.add("extra-meta", extraMeta);
+					final JSONObject extraMeta = new JSONObject();
+
+					extraMeta.put("owner", skullMeta.getOwner());
+					metaJson.put("extra-meta", extraMeta);
 				}
 
 			} else if (meta instanceof BannerMeta) {
 				final BannerMeta bannerMeta = (BannerMeta) meta;
-				final JsonObject extraMeta = new JsonObject();
-				extraMeta.addProperty("base-color", bannerMeta.getBaseColor().name());
+				final JSONObject extraMeta = new JSONObject();
+				extraMeta.put("base-color", bannerMeta.getBaseColor().name());
 
 				if (bannerMeta.numberOfPatterns() > 0) {
-					final JsonArray patterns = new JsonArray();
+					final JSONArray patterns = new JSONArray();
 					bannerMeta.getPatterns()
 							.stream()
 							.map(pattern -> pattern.getColor().name() + ":" + pattern.getPattern().getIdentifier())
 							.forEach(str -> patterns.add(new JsonPrimitive(str)));
-					extraMeta.add("patterns", patterns);
+					extraMeta.put("patterns", patterns);
 				}
 
-				metaJson.add("extra-meta", extraMeta);
+				metaJson.put("extra-meta", extraMeta);
 
 			} else if (meta instanceof EnchantmentStorageMeta) {
 				final EnchantmentStorageMeta esmeta = (EnchantmentStorageMeta) meta;
 
 				if (esmeta.hasStoredEnchants()) {
-					final JsonObject extraMeta = new JsonObject();
-					final JsonArray storedEnchants = new JsonArray();
+					final JSONObject extraMeta = new JSONObject();
+					final JSONArray storedEnchants = new JSONArray();
+
 					esmeta.getStoredEnchants().forEach((enchantment, integer) -> {
 						storedEnchants.add(new JsonPrimitive(enchantment.getName() + ":" + integer));
 					});
-					extraMeta.add("stored-enchants", storedEnchants);
-					metaJson.add("extra-meta", extraMeta);
+
+					extraMeta.put("stored-enchants", storedEnchants);
+					metaJson.put("extra-meta", extraMeta);
 				}
 
 			} else if (meta instanceof LeatherArmorMeta) {
 				final LeatherArmorMeta lameta = (LeatherArmorMeta) meta;
-				final JsonObject extraMeta = new JsonObject();
+				final JSONObject extraMeta = new JSONObject();
 
-				extraMeta.addProperty("color", Integer.toHexString(lameta.getColor().asRGB()));
-				metaJson.add("extra-meta", extraMeta);
+				extraMeta.put("color", Integer.toHexString(lameta.getColor().asRGB()));
+				metaJson.put("extra-meta", extraMeta);
 
 			} else if (meta instanceof BookMeta) {
 				final BookMeta bmeta = (BookMeta) meta;
 
 				if (bmeta.hasAuthor() || bmeta.hasPages() || bmeta.hasTitle()) {
-					final JsonObject extraMeta = new JsonObject();
+					final JSONObject extraMeta = new JSONObject();
+
 					if (bmeta.hasTitle())
-						extraMeta.addProperty("title", bmeta.getTitle());
+						extraMeta.put("title", bmeta.getTitle());
+
 					if (bmeta.hasAuthor())
-						extraMeta.addProperty("author", bmeta.getAuthor());
+						extraMeta.put("author", bmeta.getAuthor());
+
 					if (bmeta.hasPages()) {
-						final JsonArray pages = new JsonArray();
-						bmeta.getPages().forEach(str -> pages.add(new JsonPrimitive(str)));
-						extraMeta.add("pages", pages);
+						final JSONArray pages = new JSONArray();
+
+						bmeta.getPages().forEach(str -> pages.add(str));
+						extraMeta.put("pages", pages);
 					}
-					metaJson.add("extra-meta", extraMeta);
+
+					metaJson.put("extra-meta", extraMeta);
 				}
+
 			} else if (meta instanceof PotionMeta) {
 				final PotionMeta pmeta = (PotionMeta) meta;
 
-				final JsonObject extraMeta = new JsonObject();
+				final JSONObject extraMeta = new JSONObject();
+
 				if (pmeta.hasCustomEffects()) {
-					final JsonArray customEffects = new JsonArray();
+					final JSONArray customEffects = new JSONArray();
+
 					pmeta.getCustomEffects().forEach(potionEffect -> {
 						customEffects.add(new JsonPrimitive(potionEffect.getType().getName()
 								+ ":" + potionEffect.getAmplifier()
 								+ ":" + potionEffect.getDuration() / 20));
 					});
-					extraMeta.add("custom-effects", customEffects);
+
+					extraMeta.put("custom-effects", customEffects);
+
 				} else
 					try {
 						final PotionType type = pmeta.getBasePotionData().getType();
 						final boolean isExtended = pmeta.getBasePotionData().isExtended();
 						final boolean isUpgraded = pmeta.getBasePotionData().isUpgraded();
 
-						final JsonObject baseEffect = new JsonObject();
+						final JSONObject baseEffect = new JSONObject();
 
-						baseEffect.addProperty("type", type.getEffectType().getName());
-						baseEffect.addProperty("isExtended", isExtended);
-						baseEffect.addProperty("isUpgraded", isUpgraded);
-						extraMeta.add("base-effect", baseEffect);
+						baseEffect.put("type", type.getEffectType().getName());
+						baseEffect.put("isExtended", isExtended);
+						baseEffect.put("isUpgraded", isUpgraded);
+						extraMeta.put("base-effect", baseEffect);
+
 					} catch (final NoSuchMethodError err) {
 						// Unsupported
 					}
-				metaJson.add("extra-meta", extraMeta);
+
+				metaJson.put("extra-meta", extraMeta);
 
 			} else if (meta instanceof FireworkEffectMeta) {
 				final FireworkEffectMeta femeta = (FireworkEffectMeta) meta;
 
 				if (femeta.hasEffect()) {
 					final FireworkEffect effect = femeta.getEffect();
-					final JsonObject extraMeta = new JsonObject();
+					final JSONObject extraMeta = new JSONObject();
 
-					extraMeta.addProperty("type", effect.getType().name());
+					extraMeta.put("type", effect.getType().name());
 					if (effect.hasFlicker())
-						extraMeta.addProperty("flicker", true);
+						extraMeta.put("flicker", true);
 					if (effect.hasTrail())
-						extraMeta.addProperty("trail", true);
+						extraMeta.put("trail", true);
 
 					if (!effect.getColors().isEmpty()) {
-						final JsonArray colors = new JsonArray();
-						effect.getColors().forEach(color -> colors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
-						extraMeta.add("colors", colors);
+						final JSONArray colors = new JSONArray();
+						effect.getColors().forEach(color -> colors.add(Integer.toHexString(color.asRGB())));
+						extraMeta.put("colors", colors);
 					}
 
 					if (!effect.getFadeColors().isEmpty()) {
-						final JsonArray fadeColors = new JsonArray();
-						effect.getFadeColors().forEach(color -> fadeColors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
-						extraMeta.add("fade-colors", fadeColors);
+						final JSONArray fadeColors = new JSONArray();
+
+						effect.getFadeColors().forEach(color -> fadeColors.add(Integer.toHexString(color.asRGB())));
+						extraMeta.put("fade-colors", fadeColors);
 					}
 
-					metaJson.add("extra-meta", extraMeta);
+					metaJson.put("extra-meta", extraMeta);
 				}
+
 			} else if (meta instanceof FireworkMeta) {
 				final FireworkMeta fmeta = (FireworkMeta) meta;
-				final JsonObject extraMeta = new JsonObject();
+				final JSONObject extraMeta = new JSONObject();
 
-				extraMeta.addProperty("power", fmeta.getPower());
+				extraMeta.put("power", fmeta.getPower());
 
 				if (fmeta.hasEffects()) {
-					final JsonArray effects = new JsonArray();
-					fmeta.getEffects().forEach(effect -> {
-						final JsonObject jsonObject = new JsonObject();
+					final JSONArray effects = new JSONArray();
 
-						jsonObject.addProperty("type", effect.getType().name());
+					fmeta.getEffects().forEach(effect -> {
+						final JSONObject jsonObject = new JSONObject();
+
+						jsonObject.put("type", effect.getType().name());
+
 						if (effect.hasFlicker())
-							jsonObject.addProperty("flicker", true);
+							jsonObject.put("flicker", true);
+
 						if (effect.hasTrail())
-							jsonObject.addProperty("trail", true);
+							jsonObject.put("trail", true);
 
 						if (!effect.getColors().isEmpty()) {
-							final JsonArray colors = new JsonArray();
-							effect.getColors().forEach(color -> colors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
-							jsonObject.add("colors", colors);
+							final JSONArray colors = new JSONArray();
+							effect.getColors().forEach(color -> colors.add(Integer.toHexString(color.asRGB())));
+							jsonObject.put("colors", colors);
 						}
 
 						if (!effect.getFadeColors().isEmpty()) {
-							final JsonArray fadeColors = new JsonArray();
-							effect.getFadeColors().forEach(color -> fadeColors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
-							jsonObject.add("fade-colors", fadeColors);
+							final JSONArray fadeColors = new JSONArray();
+
+							effect.getFadeColors().forEach(color -> fadeColors.add(Integer.toHexString(color.asRGB())));
+							jsonObject.put("fade-colors", fadeColors);
 						}
 
 						effects.add(jsonObject);
 					});
-					extraMeta.add("effects", effects);
+
+					extraMeta.put("effects", effects);
 				}
-				metaJson.add("extra-meta", extraMeta);
+				metaJson.put("extra-meta", extraMeta);
 
 			} else if (meta instanceof MapMeta) {
 				final MapMeta mmeta = (MapMeta) meta;
-				final JsonObject extraMeta = new JsonObject();
+				final JSONObject extraMeta = new JSONObject();
 
 				try {
 					if (mmeta.hasLocationName())
-						extraMeta.addProperty("location-name", mmeta.getLocationName());
+						extraMeta.put("location-name", mmeta.getLocationName());
+
 					if (mmeta.hasColor())
-						extraMeta.addProperty("color", Integer.toHexString(mmeta.getColor().asRGB()));
+						extraMeta.put("color", Integer.toHexString(mmeta.getColor().asRGB()));
+
 				} catch (final NoSuchMethodError err) {
 					// Unsupported
 				}
 
-				extraMeta.addProperty("scaling", mmeta.isScaling());
+				extraMeta.put("scaling", mmeta.isScaling());
 
-				metaJson.add("extra-meta", extraMeta);
+				metaJson.put("extra-meta", extraMeta);
 			}
 
-			itemJson.add("item-meta", metaJson);
+			json.put("item-meta", metaJson);
 		}
 
-		return itemJson;
+		return json;
 	}
 
 	/**
@@ -300,334 +333,331 @@ public class JsonItemStack {
 	 * @return The {@link ItemStack} or null if not succeed
 	 */
 	public static ItemStack fromJson(@Nullable String string) {
-
-		if (string == null)
+		if (string == null || string.isEmpty() || "{}".equals(string))
 			return null;
 
-		final JsonParser parser = new JsonParser();
-		final JsonElement element = parser.parse(string);
-		if (element.isJsonObject()) {
-			final JsonObject itemJson = element.getAsJsonObject();
+		final JSONParser parser = JSONParser.getInstance();
+		Object element;
 
-			final JsonElement typeElement = itemJson.get("type");
-			final JsonElement dataElement = itemJson.get("data");
-			final JsonElement amountElement = itemJson.get("amount");
+		try {
+			element = parser.parse(string);
 
-			if (typeElement.isJsonPrimitive()) {
+		} catch (final JSONParseException ex) {
+			Remain.sneaky(ex);
 
-				final String type = typeElement.getAsString();
-				final short data = dataElement != null ? dataElement.getAsShort() : 0;
-				final int amount = amountElement != null ? amountElement.getAsInt() : 1;
+			return null;
+		}
 
-				final ItemStack itemStack = new ItemStack(Material.getMaterial(type));
-				itemStack.setDurability(data);
-				itemStack.setAmount(amount);
+		Valid.checkBoolean(element instanceof JSONObject, "Expected JSONObject from JSON ItemStack, got " + (element == null ? "null" : element.getClass().getSimpleName()) + ": " + element);
 
-				final JsonElement itemMetaElement = itemJson.get("item-meta");
-				if (itemMetaElement != null && itemMetaElement.isJsonObject()) {
+		final JSONObject itemJson = (JSONObject) element;
 
-					final ItemMeta meta = itemStack.getItemMeta();
-					final JsonObject metaJson = itemMetaElement.getAsJsonObject();
+		final String type = itemJson.getString("type");
+		final Integer data = itemJson.getInteger("data");
+		final Integer amount = itemJson.getInteger("amount");
 
-					final JsonElement displaynameElement = metaJson.get("displayname");
-					final JsonElement loreElement = metaJson.get("lore");
-					final JsonElement enchants = metaJson.get("enchants");
-					final JsonElement flagsElement = metaJson.get("flags");
-					if (displaynameElement != null && displaynameElement.isJsonPrimitive())
-						meta.setDisplayName(displaynameElement.getAsString());
-					if (loreElement != null && loreElement.isJsonArray()) {
-						final JsonArray jarray = loreElement.getAsJsonArray();
-						final List<String> lore = new ArrayList<>(jarray.size());
-						jarray.forEach(jsonElement -> {
-							if (jsonElement.isJsonPrimitive())
-								lore.add(jsonElement.getAsString());
-						});
-						meta.setLore(lore);
-					}
-					if (enchants != null && enchants.isJsonArray()) {
-						final JsonArray jarray = enchants.getAsJsonArray();
-						jarray.forEach(jsonElement -> {
-							if (jsonElement.isJsonPrimitive()) {
-								final String enchantString = jsonElement.getAsString();
-								if (enchantString.contains(":"))
-									try {
-										final String[] splitEnchant = enchantString.split(":");
-										final Enchantment enchantment = Enchantment.getByName(splitEnchant[0]);
-										final int level = Integer.parseInt(splitEnchant[1]);
-										if (enchantment != null && level > 0)
-											meta.addEnchant(enchantment, level, true);
-									} catch (final NumberFormatException ignored) {
-									}
-							}
-						});
-					}
-					if (flagsElement != null && flagsElement.isJsonArray()) {
-						final JsonArray jarray = flagsElement.getAsJsonArray();
-						jarray.forEach(jsonElement -> {
-							if (jsonElement.isJsonPrimitive())
-								for (final ItemFlag flag : ItemFlag.values())
-									if (flag.name().equalsIgnoreCase(jsonElement.getAsString())) {
-										meta.addItemFlags(flag);
-										break;
-									}
-						});
-					}
-					for (final String clazz : BYPASS_CLASS)
-						if (meta.getClass().getSimpleName().equals(clazz))
-							return itemStack;
+		final ItemStack item = new ItemStack(Material.getMaterial(type));
 
-					final JsonElement extrametaElement = metaJson.get("extra-meta");
+		if (data != null)
+			item.setDurability(data.shortValue());
 
-					if (extrametaElement != null
-							&& extrametaElement.isJsonObject())
-						try {
-							final JsonObject extraJson = extrametaElement.getAsJsonObject();
-							if (meta instanceof SkullMeta) {
-								final JsonElement ownerElement = extraJson.get("owner");
-								if (ownerElement != null && ownerElement.isJsonPrimitive()) {
-									final SkullMeta smeta = (SkullMeta) meta;
-									smeta.setOwner(ownerElement.getAsString());
-								}
-							} else if (meta instanceof BannerMeta) {
-								final BannerMeta bmeta = (BannerMeta) meta;
-								final JsonElement baseColorElement = extraJson.get("base-color");
-								final JsonElement patternsElement = extraJson.get("patterns");
-								if (baseColorElement != null && baseColorElement.isJsonPrimitive())
-									try {
-										final Optional<DyeColor> color = Arrays.stream(DyeColor.values())
-												.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(baseColorElement.getAsString()))
-												.findFirst();
-										if (color.isPresent())
-											bmeta.setBaseColor(color.get());
-									} catch (final NumberFormatException ignored) {
-									}
-								if (patternsElement != null && patternsElement.isJsonArray()) {
-									final JsonArray jarray = patternsElement.getAsJsonArray();
-									final List<Pattern> patterns = new ArrayList<>(jarray.size());
-									jarray.forEach(jsonElement -> {
-										final String patternString = jsonElement.getAsString();
-										if (patternString.contains(":")) {
-											final String[] splitPattern = patternString.split(":");
-											final Optional<DyeColor> color = Arrays.stream(DyeColor.values())
-													.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(splitPattern[0]))
-													.findFirst();
-											final PatternType patternType = PatternType.getByIdentifier(splitPattern[1]);
-											if (color.isPresent() && patternType != null)
-												patterns.add(new Pattern(color.get(), patternType));
-										}
-									});
-									if (!patterns.isEmpty())
-										bmeta.setPatterns(patterns);
-								}
-							} else if (meta instanceof EnchantmentStorageMeta) {
-								final JsonElement storedEnchantsElement = extraJson.get("stored-enchants");
-								if (storedEnchantsElement != null && storedEnchantsElement.isJsonArray()) {
-									final EnchantmentStorageMeta esmeta = (EnchantmentStorageMeta) meta;
-									final JsonArray jarray = storedEnchantsElement.getAsJsonArray();
-									jarray.forEach(jsonElement -> {
-										if (jsonElement.isJsonPrimitive()) {
-											final String enchantString = jsonElement.getAsString();
-											if (enchantString.contains(":"))
-												try {
-													final String[] splitEnchant = enchantString.split(":");
-													final Enchantment enchantment = Enchantment.getByName(splitEnchant[0]);
-													final int level = Integer.parseInt(splitEnchant[1]);
-													if (enchantment != null && level > 0)
-														esmeta.addStoredEnchant(enchantment, level, true);
-												} catch (final NumberFormatException ignored) {
-												}
-										}
-									});
-								}
-							} else if (meta instanceof LeatherArmorMeta) {
-								final JsonElement colorElement = extraJson.get("color");
-								if (colorElement != null && colorElement.isJsonPrimitive()) {
-									final LeatherArmorMeta lameta = (LeatherArmorMeta) meta;
-									try {
-										lameta.setColor(Color.fromRGB(Integer.parseInt(colorElement.getAsString(),
-												16)));
-									} catch (final NumberFormatException ignored) {
-									}
-								}
-							} else if (meta instanceof BookMeta) {
-								final BookMeta bmeta = (BookMeta) meta;
-								final JsonElement titleElement = extraJson.get("title");
-								final JsonElement authorElement = extraJson.get("author");
-								final JsonElement pagesElement = extraJson.get("pages");
+		if (amount != null)
+			item.setAmount(amount);
 
-								if (titleElement != null && titleElement.isJsonPrimitive())
-									bmeta.setTitle(titleElement.getAsString());
-								if (authorElement != null && authorElement.isJsonPrimitive())
-									bmeta.setAuthor(authorElement.getAsString());
-								if (pagesElement != null && pagesElement.isJsonArray()) {
-									final JsonArray jarray = pagesElement.getAsJsonArray();
-									final List<String> pages = new ArrayList<>(jarray.size());
-									jarray.forEach(jsonElement -> {
-										if (jsonElement.isJsonPrimitive())
-											pages.add(jsonElement.getAsString());
-									});
-									bmeta.setPages(pages);
-								}
+		final JSONObject metaJson = itemJson.getObject("item-meta");
 
-							} else if (meta instanceof PotionMeta) {
-								final JsonElement customEffectsElement = extraJson.get("custom-effects");
-								final PotionMeta pmeta = (PotionMeta) meta;
-								if (customEffectsElement != null && customEffectsElement.isJsonArray()) {
-									final JsonArray jarray = customEffectsElement.getAsJsonArray();
-									jarray.forEach(jsonElement -> {
-										if (jsonElement.isJsonPrimitive()) {
-											final String enchantString = jsonElement.getAsString();
-											if (enchantString.contains(":"))
-												try {
-													final String[] splitPotions = enchantString.split(":");
-													final PotionEffectType potionType = PotionEffectType.getByName(splitPotions[0]);
-													final int amplifier = Integer.parseInt(splitPotions[1]);
-													final int duration = Integer.parseInt(splitPotions[2]) * 20;
-													if (potionType != null)
-														pmeta.addCustomEffect(new PotionEffect(potionType, amplifier,
-																duration), true);
-												} catch (final NumberFormatException ignored) {
-												}
-										}
-									});
-								} else {
-									final JsonObject basePotion = extraJson.getAsJsonObject("base-effect");
-									final PotionType potionType = PotionType.valueOf(basePotion.get("type").getAsString());
-									final boolean isExtended = basePotion.get("isExtended").getAsBoolean();
-									final boolean isUpgraded = basePotion.get("isUpgraded").getAsBoolean();
-									try {
-										final PotionData potionData = new PotionData(potionType, isExtended, isUpgraded);
-										pmeta.setBasePotionData(potionData);
-									} catch (final Throwable t) {
-										// Unsupported
-									}
-								}
-							} else if (meta instanceof FireworkEffectMeta) {
-								final JsonElement effectTypeElement = extraJson.get("type");
-								final JsonElement flickerElement = extraJson.get("flicker");
-								final JsonElement trailElement = extraJson.get("trail");
-								final JsonElement colorsElement = extraJson.get("colors");
-								final JsonElement fadeColorsElement = extraJson.get("fade-colors");
+		if (metaJson == null)
+			return item;
 
-								if (effectTypeElement != null && effectTypeElement.isJsonPrimitive()) {
-									final FireworkEffectMeta femeta = (FireworkEffectMeta) meta;
+		final ItemMeta meta = item.getItemMeta();
 
-									final FireworkEffect.Type effectType = FireworkEffect.Type.valueOf(effectTypeElement.getAsString());
+		final String displayName = metaJson.getString("displayname");
+		final JSONArray lore = metaJson.getArray("lore");
+		final JSONArray enchants = metaJson.getArray("enchants");
+		final JSONArray flags = metaJson.getArray("flags");
 
-									if (effectType != null) {
-										final List<Color> colors = new ArrayList<>();
-										if (colorsElement != null && colorsElement.isJsonArray())
-											colorsElement.getAsJsonArray().forEach(colorElement -> {
-												if (colorElement.isJsonPrimitive())
-													colors.add(Color.fromRGB(Integer.parseInt(colorElement.getAsString(), 16)));
-											});
+		if (displayName != null)
+			meta.setDisplayName(displayName);
 
-										final List<Color> fadeColors = new ArrayList<>();
-										if (fadeColorsElement != null && fadeColorsElement.isJsonArray())
-											fadeColorsElement.getAsJsonArray().forEach(colorElement -> {
-												if (colorElement.isJsonPrimitive())
-													fadeColors.add(Color.fromRGB(Integer.parseInt(colorElement.getAsString(), 16)));
-											});
+		if (lore != null)
+			meta.setLore(Arrays.asList(lore.toStringArray()));
 
-										final FireworkEffect.Builder builder = FireworkEffect.builder().with(effectType);
+		if (enchants != null)
+			for (final String enchant : enchants.toStringArray()) {
+				Valid.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
 
-										if (flickerElement != null && flickerElement.isJsonPrimitive())
-											builder.flicker(flickerElement.getAsBoolean());
-										if (trailElement != null && trailElement.isJsonPrimitive())
-											builder.trail(trailElement.getAsBoolean());
+				try {
+					final String[] split = enchant.split(":");
+					final Enchantment enchantment = Enchantment.getByName(split[0]);
+					final int level = Integer.parseInt(split[1]);
 
-										if (!colors.isEmpty())
-											builder.withColor(colors);
-										if (!fadeColors.isEmpty())
-											builder.withFade(fadeColors);
+					if (enchantment != null && level > 0)
+						meta.addEnchant(enchantment, level, true);
 
-										femeta.setEffect(builder.build());
-									}
-								}
-							} else if (meta instanceof FireworkMeta) {
-								final FireworkMeta fmeta = (FireworkMeta) meta;
-
-								final JsonElement effectArrayElement = extraJson.get("effects");
-								final JsonElement powerElement = extraJson.get("power");
-
-								if (powerElement != null && powerElement.isJsonPrimitive())
-									fmeta.setPower(powerElement.getAsInt());
-
-								if (effectArrayElement != null && effectArrayElement.isJsonArray())
-									effectArrayElement.getAsJsonArray().forEach(jsonElement -> {
-										if (jsonElement.isJsonObject()) {
-
-											final JsonObject jsonObject = jsonElement.getAsJsonObject();
-
-											final JsonElement effectTypeElement = jsonObject.get("type");
-											final JsonElement flickerElement = jsonObject.get("flicker");
-											final JsonElement trailElement = jsonObject.get("trail");
-											final JsonElement colorsElement = jsonObject.get("colors");
-											final JsonElement fadeColorsElement = jsonObject.get("fade-colors");
-
-											if (effectTypeElement != null && effectTypeElement.isJsonPrimitive()) {
-
-												final FireworkEffect.Type effectType = FireworkEffect.Type.valueOf(effectTypeElement.getAsString());
-
-												if (effectType != null) {
-													final List<Color> colors = new ArrayList<>();
-													if (colorsElement != null && colorsElement.isJsonArray())
-														colorsElement.getAsJsonArray().forEach(colorElement -> {
-															if (colorElement.isJsonPrimitive())
-																colors.add(Color.fromRGB(Integer.parseInt(colorElement.getAsString(), 16)));
-														});
-
-													final List<Color> fadeColors = new ArrayList<>();
-													if (fadeColorsElement != null && fadeColorsElement.isJsonArray())
-														fadeColorsElement.getAsJsonArray().forEach(colorElement -> {
-															if (colorElement.isJsonPrimitive())
-																fadeColors.add(Color.fromRGB(Integer.parseInt(colorElement.getAsString(), 16)));
-														});
-
-													final FireworkEffect.Builder builder = FireworkEffect.builder().with(effectType);
-
-													if (flickerElement != null && flickerElement.isJsonPrimitive())
-														builder.flicker(flickerElement.getAsBoolean());
-													if (trailElement != null && trailElement.isJsonPrimitive())
-														builder.trail(trailElement.getAsBoolean());
-
-													if (!colors.isEmpty())
-														builder.withColor(colors);
-													if (!fadeColors.isEmpty())
-														builder.withFade(fadeColors);
-
-													fmeta.addEffect(builder.build());
-												}
-											}
-										}
-									});
-							} else if (meta instanceof MapMeta) {
-								final MapMeta mmeta = (MapMeta) meta;
-
-								final JsonElement scalingElement = extraJson.get("scaling");
-								if (scalingElement != null && scalingElement.isJsonPrimitive())
-									mmeta.setScaling(scalingElement.getAsBoolean());
-
-								/* 1.11
-								JsonElement locationNameElement = extraJson.get("location-name");
-								if(locationNameElement != null && locationNameElement.isJsonPrimitive()) {
-								    mmeta.setLocationName(locationNameElement.getAsString());
-								}
-								
-								JsonElement colorElement = extraJson.get("color");
-								if(colorElement != null && colorElement.isJsonPrimitive()) {
-								    mmeta.setColor(Color.fromRGB(Integer.parseInt(colorElement.getAsString(), 16)));
-								}*/
-							}
-						} catch (final Exception e) {
-							return null;
-						}
-					itemStack.setItemMeta(meta);
+				} catch (final NumberFormatException ignored) {
 				}
-				return itemStack;
-			} else
+			}
+
+		if (flags != null)
+			try {
+				for (final String jsonFlag : flags.toStringArray()) {
+					final ItemFlag flag = ReflectionUtil.lookupEnumSilent(ItemFlag.class, jsonFlag);
+
+					if (flag != null)
+						meta.addItemFlags(flag);
+				}
+			} catch (final Error err) {
+				// Minecraft version too old
+			}
+
+		for (final String clazz : BYPASS_CLASS)
+			if (meta.getClass().getSimpleName().equals(clazz))
+				return item;
+
+		final JSONObject extraJson = metaJson.getObject("extra-meta");
+
+		if (extraJson != null)
+			try {
+				if (meta instanceof SkullMeta) {
+					final String owner = extraJson.getString("owner");
+
+					if (owner != null)
+						((SkullMeta) meta).setOwner(owner);
+
+				} else if (meta instanceof BannerMeta) {
+					final BannerMeta bmeta = (BannerMeta) meta;
+					final String baseColor = extraJson.getString("base-color");
+					final JSONArray patterns = extraJson.getArray("patterns");
+
+					if (baseColor != null)
+						try {
+							final Optional<DyeColor> color = Arrays.stream(DyeColor.values())
+									.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(baseColor))
+									.findFirst();
+
+							if (color.isPresent())
+								bmeta.setBaseColor(color.get());
+
+						} catch (final NumberFormatException ignored) {
+						}
+
+					if (patterns != null) {
+
+						final List<Pattern> bukkitPatterns = new ArrayList<>();
+
+						for (final String pattern : patterns.toStringArray()) {
+							Valid.checkBoolean(pattern.contains(":"), "Expected : when parsing banner patterns from JSON item, got: " + pattern + ". Full item: " + itemJson);
+
+							if (pattern.contains(":")) {
+								final String[] splitPattern = pattern.split(":");
+								final Optional<DyeColor> color = Arrays.stream(DyeColor.values())
+										.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(splitPattern[0]))
+										.findFirst();
+
+								final PatternType patternType = PatternType.getByIdentifier(splitPattern[1]);
+
+								if (color.isPresent() && patternType != null)
+									bukkitPatterns.add(new Pattern(color.get(), patternType));
+							}
+						}
+
+						if (!patterns.isEmpty())
+							bmeta.setPatterns(bukkitPatterns);
+					}
+
+				} else if (meta instanceof EnchantmentStorageMeta) {
+					final JSONArray storedEnchants = extraJson.getArray("stored-enchants");
+
+					if (storedEnchants != null) {
+						final EnchantmentStorageMeta esmeta = (EnchantmentStorageMeta) meta;
+
+						for (final String enchant : storedEnchants.toStringArray()) {
+							Valid.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
+
+							try {
+								final String[] splitEnchant = enchant.split(":");
+								final Enchantment enchantment = Enchantment.getByName(splitEnchant[0]);
+								final int level = Integer.parseInt(splitEnchant[1]);
+
+								if (enchantment != null && level > 0)
+									esmeta.addStoredEnchant(enchantment, level, true);
+
+							} catch (final NumberFormatException ignored) {
+							}
+						}
+					}
+
+				} else if (meta instanceof LeatherArmorMeta) {
+					final String color = extraJson.getString("color");
+
+					if (color != null)
+						try {
+							((LeatherArmorMeta) meta).setColor(Color.fromRGB(Integer.parseInt(color, 16)));
+
+						} catch (final NumberFormatException ignored) {
+						}
+
+				} else if (meta instanceof BookMeta) {
+					final BookMeta bmeta = (BookMeta) meta;
+
+					final String title = extraJson.getString("title");
+					final String author = extraJson.getString("author");
+					final JSONArray pages = extraJson.getArray("pages");
+
+					if (title != null)
+						bmeta.setTitle(title);
+
+					if (author != null)
+						bmeta.setAuthor(author);
+
+					if (pages != null)
+						bmeta.setPages(Arrays.asList(pages.toStringArray()));
+
+				} else if (meta instanceof PotionMeta) {
+					final JSONArray effects = extraJson.getArray("custom-effects");
+					final PotionMeta pmeta = (PotionMeta) meta;
+
+					if (effects != null) {
+
+						for (final String effect : effects.toStringArray()) {
+							Valid.checkBoolean(effect.contains(":"), "Expected : when parsing effects from JSON item, got: " + effects + ". Full item: " + itemJson);
+
+							try {
+								final String[] splitPotions = effect.split(":");
+								final PotionEffectType potionType = PotionEffectType.getByName(splitPotions[0]);
+								final int amplifier = Integer.parseInt(splitPotions[1]);
+								final int duration = Integer.parseInt(splitPotions[2]) * 20;
+
+								if (potionType != null)
+									pmeta.addCustomEffect(new PotionEffect(potionType, amplifier, duration), true);
+
+							} catch (final NumberFormatException ignored) {
+							}
+						}
+
+					} else {
+						final JSONObject basePotion = extraJson.getObject("base-effect");
+						final PotionType potionType = PotionType.valueOf(basePotion.getString("type"));
+						final boolean isExtended = basePotion.getBoolean("isExtended");
+						final boolean isUpgraded = basePotion.getBoolean("isUpgraded");
+
+						try {
+							final PotionData potionData = new PotionData(potionType, isExtended, isUpgraded);
+
+							pmeta.setBasePotionData(potionData);
+						} catch (final Throwable t) {
+							// Unsupported
+						}
+					}
+
+				} else if (meta instanceof FireworkEffectMeta) {
+					final String effectTypeName = extraJson.getString("type");
+					final boolean flicker = extraJson.getBoolean("flicker");
+					final boolean trail = extraJson.getBoolean("trail");
+					final JSONArray colorsElement = extraJson.getArray("colors");
+					final JSONArray fadeColorsElement = extraJson.getArray("fade-colors");
+
+					if (effectTypeName != null) {
+						final FireworkEffectMeta femeta = (FireworkEffectMeta) meta;
+						final FireworkEffect.Type effectType = FireworkEffect.Type.valueOf(effectTypeName);
+
+						if (effectType != null) {
+							final List<Color> colors = new ArrayList<>();
+
+							if (colorsElement != null)
+								colorsElement.forEach(colorElement -> {
+									colors.add(Color.fromRGB(Integer.parseInt(colorElement.toString(), 16)));
+								});
+
+							final List<Color> fadeColors = new ArrayList<>();
+
+							if (fadeColorsElement != null)
+								fadeColorsElement.forEach(colorElement -> {
+									fadeColors.add(Color.fromRGB(Integer.parseInt(colorElement.toString(), 16)));
+								});
+
+							final FireworkEffect.Builder builder = FireworkEffect.builder().with(effectType);
+
+							builder.flicker(flicker);
+							builder.trail(trail);
+
+							if (!colors.isEmpty())
+								builder.withColor(colors);
+
+							if (!fadeColors.isEmpty())
+								builder.withFade(fadeColors);
+
+							femeta.setEffect(builder.build());
+						}
+					}
+
+				} else if (meta instanceof FireworkMeta) {
+					final FireworkMeta fmeta = (FireworkMeta) meta;
+
+					final JSONArray effectArrayElement = extraJson.getArray("effects");
+					final Integer powerElement = extraJson.getInteger("power");
+
+					if (powerElement != null)
+						fmeta.setPower(powerElement);
+
+					if (effectArrayElement != null)
+						for (final JSONObject jsonObject : effectArrayElement.toObjectArray()) {
+
+							final String effectTypeElement = jsonObject.getString("type");
+							final boolean flicker = jsonObject.getBoolean("flicker");
+							final boolean trail = jsonObject.getBoolean("trail");
+							final JSONArray colorsElement = jsonObject.getArray("colors");
+							final JSONArray fadeColorsElement = jsonObject.getArray("fade-colors");
+
+							if (effectTypeElement != null) {
+
+								final FireworkEffect.Type effectType = FireworkEffect.Type.valueOf(effectTypeElement);
+
+								if (effectType != null) {
+									final List<Color> colors = new ArrayList<>();
+
+									if (colorsElement != null)
+										colorsElement.forEach(colorElement -> {
+											colors.add(Color.fromRGB(Integer.parseInt(colorElement.toString(), 16)));
+										});
+
+									final List<Color> fadeColors = new ArrayList<>();
+
+									if (fadeColorsElement != null)
+										fadeColorsElement.forEach(colorElement -> {
+											fadeColors.add(Color.fromRGB(Integer.parseInt(colorElement.toString(), 16)));
+										});
+
+									final FireworkEffect.Builder builder = FireworkEffect.builder().with(effectType);
+
+									builder.flicker(flicker);
+									builder.trail(trail);
+
+									if (!colors.isEmpty())
+										builder.withColor(colors);
+
+									if (!fadeColors.isEmpty())
+										builder.withFade(fadeColors);
+
+									fmeta.addEffect(builder.build());
+								}
+							}
+						}
+
+				} else if (meta instanceof MapMeta) {
+					final MapMeta mmeta = (MapMeta) meta;
+					final Boolean scaling = extraJson.getBoolean("scaling");
+
+					if (scaling != null)
+						mmeta.setScaling(scaling);
+				}
+
+			} catch (final Exception e) {
 				return null;
-		} else
-			return null;
+			}
+
+		item.setItemMeta(meta);
+
+		return item;
 	}
 }
