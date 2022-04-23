@@ -963,8 +963,6 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 
 			for (final Map.Entry<String, Object> entry : this.map.entrySet()) {
 				final Object key = SerializeUtil.serialize(entry.getKey());
-
-				System.out.println("Serializing '" + key + "' -> " + entry.getValue());
 				final Object value = SerializeUtil.serialize(entry.getValue());
 
 				if (key != null && value != null)
