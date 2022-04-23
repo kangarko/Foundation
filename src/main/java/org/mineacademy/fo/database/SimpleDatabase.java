@@ -165,6 +165,21 @@ public class SimpleDatabase {
 			// Close any open connection
 			this.close();
 
+			// Support local storage of databases on your disk, typically in your plugin's folder
+			// Make sure to load the library using "libraries" and "legacy-libraries" feature in plugin.yml:
+			//
+			// libraries:
+			// - org.xerial:sqlite-jdbc:3.36.0.3
+			//
+			// legacy-libraries:
+			// - org.xerial:sqlite-jdbc:3.36.0.3
+			//
+			if (url.startsWith("jdbc:sqlite")) {
+				Class.forName("org.sqlite.JDBC");
+
+				this.connection = DriverManager.getConnection(url);
+			}
+
 			// Avoid using imports so that Foundation users don't have to include Hikari, you can
 			// optionally load the library using "libraries" and "legacy-libraries" feature in plugin.yml:
 			//
@@ -175,7 +190,7 @@ public class SimpleDatabase {
 			//  - org.slf4j:slf4j-api:1.7.36
 			//  - com.zaxxer:HikariCP:4.0.3
 			//
-			if (ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig")) {
+			else if (ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig")) {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
@@ -213,12 +228,6 @@ public class SimpleDatabase {
 
 					t.printStackTrace();
 				}
-			}
-
-			else if (url.startsWith("jdbc:sqlite")) {
-				Class.forName("org.sqlite.JDBC");
-
-				this.connection = DriverManager.getConnection(url);
 			}
 
 			/*
