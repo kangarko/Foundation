@@ -571,7 +571,7 @@ public final class BlockUtil {
 			return false;
 
 		try {
-			if ((boolean) ReflectionUtil.invoke("isInteractable", material)) // Ignore chests etc.
+			if (material.isInteractable()) // Ignore chests etc.
 				return false;
 
 		} catch (final Throwable t) {
