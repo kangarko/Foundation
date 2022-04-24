@@ -1256,6 +1256,8 @@ public abstract class FileConfig {
 					return;
 				}
 
+				this.onPreSave();
+
 				if (this.canSaveFile()) {
 					this.onSave();
 
@@ -1288,8 +1290,16 @@ public abstract class FileConfig {
 	}
 
 	/**
+	 * Called automatically before {@link #canSaveFile()}
+	 */
+	protected void onPreSave() {
+	}
+
+	/**
 	 * Called automatically on saving the configuration, you can call "set(path, value)" methods here
 	 * to save your class fields. We automatically save what you have in {@link #saveToMap()} if not null.
+	 *
+	 * Called after {@link #canSaveFile()}
 	 */
 	protected void onSave() {
 		final SerializedMap map = this.saveToMap();
