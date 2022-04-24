@@ -6,10 +6,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -281,7 +283,7 @@ public class SimpleDatabase {
 	 * Attempts to connect using last known credentials. Fails gracefully if those are not provided
 	 * i.e. connect function was never called
 	 */
-	private final void connectUsingLastCredentials() {
+	protected final void connectUsingLastCredentials() {
 		if (this.lastCredentials != null)
 			this.connect(this.lastCredentials.url, this.lastCredentials.user, this.lastCredentials.password, this.lastCredentials.table);
 	}
@@ -497,6 +499,58 @@ public class SimpleDatabase {
 	}
 
 	/**
+	 * Returns the amount of rows from the given table per the key-value conditions.
+	 *
+	 * Example conditions: count("MyTable", "Player", "kangarko, "Status", "PENDING")
+	 * This example will return all rows where column Player is equal to kangarko and Status column equals PENDING.
+	 *
+	 * @param table
+	 * @param array
+	 * @return
+	 */
+	protected final int count(String table, Object... array) {
+		return this.count(table, SerializedMap.ofArray(array));
+	}
+
+	/**
+	 * Returns the amount of rows from the given table per the conditions,
+	 *
+	 * Example conditions: SerializedMap.ofArray("Player", "kangarko, "Status", "PENDING")
+	 * This example will return all rows where column Player is equal to kangarko and Status column equals PENDING.
+	 *
+	 * @param table
+	 * @param conditions
+	 * @return
+	 */
+	protected final int count(String table, SerializedMap conditions) {
+
+		// Convert conditions into SQL syntax
+		final Set<String> conditionsList = Common.convertSet(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtil.serialize(entry.getValue()) + "'");
+
+		// Run the query
+		final String sql = "SELECT * FROM " + table + (conditionsList.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditionsList)) + ";";
+
+		try {
+			final ResultSet resultSet = this.query(sql);
+			int count = 0;
+
+			while (resultSet.next())
+				count++;
+
+			return count;
+
+		} catch (final SQLException ex) {
+			Common.throwError(ex,
+					"Unable to count rows!",
+					"Table: " + this.replaceVariables(table),
+					"Conditions: " + conditions,
+					"Query: " + sql);
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Attempts to execute a new query
 	 * <p>
 	 * Make sure you called connect() first otherwise an error will be thrown
@@ -523,6 +577,9 @@ public class SimpleDatabase {
 			return resultSet;
 
 		} catch (final SQLException ex) {
+			if (ex instanceof SQLSyntaxErrorException && ex.getMessage().startsWith("Table") && ex.getMessage().endsWith("doesn't exist"))
+				return new DummyResultSet();
+
 			this.handleError(ex, "Error on querying MySQL with: " + sql);
 		}
 
@@ -620,8 +677,31 @@ public class SimpleDatabase {
 		sql = this.replaceVariables(sql);
 
 		Debugger.debug("mysql", "Preparing statement: " + sql);
-
 		return this.connection.prepareStatement(sql);
+	}
+
+	/**
+	 * Attempts to return a prepared statement
+	 * <p>
+	 * Make sure you called connect() first otherwise an error will be thrown
+	 *
+	 * @param sql
+	 * @param type
+	 * @param concurrency
+	 *
+	 * @return
+	 * @throws SQLException
+	 */
+	protected final java.sql.PreparedStatement prepareStatement(String sql, int type, int concurrency) throws SQLException {
+		this.checkEstablished();
+
+		if (!this.isConnected())
+			this.connectUsingLastCredentials();
+
+		sql = this.replaceVariables(sql);
+
+		Debugger.debug("mysql", "Preparing statement: " + sql);
+		return this.connection.prepareStatement(sql, type, concurrency);
 	}
 
 	/**
