@@ -168,6 +168,17 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	}
 
 	/**
+	 * Puts the key-value pair into the map if the value is not null and non zero
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIfNonZero(final String key, final Number value) {
+		if (value != null && value.longValue() != 0)
+			put(key, value);
+	}
+
+	/**
 	 * Puts the key-value pair into the map if the value is not null
 	 *
 	 * @param key
