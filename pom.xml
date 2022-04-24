@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>DiscordSRV</artifactId>
-			<version>1.25.0</version>
+			<version>1.26.0-SNAPSHOT-58ab62b</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
