@@ -1,6 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,8 +25,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -3147,10 +3144,10 @@ class DiscordSRVHook {
 	}
 
 	boolean sendMessage(final String channel, final String message) {
-		return sendMessage((CommandSender) null, channel, message);
+		return sendMessage(null, channel, message);
 	}
 
-	boolean sendMessage(final CommandSender sender, final String channel, final String message) {
+	boolean sendMessage(@Nullable CommandSender sender, final String channel, final String message) {
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// Channel not configured in DiscordSRV config.yml, ignore
@@ -3165,25 +3162,21 @@ class DiscordSRVHook {
 
 			final DiscordSRV instance = JavaPlugin.getPlugin(DiscordSRV.class);
 
-			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage method to function
-			final File file = new File(SimplePlugin.getData().getParent(), "DiscordSRV/config.yml");
+			// Dirty: We have to temporarily set a config value in DiscordSRV to enable the processChatMessage method to function
+			final String key = "DiscordChatChannelMinecraftToDiscord";
+			final Map<String, Object> runtimeValues = ReflectionUtil.getFieldContent(DiscordSRV.config(), "runtimeValues");
+			final Object oldValue = runtimeValues.get(key);
 
-			if (file.exists()) {
-				final FileConfiguration discordConfig = YamlConfiguration.loadConfiguration(file);
+			runtimeValues.put(key, true);
 
-				if (discordConfig != null) {
-					final String outMessageKey = "DiscordChatChannelMinecraftToDiscord";
-					final boolean outMessageOldValue = discordConfig.getBoolean(outMessageKey);
+			try {
+				instance.processChatMessage((Player) sender, message, channel, false);
 
-					discordConfig.set(outMessageKey, true);
-
-					try {
-						instance.processChatMessage((Player) sender, message, channel, false);
-
-					} finally {
-						discordConfig.set(outMessageKey, outMessageOldValue);
-					}
-				}
+			} finally {
+				if (oldValue == null)
+					runtimeValues.remove(key);
+				else
+					runtimeValues.put(key, oldValue);
 			}
 
 		} else {
@@ -3191,6 +3184,7 @@ class DiscordSRVHook {
 
 			DiscordUtil.sendMessage(textChannel, message);
 		}
+
 		return true;
 	}
 }
@@ -3346,16 +3340,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
