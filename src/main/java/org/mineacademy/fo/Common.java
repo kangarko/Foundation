@@ -1736,6 +1736,19 @@ public final class Common {
 	}
 
 	/**
+	 * Joins a list of a given type using the comma delimiter and a helper interface
+	 * to convert each element in the array into string
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param stringer
+	 * @return
+	 */
+	public static <T> String join(final Iterable<T> array, final Stringer<T> stringer) {
+		return join(array, ", ", stringer);
+	}
+
+	/**
 	 * Joins a list of a given type using the given delimiter and a helper interface
 	 * to convert each element in the array into string
 	 *
