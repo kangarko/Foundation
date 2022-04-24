@@ -1234,6 +1234,11 @@ public final class HookManager {
 		message = isPlaceholderAPILoaded() ? placeholderAPIHook.replacePlaceholders(player, message) : message;
 		message = isMVdWPlaceholderAPILoaded() ? MVdWPlaceholderHook.replacePlaceholders(player, message) : message;
 
+		if (!isPlaceholderAPILoaded())
+			Debugger.debug("placeholder-api", "Not replacing PAPI placeholders in '" + message + "' as the plugin is not yet loaded");
+		else
+			Debugger.debug("placeholder-api", "Replacing PAPI placeholders in: " + message);
+
 		return message;
 	}
 
@@ -3340,16 +3345,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
