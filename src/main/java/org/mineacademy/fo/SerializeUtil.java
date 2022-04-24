@@ -23,6 +23,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -176,6 +177,9 @@ public final class SerializeUtil {
 
 			else if (object instanceof World)
 				return ((World) object).getName();
+
+			else if (object instanceof Entity)
+				return Remain.getName((Entity) object);
 
 			else if (object instanceof PotionEffectType)
 				return ((PotionEffectType) object).getName();
