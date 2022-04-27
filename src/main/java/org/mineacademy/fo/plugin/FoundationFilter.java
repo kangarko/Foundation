@@ -33,7 +33,7 @@ final class FoundationFilter {
 	/**
 	 * Start filtering the console
 	 */
-	public static void inject() {
+	static void inject() {
 
 		// Set filter for System out
 		System.setOut(new FilterSystem());
