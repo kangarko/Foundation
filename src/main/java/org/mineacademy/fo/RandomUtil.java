@@ -29,7 +29,7 @@ public final class RandomUtil {
 	/**
 	 * Symbols for chat colors using the & character including decorations like bold italics etc
 	 */
-	private static final char[] COLORS_AND_DECORATION = new char[] {
+	private static final char[] COLORS_AND_DECORATION = {
 			'0', '1', '2', '3', '4',
 			'5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e',
@@ -39,7 +39,7 @@ public final class RandomUtil {
 	/**
 	 * Only valid chat colors without decorations
 	 */
-	private static final char[] CHAT_COLORS = new char[] {
+	private static final char[] CHAT_COLORS = {
 			'0', '1', '2', '3', '4',
 			'5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e',
@@ -49,7 +49,7 @@ public final class RandomUtil {
 	/**
 	 * English alphabet letters
 	 */
-	private static final char[] LETTERS = new char[] {
+	private static final char[] LETTERS = {
 			'a', 'b', 'c', 'd', 'e',
 			'f', 'g', 'h', 'i', 'j',
 			'k', 'l', 'm', 'n', 'o',
@@ -248,9 +248,8 @@ public final class RandomUtil {
 
 		final double x = randomRadius * Math.cos(theta) * Math.sin(phi);
 		final double z = randomRadius * Math.cos(phi);
-		final Location newLoc = origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 
-		return newLoc;
+		return origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 	}
 
 	/**
