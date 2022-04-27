@@ -445,11 +445,13 @@ public abstract class SimpleCommand extends Command {
 		if (isPlayer()) {
 			final Player player = getPlayer();
 
-			final long lastExecution = cooldownMap.getOrDefault(player.getUniqueId(), 0L);
-			final long lastExecutionDifference = (System.currentTimeMillis() - lastExecution) / 1000;
+			final long lastRun = cooldownMap.getOrDefault(player.getUniqueId(), 0L);
+			final long difference = (System.currentTimeMillis() - lastRun) / 1000;
 
-			// Check if the command was not run earlier within the wait threshold
-			checkBoolean(lastExecution == 0 || lastExecutionDifference > cooldownSeconds, Common.getOrDefault(cooldownMessage, SimpleLocalization.Commands.COOLDOWN_WAIT).replace("{duration}", cooldownSeconds - lastExecutionDifference + 1 + ""));
+			// Check if the command was run earlier within the wait threshold
+			if (lastRun != 0)
+				checkBoolean(difference > cooldownSeconds, Common.getOrDefault(cooldownMessage, SimpleLocalization.Commands.COOLDOWN_WAIT)
+						.replace("{duration}", String.valueOf(cooldownSeconds - difference + 1)));
 
 			// Update the last try with the current time
 			cooldownMap.put(player.getUniqueId(), System.currentTimeMillis());
@@ -1394,7 +1396,7 @@ public abstract class SimpleCommand extends Command {
 	protected final void setCooldown(final int cooldown, final TimeUnit unit) {
 		Valid.checkBoolean(cooldown >= 0, "Cooldown must be >= 0 for /" + getLabel());
 
-		cooldownSeconds = (int) unit.toSeconds(cooldown);
+		this.cooldownSeconds = (int) unit.toSeconds(cooldown);
 	}
 
 	/**
