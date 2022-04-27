@@ -779,9 +779,11 @@ public abstract class SimpleCommand extends Command {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final <T extends Number & Comparable<T>> T findNumber(final Class<T> numberType, final int index, final T min, final T max, final String falseMessage) {
+	protected final <T extends Number & Comparable<T>> T findNumber(final Class<T> numberType, final int index, final T min, final T max, String falseMessage) {
+		falseMessage = falseMessage.replace("{min}", min + "").replace("{max}", max + "");
+
 		final T number = findNumber(numberType, index, falseMessage);
-		checkBoolean(number.compareTo(min) >= 0 && number.compareTo(max) <= 0, falseMessage.replace("{min}", min + "").replace("{max}", max + ""));
+		checkBoolean(number.compareTo(min) >= 0 && number.compareTo(max) <= 0, falseMessage);
 
 		return number;
 	}
