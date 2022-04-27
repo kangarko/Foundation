@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -29,6 +31,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -175,6 +178,48 @@ public final class FileUtil {
 	// ----------------------------------------------------------------------------------------------------
 	// Reading
 	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return all lines from the given URL, opening a connection with a fake user agent first
+	 *
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
+	public static List<String> readLines(URL url) throws IOException {
+
+		final URLConnection connection = url.openConnection();
+
+		// Set a random user agent to prevent most webhostings from rejecting with 403
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7) Gecko/20040803 Firefox/0.9.3");
+		connection.setConnectTimeout(6000);
+		connection.setReadTimeout(6000);
+		connection.setDoOutput(true);
+
+		return readLines(connection);
+	}
+
+	/**
+	 * Return all lines from the given connection
+	 *
+	 * @param connection
+	 * @return
+	 */
+	public static List<String> readLines(URLConnection connection) {
+		final List<String> lines = new ArrayList<>();
+
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+			String inputLine;
+
+			while ((inputLine = reader.readLine()) != null)
+				lines.add(inputLine);
+
+		} catch (final IOException ex) {
+			Remain.sneaky(ex);
+		}
+
+		return lines;
+	}
 
 	/**
 	 * Return all lines from file in a path in our plugin folder, file must exists.
