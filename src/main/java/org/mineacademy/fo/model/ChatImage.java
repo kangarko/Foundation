@@ -1,6 +1,6 @@
 package org.mineacademy.fo.model;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -125,10 +125,24 @@ public final class ChatImage {
 
 		final BufferedImage image = ImageIO.read(file);
 
-		if (image == null)
+		final BufferedImage newImage = new BufferedImage(
+				image.getWidth(),
+				image.getHeight(),
+				BufferedImage.TYPE_INT_RGB
+		);
+
+		if (newImage == null)
 			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
 
-		final CompChatColor[][] chatColors = parseImage(image, height);
+		else newImage.createGraphics()
+				.drawImage(image,
+						0,
+						0,
+						Color.WHITE,
+						null
+				);
+
+		final CompChatColor[][] chatColors = parseImage(newImage, height);
 		final ChatImage chatImage = new ChatImage();
 
 		chatImage.lines = parseColors(chatColors, characterType);
@@ -152,14 +166,14 @@ public final class ChatImage {
 	/*
 	 * Parse the given image into chat colors
 	 */
-	private static CompChatColor[][] parseImage(BufferedImage image, int height) {
-		final double ratio = (double) image.getHeight() / image.getWidth();
+	private static CompChatColor[][] parseImage(BufferedImage newImage, int height) {
+		final double ratio = (double) newImage.getHeight() / newImage.getWidth();
 		int width = (int) (height / ratio);
 
 		if (width > 10)
 			width = 10;
 
-		final BufferedImage resized = resizeImage(image, (int) (height / ratio), height);
+		final BufferedImage resized = resizeImage(newImage, (int) (height / ratio), height);
 		final CompChatColor[][] chatImg = new CompChatColor[resized.getWidth()][resized.getHeight()];
 
 		for (int x = 0; x < resized.getWidth(); x++)
