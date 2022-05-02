@@ -125,29 +125,32 @@ public final class ChatImage {
 
 		final BufferedImage image = ImageIO.read(file);
 
-		if (image == null)
+		if (image == null) {
 			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
 
-		final BufferedImage newImage = new BufferedImage(
-				image.getWidth(),
-				image.getHeight(),
-				BufferedImage.TYPE_INT_RGB
-		);
+		} else {
 
-		newImage.createGraphics()
-				.drawImage(image,
-						0,
-						0,
-						Color.WHITE,
-						null
-				);
+			final BufferedImage newImage = new BufferedImage(
+					image.getWidth(),
+					image.getHeight(),
+					BufferedImage.TYPE_INT_RGB
+			);
 
-		final CompChatColor[][] chatColors = parseImage(newImage, height);
-		final ChatImage chatImage = new ChatImage();
+			newImage.createGraphics()
+					.drawImage(image,
+							0,
+							0,
+							Color.WHITE,
+							null
+					);
 
-		chatImage.lines = parseColors(chatColors, characterType);
+			final CompChatColor[][] chatColors = parseImage(newImage, height);
+			final ChatImage chatImage = new ChatImage();
 
-		return chatImage;
+			chatImage.lines = parseColors(chatColors, characterType);
+
+			return chatImage;
+		}
 	}
 
 	/**
