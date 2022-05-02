@@ -125,16 +125,16 @@ public final class ChatImage {
 
 		final BufferedImage image = ImageIO.read(file);
 
+		if (image == null)
+			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
+
 		final BufferedImage newImage = new BufferedImage(
 				image.getWidth(),
 				image.getHeight(),
 				BufferedImage.TYPE_INT_RGB
 		);
 
-		if (newImage == null)
-			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
-
-		else newImage.createGraphics()
+		newImage.createGraphics()
 				.drawImage(image,
 						0,
 						0,
