@@ -211,8 +211,8 @@ public final class ChatUtil {
 	}
 
 	/**
-	 * <p>Converts all the whitespace separated words in a String into capitalized words, 
-	 * that is each word is made up of a titlecase character and then a series of 
+	 * <p>Converts all the whitespace separated words in a String into capitalized words,
+	 * that is each word is made up of a titlecase character and then a series of
 	 * lowercase characters.  </p>
 	 *
 	 * <p>Whitespace is defined by {@link Character#isWhitespace(char)}.
@@ -225,7 +225,7 @@ public final class ChatUtil {
 	 * capitalizeFully("")          = ""
 	 * capitalizeFully("i am FINE") = "I Am Fine"
 	 * </pre>
-	 * 
+	 *
 	 * @param message  the String to capitalize, may be null
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
@@ -246,6 +246,7 @@ public final class ChatUtil {
 	 * capitalize(null)        = null
 	 * capitalize("")          = ""
 	 * capitalize("i am FINE") = "I Am FINE"
+	 * capitalize("&7i am FINE") = "I Am FINE" // Colors are supported!
 	 * </pre>
 	 *
 	 * @author Apache Commons - WordUtils
@@ -258,17 +259,33 @@ public final class ChatUtil {
 
 		final int length = message.length();
 		final StringBuffer buffer = new StringBuffer(length);
+
 		boolean next = true;
+		boolean skipColor = false;
 
 		for (int i = 0; i < length; i++) {
 			final char letter = message.charAt(i);
 
-			if (next) {
+			if (next && !skipColor) {
+
+				if ((letter == ChatColor.COLOR_CHAR || letter == '&') && i + 1 < message.length()) {
+					final char evenNext = message.charAt(i + 1);
+
+					if (Common.hasColors("&" + evenNext)) {
+						buffer.append(letter);
+
+						skipColor = true;
+						continue;
+					}
+				}
+
 				buffer.append(Character.toTitleCase(letter));
 				next = false;
 
 			} else
 				buffer.append(letter);
+
+			skipColor = false;
 		}
 
 		return buffer.toString();
