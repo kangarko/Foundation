@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +53,6 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
-import com.comphenix.protocol.injector.server.TemporaryPlayer;
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
@@ -1148,7 +1146,7 @@ public final class HookManager {
 
 	/**
 	 * Checks if the given player has the given permission, safe to use
-	 * for instances where the player may be a {@link TemporaryPlayer} from
+	 * for instances where the player may be a temporary player from
 	 * ProtocolLib where then we use Vault to check the players perm
 	 *
 	 * @param player
@@ -1954,14 +1952,14 @@ class ProtocolLibHook {
 		try {
 			manager.sendServerPacket(player, (PacketContainer) packet);
 
-		} catch (final InvocationTargetException e) {
+		} catch (final Exception e) {
 			Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
 		}
 	}
 
 	final boolean isTemporaryPlayer(Player player) {
 		try {
-			return player instanceof TemporaryPlayer;
+			return player != null && player.getClass().getSimpleName().contains("TemporaryPlayer"); // Solves compatibiltiy issues
 
 		} catch (final NoClassDefFoundError err) {
 			return false;
