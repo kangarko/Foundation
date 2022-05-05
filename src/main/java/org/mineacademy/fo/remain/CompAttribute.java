@@ -163,17 +163,22 @@ public enum CompAttribute {
 			instance.setBaseValue(value);
 
 		} catch (NullPointerException | NoSuchMethodError | NoClassDefFoundError ex) {
-			try {
-				if (hasLegacy())
-					setLegacy(entity, value);
 
-			} catch (final Throwable t) {
-				if (MinecraftVersion.equals(V.v1_8))
-					t.printStackTrace();
+			if (this == GENERIC_MAX_HEALTH)
+				entity.setMaxHealth(value);
 
-				if (t instanceof NullPointerException)
-					throw new FoException("Attribute " + this + " cannot be set for " + entity);
-			}
+			else
+				try {
+					if (hasLegacy())
+						setLegacy(entity, value);
+
+				} catch (final Throwable t) {
+					if (MinecraftVersion.equals(V.v1_8))
+						t.printStackTrace();
+
+					if (t instanceof NullPointerException)
+						throw new FoException("Attribute " + this + " cannot be set for " + entity);
+				}
 		}
 	}
 
