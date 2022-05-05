@@ -155,8 +155,8 @@ public final class FileUtil {
 	/**
 	 * Return all files in our plugin directory within a given path, ending with the given extension
 	 *
-	 * @param directory
-	 * @param extension
+	 * @param directory inside your plugin's folder
+	 * @param extension where dot is placed automatically in case it is lacking
 	 * @return
 	 */
 	public static File[] getFiles(@NonNull String directory, @NonNull String extension) {
