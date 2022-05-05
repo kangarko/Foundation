@@ -1,5 +1,14 @@
 package org.mineacademy.fo.settings;
 
+import lombok.NonNull;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.mineacademy.fo.ChatUtil;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictMap;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -10,20 +19,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictMap;
-
-import lombok.NonNull;
-
 /**
  * A special class that can store loaded {@link YamlConfig} files
- *
+ * <p>
  * DOES NOT INVOKE {@link YamlConfig#loadConfiguration(String, String)}
  * for you, you must invoke it by yourself as you otherwise normally would!
  *
@@ -53,26 +51,25 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * <p>
 	 * *MUST* have a private constructor without any arguments
 	 */
-	private final Class<T> prototypeClass;
+	private final Function<String, Class<T>> prototypeCreator;
 
 	/**
 	 * Are all items stored in a single file?
 	 */
-	private boolean singleFile = false;
+	private final boolean singleFile;
 
 	/**
 	 * Create a new config items instance
 	 *
 	 * @param type
 	 * @param folder
-	 * @param prototypeClass
-	 * @param hasDefaultPrototype
+	 * @param prototypeCreator
 	 * @param singleFile
 	 */
-	private ConfigItems(String type, String folder, Class<T> prototypeClass, boolean singleFile) {
+	private ConfigItems(String type, String folder, Function<String, Class<T>> prototypeCreator, boolean singleFile) {
 		this.type = type;
 		this.folder = folder;
-		this.prototypeClass = prototypeClass;
+		this.prototypeCreator = prototypeCreator;
 		this.singleFile = singleFile;
 	}
 
@@ -85,7 +82,19 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
-		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeClass, false);
+		return fromFolder(folder, s -> prototypeClass);
+	}
+
+	/**
+	 * Load items from the given folder
+	 *
+	 * @param <P>
+	 * @param folder
+	 * @param prototypeCreator
+	 * @return
+	 */
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Function<String, Class<P>> prototypeCreator) {
+		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeCreator, false);
 	}
 
 	/**
@@ -98,7 +107,20 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
-		return new ConfigItems<>(path, file, prototypeClass, true);
+		return fromFile(path, file, s -> prototypeClass);
+	}
+
+	/**
+	 * Load items from the given YAML file path
+	 *
+	 * @param <P>
+	 * @param path
+	 * @param file
+	 * @param prototypeCreator
+	 * @return
+	 */
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Function<String, Class<P>> prototypeCreator) {
+		return new ConfigItems<>(path, file, prototypeCreator, true);
 	}
 
 	/**
@@ -126,9 +148,7 @@ public final class ConfigItems<T extends YamlConfig> {
 			if (config.isSet(this.type))
 				for (final String name : config.getConfigurationSection(this.type).getKeys(false))
 					loadOrCreateItem(name);
-		}
-
-		else {
+		} else {
 			// Try copy items from our JAR
 			if (!FileUtil.getFile(folder).exists())
 				FileUtil.extractFolderFromJar(folder + "/", folder);
@@ -166,9 +186,8 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @param name
 	 * @param instantiator by default we create new instances of your item by calling its constructor,
-	 * 		  which either can be a no args one or one taking a single argument, the name. If that is not
-	 * 		  sufficient, you can supply your custom instantiator here.
-	 *
+	 *                     which either can be a no args one or one taking a single argument, the name. If that is not
+	 *                     sufficient, you can supply your custom instantiator here.
 	 * @return
 	 */
 	public T loadOrCreateItem(@NonNull final String name, @Nullable Supplier<T> instantiator) {
@@ -185,6 +204,9 @@ public final class ConfigItems<T extends YamlConfig> {
 			else {
 				Constructor<T> constructor;
 				boolean nameConstructor = true;
+
+				final Class<T> prototypeClass = this.prototypeCreator.apply(name);
+				Valid.checkNotNull(prototypeClass);
 
 				try {
 					constructor = prototypeClass.getDeclaredConstructor(String.class);
@@ -212,10 +234,10 @@ public final class ConfigItems<T extends YamlConfig> {
 			loadedItemsMap.put(name, item);
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Failed to load" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + (this.singleFile ? "" : " from " + folder));
+			Common.throwError(t, "Failed to load" + name + (this.singleFile ? "" : " from " + folder));
 		}
 
-		Valid.checkNotNull(item, "Failed to initiliaze" + (type == null ? prototypeClass.getSimpleName() : " " + type) + " " + name + " from " + folder);
+		Valid.checkNotNull(item, "Failed to initiliaze " + name + " from " + folder);
 		return item;
 	}
 
@@ -225,8 +247,17 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param item
 	 */
 	public void removeItem(@NonNull final T item) {
-		final String name = item.getName();
-		Valid.checkBoolean(isItemLoaded(name), ChatUtil.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
+		this.removeItemByName(item.getName());
+	}
+
+	/**
+	 * Remove the given item by instance
+	 *
+	 * @param name
+	 */
+	public void removeItemByName(@NonNull final String name) {
+		T item = findItem(name);
+		Valid.checkNotNull(item, ChatUtil.capitalize(type) + " " + name + " not loaded. Available: " + getItemNames());
 
 		if (this.singleFile) {
 			item.save("", null);
