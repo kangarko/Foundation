@@ -1640,10 +1640,18 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static int getPlaytimeMinutes(final Player player) {
+	public static int getPlaytimeMinutes(final OfflinePlayer player) {
 		final Statistic stat = getPlayTimeStatisticName();
+		long value;
 
-		return player.getStatistic(stat) / (stat.name().contains("TICK") ? 20 * 60 : 60 * 60);
+		try {
+			value = player.getStatistic(stat);
+
+		} catch (final NoSuchMethodError err) {
+			value = PlayerUtil.getStatistic(player, getPlayTimeStatisticName());
+		}
+
+		return (int) (value / (stat.name().contains("TICK") ? 20 * 60 : 1));
 	}
 
 	/**
