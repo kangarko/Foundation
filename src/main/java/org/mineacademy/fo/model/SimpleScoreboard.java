@@ -427,7 +427,7 @@ public class SimpleScoreboard {
 			Team line = scoreboard.getTeam("line" + scoreboardLineNumber);
 
 			if (lineNumber < this.rows.size()) {
-				final String text = this.replaceTheme(this.replaceVariables(player, this.rows.get(lineNumber)));
+				final String text = this.replaceTheme(this.replaceVariables(player, this.rows.get(lineNumber).replace("{player}", player.getName())));
 				final ScoreboardLine scoreboardLine = new ScoreboardLine(text, lineEntries.get(lineNumber));
 
 				if (line == null)
