@@ -396,6 +396,27 @@ public class YamlConfig extends FileConfig {
 		return config;
 	}
 
+	/**
+	 * Loads configuration from the file in your plugin's folder.
+	 *
+	 * @param file
+	 * @return
+	 */
+	@NonNull
+	public static final YamlConfig fromFileFast(@NonNull File file) {
+		final YamlConfig config = new YamlConfig();
+
+		try {
+			List<String> content = FileUtil.readLines(file);
+			config.loadFromString(String.join("\n", content));
+
+		} catch (final Exception ex) {
+			Bukkit.getLogger().log(Level.SEVERE, "Cannot load " + file, ex);
+		}
+
+		return config;
+	}
+
 	// -----------------------------------------------------------------------------------------------------
 	// Classes
 	// -----------------------------------------------------------------------------------------------------
