@@ -455,8 +455,19 @@ public final class Valid {
 	 * @return
 	 */
 	public boolean locationEquals(final Location first, final Location sec) {
-		if (!first.getWorld().getName().equals(sec.getWorld().getName()))
+
+		if (first == null && sec == null)
+			return true;
+
+		if ((first == null && sec == null) || (first != null && sec == null))
 			return false;
+
+		try {
+			if (!first.getWorld().getName().equals(sec.getWorld().getName()))
+				return false;
+		} catch (final NullPointerException ex) {
+			// Ignore
+		}
 
 		return first.getBlockX() == sec.getBlockX() && first.getBlockY() == sec.getBlockY() && first.getBlockZ() == sec.getBlockZ();
 	}
