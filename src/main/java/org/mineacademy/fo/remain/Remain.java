@@ -1640,18 +1640,21 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static int getPlaytimeMinutes(final OfflinePlayer player) {
-		final Statistic stat = getPlayTimeStatisticName();
-		long value;
+	public static long getPlaytimeMinutes(final OfflinePlayer player) {
+		return getPlaytimeSeconds(player) / 60;
+	}
 
-		try {
-			value = player.getStatistic(stat);
+	/**
+	 * Return how long the player has played on this server (pulled from your world statistics file)
+	 * in seconds.
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static long getPlaytimeSeconds(final OfflinePlayer player) {
+		final long value = PlayerUtil.getStatistic(player, getPlayTimeStatisticName());
 
-		} catch (final NoSuchMethodError err) {
-			value = PlayerUtil.getStatistic(player, getPlayTimeStatisticName());
-		}
-
-		return (int) (value / (stat.name().contains("TICK") ? 20 * 60 : 1));
+		return value / 20;
 	}
 
 	/**
