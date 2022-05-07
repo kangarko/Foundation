@@ -572,15 +572,31 @@ public abstract class SimpleCommand extends Command {
 	 * The offline player lookup is done async, the callback is synchronized.
 	 *
 	 * @param name
-	 * @param callback
+	 * @param syncCallback
 	 * @throws CommandException
 	 */
-	protected final void findOfflinePlayer(final String name, Consumer<OfflinePlayer> callback) throws CommandException {
+	protected final void findOfflinePlayer(final String name, Consumer<OfflinePlayer> syncCallback) throws CommandException {
 		runAsync(() -> {
 			final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
 			checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
 
-			runLater(() -> callback.accept(targetPlayer));
+			runLater(() -> syncCallback.accept(targetPlayer));
+		});
+	}
+
+	/**
+	 * Attempts to find the offline player by UUID, this will fire the callback
+	 *
+	 * @param uniqueId
+	 * @param syncCallback
+	 * @throws CommandException
+	 */
+	protected final void findOfflinePlayer(final UUID uniqueId, Consumer<OfflinePlayer> syncCallback) throws CommandException {
+		runAsync(() -> {
+			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUUID(uniqueId);
+			checkNotNull(targetPlayer, SimpleLocalization.Player.INVALID_UUID.replace("{uuid}", uniqueId.toString()));
+
+			runLater(() -> syncCallback.accept(targetPlayer));
 		});
 	}
 
