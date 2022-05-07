@@ -76,7 +76,7 @@ public class SimpleScoreboard {
 	 * The update tick delay
 	 */
 	@Getter
-	private int updateDelayTicks;
+	private int updateDelayTicks = 20;
 
 	/**
 	 * The running update task
