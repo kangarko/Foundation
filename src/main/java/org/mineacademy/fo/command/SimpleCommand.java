@@ -530,6 +530,14 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_ARGUMENT}
+	 * message for player if the condition does not meet
+	 */
+	protected final void checkArgs(boolean condition) {
+		checkBoolean(condition, SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", getLabel()));
+	}
+
+	/**
 	 * Checks if the given boolean is true
 	 *
 	 * @param value
