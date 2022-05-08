@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
+import org.mineacademy.fo.settings.YamlConfig;
 
 /**
  * A simple predefined sub-command for quickly reloading the plugin
