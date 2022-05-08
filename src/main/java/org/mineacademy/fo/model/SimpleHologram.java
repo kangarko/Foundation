@@ -111,7 +111,7 @@ public abstract class SimpleHologram {
 			for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext();) {
 				final SimpleHologram model = it.next();
 
-				if (model.isSpawned()) {
+				if (model.isSpawned())
 					if (!model.getEntity().isValid() || model.getEntity().isDead()) {
 						model.removeLore();
 						model.getEntity().remove();
@@ -119,7 +119,6 @@ public abstract class SimpleHologram {
 						it.remove();
 					} else
 						model.tick();
-				}
 			}
 		});
 	}
@@ -269,7 +268,7 @@ public abstract class SimpleHologram {
 	 * @return
 	 */
 	public final Location getLastTeleportLocation() {
-		return lastTeleportLocation.clone();
+		return this.lastTeleportLocation.clone();
 	}
 
 	/**

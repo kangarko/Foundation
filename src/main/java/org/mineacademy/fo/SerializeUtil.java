@@ -306,15 +306,13 @@ public final class SerializeUtil {
 						if (value instanceof List) {
 							final JSONArray array = new JSONArray();
 
-							for (final Object listValue : (List<?>) value) {
-
+							for (final Object listValue : (List<?>) value)
 								if (listValue == null || listValue instanceof Boolean || listValue instanceof Character || listValue instanceof String || listValue instanceof Number
 										|| listValue instanceof JSONArray || listValue instanceof JSONObject)
 									array.add(listValue);
 
 								else
 									throw new FoException("JSON requires List to only contain primitive types or strings, found " + listValue.getClass().getSimpleName() + ": " + listValue);
-							}
 
 							json.put(key == null ? null : key, array);
 
@@ -535,10 +533,9 @@ public final class SerializeUtil {
 					return null;
 			}
 
-			else if (Color.class.isAssignableFrom(classOf)) {
+			else if (Color.class.isAssignableFrom(classOf))
 				object = CompChatColor.of(object.toString()).getColor();
-
-			} else if (List.class.isAssignableFrom(classOf) && object instanceof List) {
+			else if (List.class.isAssignableFrom(classOf) && object instanceof List) {
 				// Good
 
 			} else if (Map.class.isAssignableFrom(classOf)) {
@@ -749,8 +746,7 @@ public final class SerializeUtil {
 			final ItemStack item = ItemStack.deserialize(map.asMap());
 			final SerializedMap meta = map.getMap("meta");
 
-			if (meta != null) {
-
+			if (meta != null)
 				try {
 					final Class<?> cl = ReflectionUtil.getOBCClass("inventory." + (meta.containsKey("spawnedType") ? "CraftMetaSpawnEgg" : "CraftMetaItem"));
 					final Constructor<?> c = cl.getDeclaredConstructor(Map.class);
@@ -798,7 +794,6 @@ public final class SerializeUtil {
 
 					item.setItemMeta(itemMeta);
 				}
-			}
 
 			return item;
 
@@ -864,7 +859,7 @@ public final class SerializeUtil {
 		}
 
 		public String getMinecraftName() {
-			return Common.getOrDefault(minecraftName, bukkitName);
+			return Common.getOrDefault(this.minecraftName, this.bukkitName);
 		}
 	}
 
@@ -920,7 +915,7 @@ public final class SerializeUtil {
 		}
 
 		public String getBukkitName() {
-			return bukkitName != null ? bukkitName : name();
+			return this.bukkitName != null ? this.bukkitName : this.name();
 		}
 	}
 }

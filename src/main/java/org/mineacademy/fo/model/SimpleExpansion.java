@@ -37,7 +37,7 @@ public abstract class SimpleExpansion {
 	public final String replacePlaceholders(CommandSender sender, String params) {
 		this.args = params.split("\\_");
 
-		return onReplace(sender, params);
+		return this.onReplace(sender, params);
 	}
 
 	/**

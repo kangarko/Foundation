@@ -73,11 +73,11 @@ public class ButtonRemove extends Button {
 		return ItemCreator
 
 				.of(CompMaterial.LAVA_BUCKET)
-				.name(title.replace("{name}", toRemoveName))
+				.name(title.replace("{name}", this.toRemoveName))
 
 				.lore(Replacer.replaceArray(lore,
-						"name", toRemoveName,
-						"type", toRemoveType))
+						"name", this.toRemoveName,
+						"type", this.toRemoveType))
 
 				.flags(CompItemFlag.HIDE_ATTRIBUTES)
 				.make();
@@ -92,11 +92,11 @@ public class ButtonRemove extends Button {
 		return ItemCreator
 
 				.ofWool(CompColor.RED)
-				.name("&6&lRemove " + toRemoveName)
+				.name("&6&lRemove " + this.toRemoveName)
 
 				.lore(Arrays.asList(
 						"&r",
-						"&7Confirm that this " + toRemoveType + " will",
+						"&7Confirm that this " + this.toRemoveType + " will",
 						"&7be removed permanently.",
 						"&cCannot be undone."))
 
@@ -113,7 +113,7 @@ public class ButtonRemove extends Button {
 	 */
 	@Override
 	public void onClickedInMenu(final Player pl, final Menu menu, final ClickType click) {
-		new MenuDialogRemove(parentMenu, new RemoveConfirmButton()).displayTo(pl);
+		new MenuDialogRemove(this.parentMenu, new RemoveConfirmButton()).displayTo(pl);
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class ButtonRemove extends Button {
 
 		@Override
 		public ItemStack getItem() {
-			return getRemoveConfirmItem();
+			return ButtonRemove.this.getRemoveConfirmItem();
 		}
 
 		/**
@@ -133,9 +133,9 @@ public class ButtonRemove extends Button {
 		@Override
 		public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 			player.closeInventory();
-			removeAction.run();
+			ButtonRemove.this.removeAction.run();
 
-			Common.tell(player, SimpleLocalization.Menu.ITEM_DELETED.replace("{item}", (!toRemoveType.isEmpty() ? toRemoveType + " " : "") + toRemoveName));
+			Common.tell(player, SimpleLocalization.Menu.ITEM_DELETED.replace("{item}", (!ButtonRemove.this.toRemoveType.isEmpty() ? ButtonRemove.this.toRemoveType + " " : "") + ButtonRemove.this.toRemoveName));
 		}
 	}
 
@@ -164,10 +164,10 @@ public class ButtonRemove extends Button {
 			super(parentMenu);
 
 			this.confirmButton = confirmButton;
-			returnButton = new ButtonReturnBack(parentMenu);
+			this.returnButton = new ButtonReturnBack(parentMenu);
 
-			setSize(9 * 3);
-			setTitle(getMenuTitle());
+			this.setSize(9 * 3);
+			this.setTitle(ButtonRemove.this.getMenuTitle());
 		}
 
 		/**
@@ -179,10 +179,10 @@ public class ButtonRemove extends Button {
 		@Override
 		public ItemStack getItemAt(final int slot) {
 			if (slot == 9 + 3)
-				return confirmButton.getItem();
+				return this.confirmButton.getItem();
 
 			if (slot == 9 + 5)
-				return returnButton.getItem();
+				return this.returnButton.getItem();
 
 			return null;
 		}

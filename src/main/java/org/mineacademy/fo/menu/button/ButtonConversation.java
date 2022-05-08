@@ -85,15 +85,15 @@ public final class ButtonConversation extends Button {
 
 	@Override
 	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-		Valid.checkBoolean(conversation != null || prompt != null, "Conversation and prompt cannot be null!");
+		Valid.checkBoolean(this.conversation != null || this.prompt != null, "Conversation and prompt cannot be null!");
 
-		if (conversation != null) {
-			conversation.setMenuToReturnTo(menu);
+		if (this.conversation != null) {
+			this.conversation.setMenuToReturnTo(menu);
 
-			conversation.start(player);
+			this.conversation.start(player);
 
 		} else
-			prompt.show(player);
+			this.prompt.show(player);
 
 	}
 }

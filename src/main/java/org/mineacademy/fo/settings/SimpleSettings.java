@@ -34,7 +34,7 @@ public class SimpleSettings extends YamlStaticConfig {
 
 	@Override
 	protected final void onLoad() throws Exception {
-		loadConfiguration(getSettingsFileName());
+		this.loadConfiguration(this.getSettingsFileName());
 	}
 
 	/**
@@ -67,8 +67,8 @@ public class SimpleSettings extends YamlStaticConfig {
 		// Load version first so we can use it later
 		setPathPrefix(null);
 
-		if ((VERSION = getInteger("Version")) != getConfigVersion())
-			set("Version", getConfigVersion());
+		if ((VERSION = getInteger("Version")) != this.getConfigVersion())
+			set("Version", this.getConfigVersion());
 	}
 
 	/**

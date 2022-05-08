@@ -56,7 +56,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	public PermsCommand(@NonNull Class<?> classToList, String permission) {
 		this(classToList, new SerializedMap());
 
-		setPermission(permission);
+		this.setPermission(permission);
 	}
 
 	/**
@@ -78,23 +78,23 @@ public final class PermsCommand extends SimpleSubCommand {
 		if (!this.variables.containsKey("label") && SimplePlugin.getInstance().getMainCommand() != null)
 			this.variables.put("label", SimplePlugin.getInstance().getMainCommand().getLabel());
 
-		setPermission(SimplePlugin.getNamed().toLowerCase() + ".command.permissions");
-		setDescription(Commands.PERMS_DESCRIPTION);
-		setUsage(Commands.PERMS_USAGE);
+		this.setPermission(SimplePlugin.getNamed().toLowerCase() + ".command.permissions");
+		this.setDescription(Commands.PERMS_DESCRIPTION);
+		this.setUsage(Commands.PERMS_USAGE);
 
 		// Invoke to check for errors early
-		list();
+		this.list();
 	}
 
 	@Override
 	protected void onCommand() {
 
-		final String phrase = args.length > 0 ? joinArgs(0) : null;
+		final String phrase = this.args.length > 0 ? this.joinArgs(0) : null;
 
 		new ChatPaginator(15)
 				.setFoundationHeader(Commands.PERMS_HEADER)
-				.setPages(list(phrase))
-				.send(sender);
+				.setPages(this.list(phrase))
+				.send(this.sender);
 	}
 
 	/*
@@ -110,13 +110,12 @@ public final class PermsCommand extends SimpleSubCommand {
 	 */
 	private List<SimpleComponent> list(String phrase) {
 		final List<SimpleComponent> messages = new ArrayList<>();
-		Class<?> iteratedClass = classToList;
+		Class<?> iteratedClass = this.classToList;
 
 		try {
-			do {
-				listIn(iteratedClass, messages, phrase);
-
-			} while (!(iteratedClass = iteratedClass.getSuperclass()).isAssignableFrom(Object.class));
+			do
+				this.listIn(iteratedClass, messages, phrase);
+			while (!(iteratedClass = iteratedClass.getSuperclass()).isAssignableFrom(Object.class));
 
 		} catch (final Exception ex) {
 			ex.printStackTrace();
@@ -146,14 +145,14 @@ public final class PermsCommand extends SimpleSubCommand {
 
 			final Permission annotation = field.getAnnotation(Permission.class);
 
-			final String info = Replacer.replaceVariables(String.join("\n", Common.split(annotation.value(), 50)), variables);
+			final String info = Replacer.replaceVariables(String.join("\n", Common.split(annotation.value(), 50)), this.variables);
 			final boolean def = annotation.def();
 
 			if (info.contains("{") && info.contains("}"))
 				throw new FoException("Forgotten unreplaced variable in " + info + " for field " + field + " in " + clazz);
 
-			final String node = Replacer.replaceVariables((String) field.get(null), variables);
-			final boolean has = sender == null ? false : hasPerm(node);
+			final String node = Replacer.replaceVariables((String) field.get(null), this.variables);
+			final boolean has = this.sender == null ? false : this.hasPerm(node);
 
 			if (phrase == null || node.contains(phrase))
 				messages.add(SimpleComponent
@@ -167,7 +166,7 @@ public final class PermsCommand extends SimpleSubCommand {
 		for (final Class<?> inner : clazz.getDeclaredClasses()) {
 			messages.add(SimpleComponent.of("&r "));
 
-			listIn(inner, messages, phrase);
+			this.listIn(inner, messages, phrase);
 		}
 	}
 

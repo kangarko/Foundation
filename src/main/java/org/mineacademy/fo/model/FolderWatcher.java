@@ -70,11 +70,10 @@ public abstract class FolderWatcher extends Thread {
 		this.folder = folder.toPath();
 		this.start();
 
-		for (final FolderWatcher other : activeThreads) {
+		for (final FolderWatcher other : activeThreads)
 			//Valid.checkBoolean(other.folder.toString().equals(this.folder.toString()), "Tried to add a duplicate file watcher for " + this.folder);
 			if (other.folder.toString().equals(this.folder.toString()))
 				Common.warning("A duplicate file watcher for '" + folder.getPath() + "' was added. This is untested and may causes fatal issues!");
-		}
 
 		activeThreads.add(this);
 
@@ -86,12 +85,12 @@ public abstract class FolderWatcher extends Thread {
 	 */
 	@Override
 	public final void run() {
-		final FileSystem fileSystem = folder.getFileSystem();
+		final FileSystem fileSystem = this.folder.getFileSystem();
 
 		try (WatchService service = fileSystem.newWatchService()) {
-			final WatchKey registration = folder.register(service, ENTRY_MODIFY);
+			final WatchKey registration = this.folder.register(service, ENTRY_MODIFY);
 
-			while (watching) {
+			while (this.watching)
 				//synchronized (activeThreads) {
 				try {
 					final WatchKey watchKey = service.take();
@@ -104,21 +103,21 @@ public abstract class FolderWatcher extends Thread {
 							final File fileModified = new File(SimplePlugin.getData(), watchEventPath.toFile().getName());
 
 							final String path = fileModified.getAbsolutePath();
-							final BukkitTask pendingTask = scheduledUpdates.remove(path);
+							final BukkitTask pendingTask = this.scheduledUpdates.remove(path);
 
 							// Cancel the old task and reschedule
 							if (pendingTask != null)
 								pendingTask.cancel();
 
 							// Force run sync -- reschedule five seconds later to ensure no further edits take place
-							scheduledUpdates.put(path, Common.runLater(10, () -> {
-								if (!watching)
+							this.scheduledUpdates.put(path, Common.runLater(10, () -> {
+								if (!this.watching)
 									return;
 
 								try {
-									onModified(fileModified);
+									this.onModified(fileModified);
 
-									scheduledUpdates.remove(path);
+									this.scheduledUpdates.remove(path);
 
 								} catch (final Throwable t) {
 									Common.error(t, "Error in calling onModified when watching changed file " + fileModified);
@@ -135,8 +134,7 @@ public abstract class FolderWatcher extends Thread {
 				} catch (final Throwable t) {
 					Common.error(t, "Error in handling watching thread loop for folder " + this.getFolder());
 				}
-				//}
-			}
+			//}
 
 			registration.cancel();
 
@@ -157,7 +155,7 @@ public abstract class FolderWatcher extends Thread {
 	 * Stops listening for folder changes
 	 */
 	public void stopWatching() {
-		Valid.checkBoolean(this.watching, "The folder watcher for folder " + folder + " is no longer watching!");
+		Valid.checkBoolean(this.watching, "The folder watcher for folder " + this.folder + " is no longer watching!");
 
 		this.watching = false;
 

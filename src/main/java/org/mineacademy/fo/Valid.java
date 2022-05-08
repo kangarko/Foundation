@@ -222,23 +222,19 @@ public final class Valid {
 		// deal with any possible sign up front
 		final int start = (letters[0] == '-') ? 1 : 0;
 
-		if (length > start + 1) {
+		if (length > start + 1)
 			if (letters[start] == '0' && letters[start + 1] == 'x') {
 				int i = start + 2;
-				if (i == length) {
+				if (i == length)
 					return false; // str == "0x"
-				}
 				// checking hex (it can't be anything else)
-				for (; i < letters.length; i++) {
+				for (; i < letters.length; i++)
 					if ((letters[i] < '0' || letters[i] > '9')
 							&& (letters[i] < 'a' || letters[i] > 'f')
-							&& (letters[i] < 'A' || letters[i] > 'F')) {
+							&& (letters[i] < 'A' || letters[i] > 'F'))
 						return false;
-					}
-				}
 				return true;
 			}
-		}
 		length--; // don't want to loop to the last char, check it afterwords
 		// for type qualifiers
 		int i = start;
@@ -250,47 +246,39 @@ public final class Valid {
 				allowSigns = false;
 
 			} else if (letters[i] == '.') {
-				if (hasDecPoint || hasExp) {
+				if (hasDecPoint || hasExp)
 					// two decimal points or dec in exponent
 					return false;
-				}
 				hasDecPoint = true;
 			} else if (letters[i] == 'e' || letters[i] == 'E') {
 				// we've already taken care of hex.
-				if (hasExp) {
+				if (hasExp)
 					// two E's
 					return false;
-				}
-				if (!foundDigit) {
+				if (!foundDigit)
 					return false;
-				}
 				hasExp = true;
 				allowSigns = true;
 			} else if (letters[i] == '+' || letters[i] == '-') {
-				if (!allowSigns) {
+				if (!allowSigns)
 					return false;
-				}
 				allowSigns = false;
 				foundDigit = false; // we need a digit after the E
-			} else {
+			} else
 				return false;
-			}
 			i++;
 		}
 		if (i < letters.length) {
-			if (letters[i] >= '0' && letters[i] <= '9') {
+			if (letters[i] >= '0' && letters[i] <= '9')
 				// no type qualifier, OK
 				return true;
-			}
-			if (letters[i] == 'e' || letters[i] == 'E') {
+			if (letters[i] == 'e' || letters[i] == 'E')
 				// can't have an E at the last byte
 				return false;
-			}
 			if (letters[i] == '.') {
-				if (hasDecPoint || hasExp) {
+				if (hasDecPoint || hasExp)
 					// two decimal points or dec in exponent
 					return false;
-				}
 				// single trailing decimal point after non-exponent is ok
 				return foundDigit;
 			}
@@ -298,14 +286,12 @@ public final class Valid {
 					&& (letters[i] == 'd'
 							|| letters[i] == 'D'
 							|| letters[i] == 'f'
-							|| letters[i] == 'F')) {
+							|| letters[i] == 'F'))
 				return foundDigit;
-			}
 			if (letters[i] == 'l'
-					|| letters[i] == 'L') {
+					|| letters[i] == 'L')
 				// not allowing L with an exponent
 				return foundDigit && !hasExp;
-			}
 			// last character is illegal
 			return false;
 		}
@@ -562,9 +548,7 @@ public final class Valid {
 		final List<String> copy = new ArrayList<>(values);
 		String lastValue = null;
 
-		for (int i = 0; i < copy.size(); i++) {
-			final String value = copy.get(i);
-
+		for (final String value : copy) {
 			if (lastValue == null)
 				lastValue = value;
 

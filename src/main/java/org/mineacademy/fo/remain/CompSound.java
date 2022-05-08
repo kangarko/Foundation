@@ -233,7 +233,7 @@ public enum CompSound {
 	 * @param player
 	 */
 	public final void play(Player player) {
-		play(player, 1F, 1F);
+		this.play(player, 1F, 1F);
 	}
 
 	/**
@@ -245,7 +245,7 @@ public enum CompSound {
 	 */
 	public final void play(Player player, float volume, float pitch) {
 		try {
-			player.playSound(player.getLocation(), getSound(), volume, pitch);
+			player.playSound(player.getLocation(), this.getSound(), volume, pitch);
 		} catch (final Throwable t) {
 			// Fail-through
 		}
@@ -257,7 +257,7 @@ public enum CompSound {
 	 * @param loc
 	 */
 	public final void play(Location loc) {
-		play(loc, 1F, 1F);
+		this.play(loc, 1F, 1F);
 	}
 
 	/**
@@ -269,7 +269,7 @@ public enum CompSound {
 	 */
 	public final void play(Location loc, float volume, float pitch) {
 		try {
-			loc.getWorld().playSound(loc, getSound(), volume, pitch);
+			loc.getWorld().playSound(loc, this.getSound(), volume, pitch);
 		} catch (final Throwable t) {
 			// Fail-through
 		}
@@ -283,12 +283,12 @@ public enum CompSound {
 	 * @return corresponding {@link org.bukkit.Sound}
 	 */
 	public final Sound getSound() {
-		if (cached != null)
-			return cached;
+		if (this.cached != null)
+			return this.cached;
 
-		for (final String name : versionDependentNames)
+		for (final String name : this.versionDependentNames)
 			try {
-				return cached = org.bukkit.Sound.valueOf(name);
+				return this.cached = org.bukkit.Sound.valueOf(name);
 			} catch (final IllegalArgumentException ex) {
 				// try next
 			}

@@ -58,11 +58,11 @@ public final class InventoryDrawer {
 	public void pushItem(ItemStack item) {
 		boolean added = false;
 
-		for (int i = 0; i < content.length; i++) {
-			final ItemStack currentItem = content[i];
+		for (int i = 0; i < this.content.length; i++) {
+			final ItemStack currentItem = this.content[i];
 
 			if (currentItem == null) {
-				content[i] = item;
+				this.content[i] = item;
 				added = true;
 
 				break;
@@ -70,7 +70,7 @@ public final class InventoryDrawer {
 		}
 
 		if (!added)
-			content[size - 1] = item;
+			this.content[this.size - 1] = item;
 	}
 
 	/**
@@ -80,7 +80,7 @@ public final class InventoryDrawer {
 	 * @return true if the slot is occupied
 	 */
 	public boolean isSet(int slot) {
-		return getItem(slot) != null;
+		return this.getItem(slot) != null;
 	}
 
 	/**
@@ -90,7 +90,7 @@ public final class InventoryDrawer {
 	 * @return
 	 */
 	public ItemStack getItem(int slot) {
-		return slot < content.length ? content[slot] : null;
+		return slot < this.content.length ? this.content[slot] : null;
 	}
 
 	/**
@@ -100,7 +100,7 @@ public final class InventoryDrawer {
 	 * @param item
 	 */
 	public void setItem(int slot, ItemStack item) {
-		content[slot] = item;
+		this.content[slot] = item;
 	}
 
 	/**
@@ -111,8 +111,8 @@ public final class InventoryDrawer {
 	 * @param newContent the new content
 	 */
 	public void setContent(ItemStack[] newContent) {
-		for (int i = 0; i < content.length; i++)
-			content[i] = i < newContent.length ? newContent[i] : new ItemStack(CompMaterial.AIR.getMaterial());
+		for (int i = 0; i < this.content.length; i++)
+			this.content[i] = i < newContent.length ? newContent[i] : new ItemStack(CompMaterial.AIR.getMaterial());
 	}
 
 	/**
@@ -153,9 +153,9 @@ public final class InventoryDrawer {
 	public Inventory build(InventoryHolder holder) {
 
 		// Automatically append the black color in the menu, can be overriden by colors
-		final Inventory inv = Bukkit.createInventory(holder, size, Common.colorize("&0" + (title.length() > 30 ? title.substring(0, 30) : title)));
+		final Inventory inv = Bukkit.createInventory(holder, this.size, Common.colorize("&0" + (this.title.length() > 30 ? this.title.substring(0, 30) : this.title)));
 
-		inv.setContents(content);
+		inv.setContents(this.content);
 
 		return inv;
 	}

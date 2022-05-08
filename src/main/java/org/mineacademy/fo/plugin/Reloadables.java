@@ -32,15 +32,15 @@ final class Reloadables {
 	 * Remove all listeners and cancel all running tasks
 	 */
 	void reload() {
-		for (final Listener listener : listeners)
+		for (final Listener listener : this.listeners)
 			HandlerList.unregisterAll(listener);
 
-		listeners.clear();
+		this.listeners.clear();
 
-		for (final SimpleCommandGroup commandGroup : commandGroups)
+		for (final SimpleCommandGroup commandGroup : this.commandGroups)
 			commandGroup.unregister();
 
-		commandGroups.clear();
+		this.commandGroups.clear();
 	}
 
 	// -------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ final class Reloadables {
 	void registerEvents(Listener listener) {
 		Common.registerEvents(listener);
 
-		listeners.add(listener);
+		this.listeners.add(listener);
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class Reloadables {
 	<T extends Event> void registerEvents(SimpleListener<T> listener) {
 		listener.register();
 
-		listeners.add(listener);
+		this.listeners.add(listener);
 	}
 
 	// -------------------------------------------------------------------------------------------
@@ -84,6 +84,6 @@ final class Reloadables {
 	void registerCommands(final SimpleCommandGroup group) {
 		group.register();
 
-		commandGroups.add(group);
+		this.commandGroups.add(group);
 	}
 }

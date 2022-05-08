@@ -17,16 +17,16 @@ public final class ConversationCommand extends SimpleSubCommand {
 	public ConversationCommand() {
 		super("conversation|conv");
 
-		setDescription("Reply to a server's conversation manually.");
-		setUsage("<message ...>");
-		setMinArguments(1);
+		this.setDescription("Reply to a server's conversation manually.");
+		this.setUsage("<message ...>");
+		this.setMinArguments(1);
 	}
 
 	@Override
 	protected void onCommand() {
-		checkConsole();
-		checkBoolean(getPlayer().isConversing(), SimpleLocalization.Conversation.CONVERSATION_NOT_CONVERSING);
+		this.checkConsole();
+		this.checkBoolean(this.getPlayer().isConversing(), SimpleLocalization.Conversation.CONVERSATION_NOT_CONVERSING);
 
-		getPlayer().acceptConversationInput(Common.joinRange(0, args));
+		this.getPlayer().acceptConversationInput(Common.joinRange(0, this.args));
 	}
 }

@@ -344,17 +344,15 @@ public class Region implements ConfigSerializable {
 				return true;
 			}
 
+		} else if (location == null || (this.hasSecondary() && this.isSecondary(location) && toggle)) {
+			this.setSecondary(null);
+
+			return false;
+
 		} else {
-			if (location == null || (this.hasSecondary() && this.isSecondary(location) && toggle)) {
-				this.setSecondary(null);
+			this.setSecondary(location);
 
-				return false;
-
-			} else {
-				this.setSecondary(location);
-
-				return true;
-			}
+			return true;
 		}
 	}
 
@@ -370,7 +368,7 @@ public class Region implements ConfigSerializable {
 			if ((otherRegion.name != null && !otherRegion.name.equals(this.name)) || (otherRegion.name != null && !this.name.equals(otherRegion.name)))
 				return false;
 
-			return Valid.locationEquals(otherRegion.getPrimary(), this.primary) && Valid.locationEquals(otherRegion.getSecondary(), secondary);
+			return Valid.locationEquals(otherRegion.getPrimary(), this.primary) && Valid.locationEquals(otherRegion.getSecondary(), this.secondary);
 		}
 
 		return false;

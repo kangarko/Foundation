@@ -218,7 +218,7 @@ public final class ChatPaginator {
 		if (Bukkit.isPrimaryThread())
 			this.send0(sender, page);
 		else
-			Common.runLater(() -> send0(sender, page));
+			Common.runLater(() -> this.send0(sender, page));
 	}
 
 	private void send0(CommandSender sender, int page) {

@@ -40,7 +40,7 @@ public class NBTItem extends NBTCompound {
 			throw new NullPointerException("ItemStack can't be null/Air! This is not a NBTAPI bug!");
 		this.directApply = directApply;
 		this.bukkitItem = item.clone();
-		if(directApply)
+		if (directApply)
 			this.originalSrcStack = item;
 	}
 
@@ -97,15 +97,14 @@ public class NBTItem extends NBTCompound {
 		item.setItemMeta(meta);
 	}
 
-
 	/**
 	 * True, if the item has any tags now known for this item type.
 	 *
 	 * @return true when custom tags are present
 	 */
 	public boolean hasCustomNbtData() {
-        final ItemMeta meta = this.bukkitItem.getItemMeta();
-        return !NBTReflectionUtil.getUnhandledNBTTags(meta).isEmpty();
+		final ItemMeta meta = this.bukkitItem.getItemMeta();
+		return !NBTReflectionUtil.getUnhandledNBTTags(meta).isEmpty();
 	}
 
 	/**
@@ -162,7 +161,7 @@ public class NBTItem extends NBTCompound {
 
 	@Override
 	protected void saveCompound() {
-		if(this.directApply)
+		if (this.directApply)
 			this.applyNBT(this.originalSrcStack);
 	}
 

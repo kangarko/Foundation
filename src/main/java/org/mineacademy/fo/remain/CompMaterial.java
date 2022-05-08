@@ -1446,10 +1446,10 @@ public enum CompMaterial {
 	}
 
 	static {
-		if (Data.ISFLAT) {
+		if (Data.ISFLAT)
 			// It's not needed at all if it's the newer version. We can save some memory.
 			DUPLICATED = null;
-		} else {
+		else {
 			// MELON_SLICE, CARROTS, POTATOES, BEETROOTS, GRASS_BLOCK, BRICKS, NETHER_BRICKS, BROWN_MUSHROOM
 			// Using the constructor to add elements will decide to allocate more size which we don't need.
 			DUPLICATED = new HashSet<>(4);
@@ -1533,7 +1533,7 @@ public enum CompMaterial {
 	 * @param player
 	 */
 	public final void give(final Player player) {
-		give(player, 1);
+		this.give(player, 1);
 	}
 
 	/**
@@ -1609,9 +1609,9 @@ public enum CompMaterial {
 	 */
 	public final boolean is(final ItemStack comp) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return comp.getType() == material;
+			return comp.getType() == this.material;
 
-		return is(comp.getType(), comp.getData().getData());
+		return this.is(comp.getType(), comp.getData().getData());
 	}
 
 	/**
@@ -1622,9 +1622,9 @@ public enum CompMaterial {
 	 */
 	public final boolean is(final Block block) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return block.getType() == material;
+			return block.getType() == this.material;
 
-		return block != null && is(block.getType(), block.getData());
+		return block != null && this.is(block.getType(), block.getData());
 	}
 
 	/**
@@ -1638,7 +1638,7 @@ public enum CompMaterial {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return type == this.material;
 
-		if (type == toMaterial() && data == this.data)
+		if (type == this.toMaterial() && data == this.data)
 			return true;
 
 		final CompMaterial compMat = fromMaterial(type);
@@ -2244,10 +2244,9 @@ public enum CompMaterial {
 
 		final CompMaterial oldCompmaterial = requestOldMaterial(name, data);
 
-		if (oldCompmaterial == null) {
+		if (oldCompmaterial == null)
 			// Special case. Refer to FILLED_MAP for more info.
 			return data >= 0 && isAMap ? FILLED_MAP : null;
-		}
 
 		if (!Data.ISFLAT && oldCompmaterial.isPlural() && (duplicated == null ? isDuplicated(name) : duplicated))
 			return getIfPresent(name);
@@ -2365,9 +2364,9 @@ public enum CompMaterial {
 
 		// getVersion()
 		int index = version.lastIndexOf("MC:");
-		if (index != -1) {
+		if (index != -1)
 			version = version.substring(index + 4, version.length() - 1);
-		} else if (version.endsWith("SNAPSHOT")) {
+		else if (version.endsWith("SNAPSHOT")) {
 			// getBukkitVersion()
 			index = version.indexOf('-');
 			version = version.substring(0, index);
@@ -2488,10 +2487,9 @@ public enum CompMaterial {
 	 * @since 2.0.0
 	 */
 	private boolean anyMatchLegacy(String name) {
-		for (int i = this.legacy.length - 1; i >= 0; i--) {
+		for (int i = this.legacy.length - 1; i >= 0; i--)
 			if (name.equals(this.legacy[i]))
 				return true;
-		}
 		return false;
 	}
 

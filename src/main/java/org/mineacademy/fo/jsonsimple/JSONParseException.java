@@ -275,7 +275,7 @@ public class JSONParseException extends Exception {
 	 */
 	public int getErrorType() {
 
-		return errorType;
+		return this.errorType;
 	}
 
 	/**

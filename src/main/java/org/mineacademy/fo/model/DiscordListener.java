@@ -90,7 +90,7 @@ public abstract class DiscordListener implements Listener {
 	private final void handleMessageReceived(DiscordGuildMessagePreProcessEvent event) {
 		this.message = event.getMessage();
 
-		onMessageReceived(event);
+		this.onMessageReceived(event);
 	}
 
 	/*
@@ -99,7 +99,7 @@ public abstract class DiscordListener implements Listener {
 	private final void handleMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
 		this.message = event.getMessage();
 
-		onMessageReceivedLate(event);
+		this.onMessageReceivedLate(event);
 	}
 
 	/**
@@ -140,7 +140,7 @@ public abstract class DiscordListener implements Listener {
 	protected final Player findPlayer(String playerName, String offlineMessage) {
 		final Player player = Bukkit.getPlayer(playerName);
 
-		checkBoolean(player != null, offlineMessage);
+		this.checkBoolean(player != null, offlineMessage);
 		return player;
 	}
 
@@ -204,7 +204,7 @@ public abstract class DiscordListener implements Listener {
 	 */
 	protected final void checkBoolean(boolean value, String warningMessage) throws RemovedMessageException {
 		if (!value)
-			removeAndWarn(warningMessage);
+			this.removeAndWarn(warningMessage);
 	}
 
 	/**
@@ -214,7 +214,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param warningMessage
 	 */
 	protected final void removeAndWarn(String warningMessage) {
-		removeAndWarn(this.message, warningMessage);
+		this.removeAndWarn(this.message, warningMessage);
 	}
 
 	/**
@@ -225,7 +225,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param warningMessage
 	 */
 	protected final void removeAndWarn(Message message, String warningMessage) {
-		removeAndWarn(message, warningMessage, 2);
+		this.removeAndWarn(message, warningMessage, 2);
 	}
 
 	/**

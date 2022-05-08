@@ -58,9 +58,9 @@ public class SimpleStringPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected String getPrompt(final ConversationContext ctx) {
-		Valid.checkNotNull(question, "Please either call setQuestion or override getPrompt");
+		Valid.checkNotNull(this.question, "Please either call setQuestion or override getPrompt");
 
-		return question;
+		return this.question;
 	}
 
 	/**

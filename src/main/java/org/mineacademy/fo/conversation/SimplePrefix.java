@@ -21,6 +21,6 @@ public final class SimplePrefix implements ConversationPrefix {
 
 	@Override
 	public String getPrefix(ConversationContext context) {
-		return Common.colorize(prefix);
+		return Common.colorize(this.prefix);
 	}
 }

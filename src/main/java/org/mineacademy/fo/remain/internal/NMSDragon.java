@@ -40,7 +40,7 @@ abstract class NMSDragon {
 		this.x = loc.getBlockX();
 		this.y = loc.getBlockY();
 		this.z = loc.getBlockZ();
-		this.health = percent / 100F * maxHealth;
+		this.health = percent / 100F * this.maxHealth;
 		this.world = Remain.getHandleWorld(loc.getWorld());
 	}
 
@@ -53,7 +53,7 @@ abstract class NMSDragon {
 	}
 
 	void setHealth(int percent) {
-		this.health = percent / 100F * maxHealth;
+		this.health = percent / 100F * this.maxHealth;
 	}
 
 	void setHealthF(float health) {

@@ -54,9 +54,9 @@ public interface MenuQuantitable {
 	 * @return
 	 */
 	default String getCurrentQuantityPercent() {
-		final double percent = getQuantity().getAmountPercent();
+		final double percent = this.getQuantity().getAmountPercent();
 
-		return (allowDecimalQuantities() ? MathUtil.formatTwoDigits(percent) : String.valueOf((int) percent)) + (quantitiesArePercents() ? "%" : "");
+		return (this.allowDecimalQuantities() ? MathUtil.formatTwoDigits(percent) : String.valueOf((int) percent)) + (this.quantitiesArePercents() ? "%" : "");
 	}
 
 	/**
@@ -66,7 +66,7 @@ public interface MenuQuantitable {
 	 * @return the next quantity (higher or lower depending on the click)
 	 */
 	default double getNextQuantityDouble(ClickType clickType) {
-		return clickType == ClickType.LEFT ? -getQuantity().getAmountDouble() : getQuantity().getAmountDouble();
+		return clickType == ClickType.LEFT ? -this.getQuantity().getAmountDouble() : this.getQuantity().getAmountDouble();
 	}
 
 	/**
@@ -76,7 +76,7 @@ public interface MenuQuantitable {
 	 * @return the next quantity (higher or lower depending on the click)
 	 */
 	default double getNextQuantityPercent(ClickType clickType) {
-		return clickType == ClickType.LEFT ? -getQuantity().getAmountPercent() : getQuantity().getAmountPercent();
+		return clickType == ClickType.LEFT ? -this.getQuantity().getAmountPercent() : this.getQuantity().getAmountPercent();
 	}
 
 	/**
@@ -91,12 +91,12 @@ public interface MenuQuantitable {
 
 			@Override
 			public final void onClickedInMenu(Player player, Menu clickedMenu, ClickType clickType) {
-				final MenuQuantity nextQuantity = clickType == ClickType.LEFT ? getQuantity().previous(allowDecimalQuantities()) : getQuantity().next(allowDecimalQuantities());
-				Valid.checkNotNull(nextQuantity, "Next quantity cannot be null. Current: " + getQuantity() + " Click: " + clickType);
+				final MenuQuantity nextQuantity = clickType == ClickType.LEFT ? MenuQuantitable.this.getQuantity().previous(MenuQuantitable.this.allowDecimalQuantities()) : MenuQuantitable.this.getQuantity().next(MenuQuantitable.this.allowDecimalQuantities());
+				Valid.checkNotNull(nextQuantity, "Next quantity cannot be null. Current: " + MenuQuantitable.this.getQuantity() + " Click: " + clickType);
 
-				setQuantity(nextQuantity);
+				MenuQuantitable.this.setQuantity(nextQuantity);
 
-				menu.restartMenu("&9Editing quantity set to " + getCurrentQuantityPercent());
+				menu.restartMenu("&9Editing quantity set to " + MenuQuantitable.this.getCurrentQuantityPercent());
 			}
 
 			@Override
@@ -104,7 +104,7 @@ public interface MenuQuantitable {
 				return ItemCreator
 						.of(
 								CompMaterial.STRING,
-								"Edit Quantity: &7" + getCurrentQuantityPercent(),
+								"Edit Quantity: &7" + MenuQuantitable.this.getCurrentQuantityPercent(),
 								"",
 								"&8< &7Left click to decrease",
 								"&8> &7Right click to increase")
@@ -160,14 +160,14 @@ public interface MenuQuantitable {
 
 				// Lore
 				"",
-				"&7" + getLevelLoreLabel() + ": &6{level}",
+				"&7" + this.getLevelLoreLabel() + ": &6{level}",
 				"",
 				"   &8(Mouse click)",
 				"  &7&l< &4-{quantity}    &2+{quantity} &7&l>"),
 
 				// Variables
 				"level", level,
-				"quantity", getCurrentQuantityPercent());
+				"quantity", this.getCurrentQuantityPercent());
 
 		return ItemCreator.of(item.clone()).clearLore().lore(dropChanceLore).makeMenuTool();
 	}

@@ -52,9 +52,9 @@ public abstract class ChunkedTask {
 		Common.runLater(() -> {
 
 			// Cancelled prematurely
-			if (!processing) {
-				onFinish(false);
-				firstLaunch = false;
+			if (!this.processing) {
+				this.onFinish(false);
+				this.firstLaunch = false;
 
 				return;
 			}
@@ -64,30 +64,30 @@ public abstract class ChunkedTask {
 			boolean finished = false;
 			int processed = 0;
 
-			for (int i = currentIndex; i < currentIndex + processAmount; i++) {
-				if (!canContinue(i)) {
+			for (int i = this.currentIndex; i < this.currentIndex + this.processAmount; i++) {
+				if (!this.canContinue(i)) {
 					finished = true;
 
 					break;
 				}
 
-				onProcess(i);
+				this.onProcess(i);
 				processed++;
 			}
 
 			if (processed > 0 || !finished)
-				Common.log(getProcessMessage(now, processed));
+				Common.log(this.getProcessMessage(now, processed));
 
 			if (!finished) {
-				currentIndex += processAmount;
+				this.currentIndex += this.processAmount;
 
-				Common.runLaterAsync(waitPeriodTicks, this::startChain);
+				Common.runLaterAsync(this.waitPeriodTicks, this::startChain);
 
 			} else {
-				processing = false;
-				firstLaunch = false;
+				this.processing = false;
+				this.firstLaunch = false;
 
-				onFinish(true);
+				this.onFinish(true);
 			}
 		});
 	}
@@ -124,7 +124,7 @@ public abstract class ChunkedTask {
 	 * @return
 	 */
 	protected String getProcessMessage(long initialTime, int processed) {
-		return "Processed " + String.format("%,d", processed) + " " + getLabel() + ". Took " + (System.currentTimeMillis() - initialTime) + " ms";
+		return "Processed " + String.format("%,d", processed) + " " + this.getLabel() + ". Took " + (System.currentTimeMillis() - initialTime) + " ms";
 	}
 
 	/**

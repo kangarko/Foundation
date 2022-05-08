@@ -65,7 +65,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	@Override
 	public final String getPromptText(final ConversationContext context) {
-		String prompt = getPrompt(context);
+		String prompt = this.getPrompt(context);
 
 		if (Common.getTellPrefix().isEmpty() /* ignore since we can default to this when no custom prefix is set */
 				&& Messenger.ENABLED
@@ -74,12 +74,10 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 				&& !prompt.contains(Messenger.getInfoPrefix())
 				&& !prompt.contains(Messenger.getQuestionPrefix())
 				&& !prompt.contains(Messenger.getSuccessPrefix())
-				&& !prompt.contains(Messenger.getWarnPrefix())) {
-
+				&& !prompt.contains(Messenger.getWarnPrefix()))
 			prompt = Messenger.getQuestionPrefix() + prompt;
-		}
 
-		return Variables.replace(prompt, getPlayer(context));
+		return Variables.replace(prompt, this.getPlayer(context));
 	}
 
 	/**
@@ -130,9 +128,9 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final String message) {
-		Valid.checkNotNull(player, "Cannot use tell() when player not yet set!");
+		Valid.checkNotNull(this.player, "Cannot use tell() when player not yet set!");
 
-		tell(player, message);
+		this.tell(this.player, message);
 	}
 
 	/**
@@ -142,7 +140,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final ConversationContext context, final String message) {
-		tell(getPlayer(context), message);
+		this.tell(this.getPlayer(context), message);
 	}
 
 	/**
@@ -152,7 +150,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final Conversable conversable, final String message) {
-		Common.tellConversing(conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
+		Common.tellConversing(conversable, (this.getCustomPrefix() != null ? this.getCustomPrefix() : "") + message);
 	}
 
 	/**
@@ -163,7 +161,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
-		Common.tellLaterConversing(delayTicks, conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
+		Common.tellLaterConversing(delayTicks, conversable, (this.getCustomPrefix() != null ? this.getCustomPrefix() : "") + message);
 	}
 
 	/**
@@ -182,14 +180,14 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			// Since developers use try-catch blocks to validate input, do not save this as error
 			FoException.setErrorSavedAutomatically(false);
 
-			if (isInputValid(context, input))
-				return acceptValidatedInput(context, input);
+			if (this.isInputValid(context, input))
+				return this.acceptValidatedInput(context, input);
 
 			else {
-				final String failPrompt = getFailedValidationText(context, input);
+				final String failPrompt = this.getFailedValidationText(context, input);
 
 				if (failPrompt != null)
-					tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, getPlayer(context)));
+					this.tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
 
 				// Redisplay this prompt to the user to re-collect input
 				return this;
@@ -211,7 +209,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @return
 	 */
 	public final SimpleConversation show(final Player player) {
-		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + getClass().getSimpleName() + " instead!");
+		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + this.getClass().getSimpleName() + " instead!");
 
 		this.player = player;
 
@@ -237,18 +235,17 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			@Override
 			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
 				final String message = "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".";
-				final Player player = getPlayer(event.getContext());
+				final Player player = SimplePrompt.this.getPlayer(event.getContext());
 
-				if (!event.gracefulExit()) {
+				if (!event.gracefulExit())
 					if (Messenger.ENABLED)
 						Messenger.warn(player, message);
 					else
 						Common.tell(player, message);
-				}
 			}
 		};
 
-		if (openMenu) {
+		if (this.openMenu) {
 			final Menu menu = Menu.getMenu(player);
 
 			if (menu != null)

@@ -81,7 +81,7 @@ public enum MenuQuantity {
 	 * @return the previous enum ordinal, or last if overflows
 	 */
 	public final MenuQuantity previous(boolean allowDecimals) {
-		return Common.getNext(this, compileQuantities(allowDecimals), false);
+		return Common.getNext(this, this.compileQuantities(allowDecimals), false);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public enum MenuQuantity {
 	 * @return the next enum ordinal, or first if overflows
 	 */
 	public final MenuQuantity next(boolean allowDecimals) {
-		return Common.getNext(this, compileQuantities(allowDecimals), true);
+		return Common.getNext(this, this.compileQuantities(allowDecimals), true);
 	}
 
 	/*

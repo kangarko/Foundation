@@ -33,13 +33,13 @@ public abstract class VisualTool extends BlockTool {
 	@Override
 	protected final void onBlockClick(final Player player, final ClickType click, final Block block) {
 		// Remove old blocks
-		stopVisualizing(player);
+		this.stopVisualizing(player);
 
 		// Call the block handling, probably new blocks will appear
-		handleBlockClick(player, click, block);
+		this.handleBlockClick(player, click, block);
 
 		// Render the new blocks
-		visualize(player);
+		this.visualize(player);
 	}
 
 	/**
@@ -74,13 +74,13 @@ public abstract class VisualTool extends BlockTool {
 	@Override
 	protected final void onAirClick(final Player player, final ClickType click) {
 		// Remove old blocks
-		stopVisualizing(player);
+		this.stopVisualizing(player);
 
 		// Call the block handling, probably new blocks will appear
-		handleAirClick(player, click);
+		this.handleAirClick(player, click);
 
 		// Render the new blocks
-		visualize(player);
+		this.visualize(player);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public abstract class VisualTool extends BlockTool {
 	 */
 	@Override
 	protected final void onHotbarFocused(final Player player) {
-		visualize(player);
+		this.visualize(player);
 	}
 
 	/**
@@ -105,7 +105,7 @@ public abstract class VisualTool extends BlockTool {
 	 */
 	@Override
 	protected final void onHotbarDefocused(final Player player) {
-		stopVisualizing(player);
+		this.stopVisualizing(player);
 	}
 
 	/**
@@ -194,20 +194,20 @@ public abstract class VisualTool extends BlockTool {
 	 * Visualize the region and points if exist
 	 */
 	private void visualize(@NonNull final Player player) {
-		final VisualizedRegion region = getVisualizedRegion(player);
+		final VisualizedRegion region = this.getVisualizedRegion(player);
 
 		if (region != null && region.isWhole())
 			if (!region.canSeeParticles(player))
 				region.showParticles(player);
 
-		for (final Location location : getVisualizedPoints(player)) {
+		for (final Location location : this.getVisualizedPoints(player)) {
 			if (location == null)
 				continue;
 
 			final Block block = location.getBlock();
 
 			if (!BlockVisualizer.isVisualized(block))
-				BlockVisualizer.visualize(block, getBlockMask(block, player), getBlockName(block, player));
+				BlockVisualizer.visualize(block, this.getBlockMask(block, player), this.getBlockName(block, player));
 		}
 	}
 
@@ -215,12 +215,12 @@ public abstract class VisualTool extends BlockTool {
 	 * Stop visualizing region and points if they were so before
 	 */
 	private void stopVisualizing(@NonNull final Player player) {
-		final VisualizedRegion region = getVisualizedRegion(player);
+		final VisualizedRegion region = this.getVisualizedRegion(player);
 
 		if (region != null && region.canSeeParticles(player))
 			region.hideParticles(player);
 
-		for (final Location location : getVisualizedPoints(player)) {
+		for (final Location location : this.getVisualizedPoints(player)) {
 			if (location == null)
 				continue;
 

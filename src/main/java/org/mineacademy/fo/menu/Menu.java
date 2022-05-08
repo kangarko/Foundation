@@ -270,11 +270,11 @@ public abstract class Menu {
 	 * Scans the menu class this menu extends and registers buttons
 	 */
 	final void registerButtons() {
-		registeredButtons.clear();
+		this.registeredButtons.clear();
 
 		// Register buttons explicitly given
 		{
-			final List<Button> buttons = getButtonsToAutoRegister();
+			final List<Button> buttons = this.getButtonsToAutoRegister();
 
 			if (buttons != null) {
 				final Map<Button, Position> buttonsRemapped = new HashMap<>();
@@ -282,17 +282,17 @@ public abstract class Menu {
 				for (final Button button : buttons)
 					buttonsRemapped.put(button, null);
 
-				registeredButtons.putAll(buttonsRemapped);
+				this.registeredButtons.putAll(buttonsRemapped);
 			}
 		}
 
 		// Register buttons declared as fields
 		{
-			Class<?> lookup = getClass();
+			Class<?> lookup = this.getClass();
 
 			do
 				for (final Field f : lookup.getDeclaredFields())
-					registerButton0(f);
+					this.registerButton0(f);
 			while (Menu.class.isAssignableFrom(lookup = lookup.getSuperclass()));
 		}
 	}
@@ -310,11 +310,10 @@ public abstract class Menu {
 			final Position position = field.getAnnotation(Position.class);
 
 			if (!(button instanceof DummyButton))
-				registeredButtons.put(button, position);
+				this.registeredButtons.put(button, position);
 
-		} else if (Button[].class.isAssignableFrom(type)) {
+		} else if (Button[].class.isAssignableFrom(type))
 			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
-		}
 	}
 
 	/*
@@ -323,10 +322,10 @@ public abstract class Menu {
 	 * This method will only register them once until the server is reset
 	 */
 	private final void registerButtonsIfHasnt() {
-		if (!buttonsRegistered) {
-			registerButtons();
+		if (!this.buttonsRegistered) {
+			this.registerButtons();
 
-			buttonsRegistered = true;
+			this.buttonsRegistered = true;
 		}
 	}
 
@@ -350,12 +349,12 @@ public abstract class Menu {
 	 * @return the buttor or null if not found
 	 */
 	protected final Button getButton(final ItemStack fromItem) {
-		registerButtonsIfHasnt();
+		this.registerButtonsIfHasnt();
 
 		if (fromItem != null)
-			for (final Button button : registeredButtons.keySet()) {
-				Valid.checkNotNull(button, "Menu button is null at " + getClass().getSimpleName());
-				Valid.checkNotNull(button.getItem(), "Menu " + getTitle() + " contained button " + button + " with empty item!");
+			for (final Button button : this.registeredButtons.keySet()) {
+				Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
+				Valid.checkNotNull(button.getItem(), "Menu " + this.getTitle() + " contained button " + button + " with empty item!");
 
 				if (ItemUtil.isSimilar(fromItem, button.getItem()))
 					return button;
@@ -376,20 +375,20 @@ public abstract class Menu {
 	 */
 	public Menu newInstance() {
 		try {
-			return ReflectionUtil.instantiate(getClass());
+			return ReflectionUtil.instantiate(this.getClass());
 		} catch (final Throwable t) {
 			try {
-				final Object parent = getClass().getMethod("getParent").invoke(getClass());
+				final Object parent = this.getClass().getMethod("getParent").invoke(this.getClass());
 
 				if (parent != null)
-					return ReflectionUtil.instantiate(getClass(), parent);
+					return ReflectionUtil.instantiate(this.getClass(), parent);
 			} catch (final Throwable tt) {
 			}
 
 			t.printStackTrace();
 		}
 
-		throw new FoException("Could not instantiate menu of " + getClass() + ", override the method 'newInstance()' or ensure you have a public constructor which takes only one parameter ");
+		throw new FoException("Could not instantiate menu of " + this.getClass() + ", override the method 'newInstance()' or ensure you have a public constructor which takes only one parameter ");
 	}
 
 	// --------------------------------------------------------------------------------
@@ -416,11 +415,11 @@ public abstract class Menu {
 			return;
 		}
 
-		viewer = player;
-		registerButtonsIfHasnt();
+		this.viewer = player;
+		this.registerButtonsIfHasnt();
 
 		// Draw the menu
-		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
+		final InventoryDrawer drawer = InventoryDrawer.of(this.size, this.title);
 
 		// Allocate items
 		this.compileItems().forEach((slot, item) -> drawer.setItem(slot, item));
@@ -466,7 +465,7 @@ public abstract class Menu {
 
 			player.setMetadata(FoConstants.NBT.TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
 
-			opened = true;
+			this.opened = true;
 		});
 	}
 
@@ -477,7 +476,7 @@ public abstract class Menu {
 	 * @param drawer
 	 */
 	private void debugSlotNumbers(final InventoryDrawer drawer) {
-		if (slotNumbersVisible)
+		if (this.slotNumbersVisible)
 			for (int slot = 0; slot < drawer.getSize(); slot++) {
 				final ItemStack item = drawer.getItem(slot);
 
@@ -502,7 +501,7 @@ public abstract class Menu {
 	 * Redraws and refreshes all buttons
 	 */
 	public final void restartMenu() {
-		restartMenu(null);
+		this.restartMenu(null);
 	}
 
 	/**
@@ -513,8 +512,8 @@ public abstract class Menu {
 	 */
 	public final void restartMenu(final String animatedTitle) {
 
-		final Inventory inventory = getViewer().getOpenInventory().getTopInventory();
-		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
+		final Inventory inventory = this.getViewer().getOpenInventory().getTopInventory();
+		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, this.getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
 		this.registerButtons();
 
@@ -525,7 +524,7 @@ public abstract class Menu {
 		this.getViewer().updateInventory();
 
 		if (animatedTitle != null)
-			animateTitle(animatedTitle);
+			this.animateTitle(animatedTitle);
 	}
 
 	void onRestart() {
@@ -540,7 +539,7 @@ public abstract class Menu {
 	private Map<Integer, ItemStack> compileItems() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
 
-		final boolean hasReturnButton = addReturnButton() && !(returnButton instanceof DummyButton);
+		final boolean hasReturnButton = this.addReturnButton() && !(this.returnButton instanceof DummyButton);
 
 		// Begin with basic items
 		for (int slot = 0; slot < this.size; slot++) {
@@ -572,10 +571,9 @@ public abstract class Menu {
 			else if (startPosition == StartPosition.BOTTOM_LEFT)
 				slot += this.getSize() - (hasReturnButton ? 2 : 1);
 
-			else if (startPosition == StartPosition.TOP_LEFT) {
+			else if (startPosition == StartPosition.TOP_LEFT)
 				slot += 0;
-
-			} else
+			else
 				throw new FoException("Does not know how to implement button position's Slot." + startPosition);
 
 			items.put(slot, button.getItem());
@@ -591,11 +589,11 @@ public abstract class Menu {
 
 		// Override by hotbar
 		{
-			if (addInfoButton() && getInfo() != null)
-				items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
+			if (this.addInfoButton() && this.getInfo() != null)
+				items.put(this.getInfoButtonPosition(), Button.makeInfo(this.getInfo()).getItem());
 
 			if (hasReturnButton)
-				items.put(getReturnButtonPosition(), returnButton.getItem());
+				items.put(this.getReturnButtonPosition(), this.returnButton.getItem());
 		}
 
 		return items;
@@ -683,7 +681,7 @@ public abstract class Menu {
 	 */
 	public final void animateTitle(final String title) {
 		if (titleAnimationEnabled)
-			PlayerUtil.updateInventoryTitle(this, getViewer(), title, getTitle(), titleAnimationDurationTicks);
+			PlayerUtil.updateInventoryTitle(this, this.getViewer(), title, this.getTitle(), titleAnimationDurationTicks);
 	}
 
 	/**
@@ -771,7 +769,7 @@ public abstract class Menu {
 	 * @return the slot which info buttons is located on
 	 */
 	protected int getInfoButtonPosition() {
-		return size - 9;
+		return this.size - 9;
 	}
 
 	/**
@@ -799,7 +797,7 @@ public abstract class Menu {
 	 * @return the slot which return buttons is located on
 	 */
 	protected int getReturnButtonPosition() {
-		return size - 1;
+		return this.size - 1;
 	}
 
 	/**
@@ -812,9 +810,9 @@ public abstract class Menu {
 	 * @return the estimated center slot
 	 */
 	protected final int getCenterSlot() {
-		final int pos = size / 2;
+		final int pos = this.size / 2;
 
-		return size % 2 == 1 ? pos : pos - 5;
+		return this.size % 2 == 1 ? pos : pos - 5;
 	}
 
 	/**
@@ -848,7 +846,7 @@ public abstract class Menu {
 	 * @return the menu title
 	 */
 	public final String getTitle() {
-		return title;
+		return this.title;
 	}
 
 	/**
@@ -870,7 +868,7 @@ public abstract class Menu {
 	 * @return
 	 */
 	public final Menu getParent() {
-		return parent;
+		return this.parent;
 	}
 
 	/**
@@ -879,7 +877,7 @@ public abstract class Menu {
 	 * @return
 	 */
 	public final Integer getSize() {
-		return size;
+		return this.size;
 	}
 
 	/**
@@ -911,7 +909,7 @@ public abstract class Menu {
 	 * @return the viewer of this instance, or null
 	 */
 	protected final Player getViewer() {
-		return viewer;
+		return this.viewer;
 	}
 
 	/**
@@ -929,9 +927,9 @@ public abstract class Menu {
 	 * @return
 	 */
 	protected final Inventory getInventory() {
-		Valid.checkNotNull(viewer, "Cannot get inventory when there is no viewer!");
+		Valid.checkNotNull(this.viewer, "Cannot get inventory when there is no viewer!");
 
-		final Inventory topInventory = viewer.getOpenInventory().getTopInventory();
+		final Inventory topInventory = this.viewer.getOpenInventory().getTopInventory();
 		Valid.checkNotNull(topInventory, "Top inventory is null!");
 
 		return topInventory;
@@ -946,7 +944,7 @@ public abstract class Menu {
 	 * @return
 	 */
 	protected final ItemStack[] getContent(final int from, final int to) {
-		final ItemStack[] content = getInventory().getContents();
+		final ItemStack[] content = this.getInventory().getContents();
 		final ItemStack[] copy = new ItemStack[content.length];
 
 		for (int i = from; i < copy.length; i++) {
@@ -1077,6 +1075,6 @@ public abstract class Menu {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "{}";
+		return this.getClass().getSimpleName() + "{}";
 	}
 }

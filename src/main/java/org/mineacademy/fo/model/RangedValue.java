@@ -54,7 +54,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public double getMinDouble() {
-		return min.doubleValue();
+		return this.min.doubleValue();
 	}
 
 	/**
@@ -62,7 +62,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public double getMaxDouble() {
-		return max.doubleValue();
+		return this.max.doubleValue();
 	}
 
 	/**
@@ -70,7 +70,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public long getMinLong() {
-		return min.longValue();
+		return this.min.longValue();
 	}
 
 	/**
@@ -78,7 +78,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public long getMaxLong() {
-		return max.longValue();
+		return this.max.longValue();
 	}
 
 	/**
@@ -88,7 +88,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public boolean isInRangeLong(long value) {
-		return value >= min.longValue() && value <= max.longValue();
+		return value >= this.min.longValue() && value <= this.max.longValue();
 	}
 
 	/**
@@ -98,7 +98,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public boolean isInRangeDouble(double value) {
-		return value >= min.doubleValue() && value <= max.doubleValue();
+		return value >= this.min.doubleValue() && value <= this.max.doubleValue();
 	}
 
 	/**
@@ -107,7 +107,7 @@ public final class RangedValue {
 	 * @return a random value
 	 */
 	public int getRandomInt() {
-		return RandomUtil.nextBetween((int) getMinLong(), (int) getMaxLong());
+		return RandomUtil.nextBetween((int) this.getMinLong(), (int) this.getMaxLong());
 	}
 
 	/**
@@ -116,7 +116,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public boolean isStatic() {
-		return min.longValue() == max.longValue();
+		return this.min.longValue() == this.max.longValue();
 	}
 
 	/**
@@ -125,7 +125,7 @@ public final class RangedValue {
 	 * @return
 	 */
 	public String toLine() {
-		return min.longValue() + " - " + max.longValue();
+		return this.min.longValue() + " - " + this.max.longValue();
 	}
 
 	/**
@@ -188,6 +188,6 @@ public final class RangedValue {
 
 	@Override
 	public String toString() {
-		return isStatic() ? min.longValue() + "" : min.longValue() + " - " + max.longValue();
+		return this.isStatic() ? this.min.longValue() + "" : this.min.longValue() + " - " + this.max.longValue();
 	}
 }

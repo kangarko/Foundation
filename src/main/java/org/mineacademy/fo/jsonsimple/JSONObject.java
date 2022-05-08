@@ -512,7 +512,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 		// -	Fixed some weird behavior
 		// ====
 
-		if (object != null && object instanceof Map) {
+		if (object instanceof Map) {
 
 			final Map<?, ?> map = (Map<?, ?>) object;
 

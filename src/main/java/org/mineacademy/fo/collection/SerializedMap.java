@@ -71,7 +71,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	private SerializedMap(final String key, final Object value) {
 		this();
 
-		put(key, value);
+		this.put(key, value);
 	}
 
 	/**
@@ -116,7 +116,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public boolean containsKey(final String key) {
-		return map.containsKey(key);
+		return this.map.containsKey(key);
 	}
 
 	/**
@@ -136,7 +136,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 				lastKey = (String) obj;
 
 			} else
-				map.override(lastKey, obj);
+				this.map.override(lastKey, obj);
 
 			nextIsString = !nextIsString;
 		}
@@ -151,7 +151,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return this
 	 */
 	public SerializedMap put(@NonNull SerializedMap anotherMap) {
-		map.putAll(anotherMap.asMap());
+		this.map.putAll(anotherMap.asMap());
 
 		return this;
 	}
@@ -164,7 +164,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIfTrue(final String key, final boolean value) {
 		if (value)
-			put(key, value);
+			this.put(key, value);
 	}
 
 	/**
@@ -175,7 +175,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIfNonZero(final String key, final Number value) {
 		if (value != null && value.longValue() != 0)
-			put(key, value);
+			this.put(key, value);
 	}
 
 	/**
@@ -186,7 +186,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIfExist(final String key, final Object value) {
 		if (value != null)
-			put(key, value);
+			this.put(key, value);
 	}
 
 	/**
@@ -199,12 +199,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIf(final String key, final Map<?, ?> value) {
 		if (value != null && !value.isEmpty())
-			put(key, value);
+			this.put(key, value);
 
 		// This value is undesirable to save if null, so if YamlConfig is used
 		// it will remove it from the config
 		else
-			map.getSource().put(key, null);
+			this.map.getSource().put(key, null);
 	}
 
 	/**
@@ -217,12 +217,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIf(final String key, final Collection<?> value) {
 		if (value != null && !value.isEmpty())
-			put(key, value);
+			this.put(key, value);
 
 		// This value is undesirable to save if null, so if YamlConfig is used
 		// it will remove it from the config
 		else
-			map.getSource().put(key, null);
+			this.map.getSource().put(key, null);
 	}
 
 	/**
@@ -235,12 +235,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIf(final String key, final boolean value) {
 		if (value)
-			put(key, value);
+			this.put(key, value);
 
 		// This value is undesirable to save if null, so if YamlConfig is used
 		// it will remove it from the config
 		else
-			map.getSource().put(key, null);
+			this.map.getSource().put(key, null);
 	}
 
 	/**
@@ -253,12 +253,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public void putIf(final String key, final Object value) {
 		if (value != null)
-			put(key, value);
+			this.put(key, value);
 
 		// This value is undesirable to save if null, so if YamlConfig is used
 		// it will remove it from the config
 		else
-			map.getSource().put(key, null);
+			this.map.getSource().put(key, null);
 	}
 
 	/**
@@ -271,7 +271,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	public void put(final String key, final Object value) {
 		Valid.checkNotNull(value, "Value with key '" + key + "' is null!");
 
-		map.put(key, value);
+		this.map.put(key, value);
 	}
 
 	/**
@@ -282,7 +282,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @param value
 	 */
 	public void override(final String key, final Object value) {
-		map.override(key, value);
+		this.map.override(key, value);
 	}
 
 	/**
@@ -301,7 +301,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Object removeWeak(final String key) {
-		return map.removeWeak(key);
+		return this.map.removeWeak(key);
 	}
 
 	/**
@@ -311,7 +311,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Object remove(final String key) {
-		return map.remove(key);
+		return this.map.remove(key);
 	}
 
 	/**
@@ -320,7 +320,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @param value
 	 */
 	public void removeByValue(final Object value) {
-		map.removeByValue(value);
+		this.map.removeByValue(value);
 	}
 
 	/**
@@ -330,7 +330,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public String getString(final String key) {
-		return getString(key, null);
+		return this.getString(key, null);
 	}
 
 	/**
@@ -341,7 +341,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public String getString(final String key, final String def) {
-		return get(key, String.class, def);
+		return this.get(key, String.class, def);
 	}
 
 	/**
@@ -351,7 +351,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public UUID getUUID(final String key) {
-		return getUUID(key, null);
+		return this.getUUID(key, null);
 	}
 
 	/**
@@ -362,7 +362,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public UUID getUUID(final String key, final UUID def) {
-		return get(key, UUID.class, def);
+		return this.get(key, UUID.class, def);
 	}
 
 	/**
@@ -372,7 +372,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Location getLocation(final String key) {
-		return get(key, org.bukkit.Location.class, null);
+		return this.get(key, org.bukkit.Location.class, null);
 	}
 
 	/**
@@ -382,7 +382,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Long getLong(final String key) {
-		return getLong(key, null);
+		return this.getLong(key, null);
 	}
 
 	/**
@@ -393,7 +393,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Long getLong(final String key, final Long def) {
-		final Number n = get(key, Long.class, def);
+		final Number n = this.get(key, Long.class, def);
 
 		return n != null ? n.longValue() : null;
 	}
@@ -405,7 +405,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Integer getInteger(final String key) {
-		return getInteger(key, null);
+		return this.getInteger(key, null);
 	}
 
 	/**
@@ -416,7 +416,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Integer getInteger(final String key, final Integer def) {
-		return get(key, Integer.class, def);
+		return this.get(key, Integer.class, def);
 	}
 
 	/**
@@ -426,7 +426,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Double getDouble(final String key) {
-		return getDouble(key, null);
+		return this.getDouble(key, null);
 	}
 
 	/**
@@ -437,7 +437,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Double getDouble(final String key, final Double def) {
-		return get(key, Double.class, def);
+		return this.get(key, Double.class, def);
 	}
 
 	/**
@@ -447,7 +447,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Float getFloat(final String key) {
-		return getFloat(key, null);
+		return this.getFloat(key, null);
 	}
 
 	/**
@@ -458,7 +458,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Float getFloat(final String key, final Float def) {
-		return get(key, Float.class, def);
+		return this.get(key, Float.class, def);
 	}
 
 	/**
@@ -468,7 +468,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Boolean getBoolean(final String key) {
-		return getBoolean(key, null);
+		return this.getBoolean(key, null);
 	}
 
 	/**
@@ -479,7 +479,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Boolean getBoolean(final String key, final Boolean def) {
-		return get(key, Boolean.class, def);
+		return this.get(key, Boolean.class, def);
 	}
 
 	/**
@@ -489,7 +489,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public CompMaterial getMaterial(final String key) {
-		return getMaterial(key, null);
+		return this.getMaterial(key, null);
 	}
 
 	/**
@@ -500,7 +500,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public CompMaterial getMaterial(final String key, final CompMaterial def) {
-		final String raw = getString(key);
+		final String raw = this.getString(key);
 
 		return raw != null ? CompMaterial.fromString(raw) : def;
 	}
@@ -512,7 +512,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public ItemStack getItemStack(final String key) {
-		return getItem(key, null);
+		return this.getItem(key, null);
 	}
 
 	/**
@@ -523,12 +523,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public ItemStack getItem(final String key, final ItemStack def) {
-		final Object obj = get(key, Object.class, null);
+		final Object obj = this.get(key, Object.class, null);
 
 		if (obj == null)
 			return def;
 
-		return json ? JsonItemStack.fromJson(obj.toString()) : SerializeUtil.deserialize(ItemStack.class, obj);
+		return this.json ? JsonItemStack.fromJson(obj.toString()) : SerializeUtil.deserialize(ItemStack.class, obj);
 	}
 
 	/**
@@ -542,7 +542,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
-		return getTuple(key, null, keyType, valueType);
+		return this.getTuple(key, null, keyType, valueType);
 	}
 
 	/**
@@ -557,7 +557,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
-		return get(key, Tuple.class, def, keyType, valueType);
+		return this.get(key, Tuple.class, def, keyType, valueType);
 	}
 
 	/**
@@ -567,7 +567,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public List<String> getStringList(final String key) {
-		return getStringList(key, null);
+		return this.getStringList(key, null);
 	}
 
 	/**
@@ -578,7 +578,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public List<String> getStringList(final String key, final List<String> def) {
-		final List<String> list = getList(key, String.class);
+		final List<String> list = this.getList(key, String.class);
 
 		return list == null ? def : list;
 	}
@@ -590,7 +590,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public List<SerializedMap> getMapList(final String key) {
-		return getList(key, SerializedMap.class);
+		return this.getList(key, SerializedMap.class);
 	}
 
 	/**
@@ -604,7 +604,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @see #getList(String, Class)
 	 */
 	public <T> Set<T> getSet(final String key, final Class<T> type) {
-		final List<T> list = getList(key, type);
+		final List<T> list = this.getList(key, type);
 
 		return new HashSet<>(list);
 	}
@@ -618,12 +618,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public <T> IsInList<T> getIsInList(String path, Class<T> type) {
-		final List<String> stringList = getStringList(path);
+		final List<String> stringList = this.getStringList(path);
 
 		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
 			return IsInList.fromStar();
 
-		return IsInList.fromList(getList(path, type));
+		return IsInList.fromList(this.getList(path, type));
 	}
 
 	/**
@@ -639,17 +639,15 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	public <K, V> List<Tuple<K, V>> getTupleList(final String path, final Class<K> tupleKey, final Class<V> tupleValue) {
 		final List<Tuple<K, V>> list = new ArrayList<>();
 
-		for (final Object object : this.getList(path, Object.class)) {
-
+		for (final Object object : this.getList(path, Object.class))
 			if (object == null)
 				list.add(null);
 
 			else {
-				final Tuple<K, V> tuple = Tuple.deserialize(of(object, json), tupleKey, tupleValue);
+				final Tuple<K, V> tuple = Tuple.deserialize(of(object, this.json), tupleKey, tupleValue);
 
 				list.add(tuple);
 			}
-		}
 
 		return list;
 	}
@@ -668,22 +666,21 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	public <T> List<T> getList(final String key, final Class<T> type) {
 		final List<T> list = new ArrayList<>();
 
-		if (!map.containsKey(key))
+		if (!this.map.containsKey(key))
 			return list;
 
-		final Object rawList = Remain.getRootOfSectionPathData(this.removeOnGet ? map.removeWeak(key) : map.get(key));
+		final Object rawList = Remain.getRootOfSectionPathData(this.removeOnGet ? this.map.removeWeak(key) : this.map.get(key));
 
 		// Forgive if string used instead of string list
-		if (type == String.class && rawList instanceof String) {
+		if (type == String.class && rawList instanceof String)
 			list.add((T) rawList);
-
-		} else {
+		else {
 			Valid.checkBoolean(rawList instanceof Collection<?>, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead! Try putting '' quotes around the message: " + rawList);
 
 			final SerializeUtil.Mode oldMode = SerializeUtil.getMode();
 
 			try {
-				if (json)
+				if (this.json)
 					SerializeUtil.setMode(Mode.JSON);
 
 				for (final Object object : (Collection<Object>) rawList)
@@ -704,9 +701,9 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public SerializedMap getMap(final String key) {
-		final Object raw = get(key, Object.class);
+		final Object raw = this.get(key, Object.class);
 
-		return raw != null ? of(raw, json) : new SerializedMap();
+		return raw != null ? of(raw, this.json) : new SerializedMap();
 	}
 
 	/**
@@ -731,16 +728,16 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 			final SerializeUtil.Mode oldMode = SerializeUtil.getMode();
 
 			try {
-				if (json)
+				if (this.json)
 					SerializeUtil.setMode(Mode.JSON);
 
-				for (final Entry<?, ?> entry : of(raw, json).entrySet()) {
+				for (final Entry<?, ?> entry : of(raw, this.json).entrySet()) {
 					final Key key = SerializeUtil.deserialize(keyType, entry.getKey());
 					final Value value = SerializeUtil.deserialize(valueType, entry.getValue());
 
 					// Ensure the pair values are valid for the given paramenters
-					checkAssignable(path, key, keyType);
-					checkAssignable(path, value, valueType);
+					this.checkAssignable(path, key, keyType);
+					this.checkAssignable(path, value, valueType);
 
 					map.put(key, value);
 				}
@@ -769,12 +766,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		Object raw = this.map.get(path);
 
 		if (raw != null) {
-			raw = of(raw, json);
+			raw = of(raw, this.json);
 
 			final SerializeUtil.Mode oldMode = SerializeUtil.getMode();
 
 			try {
-				if (json)
+				if (this.json)
 					SerializeUtil.setMode(Mode.JSON);
 
 				for (final Entry<String, Object> entry : ((SerializedMap) raw).entrySet()) {
@@ -782,11 +779,11 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 					final List<Value> value = SerializeUtil.deserialize(List.class, entry.getValue());
 
 					// Ensure the pair values are valid for the given paramenters
-					checkAssignable(path, key, keyType);
+					this.checkAssignable(path, key, keyType);
 
 					if (!value.isEmpty())
 						for (final Value item : value)
-							checkAssignable(path, item, setType);
+							this.checkAssignable(path, item, setType);
 
 					map.put(key, new HashSet<>(value));
 				}
@@ -813,7 +810,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Object getObject(final String key) {
-		return get(key, Object.class);
+		return this.get(key, Object.class);
 	}
 
 	/**
@@ -824,7 +821,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Object getObject(final String key, final Object def) {
-		return get(key, Object.class, def);
+		return this.get(key, Object.class, def);
 	}
 
 	/**
@@ -836,7 +833,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public <T> T get(final String key, final Class<T> type) {
-		return get(key, type, null);
+		return this.get(key, type, null);
 	}
 
 	/**
@@ -850,11 +847,11 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public <T> T get(final String key, final Class<T> type, final T def, Object... deserializeParameters) {
-		Object raw = removeOnGet ? map.removeWeak(key) : map.get(key);
+		Object raw = this.removeOnGet ? this.map.removeWeak(key) : this.map.get(key);
 
 		// Try to get the value by key with ignoring case
 		if (raw == null)
-			raw = getValueIgnoreCase(key);
+			raw = this.getValueIgnoreCase(key);
 
 		// Assume empty means default for enumerations
 		if ("".equals(raw) && Enum.class.isAssignableFrom(type))
@@ -863,7 +860,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		final SerializeUtil.Mode oldMode = SerializeUtil.getMode();
 
 		try {
-			if (json)
+			if (this.json)
 				SerializeUtil.setMode(Mode.JSON);
 
 			return raw == null ? def : SerializeUtil.deserialize(type, raw, deserializeParameters);
@@ -880,7 +877,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Object getValueIgnoreCase(final String key) {
-		for (final Entry<String, Object> entry : map.entrySet())
+		for (final Entry<String, Object> entry : this.map.entrySet())
 			if (entry.getKey().equalsIgnoreCase(key))
 				return entry.getValue();
 
@@ -893,7 +890,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @param consumer
 	 */
 	public void forEach(final BiConsumer<String, Object> consumer) {
-		for (final Entry<String, Object> e : map.entrySet())
+		for (final Entry<String, Object> e : this.map.entrySet())
 			consumer.accept(e.getKey(), e.getValue());
 	}
 
@@ -903,7 +900,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Map.Entry<String, Object> firstEntry() {
-		return isEmpty() ? null : map.getSource().entrySet().iterator().next();
+		return this.isEmpty() ? null : this.map.getSource().entrySet().iterator().next();
 	}
 
 	/**
@@ -912,7 +909,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Set<String> keySet() {
-		return map.keySet();
+		return this.map.keySet();
 	}
 
 	/**
@@ -921,7 +918,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Collection<Object> values() {
-		return map.values();
+		return this.map.values();
 	}
 
 	/**
@@ -930,7 +927,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Set<Entry<String, Object>> entrySet() {
-		return map.entrySet();
+		return this.map.entrySet();
 	}
 
 	/**
@@ -939,7 +936,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public int size() {
-		return map.size();
+		return this.map.size();
 	}
 
 	/**
@@ -948,7 +945,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public Map<String, Object> asMap() {
-		return map.getSource();
+		return this.map.getSource();
 	}
 
 	/**
@@ -956,7 +953,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	@Override
 	public Object serialize() {
-		return map.serialize();
+		return this.map.serialize();
 	}
 
 	/**
@@ -983,7 +980,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 			return jsonMap.toString();
 
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to serialize to json, unparsed data: " + map);
+			Common.error(t, "Failed to serialize to json, unparsed data: " + this.map);
 
 			return "{}";
 
@@ -998,7 +995,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return map.isEmpty();
+		return this.map.isEmpty();
 	}
 
 	/**
@@ -1012,7 +1009,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @param converter
 	 */
 	public <O, N> void convert(final String path, final Class<O> from, final Class<N> to, final Function<O, N> converter) {
-		final Object old = getObject(path);
+		final Object old = this.getObject(path);
 
 		if (old != null)
 			// If the old is a collection check if the first value is old, assume the rest is old as well
@@ -1027,12 +1024,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 				for (final O oldItem : (Collection<O>) collection)
 					newCollection.add(converter.apply(oldItem));
 
-				override(path, newCollection);
+				this.override(path, newCollection);
 
 				Common.logNoPrefix("[" + SimplePlugin.getNamed() + "] Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
 
 			} else if (from.isAssignableFrom(old.getClass())) {
-				override(path, converter.apply((O) old));
+				this.override(path, converter.apply((O) old));
 
 				Common.logNoPrefix("[" + SimplePlugin.getNamed() + "] Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
 			}
@@ -1048,7 +1045,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public String toStringFormatted() {
-		final Map<?, ?> map = (Map<?, ?>) serialize();
+		final Map<?, ?> map = (Map<?, ?>) this.serialize();
 		final List<String> lines = new ArrayList<>();
 
 		lines.add("{");
@@ -1079,7 +1076,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 
 	@Override
 	public String toString() {
-		return serialize().toString();
+		return this.serialize().toString();
 	}
 
 	// ----------------------------------------------------------------------------------------------------

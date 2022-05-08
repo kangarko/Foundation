@@ -30,7 +30,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray("Key", key, "Value", value);
+		return SerializedMap.ofArray("Key", this.key, "Value", this.value);
 	}
 
 	/**
@@ -39,7 +39,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @return
 	 */
 	public String toLine() {
-		return key + " - " + value;
+		return this.key + " - " + this.value;
 	}
 
 	/**

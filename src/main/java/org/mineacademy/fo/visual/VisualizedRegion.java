@@ -102,11 +102,11 @@ public final class VisualizedRegion extends Region {
 	 * @param durationTicks
 	 */
 	public void showParticles(Player player, @Nullable Color color, int durationTicks) {
-		showParticles(player, color);
+		this.showParticles(player, color);
 
 		Common.runLater(durationTicks, () -> {
-			if (canSeeParticles(player))
-				hideParticles(player);
+			if (this.canSeeParticles(player))
+				this.hideParticles(player);
 		});
 	}
 
@@ -126,13 +126,13 @@ public final class VisualizedRegion extends Region {
 	 * @param color
 	 */
 	public void showParticles(final Player player, @Nullable Color color) {
-		Valid.checkBoolean(!canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
-		Valid.checkBoolean(isWhole(), "Cannot show particles of an incomplete region " + this);
+		Valid.checkBoolean(!this.canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
+		Valid.checkBoolean(this.isWhole(), "Cannot show particles of an incomplete region " + this);
 
-		viewers.put(player, color);
+		this.viewers.put(player, color);
 
-		if (task == null)
-			startVisualizing();
+		if (this.task == null)
+			this.startVisualizing();
 	}
 
 	/**
@@ -141,12 +141,12 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 */
 	public void hideParticles(final Player player) {
-		Valid.checkBoolean(canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
+		Valid.checkBoolean(this.canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
 
-		viewers.removeWeak(player);
+		this.viewers.removeWeak(player);
 
-		if (viewers.isEmpty() && task != null)
-			stopVisualizing();
+		if (this.viewers.isEmpty() && this.task != null)
+			this.stopVisualizing();
 	}
 
 	/**
@@ -156,40 +156,39 @@ public final class VisualizedRegion extends Region {
 	 * @return
 	 */
 	public boolean canSeeParticles(final Player player) {
-		return viewers.containsKey(player);
+		return this.viewers.containsKey(player);
 	}
 
 	/*
 	 * Starts visualizing this region if it is whole
 	 */
 	private void startVisualizing() {
-		Valid.checkBoolean(task == null, "Already visualizing region " + this + "!");
-		Valid.checkBoolean(isWhole(), "Cannot visualize incomplete region " + this + "!");
+		Valid.checkBoolean(this.task == null, "Already visualizing region " + this + "!");
+		Valid.checkBoolean(this.isWhole(), "Cannot visualize incomplete region " + this + "!");
 
-		task = Common.runTimer(delayTicks, new BukkitRunnable() {
+		this.task = Common.runTimer(this.delayTicks, new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (viewers.isEmpty()) {
-					stopVisualizing();
+				if (VisualizedRegion.this.viewers.isEmpty()) {
+					VisualizedRegion.this.stopVisualizing();
 
 					return;
 				}
 
-				final Set<Location> blocks = BlockUtil.getBoundingBox(getPrimary(), getSecondary());
+				final Set<Location> blocks = BlockUtil.getBoundingBox(VisualizedRegion.this.getPrimary(), VisualizedRegion.this.getSecondary());
 
 				for (final Location location : blocks)
-					for (final Map.Entry<Player, Color> entry : viewers.entrySet()) {
+					for (final Map.Entry<Player, Color> entry : VisualizedRegion.this.viewers.entrySet()) {
 						final Player viewer = entry.getKey();
 						final Color color = entry.getValue();
 						final Location viewerLocation = viewer.getLocation();
 
-						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100) {
+						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
 							if (color != null)
 								CompParticle.REDSTONE.spawn(viewer, location, color, 0.5F);
 
 							else
-								particle.spawn(viewer, location);
-						}
+								VisualizedRegion.this.particle.spawn(viewer, location);
 					}
 
 			}
@@ -200,12 +199,12 @@ public final class VisualizedRegion extends Region {
 	 * Stops the region from being visualized
 	 */
 	private void stopVisualizing() {
-		Valid.checkNotNull(task, "Region " + this + " not visualized");
+		Valid.checkNotNull(this.task, "Region " + this + " not visualized");
 
-		task.cancel();
-		task = null;
+		this.task.cancel();
+		this.task = null;
 
-		viewers.clear();
+		this.viewers.clear();
 	}
 
 	/**

@@ -64,13 +64,12 @@ public final class Debugger {
 	 * @param messages
 	 */
 	public static void debug(String section, String... messages) {
-		if (isDebugged(section)) {
+		if (isDebugged(section))
 			for (final String message : messages)
 				if (SimplePlugin.hasInstance())
 					Common.log("[" + section + "] " + message);
 				else
 					System.out.println("[" + section + "] " + message);
-		}
 	}
 
 	/**
@@ -310,11 +309,10 @@ public final class Debugger {
 			while ((cause = cause.getCause()) != null);
 		}
 
-		if (throwable instanceof FoException && !causes.isEmpty()) {
+		if (throwable instanceof FoException && !causes.isEmpty())
 			// Do not print parent exception if we are only wrapping it, saves console spam
 			print(throwable.getMessage());
-
-		} else {
+		else {
 			print(throwable.toString());
 
 			printStackTraceElements(throwable);

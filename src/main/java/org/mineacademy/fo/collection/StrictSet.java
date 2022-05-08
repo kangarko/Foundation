@@ -33,7 +33,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	public StrictSet(E... elements) {
 		this();
 
-		addAll(Arrays.asList(elements));
+		this.addAll(Arrays.asList(elements));
 	}
 
 	/**
@@ -44,7 +44,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	public StrictSet(Iterable<E> oldList) {
 		this();
 
-		addAll(oldList);
+		this.addAll(oldList);
 	}
 
 	/**
@@ -66,9 +66,9 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	public void remove(E value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
-		final boolean removed = set.remove(value);
+		final boolean removed = this.set.remove(value);
 
-		Valid.checkBoolean(removed, String.format(getCannotRemoveMessage(), value));
+		Valid.checkBoolean(removed, String.format(this.getCannotRemoveMessage(), value));
 	}
 
 	/**
@@ -77,7 +77,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @param value
 	 */
 	public void removeWeak(E value) {
-		set.remove(value);
+		this.set.remove(value);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	public void addAll(Iterable<E> collection) {
 		for (final E val : collection)
-			add(val);
+			this.add(val);
 	}
 
 	/**
@@ -98,9 +98,9 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	public void add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
-		Valid.checkBoolean(!set.contains(key), String.format(getCannotAddMessage(), key));
+		Valid.checkBoolean(!this.set.contains(key), String.format(this.getCannotAddMessage(), key));
 
-		set.add(key);
+		this.set.add(key);
 	}
 
 	/**
@@ -109,7 +109,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @param key
 	 */
 	public void override(E key) {
-		set.add(key);
+		this.set.add(key);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	@Nullable
 	public E first() {
-		return set.isEmpty() ? null : set.iterator().next();
+		return this.set.isEmpty() ? null : this.set.iterator().next();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -133,14 +133,14 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public boolean contains(E key) {
-		return set.contains(key);
+		return this.set.contains(key);
 	}
 
 	/**
 	 * Clear the set
 	 */
 	public void clear() {
-		set.clear();
+		this.set.clear();
 	}
 
 	/**
@@ -149,7 +149,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return set.isEmpty();
+		return this.set.isEmpty();
 	}
 
 	/**
@@ -158,7 +158,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public int size() {
-		return set.size();
+		return this.set.size();
 	}
 
 	/**
@@ -167,7 +167,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public Set<E> getSource() {
-		return set;
+		return this.set;
 	}
 
 	/**
@@ -177,7 +177,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public String join(String separator) {
-		return Common.join(set, separator);
+		return Common.join(this.set, separator);
 	}
 
 	/**
@@ -187,7 +187,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public E[] toArray(E[] e) {
-		return set.toArray(e);
+		return this.set.toArray(e);
 	}
 
 	/**
@@ -195,7 +195,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	@Override
 	public Iterator<E> iterator() {
-		return set.iterator();
+		return this.set.iterator();
 	}
 
 	/**
@@ -203,11 +203,11 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serialize(set);
+		return SerializeUtil.serialize(this.set);
 	}
 
 	@Override
 	public String toString() {
-		return "StrictSet{\n\t" + Common.join(set, "\n\t") + "\n}";
+		return "StrictSet{\n\t" + Common.join(this.set, "\n\t") + "\n}";
 	}
 }

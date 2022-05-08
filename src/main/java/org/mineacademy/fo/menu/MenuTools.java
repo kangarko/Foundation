@@ -42,13 +42,13 @@ public abstract class MenuTools extends Menu {
 	protected MenuTools(final Menu parent) {
 		super(parent);
 
-		this.tools = compile0(compileTools());
+		this.tools = this.compile0(this.compileTools());
 
-		final int items = tools.size();
+		final int items = this.tools.size();
 		final int pages = items < 9 ? 9 * 1 : items < 9 * 2 ? 9 * 2 : items < 9 * 3 ? 9 * 3 : items < 9 * 4 ? 9 * 4 : 9 * 5;
 
-		setSize(pages);
-		setTitle(SimpleLocalization.Menu.TITLE_TOOLS);
+		this.setSize(pages);
+		this.setTitle(SimpleLocalization.Menu.TITLE_TOOLS);
 	}
 
 	/**
@@ -106,7 +106,7 @@ public abstract class MenuTools extends Menu {
 	 */
 	@Override
 	public final ItemStack getItemAt(final int slot) {
-		return slot < tools.size() ? tools.get(slot).get(getViewer()) : null;
+		return slot < this.tools.size() ? this.tools.get(slot).get(this.getViewer()) : null;
 	}
 
 	/**
@@ -114,19 +114,19 @@ public abstract class MenuTools extends Menu {
 	 */
 	@Override
 	public final void onMenuClick(final Player pl, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack item, final boolean cancelled) {
-		final ItemStack it = getItemAt(slot);
-		final ToggleableTool tool = it != null ? findTool(it) : null;
+		final ItemStack it = this.getItemAt(slot);
+		final ToggleableTool tool = it != null ? this.findTool(it) : null;
 
 		if (tool != null) {
 			tool.giveOrTake(pl);
 
-			restartMenu();
+			this.restartMenu();
 		}
 	}
 
 	// Converts the clicked item into a toggleable tool
 	private final ToggleableTool findTool(final ItemStack item) {
-		for (final ToggleableTool h : tools)
+		for (final ToggleableTool h : this.tools)
 			if (h.equals(item))
 				return h;
 
@@ -135,7 +135,7 @@ public abstract class MenuTools extends Menu {
 
 	@Override
 	protected int getInfoButtonPosition() {
-		return getSize() - 1;
+		return this.getSize() - 1;
 	}
 
 	/**
@@ -160,7 +160,7 @@ public abstract class MenuTools extends Menu {
 
 			@Override
 			protected Object[] compileTools() {
-				return lookupTools(pluginToolClasses);
+				return this.lookupTools(pluginToolClasses);
 			}
 
 			@Override
@@ -222,19 +222,19 @@ final class ToggleableTool {
 	 * @return the item
 	 */
 	ItemStack get(final Player player) {
-		update(player);
+		this.update(player);
 
-		return playerHasTool ? getToolWhenHas() : getToolWhenHasnt();
+		return this.playerHasTool ? this.getToolWhenHas() : this.getToolWhenHasnt();
 	}
 
 	private void update(final Player pl) {
-		playerHasTool = pl.getOpenInventory().getBottomInventory().containsAtLeast(item, 1);
+		this.playerHasTool = pl.getOpenInventory().getBottomInventory().containsAtLeast(this.item, 1);
 	}
 
 	// Return the dummy placeholder tool when the player already has it
 	private ItemStack getToolWhenHas() {
 		return ItemCreator
-				.of(item)
+				.of(this.item)
 				.glow(true)
 				.lore("", "&6You already have this item.", "&6Click to take it away.")
 				.makeMenuTool();
@@ -242,7 +242,7 @@ final class ToggleableTool {
 
 	// Return the actual working tool in case player does not have it yet
 	private ItemStack getToolWhenHasnt() {
-		return item;
+		return this.item;
 	}
 
 	/**
@@ -253,15 +253,15 @@ final class ToggleableTool {
 	void giveOrTake(final Player player) {
 		final PlayerInventory inv = player.getInventory();
 
-		if (playerHasTool = !playerHasTool)
-			inv.addItem(item);
+		if (this.playerHasTool = !this.playerHasTool)
+			inv.addItem(this.item);
 
 		else
-			inv.removeItem(item);
+			inv.removeItem(this.item);
 	}
 
 	boolean equals(final ItemStack item) {
-		return getToolWhenHas().isSimilar(item) || getToolWhenHasnt().isSimilar(item);
+		return this.getToolWhenHas().isSimilar(item) || this.getToolWhenHasnt().isSimilar(item);
 	}
 
 	/**
@@ -269,6 +269,6 @@ final class ToggleableTool {
 	 */
 	@Override
 	public String toString() {
-		return "Toggleable{" + item.getType() + "}";
+		return "Toggleable{" + this.item.getType() + "}";
 	}
 }

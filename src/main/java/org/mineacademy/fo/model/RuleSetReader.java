@@ -71,17 +71,16 @@ public abstract class RuleSetReader<T extends Rule> {
 			}
 
 			// Found the disabled operator
-			else if (line.equals("disabled")) {
+			else if (line.equals("disabled"))
 				if (found && !disabled) {
 					lines.remove(i);
 
 					break;
 				}
-			}
 		}
 
 		Valid.checkBoolean(found, "Failed to disable rule " + rule);
-		saveAndLoad(file, lines);
+		this.saveAndLoad(file, lines);
 	}
 
 	/**
@@ -93,7 +92,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	protected final void saveAndLoad(File file, List<String> lines) {
 		FileUtil.write(file, lines, StandardOpenOption.TRUNCATE_EXISTING);
 
-		load();
+		this.load();
 	}
 
 	/**
@@ -105,7 +104,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	protected final List<T> loadFromFile(String path) {
 		final File file = FileUtil.extract(path);
 
-		return loadFromFile(file);
+		return this.loadFromFile(file);
 	}
 
 	/*
@@ -122,22 +121,18 @@ public abstract class RuleSetReader<T extends Rule> {
 		for (int i = 0; i < lines.size(); i++) {
 			final String line = lines.get(i).trim();
 
-			if (!line.isEmpty() && !line.startsWith("#")) {
-
+			if (!line.isEmpty() && !line.startsWith("#"))
 				// If a line starts with matcher then assume a new rule is found and start creating it. This makes a new instance of the object.
-				if (line.startsWith(newKeyword + " ")) {
+				if (line.startsWith(this.newKeyword + " ")) {
 
 					// Found another match, assuming previous rule is finished creating.
-					if (rule != null) {
-						//Valid.checkBoolean(!rules.contains(rule), "Duplicate rule found in: " + file + "! Duplicated rule: " + rule);
-
-						if (canFinish(rule))
+					if (rule != null)
+						if (this.canFinish(rule))
 							rules.add(rule);
-					}
 
 					try {
-						match = line.replace(newKeyword + " ", "");
-						rule = createRule(file, match);
+						match = line.replace(this.newKeyword + " ", "");
+						rule = this.createRule(file, match);
 
 					} catch (final Throwable t) {
 						Common.throwError(t,
@@ -152,7 +147,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 				// If something is being created then attempt to parse operators.
 				else {
-					if (!onNoMatchLineParse(file, line))
+					if (!this.onNoMatchLineParse(file, line))
 						Valid.checkNotNull(match, "Cannot define operator when no rule is being created! File: '" + file + "' Line (" + (i + 1) + "): '" + line + "'");
 
 					if (rule != null)
@@ -166,10 +161,9 @@ public abstract class RuleSetReader<T extends Rule> {
 									"Error: %error");
 						}
 				}
-			}
 
 			// Reached end of the file and a rule is still being created, finish it.
-			if (i + 1 == lines.size() && rule != null && canFinish(rule))
+			if (i + 1 == lines.size() && rule != null && this.canFinish(rule))
 				rules.add(rule);
 		}
 

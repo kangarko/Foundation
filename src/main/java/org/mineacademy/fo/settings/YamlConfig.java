@@ -407,7 +407,7 @@ public class YamlConfig extends FileConfig {
 		final YamlConfig config = new YamlConfig();
 
 		try {
-			List<String> content = FileUtil.readLines(file);
+			final List<String> content = FileUtil.readLines(file);
 			config.loadFromString(String.join("\n", content));
 
 		} catch (final Exception ex) {

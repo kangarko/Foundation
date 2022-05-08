@@ -116,7 +116,7 @@ public enum CompAttribute {
 	 * @return true if this attribute existed in MC 1.8.9
 	 */
 	public final boolean hasLegacy() {
-		return genericFieldName != null;
+		return this.genericFieldName != null;
 	}
 
 	/**
@@ -127,13 +127,13 @@ public enum CompAttribute {
 	 */
 	public final Double get(final LivingEntity entity) {
 		try {
-			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(toString()));
+			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(this.toString()));
 
 			return instance != null ? instance.getBaseValue() : null;
 
 		} catch (IllegalArgumentException | NoSuchMethodError | NoClassDefFoundError ex) {
 			try {
-				return hasLegacy() ? getLegacy(entity) : null;
+				return this.hasLegacy() ? this.getLegacy(entity) : null;
 
 			} catch (final NullPointerException exx) {
 				return null;
@@ -158,7 +158,7 @@ public enum CompAttribute {
 		Valid.checkNotNull(entity, "Attribute cannot be null");
 
 		try {
-			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(toString()));
+			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(this.toString()));
 
 			instance.setBaseValue(value);
 
@@ -169,8 +169,8 @@ public enum CompAttribute {
 
 			else
 				try {
-					if (hasLegacy())
-						setLegacy(entity, value);
+					if (this.hasLegacy())
+						this.setLegacy(entity, value);
 
 				} catch (final Throwable t) {
 					if (MinecraftVersion.equals(V.v1_8))
@@ -184,12 +184,12 @@ public enum CompAttribute {
 
 	// MC 1.8.9
 	private double getLegacy(final Entity entity) {
-		return (double) ReflectionUtil.invoke("getValue", getLegacyAttributeInstance(entity));
+		return (double) ReflectionUtil.invoke("getValue", this.getLegacyAttributeInstance(entity));
 	}
 
 	// MC 1.8.9
 	private void setLegacy(final Entity entity, final double value) {
-		final Object instance = getLegacyAttributeInstance(entity);
+		final Object instance = this.getLegacyAttributeInstance(entity);
 
 		ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
 	}

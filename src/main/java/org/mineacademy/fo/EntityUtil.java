@@ -275,8 +275,8 @@ public final class EntityUtil {
 			public void run() {
 
 				// Cancel after the given timeout to save performance
-				if (elapsedTicks++ > timeoutTicks) {
-					cancel();
+				if (this.elapsedTicks++ > timeoutTicks) {
+					this.cancel();
 
 					return;
 				}
@@ -286,7 +286,7 @@ public final class EntityUtil {
 					if (entity instanceof FallingBlock && hitGroundListener != null)
 						hitGroundListener.run();
 
-					cancel();
+					this.cancel();
 					return;
 				}
 
@@ -295,7 +295,7 @@ public final class EntityUtil {
 					if (hitGroundListener != null)
 						hitGroundListener.run();
 
-					cancel();
+					this.cancel();
 
 				} else if (flyListener != null)
 					flyListener.run();

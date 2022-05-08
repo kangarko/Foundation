@@ -30,7 +30,7 @@ public final class TabUtil {
 
 		if (all != null)
 			for (final T s : all)
-				if (s != null) {
+				if (s != null)
 					if (s instanceof Iterable)
 						for (final Object iterable : (Iterable<?>) s)
 							clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(iterable).toString());
@@ -47,7 +47,6 @@ public final class TabUtil {
 						if (!"".equals(parsed))
 							clone.add(lowercase ? parsed.toLowerCase() : parsed);
 					}
-				}
 
 		return complete(partialName, clone);
 	}

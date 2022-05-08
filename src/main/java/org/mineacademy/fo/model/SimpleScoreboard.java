@@ -95,8 +95,8 @@ public class SimpleScoreboard {
 	 * Create a new scoreboard with customizable updateDelayTicks
 	 */
 	public SimpleScoreboard(String title, int updateDelayTicks) {
-		setTitle(title);
-		setUpdateDelayTicks(updateDelayTicks);
+		this.setTitle(title);
+		this.setUpdateDelayTicks(updateDelayTicks);
 
 		registeredBoards.add(this);
 	}
@@ -159,7 +159,7 @@ public class SimpleScoreboard {
 	}
 
 	public final String getTitle() {
-		return title;
+		return this.title;
 	}
 
 	/**
@@ -356,9 +356,9 @@ public class SimpleScoreboard {
 	private void update() {
 		this.onUpdate();
 
-		for (final Player viewer : new StrictList<>(scoreboards)) {
+		for (final Player viewer : new StrictList<>(this.scoreboards)) {
 			if (!viewer.isOnline()) {
-				scoreboards.remove(viewer);
+				this.scoreboards.remove(viewer);
 				continue;
 			}
 
@@ -468,12 +468,12 @@ public class SimpleScoreboard {
 		public String compare(Team team) {
 			String oldEntry = null;
 			final String teamPrefix = ChatColor.translateAlternateColorCodes('&', team.getPrefix());
-			final String linePrefix = ChatColor.translateAlternateColorCodes('&', prefix);
+			final String linePrefix = ChatColor.translateAlternateColorCodes('&', this.prefix);
 
 			if (!teamPrefix.equals(linePrefix))
 				team.setPrefix(linePrefix);
 
-			final String lineEntry = ChatColor.translateAlternateColorCodes('&', teamEntry);
+			final String lineEntry = ChatColor.translateAlternateColorCodes('&', this.teamEntry);
 
 			if (team.getEntries().size() > 1)
 				throw new IllegalArgumentException("Something went wrong!");
@@ -488,7 +488,7 @@ public class SimpleScoreboard {
 			}
 
 			final String teamSuffix = ChatColor.translateAlternateColorCodes('&', team.getSuffix());
-			final String lineSuffix = ChatColor.translateAlternateColorCodes('&', suffix);
+			final String lineSuffix = ChatColor.translateAlternateColorCodes('&', this.suffix);
 
 			if (!teamSuffix.equals(lineSuffix))
 				team.setSuffix(lineSuffix);

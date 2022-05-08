@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -391,8 +390,7 @@ public final class ReflectionUtil {
 	public static Method getDeclaredMethod(Class<?> clazz, final String methodName, Class<?>... args) {
 		final Class<?> originalClass = clazz;
 
-		while (!clazz.equals(Object.class)) {
-
+		while (!clazz.equals(Object.class))
 			try {
 				final Method method = clazz.getDeclaredMethod(methodName, args);
 				method.setAccessible(true);
@@ -405,7 +403,6 @@ public final class ReflectionUtil {
 			} catch (final Throwable t) {
 				throw new ReflectionException(t, "Error lookup up method " + methodName + " in class " + originalClass + " and her subclasses");
 			}
-		}
 
 		throw new ReflectionException("Unable to find method " + methodName + " with params " + Common.join(args) + " in class " + originalClass + " and her subclasses");
 	}
@@ -710,11 +707,10 @@ public final class ReflectionUtil {
 			if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + ""))
 				return (E) ChatColor.getByChar(name.charAt(1));
 
-			if (enumType == org.bukkit.block.Biome.class) {
+			if (enumType == org.bukkit.block.Biome.class)
 				if (MinecraftVersion.atLeast(V.v1_13))
 					if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
 						name = "SNOWY_TAIGA";
-			}
 
 			if (enumType == EntityType.class) {
 				if (MinecraftVersion.atLeast(V.v1_16))
@@ -1062,8 +1058,7 @@ public final class ReflectionUtil {
 		primitiveWrapperMap.put(Float.TYPE, Float.class);
 		primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
 
-		for (final Iterator<Class<?>> it = primitiveWrapperMap.keySet().iterator(); it.hasNext();) {
-			final Class<?> primitiveClass = it.next();
+		for (Class<?> primitiveClass : primitiveWrapperMap.keySet()) {
 			final Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
 
 			if (!primitiveClass.equals(wrapperClass))
@@ -1092,66 +1087,66 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Class<?> param : constructor.getParameterTypes()) {
-				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
+				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + this.clazz);
 
 				classes.add(param);
 			}
 
-			constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);
+			this.constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);
 		}
 
 		public Constructor<T> getDeclaredConstructor(final Class<?>... paramTypes) throws NoSuchMethodException {
 			final Integer hashCode = Arrays.hashCode(paramTypes);
 
-			if (constructorCache.containsKey(hashCode))
-				return (Constructor<T>) constructorCache.get(hashCode);
+			if (this.constructorCache.containsKey(hashCode))
+				return (Constructor<T>) this.constructorCache.get(hashCode);
 
-			if (constructorGuard.contains(hashCode)) {
-				while (constructorGuard.contains(hashCode)) {
+			if (this.constructorGuard.contains(hashCode)) {
+				while (this.constructorGuard.contains(hashCode)) {
 
 				} // Wait for other thread;
-				return getDeclaredConstructor(paramTypes);
+				return this.getDeclaredConstructor(paramTypes);
 			}
 
-			constructorGuard.add(hashCode);
+			this.constructorGuard.add(hashCode);
 
 			try {
-				final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+				final Constructor<T> constructor = this.clazz.getDeclaredConstructor(paramTypes);
 
-				cacheConstructor(constructor);
+				this.cacheConstructor(constructor);
 
 				return constructor;
 
 			} finally {
-				constructorGuard.remove(hashCode);
+				this.constructorGuard.remove(hashCode);
 			}
 		}
 
 		public Constructor<T> getConstructor(final Class<?>... paramTypes) throws NoSuchMethodException {
 			final Integer hashCode = Arrays.hashCode(paramTypes);
 
-			if (constructorCache.containsKey(hashCode))
-				return (Constructor<T>) constructorCache.get(hashCode);
+			if (this.constructorCache.containsKey(hashCode))
+				return (Constructor<T>) this.constructorCache.get(hashCode);
 
-			if (constructorGuard.contains(hashCode)) {
-				while (constructorGuard.contains(hashCode)) {
+			if (this.constructorGuard.contains(hashCode)) {
+				while (this.constructorGuard.contains(hashCode)) {
 					// Wait for other thread;
 				}
 
-				return getConstructor(paramTypes);
+				return this.getConstructor(paramTypes);
 			}
 
-			constructorGuard.add(hashCode);
+			this.constructorGuard.add(hashCode);
 
 			try {
-				final Constructor<T> constructor = clazz.getConstructor(paramTypes);
+				final Constructor<T> constructor = this.clazz.getConstructor(paramTypes);
 
-				cacheConstructor(constructor);
+				this.cacheConstructor(constructor);
 
 				return constructor;
 
 			} finally {
-				constructorGuard.remove(hashCode);
+				this.constructorGuard.remove(hashCode);
 			}
 		}
 
@@ -1162,46 +1157,46 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-		
+
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-		
+
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
+
 			cacheMethod(method);
-		
+
 			return method;
 		}*/
 
 		public void cacheField(final Field field) {
-			fieldCache.put(field.getName(), field);
+			this.fieldCache.put(field.getName(), field);
 		}
 
 		public Field getDeclaredField(final String name) throws NoSuchFieldException {
 
-			if (fieldCache.containsKey(name))
-				return fieldCache.get(name);
+			if (this.fieldCache.containsKey(name))
+				return this.fieldCache.get(name);
 
-			if (fieldGuard.contains(name)) {
-				while (fieldGuard.contains(name)) {
+			if (this.fieldGuard.contains(name)) {
+				while (this.fieldGuard.contains(name)) {
 				}
 
-				return getDeclaredField(name);
+				return this.getDeclaredField(name);
 			}
 
-			fieldGuard.add(name);
+			this.fieldGuard.add(name);
 
 			try {
-				final Field field = clazz.getDeclaredField(name);
+				final Field field = this.clazz.getDeclaredField(name);
 
-				cacheField(field);
+				this.cacheField(field);
 
 				return field;
 
 			} finally {
-				fieldGuard.remove(name);
+				this.fieldGuard.remove(name);
 			}
 		}
 	}
@@ -1243,7 +1238,7 @@ public final class ReflectionUtil {
 		}
 
 		public String getEnumName() {
-			return enumName;
+			return this.enumName;
 		}
 	}
 }

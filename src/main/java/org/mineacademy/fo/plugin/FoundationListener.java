@@ -120,12 +120,11 @@ final class FoundationListener implements Listener {
 
 			int whiteLines = chatPages.getLinesPerPage();
 
-			if (whiteLines == 15 && pages.size() == 1) {
+			if (whiteLines == 15 && pages.size() == 1)
 				if (messagesOnPage.size() < 17)
 					whiteLines = 7;
 				else
 					whiteLines += 2;
-			}
 
 			for (int i = messagesOnPage.size(); i < whiteLines; i++)
 				SimpleComponent.of("&r").send(player);

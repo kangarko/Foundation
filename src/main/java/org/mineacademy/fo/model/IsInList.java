@@ -51,10 +51,10 @@ public final class IsInList<T> implements Iterable<T> {
 	public boolean contains(final T toEvaluateAgainst) {
 
 		// Return false when list is empty and we are not always true
-		if (!matchAll && list.isEmpty())
+		if (!this.matchAll && this.list.isEmpty())
 			return false;
 
-		return matchAll || list.contains(toEvaluateAgainst);
+		return this.matchAll || this.list.contains(toEvaluateAgainst);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public final class IsInList<T> implements Iterable<T> {
 	 * @return
 	 */
 	public boolean isEntireList() {
-		return matchAll;
+		return this.matchAll;
 	}
 
 	/**
