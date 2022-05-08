@@ -32,7 +32,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -49,7 +48,6 @@ import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
-import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
@@ -222,10 +220,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
-		if (!Bukkit.getVersion().contains("Paper") && !Bukkit.getVersion().contains("NachoSpigot") && !Bukkit.getVersion().contains("-Spigot") && MinecraftVersion.atLeast(V.v1_8)) {
+		final String version = Bukkit.getVersion();
+
+		if (!version.contains("Paper")
+				&& !version.contains("Purpur")
+				&& !version.contains("NachoSpigot")
+				&& !version.contains("-Spigot")
+				&& MinecraftVersion.atLeast(V.v1_8)) {
 			Bukkit.getLogger().severe(Common.consoleLine());
 			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper!");
-			Bukkit.getLogger().warning("Detected: " + Bukkit.getVersion());
+			Bukkit.getLogger().warning("Detected: " + version);
 			Bukkit.getLogger().warning("");
 			Bukkit.getLogger().warning("Third party forks are known to alter server in unwanted");
 			Bukkit.getLogger().warning("ways. If you have issues with " + named + " use Paper");
