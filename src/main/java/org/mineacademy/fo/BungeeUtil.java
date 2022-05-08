@@ -89,7 +89,7 @@ public final class BungeeUtil {
 
 		int actionHead = 0;
 
-		for (Object datum : data) {
+		for (Object datum : data)
 			try {
 				Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + " (" + t.getClass().getSimpleName() + ")"));
 
@@ -160,7 +160,6 @@ public final class BungeeUtil {
 
 				return;
 			}
-		}
 
 		Debugger.push("bungee");
 

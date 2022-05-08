@@ -83,7 +83,7 @@ abstract class Message {
 		final BungeeMessageType action = BungeeMessageType.getByName(this.listener, actionName);
 
 		Valid.checkNotNull(action, "Unknown plugin action named: " + actionName + ". IF YOU UPDATED THE PLUGIN BY RELOADING, you need to stop your entire network, ensure all servers were updated and start it again.");
-		setAction(action);
+		this.setAction(action);
 	}
 
 	/**
@@ -105,7 +105,7 @@ abstract class Message {
 	 * @return
 	 */
 	public <T extends BungeeMessageType> T getAction() {
-		return (T) action;
+		return (T) this.action;
 	}
 
 	/**
@@ -118,13 +118,13 @@ abstract class Message {
 	 * @param typeOf
 	 */
 	protected final void moveHead(Class<?> typeOf) {
-		Valid.checkNotNull(serverName, "Server name not set!");
-		Valid.checkNotNull(action, "Action not set!");
+		Valid.checkNotNull(this.serverName, "Server name not set!");
+		Valid.checkNotNull(this.action, "Action not set!");
 
-		final Class<?>[] content = action.getContent();
-		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length);
+		final Class<?>[] content = this.action.getContent();
+		Valid.checkBoolean(this.actionHead < content.length, "Head out of bounds! Max data size for " + this.action.name() + " is " + content.length);
 
-		actionHead++;
+		this.actionHead++;
 	}
 
 	/**

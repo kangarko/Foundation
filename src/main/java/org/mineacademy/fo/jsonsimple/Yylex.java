@@ -545,7 +545,7 @@ public class Yylex {
 
 	public void yypushback(int number) {
 
-		if (number > yylength())
+		if (number > this.yylength())
 			this.zzScanError(Yylex.ZZ_PUSHBACK_2BIG);
 
 		this.zzMarkedPos -= number;
@@ -654,7 +654,7 @@ public class Yylex {
 				} else if (value == 12)
 					this.sb.append('\\');
 				else if (value == 21)
-					return new Yytoken(Yytoken.TYPE_VALUE, Double.valueOf(yytext()));
+					return new Yytoken(Yytoken.TYPE_VALUE, Double.valueOf(this.yytext()));
 				else if (value == 1)
 					throw new JSONParseException(this.yychar, JSONParseException.ERROR_UNEXPECTED_CHAR, this.yycharat(0));
 				else if (value == 8)

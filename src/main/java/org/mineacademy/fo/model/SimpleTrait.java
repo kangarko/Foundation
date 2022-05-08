@@ -110,12 +110,11 @@ public abstract class SimpleTrait extends Trait {
 			this.onClick(player, clickType);
 
 		} catch (final EventHandledException ex) {
-			if (ex.getMessages() != null) {
+			if (ex.getMessages() != null)
 				if (Messenger.ENABLED)
 					Messenger.error(player, ex.getMessages());
 				else
 					Common.tell(player, ex.getMessages());
-			}
 
 			if (ex.isCancelled())
 				event.setCancelled(true);

@@ -260,6 +260,6 @@ public enum SimpleEnchantmentTarget {
 	public abstract boolean includes(Material item);
 
 	public boolean includes(ItemStack item) {
-		return includes(item.getType());
+		return this.includes(item.getType());
 	}
 }

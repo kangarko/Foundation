@@ -840,7 +840,7 @@ public final class BlockUtil {
 		protected final double x, y, z;
 
 		public VectorHelper add(final VectorHelper other) {
-			return add(other.x, other.y, other.z);
+			return this.add(other.x, other.y, other.z);
 		}
 
 		public VectorHelper add(final double x, final double y, final double z) {
@@ -848,7 +848,7 @@ public final class BlockUtil {
 		}
 
 		public VectorHelper subtract(final VectorHelper other) {
-			return subtract(other.x, other.y, other.z);
+			return this.subtract(other.x, other.y, other.z);
 		}
 
 		public VectorHelper subtract(final double x, final double y, final double z) {
@@ -860,21 +860,21 @@ public final class BlockUtil {
 		}
 
 		public VectorHelper divide(final double n) {
-			return new VectorHelper(x / n, y / n, z / n);
+			return new VectorHelper(this.x / n, this.y / n, this.z / n);
 		}
 
 		public double length() {
-			return Math.sqrt(x * x + y * y + z * z);
+			return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 		}
 
 		public double distance(final VectorHelper other) {
-			return Math.sqrt(Math.pow(other.x - x, 2) +
-					Math.pow(other.y - y, 2) +
-					Math.pow(other.z - z, 2));
+			return Math.sqrt(Math.pow(other.x - this.x, 2) +
+					Math.pow(other.y - this.y, 2) +
+					Math.pow(other.z - this.z, 2));
 		}
 
 		public VectorHelper normalize() {
-			return divide(length());
+			return this.divide(this.length());
 		}
 
 		@Override
@@ -888,7 +888,7 @@ public final class BlockUtil {
 
 		@Override
 		public String toString() {
-			return "(" + x + ", " + y + ", " + z + ")";
+			return "(" + this.x + ", " + this.y + ", " + this.z + ")";
 		}
 	}
 }

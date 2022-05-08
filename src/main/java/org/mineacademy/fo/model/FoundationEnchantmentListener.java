@@ -41,7 +41,7 @@ public final class FoundationEnchantmentListener implements Listener {
 		final Entity damager = event.getDamager();
 
 		if (damager instanceof LivingEntity)
-			execute((LivingEntity) damager, (enchant, level) -> enchant.onDamage(level, (LivingEntity) damager, event));
+			this.execute((LivingEntity) damager, (enchant, level) -> enchant.onDamage(level, (LivingEntity) damager, event));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
@@ -49,12 +49,12 @@ public final class FoundationEnchantmentListener implements Listener {
 		if (!Remain.isInteractEventPrimaryHand(event))
 			return;
 
-		execute(event.getPlayer(), (enchant, level) -> enchant.onInteract(level, event));
+		this.execute(event.getPlayer(), (enchant, level) -> enchant.onInteract(level, event));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBreakBlock(BlockBreakEvent event) {
-		execute(event.getPlayer(), (enchant, level) -> enchant.onBreakBlock(level, event));
+		this.execute(event.getPlayer(), (enchant, level) -> enchant.onBreakBlock(level, event));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -65,8 +65,8 @@ public final class FoundationEnchantmentListener implements Listener {
 			if (projectileSource instanceof LivingEntity) {
 				final LivingEntity shooter = (LivingEntity) projectileSource;
 
-				execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
-				EntityUtil.trackHit(event.getEntity(), hitEvent -> execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
+				this.execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
+				EntityUtil.trackHit(event.getEntity(), hitEvent -> this.execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
 			}
 		} catch (final NoSuchMethodError ex) {
 			if (MinecraftVersion.atLeast(V.v1_4))

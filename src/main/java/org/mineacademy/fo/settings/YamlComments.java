@@ -145,8 +145,7 @@ final class YamlComments {
 						continue outerloop;
 
 				for (final String ignoredSection : ignoredSections) {
-					if (key.equals(ignoredSection)) {
-
+					if (key.equals(ignoredSection))
 						// Write from new to old config
 						if ((!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty())) {
 							copyAllowed.add(ignoredSection);
@@ -158,14 +157,12 @@ final class YamlComments {
 						else {
 							write0(key, true, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 
-							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
+							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true))
 								write0(ignoredSection + "." + oldKey, true, oldConfig, newConfig, comments, ignoredSections, writer, yaml);
-							}
 
 							reverseCopy.add(ignoredSection);
 							continue outerloop;
 						}
-					}
 
 					if (key.startsWith(ignoredSection))
 						continue outerloop;
@@ -298,19 +295,15 @@ final class YamlComments {
 						builder.append("\n");
 				}
 
-			} else if (o instanceof String || o instanceof Character) {
+			} else if (o instanceof String || o instanceof Character)
 				builder.append(prefixSpaces).append("- '").append(o.toString().replace("'", "''")).append("'");
-
-			} else if (o instanceof List) {
+			else if (o instanceof List)
 				builder.append(prefixSpaces).append("- ").append(yaml.dump(o));
-
-			} else {
+			else
 				builder.append(prefixSpaces).append("- ").append(o);
-			}
 
-			if (i != list.size()) {
+			if (i != list.size())
 				builder.append("\n");
-			}
 		}
 
 		return builder.toString();
@@ -329,9 +322,9 @@ final class YamlComments {
 			if (line != null && line.trim().startsWith("-"))
 				continue;
 
-			if (line == null || line.trim().equals("") || line.trim().startsWith("#")) {
+			if (line == null || line.trim().equals("") || line.trim().startsWith("#"))
 				builder.append(line).append("\n");
-			} else {
+			else {
 				lastLineIndentCount = setFullKey(keyBuilder, line, lastLineIndentCount);
 
 				if (keyBuilder.length() > 0) {
@@ -341,9 +334,8 @@ final class YamlComments {
 			}
 		}
 
-		if (builder.length() > 0) {
+		if (builder.length() > 0)
 			comments.put(null, builder.toString());
-		}
 
 		return comments;
 	}
@@ -352,13 +344,11 @@ final class YamlComments {
 	private static int countIndents(String s) {
 		int spaces = 0;
 
-		for (final char c : s.toCharArray()) {
-			if (c == ' ') {
+		for (final char c : s.toCharArray())
+			if (c == ' ')
 				spaces += 1;
-			} else {
+			else
 				break;
-			}
-		}
 
 		return spaces / 2;
 	}
@@ -382,30 +372,27 @@ final class YamlComments {
 		final int currentIndents = countIndents(configLine);
 		final String key = configLine.trim().split(":")[0];
 
-		if (keyBuilder.length() == 0) {
+		if (keyBuilder.length() == 0)
 			keyBuilder.append(key);
-		} else if (currentIndents == lastLineIndentCount) {
+		else if (currentIndents == lastLineIndentCount) {
 			//Replace the last part of the key with current key
 			removeLastKey(keyBuilder);
 
-			if (keyBuilder.length() > 0) {
+			if (keyBuilder.length() > 0)
 				keyBuilder.append(".");
-			}
 
 			keyBuilder.append(key);
-		} else if (currentIndents > lastLineIndentCount) {
+		} else if (currentIndents > lastLineIndentCount)
 			//Append current key to the keyBuilder
 			keyBuilder.append(".").append(key);
-		} else {
+		else {
 			final int difference = lastLineIndentCount - currentIndents;
 
-			for (int i = 0; i < difference + 1; i++) {
+			for (int i = 0; i < difference + 1; i++)
 				removeLastKey(keyBuilder);
-			}
 
-			if (keyBuilder.length() > 0) {
+			if (keyBuilder.length() > 0)
 				keyBuilder.append(".");
-			}
 
 			keyBuilder.append(key);
 		}
@@ -416,9 +403,8 @@ final class YamlComments {
 	private static String getPrefixSpaces(int indents) {
 		final StringBuilder builder = new StringBuilder();
 
-		for (int i = 0; i < indents; i++) {
+		for (int i = 0; i < indents; i++)
 			builder.append("  ");
-		}
 
 		return builder.toString();
 	}

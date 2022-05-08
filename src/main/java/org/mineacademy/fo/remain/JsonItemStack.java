@@ -517,8 +517,7 @@ public class JsonItemStack {
 					final JSONArray effects = extraJson.getArray("custom-effects");
 					final PotionMeta pmeta = (PotionMeta) meta;
 
-					if (effects != null) {
-
+					if (effects != null)
 						for (final String effect : effects.toStringArray()) {
 							Valid.checkBoolean(effect.contains(":"), "Expected : when parsing effects from JSON item, got: " + effects + ". Full item: " + itemJson);
 
@@ -534,8 +533,7 @@ public class JsonItemStack {
 							} catch (final NumberFormatException ignored) {
 							}
 						}
-
-					} else {
+					else {
 						final JSONObject basePotion = extraJson.getObject("base-effect");
 						final PotionType potionType = PotionType.valueOf(basePotion.getString("type"));
 						final boolean isExtended = basePotion.getBoolean("isExtended");

@@ -84,9 +84,9 @@ public enum CompProperty {
 	 */
 	public void apply(Object instance, Object key) {
 		Valid.checkNotNull(instance, "instance is null!");
-		Valid.checkBoolean(requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
+		Valid.checkBoolean(this.requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + this.requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
 
-		final Method method = getMethod(instance.getClass());
+		final Method method = this.getMethod(instance.getClass());
 
 		if (method == null)
 			this.applyLegacy(instance, key);
@@ -96,10 +96,9 @@ public enum CompProperty {
 				ReflectionUtil.invoke(method, instance, key);
 
 			} catch (final Throwable t) {
-				if (MinecraftVersion.olderThan(V.values()[0])) {
+				if (MinecraftVersion.olderThan(V.values()[0]))
 					this.applyLegacy(instance, key);
-
-				} else
+				else
 					// Print error when on latest MC version
 					t.printStackTrace();
 			}
@@ -120,7 +119,7 @@ public enum CompProperty {
 				nbtEntity.setInteger("NoGravity", has ? 0 : 1);
 		}
 
-		if (Remain.hasItemMeta() && instance instanceof ItemMeta) {
+		if (Remain.hasItemMeta() && instance instanceof ItemMeta)
 			if (this == UNBREAKABLE)
 				try {
 					final boolean has = Boolean.parseBoolean(key.toString());
@@ -139,7 +138,6 @@ public enum CompProperty {
 					if (MinecraftVersion.atLeast(V.v1_8))
 						t.printStackTrace();
 				}
-		}
 	}
 
 	/**
@@ -168,7 +166,7 @@ public enum CompProperty {
 
 		if (method == null)
 			try {
-				method = clazz.getMethod("set" + (toString().equals("AI") ? "AI" : ChatUtil.capitalize(toString().toLowerCase())), setterMethodType);
+				method = clazz.getMethod("set" + (this.toString().equals("AI") ? "AI" : ChatUtil.capitalize(this.toString().toLowerCase())), this.setterMethodType);
 				method.setAccessible(true);
 
 				this.isAvailable.put(clazz, true);

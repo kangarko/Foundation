@@ -82,34 +82,34 @@ public class SpigotUpdater implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if (resourceId == -1)
+		if (this.resourceId == -1)
 			return;
 
 		final String currentVersion = SimplePlugin.getVersion();
 
-		if (!canUpdateFrom(currentVersion))
+		if (!this.canUpdateFrom(currentVersion))
 			return;
 
 		try {
-			HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId).openConnection();
+			HttpURLConnection connection = (HttpURLConnection) new URL("https://api.spigotmc.org/legacy/update.php?resource=" + this.resourceId).openConnection();
 			connection.setRequestMethod("GET");
 
 			try (final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 				final String line = reader.readLine();
 
-				newVersion = line;
+				this.newVersion = line;
 			}
 
-			if (newVersion.isEmpty())
+			if (this.newVersion.isEmpty())
 				return;
 
-			if (isNewerVersion(currentVersion, newVersion) && canUpdateTo(newVersion)) {
-				newVersionAvailable = true;
+			if (this.isNewerVersion(currentVersion, this.newVersion) && this.canUpdateTo(this.newVersion)) {
+				this.newVersionAvailable = true;
 
-				if (download) {
+				if (this.download) {
 					final ReadableByteChannel channel;
 
-					connection = (HttpURLConnection) new URL("https://api.spiget.org/v2/resources/" + resourceId + "/download").openConnection();
+					connection = (HttpURLConnection) new URL("https://api.spiget.org/v2/resources/" + this.resourceId + "/download").openConnection();
 					connection.setRequestProperty("User-Agent", SimplePlugin.getNamed());
 					Valid.checkBoolean(connection.getResponseCode() == 200, "Downloading update for " + SimplePlugin.getNamed() + " returned " + connection.getResponseCode() + ", aborting.");
 
@@ -118,16 +118,16 @@ public class SpigotUpdater implements Runnable {
 					final File updateFolder = Bukkit.getUpdateFolderFile();
 					FileUtil.createIfNotExists(updateFolder);
 
-					final File destination = new File(updateFolder, SimplePlugin.getNamed() + "-" + newVersion + ".jar");
+					final File destination = new File(updateFolder, SimplePlugin.getNamed() + "-" + this.newVersion + ".jar");
 					final FileOutputStream output = new FileOutputStream(destination);
 
 					output.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
 					output.flush();
 					output.close();
 
-					Common.log(getDownloadMessage());
+					Common.log(this.getDownloadMessage());
 				} else
-					Common.log(getNotifyMessage());
+					Common.log(this.getNotifyMessage());
 			}
 
 		} catch (final UnknownHostException ex) {
@@ -181,8 +181,8 @@ public class SpigotUpdater implements Runnable {
 		if (remote.contains("-LEGACY"))
 			return false;
 
-		String[] currParts = removeTagsInNumber(current).split("\\.");
-		String[] remoteParts = removeTagsInNumber(remote).split("\\.");
+		String[] currParts = this.removeTagsInNumber(current).split("\\.");
+		String[] remoteParts = this.removeTagsInNumber(remote).split("\\.");
 
 		if (currParts.length != remoteParts.length) {
 			final boolean olderIsLonger = currParts.length > remoteParts.length;
@@ -227,7 +227,7 @@ public class SpigotUpdater implements Runnable {
 	 * @return
 	 */
 	public final String getNotifyMessage() {
-		return replaceVariables(SimpleLocalization.Update.AVAILABLE);
+		return this.replaceVariables(SimpleLocalization.Update.AVAILABLE);
 	}
 
 	/**
@@ -238,7 +238,7 @@ public class SpigotUpdater implements Runnable {
 	 * @return
 	 */
 	public final String getDownloadMessage() {
-		return replaceVariables(SimpleLocalization.Update.DOWNLOADED);
+		return this.replaceVariables(SimpleLocalization.Update.DOWNLOADED);
 	}
 
 	/**
@@ -250,9 +250,9 @@ public class SpigotUpdater implements Runnable {
 	 */
 	protected String replaceVariables(final String message) {
 		return message
-				.replace("{resource_id}", resourceId + "")
+				.replace("{resource_id}", this.resourceId + "")
 				.replace("{plugin_name}", SimplePlugin.getNamed())
-				.replace("{new}", newVersion)
+				.replace("{new}", this.newVersion)
 				.replace("{current}", SimplePlugin.getVersion())
 				.replace("{user_id}", "%%__USER__%%");
 	}

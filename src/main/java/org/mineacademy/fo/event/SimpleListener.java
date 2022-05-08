@@ -79,20 +79,20 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 		if (!event.getClass().equals(this.eventClass))
 			return;
 
-		final String logName = listener.getClass().getSimpleName() + " listening to " + event.getEventName() + " at " + priority + " priority";
+		final String logName = listener.getClass().getSimpleName() + " listening to " + event.getEventName() + " at " + this.priority + " priority";
 
 		LagCatcher.start(logName);
 
 		try {
 			this.event = this.eventClass.cast(event);
 
-			execute((T) event);
+			this.execute((T) event);
 
 		} catch (final EventHandledException ex) {
 			final String[] messages = ex.getMessages();
 			final boolean cancelled = ex.isCancelled();
 
-			final Player player = findPlayer();
+			final Player player = this.findPlayer();
 
 			if (messages != null && player != null)
 				for (String message : messages) {
@@ -148,7 +148,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param falseMessages
 	 */
 	protected final void checkNotNull(Object toCheck, String... nullMessages) {
-		checkBoolean(toCheck != null, nullMessages);
+		this.checkBoolean(toCheck != null, nullMessages);
 	}
 
 	/**
@@ -170,7 +170,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param permission
 	 */
 	protected final void checkPerm(String permission) {
-		checkPerm(permission, SimpleLocalization.NO_PERMISSION);
+		this.checkPerm(permission, SimpleLocalization.NO_PERMISSION);
 	}
 
 	/**
@@ -180,7 +180,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @return
 	 */
 	protected final boolean hasPerm(String permission) {
-		return PlayerUtil.hasPerm(findPlayer(), permission);
+		return PlayerUtil.hasPerm(this.findPlayer(), permission);
 	}
 
 	/**
@@ -191,7 +191,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param falseMessage
 	 */
 	protected final void checkPerm(String permission, String falseMessage) {
-		final Player player = findPlayer();
+		final Player player = this.findPlayer();
 		Valid.checkNotNull(player, "Player cannot be null for " + this.event + "!");
 
 		if (!PlayerUtil.hasPerm(player, permission))
@@ -227,6 +227,6 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * A shortcut for registering this event in Bukkit
 	 */
 	public final void register() {
-		Bukkit.getPluginManager().registerEvent(eventClass, this, priority, this, SimplePlugin.getInstance(), ignoreCancelled);
+		Bukkit.getPluginManager().registerEvent(this.eventClass, this, this.priority, this, SimplePlugin.getInstance(), this.ignoreCancelled);
 	}
 }

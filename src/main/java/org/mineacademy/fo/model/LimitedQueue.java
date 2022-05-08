@@ -35,7 +35,7 @@ public final class LimitedQueue<E> extends ForwardingQueue<E> {
 
 	@Override
 	protected Queue<E> delegate() {
-		return delegate;
+		return this.delegate;
 	}
 
 	/**
@@ -43,10 +43,10 @@ public final class LimitedQueue<E> extends ForwardingQueue<E> {
 	 */
 	@Override
 	public boolean add(final E element) {
-		if (size() >= capacity)
-			delegate.poll();
+		if (this.size() >= this.capacity)
+			this.delegate.poll();
 
-		return delegate.add(element);
+		return this.delegate.add(element);
 	}
 
 	/**
@@ -54,7 +54,7 @@ public final class LimitedQueue<E> extends ForwardingQueue<E> {
 	 */
 	@Override
 	public boolean addAll(final Collection<? extends E> collection) {
-		return standardAddAll(collection);
+		return this.standardAddAll(collection);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public final class LimitedQueue<E> extends ForwardingQueue<E> {
 	 */
 	@Override
 	public boolean offer(final E o) {
-		return standardOffer(o);
+		return this.standardOffer(o);
 	}
 
 }

@@ -67,7 +67,7 @@ public abstract class PacketListener {
 	 * @param consumer
 	 */
 	protected void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
-		addReceivingListener(ListenerPriority.NORMAL, type, consumer);
+		this.addReceivingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public abstract class PacketListener {
 	 * @param consumer
 	 */
 	protected void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
-		addPacketListener(new SimpleAdapter(priority, type) {
+		this.addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
 			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
@@ -103,7 +103,7 @@ public abstract class PacketListener {
 	 * @param consumer
 	 */
 	protected void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
-		addSendingListener(ListenerPriority.NORMAL, type, consumer);
+		this.addSendingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public abstract class PacketListener {
 	 * @param consumer
 	 */
 	protected void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
-		addPacketListener(new SimpleAdapter(priority, type) {
+		this.addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
 			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
@@ -247,7 +247,7 @@ public abstract class PacketListener {
 				} catch (final RegexTimeoutException ex) {
 					// Such errors mean the parsed message took too long to process.
 					// Only show such errors every 30 minutes to prevent console spam
-					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(jsonMessage, 500)
+					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(this.jsonMessage, 500)
 							+ "' (possibly longer) took too long time to edit received message and was ignored."
 							+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
 
@@ -260,7 +260,7 @@ public abstract class PacketListener {
 				}
 
 				if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
-					this.onJsonMessage(jsonMessage);
+					this.onJsonMessage(this.jsonMessage);
 
 				if (!Common.stripColors(legacyText).equals(Common.stripColors(parsedText)))
 					this.writeEditedMessage(parsedText, event);
@@ -276,7 +276,7 @@ public abstract class PacketListener {
 		private String compileChatMessage(PacketEvent event) {
 
 			// Reset
-			jsonMessage = null;
+			this.jsonMessage = null;
 
 			// No components for this MC version
 			if (MinecraftVersion.atLeast(V.v1_7)) {
@@ -296,7 +296,7 @@ public abstract class PacketListener {
 				}
 
 				if (component != null)
-					jsonMessage = component.getJson();
+					this.jsonMessage = component.getJson();
 
 				// Md_5 way of dealing with packets
 				else if (packet.size() > 1) {
@@ -307,31 +307,30 @@ public abstract class PacketListener {
 						secondField = packet.readSafely(2);
 
 						if (secondField != null)
-							adventure = true;
+							this.adventure = true;
 					}
 
 					if (secondField instanceof BaseComponent[]) {
-						jsonMessage = Remain.toJson((BaseComponent[]) secondField);
+						this.jsonMessage = Remain.toJson((BaseComponent[]) secondField);
 
-						isBaseComponent = true;
+						this.isBaseComponent = true;
 					}
 				}
 			}
 
 			else
-				jsonMessage = event.getPacket().getStrings().read(0);
+				this.jsonMessage = event.getPacket().getStrings().read(0);
 
-			if (jsonMessage != null && !jsonMessage.isEmpty()) {
-
+			if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
 				// Only check valid messages, skipping those over 50k since it would cause rules
 				// to take too long and overflow. 99% packets are below this size, it may even be
 				// that such oversized packets are maliciously sent so we protect the server from freeze
-				if (jsonMessage.length() < 50_000) {
+				if (this.jsonMessage.length() < 50_000) {
 					final String legacyText;
 
 					// Catch errors from other plugins and silence them
 					try {
-						legacyText = Remain.toLegacyText(jsonMessage, false);
+						legacyText = Remain.toLegacyText(this.jsonMessage, false);
 
 					} catch (final Throwable t) {
 						return "";
@@ -339,7 +338,6 @@ public abstract class PacketListener {
 
 					return legacyText;
 				}
-			}
 
 			return "";
 		}
@@ -350,18 +348,15 @@ public abstract class PacketListener {
 		private void writeEditedMessage(String message, PacketEvent event) {
 			final StructureModifier<Object> packet = event.getPacket().getModifier();
 
-			jsonMessage = Remain.toJson(message);
+			this.jsonMessage = Remain.toJson(message);
 
-			if (isBaseComponent)
-				packet.writeSafely(adventure ? 2 : 1, Remain.toComponent(jsonMessage));
+			if (this.isBaseComponent)
+				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
+			else if (MinecraftVersion.atLeast(V.v1_7))
+				event.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(this.jsonMessage));
 
-			else {
-				if (MinecraftVersion.atLeast(V.v1_7))
-					event.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(jsonMessage));
-
-				else
-					event.getPacket().getStrings().writeSafely(0, SerializedMap.of("text", jsonMessage.substring(1, jsonMessage.length() - 1)).toJson());
-			}
+			else
+				event.getPacket().getStrings().writeSafely(0, SerializedMap.of("text", this.jsonMessage.substring(1, this.jsonMessage.length() - 1)).toJson());
 		}
 
 		/**

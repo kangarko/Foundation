@@ -158,12 +158,10 @@ public final class JavaScriptExecutor {
 			if (sender instanceof DiscordSender) {
 				final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(javascript);
 
-				while (matcher.find()) {
-
+				while (matcher.find())
 					// We do not support variables when the message sender is Discord,
 					// so just replace those that were not translated earlier with false value.
 					javascript = javascript.replace(matcher.group(), "false");
-				}
 			}
 
 			final Object result = engine.eval(javascript);

@@ -8,7 +8,6 @@ public final class InvalidCommandArgException extends CommandException {
 	private static final long serialVersionUID = 1L;
 
 	public InvalidCommandArgException() {
-		super();
 	}
 
 	public InvalidCommandArgException(String message) {

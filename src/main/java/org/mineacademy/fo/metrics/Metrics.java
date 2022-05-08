@@ -98,7 +98,7 @@ public class Metrics {
 		final boolean logErrors = config.getBoolean("logFailedRequests", false);
 		final boolean logSentData = config.getBoolean("logSentData", false);
 		final boolean logResponseStatusText = config.getBoolean("logResponseStatusText", false);
-		metricsBase = new MetricsBase(
+		this.metricsBase = new MetricsBase(
 				"bukkit",
 				serverUUID,
 				serviceId,
@@ -120,11 +120,11 @@ public class Metrics {
 	 * @param chart The chart to add.
 	 */
 	public void addCustomChart(CustomChart chart) {
-		metricsBase.addCustomChart(chart);
+		this.metricsBase.addCustomChart(chart);
 	}
 
 	private void appendPlatformData(JsonObjectBuilder builder) {
-		builder.appendField("playerAmount", getPlayerAmount());
+		builder.appendField("playerAmount", this.getPlayerAmount());
 		builder.appendField("onlineMode", Bukkit.getOnlineMode() ? 1 : 0);
 		builder.appendField("bukkitVersion", Bukkit.getVersion());
 		builder.appendField("bukkitName", Bukkit.getName());
@@ -136,7 +136,7 @@ public class Metrics {
 	}
 
 	private void appendServiceData(JsonObjectBuilder builder) {
-		builder.appendField("pluginVersion", plugin.getDescription().getVersion());
+		builder.appendField("pluginVersion", this.plugin.getDescription().getVersion());
 	}
 
 	private int getPlayerAmount() {
@@ -239,10 +239,9 @@ public class Metrics {
 			this.logErrors = logErrors;
 			this.logSentData = logSentData;
 			this.logResponseStatusText = logResponseStatusText;
-			checkRelocation();
-			if (enabled) {
-				startSubmitting();
-			}
+			this.checkRelocation();
+			if (enabled)
+				this.startSubmitting();
 		}
 
 		public void addCustomChart(CustomChart chart) {
@@ -251,16 +250,15 @@ public class Metrics {
 
 		private void startSubmitting() {
 			final Runnable submitTask = () -> {
-				if (!enabled || !checkServiceEnabledSupplier.get()) {
+				if (!this.enabled || !this.checkServiceEnabledSupplier.get()) {
 					// Submitting data or service is disabled
 					scheduler.shutdown();
 					return;
 				}
-				if (submitTaskConsumer != null) {
-					submitTaskConsumer.accept(this::submitData);
-				} else {
+				if (this.submitTaskConsumer != null)
+					this.submitTaskConsumer.accept(this::submitData);
+				else
 					this.submitData();
-				}
 			};
 			// Many servers tend to restart at a fixed time at xx:00 which causes an uneven distribution
 			// of requests on the
@@ -278,38 +276,36 @@ public class Metrics {
 
 		private void submitData() {
 			final JsonObjectBuilder baseJsonBuilder = new JsonObjectBuilder();
-			appendPlatformDataConsumer.accept(baseJsonBuilder);
+			this.appendPlatformDataConsumer.accept(baseJsonBuilder);
 			final JsonObjectBuilder serviceJsonBuilder = new JsonObjectBuilder();
-			appendServiceDataConsumer.accept(serviceJsonBuilder);
-			final JsonObjectBuilder.JsonObject[] chartData = customCharts.stream()
-					.map(customChart -> customChart.getRequestJsonObject(errorLogger, logErrors))
+			this.appendServiceDataConsumer.accept(serviceJsonBuilder);
+			final JsonObjectBuilder.JsonObject[] chartData = this.customCharts.stream()
+					.map(customChart -> customChart.getRequestJsonObject(this.errorLogger, this.logErrors))
 					.filter(Objects::nonNull)
 					.toArray(JsonObjectBuilder.JsonObject[]::new);
-			serviceJsonBuilder.appendField("id", serviceId);
+			serviceJsonBuilder.appendField("id", this.serviceId);
 			serviceJsonBuilder.appendField("customCharts", chartData);
 			baseJsonBuilder.appendField("service", serviceJsonBuilder.build());
-			baseJsonBuilder.appendField("serverUUID", serverUuid);
+			baseJsonBuilder.appendField("serverUUID", this.serverUuid);
 			baseJsonBuilder.appendField("metricsVersion", METRICS_VERSION);
 			final JsonObjectBuilder.JsonObject data = baseJsonBuilder.build();
 			scheduler.execute(
 					() -> {
 						try {
 							// Send the data
-							sendData(data);
+							this.sendData(data);
 						} catch (final Exception e) {
 							// Something went wrong! :(
-							if (logErrors) {
-								errorLogger.accept("Could not submit bStats metrics data", e);
-							}
+							if (this.logErrors)
+								this.errorLogger.accept("Could not submit bStats metrics data", e);
 						}
 					});
 		}
 
 		private void sendData(JsonObjectBuilder.JsonObject data) throws Exception {
-			if (logSentData) {
-				infoLogger.accept("Sent bStats metrics data: " + data.toString());
-			}
-			final String url = String.format(REPORT_URL, platform);
+			if (this.logSentData)
+				this.infoLogger.accept("Sent bStats metrics data: " + data.toString());
+			final String url = String.format(REPORT_URL, this.platform);
 			final HttpsURLConnection connection = (HttpsURLConnection) new URL(url).openConnection();
 			// Compress the data to save bandwidth
 			final byte[] compressedData = compress(data.toString());
@@ -327,13 +323,11 @@ public class Metrics {
 			final StringBuilder builder = new StringBuilder();
 			try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
 				String line;
-				while ((line = bufferedReader.readLine()) != null) {
+				while ((line = bufferedReader.readLine()) != null)
 					builder.append(line);
-				}
 			}
-			if (logResponseStatusText) {
-				infoLogger.accept("Sent data to bStats and received response: " + builder);
-			}
+			if (this.logResponseStatusText)
+				this.infoLogger.accept("Sent data to bStats and received response: " + builder);
 		}
 
 		/** Checks that the class was properly relocated. */
@@ -348,9 +342,8 @@ public class Metrics {
 				// We want to make sure no one just copy & pastes the example and uses the wrong package
 				// names
 				if (MetricsBase.class.getPackage().getName().startsWith(defaultPackage)
-						|| MetricsBase.class.getPackage().getName().startsWith(examplePackage)) {
+						|| MetricsBase.class.getPackage().getName().startsWith(examplePackage))
 					throw new IllegalStateException("bStats Metrics class has not been relocated correctly!");
-				}
 			}
 		}
 
@@ -361,9 +354,8 @@ public class Metrics {
 		 * @return The gzipped string.
 		 */
 		private static byte[] compress(final String str) throws IOException {
-			if (str == null) {
+			if (str == null)
 				return null;
-			}
 			final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
 				gzip.write(str.getBytes(StandardCharsets.UTF_8));
@@ -390,24 +382,21 @@ public class Metrics {
 		@Override
 		protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
 			final JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-			final Map<String, int[]> map = callable.call();
-			if (map == null || map.isEmpty()) {
+			final Map<String, int[]> map = this.callable.call();
+			if (map == null || map.isEmpty())
 				// Null = skip the chart
 				return null;
-			}
 			boolean allSkipped = true;
 			for (final Map.Entry<String, int[]> entry : map.entrySet()) {
-				if (entry.getValue().length == 0) {
+				if (entry.getValue().length == 0)
 					// Skip this invalid
 					continue;
-				}
 				allSkipped = false;
 				valuesBuilder.appendField(entry.getKey(), entry.getValue());
 			}
-			if (allSkipped) {
+			if (allSkipped)
 				// Null = skip the chart
 				return null;
-			}
 			return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
 		}
 	}
@@ -430,14 +419,12 @@ public class Metrics {
 		@Override
 		protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
 			final JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-			final Map<String, Integer> map = callable.call();
-			if (map == null || map.isEmpty()) {
+			final Map<String, Integer> map = this.callable.call();
+			if (map == null || map.isEmpty())
 				// Null = skip the chart
 				return null;
-			}
-			for (final Map.Entry<String, Integer> entry : map.entrySet()) {
+			for (final Map.Entry<String, Integer> entry : map.entrySet())
 				valuesBuilder.appendField(entry.getKey(), new int[] { entry.getValue() });
-			}
 			return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
 		}
 	}
@@ -460,24 +447,21 @@ public class Metrics {
 		@Override
 		protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
 			final JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-			final Map<String, Integer> map = callable.call();
-			if (map == null || map.isEmpty()) {
+			final Map<String, Integer> map = this.callable.call();
+			if (map == null || map.isEmpty())
 				// Null = skip the chart
 				return null;
-			}
 			boolean allSkipped = true;
 			for (final Map.Entry<String, Integer> entry : map.entrySet()) {
-				if (entry.getValue() == 0) {
+				if (entry.getValue() == 0)
 					// Skip this invalid
 					continue;
-				}
 				allSkipped = false;
 				valuesBuilder.appendField(entry.getKey(), entry.getValue());
 			}
-			if (allSkipped) {
+			if (allSkipped)
 				// Null = skip the chart
 				return null;
-			}
 			return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
 		}
 	}
@@ -500,24 +484,21 @@ public class Metrics {
 		@Override
 		protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
 			final JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-			final Map<String, Integer> map = callable.call();
-			if (map == null || map.isEmpty()) {
+			final Map<String, Integer> map = this.callable.call();
+			if (map == null || map.isEmpty())
 				// Null = skip the chart
 				return null;
-			}
 			boolean allSkipped = true;
 			for (final Map.Entry<String, Integer> entry : map.entrySet()) {
-				if (entry.getValue() == 0) {
+				if (entry.getValue() == 0)
 					// Skip this invalid
 					continue;
-				}
 				allSkipped = false;
 				valuesBuilder.appendField(entry.getKey(), entry.getValue());
 			}
-			if (allSkipped) {
+			if (allSkipped)
 				// Null = skip the chart
 				return null;
-			}
 			return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
 		}
 	}
@@ -527,27 +508,24 @@ public class Metrics {
 		private final String chartId;
 
 		protected CustomChart(String chartId) {
-			if (chartId == null) {
+			if (chartId == null)
 				throw new IllegalArgumentException("chartId must not be null");
-			}
 			this.chartId = chartId;
 		}
 
 		public JsonObjectBuilder.JsonObject getRequestJsonObject(
 				BiConsumer<String, Throwable> errorLogger, boolean logErrors) {
 			final JsonObjectBuilder builder = new JsonObjectBuilder();
-			builder.appendField("chartId", chartId);
+			builder.appendField("chartId", this.chartId);
 			try {
-				final JsonObjectBuilder.JsonObject data = getChartData();
-				if (data == null) {
+				final JsonObjectBuilder.JsonObject data = this.getChartData();
+				if (data == null)
 					// If the data is null we don't send the chart.
 					return null;
-				}
 				builder.appendField("data", data);
 			} catch (final Throwable t) {
-				if (logErrors) {
-					errorLogger.accept("Failed to get data for custom chart with id " + chartId, t);
-				}
+				if (logErrors)
+					errorLogger.accept("Failed to get data for custom chart with id " + this.chartId, t);
 				return null;
 			}
 			return builder.build();
@@ -573,11 +551,10 @@ public class Metrics {
 
 		@Override
 		protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
-			final int value = callable.call();
-			if (value == 0) {
+			final int value = this.callable.call();
+			if (value == 0)
 				// Null = skip the chart
 				return null;
-			}
 			return new JsonObjectBuilder().appendField("value", value).build();
 		}
 	}
@@ -599,11 +576,10 @@ public class Metrics {
 
 		@Override
 		protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
-			final String value = callable.call();
-			if (value == null || value.isEmpty()) {
+			final String value = this.callable.call();
+			if (value == null || value.isEmpty())
 				// Null = skip the chart
 				return null;
-			}
 			return new JsonObjectBuilder().appendField("value", value).build();
 		}
 	}
@@ -626,11 +602,10 @@ public class Metrics {
 		@Override
 		public JsonObjectBuilder.JsonObject getChartData() throws Exception {
 			final JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-			final Map<String, Map<String, Integer>> map = callable.call();
-			if (map == null || map.isEmpty()) {
+			final Map<String, Map<String, Integer>> map = this.callable.call();
+			if (map == null || map.isEmpty())
 				// Null = skip the chart
 				return null;
-			}
 			boolean reallyAllSkipped = true;
 			for (final Map.Entry<String, Map<String, Integer>> entryValues : map.entrySet()) {
 				final JsonObjectBuilder valueBuilder = new JsonObjectBuilder();
@@ -644,10 +619,9 @@ public class Metrics {
 					valuesBuilder.appendField(entryValues.getKey(), valueBuilder.build());
 				}
 			}
-			if (reallyAllSkipped) {
+			if (reallyAllSkipped)
 				// Null = skip the chart
 				return null;
-			}
 			return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
 		}
 	}
@@ -665,7 +639,7 @@ public class Metrics {
 		private boolean hasAtLeastOneField = false;
 
 		public JsonObjectBuilder() {
-			builder.append("{");
+			this.builder.append("{");
 		}
 
 		/**
@@ -675,7 +649,7 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendNull(String key) {
-			appendFieldUnescaped(key, "null");
+			this.appendFieldUnescaped(key, "null");
 			return this;
 		}
 
@@ -687,10 +661,9 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendField(String key, String value) {
-			if (value == null) {
+			if (value == null)
 				throw new IllegalArgumentException("JSON value must not be null");
-			}
-			appendFieldUnescaped(key, "\"" + escape(value) + "\"");
+			this.appendFieldUnescaped(key, "\"" + escape(value) + "\"");
 			return this;
 		}
 
@@ -702,7 +675,7 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendField(String key, int value) {
-			appendFieldUnescaped(key, String.valueOf(value));
+			this.appendFieldUnescaped(key, String.valueOf(value));
 			return this;
 		}
 
@@ -714,10 +687,9 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendField(String key, JsonObject object) {
-			if (object == null) {
+			if (object == null)
 				throw new IllegalArgumentException("JSON object must not be null");
-			}
-			appendFieldUnescaped(key, object.toString());
+			this.appendFieldUnescaped(key, object.toString());
 			return this;
 		}
 
@@ -729,13 +701,12 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendField(String key, String[] values) {
-			if (values == null) {
+			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
-			}
 			final String escapedValues = Arrays.stream(values)
 					.map(value -> "\"" + escape(value) + "\"")
 					.collect(Collectors.joining(","));
-			appendFieldUnescaped(key, "[" + escapedValues + "]");
+			this.appendFieldUnescaped(key, "[" + escapedValues + "]");
 			return this;
 		}
 
@@ -747,11 +718,10 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendField(String key, int[] values) {
-			if (values == null) {
+			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
-			}
 			final String escapedValues = Arrays.stream(values).mapToObj(String::valueOf).collect(Collectors.joining(","));
-			appendFieldUnescaped(key, "[" + escapedValues + "]");
+			this.appendFieldUnescaped(key, "[" + escapedValues + "]");
 			return this;
 		}
 
@@ -763,11 +733,10 @@ public class Metrics {
 		 * @return A reference to this object.
 		 */
 		public JsonObjectBuilder appendField(String key, JsonObject[] values) {
-			if (values == null) {
+			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
-			}
 			final String escapedValues = Arrays.stream(values).map(JsonObject::toString).collect(Collectors.joining(","));
-			appendFieldUnescaped(key, "[" + escapedValues + "]");
+			this.appendFieldUnescaped(key, "[" + escapedValues + "]");
 			return this;
 		}
 
@@ -778,17 +747,14 @@ public class Metrics {
 		 * @param escapedValue The escaped value of the field.
 		 */
 		private void appendFieldUnescaped(String key, String escapedValue) {
-			if (builder == null) {
+			if (this.builder == null)
 				throw new IllegalStateException("JSON has already been built");
-			}
-			if (key == null) {
+			if (key == null)
 				throw new IllegalArgumentException("JSON key must not be null");
-			}
-			if (hasAtLeastOneField) {
-				builder.append(",");
-			}
-			builder.append("\"").append(escape(key)).append("\":").append(escapedValue);
-			hasAtLeastOneField = true;
+			if (this.hasAtLeastOneField)
+				this.builder.append(",");
+			this.builder.append("\"").append(escape(key)).append("\":").append(escapedValue);
+			this.hasAtLeastOneField = true;
 		}
 
 		/**
@@ -797,11 +763,10 @@ public class Metrics {
 		 * @return The built JSON string.
 		 */
 		public JsonObject build() {
-			if (builder == null) {
+			if (this.builder == null)
 				throw new IllegalStateException("JSON has already been built");
-			}
-			final JsonObject object = new JsonObject(builder.append("}").toString());
-			builder = null;
+			final JsonObject object = new JsonObject(this.builder.append("}").toString());
+			this.builder = null;
 			return object;
 		}
 
@@ -818,17 +783,16 @@ public class Metrics {
 			final StringBuilder builder = new StringBuilder();
 			for (int i = 0; i < value.length(); i++) {
 				final char c = value.charAt(i);
-				if (c == '"') {
+				if (c == '"')
 					builder.append("\\\"");
-				} else if (c == '\\') {
+				else if (c == '\\')
 					builder.append("\\\\");
-				} else if (c <= '\u000F') {
+				else if (c <= '\u000F')
 					builder.append("\\u000").append(Integer.toHexString(c));
-				} else if (c <= '\u001F') {
+				else if (c <= '\u001F')
 					builder.append("\\u00").append(Integer.toHexString(c));
-				} else {
+				else
 					builder.append(c);
-				}
 			}
 			return builder.toString();
 		}
@@ -850,7 +814,7 @@ public class Metrics {
 
 			@Override
 			public String toString() {
-				return value;
+				return this.value;
 			}
 		}
 	}

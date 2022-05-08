@@ -123,29 +123,29 @@ public final class ButtonMenu extends Button {
 	 */
 	@Override
 	public void onClickedInMenu(final Player pl, final Menu menu, final ClickType click) {
-		if (menuLateBind != null) {
+		if (this.menuLateBind != null) {
 			Menu menuToOpen = null;
 
 			try {
-				menuToOpen = menuLateBind.call();
+				menuToOpen = this.menuLateBind.call();
 			} catch (final Exception ex) {
 				ex.printStackTrace();
 
 				return;
 			}
 
-			if (newInstance)
+			if (this.newInstance)
 				menuToOpen = menuToOpen.newInstance();
 
 			menuToOpen.displayTo(pl);
 
 		} else {
-			Valid.checkNotNull(menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
+			Valid.checkNotNull(this.menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
 
-			if (newInstance)
-				menuToOpen.newInstance().displayTo(pl);
+			if (this.newInstance)
+				this.menuToOpen.newInstance().displayTo(pl);
 			else
-				menuToOpen.displayTo(pl);
+				this.menuToOpen.displayTo(pl);
 		}
 	}
 }

@@ -77,40 +77,40 @@ public final class ExpiringValue<V> {
 	}
 
 	public V getValue() {
-		return value;
+		return this.value;
 	}
 
 	public ExpirationPolicy getExpirationPolicy() {
-		return expirationPolicy;
+		return this.expirationPolicy;
 	}
 
 	public long getDuration() {
-		return duration;
+		return this.duration;
 	}
 
 	public TimeUnit getTimeUnit() {
-		return timeUnit;
+		return this.timeUnit;
 	}
 
 	@Override
 	public int hashCode() {
-		return value != null ? value.hashCode() : 0;
+		return this.value != null ? this.value.hashCode() : 0;
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
 			return true;
-		if (o == null || getClass() != o.getClass())
+		if (o == null || this.getClass() != o.getClass())
 			return false;
 
 		final ExpiringValue<?> that = (ExpiringValue<?>) o;
-		return !(value != null ? !value.equals(that.value) : that.value != null) && expirationPolicy == that.expirationPolicy && duration == that.duration && timeUnit == that.timeUnit;
+		return !(this.value != null ? !this.value.equals(that.value) : that.value != null) && this.expirationPolicy == that.expirationPolicy && this.duration == that.duration && this.timeUnit == that.timeUnit;
 
 	}
 
 	@Override
 	public String toString() {
-		return "ExpiringValue{" + "value=" + value + ", expirationPolicy=" + expirationPolicy + ", duration=" + duration + ", timeUnit=" + timeUnit + '}';
+		return "ExpiringValue{" + "value=" + this.value + ", expirationPolicy=" + this.expirationPolicy + ", duration=" + this.duration + ", timeUnit=" + this.timeUnit + '}';
 	}
 }

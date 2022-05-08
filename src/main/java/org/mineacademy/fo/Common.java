@@ -459,13 +459,12 @@ public final class Common {
 		} else if (colorlessMessage.startsWith("<bossbar>")) {
 			final String stripped = message.replace("<bossbar>", "");
 
-			if (!stripped.isEmpty()) {
+			if (!stripped.isEmpty())
 				if (sender instanceof Player)
 					// cannot provide time here so we show it for 10 seconds
 					Remain.sendBossbarTimed((Player) sender, stripped, 10);
 				else
 					tellJson(sender, stripped);
-			}
 
 		} else
 			for (final String part : message.split("\n")) {
@@ -593,13 +592,12 @@ public final class Common {
 
 		final char[] letters = message.toCharArray();
 
-		for (int index = 0; index < letters.length - 1; index++) {
+		for (int index = 0; index < letters.length - 1; index++)
 			if (letters[index] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx".indexOf(letters[index + 1]) > -1) {
 				letters[index] = ChatColor.COLOR_CHAR;
 
 				letters[index + 1] = Character.toLowerCase(letters[index + 1]);
 			}
-		}
 
 		String result = new String(letters)
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
@@ -2782,7 +2780,7 @@ final class TimedCharSequence implements CharSequence {
 		//	throw new RegexTimeoutException(message, futureTimestampLimit);
 
 		try {
-			return message.charAt(index);
+			return this.message.charAt(index);
 		} catch (final StringIndexOutOfBoundsException ex) {
 
 			// Odd case: Java 8 seems to overflow for too-long unicode characters, security feature
@@ -2792,17 +2790,17 @@ final class TimedCharSequence implements CharSequence {
 
 	@Override
 	public int length() {
-		return message.length();
+		return this.message.length();
 	}
 
 	@Override
 	public CharSequence subSequence(final int start, final int end) {
-		return new TimedCharSequence(message.subSequence(start, end), futureTimestampLimit);
+		return new TimedCharSequence(this.message.subSequence(start, end), this.futureTimestampLimit);
 	}
 
 	@Override
 	public String toString() {
-		return message.toString();
+		return this.message.toString();
 	}
 
 	/**

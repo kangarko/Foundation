@@ -73,7 +73,7 @@ public final class ButtonReturnBack extends Button {
 	@Override
 	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
 
-		if (makeNewInstance) {
+		if (this.makeNewInstance) {
 
 			// Flush data so that the parent menu can call the saved data in the current menu
 			//
@@ -84,9 +84,9 @@ public final class ButtonReturnBack extends Button {
 			if (currentChestInventory != null)
 				menu.handleClose(currentChestInventory);
 
-			parentMenu.newInstance().displayTo(player);
+			this.parentMenu.newInstance().displayTo(player);
 
 		} else
-			parentMenu.displayTo(player);
+			this.parentMenu.displayTo(player);
 	}
 }

@@ -91,7 +91,7 @@ public final class ChatUtil {
 
 				continue;
 
-			} else if (previousCode == true) {
+			} else if (previousCode) {
 				previousCode = false;
 
 				if (c == 'l' || c == 'L') {
@@ -193,7 +193,7 @@ public final class ChatUtil {
 		final String[] sentences = message.split("(?<=[!?\\.])\\s");
 		String tempMessage = "";
 
-		for (String sentence : sentences) {
+		for (String sentence : sentences)
 			try {
 				final String word = message.split("\\s")[0];
 
@@ -204,7 +204,6 @@ public final class ChatUtil {
 			} catch (final ArrayIndexOutOfBoundsException ex) {
 				// Probably an exotic language, silence
 			}
-		}
 
 		return tempMessage.trim();
 	}
@@ -354,15 +353,13 @@ public final class ChatUtil {
 		for (int i = 0; i < message.length(); i++) {
 
 			// Emojis are two characters long in java, e.g. a rocket emoji is "\uD83D\uDE80";
-			if (i < message.length() - 1) {
-
+			if (i < message.length() - 1)
 				if (Character.isSurrogatePair(message.charAt(i), message.charAt(i + 1))) {
 					// also skip the second character of the emoji
 					i += 1;
 
 					continue;
 				}
-			}
 
 			builder.append(message.charAt(i));
 		}

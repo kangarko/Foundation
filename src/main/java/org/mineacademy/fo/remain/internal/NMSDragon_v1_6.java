@@ -36,19 +36,19 @@ class NMSDragon_v1_6 extends NMSDragon {
 			// (ID: 64)
 			final Field c = ReflectionUtil.getDeclaredField(mob_class, "c");
 			c.setAccessible(true);
-			c.set(mobPacket, getX());// X position
+			c.set(mobPacket, this.getX());// X position
 
 			final Field d = ReflectionUtil.getDeclaredField(mob_class, "d");
 			d.setAccessible(true);
-			d.set(mobPacket, getY());// Y position
+			d.set(mobPacket, this.getY());// Y position
 
 			final Field e = ReflectionUtil.getDeclaredField(mob_class, "e");
 			e.setAccessible(true);
-			e.set(mobPacket, getZ());// Z position
+			e.set(mobPacket, this.getZ());// Z position
 
 			final Field f = ReflectionUtil.getDeclaredField(mob_class, "f");
 			f.setAccessible(true);
-			f.set(mobPacket, (byte) (int) (getPitch() * 256.0F / 360.0F));// Pitch
+			f.set(mobPacket, (byte) (int) (this.getPitch() * 256.0F / 360.0F));// Pitch
 
 			final Field g = ReflectionUtil.getDeclaredField(mob_class, "g");
 			g.setAccessible(true);
@@ -57,21 +57,21 @@ class NMSDragon_v1_6 extends NMSDragon {
 			// Pitch
 			final Field h = ReflectionUtil.getDeclaredField(mob_class, "h");
 			h.setAccessible(true);
-			h.set(mobPacket, (byte) (int) (getYaw() * 256.0F / 360.0F));// Yaw
+			h.set(mobPacket, (byte) (int) (this.getYaw() * 256.0F / 360.0F));// Yaw
 
 			final Field i = ReflectionUtil.getDeclaredField(mob_class, "i");
 			i.setAccessible(true);
-			i.set(mobPacket, getXvel());// X velocity
+			i.set(mobPacket, this.getXvel());// X velocity
 
 			final Field j = ReflectionUtil.getDeclaredField(mob_class, "j");
 			j.setAccessible(true);
-			j.set(mobPacket, getYvel());// Y velocity
+			j.set(mobPacket, this.getYvel());// Y velocity
 
 			final Field k = ReflectionUtil.getDeclaredField(mob_class, "k");
 			k.setAccessible(true);
-			k.set(mobPacket, getZvel());// Z velocity
+			k.set(mobPacket, this.getZvel());// Z velocity
 
-			final Object watcher = getWatcher();
+			final Object watcher = this.getWatcher();
 			final Field t = ReflectionUtil.getDeclaredField(mob_class, "t");
 			t.setAccessible(true);
 			t.set(mobPacket, watcher);
@@ -172,11 +172,11 @@ class NMSDragon_v1_6 extends NMSDragon {
 			final Method a = ReflectionUtil.getMethod(watcher_class, "a", int.class, Object.class);
 			a.setAccessible(true);
 
-			a.invoke(watcher, 0, isVisible() ? (byte) 0 : (byte) 0x20);
-			a.invoke(watcher, 6, getHealth());
+			a.invoke(watcher, 0, this.isVisible() ? (byte) 0 : (byte) 0x20);
+			a.invoke(watcher, 6, this.getHealth());
 			a.invoke(watcher, 7, 0);
 			a.invoke(watcher, 8, (byte) 0);
-			a.invoke(watcher, 10, getName());
+			a.invoke(watcher, 10, this.getName());
 			a.invoke(watcher, 11, (byte) 1);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();

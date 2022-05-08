@@ -191,12 +191,11 @@ public final class LagCatcher {
 		final Long nanoTime = startTimesMap.get(section);
 		final String message = section + " took " + MathUtil.formatTwoDigits(nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D) + " ms";
 
-		if (printingMessages) {
+		if (printingMessages)
 			if (SimplePlugin.hasInstance())
 				Common.logNoPrefix("[{plugin_name} {plugin_version}] " + message);
 			else
 				System.out.println("[LagCatcher] " + message);
-		}
 	}
 
 	/**

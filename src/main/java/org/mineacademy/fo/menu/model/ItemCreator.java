@@ -492,7 +492,7 @@ public final class ItemCreator {
 	public ItemStack makeMenuTool() {
 		this.hideTags = true;
 
-		return make();
+		return this.make();
 	}
 
 	/**

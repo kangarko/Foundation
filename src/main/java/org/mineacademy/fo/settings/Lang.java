@@ -37,7 +37,7 @@ public final class Lang extends YamlConfig {
 	 * Return a key from our localization, failing if not exists
 	 */
 	private String getStringStrict(String path) {
-		final String key = getString(path);
+		final String key = this.getString(path);
 		Valid.checkNotNull(key, "Missing localization key '" + path + "' from " + this.getFileName());
 
 		return key;

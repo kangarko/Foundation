@@ -295,15 +295,14 @@ public final class Remain {
 				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
 						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 
-				if (MinecraftVersion.olderThan(V.v1_12)) {
+				if (MinecraftVersion.olderThan(V.v1_12))
 					try {
 						fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
 						fieldEntityInvulnerable.setAccessible(true);
 					} catch (final Throwable t) {
 						// Unavailable
 					}
-
-				} else
+				else
 					fieldEntityInvulnerable = null;
 
 			} catch (final Throwable t) {
@@ -695,10 +694,9 @@ public final class Remain {
 	 * @param material
 	 */
 	public static void setTypeAndData(final Block block, final CompMaterial material) {
-		if (MinecraftVersion.atLeast(V.v1_13)) {
+		if (MinecraftVersion.atLeast(V.v1_13))
 			block.setType(material.getMaterial());
-
-		} else
+		else
 			try {
 				block.getClass().getMethod("setTypeIdAndData", int.class, byte.class, boolean.class).invoke(block, material.getId(), material.getData(), true);
 			} catch (final ReflectiveOperationException ex) {
@@ -2168,7 +2166,7 @@ public final class Remain {
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
 
-		if (hasAdvancements) {
+		if (hasAdvancements)
 			Common.runLaterAsync(() -> {
 				for (final Player receiver : receivers) {
 
@@ -2187,8 +2185,7 @@ public final class Remain {
 					});
 				}
 			});
-
-		} else
+		else
 			for (final Player receiver : receivers) {
 				final String colorized = Common.colorize(message.apply(receiver));
 
@@ -2912,17 +2909,17 @@ class AdvancementAccessor {
 	}
 
 	public void show(final Player player) {
-		loadAdvancement();
-		grantAdvancement(player);
+		this.loadAdvancement();
+		this.grantAdvancement(player);
 
 		Common.runLater(10, () -> {
-			revokeAdvancement(player);
-			removeAdvancement();
+			this.revokeAdvancement(player);
+			this.removeAdvancement();
 		});
 	}
 
 	private void loadAdvancement() {
-		Bukkit.getUnsafe().loadAdvancement(key, compileJson0());
+		Bukkit.getUnsafe().loadAdvancement(this.key, this.compileJson0());
 	}
 
 	private String compileJson0() {
@@ -2933,7 +2930,7 @@ class AdvancementAccessor {
 
 		final JsonObject display = new JsonObject();
 		display.add("icon", icon);
-		display.addProperty("title", message);
+		display.addProperty("title", this.message);
 		display.addProperty("description", "");
 		display.addProperty("background", "minecraft:textures/gui/advancements/backgrounds/adventure.png");
 		display.addProperty("frame", this.toastStyle.getKey());
@@ -2955,7 +2952,7 @@ class AdvancementAccessor {
 	}
 
 	private void grantAdvancement(final Player plazer) {
-		final Advancement adv = getAdvancement();
+		final Advancement adv = this.getAdvancement();
 		final AdvancementProgress progress = plazer.getAdvancementProgress(adv);
 
 		if (!progress.isDone())
@@ -2963,7 +2960,7 @@ class AdvancementAccessor {
 	}
 
 	private void revokeAdvancement(final Player plazer) {
-		final Advancement adv = getAdvancement();
+		final Advancement adv = this.getAdvancement();
 		final AdvancementProgress prog = plazer.getAdvancementProgress(adv);
 
 		if (prog.isDone())
@@ -2971,11 +2968,11 @@ class AdvancementAccessor {
 	}
 
 	private void removeAdvancement() {
-		Bukkit.getUnsafe().removeAdvancement(key);
+		Bukkit.getUnsafe().removeAdvancement(this.key);
 	}
 
 	private Advancement getAdvancement() {
-		return Bukkit.getAdvancement(key);
+		return Bukkit.getAdvancement(this.key);
 	}
 }
 

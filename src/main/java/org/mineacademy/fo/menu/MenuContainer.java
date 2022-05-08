@@ -73,7 +73,7 @@ public abstract class MenuContainer extends Menu {
 		if (location != MenuClickLocation.MENU)
 			return true;
 
-		if (slot >= getSize() - 9)
+		if (slot >= this.getSize() - 9)
 			return false;
 
 		if (!this.canEditItem(location, slot, clicked, cursor, action))

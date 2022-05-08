@@ -622,34 +622,34 @@ public class NBTCompound {
 	}
 
 	/**
-     * @param name
-     * @return The retrieved Integer List
-     */
-    public NBTList<int[]> getIntArrayList(String name) {
-        try {
-            this.writeLock.lock();
-            final NBTList<int[]> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagIntArray, int[].class);
-            this.saveCompound();
-            return list;
-        } finally {
-            this.writeLock.unlock();
-        }
-    }
+	 * @param name
+	 * @return The retrieved Integer List
+	 */
+	public NBTList<int[]> getIntArrayList(String name) {
+		try {
+			this.writeLock.lock();
+			final NBTList<int[]> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagIntArray, int[].class);
+			this.saveCompound();
+			return list;
+		} finally {
+			this.writeLock.unlock();
+		}
+	}
 
-   /**
-    * @param name
-    * @return The retrieved Integer List
-    */
-   public NBTList<UUID> getUUIDList(String name) {
-       try {
-           this.writeLock.lock();
-           final NBTList<UUID> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagIntArray, UUID.class);
-           this.saveCompound();
-           return list;
-       } finally {
-           this.writeLock.unlock();
-       }
-   }
+	/**
+	* @param name
+	* @return The retrieved Integer List
+	*/
+	public NBTList<UUID> getUUIDList(String name) {
+		try {
+			this.writeLock.lock();
+			final NBTList<UUID> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagIntArray, UUID.class);
+			this.saveCompound();
+			return list;
+		} finally {
+			this.writeLock.unlock();
+		}
+	}
 
 	/**
 	 * @param name
@@ -738,9 +738,9 @@ public class NBTCompound {
 			this.readLock.lock();
 			if (MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4) {
 				final Object nbtbase = NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET, name);
-				if(nbtbase == null)
+				if (nbtbase == null)
 					return null;
-				return NBTType.valueOf((byte)ReflectionMethod.COMPOUND_OWN_TYPE.run(nbtbase));
+				return NBTType.valueOf((byte) ReflectionMethod.COMPOUND_OWN_TYPE.run(nbtbase));
 			}
 			final Object o = NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_TYPE, name);
 			if (o == null)
@@ -817,11 +817,11 @@ public class NBTCompound {
 			return true;
 		if (obj == null)
 			return false;
-		if(obj instanceof NBTCompound) {
+		if (obj instanceof NBTCompound) {
 			final NBTCompound other = (NBTCompound) obj;
-			if(this.getKeys().equals(other.getKeys())) {
-				for(final String key : this.getKeys())
-					if(!isEqual(this, other, key))
+			if (this.getKeys().equals(other.getKeys())) {
+				for (final String key : this.getKeys())
+					if (!isEqual(this, other, key))
 						return false;
 				return true;
 			}
@@ -830,32 +830,33 @@ public class NBTCompound {
 	}
 
 	protected static boolean isEqual(NBTCompound compA, NBTCompound compB, String key) {
-		if(compA.getType(key) != compB.getType(key))return false;
-		switch(compA.getType(key)) {
-		case NBTTagByte:
-			return compA.getByte(key).equals(compB.getByte(key));
-		case NBTTagByteArray:
-			return Arrays.equals(compA.getByteArray(key), compB.getByteArray(key));
-		case NBTTagCompound:
-			return compA.getCompound(key).equals(compB.getCompound(key));
-		case NBTTagDouble:
-			return compA.getDouble(key).equals(compB.getDouble(key));
-		case NBTTagEnd:
-			return true; //??
-		case NBTTagFloat:
-			return compA.getFloat(key).equals(compB.getFloat(key));
-		case NBTTagInt:
-			return compA.getInteger(key).equals(compB.getInteger(key));
-		case NBTTagIntArray:
-			return Arrays.equals(compA.getIntArray(key), compB.getIntArray(key));
-		case NBTTagList:
-			return NBTReflectionUtil.getEntry(compA, key).toString().equals(NBTReflectionUtil.getEntry(compB, key).toString()); // Just string compare the 2 lists
-		case NBTTagLong:
-			return compA.getLong(key).equals(compB.getLong(key));
-		case NBTTagShort:
-			return compA.getShort(key).equals(compB.getShort(key));
-		case NBTTagString:
-			return compA.getString(key).equals(compB.getString(key));
+		if (compA.getType(key) != compB.getType(key))
+			return false;
+		switch (compA.getType(key)) {
+			case NBTTagByte:
+				return compA.getByte(key).equals(compB.getByte(key));
+			case NBTTagByteArray:
+				return Arrays.equals(compA.getByteArray(key), compB.getByteArray(key));
+			case NBTTagCompound:
+				return compA.getCompound(key).equals(compB.getCompound(key));
+			case NBTTagDouble:
+				return compA.getDouble(key).equals(compB.getDouble(key));
+			case NBTTagEnd:
+				return true; //??
+			case NBTTagFloat:
+				return compA.getFloat(key).equals(compB.getFloat(key));
+			case NBTTagInt:
+				return compA.getInteger(key).equals(compB.getInteger(key));
+			case NBTTagIntArray:
+				return Arrays.equals(compA.getIntArray(key), compB.getIntArray(key));
+			case NBTTagList:
+				return NBTReflectionUtil.getEntry(compA, key).toString().equals(NBTReflectionUtil.getEntry(compB, key).toString()); // Just string compare the 2 lists
+			case NBTTagLong:
+				return compA.getLong(key).equals(compB.getLong(key));
+			case NBTTagShort:
+				return compA.getShort(key).equals(compB.getShort(key));
+			case NBTTagString:
+				return compA.getString(key).equals(compB.getString(key));
 		}
 		return false;
 	}

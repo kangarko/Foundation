@@ -49,9 +49,9 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected String getPrompt(final ConversationContext ctx) {
-		Valid.checkNotNull(question, "Please either call setQuestion or override getPrompt");
+		Valid.checkNotNull(this.question, "Please either call setQuestion or override getPrompt");
 
-		return question;
+		return this.question;
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected final Prompt acceptValidatedInput(@NonNull final ConversationContext context, @NonNull final String input) {
-		return acceptValidatedInput(context, Double.parseDouble(input));
+		return this.acceptValidatedInput(context, Double.parseDouble(input));
 	}
 
 	/**

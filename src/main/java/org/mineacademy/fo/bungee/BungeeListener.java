@@ -65,7 +65,7 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 		if (Bukkit.getName().contains("Cauldron"))
 			return;
 
-		onMessageReceived(player, new IncomingMessage(data));
+		this.onMessageReceived(player, new IncomingMessage(data));
 	}
 
 	/**

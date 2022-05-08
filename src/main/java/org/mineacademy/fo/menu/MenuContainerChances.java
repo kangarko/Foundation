@@ -91,7 +91,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 				instance.onMenuClose(player, player.getOpenInventory().getTopInventory());
 
 				// Simulate mode chance in the menu
-				instance.mode = mode.next();
+				instance.mode = MenuContainerChances.this.mode.next();
 				instance.setTitle("&0Editing " + instance.mode.getKey());
 
 				instance.restartMenu();
@@ -102,13 +102,13 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			 */
 			@Override
 			public ItemStack getItem() {
-				final boolean chances = mode == EditMode.CHANCE;
+				final boolean chances = MenuContainerChances.this.mode == EditMode.CHANCE;
 
 				return ItemCreator.of(
 						chances ? CompMaterial.GOLD_NUGGET : CompMaterial.CHEST,
-						"Editing " + mode.getKey(),
+						"Editing " + MenuContainerChances.this.mode.getKey(),
 						"",
-						"&7Click to edit " + mode.next().getKey().toLowerCase() + ".")
+						"&7Click to edit " + MenuContainerChances.this.mode.next().getKey().toLowerCase() + ".")
 						.glow(chances)
 						.make();
 			}
@@ -153,7 +153,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			final double dropChance = this.mode == EditMode.ITEM ? this.getDropChance(slot) : this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
 			final String level = MathUtil.formatTwoDigits(100 * dropChance) + "%";
 
-			return addLevelToItem(customDrop, level);
+			return this.addLevelToItem(customDrop, level);
 		}
 
 		if (slot > this.getSize() - 9)
@@ -213,7 +213,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 */
 	@Override
 	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
-		if (mode == EditMode.CHANCE)
+		if (this.mode == EditMode.CHANCE)
 			return false;
 
 		if (location != MenuClickLocation.MENU)
@@ -222,7 +222,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		if (!this.canEditItem(location, slot, clicked, cursor, action))
 			return false;
 
-		return slot < getSize() - 9;
+		return slot < this.getSize() - 9;
 	}
 
 	/**
@@ -345,7 +345,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 */
 	@Override
 	protected String[] getInfo() {
-		if (mode == EditMode.ITEM)
+		if (this.mode == EditMode.ITEM)
 			return new String[] {
 					"This menu allows you to drop",
 					"items to this container.",

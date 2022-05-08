@@ -89,10 +89,10 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 				items.put(index, this.fillerItem);
 
 			if (column == 1 || column == 9)
-				items.put(index, sideItem);
+				items.put(index, this.sideItem);
 		}
 
-		if (topDecreasing)
+		if (this.topDecreasing)
 			this.topPointer--;
 
 		else
@@ -104,7 +104,7 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 		else if (this.topPointer == 8)
 			this.topDecreasing = true;
 
-		if (bottomDecreasing)
+		if (this.bottomDecreasing)
 			this.bottomPointer--;
 
 		else

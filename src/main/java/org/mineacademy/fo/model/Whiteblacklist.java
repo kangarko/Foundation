@@ -78,21 +78,20 @@ public final class Whiteblacklist {
 
 	/**
 	 * Evaluates if the given collection contains at least one match
-	 * 
+	 *
 	 * @param items
 	 * @return
 	 */
 	public boolean isInList(Collection<String> items) {
-		if (entireList) {
-			if (whitelist && !items.isEmpty())
+		if (this.entireList)
+			if (this.whitelist && !items.isEmpty())
 				return true;
 
-			else if (!whitelist && items.isEmpty())
+			else if (!this.whitelist && items.isEmpty())
 				return true;
-		}
 
 		for (final String item : items)
-			if (isInList(item))
+			if (this.isInList(item))
 				return true;
 
 		return false;
@@ -106,12 +105,12 @@ public final class Whiteblacklist {
 	 * @return
 	 */
 	public boolean isInList(String item) {
-		if (entireList)
-			return whitelist;
+		if (this.entireList)
+			return this.whitelist;
 
 		final boolean match = Valid.isInList(item, this.items);
 
-		return whitelist ? match : !match;
+		return this.whitelist ? match : !match;
 	}
 
 	/**
@@ -122,12 +121,12 @@ public final class Whiteblacklist {
 	 * @return
 	 */
 	public boolean isInListRegex(String item) {
-		if (entireList)
-			return whitelist;
+		if (this.entireList)
+			return this.whitelist;
 
 		final boolean match = Valid.isInListRegex(item, this.items);
 
-		return whitelist ? match : !match;
+		return this.whitelist ? match : !match;
 	}
 
 	/**
@@ -138,12 +137,12 @@ public final class Whiteblacklist {
 	 * @return
 	 */
 	public boolean isInListStartsWith(String item) {
-		if (entireList)
-			return whitelist;
+		if (this.entireList)
+			return this.whitelist;
 
 		final boolean match = Valid.isInListStartsWith(item, this.items);
 
-		return whitelist ? match : !match;
+		return this.whitelist ? match : !match;
 	}
 
 	/**
@@ -151,6 +150,6 @@ public final class Whiteblacklist {
 	 */
 	@Override
 	public String toString() {
-		return "{" + (entireList ? "entire list" : whitelist ? "whitelist" : "blacklist") + " " + this.items + "}";
+		return "{" + (this.entireList ? "entire list" : this.whitelist ? "whitelist" : "blacklist") + " " + this.items + "}";
 	}
 }

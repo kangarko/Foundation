@@ -30,16 +30,16 @@ public abstract class BlockTool extends Tool {
 		final Action action = event.getAction();
 
 		if (action == Action.RIGHT_CLICK_BLOCK)
-			onBlockClick(player, ClickType.RIGHT, block);
+			this.onBlockClick(player, ClickType.RIGHT, block);
 
 		else if (action == Action.LEFT_CLICK_BLOCK)
-			onBlockClick(player, ClickType.LEFT, block);
+			this.onBlockClick(player, ClickType.LEFT, block);
 
 		else if (action == Action.RIGHT_CLICK_AIR)
-			onAirClick(player, ClickType.RIGHT);
+			this.onAirClick(player, ClickType.RIGHT);
 
 		else if (action == Action.LEFT_CLICK_AIR)
-			onAirClick(player, ClickType.LEFT);
+			this.onAirClick(player, ClickType.LEFT);
 	}
 
 	/**

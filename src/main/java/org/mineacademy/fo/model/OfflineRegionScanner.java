@@ -94,7 +94,7 @@ public abstract class OfflineRegionScanner {
 
 		try {
 			world.setAutoSave(false);
-			scan0(world);
+			this.scan0(world);
 
 		} finally {
 			world.setAutoSave(hadAutoSave);
@@ -112,7 +112,7 @@ public abstract class OfflineRegionScanner {
 				Common.consoleLine());
 
 		// Disable watch dog
-		disableWatchdog();
+		this.disableWatchdog();
 
 		// Collect files
 		final File[] files = getRegionFiles(world);
@@ -130,7 +130,7 @@ public abstract class OfflineRegionScanner {
 		this.world = world;
 
 		// Start the schedule
-		schedule0(queue);
+		this.schedule0(queue);
 	}
 
 	/*
@@ -152,7 +152,7 @@ public abstract class OfflineRegionScanner {
 
 			} catch (final Throwable t) {
 				Common.log("ERROR: FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
-				Common.callEvent(new RegionScanCompleteEvent(world));
+				Common.callEvent(new RegionScanCompleteEvent(this.world));
 
 				t.printStackTrace();
 				this.finishScan();
@@ -183,15 +183,15 @@ public abstract class OfflineRegionScanner {
 							"Region scanner finished. World saved.",
 							Common.consoleLine());
 
-					Common.callEvent(new RegionScanCompleteEvent(world));
+					Common.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
 
-					finishScan();
-					cancel();
+					OfflineRegionScanner.this.finishScan();
+					this.cancel();
 
 					return;
 				}
 
-				scanFile(file, queue);
+				OfflineRegionScanner.this.scanFile(file, queue);
 			}
 		}.runTask(SimplePlugin.getInstance());
 	}
@@ -208,10 +208,10 @@ public abstract class OfflineRegionScanner {
 		final int regionX = Integer.parseInt(matcher.group(1));
 		final int regionZ = Integer.parseInt(matcher.group(2));
 
-		System.out.print("[" + Math.round((double) processedFilesCount++ / (double) totalFilesCount * 100) + "%] Processing " + file);
+		System.out.print("[" + Math.round((double) this.processedFilesCount++ / (double) this.totalFilesCount * 100) + "%] Processing " + file);
 
 		// Calculate time, collect memory and increase pauses in between if running out of memory
-		if (System.currentTimeMillis() - lastTick > 4000) {
+		if (System.currentTimeMillis() - this.lastTick > 4000) {
 			final long free = Runtime.getRuntime().freeMemory() / 1_000_000;
 
 			if (free < 200) {
@@ -224,7 +224,7 @@ public abstract class OfflineRegionScanner {
 			} else
 				System.out.print(" [free memory = " + free + " mb]");
 
-			lastTick = System.currentTimeMillis();
+			this.lastTick = System.currentTimeMillis();
 		}
 
 		System.out.println();
@@ -239,15 +239,15 @@ public abstract class OfflineRegionScanner {
 				final int chunkX = x + (regionX << 5);
 				final int chunkZ = z + (regionZ << 5);
 
-				if (RegionAccessor.isChunkSaved(region, x, z)) {
+				if (RegionAccessor.isChunkSaved(region, x, z))
 					if (this.fastMode)
 						this.onChunkScanFast(chunkX, chunkZ);
 
 					else {
-						final Chunk chunk = world.getChunkAt(chunkX, chunkZ);
+						final Chunk chunk = this.world.getChunkAt(chunkX, chunkZ);
 
 						try {
-							onChunkScan(chunk);
+							this.onChunkScan(chunk);
 
 						} catch (final Throwable t) {
 							Common.error(t, "Failed to scan chunk " + chunk + ", aborting for safety");
@@ -255,7 +255,6 @@ public abstract class OfflineRegionScanner {
 							break scan;
 						}
 					}
-				}
 			}
 
 		// Save
@@ -271,7 +270,7 @@ public abstract class OfflineRegionScanner {
 			this.schedule0(queue);
 
 		else
-			Common.runLater(WAIT_TIME_BETWEEN_SCAN_SECONDS, () -> schedule0(queue));
+			Common.runLater(WAIT_TIME_BETWEEN_SCAN_SECONDS, () -> this.schedule0(queue));
 
 	}
 
@@ -299,8 +298,8 @@ public abstract class OfflineRegionScanner {
 	 */
 	private void finishScan() {
 
-		if (watchdog != null)
-			watchdog.resume();
+		if (this.watchdog != null)
+			this.watchdog.resume();
 
 		this.onScanFinished();
 	}

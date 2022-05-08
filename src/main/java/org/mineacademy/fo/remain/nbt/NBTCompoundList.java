@@ -39,7 +39,7 @@ public class NBTCompoundList extends NBTList<NBTListCompound> {
 				ReflectionMethod.LEGACY_LIST_ADD.run(this.listObject, compound);
 			this.getParent().saveCompound();
 			final NBTListCompound listcomp = new NBTListCompound(this, compound);
-			if(comp != null)
+			if (comp != null)
 				listcomp.mergeCompound(comp);
 			return listcomp;
 		} catch (final Exception ex) {

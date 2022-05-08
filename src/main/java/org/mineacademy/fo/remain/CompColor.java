@@ -177,7 +177,7 @@ public final class CompColor {
 	 * @return
 	 */
 	public Color getColor() {
-		return color != null ? color : dye.getColor();
+		return this.color != null ? this.color : this.dye.getColor();
 	}
 
 	// ----------------------------------------------------------------------------------------------------

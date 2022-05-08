@@ -41,35 +41,35 @@ public final class DebugCommand extends SimpleSubCommand {
 	public DebugCommand(String permission) {
 		this();
 
-		setPermission(permission);
+		this.setPermission(permission);
 	}
 
 	public DebugCommand() {
 		super("debug");
 
-		setDescription("ZIP your settings for reporting bugs.");
+		this.setDescription("ZIP your settings for reporting bugs.");
 	}
 
 	@Override
 	protected void onCommand() {
-		tell(SimpleLocalization.Commands.DEBUG_PREPARING);
+		this.tell(SimpleLocalization.Commands.DEBUG_PREPARING);
 
 		final File debugFolder = FileUtil.getFile("debug");
-		final List<File> files = listFilesRecursively(SimplePlugin.getData(), new ArrayList<>());
+		final List<File> files = this.listFilesRecursively(SimplePlugin.getData(), new ArrayList<>());
 
 		// Clean up the old folder if exists
 		FileUtil.deleteRecursivelly(debugFolder);
 
 		// Collect general debug information first
-		writeDebugInformation();
+		this.writeDebugInformation();
 
 		// Copy all plugin files
-		copyFilesToDebug(files);
+		this.copyFilesToDebug(files);
 
 		// Zip the folder
-		zipAndRemoveFolder(debugFolder);
+		this.zipAndRemoveFolder(debugFolder);
 
-		tell(SimpleLocalization.Commands.DEBUG_SUCCESS.replace("{amount}", String.valueOf(files.size())));
+		this.tell(SimpleLocalization.Commands.DEBUG_SUCCESS.replace("{amount}", String.valueOf(files.size())));
 	}
 
 	/*
@@ -97,8 +97,7 @@ public final class DebugCommand extends SimpleSubCommand {
 	 */
 	private void copyFilesToDebug(List<File> files) {
 
-		for (final File file : files) {
-
+		for (final File file : files)
 			try {
 				// Get the path in our folder
 				final String path = file.getPath().replace("\\", "/").replace("plugins/" + SimplePlugin.getNamed(), "");
@@ -127,9 +126,8 @@ public final class DebugCommand extends SimpleSubCommand {
 			} catch (final Exception ex) {
 				ex.printStackTrace();
 
-				returnTell(SimpleLocalization.Commands.DEBUG_COPY_FAIL.replace("{file}", file.getName()));
+				this.returnTell(SimpleLocalization.Commands.DEBUG_COPY_FAIL.replace("{file}", file.getName()));
 			}
-		}
 	}
 
 	/*
@@ -145,7 +143,7 @@ public final class DebugCommand extends SimpleSubCommand {
 		} catch (final IOException ex) {
 			ex.printStackTrace();
 
-			returnTell(SimpleLocalization.Commands.DEBUG_ZIP_FAIL);
+			this.returnTell(SimpleLocalization.Commands.DEBUG_ZIP_FAIL);
 		}
 	}
 
@@ -157,13 +155,11 @@ public final class DebugCommand extends SimpleSubCommand {
 			if (file.isDirectory()) {
 				// Ignore log directory and ignore the debug directory itself
 				if (!file.getName().equals("logs") && !file.getName().equals("debug"))
-					listFilesRecursively(file, files);
+					this.listFilesRecursively(file, files);
 
-			} else {
-				// Ignore the debug zip file itself
-				if (!file.getName().equals("debug.zip") && !file.getName().equals("mysql.yml"))
-					files.add(file);
-			}
+			} else // Ignore the debug zip file itself
+			if (!file.getName().equals("debug.zip") && !file.getName().equals("mysql.yml"))
+				files.add(file);
 
 		return files;
 	}

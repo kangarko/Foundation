@@ -153,15 +153,13 @@ public class AnimationUtil {
 	public static List<String> duplicate(List<String> frames, int amount) {
 		final List<String> result = new ArrayList<>();
 
-		for (int i = 0; i < frames.size(); i++) {
-
+		for (int i = 0; i < frames.size(); i++)
 			//duplicate j times;
 			for (int j = 0; j < amount; j++) {
 				final String duplicated = frames.get(i);
 
 				result.add(i, duplicated);
 			}
-		}
 		return result;
 	}
 
@@ -231,12 +229,12 @@ public class AnimationUtil {
 
 			@Override
 			public void run() {
-				Remain.sendBossbarPercent(player, animatedFrames.get(frame), 100);
+				Remain.sendBossbarPercent(player, animatedFrames.get(this.frame), 100);
 
-				frame++;
+				this.frame++;
 
-				if (frame == animatedFrames.size())
-					frame = 0;
+				if (this.frame == animatedFrames.size())
+					this.frame = 0;
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
 	}
@@ -268,32 +266,31 @@ public class AnimationUtil {
 
 			@Override
 			public void run() {
-				if (!run)
+				if (!this.run)
 					return;
 
-				final String title = animatedFrames.get(frame % (animatedFrames.size() * finalSmoothnessLevel));
+				final String title = animatedFrames.get(this.frame % (animatedFrames.size() * finalSmoothnessLevel));
 
 				if (animatedColors != null)
-					Remain.sendBossbarPercent(player, title, health, animatedColors.get(frame % (animatedColors.size() * finalSmoothnessLevel)), CompBarStyle.SOLID);
+					Remain.sendBossbarPercent(player, title, this.health, animatedColors.get(this.frame % (animatedColors.size() * finalSmoothnessLevel)), CompBarStyle.SOLID);
 
 				else
-					Remain.sendBossbarPercent(player, title, health);
+					Remain.sendBossbarPercent(player, title, this.health);
 
-				if (countdownBar != null) {
+				if (countdownBar != null)
 					if (countdownBar.isSmooth)
-						health -= countdownBar.duration / (10D * finalSmoothnessLevel);
+						this.health -= countdownBar.duration / (10D * finalSmoothnessLevel);
 					else
-						health -= countdownBar.duration / 10D;
-				}
+						this.health -= countdownBar.duration / 10D;
 
-				frame++;
+				this.frame++;
 
-				if (frame >= animatedFrames.size()) {
-					frame = 0;
-					health = 1F;
+				if (this.frame >= animatedFrames.size()) {
+					this.frame = 0;
+					this.health = 1F;
 
 					if (animateOnce) {
-						run = false;
+						this.run = false;
 
 						Remain.removeBossBar(player);
 					}
@@ -318,11 +315,11 @@ public class AnimationUtil {
 
 			@Override
 			public void run() {
-				scoreboard.setTitle(animatedFrames.get(frame));
-				frame++;
+				scoreboard.setTitle(animatedFrames.get(this.frame));
+				this.frame++;
 
-				if (frame == animatedFrames.size())
-					frame = 0;
+				if (this.frame == animatedFrames.size())
+					this.frame = 0;
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
 	}
@@ -344,17 +341,17 @@ public class AnimationUtil {
 			@Override
 			public void run() {
 				if (titleFrames != null)
-					title = titleFrames.get(frame % titleFrames.size());
+					this.title = titleFrames.get(this.frame % titleFrames.size());
 				if (subtitleFrames != null)
-					subtitle = subtitleFrames.get(frame % subtitleFrames.size());
+					this.subtitle = subtitleFrames.get(this.frame % subtitleFrames.size());
 
-				Remain.sendTitle(who, 10, 70, 20, title, subtitle);
+				Remain.sendTitle(who, 10, 70, 20, this.title, this.subtitle);
 
-				frame++;
+				this.frame++;
 
-				if (frame == Math.max(titleFrames != null ? titleFrames.size() : 0,
+				if (this.frame == Math.max(titleFrames != null ? titleFrames.size() : 0,
 						subtitleFrames != null ? subtitleFrames.size() : 0) || SimplePlugin.isReloading())
-					cancel();
+					this.cancel();
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), 0, period);
 	}
@@ -376,12 +373,12 @@ public class AnimationUtil {
 			public void run() {
 				final ItemMeta meta = checkMeta(item);
 
-				meta.setDisplayName(animatedFrames.get(frame));
+				meta.setDisplayName(animatedFrames.get(this.frame));
 				item.setItemMeta(meta);
 
-				frame++;
-				if (frame > animatedFrames.size())
-					frame = 0;
+				this.frame++;
+				if (this.frame > animatedFrames.size())
+					this.frame = 0;
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
 	}
@@ -402,7 +399,7 @@ public class AnimationUtil {
 
 			@Override
 			public void run() {
-				final String frameText = animatedFrames.get(frame % animatedFrames.size());
+				final String frameText = animatedFrames.get(this.frame % animatedFrames.size());
 				final ItemMeta meta = checkMeta(item);
 				List<String> lore = meta.getLore();
 				if (lore == null)
@@ -416,9 +413,9 @@ public class AnimationUtil {
 				meta.setLore(lore);
 				item.setItemMeta(meta);
 
-				frame++;
-				if (frame > animatedFrames.size())
-					frame = 0;
+				this.frame++;
+				if (this.frame > animatedFrames.size())
+					this.frame = 0;
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
 	}
@@ -438,10 +435,10 @@ public class AnimationUtil {
 
 			@Override
 			public void run() {
-				PlayerUtil.updateInventoryTitle(viewer, animatedFrames.get(frame));
-				frame++;
-				if (frame > animatedFrames.size())
-					frame = 0;
+				PlayerUtil.updateInventoryTitle(viewer, animatedFrames.get(this.frame));
+				this.frame++;
+				if (this.frame > animatedFrames.size())
+					this.frame = 0;
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
 	}

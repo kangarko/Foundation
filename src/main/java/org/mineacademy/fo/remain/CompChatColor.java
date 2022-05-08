@@ -227,7 +227,7 @@ public final class CompChatColor {
 		if (this == obj)
 			return true;
 
-		if (obj == null || getClass() != obj.getClass())
+		if (obj == null || this.getClass() != obj.getClass())
 			return false;
 
 		return Objects.equals(this.toString, ((CompChatColor) obj).toString);
@@ -239,9 +239,9 @@ public final class CompChatColor {
 	 * @return the code
 	 */
 	public char getCode() {
-		Valid.checkBoolean(code != '#', "Cannot retrieve color code for HEX colors");
+		Valid.checkBoolean(this.code != '#', "Cannot retrieve color code for HEX colors");
 
-		return code;
+		return this.code;
 	}
 
 	/**
@@ -250,7 +250,7 @@ public final class CompChatColor {
 	 * @return
 	 */
 	public boolean isHex() {
-		return code == '#';
+		return this.code == '#';
 	}
 
 	/**
@@ -259,7 +259,7 @@ public final class CompChatColor {
 	 * @return
 	 */
 	public String toEscapedString() {
-		return isHex() ? toString + "\\" + getName() : ItemUtil.bountify(getName());
+		return this.isHex() ? this.toString + "\\" + this.getName() : ItemUtil.bountify(this.getName());
 	}
 
 	/**
@@ -276,7 +276,7 @@ public final class CompChatColor {
 	 */
 	@Override
 	public String toString() {
-		return toString;
+		return this.toString;
 	}
 
 	/**
@@ -314,7 +314,7 @@ public final class CompChatColor {
 				return CompChatColor.WHITE;
 
 			if (!MinecraftVersion.atLeast(V.v1_16)) {
-				Color color = getColorFromHex(string);
+				final Color color = getColorFromHex(string);
 
 				return getClosestLegacyColor(color);
 			}
@@ -362,7 +362,7 @@ public final class CompChatColor {
 	 * Parse the given HEX into a Java Color object
 	 */
 	private static Color getColorFromHex(String hex) {
-		return new Color(Integer.valueOf(hex.substring(1, 3), 16), Integer.valueOf(hex.substring(3, 5), 16), Integer.valueOf(hex.substring(5, 7), 16));
+		return new Color(Integer.parseInt(hex.substring(1, 3), 16), Integer.parseInt(hex.substring(3, 5), 16), Integer.parseInt(hex.substring(5, 7), 16));
 	}
 
 	/**

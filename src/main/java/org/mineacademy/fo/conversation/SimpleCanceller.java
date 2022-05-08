@@ -50,7 +50,7 @@ public final class SimpleCanceller implements ConversationCanceller {
 	 */
 	@Override
 	public boolean cancelBasedOnInput(ConversationContext context, String input) {
-		for (final String phrase : cancelPhrases)
+		for (final String phrase : this.cancelPhrases)
 			if (input.equalsIgnoreCase(phrase))
 				return true;
 
@@ -59,6 +59,6 @@ public final class SimpleCanceller implements ConversationCanceller {
 
 	@Override
 	public ConversationCanceller clone() {
-		return new SimpleCanceller(cancelPhrases);
+		return new SimpleCanceller(this.cancelPhrases);
 	}
 }

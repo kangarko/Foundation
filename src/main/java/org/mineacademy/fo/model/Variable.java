@@ -124,51 +124,51 @@ public final class Variable extends YamlConfig {
 	@Override
 	protected void onLoad() {
 
-		this.type = get("Type", Type.class);
-		this.key = getString("Key");
-		this.value = getString("Value");
-		this.senderCondition = getString("Sender_Condition");
-		this.receiverCondition = getString("Receiver_Condition");
-		this.senderPermission = getString("Sender_Permission");
-		this.receiverPermission = getString("Receiver_Permission");
+		this.type = this.get("Type", Type.class);
+		this.key = this.getString("Key");
+		this.value = this.getString("Value");
+		this.senderCondition = this.getString("Sender_Condition");
+		this.receiverCondition = this.getString("Receiver_Condition");
+		this.senderPermission = this.getString("Sender_Permission");
+		this.receiverPermission = this.getString("Receiver_Permission");
 
 		// Correct common mistakes
 		if (this.type == null) {
 			this.type = Type.FORMAT;
 
-			save();
+			this.save();
 		}
 
 		// Check for known mistakes
 		if (this.key == null || this.key.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFileName());
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + this.getFileName());
 
 		if (this.value == null || this.value.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFileName() + " (this can be a JavaScript code)");
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + this.getFileName() + " (this can be a JavaScript code)");
 
 		if (this.key.startsWith("{") || this.key.startsWith("[")) {
 			this.key = this.key.substring(1);
 
-			save();
+			this.save();
 		}
 
 		if (this.key.endsWith("}") || this.key.endsWith("]")) {
 			this.key = this.key.substring(0, this.key.length() - 1);
 
-			save();
+			this.save();
 		}
 
 		if (this.type == Type.MESSAGE) {
-			this.hoverText = getStringList("Hover");
-			this.hoverItem = getString("Hover_Item");
-			this.openUrl = getString("Open_Url");
-			this.suggestCommand = getString("Suggest_Command");
-			this.runCommand = getString("Run_Command");
+			this.hoverText = this.getStringList("Hover");
+			this.hoverItem = this.getString("Hover_Item");
+			this.openUrl = this.getString("Open_Url");
+			this.suggestCommand = this.getString("Suggest_Command");
+			this.runCommand = this.getString("Run_Command");
 		}
 
 		// Test for key validity
 		if (!Common.regExMatch("^\\w+$", this.key))
-			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFileName() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFileName() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 	}
 
 	@Override
@@ -239,9 +239,9 @@ public final class Variable extends YamlConfig {
 			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
 
 			if (result != null) {
-				Valid.checkBoolean(result instanceof Boolean, "Variable '" + getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+				Valid.checkBoolean(result instanceof Boolean, "Variable '" + this.getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
 
-				if ((boolean) result == false)
+				if (!((boolean) result))
 					return SimpleComponent.of("");
 			}
 		}
@@ -261,7 +261,7 @@ public final class Variable extends YamlConfig {
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements), sender);
-			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
+			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + this.getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
 			component.onHover((ItemStack) result);
 		}
