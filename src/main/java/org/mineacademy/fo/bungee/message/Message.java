@@ -3,8 +3,8 @@ package org.mineacademy.fo.bungee.message;
 import java.util.UUID;
 
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 
 import lombok.AccessLevel;
 import lombok.Getter;

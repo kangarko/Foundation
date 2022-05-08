@@ -1,14 +1,5 @@
 package org.mineacademy.fo.settings;
 
-import lombok.NonNull;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictMap;
-
-import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -18,6 +9,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.mineacademy.fo.ChatUtil;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.StrictMap;
+
+import lombok.NonNull;
 
 /**
  * A special class that can store loaded {@link YamlConfig} files

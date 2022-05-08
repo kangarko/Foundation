@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;

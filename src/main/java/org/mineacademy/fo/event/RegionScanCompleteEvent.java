@@ -2,7 +2,6 @@ package org.mineacademy.fo.event;
 
 import org.bukkit.World;
 import org.bukkit.event.HandlerList;
-import org.mineacademy.fo.model.OfflineRegionScanner;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
