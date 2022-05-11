@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -348,23 +350,11 @@ public final class ChatUtil {
 		if (message == null)
 			return "";
 
-		final StringBuilder builder = new StringBuilder();
+		final String regex = "[^\\p{L}\\p{N}\\p{P}\\p{Z}]";
+		final Pattern pattern = Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
+		final Matcher matcher = pattern.matcher(message);
 
-		for (int i = 0; i < message.length(); i++) {
-
-			// Emojis are two characters long in java, e.g. a rocket emoji is "\uD83D\uDE80";
-			if (i < message.length() - 1)
-				if (Character.isSurrogatePair(message.charAt(i), message.charAt(i + 1))) {
-					// also skip the second character of the emoji
-					i += 1;
-
-					continue;
-				}
-
-			builder.append(message.charAt(i));
-		}
-
-		return builder.toString();
+		return matcher.replaceAll("");
 	}
 
 	/**
