@@ -403,7 +403,7 @@ public abstract class DiscordListener implements Listener {
 
 					// Send a new one
 					final Message newSentMessage = channel
-							.sendMessage(format.replace("{player}", message.getAuthor().getName()).replace("*", "\\*").replace("_", "\\_").replace("@", "\\@"))
+							.sendMessage(format.replace("{player}", message.getAuthor().getName()))
 							.complete();
 
 					this.editedMessages.put(messageId, newSentMessage.getIdLong());
