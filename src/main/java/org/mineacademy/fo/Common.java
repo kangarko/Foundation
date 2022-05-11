@@ -667,7 +667,6 @@ public final class Common {
 	 * @return
 	 */
 	public static String stripColors(String message) {
-
 		if (message == null || message.isEmpty())
 			return message;
 
