@@ -2621,6 +2621,28 @@ public final class Remain {
 	}
 
 	/**
+	 * Attempts to set render distance of the player to the given value
+	 * returning false if we got a reflective exception (such as when not using PaperSpigot
+	 * or on an outdated MC version).
+	 *
+	 * @return
+	 */
+	public static boolean setViewDistance(Player player, int viewDistanceChunks) {
+
+		try {
+			final Method setViewDistance = Player.class.getDeclaredMethod("setViewDistance", int.class);
+
+			ReflectionUtil.invoke(setViewDistance, player, viewDistanceChunks);
+			return true;
+
+		} catch (final ReflectiveOperationException ex) {
+
+			// Not using Paper or old MC version
+			return false;
+		}
+	}
+
+	/**
 	 * Converts the given object that may be a SectionPathData for MC 1.18 back into its root data
 	 * such as {@link MemorySection}
 	 *
