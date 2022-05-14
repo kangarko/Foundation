@@ -2,7 +2,6 @@ package org.mineacademy.fo.model;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +57,7 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
-import com.comphenix.protocol.injector.server.TemporaryPlayer;
+import com.comphenix.protocol.injector.temporary.TemporaryPlayer;
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
@@ -1919,14 +1918,14 @@ class ProtocolLibHook {
 		try {
 			manager.sendServerPacket(player, (PacketContainer) packet);
 
-		} catch (final InvocationTargetException e) {
+		} catch (final Throwable e) {
 			Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
 		}
 	}
 
 	final boolean isTemporaryPlayer(Player player) {
 		try {
-			return player instanceof TemporaryPlayer;
+			return player != null && player.getClass().getSimpleName().contains("TemporaryPlayer");
 
 		} catch (final NoClassDefFoundError err) {
 			return false;
@@ -2585,15 +2584,15 @@ class WorldGuardHook {
 				}
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-						.getRegions().values().forEach(reg -> {
-							if (reg == null || reg.getId() == null)
-								return;
+				.getRegions().values().forEach(reg -> {
+					if (reg == null || reg.getId() == null)
+						return;
 
-							final String name = Common.stripColors(reg.getId());
+					final String name = Common.stripColors(reg.getId());
 
-							if (!name.startsWith("__"))
-								list.add(name);
-						});
+					if (!name.startsWith("__"))
+						list.add(name);
+				});
 		}
 
 		return list;
