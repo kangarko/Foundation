@@ -53,34 +53,34 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.18.1-R0.1-SNAPSHOT</version>
+			<version>1.18.2-R0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>AuthMe</artifactId>
-			<version>5.6.0-SNAPSHOT-2509</version>
+			<version>5.6.0-SNAPSHOT-2530</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CitizensAPI</artifactId>
-			<version>2.0.28-b792</version>
+			<version>2.0.29-b839</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CMI-API</artifactId>
-			<version>8.7.8.2</version>
+			<version>9.0.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>DiscordSRV</artifactId>
-			<version>1.24.1</version>
+			<version>1.26.0-SNAPSHOT-0824719</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>EssentialsX</artifactId>
-			<version>2.19.1-SNAPSHOT-1324</version>
+			<version>2.20.0-SNAPSHOT-1375</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -90,22 +90,22 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>FactionsUUID</artifactId>
-			<version>1.6.9.5-U0.6.4-b271</version>
+			<version>1.6.9.5-U0.6.11-b287</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Jobs</artifactId>
-			<version>5.0.1.0</version>
+			<version>5.0.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>LandsAPI</artifactId>
-			<version>5.15.2</version>
+			<version>6.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>LWC</artifactId>
-			<version>2.2.8-SNAPSHOT-168</version>
+			<version>2.2.8-SNAPSHOT-171</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -115,12 +115,12 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>mcMMO</artifactId>
-			<version>2.1.202</version>
+			<version>2.1.212</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Multiverse-Core</artifactId>
-			<version>4.3.2-SNAPSHOT-867</version>
+			<version>4.3.2-SNAPSHOT-870</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -130,37 +130,37 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>PlaceholderAPI</artifactId>
-			<version>2.10.10</version>
+			<version>2.11.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>4.8.0-SNAPSHOT-538</version>
+			<version>5.0.0-SNAPSHOT-554</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Residence</artifactId>
-			<version>5.0.0.4</version>
+			<version>5.0.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>SimpleClans</artifactId>
-			<version>2.16.0-SNAPSHOT-214</version>
+			<version>2.16.2-SNAPSHOT-283</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>StackMob</artifactId>
-			<version>5.7.2</version>
+			<version>5.7.5</version>
 		</dependency>		
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Towny</artifactId>
-			<version>0.97.4.0</version>
+			<version>0.98.1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>TownyChat</artifactId>
-			<version>0.91</version>
+			<version>0.96</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -170,12 +170,12 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.3.0-SNAPSHOT-5758</version>
+			<version>7.2.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldGuard</artifactId>
-			<version>7.0.5-SNAPSHOT-2109</version>
+			<version>7.0.7</version>
 		</dependency>
 	</dependencies>
 	<build>
