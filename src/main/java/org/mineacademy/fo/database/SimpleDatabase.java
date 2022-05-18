@@ -258,7 +258,7 @@ public class SimpleDatabase {
 
 			if (Common.getOrEmpty(ex.getMessage()).contains("No suitable driver found"))
 				Common.logFramed(true,
-						"Failed to look up MySQL driver! If you had MySQL disabled,",
+						"Failed to look up database driver! If you had database disabled,",
 						"then enable it and reload - this is expected.",
 						"",
 						"You have have access to your server machine, try installing",
@@ -268,7 +268,7 @@ public class SimpleDatabase {
 						"your hosting provider with the error message below.");
 			else
 				Common.logFramed(true,
-						"Failed to connect to MySQL database",
+						"Failed to connect to database",
 						"URL: " + url,
 						"Error: " + ex.getMessage());
 
@@ -299,6 +299,21 @@ public class SimpleDatabase {
 	// --------------------------------------------------------------------
 
 	/**
+	 * Attempts to close the result set if not
+	 *
+	 * @param resultSet
+	 */
+	public final void close(ResultSet resultSet) {
+		try {
+			if (!resultSet.isClosed())
+				resultSet.close();
+
+		} catch (final SQLException e) {
+			Common.error(e, "Error closing database result set!");
+		}
+	}
+
+	/**
 	 * Attempts to close the connection, if not null
 	 */
 	public final void close() {
@@ -310,7 +325,7 @@ public class SimpleDatabase {
 				ReflectionUtil.invoke("close", this.hikariDataSource);
 
 		} catch (final SQLException e) {
-			Common.error(e, "Error closing MySQL connection!");
+			Common.error(e, "Error closing database connection!");
 		}
 	}
 
@@ -446,7 +461,7 @@ public class SimpleDatabase {
 		sql = this.replaceVariables(sql);
 		Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
 
-		Debugger.debug("mysql", "Updating MySQL with: " + sql);
+		Debugger.debug("mysql", "Updating database with: " + sql);
 
 		try {
 			final Statement statement = this.connection.createStatement();
@@ -455,7 +470,7 @@ public class SimpleDatabase {
 			statement.close();
 
 		} catch (final SQLException e) {
-			this.handleError(e, "Error on updating MySQL with: " + sql);
+			this.handleError(e, "Error on updating database with: " + sql);
 		}
 	}
 
@@ -494,6 +509,9 @@ public class SimpleDatabase {
 
 			} catch (final Throwable t) {
 				Common.error(t, "Error selecting rows from table " + table + " with param '" + param + "'");
+
+			} finally {
+				this.close(resultSet);
 			}
 		}
 	}
@@ -568,7 +586,7 @@ public class SimpleDatabase {
 
 		sql = this.replaceVariables(sql);
 
-		Debugger.debug("mysql", "Querying MySQL with: " + sql);
+		Debugger.debug("mysql", "Querying database with: " + sql);
 
 		try {
 			final Statement statement = this.connection.createStatement();
@@ -580,7 +598,7 @@ public class SimpleDatabase {
 			if (ex instanceof SQLSyntaxErrorException && ex.getMessage().startsWith("Table") && ex.getMessage().endsWith("doesn't exist"))
 				return new DummyResultSet();
 
-			this.handleError(ex, "Error on querying MySQL with: " + sql);
+			this.handleError(ex, "Error on querying database with: " + sql);
 		}
 
 		return null;
@@ -629,6 +647,9 @@ public class SimpleDatabase {
 
 			// This will block the thread
 			this.getConnection().commit();
+
+			if (!batchStatement.isClosed())
+				batchStatement.close();
 
 			//Common.log("Updated " + processedCount + " database entries.");
 
@@ -735,8 +756,8 @@ public class SimpleDatabase {
 	 */
 	private void handleError(Throwable t, String fallbackMessage) {
 		if (t.toString().contains("Unknown collation")) {
-			Common.log("You need to update your MySQL provider driver. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
-			Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable MySQL connection or update your driver to fix this.");
+			Common.log("You need to update your database provider driver. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
+			Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable database connection or update your driver to fix this.");
 		}
 
 		else if (t.toString().contains("Incorrect string value")) {
