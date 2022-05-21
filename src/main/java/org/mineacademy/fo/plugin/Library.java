@@ -140,7 +140,7 @@ public final class Library {
 				}
 			}
 
-			Bukkit.getLogger().info("Loading library: " + this.getName());
+			//Bukkit.getLogger().info("Loading library: " + this.getName());
 
 			// Load the library into the plugin's class loader
 			final URL url = file.toURI().toURL();
