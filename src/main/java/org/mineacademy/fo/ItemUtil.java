@@ -1,3 +1,4 @@
+
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public final class ItemUtil {
 	 * @param color
 	 * @return
 	 */
-	public static String bountifyCapitalized(CompChatColor color) {
+	public static String bountifyCapitalized(@NonNull CompChatColor color) {
 		return bountifyCapitalized(color.getName());
 	}
 
@@ -59,7 +60,7 @@ public final class ItemUtil {
 	 * @param enumeration
 	 * @return
 	 */
-	public static String bountifyCapitalized(Enum<?> enumeration) {
+	public static String bountifyCapitalized(@NonNull Enum<?> enumeration) {
 		return ChatUtil.capitalizeFully(bountify(enumeration.toString().toLowerCase()));
 	}
 
@@ -79,7 +80,7 @@ public final class ItemUtil {
 	 * @param enumeration
 	 * @return
 	 */
-	public static String bountify(Enum<?> enumeration) {
+	public static String bountify(@NonNull Enum<?> enumeration) {
 		return bountify(enumeration.toString());
 	}
 
@@ -89,7 +90,7 @@ public final class ItemUtil {
 	 * @param name
 	 * @return
 	 */
-	public static String bountify(String name) {
+	public static String bountify(@NonNull String name) {
 		return name.toLowerCase().replace("_", " ");
 	}
 
@@ -99,7 +100,7 @@ public final class ItemUtil {
 	 * @param type
 	 * @return
 	 */
-	public static String bountify(PotionEffectType type) {
+	public static String bountify(@NonNull PotionEffectType type) {
 		return PotionWrapper.getLocalizedName(type.getName()).toLowerCase();
 	}
 
@@ -109,7 +110,7 @@ public final class ItemUtil {
 	 * @param enchant
 	 * @return
 	 */
-	public static String bountify(Enchantment enchant) {
+	public static String bountify(@NonNull Enchantment enchant) {
 		return EnchantmentWrapper.toMinecraft(enchant.getName());
 	}
 
