@@ -197,8 +197,14 @@ public class SimpleDatabase {
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
 				if (url.startsWith("jdbc:mysql://"))
-					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
+					try {
+						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
 
+					} catch (final Throwable t) {
+
+						// Fall back to legacy driver
+						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
+					}
 				else if (url.startsWith("jdbc:mariadb://"))
 					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
 
