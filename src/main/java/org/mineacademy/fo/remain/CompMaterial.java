@@ -2176,13 +2176,16 @@ public enum CompMaterial {
 	 * @since 2.0.0
 	 */
 	public static CompMaterial fromItem(@NonNull ItemStack item) {
-		Objects.requireNonNull(item, "Cannot match null ItemStack");
-
 		final String material = item.getType().name();
 		final byte data = (byte) (Data.ISFLAT || item.getType().getMaxDurability() > 0 ? 0 : item.getDurability());
 
 		final CompMaterial compmaterial = fromLegacy(material, data);
-		Valid.checkNotNull("Unsupported material from item: " + material + " (" + data + ')');
+
+		// Exception for legacy eggs for non existing entities
+		if (material.equals("MONSTER_EGG") && compmaterial == null)
+			return CompMaterial.SHEEP_SPAWN_EGG;
+
+		Valid.checkNotNull(compmaterial, "Unsupported material from item: " + material + " (" + data + ')');
 
 		return compmaterial;
 	}
