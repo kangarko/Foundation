@@ -427,9 +427,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			else
 				for (final Library library : libraries)
 					library.load();
-
-				// Debug
-			Common.log("Currently using Java " + javaVersion + " on a " + Bukkit.getVersion() + " (" + Bukkit.getBukkitVersion() + ") server.");
 		}
 
 		// Always load user-defined libraries
