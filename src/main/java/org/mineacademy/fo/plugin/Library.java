@@ -105,7 +105,7 @@ public final class Library {
 	 * @return
 	 */
 	public boolean load() {
-		Valid.checkBoolean(JAVA_VERSION <= 8, "Library feature requires Java 8 and does not work on Java " + JAVA_VERSION);
+		Valid.checkBoolean(JAVA_VERSION <= 14, "Library feature requires Java versions between 8 and 14 and does not work on Java " + JAVA_VERSION);
 
 		if (this.minimumJavaVersion != null && JAVA_VERSION < this.minimumJavaVersion)
 			return false;

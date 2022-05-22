@@ -413,29 +413,32 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			}
 
 			// Load normally
-			if (!libraries.isEmpty() && javaVersion >= 9)
+			if (!libraries.isEmpty() && javaVersion >= 14)
 				Common.logFramed(
 						"Warning: Unsupported Java version: " + javaVersion + " for your server",
-						"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
+						"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java versions between 8 and 14",
 						"and we're unable unable to load 'legacy-libraries'",
 						"that this plugin uses:",
 						Common.join(libraries, ", ", Library::getGroupId),
 						"",
-						"To fix this, start your server using Java 8 or",
+						"To fix this, start your server using Java versions between 8 and 14 or",
 						"upgrade to Minecraft 1.16 or greater.");
 
 			else
 				for (final Library library : libraries)
 					library.load();
+
+				// Debug
+			Common.log("Currently using Java " + javaVersion + " on a " + Bukkit.getVersion() + " (" + Bukkit.getBukkitVersion() + ") server.");
 		}
 
 		// Always load user-defined libraries
 		final List<Library> manualLibraries = this.getLibraries();
 
 		// But only on Java 8 (for now)
-		if (!manualLibraries.isEmpty() && javaVersion > 8)
-			Common.warning("The getLibraries() feature only supports Java 8 for now and does not work on Java " + javaVersion + ". To load the following libraries, "
-					+ "install Java 8 or upgrade to Minecraft 16 where you use the 'libraries' feature of plugin.yml to load. Skipping loading: " + manualLibraries);
+		if (!manualLibraries.isEmpty() && javaVersion > 14)
+			Common.warning("The getLibraries() feature only supports Java versions between 8 and 14 for now and does not work on Java " + javaVersion + ". To load the following libraries, "
+					+ "install a Java version between 8 and 14 or upgrade to Minecraft 16 where you use the 'libraries' feature of plugin.yml to load. Skipping loading: " + manualLibraries);
 
 		else
 			methodLibraryLoader:
