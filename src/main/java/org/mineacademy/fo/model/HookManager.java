@@ -54,7 +54,6 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
-import com.earth2me.essentials.IUser;
 import com.earth2me.essentials.User;
 import com.earth2me.essentials.UserMap;
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
@@ -1591,8 +1590,8 @@ class EssentialsHook {
 
 	void setIgnore(final UUID player, final UUID toIgnore, final boolean ignore) {
 		try {
-			final com.earth2me.essentials.User user = this.ess.getUser(player);
-			final com.earth2me.essentials.User toIgnoreUser = this.ess.getUser(toIgnore);
+			final User user = this.ess.getUser(player);
+			final User toIgnoreUser = this.ess.getUser(toIgnore);
 
 			if (toIgnoreUser != null)
 				user.setIgnoredPlayer(toIgnoreUser, ignore);
@@ -1603,8 +1602,8 @@ class EssentialsHook {
 
 	boolean isIgnoring(final UUID player, final UUID ignoringPlayer) {
 		try {
-			final com.earth2me.essentials.User user = this.ess.getUser(player);
-			final com.earth2me.essentials.User ignored = this.ess.getUser(ignoringPlayer);
+			final User user = this.ess.getUser(player);
+			final User ignored = this.ess.getUser(ignoringPlayer);
 
 			return user != null && ignored != null && user.isIgnoredPlayer(ignored);
 
@@ -1614,26 +1613,26 @@ class EssentialsHook {
 	}
 
 	boolean isAfk(final String pl) {
-		final IUser user = this.getUser(pl);
+		final User user = this.getUser(pl);
 
 		return user != null ? user.isAfk() : false;
 	}
 
 	boolean isVanished(final String pl) {
-		final IUser user = this.getUser(pl);
+		final User user = this.getUser(pl);
 
 		return user != null ? user.isVanished() : false;
 	}
 
 	void setVanished(final String playerName, boolean vanished) {
-		final IUser user = this.getUser(playerName);
+		final User user = this.getUser(playerName);
 
 		if (user != null && user.isVanished() != vanished)
 			user.setVanished(false);
 	}
 
 	boolean isMuted(final String pl) {
-		final com.earth2me.essentials.User user = this.getUser(pl);
+		final User user = this.getUser(pl);
 
 		return user != null ? user.isMuted() : false;
 	}
