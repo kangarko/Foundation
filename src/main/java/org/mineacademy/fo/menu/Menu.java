@@ -85,7 +85,7 @@ public abstract class Menu {
 	 * The default duration of the new animated title before
 	 * it is reverted back to the old one
 	 * <p>
-	 * Used in {@link #updateInventoryTitle(Menu, Player, String, String)}
+	 * Used in {@link PlayerUtil#updateInventoryTitle(Menu, Player, String, String, int)}
 	 */
 	@Setter
 	private static int titleAnimationDurationTicks = 20;
@@ -756,7 +756,7 @@ public abstract class Menu {
 	/**
 	 * Returns the item at a certain slot
 	 *
-	 * @param slot the slow
+	 * @param slot the slot
 	 * @return the item, or null if no icon at the given slot (default)
 	 */
 	public ItemStack getItemAt(final int slot) {
@@ -833,7 +833,7 @@ public abstract class Menu {
 	 * @param cursor   the cursor
 	 * @param action   the inventory action
 	 *
-	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
+	 * @return if the action is cancelled in the {@link org.bukkit.event.inventory.InventoryClickEvent}, false
 	 * by default
 	 */
 	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor, InventoryAction action) {
