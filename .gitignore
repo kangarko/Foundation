@@ -68,3 +68,8 @@ $RECYCLE.BIN/
 # Mac crap
 .DS_Store
 REBASE.bat
+
+# Test server
+/src/main/java/testserver/
+/src/main/resources/plugin.yml
+build.number

@@ -1,13 +1,9 @@
 package org.mineacademy.fo.menu;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -17,12 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.EventHandledException;
@@ -39,10 +30,9 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * The core class of Menu. Represents a simple menu.
@@ -57,7 +47,10 @@ import lombok.Setter;
  * make a instatiate when in constructor. Those will be registered as clickable
  * automatically. To render them, override {@link #getItemAt(int)} and make them
  * return at your desired positions.
+ *
+ * @deprecated use {@link AdvancedMenu}
  */
+@Deprecated
 public abstract class Menu {
 
 	// --------------------------------------------------------------------------------
@@ -65,62 +58,54 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
+	 * A placeholder to represent that no item should be displayed/returned
+	 */
+	protected static final ItemStack NO_ITEM = null;
+	/**
 	 * The default sound when switching between menus.
 	 */
 	@Getter
 	@Setter
 	private static SimpleSound sound = new SimpleSound(CompSound.NOTE_STICKS.getSound(), .4F);
-
 	/**
 	 * Should we animate menu titles?
 	 */
 	@Getter
 	@Setter
 	private static boolean titleAnimationEnabled = true;
-
 	/**
 	 * The default duration of the new animated title before
 	 * it is reverted back to the old one
 	 * <p>
-	 * Used in {@link #updateInventoryTitle(Menu, Player, String, String)}
+	 * Used in {@link PlayerUtil#updateInventoryTitle(Menu, Player, String, String, int)}
 	 */
 	@Setter
 	private static int titleAnimationDurationTicks = 20;
 
-	/**
-	 * A placeholder to represent that no item should be displayed/returned
-	 */
-	protected static final ItemStack NO_ITEM = null;
-
 	// --------------------------------------------------------------------------------
 	// Actual class
 	// --------------------------------------------------------------------------------
-
 	/**
 	 * Automatically registered Buttons in this menu (using reflection)
 	 */
 	private final List<Button> registeredButtons = new ArrayList<>();
-
+	/**
+	 * Parent menu
+	 */
+	private final Menu parent;
+	/**
+	 * The return button to the previous menu, null if none
+	 */
+	private final Button returnButton;
 	/**
 	 * The registrator responsible for scanning the class and making buttons
 	 * function
 	 */
 	private boolean buttonsRegistered = false;
 
-	/**
-	 * Parent menu
-	 */
-	private final Menu parent;
-
-	/**
-	 * The return button to the previous menu, null if none
-	 */
-	private final Button returnButton;
-
 	// --------------------------------------------------------------------------------
 	// Other constructors
 	// --------------------------------------------------------------------------------
-
 	/**
 	 * The inventory title of the menu, colors & are supported
 	 */
@@ -215,7 +200,7 @@ public abstract class Menu {
 	 * @param player the player
 	 * @return the menu, or null if none
 	 */
-	public static final Menu getMenu(final Player player) {
+	public static Menu getMenu(final Player player) {
 		return getMenu0(player, FoConstants.NBT.TAG_MENU_CURRENT);
 	}
 
@@ -225,7 +210,8 @@ public abstract class Menu {
 	 * @param player the player
 	 * @return the menu, or none
 	 */
-	public static final Menu getPreviousMenu(final Player player) {
+	@Deprecated
+	public static Menu getPreviousMenu(final Player player) {
 		return getMenu0(player, FoConstants.NBT.TAG_MENU_PREVIOUS);
 	}
 
@@ -316,7 +302,10 @@ public abstract class Menu {
 	 * them here
 	 *
 	 * @return button list, null by default
+	 *
+	 * @deprecated use {@link AdvancedMenu#addButton} to add an automatically registered button.
 	 */
+	@Deprecated
 	protected List<Button> getButtonsToAutoRegister() {
 		return null;
 	}
@@ -328,6 +317,7 @@ public abstract class Menu {
 	 * @param fromItem the itemstack to compare to
 	 * @return the buttor or null if not found
 	 */
+	@Deprecated
 	protected final Button getButton(final ItemStack fromItem) {
 		registerButtonsIfHasnt();
 
@@ -353,6 +343,7 @@ public abstract class Menu {
 	 * @throws if new instance could not be made, for example when the menu is
 	 *            taking constructor params
 	 */
+	@Deprecated
 	public Menu newInstance() {
 		try {
 			return ReflectionUtil.instantiate(getClass());
@@ -379,7 +370,10 @@ public abstract class Menu {
 	 * Display this menu to the player
 	 *
 	 * @param player the player
+	 *
+	 * @deprecated use {@link AdvancedMenu#display()} to display the menu.
 	 */
+	@Deprecated
 	public final void displayTo(final Player player) {
 		Valid.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
 		Valid.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
@@ -648,24 +642,6 @@ public abstract class Menu {
 	}
 
 	/**
-	 * A special wrapper for animating menus
-	 */
-	@FunctionalInterface
-	public interface MenuRunnable extends Runnable {
-
-		/**
-		 * Cancel the menu animation
-		 */
-		default void cancel() {
-			throw new EventHandledException();
-		}
-	}
-
-	// --------------------------------------------------------------------------------
-	// Menu functions
-	// --------------------------------------------------------------------------------
-
-	/**
 	 * Returns the item at a certain slot
 	 *
 	 * @param slot the slow
@@ -675,11 +651,19 @@ public abstract class Menu {
 		return NO_ITEM;
 	}
 
+	// --------------------------------------------------------------------------------
+	// Menu functions
+	// --------------------------------------------------------------------------------
+
 	/**
 	 * Get the info button position
 	 *
 	 * @return the slot which info buttons is located on
+	 *
+	 * @deprecated use {@link AdvancedMenu#addButton} to set the slot
+	 * and {@link AdvancedMenu#getInfoButton()} to get the button.
 	 */
+	@Deprecated
 	protected int getInfoButtonPosition() {
 		return size - 9;
 	}
@@ -688,7 +672,10 @@ public abstract class Menu {
 	 * Should we automatically add the return button to the bottom left corner?
 	 *
 	 * @return true if the return button should be added, true by default
+	 *
+	 * @deprecated Use {@link AdvancedMenu#addButton} to add any button to the menu.
 	 */
+	@Deprecated
 	protected boolean addReturnButton() {
 		return true;
 	}
@@ -698,7 +685,10 @@ public abstract class Menu {
 	 * {@link #getInfoButtonPosition()} ?
 	 *
 	 * @return
+	 *
+	 * @deprecated use {@link AdvancedMenu#addButton} to add any button to the menu.
 	 */
+	@Deprecated
 	protected boolean addInfoButton() {
 		return true;
 	}
@@ -707,7 +697,11 @@ public abstract class Menu {
 	 * Get the return button position
 	 *
 	 * @return the slot which return buttons is located on
+	 *
+	 * @deprecated use {@link AdvancedMenu#getReturnBackButton()} to get the item
+	 * and {@link AdvancedMenu#addButton(Integer, Button)} to set its slot.
 	 */
+	@Deprecated
 	protected int getReturnButtonPosition() {
 		return size - 1;
 	}
@@ -880,8 +874,6 @@ public abstract class Menu {
 	 * <p>
 	 * Only takes change when used in constructor or before calling
 	 * {@link #displayTo(Player)} and cannot be updated in {@link #restartMenu()}
-	 *
-	 * @param visible
 	 */
 	protected final void setSlotNumbersVisible() {
 		this.slotNumbersVisible = true;
@@ -899,10 +891,6 @@ public abstract class Menu {
 
 		return menu != null && menu.getClass().getName().equals(this.getClass().getName());
 	}
-
-	// --------------------------------------------------------------------------------
-	// Events
-	// --------------------------------------------------------------------------------
 
 	/**
 	 * Called automatically when the menu is clicked.
@@ -922,6 +910,10 @@ public abstract class Menu {
 	protected void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
 		this.onMenuClick(player, slot, clicked);
 	}
+
+	// --------------------------------------------------------------------------------
+	// Events
+	// --------------------------------------------------------------------------------
 
 	/**
 	 * Called automatically when the menu is clicked
@@ -977,5 +969,19 @@ public abstract class Menu {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "{}";
+	}
+
+	/**
+	 * A special wrapper for animating menus
+	 */
+	@FunctionalInterface
+	public interface MenuRunnable extends Runnable {
+
+		/**
+		 * Cancel the menu animation
+		 */
+		default void cancel() {
+			throw new EventHandledException();
+		}
 	}
 }

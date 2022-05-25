@@ -1,8 +1,8 @@
 package org.mineacademy.fo.menu;
 
-import java.util.List;
-import java.util.Map;
-
+import lombok.Getter;
+import lombok.Setter;
+import lombok.val;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -18,15 +18,15 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.val;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An advanced menu listing items with automatic page support
  *
  * @param <T> the item that each page consists of
  */
+@Deprecated
 public abstract class MenuPagged<T> extends Menu {
 
 	/**

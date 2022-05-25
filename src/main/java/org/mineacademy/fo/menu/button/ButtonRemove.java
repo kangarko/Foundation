@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * Typically we use this to remove an arena, class, upgrade etc.
  */
+@Deprecated
 @RequiredArgsConstructor
 public class ButtonRemove extends Button {
 

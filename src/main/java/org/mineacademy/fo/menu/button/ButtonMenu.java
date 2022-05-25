@@ -1,7 +1,6 @@
 package org.mineacademy.fo.menu.button;
 
-import java.util.concurrent.Callable;
-
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -11,11 +10,12 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import lombok.Getter;
+import java.util.concurrent.Callable;
 
 /**
  * A button that opens another menu
  */
+@Deprecated
 public final class ButtonMenu extends Button {
 
 	/**

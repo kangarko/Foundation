@@ -1,9 +1,5 @@
 package org.mineacademy.fo.menu;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -21,10 +17,15 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A standardized menu to display a list of tools player can toggle to get in
  * his inventory
  */
+@Deprecated
 public abstract class MenuTools extends Menu {
 
 	/**
@@ -54,6 +55,30 @@ public abstract class MenuTools extends Menu {
 
 		setSize(pages);
 		setTitle(SimpleLocalization.Menu.TITLE_TOOLS);
+	}
+
+	/**
+	 * Compiles an automated tools menu.
+	 *
+	 * @param pluginToolClasses We will scan your plugin for this kind of class and
+	 *                          all classes extending it will be loaded into the
+	 *                          menu
+	 * @param description       the menu description
+	 * @return
+	 */
+	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
+		return new MenuTools() {
+
+			@Override
+			protected Object[] compileTools() {
+				return lookupTools(pluginToolClasses);
+			}
+
+			@Override
+			protected String[] getInfo() {
+				return description;
+			}
+		};
 	}
 
 	/**
@@ -141,30 +166,6 @@ public abstract class MenuTools extends Menu {
 	@Override
 	protected int getInfoButtonPosition() {
 		return getSize() - 1;
-	}
-
-	/**
-	 * Compiles an automated tools menu.
-	 *
-	 * @param pluginToolClasses We will scan your plugin for this kind of class and
-	 *                          all classes extending it will be loaded into the
-	 *                          menu
-	 * @param description       the menu description
-	 * @return
-	 */
-	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
-		return new MenuTools() {
-
-			@Override
-			protected Object[] compileTools() {
-				return lookupTools(pluginToolClasses);
-			}
-
-			@Override
-			protected String[] getInfo() {
-				return description;
-			}
-		};
 	}
 }
 
