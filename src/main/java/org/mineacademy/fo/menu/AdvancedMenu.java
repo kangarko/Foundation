@@ -16,18 +16,30 @@ import org.mineacademy.fo.remain.CompMaterial;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-@SuppressWarnings("unused")
+/**
+ * Basic advanced menu.
+ * Supports adding items, buttons and filling locked slots with wrapper item.
+ * Also contains some ready buttons (Menu, ReturnBack, Refresh, etc.).<br><br>
+ * DO NOT FORGET to add {@link #init()} method in the end of the constructor
+ * if you make any changes in your menu (like setting the locked slots or adding new buttons).
+ */
 public abstract class AdvancedMenu extends Menu {
 
     /**
-     * The player for whom the menu is opened.
+     * The player watching the menu.
+     */
+    private final Player player;
+    /**
+     * The menu which is opened from {@link #getReturnBackButton}.
      */
     @Getter
-    private final Player player;
-    private final Class<? extends AdvancedMenu> parent;
+    private final Class<? extends AdvancedMenu> parentMenu;
     /**
      * Contains buttons and their slots.
      */
@@ -44,6 +56,7 @@ public abstract class AdvancedMenu extends Menu {
      * In AdvancedMenuPaginated, <i>elementsItems</i> are not displayed on these slots and slots
      * are filled with {@link #getWrapperItem()} only if {@link AdvancedMenuPagged#fillWithWrapper} is true.
      */
+    @Getter
     protected List<Integer> lockedSlots = new ArrayList<>();
     /**
      * The material of the wrapper item.
@@ -67,7 +80,7 @@ public abstract class AdvancedMenu extends Menu {
 
     public AdvancedMenu(Player player, Class<? extends AdvancedMenu> parent){
         this.player = player;
-        this.parent = (parent == null ? getClass() : parent);
+        this.parentMenu = (parent == null ? getClass() : parent);
     }
 
     /**
@@ -105,6 +118,13 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
+     * Get a player watching the menu.
+     */
+    public final Player getPlayer(){
+        return this.player;
+    }
+
+    /**
      * Display this menu to the player given in the constructor.
      */
     public final void display(){
@@ -129,7 +149,7 @@ public abstract class AdvancedMenu extends Menu {
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                openNewMenu(player, parent);
+                newInstanceOf(player, parentMenu).display();
             }
 
             @Override
@@ -137,40 +157,6 @@ public abstract class AdvancedMenu extends Menu {
                 return item;
             }
         };
-    }
-
-    /**
-     * Get the button that displays new menu to the player.
-     * @param item how the button should look like
-     * @param to what menu the player should be sent to
-     * @return the button
-     */
-    protected Button getMenuButton(ItemStack item, Class<? extends AdvancedMenu> to){
-        return new Button() {
-            @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                openNewMenu(player, to);
-            }
-
-            @Override
-            public ItemStack getItem() {
-                return item;
-            }
-        };
-    }
-
-    /**
-     * Create a new instance of the menu from the given class and display it to the player.
-     */
-    private void openNewMenu(Player player, Class<? extends AdvancedMenu> menu){
-        try{
-            menu.getDeclaredConstructor(Player.class).newInstance(player).display();
-        }
-        catch (NoSuchMethodException e){
-            e.printStackTrace();
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -204,7 +190,8 @@ public abstract class AdvancedMenu extends Menu {
 
     /**
      * Make the button from the tool. It gives player one piece of this tool.<br>
-     * This button gets its display-items from {@link #getAlreadyHaveTool} and {@link #getClickToGetTool}
+     * This button gets its additional lore depending on if player has the tool
+     * in the inventory from {@link #getAlreadyHaveLore()} and {@link #getClickToGetLore()}
      * so you can override them to set your custom items and messages.<br>
      * Or you can override this whole method to set your custom items and logic.
      * @param tool the tool we should give
@@ -227,27 +214,61 @@ public abstract class AdvancedMenu extends Menu {
 
             @Override
             public ItemStack getItem() {
-                return (hasItem(getPlayer(), tool) ? getAlreadyHaveTool(tool) : getClickToGetTool(tool));
+                boolean hasTool = hasItem(player, tool);
+                List<String> lore = hasTool ? getAlreadyHaveLore() : getClickToGetLore();
+
+                return ItemCreator.of(tool.getItem()).lores(lore).glow(hasTool).build().make();
             }
         };
     }
 
     /**
-     * Get the item of the tool of this tool is already contained in the player's inventory.
-     * @param tool the tool
-     * @return the result item
+     * Get the button that displays new menu to the player.
+     * @param item how the button should look like
+     * @param to what menu the player should be sent to
+     * @return the button
      */
-    protected ItemStack getAlreadyHaveTool(Tool tool){
-        return ItemCreator.of(tool.getItem()).lore("&cYou already have this item").glow(true).build().make();
+    protected Button getMenuButton(ItemStack item, Class<? extends AdvancedMenu> to){
+        return new Button() {
+            @Override
+            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+                newInstanceOf(player, to).display();
+            }
+
+            @Override
+            public ItemStack getItem() {
+                return item;
+            }
+        };
     }
 
     /**
-     * Get the item of the tool if this tool is not contained in the player's inventory.
-     * @param tool the tool
-     * @return the result item
+     * Create a new instance of the menu from the given class.
      */
-    protected ItemStack getClickToGetTool(Tool tool){
-        return ItemCreator.of(tool.getItem()).lore("&2Click to get this item").build().make();
+    private AdvancedMenu newInstanceOf(Player player, Class<? extends AdvancedMenu> menu){
+        try{
+            return menu.getDeclaredConstructor(Player.class).newInstance(player);
+        }
+        catch (NoSuchMethodException e){
+            e.printStackTrace();
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        throw new NullPointerException("Could not create a new instance of " + menu.getName() + " class.");
+    }
+
+    /**
+     * Get the additional item lore of the tool if the player already has this tool in the inventory.
+     */
+    protected List<String> getAlreadyHaveLore(){
+        return Arrays.asList("", "&cYou already have this item!");
+    }
+
+    /**
+     * Get the additional item lore of the tool if player does not have this tool in the inventory yet.
+     */
+    protected List<String> getClickToGetLore(){
+        return Arrays.asList("", "&2Click to get this item");
     }
 
     /**
@@ -267,6 +288,51 @@ public abstract class AdvancedMenu extends Menu {
                 return Button.makeInfo(getInfo()).getItem();
             }
         };
+    }
+
+    /**
+     * For {@link AdvancedMenu}, set the slots that should NOT be filled with {@link #wrapperItem}.<br>
+     * For {@link AdvancedMenuPagged}, set the slots the main elements can only be placed on.
+     * To fill the rest slots with wrapper, set {@link AdvancedMenuPagged#isFillWithWrapper()} to true.<br>
+     * Note that all unspecified slots are locked.
+     */
+    @SuppressWarnings("BoxingBoxedValue")
+    protected void setUnlockedSlots(Integer... slots){
+        lockedSlots.clear();
+        lockedSlots = IntStream.rangeClosed(0, 53).boxed().collect(Collectors.toList());
+        for (Integer slot : slots){
+            lockedSlots.remove(Integer.valueOf(slot));
+        }
+    }
+
+    /**
+     * For {@link AdvancedMenu}, set the slots that should be filled with {@link #wrapperItem}.
+     * For {@link AdvancedMenuPagged}, set the slots the main elements should NOT be placed on.
+     * To fill these slots with wrapper item, set {@link AdvancedMenuPagged#isFillWithWrapper()} to true.
+     */
+    protected void setLockedSlots(Integer... slots){
+        lockedSlots.clear();
+        lockedSlots.addAll(Arrays.asList(slots));
+    }
+
+    /**
+     * See {@link #setLockedSlots(Integer...)} for the detailed description.<br><br>
+     * Figures available: 9x6_bounds, 9x6_circle, 9x6_rows, 9x6_columns, 9x6_six_slots,
+     * 9x6_two_slots, 9x3_bounds, 9x3_one_slot, 9x1_one_slot.
+     */
+    protected final void setLockedSlots(String figure){
+        switch (figure) {
+            case ("9x6_bounds"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
+            case ("9x6_circle"): setUnlockedSlots(12, 13, 14, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 39, 40, 41); break;
+            case ("9x6_rows"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
+            case ("9x6_columns"): setLockedSlots(0, 8, 9, 18, 27, 36, 45, 17, 26, 35, 44, 53); break;
+            case ("9x6_six_slots"): setUnlockedSlots(21, 22, 23, 30, 31, 32); break;
+            case ("9x6_two_slots"): setUnlockedSlots(22, 31); break;
+            case ("9x3_bounds"): setUnlockedSlots(10, 11, 12, 13, 14, 15, 16); break;
+            case ("9x3_one_slot"): setUnlockedSlots(13); break;
+            case ("9x1_one_slot"): setUnlockedSlots(4); break;
+            default: new ArrayList<>();
+        }
     }
 
     /**

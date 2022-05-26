@@ -12,16 +12,15 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Menu with pages.<br>
- * Supports previous and next buttons.
+ * Supports previous and next buttons.<br><br>
+ * DO NOT FORGET to add {@link #init()} method in the end of the constructor
+ * if you make any changes in your menu (like setting the locked slots or adding new buttons).
  */
 public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     /**
@@ -34,6 +33,11 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
      */
     @Getter
     private final TreeMap<Integer, T> elementsSlots = new TreeMap<>();
+    /**
+     * Defines if we should fill all empty locked slots with {@link #getWrapperItem()}. True by default.
+     */
+    @Getter @Setter
+    protected boolean fillWithWrapper = true;
     /**
      * Raw elements that should be converted to itemStacks.<br>
      * These can be enumerable objects (Tasks, EntityType, Sound, etc.)
@@ -52,11 +56,6 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
      */
     @Getter
     private int currentPage = 1;
-    /**
-     * Defines if we should fill all empty locked slots with {@link #getWrapperItem()}. True by default.
-     */
-    @Getter @Setter
-    protected boolean fillWithWrapper = true;
     /**
      * Defines if the previous and next buttons are displayed even if the menu has only one page.
      * False by default.
@@ -123,10 +122,18 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
         }
     }
 
+    /**
+     * Get the slot of the previous page button.
+     * Override it to set your own slot.
+     */
     protected int getPreviousButtonSlot(){
         return getSize() - 9;
     }
 
+    /**
+     * Get the slot of the next page button.
+     * Override it to set your own slot.
+     */
     protected int getNextButtonSlot(){
         return getSize() - 1;
     }
@@ -143,48 +150,6 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
      */
     private void setElementsItems(){
         this.elementsItems = convertToItemStacks(elements);
-    }
-
-    /**
-     * Set the slots where the main elements only can be placed.
-     * Meanwhile, it locks all unspecified slots.
-     */
-    @SuppressWarnings("BoxingBoxedValue")
-    protected void setUnlockedSlots(Integer... slots){
-        lockedSlots.clear();
-        lockedSlots = IntStream.rangeClosed(0, 53).boxed().collect(Collectors.toList());
-        for (Integer slot : slots){
-            lockedSlots.remove(Integer.valueOf(slot));
-        }
-    }
-
-    /**
-     * Set the slots where the main elements should not be placed.
-     */
-    protected void setLockedSlots(Integer... slots){
-        lockedSlots.clear();
-        lockedSlots.addAll(Arrays.asList(slots));
-    }
-
-    /**
-     * Set the slots where the main elements should not be placed.
-     * Figures available: 9x6_bounds, 9x6_circle, 9x6_rows, 9x6_columns, 9x6_two_slots,
-     * 9x6_six_slots, 9x3_one_slot, 9x3_bounds, 9x1_one_slot.
-     */
-    @SuppressWarnings("SameParameterValue")
-    protected final void setLockedSlots(String figure){
-        switch (figure) {
-            case ("9x6_bounds"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
-            case ("9x6_circle"): setUnlockedSlots(12, 13, 14, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 39, 40, 41); break;
-            case ("9x6_rows"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
-            case ("9x6_columns"): setLockedSlots(0, 8, 9, 18, 27, 36, 45, 17, 26, 35, 44, 53); break;
-            case ("9x6_two_slots"): setUnlockedSlots(22, 31); break;
-            case ("9x6_six_slots"): setUnlockedSlots(21, 22, 23, 30, 31, 32); break;
-            case ("9x3_one_slot"): setUnlockedSlots(13); break;
-            case ("9x3_bounds"): setUnlockedSlots(10, 11, 12, 13, 14, 15, 16); break;
-            case ("9x1_one_slot"): setUnlockedSlots(4); break;
-            default: new ArrayList<>();
-        }
     }
 
     /**
@@ -245,7 +210,7 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     /**
      * Get the number of pages that can be in the menu considering amount of elements and available slots.
      */
-    protected final int getMaxPage(){
+    public final int getMaxPage(){
         float a = (float) elementsItems.size() / getAvailableSlotsSize();
         return (a % 2 == 0 ? (int)a : (int)a + 1);
     }
@@ -262,6 +227,9 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
         }
     }
 
+    /**
+     * Internal implementation of {@link #setElementsSlots()}.
+     */
     private void loopSlots(T element){
         for (int page = 1; page <= getMaxPage(); page++){
             for (int slot = 0; slot < getSize(); slot++){
@@ -321,7 +289,7 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
 
     /**
      * Actions that should be executed when player clicks on list element.
-     * It does not work on locked slots and custom slots.
+     * It works only on list elements.
      */
     protected void onElementClick(Player player, T object, int slot, ClickType clickType) {}
 

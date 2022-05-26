@@ -287,7 +287,7 @@ public abstract class Menu {
 	 *
 	 * This method will only register them once until the server is reset
 	 */
-	private final void registerButtonsIfHasnt() {
+	private void registerButtonsIfHasnt() {
 		if (!buttonsRegistered) {
 			registerButtons();
 
@@ -315,7 +315,7 @@ public abstract class Menu {
 	 * icon as the given item stack
 	 *
 	 * @param fromItem the itemstack to compare to
-	 * @return the buttor or null if not found
+	 * @return the button or null if not found
 	 */
 	@Deprecated
 	protected final Button getButton(final ItemStack fromItem) {
@@ -340,10 +340,9 @@ public abstract class Menu {
 	 * You must override this in certain cases
 	 *
 	 * @return the new instance, of null
-	 * @throws if new instance could not be made, for example when the menu is
+	 * @throws FoException if new instance could not be made, for example when the menu is
 	 *            taking constructor params
 	 */
-	@Deprecated
 	public Menu newInstance() {
 		try {
 			return ReflectionUtil.instantiate(getClass());
@@ -353,7 +352,7 @@ public abstract class Menu {
 
 				if (parent != null)
 					return ReflectionUtil.instantiate(getClass(), parent);
-			} catch (final Throwable tt) {
+			} catch (final Throwable ignored) {
 			}
 
 			t.printStackTrace();
@@ -385,7 +384,7 @@ public abstract class Menu {
 		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
 
 		// Compile bottom bar
-		compileBottomBar0().forEach((slot, item) -> drawer.setItem(slot, item));
+		compileBottomBar0().forEach(drawer::setItem);
 
 		// Set items defined by classes upstream
 		for (int i = 0; i < drawer.getSize(); i++) {
@@ -436,8 +435,6 @@ public abstract class Menu {
 	/**
 	 * Sets all empty slots to light gray pane or adds a slot number to existing
 	 * items lores if {@link #slotNumbersVisible} is true
-	 *
-	 * @param drawer
 	 */
 	private void debugSlotNumbers(final InventoryDrawer drawer) {
 		if (slotNumbersVisible)
@@ -496,14 +493,12 @@ public abstract class Menu {
 			inv.setItem(i, item);
 		}
 
-		compileBottomBar0().forEach((slot, item) -> inv.setItem(slot, item));
+		compileBottomBar0().forEach(inv::setItem);
 		getViewer().updateInventory();
 	}
 
 	/**
 	 * Draws the bottom bar for the player inventory
-	 *
-	 * @return
 	 */
 	private Map<Integer, ItemStack> compileBottomBar0() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
@@ -523,8 +518,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param messages
 	 */
 	public final void tell(String... messages) {
 		Common.tell(this.viewer, messages);
@@ -532,8 +525,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
 	 */
 	public final void tellInfo(String message) {
 		Messenger.info(this.viewer, message);
@@ -541,8 +532,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
 	 */
 	public final void tellSuccess(String message) {
 		Messenger.success(this.viewer, message);
@@ -550,8 +539,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
 	 */
 	public final void tellWarn(String message) {
 		Messenger.warn(this.viewer, message);
@@ -559,8 +546,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
 	 */
 	public final void tellError(String message) {
 		Messenger.error(this.viewer, message);
@@ -568,8 +553,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
 	 */
 	public final void tellQuestion(String message) {
 		Messenger.question(this.viewer, message);
@@ -577,8 +560,6 @@ public abstract class Menu {
 
 	/**
 	 * Send a message to the {@link #getViewer()}
-	 *
-	 * @param message
 	 */
 	public final void tellAnnounce(String message) {
 		Messenger.announce(this.viewer, message);
@@ -608,9 +589,6 @@ public abstract class Menu {
 	/**
 	 * Start a repetitive task with the given period in ticks,
 	 * that is automatically stopped if the viewer no longer sees this menu.
-	 *
-	 * @param periodTicks
-	 * @param task
 	 */
 	protected final void animateAsync(int periodTicks, MenuRunnable task) {
 		Common.runTimerAsync(2, periodTicks, this.wrapAnimation(task));
@@ -684,8 +662,6 @@ public abstract class Menu {
 	 * Should we automatically add an info button {@link #getInfo()} at the
 	 * {@link #getInfoButtonPosition()} ?
 	 *
-	 * @return
-	 *
 	 * @deprecated use {@link AdvancedMenu#addButton} to add any button to the menu.
 	 */
 	@Deprecated
@@ -711,7 +687,7 @@ public abstract class Menu {
 	 *
 	 * <p>
 	 * Credits to Gober at
-	 * https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/
+	 * <a href="https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/">https://www.spigotmc.org/threads/get-the-center-slot-of-a-menu.379586/</a>
 	 *
 	 * @return the estimated center slot
 	 */
@@ -764,16 +740,15 @@ public abstract class Menu {
 	/**
 	 * Return the parent menu or null
 	 *
-	 * @return
+	 * @deprecated use {@link AdvancedMenu#getParentMenu()} instead.
 	 */
+	@Deprecated
 	public final Menu getParent() {
 		return parent;
 	}
 
 	/**
 	 * Get the size of this menu
-	 *
-	 * @return
 	 */
 	public final Integer getSize() {
 		return size;
@@ -782,8 +757,6 @@ public abstract class Menu {
 	/**
 	 * Sets the size of this menu (without updating the player container - if you
 	 * want to update it call {@link #restartMenu()})
-	 *
-	 * @param size
 	 */
 	protected final void setSize(final Integer size) {
 		this.size = size;
@@ -813,8 +786,6 @@ public abstract class Menu {
 
 	/**
 	 * Sets the viewer for this instance of this menu
-	 *
-	 * @param viewer
 	 */
 	protected final void setViewer(@NonNull final Player viewer) {
 		this.viewer = viewer;
@@ -822,8 +793,6 @@ public abstract class Menu {
 
 	/**
 	 * Return the top opened inventory if viewer exists
-	 *
-	 * @return
 	 */
 	protected final Inventory getInventory() {
 		Valid.checkNotNull(viewer, "Cannot get inventory when there is no viewer!");
@@ -837,10 +806,6 @@ public abstract class Menu {
 	/**
 	 * Get the open inventory content to match the array length, cloning items
 	 * preventing ID mismatch in yaml files
-	 *
-	 * @param from
-	 * @param to
-	 * @return
 	 */
 	protected final ItemStack[] getContent(final int from, final int to) {
 		final ItemStack[] content = getInventory().getContents();
@@ -857,9 +822,6 @@ public abstract class Menu {
 
 	/**
 	 * Updates a slot in this menu
-	 *
-	 * @param slot
-	 * @param item
 	 */
 	protected final void setItem(int slot, ItemStack item) {
 		final Inventory inventory = this.getInventory();
@@ -882,9 +844,6 @@ public abstract class Menu {
 	/**
 	 * Return if the given player is still viewing this menu, we compare
 	 * the menu class of the menu the player is viewing and return true if both equal.
-	 *
-	 * @param player
-	 * @return
 	 */
 	public final boolean isViewing(Player player) {
 		final Menu menu = Menu.getMenu(player);
@@ -947,7 +906,6 @@ public abstract class Menu {
 	 * do not use.
 	 *
 	 * @deprecated internal use only
-	 * @param inventory
 	 */
 	@Deprecated
 	protected final void handleClose(Inventory inventory) {

@@ -1,11 +1,10 @@
 package org.mineacademy.fo.constants;
 
-import java.util.UUID;
-
-import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
+
+import java.util.UUID;
 
 /**
  * Stores constants for this plugin
@@ -119,7 +118,7 @@ public final class FoConstants {
 	public static final class NBT {
 
 		/**
-		 * Represents our NBT tag used in {@link NBTUtil}
+		 * Represents our NBT tag used in {@link org.mineacademy.fo.remain.CompMetadata}
 		 */
 		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
 
@@ -127,7 +126,7 @@ public final class FoConstants {
 		 * An internal metadata tag the player gets when he opens the menu
 		 *
 		 * <p>
-		 * Used in {@link #getMenu(Player)}
+		 * Used in {@link org.mineacademy.fo.menu.AdvancedMenu#getMenu}
 		 */
 		public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
 
@@ -135,7 +134,7 @@ public final class FoConstants {
 		 * An internal metadata tag the player gets when he opens another menu
 		 *
 		 * <p>
-		 * Used in {@link #getPreviousMenu(Player)}
+		 * Used in {@link org.mineacademy.fo.menu.AdvancedMenu#getPreviousMenu}
 		 */
 		public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
 	}
