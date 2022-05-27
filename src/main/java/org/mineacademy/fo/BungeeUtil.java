@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.ChannelNotRegisteredException;
@@ -190,7 +189,7 @@ public final class BungeeUtil {
 		final byte[] byteArray = out.toByteArray();
 
 		try {
-			Bukkit.getServer().sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
 
 		} catch (final ChannelNotRegisteredException ex) {
 			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "
