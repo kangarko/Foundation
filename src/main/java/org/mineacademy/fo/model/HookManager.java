@@ -87,6 +87,8 @@ import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.ai.EntityTarget;
+import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -1507,6 +1509,16 @@ public final class HookManager {
 	 */
 	public static boolean isNPC(final Entity entity) {
 		return isCitizensLoaded() ? citizensHook.isNPC(entity) : false;
+	}
+
+	/**
+	 * Return the target of the entity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static Entity getNPCTarget(final Entity entity) {
+		return isCitizensLoaded() ? citizensHook.getNPCTarget(entity) : null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -3131,6 +3143,19 @@ class CitizensHook {
 		final NPCRegistry reg = CitizensAPI.getNPCRegistry();
 
 		return reg != null ? reg.isNPC(entity) : false;
+	}
+
+	Entity getNPCTarget(Entity entity) {
+		final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+
+		if (npc != null) {
+			final EntityTarget target = npc.getNavigator().getEntityTarget();
+
+			if (target != null)
+				return target.getTarget();
+		}
+
+		return null;
 	}
 }
 
