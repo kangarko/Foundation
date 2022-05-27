@@ -362,4 +362,9 @@ public abstract class AdvancedMenu extends Menu {
         }
         return null;
     }
+
+    @Override
+    public AdvancedMenu newInstance() {
+        return this;
+    }
 }
