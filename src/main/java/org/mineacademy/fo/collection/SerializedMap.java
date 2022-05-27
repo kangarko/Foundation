@@ -1190,6 +1190,10 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 			return serialized;
 		}
 
+		// Exception since some config sections are stored like this when they are empty
+		if (object instanceof List && ((List<?>) object).isEmpty())
+			return new SerializedMap(json);
+
 		throw new FoException("Cannot instantiate SerializedMap from " + (json ? "json " : "") + object.getClass().getSimpleName() + ": " + object);
 	}
 
