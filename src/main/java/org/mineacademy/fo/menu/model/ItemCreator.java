@@ -704,6 +704,13 @@ public final class ItemCreator {
 			} catch (final Throwable t) {
 			}
 
+		// Set custom model data
+		if (this.modelData != null && MinecraftVersion.atLeast(V.v1_14))
+			try {
+				((ItemMeta) compiledMeta).setCustomModelData(this.modelData);
+			} catch (final Throwable t) {
+			}
+
 		// Override with custom amount if set
 		if (this.amount != -1)
 			compiledItem.setAmount(this.amount);
@@ -718,13 +725,6 @@ public final class ItemCreator {
 
 		// Apply custom enchantment lores
 		compiledItem = Common.getOrDefault(SimpleEnchantment.addEnchantmentLores(compiledItem), compiledItem);
-
-		// Set custom model data
-		if (this.modelData != null && MinecraftVersion.atLeast(V.v1_14))
-			try {
-				((ItemMeta) compiledMeta).setCustomModelData(this.modelData);
-			} catch (final Throwable t) {
-			}
 
 		// 1.7.10 hack to add glow, requires no enchants
 		if (this.glow && MinecraftVersion.equals(V.v1_7) && (this.enchants == null || this.enchants.isEmpty())) {
