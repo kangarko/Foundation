@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -352,6 +353,7 @@ public abstract class Menu {
 		this.registerButtonsIfHasnt();
 
 		if (fromItem != null)
+			// TODO rewrite to use cache instead of for loop so that two buttons that are the same won't collide
 			for (final Button button : this.registeredButtons.keySet()) {
 				Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 				Valid.checkNotNull(button.getItem(), "Menu " + this.getTitle() + " contained button " + button + " with empty item!");
