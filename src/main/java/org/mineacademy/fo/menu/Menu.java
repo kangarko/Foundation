@@ -499,6 +499,7 @@ public abstract class Menu {
 
 	/**
 	 * Draws the bottom bar for the player inventory
+	 * Adds the info and the return button.
 	 */
 	private Map<Integer, ItemStack> compileBottomBar0() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
@@ -519,49 +520,49 @@ public abstract class Menu {
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tell(String... messages) {
+	public void tell(String... messages) {
 		Common.tell(this.viewer, messages);
 	}
 
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tellInfo(String message) {
+	public void tellInfo(String message) {
 		Messenger.info(this.viewer, message);
 	}
 
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tellSuccess(String message) {
+	public void tellSuccess(String message) {
 		Messenger.success(this.viewer, message);
 	}
 
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tellWarn(String message) {
+	public void tellWarn(String message) {
 		Messenger.warn(this.viewer, message);
 	}
 
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tellError(String message) {
+	public void tellError(String message) {
 		Messenger.error(this.viewer, message);
 	}
 
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tellQuestion(String message) {
+	public void tellQuestion(String message) {
 		Messenger.question(this.viewer, message);
 	}
 
 	/**
 	 * Send a message to the {@link #getViewer()}
 	 */
-	public final void tellAnnounce(String message) {
+	public void tellAnnounce(String message) {
 		Messenger.announce(this.viewer, message);
 	}
 
@@ -655,7 +656,7 @@ public abstract class Menu {
 	 */
 	@Deprecated
 	protected boolean addReturnButton() {
-		return true;
+		return false;
 	}
 
 	/**
@@ -666,7 +667,7 @@ public abstract class Menu {
 	 */
 	@Deprecated
 	protected boolean addInfoButton() {
-		return true;
+		return false;
 	}
 
 	/**

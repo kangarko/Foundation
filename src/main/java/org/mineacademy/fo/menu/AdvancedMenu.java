@@ -8,6 +8,9 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.SoundUtil;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -189,37 +192,10 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * Make the button from the tool. It gives player one piece of this tool.<br>
-     * This button gets its additional lore depending on if player has the tool
-     * in the inventory from {@link #getAlreadyHaveLore()} and {@link #getClickToGetLore()}
-     * so you can override them to set your custom items and messages.<br>
-     * Or you can override this whole method to set your custom items and logic.
-     * @param tool the tool we should give
-     * @return the button
+     * See {@link #getMenuButton(ItemStack, Class)}
      */
-    protected Button getToolButton(Tool tool){
-        return new Button() {
-            @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                if (!player.getInventory().contains(tool.getItem())){
-                    SoundUtil.Play.POP_HIGH(player);
-                    player.getInventory().addItem(tool.getItem());
-                }
-                else{
-                    SoundUtil.Play.POP_LOW(player);
-                    player.getInventory().removeItem(tool.getItem());
-                }
-                refreshMenu();
-            }
-
-            @Override
-            public ItemStack getItem() {
-                boolean hasTool = hasItem(player, tool);
-                List<String> lore = hasTool ? getAlreadyHaveLore() : getClickToGetLore();
-
-                return ItemCreator.of(tool.getItem()).lores(lore).glow(hasTool).build().make();
-            }
-        };
+    protected Button getMenuButton(Class<? extends AdvancedMenu> to){
+        return getMenuButton(MenuUtil.defaultMenuItem, to);
     }
 
     /**
@@ -258,6 +234,47 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
+     * Make the button from the tool. It gives player one piece of this tool.<br>
+     * This button gets its additional lore depending on if player has the tool
+     * in the inventory from {@link #getAlreadyHaveLore()} and {@link #getClickToGetLore()}
+     * so you can override them to set your custom items and messages.<br>
+     * Or you can override this whole method to set your custom items and logic.
+     * @param tool the tool we should give
+     * @return the button
+     */
+    protected Button getToolButton(Tool tool){
+        return new Button() {
+            @Override
+            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+                if (!player.getInventory().contains(tool.getItem())){
+                    SoundUtil.Play.POP_HIGH(player);
+                    player.getInventory().addItem(tool.getItem());
+                }
+                else{
+                    SoundUtil.Play.POP_LOW(player);
+                    player.getInventory().removeItem(tool.getItem());
+                }
+                refreshMenu();
+            }
+
+            @Override
+            public ItemStack getItem() {
+                boolean hasTool = hasItem(player, tool);
+                List<String> lore = hasTool ? getAlreadyHaveLore() : getClickToGetLore();
+
+                return ItemCreator.of(tool.getItem()).lores(lore).glow(hasTool).build().make();
+            }
+        };
+    }
+
+    /**
+     * Checks if the player has the specified tool in the inventory.
+     */
+    private boolean hasItem(Player player, Tool tool){
+        return player.getInventory().contains(tool.getItem());
+    }
+
+    /**
      * Get the additional item lore of the tool if the player already has this tool in the inventory.
      */
     protected List<String> getAlreadyHaveLore(){
@@ -272,12 +289,19 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * Get the button that shows info about the menu.
-     * By default, does nothing when clicked, but you can override it and add your behavior.
-     * This button gets its info from {@link #getInfo()}. So you can override it and set your custom information.
-     * @return the button
+     * See {@link #getInfoButton(ItemStack)}
      */
     protected Button getInfoButton(){
+        return getInfoButton(MenuUtil.defaultInfoItem);
+    }
+
+    /**
+     * Get the button that shows info about the menu.
+     * By default, does nothing when clicked, but you can override it and add your behavior.
+     * This button gets its info from {@link #getInfoLore()}. So you can override it and set your custom information.
+     * @return the button
+     */
+    protected Button getInfoButton(ItemStack item){
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, Menu menu, ClickType click) {
@@ -285,8 +309,30 @@ public abstract class AdvancedMenu extends Menu {
 
             @Override
             public ItemStack getItem() {
-                return Button.makeInfo(getInfo()).getItem();
+                return ItemCreator.of(item).name(getInfoName()).lores(Arrays.asList(getInfoLore())).hideTags(true).build().make();
             }
+        };
+    }
+
+    /**
+     * Get the name of the button that shows info about the menu.<br>
+     * Override it to set your own name.
+     * @see #getInfoButton(ItemStack)
+     */
+    protected String getInfoName(){
+        return "&f" + ItemUtil.bountifyCapitalized(getTitle()) + " Menu Information";
+    }
+
+    /**
+     * Get the lore of the button that shows info about the menu.<br>
+     * Override it to set your own lore (info).
+     * @see #getInfoButton(ItemStack)
+     */
+    protected String[] getInfoLore() {
+        return new String[]{
+                "",
+                "&7Override &fgetInfoName() &7and &fgetInfoLore()",
+                "&7in " + getClass().getSimpleName() + " &7to set your own menu description."
         };
     }
 
@@ -335,13 +381,6 @@ public abstract class AdvancedMenu extends Menu {
         }
     }
 
-    /**
-     * Checks if the player has the specified tool in the inventory.
-     */
-    private boolean hasItem(Player player, Tool tool){
-        return player.getInventory().contains(tool.getItem());
-    }
-
     @Override
     protected void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
         if (getButtons().containsKey(slot)){
@@ -366,5 +405,54 @@ public abstract class AdvancedMenu extends Menu {
     @Override
     public AdvancedMenu newInstance() {
         return this;
+    }
+
+    /**
+     * Send a message to the {@link #getPlayer()}
+     */
+    public void tell(String... messages) {
+        Common.tell(this.player, messages);
+    }
+
+    /**
+     * Send an information message to the {@link #getPlayer()}
+     */
+    public void tellInfo(String message) {
+        Messenger.info(this.player, message);
+    }
+
+    /**
+     * Send a success message to the {@link #getPlayer()}
+     */
+    public void tellSuccess(String message) {
+        Messenger.success(this.player, message);
+    }
+
+    /**
+     * Send a warning message to the {@link #getPlayer()}
+     */
+    public void tellWarn(String message) {
+        Messenger.warn(this.player, message);
+    }
+
+    /**
+     * Send an error message to the {@link #getPlayer()}
+     */
+    public void tellError(String message) {
+        Messenger.error(this.player, message);
+    }
+
+    /**
+     * Send a question message to the {@link #getPlayer()}
+     */
+    public void tellQuestion(String message) {
+        Messenger.question(this.player, message);
+    }
+
+    /**
+     * Send an announcement message to the {@link #getPlayer()}
+     */
+    public void tellAnnounce(String message) {
+        Messenger.announce(this.player, message);
     }
 }
