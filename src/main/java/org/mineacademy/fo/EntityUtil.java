@@ -76,7 +76,7 @@ public final class EntityUtil {
 	 * @return
 	 */
 	public static Player getTargetPlayer(Entity entity) {
-		final LivingEntity target = getTarget(entity);
+		final Entity target = getTarget(entity);
 
 		if (target == null)
 			return null;
@@ -85,13 +85,22 @@ public final class EntityUtil {
 	}
 
 	/**
-	 * Return the target for the given entity
+	 * Return the target for the given entity, supporting getting targets if entity is an NPC, use
+	 * {@link HookManager#isNPC(Entity)} to check if the target is an NPC
 	 *
 	 * @param entity
 	 * @return the target, or null if does not have / unsupported
 	 */
-	public static LivingEntity getTarget(Entity entity) {
-		return entity instanceof Creature ? ((Creature) entity).getTarget() : null;
+	public static Entity getTarget(Entity entity) {
+		Entity target = null;
+
+		if (entity instanceof Creature)
+			target = ((Creature) entity).getTarget();
+
+		if (target == null)
+			target = HookManager.getNPCTarget(entity);
+
+		return target;
 	}
 
 	/**

@@ -40,6 +40,7 @@ import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -1143,7 +1144,11 @@ public abstract class SimpleCommand extends Command {
 	 * @param message
 	 * @return
 	 */
-	private String replaceBasicPlaceholders0(final String message) {
+	private String replaceBasicPlaceholders0(String message) {
+
+		// Replace hard variables
+		message = Variables.replace(message, null);
+
 		return message
 				.replace("{label}", this.getLabel())
 				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel());
