@@ -20,7 +20,6 @@ import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.button.Button.DummyButton;
-import org.mineacademy.fo.menu.button.ButtonReturnBack;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
@@ -93,10 +92,6 @@ public abstract class Menu {
 	 * Parent menu
 	 */
 	private final Menu parent;
-	/**
-	 * The return button to the previous menu, null if none
-	 */
-	private final Button returnButton;
 	/**
 	 * The registrator responsible for scanning the class and making buttons
 	 * function
@@ -191,7 +186,6 @@ public abstract class Menu {
 	 */
 	protected Menu(final Menu parent, final boolean returnMakesNewInstance) {
 		this.parent = parent;
-		this.returnButton = parent != null ? new ButtonReturnBack(parent, returnMakesNewInstance) : Button.makeEmpty();
 	}
 
 	/**
@@ -500,15 +494,15 @@ public abstract class Menu {
 	/**
 	 * Draws the bottom bar for the player inventory
 	 * Adds the info and the return button.
+	 *
+	 * @deprecated Items are now compiled using {@link #getItemAt}.
 	 */
+	@Deprecated
 	private Map<Integer, ItemStack> compileBottomBar0() {
 		final Map<Integer, ItemStack> items = new HashMap<>();
 
 		if (addInfoButton() && getInfo() != null)
 			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
-
-		if (addReturnButton() && !(returnButton instanceof DummyButton))
-			items.put(getReturnButtonPosition(), returnButton.getItem());
 
 		return items;
 	}
