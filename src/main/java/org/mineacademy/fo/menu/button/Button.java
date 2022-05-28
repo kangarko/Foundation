@@ -1,23 +1,23 @@
 package org.mineacademy.fo.menu.button;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.conversation.SimpleDecimalPrompt;
+import org.mineacademy.fo.menu.AdvancedMenu;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Represents a clickable button in menu
@@ -40,26 +40,6 @@ public abstract class Button {
 
 	// ----------------------------------------------------------------
 	// Button functions
-	// ----------------------------------------------------------------
-
-	/**
-	 * Called automatically from the button is clicked
-	 *
-	 * @param player
-	 * @param menu
-	 * @param click
-	 */
-	public abstract void onClickedInMenu(Player player, Menu menu, ClickType click);
-
-	/**
-	 * The item representing this button. Tip: Use {@link ItemCreator} to create it.
-	 *
-	 * @return the item for this button
-	 */
-	public abstract ItemStack getItem();
-
-	// ----------------------------------------------------------------
-	// Static methods
 	// ----------------------------------------------------------------
 
 	/**
@@ -102,6 +82,10 @@ public abstract class Button {
 		return makeDummy(builder.build());
 	}
 
+	// ----------------------------------------------------------------
+	// Static methods
+	// ----------------------------------------------------------------
+
 	/**
 	 * Creates a dummy button that does nothing when clicked
 	 *
@@ -141,7 +125,7 @@ public abstract class Button {
 			}
 
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+			public void onClickedInMenu(final Player player, final AdvancedMenu menu, final ClickType click) {
 				onClickFunction.accept(player);
 			}
 		};
@@ -163,7 +147,7 @@ public abstract class Button {
 			}
 
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+			public void onClickedInMenu(final Player player, final AdvancedMenu menu, final ClickType click) {
 				onClickFunction.accept(player);
 			}
 		};
@@ -188,7 +172,7 @@ public abstract class Button {
 			}
 
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+			public void onClickedInMenu(final Player player, final AdvancedMenu menu, final ClickType click) {
 				onClickFunction.accept(player, click);
 			}
 		};
@@ -209,11 +193,31 @@ public abstract class Button {
 			}
 
 			@Override
-			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+			public void onClickedInMenu(final Player player, final AdvancedMenu menu, final ClickType click) {
 				SimpleDecimalPrompt.show(player, question, successAction);
 			}
 		};
 	}
+
+	/**
+	 * Called automatically when the button is clicked
+	 *
+	 * @deprecated use {@link #onClickedInMenu(Player, AdvancedMenu, ClickType)}
+	 */
+	@Deprecated
+	public void onClickedInMenu(Player player, Menu menu, ClickType click){};
+
+	/**
+	 * Called automatically when the button is clicked
+	 */
+	public abstract void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click);
+
+	/**
+	 * The item representing this button. Tip: Use {@link ItemCreator} to create it.
+	 *
+	 * @return the item for this button
+	 */
+	public abstract ItemStack getItem();
 
 	@Override
 	public final String toString() {
@@ -242,7 +246,7 @@ public abstract class Button {
 		 * Do nothing when clicked
 		 */
 		@Override
-		public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
+		public void onClickedInMenu(final Player player, final AdvancedMenu menu, final ClickType click) {
 		}
 	}
 }

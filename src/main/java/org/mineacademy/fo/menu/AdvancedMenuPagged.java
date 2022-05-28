@@ -158,7 +158,7 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     private Button formPreviousButton(ItemStack itemStack){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
                 if (currentPage <= 1) {
                     CompSound.VILLAGER_NO.play(getViewer());
                     return;
@@ -182,7 +182,7 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     private Button formNextButton(ItemStack itemStack){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
                 if (currentPage >= getMaxPage()) {
                     CompSound.VILLAGER_NO.play(getViewer());
                     return;

@@ -1,5 +1,7 @@
 package org.mineacademy.fo;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.mineacademy.fo.exception.CommandException;
 
 /**
@@ -8,25 +10,51 @@ import org.mineacademy.fo.exception.CommandException;
  * <ul>
  *     <li>It does not require all messages to be String.</li>
  *     <li>It appends the message with a prefix.<br>
- *     This prefix is empty by default. You can change it by calling Logger.LOG_PREFIX.</li>
+ *     This prefix is empty by default. You can change it by calling {@link #setLogPrefix}.</li>
  * </ul>
  */
 public class Logger {
 
-    public static String LOG_PREFIX = "";
+    @Getter @Setter
+    public static String logPrefix = "";
 
     /**
      * Log an info message to the console.
      * @param s the message
      */
-    public static void info(Object s){ Common.log(LOG_PREFIX + s); }
+    public static void info(Object s){ Common.log(logPrefix + s); }
+
+    /**
+     * Log an info message without a prefix.
+     * @param s the message
+     */
+    public static void infoNoPrefix(Object s){
+        Common.logNoPrefix(s.toString());
+    }
+
+    /**
+     * See {@link Common#logFramed}
+     * @param s the message
+     */
+    public static void infoFramed(Object s){
+        Common.logFramed(logPrefix + s);
+    }
+
+    /**
+     * See {@link Common#logF}
+     * @param s the message
+     * @param args replacements
+     */
+    public static void infoF(Object s, Object... args){
+        Common.logF(s.toString(), args);
+    }
 
     /**
      * Log a warning to the console.
      * @param s the warning message
      */
     public static void warning(Object s){
-        Common.warning("&e" + LOG_PREFIX + s);
+        Common.warning("&e" + logPrefix + s);
     }
 
     /**
@@ -34,7 +62,7 @@ public class Logger {
      * @param s the error message
      */
     public static void error(Object s){
-        Common.error(new CommandException(), "&6" + LOG_PREFIX + s);
+        Common.error(new CommandException(), "&6" + logPrefix + s);
     }
 
     /**
@@ -43,7 +71,7 @@ public class Logger {
      * @param s the message
      */
     public static void error(Throwable t, Object s){
-        Common.error(t, "&6" + LOG_PREFIX + s);
+        Common.error(t, "&6" + logPrefix + s);
     }
 
     /**
@@ -52,7 +80,7 @@ public class Logger {
      * @return colorized prefixed message
      */
     public static String get(String s){
-        return Common.colorize(LOG_PREFIX + s);
+        return Common.colorize(logPrefix + s);
     }
 
 }

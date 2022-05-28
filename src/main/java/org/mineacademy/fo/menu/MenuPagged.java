@@ -199,7 +199,7 @@ public abstract class MenuPagged<T> extends Menu {
 			final boolean canGo = currentPage > 1;
 
 			@Override
-			public void onClickedInMenu(final Player pl, final Menu menu, final ClickType click) {
+			public void onClickedInMenu(final Player pl, final AdvancedMenu menu, final ClickType click) {
 				if (canGo) {
 					currentPage = MathUtil.range(currentPage - 1, 1, pages.size());
 
@@ -230,7 +230,7 @@ public abstract class MenuPagged<T> extends Menu {
 			final boolean canGo = currentPage < pages.size();
 
 			@Override
-			public void onClickedInMenu(final Player pl, final Menu menu, final ClickType click) {
+			public void onClickedInMenu(final Player pl, final AdvancedMenu menu, final ClickType click) {
 				if (canGo) {
 					currentPage = MathUtil.range(currentPage + 1, 1, pages.size());
 

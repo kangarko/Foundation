@@ -151,7 +151,7 @@ public abstract class AdvancedMenu extends Menu {
     protected Button getReturnBackButton(@NotNull ItemStack item){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
                 newInstanceOf(player, parentMenu).display();
             }
 
@@ -179,7 +179,7 @@ public abstract class AdvancedMenu extends Menu {
     protected Button getRefreshButton(@NotNull ItemStack item){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
                 SoundUtil.Play.POP(player);
                 refreshMenu();
             }
@@ -207,7 +207,7 @@ public abstract class AdvancedMenu extends Menu {
     protected Button getMenuButton(ItemStack item, Class<? extends AdvancedMenu> to){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
                 newInstanceOf(player, to).display();
             }
 
@@ -245,7 +245,7 @@ public abstract class AdvancedMenu extends Menu {
     protected Button getToolButton(Tool tool){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
                 if (!player.getInventory().contains(tool.getItem())){
                     SoundUtil.Play.POP_HIGH(player);
                     player.getInventory().addItem(tool.getItem());
@@ -298,13 +298,14 @@ public abstract class AdvancedMenu extends Menu {
     /**
      * Get the button that shows info about the menu.
      * By default, does nothing when clicked, but you can override it and add your behavior.
-     * This button gets its info from {@link #getInfoLore()}. So you can override it and set your custom information.
+     * This button gets its info from {@link #getInfoName()} and {@link #getInfoLore()}.
+     * So you can override them and set your custom name and lore.
      * @return the button
      */
     protected Button getInfoButton(ItemStack item){
         return new Button() {
             @Override
-            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
             }
 
             @Override
@@ -379,6 +380,11 @@ public abstract class AdvancedMenu extends Menu {
             case ("9x1_one_slot"): setUnlockedSlots(4); break;
             default: new ArrayList<>();
         }
+    }
+
+    @Override
+    protected void onButtonClick(Player player, int slot, InventoryAction action, ClickType click, Button button) {
+        super.onButtonClick(player, slot, action, click, button);
     }
 
     @Override

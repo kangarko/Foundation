@@ -55,7 +55,7 @@ public interface MenuQuantitable {
 		return new Button() {
 
 			@Override
-			public final void onClickedInMenu(Player pl, Menu clickedMenu, ClickType click) {
+			public final void onClickedInMenu(Player pl, AdvancedMenu clickedMenu, ClickType click) {
 				setQuantity(click == ClickType.LEFT ? getQuantity().previous() : getQuantity().next());
 				menu.redraw();
 

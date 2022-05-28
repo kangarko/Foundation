@@ -1,16 +1,15 @@
 package org.mineacademy.fo.menu.button;
 
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.conversation.SimpleConversation;
 import org.mineacademy.fo.conversation.SimplePrompt;
-import org.mineacademy.fo.menu.Menu;
+import org.mineacademy.fo.menu.AdvancedMenu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
-
-import lombok.Getter;
 
 /**
  * A button that runs a server conversation
@@ -104,7 +103,7 @@ public final class ButtonConversation extends Button {
 	}
 
 	@Override
-	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+	public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
 		Valid.checkBoolean(conversation != null || prompt != null, "Conversation and prompt cannot be null!");
 
 		if (conversation != null) {
