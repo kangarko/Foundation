@@ -135,7 +135,8 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * See {@link #getReturnBackButton(ItemStack)}
+     * Does the same as {@link #getReturnBackButton(ItemStack)}.
+     * Uses the default button from {@link MenuUtil#defaultReturnBackItem}.
      */
     protected Button getReturnBackButton(){
         return getReturnBackButton(MenuUtil.defaultReturnBackItem);
@@ -163,7 +164,8 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * See {@link #getRefreshButton(ItemStack)}.
+     * Does the same as {@link #getRefreshButton(ItemStack)}.
+     * Uses the default button from {@link MenuUtil#defaultRefreshItem}.
      */
     protected Button getRefreshButton(){
         return getRefreshButton(MenuUtil.defaultRefreshItem);
@@ -192,7 +194,8 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * See {@link #getMenuButton(ItemStack, Class)}
+     * Does the same as {@link #getMenuButton(ItemStack, Class)}.
+     * Uses the default button from {@link MenuUtil#defaultMenuItem}.
      */
     protected Button getMenuButton(Class<? extends AdvancedMenu> to){
         return getMenuButton(MenuUtil.defaultMenuItem, to);
@@ -225,12 +228,16 @@ public abstract class AdvancedMenu extends Menu {
         try{
             return menu.getDeclaredConstructor(Player.class).newInstance(player);
         }
-        catch (NoSuchMethodException e){
-            e.printStackTrace();
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e){
+            try{
+                return menu.getDeclaredConstructor(Player.class, Class.class).newInstance(player, null);
+            }
+            catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e1){
+                e1.printStackTrace();
+            }
         }
-        throw new NullPointerException("Could not create a new instance of " + menu.getName() + " class.");
+        throw new NullPointerException("Could not create a new instance of " + menu.getName() + " class. " +
+                "Please create a constructor with only Player argument.");
     }
 
     /**
@@ -289,7 +296,8 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * See {@link #getInfoButton(ItemStack)}
+     * Does the same as {@link #getInfoButton(ItemStack)}.
+     * Uses the default button from {@link MenuUtil#defaultInfoItem}.
      */
     protected Button getInfoButton(){
         return getInfoButton(MenuUtil.defaultInfoItem);
@@ -303,16 +311,8 @@ public abstract class AdvancedMenu extends Menu {
      * @return the button
      */
     protected Button getInfoButton(ItemStack item){
-        return new Button() {
-            @Override
-            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
-            }
-
-            @Override
-            public ItemStack getItem() {
-                return ItemCreator.of(item).name(getInfoName()).lores(Arrays.asList(getInfoLore())).hideTags(true).build().make();
-            }
-        };
+        return Button.makeDummy(ItemCreator.of(item).name(getInfoName())
+                .lores(Arrays.asList(getInfoLore())).hideTags(true));
     }
 
     /**
