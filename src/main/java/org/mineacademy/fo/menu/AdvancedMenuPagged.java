@@ -96,26 +96,16 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
         setElements();
         setElementsItems();
         setElementsSlots();
-        if (isInitialized) addPrevNextButtons();
-    }
-
-    /**
-     * Add previous and next buttons.<br>
-     * If no slots are specified, this method must be called only after {@link #setSize} method.<br>
-     * Default slots are left bottom corner and right bottom corner for previous and next buttons correspondingly.<br>
-     * By default, buttons are only displayed when there is more than one page
-     * or {@link #isPrevNextButtonsEnabledNoPages()} is set to true.
-     */
-    protected void addPrevNextButtons(){
-        addPrevNextButtons(getPreviousButtonSlot(), getNextButtonSlot());
+        if (isInitialized) addPrevNextButtons(getPreviousButtonSlot(), getNextButtonSlot());
     }
 
     /**
      * Add previous and next buttons with specified slots.<br>
+     * Default slots are left bottom corner and right bottom corner for previous and next buttons correspondingly.<br>
      * By default, buttons are only displayed when there is more than one page
      * or {@link #isPrevNextButtonsEnabledNoPages()} is set to true.
      */
-    protected void addPrevNextButtons(int prevSlot, int nextSlot){
+    private void addPrevNextButtons(int prevSlot, int nextSlot){
         if (getMaxPage() > 1 || isPrevNextButtonsEnabledNoPages){
             addButton(prevSlot, formPreviousButton(getPreviousButtonItem()));
             addButton(nextSlot, formNextButton(getNextButtonItem()));
@@ -237,6 +227,8 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
 
                 if (getItems().containsKey(slot)) continue;
                 if (lockedSlots.contains(slot)) continue;
+                if (getPreviousButtonSlot() == slot) continue;
+                if (getNextButtonSlot() == slot) continue;
                 if (elementsSlots.containsKey(finalSlot)) continue;
 
                 elementsSlots.put(finalSlot, element);
