@@ -244,8 +244,8 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
      */
     @Override
     public void display(){
-        updateElements();
         setup();
+        updateElements();
         displayTo(getPlayer());
     }
 
