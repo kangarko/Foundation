@@ -13,18 +13,12 @@ import java.util.stream.Collectors;
 /**
  * The semi-ready implementation of paged menu with all tools.
  * You only have to set the size, title and locked slots.<br><br>
- * DO NOT FORGET to add {@link #init()} method in the end of the constructor
- * if you make any changes in your menu (like setting the locked slots or adding new buttons).
+ * To get started, override {@link #setup} method and customize your menu inside it.
  */
 public abstract class AdvancedMenuTools extends AdvancedMenuPagged<Tool> {
 
     public AdvancedMenuTools(Player player) {
-        this(player, null);
-    }
-
-    public AdvancedMenuTools(Player player, Class<? extends AdvancedMenu> parent){
-        super(player, parent);
-        init();
+        super(player);
     }
 
     @Override

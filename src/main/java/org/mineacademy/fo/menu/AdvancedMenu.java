@@ -29,8 +29,7 @@ import java.util.stream.IntStream;
  * Basic advanced menu.
  * Supports adding items, buttons and filling locked slots with wrapper item.
  * Also contains some ready buttons (Menu, ReturnBack, Refresh, etc.).<br><br>
- * DO NOT FORGET to add {@link #init()} method in the end of the constructor
- * if you make any changes in your menu (like setting the locked slots or adding new buttons).
+ * To get started, override {@link #setup} method and customize your menu inside it.
  */
 public abstract class AdvancedMenu extends Menu {
 
@@ -38,11 +37,6 @@ public abstract class AdvancedMenu extends Menu {
      * The player watching the menu.
      */
     private final Player player;
-    /**
-     * The menu which is opened from {@link #getReturnBackButton}.
-     */
-    @Getter
-    private final Class<? extends AdvancedMenu> parentMenu;
     /**
      * Contains buttons and their slots.
      */
@@ -62,6 +56,10 @@ public abstract class AdvancedMenu extends Menu {
     @Getter
     protected List<Integer> lockedSlots = new ArrayList<>();
     /**
+     * The menu which is opened from {@link #getReturnBackButton}.
+     */
+    private Class<? extends AdvancedMenu> parentMenu = getClass();
+    /**
      * The material of the wrapper item.
      * See {@link #wrapperItem} for more info.
      */
@@ -78,16 +76,12 @@ public abstract class AdvancedMenu extends Menu {
     private ItemStack wrapperItem = ItemCreator.of(wrapperMaterial, "").build().make();
 
     public AdvancedMenu(Player player){
-        this(player, null);
-    }
-
-    public AdvancedMenu(Player player, Class<? extends AdvancedMenu> parent){
         this.player = player;
-        this.parentMenu = (parent == null ? getClass() : parent);
     }
 
     /**
-     * Add button to the menu.
+     * Add button to the menu.<br>
+     * <b>Use it only inside {@link #setup} method to avoid errors!</b><br>
      * @param slot the slot the button should be displayed on
      * @param btn the button
      */
@@ -96,7 +90,8 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * Add custom item with no behavior to the menu.
+     * Add custom item with no behavior to the menu.<br>
+     * <b>Use it only inside {@link #setup} method to avoid errors!</b><br>
      * If you want item to have behavior use {@link #addButton}.
      * @param slot the slot the item should be placed on
      * @param item the item
@@ -106,17 +101,9 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * Actions to be taken when opening or updating the menu.<br>
-     * It automatically runs when the menu opens. But if you make some changes after calling super()
-     * in your child class you must call init() manually in the constructor after all changes.
-     */
-    protected void init(){}
-
-    /**
      * Redraw the menu without moving the cursor to the center.
      */
     protected void refreshMenu(){
-        init();
         redraw();
     }
 
@@ -128,9 +115,24 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
+     * Get the {@link #parentMenu}.
+     */
+    protected final Class<? extends AdvancedMenu> getParentMenu(){
+        return this.parentMenu;
+    }
+
+    /**
+     * Set the {@link #parentMenu}.
+     */
+    protected final void setParent(Class<? extends AdvancedMenu> parent){
+        this.parentMenu = parent;
+    }
+
+    /**
      * Display this menu to the player given in the constructor.
      */
-    public final void display(){
+    public void display(){
+        setup();
         displayTo(getPlayer());
     }
 
@@ -145,7 +147,9 @@ public abstract class AdvancedMenu extends Menu {
     /**
      * Get the button that returns player to the parent menu given in the constructor.
      * If the parent is not given it will return player to the same menu.
-     * If item is not given, it will get its item from {@link MenuUtil#defaultReturnBackItem}.<br>
+     * If item is not given, it will get its item from {@link MenuUtil#defaultReturnBackItem}.<br><br>
+     * <b>NOTE</b> that this button returns player to the non-personalized menu.
+     * To use personalized menus, use {@link #getMenuButton}.<br><br>
      * You can override this button and add some your logic.
      * @return the return button
      */
@@ -194,15 +198,49 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
-     * Does the same as {@link #getMenuButton(ItemStack, Class)}.
+     * <b>Attention! Please use {@link #getMenuButton(Class)} if possible because it is much more efficient!
+     * Use this method only if your menu constructor is custom or the menu must be created by instance
+     * (and not by class).</b><br><br>
+     * Does the same as {@link #getMenuButton(ItemStack, AdvancedMenu)}.
      * Uses the default button from {@link MenuUtil#defaultMenuItem}.
+     */
+    protected Button getMenuButton(AdvancedMenu to){
+        return getMenuButton(MenuUtil.defaultMenuItem, to);
+    }
+
+    /**
+     * <b>Attention! Please use {@link #getMenuButton(ItemStack, Class)} if possible because it is much more efficient!
+     * Use this method only if your menu constructor is custom or the menu must be created by instance
+     * (and not by class).</b><br><br>
+     * Create a new button which opens a given menu instance.
+     * @param item how the button should look like
+     * @param to what menu the player should be sent to
+     * @return the button
+     */
+    protected Button getMenuButton(ItemStack item, AdvancedMenu to){
+        return new Button() {
+            @Override
+            public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
+                to.display();
+            }
+
+            @Override
+            public ItemStack getItem() {
+                return item;
+            }
+        };
+    }
+
+    /**
+     * Does the same as {@link #getMenuButton(ItemStack, Class)}.
+     * Uses default item from {@link MenuUtil#defaultMenuItem}.
      */
     protected Button getMenuButton(Class<? extends AdvancedMenu> to){
         return getMenuButton(MenuUtil.defaultMenuItem, to);
     }
 
     /**
-     * Get the button that displays new menu to the player.
+     * Create a new button which opens a new menu instance created from a given class.
      * @param item how the button should look like
      * @param to what menu the player should be sent to
      * @return the button
@@ -226,15 +264,12 @@ public abstract class AdvancedMenu extends Menu {
      */
     private AdvancedMenu newInstanceOf(Player player, Class<? extends AdvancedMenu> menu){
         try{
-            return menu.getDeclaredConstructor(Player.class).newInstance(player);
+            AdvancedMenu am = menu.getDeclaredConstructor(Player.class).newInstance(player);
+            am.setParent(menu);
+            return am;
         }
         catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e){
-            try{
-                return menu.getDeclaredConstructor(Player.class, Class.class).newInstance(player, null);
-            }
-            catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e1){
-                e1.printStackTrace();
-            }
+            e.printStackTrace();
         }
         throw new NullPointerException("Could not create a new instance of " + menu.getName() + " class. " +
                 "Please create a constructor with only Player argument.");
@@ -383,16 +418,17 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     @Override
-    protected void onButtonClick(Player player, int slot, InventoryAction action, ClickType click, Button button) {
-        super.onButtonClick(player, slot, action, click, button);
-    }
-
-    @Override
     protected void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
         if (getButtons().containsKey(slot)){
             getButtons().get(slot).onClickedInMenu(player, this, click);
         }
     }
+
+    /**
+     * Override this method and customize your menu here.
+     * This method is automatically started just before displaying a menu to a player.
+     */
+    protected void setup(){}
 
     @Override
     public ItemStack getItemAt(int slot) {

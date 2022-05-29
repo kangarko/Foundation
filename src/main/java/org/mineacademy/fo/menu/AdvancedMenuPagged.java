@@ -19,15 +19,9 @@ import java.util.stream.Collectors;
 /**
  * Menu with pages.<br>
  * Supports previous and next buttons.<br><br>
- * DO NOT FORGET to add {@link #init()} method in the end of the constructor
- * if you make any changes in your menu (like setting the locked slots or adding new buttons).
+ * To get started, override {@link #setup} method and customize your menu inside it.
  */
 public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
-    /**
-     * Shows if the constructor of MenuPaginated was initialized at least once.
-     */
-    private final boolean isInitialized;
-
     /**
      * Slots and their raw {@link #elements}.
      */
@@ -76,27 +70,19 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     private ItemStack nextButtonItem = ItemCreator.of(CompMaterial.TIPPED_ARROW, "&7Next page").build().make();
 
     public AdvancedMenuPagged(Player player){
-        this(player, null);
-    }
-
-    public AdvancedMenuPagged(Player player, Class<? extends AdvancedMenu> parent){
-        super(player, parent);
-        init();
-        isInitialized = true;
+        super(player);
     }
 
     /**
-     * Actions to be taken when opening or updating the menu.<br>
-     * It automatically runs when the menu opens. But if you make some changes after calling super()
-     * in your child class you must call init() manually in the constructor after all changes.
+     * Updating paged menu elements.<br>
+     * It automatically runs when the menu opens.
      */
-    @Override
-    protected void init(){
+    private void updateElements(){
         resetCursorAt();
         setElements();
         setElementsItems();
         setElementsSlots();
-        if (isInitialized) addPrevNextButtons(getPreviousButtonSlot(), getNextButtonSlot());
+        addPrevNextButtons(getPreviousButtonSlot(), getNextButtonSlot());
     }
 
     /**
@@ -242,6 +228,25 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
      */
     private void resetCursorAt() {
         this.cursorAt = (currentPage - 1) * getAvailableSlotsSize();
+    }
+
+    /**
+     * Redraw the menu without moving the cursor to the center.
+     */
+    @Override
+    protected void refreshMenu(){
+        updateElements();
+        redraw();
+    }
+
+    /**
+     * Display this menu to the player given in the constructor.
+     */
+    @Override
+    public void display(){
+        updateElements();
+        setup();
+        displayTo(getPlayer());
     }
 
     /**
