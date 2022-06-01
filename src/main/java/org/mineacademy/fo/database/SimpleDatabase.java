@@ -642,7 +642,7 @@ public class SimpleDatabase {
 				@Override
 				public void run() {
 					if (SimpleDatabase.this.batchUpdateGoingOn)
-						Common.log("Still executing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
+						Common.log("Database batch update is still processing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
 					else
 						this.cancel();
 				}
