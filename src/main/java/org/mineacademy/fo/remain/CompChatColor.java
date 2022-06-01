@@ -259,7 +259,7 @@ public final class CompChatColor {
 	 * @return
 	 */
 	public String toEscapedString() {
-		return this.isHex() ? this.toString + "\\" + this.getName() : ItemUtil.bountify(this.getName());
+		return this.isHex() ? this.toString + "\\\\" + this.getName() : ItemUtil.bountify(this.getName());
 	}
 
 	/**
