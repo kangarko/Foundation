@@ -222,7 +222,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		final String version = Bukkit.getVersion();
 
-		if (!version.contains("Paper")
+		if (suggestPaper() && !version.contains("Paper")
 				&& !version.contains("Purpur")
 				&& !version.contains("NachoSpigot")
 				&& !version.contains("-Spigot")
