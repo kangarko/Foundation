@@ -75,8 +75,7 @@ public final class SimpleSound {
 	 *
 	 * @param line
 	 */
-	public SimpleSound(String line) {
-		Valid.checkNotNull(line);
+	public SimpleSound(@NonNull String line) {
 
 		if ("none".equals(line)) {
 			this.sound = CompSound.CLICK.getSound();
@@ -89,7 +88,7 @@ public final class SimpleSound {
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
 
 		try {
-			sound = CompSound.convert(values[0]);
+			this.sound = CompSound.convert(values[0]);
 
 		} catch (final IllegalArgumentException ex) {
 			Common.throwError(ex, "Sound '" + values[0] + "' does not exists (in your Minecraft version)!",
@@ -98,26 +97,26 @@ public final class SimpleSound {
 		}
 
 		if (values.length == 1) {
-			volume = 1F;
-			pitch = 1.5F;
+			this.volume = 1F;
+			this.pitch = 1.5F;
 			return;
 		}
 
 		Valid.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
-		Valid.checkNotNull(sound, "Unable to parse sound from: " + line);
+		Valid.checkNotNull(this.sound, "Unable to parse sound from: " + line);
 
 		final String volumeRaw = values[1];
 		final String pitchRaw = values[2];
 
-		volume = Float.parseFloat(volumeRaw);
+		this.volume = Float.parseFloat(volumeRaw);
 
 		if ("random".equals(pitchRaw)) {
-			pitch = 1.0F;
-			randomPitch = true;
+			this.pitch = 1.0F;
+			this.randomPitch = true;
 		}
 
 		else
-			pitch = Float.parseFloat(pitchRaw);
+			this.pitch = Float.parseFloat(pitchRaw);
 	}
 
 	/**
@@ -126,9 +125,9 @@ public final class SimpleSound {
 	 * @param players
 	 */
 	public void play(Iterable<Player> players) {
-		if (enabled)
+		if (this.enabled)
 			for (final Player player : players)
-				play(player);
+				this.play(player);
 	}
 
 	/**
@@ -137,10 +136,14 @@ public final class SimpleSound {
 	 * @param player
 	 */
 	public void play(Player player) {
-		if (enabled) {
-			Valid.checkNotNull(sound);
+		if (this.enabled) {
+			Valid.checkNotNull(this.sound);
 
-			player.playSound(player.getLocation(), sound, volume, getPitch());
+			try {
+				player.playSound(player.getLocation(), this.sound, this.volume, this.getPitch());
+			} catch (final NoSuchMethodError err) {
+				// Legacy MC
+			}
 		}
 	}
 
@@ -150,10 +153,14 @@ public final class SimpleSound {
 	 * @param location
 	 */
 	public void play(Location location) {
-		if (enabled) {
-			Valid.checkNotNull(sound);
+		if (this.enabled) {
+			Valid.checkNotNull(this.sound);
 
-			location.getWorld().playSound(location, sound, volume, getPitch());
+			try {
+				location.getWorld().playSound(location, this.sound, this.volume, this.getPitch());
+			} catch (final NoSuchMethodError err) {
+				// Legacy MC
+			}
 		}
 	}
 
@@ -163,7 +170,7 @@ public final class SimpleSound {
 	 * @return
 	 */
 	public float getPitch() {
-		return randomPitch ? (float) Math.random() : pitch;
+		return this.randomPitch ? (float) Math.random() : this.pitch;
 	}
 
 	/**
@@ -171,6 +178,6 @@ public final class SimpleSound {
 	 */
 	@Override
 	public String toString() {
-		return enabled ? sound + " " + volume + " " + (randomPitch ? "random" : pitch) : "none";
+		return this.enabled ? this.sound + " " + this.volume + " " + (this.randomPitch ? "random" : this.pitch) : "none";
 	}
 }

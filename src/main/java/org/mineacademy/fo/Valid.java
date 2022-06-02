@@ -1,12 +1,7 @@
 package org.mineacademy.fo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -16,7 +11,8 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.experimental.UtilityClass;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for checking conditions and throwing our safe exception that is
@@ -33,7 +29,7 @@ public final class Valid {
 	/**
 	 * Matching valid whole numbers
 	 */
-	private final Pattern PATTERN_DECIMAL = Pattern.compile("-?\\d+.\\d+");
+	private final Pattern PATTERN_DECIMAL = Pattern.compile("([0-9]+\\.?[0-9]*|\\.[0-9]+)");
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Checking for validity and throwing errors if false or null
@@ -75,10 +71,20 @@ public final class Valid {
 	 *
 	 * @param expression
 	 * @param falseMessage
+	 * @param replacements
 	 */
 	public void checkBoolean(final boolean expression, final String falseMessage, final Object... replacements) {
-		if (!expression)
-			throw new FoException(String.format(falseMessage, replacements));
+		if (!expression) {
+			String message = falseMessage;
+
+			try {
+				message = String.format(falseMessage, replacements);
+
+			} catch (final Throwable t) {
+			}
+
+			throw new FoException(message);
+		}
 	}
 
 	/**
@@ -86,6 +92,7 @@ public final class Valid {
 	 *
 	 * @param toCheck
 	 * @param falseMessage
+	 * @param replacements
 	 */
 	public void checkInteger(final String toCheck, final String falseMessage, final Object... replacements) {
 		if (!Valid.isInteger(toCheck))
@@ -107,7 +114,7 @@ public final class Valid {
 	 * Throw an error if the given message is empty or null
 	 *
 	 * @param message
-	 * @param message
+	 * @param emptyMessage
 	 */
 	public void checkNotEmpty(final String message, final String emptyMessage) {
 		if (message == null || message.length() == 0)
@@ -165,7 +172,7 @@ public final class Valid {
 	public boolean isInteger(final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is an integer!");
 
-		return Valid.PATTERN_INTEGER.matcher(raw).find();
+		return Valid.PATTERN_INTEGER.matcher(raw).matches();
 	}
 
 	/**
@@ -177,7 +184,115 @@ public final class Valid {
 	public boolean isDecimal(final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is a decimal!");
 
-		return Valid.PATTERN_DECIMAL.matcher(raw).find();
+		return Valid.PATTERN_DECIMAL.matcher(raw).matches();
+	}
+
+	/**
+	 * <p>Checks whether the String a valid Java number.</p>
+	 *
+	 * <p>Valid numbers include hexadecimal marked with the <code>0x</code>
+	 * qualifier, scientific notation and numbers marked with a type
+	 * qualifier (e.g. 123L).</p>
+	 *
+	 * <p><code>Null</code> and empty String will return
+	 * <code>false</code>.</p>
+	 *
+	 * @author Apache Commons NumberUtils
+	 * @param raw  the <code>String</code> to check
+	 * @return <code>true</code> if the string is a correctly formatted number
+	 */
+	public static boolean isNumber(@NonNull String raw) {
+		Valid.checkNotNull(raw, "Cannot check if null is a Number!");
+
+		if (raw.isEmpty())
+			return false;
+
+		final char[] letters = raw.toCharArray();
+		int length = letters.length;
+		boolean hasExp = false;
+		boolean hasDecPoint = false;
+		boolean allowSigns = false;
+		boolean foundDigit = false;
+
+		// deal with any possible sign up front
+		final int start = (letters[0] == '-') ? 1 : 0;
+
+		if (length > start + 1)
+			if (letters[start] == '0' && letters[start + 1] == 'x') {
+				int i = start + 2;
+				if (i == length)
+					return false; // str == "0x"
+				// checking hex (it can't be anything else)
+				for (; i < letters.length; i++)
+					if ((letters[i] < '0' || letters[i] > '9')
+							&& (letters[i] < 'a' || letters[i] > 'f')
+							&& (letters[i] < 'A' || letters[i] > 'F'))
+						return false;
+				return true;
+			}
+		length--; // don't want to loop to the last char, check it afterwords
+		// for type qualifiers
+		int i = start;
+		// loop to the next to last char or to the last char if we need another digit to
+		// make a valid number (e.g. chars[0..5] = "1234E")
+		while (i < length || (i < length + 1 && allowSigns && !foundDigit)) {
+			if (letters[i] >= '0' && letters[i] <= '9') {
+				foundDigit = true;
+				allowSigns = false;
+
+			} else if (letters[i] == '.') {
+				if (hasDecPoint || hasExp)
+					// two decimal points or dec in exponent
+					return false;
+				hasDecPoint = true;
+			} else if (letters[i] == 'e' || letters[i] == 'E') {
+				// we've already taken care of hex.
+				if (hasExp)
+					// two E's
+					return false;
+				if (!foundDigit)
+					return false;
+				hasExp = true;
+				allowSigns = true;
+			} else if (letters[i] == '+' || letters[i] == '-') {
+				if (!allowSigns)
+					return false;
+				allowSigns = false;
+				foundDigit = false; // we need a digit after the E
+			} else
+				return false;
+			i++;
+		}
+		if (i < letters.length) {
+			if (letters[i] >= '0' && letters[i] <= '9')
+				// no type qualifier, OK
+				return true;
+			if (letters[i] == 'e' || letters[i] == 'E')
+				// can't have an E at the last byte
+				return false;
+			if (letters[i] == '.') {
+				if (hasDecPoint || hasExp)
+					// two decimal points or dec in exponent
+					return false;
+				// single trailing decimal point after non-exponent is ok
+				return foundDigit;
+			}
+			if (!allowSigns
+					&& (letters[i] == 'd'
+							|| letters[i] == 'D'
+							|| letters[i] == 'f'
+							|| letters[i] == 'F'))
+				return foundDigit;
+			if (letters[i] == 'l'
+					|| letters[i] == 'L')
+				// not allowing L with an exponent
+				return foundDigit && !hasExp;
+			// last character is illegal
+			return false;
+		}
+		// allowSigns is true iff the val ends in 'E'
+		// found digit it to make sure weird stuff like '.' and '1E-' doesn't pass
+		return !allowSigns && foundDigit;
 	}
 
 	/**
@@ -321,8 +436,19 @@ public final class Valid {
 	 * @return
 	 */
 	public boolean locationEquals(final Location first, final Location sec) {
-		if (!first.getWorld().getName().equals(sec.getWorld().getName()))
+
+		if (first == null && sec == null)
+			return true;
+
+		if ((first == null && sec == null) || (first != null && sec == null))
 			return false;
+
+		try {
+			if (!first.getWorld().getName().equals(sec.getWorld().getName()))
+				return false;
+		} catch (final NullPointerException ex) {
+			// Ignore
+		}
 
 		return first.getBlockX() == sec.getBlockX() && first.getBlockY() == sec.getBlockY() && first.getBlockZ() == sec.getBlockZ();
 	}
@@ -331,8 +457,8 @@ public final class Valid {
 	 * Compare two lists. Two lists are considered equal if they are same length and all values are the same.
 	 * Exception: Strings are stripped of colors before comparation.
 	 *
-	 * @param first,  first list to compare
-	 * @param second, second list to compare with
+	 * @param first first list to compare
+	 * @param second second list to compare with
 	 * @return true if lists are equal
 	 */
 	public <T> boolean listEquals(final List<T> first, final List<T> second) {
@@ -417,9 +543,7 @@ public final class Valid {
 		final List<String> copy = new ArrayList<>(values);
 		String lastValue = null;
 
-		for (int i = 0; i < copy.size(); i++) {
-			final String value = copy.get(i);
-
+		for (final String value : copy) {
 			if (lastValue == null)
 				lastValue = value;
 
@@ -490,28 +614,6 @@ public final class Valid {
 	}
 
 	/**
-	 * Return true if any element in the given list contains (case ignored) your given element
-	 *
-	 * @param element
-	 * @param list
-	 * @return
-	 *
-	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
-	 */
-	@Deprecated
-	public boolean isInListContains(final String element, final Iterable<String> list) {
-		try {
-			for (final String matched : list)
-				if (removeSlash(element).toLowerCase().contains(removeSlash(matched).toLowerCase()))
-					return true;
-
-		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
-		}
-
-		return false;
-	}
-
-	/**
 	 * Return true if any element in the given list matches your given element.
 	 *
 	 * A regular expression is compiled from that list element.
@@ -543,6 +645,28 @@ public final class Valid {
 		for (final Enum<?> constant : enumeration)
 			if (constant.name().equalsIgnoreCase(element))
 				return true;
+
+		return false;
+	}
+
+	/**
+	 * Return true if any element in the given list contains (case ignored) your given element
+	 *
+	 * @param element
+	 * @param list
+	 * @return
+	 *
+	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
+	 */
+	@Deprecated
+	public boolean isInListContains(final String element, final Iterable<String> list) {
+		try {
+			for (final String matched : list)
+				if (removeSlash(element).toLowerCase().contains(removeSlash(matched).toLowerCase()))
+					return true;
+
+		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
+		}
 
 		return false;
 	}

@@ -1,8 +1,8 @@
 package org.mineacademy.fo.constants;
 
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompMetadata;
 
 import java.util.UUID;
 
@@ -84,8 +84,10 @@ public final class FoConstants {
 
 		/**
 		 * The header for data.db file
+		 *
+		 * Use YamlConfig/setHeader() to override this.
 		 */
-		public static final String[] DATA_FILE = new String[] {
+		public static final String[] DATA_FILE = {
 				"",
 				"This file stores various data you create via the plugin.",
 				"",
@@ -94,48 +96,52 @@ public final class FoConstants {
 		};
 
 		/**
-		 * The header that is put into the file that has been automatically
-		 * updated and comments were lost
+		 * The header for a variable file that does not have a default prototype.
 		 */
-		public static final String[] UPDATED_FILE = new String[] {
-				Common.configLine(),
+		public static final String[] VARIABLE_FILE = {
+				"-------------------------------------------------------------------------------------------------",
+				SimplePlugin.getNamed() + " supports dynamic, high performance JavaScript variables! They will",
+				"automatically be used when calling Variables#replace for your messages.",
 				"",
-				" Your file has been automatically updated at " + TimeUtil.getFormattedDate(),
-				" to " + SimplePlugin.getNamed() + " " + SimplePlugin.getVersion(),
+				"Because variables return a JavaScript value, you can sneak in code to play sounds or spawn",
+				"monsters directly in your variable instead of it just displaying text!",
 				"",
-				" Unfortunatelly, due to how Bukkit saves all .yml files, it was not possible",
-				" preserve the documentation comments in your file. We apologize.",
-				"",
-				" If you'd like to view the default file, you can either:",
-				" a) Open the " + SimplePlugin.getSource().getName() + " with a WinRar or similar",
-				" b) or, visit: https://github.com/kangarko/" + SimplePlugin.getNamed() + "/wiki",
-				"",
-				Common.configLine(),
-				""
+				"For example of how variables can be used, see our plugin ChatControl's wikipedia article:",
+				"https://github.com/kangarko/ChatControl-Red/wiki/JavaScript-Variables",
+				" -------------------------------------------------------------------------------------------------",
 		};
 	}
 
 	public static final class NBT {
 
 		/**
-		 * Represents our NBT tag used in {@link org.mineacademy.fo.remain.CompMetadata}
+		 * Represents our NBT tag used in {@link CompMetadata}
 		 */
 		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
 
 		/**
-		 * An internal metadata tag the player gets when he opens the menu
+		 * An internal metadata tag the player gets when he opens the menu.
 		 *
 		 * <p>
-		 * Used in {@link org.mineacademy.fo.menu.AdvancedMenu#getMenu}
+		 * Used in {@link Menu#getMenu(Player)}
 		 */
 		public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
 
 		/**
-		 * An internal metadata tag the player gets when he opens another menu
+		 * An internal metadata tag the player gets when he opens another menu.
 		 *
 		 * <p>
-		 * Used in {@link org.mineacademy.fo.menu.AdvancedMenu#getPreviousMenu}
+		 * Used in {@link Menu#getPreviousMenu(Player)}
 		 */
 		public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
+
+		/**
+		 * An internal metadata tag the player gets when he closes our menu so you can
+		 * reopen last closed menu manually.
+		 *
+		 * <p>
+		 * Used in {@link Menu#getLastClosedMenu(Player)}
+		 */
+		public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getNamed() + "_Last_Closed_Menu";
 	}
 }

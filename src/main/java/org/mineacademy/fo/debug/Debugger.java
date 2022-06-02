@@ -1,13 +1,9 @@
 package org.mineacademy.fo.debug;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
@@ -17,10 +13,9 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Utility class for solving problems and errors
@@ -64,13 +59,12 @@ public final class Debugger {
 	 * @param messages
 	 */
 	public static void debug(String section, String... messages) {
-		if (isDebugged(section)) {
+		if (isDebugged(section))
 			for (final String message : messages)
 				if (SimplePlugin.hasInstance())
 					Common.log("[" + section + "] " + message);
 				else
 					System.out.println("[" + section + "] " + message);
-		}
 	}
 
 	/**
@@ -117,7 +111,7 @@ public final class Debugger {
 		if (parts == null)
 			return;
 
-		final String whole = StringUtils.join(parts, "");
+		final String whole = String.join("", parts);
 
 		for (final String message : whole.split("\n"))
 			debug(section, message);
@@ -149,57 +143,64 @@ public final class Debugger {
 	 * @param messages
 	 */
 	public static void saveError(Throwable t, String... messages) {
+
 		if (Bukkit.getServer() == null) // Instance not set, e.g. when not using Bukkit
 			return;
 
-		final List<String> lines = new ArrayList<>();
-		final String header = SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + " encountered " + Common.article(t.getClass().getSimpleName());
+		try {
+			final List<String> lines = new ArrayList<>();
+			final String header = SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + " encountered " + Common.article(t.getClass().getSimpleName());
 
-		// Write out header and server info
-		fill(lines,
-				"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
-				header,
-				"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
-				"Plugins: " + StringUtils.join(Bukkit.getPluginManager().getPlugins(), ", "),
-				"----------------------------------------------------------------------------------------------");
+			// Write out header and server info
+			fill(lines,
+					"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+					header,
+					"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
+					"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", "),
+					"----------------------------------------------------------------------------------------------");
 
-		// Write additional data
-		if (messages != null && !StringUtils.join(messages, "").isEmpty()) {
-			fill(lines, "\nMore Information: ");
-			fill(lines, messages);
+			// Write additional data
+			if (messages != null && !String.join("", messages).isEmpty()) {
+				fill(lines, "\nMore Information: ");
+				fill(lines, messages);
+			}
+
+			{ // Write the stack trace
+
+				do {
+					// Write the error header
+					fill(lines, t == null ? "Unknown error" : t.getClass().getSimpleName() + " " + Common.getOrDefault(t.getMessage(), Common.getOrDefault(t.getLocalizedMessage(), "(Unknown cause)")));
+
+					int count = 0;
+
+					for (final StackTraceElement el : t.getStackTrace()) {
+						count++;
+
+						final String trace = el.toString();
+
+						if (trace.contains("sun.reflect"))
+							continue;
+
+						if (count > 6 && trace.startsWith("net.minecraft.server"))
+							break;
+
+						fill(lines, "\t at " + el.toString());
+					}
+				} while ((t = t.getCause()) != null);
+			}
+
+			fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
+
+			// Log to the console
+			Bukkit.getLogger().severe(header + "! Please check your error.log and report this issue with the information in that file.");
+
+			// Finally, save the error file
+			FileUtil.write(FoConstants.File.ERRORS, lines);
+
+		} catch (final Throwable secondError) {
+			Bukkit.getLogger().log(Level.SEVERE, "Got error when saving another error! Saving error:", secondError);
+			Bukkit.getLogger().log(Level.SEVERE, "Original error that is not saved:", t);
 		}
-
-		{ // Write the stack trace
-
-			do {
-				// Write the error header
-				fill(lines, t == null ? "Unknown error" : t.getClass().getSimpleName() + " " + Common.getOrDefault(t.getMessage(), Common.getOrDefault(t.getLocalizedMessage(), "(Unknown cause)")));
-
-				int count = 0;
-
-				for (final StackTraceElement el : t.getStackTrace()) {
-					count++;
-
-					final String trace = el.toString();
-
-					if (trace.contains("sun.reflect"))
-						continue;
-
-					if (count > 6 && trace.startsWith("net.minecraft.server"))
-						break;
-
-					fill(lines, "\t at " + el.toString());
-				}
-			} while ((t = t.getCause()) != null);
-		}
-
-		fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
-
-		// Log to the console
-		Common.log(header + "! Please check your error.log and report this issue with the information in that file.");
-
-		// Finally, save the error file
-		FileUtil.write(FoConstants.File.ERRORS, lines);
 	}
 
 	private static void fill(List<String> list, String... messages) {
@@ -303,11 +304,10 @@ public final class Debugger {
 			while ((cause = cause.getCause()) != null);
 		}
 
-		if (throwable instanceof FoException && !causes.isEmpty()) {
+		if (throwable instanceof FoException && !causes.isEmpty())
 			// Do not print parent exception if we are only wrapping it, saves console spam
 			print(throwable.getMessage());
-
-		} else {
+		else {
 			print(throwable.toString());
 
 			printStackTraceElements(throwable);
@@ -331,13 +331,22 @@ public final class Debugger {
 	}
 
 	/**
-	 * Returns whether a line is suitable for printing as an error line - we ignore stuff from NMS and OBF as this is not needed
+	 * Returns whether a line is suitable for printing as an error line - we ignore stuff from NMS and other spam as this is not needed
 	 *
 	 * @param message
 	 * @return
 	 */
 	private static boolean canPrint(String message) {
-		return !message.contains("net.minecraft") && !message.contains("org.bukkit.craftbukkit") && !message.contains("nashorn") && !message.contains("javax.script") && !message.contains("org.yaml.snakeyaml");
+		return !message.contains("net.minecraft") &&
+				!message.contains("org.bukkit.craftbukkit") &&
+				!message.contains("org.github.paperspigot.ServerScheduler") &&
+				!message.contains("nashorn") &&
+				!message.contains("javax.script") &&
+				!message.contains("org.yaml.snakeyaml") &&
+				!message.contains("sun.reflect") &&
+				!message.contains("sun.misc") &&
+				!message.contains("java.lang.Thread.run") &&
+				!message.contains("java.util.concurrent.ThreadPoolExecutor");
 	}
 
 	// Print a simple console message

@@ -1,9 +1,10 @@
 package org.mineacademy.fo;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -37,10 +38,22 @@ public final class HealthBarUtil {
 	 *                     or just set 0 to not subtract anything from health.
 	 */
 	public static void display(final Player displayTo, final LivingEntity displayAbout, final double damage) {
+		display(displayTo, displayAbout, null, damage);
+	}
+
+	/**
+	 * Formats and displays the health bar as action bar.
+	 *
+	 * @param displayTo
+	 * @param displayAbout
+	 * @param damagedEntityName
+	 * @param damage
+	 */
+	public static void display(final Player displayTo, final LivingEntity displayAbout, @Nullable final String damagedEntityName, final double damage) {
 		final int maxHealth = Remain.getMaxHealth(displayAbout);
 		final int health = Remain.getHealth(displayAbout);
 
-		final String name = Common.getOrEmpty(displayAbout.getCustomName());
+		final String name = Common.getOrEmpty(damagedEntityName);
 		final String formatted = (name.isEmpty() ? ItemUtil.bountifyCapitalized(displayAbout.getType()) : name) + " - " + getHealthMessage(health, maxHealth, (int) damage);
 
 		Remain.sendActionBar(displayTo, formatted);

@@ -20,29 +20,41 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * Listens and executes events for {@link SimpleEnchantment}
  * <p>
- * Internal use only!
+ * @deprecated Internal use only!
  */
-public final class EnchantmentListener implements Listener {
+@Deprecated
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class FoundationEnchantmentListener implements Listener {
+
+	@Getter
+	private static volatile Listener instance = new FoundationEnchantmentListener();
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		final Entity damager = event.getDamager();
 
 		if (damager instanceof LivingEntity)
-			execute((LivingEntity) damager, (enchant, level) -> enchant.onDamage(level, (LivingEntity) damager, event));
+			this.execute((LivingEntity) damager, (enchant, level) -> enchant.onDamage(level, (LivingEntity) damager, event));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
 	public void onInteract(PlayerInteractEvent event) {
-		execute(event.getPlayer(), (enchant, level) -> enchant.onInteract(level, event));
+		if (!Remain.isInteractEventPrimaryHand(event))
+			return;
+
+		this.execute(event.getPlayer(), (enchant, level) -> enchant.onInteract(level, event));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBreakBlock(BlockBreakEvent event) {
-		execute(event.getPlayer(), (enchant, level) -> enchant.onBreakBlock(level, event));
+		this.execute(event.getPlayer(), (enchant, level) -> enchant.onBreakBlock(level, event));
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -53,8 +65,8 @@ public final class EnchantmentListener implements Listener {
 			if (projectileSource instanceof LivingEntity) {
 				final LivingEntity shooter = (LivingEntity) projectileSource;
 
-				execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
-				EntityUtil.trackHit(event.getEntity(), hitEvent -> execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
+				this.execute(shooter, (enchant, level) -> enchant.onShoot(level, shooter, event));
+				EntityUtil.trackHit(event.getEntity(), hitEvent -> this.execute(shooter, (enchant, level) -> enchant.onHit(level, shooter, hitEvent)));
 			}
 		} catch (final NoSuchMethodError ex) {
 			if (MinecraftVersion.atLeast(V.v1_4))

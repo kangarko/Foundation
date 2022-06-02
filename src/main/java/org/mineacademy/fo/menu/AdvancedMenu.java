@@ -60,7 +60,7 @@ public abstract class AdvancedMenu extends Menu {
      * Set this item to whether you want by {@link #setWrapper}.
      * To disable item set it to null.
      */
-    private ItemStack wrapperItem = ItemCreator.of(MenuUtil.defaultWrapperMaterial, "").build().make();
+    private ItemStack wrapperItem = ItemCreator.of(MenuUtil.defaultWrapperMaterial, "").make();
 
     public AdvancedMenu(Player player){
         this.player = player;
@@ -173,7 +173,7 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     protected final void setWrapper(CompMaterial material){
-        wrapperItem = ItemCreator.of(material, "").build().make();
+        wrapperItem = ItemCreator.of(material, "").make();
     }
 
     protected final void setWrapper(ItemStack item){
@@ -367,7 +367,7 @@ public abstract class AdvancedMenu extends Menu {
                     lore = hasTool ? getAlreadyHaveLore() : getClickToGetLore();
                 }
 
-                return ItemCreator.of(tool.getItem()).lores(lore).glow(!isConsumable && hasTool).build().make();
+                return ItemCreator.of(tool.getItem()).lore(lore).glow(!isConsumable && hasTool).make();
             }
         };
     }
@@ -410,7 +410,7 @@ public abstract class AdvancedMenu extends Menu {
      */
     protected final Button getInfoButton(ItemStack item){
         return Button.makeDummy(ItemCreator.of(item).name(getInfoName())
-                .lores(Arrays.asList(getInfoLore())).hideTags(true));
+                .lore(Arrays.asList(getInfoLore())).hideTags(true));
     }
 
     /**

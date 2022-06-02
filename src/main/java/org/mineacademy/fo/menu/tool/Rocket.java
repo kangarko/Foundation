@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.event.RocketExplosionEvent;
 
 import lombok.Getter;
 
@@ -13,7 +12,7 @@ import lombok.Getter;
  * A rocket is an extended {@link Tool}
  * that explodes when hit the ground.
  * <p>
- * Please use {@link #explode(Projectile, Location, float, boolean)} for calling
+ * Please use the onExplode method for calling
  * the explosion or call the {@link RocketExplosionEvent} manually.
  */
 @Getter

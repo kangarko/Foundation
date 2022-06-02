@@ -6,8 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -59,7 +57,7 @@ public final class NmsEntity {
 		}
 
 		this.bukkitWorld = location.getWorld();
-		this.nmsEntity = MinecraftVersion.equals(V.v1_7) ? getHandle(location, entityClass) : createEntity(location, entityClass);
+		this.nmsEntity = MinecraftVersion.equals(V.v1_7) ? getHandle(location, entityClass) : this.createEntity(location, entityClass);
 	}
 
 	//
@@ -80,7 +78,7 @@ public final class NmsEntity {
 	//
 	private Object createEntity(final Location location, final Class<?> entityClass) {
 		try {
-			return NmsAccessor.createEntity.invoke(bukkitWorld, location, entityClass);
+			return NmsAccessor.createEntity.invoke(this.bukkitWorld, location, entityClass);
 
 		} catch (final ReflectiveOperationException e) {
 			throw new FoException(e, "Error creating entity " + entityClass + " at " + location);
@@ -97,10 +95,10 @@ public final class NmsEntity {
 	public <T extends Entity> T addEntity(final SpawnReason reason) {
 		try {
 
-			return (T) NmsAccessor.addEntity(bukkitWorld, nmsEntity, reason);
+			return (T) NmsAccessor.addEntity(this.bukkitWorld, this.nmsEntity, reason);
 
 		} catch (final ReflectiveOperationException e) {
-			throw new FoException(e, "Error creating entity " + nmsEntity + " for " + reason);
+			throw new FoException(e, "Error creating entity " + this.nmsEntity + " for " + reason);
 		}
 	}
 
@@ -111,10 +109,10 @@ public final class NmsEntity {
 	 */
 	public Entity getBukkitEntity() {
 		try {
-			return (Entity) NmsAccessor.getBukkitEntity.invoke(nmsEntity);
+			return (Entity) NmsAccessor.getBukkitEntity.invoke(this.nmsEntity);
 
 		} catch (final ReflectiveOperationException e) {
-			throw new FoException(e, "Error getting bukkit entity from " + nmsEntity);
+			throw new FoException(e, "Error getting bukkit entity from " + this.nmsEntity);
 		}
 	}
 }

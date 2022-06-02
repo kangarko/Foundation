@@ -3,6 +3,7 @@ package org.mineacademy.fo.model;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.ClickType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.EventHandledException;
@@ -110,7 +111,10 @@ public abstract class SimpleTrait extends Trait {
 
 		} catch (final EventHandledException ex) {
 			if (ex.getMessages() != null)
-				Messenger.error(player, ex.getMessages());
+				if (Messenger.ENABLED)
+					Messenger.error(player, ex.getMessages());
+				else
+					Common.tell(player, ex.getMessages());
 
 			if (ex.isCancelled())
 				event.setCancelled(true);

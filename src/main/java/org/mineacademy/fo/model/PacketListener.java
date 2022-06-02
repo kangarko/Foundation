@@ -1,22 +1,4 @@
-package org.mineacademy.fo;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.UUID;
-
-import org.bukkit.entity.Player;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.EventHandledException;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.exception.RegexTimeoutException;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.Remain;
+package org.mineacademy.fo.model;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
@@ -27,25 +9,44 @@ import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedServerPing;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.md_5.bungee.api.chat.BaseComponent;
+import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.EventHandledException;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.RegexTimeoutException;
+import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
+
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Represents packet handling using ProtocolLib
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PacketUtil {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class PacketListener {
+
+	/**
+	 * Called automatically when you use \@AutoRegister, inject
+	 * your packet listeners here.
+	 */
+	public abstract void onRegister();
 
 	/**
 	 * A convenience shortcut to add packet listener
 	 *
 	 * @param adapter
 	 */
-	public static void addPacketListener(final SimpleAdapter adapter) {
-		Valid.checkBoolean(HookManager.isVaultLoaded(), "ProtocolLib integration requires Vault to be installed. Please install that plugin before continuing.");
+	protected void addPacketListener(final SimpleAdapter adapter) {
+		//Valid.checkBoolean(HookManager.isVaultLoaded(), "ProtocolLib integration requires Vault to be installed. Please install that plugin before continuing.");
 
 		HookManager.addPacketListener(adapter);
 	}
@@ -60,8 +61,8 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
-		addReceivingListener(ListenerPriority.NORMAL, type, consumer);
+	protected void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
+		this.addReceivingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
@@ -71,8 +72,8 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
-		addPacketListener(new SimpleAdapter(priority, type) {
+	protected void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
+		this.addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
 			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
@@ -96,8 +97,8 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
-		addSendingListener(ListenerPriority.NORMAL, type, consumer);
+	protected void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
+		this.addSendingListener(ListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
@@ -107,8 +108,8 @@ public final class PacketUtil {
 	 * @param type
 	 * @param consumer
 	 */
-	public static void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
-		addPacketListener(new SimpleAdapter(priority, type) {
+	protected void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
+		this.addPacketListener(new SimpleAdapter(priority, type) {
 
 			/**
 			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
@@ -130,12 +131,23 @@ public final class PacketUtil {
 	 *
 	 * @param hoverTexts
 	 */
-	public static List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
+	protected List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
 		final List<WrappedGameProfile> profiles = new ArrayList<>();
 
+		int count = 0;
 
-		for (final String hoverText : hoverTexts)
-			profiles.add(new WrappedGameProfile(UUID.randomUUID(), Common.colorize(hoverText)));
+		for (final String hoverText : hoverTexts) {
+			WrappedGameProfile profile;
+
+			try {
+				profile = new WrappedGameProfile(UUID.randomUUID(), Common.colorize(hoverText));
+
+			} catch (final Throwable t) {
+				profile = new WrappedGameProfile(String.valueOf(count++), Common.colorize(hoverText));
+			}
+
+			profiles.add(profile);
+		}
 
 		return profiles;
 	}
@@ -147,7 +159,7 @@ public final class PacketUtil {
 	/**
 	 * A convenience adapter for handling chat packets doing most of the heavy work for you.
 	 */
-	public static abstract class SimpleChatAdapter extends SimpleAdapter {
+	protected abstract class SimpleChatAdapter extends SimpleAdapter {
 
 		/**
 		 * Players being processed RIGHT NOW inside the method. Prevents dead loop.
@@ -182,7 +194,7 @@ public final class PacketUtil {
 		private boolean adventure = false;
 
 		/**
-		 * @param params
+		 * Create new chat listener
 		 */
 		public SimpleChatAdapter() {
 			super(ListenerPriority.HIGHEST, PacketType.Play.Server.CHAT);
@@ -230,7 +242,7 @@ public final class PacketUtil {
 				} catch (final RegexTimeoutException ex) {
 					// Such errors mean the parsed message took too long to process.
 					// Only show such errors every 30 minutes to prevent console spam
-					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(jsonMessage, 500)
+					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(this.jsonMessage, 500)
 							+ "' (possibly longer) took too long time to edit received message and was ignored."
 							+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
 
@@ -243,7 +255,7 @@ public final class PacketUtil {
 				}
 
 				if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
-					this.onJsonMessage(jsonMessage);
+					this.onJsonMessage(this.jsonMessage);
 
 				if (!Common.stripColors(legacyText).equals(Common.stripColors(parsedText)))
 					this.writeEditedMessage(parsedText, event);
@@ -259,7 +271,7 @@ public final class PacketUtil {
 		private String compileChatMessage(PacketEvent event) {
 
 			// Reset
-			jsonMessage = null;
+			this.jsonMessage = null;
 
 			// No components for this MC version
 			if (MinecraftVersion.atLeast(V.v1_7)) {
@@ -279,7 +291,7 @@ public final class PacketUtil {
 				}
 
 				if (component != null)
-					jsonMessage = component.getJson();
+					this.jsonMessage = component.getJson();
 
 				// Md_5 way of dealing with packets
 				else if (packet.size() > 1) {
@@ -290,31 +302,30 @@ public final class PacketUtil {
 						secondField = packet.readSafely(2);
 
 						if (secondField != null)
-							adventure = true;
+							this.adventure = true;
 					}
 
 					if (secondField instanceof BaseComponent[]) {
-						jsonMessage = Remain.toJson((BaseComponent[]) secondField);
+						this.jsonMessage = Remain.toJson((BaseComponent[]) secondField);
 
-						isBaseComponent = true;
+						this.isBaseComponent = true;
 					}
 				}
 			}
 
 			else
-				jsonMessage = event.getPacket().getStrings().read(0);
+				this.jsonMessage = event.getPacket().getStrings().read(0);
 
-			if (jsonMessage != null && !jsonMessage.isEmpty()) {
-
+			if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
 				// Only check valid messages, skipping those over 50k since it would cause rules
 				// to take too long and overflow. 99% packets are below this size, it may even be
 				// that such oversized packets are maliciously sent so we protect the server from freeze
-				if (jsonMessage.length() < 50_000) {
+				if (this.jsonMessage.length() < 50_000) {
 					final String legacyText;
 
 					// Catch errors from other plugins and silence them
 					try {
-						legacyText = Remain.toLegacyText(jsonMessage, false);
+						legacyText = Remain.toLegacyText(this.jsonMessage, false);
 
 					} catch (final Throwable t) {
 						return "";
@@ -322,7 +333,6 @@ public final class PacketUtil {
 
 					return legacyText;
 				}
-			}
 
 			return "";
 		}
@@ -333,18 +343,15 @@ public final class PacketUtil {
 		private void writeEditedMessage(String message, PacketEvent event) {
 			final StructureModifier<Object> packet = event.getPacket().getModifier();
 
-			jsonMessage = Remain.toJson(message);
+			this.jsonMessage = Remain.toJson(message);
 
-			if (isBaseComponent)
-				packet.writeSafely(adventure ? 2 : 1, Remain.toComponent(jsonMessage));
+			if (this.isBaseComponent)
+				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
+			else if (MinecraftVersion.atLeast(V.v1_7))
+				event.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(this.jsonMessage));
 
-			else {
-				if (MinecraftVersion.atLeast(V.v1_7))
-					event.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(jsonMessage));
-
-				else
-					event.getPacket().getStrings().writeSafely(0, SerializedMap.of("text", jsonMessage.substring(1, jsonMessage.length() - 1)).toJson());
-			}
+			else
+				event.getPacket().getStrings().writeSafely(0, SerializedMap.of("text", this.jsonMessage.substring(1, this.jsonMessage.length() - 1)).toJson());
 		}
 
 		/**
@@ -375,7 +382,7 @@ public final class PacketUtil {
 	/**
 	 * A convenience class so that you don't have to specify which plugin is the owner of the packet adapter
 	 */
-	public static class SimpleAdapter extends PacketAdapter {
+	protected class SimpleAdapter extends PacketAdapter {
 
 		/**
 		 * The packet we're listening for

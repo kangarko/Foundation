@@ -42,7 +42,9 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 */
 	private static SimpleCommandGroup getMainCommandGroup0() {
 		final SimpleCommandGroup main = SimplePlugin.getInstance().getMainCommand();
-		Valid.checkNotNull(main, SimplePlugin.getNamed() + " does not define a main command group!");
+
+		Valid.checkNotNull(main, SimplePlugin.getNamed() + " does not define a main command group!"
+				+ " You need to put @AutoRegister over your class extending a SimpleCommandGroup that has a no args constructor to register it automatically");
 
 		return main;
 	}
@@ -57,20 +59,17 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 		super(parent.getLabel());
 
 		this.sublabels = sublabel.split("(\\||\\/)");
-		Valid.checkBoolean(sublabels.length > 0, "Please set at least 1 sublabel");
+		Valid.checkBoolean(this.sublabels.length > 0, "Please set at least 1 sublabel");
 
-		this.sublabel = sublabels[0];
+		this.sublabel = this.sublabels[0];
 
 		// If the default perm was not changed, improve it
-		if (getRawPermission().equals(getDefaultPermission())) {
-			final SimplePlugin instance = SimplePlugin.getInstance();
-
-			if (instance.getMainCommand() != null && instance.getMainCommand().getLabel().equals(this.getMainLabel()))
-				setPermission(getRawPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
+		if (this.getRawPermission().equals(getDefaultPermission()))
+			if (SimplePlugin.getInstance().getMainCommand() != null && SimplePlugin.getInstance().getMainCommand().getLabel().equals(this.getMainLabel()))
+				this.setPermission(this.getRawPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
 
 			else
-				setPermission(getRawPermission() + ".{sublabel}"); // append the sublabel at the end since this is not our main command
-		}
+				this.setPermission(this.getRawPermission() + ".{sublabel}"); // append the sublabel at the end since this is not our main command
 	}
 
 	/**
@@ -89,7 +88,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 */
 	@Override
 	protected String replacePlaceholders(String message) {
-		return super.replacePlaceholders(message).replace("{sublabel}", getSublabel());
+		return super.replacePlaceholders(message).replace("{sublabel}", this.getSublabel());
 	}
 
 	@Override

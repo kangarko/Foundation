@@ -1,20 +1,20 @@
-<!-- (c) 2013 - 2021 - All rights reserved. Do not share, copy, reproduce 
+<!-- (c) All rights reserved. Do not share, copy, reproduce
 	or sell any part of this library unless you have written permission from 
 	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
 	owner of the MineAcademy.org End User License then you may use it for your 
 	own use in plugins but not for any other purpose. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>5.13.1</version>
+	<version>6.0.1.1</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
-	<description>Create complex and unique plugins easily and fast.</description>
+	<description>A framework for easy creation of rich Bukkit plugins.</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.22</version>
+			<version>1.18.24</version>
 		</dependency>
 
 		<!-- This is NOT used anywhere in Foundation, only here to prevent compile 
@@ -45,11 +45,11 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.17.1</version>
+			<version>2.17.2</version>
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- The Spigot API and PaperSpigot server -->
+		<!-- The Spigot API -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
@@ -94,21 +94,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>Jobs</artifactId>
-			<version>5.0.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>LandsAPI</artifactId>
-			<version>6.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>LWC</artifactId>
-			<version>2.2.8-SNAPSHOT-171</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>MassiveCore</artifactId>
 			<version>3.3.3</version>
 		</dependency>
@@ -149,11 +134,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>StackMob</artifactId>
-			<version>5.7.5</version>
-		</dependency>		
-		<dependency>
-			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Towny</artifactId>
 			<version>0.98.1.12</version>
 		</dependency>
@@ -183,16 +163,32 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.2.2</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.4.0</version>
+				<configuration>
+					<doclint>none</doclint>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

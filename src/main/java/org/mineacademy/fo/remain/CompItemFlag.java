@@ -47,7 +47,7 @@ public enum CompItemFlag {
 	public final void applyTo(ItemStack item) {
 		try {
 			final ItemMeta meta = item.getItemMeta();
-			final ItemFlag bukkitFlag = ItemFlag.valueOf(toString());
+			final ItemFlag bukkitFlag = ItemFlag.valueOf(this.toString());
 
 			meta.addItemFlags(bukkitFlag);
 

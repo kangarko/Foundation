@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.remain.CompMaterial;
 
 public enum SimpleEnchantmentTarget {
 
@@ -28,8 +29,8 @@ public enum SimpleEnchantmentTarget {
 					|| item.equals(Material.CHAINMAIL_BOOTS)
 					|| item.equals(Material.IRON_BOOTS)
 					|| item.equals(Material.DIAMOND_BOOTS)
-					|| item.equals(Material.GOLDEN_BOOTS)
-					|| item.equals(Material.NETHERITE_BOOTS);
+					|| item.equals(CompMaterial.GOLDEN_BOOTS.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_BOOTS.getMaterial());
 		}
 	},
 
@@ -43,8 +44,8 @@ public enum SimpleEnchantmentTarget {
 					|| item.equals(Material.CHAINMAIL_LEGGINGS)
 					|| item.equals(Material.IRON_LEGGINGS)
 					|| item.equals(Material.DIAMOND_LEGGINGS)
-					|| item.equals(Material.GOLDEN_LEGGINGS)
-					|| item.equals(Material.NETHERITE_LEGGINGS);
+					|| item.equals(CompMaterial.GOLDEN_LEGGINGS.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_LEGGINGS.getMaterial());
 		}
 	},
 
@@ -58,8 +59,8 @@ public enum SimpleEnchantmentTarget {
 					|| item.equals(Material.CHAINMAIL_CHESTPLATE)
 					|| item.equals(Material.IRON_CHESTPLATE)
 					|| item.equals(Material.DIAMOND_CHESTPLATE)
-					|| item.equals(Material.GOLDEN_CHESTPLATE)
-					|| item.equals(Material.NETHERITE_CHESTPLATE);
+					|| item.equals(CompMaterial.GOLDEN_CHESTPLATE.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_CHESTPLATE.getMaterial());
 		}
 	},
 
@@ -73,9 +74,9 @@ public enum SimpleEnchantmentTarget {
 					|| item.equals(Material.CHAINMAIL_HELMET)
 					|| item.equals(Material.DIAMOND_HELMET)
 					|| item.equals(Material.IRON_HELMET)
-					|| item.equals(Material.GOLDEN_HELMET)
-					|| item.equals(Material.TURTLE_HELMET)
-					|| item.equals(Material.NETHERITE_HELMET);
+					|| item.equals(CompMaterial.GOLDEN_HELMET.getMaterial())
+					|| item.equals(CompMaterial.TURTLE_HELMET.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_HELMET.getMaterial());
 		}
 	},
 
@@ -85,12 +86,12 @@ public enum SimpleEnchantmentTarget {
 	WEAPON {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.WOODEN_SWORD)
+			return item.equals(CompMaterial.WOODEN_SWORD.getMaterial())
 					|| item.equals(Material.STONE_SWORD)
 					|| item.equals(Material.IRON_SWORD)
 					|| item.equals(Material.DIAMOND_SWORD)
-					|| item.equals(Material.GOLDEN_SWORD)
-					|| item.equals(Material.NETHERITE_SWORD);
+					|| item.equals(CompMaterial.GOLDEN_SWORD.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_SWORD.getMaterial());
 		}
 	},
 
@@ -113,12 +114,12 @@ public enum SimpleEnchantmentTarget {
 	SHOVEL {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.WOODEN_SHOVEL)
-					|| item.equals(Material.STONE_SHOVEL)
-					|| item.equals(Material.IRON_SHOVEL)
-					|| item.equals(Material.DIAMOND_SHOVEL)
-					|| item.equals(Material.GOLDEN_SHOVEL)
-					|| item.equals(Material.NETHERITE_SHOVEL);
+			return item.equals(CompMaterial.WOODEN_SHOVEL.getMaterial())
+					|| item.equals(CompMaterial.STONE_SHOVEL.getMaterial())
+					|| item.equals(CompMaterial.IRON_SHOVEL.getMaterial())
+					|| item.equals(CompMaterial.DIAMOND_SHOVEL.getMaterial())
+					|| item.equals(CompMaterial.GOLDEN_SHOVEL.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_SHOVEL.getMaterial());
 		}
 	},
 
@@ -128,12 +129,12 @@ public enum SimpleEnchantmentTarget {
 	PICKAXE {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.WOODEN_PICKAXE)
+			return item.equals(CompMaterial.WOODEN_PICKAXE.getMaterial())
 					|| item.equals(Material.STONE_PICKAXE)
 					|| item.equals(Material.IRON_PICKAXE)
 					|| item.equals(Material.DIAMOND_PICKAXE)
-					|| item.equals(Material.GOLDEN_PICKAXE)
-					|| item.equals(Material.NETHERITE_PICKAXE);
+					|| item.equals(CompMaterial.GOLDEN_PICKAXE.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_PICKAXE.getMaterial());
 		}
 	},
 
@@ -143,12 +144,12 @@ public enum SimpleEnchantmentTarget {
 	AXE {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.WOODEN_AXE)
+			return item.equals(CompMaterial.WOODEN_AXE.getMaterial())
 					|| item.equals(Material.STONE_AXE)
 					|| item.equals(Material.IRON_AXE)
 					|| item.equals(Material.DIAMOND_AXE)
-					|| item.equals(Material.GOLDEN_AXE)
-					|| item.equals(Material.NETHERITE_AXE);
+					|| item.equals(CompMaterial.GOLDEN_AXE.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_AXE.getMaterial());
 		}
 	},
 
@@ -158,12 +159,12 @@ public enum SimpleEnchantmentTarget {
 	HOE {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.WOODEN_HOE)
+			return item.equals(CompMaterial.WOODEN_HOE.getMaterial())
 					|| item.equals(Material.STONE_HOE)
 					|| item.equals(Material.IRON_HOE)
 					|| item.equals(Material.DIAMOND_HOE)
-					|| item.equals(Material.GOLDEN_HOE)
-					|| item.equals(Material.NETHERITE_HOE);
+					|| item.equals(CompMaterial.GOLDEN_HOE.getMaterial())
+					|| item.equals(CompMaterial.NETHERITE_HOE.getMaterial());
 		}
 	},
 
@@ -205,14 +206,14 @@ public enum SimpleEnchantmentTarget {
 		public boolean includes(Material item) {
 			return ARMOR.includes(item)
 					|| ELYTRA.includes(item)
-					|| item.equals(Material.CARVED_PUMPKIN)
-					|| item.equals(Material.JACK_O_LANTERN)
-					|| item.equals(Material.SKELETON_SKULL)
-					|| item.equals(Material.WITHER_SKELETON_SKULL)
-					|| item.equals(Material.ZOMBIE_HEAD)
-					|| item.equals(Material.PLAYER_HEAD)
-					|| item.equals(Material.CREEPER_HEAD)
-					|| item.equals(Material.DRAGON_HEAD);
+					|| item.equals(CompMaterial.CARVED_PUMPKIN.getMaterial())
+					|| item.equals(CompMaterial.JACK_O_LANTERN.getMaterial())
+					|| item.equals(CompMaterial.SKELETON_SKULL.getMaterial())
+					|| item.equals(CompMaterial.WITHER_SKELETON_SKULL.getMaterial())
+					|| item.equals(CompMaterial.ZOMBIE_HEAD.getMaterial())
+					|| item.equals(CompMaterial.PLAYER_HEAD.getMaterial())
+					|| item.equals(CompMaterial.CREEPER_HEAD.getMaterial())
+					|| item.equals(CompMaterial.DRAGON_HEAD.getMaterial());
 		}
 	},
 
@@ -222,7 +223,7 @@ public enum SimpleEnchantmentTarget {
 	ELYTRA {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.ELYTRA);
+			return item.equals(CompMaterial.ELYTRA.getMaterial());
 		}
 	},
 
@@ -232,7 +233,7 @@ public enum SimpleEnchantmentTarget {
 	TRIDENT {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.TRIDENT);
+			return item.equals(CompMaterial.TRIDENT.getMaterial());
 		}
 	},
 
@@ -242,7 +243,7 @@ public enum SimpleEnchantmentTarget {
 	CROSSBOW {
 		@Override
 		public boolean includes(Material item) {
-			return item.equals(Material.CROSSBOW);
+			return item.equals(CompMaterial.CROSSBOW.getMaterial());
 		}
 	},
 
@@ -252,13 +253,13 @@ public enum SimpleEnchantmentTarget {
 	VANISHABLE {
 		@Override
 		public boolean includes(Material item) {
-			return BREAKABLE.includes(item) || (WEARABLE.includes(item) && !item.equals(Material.ELYTRA)) || item.equals(Material.COMPASS);
+			return BREAKABLE.includes(item) || (WEARABLE.includes(item) && !item.equals(CompMaterial.ELYTRA.getMaterial())) || item.equals(Material.COMPASS);
 		}
 	};
 
 	public abstract boolean includes(Material item);
 
 	public boolean includes(ItemStack item) {
-		return includes(item.getType());
+		return this.includes(item.getType());
 	}
 }

@@ -1,7 +1,5 @@
 package org.mineacademy.fo.plugin;
 
-import java.util.List;
-
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -34,15 +32,15 @@ final class Reloadables {
 	 * Remove all listeners and cancel all running tasks
 	 */
 	void reload() {
-		for (final Listener listener : listeners)
+		for (final Listener listener : this.listeners)
 			HandlerList.unregisterAll(listener);
 
-		listeners.clear();
+		this.listeners.clear();
 
-		for (final SimpleCommandGroup commandGroup : commandGroups)
+		for (final SimpleCommandGroup commandGroup : this.commandGroups)
 			commandGroup.unregister();
 
-		commandGroups.clear();
+		this.commandGroups.clear();
 	}
 
 	// -------------------------------------------------------------------------------------------
@@ -57,7 +55,7 @@ final class Reloadables {
 	void registerEvents(Listener listener) {
 		Common.registerEvents(listener);
 
-		listeners.add(listener);
+		this.listeners.add(listener);
 	}
 
 	/**
@@ -69,7 +67,7 @@ final class Reloadables {
 	<T extends Event> void registerEvents(SimpleListener<T> listener) {
 		listener.register();
 
-		listeners.add(listener);
+		this.listeners.add(listener);
 	}
 
 	// -------------------------------------------------------------------------------------------
@@ -83,21 +81,9 @@ final class Reloadables {
 	 * @param aliases
 	 * @param group
 	 */
-	void registerCommands(final String label, final List<String> aliases, final SimpleCommandGroup group) {
-		group.register(label, aliases);
+	void registerCommands(final SimpleCommandGroup group) {
+		group.register();
 
-		commandGroups.add(group);
-	}
-
-	/**
-	 * Register the given command group
-	 *
-	 * @param labelAndAliases
-	 * @param group
-	 */
-	void registerCommands(final StrictList<String> labelAndAliases, final SimpleCommandGroup group) {
-		group.register(labelAndAliases);
-
-		commandGroups.add(group);
+		this.commandGroups.add(group);
 	}
 }

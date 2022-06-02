@@ -1,27 +1,28 @@
 package org.mineacademy.fo.collection;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import javax.annotation.Nullable;
+
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 
 /**
  * Strict set that only allows to remove elements that are contained within, or add elements that are not.
  * <p>
  * Failing to do so results in an error, with optional error message.
+ * @param <E>
  */
 public final class StrictSet<E> extends StrictCollection implements Iterable<E> {
 
 	/**
 	 * The internal set
 	 */
-	private final Set<E> set = new HashSet<>();
+	private final Set<E> set = new LinkedHashSet<>();
 
 	/**
 	 * Create a new set from the given elements
@@ -32,7 +33,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	public StrictSet(E... elements) {
 		this();
 
-		addAll(Arrays.asList(elements));
+		this.addAll(Arrays.asList(elements));
 	}
 
 	/**
@@ -40,10 +41,10 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 *
 	 * @param oldList
 	 */
-	public StrictSet(Collection<E> oldList) {
+	public StrictSet(Iterable<E> oldList) {
 		this();
 
-		addAll(oldList);
+		this.addAll(oldList);
 	}
 
 	/**
@@ -65,9 +66,9 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	public void remove(E value) {
 		Valid.checkNotNull(value, "Cannot remove null values");
-		final boolean removed = set.remove(value);
+		final boolean removed = this.set.remove(value);
 
-		Valid.checkBoolean(removed, String.format(getCannotRemoveMessage(), value));
+		Valid.checkBoolean(removed, String.format(this.getCannotRemoveMessage(), value));
 	}
 
 	/**
@@ -76,7 +77,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @param value
 	 */
 	public void removeWeak(E value) {
-		set.remove(value);
+		this.set.remove(value);
 	}
 
 	/**
@@ -84,9 +85,9 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 *
 	 * @param collection
 	 */
-	public void addAll(Collection<E> collection) {
+	public void addAll(Iterable<E> collection) {
 		for (final E val : collection)
-			add(val);
+			this.add(val);
 	}
 
 	/**
@@ -97,9 +98,9 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	public void add(E key) {
 		Valid.checkNotNull(key, "Cannot add null values");
-		Valid.checkBoolean(!set.contains(key), String.format(getCannotAddMessage(), key));
+		Valid.checkBoolean(!this.set.contains(key), String.format(this.getCannotAddMessage(), key));
 
-		set.add(key);
+		this.set.add(key);
 	}
 
 	/**
@@ -108,28 +109,17 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @param key
 	 */
 	public void override(E key) {
-		set.add(key);
+		this.set.add(key);
 	}
 
 	/**
-	 * Return the element at the given index
+	 * Returns the first value or null if the list is empty
 	 *
-	 * @param index
 	 * @return
 	 */
-	public E getAt(int index) {
-		int i = 0;
-
-		final Iterator<E> it = set.iterator();
-
-		while (it.hasNext()) {
-			final E e = it.next();
-
-			if (i++ == index)
-				return e;
-		}
-
-		throw new FoException("Index (" + index + ") + out of size (" + set.size() + ")");
+	@Nullable
+	public E first() {
+		return this.set.isEmpty() ? null : this.set.iterator().next();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -143,14 +133,14 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public boolean contains(E key) {
-		return set.contains(key);
+		return this.set.contains(key);
 	}
 
 	/**
 	 * Clear the set
 	 */
 	public void clear() {
-		set.clear();
+		this.set.clear();
 	}
 
 	/**
@@ -159,7 +149,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return set.isEmpty();
+		return this.set.isEmpty();
 	}
 
 	/**
@@ -168,7 +158,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public int size() {
-		return set.size();
+		return this.set.size();
 	}
 
 	/**
@@ -177,7 +167,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public Set<E> getSource() {
-		return set;
+		return this.set;
 	}
 
 	/**
@@ -187,7 +177,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public String join(String separator) {
-		return StringUtils.join(set, separator);
+		return Common.join(this.set, separator);
 	}
 
 	/**
@@ -197,7 +187,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 * @return
 	 */
 	public E[] toArray(E[] e) {
-		return set.toArray(e);
+		return this.set.toArray(e);
 	}
 
 	/**
@@ -205,7 +195,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	@Override
 	public Iterator<E> iterator() {
-		return set.iterator();
+		return this.set.iterator();
 	}
 
 	/**
@@ -213,11 +203,11 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serialize(set);
+		return SerializeUtil.serialize(this.set);
 	}
 
 	@Override
 	public String toString() {
-		return "StrictSet{\n" + StringUtils.join(set, "\n") + "}";
+		return "StrictSet{\n\t" + Common.join(this.set, "\n\t") + "\n}";
 	}
 }

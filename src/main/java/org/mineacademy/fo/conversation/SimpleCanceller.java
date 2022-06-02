@@ -1,12 +1,12 @@
 package org.mineacademy.fo.conversation;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationContext;
 import org.mineacademy.fo.Valid;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A simple conversation canceller
@@ -50,7 +50,7 @@ public final class SimpleCanceller implements ConversationCanceller {
 	 */
 	@Override
 	public boolean cancelBasedOnInput(ConversationContext context, String input) {
-		for (final String phrase : cancelPhrases)
+		for (final String phrase : this.cancelPhrases)
 			if (input.equalsIgnoreCase(phrase))
 				return true;
 
@@ -59,6 +59,6 @@ public final class SimpleCanceller implements ConversationCanceller {
 
 	@Override
 	public ConversationCanceller clone() {
-		return new SimpleCanceller(cancelPhrases);
+		return new SimpleCanceller(this.cancelPhrases);
 	}
 }

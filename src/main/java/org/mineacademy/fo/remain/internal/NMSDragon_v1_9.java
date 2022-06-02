@@ -17,29 +17,29 @@ class NMSDragon_v1_9 extends NMSDragon {
 	public NMSDragon_v1_9(String name, Location loc) {
 		super(name, loc);
 
-		bar = Bukkit.createBossBar(name, BarColor.PINK, BarStyle.SOLID);
+		this.bar = Bukkit.createBossBar(name, BarColor.PINK, BarStyle.SOLID);
 	}
 
 	public final void removePlayer(Player player) {
-		getBar().removePlayer(player);
+		this.getBar().removePlayer(player);
 	}
 
 	public final void addPlayer(Player player) {
-		getBar().addPlayer(player);
+		this.getBar().addPlayer(player);
 	}
 
 	public final void setProgress(double progress) {
-		getBar().setProgress(progress);
+		this.getBar().setProgress(progress);
 	}
 
 	private BossBar getBar() {
-		if (barColor != null)
-			bar.setColor(BarColor.valueOf(barColor.toString()));
+		if (this.barColor != null)
+			this.bar.setColor(BarColor.valueOf(this.barColor.toString()));
 
-		if (barStyle != null)
-			bar.setStyle(BarStyle.valueOf(barStyle.toString()));
+		if (this.barStyle != null)
+			this.bar.setStyle(BarStyle.valueOf(this.barStyle.toString()));
 
-		return bar;
+		return this.bar;
 	}
 
 	@Override

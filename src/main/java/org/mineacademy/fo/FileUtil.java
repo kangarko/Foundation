@@ -5,11 +5,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,21 +21,17 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.SimpleYaml;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -52,7 +49,7 @@ public final class FileUtil {
 	 * <p>
 	 * Example: classes/Archer.yml will only return Archer
 	 *
-	 * @param path
+	 * @param file
 	 * @return
 	 */
 	public static String getFileName(File file) {
@@ -74,7 +71,7 @@ public final class FileUtil {
 		int pos = path.lastIndexOf("/");
 
 		if (pos > 0)
-			path = path.substring(pos + 1, path.length());
+			path = path.substring(pos + 1);
 
 		pos = path.lastIndexOf(".");
 
@@ -127,7 +124,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File createIfNotExists(String path) {
-		final File datafolder = SimplePlugin.getInstance().getDataFolder();
+		final File datafolder = SimplePlugin.getData();
 		final int lastIndex = path.lastIndexOf('/');
 		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
 
@@ -139,9 +136,7 @@ public final class FileUtil {
 			destination.createNewFile();
 
 		} catch (final IOException ex) {
-			Bukkit.getLogger().severe("Failed to create a new file " + path);
-
-			ex.printStackTrace();
+			Common.error(ex, "Failed to create a new file " + path);
 		}
 
 		return destination;
@@ -154,14 +149,14 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File getFile(String path) {
-		return new File(SimplePlugin.getInstance().getDataFolder(), path);
+		return new File(SimplePlugin.getData(), path);
 	}
 
 	/**
 	 * Return all files in our plugin directory within a given path, ending with the given extension
 	 *
-	 * @param directory
-	 * @param extension
+	 * @param directory inside your plugin's folder
+	 * @param extension where dot is placed automatically in case it is lacking
 	 * @return
 	 */
 	public static File[] getFiles(@NonNull String directory, @NonNull String extension) {
@@ -185,13 +180,64 @@ public final class FileUtil {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return all lines from the given URL, opening a connection with a fake user agent first
+	 *
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
+	public static List<String> readLines(URL url) throws IOException {
+
+		final URLConnection connection = url.openConnection();
+
+		// Set a random user agent to prevent most webhostings from rejecting with 403
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7) Gecko/20040803 Firefox/0.9.3");
+		connection.setConnectTimeout(6000);
+		connection.setReadTimeout(6000);
+		connection.setDoOutput(true);
+
+		return readLines(connection);
+	}
+
+	/**
+	 * Return all lines from the given connection
+	 *
+	 * @param connection
+	 * @return
+	 */
+	public static List<String> readLines(URLConnection connection) {
+		final List<String> lines = new ArrayList<>();
+
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+			String inputLine;
+
+			while ((inputLine = reader.readLine()) != null)
+				lines.add(inputLine);
+
+		} catch (final IOException ex) {
+			Remain.sneaky(ex);
+		}
+
+		return lines;
+	}
+
+	/**
+	 * Return all lines from file in a path in our plugin folder, file must exists.
+	 *
+	 * @param fileName
+	 * @return
+	 */
+	public static List<String> readLines(String fileName) {
+		return readLines(getFile(fileName));
+	}
+
+	/**
 	 * Return all lines in the file, failing if the file does not exists
 	 *
 	 * @param file
 	 * @return
 	 */
-	public static List<String> readLines(File file) {
-		Valid.checkNotNull(file, "File cannot be null");
+	public static List<String> readLines(@NonNull File file) {
 		Valid.checkBoolean(file.exists(), "File: " + file + " does not exists!");
 
 		// Older method, missing libraries
@@ -209,65 +255,6 @@ public final class FileUtil {
 		}
 	}
 
-	/**
-	 * Attempts to load a yaml configuration from the given path inside of your plugin's JAR
-	 *
-	 * @param internalFileName
-	 * @return
-	 */
-	public static SimpleYaml loadInternalConfiguration(String internalFileName) {
-		final InputStream is = getInternalResource(internalFileName);
-		Valid.checkNotNull(is, "Failed getting internal configuration from " + internalFileName);
-
-		return Remain.loadConfiguration(is);
-	}
-
-	/**
-	 * Loads YAML configuration from file, failing if anything happens or the file does not exist
-	 *
-	 * FIX FOR PROJECT ORION STUDENTS IN ARENA MANAGER, SIMPLY RENAME YamlConfiguration TO FileConfiguration
-	 *
-	 * @param file
-	 * @return
-	 * @throws RuntimeException
-	 */
-	public static SimpleYaml loadConfigurationStrict(File file) throws RuntimeException {
-		Valid.checkNotNull(file, "File is null!");
-		Valid.checkBoolean(file.exists(), "File " + file.getName() + " does not exists");
-
-		final SimpleYaml conf = new SimpleYaml();
-
-		try {
-			if (file.exists())
-				checkFileForKnownErrors(file);
-
-			conf.load(file);
-
-		} catch (final FileNotFoundException ex) {
-			throw new IllegalArgumentException("Configuration file missing: " + file.getName(), ex);
-
-		} catch (final IOException ex) {
-			throw new IllegalArgumentException("IO exception opening " + file.getName(), ex);
-
-		} catch (final InvalidConfigurationException ex) {
-			throw new IllegalArgumentException("Malformed YAML file " + file.getName() + " - use services like yaml-online-parser.appspot.com to check and fix it", ex);
-
-		} catch (final Throwable t) {
-			throw new IllegalArgumentException("Error reading YAML file " + file.getName(), t);
-		}
-
-		return conf;
-	}
-
-	/*
-	 * Check file for known errors
-	 */
-	private static void checkFileForKnownErrors(File file) throws IllegalArgumentException {
-		for (final String line : readLines(file))
-			if (line.contains("[*]"))
-				throw new IllegalArgumentException("Found [*] in your .yml file " + file + ". Please replace it with ['*'] instead.");
-	}
-
 	// ----------------------------------------------------------------------------------------------------
 	// Writing
 	// ----------------------------------------------------------------------------------------------------
@@ -278,7 +265,6 @@ public final class FileUtil {
 	 * The line will be as follows: [date] msg
 	 *
 	 * @param to
-	 * @param prefix
 	 * @param message
 	 */
 	public static void writeFormatted(String to, String message) {
@@ -298,7 +284,7 @@ public final class FileUtil {
 		message = Common.stripColors(message).trim();
 
 		if (!message.equalsIgnoreCase("none") && !message.isEmpty())
-			for (final String line : Common.splitNewline(message))
+			for (final String line : message.split("\n"))
 				if (!line.isEmpty())
 					write(to, "[" + TimeUtil.getFormattedDate() + "] " + (prefix != null ? prefix + ": " : "") + line);
 	}
@@ -363,9 +349,9 @@ public final class FileUtil {
 			}
 
 		} catch (final Exception ex) {
-			Bukkit.getLogger().severe("Failed to write to " + to);
 
-			ex.printStackTrace(); // do not throw our exception since it would cause an infinite loop if there is a problem due to error writing
+			// do not throw our exception since it would cause an infinite loop if there is a problem due to error writing
+			Common.error(ex, "Failed to write to " + to);
 		}
 	}
 
@@ -388,17 +374,16 @@ public final class FileUtil {
 	 * Copy file from our plugin jar to destination - customizable destination file
 	 * name.
 	 *
-	 * @param override always extract file even if already exists?
 	 * @param from     the path to the file inside the plugin
 	 * @param to       the path where the file will be copyed inside the plugin
 	 *                 folder
 	 * @return the extracted file
 	 */
 	public static File extract(String from, String to) {
-		File file = new File(SimplePlugin.getInstance().getDataFolder(), to);
+		File file = new File(SimplePlugin.getData(), to);
 
-		final InputStream is = FileUtil.getInternalResource("/" + from);
-		Valid.checkNotNull(is, "Inbuilt file not found: " + from);
+		final List<String> lines = getInternalFileContent(from);
+		Valid.checkNotNull(lines, "Inbuilt " + from + " not found! Did you reload?");
 
 		if (file.exists())
 			return file;
@@ -406,19 +391,13 @@ public final class FileUtil {
 		file = createIfNotExists(to);
 
 		try {
-
-			final List<String> lines = new ArrayList<>();
 			final String fileName = getFileName(file);
 
-			// Load lines from internal file and replace them
-			try (final BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-				String line;
+			// Replace variables in lines
+			for (int i = 0; i < lines.size(); i++)
+				lines.set(i, replaceVariables(lines.get(i), fileName));
 
-				while ((line = br.readLine()) != null)
-					lines.add(replaceVariables(line, fileName));
-			}
-
-			Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(file.toPath(), lines, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
 
 		} catch (final IOException ex) {
 			Common.error(ex,
@@ -433,31 +412,44 @@ public final class FileUtil {
 	 * Similar to {@link #extract(String, String)} but intended
 	 * for non-text file types such as images etc.
 	 *
-	 * @param from
-	 * @param to
+	 * @param path
 	 * @return
 	 */
 	public static File extractRaw(String path) {
-		File file = new File(SimplePlugin.getInstance().getDataFolder(), path);
+		File file = new File(SimplePlugin.getData(), path);
 
-		final InputStream is = FileUtil.getInternalResource("/" + path);
-		Valid.checkNotNull(is, "Inbuilt file not found: " + path);
+		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
 
-		if (file.exists())
-			return file;
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry entry = it.nextElement();
 
-		file = createIfNotExists(path);
+				if (entry.toString().equals(path)) {
+					final InputStream is = jarFile.getInputStream(entry);
 
-		try {
-			Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					if (file.exists())
+						return file;
 
-		} catch (final IOException ex) {
-			Common.error(ex,
-					"Failed to extract " + path,
-					"Error: %error");
+					file = createIfNotExists(path);
+
+					try {
+						Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+					} catch (final IOException ex) {
+						Common.error(ex,
+								"Failed to extract " + path,
+								"Error: %error");
+					}
+
+					return file;
+
+				}
+			}
+
+		} catch (final Throwable ex) {
+			ex.printStackTrace();
 		}
 
-		return file;
+		throw new FoException("Inbuilt file not found: " + path);
 	}
 
 	/*
@@ -468,7 +460,8 @@ public final class FileUtil {
 	 */
 	private static String replaceVariables(String line, String fileName) {
 		return line
-				.replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase())
+				.replace("{plugin_name}", SimplePlugin.getNamed())
+				.replace("{plugin_name_lower}", SimplePlugin.getNamed().toLowerCase())
 				.replace("{file}", fileName)
 				.replace("{file_lowercase}", fileName);
 	}
@@ -506,29 +499,31 @@ public final class FileUtil {
 	 * Return an internal resource within our plugin's jar file
 	 *
 	 * @param path
-	 * @return the resource input stream, or null if not found
+	 * @return the content of the internal file
 	 */
-	public static InputStream getInternalResource(@NonNull String path) {
-		// First attempt
-		InputStream is = SimplePlugin.getInstance().getClass().getResourceAsStream(path);
+	public static List<String> getInternalFileContent(@NonNull String path) {
 
-		// Try using Bukkit
-		if (is == null)
-			is = SimplePlugin.getInstance().getResource(path);
+		try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
 
-		// The hard way - go in the jar file
-		if (is == null)
-			try (JarFile jarFile = new JarFile(SimplePlugin.getSource())) {
-				final JarEntry jarEntry = jarFile.getJarEntry(path);
+			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
+				final JarEntry entry = it.nextElement();
 
-				if (jarEntry != null)
-					is = jarFile.getInputStream(jarEntry);
+				if (entry.toString().equals(path)) {
 
-			} catch (final IOException ex) {
-				ex.printStackTrace();
+					final InputStream is = jarFile.getInputStream(entry);
+					final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+					final List<String> lines = reader.lines().collect(Collectors.toList());
+
+					reader.close();
+					return lines;
+				}
 			}
 
-		return is;
+		} catch (final Throwable ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
 	}
 
 	/**
@@ -545,116 +540,6 @@ public final class FileUtil {
 			Valid.checkBoolean(file.delete(), "Failed to delete file: " + file);
 	}
 
-	// ----------------------------------------------------------------------------------------------------
-	// Archiving
-	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Attempt to compress the given file into a byte array of the following structure:
-	 *
-	 * A list of all lines from the file + the file path up to your server root folder such as plugins/ChatControl/localization/ if
-	 * the file is in the localization/ folder in your plugin folder appended at the end of the list.
-	 *
-	 * THE FILE MUST BE SOMEWHERE IN YOUR ROOT SERVER FOLDER (does not matter how many directories deep)
-	 * AND YOUR WORKING DIRECTORY MUST BE SET TO YOUR ROOT SERVER FOLDER.
-	 *
-	 * @param file
-	 * @return filepath from server root with the byte compressed file content array
-	 */
-	public static Tuple<String, byte[]> compress(@NonNull File file) {
-		Valid.checkBoolean(!file.isDirectory(), "Cannot compress a directory: " + file.getPath());
-		final List<String> lines = new ArrayList<>(readLines(file)); // ensure modifiable
-
-		// Add all parent directories until we reach the plugin's folder
-		final List<File> parentDirs = new ArrayList<>();
-
-		File parent = file.getParentFile();
-
-		while (parent != null) {
-			parentDirs.add(parent);
-
-			parent = parent.getParentFile();
-		}
-
-		Collections.reverse(parentDirs);
-
-		final String filePath = Common.join(parentDirs, "/", File::getName) + "/" + file.getName();
-
-		lines.add(filePath);
-
-		// Join using our custom deliminer
-		final String joinedLines = String.join("%CMPRSDBF%", lines);
-
-		return new Tuple<>(filePath, CompressUtil.compress(joinedLines));
-	}
-
-	/**
-	 * Decompresses and writes all content to the file from the data array
-	 *
-	 * see {@link #compress(File)}
-	 *
-	 * @param data
-	 *
-	 * @return
-	 */
-	public static File decompressAndWrite(@NonNull byte[] data) {
-		return decompressAndWrite(null, data);
-	}
-
-	/**
-	 * Decompresses and writes all content to the file,
-	 *
-	 * see {@link #compress(File)}
-	 *
-	 * @param destination
-	 * @param data
-	 *
-	 * @return
-	 */
-	public static File decompressAndWrite(File destination, @NonNull byte[] data) {
-		final Tuple<File, List<String>> tuple = decompress(data);
-
-		if (destination == null)
-			destination = tuple.getKey();
-
-		final List<String> lines = tuple.getValue();
-
-		try {
-			FileUtil.createIfNotExists(destination);
-
-			Files.write(destination.toPath(), lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-		} catch (final IOException e) {
-			Common.throwError(e, "Failed to write " + lines.size() + " lines into " + destination);
-		}
-
-		return destination;
-	}
-
-	/**
-	 * Decompresses the given data array into a file-lines tuple,
-	 * see {@link #compress(File)}
-	 *
-	 * @param data
-	 * @return
-	 */
-	public static Tuple<File, List<String>> decompress(@NonNull byte[] data) {
-		final String decompressed = CompressUtil.decompress(data);
-		final String[] linesRaw = decompressed.split("%CMPRSDBF%");
-		Valid.checkBoolean(linesRaw.length > 0, "Received empty lines to decompress into a file!");
-
-		final List<String> lines = new ArrayList<>();
-
-		// Load lines
-		for (int i = 0; i < linesRaw.length - 1; i++)
-			lines.add(linesRaw[i]);
-
-		// The final line is the file
-		final File file = new File(linesRaw[linesRaw.length - 1]);
-
-		return new Tuple<>(file, lines);
-	}
-
 	/**
 	 * Creates a ZIP archive from the given source directory (inside our plugin folder)
 	 * to the given full path (in our plugin folder) - please do not specify any extension, just the dir & file name
@@ -664,7 +549,7 @@ public final class FileUtil {
 	 * @throws IOException
 	 */
 	public static void zip(String sourceDirectory, String to) throws IOException {
-		final File parent = SimplePlugin.getInstance().getDataFolder().getParentFile().getParentFile();
+		final File parent = SimplePlugin.getData().getParentFile().getParentFile();
 		final File toFile = new File(parent, to + ".zip");
 
 		if (toFile.exists())

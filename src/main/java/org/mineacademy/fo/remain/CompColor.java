@@ -1,8 +1,6 @@
 package org.mineacademy.fo.remain;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -12,7 +10,8 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A utility class enabling you to convert between {@link DyeColor} and {@link ChatColor} with ease
@@ -177,7 +176,7 @@ public final class CompColor {
 	 * @return
 	 */
 	public Color getColor() {
-		return color != null ? color : dye.getColor();
+		return this.color != null ? this.color : this.dye.getColor();
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -234,9 +233,9 @@ public final class CompColor {
 		// Support HEX colors
 		if (name.startsWith("#") && name.length() == 7)
 			return new CompColor(Color.fromRGB(
-					Integer.valueOf(name.substring(1, 3), 16),
-					Integer.valueOf(name.substring(3, 5), 16),
-					Integer.valueOf(name.substring(5, 7), 16)));
+					Integer.parseInt(name.substring(1, 3), 16),
+					Integer.parseInt(name.substring(3, 5), 16),
+					Integer.parseInt(name.substring(5, 7), 16)));
 
 		name = name.toUpperCase();
 
@@ -262,7 +261,7 @@ public final class CompColor {
 	}
 
 	/**
-	 * Returns a {@link CompDye} from the given chat color
+	 * Returns a {@link CompColor} from the given chat color
 	 *
 	 * @param color
 	 * @return
@@ -276,7 +275,7 @@ public final class CompColor {
 	}
 
 	/**
-	 * Returns a {@link CompDye} from the given chat color
+	 * Returns a {@link CompColor} from the given chat color
 	 *
 	 * @param color
 	 * @return

@@ -1,18 +1,14 @@
 package org.mineacademy.fo;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.bukkit.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 /**
  * Utility class for generating random numbers.
@@ -28,7 +24,7 @@ public final class RandomUtil {
 	/**
 	 * Symbols for chat colors using the & character including decorations like bold italics etc
 	 */
-	private static final char[] COLORS_AND_DECORATION = new char[] {
+	private static final char[] COLORS_AND_DECORATION = {
 			'0', '1', '2', '3', '4',
 			'5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e',
@@ -38,7 +34,7 @@ public final class RandomUtil {
 	/**
 	 * Only valid chat colors without decorations
 	 */
-	private static final char[] CHAT_COLORS = new char[] {
+	private static final char[] CHAT_COLORS = {
 			'0', '1', '2', '3', '4',
 			'5', '6', '7', '8', '9',
 			'a', 'b', 'c', 'd', 'e',
@@ -48,7 +44,7 @@ public final class RandomUtil {
 	/**
 	 * English alphabet letters
 	 */
-	private static final char[] LETTERS = new char[] {
+	private static final char[] LETTERS = {
 			'a', 'b', 'c', 'd', 'e',
 			'f', 'g', 'h', 'i', 'j',
 			'k', 'l', 'm', 'n', 'o',
@@ -120,7 +116,7 @@ public final class RandomUtil {
 	/**
 	 * Generates random text, like lorem ipsum but completely
 	 * different.
-	 * 
+	 *
 	 * @param length
 	 * @return
 	 */
@@ -142,6 +138,15 @@ public final class RandomUtil {
 		final char letter = CHAT_COLORS[nextInt(CHAT_COLORS.length)];
 
 		return ChatColor.getByChar(letter);
+	}
+
+	/**
+	 * Return a random bright bukkit color, 7 colors are selected
+	 *
+	 * @return
+	 */
+	public static Color nextColor() {
+		return nextItem(Color.AQUA, Color.ORANGE, Color.WHITE, Color.YELLOW, Color.RED, Color.GREEN, Color.BLUE);
 	}
 
 	/**
@@ -228,7 +233,7 @@ public final class RandomUtil {
 	 *
 	 * @param origin
 	 * @param radius
-	 * @param is3D,  true for sphere, false for cylinder search
+	 * @param is3D true for sphere, false for cylinder search
 	 * @return
 	 */
 	public static Location nextLocation(final Location origin, final double radius, final boolean is3D) {
@@ -238,9 +243,8 @@ public final class RandomUtil {
 
 		final double x = randomRadius * Math.cos(theta) * Math.sin(phi);
 		final double z = randomRadius * Math.cos(phi);
-		final Location newLoc = origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 
-		return newLoc;
+		return origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
 	}
 
 	/**

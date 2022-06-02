@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.CompressUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeAction;
+import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.BungeeMessageType;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -19,7 +20,7 @@ import com.google.common.io.ByteStreams;
 /**
  * NB: This uses the standardized Foundation model where the first
  * String is the server name and the second String is the
- * {@link BungeeAction} by its name *written automatically*.
+ * {@link BungeeMessageType} by its name *written automatically*.
  */
 public final class OutgoingMessage extends Message {
 
@@ -28,19 +29,47 @@ public final class OutgoingMessage extends Message {
 	 */
 	private final List<Object> queue = new ArrayList<>();
 
-	public OutgoingMessage(UUID senderUid, BungeeAction action) {
-		setSenderUid(senderUid.toString());
-		setServerName(Remain.getServerName());
-		setAction(action);
+	/**
+	 * Create a new outgoing message, see header of this class
+	 *
+	 * @param senderUid
+	 * @param action
+	 */
+	public OutgoingMessage(UUID senderUid, BungeeMessageType action) {
+		this(SimplePlugin.getInstance().getBungeeCord(), senderUid, action);
+	}
+
+	/**
+	 * Create a new outgoing message, see header of this class
+	 *
+	 * @param listener
+	 * @param senderUid
+	 * @param action
+	 */
+	public OutgoingMessage(BungeeListener listener, UUID senderUid, BungeeMessageType action) {
+		super(listener);
+
+		this.setSenderUid(senderUid.toString());
+		this.setServerName(Remain.getServerName());
+		this.setAction(action);
 
 		// -----------------------------------------------------------------
 		// We are automatically writing the first two strings assuming the
 		// first is the senders server name and the second is the action
 		// -----------------------------------------------------------------
 
-		queue.add(senderUid);
-		queue.add(getServerName());
-		queue.add(getAction());
+		this.queue.add(senderUid);
+		this.queue.add(this.getServerName());
+		this.queue.add(this.getAction().name());
+	}
+
+	/**
+	 * Write the map into the message
+	 *
+	 * @param map
+	 */
+	public void writeMap(SerializedMap map) {
+		this.write(map.toJson(), String.class);
 	}
 
 	/**
@@ -50,7 +79,7 @@ public final class OutgoingMessage extends Message {
 	 */
 	public void writeString(String... messages) {
 		for (final String message : messages)
-			write(CompressUtil.compressB64(message), String.class);
+			this.write(message, String.class);
 	}
 
 	/**
@@ -59,7 +88,7 @@ public final class OutgoingMessage extends Message {
 	 * @param bool
 	 */
 	public void writeBoolean(boolean bool) {
-		write(bool, Boolean.class);
+		this.write(bool, Boolean.class);
 	}
 
 	/**
@@ -68,7 +97,7 @@ public final class OutgoingMessage extends Message {
 	 * @param number
 	 */
 	public void writeByte(byte number) {
-		write(number, Byte.class);
+		this.write(number, Byte.class);
 	}
 
 	/**
@@ -77,7 +106,7 @@ public final class OutgoingMessage extends Message {
 	 * @param number
 	 */
 	public void writeDouble(double number) {
-		write(number, Double.class);
+		this.write(number, Double.class);
 	}
 
 	/**
@@ -86,7 +115,7 @@ public final class OutgoingMessage extends Message {
 	 * @param number
 	 */
 	public void writeFloat(float number) {
-		write(number, Float.class);
+		this.write(number, Float.class);
 	}
 
 	/**
@@ -95,7 +124,7 @@ public final class OutgoingMessage extends Message {
 	 * @param number
 	 */
 	public void writeInt(int number) {
-		write(number, Integer.class);
+		this.write(number, Integer.class);
 	}
 
 	/**
@@ -104,7 +133,7 @@ public final class OutgoingMessage extends Message {
 	 * @param number
 	 */
 	public void writeLong(long number) {
-		write(number, Long.class);
+		this.write(number, Long.class);
 	}
 
 	/**
@@ -113,7 +142,7 @@ public final class OutgoingMessage extends Message {
 	 * @param number
 	 */
 	public void writeShort(short number) {
-		write(number, Short.class);
+		this.write(number, Short.class);
 	}
 
 	/**
@@ -122,14 +151,14 @@ public final class OutgoingMessage extends Message {
 	 * @param uuid
 	 */
 	public void writeUUID(UUID uuid) {
-		write(uuid, UUID.class);
+		this.write(uuid, UUID.class);
 	}
 
 	/**
 	 * Write an object of the given type into the message
 	 * <p>
 	 * We move the head and ensure writing safety in accordance
-	 * to the {@link BungeeAction#getContent()} length and
+	 * to the {@link BungeeMessageType#getContent()} length and
 	 * data type at the given position
 	 *
 	 * @param object
@@ -138,19 +167,19 @@ public final class OutgoingMessage extends Message {
 	private void write(Object object, Class<?> typeOf) {
 		Valid.checkNotNull(object, "Added object must not be null!");
 
-		moveHead(typeOf);
-		queue.add(object);
+		this.moveHead(typeOf);
+		this.queue.add(object);
 	}
 
 	/**
 	 * Send this message with the current data for the given player!
 	 *
-	 * @param connection
+	 * @param player
 	 */
 	public void send(Player player) {
-		player.sendPluginMessage(SimplePlugin.getInstance(), getChannel(), compileData());
+		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.compileData());
 
-		Debugger.debug("bungee", "Sending data on " + getChannel() + " channel from " + getAction() + " as " + player.getName() + " player to BungeeCord.");
+		Debugger.debug("bungee", "Sending data on " + this.getChannel() + " channel from " + this.getAction() + " as " + player.getName() + " player to BungeeCord.");
 	}
 
 	/**
@@ -162,7 +191,7 @@ public final class OutgoingMessage extends Message {
 	private byte[] compileData() {
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-		for (final Object object : queue)
+		for (final Object object : this.queue)
 			if (object instanceof String)
 				out.writeUTF((String) object);
 
@@ -190,8 +219,11 @@ public final class OutgoingMessage extends Message {
 			else if (object instanceof byte[])
 				out.write((byte[]) object);
 
+			else if (object instanceof UUID)
+				out.writeUTF(object.toString());
+
 			else
-				throw new FoException("Unsupported write of " + object.getClass().getSimpleName() + " to channel " + getChannel() + " with action " + getAction().toString());
+				throw new FoException("Unsupported write of " + object.getClass().getSimpleName() + " to channel " + this.getChannel() + " with action " + this.getAction().toString());
 
 		return out.toByteArray();
 	}

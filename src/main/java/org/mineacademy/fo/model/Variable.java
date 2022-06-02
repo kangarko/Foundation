@@ -1,7 +1,9 @@
 package org.mineacademy.fo.model;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.bukkit.command.CommandSender;
@@ -10,7 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
@@ -27,7 +30,7 @@ public final class Variable extends YamlConfig {
 	/**
 	 * A list of all loaded variables
 	 */
-	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variable", "variables", Variable.class);
+	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variables", Variable.class);
 
 	/**
 	 * The kind of this variable
@@ -50,28 +53,24 @@ public final class Variable extends YamlConfig {
 	/**
 	 * The JavaScript condition that must return TRUE for this variable to be shown
 	 */
-
 	@Getter
 	private String senderCondition;
 
 	/**
 	 * The JavaScript condition that must return TRUE for this variable to be shown to a receiver
 	 */
-
 	@Getter
 	private String receiverCondition;
 
 	/**
 	 * The permission the sender must have to show the part
 	 */
-
 	@Getter
 	private String senderPermission;
 
 	/**
 	 * The permission receiver must have to see the part
 	 */
-
 	@Getter
 	private String receiverPermission;
 
@@ -79,41 +78,31 @@ public final class Variable extends YamlConfig {
 	 * The hover text or null if not set
 	 */
 	@Getter
-
 	private List<String> hoverText;
 
 	/**
 	 * The JavaScript pointing to a particular {@link ItemStack}
 	 */
 	@Getter
-
 	private String hoverItem;
 
 	/**
 	 * What URL should be opened on click? Null if none
 	 */
 	@Getter
-
 	private String openUrl;
 
 	/**
 	 * What command should be suggested on click? Null if none
 	 */
 	@Getter
-
 	private String suggestCommand;
 
 	/**
 	 * What command should be run on click? Null if none
 	 */
 	@Getter
-
 	private String runCommand;
-
-	/*
-	 * Shall we save comments for this file?
-	 */
-	private final boolean saveComments;
 
 	/*
 	 * Create and load a new variable (automatically called)
@@ -121,16 +110,8 @@ public final class Variable extends YamlConfig {
 	private Variable(String file) {
 		final String prototypePath = PROTOTYPE_PATH.apply(file);
 
-		this.saveComments = prototypePath != null;
+		this.setHeader(FoConstants.Header.VARIABLE_FILE);
 		this.loadConfiguration(prototypePath, "variables/" + file + ".yml");
-	}
-
-	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#saveComments()
-	 */
-	@Override
-	protected boolean saveComments() {
-		return saveComments;
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -138,80 +119,72 @@ public final class Variable extends YamlConfig {
 	// ----------------------------------------------------------------------------------
 
 	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#onLoadFinish()
+	 * @see org.mineacademy.fo.settings.YamlConfig#onLoad()
 	 */
 	@Override
-	protected void onLoadFinish() {
+	protected void onLoad() {
 
-		this.type = get("Type", Type.class);
-		this.key = getString("Key");
-		this.value = getString("Value");
-		this.senderCondition = getString("Sender_Condition");
-		this.receiverCondition = getString("Receiver_Condition");
-		this.senderPermission = getString("Sender_Permission");
-		this.receiverPermission = getString("Receiver_Permission");
+		this.type = this.get("Type", Type.class);
+		this.key = this.getString("Key");
+		this.value = this.getString("Value");
+		this.senderCondition = this.getString("Sender_Condition");
+		this.receiverCondition = this.getString("Receiver_Condition");
+		this.senderPermission = this.getString("Sender_Permission");
+		this.receiverPermission = this.getString("Receiver_Permission");
 
 		// Correct common mistakes
 		if (this.type == null) {
 			this.type = Type.FORMAT;
 
-			save();
+			this.save();
 		}
+
+		// Check for known mistakes
+		if (this.key == null || this.key.isEmpty())
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + this.getFileName());
+
+		if (this.value == null || this.value.isEmpty())
+			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + this.getFileName() + " (this can be a JavaScript code)");
 
 		if (this.key.startsWith("{") || this.key.startsWith("[")) {
 			this.key = this.key.substring(1);
 
-			save();
+			this.save();
 		}
 
 		if (this.key.endsWith("}") || this.key.endsWith("]")) {
 			this.key = this.key.substring(0, this.key.length() - 1);
 
-			save();
+			this.save();
 		}
 
 		if (this.type == Type.MESSAGE) {
-			this.hoverText = getStringList("Hover");
-			this.hoverItem = getString("Hover_Item");
-			this.openUrl = getString("Open_Url");
-			this.suggestCommand = getString("Suggest_Command");
-			this.runCommand = getString("Run_Command");
+			this.hoverText = this.getStringList("Hover");
+			this.hoverItem = this.getString("Hover_Item");
+			this.openUrl = this.getString("Open_Url");
+			this.suggestCommand = this.getString("Suggest_Command");
+			this.runCommand = this.getString("Run_Command");
 		}
-
-		// Check for known mistakes
-		if (this.key == null || this.key.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + getFile());
-
-		if (this.value == null || this.value.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + getFile() + " (this can be a JavaScript code)");
 
 		// Test for key validity
 		if (!Common.regExMatch("^\\w+$", this.key))
-			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFileName() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 	}
 
-	/**
-	 * Return this class as a map
-	 *
-	 * @return
-	 */
 	@Override
-	public SerializedMap serialize() {
-		final SerializedMap map = new SerializedMap();
-
-		map.putIf("Type", this.type);
-		map.putIf("Key", this.key);
-		map.putIf("Sender_Condition", this.senderCondition);
-		map.putIf("Receiver_Condition", this.receiverCondition);
-		map.putIf("Hover", this.hoverText);
-		map.putIf("Hover_Item", this.hoverItem);
-		map.putIf("Open_Url", this.openUrl);
-		map.putIf("Suggest_Command", this.suggestCommand);
-		map.putIf("Run_Command", this.runCommand);
-		map.putIf("Sender_Permission", this.senderPermission);
-		map.putIf("Receiver_Permission", this.receiverPermission);
-
-		return map;
+	public void onSave() {
+		this.set("Type", this.type);
+		this.set("Key", this.key);
+		this.set("Value", this.value);
+		this.set("Sender_Condition", this.senderCondition);
+		this.set("Receiver_Condition", this.receiverCondition);
+		this.set("Hover", this.hoverText);
+		this.set("Hover_Item", this.hoverItem);
+		this.set("Open_Url", this.openUrl);
+		this.set("Suggest_Command", this.suggestCommand);
+		this.set("Run_Command", this.runCommand);
+		this.set("Sender_Permission", this.senderPermission);
+		this.set("Receiver_Permission", this.receiverPermission);
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -254,6 +227,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @param sender
 	 * @param existingComponent
+	 * @param replacements
 	 * @return
 	 */
 	public SimpleComponent build(CommandSender sender, SimpleComponent existingComponent, Map<String, Object> replacements) {
@@ -265,9 +239,9 @@ public final class Variable extends YamlConfig {
 			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
 
 			if (result != null) {
-				Valid.checkBoolean(result instanceof Boolean, "Variable '" + getName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+				Valid.checkBoolean(result instanceof Boolean, "Variable '" + this.getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
 
-				if ((boolean) result == false)
+				if (!((boolean) result))
 					return SimpleComponent.of("");
 			}
 		}
@@ -287,7 +261,7 @@ public final class Variable extends YamlConfig {
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements), sender);
-			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + getName() + "' option Hover_Item must return ItemStack not " + result.getClass());
+			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + this.getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
 			component.onHover((ItemStack) result);
 		}
@@ -305,11 +279,11 @@ public final class Variable extends YamlConfig {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#toString()
+	 * @see org.mineacademy.fo.settings.YamlConfig#equals(java.lang.Object)
 	 */
 	@Override
-	public String toString() {
-		return serialize().toStringFormatted();
+	public boolean equals(Object obj) {
+		return obj instanceof Variable && this.key.equals(((Variable) obj).getKey());
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
@@ -370,7 +344,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static List<Variable> getVariables() {
+	public static Collection<Variable> getVariables() {
 		return loadedVariables.getItems();
 	}
 
@@ -379,7 +353,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static List<String> getVariableNames() {
+	public static Set<String> getVariableNames() {
 		return loadedVariables.getItemNames();
 	}
 

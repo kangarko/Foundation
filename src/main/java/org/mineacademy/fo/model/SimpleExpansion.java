@@ -37,7 +37,7 @@ public abstract class SimpleExpansion {
 	public final String replacePlaceholders(CommandSender sender, String params) {
 		this.args = params.split("\\_");
 
-		return onReplace(sender, params);
+		return this.onReplace(sender, params);
 	}
 
 	/**
@@ -45,7 +45,7 @@ public abstract class SimpleExpansion {
 	 * identifier.
 	 *
 	 * @param sender
-	 * @param identifier, everything after your plugin name such as if user types {corearena_player_health},
+	 * @param identifier everything after your plugin name such as if user types {corearena_player_health},
 	 * 		  we return only "player_health". You can also use {@link #args} here.
 	 * @return
 	 */

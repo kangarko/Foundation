@@ -3,8 +3,8 @@ package org.mineacademy.fo.bungee.message;
 import java.util.UUID;
 
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.bungee.BungeeAction;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +17,11 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class Message {
+
+	/**
+	 * The listener associated with this message
+	 */
+	private final BungeeListener listener;
 
 	/**
 	 * The UUID of the sender who initiated the packet, can be null
@@ -33,11 +38,11 @@ abstract class Message {
 	/**
 	 * The action
 	 */
-	private BungeeAction action;
+	private BungeeMessageType action;
 
 	/**
 	 * The current position of writing the data based on the
-	 * {@link BungeeAction#getContent()}
+	 * {@link BungeeMessageType#getContent()}
 	 */
 	private int actionHead = 0;
 
@@ -75,10 +80,10 @@ abstract class Message {
 	 * @param action
 	 */
 	protected final void setAction(String actionName) {
-		final BungeeAction action = BungeeAction.getByName(actionName);
+		final BungeeMessageType action = BungeeMessageType.getByName(this.listener, actionName);
 
 		Valid.checkNotNull(action, "Unknown plugin action named: " + actionName + ". IF YOU UPDATED THE PLUGIN BY RELOADING, you need to stop your entire network, ensure all servers were updated and start it again.");
-		setAction(action);
+		this.setAction(action);
 	}
 
 	/**
@@ -87,7 +92,7 @@ abstract class Message {
 	 *
 	 * @param action
 	 */
-	protected final void setAction(BungeeAction action) {
+	protected final void setAction(BungeeMessageType action) {
 		Valid.checkBoolean(this.action == null, "Action already set");
 
 		this.action = action;
@@ -99,13 +104,13 @@ abstract class Message {
 	 * @param <T>
 	 * @return
 	 */
-	public <T extends BungeeAction> T getAction() {
-		return (T) action;
+	public <T extends BungeeMessageType> T getAction() {
+		return (T) this.action;
 	}
 
 	/**
-	 * Ensures we are reading in the correct order as the given {@link BungeeAction}
-	 * specifies in its {@link BungeeAction#getContent()} getter.
+	 * Ensures we are reading in the correct order as the given {@link BungeeMessageType}
+	 * specifies in its {@link BungeeMessageType#getContent()} getter.
 	 * <p>
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).
@@ -113,22 +118,21 @@ abstract class Message {
 	 * @param typeOf
 	 */
 	protected final void moveHead(Class<?> typeOf) {
-		Valid.checkNotNull(serverName, "Server name not set!");
-		Valid.checkNotNull(action, "Action not set!");
+		Valid.checkNotNull(this.serverName, "Server name not set!");
+		Valid.checkNotNull(this.action, "Action not set!");
 
-		final Class<?>[] content = action.getContent();
-		Valid.checkBoolean(actionHead < content.length, "Head out of bounds! Max data size for " + action.name() + " is " + content.length);
+		final Class<?>[] content = this.action.getContent();
+		Valid.checkBoolean(this.actionHead < content.length, "Head out of bounds! Max data size for " + this.action.name() + " is " + content.length);
 
-		actionHead++;
+		this.actionHead++;
 	}
 
 	/**
-	 * Return the bungee channel, always returns
-	 * {@link SimplePlugin#getBungee()#getChannel()}
+	 * Return the bungee channel this message is coming from
 	 *
 	 * @return
 	 */
 	public final String getChannel() {
-		return SimplePlugin.getInstance().getBungeeCord().getChannel();
+		return this.listener.getChannel();
 	}
 }

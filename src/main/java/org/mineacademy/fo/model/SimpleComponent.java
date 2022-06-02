@@ -39,7 +39,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The pattern to match URL addresses when parsing text
 	 */
-	private static final Pattern URL_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
+	private static final Pattern URL_PATTERN = Pattern.compile("^(https?)://[-a-zA-Z\\d+&@#/%?=~_|!:,.;]*[-a-zA-Z\\d]?([^&]+[^\\da-fk-orA-FK-OR])?$");
 
 	/**
 	 * The past components
@@ -49,7 +49,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The current component being created
 	 */
-
 	private Part currentComponent;
 
 	/**
@@ -77,17 +76,17 @@ public final class SimpleComponent implements ConfigSerializable {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Add a show text ; event for the {@link #currentComponents}
+	 * Add a show text event
 	 *
 	 * @param texts
 	 * @return
 	 */
 	public SimpleComponent onHover(Collection<String> texts) {
-		return onHover(Common.toArray(texts));
+		return this.onHover(Common.toArray(texts));
 	}
 
 	/**
-	 * Add a show text hover event for the {@link #currentComponents}
+	 * Add a show text hover event
 	 *
 	 * @param lines
 	 * @return
@@ -111,7 +110,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public SimpleComponent onHover(ItemStack item) {
 		if (CompMaterial.isAir(item.getType()))
-			return onHover("Air");
+			return this.onHover("Air");
 
 		this.currentComponent.hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[] { new TextComponent(Remain.toJson(item)) });
 
@@ -143,37 +142,37 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Add a run command event for the {@link #currentComponents}
+	 * Add a run command event
 	 *
 	 * @param text
 	 * @return
 	 */
 	public SimpleComponent onClickRunCmd(String text) {
-		return onClick(Action.RUN_COMMAND, text);
+		return this.onClick(Action.RUN_COMMAND, text);
 	}
 
 	/**
-	 * Add a suggest command event for the {@link #currentComponents}
+	 * Add a suggest command event
 	 *
 	 * @param text
 	 * @return
 	 */
 	public SimpleComponent onClickSuggestCmd(String text) {
-		return onClick(Action.SUGGEST_COMMAND, text);
+		return this.onClick(Action.SUGGEST_COMMAND, text);
 	}
 
 	/**
-	 * Open the given URL for the {@link #currentComponents}
+	 * Open the given URL
 	 *
 	 * @param url
 	 * @return
 	 */
 	public SimpleComponent onClickOpenUrl(String url) {
-		return onClick(Action.OPEN_URL, url);
+		return this.onClick(Action.OPEN_URL, url);
 	}
 
 	/**
-	 * Add a command event for the {@link #currentComponents}
+	 * Add a command event
 	 *
 	 * @param action
 	 * @param text
@@ -186,7 +185,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Invoke {@link TextComponent#setInsertion(String)} for {@link #currentComponents}
+	 * Invoke {@link TextComponent#setInsertion(String)}
 	 *
 	 * @param insertion
 	 * @return
@@ -254,18 +253,19 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * specified here
 	 *
 	 * @param text
+	 * @param inheritFormatting
 	 * @param colorize
 	 * @return
 	 */
 	public SimpleComponent append(String text, BaseComponent inheritFormatting, boolean colorize) {
 
 		// Get the last extra
-		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent(null);
+		BaseComponent inherit = inheritFormatting != null ? inheritFormatting : this.currentComponent.toTextComponent(false, null);
 
 		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
 
-		// Center text for each line separatelly if replacing colors
+		// Center text for each line separately if replacing colors
 		if (colorize) {
 			final List<String> formatContents = Arrays.asList(text.split("\n"));
 
@@ -298,7 +298,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		this.pastComponents.addAll(component.pastComponents);
 
 		// Get the last extra
-		BaseComponent inherit = Common.getOrDefault(component.currentComponent.inheritFormatting, this.currentComponent.toTextComponent(null));
+		BaseComponent inherit = Common.getOrDefault(component.currentComponent.inheritFormatting, this.currentComponent.toTextComponent(false, null));
 
 		if (inherit != null && inherit.getExtra() != null && !inherit.getExtra().isEmpty())
 			inherit = inherit.getExtra().get(inherit.getExtra().size() - 1);
@@ -316,7 +316,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public String getPlainMessage() {
-		return build(null).toLegacyText();
+		return this.build(null).toLegacyText();
 	}
 
 	/**
@@ -325,7 +325,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public TextComponent getTextComponent() {
-		return build(null);
+		return this.build(null);
 	}
 
 	/**
@@ -338,7 +338,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		TextComponent preparedComponent = null;
 
 		for (final Part part : this.pastComponents) {
-			final TextComponent component = part.toTextComponent(receiver);
+			final TextComponent component = part.toTextComponent(true, receiver);
 
 			if (component != null)
 				if (preparedComponent == null)
@@ -347,7 +347,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					preparedComponent.addExtra(component);
 		}
 
-		final TextComponent currentComponent = this.currentComponent.toTextComponent(receiver);
+		final TextComponent currentComponent = this.currentComponent.toTextComponent(true, receiver);
 
 		if (currentComponent != null)
 			if (preparedComponent == null)
@@ -389,8 +389,8 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * command senders. If they are players, we send them interactive elements.
 	 * <p>
 	 * If they are console, they receive a plain text message.
-	 *
-	 * @param receiver
+	 * @param receivers
+	 * @param <T>
 	 */
 	public <T extends CommandSender> void send(T... receivers) {
 		this.send(Arrays.asList(receivers));
@@ -403,7 +403,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * If they are console, they receive a plain text message.
 	 *
 	 * @param <T>
-	 * @param receiver
+	 * @param receivers
 	 */
 	public <T extends CommandSender> void send(Iterable<T> receivers) {
 		this.sendAs(null, receivers);
@@ -418,14 +418,15 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * We will also replace relation placeholders if the sender is set and is player.
 	 *
 	 * @param <T>
-	 * @param receiver
+	 * @param sender
+	 * @param receivers
 	 */
 	public <T extends CommandSender> void sendAs(CommandSender sender, Iterable<T> receivers) {
 		for (final CommandSender receiver : receivers) {
-			final TextComponent component = build(receiver);
+			final TextComponent component = this.build(receiver);
 
 			if (receiver instanceof Player && sender instanceof Player)
-				setRelationPlaceholders(component, (Player) receiver, (Player) sender);
+				this.setRelationPlaceholders(component, (Player) receiver, (Player) sender);
 
 			// Prevent clients being kicked out, so we just send plain message instead
 			if (STRIP_OVERSIZED_COMPONENTS && Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
@@ -480,7 +481,7 @@ public final class SimpleComponent implements ConfigSerializable {
 						}
 
 				// Then repeat for the extra parts in the text itself
-				setRelationPlaceholders(text, receiver, sender);
+				this.setRelationPlaceholders(text, receiver, sender);
 			}
 	}
 
@@ -691,7 +692,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * Create a new interactive chat component
 	 * You can then build upon your text to add interactive elements
 	 *
-	 * @param text
 	 * @return
 	 */
 	public static SimpleComponent empty() {
@@ -821,25 +821,25 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * Turn this part of the components into a {@link TextComponent}
 		 * for the given receiver
 		 *
+		 * @param checkForReceiver
 		 * @param receiver
 		 * @return
 		 */
-
-		private TextComponent toTextComponent(CommandSender receiver) {
-			if (!canSendTo(receiver) || isEmpty())
+		private TextComponent toTextComponent(boolean checkForReceiver, CommandSender receiver) {
+			if ((checkForReceiver && !this.canSendTo(receiver)) || this.isEmpty())
 				return null;
 
 			final List<BaseComponent> base = toComponent(this.text, this.inheritFormatting)[0].getExtra();
 
 			for (final BaseComponent part : base) {
 				if (this.hoverEvent != null)
-					part.setHoverEvent(hoverEvent);
+					part.setHoverEvent(this.hoverEvent);
 
 				if (this.clickEvent != null)
-					part.setClickEvent(clickEvent);
+					part.setClickEvent(this.clickEvent);
 
 				if (this.insertion != null)
-					part.setInsertion(insertion);
+					part.setInsertion(this.insertion);
 			}
 
 			return new TextComponent(base.toArray(new BaseComponent[base.size()]));
@@ -869,7 +869,7 @@ public final class SimpleComponent implements ConfigSerializable {
 				if (result != null) {
 					Valid.checkBoolean(result instanceof Boolean, "View condition must return Boolean not " + (result == null ? "null" : result.getClass()) + " for component: " + this);
 
-					if ((boolean) result == false)
+					if (!((boolean) result))
 						return false;
 				}
 			}

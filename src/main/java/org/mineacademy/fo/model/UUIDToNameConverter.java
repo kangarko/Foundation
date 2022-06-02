@@ -42,8 +42,8 @@ public class UUIDToNameConverter implements Callable<String> {
 	@Override
 	public String call() throws Exception {
 
-		final HttpURLConnection connection = (HttpURLConnection) new URL(PROFILE_URL + uuid.toString().replace("-", "")).openConnection();
-		final JsonObject response = gson.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+		final HttpURLConnection connection = (HttpURLConnection) new URL(PROFILE_URL + this.uuid.toString().replace("-", "")).openConnection();
+		final JsonObject response = this.gson.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
 		final String name = response.get("name").getAsString();
 
 		if (name == null)

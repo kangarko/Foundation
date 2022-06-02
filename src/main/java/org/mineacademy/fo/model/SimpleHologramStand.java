@@ -49,7 +49,7 @@ public class SimpleHologramStand extends SimpleHologram {
 		final ArmorStand armorStand = this.getLastTeleportLocation().getWorld().spawn(this.getLastTeleportLocation(), ArmorStand.class);
 
 		armorStand.setGravity(false);
-		armorStand.setHelmet(ItemCreator.of(material).glow(this.glowing).build().make());
+		armorStand.setHelmet(ItemCreator.of(this.material).glow(this.glowing).make());
 		armorStand.setVisible(false);
 		armorStand.setSmall(this.small);
 
@@ -69,6 +69,7 @@ public class SimpleHologramStand extends SimpleHologram {
 
 	/**
 	 * @param small the small to set
+	 * @return
 	 */
 	public final SimpleHologram setSmall(boolean small) {
 		this.small = small;

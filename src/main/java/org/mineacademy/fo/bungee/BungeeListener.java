@@ -4,42 +4,68 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.message.IncomingMessage;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.plugin.SimplePlugin;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * Represents a BungeeCord listener using a {@link BungeeChannel} channel
+ * Represents a BungeeCord listener using a bungee channel
  * on which you can listen to receiving messages
  * <p>
  * This class is also a Listener for Bukkit events for your convenience
  */
+@Getter
 public abstract class BungeeListener implements Listener, PluginMessageListener {
 
 	/**
-	 * Create a new bungee listener
+	 * The channel
+	 */
+	private final String channel;
+
+	/**
+	 * The actions
+	 */
+	private final BungeeMessageType[] actions;
+
+	/**
+	 * Create a new bungee suite with the given params
 	 *
 	 * @param channel
+	 * @param listener
+	 * @param actions
 	 */
-	protected BungeeListener() {
+	protected BungeeListener(@NonNull String channel, Class<? extends BungeeMessageType> actionEnum) {
+		this.channel = channel;
+		this.actions = toActions(actionEnum);
+	}
+
+	private static BungeeMessageType[] toActions(@NonNull Class<? extends BungeeMessageType> actionEnum) {
+		Valid.checkBoolean(actionEnum.isEnum(), "BungeeListener expects BungeeMessageType to be an enum, given: " + actionEnum);
+
+		try {
+			return (BungeeMessageType[]) actionEnum.getMethod("values").invoke(null);
+
+		} catch (final ReflectiveOperationException ex) {
+			Common.throwError(ex, "Unable to get values() of " + actionEnum + ", ensure it is an enum!");
+
+			return null;
+		}
 	}
 
 	/**
 	 * Handle the received message automatically if it matches our tag
 	 */
 	@Override
-	public final void onPluginMessageReceived(String tag, Player player, byte[] data) {
+	public final void onPluginMessageReceived(String channelName, Player player, byte[] data) {
 
-		// Cauldron/Thermos is unsupported for bungee
+		// Cauldron/Thermos is unsupported for Bungee
 		if (Bukkit.getName().contains("Cauldron"))
 			return;
 
-		if (tag != null && tag.equals(SimplePlugin.getInstance().getBungeeCord().getChannel())) {
-			final IncomingMessage message = new IncomingMessage(data);
-
-			Debugger.debug("bungee", "Channel " + message.getChannel() + " received " + message.getAction() + " message from " + message.getServerName() + " server.");
-			onMessageReceived(player, message);
-		}
+		this.onMessageReceived(player, new IncomingMessage(data));
 	}
 
 	/**
@@ -50,4 +76,5 @@ public abstract class BungeeListener implements Listener, PluginMessageListener 
 	 * @param message
 	 */
 	public abstract void onMessageReceived(Player player, IncomingMessage message);
+
 }

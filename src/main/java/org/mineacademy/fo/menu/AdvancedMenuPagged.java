@@ -60,13 +60,13 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
      * Default: Material: Spectral_arrow, Name: "&7Previous page"
      */
     @Setter
-    private ItemStack previousButtonItem = ItemCreator.of(CompMaterial.SPECTRAL_ARROW, "&7Previous page").build().make();
+    private ItemStack previousButtonItem = ItemCreator.of(CompMaterial.SPECTRAL_ARROW, "&7Previous page").make();
     /**
      * The ItemStack that the next button should have.
      * Default: Material: Tipped_arrow, Name: "&7Next page"
      */
     @Setter
-    private ItemStack nextButtonItem = ItemCreator.of(CompMaterial.TIPPED_ARROW, "&7Next page").build().make();
+    private ItemStack nextButtonItem = ItemCreator.of(CompMaterial.TIPPED_ARROW, "&7Next page").make();
 
     public AdvancedMenuPagged(Player player){
         super(player);

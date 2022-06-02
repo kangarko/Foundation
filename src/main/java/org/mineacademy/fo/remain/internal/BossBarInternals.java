@@ -46,11 +46,6 @@ public final class BossBarInternals implements Listener {
 	private final Class<?> entityClass;
 
 	/**
-	 * Does the current MC version require us to spawn the dragon below ground?
-	 */
-	private final boolean isBelowGround;
-
-	/**
 	 * The player currently viewing the boss bar
 	 */
 	private final HashMap<UUID, NMSDragon> players = new HashMap<>();
@@ -63,43 +58,35 @@ public final class BossBarInternals implements Listener {
 	// Singleton
 	private BossBarInternals() {
 
-		if (MinecraftVersion.olderThan(V.v1_6)) {
+		if (MinecraftVersion.olderThan(V.v1_6))
 			this.entityClass = null;
-			this.isBelowGround = false;
-		}
 
-		else if (Remain.isProtocol18Hack()) {
+		else if (Remain.isProtocol18Hack())
 			this.entityClass = NMSDragon_v1_8Hack.class;
-			this.isBelowGround = false;
 
-		} else if (MinecraftVersion.equals(V.v1_6)) {
+		else if (MinecraftVersion.equals(V.v1_6))
 			this.entityClass = NMSDragon_v1_6.class;
-			this.isBelowGround = true;
 
-		} else if (MinecraftVersion.equals(V.v1_7)) {
+		else if (MinecraftVersion.equals(V.v1_7))
 			this.entityClass = NMSDragon_v1_7.class;
-			this.isBelowGround = true;
 
-		} else if (MinecraftVersion.equals(V.v1_8)) {
+		else if (MinecraftVersion.equals(V.v1_8))
 			this.entityClass = NMSDragon_v1_8.class;
-			this.isBelowGround = false;
 
-		} else {
+		else
 			this.entityClass = NMSDragon_v1_9.class;
-			this.isBelowGround = true;
-		}
 
 		if (MinecraftVersion.atLeast(V.v1_6)) {
-			Valid.checkNotNull(entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
+			Valid.checkNotNull(this.entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
 
 			Common.registerEvents(this);
 
 			if (Remain.isProtocol18Hack())
 				Common.runTimer(5, () -> {
-					for (final UUID uuid : players.keySet()) {
+					for (final UUID uuid : this.players.keySet()) {
 						final Player player = Remain.getPlayerByUUID(uuid);
 
-						Remain.sendPacket(player, players.get(uuid).getTeleportPacket(getDragonLocation(player.getLocation())));
+						Remain.sendPacket(player, this.players.get(uuid).getTeleportPacket(this.getDragonLocation(player.getLocation())));
 					}
 				});
 		}
@@ -187,19 +174,23 @@ public final class BossBarInternals implements Listener {
 	 * @param percent The percentage of the health bar filled.<br>
 	 *                This value must be between 0F (inclusive) and 100F
 	 *                (inclusive).
+	 * @param color
+	 * @param style
 	 * @throws IllegalArgumentException If the percentage is not within valid
 	 *                                  bounds.
 	 */
-	public void setMessage(final Player player, final String message, final float percent, final CompBarColor color, final CompBarStyle style) {
+	public void setMessage(Player player, String message, float percent, CompBarColor color, CompBarStyle style) {
 		Valid.checkBoolean(0F <= percent && percent <= 100F, "Percent must be between 0F and 100F, but was: " + percent);
 
 		if (this.entityClass == null)
 			return;
 
-		if (hasBar(player))
-			removeBar(player);
+		if (this.hasBar(player))
+			this.removeBar(player);
 
-		final NMSDragon dragon = getDragon(player, message);
+		message = Common.colorize(message);
+
+		final NMSDragon dragon = this.getDragon(player, message);
 
 		dragon.setName(cleanMessage(message));
 		dragon.setHealthF(percent / 100f * dragon.getMaxHealth());
@@ -210,9 +201,9 @@ public final class BossBarInternals implements Listener {
 		if (style != null)
 			dragon.barStyle = style;
 
-		cancelTimer(player);
+		this.cancelTimer(player);
 
-		sendDragon(dragon, player);
+		this.sendDragon(dragon, player);
 	}
 
 	/**
@@ -231,6 +222,8 @@ public final class BossBarInternals implements Listener {
 	 *                It will be cut to that size automatically.
 	 * @param seconds The amount of seconds displayed by the timer.<br>
 	 *                Supports values above 1 (inclusive).
+	 * @param color
+	 * @param style
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
 	public void setMessage(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {
@@ -239,10 +232,10 @@ public final class BossBarInternals implements Listener {
 		if (this.entityClass == null)
 			return;
 
-		if (hasBar(player))
-			removeBar(player);
+		if (this.hasBar(player))
+			this.removeBar(player);
 
-		final NMSDragon dragon = getDragon(player, message);
+		final NMSDragon dragon = this.getDragon(player, message);
 
 		dragon.setName(cleanMessage(message));
 		dragon.setHealthF(dragon.getMaxHealth());
@@ -254,21 +247,21 @@ public final class BossBarInternals implements Listener {
 
 		final float dragonHealthMinus = dragon.getMaxHealth() / seconds;
 
-		cancelTimer(player);
+		this.cancelTimer(player);
 
 		this.timers.put(player.getUniqueId(), Common.runTimer(20, 20, () -> {
-			final NMSDragon drag = getDragon(player, "");
+			final NMSDragon drag = this.getDragon(player, "");
 			drag.setHealthF(drag.getHealth() - dragonHealthMinus);
 
 			if (drag.getHealth() <= 1) {
-				removeBar(player);
-				cancelTimer(player);
+				this.removeBar(player);
+				this.cancelTimer(player);
 			} else
-				sendDragon(drag, player);
+				this.sendDragon(drag, player);
 
 		}).getTaskId());
 
-		sendDragon(dragon, player);
+		this.sendDragon(dragon, player);
 	}
 
 	/**
@@ -281,19 +274,19 @@ public final class BossBarInternals implements Listener {
 		if (this.entityClass == null)
 			return;
 
-		if (!hasBar(player))
+		if (!this.hasBar(player))
 			return;
 
-		final NMSDragon dragon = getDragon(player, "");
+		final NMSDragon dragon = this.getDragon(player, "");
 
 		if (dragon instanceof NMSDragon_v1_9)
 			((NMSDragon_v1_9) dragon).removePlayer(player);
 		else
-			Remain.sendPacket(player, getDragon(player, "").getDestroyPacket());
+			Remain.sendPacket(player, this.getDragon(player, "").getDestroyPacket());
 
 		this.players.remove(player.getUniqueId());
 
-		cancelTimer(player);
+		this.cancelTimer(player);
 	}
 
 	private boolean hasBar(final Player player) {
@@ -323,7 +316,7 @@ public final class BossBarInternals implements Listener {
 
 		} else {
 			Remain.sendPacket(player, dragon.getMetaPacket(dragon.getWatcher()));
-			Remain.sendPacket(player, dragon.getTeleportPacket(getDragonLocation(player.getLocation())));
+			Remain.sendPacket(player, dragon.getTeleportPacket(this.getDragonLocation(player.getLocation())));
 		}
 	}
 
@@ -331,7 +324,7 @@ public final class BossBarInternals implements Listener {
 		if (this.hasBar(player))
 			return this.players.get(player.getUniqueId());
 
-		return addDragon(player, cleanMessage(message));
+		return this.addDragon(player, cleanMessage(message));
 	}
 
 	private NMSDragon addDragon(final Player player, final String message) {
@@ -339,7 +332,7 @@ public final class BossBarInternals implements Listener {
 	}
 
 	private NMSDragon addDragon(final Player player, final Location loc, final String message) {
-		final NMSDragon dragon = newDragon(message, getDragonLocation(loc));
+		final NMSDragon dragon = this.newDragon(message, this.getDragonLocation(loc));
 
 		if (dragon instanceof NMSDragon_v1_9)
 			((NMSDragon_v1_9) dragon).addPlayer(player);
@@ -353,21 +346,16 @@ public final class BossBarInternals implements Listener {
 	}
 
 	private Location getDragonLocation(Location loc) {
-		if (this.isBelowGround) {
-			loc.subtract(0, 300, 0);
-			return loc;
-		}
-
 		final float pitch = loc.getPitch();
 
 		if (pitch >= 55)
-			loc.add(0, -300, 0);
+			loc.add(0, -3, 0);
 		else if (pitch <= -55)
-			loc.add(0, 300, 0);
+			loc.add(0, 3, 0);
 		else
 			loc = loc.getBlock().getRelative(getDirection(loc), Bukkit.getViewDistance() * 16).getLocation();
 
-		loc.subtract(0, 150, 0);
+		loc.subtract(0, 10, 0);
 
 		return loc;
 	}

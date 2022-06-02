@@ -1,5 +1,7 @@
 package org.mineacademy.fo.exception;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.mineacademy.fo.debug.Debugger;
 
 /**
@@ -11,6 +13,13 @@ public class FoException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
 	/**
+	 * Should we save thrown exceptions to error.log file automatically when they are thrown?
+	 */
+	@Getter
+	@Setter
+	private static boolean errorSavedAutomatically = true;
+
+	/**
 	 * Create a new exception and logs it
 	 *
 	 * @param t
@@ -18,7 +27,8 @@ public class FoException extends RuntimeException {
 	public FoException(Throwable t) {
 		super(t);
 
-		Debugger.saveError(t);
+		if (errorSavedAutomatically)
+			Debugger.saveError(t);
 	}
 
 	/**
@@ -29,7 +39,8 @@ public class FoException extends RuntimeException {
 	public FoException(String message) {
 		super(message);
 
-		Debugger.saveError(this, message);
+		if (errorSavedAutomatically)
+			Debugger.saveError(this, message);
 	}
 
 	/**
@@ -51,14 +62,17 @@ public class FoException extends RuntimeException {
 	public FoException(Throwable t, String message) {
 		super(message, t);
 
-		Debugger.saveError(t, message);
+		if (errorSavedAutomatically)
+			Debugger.saveError(t, message);
 	}
 
 	/**
 	 * Create a new exception and logs it
 	 */
 	public FoException() {
-		Debugger.saveError(this);
+
+		if (errorSavedAutomatically)
+			Debugger.saveError(this);
 	}
 
 	@Override

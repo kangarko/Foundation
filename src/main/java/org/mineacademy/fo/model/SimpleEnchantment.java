@@ -178,7 +178,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 * @return
 	 */
 	public String getLore(int level) {
-		return name + " " + MathUtil.toRoman(level);
+		return this.name + " " + MathUtil.toRoman(level);
 	}
 
 	/**
@@ -229,7 +229,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	/**
 	 * What other enchants this one conflicts with? Defaults to false for all
 	 *
-	 * @param
+	 * @param other
 	 * @return
 	 */
 	@Override
@@ -240,7 +240,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	/**
 	 * What items can be enchanted? Defaults to true for all
 	 *
-	 * @param
+	 * @param item
 	 * @return
 	 */
 	@Override
@@ -285,7 +285,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 */
 	@Override
 	public final int getMaxLevel() {
-		return maxLevel;
+		return this.maxLevel;
 	}
 
 	/**
@@ -295,7 +295,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 */
 	@Override
 	public final String getName() {
-		return name;
+		return this.name;
 	}
 
 	// ------------------------------------------------------------------------------------------

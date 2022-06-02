@@ -9,7 +9,7 @@ import lombok.NonNull;
  * A simple class holding time values in human readable form such as 1 second or 5 minutes
  */
 @Getter
-public class SimpleTime {
+public final class SimpleTime {
 
 	private final String raw;
 	private final long timeTicks;
@@ -65,12 +65,34 @@ public class SimpleTime {
 		return (int) this.timeTicks;
 	}
 
+	/**
+	 * Get the time specified in ms (ticks * 20)
+	 *
+	 * @return
+	 */
+	public long getTimeMilliseconds() {
+		return this.timeTicks * 50;
+	}
+
+	/**
+	 * Return the human readable representation of this time, such as 69 seconds (no pun intended)
+	 *
+	 * @return
+	 */
 	public String getRaw() {
 		return this.timeTicks == 0 ? "0" : this.raw;
 	}
 
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof SimpleTime && ((SimpleTime) obj).timeTicks == this.timeTicks;
+	}
+
 	@Override
 	public String toString() {
-		return this.raw;
+		return this.getRaw();
 	}
 }

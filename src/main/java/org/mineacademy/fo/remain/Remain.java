@@ -3,17 +3,12 @@ package org.mineacademy.fo.remain;
 import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
 import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +35,7 @@ import org.bukkit.Statistic.Type;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -48,7 +44,6 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -59,13 +54,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -78,8 +73,10 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
@@ -88,7 +85,7 @@ import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
 import org.mineacademy.fo.remain.internal.ChatInternals;
-import org.mineacademy.fo.settings.SimpleYaml;
+import org.mineacademy.fo.remain.nbt.NBTEntity;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -139,6 +136,11 @@ public final class Remain {
 	 * The EntityPlayer.playerConnection method
 	 */
 	private static Field fieldPlayerConnection;
+
+	/**
+	 * Get if entity is invulnerable on legacy MC
+	 */
+	private static Field fieldEntityInvulnerable;
 
 	/**
 	 * The PlayerConnection.sendPacket method
@@ -215,9 +217,19 @@ public final class Remain {
 	private static boolean hasItemMeta = true;
 
 	/**
+	 * Return if the {@link Entity#addPassenger(Entity)} method is available.
+	 */
+	private static boolean hasAddPassenger = true;
+
+	/**
 	 * Stores player cooldowns for old MC versions
 	 */
 	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
+
+	/**
+	 * The internal private section path data class
+	 */
+	private static Class<?> sectionPathDataClass = null;
 
 	/**
 	 * The server-name from server.properties (is lacking on new Minecraft version so we have to readd it back)
@@ -249,12 +261,23 @@ public final class Remain {
 			getNMSClass("Entity", "net.minecraft.world.entity.Entity");
 
 		} catch (final Throwable t) {
-			Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
-			Bukkit.getLogger().severe("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
+			boolean isThermos = false;
 
-			t.printStackTrace();
+			try {
+				Class.forName("thermos.ThermosRemapper");
 
-			Bukkit.getLogger().severe("***************************************************************");
+				isThermos = true;
+			} catch (final Throwable tt) {
+			}
+
+			if (!isThermos) {
+				Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
+				Bukkit.getLogger().severe("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
+
+				t.printStackTrace();
+
+				Bukkit.getLogger().severe("***************************************************************");
+			}
 		}
 
 		try {
@@ -272,10 +295,25 @@ public final class Remain {
 				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
 						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 
+				if (MinecraftVersion.olderThan(V.v1_12))
+					try {
+						fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
+						fieldEntityInvulnerable.setAccessible(true);
+					} catch (final Throwable t) {
+						// Unavailable
+					}
+				else
+					fieldEntityInvulnerable = null;
+
 			} catch (final Throwable t) {
-				Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
-				Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibble.");
+
+				t.printStackTrace();
+
+				if (MinecraftVersion.atLeast(V.v1_7)) {
+					Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
+					Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+					Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibble.");
+				}
 
 				fieldPlayerConnection = null;
 				sendPacket = null;
@@ -293,13 +331,13 @@ public final class Remain {
 
 			try {
 				World.class.getMethod("spawnParticle", org.bukkit.Particle.class, Location.class, int.class);
-			} catch (final NoClassDefFoundError | ReflectiveOperationException ex) {
+			} catch (final Throwable ex) {
 				hasParticleAPI = false;
 			}
 
 			try {
 				Class.forName("net.md_5.bungee.chat.ComponentSerializer");
-			} catch (final ClassNotFoundException ex) {
+			} catch (final Throwable ex) {
 				bungeeApiPresent = false;
 
 				throw new FoException(
@@ -311,54 +349,63 @@ public final class Remain {
 
 			try {
 				Objective.class.getMethod("getScore", String.class);
-			} catch (final NoClassDefFoundError | NoSuchMethodException e) {
+			} catch (final Throwable e) {
 				newScoreboardAPI = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.event.player.PlayerEditBookEvent").getName();
-			} catch (final ClassNotFoundException ex) {
+			} catch (final Throwable ex) {
 				hasBookEvent = false;
 			}
 
 			try {
 				Inventory.class.getMethod("getLocation");
-			} catch (final ReflectiveOperationException ex) {
+			} catch (final Throwable ex) {
 				hasInventoryLocation = false;
 			}
 
 			try {
 				Entity.class.getMethod("getScoreboardTags");
-			} catch (final ReflectiveOperationException ex) {
+			} catch (final Throwable ex) {
 				hasScoreboardTags = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.inventory.meta.SpawnEggMeta");
-			} catch (final ClassNotFoundException err) {
+			} catch (final Throwable err) {
 				hasSpawnEggMeta = false;
 			}
 
 			try {
 				Class.forName("org.bukkit.advancement.Advancement");
 				Class.forName("org.bukkit.NamespacedKey");
-
-			} catch (final ClassNotFoundException err) {
+			} catch (final Throwable err) {
 				hasAdvancements = false;
 			}
 
 			try {
 				YamlConfiguration.class.getMethod("load", java.io.Reader.class);
-
-			} catch (final NoSuchMethodException err) {
+			} catch (final Throwable err) {
 				hasYamlReaderLoad = false;
 			}
 
 			try {
-				Class.forName("org.bukkit.inventory.meta.ItemMeta");
-
-			} catch (final Exception ex) {
+				org.bukkit.inventory.ItemStack.class.getMethod("getItemMeta");
+			} catch (final Throwable ex) {
 				hasItemMeta = false;
+			}
+
+			try {
+				Entity.class.getMethod("addPassenger", Entity.class);
+			} catch (final Throwable ex) {
+				hasAddPassenger = false;
+			}
+
+			try {
+				sectionPathDataClass = ReflectionUtil.lookupClass("org.bukkit.configuration.SectionPathData");
+			} catch (final Throwable ex) {
+				// unsupported
 			}
 
 		} catch (final ReflectiveOperationException ex) {
@@ -620,6 +667,7 @@ public final class Remain {
 	public static void setData(final Block block, final int data) {
 		try {
 			Block.class.getMethod("setData", byte.class).invoke(block, (byte) data);
+
 		} catch (final NoSuchMethodException ex) {
 			block.setBlockData(Bukkit.getUnsafe().fromLegacy(block.getType(), (byte) data), true);
 
@@ -635,19 +683,8 @@ public final class Remain {
 	 * @param material
 	 * @param data
 	 */
-	public static void setTypeAndData(final Block block, final CompMaterial material, final byte data) {
-		setTypeAndData(block, material.getMaterial(), data);
-	}
-
-	/**
-	 * Sets a block type and its data, applying physics.
-	 *
-	 * @param block
-	 * @param material
-	 * @param data
-	 */
 	public static void setTypeAndData(final Block block, final Material material, final byte data) {
-		setTypeAndData(block, material, data, true);
+		setTypeAndData(block, CompMaterial.fromLegacy(material.name(), data));
 	}
 
 	/**
@@ -655,16 +692,13 @@ public final class Remain {
 	 *
 	 * @param block
 	 * @param material
-	 * @param data
 	 */
-	public static void setTypeAndData(final Block block, final Material material, final byte data, final boolean physics) {
-		if (MinecraftVersion.atLeast(V.v1_13)) {
-			block.setType(material);
-			block.setBlockData(Bukkit.getUnsafe().fromLegacy(material, data), physics);
-
-		} else
+	public static void setTypeAndData(final Block block, final CompMaterial material) {
+		if (MinecraftVersion.atLeast(V.v1_13))
+			block.setType(material.getMaterial());
+		else
 			try {
-				block.getClass().getMethod("setTypeIdAndData", int.class, byte.class, boolean.class).invoke(block, material.getId(), data, physics);
+				block.getClass().getMethod("setTypeIdAndData", int.class, byte.class, boolean.class).invoke(block, material.getId(), material.getData(), true);
 			} catch (final ReflectiveOperationException ex) {
 				ex.printStackTrace();
 			}
@@ -685,9 +719,11 @@ public final class Remain {
 	 * Converts chat message in JSON (IChatBaseComponent) to one lined old style
 	 * message with color codes. e.g. {text:"Hello world",color="red"} converts to
 	 * &cHello world
+	 * @param json
 	 *
 	 * @param denyEvents if an exception should be thrown if hover/click event is
 	 *                   found.
+	 * @return
 	 * @throws InteractiveTextFoundException if click/hover event are found. Such
 	 *                                       events would be removed, and therefore
 	 *                                       message containing them shall not be
@@ -714,11 +750,6 @@ public final class Remain {
 			// Do not catch our own exception
 			if (throwable instanceof InteractiveTextFoundException)
 				throw throwable;
-
-			/*Debugger.saveError(throwable,
-					"Unable to parse JSON message.",
-					"JSON: " + json,
-					"Error: %error");*/
 		}
 
 		return text.toString();
@@ -738,7 +769,6 @@ public final class Remain {
 	 * Convert the given json into list
 	 *
 	 * @param json
-	 * @param typeOf
 	 * @return
 	 */
 	public static List<String> fromJsonList(String json) {
@@ -748,6 +778,8 @@ public final class Remain {
 	/**
 	 * Converts chat message with color codes to Json chat components e.g. &6Hello
 	 * world converts to {text:"Hello world",color="gold"}
+	 * @param message
+	 * @return
 	 */
 	public static String toJson(final String message) {
 		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
@@ -1057,7 +1089,7 @@ public final class Remain {
 	 *
 	 * @param player
 	 */
-	public static void removeBar(final Player player) {
+	public static void removeBossBar(final Player player) {
 		BossBarInternals.getInstance().removeBar(player);
 	}
 
@@ -1075,7 +1107,7 @@ public final class Remain {
 	 * Broadcast a chest open animation at the given block,
 	 * the block must be a chest!
 	 *
-	 * @param location
+	 * @param block
 	 */
 	public static void sendChestOpen(Block block) {
 		sendChestAction(block, 1);
@@ -1167,7 +1199,7 @@ public final class Remain {
 	 * aliases
 	 *
 	 * @param label          the label
-	 * @param removeAliases, also remove aliases?
+	 * @param removeAliases also remove aliases?
 	 */
 	public static void unregisterCommand(final String label, final boolean removeAliases) {
 		try {
@@ -1205,11 +1237,19 @@ public final class Remain {
 	 * @return
 	 */
 	public static SimpleCommandMap getCommandMap() {
+		final Class<?> craftServer = getOBCClass("CraftServer");
+
 		try {
-			return (SimpleCommandMap) getOBCClass("CraftServer").getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
+			return (SimpleCommandMap) craftServer.getDeclaredMethod("getCommandMap").invoke(Bukkit.getServer());
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Unable to get the command map");
+
+			try {
+				return ReflectionUtil.getFieldContent(Bukkit.getServer(), "commandMap");
+
+			} catch (final Throwable ex2) {
+				throw new FoException(ex2, "Unable to get the command map");
+			}
 		}
 	}
 
@@ -1223,7 +1263,6 @@ public final class Remain {
 
 		ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
 		Enchantment.registerEnchantment(enchantment);
-
 	}
 
 	/**
@@ -1262,6 +1301,21 @@ public final class Remain {
 			}
 
 		return inv.getHolder() instanceof BlockState ? ((BlockState) inv.getHolder()).getLocation() : !inv.getViewers().isEmpty() ? inv.getViewers().iterator().next().getLocation() : null;
+	}
+
+	/**
+	 * Return the biome at the given location
+	 *
+	 * @param loc
+	 * @return
+	 */
+	public static Biome getBiome(Location loc) {
+		try {
+			return loc.getWorld().getBiome(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+
+		} catch (final NoSuchMethodError err) {
+			return loc.getWorld().getBiome(loc.getBlockX(), loc.getBlockZ());
+		}
 	}
 
 	/**
@@ -1377,10 +1431,10 @@ public final class Remain {
 	 */
 	public static void openBook(Player player, ItemStack book) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
-		Valid.checkBoolean(book.getItemMeta() instanceof BookMeta, "openBook method called for not a book item: " + book);
+		Valid.checkBoolean(book.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta, "openBook method called for not a book item: " + book);
 
 		// Fix "Invalid book tag" error when author/title is empty
-		final BookMeta meta = (BookMeta) book.getItemMeta();
+		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) book.getItemMeta();
 
 		if (meta.getAuthor() == null)
 			meta.setAuthor("");
@@ -1388,10 +1442,12 @@ public final class Remain {
 		if (meta.getTitle() == null)
 			meta.setTitle("");
 
+		if (meta.getPageCount() == 0)
+			meta.setPages(""); // Empty book
+
 		book.setItemMeta(meta);
 
 		try {
-
 			player.openBook(book);
 
 		} catch (final NoSuchMethodError ex) {
@@ -1541,10 +1597,7 @@ public final class Remain {
 	 * @param material   the material
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Location location, final CompMaterial material) {
-		if (delayTicks > 0)
-			Common.runLater(delayTicks, () -> sendBlockChange0(player, location, material));
-		else
-			sendBlockChange0(player, location, material);
+		Common.runLater(delayTicks, () -> sendBlockChange0(player, location, material));
 	}
 
 	private static void sendBlockChange0(final Player player, final Location location, final CompMaterial material) {
@@ -1564,10 +1617,7 @@ public final class Remain {
 	 * @param block
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Block block) {
-		if (delayTicks > 0)
-			Common.runLater(delayTicks, () -> sendBlockChange0(player, block));
-		else
-			sendBlockChange0(player, block);
+		Common.runLater(delayTicks, () -> sendBlockChange0(player, block));
 	}
 
 	private static void sendBlockChange0(final Player player, final Block block) {
@@ -1585,10 +1635,21 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static int getPlaytimeMinutes(final Player player) {
-		final Statistic stat = getPlayTimeStatisticName();
+	public static long getPlaytimeMinutes(final OfflinePlayer player) {
+		return getPlaytimeSeconds(player) / 60;
+	}
 
-		return player.getStatistic(stat) / (stat.name().contains("TICK") ? 20 * 60 : 60 * 60);
+	/**
+	 * Return how long the player has played on this server (pulled from your world statistics file)
+	 * in seconds.
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static long getPlaytimeSeconds(final OfflinePlayer player) {
+		final long value = PlayerUtil.getStatistic(player, getPlayTimeStatisticName());
+
+		return value / 20;
 	}
 
 	/**
@@ -1615,12 +1676,16 @@ public final class Remain {
 	 * <p>
 	 * Backwards compatible.
 	 *
-	 * @param e, the event
+	 * @param event the event
 	 * @return if the event was fired for main hand only
 	 */
-	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent e) {
+	public static boolean isInteractEventPrimaryHand(final PlayerInteractEvent event) {
+
+		if (MinecraftVersion.olderThan(V.v1_9))
+			return true;
+
 		try {
-			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
+			return event.getHand() != null && event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
 
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
@@ -1634,8 +1699,13 @@ public final class Remain {
 	 * @return
 	 */
 	public static boolean isInteractEventPrimaryHand(final PlayerInteractEntityEvent e) {
+
+		if (MinecraftVersion.olderThan(V.v1_9))
+			return true;
+
 		try {
 			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
+
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
 		}
@@ -1691,11 +1761,14 @@ public final class Remain {
 	 * Tries to find online player by uuid
 	 *
 	 * @param id
-	 * @return
+	 *
+	 * @return null if offline or player
 	 */
 	public static Player getPlayerByUUID(final UUID id) {
 		try {
-			return Bukkit.getPlayer(id);
+			final Player player = Bukkit.getPlayer(id);
+
+			return player != null && player.isOnline() ? player : null;
 
 		} catch (final NoSuchMethodError err) {
 			for (final Player online : getOnlinePlayers())
@@ -1709,15 +1782,15 @@ public final class Remain {
 	/**
 	 * Gets the final damage of an event
 	 *
-	 * @param e
+	 * @param event
 	 * @return
 	 */
-	public static double getFinalDamage(final EntityDamageEvent e) {
+	public static double getFinalDamage(final EntityDamageEvent event) {
 		try {
-			return e.getFinalDamage();
+			return event.getFinalDamage();
 
 		} catch (final NoSuchMethodError err) {
-			return e.getDamage();
+			return event.getDamage();
 		}
 	}
 
@@ -1725,13 +1798,13 @@ public final class Remain {
 	 * Return the correct inventory that was clicked (either bottom or top inventory
 	 * or null if clicked outside)
 	 *
-	 * @param e the inventory click event
+	 * @param event the inventory click event
 	 * @return the actual inventory clicked, either bottom or top, or null if
 	 * clicked outside
 	 */
-	public static Inventory getClickedInventory(final InventoryClickEvent e) {
-		final int slot = e.getRawSlot();
-		final InventoryView view = e.getView();
+	public static Inventory getClickedInventory(final InventoryClickEvent event) {
+		final int slot = event.getRawSlot();
+		final InventoryView view = event.getView();
 
 		return slot < 0 ? null : view.getTopInventory() != null && slot < view.getTopInventory().getSize() ? view.getTopInventory() : view.getBottomInventory();
 	}
@@ -1740,10 +1813,13 @@ public final class Remain {
 	 * Return a list of pages (new MC also will expose interactive elements)
 	 * in a book
 	 *
-	 * @param meta
+	 * @param metaObject
 	 * @return
 	 */
-	public static List<BaseComponent[]> getPages(BookMeta meta) {
+	public static List<BaseComponent[]> getPages(Object metaObject) {
+		Valid.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta);
+		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
+
 		try {
 			return meta.spigot().getPages();
 
@@ -1760,21 +1836,17 @@ public final class Remain {
 	/**
 	 * Attempts to set the book pages from the given list
 	 *
-	 * @param meta
+	 * @param metaObject
 	 * @param pages
 	 */
-	public static void setPages(BookMeta meta, List<BaseComponent[]> pages) {
+	public static void setPages(Object metaObject, List<BaseComponent[]> pages) {
+		Valid.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta);
+		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
+
 		try {
 			meta.spigot().setPages(pages);
 
 		} catch (final NoSuchMethodError ex) {
-			/*final List<String> list = new ArrayList<>();
-
-			for (final BaseComponent[] page : pages)
-				list.add(TextComponent.toLegacyText(page));
-
-			meta.setPages(list);*/
-
 			try {
 				final List<Object> chatComponentPages = (List<Object>) ReflectionUtil.getFieldContent(ReflectionUtil.getOBCClass("inventory.CraftMetaBook"), "pages", meta);
 
@@ -1840,14 +1912,41 @@ public final class Remain {
 	/**
 	 * Sets a custom name to entity
 	 *
-	 * @param en
+	 * @param entity
 	 * @param name
 	 */
-	public static void setCustomName(final Entity en, final String name) {
+	public static void setCustomName(final Entity entity, final String name) {
 		try {
-			en.setCustomNameVisible(true);
-			en.setCustomName(Common.colorize(name));
+			entity.setCustomNameVisible(true);
+			entity.setCustomName(Common.colorize(name));
+
 		} catch (final NoSuchMethodError er) {
+			Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "setCustomName requires Minecraft 1.7.10+");
+
+			final NBTEntity nbt = new NBTEntity(entity);
+
+			nbt.setInteger("CustomNameVisible", 1);
+			nbt.setString("CustomName", Common.colorize(name));
+		}
+	}
+
+	/**
+	 * Removes a custom name if the entity had it
+	 *
+	 * @param entity
+	 */
+	public static void removeCustomName(final Entity entity) {
+		try {
+			entity.setCustomNameVisible(false);
+			entity.setCustomName(null);
+
+		} catch (final NoSuchMethodError er) {
+			Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "setCustomName requires Minecraft 1.7.10+");
+
+			final NBTEntity nbt = new NBTEntity(entity);
+
+			nbt.removeKey("CustomNameVisible");
+			nbt.removeKey("CustomName");
 		}
 	}
 
@@ -1855,20 +1954,22 @@ public final class Remain {
 	 * Calls NMS to find out if the entity is invisible, works for any entity,
 	 * better than Bukkit since it has extreme downwards compatibility and does not require LivingEntity
 	 *
+	 * USE WITH CAUTION, returns true for spectator mode and vanish potions
+	 *
 	 * @param entity
 	 * @return
 	 */
 	public static boolean isInvisible(Entity entity) {
-		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#isInvisible requires Minecraft 1.4.7 or greater");
-
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
 			return ((LivingEntity) entity).isInvisible();
 
-		else {
+		else if (MinecraftVersion.atLeast(V.v1_4)) {
 			final Object nmsEntity = getHandleEntity(entity);
 
 			return (boolean) ReflectionUtil.invoke("isInvisible", nmsEntity);
 		}
+
+		return false;
 	}
 
 	/**
@@ -1877,7 +1978,10 @@ public final class Remain {
 	 *
 	 * @param entity
 	 * @param invisible
+	 *
+	 * @deprecated use {@link PlayerUtil#setVanished(Player, boolean)} to disable vanish for plugins also
 	 */
+	@Deprecated
 	public static void setInvisible(Object entity, boolean invisible) {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_4), "Entity#setInvisible requires Minecraft 1.4.7 or greater");
 
@@ -1891,6 +1995,40 @@ public final class Remain {
 			// https://www.spigotmc.org/threads/how-do-i-make-an-entity-go-invisible-without-using-potioneffects.321227/
 			Common.runLater(2, () -> ReflectionUtil.invoke("setInvisible", nmsEntity, invisible));
 		}
+	}
+
+	/**
+	 * Return if the given entity is invulnerable
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static boolean isInvulnerable(Entity entity) {
+		try {
+			return entity.isInvulnerable();
+
+		} catch (final NoSuchMethodError ex) {
+
+			if (fieldEntityInvulnerable != null)
+				try {
+					return (boolean) fieldEntityInvulnerable.get(getHandleEntity(entity));
+
+				} catch (final ReflectiveOperationException exx) {
+				}
+
+			return false;
+		}
+	}
+
+	/**
+	 * Set the invulnerable status for an entity,
+	 * this may fail on old Minecraft versions such as 1.7.10.
+	 *
+	 * @param entity
+	 * @param invulnerable
+	 */
+	public static void setInvulnerable(Entity entity, boolean invulnerable) {
+		CompProperty.INVULNERABLE.apply(entity, invulnerable);
 	}
 
 	/**
@@ -1952,25 +2090,55 @@ public final class Remain {
 	}
 
 	/**
-	 * Send a "toast" notification. This is an advancement notification that cannot
-	 * be modified that much. It imposes a slight performance penalty.
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
 	 *
 	 * @param receiver
 	 * @param message
 	 */
-	public static void sendToast(final Player receiver, final String message) {
-		sendToast(receiver, message, CompMaterial.BOOK);
+	public static void sendToast(Player receiver, String message) {
+		sendToast(receiver, message, CompMaterial.BOOK, CompToastStyle.TASK);
+	}
+
+	/**
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
+	 *
+	 * You can pick the first screen from precreated Minecraft screens here.
+	 *
+	 * @param receiver
+	 * @param message
+	 * @param toastStyle
+	 */
+	public static void sendToast(Player receiver, String message, CompToastStyle toastStyle) {
+		sendToast(receiver, message, CompMaterial.BOOK, toastStyle);
+	}
+
+	/**
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
+	 *
+	 * You can change the icon appearing on the first screen here.
+	 *
+	 * @param receiver
+	 * @param message
+	 */
+	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
+		sendToast(receiver, message, icon, CompToastStyle.TASK);
 	}
 
 	/**
 	 * Send a "toast" notification. This is an advancement notification that cannot
 	 * be modified that much. It imposes a slight performance penalty.
 	 *
+	 * You can change the icon appearing on the first screen here.
+	 * You can also pick the first screen from precreated Minecraft screens here.
+	 *
 	 * @param receiver
 	 * @param message
 	 * @param icon
 	 */
-	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
+	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
@@ -1978,7 +2146,7 @@ public final class Remain {
 				Valid.checkSync("Toasts may only be sent from the main thread");
 
 				if (hasAdvancements)
-					new AdvancementAccessor(colorized, icon.toString().toLowerCase()).show(receiver);
+					new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver);
 
 				else
 					receiver.sendMessage(colorized);
@@ -1992,13 +2160,13 @@ public final class Remain {
 	 *
 	 * Each player sending is delayed by 0.1s
 	 *
-	 * @param receiver
+	 * @param receivers
 	 * @param message you can replace player-specific variables in the message here
 	 * @param icon
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
 
-		if (hasAdvancements) {
+		if (hasAdvancements)
 			Common.runLaterAsync(() -> {
 				for (final Player receiver : receivers) {
 
@@ -2009,7 +2177,7 @@ public final class Remain {
 						final String colorized = Common.colorize(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase());
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), CompToastStyle.GOAL);
 
 							if (receiver.isOnline())
 								accessor.show(receiver);
@@ -2017,8 +2185,7 @@ public final class Remain {
 					});
 				}
 			});
-
-		} else
+		else
 			for (final Player receiver : receivers) {
 				final String colorized = Common.colorize(message.apply(receiver));
 
@@ -2068,7 +2235,7 @@ public final class Remain {
 		} catch (final Throwable t) {
 			final StrictMap<Material, Integer> cooldown = getCooldown(player);
 
-			return cooldown.contains(material);
+			return cooldown.containsKey(material);
 		}
 	}
 
@@ -2099,6 +2266,25 @@ public final class Remain {
 	}
 
 	/**
+	 * Return the player ping
+	 *
+	 * @deprecated use {@link PlayerUtil#getPing(Player)}
+	 * @param player
+	 * @return
+	 */
+	@Deprecated
+	public static int getPing(Player player) {
+		try {
+			return player.getPing();
+
+		} catch (final NoSuchMethodError err) {
+			final Object entityPlayer = Remain.getHandleEntity(player);
+
+			return (int) ReflectionUtil.getFieldContent(entityPlayer, "ping");
+		}
+	}
+
+	/**
 	 * Return the entity by UUID
 	 *
 	 * @param uuid
@@ -2111,6 +2297,33 @@ public final class Remain {
 			for (final Entity entity : world.getEntities())
 				if (entity.getUniqueId().equals(uuid))
 					return entity;
+
+		return null;
+	}
+
+	/**
+	 * Attempts to find the hit entity from the projectile hit event.
+	 *
+	 * @param event
+	 * @return
+	 */
+	public static LivingEntity getHitEntity(ProjectileHitEvent event) {
+		try {
+
+			// Try getting the hit entity directly
+			if (event.getHitEntity() instanceof LivingEntity)
+				return (LivingEntity) event.getHitEntity();
+
+		} catch (final Throwable t) {
+
+			// If this fails, try getting the entity to which the projectile was attached,
+			// imperfect, but mostly works.
+			final double radius = 0.5;
+
+			for (final Entity nearby : event.getEntity().getNearbyEntities(radius, radius, radius))
+				if (nearby instanceof LivingEntity)
+					return (LivingEntity) nearby;
+		}
 
 		return null;
 	}
@@ -2129,9 +2342,9 @@ public final class Remain {
 		} catch (final Throwable t) {
 			final List<Entity> found = new ArrayList<>();
 
-			for (final Entity e : location.getWorld().getEntities())
-				if (e.getLocation().distance(location) <= radius)
-					found.add(e);
+			for (final Entity nearby : location.getWorld().getEntities())
+				if (nearby.getLocation().distance(location) <= radius)
+					found.add(nearby);
 
 			return found;
 		}
@@ -2202,15 +2415,27 @@ public final class Remain {
 	}
 
 	/**
-	 * Attempts to insert a certain potion to the given item
+	 * Attempts to insert a potion to the given item with duration of 10 minutes.
 	 *
 	 * @param item
 	 * @param type
 	 * @param level
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
+		setPotion(item, type, 20 * 60 * 10, level);
+	}
+
+	/**
+	 * Attempts to insert a potion to the given item.
+	 *
+	 * @param item
+	 * @param type
+	 * @param durationTicks
+	 * @param level
+	 */
+	public static void setPotion(final ItemStack item, final PotionEffectType type, final int durationTicks, final int level) {
 		if (hasItemMeta)
-			PotionSetter.setPotion(item, type, level);
+			PotionSetter.setPotion(item, type, durationTicks, level);
 	}
 
 	/**
@@ -2229,75 +2454,6 @@ public final class Remain {
 		} catch (final Throwable t) {
 			return ItemUtil.bountifyCapitalized(item.getType());
 		}
-	}
-
-	/**
-	 * Load YAML configuration from stream, throwing any errors
-	 *
-	 * @param is the input stream
-	 * @return the configuration
-	 */
-	public static SimpleYaml loadConfiguration(final InputStream is) {
-		Valid.checkNotNull(is, "Could not load configuration from a null input stream!");
-
-		SimpleYaml conf = null;
-
-		try {
-			conf = loadConfigurationStrict(is);
-
-		} catch (final Throwable ex) {
-			ex.printStackTrace();
-		}
-
-		Valid.checkNotNull(conf, "Could not load configuration from " + is);
-		return conf;
-	}
-
-	/**
-	 * Load YAML configuration from stream as unicode, throwing any errors
-	 *
-	 * @param is the input stream
-	 * @return the configuration
-	 * @throws Throwable when any error occurs
-	 */
-	public static SimpleYaml loadConfigurationStrict(final InputStream is) throws Throwable {
-		final SimpleYaml conf = new SimpleYaml();
-
-		try {
-			conf.load(new InputStreamReader(is, StandardCharsets.UTF_8));
-
-		} catch (final NoSuchMethodError ex) {
-			loadConfigurationFromString(is, conf);
-		}
-
-		return conf;
-	}
-
-	/**
-	 * Load the YAML configuration from stream
-	 *
-	 * @param stream
-	 * @param conf
-	 * @throws IOException
-	 * @throws InvalidConfigurationException
-	 */
-	public static SimpleYaml loadConfigurationFromString(final InputStream stream, final SimpleYaml conf) throws IOException, InvalidConfigurationException {
-		Valid.checkNotNull(stream, "Stream cannot be null");
-
-		final StringBuilder builder = new StringBuilder();
-		final InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
-
-		try (final BufferedReader input = new BufferedReader(reader)) {
-			String line;
-
-			while ((line = input.readLine()) != null) {
-				builder.append(line);
-				builder.append('\n');
-			}
-		}
-
-		conf.loadFromString(builder.toString());
-		return conf;
 	}
 
 	/**
@@ -2388,7 +2544,7 @@ public final class Remain {
 		String previousName = null;
 
 		if (settingsFile.exists()) {
-			final SimpleYaml settings = FileUtil.loadConfigurationStrict(settingsFile);
+			final YamlConfiguration settings = YamlConfiguration.loadConfiguration(settingsFile);
 			final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
 			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
@@ -2443,22 +2599,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static int getJavaVersion() {
-		String version = System.getProperty("java.version");
-
-		if (version.startsWith("1."))
-			version = version.substring(2, 3);
-
-		else {
-			final int dot = version.indexOf(".");
-
-			if (dot != -1)
-				version = version.substring(0, dot);
-		}
-
-		if (version.contains("-"))
-			version = version.split("\\-")[0];
-
-		return Integer.parseInt(version);
+		return SimplePlugin.getJavaVersion(); // The reason we have one in SimplePlugin is to NOT invoke the Remain class when calling
 	}
 
 	/**
@@ -2477,6 +2618,55 @@ public final class Remain {
 			// Unsupported
 			return 20;
 		}
+	}
+
+	/**
+	 * Attempts to set render distance of the player to the given value
+	 * returning false if we got a reflective exception (such as when not using PaperSpigot
+	 * or on an outdated MC version).
+	 *
+	 * @return
+	 */
+	public static boolean setViewDistance(Player player, int viewDistanceChunks) {
+
+		try {
+			final Method setViewDistance = Player.class.getDeclaredMethod("setViewDistance", int.class);
+
+			ReflectionUtil.invoke(setViewDistance, player, viewDistanceChunks);
+			return true;
+
+		} catch (final ReflectiveOperationException ex) {
+
+			// Not using Paper or old MC version
+			return false;
+		}
+	}
+
+	/**
+	 * Converts the given object that may be a SectionPathData for MC 1.18 back into its root data
+	 * such as {@link MemorySection}
+	 *
+	 * @param objectOrSectionPathData
+	 * @return
+	 *
+	 * @deprecated legacy code, will be removed
+	 */
+	@Deprecated
+	public static Object getRootOfSectionPathData(Object objectOrSectionPathData) {
+		if (objectOrSectionPathData != null && objectOrSectionPathData.getClass() == sectionPathDataClass)
+			objectOrSectionPathData = ReflectionUtil.invoke("getData", objectOrSectionPathData);
+
+		return objectOrSectionPathData;
+	}
+
+	/**
+	 * Return true if the given object is a memory section
+	 *
+	 * @param obj
+	 * @return
+	 */
+	public static boolean isMemorySection(Object obj) {
+		return obj != null && sectionPathDataClass == obj.getClass();
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -2549,7 +2739,7 @@ public final class Remain {
 	}
 
 	/**
-	 * Return if the server version supports {@link SpawnEggMeta}
+	 * Return if the server version supports SpawnEggMeta
 	 *
 	 * @return true if egg meta are supported
 	 */
@@ -2583,6 +2773,15 @@ public final class Remain {
 	 */
 	public static boolean hasHexColors() {
 		return MinecraftVersion.atLeast(V.v1_16);
+	}
+
+	/**
+	 * Return if the Entity class has the addPassenger method
+	 *
+	 * @return
+	 */
+	public static boolean hasAddPassenger() {
+		return hasAddPassenger;
 	}
 
 	// ------------------------ Legacy ------------------------
@@ -2722,25 +2921,27 @@ class AdvancementAccessor {
 	private final NamespacedKey key;
 	private final String icon;
 	private final String message;
+	private final CompToastStyle toastStyle;
 
-	AdvancementAccessor(final String message, final String icon) {
+	AdvancementAccessor(final String message, final String icon, CompToastStyle toastStyle) {
 		this.key = new NamespacedKey(SimplePlugin.getInstance(), UUID.randomUUID().toString());
 		this.message = message;
 		this.icon = icon;
+		this.toastStyle = toastStyle;
 	}
 
 	public void show(final Player player) {
-		loadAdvancement();
-		grantAdvancement(player);
+		this.loadAdvancement();
+		this.grantAdvancement(player);
 
 		Common.runLater(10, () -> {
-			revokeAdvancement(player);
-			removeAdvancement();
+			this.revokeAdvancement(player);
+			this.removeAdvancement();
 		});
 	}
 
 	private void loadAdvancement() {
-		Bukkit.getUnsafe().loadAdvancement(key, compileJson0());
+		Bukkit.getUnsafe().loadAdvancement(this.key, this.compileJson0());
 	}
 
 	private String compileJson0() {
@@ -2751,10 +2952,10 @@ class AdvancementAccessor {
 
 		final JsonObject display = new JsonObject();
 		display.add("icon", icon);
-		display.addProperty("title", message);
+		display.addProperty("title", this.message);
 		display.addProperty("description", "");
 		display.addProperty("background", "minecraft:textures/gui/advancements/backgrounds/adventure.png");
-		display.addProperty("frame", "goal");
+		display.addProperty("frame", this.toastStyle.getKey());
 		display.addProperty("announce_to_chat", false);
 		display.addProperty("show_toast", true);
 		display.addProperty("hidden", true);
@@ -2773,7 +2974,7 @@ class AdvancementAccessor {
 	}
 
 	private void grantAdvancement(final Player plazer) {
-		final Advancement adv = getAdvancement();
+		final Advancement adv = this.getAdvancement();
 		final AdvancementProgress progress = plazer.getAdvancementProgress(adv);
 
 		if (!progress.isDone())
@@ -2781,7 +2982,7 @@ class AdvancementAccessor {
 	}
 
 	private void revokeAdvancement(final Player plazer) {
-		final Advancement adv = getAdvancement();
+		final Advancement adv = this.getAdvancement();
 		final AdvancementProgress prog = plazer.getAdvancementProgress(adv);
 
 		if (prog.isDone())
@@ -2789,11 +2990,11 @@ class AdvancementAccessor {
 	}
 
 	private void removeAdvancement() {
-		Bukkit.getUnsafe().removeAdvancement(key);
+		Bukkit.getUnsafe().removeAdvancement(this.key);
 	}
 
 	private Advancement getAdvancement() {
-		return Bukkit.getAdvancement(key);
+		return Bukkit.getAdvancement(this.key);
 	}
 }
 
@@ -2804,26 +3005,40 @@ class PotionSetter {
 	 *
 	 * @param item
 	 * @param type
+	 * @param durationTicks
 	 * @param level
 	 */
-	public static void setPotion(final ItemStack item, final PotionEffectType type, final int level) {
+	public static void setPotion(final ItemStack item, final PotionEffectType type, final int durationTicks, final int level) {
 		Valid.checkBoolean(item.getItemMeta() instanceof org.bukkit.inventory.meta.PotionMeta, "Can only use setPotion for items with PotionMeta not: " + item.getItemMeta());
 
-		final PotionType wrapped = PotionType.getByEffect(type);
 		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
+		final PotionType wrapped = PotionType.getByEffect(type);
 
 		try {
-			final org.bukkit.potion.PotionData data = new org.bukkit.potion.PotionData(level > 0 && wrapped != null ? wrapped : PotionType.WATER);
+			if (level > 0 && wrapped == null) {
+				final org.bukkit.potion.PotionData data = new org.bukkit.potion.PotionData(level > 0 && wrapped != null ? wrapped : PotionType.WATER);
 
-			if (level > 0 && wrapped == null)
+				meta.setBasePotionData(data);
 				meta.addEnchant(Enchantment.DURABILITY, 1, true);
-
-			meta.setBasePotionData(data);
+			}
 
 		} catch (final NoSuchMethodError | NoClassDefFoundError ex) {
-			meta.setMainEffect(type);
-			meta.addCustomEffect(new PotionEffect(type, Integer.MAX_VALUE, level - 1), true);
 		}
+
+		// For some reason this does not get added so we have to add it manually on top of the lore
+		if (MinecraftVersion.olderThan(V.v1_9)) {
+			final List<String> lore = new ArrayList<>();
+
+			lore.add(Common.colorize("&7" + ItemUtil.bountifyCapitalized(type) + " (" + TimeUtil.formatTimeColon(durationTicks / 20) + ")"));
+
+			if (meta.getLore() != null)
+				lore.addAll(meta.getLore());
+
+			meta.setLore(lore);
+		}
+
+		meta.setMainEffect(type);
+		meta.addCustomEffect(new PotionEffect(type, durationTicks, level - 1), true);
 
 		item.setItemMeta(meta);
 	}

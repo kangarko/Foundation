@@ -1,26 +1,22 @@
 package org.mineacademy.fo.model;
 
-import java.awt.Color;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.util.ChatPaginator;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.remain.CompChatColor;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.util.ChatPaginator;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.remain.CompChatColor;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 /**
  * Represents a way to show an image in chat
@@ -36,28 +32,6 @@ public final class ChatImage {
 	private final static char TRANSPARENT_CHAR = ' ';
 
 	/**
-	 * Represents colors we can use for MC before 1.16
-	 */
-	private final static Color[] LEGACY_COLORS = {
-			new Color(0, 0, 0),
-			new Color(0, 0, 170),
-			new Color(0, 170, 0),
-			new Color(0, 170, 170),
-			new Color(170, 0, 0),
-			new Color(170, 0, 170),
-			new Color(255, 170, 0),
-			new Color(170, 170, 170),
-			new Color(85, 85, 85),
-			new Color(85, 85, 255),
-			new Color(85, 255, 85),
-			new Color(85, 255, 255),
-			new Color(255, 85, 85),
-			new Color(255, 85, 255),
-			new Color(255, 255, 85),
-			new Color(255, 255, 255),
-	};
-
-	/**
 	 * Represents the currently loaded lines
 	 */
 	@Getter
@@ -70,11 +44,11 @@ public final class ChatImage {
 	 * @return
 	 */
 	public ChatImage appendText(String... text) {
-		for (int y = 0; y < lines.length; y++)
+		for (int y = 0; y < this.lines.length; y++)
 			if (text.length > y) {
 				final String line = text[y];
 
-				lines[y] += " " + line;
+				this.lines[y] += " " + line;
 			}
 
 		return this;
@@ -87,11 +61,11 @@ public final class ChatImage {
 	 * @return
 	 */
 	public ChatImage appendCenteredText(String... text) {
-		for (int y = 0; y < lines.length; y++)
+		for (int y = 0; y < this.lines.length; y++)
 			if (text.length > y) {
-				final int len = ChatPaginator.AVERAGE_CHAT_PAGE_WIDTH - lines[y].length();
+				final int len = ChatPaginator.AVERAGE_CHAT_PAGE_WIDTH - this.lines[y].length();
 
-				lines[y] = lines[y] + center(text[y], len);
+				this.lines[y] = this.lines[y] + this.center(text[y], len);
 
 			} else
 				return this;
@@ -126,7 +100,7 @@ public final class ChatImage {
 	 * @param sender
 	 */
 	public void sendToPlayer(CommandSender sender) {
-		for (final String line : lines)
+		for (final String line : this.lines)
 			sender.sendMessage(Variables.replace(line, sender));
 	}
 
@@ -142,6 +116,7 @@ public final class ChatImage {
 	 * @param height
 	 * @param characterType
 	 * @return
+	 * @throws IOException
 	 */
 	public static ChatImage fromFile(@NonNull File file, int height, Type characterType) throws IOException {
 		Valid.checkBoolean(file.exists(), "Cannot load image from non existing file " + file.toPath());
@@ -150,13 +125,27 @@ public final class ChatImage {
 
 		if (image == null)
 			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
+		else {
 
-		final CompChatColor[][] chatColors = parseImage(image, height);
-		final ChatImage chatImage = new ChatImage();
+			final BufferedImage newImage = new BufferedImage(
+					image.getWidth(),
+					image.getHeight(),
+					BufferedImage.TYPE_INT_RGB);
 
-		chatImage.lines = parseColors(chatColors, characterType);
+			newImage.createGraphics()
+					.drawImage(image,
+							0,
+							0,
+							Color.WHITE,
+							null);
 
-		return chatImage;
+			final CompChatColor[][] chatColors = parseImage(newImage, height);
+			final ChatImage chatImage = new ChatImage();
+
+			chatImage.lines = parseColors(chatColors, characterType);
+
+			return chatImage;
+		}
 	}
 
 	/**
@@ -175,20 +164,20 @@ public final class ChatImage {
 	/*
 	 * Parse the given image into chat colors
 	 */
-	private static CompChatColor[][] parseImage(BufferedImage image, int height) {
-		final double ratio = (double) image.getHeight() / image.getWidth();
+	private static CompChatColor[][] parseImage(BufferedImage newImage, int height) {
+		final double ratio = (double) newImage.getHeight() / newImage.getWidth();
 		int width = (int) (height / ratio);
 
 		if (width > 10)
 			width = 10;
 
-		final BufferedImage resized = resizeImage(image, (int) (height / ratio), height);
+		final BufferedImage resized = resizeImage(newImage, (int) (height / ratio), height);
 		final CompChatColor[][] chatImg = new CompChatColor[resized.getWidth()][resized.getHeight()];
 
 		for (int x = 0; x < resized.getWidth(); x++)
 			for (int y = 0; y < resized.getHeight(); y++) {
 				final int rgb = resized.getRGB(x, y);
-				final CompChatColor closest = getClosestChatColor(new Color(rgb, true));
+				final CompChatColor closest = CompChatColor.getClosestLegacyColor(new Color(rgb, true));
 
 				chatImg[x][y] = closest;
 			}
@@ -212,62 +201,6 @@ public final class ChatImage {
 	}
 
 	/*
-	 * Returns the closes chat color from the given color
-	 */
-	private static CompChatColor getClosestChatColor(Color color) {
-		if (MinecraftVersion.olderThan(V.v1_16)) {
-			if (color.getAlpha() < 128)
-				return null;
-
-			int index = 0;
-			double best = -1;
-
-			for (int i = 0; i < LEGACY_COLORS.length; i++)
-				if (areSimilar(LEGACY_COLORS[i], color))
-					return CompChatColor.getColors().get(i);
-
-			for (int i = 0; i < LEGACY_COLORS.length; i++) {
-				final double distance = getDistance(color, LEGACY_COLORS[i]);
-
-				if (distance < best || best == -1) {
-					best = distance;
-					index = i;
-				}
-			}
-
-			return CompChatColor.getColors().get(index);
-		}
-
-		return CompChatColor.of(color);
-	}
-
-	/*
-	 * Return if colors are nearly identical
-	 */
-	private static boolean areSimilar(Color first, Color second) {
-		return Math.abs(first.getRed() - second.getRed()) <= 5 &&
-				Math.abs(first.getGreen() - second.getGreen()) <= 5 &&
-				Math.abs(first.getBlue() - second.getBlue()) <= 5;
-
-	}
-
-	/*
-	 * Returns how different two colors are
-	 */
-	private static double getDistance(Color first, Color second) {
-		final double rmean = (first.getRed() + second.getRed()) / 2.0;
-		final double r = first.getRed() - second.getRed();
-		final double g = first.getGreen() - second.getGreen();
-		final int b = first.getBlue() - second.getBlue();
-
-		final double weightR = 2 + rmean / 256.0;
-		final double weightG = 4.0;
-		final double weightB = 2 + (255 - rmean) / 256.0;
-
-		return weightR * r * r + weightG * g * g + weightB * b * b;
-	}
-
-	/*
 	 * Parse the given 2D colors to fit lines
 	 */
 	private static String[] parseColors(CompChatColor[][] colors, Type imgchar) {
@@ -276,10 +209,10 @@ public final class ChatImage {
 		for (int y = 0; y < colors[0].length; y++) {
 			String line = "";
 
-			for (int x = 0; x < colors.length; x++) {
-				final CompChatColor color = colors[x][y];
+			for (final CompChatColor[] color2 : colors) {
+				final CompChatColor color = color2[y];
 
-				line += (color != null) ? colors[x][y].toString() + imgchar : TRANSPARENT_CHAR;
+				line += color != null ? color2[y].toString() + imgchar : TRANSPARENT_CHAR;
 			}
 
 			lines[y] = line + ChatColor.RESET;
@@ -309,7 +242,7 @@ public final class ChatImage {
 		@Getter
 		private char character;
 
-		private Type(char c) {
+		Type(char c) {
 			this.character = c;
 		}
 
@@ -320,7 +253,7 @@ public final class ChatImage {
 		 */
 		@Override
 		public String toString() {
-			return String.valueOf(character);
+			return String.valueOf(this.character);
 		}
 	}
 }

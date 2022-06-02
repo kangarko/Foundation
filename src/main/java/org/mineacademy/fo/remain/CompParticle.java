@@ -151,7 +151,7 @@ public enum CompParticle {
 	/*
 	 * Construct a new compatible particle class
 	 */
-	private CompParticle() {
+	CompParticle() {
 		this(null);
 	}
 
@@ -159,7 +159,7 @@ public enum CompParticle {
 	 * Construct a new compatible particle class
 	 */
 	@SuppressWarnings("rawtypes")
-	private CompParticle(String name1_7) {
+	CompParticle(String name1_7) {
 		this.name1_7 = name1_7;
 
 		try {
@@ -239,6 +239,30 @@ public enum CompParticle {
 			final float blue = color.getBlue() / 255F;
 
 			this.spawn(location, red, green, blue, 1, 0, 1, null);
+		}
+	}
+
+	/**
+	 * Spawns this particle with the given color, only works for {@link #REDSTONE}
+	 * The particle size requires MC 1.13+
+	 *
+	 * @param player
+	 * @param location
+	 * @param color
+	 * @param particleSize
+	 */
+	public void spawn(Player player, Location location, Color color, float particleSize) {
+		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
+
+		if (atLeast1_13)
+			player.spawnParticle((Particle) this.bukkitEnumParticle, location, 1, 0, 0, 0, 0, new DustOptions(color, particleSize));
+
+		else {
+			final float red = color.getRed() == 0 ? Float.MIN_VALUE : color.getRed() / 255F;
+			final float green = color.getGreen() / 255F;
+			final float blue = color.getBlue() / 255F;
+
+			this.spawn(player, location, red, green, blue, 1, 0, 1, null);
 		}
 	}
 
@@ -346,6 +370,7 @@ public enum CompParticle {
 	/**
 	 * Spawns the particle only shown to the given player at the given location with extra material data
 	 *
+	 * @param player
 	 * @param location
 	 * @param data
 	 */

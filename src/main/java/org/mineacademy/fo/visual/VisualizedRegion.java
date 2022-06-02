@@ -1,9 +1,11 @@
 package org.mineacademy.fo.visual;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -12,9 +14,11 @@ import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompParticle;
 
+import lombok.Getter;
 import lombok.Setter;
 
 /**
@@ -23,9 +27,9 @@ import lombok.Setter;
 public final class VisualizedRegion extends Region {
 
 	/**
-	 * A list of players who can see the particles
+	 * A list of players who can see the particles, along with the particle color (requires {@link #particle} to be REDSTONE)
 	 */
-	private final List<Player> viewers = new ArrayList<>();
+	private final StrictMap<Player, Color> viewers = new StrictMap<>();
 
 	/**
 	 * The task responsible for sending particles
@@ -35,8 +39,23 @@ public final class VisualizedRegion extends Region {
 	/**
 	 * The particle that is being sent out
 	 */
+	@Getter
 	@Setter
 	private CompParticle particle = CompParticle.VILLAGER_HAPPY;
+
+	/**
+	 * The delay between each particle shows when visualizing the region, the lower, the better visibility but more CPU drain
+	 */
+	@Getter
+	@Setter
+	private int delayTicks = 23;
+
+	/**
+	 * Create a new visualizable empty region
+	 */
+	public VisualizedRegion() {
+		this(null, null);
+	}
 
 	/**
 	 * Create a new visualizable region
@@ -71,11 +90,23 @@ public final class VisualizedRegion extends Region {
 	 * @param durationTicks
 	 */
 	public void showParticles(Player player, int durationTicks) {
-		showParticles(player);
+		this.showParticles(player, null, durationTicks);
+	}
+
+	/**
+	 * Shows the region to the given player for the given duration,
+	 * the hides it
+	 *
+	 * @param player
+	 * @param color
+	 * @param durationTicks
+	 */
+	public void showParticles(Player player, @Nullable Color color, int durationTicks) {
+		this.showParticles(player, color);
 
 		Common.runLater(durationTicks, () -> {
-			if (canSeeParticles(player))
-				hideParticles(player);
+			if (this.canSeeParticles(player))
+				this.hideParticles(player);
 		});
 	}
 
@@ -85,13 +116,23 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 */
 	public void showParticles(final Player player) {
-		Valid.checkBoolean(!canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
-		Valid.checkBoolean(isWhole(), "Cannot show particles of an incomplete region " + this);
+		this.showParticles(player, null);
+	}
 
-		viewers.add(player);
+	/**
+	 * Shows the region to the given player
+	 *
+	 * @param player
+	 * @param color
+	 */
+	public void showParticles(final Player player, @Nullable Color color) {
+		Valid.checkBoolean(!this.canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
+		Valid.checkBoolean(this.isWhole(), "Cannot show particles of an incomplete region " + this);
 
-		if (task == null)
-			startVisualizing();
+		this.viewers.put(player, color);
+
+		if (this.task == null)
+			this.startVisualizing();
 	}
 
 	/**
@@ -100,12 +141,12 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 */
 	public void hideParticles(final Player player) {
-		Valid.checkBoolean(canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
+		Valid.checkBoolean(this.canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
 
-		viewers.remove(player);
+		this.viewers.removeWeak(player);
 
-		if (viewers.isEmpty() && task != null)
-			stopVisualizing();
+		if (this.viewers.isEmpty() && this.task != null)
+			this.stopVisualizing();
 	}
 
 	/**
@@ -115,33 +156,39 @@ public final class VisualizedRegion extends Region {
 	 * @return
 	 */
 	public boolean canSeeParticles(final Player player) {
-		return viewers.contains(player);
+		return this.viewers.containsKey(player);
 	}
 
 	/*
 	 * Starts visualizing this region if it is whole
 	 */
 	private void startVisualizing() {
-		Valid.checkBoolean(task == null, "Already visualizing region " + this + "!");
-		Valid.checkBoolean(isWhole(), "Cannot visualize incomplete region " + this + "!");
+		Valid.checkBoolean(this.task == null, "Already visualizing region " + this + "!");
+		Valid.checkBoolean(this.isWhole(), "Cannot visualize incomplete region " + this + "!");
 
-		task = Common.runTimer(23, new BukkitRunnable() {
+		this.task = Common.runTimer(this.delayTicks, new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (viewers.isEmpty()) {
-					stopVisualizing();
+				if (VisualizedRegion.this.viewers.isEmpty()) {
+					VisualizedRegion.this.stopVisualizing();
 
 					return;
 				}
 
-				final Set<Location> blocks = BlockUtil.getBoundingBox(getPrimary(), getSecondary());
+				final Set<Location> blocks = BlockUtil.getBoundingBox(VisualizedRegion.this.getPrimary(), VisualizedRegion.this.getSecondary());
 
 				for (final Location location : blocks)
-					for (final Player viewer : viewers) {
+					for (final Map.Entry<Player, Color> entry : VisualizedRegion.this.viewers.entrySet()) {
+						final Player viewer = entry.getKey();
+						final Color color = entry.getValue();
 						final Location viewerLocation = viewer.getLocation();
 
 						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
-							particle.spawn(viewer, location);
+							if (color != null)
+								CompParticle.REDSTONE.spawn(viewer, location, color, 0.5F);
+
+							else
+								VisualizedRegion.this.particle.spawn(viewer, location);
 					}
 
 			}
@@ -152,12 +199,12 @@ public final class VisualizedRegion extends Region {
 	 * Stops the region from being visualized
 	 */
 	private void stopVisualizing() {
-		Valid.checkNotNull(task, "Region " + this + " not visualized");
+		Valid.checkNotNull(this.task, "Region " + this + " not visualized");
 
-		task.cancel();
-		task = null;
+		this.task.cancel();
+		this.task = null;
 
-		viewers.clear();
+		this.viewers.clear();
 	}
 
 	/**

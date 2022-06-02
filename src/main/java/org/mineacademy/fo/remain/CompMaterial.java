@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -41,7 +43,6 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.debug.Debugger;
 
 import lombok.Getter;
@@ -1136,7 +1137,7 @@ public enum CompMaterial {
 	SKELETON_WALL_SKULL("SKULL", "SKULL_ITEM"),
 	SKULL_BANNER_PATTERN,
 	SLIME_BALL,
-	SLIME_BLOCK,
+	SLIME_BLOCK("STONE"),
 	SLIME_SPAWN_EGG(55, "MONSTER_EGG"),
 	SMALL_AMETHYST_BUD,
 	SMALL_DRIPLEAF,
@@ -1165,7 +1166,7 @@ public enum CompMaterial {
 	SOUL_TORCH(16),
 	SOUL_WALL_TORCH(16),
 	SPAWNER("MOB_SPAWNER"),
-	SPECTRAL_ARROW(0, 9),
+	SPECTRAL_ARROW(0, 9, "ARROW"),
 	SPIDER_EYE,
 	SPIDER_SPAWN_EGG(52, "MONSTER_EGG"),
 	SPLASH_POTION,
@@ -1245,11 +1246,11 @@ public enum CompMaterial {
 	TARGET(16),
 	TERRACOTTA("STAINED_CLAY"),
 	TINTED_GLASS,
-	TIPPED_ARROW(0, 9),
+	TIPPED_ARROW(0, 9, "ARROW"),
 	TNT,
 	TNT_MINECART("EXPLOSIVE_MINECART"),
 	TORCH,
-	TOTEM_OF_UNDYING("TOTEM"),
+	TOTEM_OF_UNDYING("TOTEM", "ARROW"),
 	TRADER_LLAMA_SPAWN_EGG(103, 14),
 	TRAPPED_CHEST,
 	TRIDENT(13),
@@ -1445,10 +1446,10 @@ public enum CompMaterial {
 	}
 
 	static {
-		if (Data.ISFLAT) {
+		if (Data.ISFLAT)
 			// It's not needed at all if it's the newer version. We can save some memory.
 			DUPLICATED = null;
-		} else {
+		else {
 			// MELON_SLICE, CARROTS, POTATOES, BEETROOTS, GRASS_BLOCK, BRICKS, NETHER_BRICKS, BROWN_MUSHROOM
 			// Using the constructor to add elements will decide to allocate more size which we don't need.
 			DUPLICATED = new HashSet<>(4);
@@ -1499,7 +1500,7 @@ public enum CompMaterial {
 
 		Material mat = null;
 
-		if ((!Data.ISFLAT && this.isDuplicated()) || (mat = Material.getMaterial(this.name())) == null)
+		if (!Data.ISFLAT && this.isDuplicated() || (mat = Material.getMaterial(this.name())) == null)
 			for (int i = legacy.length - 1; i >= 0; i--) {
 				mat = Material.getMaterial(legacy[i]);
 
@@ -1532,7 +1533,7 @@ public enum CompMaterial {
 	 * @param player
 	 */
 	public final void give(final Player player) {
-		give(player, 1);
+		this.give(player, 1);
 	}
 
 	/**
@@ -1608,9 +1609,9 @@ public enum CompMaterial {
 	 */
 	public final boolean is(final ItemStack comp) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return comp.getType() == material;
+			return comp.getType() == this.material;
 
-		return is(comp.getType(), comp.getData().getData());
+		return this.is(comp.getType(), comp.getData().getData());
 	}
 
 	/**
@@ -1621,9 +1622,9 @@ public enum CompMaterial {
 	 */
 	public final boolean is(final Block block) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return block.getType() == material;
+			return block.getType() == this.material;
 
-		return block != null && is(block.getType(), block.getData());
+		return block != null && this.is(block.getType(), block.getData());
 	}
 
 	/**
@@ -1637,7 +1638,7 @@ public enum CompMaterial {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return type == this.material;
 
-		if (type == toMaterial() && data == this.data)
+		if (type == this.toMaterial() && data == this.data)
 			return true;
 
 		final CompMaterial compMat = fromMaterial(type);
@@ -1712,13 +1713,26 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Returns if the given item stack is air
+	 *
+	 * @param item
+	 * @return
+	 */
+	public static boolean isAir(@Nullable ItemStack item) {
+		if (item == null)
+			return true;
+
+		return isAir(item.getType());
+	}
+
+	/**
 	 * Returns if the given material is air
 	 *
 	 * @param material
 	 * @return
 	 */
 	public static boolean isAir(final Material material) {
-		return nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR", "LEGACY_AIR");
+		return material == null || nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR", "LEGACY_AIR");
 	}
 
 	/**
@@ -2085,11 +2099,10 @@ public enum CompMaterial {
 
 	/**
 	 * Parses the given material name as an CompMaterial with a given data
-	 * value in the string if attached. Check {@link #matchWithData(String)} for more info.
+	 * value in the string if attached. See matchWithData for more info.
 	 *
-	 * @see #matchWithData(String)
-	 * @see #fromLegacy(String, byte)
-	 * @since 2.0.0
+	 * @param key
+	 * @return
 	 */
 	public static CompMaterial fromString(String key) {
 
@@ -2163,13 +2176,16 @@ public enum CompMaterial {
 	 * @since 2.0.0
 	 */
 	public static CompMaterial fromItem(@NonNull ItemStack item) {
-		Objects.requireNonNull(item, "Cannot match null ItemStack");
-
 		final String material = item.getType().name();
 		final byte data = (byte) (Data.ISFLAT || item.getType().getMaxDurability() > 0 ? 0 : item.getDurability());
 
 		final CompMaterial compmaterial = fromLegacy(material, data);
-		Valid.checkNotNull("Unsupported material from item: " + material + " (" + data + ')');
+
+		// Exception for legacy eggs for non existing entities
+		if (material.equals("MONSTER_EGG") && compmaterial == null)
+			return CompMaterial.SHEEP_SPAWN_EGG;
+
+		Valid.checkNotNull(compmaterial, "Unsupported material from item: " + material + " (" + data + ')');
 
 		return compmaterial;
 	}
@@ -2177,10 +2193,8 @@ public enum CompMaterial {
 	/**
 	 * Parses the given material as an CompMaterial.
 	 *
-	 * @throws IllegalArgumentException may be thrown as an unexpected exception.
-	 * @see #fromLegacy(String, byte)
-	 * @see #fromItem(ItemStack)
-	 * @since 2.0.0
+	 * @param material
+	 * @return
 	 */
 	public static CompMaterial fromMaterial(@NonNull Material material) {
 		final CompMaterial compmaterial = fromLegacy(material.name(), UNKNOWN_DATA_VALUE);
@@ -2204,38 +2218,12 @@ public enum CompMaterial {
 	}
 
 	/**
-	 * A special method for some of our plugins that by default include
-	 * materials in their config files that do not exist in older MC versions.
-	 * <p>
-	 * For these materials, we simply return null and do not add them to settings
-	 * instead of throwing an error.
-	 *
-	 * @param name
-	 * @return
-	 * @deprecated special usage only
-	 */
-	@Deprecated
-	public static CompMaterial fromStringCompat(final String name) {
-		final CompMaterial lookup = fromString(name);
-
-		if (lookup == null && SoftMaterials.MATERIALS.contains(name))
-			return null;
-
-		return fromStringStrict(name);
-	}
-
-	/**
 	 * The main method that parses the given material name and data value as an CompMaterial.
 	 * All the values passed to this method will not be null or empty and are formatted correctly.
 	 *
-	 * @param name the formatted name of the material.
-	 * @param data the data value of the material. Is always 0 or {@link #UNKNOWN_DATA_VALUE} when {@link Data#ISFLAT}
-	 *
-	 * @return an CompMaterial (with the same data value if specified)
-	 * @see #fromMaterial(Material)
-	 * @see #matchCompMaterial(int, byte)
-	 * @see #fromItem(ItemStack)
-	 * @since 3.0.0
+	 * @param name
+	 * @param data
+	 * @return
 	 */
 	public static CompMaterial fromLegacy(String name, int data) {
 
@@ -2249,7 +2237,7 @@ public enum CompMaterial {
 		final boolean isAMap = name.equalsIgnoreCase("MAP");
 
 		// Do basic number and boolean checks before accessing more complex enum stuff.
-		if (Data.ISFLAT || (!isAMap && data <= 0 && !(duplicated = isDuplicated(name)))) {
+		if (Data.ISFLAT || !isAMap && data <= 0 && !(duplicated = isDuplicated(name))) {
 			final CompMaterial compmaterial = getIfPresent(name);
 
 			if (compmaterial != null)
@@ -2259,10 +2247,9 @@ public enum CompMaterial {
 
 		final CompMaterial oldCompmaterial = requestOldMaterial(name, data);
 
-		if (oldCompmaterial == null) {
+		if (oldCompmaterial == null)
 			// Special case. Refer to FILLED_MAP for more info.
-			return (data >= 0 && isAMap) ? FILLED_MAP : null;
-		}
+			return data >= 0 && isAMap ? FILLED_MAP : null;
 
 		if (!Data.ISFLAT && oldCompmaterial.isPlural() && (duplicated == null ? isDuplicated(name) : duplicated))
 			return getIfPresent(name);
@@ -2334,7 +2321,7 @@ public enum CompMaterial {
 			else {
 				boolean number = false;
 				// Old materials have numbers in them.
-				if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (number = (ch >= '0' && ch <= '9'))) {
+				if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || (number = ch >= '0' && ch <= '9')) {
 					if (appendUnderline) {
 						chs[count++] = '_';
 						appendUnderline = false;
@@ -2380,9 +2367,9 @@ public enum CompMaterial {
 
 		// getVersion()
 		int index = version.lastIndexOf("MC:");
-		if (index != -1) {
+		if (index != -1)
 			version = version.substring(index + 4, version.length() - 1);
-		} else if (version.endsWith("SNAPSHOT")) {
+		else if (version.endsWith("SNAPSHOT")) {
 			// getBukkitVersion()
 			index = version.indexOf('-');
 			version = version.substring(0, index);
@@ -2476,11 +2463,11 @@ public enum CompMaterial {
 	 * Use {@link #toItem()} instead when creating new ItemStacks.
 	 *
 	 * @param item the item to change its type.
+	 * @return
 	 *
 	 * @see #toItem()
 	 * @since 3.0.0
 	 */
-
 	public ItemStack setType(ItemStack item) {
 		Objects.requireNonNull(item, "Cannot set material for null ItemStack");
 		final Material material = this.toMaterial();
@@ -2503,10 +2490,9 @@ public enum CompMaterial {
 	 * @since 2.0.0
 	 */
 	private boolean anyMatchLegacy(String name) {
-		for (int i = this.legacy.length - 1; i >= 0; i--) {
+		for (int i = this.legacy.length - 1; i >= 0; i--)
 			if (name.equals(this.legacy[i]))
 				return true;
-		}
 		return false;
 	}
 
@@ -2527,13 +2513,18 @@ public enum CompMaterial {
 		if (material == null)
 			return -1;
 
-		if (Data.ISFLAT && !material.isLegacy())
-			return -1;
+		try {
+			if (Data.ISFLAT && !material.isLegacy())
+				return -1;
+		} catch (final Throwable t) {
+		}
 
 		return material.getId();
 	}
 
 	/**
+	 * @param item
+	 * @return
 	 * @see ItemUtil#isSimilar(ItemStack, ItemStack)
 	 */
 	public boolean isSimilar(ItemStack item) {
@@ -2600,93 +2591,4 @@ public enum CompMaterial {
 		 */
 		private static final boolean ISFLAT = supports(13);
 	}
-}
-
-/**
- * A special class for some of our plugins that by default include
- * materials in their config files that do not exist in older MC versions.
- * <p>
- * For these materials, we simply return null and do not add them to settings
- * instead of throwing an error.
- *
- * @deprecated special usage only, limited
- */
-@Deprecated
-class SoftMaterials {
-
-	final static StrictSet<String> MATERIALS = new StrictSet<>(Common.newSet(
-			"SKULL",
-			"ANVIL",
-			"TRAPPED_CHEST",
-			"GOLD_PLATE",
-			"IRON_PLATE",
-			"REDSTONE_COMPARATOR_OFF",
-			"REDSTONE_COMPARATOR_ON",
-			"DAYLIGHT_DETECTOR",
-			"REDSTONE_BLOCK",
-			"QUARTZ_ORE",
-			"HOPPER",
-			"QUARTZ_BLOCK",
-			"QUARTZ_STAIRS",
-			"ACTIVATOR_RAIL",
-			"DROPPER",
-			"STAINED_CLAY",
-			"STAINED_GLASS_PANE",
-			"LEAVES_2",
-			"LOG_2",
-			"ACACIA_STAIRS",
-			"DARK_OAK_STAIRS",
-			"SLIME_BLOCK",
-			"BARRIER",
-			"IRON_TRAPDOOR",
-			"PRISMARINE",
-			"SEA_LANTERN",
-			"HAY_BLOCK",
-			"CARPET",
-			"HARD_CLAY",
-			"COAL_BLOCK",
-			"PACKED_ICE",
-			"DOUBLE_PLANT",
-			"STANDING_BANNER",
-			"WALL_BANNER",
-			"DAYLIGHT_DETECTOR_INVERTED",
-			"RED_SANDSTONE",
-			"RED_SANDSTONE_STAIRS",
-			"DOUBLE_STONE_SLAB2",
-			"STONE_SLAB2",
-			"SPRUCE_FENCE_GATE",
-			"BIRCH_FENCE_GATE",
-			"JUNGLE_FENCE_GATE",
-			"DARK_OAK_FENCE_GATE",
-			"ACACIA_FENCE_GATE",
-			"SPRUCE_FENCE",
-			"BIRCH_FENCE",
-			"JUNGLE_FENCE",
-			"DARK_OAK_FENCE",
-			"ACACIA_FENCE",
-			"SPRUCE_DOOR",
-			"BIRCH_DOOR",
-			"JUNGLE_DOOR",
-			"ACACIA_DOOR",
-			"DARK_OAK_DOOR",
-			"END_ROD",
-			"CHORUS_PLANT",
-			"CHORUS_FLOWER",
-			"PURPUR_BLOCK",
-			"PURPUR_PILLAR",
-			"PURPUR_STAIRS",
-			"PURPUR_DOUBLE_SLAB",
-			"PURPUR_SLAB",
-			"END_BRICKS",
-			"GRASS_PATH",
-			"END_GATEWAY",
-			"FROSTED_ICE",
-			"MAGMA",
-			"NETHER_WART_BLOCK",
-			"RED_NETHER_BRICK",
-			"BONE_BLOCK",
-			"OBSERVER",
-			"PURPLE_SHULKER_BOX"
-
-			));
 }

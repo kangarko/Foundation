@@ -18,10 +18,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
+import javax.annotation.Nullable;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,6 +31,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -52,18 +55,29 @@ public final class ReflectionUtil {
 	public static final String CRAFTBUKKIT = "org.bukkit.craftbukkit";
 
 	/**
-	 * Compatible {@link EntityType} classes that fail gracefully so that
+	 * Compatible enum classes that fail gracefully so that
 	 * plugin loads even on old MC versions where those types are non existent
 	 * but are present in plugin's default configuration files
 	 */
-	private static final Map<String, V> legacyEntityTypes;
+	private static final Map<Class<? extends Enum<?>>, Map<String, V>> legacyEnumTypes;
 
 	/**
 	 * Reflection utilizes a simple cache for fastest performance
 	 */
 	private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, Method[]> methodCache = new ConcurrentHashMap<>();
 	private static final Collection<String> classNameGuard = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Maps primitive <code>Class</code>es to their corresponding wrapper <code>Class</code>.
+	 */
+	private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
+
+	/**
+	 * Maps wrapper <code>Class</code>es to their corresponding primitive types.
+	 */
+	private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap = new HashMap<>();
 
 	/**
 	 * Find a class automatically for older MC version (such as type EntityPlayer for oldName
@@ -82,7 +96,7 @@ public final class ReflectionUtil {
 	 * Find a class in net.minecraft.server package, adding the version
 	 * automatically
 	 *
-	 * @deprecated Minecraft 1.17 has a different path name,
+	 * @deprecated Minecraft 1.17+ has a different path name,
 	 *             use {@link #getNMSClass(String, String)} instead
 	 *
 	 * @param name
@@ -142,6 +156,9 @@ public final class ReflectionUtil {
 	/**
 	 * Return a constructor for the given class
 	 *
+	 * @param clazz
+	 * @param params
+	 * @return
 	 */
 	public static Constructor<?> getConstructor(@NonNull final Class<?> clazz, final Class<?>... params) {
 		try {
@@ -235,6 +252,9 @@ public final class ReflectionUtil {
 	/**
 	 * Gets the declared field in class by its name
 	 *
+	 * @param clazz
+	 * @param fieldName
+	 * @return
 	 */
 	public static Field getDeclaredField(final Class<?> clazz, final String fieldName) {
 		try {
@@ -247,8 +267,8 @@ public final class ReflectionUtil {
 
 			return field;
 
-		} catch (final ReflectiveOperationException e) {
-			e.printStackTrace();
+		} catch (final ReflectiveOperationException ex) {
+			Remain.sneaky(ex);
 		}
 
 		return null;
@@ -311,7 +331,15 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Method getMethod(final Class<?> clazz, final String methodName, final Class<?>... args) {
-		for (final Method method : clazz.getMethods())
+		try {
+			final Method method = clazz.getMethod(methodName, args);
+			method.setAccessible(true);
+			return method;
+		} catch (final NoSuchMethodException e) {
+		}
+
+		final Method[] methods = methodCache.computeIfAbsent(clazz, k -> clazz.getMethods());
+		for (final Method method : methods)
 			if (method.getName().equals(methodName) && isClassListEqual(args, method.getParameterTypes())) {
 				method.setAccessible(true);
 
@@ -354,12 +382,15 @@ public final class ReflectionUtil {
 	/**
 	 * Get a declared class method
 	 *
+	 * @param clazz
+	 * @param methodName
+	 * @param args
+	 * @return
 	 */
 	public static Method getDeclaredMethod(Class<?> clazz, final String methodName, Class<?>... args) {
 		final Class<?> originalClass = clazz;
 
-		while (!clazz.equals(Object.class)) {
-
+		while (!clazz.equals(Object.class))
 			try {
 				final Method method = clazz.getDeclaredMethod(methodName, args);
 				method.setAccessible(true);
@@ -372,7 +403,6 @@ public final class ReflectionUtil {
 			} catch (final Throwable t) {
 				throw new ReflectionException(t, "Error lookup up method " + methodName + " in class " + originalClass + " and her subclasses");
 			}
-		}
 
 		throw new ReflectionException("Unable to find method " + methodName + " with params " + Common.join(args) + " in class " + originalClass + " and her subclasses");
 	}
@@ -381,6 +411,7 @@ public final class ReflectionUtil {
 	 * Invoke a static method
 	 *
 	 * @param <T>
+	 * @param cl
 	 * @param methodName
 	 * @param params
 	 * @return
@@ -402,7 +433,7 @@ public final class ReflectionUtil {
 			return (T) method.invoke(null, params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException(ex, "Could not invoke static method " + method + " with params " + StringUtils.join(params));
+			throw new ReflectionException(ex, "Could not invoke static method " + method + " with params " + Common.join(params, ", ", Common::simplify));
 		}
 	}
 
@@ -435,8 +466,21 @@ public final class ReflectionUtil {
 			return (T) method.invoke(instance, params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException(ex, "Could not invoke method " + method + " on instance " + instance + " with params " + StringUtils.join(params));
+			throw new ReflectionException(ex, "Could not invoke method " + method + " on instance " + instance + " with params " + Common.join(params, ", "));
 		}
+	}
+
+	/**
+	 * Makes a new instance of a class by its full path name
+	 *
+	 * @param <T>
+	 * @param classPath
+	 * @return
+	 */
+	public static <T> T instantiate(final String classPath) {
+		final Class<T> clazz = lookupClass(classPath);
+
+		return instantiate(clazz);
 	}
 
 	/**
@@ -491,7 +535,7 @@ public final class ReflectionUtil {
 				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
 				final Class<?> paramClass = param.getClass();
 
-				classes.add(paramClass.isPrimitive() ? ClassUtils.wrapperToPrimitive(paramClass) : paramClass);
+				classes.add(paramClass.isPrimitive() ? wrapperToPrimitive(paramClass) : paramClass);
 			}
 
 			final Class<?>[] paramArr = classes.toArray(new Class<?>[0]);
@@ -555,8 +599,9 @@ public final class ReflectionUtil {
 
 	/**
 	 * Wrapper for Class.forName
-	 * @param <T>
 	 *
+	 * @param <T>
+	 * @param path
 	 * @return
 	 */
 	public static <T> Class<T> lookupClass(final String path) {
@@ -590,37 +635,25 @@ public final class ReflectionUtil {
 	}
 
 	/**
-	 * Attempts to find an enum, throwing formatted error showing all available
-	 * values if not found
+	 * Attempts to lookup an enum by its multiple names, typically the case for
+	 * multiple MC versions where names have changed but enum class stayed the same.
 	 *
-	 * The field name is uppercased, spaces are replaced with underscores and even
-	 * plural S is added in attempts to detect the correct enum
+	 * NOTE: For Material class, use our dedicated CompMaterial instead of this method.
 	 *
-	 * If the field is a type that is known not to be exist in current
-	 * MC version, we simply return null instead of {@link MissingEnumException} error
-	 *
-	 * @param <E>
-	 * @param enumType
-	 * @param name
+	 * @param enumClass
+	 * @param names
 	 * @return
 	 */
-	public static <E extends Enum<E>> E lookupEnumCompat(final Class<E> enumType, final String name) {
-		try {
-			if (enumType == CompMaterial.class)
-				return (E) CompMaterial.fromStringCompat(name);
+	public static <T extends Enum<T>> T lookupLegacyEnum(final Class<T> enumClass, String... names) {
 
-			return lookupEnum(enumType, name);
+		for (final String name : names) {
+			final T foundEnum = lookupEnumSilent(enumClass, name);
 
-		} catch (final MissingEnumException ex) {
-			if (enumType == EntityType.class) {
-				final V since = legacyEntityTypes.get(name.toUpperCase().replace(" ", "_"));
-
-				if (since != null && MinecraftVersion.olderThan(since))
-					return null;
-			}
-
-			throw ex;
+			if (foundEnum != null)
+				return foundEnum;
 		}
+
+		return null;
 	}
 
 	/**
@@ -630,10 +663,16 @@ public final class ReflectionUtil {
 	 * The field name is uppercased, spaces are replaced with underscores and even
 	 * plural S is added in attempts to detect the correct enum
 	 *
+	 * If the given type is known to be found in new MC versions, we may return null
+	 * instead of throwing an error. This is to prevent default configs containing
+	 * this enum from crashing the plugin when loaded on legacy MC version.
+	 *
 	 * @param enumType
 	 * @param name
-	 * @return the enum or error
+	 *
+	 * @return the enum or error with exceptions, see above
 	 */
+	@Nullable
 	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, final String name) {
 		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + MinecraftVersion.getServerVersion() + "! Available values: {available}");
 	}
@@ -641,14 +680,19 @@ public final class ReflectionUtil {
 	/**
 	 * Attempts to find an enum, throwing formatted error showing all available
 	 * values if not found Use {available} in errMessage to get all enum values.
-	 * <p>
+	 *
 	 * The field name is uppercased, spaces are replaced with underscores and even
 	 * plural S is added in attempts to detect the correct enum
+	 *
+	 * If the given type is known to be found in new MC versions, we may return null
+	 * instead of throwing an error. This is to prevent default configs containing
+	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
 	 * @param enumType
 	 * @param name
 	 * @param errMessage
-	 * @return
+	 *
+	 * @return the enum or error with exceptions, see above
 	 */
 	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, String name, final String errMessage) {
 		Valid.checkNotNull(enumType, "Type missing for " + name);
@@ -660,11 +704,13 @@ public final class ReflectionUtil {
 		// having these values in their default config. This prevents
 		// malfunction on plugin's first load, in case it is loaded on an older MC version.
 		{
-			if (enumType == org.bukkit.block.Biome.class) {
+			if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + ""))
+				return (E) ChatColor.getByChar(name.charAt(1));
+
+			if (enumType == org.bukkit.block.Biome.class)
 				if (MinecraftVersion.atLeast(V.v1_13))
 					if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
 						name = "SNOWY_TAIGA";
-			}
 
 			if (enumType == EntityType.class) {
 				if (MinecraftVersion.atLeast(V.v1_16))
@@ -744,16 +790,20 @@ public final class ReflectionUtil {
 		if (result == null)
 			result = lookupEnumSilent(enumType, name.replace("_", ""));
 
-		// Before giving up, see if we can translate legacy material names
-		if (result == null && enumType == Material.class) {
-			final CompMaterial compMaterial = CompMaterial.fromString(name);
+		if (result == null) {
 
-			if (compMaterial != null)
-				return (E) compMaterial.getMaterial();
+			// Return null for legacy types
+			final Map<String, V> legacyMap = legacyEnumTypes.get(enumType);
+
+			if (legacyMap != null) {
+				final V since = legacyMap.get(rawName);
+
+				if (since != null && MinecraftVersion.olderThan(since))
+					return null;
+			}
+
+			throw new MissingEnumException(oldName, errMessage.replace("{available}", Common.join(enumType.getEnumConstants(), ", ")));
 		}
-
-		if (result == null)
-			throw new MissingEnumException(oldName, errMessage.replace("{available}", StringUtils.join(enumType.getEnumConstants(), ", ")));
 
 		return result;
 	}
@@ -767,6 +817,13 @@ public final class ReflectionUtil {
 	 */
 	public static <E extends Enum<E>> E lookupEnumSilent(final Class<E> enumType, final String name) {
 		try {
+
+			if (enumType == CompMaterial.class || enumType == Material.class) {
+				final CompMaterial material = CompMaterial.fromString(name);
+
+				if (material != null)
+					return enumType == CompMaterial.class ? (E) material : (E) material.getMaterial();
+			}
 
 			// Since we obfuscate our plugins, enum names are changed.
 			// Therefore we look up a special fromKey method in some of our enums
@@ -842,17 +899,13 @@ public final class ReflectionUtil {
 	/**
 	 * Return a tree set of classes from the plugin that extend the given class
 	 *
-	 * @param <T>
-	 * @param <T>
 	 * @param plugin
-	 * @param extendingClass
 	 * @return
 	 */
 	public static List<Class<?>> getClasses(final Plugin plugin) {
 		final List<Class<?>> found = new ArrayList<>();
 
-		for (final Class<?> clazz : getClasses(plugin, null))
-			found.add(clazz);
+		found.addAll(getClasses(plugin, null));
 
 		return found;
 	}
@@ -860,11 +913,13 @@ public final class ReflectionUtil {
 	/**
 	 * Get all classes in the java plugin
 	 *
+	 * @param <T>
 	 * @param plugin
+	 * @param extendingClass
 	 * @return
 	 */
 	@SneakyThrows
-	public static <T> TreeSet<Class<T>> getClasses(final Plugin plugin, Class<T> extendingClass) {
+	public static <T> TreeSet<Class<T>> getClasses(@NonNull Plugin plugin, Class<T> extendingClass) {
 		Valid.checkNotNull(plugin, "Plugin is null!");
 		Valid.checkBoolean(JavaPlugin.class.isAssignableFrom(plugin.getClass()), "Plugin must be a JavaPlugin");
 
@@ -883,7 +938,7 @@ public final class ReflectionUtil {
 				String name = entries.nextElement().getName();
 
 				if (name.endsWith(".class")) {
-					name = name.replace("/", ".").replaceFirst(".class", "");
+					name = name.replaceFirst("\\.class", "").replace("/", ".");
 
 					Class<?> clazz = null;
 
@@ -907,58 +962,108 @@ public final class ReflectionUtil {
 		return classes;
 	}
 
+	// ------------------------------------------------------------------------------------------
+	// Misc
+	// ------------------------------------------------------------------------------------------
+
+	/**
+	 * <p>Converts the specified wrapper class to its corresponding primitive
+	 * class.</p>
+	 *
+	 * <p>This method is the counter part of <code>primitiveToWrapper()</code>.
+	 * If the passed in class is a wrapper class for a primitive type, this
+	 * primitive type will be returned (e.g. <code>Integer.TYPE</code> for
+	 * <code>Integer.class</code>). For other classes, or if the parameter is
+	 * <b>null</b>, the return value is <b>null</b>.</p>
+	 *
+	 * @param cls the class to convert, may be <b>null</b>
+	 * @return the corresponding primitive type if <code>cls</code> is a
+	 * wrapper class, <b>null</b> otherwise
+	 *
+	 * @author Apache Commons ClassUtils
+	 */
+	public static Class<?> wrapperToPrimitive(Class<?> cls) {
+		return wrapperPrimitiveMap.get(cls);
+	}
+
 	static {
-		final Map<String, V> map = new HashMap<>();
 
-		map.put("TIPPED_ARROW", V.v1_9);
-		map.put("SPECTRAL_ARROW", V.v1_9);
-		map.put("SHULKER_BULLET", V.v1_9);
-		map.put("DRAGON_FIREBALL", V.v1_9);
-		map.put("SHULKER", V.v1_9);
-		map.put("AREA_EFFECT_CLOUD", V.v1_9);
-		map.put("LINGERING_POTION", V.v1_9);
-		map.put("POLAR_BEAR", V.v1_10);
-		map.put("HUSK", V.v1_10);
-		map.put("ELDER_GUARDIAN", V.v1_11);
-		map.put("WITHER_SKELETON", V.v1_11);
-		map.put("STRAY", V.v1_11);
-		map.put("DONKEY", V.v1_11);
-		map.put("MULE", V.v1_11);
-		map.put("EVOKER_FANGS", V.v1_11);
-		map.put("EVOKER", V.v1_11);
-		map.put("VEX", V.v1_11);
-		map.put("VINDICATOR", V.v1_11);
-		map.put("ILLUSIONER", V.v1_12);
-		map.put("PARROT", V.v1_12);
-		map.put("TURTLE", V.v1_13);
-		map.put("PHANTOM", V.v1_13);
-		map.put("TRIDENT", V.v1_13);
-		map.put("COD", V.v1_13);
-		map.put("SALMON", V.v1_13);
-		map.put("PUFFERFISH", V.v1_13);
-		map.put("TROPICAL_FISH", V.v1_13);
-		map.put("DROWNED", V.v1_13);
-		map.put("DOLPHIN", V.v1_13);
-		map.put("CAT", V.v1_14);
-		map.put("PANDA", V.v1_14);
-		map.put("PILLAGER", V.v1_14);
-		map.put("RAVAGER", V.v1_14);
-		map.put("TRADER_LLAMA", V.v1_14);
-		map.put("WANDERING_TRADER", V.v1_14);
-		map.put("FOX", V.v1_14);
-		map.put("BEE", V.v1_15);
-		map.put("HOGLIN", V.v1_16);
-		map.put("PIGLIN", V.v1_16);
-		map.put("STRIDER", V.v1_16);
-		map.put("ZOGLIN", V.v1_16);
-		map.put("PIGLIN_BRUTE", V.v1_16);
-		map.put("AXOLOTL", V.v1_17);
-		map.put("GLOW_ITEM_FRAME", V.v1_17);
-		map.put("GLOW_SQUID", V.v1_17);
-		map.put("GOAT", V.v1_17);
-		map.put("MARKER", V.v1_17);
+		final Map<Class<? extends Enum<?>>, Map<String, V>> legacyEnums = new HashMap<>();
 
-		legacyEntityTypes = map;
+		final Map<String, V> entities = new HashMap<>();
+		entities.put("TIPPED_ARROW", V.v1_9);
+		entities.put("SPECTRAL_ARROW", V.v1_9);
+		entities.put("SHULKER_BULLET", V.v1_9);
+		entities.put("DRAGON_FIREBALL", V.v1_9);
+		entities.put("SHULKER", V.v1_9);
+		entities.put("AREA_EFFECT_CLOUD", V.v1_9);
+		entities.put("LINGERING_POTION", V.v1_9);
+		entities.put("POLAR_BEAR", V.v1_10);
+		entities.put("HUSK", V.v1_10);
+		entities.put("ELDER_GUARDIAN", V.v1_11);
+		entities.put("WITHER_SKELETON", V.v1_11);
+		entities.put("STRAY", V.v1_11);
+		entities.put("DONKEY", V.v1_11);
+		entities.put("MULE", V.v1_11);
+		entities.put("EVOKER_FANGS", V.v1_11);
+		entities.put("EVOKER", V.v1_11);
+		entities.put("VEX", V.v1_11);
+		entities.put("VINDICATOR", V.v1_11);
+		entities.put("ILLUSIONER", V.v1_12);
+		entities.put("PARROT", V.v1_12);
+		entities.put("TURTLE", V.v1_13);
+		entities.put("PHANTOM", V.v1_13);
+		entities.put("TRIDENT", V.v1_13);
+		entities.put("COD", V.v1_13);
+		entities.put("SALMON", V.v1_13);
+		entities.put("PUFFERFISH", V.v1_13);
+		entities.put("TROPICAL_FISH", V.v1_13);
+		entities.put("DROWNED", V.v1_13);
+		entities.put("DOLPHIN", V.v1_13);
+		entities.put("CAT", V.v1_14);
+		entities.put("PANDA", V.v1_14);
+		entities.put("PILLAGER", V.v1_14);
+		entities.put("RAVAGER", V.v1_14);
+		entities.put("TRADER_LLAMA", V.v1_14);
+		entities.put("WANDERING_TRADER", V.v1_14);
+		entities.put("FOX", V.v1_14);
+		entities.put("BEE", V.v1_15);
+		entities.put("HOGLIN", V.v1_16);
+		entities.put("PIGLIN", V.v1_16);
+		entities.put("STRIDER", V.v1_16);
+		entities.put("ZOGLIN", V.v1_16);
+		entities.put("PIGLIN_BRUTE", V.v1_16);
+		entities.put("AXOLOTL", V.v1_17);
+		entities.put("GLOW_ITEM_FRAME", V.v1_17);
+		entities.put("GLOW_SQUID", V.v1_17);
+		entities.put("GOAT", V.v1_17);
+		entities.put("MARKER", V.v1_17);
+		legacyEnums.put(EntityType.class, entities);
+
+		final Map<String, V> spawnReasons = new HashMap<>();
+		spawnReasons.put("DROWNED", V.v1_13);
+		legacyEnums.put(SpawnReason.class, spawnReasons);
+
+		legacyEnumTypes = legacyEnums;
+
+		// Load wrappers
+
+		primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
+		primitiveWrapperMap.put(Byte.TYPE, Byte.class);
+		primitiveWrapperMap.put(Character.TYPE, Character.class);
+		primitiveWrapperMap.put(Short.TYPE, Short.class);
+		primitiveWrapperMap.put(Integer.TYPE, Integer.class);
+		primitiveWrapperMap.put(Long.TYPE, Long.class);
+		primitiveWrapperMap.put(Double.TYPE, Double.class);
+		primitiveWrapperMap.put(Float.TYPE, Float.class);
+		primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
+
+		for (Class<?> primitiveClass : primitiveWrapperMap.keySet()) {
+			final Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
+
+			if (!primitiveClass.equals(wrapperClass))
+				wrapperPrimitiveMap.put(wrapperClass, primitiveClass);
+		}
 	}
 
 	/* ------------------------------------------------------------------------------- */
@@ -982,66 +1087,66 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Class<?> param : constructor.getParameterTypes()) {
-				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
+				Valid.checkNotNull(param, "Argument cannot be null when instatiating " + this.clazz);
 
 				classes.add(param);
 			}
 
-			constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);
+			this.constructorCache.put(Arrays.hashCode(classes.toArray(new Class<?>[0])), constructor);
 		}
 
 		public Constructor<T> getDeclaredConstructor(final Class<?>... paramTypes) throws NoSuchMethodException {
 			final Integer hashCode = Arrays.hashCode(paramTypes);
 
-			if (constructorCache.containsKey(hashCode))
-				return (Constructor<T>) constructorCache.get(hashCode);
+			if (this.constructorCache.containsKey(hashCode))
+				return (Constructor<T>) this.constructorCache.get(hashCode);
 
-			if (constructorGuard.contains(hashCode)) {
-				while (constructorGuard.contains(hashCode)) {
+			if (this.constructorGuard.contains(hashCode)) {
+				while (this.constructorGuard.contains(hashCode)) {
 
 				} // Wait for other thread;
-				return getDeclaredConstructor(paramTypes);
+				return this.getDeclaredConstructor(paramTypes);
 			}
 
-			constructorGuard.add(hashCode);
+			this.constructorGuard.add(hashCode);
 
 			try {
-				final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+				final Constructor<T> constructor = this.clazz.getDeclaredConstructor(paramTypes);
 
-				cacheConstructor(constructor);
+				this.cacheConstructor(constructor);
 
 				return constructor;
 
 			} finally {
-				constructorGuard.remove(hashCode);
+				this.constructorGuard.remove(hashCode);
 			}
 		}
 
 		public Constructor<T> getConstructor(final Class<?>... paramTypes) throws NoSuchMethodException {
 			final Integer hashCode = Arrays.hashCode(paramTypes);
 
-			if (constructorCache.containsKey(hashCode))
-				return (Constructor<T>) constructorCache.get(hashCode);
+			if (this.constructorCache.containsKey(hashCode))
+				return (Constructor<T>) this.constructorCache.get(hashCode);
 
-			if (constructorGuard.contains(hashCode)) {
-				while (constructorGuard.contains(hashCode)) {
+			if (this.constructorGuard.contains(hashCode)) {
+				while (this.constructorGuard.contains(hashCode)) {
 					// Wait for other thread;
 				}
 
-				return getConstructor(paramTypes);
+				return this.getConstructor(paramTypes);
 			}
 
-			constructorGuard.add(hashCode);
+			this.constructorGuard.add(hashCode);
 
 			try {
-				final Constructor<T> constructor = clazz.getConstructor(paramTypes);
+				final Constructor<T> constructor = this.clazz.getConstructor(paramTypes);
 
-				cacheConstructor(constructor);
+				this.cacheConstructor(constructor);
 
 				return constructor;
 
 			} finally {
-				constructorGuard.remove(hashCode);
+				this.constructorGuard.remove(hashCode);
 			}
 		}
 
@@ -1066,32 +1171,32 @@ public final class ReflectionUtil {
 		}*/
 
 		public void cacheField(final Field field) {
-			fieldCache.put(field.getName(), field);
+			this.fieldCache.put(field.getName(), field);
 		}
 
 		public Field getDeclaredField(final String name) throws NoSuchFieldException {
 
-			if (fieldCache.containsKey(name))
-				return fieldCache.get(name);
+			if (this.fieldCache.containsKey(name))
+				return this.fieldCache.get(name);
 
-			if (fieldGuard.contains(name)) {
-				while (fieldGuard.contains(name)) {
+			if (this.fieldGuard.contains(name)) {
+				while (this.fieldGuard.contains(name)) {
 				}
 
-				return getDeclaredField(name);
+				return this.getDeclaredField(name);
 			}
 
-			fieldGuard.add(name);
+			this.fieldGuard.add(name);
 
 			try {
-				final Field field = clazz.getDeclaredField(name);
+				final Field field = this.clazz.getDeclaredField(name);
 
-				cacheField(field);
+				this.cacheField(field);
 
 				return field;
 
 			} finally {
-				fieldGuard.remove(name);
+				this.fieldGuard.remove(name);
 			}
 		}
 	}
@@ -1099,7 +1204,7 @@ public final class ReflectionUtil {
 	/**
 	 * Represents an exception during reflection operation
 	 */
-	public static final class ReflectionException extends FoException {
+	public static final class ReflectionException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 
 		public ReflectionException(final String message) {
@@ -1107,7 +1212,7 @@ public final class ReflectionUtil {
 		}
 
 		public ReflectionException(final Throwable ex, final String message) {
-			super(ex, message);
+			super(message, ex);
 		}
 	}
 
@@ -1133,7 +1238,7 @@ public final class ReflectionUtil {
 		}
 
 		public String getEnumName() {
-			return enumName;
+			return this.enumName;
 		}
 	}
 }

@@ -1,17 +1,12 @@
 package org.mineacademy.fo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-
+import com.google.common.collect.Sets;
+import lombok.*;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.FallingBlock;
@@ -20,13 +15,9 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import com.google.common.collect.Sets;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for block manipulation.
@@ -378,11 +369,10 @@ public final class BlockUtil {
 	/**
 	 * Get all the blocks in a specific area centered around the Location passed in
 	 *
-	 * @param loc    Center of the search area
-	 * @param height how many blocks up to check
-	 * @param radius of the search (cubic search radius)
-	 * @param type   of Material to search for
-	 * @return all the Block with the given Type in the specified radius
+	 * @param loc
+	 * @param height
+	 * @param radius
+	 * @return
 	 */
 	public static List<Block> getBlocks(final Location loc, final int height, final int radius) {
 		final List<Block> blocks = new ArrayList<>();
@@ -440,12 +430,10 @@ public final class BlockUtil {
 	}
 
 	/**
-	 * Return all leaves/logs upwards connected to that given tree block
-	 * <p>
-	 * Parts are sorted according to their Y coordinate from lowest to highest
+	 * Return all leaves/logs upwards connected to that given tree block.
+	 * Parts are sorted according to their Y coordinate from lowest to highest.
 	 *
-	 * @param block
-	 * @param includeLeaves
+	 * @param treeBase
 	 * @return
 	 */
 	public static List<Block> getTreePartsUp(final Block treeBase) {
@@ -493,12 +481,15 @@ public final class BlockUtil {
 
 	/**
 	 * Returns true whether the given block is a "LOG" type and we perform a search
-	 * down to the bottom most connected block to find if that stands onto {@link #TREE_GROUND_BLOCKS}
+	 * down to the bottom most connected block to find if that stands on tree ground blocks.
 	 *
 	 * @param treeBaseBlock
-	 * @return if the bottom most connected block to the given block stays on {@link #TREE_GROUND_BLOCKS}
+	 * @return
 	 */
 	public static boolean isLogOnGround(Block treeBaseBlock) {
+		// Validates the block passed in is actually a log
+		if (!(CompMaterial.isLog(treeBaseBlock.getType())))
+			return false;
 
 		// Reach for the bottom most tree-like block
 		while (CompMaterial.isLog(treeBaseBlock.getType()))
@@ -572,6 +563,7 @@ public final class BlockUtil {
 		try {
 			if (material.isInteractable()) // Ignore chests etc.
 				return false;
+
 		} catch (final Throwable t) {
 		}
 
@@ -609,11 +601,19 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlockNoSnow(final World world, final int x, final int z) {
-		for (int y = world.getMaxHeight(); y > 0; y--) {
+		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
-			if (block != null && !CompMaterial.isAir(block) && block.getType() != CompMaterial.SNOW.getMaterial())
+			if (!CompMaterial.isAir(block)) {
+
+				if (block.getType() == CompMaterial.SNOW_BLOCK.getMaterial())
+					return -1;
+
+				if (block.getType() == CompMaterial.SNOW.getMaterial())
+					continue;
+
 				return y + 1;
+			}
 		}
 
 		return -1;
@@ -623,9 +623,9 @@ public final class BlockUtil {
 	 * Scans the location from top to bottom to find the highest Y non-air coordinate that matches
 	 * the given predicate.
 	 *
-	 * @param world
+	 * @param location
 	 * @param predicate
-	 * @return the y coordinate, or -1 if not found
+	 * @return
 	 */
 	public static int findHighestBlock(final Location location, final Predicate<Material> predicate) {
 		return findHighestBlock(location.getWorld(), location.getBlockX(), location.getBlockZ(), predicate);
@@ -633,7 +633,7 @@ public final class BlockUtil {
 
 	/**
 	 * Scans the location from top to bottom to find the highest Y non-air coordinate that matches
-	 * the given predicate.
+	 * the given predicate. For nether worlds, we recommend you see {@link #findHighestNetherAirBlock(World, int, int)}
 	 *
 	 * @param world
 	 * @param x
@@ -642,7 +642,7 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
-		for (int y = world.getMaxHeight(); y > 0; y--) {
+		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
 			if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
@@ -651,6 +651,40 @@ public final class BlockUtil {
 
 		return -1;
 
+	}
+
+	/**
+	 * @see #findHighestNetherAirBlock(World, int, int)
+	 *
+	 * @param location
+	 * @return
+	 */
+	public static int findHighestNetherAirBlock(@NonNull Location location) {
+		return findHighestNetherAirBlock(location.getWorld(), location.getBlockX(), location.getBlockZ());
+	}
+
+	/**
+	 * Returns the first air block that has air block above it and a solid block below. Useful for finding
+	 * nether location from the bottom up to spawn mobs (not spawning them on the top bedrock as per {@link #findHighestBlock(Location, Predicate)}).
+	 *
+	 * @param world
+	 * @param x
+	 * @param z
+	 * @return
+	 */
+	public static int findHighestNetherAirBlock(@NonNull World world, int x, int z) {
+		Valid.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
+
+		for (int y = 0; y < world.getMaxHeight(); y++) {
+			final Block block = world.getBlockAt(x, y, z);
+			final Block above = block.getRelative(BlockFace.UP);
+			final Block below = block.getRelative(BlockFace.DOWN);
+
+			if (block != null && CompMaterial.isAir(block) && CompMaterial.isAir(above) && !CompMaterial.isAir(below) && below.getType().isSolid())
+				return y;
+		}
+
+		return -1;
 	}
 
 	/**
@@ -796,7 +830,7 @@ public final class BlockUtil {
 		protected final double x, y, z;
 
 		public VectorHelper add(final VectorHelper other) {
-			return add(other.x, other.y, other.z);
+			return this.add(other.x, other.y, other.z);
 		}
 
 		public VectorHelper add(final double x, final double y, final double z) {
@@ -804,7 +838,7 @@ public final class BlockUtil {
 		}
 
 		public VectorHelper subtract(final VectorHelper other) {
-			return subtract(other.x, other.y, other.z);
+			return this.subtract(other.x, other.y, other.z);
 		}
 
 		public VectorHelper subtract(final double x, final double y, final double z) {
@@ -816,21 +850,21 @@ public final class BlockUtil {
 		}
 
 		public VectorHelper divide(final double n) {
-			return new VectorHelper(x / n, y / n, z / n);
+			return new VectorHelper(this.x / n, this.y / n, this.z / n);
 		}
 
 		public double length() {
-			return Math.sqrt(x * x + y * y + z * z);
+			return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
 		}
 
 		public double distance(final VectorHelper other) {
-			return Math.sqrt(Math.pow(other.x - x, 2) +
-					Math.pow(other.y - y, 2) +
-					Math.pow(other.z - z, 2));
+			return Math.sqrt(Math.pow(other.x - this.x, 2) +
+					Math.pow(other.y - this.y, 2) +
+					Math.pow(other.z - this.z, 2));
 		}
 
 		public VectorHelper normalize() {
-			return divide(length());
+			return this.divide(this.length());
 		}
 
 		@Override
@@ -844,7 +878,7 @@ public final class BlockUtil {
 
 		@Override
 		public String toString() {
-			return "(" + x + ", " + y + ", " + z + ")";
+			return "(" + this.x + ", " + this.y + ", " + this.z + ")";
 		}
 	}
 }

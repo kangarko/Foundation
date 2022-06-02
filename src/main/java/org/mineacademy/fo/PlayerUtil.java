@@ -1,26 +1,11 @@
 package org.mineacademy.fo;
 
-import java.io.File;
-import java.io.FileReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Statistic;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.bukkit.*;
 import org.bukkit.Statistic.Type;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -43,8 +28,11 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.io.File;
+import java.io.FileReader;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * Utility class for managing players.
@@ -84,9 +72,7 @@ public final class PlayerUtil {
 	 * @return
 	 */
 	public static int getPing(final Player player) {
-		final Object entityPlayer = Remain.getHandleEntity(player);
-
-		return (int) ReflectionUtil.getFieldContent(entityPlayer, "ping");
+		return Remain.getPing(player);
 	}
 
 	/**
@@ -139,6 +125,22 @@ public final class PlayerUtil {
 		}
 
 		return statistics;
+	}
+
+	/**
+	 * Return the total amount of time the player has spent on the server.
+	 * This will get reset if you delete the playerdata folder inside your main world folder.
+	 *
+	 * **For Minecraft 1.12 and older this returns a tick value, otherwise this returns the
+	 * amount of minutes!**
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static long getPlayTimeTicksOrSeconds(OfflinePlayer player) {
+		final Statistic playTime = Remain.getPlayTimeStatisticName();
+
+		return getStatistic(player, playTime);
 	}
 
 	/**
@@ -347,12 +349,8 @@ public final class PlayerUtil {
 			player.setFallDistance(0);
 
 			CompProperty.INVULNERABLE.apply(player, false);
-
-			try {
-				player.setGlowing(false);
-				player.setSilent(false);
-			} catch (final NoSuchMethodError err) {
-			}
+			CompProperty.GLOWING.apply(player, false);
+			CompProperty.SILENT.apply(player, false);
 
 			player.setAllowFlight(false);
 			player.setFlying(false);
@@ -365,15 +363,7 @@ public final class PlayerUtil {
 			player.setVelocity(new Vector(0, 0, 0));
 			player.eject();
 
-			if (player.isInsideVehicle())
-				player.getVehicle().remove();
-
-			try {
-				for (final Entity passenger : player.getPassengers())
-					player.removePassenger(passenger);
-			} catch (final NoSuchMethodError err) {
-				/* old MC */
-			}
+			EntityUtil.removeVehiclesAndPassengers(player);
 
 			if (removeVanish)
 				try {
@@ -402,6 +392,7 @@ public final class PlayerUtil {
 	private static void cleanInventoryAndFood(final Player player) {
 		player.getInventory().setArmorContents(null);
 		player.getInventory().setContents(new ItemStack[player.getInventory().getContents().length]);
+
 		try {
 			player.getInventory().setExtraContents(new ItemStack[player.getInventory().getExtraContents().length]);
 		} catch (final NoSuchMethodError err) {
@@ -426,7 +417,7 @@ public final class PlayerUtil {
 		final ItemStack[] inv = player.getInventory().getContents();
 		final ItemStack[] armor = player.getInventory().getArmorContents();
 
-		final ItemStack[] everything = (ItemStack[]) ArrayUtils.addAll(inv, armor);
+		final ItemStack[] everything = (ItemStack[]) Common.joinArrays(inv, armor);
 
 		for (final ItemStack i : everything)
 			if (i != null && i.getType() != Material.AIR)
@@ -454,16 +445,15 @@ public final class PlayerUtil {
 	}
 
 	/**
-	 * Return true if the player is vanished. We check for Essentials and CMI vanish and also "vanished"
-	 * metadata value which is supported by most plugins
+	 * Return true if the player is vanished. We check for "vanished"
+	 * metadata value which is supported by most plugins (CMI, Essentials, etc.)
+	 *
+	 * Does NOT return true for vanish potions or spectator mode.
 	 *
 	 * @param player
 	 * @return
 	 */
 	public static boolean isVanished(final Player player) {
-		if (HookManager.isVanished(player))
-			return true;
-
 		final List<MetadataValue> list = player.getMetadata("vanished");
 
 		for (final MetadataValue meta : list)
@@ -471,6 +461,31 @@ public final class PlayerUtil {
 				return true;
 
 		return false;
+	}
+
+	/**
+	 * Updates vanish status for player using metadata, Essentials, CMI and NMS invisibility.
+	 *
+	 * @param player
+	 * @param vanished
+	 */
+	public static void setVanished(Player player, boolean vanished) {
+
+		// Hook into other plugins
+		HookManager.setVanished(player, false);
+
+		// Remove metadata
+		final List<MetadataValue> list = player.getMetadata("vanished");
+
+		for (final MetadataValue meta : list)
+			if (meta.asBoolean()) {
+				player.removeMetadata("vanished", meta.getOwningPlugin());
+
+				break;
+			}
+
+		// NMS
+		Remain.setInvisible(player, false);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -647,6 +662,7 @@ public final class PlayerUtil {
 	 *
 	 * @param player
 	 * @param material
+	 * @return
 	 */
 	public static boolean takeFirstOnePiece(final Player player, final CompMaterial material) {
 
@@ -714,6 +730,42 @@ public final class PlayerUtil {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Attempts to add items to player's inventory,
+	 * returns true if all items were added. If player's
+	 * inventory is full, we drop the items nearby and return false.
+	 *
+	 * @param player
+	 * @param items
+	 * @return false if inventory was full and some items were dropped at the floor, such as the mic
+	 */
+	public static boolean addItemsOrDrop(Player player, ItemStack... items) {
+		final Map<Integer, ItemStack> leftovers = addItems(player.getInventory(), items);
+
+		final World world = player.getWorld();
+		final Location location = player.getLocation();
+
+		for (final ItemStack leftover : leftovers.values()) {
+			final Item item = world.dropItem(location, leftover);
+
+			item.setPickupDelay(2 * 20);
+		}
+
+		return leftovers.isEmpty();
+	}
+
+	/**
+	 * Attempts to add items into the inventory,
+	 * returning what it couldn't store
+	 *
+	 * @param inventory
+	 * @param items
+	 * @return
+	 */
+	public static Map<Integer, ItemStack> addItems(final Inventory inventory, final Collection<ItemStack> items) {
+		return addItems(inventory, items.toArray(new ItemStack[items.size()]));
 	}
 
 	/**

@@ -1,13 +1,13 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * A pretty specific class for picking up items for the player randomly,
@@ -41,7 +41,7 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return list.isEmpty();
+		return this.list.isEmpty();
 	}
 
 	/**
@@ -52,11 +52,11 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * @return
 	 */
 	public T pickFrom(final Iterable<T> items) {
-		return pickFromFor(items, null);
+		return this.pickFromFor(items, null);
 	}
 
 	/**
-	 * Randomly picks 1 item for the player using {@link #canObtain(Player, Object)} method
+	 * Randomly picks 1 item for the player using the canObtain method
 	 * NB: This also loads up the list
 	 *
 	 * @param items
@@ -65,9 +65,9 @@ public abstract class RandomNoRepeatPicker<T> {
 	 */
 	public T pickFromFor(final Iterable<T> items, final Player player) {
 		for (final T item : items)
-			list.add(item);
+			this.list.add(item);
 
-		return pickRandom(player);
+		return this.pickRandom(player);
 	}
 
 	/**
@@ -77,24 +77,24 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * @return
 	 */
 	public T pickRandom() {
-		return pickRandom(null);
+		return this.pickRandom(null);
 	}
 
 	/**
-	 * Picks randomly 1 item and evaluates it against {@link #canObtain(Player, Object)}
+	 * Picks randomly 1 item and evaluates it against the canObtain method
 	 * until we run out of items or find 1 that the player can acquire
 	 *
 	 * @param player
 	 * @return
 	 */
 	public T pickRandom(final Player player) {
-		if (list.isEmpty())
+		if (this.list.isEmpty())
 			return null;
 
-		while (!list.isEmpty()) {
-			final T picked = list.remove(RandomUtil.nextInt(list.size()));
+		while (!this.list.isEmpty()) {
+			final T picked = this.list.remove(RandomUtil.nextInt(this.list.size()));
 
-			if (picked != null && canObtain(player, picked))
+			if (picked != null && this.canObtain(player, picked))
 				return picked;
 		}
 
@@ -127,7 +127,6 @@ public abstract class RandomNoRepeatPicker<T> {
 	 * to check if the player can obtain the class
 	 *
 	 * @param <T>
-	 * @param pickedType
 	 * @param canObtain
 	 * @return
 	 */

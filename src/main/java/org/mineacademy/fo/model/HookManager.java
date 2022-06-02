@@ -1,52 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.region.Region;
-import org.mineacademy.fo.remain.Remain;
-
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.Zrips.CMI.Modules.TabList.TabListManager;
@@ -57,18 +10,11 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
-import com.comphenix.protocol.injector.temporary.TemporaryPlayer;
-import com.earth2me.essentials.CommandSource;
-import com.earth2me.essentials.Essentials;
-import com.earth2me.essentials.IUser;
-import com.earth2me.essentials.User;
-import com.earth2me.essentials.UserMap;
+import com.earth2me.essentials.*;
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
-import com.griefcraft.lwc.LWC;
-import com.griefcraft.model.Protection;
 import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.MPlayer;
@@ -76,13 +22,8 @@ import com.massivecraft.massivecore.ps.PS;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import com.palmergames.bukkit.towny.TownyUniverse;
-import com.palmergames.bukkit.towny.object.Nation;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.WorldCoord;
+import com.palmergames.bukkit.towny.object.*;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
@@ -90,17 +31,43 @@ import github.scarsz.discordsrv.util.DiscordUtil;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import me.angeschossen.lands.api.integration.LandsIntegration;
-import me.angeschossen.lands.api.land.Land;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.ai.EntityTarget;
+import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+import org.mineacademy.fo.*;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.collection.StrictSet;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.region.Region;
+import org.mineacademy.fo.remain.Remain;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Our main class hooking into different plugins, providing you
@@ -191,10 +158,9 @@ public final class HookManager {
 			final String ver = factions.getDescription().getVersion();
 			final String main = factions.getDescription().getMain();
 
-			if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy")) {
+			if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy"))
 				factionsHook = new FactionsUUID();
-
-			} else if (ver.startsWith("2.")) {
+			else if (ver.startsWith("2.")) {
 				Class<?> mplayer = null;
 
 				try {
@@ -202,10 +168,9 @@ public final class HookManager {
 				} catch (final ClassNotFoundException ex) {
 				}
 
-				if (mplayer != null) {
+				if (mplayer != null)
 					factionsHook = new FactionsMassive();
-
-				} else
+				else
 					Common.warning("Recognized MCore Factions, but not hooked! Check if you have the latest version!");
 
 			}
@@ -687,21 +652,43 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return true if the given player is vanished in EssentialsX or CMI, or false if neither plugin is present
+	 * Return true if the given player is vanished in EssentialsX
 	 *
-	 * @deprecated this does not call metadata check in most plugins, see {@link PlayerUtil#isVanished(Player)}
+	 * @deprecated this does not call metadata check for most plugins nor NMS check, see {@link PlayerUtil#isVanished(Player)}
 	 * @param player
 	 * @return
 	 */
 	@Deprecated
-	public static boolean isVanished(final Player player) {
-		if (isEssentialsLoaded() && essentialsHook.isVanished(player.getName()))
-			return true;
+	public static boolean isVanishedEssentials(final Player player) {
+		return isEssentialsLoaded() && essentialsHook.isVanished(player.getName());
+	}
 
-		if (isCMILoaded() && CMIHook.isVanished(player))
-			return true;
+	/**
+	 * Return true if the given player is vanished in CMI
+	 *
+	 * @deprecated this does not call metadata check for most plugins nor NMS check, see {@link PlayerUtil#isVanished(Player)}
+	 * @param player
+	 * @return
+	 */
+	@Deprecated
+	public static boolean isVanishedCMI(final Player player) {
+		return isCMILoaded() && CMIHook.isVanished(player);
+	}
 
-		return false;
+	/**
+	 * Sets the vanish status for player in CMI and Essentials
+	 *
+	 * @deprecated this does not remove vanish metadata and NMS invisibility, use {@link PlayerUtil#setVanished(Player, boolean)} for that
+	 * @param player
+	 * @param vanished
+	 */
+	@Deprecated
+	public static void setVanished(Player player, boolean vanished) {
+		if (isEssentialsLoaded())
+			essentialsHook.setVanished(player.getName(), vanished);
+
+		if (isCMILoaded())
+			CMIHook.setVanished(player, vanished);
 	}
 
 	/**
@@ -730,23 +717,36 @@ public final class HookManager {
 	/**
 	 * If litebans is loaded, mute player - this expects you having /lmute command installed!
 	 *
-	 * @param player
+	 * @param targetPlayerName
 	 * @param durationTokenized
 	 * @param reason
 	 */
-	public static void setLiteBansMute(Player player, String durationTokenized, String reason) {
+	public static void setLiteBansMute(String targetPlayerName, String durationTokenized, String reason) {
 		if (isLiteBansLoaded())
-			Common.dispatchCommand(player, "lmute {player} " + durationTokenized + (reason == null || reason.isEmpty() ? "" : " " + reason));
+			Common.dispatchCommand(Bukkit.getConsoleSender(), "lmute " + targetPlayerName + " " + durationTokenized + (reason == null || reason.isEmpty() ? "" : " " + reason));
 	}
 
 	/**
 	 * If litebans is loaded, unmute player - this expects you having /lunmute command installed!
 	 *
-	 * @param player
+	 * @param targetPlayerName
 	 */
-	public static void setLiteBansUnmute(Player player) {
+	public static void setLiteBansUnmute(String targetPlayerName) {
 		if (isLiteBansLoaded())
-			Common.dispatchCommand(player, "lunmute {player}");
+			Common.dispatchCommand(Bukkit.getConsoleSender(), "lunmute " + targetPlayerName);
+	}
+
+	/**
+	 * Returns if the player has god mode either from Essentials or CMI
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static boolean hasGodMode(final Player player) {
+		final boolean essGodMode = isEssentialsLoaded() && essentialsHook.hasGodMode(player);
+		final boolean cmiGodMode = isCMILoaded() && CMIHook.hasGodMode(player);
+
+		return essGodMode || cmiGodMode;
 	}
 
 	/**
@@ -853,6 +853,20 @@ public final class HookManager {
 		final String nick = nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
 
 		return stripColors ? Common.stripColors(Common.revertColorizing(nick).replace(ChatColor.COLOR_CHAR + "x", "")) : nick;
+	}
+
+	/**
+	 * Attempts to find a nick from the given player name, defaulting to the given name if null
+	 * We support EssentialsX and CMI only.
+	 *
+	 * @param playerName
+	 * @return
+	 */
+	public static String getNickFromName(final String playerName) {
+		final String essNick = isEssentialsLoaded() ? essentialsHook.getNick(playerName) : null;
+		final String cmiNick = isCMILoaded() ? CMIHook.getNick(playerName) : null;
+
+		return cmiNick != null ? cmiNick : essNick != null ? essNick : playerName;
 	}
 
 	/**
@@ -1106,7 +1120,7 @@ public final class HookManager {
 
 	/**
 	 * Checks if the given player has the given permission, safe to use
-	 * for instances where the player may be a {@link TemporaryPlayer} from
+	 * for instances where the player may be a temporary player from
 	 * ProtocolLib where then we use Vault to check the players perm
 	 *
 	 * @param player
@@ -1185,12 +1199,17 @@ public final class HookManager {
 	 * @param message
 	 * @return
 	 */
-	public static String replacePlaceholders(final Player player, String message) {
+	public static String replacePlaceholders(final @Nullable OfflinePlayer player, String message) {
 		if (message == null || "".equals(message.trim()))
 			return message;
 
 		message = isPlaceholderAPILoaded() ? placeholderAPIHook.replacePlaceholders(player, message) : message;
 		message = isMVdWPlaceholderAPILoaded() ? MVdWPlaceholderHook.replacePlaceholders(player, message) : message;
+
+		if (!isPlaceholderAPILoaded())
+			Debugger.debug("placeholder-api", "Not replacing PAPI placeholders in '" + message + "' as the plugin is not yet loaded");
+		else
+			Debugger.debug("placeholder-api", "Replacing PAPI placeholders in: " + message);
 
 		return message;
 	}
@@ -1467,6 +1486,16 @@ public final class HookManager {
 		return isCitizensLoaded() ? citizensHook.isNPC(entity) : false;
 	}
 
+	/**
+	 * Return the target of the entity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static Entity getNPCTarget(final Entity entity) {
+		return isCitizensLoaded() ? citizensHook.getNPCTarget(entity) : null;
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// DiscordSRV
 	// ------------------------------------------------------------------------------------------------------------
@@ -1479,18 +1508,6 @@ public final class HookManager {
 	public static Set<String> getDiscordChannels() {
 		return isDiscordSRVLoaded() ? discordSRVHook.getChannels() : new HashSet<>();
 	}
-
-	/**
-	 * Sends a message from the given sender to a certain channel on DiscordSRV
-	 *
-	 * @param senderName
-	 * @param channel
-	 * @param message
-	 */
-	/*public static void sendDiscordMessage(final String senderName, final String channel, final String message) {
-		if (isDiscordSRVLoaded())
-			discordSRVHook.sendMessage(senderName, channel, message);
-	}*/
 
 	/**
 	 * Sends a message from the given sender to a certain channel on Discord using DiscordSRV
@@ -1516,25 +1533,6 @@ public final class HookManager {
 		if (isDiscordSRVLoaded() && !Common.stripColors(message).isEmpty())
 			discordSRVHook.sendMessage(channel, message);
 	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Class helpers
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Represents a PlaceholderAPI placeholder replacer with the given
-	 * variable (will be prepended with the name of your plugin, such as
-	 * <p>
-	 * chatcontrol_ + this variable
-	 * <p>
-	 * and the value that is callable so that you can return updated value each time.
-	 */
-	/*@Data
-	static class PAPIPlaceholder {
-
-		private final String variable;
-		private final BiFunction<Player, String, String> value;
-	}*/
 }
 
 // ------------------------------------------------------------------------------------------------------------
@@ -1562,11 +1560,17 @@ class EssentialsHook {
 	private final Essentials ess;
 
 	EssentialsHook() {
-		ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+		this.ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+	}
+
+	boolean hasGodMode(final Player player) {
+		final User user = this.getUser(player.getName());
+
+		return user != null ? user.isGodModeEnabled() : false;
 	}
 
 	void setGodMode(final Player player, final boolean godMode) {
-		final User user = getUser(player.getName());
+		final User user = this.getUser(player.getName());
 
 		if (user != null)
 			user.setGodModeEnabled(godMode);
@@ -1574,8 +1578,8 @@ class EssentialsHook {
 
 	void setIgnore(final UUID player, final UUID toIgnore, final boolean ignore) {
 		try {
-			final com.earth2me.essentials.User user = ess.getUser(player);
-			final com.earth2me.essentials.User toIgnoreUser = ess.getUser(toIgnore);
+			final com.earth2me.essentials.User user = this.ess.getUser(player);
+			final com.earth2me.essentials.User toIgnoreUser = this.ess.getUser(toIgnore);
 
 			if (toIgnoreUser != null)
 				user.setIgnoredPlayer(toIgnoreUser, ignore);
@@ -1586,8 +1590,8 @@ class EssentialsHook {
 
 	boolean isIgnoring(final UUID player, final UUID ignoringPlayer) {
 		try {
-			final com.earth2me.essentials.User user = ess.getUser(player);
-			final com.earth2me.essentials.User ignored = ess.getUser(ignoringPlayer);
+			final com.earth2me.essentials.User user = this.ess.getUser(player);
+			final com.earth2me.essentials.User ignored = this.ess.getUser(ignoringPlayer);
 
 			return user != null && ignored != null && user.isIgnoredPlayer(ignored);
 
@@ -1597,25 +1601,32 @@ class EssentialsHook {
 	}
 
 	boolean isAfk(final String pl) {
-		final IUser user = getUser(pl);
+		final IUser user = this.getUser(pl);
 
 		return user != null ? user.isAfk() : false;
 	}
 
 	boolean isVanished(final String pl) {
-		final IUser user = getUser(pl);
+		final IUser user = this.getUser(pl);
 
 		return user != null ? user.isVanished() : false;
 	}
 
+	void setVanished(final String playerName, boolean vanished) {
+		final IUser user = this.getUser(playerName);
+
+		if (user != null && user.isVanished() != vanished)
+			user.setVanished(false);
+	}
+
 	boolean isMuted(final String pl) {
-		final com.earth2me.essentials.User user = getUser(pl);
+		final com.earth2me.essentials.User user = this.getUser(pl);
 
 		return user != null ? user.isMuted() : false;
 	}
 
 	Player getReplyTo(final String recipient) {
-		final User user = getUser(recipient);
+		final User user = this.getUser(recipient);
 
 		if (user == null)
 			return null;
@@ -1649,13 +1660,10 @@ class EssentialsHook {
 	}
 
 	String getNick(final String player) {
-		final User user = getUser(player);
+		final User user = this.getUser(player);
 
-		if (user == null) {
-			Common.log("&cMalfunction getting Essentials user. Have you reloaded?");
-
+		if (user == null)
 			return player;
-		}
 
 		final String essNick = Common.getOrEmpty(user.getNickname());
 
@@ -1663,7 +1671,7 @@ class EssentialsHook {
 	}
 
 	void setNick(final UUID uniqueId, String nick) {
-		final User user = getUser(uniqueId);
+		final User user = this.getUser(uniqueId);
 
 		if (user != null) {
 			final boolean isEmpty = nick == null || Common.stripColors(nick).replace(" ", "").isEmpty();
@@ -1673,7 +1681,7 @@ class EssentialsHook {
 	}
 
 	String getNameFromNick(final String maybeNick) {
-		final UserMap users = ess.getUserMap();
+		final UserMap users = this.ess.getUserMap();
 
 		if (users != null)
 			for (final UUID userId : users.getAllUniqueUsers()) {
@@ -1687,7 +1695,7 @@ class EssentialsHook {
 	}
 
 	void setBackLocation(final String player, final Location loc) {
-		final User user = getUser(player);
+		final User user = this.getUser(player);
 
 		if (user != null)
 			try {
@@ -1698,40 +1706,40 @@ class EssentialsHook {
 	}
 
 	private User getUser(final String name) {
-		if (ess.getUserMap() == null)
+		if (this.ess.getUserMap() == null)
 			return null;
 
 		User user = null;
 
 		try {
-			user = ess.getUserMap().getUser(name);
+			user = this.ess.getUserMap().getUser(name);
 		} catch (final Throwable t) {
 		}
 
 		if (user == null)
 			try {
-				user = ess.getUserMap().getUserFromBukkit(name);
+				user = this.ess.getUserMap().getUserFromBukkit(name);
 
 			} catch (final Throwable ex) {
-				user = ess.getUser(name);
+				user = this.ess.getUser(name);
 			}
 		return user;
 	}
 
 	private User getUser(final UUID uniqueId) {
-		if (ess.getUserMap() == null)
+		if (this.ess.getUserMap() == null)
 			return null;
 
 		User user = null;
 
 		try {
-			user = ess.getUserMap().getUser(uniqueId);
+			user = this.ess.getUserMap().getUser(uniqueId);
 		} catch (final Throwable t) {
 		}
 
 		if (user == null)
 			try {
-				user = ess.getUser(uniqueId);
+				user = this.ess.getUser(uniqueId);
 			} catch (final Throwable ex) {
 			}
 
@@ -1745,11 +1753,11 @@ class MultiverseHook {
 	private final MultiverseCore multiVerse;
 
 	MultiverseHook() {
-		multiVerse = (MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core");
+		this.multiVerse = (MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core");
 	}
 
 	String getWorldAlias(final String world) {
-		final MultiverseWorld mvWorld = multiVerse.getMVWorldManager().getMVWorld(world);
+		final MultiverseWorld mvWorld = this.multiVerse.getMVWorldManager().getMVWorld(world);
 
 		if (mvWorld != null)
 			return mvWorld.getColoredWorldString();
@@ -1762,11 +1770,11 @@ class TownyHook {
 
 	Collection<? extends Player> getTownResidentsOnline(final Player pl) {
 		final List<Player> recipients = new ArrayList<>();
-		final String playersTown = getTownName(pl);
+		final String playersTown = this.getTownName(pl);
 
 		if (!playersTown.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers())
-				if (playersTown.equals(getTownName(online)))
+				if (playersTown.equals(this.getTownName(online)))
 					recipients.add(online);
 
 		return recipients;
@@ -1774,11 +1782,11 @@ class TownyHook {
 
 	Collection<? extends Player> getNationPlayersOnline(final Player pl) {
 		final List<Player> recipients = new ArrayList<>();
-		final String playerNation = getNationName(pl);
+		final String playerNation = this.getNationName(pl);
 
 		if (!playerNation.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers())
-				if (playerNation.equals(getNationName(online)))
+				if (playerNation.equals(this.getNationName(online)))
 					recipients.add(online);
 
 		return recipients;
@@ -1786,11 +1794,11 @@ class TownyHook {
 
 	Collection<? extends Player> getAllyPlayersOnline(final Player pl) {
 		final List<Player> recipients = new ArrayList<>();
-		final Resident resident = getResident(pl);
+		final Resident resident = this.getResident(pl);
 
 		if (resident != null)
 			for (final Player online : Remain.getOnlinePlayers()) {
-				final Resident otherResident = getResident(online);
+				final Resident otherResident = this.getResident(online);
 
 				if (otherResident != null && otherResident.isAlliedWith(resident))
 					recipients.add(online);
@@ -1800,13 +1808,13 @@ class TownyHook {
 	}
 
 	String getTownName(final Player pl) {
-		final Town t = getTown(pl);
+		final Town t = this.getTown(pl);
 
 		return t != null ? t.getName() : "";
 	}
 
 	String getNationName(final Player pl) {
-		final Nation n = getNation(pl);
+		final Nation n = this.getNation(pl);
 
 		return n != null ? n.getName() : "";
 	}
@@ -1823,7 +1831,7 @@ class TownyHook {
 	}
 
 	String getTownName(final Location loc) {
-		final Town town = getTown(loc);
+		final Town town = this.getTown(loc);
 
 		return town != null ? town.getName() : null;
 	}
@@ -1842,7 +1850,7 @@ class TownyHook {
 
 	String getTownOwner(final Location loc) {
 		try {
-			final Town town = getTown(loc);
+			final Town town = this.getTown(loc);
 
 			return town != null ? town.getMayor().getName() : null;
 
@@ -1852,7 +1860,7 @@ class TownyHook {
 	}
 
 	private Nation getNation(final Player pl) {
-		final Town town = getTown(pl);
+		final Town town = this.getTown(pl);
 
 		try {
 			return town.getNation();
@@ -1863,7 +1871,7 @@ class TownyHook {
 	}
 
 	private Town getTown(final Player pl) {
-		final Resident res = getResident(pl);
+		final Resident res = this.getResident(pl);
 
 		try {
 			return res.getTown();
@@ -1886,29 +1894,36 @@ class TownyHook {
 class ProtocolLibHook {
 
 	private final ProtocolManager manager;
+	private final StrictSet<Object> registeredListeners = new StrictSet<>();
 
 	ProtocolLibHook() {
-		manager = ProtocolLibrary.getProtocolManager();
+		this.manager = ProtocolLibrary.getProtocolManager();
 	}
 
 	final void addPacketListener(final Object listener) {
 		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
 
 		try {
-			manager.addPacketListener((PacketListener) listener);
+			this.manager.addPacketListener((PacketListener) listener);
 
 		} catch (final Throwable t) {
 			Common.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
+
+			return;
 		}
+
+		this.registeredListeners.add(listener);
 	}
 
 	final void removePacketListeners(final Plugin plugin) {
-		manager.removePacketListeners(plugin);
+		this.manager.removePacketListeners(plugin);
+
+		this.registeredListeners.clear();
 	}
 
 	final void sendPacket(final PacketContainer packet) {
 		for (final Player player : Remain.getOnlinePlayers())
-			sendPacket(player, packet);
+			this.sendPacket(player, packet);
 	}
 
 	final void sendPacket(final Player player, final Object packet) {
@@ -1916,16 +1931,16 @@ class ProtocolLibHook {
 		Valid.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
 
 		try {
-			manager.sendServerPacket(player, (PacketContainer) packet);
+			this.manager.sendServerPacket(player, (PacketContainer) packet);
 
-		} catch (final Throwable e) {
+		} catch (final Exception e) {
 			Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
 		}
 	}
 
 	final boolean isTemporaryPlayer(Player player) {
 		try {
-			return player != null && player.getClass().getSimpleName().contains("TemporaryPlayer");
+			return player != null && player.getClass().getSimpleName().contains("TemporaryPlayer"); // Solves compatibiltiy issues
 
 		} catch (final NoClassDefFoundError err) {
 			return false;
@@ -1940,7 +1955,7 @@ class VaultHook {
 	private Permission permissions;
 
 	VaultHook() {
-		setIntegration();
+		this.setIntegration();
 	}
 
 	void setIntegration() {
@@ -1949,21 +1964,21 @@ class VaultHook {
 		final RegisteredServiceProvider<Permission> permProvider = Bukkit.getServicesManager().getRegistration(Permission.class);
 
 		if (economyProvider != null)
-			economy = economyProvider.getProvider();
+			this.economy = economyProvider.getProvider();
 
 		if (chatProvider != null)
-			chat = chatProvider.getProvider();
+			this.chat = chatProvider.getProvider();
 
 		if (permProvider != null)
-			permissions = permProvider.getProvider();
+			this.permissions = permProvider.getProvider();
 	}
 
 	boolean isChatIntegrated() {
-		return chat != null;
+		return this.chat != null;
 	}
 
 	boolean isEconomyIntegrated() {
-		return economy != null;
+		return this.economy != null;
 	}
 
 	// ------------------------------------------------------------------------------
@@ -1971,25 +1986,25 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 
 	String getCurrencyNameSG() {
-		return economy != null ? Common.getOrEmpty(economy.currencyNameSingular()) : "Money";
+		return this.economy != null ? Common.getOrEmpty(this.economy.currencyNameSingular()) : "Money";
 	}
 
 	String getCurrencyNamePL() {
-		return economy != null ? Common.getOrEmpty(economy.currencyNamePlural()) : "Money";
+		return this.economy != null ? Common.getOrEmpty(this.economy.currencyNamePlural()) : "Money";
 	}
 
 	double getBalance(final Player player) {
-		return economy != null ? economy.getBalance(player) : -1;
+		return this.economy != null ? this.economy.getBalance(player) : -1;
 	}
 
 	void withdraw(final Player player, final double amount) {
-		if (economy != null)
-			economy.withdrawPlayer(player.getName(), amount);
+		if (this.economy != null)
+			this.economy.withdrawPlayer(player.getName(), amount);
 	}
 
 	void deposit(final Player player, final double amount) {
-		if (economy != null)
-			economy.depositPlayer(player.getName(), amount);
+		if (this.economy != null)
+			this.economy.depositPlayer(player.getName(), amount);
 	}
 
 	// ------------------------------------------------------------------------------
@@ -1998,7 +2013,7 @@ class VaultHook {
 
 	Boolean hasPerm(@NonNull final OfflinePlayer player, final String perm) {
 		try {
-			return permissions != null ? perm != null ? permissions.playerHas((String) null, player, perm) : true : null;
+			return this.permissions != null ? perm != null ? this.permissions.playerHas((String) null, player, perm) : true : null;
 
 		} catch (final Throwable t) {
 			Common.logTimed(900,
@@ -2011,15 +2026,28 @@ class VaultHook {
 	}
 
 	Boolean hasPerm(@NonNull final String player, final String perm) {
-		return permissions != null ? perm != null ? permissions.has((String) null, player, perm) : true : null;
+		try {
+			return this.permissions != null ? perm != null ? this.permissions.has((String) null, player, perm) : true : null;
+		} catch (final UnsupportedOperationException t) {
+			return false; // No supported plugin installed
+		}
 	}
 
 	Boolean hasPerm(@NonNull final String world, @NonNull final String player, final String perm) {
-		return permissions != null ? perm != null ? permissions.has(world, player, perm) : true : null;
+		try {
+			return this.permissions != null ? perm != null ? this.permissions.has(world, player, perm) : true : null;
+		} catch (final UnsupportedOperationException t) {
+			return false; // No supported plugin installed
+		}
 	}
 
 	String getPrimaryGroup(final Player player) {
-		return permissions != null ? permissions.getPrimaryGroup(player) : "";
+		try {
+			return this.permissions != null ? this.permissions.getPrimaryGroup(player) : "";
+
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	// ------------------------------------------------------------------------------
@@ -2027,23 +2055,35 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 
 	String getPlayerPrefix(final Player player) {
-		return lookupVault(player, VaultPart.PREFIX);
+		try {
+			return this.lookupVault(player, VaultPart.PREFIX);
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	String getPlayerSuffix(final Player player) {
-		return lookupVault(player, VaultPart.SUFFIX);
+		try {
+			return this.lookupVault(player, VaultPart.SUFFIX);
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	String getPlayerGroup(final Player player) {
-		return lookupVault(player, VaultPart.GROUP);
+		try {
+			return this.lookupVault(player, VaultPart.GROUP);
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed
+		}
 	}
 
 	private String lookupVault(final Player player, final VaultPart vaultPart) {
-		if (chat == null)
+		if (this.chat == null)
 			return "";
 
-		final String[] groups = chat.getPlayerGroups(player);
-		String fallback = vaultPart == VaultPart.PREFIX ? chat.getPlayerPrefix(player) : vaultPart == VaultPart.SUFFIX ? chat.getPlayerSuffix(player) : groups != null && groups.length > 0 ? groups[0] : "";
+		final String[] groups = this.chat.getPlayerGroups(player);
+		String fallback = vaultPart == VaultPart.PREFIX ? this.chat.getPlayerPrefix(player) : vaultPart == VaultPart.SUFFIX ? this.chat.getPlayerSuffix(player) : groups != null && groups.length > 0 ? groups[0] : "";
 
 		if (fallback == null)
 			fallback = "";
@@ -2058,13 +2098,13 @@ class VaultHook {
 
 		if (groups != null)
 			for (final String group : groups) {
-				final String part = vaultPart == VaultPart.PREFIX ? chat.getGroupPrefix(player.getWorld(), group) : vaultPart == VaultPart.SUFFIX ? chat.getGroupSuffix(player.getWorld(), group) : group;
+				final String part = vaultPart == VaultPart.PREFIX ? this.chat.getGroupPrefix(player.getWorld(), group) : vaultPart == VaultPart.SUFFIX ? this.chat.getGroupSuffix(player.getWorld(), group) : group;
 
 				if (part != null && !part.isEmpty() && !list.contains(part))
 					list.add(part);
 			}
 
-		return StringUtils.join(list, vaultPart == VaultPart.GROUP ? ", " : "");
+		return Common.join(list, vaultPart == VaultPart.GROUP ? ", " : "");
 	}
 
 	enum VaultPart {
@@ -2098,14 +2138,14 @@ class PlaceholderAPIHook {
 			}
 	}
 
-	final String replacePlaceholders(final Player pl, final String msg) {
+	final String replacePlaceholders(final OfflinePlayer player, final String msg) {
 		try {
-			return setPlaceholders(pl, msg);
+			return this.setPlaceholders(player, msg);
 
 		} catch (final Throwable t) {
 			Common.error(t,
 					"PlaceholderAPI failed to replace variables!",
-					"Player: " + pl.getName(),
+					"Player: " + (player == null ? "none" : player.getName()),
 					"Message: " + msg,
 					"Error: %error");
 
@@ -2113,7 +2153,7 @@ class PlaceholderAPIHook {
 		}
 	}
 
-	private String setPlaceholders(final Player player, String text) {
+	private String setPlaceholders(final OfflinePlayer player, String text) {
 		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
 		if (hooks.isEmpty())
@@ -2161,7 +2201,7 @@ class PlaceholderAPIHook {
 							"our end, please contact the expansion author.",
 							"",
 							"Variable: " + identifier,
-							"Player: " + player.getName());
+							"Player: " + (player == null ? "none" : player.getName()));
 
 					currentThread.stop();
 				});
@@ -2184,7 +2224,7 @@ class PlaceholderAPIHook {
 
 	final String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
 		try {
-			return setRelationalPlaceholders(one, two, message);
+			return this.setRelationalPlaceholders(one, two, message);
 
 		} catch (final Throwable t) {
 			Common.error(t,
@@ -2370,7 +2410,11 @@ class MVdWPlaceholderHook {
 	MVdWPlaceholderHook() {
 	}
 
-	String replacePlaceholders(final Player player, final String message) {
+	String replacePlaceholders(@Nullable OfflinePlayer player, final String message) {
+
+		if (player == null)
+			return message;
+
 		try {
 			final Class<?> placeholderAPI = ReflectionUtil.lookupClass("be.maximvdw.placeholderapi.PlaceholderAPI");
 			Valid.checkNotNull(placeholderAPI, "Failed to look up class be.maximvdw.placeholderapi.PlaceholderAPI");
@@ -2403,20 +2447,34 @@ class MVdWPlaceholderHook {
 
 class LWCHook {
 
+	private final Class<?> mainClass;
+	private final boolean enabled;
+
+	private final Object instance;
+	private final Method findProtection;
+
+	LWCHook() {
+		this.mainClass = ReflectionUtil.lookupClass("com.griefcraft.lwc.LWC");
+		this.enabled = (boolean) ReflectionUtil.getStaticFieldContent(this.mainClass, "ENABLED");
+
+		this.instance = ReflectionUtil.invokeStatic(this.mainClass, "getInstance");
+		this.findProtection = ReflectionUtil.getMethod(this.mainClass, "findProtection", Block.class);
+	}
+
 	String getOwner(final Block block) {
-		if (!LWC.ENABLED)
+		if (!this.enabled)
 			return null;
 
-		final Protection protection = LWC.getInstance().findProtection(block);
+		final Object protection = ReflectionUtil.invoke(this.findProtection, this.instance, block);
 
 		if (protection != null) {
-			final String uuid = protection.getOwner();
+			final Object ownerUid = ReflectionUtil.invoke("getOwner", protection);
 
-			if (uuid != null) {
-				final OfflinePlayer opl = Remain.getOfflinePlayerByUUID(UUID.fromString(uuid));
+			if (ownerUid != null) {
+				final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(UUID.fromString(ownerUid.toString()));
 
-				if (opl != null)
-					return opl.getName();
+				if (offlinePlayer != null)
+					return offlinePlayer.getName();
 			}
 		}
 
@@ -2472,7 +2530,7 @@ class WorldEditHook {
 		} catch (final ClassNotFoundException e) {
 		}
 
-		legacy = !ok;
+		this.legacy = !ok;
 	}
 }
 
@@ -2483,14 +2541,14 @@ class WorldGuardHook {
 	public WorldGuardHook(final WorldEditHook we) {
 		final Plugin wg = Bukkit.getPluginManager().getPlugin("WorldGuard");
 
-		legacy = !wg.getDescription().getVersion().startsWith("7") || we != null && we.legacy;
+		this.legacy = !wg.getDescription().getVersion().startsWith("7") || we != null && we.legacy;
 	}
 
-	public List<String> getRegionsAt(final Location loc) {
+	public List<String> getRegionsAt(final Location location) {
 		final List<String> list = new ArrayList<>();
 
-		getApplicableRegions(loc).forEach(reg -> {
-			final String name = Common.stripColors(reg.getId());
+		this.getApplicableRegions(location).forEach(region -> {
+			final String name = Common.stripColors(region.getId());
 
 			if (!name.startsWith("__"))
 				list.add(name);
@@ -2501,8 +2559,8 @@ class WorldGuardHook {
 
 	public Region getRegion(final String name) {
 		for (final World w : Bukkit.getWorlds()) {
-			final Object rm = getRegionManager(w);
-			if (legacy)
+			final Object rm = this.getRegionManager(w);
+			if (this.legacy)
 				try {
 
 					final Map<?, ?> regionMap = (Map<?, ?>) rm.getClass().getMethod("getRegions").invoke(rm);
@@ -2561,8 +2619,8 @@ class WorldGuardHook {
 		final List<String> list = new ArrayList<>();
 
 		for (final World w : Bukkit.getWorlds()) {
-			final Object rm = getRegionManager(w);
-			if (legacy)
+			final Object rm = this.getRegionManager(w);
+			if (this.legacy)
 				try {
 					final Map<?, ?> regionMap = (Map<?, ?>) rm.getClass().getMethod("getRegions").invoke(rm);
 					Method getId = null;
@@ -2584,24 +2642,24 @@ class WorldGuardHook {
 				}
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-				.getRegions().values().forEach(reg -> {
-					if (reg == null || reg.getId() == null)
-						return;
+						.getRegions().values().forEach(reg -> {
+							if (reg == null || reg.getId() == null)
+								return;
 
-					final String name = Common.stripColors(reg.getId());
+							final String name = Common.stripColors(reg.getId());
 
-					if (!name.startsWith("__"))
-						list.add(name);
-				});
+							if (!name.startsWith("__"))
+								list.add(name);
+						});
 		}
 
 		return list;
 	}
 
 	private Iterable<ProtectedRegion> getApplicableRegions(final Location loc) {
-		final Object rm = getRegionManager(loc.getWorld());
+		final Object rm = this.getRegionManager(loc.getWorld());
 
-		if (legacy)
+		if (this.legacy)
 			try {
 				return (Iterable<ProtectedRegion>) rm.getClass().getMethod("getApplicableRegions", Location.class).invoke(rm, loc);
 
@@ -2616,7 +2674,7 @@ class WorldGuardHook {
 	}
 
 	private Object getRegionManager(final World w) {
-		if (legacy)
+		if (this.legacy)
 			try {
 				return Class.forName("com.sk89q.worldguard.bukkit.WGBukkit").getMethod("getRegionManager", World.class).invoke(null, w);
 
@@ -2674,11 +2732,11 @@ abstract class FactionsHook {
 	 */
 	final Collection<? extends Player> getSameFactionPlayers(final Player pl) {
 		final List<Player> recipients = new ArrayList<>();
-		final String playerFaction = getFaction(pl);
+		final String playerFaction = this.getFaction(pl);
 
 		if (playerFaction != null && !playerFaction.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers()) {
-				final String onlineFaction = getFaction(online);
+				final String onlineFaction = this.getFaction(online);
 
 				if (playerFaction.equals(onlineFaction))
 					recipients.add(online);
@@ -2733,7 +2791,7 @@ final class FactionsUUID extends FactionsHook {
 	@Override
 	public Collection<String> getFactions() {
 		try {
-			final Object i = instance();
+			final Object i = this.instance();
 			final Set<String> tags = (Set<String>) i.getClass().getMethod("getFactionTags").invoke(i);
 
 			return tags;
@@ -2747,7 +2805,7 @@ final class FactionsUUID extends FactionsHook {
 	@Override
 	public String getFaction(final Player pl) {
 		try {
-			final Object fplayers = fplayers();
+			final Object fplayers = this.fplayers();
 			final Object fpl = fplayers.getClass().getMethod("getByPlayer", Player.class).invoke(fplayers, pl);
 			final Object f = fpl != null ? fpl.getClass().getMethod("getFaction").invoke(fpl) : null;
 			final Object name = f != null ? f.getClass().getMethod("getTag").invoke(f) : null;
@@ -2763,7 +2821,7 @@ final class FactionsUUID extends FactionsHook {
 
 	@Override
 	public String getFaction(final Location loc) {
-		final Object f = findFaction(loc);
+		final Object f = this.findFaction(loc);
 
 		try {
 			return f != null ? f.getClass().getMethod("getTag").invoke(f).toString() : null;
@@ -2776,7 +2834,7 @@ final class FactionsUUID extends FactionsHook {
 
 	@Override
 	public String getFactionOwner(final Location loc) {
-		final Object faction = findFaction(loc);
+		final Object faction = this.findFaction(loc);
 
 		try {
 			return faction != null ? ((com.massivecraft.factions.FPlayer) faction.getClass().getMethod("getFPlayerAdmin").invoke(faction)).getName() : null;
@@ -2837,11 +2895,11 @@ class McMMOHook {
 			}
 
 		} catch (final Throwable throwable) {
-			if (!errorLogged) {
+			if (!this.errorLogged) {
 				Common.warning("Failed getting mcMMO party chat for " + player.getName() + " due to error. Returning null."
 						+ " Ensure you have the latest mcMMO version, if so, contact plugin authors to update the integration. Error was: " + throwable);
 
-				errorLogged = true;
+				this.errorLogged = true;
 			}
 		}
 
@@ -2860,11 +2918,11 @@ class McMMOHook {
 			}
 
 		} catch (final Throwable throwable) {
-			if (!errorLogged) {
+			if (!this.errorLogged) {
 				Common.warning("Failed getting mcMMO party recipients for " + bukkitPlayer.getName() + " due to error. Returning null."
 						+ " Ensure you have the latest mcMMO version, if so, contact plugin authors to update the integration. Error was: " + throwable);
 
-				errorLogged = true;
+				this.errorLogged = true;
 			}
 		}
 
@@ -2889,7 +2947,7 @@ class PlotSquaredHook {
 	List<Player> getPlotPlayers(final Player player) {
 		final List<Player> players = new ArrayList<>();
 
-		final Class<?> plotPlayerClass = ReflectionUtil.lookupClass((legacy ? "com.intellectualcrafters.plot.object" : "com.plotsquared.core.player") + ".PlotPlayer");
+		final Class<?> plotPlayerClass = ReflectionUtil.lookupClass((this.legacy ? "com.intellectualcrafters.plot.object" : "com.plotsquared.core.player") + ".PlotPlayer");
 		Method wrap;
 
 		try {
@@ -2932,19 +2990,26 @@ class PlotSquaredHook {
 class CMIHook {
 
 	boolean isVanished(final Player player) {
-		final CMIUser user = getUser(player);
+		final CMIUser user = this.getUser(player);
 
 		return user != null && user.isVanished();
 	}
 
+	void setVanished(Player player, boolean vanished) {
+		final CMIUser user = this.getUser(player);
+
+		if (user != null && user.isVanished() != vanished)
+			user.setVanished(false);
+	}
+
 	boolean isAfk(final Player player) {
-		final CMIUser user = getUser(player);
+		final CMIUser user = this.getUser(player);
 
 		return user != null && user.isAfk();
 	}
 
 	boolean isMuted(final Player player) {
-		final CMIUser user = getUser(player);
+		final CMIUser user = this.getUser(player);
 
 		try {
 			return user != null && user.getMutedUntil() != 0 && user.getMutedUntil() != null && user.getMutedUntil() > System.currentTimeMillis();
@@ -2954,14 +3019,21 @@ class CMIHook {
 		}
 	}
 
-	void setGodMode(final Player player, final boolean godMode) {
-		final CMIUser user = getUser(player);
+	boolean hasGodMode(final Player player) {
+		final CMIUser user = this.getUser(player);
 
-		user.setGod(godMode);
+		return user != null ? user.isGod() : false;
+	}
+
+	void setGodMode(final Player player, final boolean godMode) {
+		final CMIUser user = this.getUser(player);
+
+		if (user != null)
+			user.setGod(godMode);
 	}
 
 	void setLastTeleportLocation(final Player player, final Location location) {
-		final CMIUser user = getUser(player);
+		final CMIUser user = this.getUser(player);
 
 		try {
 			user.getClass().getMethod("setLastTeleportLocation", Location.class).invoke(user, location);
@@ -2991,14 +3063,21 @@ class CMIHook {
 	}
 
 	String getNick(final Player player) {
-		final CMIUser user = getUser(player);
+		final CMIUser user = this.getUser(player);
+		final String nick = user == null ? null : user.getNickName();
+
+		return nick == null || "".equals(nick) ? null : nick;
+	}
+
+	String getNick(final String playerName) {
+		final CMIUser user = this.getUser(playerName);
 		final String nick = user == null ? null : user.getNickName();
 
 		return nick == null || "".equals(nick) ? null : nick;
 	}
 
 	void setNick(final UUID uniqueId, String nick) {
-		final CMIUser user = getUser(uniqueId);
+		final CMIUser user = this.getUser(uniqueId);
 		final TabListManager tabManager = CMI.getInstance().getTabListManager();
 
 		if (user != null) {
@@ -3027,6 +3106,10 @@ class CMIHook {
 	private CMIUser getUser(final UUID uniqueId) {
 		return CMI.getInstance().getPlayerManager().getUser(uniqueId);
 	}
+
+	private CMIUser getUser(final String name) {
+		return CMI.getInstance().getPlayerManager().getUser(name);
+	}
 }
 
 class CitizensHook {
@@ -3036,30 +3119,37 @@ class CitizensHook {
 
 		return reg != null ? reg.isNPC(entity) : false;
 	}
+
+	Entity getNPCTarget(Entity entity) {
+		final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+
+		if (npc != null) {
+			final EntityTarget target = npc.getNavigator().getEntityTarget();
+
+			if (target != null)
+				return target.getTarget();
+		}
+
+		return null;
+	}
 }
 
-class DiscordSRVHook implements Listener {
+class DiscordSRVHook {
 
 	Set<String> getChannels() {
 		return DiscordSRV.getPlugin().getChannels().keySet();
 	}
 
-	/*boolean sendMessage(final String sender, final String channel, final String message) {
-		final DiscordSender discordSender = new DiscordSender(sender);
-
-		return sendMessage(discordSender, channel, message);
-	}*/
-
 	boolean sendMessage(final String channel, final String message) {
-		return sendMessage((CommandSender) null, channel, message);
+		return this.sendMessage(null, channel, message);
 	}
 
-	boolean sendMessage(final CommandSender sender, final String channel, final String message) {
+	boolean sendMessage(@Nullable CommandSender sender, final String channel, final String message) {
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// Channel not configured in DiscordSRV config.yml, ignore
 		if (textChannel == null) {
-			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", getChannels()) + ". Not sending: " + message);
+			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", this.getChannels()) + ". Not sending: " + message);
 
 			return false;
 		}
@@ -3069,25 +3159,21 @@ class DiscordSRVHook implements Listener {
 
 			final DiscordSRV instance = JavaPlugin.getPlugin(DiscordSRV.class);
 
-			// Dirty: We have to temporarily unset value in DiscordSRV to enable the processChatMessage method to function
-			final File file = new File(SimplePlugin.getData().getParent(), "DiscordSRV/config.yml");
+			// Dirty: We have to temporarily set a config value in DiscordSRV to enable the processChatMessage method to function
+			final String key = "DiscordChatChannelMinecraftToDiscord";
+			final Map<String, Object> runtimeValues = ReflectionUtil.getFieldContent(DiscordSRV.config(), "runtimeValues");
+			final Object oldValue = runtimeValues.get(key);
 
-			if (file.exists()) {
-				final FileConfiguration discordConfig = YamlConfiguration.loadConfiguration(file);
+			runtimeValues.put(key, true);
 
-				if (discordConfig != null) {
-					final String outMessageKey = "DiscordChatChannelMinecraftToDiscord";
-					final boolean outMessageOldValue = discordConfig.getBoolean(outMessageKey);
+			try {
+				instance.processChatMessage((Player) sender, message, channel, false);
 
-					discordConfig.set(outMessageKey, true);
-
-					try {
-						instance.processChatMessage((Player) sender, message, channel, false);
-
-					} finally {
-						discordConfig.set(outMessageKey, outMessageOldValue);
-					}
-				}
+			} finally {
+				if (oldValue == null)
+					runtimeValues.remove(key);
+				else
+					runtimeValues.put(key, oldValue);
 			}
 
 		} else {
@@ -3095,6 +3181,7 @@ class DiscordSRVHook implements Listener {
 
 			DiscordUtil.sendMessage(textChannel, message);
 		}
+
 		return true;
 	}
 }
@@ -3148,11 +3235,38 @@ class BossHook {
 
 class MythicMobsHook {
 
+	private Boolean legacyVersion = null;
+
+	MythicMobsHook() {
+		final Plugin mythicMobs = Bukkit.getPluginManager().getPlugin("MythicMobs");
+		final String version = mythicMobs.getDescription().getVersion();
+
+		if (version.startsWith("4."))
+			this.legacyVersion = true;
+
+		else if (version.startsWith("5."))
+			this.legacyVersion = false;
+
+		else
+			Common.warning("Skipping hooking into unsupported MythicMob version " + version + "! Only 4.X.X and 5.X.X are supported.");
+
+	}
+
 	/*
 	 * Attempt to return a MythicMob name from the given entity
 	 * or null if the entity is not a MythicMob
 	 */
-	final String getBossName(Entity entity) {
+	String getBossName(Entity entity) {
+		if (this.legacyVersion == null)
+			return null;
+
+		if (this.legacyVersion)
+			return this.getBossNameV4(entity);
+
+		return this.getBossNameV5(entity);
+	}
+
+	private String getBossNameV4(Entity entity) {
 		try {
 			final Class<?> mythicMobs = ReflectionUtil.lookupClass("io.lumine.xikage.mythicmobs.MythicMobs");
 			final Object instance = ReflectionUtil.invokeStatic(mythicMobs, "inst");
@@ -3172,21 +3286,42 @@ class MythicMobsHook {
 
 		return null;
 	}
+
+	private String getBossNameV5(Entity entity) {
+
+		final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
+		final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
+		final Collection<?> activeMobs = ReflectionUtil.invoke("getActiveMobs", mobManager);
+
+		for (final Object mob : activeMobs) {
+			final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
+
+			if (uniqueId.equals(entity.getUniqueId()))
+				return ReflectionUtil.invoke("getName", mob);
+		}
+
+		return null;
+	}
 }
 
 class LandsHook {
 
-	private final LandsIntegration lands;
+	private final Object lands;
+	private final Method getLand;
 
 	LandsHook() {
-		this.lands = new LandsIntegration(SimplePlugin.getInstance());
+		final Class<?> landsIntegration = ReflectionUtil.lookupClass("me.angeschossen.lands.api.integration.LandsIntegration");
+		final Constructor<?> con = ReflectionUtil.getConstructor(landsIntegration, Plugin.class);
+
+		this.lands = ReflectionUtil.instantiate(con, SimplePlugin.getInstance());
+		this.getLand = ReflectionUtil.getMethod(landsIntegration, "getLand", Location.class);
 	}
 
 	Collection<Player> getLandPlayers(Player player) {
-		final Land land = lands.getLand(player.getLocation());
+		final Object land = ReflectionUtil.invoke(this.getLand, this.lands, player.getLocation());
 
 		if (land != null)
-			return land.getOnlinePlayers();
+			return (Collection<Player>) ReflectionUtil.invoke("getOnlinePlayers", land);
 
 		return new ArrayList<>();
 	}
@@ -3225,8 +3360,8 @@ class ItemsAdderHook {
 
 	ItemsAdderHook() {
 		this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
-		this.replaceFontImagesMethod = ReflectionUtil.getDeclaredMethod(itemsAdder, "replaceFontImages", Player.class, String.class);
-		this.replaceFontImagesMethodNoPlayer = ReflectionUtil.getDeclaredMethod(itemsAdder, "replaceFontImages", String.class);
+		this.replaceFontImagesMethod = ReflectionUtil.getDeclaredMethod(this.itemsAdder, "replaceFontImages", Player.class, String.class);
+		this.replaceFontImagesMethodNoPlayer = ReflectionUtil.getDeclaredMethod(this.itemsAdder, "replaceFontImages", String.class);
 	}
 
 	/*
@@ -3234,8 +3369,8 @@ class ItemsAdderHook {
 	 */
 	String replaceFontImages(@Nullable final Player player, final String message) {
 		if (player == null)
-			return ReflectionUtil.invokeStatic(replaceFontImagesMethodNoPlayer, message);
+			return ReflectionUtil.invokeStatic(this.replaceFontImagesMethodNoPlayer, message);
 
-		return ReflectionUtil.invokeStatic(replaceFontImagesMethod, player, message);
+		return ReflectionUtil.invokeStatic(this.replaceFontImagesMethod, player, message);
 	}
 }

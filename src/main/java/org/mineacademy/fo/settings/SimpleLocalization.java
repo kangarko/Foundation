@@ -1,20 +1,16 @@
 package org.mineacademy.fo.settings;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.command.DebugCommand;
-import org.mineacademy.fo.command.PermsCommand;
-import org.mineacademy.fo.command.ReloadCommand;
-import org.mineacademy.fo.command.SimpleCommand;
-import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
  * A simple implementation of a basic localization file.
  * We create the localization/messages_LOCALEPREFIX.yml file
  * automatically and fill it with values from your localization/messages_LOCALEPREFIX.yml
- * file placed within in your plugins jar file.
+ * file placed within in your plugin's jar file.
  */
 @SuppressWarnings("unused")
 public class SimpleLocalization extends YamlStaticConfig {
@@ -40,8 +36,14 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 * if it does not exists, or updated if it is out of date.
 	 */
 	@Override
-	protected final void load() throws Exception {
-		createLocalizationFile(SimpleSettings.LOCALE_PREFIX);
+	protected final void onLoad() throws Exception {
+		final String localePath = "localization/messages_" + SimpleSettings.LOCALE_PREFIX + ".yml";
+		final Object content = FileUtil.getInternalFileContent(localePath);
+
+		Valid.checkNotNull(content, SimplePlugin.getNamed() + " does not support the localization: messages_" + SimpleSettings.LOCALE_PREFIX
+				+ ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
+
+		this.loadConfiguration(localePath);
 	}
 
 	// --------------------------------------------------------------------
@@ -63,10 +65,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 	@Override
 	protected final void preLoad() {
 		// Load version first so we can use it later
-		pathPrefix(null);
+		setPathPrefix(null);
 
-		if ((VERSION = getInteger("Version")) != getConfigVersion())
-			set("Version", getConfigVersion());
+		if ((VERSION = getInteger("Version")) != this.getConfigVersion())
+			set("Version", this.getConfigVersion());
 	}
 
 	/**
@@ -115,6 +117,8 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String INVALID_ARGUMENT_MULTILINE = "&cInvalid argument. Usage:";
 		public static String INVALID_TIME = "Expected time such as '3 hours' or '15 minutes'. Got: '{input}'";
 		public static String INVALID_NUMBER = "The number must be a whole or a decimal number. Got: '{input}'";
+		public static String INVALID_STRING = "Invalid string. Got: '{input}'";
+		public static String INVALID_WORLD = "Invalid world '{world}'. Available: {available}";
 
 		/**
 		 * The authors label
@@ -137,7 +141,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String LABEL_REQUIRED_ARGS = "required arguments";
 
 		/**
-		 * The multiline usages label, see {@link SimpleCommand#getMultilineUsageMessage()}
+		 * The multiline usages label
 		 */
 		public static String LABEL_USAGES = "&c&lUsages:";
 
@@ -240,7 +244,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Commands");
+			setPathPrefix("Commands");
 
 			if (isSetDefault("No_Console"))
 				NO_CONSOLE = getString("No_Console");
@@ -265,6 +269,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Invalid_Number"))
 				INVALID_NUMBER = getString("Invalid_Number");
+
+			if (isSetDefault("Invalid_String"))
+				INVALID_STRING = getString("Invalid_String");
+
+			if (isSetDefault("Invalid_World"))
+				INVALID_WORLD = getString("Invalid_World");
 
 			if (isSetDefault("Label_Authors"))
 				LABEL_AUTHORS = getString("Label_Authors");
@@ -389,6 +399,40 @@ public class SimpleLocalization extends YamlStaticConfig {
 	}
 
 	/**
+	 * Strings related to player-server conversation waiting for his chat input
+	 */
+	public static final class Conversation {
+
+		/**
+		 * The key used when the player wants to converse but he is not conversing.
+		 */
+		public static String CONVERSATION_NOT_CONVERSING = "&cYou must be conversing with the server!";
+
+		/**
+		 * Called when console attempts to start conversing
+		 */
+		public static String CONVERSATION_REQUIRES_PLAYER = "Only players may enter this conversation.";
+
+		/**
+		 * Called in the try-catch handling when an error occurs
+		 */
+		public static String CONVERSATION_ERROR = "&cOups! There was a problem in this conversation! Please contact the administrator to review the console for details.";
+
+		private static void init() {
+			setPathPrefix("Conversation");
+
+			if (isSetDefault("Not_Conversing"))
+				CONVERSATION_NOT_CONVERSING = getString("Not_Conversing");
+
+			if (isSetDefault("Requires_Player"))
+				CONVERSATION_REQUIRES_PLAYER = getString("Requires_Player");
+
+			if (isSetDefault("Conversation_Error"))
+				CONVERSATION_ERROR = getString("Error");
+		}
+	}
+
+	/**
 	 * Key related to players
 	 */
 	public static final class Player {
@@ -404,16 +448,24 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String NOT_PLAYED_BEFORE = "&cPlayer {player} &chas not played before or we could not locate his disk data.";
 
 		/**
+		 * Message shown the an offline player is returned null from a given UUID.
+		 */
+		public static String INVALID_UUID = "&cCould not find a player from UUID {uuid}.";
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Player");
+			setPathPrefix("Player");
 
 			if (isSetDefault("Not_Online"))
 				NOT_ONLINE = getString("Not_Online");
 
 			if (isSetDefault("Not_Played_Before"))
 				NOT_PLAYED_BEFORE = getString("Not_Played_Before");
+
+			if (isSetDefault("Invalid_UUID"))
+				INVALID_UUID = getString("Invalid_UUID");
 		}
 	}
 
@@ -422,17 +474,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 	 */
 	public static final class Pages {
 
-		/**
-		 * Below you find different keys called from {@link FoundationListener}
-		 */
-
 		public static String NO_PAGE_NUMBER = "&cPlease specify the page number for this command.";
 		public static String NO_PAGES = "&cYou do not have any pages saved to show.";
 		public static String NO_PAGE = "Pages do not contain the given page number.";
 		public static String INVALID_PAGE = "&cYour input '{input}' is not a valid number.";
 		public static String GO_TO_PAGE = "&7Go to page {page}";
 		public static String GO_TO_FIRST_PAGE = "&7Go to the first page";
-		public static String[] TOOLTIP = new String[] {
+		public static String[] TOOLTIP = {
 				"&7You can also navigate using the",
 				"&7hidden /#flp <page> command."
 		};
@@ -441,7 +489,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Pages");
+			setPathPrefix("Pages");
 
 			if (isSetDefault("No_Page_Number"))
 				NO_PAGE_NUMBER = getString("No_Page_Number");
@@ -462,7 +510,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 				GO_TO_FIRST_PAGE = getString("Go_To_First_Page");
 
 			if (isSetDefault("Tooltip"))
-				TOOLTIP = getStringArray("Tooltip");
+				TOOLTIP = Common.toArray(getStringList("Tooltip"));
 		}
 	}
 
@@ -500,13 +548,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String TITLE_TOOLS = "Tools Menu";
 		public static String TOOLTIP_INFO = "&fMenu Information";
 		public static String BUTTON_RETURN_TITLE = "&4&lReturn";
-		public static String[] BUTTON_RETURN_LORE = new String[] { "", "Return back." };
+		public static String[] BUTTON_RETURN_LORE = { "", "Return back." };
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Menu");
+			setPathPrefix("Menu");
 
 			if (isSetDefault("Item_Deleted"))
 				ITEM_DELETED = getString("Item_Deleted");
@@ -539,7 +587,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 				BUTTON_RETURN_TITLE = getString("Button_Return_Title");
 
 			if (isSetDefault("Button_Return_Lore"))
-				BUTTON_RETURN_LORE = getStringArray("Button_Return_Lore");
+				BUTTON_RETURN_LORE = Common.toArray(getStringList("Button_Return_Lore"));
 		}
 	}
 
@@ -557,7 +605,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix("Tool");
+			setPathPrefix("Tool");
 
 			if (isSetDefault("Error"))
 				ERROR = getString("Error");
@@ -587,13 +635,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
-			pathPrefix(null);
+			setPathPrefix(null);
 
 			// Upgrade from old path
-			if (isSetAbsolute("Update_Available"))
+			if (isSet("Update_Available"))
 				move("Update_Available", "Update.Available");
 
-			pathPrefix("Update");
+			setPathPrefix("Update");
 
 			if (isSetDefault("Available"))
 				AVAILABLE = getString("Available");
@@ -631,15 +679,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 	public static String DATA_MISSING = "&c{name} lacks database information! Please only create {type} in-game! Skipping..";
 
 	/**
-	 * The message when the console attempts to start a server conversation which is prevented.
-	 */
-	public static String CONVERSATION_REQUIRES_PLAYER = "Only players may enter this conversation.";
-
-	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
-		pathPrefix(null);
+		setPathPrefix(null);
 		Valid.checkBoolean(!localizationClassCalled, "Localization class already loaded!");
 
 		if (isSetDefault("No_Permission"))
@@ -653,9 +696,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 		if (isSetDefault("Data_Missing"))
 			DATA_MISSING = getString("Data_Missing");
-
-		if (isSetDefault("Conversation_Requires_Player"))
-			CONVERSATION_REQUIRES_PLAYER = getString("Conversation_Requires_Player");
 
 		if (isSetDefault("None"))
 			NONE = getString("None");

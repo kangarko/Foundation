@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.menu.tool.ToolRegistry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +22,7 @@ public abstract class AdvancedMenuTools extends AdvancedMenuPagged<Tool> {
 
     @Override
     protected List<Tool> getElements() {
-        return Arrays.stream(ToolRegistry.getTools()).collect(Collectors.toList());
+        return Arrays.stream(Tool.getTools()).collect(Collectors.toList());
     }
 
     @Override

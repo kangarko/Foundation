@@ -33,20 +33,12 @@ public final class Lang extends YamlConfig {
 		this.loadConfiguration(filePath);
 	}
 
-	/**
-	 * @see org.mineacademy.fo.settings.YamlConfig#saveComments()
-	 */
-	@Override
-	protected boolean saveComments() {
-		return true;
-	}
-
 	/*
 	 * Return a key from our localization, failing if not exists
 	 */
 	private String getStringStrict(String path) {
-		final String key = getString(path);
-		Valid.checkNotNull(key, "Missing localization key '" + path + "' from " + getFileName());
+		final String key = this.getString(path);
+		Valid.checkNotNull(key, "Missing localization key '" + path + "' from " + this.getFileName());
 
 		return key;
 	}
@@ -69,38 +61,57 @@ public final class Lang extends YamlConfig {
 	 * the Lang class will use the given file in the given path.
 	 *
 	 * Example: "localization/messages_" + SimpleSettings.LOCALE_PREFIX ".yml"
+	 * @param filePath
 	 */
 	public static void init(String filePath) {
 		instance = new Lang(filePath);
 
-		if (instance.isSet("Prefix.Announce"))
-			Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
-
-		if (instance.isSet("Prefix.Error"))
-			Messenger.setErrorPrefix(Lang.of("Prefix.Error"));
-
-		if (instance.isSet("Prefix.Info"))
-			Messenger.setInfoPrefix(Lang.of("Prefix.Info"));
-
-		if (instance.isSet("Prefix.Question"))
-			Messenger.setQuestionPrefix(Lang.of("Prefix.Question"));
-
-		if (instance.isSet("Prefix.Success"))
-			Messenger.setSuccessPrefix(Lang.of("Prefix.Success"));
-
-		if (instance.isSet("Prefix.Warn"))
-			Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
+		loadPrefixes();
 	}
 
 	/**
-	 * Reload this file
+	 * Reload the language file
+	 *
+	 * @deprecated internal use only
 	 */
-	public static void reloadFile() {
-		if (instance != null) {
+	@Deprecated
+	public static void reloadLang() {
+		if (instance != null)
 			synchronized (instance) {
 				instance.reload();
+				instance.save();
 			}
-		}
+	}
+
+	/**
+	 * Reload prefixes from the locale file
+	 *
+	 * @deprecated internal use only
+	 */
+	@Deprecated
+	public static void loadPrefixes() {
+		if (instance != null)
+			synchronized (instance) {
+				if (instance.isSet("Prefix.Announce"))
+					Messenger.setAnnouncePrefix(Lang.of("Prefix.Announce"));
+
+				if (instance.isSet("Prefix.Error"))
+					Messenger.setErrorPrefix(Lang.of("Prefix.Error"));
+
+				if (instance.isSet("Prefix.Info"))
+					Messenger.setInfoPrefix(Lang.of("Prefix.Info"));
+
+				if (instance.isSet("Prefix.Question"))
+					Messenger.setQuestionPrefix(Lang.of("Prefix.Question"));
+
+				if (instance.isSet("Prefix.Success"))
+					Messenger.setSuccessPrefix(Lang.of("Prefix.Success"));
+
+				if (instance.isSet("Prefix.Warn"))
+					Messenger.setWarnPrefix(Lang.of("Prefix.Warn"));
+
+				instance.save();
+			}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -204,11 +215,11 @@ public final class Lang extends YamlConfig {
 	 *
 	 * @param path
 	 * @param scriptVariables
-	 * @param variables
+	 * @param stringVariables
 	 * @return
 	 */
-	public static String ofScript(String path, SerializedMap scriptVariables, Object... variables) {
-		String script = of(path, variables);
+	public static String ofScript(String path, SerializedMap scriptVariables, Object... stringVariables) {
+		String script = of(path, stringVariables);
 		Object result;
 
 		// Our best guess is that the user has removed the script completely but forgot to put the entire message in '',
@@ -237,9 +248,12 @@ public final class Lang extends YamlConfig {
 		checkInit();
 
 		synchronized (instance) {
-			final String key = instance.getStringStrict(path);
+			String key = instance.getStringStrict(path);
 
-			return translate(key, variables);
+			key = Messenger.replacePrefixes(key);
+			key = translate(key, variables);
+
+			return key;
 		}
 	}
 

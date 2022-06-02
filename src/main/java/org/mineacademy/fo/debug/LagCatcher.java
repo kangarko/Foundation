@@ -1,11 +1,8 @@
 package org.mineacademy.fo.debug;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
@@ -13,8 +10,10 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple yet effective way to calculate duration
@@ -24,14 +23,14 @@ import lombok.NoArgsConstructor;
 public final class LagCatcher {
 
 	/**
-	 * Stores sections with the time they started to be measured
+	 * Stores sections with the time time they started to be measured
 	 */
-	private static final Map<String, Long> startTimesMap = new HashMap<>();
+	private static volatile Map<String, Long> startTimesMap = new HashMap<>();
 
 	/**
 	 * Stores sections with a list of lag durations for each section
 	 */
-	private static final Map<String, List<Long>> durationsMap = new HashMap<>();
+	private static volatile Map<String, List<Long>> durationsMap = new HashMap<>();
 
 	/**
 	 * Used to completely disable "X took Y ms" messages from being printed in to your console.
@@ -148,7 +147,13 @@ public final class LagCatcher {
 	 * @param section
 	 */
 	public static void performancePartStart(String section) {
-		List<Long> sectionDurations = durationsMap.computeIfAbsent(section, k -> new ArrayList<>());
+		List<Long> sectionDurations = durationsMap.get(section);
+
+		if (sectionDurations == null) {
+			sectionDurations = new ArrayList<>();
+
+			durationsMap.put(section, sectionDurations);
+		}
 
 		// Do not calculate duration, just append last time at the end
 		sectionDurations.add(System.nanoTime());
@@ -185,12 +190,11 @@ public final class LagCatcher {
 		final Long nanoTime = startTimesMap.get(section);
 		final String message = section + " took " + MathUtil.formatTwoDigits(nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D) + " ms";
 
-		if (printingMessages) {
+		if (printingMessages)
 			if (SimplePlugin.hasInstance())
 				Common.logNoPrefix("[{plugin_name} {plugin_version}] " + message);
 			else
 				System.out.println("[LagCatcher] " + message);
-		}
 	}
 
 	/**

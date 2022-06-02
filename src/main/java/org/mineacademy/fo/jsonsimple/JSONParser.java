@@ -203,16 +203,15 @@
  */
 package org.mineacademy.fo.jsonsimple;
 
+import lombok.Getter;
+import org.mineacademy.fo.exception.FoException;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-
-import org.mineacademy.fo.exception.FoException;
-
-import lombok.Getter;
 
 /**
  * Parses JSON data (<u>not</u> thread-safe).
@@ -496,7 +495,7 @@ public class JSONParser {
 				this.inArray(statusStack, valueStack);
 
 			if (this.status == JSONParser.S_IN_ERROR)
-				throw new JSONParseException(getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, token);
+				throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
 
 		} while (this.token.type != Yytoken.TYPE_EOF);
 
@@ -620,7 +619,7 @@ public class JSONParser {
 					if (this.token.type == Yytoken.TYPE_EOF) {
 
 						contentHandler.endJSON();
-						status = JSONParser.S_END;
+						this.status = JSONParser.S_END;
 						return;
 
 					} else

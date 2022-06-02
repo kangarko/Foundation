@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * An extension of {@link SimpleEvent} which also makes your custom events 
- * cancellable. 
+ * An extension of {@link SimpleEvent} which also makes your custom events
+ * cancellable.
  */
 @Getter
 @Setter

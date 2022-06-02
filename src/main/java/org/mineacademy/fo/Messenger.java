@@ -2,7 +2,9 @@ package org.mineacademy.fo;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -62,7 +64,7 @@ public class Messenger {
 	private String announcePrefix = "&8&l[&5&l!&l&8]&d ";
 
 	/**
-	 * Send a message prepended with the {@link #infoPrefix}
+	 * Send a message prepended with the {@link #getInfoPrefix()}
 	 *
 	 * @param message
 	 */
@@ -72,7 +74,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #successPrefix}
+	 * Send a message prepended with the {@link #getSuccessPrefix()}
 	 *
 	 * @param message
 	 */
@@ -82,7 +84,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #warnPrefix}
+	 * Send a message prepended with the {@link #getWarnPrefix()}
 	 *
 	 * @param message
 	 */
@@ -92,7 +94,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #errorPrefix}
+	 * Send a message prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param message
 	 */
@@ -102,7 +104,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #questionPrefix}
+	 * Send a message prepended with the {@link #getQuestionPrefix()}
 	 *
 	 * @param message
 	 */
@@ -112,7 +114,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #announcePrefix}
+	 * Send a message prepended with the {@link #getAnnouncePrefix()}
 	 *
 	 * @param message
 	 */
@@ -122,7 +124,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #infoPrefix}
+	 * Send a message prepended with the {@link #getInfoPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -132,7 +134,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #successPrefix}
+	 * Send a message prepended with the {@link #getSuccessPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -142,7 +144,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #warnPrefix}
+	 * Send a message prepended with the {@link #getWarnPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -152,7 +154,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send messages prepended with the {@link #errorPrefix}
+	 * Send messages prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param player
 	 * @param messages
@@ -163,7 +165,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #errorPrefix}
+	 * Send a message prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -173,7 +175,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #questionPrefix}
+	 * Send a message prepended with the {@link #getQuestionPrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -183,7 +185,7 @@ public class Messenger {
 	}
 
 	/**
-	 * Send a message prepended with the {@link #announcePrefix}
+	 * Send a message prepended with the {@link #getAnnouncePrefix()}
 	 *
 	 * @param player
 	 * @param message
@@ -202,13 +204,43 @@ public class Messenger {
 			return;
 
 		final String colorless = Common.stripColors(message);
-		final boolean foundElements = ChatUtil.isInteractive(colorless);
+		boolean noPrefix = ChatUtil.isInteractive(colorless);
 
 		// Special case: Send the prefix for actionbar
 		if (colorless.startsWith("<actionbar>"))
 			message = message.replace("<actionbar>", "<actionbar>" + prefix);
 
+		if (colorless.startsWith("@noprefix")) {
+			message = message.replace("@noprefix", "");
+
+			noPrefix = true;
+		}
+
 		// Only insert prefix if the message is sent through the normal chat
-		Common.tellNoPrefix(player, (foundElements ? "" : prefix) + message);
+		Common.tellNoPrefix(player, (noPrefix ? "" : prefix) + message);
+	}
+
+	/**
+	 * Replace {plugin_prefix} and {X_prefix} and {prefix_X} with respective messenger variables
+	 * such as {warn_prefix} with {@link #getWarnPrefix()} etc.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String replacePrefixes(String message) {
+		return Replacer.replaceArray(message,
+				"plugin_prefix", SimpleSettings.PLUGIN_PREFIX,
+				"info_prefix", infoPrefix,
+				"prefix_info", infoPrefix,
+				"success_prefix", successPrefix,
+				"prefix_success", successPrefix,
+				"warn_prefix", warnPrefix,
+				"prefix_warn", warnPrefix,
+				"error_prefix", errorPrefix,
+				"prefix_error", errorPrefix,
+				"question_prefix", questionPrefix,
+				"prefix_question", questionPrefix,
+				"announce_prefix", announcePrefix,
+				"prefix_announce", announcePrefix);
 	}
 }

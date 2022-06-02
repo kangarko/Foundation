@@ -12,7 +12,6 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -55,24 +54,6 @@ public abstract class MenuTools extends Menu {
 
 		setSize(pages);
 		setTitle(SimpleLocalization.Menu.TITLE_TOOLS);
-	}
-
-	/**
-	 * Compiles an automated tools menu.
-	 *
-	 * @param pluginToolClasses We will scan your plugin for this kind of class and
-	 *                          all classes extending it will be loaded into the
-	 *                          menu
-	 * @return
-	 */
-	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses) {
-		return new MenuTools() {
-
-			@Override
-			protected Object[] compileTools() {
-				return lookupTools(pluginToolClasses);
-			}
-		};
 	}
 
 	/**
@@ -156,6 +137,34 @@ public abstract class MenuTools extends Menu {
 
 		return null;
 	}
+
+	protected int getInfoButtonPosition() {
+		return getSize() - 1;
+	}
+
+	/**
+	 * Compiles an automated tools menu.
+	 *
+	 * @param pluginToolClasses We will scan your plugin for this kind of class and
+	 *                          all classes extending it will be loaded into the
+	 *                          menu
+	 * @param description       the menu description
+	 * @return
+	 */
+	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
+		return new MenuTools() {
+
+			@Override
+			protected Object[] compileTools() {
+				return lookupTools(pluginToolClasses);
+			}
+
+			@Override
+			protected String[] getInfo() {
+				return description;
+			}
+		};
+	}
 }
 
 /**
@@ -216,7 +225,7 @@ final class ToggleableTool {
 
 	// Return the dummy placeholder tool when the player already has it
 	private ItemStack getToolWhenHas() {
-		return ItemCreator.of(item).enchant(new SimpleEnchant(Enchantment.ARROW_INFINITE, 1)).flag(CompItemFlag.HIDE_ENCHANTS).lores(Arrays.asList("", "&cYou already have this item.", "&7Click to take it away.")).build().make();
+		return ItemCreator.of(item).enchant(Enchantment.ARROW_INFINITE).flags(CompItemFlag.HIDE_ENCHANTS).lore(Arrays.asList("", "&cYou already have this item.", "&7Click to take it away.")).make();
 	}
 
 	// Return the actual working tool in case player does not have it yet

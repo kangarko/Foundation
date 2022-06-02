@@ -1,25 +1,10 @@
 package org.mineacademy.fo;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import org.apache.commons.lang.StringUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -51,14 +36,20 @@ import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.ConfigSection;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import net.md_5.bungee.api.chat.TextComponent;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions
@@ -77,23 +68,15 @@ public final class Common {
 
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
+	 *
+	 * Matches {#CCCCCC} or &#CCCCCC or #CCCCCC
 	 */
-	public static final Pattern RGB_HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)(&|)#((?:[0-9a-fA-F]{3}){1,2})");
-
-	/**
-	 * Pattern used to match colors with {#HEX} code for MC 1.16+
-	 */
-	public static final Pattern RGB_HEX_BRACKET_COLOR_REGEX = Pattern.compile("\\{#((?:[0-9a-fA-F]{3}){1,2})\\}");
+	public static final Pattern HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|)");
 
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
 	 */
 	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + ChatColor.COLOR_CHAR + "x)(" + ChatColor.COLOR_CHAR + "[0-9a-fA-F]){6}");
-
-	/**
-	 * We use this to send messages with colors to your console
-	 */
-	private static final CommandSender CONSOLE_SENDER = Bukkit.getServer() != null ? Bukkit.getServer().getConsoleSender() : null;
 
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
@@ -113,27 +96,13 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Should we add a prefix to the messages we send to players using tell() methods?
-	 * <p>
-	 * False by default
-	 */
-	public static boolean ADD_TELL_PREFIX = false;
-
-	/**
-	 * Should we add a prefix to the messages we send to the console?
-	 * <p>
-	 * True by default
-	 */
-	public static boolean ADD_LOG_PREFIX = true;
-
-	/**
-	 * The tell prefix applied on tell() methods
+	 * The tell prefix applied on tell() methods, defaults to empty
 	 */
 	@Getter
-	private static String tellPrefix = "[" + SimplePlugin.getNamed() + "]";
+	private static String tellPrefix = "";
 
 	/**
-	 * The log prefix applied on log() methods
+	 * The log prefix applied on log() methods, defaults to [PluginName]
 	 */
 	@Getter
 	private static String logPrefix = "[" + SimplePlugin.getNamed() + "]";
@@ -146,7 +115,7 @@ public final class Common {
 	 * @param prefix
 	 */
 	public static void setTellPrefix(final String prefix) {
-		tellPrefix = colorize(prefix);
+		tellPrefix = prefix == null ? "" : colorize(prefix);
 	}
 
 	/**
@@ -157,7 +126,7 @@ public final class Common {
 	 * @param prefix
 	 */
 	public static void setLogPrefix(final String prefix) {
-		logPrefix = colorize(prefix);
+		logPrefix = prefix == null ? "" : colorize(prefix);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -198,7 +167,7 @@ public final class Common {
 	/**
 	 * Broadcast the message to everyone and logs it
 	 *
-	 * @param message
+	 * @param messages
 	 */
 	public static void broadcast(final String... messages) {
 		if (!Valid.isNullOrEmpty(messages))
@@ -267,30 +236,25 @@ public final class Common {
 	 * Sends a message to the player and saves the time when it was sent.
 	 * The delay in seconds is the delay between which we won't send player the
 	 * same message, in case you call this method again.
-	 * <p>
+	 *
 	 * Does not prepend the message with {@link #getTellPrefix()}
-	 * <p>
-	 * See {@link #TIMED_TELL_CACHE} for more explanation.
 	 *
 	 * @param delaySeconds
 	 * @param sender
 	 * @param message
 	 */
 	public static void tellTimedNoPrefix(final int delaySeconds, final CommandSender sender, final String message) {
-		final boolean hadPrefix = ADD_TELL_PREFIX;
-		ADD_TELL_PREFIX = false;
+		final String oldPrefix = getTellPrefix();
+		setTellPrefix("");
 
 		tellTimed(delaySeconds, sender, message);
-
-		ADD_TELL_PREFIX = hadPrefix;
+		setTellPrefix(oldPrefix);
 	}
 
 	/**
 	 * Sends a message to the player and saves the time when it was sent.
 	 * The delay in seconds is the delay between which we won't send player the
 	 * same message, in case you call this method again.
-	 * <p>
-	 * See {@link #TIMED_TELL_CACHE} for more explanation.
 	 *
 	 * @param delaySeconds
 	 * @param sender
@@ -331,7 +295,7 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellConversing(final Conversable conversable, final String message) {
-		conversable.sendRawMessage(colorize((ADD_TELL_PREFIX ? tellPrefix : "") + removeFirstSpaces(message)).trim());
+		conversable.sendRawMessage(colorize(addLastSpace(tellPrefix) + removeFirstSpaces(message)).trim());
 	}
 
 	/**
@@ -351,14 +315,14 @@ public final class Common {
 	}
 
 	/**
-	 * Sends sender a message with {} variables replaced and colors supported
-	 * without the {@link #getTellPrefix()}
+	 * Sends the sender a bunch of messages, colors & are supported
+	 * without {@link #getTellPrefix()} prefix
 	 *
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tellNoPrefix(final CommandSender sender, final Replacer replacer) {
-		tellNoPrefix(sender, replacer.getReplacedMessage());
+	public static void tellNoPrefix(final CommandSender sender, final Collection<String> messages) {
+		tellNoPrefix(sender, Common.toArray(messages));
 	}
 
 	/**
@@ -369,11 +333,11 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void tellNoPrefix(final CommandSender sender, final String... messages) {
-		final boolean was = ADD_TELL_PREFIX;
+		final String oldPrefix = getTellPrefix();
 
-		ADD_TELL_PREFIX = false;
+		setTellPrefix("");
 		tell(sender, messages);
-		ADD_TELL_PREFIX = was;
+		setTellPrefix(oldPrefix);
 	}
 
 	/**
@@ -483,18 +447,17 @@ public final class Common {
 		} else if (colorlessMessage.startsWith("<bossbar>")) {
 			final String stripped = message.replace("<bossbar>", "");
 
-			if (!stripped.isEmpty()) {
+			if (!stripped.isEmpty())
 				if (sender instanceof Player)
 					// cannot provide time here so we show it for 10 seconds
 					Remain.sendBossbarTimed((Player) sender, stripped, 10);
 				else
 					tellJson(sender, stripped);
-			}
 
 		} else
-			for (final String part : splitNewline(message)) {
+			for (final String part : message.split("\n")) {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
-				final String prefix = ADD_TELL_PREFIX && !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
+				final String prefix = !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
 
 				String toSend;
 
@@ -514,12 +477,18 @@ public final class Common {
 					((Conversable) sender).sendRawMessage(toSend);
 
 				else
-					sender.sendMessage(toSend);
+					try {
+						sender.sendMessage(toSend);
+					} catch (final Throwable t) {
+						Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
+
+						t.printStackTrace();
+					}
 			}
 	}
 
 	/**
-	 * Return the sender's name if it's a player or discord sender, or simply {@link SimplePlugin#getConsoleName()} if it is a console
+	 * Return the sender's name if it's a player or discord sender, or simply {@link SimpleLocalization#CONSOLE_NAME} if it is a console
 	 *
 	 * @param sender
 	 * @return
@@ -534,6 +503,16 @@ public final class Common {
 
 		while (message.startsWith(" "))
 			message = message.substring(1);
+
+		return message;
+	}
+
+	// Helper method used to add spaces between tell/log prefix and the message
+	private static String addLastSpace(String message) {
+		message = message.trim();
+
+		if (!message.endsWith(" "))
+			message = message + " ";
 
 		return message;
 	}
@@ -564,17 +543,17 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
 	 *
 	 * @param messages the messages to replace color codes with '&'
 	 * @return the colored message
 	 */
 	public static String colorize(final String... messages) {
-		return colorize(StringUtils.join(messages, "\n"));
+		return colorize(String.join("\n", messages));
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
 	 *
 	 * @param messages the messages to replace color codes with '&'
 	 * @return the colored message
@@ -588,9 +567,9 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link org.bukkit.CompChatColor.COLOR_CHAR} in the message.
+	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
 	 * <p>
-	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimplePlugin#getServerPrefix()}
+	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimpleLocalization#SERVER_PREFIX}
 	 *
 	 * @param message the message to replace color codes with '&'
 	 * @return the colored message
@@ -599,48 +578,39 @@ public final class Common {
 		if (message == null || message.isEmpty())
 			return "";
 
-		String result = ChatColor.translateAlternateColorCodes('&', message
+		final char[] letters = message.toCharArray();
+
+		for (int index = 0; index < letters.length - 1; index++)
+			if (letters[index] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx".indexOf(letters[index + 1]) > -1) {
+				letters[index] = ChatColor.COLOR_CHAR;
+
+				letters[index + 1] = Character.toLowerCase(letters[index + 1]);
+			}
+
+		String result = new String(letters)
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 				.replace("{plugin_name}", SimplePlugin.getNamed())
-				.replace("{plugin_version}", SimplePlugin.getVersion()));
+				.replace("{plugin_version}", SimplePlugin.getVersion());
 
-		// RGB colors
-		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
+		// RGB colors - return the closest color for legacy MC versions
+		final Matcher match = HEX_COLOR_REGEX.matcher(result);
 
-			// Preserve compatibility with former systems
-			Matcher match = RGB_HEX_BRACKET_COLOR_REGEX.matcher(result);
+		while (match.find()) {
+			final String matched = match.group();
+			final String colorCode = match.group(2);
+			String replacement = "";
 
-			while (match.find()) {
-				final String colorCode = match.group(1);
-				String replacement = "";
+			try {
+				replacement = CompChatColor.of("#" + colorCode).toString();
 
-				try {
-					replacement = CompChatColor.of("#" + colorCode).toString();
-
-				} catch (final IllegalArgumentException ex) {
-				}
-
-				result = result.replaceAll("\\{#" + colorCode + "\\}", replacement);
+			} catch (final IllegalArgumentException ex) {
 			}
 
-			match = RGB_HEX_COLOR_REGEX.matcher(result);
-
-			while (match.find()) {
-				final String colorCode = match.group(2);
-				String replacement = "";
-
-				try {
-					replacement = CompChatColor.of("#" + colorCode).toString();
-
-				} catch (final IllegalArgumentException ex) {
-				}
-
-				result = result.replaceAll("(&|)#" + colorCode, replacement);
-			}
-
-			result = result.replace("\\#", "#");
+			result = result.replaceAll(Pattern.quote(matched), replacement);
 		}
+
+		result = result.replace("\\#", "#");
 
 		return result;
 	}
@@ -685,7 +655,6 @@ public final class Common {
 	 * @return
 	 */
 	public static String stripColors(String message) {
-
 		if (message == null || message.isEmpty())
 			return message;
 
@@ -697,7 +666,7 @@ public final class Common {
 
 		// Replace hex colors, both raw and parsed
 		if (Remain.hasHexColors()) {
-			matcher = RGB_HEX_COLOR_REGEX.matcher(message);
+			matcher = HEX_COLOR_REGEX.matcher(message);
 
 			while (matcher.find())
 				message = matcher.replaceAll("");
@@ -736,7 +705,7 @@ public final class Common {
 	/**
 	 * Returns the last color, either & or {@link ChatColor#COLOR_CHAR} from the given message
 	 *
-	 * @param message, or empty if none
+	 * @param message or empty if none
 	 * @return
 	 */
 	public static String lastColor(final String message) {
@@ -862,6 +831,19 @@ public final class Common {
 			fill += "-";
 
 		return "&m|" + fill + "|";
+	}
+
+	/**
+	 * Convenience method for printing count with what the list actually contains.
+	 * Example:
+	 * "X bosses: Creeper, Zombie
+	 *
+	 * @param iterable
+	 * @param ofWhat
+	 * @return
+	 */
+	public static <T> String plural(final Collection<T> iterable, final String ofWhat) {
+		return plural(iterable.size(), ofWhat) + ": " + join(iterable);
 	}
 
 	/**
@@ -1027,7 +1009,11 @@ public final class Common {
 
 		Valid.checkNotNull(loc.getWorld(), "Cannot shorten a location with null world!");
 
-		return loc.getWorld().getName() + " [" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + "]";
+		return Replacer.replaceArray(SimpleSettings.LOCATION_FORMAT,
+				"world", loc.getWorld().getName(),
+				"x", loc.getBlockX(),
+				"y", loc.getBlockY(),
+				"z", loc.getBlockZ());
 	}
 
 	/**
@@ -1070,19 +1056,6 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * @see #doesPluginExist(String)
-	 *
-	 * @deprecated subject for removal, please use {@link #doesPluginExist(String)} because it now works the same
-	 *
-	 * @param pluginName
-	 * @return
-	 */
-	@Deprecated
-	public static boolean doesPluginExistSilently(final String pluginName) {
-		return doesPluginExist(pluginName);
-	}
-
-	/**
 	 * Checks if a plugin is enabled. We also schedule an async task to make
 	 * sure the plugin is loaded correctly when the server is done booting
 	 * <p>
@@ -1095,7 +1068,7 @@ public final class Common {
 		Plugin lookup = null;
 
 		for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins())
-			if (otherPlugin.getName().equals(pluginName)) {
+			if (otherPlugin.getDescription().getName().equals(pluginName)) {
 				lookup = otherPlugin;
 
 				break;
@@ -1148,7 +1121,7 @@ public final class Common {
 			Messenger.success(playerReplacement, command.replace("@success ", ""));
 
 		else {
-			command = command.startsWith("/") ? command.substring(1) : command;
+			command = command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command;
 			command = command.replace("{player}", playerReplacement == null ? "" : resolveSenderName(playerReplacement));
 
 			// Workaround for JSON in tellraw getting HEX colors replaced
@@ -1171,7 +1144,13 @@ public final class Common {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		runLater(() -> playerSender.performCommand(colorize(command.replace("{player}", resolveSenderName(playerSender)))));
+		// Remove trailing /
+		if (command.startsWith("/") && !command.startsWith("//"))
+			command = command.substring(1);
+
+		final String finalCommand = command;
+
+		runLater(() -> playerSender.performCommand(colorize(finalCommand.replace("{player}", resolveSenderName(playerSender)))));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1280,15 +1259,17 @@ public final class Common {
 		if (messages == null)
 			return;
 
+		final CommandSender console = Bukkit.getConsoleSender();
+
+		if (console == null)
+			throw new FoException("Failed to initialize Console Sender, are you running Foundation under a Bukkit/Spigot server?");
+
 		for (String message : messages) {
-			if (message.equals("none"))
+			if (message == null || message.equals("none"))
 				continue;
 
 			if (stripColors(message).replace(" ", "").isEmpty()) {
-				if (CONSOLE_SENDER == null)
-					System.out.println(" ");
-				else
-					CONSOLE_SENDER.sendMessage("  ");
+				console.sendMessage("  ");
 
 				continue;
 			}
@@ -1302,13 +1283,10 @@ public final class Common {
 					log(Remain.toLegacyText(stripped, false));
 
 			} else
-				for (final String part : splitNewline(message)) {
-					final String log = ((addLogPrefix && ADD_LOG_PREFIX ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
+				for (final String part : message.split("\n")) {
+					final String log = ((addLogPrefix && !logPrefix.isEmpty() ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
 
-					if (CONSOLE_SENDER != null)
-						CONSOLE_SENDER.sendMessage(log);
-					else
-						System.out.println("[" + SimplePlugin.getNamed() + "] " + stripColors(log));
+					console.sendMessage(log);
 				}
 		}
 	}
@@ -1350,15 +1328,19 @@ public final class Common {
 	 * Saves the error, prints the stack trace and logs it in frame.
 	 * Possible to use %error variable
 	 *
-	 * @param t
+	 * @param throwable
 	 * @param messages
 	 */
-	public static void error(final Throwable t, final String... messages) {
-		if (!(t instanceof FoException))
-			Debugger.saveError(t, messages);
+	public static void error(@NonNull Throwable throwable, String... messages) {
 
-		Debugger.printStackTrace(t);
-		logFramed(replaceErrorVariable(t, messages));
+		if (throwable instanceof InvocationTargetException && throwable.getCause() != null)
+			throwable = throwable.getCause();
+
+		if (!(throwable instanceof FoException))
+			Debugger.saveError(throwable, messages);
+
+		Debugger.printStackTrace(throwable);
+		logFramed(replaceErrorVariable(throwable, messages));
 	}
 
 	/**
@@ -1371,10 +1353,6 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void throwError(Throwable t, final String... messages) {
-
-		// Get to the root cause of this problem
-		while (t.getCause() != null)
-			t = t.getCause();
 
 		// Delegate to only print out the relevant stuff
 		if (t instanceof FoException)
@@ -1564,6 +1542,24 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Joins an array of lists together into one big array
+	 *
+	 * @param <T>
+	 * @param arrays
+	 * @return
+	 */
+	@SafeVarargs
+	public static <T> Object[] joinArrays(final T[]... arrays) {
+		final List<T> all = new ArrayList<>();
+
+		for (final T[] array : arrays)
+			for (final T element : array)
+				all.add(element);
+
+		return all.toArray();
+	}
+
+	/**
 	 * Joins an array of lists together into one big list
 	 *
 	 * @param <T>
@@ -1571,7 +1567,7 @@ public final class Common {
 	 * @return
 	 */
 	@SafeVarargs
-	public static <T> List<T> joinArrays(final Iterable<T>... arrays) {
+	public static <T> List<T> joinLists(final Iterable<T>... arrays) {
 		final List<T> all = new ArrayList<>();
 
 		for (final Iterable<T> array : arrays)
@@ -1678,8 +1674,34 @@ public final class Common {
 	 * @param delimiter
 	 * @return
 	 */
+	public static <T> String join(final T[] array, final String delimiter) {
+		return join(array, delimiter, object -> object == null ? "" : simplify(object));
+	}
+
+	/**
+	 * A convenience method for converting list of objects into array of strings
+	 * We invoke "toString" for each object given it is not null, or return "" if it is
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param delimiter
+	 * @return
+	 */
 	public static <T> String join(final Iterable<T> array, final String delimiter) {
 		return join(array, delimiter, object -> object == null ? "" : simplify(object));
+	}
+
+	/**
+	 * Joins an array of a given type using the ", " delimiter and a helper interface
+	 * to convert each element in the array into string
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param stringer
+	 * @return
+	 */
+	public static <T> String join(final T[] array, final Stringer<T> stringer) {
+		return join(array, ", ", stringer);
 	}
 
 	/**
@@ -1696,6 +1718,19 @@ public final class Common {
 		Valid.checkNotNull(array, "Cannot join null array!");
 
 		return join(Arrays.asList(array), delimiter, stringer);
+	}
+
+	/**
+	 * Joins a list of a given type using the comma delimiter and a helper interface
+	 * to convert each element in the array into string
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param stringer
+	 * @return
+	 */
+	public static <T> String join(final Iterable<T> array, final Stringer<T> stringer) {
+		return join(array, ", ", stringer);
 	}
 
 	/**
@@ -1769,8 +1804,10 @@ public final class Common {
 	/**
 	 * Dynamically populates pages, used for pagination in commands or menus
 	 *
-	 * @param allItems all items that will be split
-	 * @return the map containing pages and their items
+	 * @param <T>
+	 * @param cellSize
+	 * @param items
+	 * @return
 	 */
 	public static <T> Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
 		final List<T> allItems = Common.toList(items);
@@ -2038,42 +2075,6 @@ public final class Common {
 	}
 
 	/**
-	 * Attempts to split the message using the \n character. This is used in some plugins
-	 * since some OS's have a different method for splitting so we just go letter by letter
-	 * there and match \ and n and then split it.
-	 *
-	 * @param message
-	 * @return
-	 * @deprecated usage specific, also some operating systems seems to handle this poorly
-	 */
-	@Deprecated
-	public static String[] splitNewline(final String message) {
-		if (!SimplePlugin.getInstance().enforeNewLine())
-			return message.split("\n");
-
-		final String delimiter = "KANGARKOJESUUPER";
-
-		final char[] chars = message.toCharArray();
-		String parts = "";
-
-		for (int i = 0; i < chars.length; i++) {
-			final char c = chars[i];
-
-			if ('\\' == c)
-				if (i + 1 < chars.length)
-					if ('n' == chars[i + 1]) {
-						i++;
-
-						parts += delimiter;
-						continue;
-					}
-			parts += c;
-		}
-
-		return parts.split(delimiter);
-	}
-
-	/**
 	 * Split the given string into array of the given max line length
 	 *
 	 * @param input
@@ -2095,8 +2096,8 @@ public final class Common {
 				lineLen = 0;
 			}
 
-			output.append(word);
-			lineLen += word.length();
+			output.append(word + " ");
+			lineLen += word.length() + 1;
 		}
 
 		return output.toString().split("\n");
@@ -2183,21 +2184,6 @@ public final class Common {
 	 */
 	public static String getOrNull(final String input) {
 		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? null : input;
-	}
-
-	/**
-	 * Returns the value or its default counterpart in case it is null
-	 *
-	 * @param value
-	 * @param def
-	 *
-	 * @deprecated subject for removal, use {@link #getOrDefault(Object, Object)}
-	 * 			   as it works exactly the same now
-	 * @return
-	 */
-	@Deprecated
-	public static String getOrSupply(String value, String def) {
-		return getOrDefault(value, def);
 	}
 
 	/**
@@ -2388,8 +2374,7 @@ public final class Common {
 	public static <T> List<T> newList(final T... keys) {
 		final List<T> list = new ArrayList<>();
 
-		for (final T key : keys)
-			list.add(key);
+		Collections.addAll(list, keys);
 
 		return list;
 	}
@@ -2549,7 +2534,6 @@ public final class Common {
 			if (task.getTaskId() == taskId)
 				return task;
 
-		// TODO Fix for MC 1.2.5
 		return null;
 	}
 
@@ -2599,11 +2583,25 @@ public final class Common {
 	 * @param mapOrSection
 	 * @return
 	 */
-	public static Map<String, Object> getMapFromSection(@NonNull final Object mapOrSection) {
-		final Map<String, Object> map = mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection : mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
+	public static Map<String, Object> getMapFromSection(@NonNull Object mapOrSection) {
+		mapOrSection = Remain.getRootOfSectionPathData(mapOrSection);
+
+		final Map<String, Object> map = mapOrSection instanceof ConfigSection ? ((ConfigSection) mapOrSection).getValues(false)
+				: mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection
+						: mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
+
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
-		return map;
+		final Map<String, Object> copy = new LinkedHashMap<>();
+
+		for (final Map.Entry<String, Object> entry : map.entrySet()) {
+			final String key = entry.getKey();
+			final Object value = entry.getValue();
+
+			copy.put(key, Remain.getRootOfSectionPathData(value));
+		}
+
+		return copy;
 	}
 
 	/**
@@ -2757,7 +2755,7 @@ final class TimedCharSequence implements CharSequence {
 
 	/**
 	 * Gets a character at the given index, or throws an error if
-	 * this is called too late after the constructor, see {@link #futureTimestampLimit}
+	 * this is called too late after the constructor.
 	 */
 	@Override
 	public char charAt(final int index) {
@@ -2768,22 +2766,28 @@ final class TimedCharSequence implements CharSequence {
 		//if (System.currentTimeMillis() > futureTimestampLimit)
 		//	throw new RegexTimeoutException(message, futureTimestampLimit);
 
-		return message.charAt(index);
+		try {
+			return this.message.charAt(index);
+		} catch (final StringIndexOutOfBoundsException ex) {
+
+			// Odd case: Java 8 seems to overflow for too-long unicode characters, security feature
+			return ' ';
+		}
 	}
 
 	@Override
 	public int length() {
-		return message.length();
+		return this.message.length();
 	}
 
 	@Override
 	public CharSequence subSequence(final int start, final int end) {
-		return new TimedCharSequence(message.subSequence(start, end), futureTimestampLimit);
+		return new TimedCharSequence(this.message.subSequence(start, end), this.futureTimestampLimit);
 	}
 
 	@Override
 	public String toString() {
-		return message.toString();
+		return this.message.toString();
 	}
 
 	/**

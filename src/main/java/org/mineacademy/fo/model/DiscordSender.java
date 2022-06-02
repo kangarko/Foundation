@@ -4,7 +4,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -28,18 +31,20 @@ import lombok.RequiredArgsConstructor;
 public final class DiscordSender implements CommandSender {
 
 	private final String name;
+	@Nullable
+	private final OfflinePlayer offlinePlayer;
 	private final User user;
 	private final MessageChannel channel;
 	private final Message message;
 
 	@Override
 	public boolean isPermissionSet(String permission) {
-		throw unsupported("isPermissionSet");
+		throw this.unsupported("isPermissionSet");
 	}
 
 	@Override
 	public boolean isPermissionSet(Permission permission) {
-		throw unsupported("isPermissionSet");
+		throw this.unsupported("isPermissionSet");
 	}
 
 	@Override
@@ -54,53 +59,53 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
-		throw unsupported("addAttachment");
+		throw this.unsupported("addAttachment");
 	}
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin) {
-		throw unsupported("addAttachment");
+		throw this.unsupported("addAttachment");
 	}
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
-		throw unsupported("addAttachment");
+		throw this.unsupported("addAttachment");
 	}
 
 	@Override
 	public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
-		throw unsupported("addAttachment");
+		throw this.unsupported("addAttachment");
 	}
 
 	@Override
 	public void removeAttachment(PermissionAttachment attachment) {
-		throw unsupported("removeAttachment");
+		throw this.unsupported("removeAttachment");
 	}
 
 	@Override
 	public void recalculatePermissions() {
-		throw unsupported("recalculatePermissions");
+		throw this.unsupported("recalculatePermissions");
 	}
 
 	@Override
 	public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-		throw unsupported("getEffectivePermissions");
+		throw this.unsupported("getEffectivePermissions");
 	}
 
 	@Override
 	public boolean isOp() {
-		throw unsupported("isOp");
+		throw this.unsupported("isOp");
 	}
 
 	@Override
 	public void setOp(boolean op) {
-		throw unsupported("setOp");
+		throw this.unsupported("setOp");
 	}
 
 	@Override
 	public void sendMessage(String... messages) {
 		for (final String message : messages)
-			sendMessage(message);
+			this.sendMessage(message);
 	}
 
 	@Override
@@ -108,11 +113,11 @@ public final class DiscordSender implements CommandSender {
 		final String finalMessage = Common.stripColors(message);
 
 		Common.runAsync(() -> {
-			final Message sentMessage = channel.sendMessage(finalMessage).complete();
+			final Message sentMessage = this.channel.sendMessage(finalMessage).complete();
 
 			try {
 				// Automatically remove after a short while
-				channel.deleteMessageById(sentMessage.getIdLong()).completeAfter(4, TimeUnit.SECONDS);
+				this.channel.deleteMessageById(sentMessage.getIdLong()).completeAfter(4, TimeUnit.SECONDS);
 
 			} catch (final Throwable t) {
 
@@ -125,7 +130,7 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	@Override
@@ -135,7 +140,7 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public Spigot spigot() {
-		throw unsupported("spigot");
+		throw this.unsupported("spigot");
 	}
 
 	private FoException unsupported(String method) {
@@ -145,7 +150,6 @@ public final class DiscordSender implements CommandSender {
 	/**
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String)
 	 */
-	//@Override - Disable to prevent errors in older MC
 	@Override
 	public void sendMessage(UUID uuid, String message) {
 		this.sendMessage(message);
@@ -154,7 +158,6 @@ public final class DiscordSender implements CommandSender {
 	/**
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String[])
 	 */
-	//@Override - Disable to prevent errors in older MC
 	@Override
 	public void sendMessage(UUID uuid, String... messages) {
 		this.sendMessage(messages);

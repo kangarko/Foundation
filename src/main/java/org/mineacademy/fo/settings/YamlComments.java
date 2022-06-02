@@ -1,22 +1,6 @@
 package org.mineacademy.fo.settings;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import lombok.NonNull;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -28,7 +12,10 @@ import org.mineacademy.fo.remain.Remain;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * A class to update/add new sections/keys to your config while keeping your current values and keeping your comments
@@ -42,48 +29,42 @@ import lombok.NonNull;
  * Source: https://github.com/tchristofferson/Config-Updater
  * Modified by MineAcademy.org
  */
-public final class YamlComments {
+final class YamlComments {
 
 	/**
 	 * Update a yaml file from a resource inside your plugin jar
 	 *
 	 * @param jarPath The yaml file name to update from, typically config.yml
 	 * @param diskFile The yaml file to update
-	 *
-	 * @throws IOException If an IOException occurs
-	 */
-	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile) {
-		try {
-			writeComments(jarPath, diskFile, new ArrayList<>());
-
-		} catch (final IOException ex) {
-			Common.error(ex,
-					"Failed writing comments!",
-					"Path in plugin jar wherefrom comments are fetched: " + jarPath,
-					"Disk file where comments are written: " + diskFile);
-		}
-	}
-
-	/**
-	 * Update a yaml file from a resource inside your plugin jar
-	 *
-	 * @param jarPath The yaml file name to update from, typically config.yml
-	 * @param diskFile The yaml file to update
+	 * @param oldContents the actual yaml content from the old file, to prevent overriding values
 	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
 	 *
 	 * @throws IOException If an IOException occurs
 	 */
-	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) throws IOException {
+	static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @Nullable String oldContents, @NonNull List<String> ignoredSections) throws IOException {
 
-		final InputStream internalResource = FileUtil.getInternalResource(jarPath);
-		Valid.checkNotNull(internalResource, "Failed getting internal resource: " + jarPath);
+		final List<String> newLines = FileUtil.getInternalFileContent(jarPath);
 
-		final BufferedReader newReader = new BufferedReader(new InputStreamReader(internalResource, StandardCharsets.UTF_8));
-		final List<String> newLines = newReader.lines().collect(Collectors.toList());
-		newReader.close();
+		final YamlConfiguration oldConfig = new YamlConfiguration();
 
-		final FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(diskFile);
-		final FileConfiguration newConfig = Remain.loadConfiguration(FileUtil.getInternalResource(jarPath));
+		try {
+			if (oldContents != null)
+				oldConfig.loadFromString(oldContents);
+			else
+				oldConfig.load(diskFile);
+
+		} catch (final Throwable t) {
+			Remain.sneaky(t);
+		}
+
+		final YamlConfiguration newConfig = new YamlConfiguration();
+
+		try {
+			newConfig.loadFromString(String.join("\n", newLines));
+
+		} catch (final Throwable t) {
+			Remain.sneaky(t);
+		}
 
 		final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(diskFile), StandardCharsets.UTF_8));
 
@@ -154,8 +135,7 @@ public final class YamlComments {
 						continue outerloop;
 
 				for (final String ignoredSection : ignoredSections) {
-					if (key.equals(ignoredSection)) {
-
+					if (key.equals(ignoredSection))
 						// Write from new to old config
 						if ((!oldConfig.isSet(ignoredSection) || oldConfig.getConfigurationSection(ignoredSection).getKeys(false).isEmpty())) {
 							copyAllowed.add(ignoredSection);
@@ -167,14 +147,12 @@ public final class YamlComments {
 						else {
 							write0(key, true, newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 
-							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true)) {
+							for (final String oldKey : oldConfig.getConfigurationSection(ignoredSection).getKeys(true))
 								write0(ignoredSection + "." + oldKey, true, oldConfig, newConfig, comments, ignoredSections, writer, yaml);
-							}
 
 							reverseCopy.add(ignoredSection);
 							continue outerloop;
 						}
-					}
 
 					if (key.startsWith(ignoredSection))
 						continue outerloop;
@@ -193,6 +171,7 @@ public final class YamlComments {
 	}
 
 	private static void write0(String key, boolean forceNew, FileConfiguration newConfig, FileConfiguration oldConfig, Map<String, String> comments, List<String> ignoredSections, BufferedWriter writer, Yaml yaml) throws IOException {
+
 		final String[] keys = key.split("\\.");
 		final String actualKey = keys[keys.length - 1];
 		final String comment = comments.remove(key);
@@ -224,12 +203,12 @@ public final class YamlComments {
 		// Write new object
 		else
 			write(newObj, actualKey, prefixSpaces, yaml, writer);
-
 	}
 
 	// Doesn't work with configuration sections, must be an actual object
 	// Auto checks if it is serializable and writes to file
 	private static void write(Object obj, String actualKey, String prefixSpaces, Yaml yaml, BufferedWriter writer) throws IOException {
+
 		if (obj instanceof ConfigurationSerializable)
 			writer.write(prefixSpaces + actualKey + ": " + yaml.dump(((ConfigurationSerializable) obj).serialize()));
 
@@ -289,37 +268,32 @@ public final class YamlComments {
 
 			if (o instanceof Map) {
 				int entryIndex = 0;
-				int mapSize = ((Map<?, ?>) o).size();
+				final int mapSize = ((Map<?, ?>) o).size();
 
-				for (Map.Entry<?, ?> entry : ((Map<?, ?>) o).entrySet()) {
+				for (final Map.Entry<?, ?> entry : ((Map<?, ?>) o).entrySet()) {
 					builder.append(prefixSpaces);
-					if (entryIndex == 0) {
+
+					if (entryIndex == 0)
 						builder.append("- ");
-					} else {
+					else
 						builder.append("  ");
-					}
 
-					builder.append(entry.getKey()).append(": ").append(entry.getValue());
-
+					builder.append(entry.getKey()).append(": ").append(yaml.dump(entry.getValue()));
 					entryIndex++;
-					if (entryIndex != mapSize) {
+
+					if (entryIndex != mapSize)
 						builder.append("\n");
-					}
 				}
 
-			} else if (o instanceof String || o instanceof Character) {
+			} else if (o instanceof String || o instanceof Character)
 				builder.append(prefixSpaces).append("- '").append(o.toString().replace("'", "''")).append("'");
-
-			} else if (o instanceof List) {
+			else if (o instanceof List)
 				builder.append(prefixSpaces).append("- ").append(yaml.dump(o));
-
-			} else {
+			else
 				builder.append(prefixSpaces).append("- ").append(o);
-			}
 
-			if (i != list.size()) {
+			if (i != list.size())
 				builder.append("\n");
-			}
 		}
 
 		return builder.toString();
@@ -338,9 +312,9 @@ public final class YamlComments {
 			if (line != null && line.trim().startsWith("-"))
 				continue;
 
-			if (line == null || line.trim().equals("") || line.trim().startsWith("#")) {
+			if (line == null || line.trim().equals("") || line.trim().startsWith("#"))
 				builder.append(line).append("\n");
-			} else {
+			else {
 				lastLineIndentCount = setFullKey(keyBuilder, line, lastLineIndentCount);
 
 				if (keyBuilder.length() > 0) {
@@ -350,9 +324,8 @@ public final class YamlComments {
 			}
 		}
 
-		if (builder.length() > 0) {
+		if (builder.length() > 0)
 			comments.put(null, builder.toString());
-		}
 
 		return comments;
 	}
@@ -361,13 +334,11 @@ public final class YamlComments {
 	private static int countIndents(String s) {
 		int spaces = 0;
 
-		for (final char c : s.toCharArray()) {
-			if (c == ' ') {
+		for (final char c : s.toCharArray())
+			if (c == ' ')
 				spaces += 1;
-			} else {
+			else
 				break;
-			}
-		}
 
 		return spaces / 2;
 	}
@@ -391,30 +362,27 @@ public final class YamlComments {
 		final int currentIndents = countIndents(configLine);
 		final String key = configLine.trim().split(":")[0];
 
-		if (keyBuilder.length() == 0) {
+		if (keyBuilder.length() == 0)
 			keyBuilder.append(key);
-		} else if (currentIndents == lastLineIndentCount) {
+		else if (currentIndents == lastLineIndentCount) {
 			//Replace the last part of the key with current key
 			removeLastKey(keyBuilder);
 
-			if (keyBuilder.length() > 0) {
+			if (keyBuilder.length() > 0)
 				keyBuilder.append(".");
-			}
 
 			keyBuilder.append(key);
-		} else if (currentIndents > lastLineIndentCount) {
+		} else if (currentIndents > lastLineIndentCount)
 			//Append current key to the keyBuilder
 			keyBuilder.append(".").append(key);
-		} else {
+		else {
 			final int difference = lastLineIndentCount - currentIndents;
 
-			for (int i = 0; i < difference + 1; i++) {
+			for (int i = 0; i < difference + 1; i++)
 				removeLastKey(keyBuilder);
-			}
 
-			if (keyBuilder.length() > 0) {
+			if (keyBuilder.length() > 0)
 				keyBuilder.append(".");
-			}
 
 			keyBuilder.append(key);
 		}
@@ -425,9 +393,8 @@ public final class YamlComments {
 	private static String getPrefixSpaces(int indents) {
 		final StringBuilder builder = new StringBuilder();
 
-		for (int i = 0; i < indents; i++) {
+		for (int i = 0; i < indents; i++)
 			builder.append("  ");
-		}
 
 		return builder.toString();
 	}

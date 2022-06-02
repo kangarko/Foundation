@@ -1,8 +1,6 @@
 package org.mineacademy.fo.plugin;
 
-import java.util.List;
-import java.util.Map;
-
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,32 +9,20 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.MinecraftVersion;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.constants.FoPermissions;
-import org.mineacademy.fo.model.ChatPaginator;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.model.SimpleScoreboard;
-import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.settings.SimpleLocalization;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Listens for some events we handle for you automatically
  */
 final class FoundationListener implements Listener {
-
-	@EventHandler(priority = EventPriority.LOW)
-	public void onJoin(PlayerJoinEvent event) {
-		final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
-
-		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(event.getPlayer(), FoPermissions.NOTIFY_UPDATE))
-			Common.tellLater(4 * 20, event.getPlayer(), check.getNotifyMessage());
-	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent event) {
@@ -58,10 +44,11 @@ final class FoundationListener implements Listener {
 
 		final Player player = event.getPlayer();
 		final String message = event.getMessage();
-		final String[] args = message.split(" ");
 
 		if (!message.startsWith("/#flp"))
 			return;
+
+		final String[] args = message.split(" ");
 
 		if (args.length != 2) {
 			Common.tell(player, SimpleLocalization.Pages.NO_PAGE_NUMBER);
@@ -125,12 +112,11 @@ final class FoundationListener implements Listener {
 
 			int whiteLines = chatPages.getLinesPerPage();
 
-			if (whiteLines == 15 && pages.size() == 1) {
+			if (whiteLines == 15 && pages.size() == 1)
 				if (messagesOnPage.size() < 17)
 					whiteLines = 7;
 				else
 					whiteLines += 2;
-			}
 
 			for (int i = messagesOnPage.size(); i < whiteLines; i++)
 				SimpleComponent.of("&r").send(player);
@@ -169,5 +155,30 @@ final class FoundationListener implements Listener {
 
 		// Prevent "Unknown command message"
 		event.setCancelled(true);
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onJoin(PlayerJoinEvent event) {
+		final Player player = event.getPlayer();
+		final SpigotUpdater check = SimplePlugin.getInstance().getUpdateCheck();
+
+		if (check != null && check.isNewVersionAvailable() && PlayerUtil.hasPerm(player, check.getPermission().replace("{plugin_name}", SimplePlugin.getNamed().toLowerCase().replace(" ", "_"))))
+			Common.tellLater(4 * 20, player, check.getNotifyMessage());
+
+		// Workaround for Essentials and CMI bug where they report "vanished" metadata when
+		// the /vanish command is run, but forgot to do so after reload, despite player still
+		// being vanished. So we just set the metadata on join back manually.
+		//
+		// Saves tons of performance when we check if a player is vanished.
+		if (!player.hasMetadata("vanished")) {
+			final boolean essVanished = HookManager.isVanishedEssentials(player);
+			final boolean cmiVanished = HookManager.isVanishedCMI(player);
+
+			if (essVanished || cmiVanished) {
+				final Plugin plugin = Bukkit.getPluginManager().getPlugin(essVanished ? "Essentials" : "CMI");
+
+				player.setMetadata("vanished", new FixedMetadataValue(plugin, true));
+			}
+		}
 	}
 }

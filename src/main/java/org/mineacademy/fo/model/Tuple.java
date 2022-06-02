@@ -9,6 +9,8 @@ import lombok.Data;
 
 /**
  * Simple tuple for key-value pairs
+ * @param <K>
+ * @param <V>
  */
 @Data
 public final class Tuple<K, V> implements ConfigSerializable {
@@ -28,7 +30,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray("Key", key, "Value", value);
+		return SerializedMap.ofArray("Key", this.key, "Value", this.value);
 	}
 
 	/**
@@ -37,7 +39,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @return
 	 */
 	public String toLine() {
-		return key + " - " + value;
+		return this.key + " - " + this.value;
 	}
 
 	/**
@@ -59,8 +61,9 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @return
 	 */
 	public static <K, V> Tuple<K, V> deserialize(SerializedMap map, Class<K> keyType, Class<V> valueType) {
-		final K key = SerializeUtil.deserialize(keyType, map.getObject("Key"));
-		final V value = SerializeUtil.deserialize(valueType, map.getObject("Value"));
+
+		final K key = map.containsKey("Key") ? map.get("Key", keyType) : null;
+		final V value = map.containsKey("Value") ? map.get("Value", valueType) : null;
 
 		return new Tuple<>(key, value);
 	}

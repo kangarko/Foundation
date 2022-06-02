@@ -209,7 +209,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -513,7 +512,7 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 		// -	Fixed some weird behavior
 		// ====
 
-		if (object != null && object instanceof Map) {
+		if (object instanceof Map) {
 
 			final Map<?, ?> map = (Map<?, ?>) object;
 

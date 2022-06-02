@@ -34,15 +34,24 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	private Consumer<Double> successAction;
 
 	/**
+	 * Create a new prompt with bare question
+	 *
+	 * @param question
+	 */
+	public SimpleDecimalPrompt(String question) {
+		this(question, null);
+	}
+
+	/**
 	 * The menu question
 	 *
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#getPrompt(org.bukkit.conversations.ConversationContext)
 	 */
 	@Override
 	protected String getPrompt(final ConversationContext ctx) {
-		Valid.checkNotNull(question, "Please either call setQuestion or override getPrompt");
+		Valid.checkNotNull(this.question, "Please either call setQuestion or override getPrompt");
 
-		return "&6" + question;
+		return this.question;
 	}
 
 	/**
@@ -52,7 +61,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected boolean isInputValid(final ConversationContext context, final String input) {
-		return Valid.isDecimal(input) || Valid.isInteger(input);
+		return Valid.isDecimal(input);
 	}
 
 	/**
@@ -72,7 +81,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected final Prompt acceptValidatedInput(@NonNull final ConversationContext context, @NonNull final String input) {
-		return acceptValidatedInput(context, Double.parseDouble(input));
+		return this.acceptValidatedInput(context, Double.parseDouble(input));
 	}
 
 	/**
@@ -83,10 +92,22 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 * @return the next prompt, or {@link Prompt#END_OF_CONVERSATION} (that is actualy null) to exit
 	 */
 	protected Prompt acceptValidatedInput(final ConversationContext context, final double input) {
-		Valid.checkNotNull(question, "Please either call setSuccessAction or override acceptValidatedInput");
+		if (this.successAction != null)
+			this.successAction.accept(input);
 
-		successAction.accept(input);
+		else
+			this.onValidatedInput(context, input);
+
 		return Prompt.END_OF_CONVERSATION;
+	}
+
+	/**
+	 * Override this if you want a single question prompt and we have reached the end
+	 *
+	 * @param context
+	 * @param input
+	 */
+	protected void onValidatedInput(ConversationContext context, double input) {
 	}
 
 	/**

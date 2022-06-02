@@ -237,16 +237,17 @@ public final class MathUtil {
 	 *
 	 * @param vector
 	 * @param angle
+	 * @return
 	 */
-	public static Vector rotateAroundAxisX(Vector v, double angle) {
+	public static Vector rotateAroundAxisX(Vector vector, double angle) {
 		angle = Math.toRadians(angle);
 
 		final double cos = Math.cos(angle);
 		final double sin = Math.sin(angle);
-		final double y = v.getY() * cos - v.getZ() * sin;
-		final double z = v.getY() * sin + v.getZ() * cos;
+		final double y = vector.getY() * cos - vector.getZ() * sin;
+		final double z = vector.getY() * sin + vector.getZ() * cos;
 
-		return v.setY(y).setZ(z);
+		return vector.setY(y).setZ(z);
 	}
 
 	/**
@@ -395,21 +396,21 @@ public final class MathUtil {
 			int pos = -1, c;
 
 			void eatChar() {
-				c = ++pos < expression.length() ? expression.charAt(pos) : -1;
+				this.c = ++this.pos < expression.length() ? expression.charAt(this.pos) : -1;
 			}
 
 			void eatSpace() {
-				while (Character.isWhitespace(c))
-					eatChar();
+				while (Character.isWhitespace(this.c))
+					this.eatChar();
 			}
 
 			double parse() {
-				eatChar();
+				this.eatChar();
 
-				final double v = parseExpression();
+				final double v = this.parseExpression();
 
-				if (c != -1)
-					throw new CalculatorException("Unexpected: " + (char) c);
+				if (this.c != -1)
+					throw new CalculatorException("Unexpected: " + (char) this.c);
 
 				return v;
 			}
@@ -421,17 +422,17 @@ public final class MathUtil {
 			// brackets = `(` expression `)`
 
 			double parseExpression() {
-				double v = parseTerm();
+				double v = this.parseTerm();
 
 				for (;;) {
-					eatSpace();
+					this.eatSpace();
 
-					if (c == '+') { // addition
-						eatChar();
-						v += parseTerm();
-					} else if (c == '-') { // subtraction
-						eatChar();
-						v -= parseTerm();
+					if (this.c == '+') { // addition
+						this.eatChar();
+						v += this.parseTerm();
+					} else if (this.c == '-') { // subtraction
+						this.eatChar();
+						v -= this.parseTerm();
 					} else
 						return v;
 
@@ -439,18 +440,18 @@ public final class MathUtil {
 			}
 
 			double parseTerm() {
-				double v = parseFactor();
+				double v = this.parseFactor();
 
 				for (;;) {
-					eatSpace();
+					this.eatSpace();
 
-					if (c == '/') { // division
-						eatChar();
-						v /= parseFactor();
-					} else if (c == '*' || c == '(') { // multiplication
-						if (c == '*')
-							eatChar();
-						v *= parseFactor();
+					if (this.c == '/') { // division
+						this.eatChar();
+						v /= this.parseFactor();
+					} else if (this.c == '*' || this.c == '(') { // multiplication
+						if (this.c == '*')
+							this.eatChar();
+						v *= this.parseFactor();
 					} else
 						return v;
 				}
@@ -460,36 +461,36 @@ public final class MathUtil {
 				double v;
 				boolean negate = false;
 
-				eatSpace();
+				this.eatSpace();
 
-				if (c == '+' || c == '-') { // unary plus & minus
-					negate = c == '-';
-					eatChar();
-					eatSpace();
+				if (this.c == '+' || this.c == '-') { // unary plus & minus
+					negate = this.c == '-';
+					this.eatChar();
+					this.eatSpace();
 				}
 
-				if (c == '(') { // brackets
-					eatChar();
-					v = parseExpression();
-					if (c == ')')
-						eatChar();
+				if (this.c == '(') { // brackets
+					this.eatChar();
+					v = this.parseExpression();
+					if (this.c == ')')
+						this.eatChar();
 				} else { // numbers
 					final StringBuilder sb = new StringBuilder();
 
-					while (c >= '0' && c <= '9' || c == '.') {
-						sb.append((char) c);
-						eatChar();
+					while (this.c >= '0' && this.c <= '9' || this.c == '.') {
+						sb.append((char) this.c);
+						this.eatChar();
 					}
 
 					if (sb.length() == 0)
-						throw new CalculatorException("Unexpected: " + (char) c);
+						throw new CalculatorException("Unexpected: " + (char) this.c);
 
 					v = Double.parseDouble(sb.toString());
 				}
-				eatSpace();
-				if (c == '^') { // exponentiation
-					eatChar();
-					v = Math.pow(v, parseFactor());
+				this.eatSpace();
+				if (this.c == '^') { // exponentiation
+					this.eatChar();
+					v = Math.pow(v, this.parseFactor());
 				}
 				if (negate)
 					v = -v; // unary minus is applied after exponentiation; e.g. -3^2=-9

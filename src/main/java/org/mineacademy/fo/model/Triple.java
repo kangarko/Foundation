@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 
 /**
  * A simple placeholder for storing three values
@@ -10,9 +9,8 @@ import lombok.RequiredArgsConstructor;
  * @param <B>
  * @param <C>
  */
-@Getter
-@RequiredArgsConstructor
-public class Triple<A, B, C> {
+@Data
+public final class Triple<A, B, C> {
 
 	/**
 	 * The first value we hold

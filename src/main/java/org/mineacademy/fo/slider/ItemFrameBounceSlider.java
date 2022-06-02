@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
-import org.mineacademy.fo.slider.Slider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,22 +88,30 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 				items.put(index, this.fillerItem);
 
 			if (column == 1 || column == 9)
-				items.put(index, sideItem);
+				items.put(index, this.sideItem);
 		}
 
-		if (topDecreasing)
+		if (this.topDecreasing)
 			this.topPointer--;
-		else this.topPointer++;
+
+		else
+			this.topPointer++;
+
 		if (this.topPointer == 0)
 			this.topDecreasing = false;
+
 		else if (this.topPointer == 8)
 			this.topDecreasing = true;
 
-		if (bottomDecreasing)
+		if (this.bottomDecreasing)
 			this.bottomPointer--;
-		else this.bottomPointer++;
+
+		else
+			this.bottomPointer++;
+
 		if (this.bottomPointer == this.frameSize - 9)
 			this.bottomDecreasing = false;
+
 		else if (this.bottomPointer == this.frameSize - 1)
 			this.bottomDecreasing = true;
 
@@ -138,8 +145,8 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 	 * @param highlighted
 	 * @return
 	 */
-	public static ItemFrameBounceSlider from(final ItemCreator.ItemCreatorBuilder filler, final ItemCreator.ItemCreatorBuilder highlighted, final ItemCreator.ItemCreatorBuilder side, final ItemCreator.ItemCreatorBuilder corner) {
-		return from(filler.build().make(), highlighted.build().make(), side.build().make(), corner.build().make());
+	public static ItemFrameBounceSlider from(final ItemCreator filler, final ItemCreator highlighted, final ItemCreator side, final ItemCreator corner) {
+		return from(filler.make(), highlighted.make(), side.make(), corner.make());
 	}
 
 	/**

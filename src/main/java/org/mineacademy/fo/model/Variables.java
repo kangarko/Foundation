@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.TimeUtil;
@@ -24,6 +25,7 @@ import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
@@ -83,10 +85,10 @@ public final class Variables {
 	/**
 	 * Return the variable for the given key that is a function of replacing
 	 * itself for the player. Returns null if no such variable by key is present.
+	 * @param key
 	 *
 	 * @return
 	 */
-
 	public static Function<CommandSender, String> getVariable(String key) {
 		return customVariables.get(key);
 	}
@@ -123,7 +125,7 @@ public final class Variables {
 	 * @return
 	 */
 	public static boolean hasVariable(String variable) {
-		return customVariables.contains(variable);
+		return customVariables.containsKey(variable);
 	}
 
 	/**
@@ -168,14 +170,6 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * @deprecated, use {@link #replace(String, CommandSender)} as it will work the same
-	 */
-	@Deprecated
-	public static String replace(boolean replaceCustom, String message, CommandSender sender) {
-		return replace(message, sender);
-	}
-
-	/**
 	 * Replaces variables in the messages using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
@@ -183,6 +177,7 @@ public final class Variables {
 	 *
 	 * @param messages
 	 * @param sender
+	 * @param replacements
 	 * @return
 	 */
 	public static List<String> replace(Iterable<String> messages, CommandSender sender, Map<String, Object> replacements) {
@@ -215,6 +210,7 @@ public final class Variables {
 	 *
 	 * @param message
 	 * @param sender
+	 * @param replacements
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender, Map<String, Object> replacements) {
@@ -229,6 +225,7 @@ public final class Variables {
 	 *
 	 * @param message
 	 * @param sender
+	 * @param replacements
 	 * @param colorize
 	 * @return
 	 */
@@ -265,11 +262,12 @@ public final class Variables {
 			}
 		}
 
-		if (senderIsPlayer) {
-
-			// PlaceholderAPI and MvdvPlaceholderAPI
+		// PlaceholderAPI and MvdvPlaceholderAPI
+		if (senderIsPlayer)
 			message = HookManager.replacePlaceholders((Player) sender, message);
-		}
+
+		else if (sender instanceof DiscordSender)
+			message = HookManager.replacePlaceholders(((DiscordSender) sender).getOfflinePlayer(), message);
 
 		// Default
 		message = replaceHardVariables0(sender, message);
@@ -355,6 +353,8 @@ public final class Variables {
 			}
 		}
 
+		message = Messenger.replacePrefixes(message);
+
 		return message;
 	}
 
@@ -418,8 +418,13 @@ public final class Variables {
 				return player == null ? "" : String.valueOf(player.getLocation().getBlockZ());
 
 			case "player":
-			case "player_name":
+			case "player_name": {
+				if (console == null)
+					return null;
+
 				return player == null ? Common.resolveSenderName(console) : player.getName();
+			}
+
 			case "tab_name":
 				return player == null ? Common.resolveSenderName(console) : player.getPlayerListName();
 			case "display_name":
@@ -457,34 +462,13 @@ public final class Variables {
 				return player == null ? "" : geoResponse.getIsp();
 
 			case "label":
-				return SimplePlugin.getInstance().getMainCommand() != null ? SimplePlugin.getInstance().getMainCommand().getLabel() : "noMainCommandLabel";
+				return SimplePlugin.getInstance().getMainCommand() != null ? SimplePlugin.getInstance().getMainCommand().getLabel() : SimpleLocalization.NONE;
 			case "sender_is_player":
 				return player != null ? "true" : "false";
 			case "sender_is_discord":
 				return console instanceof DiscordSender ? "true" : "false";
 			case "sender_is_console":
 				return console instanceof ConsoleCommandSender ? "true" : "false";
-
-			case "plugin_prefix":
-				return SimpleSettings.PLUGIN_PREFIX;
-			case "info_prefix":
-			case "prefix_info":
-				return org.mineacademy.fo.Messenger.getInfoPrefix();
-			case "success_prefix":
-			case "prefix_success":
-				return org.mineacademy.fo.Messenger.getSuccessPrefix();
-			case "warn_prefix":
-			case "prefix_warn":
-				return org.mineacademy.fo.Messenger.getWarnPrefix();
-			case "error_prefix":
-			case "prefix_error":
-				return org.mineacademy.fo.Messenger.getErrorPrefix();
-			case "question_prefix":
-			case "prefix_question":
-				return org.mineacademy.fo.Messenger.getQuestionPrefix();
-			case "announce_prefix":
-			case "prefix_announce":
-				return org.mineacademy.fo.Messenger.getAnnouncePrefix();
 		}
 
 		return null;

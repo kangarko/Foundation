@@ -25,33 +25,34 @@ class NMSDragon_v1_8 extends NMSDragon {
 		Object packet = null;
 
 		try {
-			dragon = EntityEnderDragon.getConstructor(ReflectionUtil.getNMSClass("World", "N/A")).newInstance(getWorld());
+			this.dragon = EntityEnderDragon.getConstructor(ReflectionUtil.getNMSClass("World", "N/A")).newInstance(this.getWorld());
 
 			final Method setLocation = ReflectionUtil.getMethod(EntityEnderDragon, "setLocation", double.class, double.class, double.class, float.class, float.class);
-			setLocation.invoke(dragon, getX(), getY(), getZ(), getPitch(), getYaw());
+			setLocation.invoke(this.dragon, this.getX(), this.getY(), this.getZ(), this.getPitch(), this.getYaw());
 
 			final Method setInvisible = ReflectionUtil.getMethod(EntityEnderDragon, "setInvisible", boolean.class);
-			setInvisible.invoke(dragon, true);
+			setInvisible.invoke(this.dragon, true);
 
 			final Method setCustomName = ReflectionUtil.getMethod(EntityEnderDragon, "setCustomName", String.class);
-			setCustomName.invoke(dragon, getName());
+			setCustomName.invoke(this.dragon, this.getName());
 
 			final Method setHealth = ReflectionUtil.getMethod(EntityEnderDragon, "setHealth", float.class);
-			setHealth.invoke(dragon, getHealth());
+			setHealth.invoke(this.dragon, this.getHealth());
 
 			final Field motX = ReflectionUtil.getDeclaredField(Entity, "motX");
-			motX.set(dragon, getXvel());
+			motX.set(this.dragon, this.getXvel());
 
 			final Field motY = ReflectionUtil.getDeclaredField(Entity, "motY");
-			motY.set(dragon, getYvel());
+			motY.set(this.dragon, this.getYvel());
 
 			final Field motZ = ReflectionUtil.getDeclaredField(Entity, "motZ");
-			motZ.set(dragon, getZvel());
+			motZ.set(this.dragon, this.getZvel());
 
 			final Method getId = ReflectionUtil.getMethod(EntityEnderDragon, "getId");
-			this.id = (Integer) getId.invoke(dragon);
+			this.id = (Integer) getId.invoke(this.dragon);
 
-			packet = ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving", "N/A").getConstructor(EntityLiving).newInstance(dragon);
+			packet = ReflectionUtil.getNMSClass("PacketPlayOutSpawnEntityLiving", "N/A").getConstructor(EntityLiving).newInstance(this.dragon);
+
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -68,7 +69,7 @@ class NMSDragon_v1_8 extends NMSDragon {
 			packet = PacketPlayOutEntityDestroy.newInstance();
 			final Field a = PacketPlayOutEntityDestroy.getDeclaredField("a");
 			a.setAccessible(true);
-			a.set(packet, new int[] { id });
+			a.set(packet, new int[] { this.id });
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -84,7 +85,7 @@ class NMSDragon_v1_8 extends NMSDragon {
 
 		Object packet = null;
 		try {
-			packet = PacketPlayOutEntityMetadata.getConstructor(int.class, DataWatcher, boolean.class).newInstance(id, watcher, true);
+			packet = PacketPlayOutEntityMetadata.getConstructor(int.class, DataWatcher, boolean.class).newInstance(this.id, watcher, true);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();
 		}
@@ -113,14 +114,14 @@ class NMSDragon_v1_8 extends NMSDragon {
 
 		Object watcher = null;
 		try {
-			watcher = DataWatcher.getConstructor(Entity).newInstance(dragon);
+			watcher = DataWatcher.getConstructor(Entity).newInstance(this.dragon);
 			final Method a = ReflectionUtil.getMethod(DataWatcher, "a", int.class, Object.class);
 
-			a.invoke(watcher, 5, isVisible() ? (byte) 0 : (byte) 0x20);
-			a.invoke(watcher, 6, getHealth());
+			a.invoke(watcher, 5, this.isVisible() ? (byte) 0 : (byte) 0x20);
+			a.invoke(watcher, 6, this.getHealth());
 			a.invoke(watcher, 7, 0);
 			a.invoke(watcher, 8, (byte) 0);
-			a.invoke(watcher, 10, getName());
+			a.invoke(watcher, 10, this.getName());
 			a.invoke(watcher, 11, (byte) 1);
 		} catch (final ReflectiveOperationException e) {
 			e.printStackTrace();

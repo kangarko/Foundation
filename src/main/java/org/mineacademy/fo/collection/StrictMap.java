@@ -2,13 +2,14 @@ package org.mineacademy.fo.collection;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
+
+import javax.annotation.Nullable;
 
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
@@ -17,13 +18,15 @@ import org.mineacademy.fo.Valid;
  * Strict map that only allows to remove elements that are contained within, or add elements that are not.
  * <p>
  * Failing to do so results in an error, with optional error message.
+ * @param <K>
+ * @param <V>
  */
-public final class StrictMap<E, T> extends StrictCollection {
+public final class StrictMap<K, V> extends StrictCollection {
 
 	/**
 	 * The internal map holding value-key pairs
 	 */
-	private final Map<E, T> map = new LinkedHashMap<>();
+	private final Map<K, V> map = new LinkedHashMap<>();
 
 	/**
 	 * Create a new strict map
@@ -47,10 +50,10 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param copyOf
 	 */
-	public StrictMap(Map<E, T> copyOf) {
+	public StrictMap(Map<K, V> copyOf) {
 		this();
 
-		putAll(copyOf);
+		this.putAll(copyOf);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -62,14 +65,14 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param value
 	 */
-	public void removeByValue(T value) {
-		for (final Entry<E, T> e : map.entrySet())
+	public void removeByValue(V value) {
+		for (final Entry<K, V> e : this.map.entrySet())
 			if (e.getValue().equals(value)) {
-				map.remove(e.getKey());
+				this.map.remove(e.getKey());
 				return;
 			}
 
-		throw new NullPointerException(String.format(getCannotRemoveMessage(), value));
+		throw new NullPointerException(String.format(this.getCannotRemoveMessage(), value));
 	}
 
 	/**
@@ -78,11 +81,11 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param keys
 	 * @return
 	 */
-	public Object[] removeAll(Collection<E> keys) {
-		final List<T> removedKeys = new ArrayList<>();
+	public Object[] removeAll(Collection<K> keys) {
+		final List<V> removedKeys = new ArrayList<>();
 
-		for (final E key : keys)
-			removedKeys.add(remove(key));
+		for (final K key : keys)
+			removedKeys.add(this.remove(key));
 
 		return removedKeys.toArray();
 	}
@@ -93,9 +96,9 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public T remove(E key) {
-		final T removed = removeWeak(key);
-		Valid.checkNotNull(removed, String.format(getCannotRemoveMessage(), key));
+	public V remove(K key) {
+		final V removed = this.removeWeak(key);
+		Valid.checkNotNull(removed, String.format(this.getCannotRemoveMessage(), key));
 
 		return removed;
 	}
@@ -106,10 +109,10 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void put(E key, T value) {
-		Valid.checkBoolean(!map.containsKey(key), String.format(getCannotAddMessage(), key, map.get(key)));
+	public void put(K key, V value) {
+		Valid.checkBoolean(!this.map.containsKey(key), String.format(this.getCannotAddMessage(), key, this.map.get(key)));
 
-		override(key, value);
+		this.override(key, value);
 	}
 
 	/**
@@ -117,11 +120,11 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param m
 	 */
-	public void putAll(Map<? extends E, ? extends T> m) {
-		for (final Map.Entry<? extends E, ? extends T> e : m.entrySet())
-			Valid.checkBoolean(!map.containsKey(e.getKey()), String.format(getCannotAddMessage(), e.getKey(), map.get(e.getKey())));
+	public void putAll(Map<? extends K, ? extends V> m) {
+		for (final Map.Entry<? extends K, ? extends V> e : m.entrySet())
+			Valid.checkBoolean(!this.map.containsKey(e.getKey()), String.format(this.getCannotAddMessage(), e.getKey(), this.map.get(e.getKey())));
 
-		override(m);
+		this.override(m);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -134,8 +137,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public T removeWeak(E value) {
-		return map.remove(value);
+	public V removeWeak(K value) {
+		return this.map.remove(value);
 	}
 
 	/**
@@ -144,8 +147,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @param value
 	 */
-	public void override(E key, T value) {
-		map.put(key, value);
+	public void override(K key, V value) {
+		this.map.put(key, value);
 	}
 
 	/**
@@ -153,8 +156,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param m
 	 */
-	public void override(Map<? extends E, ? extends T> m) {
-		map.putAll(m);
+	public void override(Map<? extends K, ? extends V> m) {
+		this.map.putAll(m);
 	}
 
 	/**
@@ -164,11 +167,11 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param defaultToPut
 	 * @return
 	 */
-	public T getOrPut(E key, T defaultToPut) {
-		if (contains(key))
-			return get(key);
+	public V getOrPut(K key, V defaultToPut) {
+		if (this.containsKey(key))
+			return this.get(key);
 
-		put(key, defaultToPut);
+		this.put(key, defaultToPut);
 		return defaultToPut;
 	}
 
@@ -178,8 +181,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public E getKeyFromValue(T value) {
-		for (final Entry<E, T> e : map.entrySet())
+	public K getKeyFromValue(V value) {
+		for (final Entry<K, V> e : this.map.entrySet())
 			if (e.getValue().equals(value))
 				return e.getKey();
 
@@ -187,19 +190,13 @@ public final class StrictMap<E, T> extends StrictCollection {
 	}
 
 	/**
-	 * Get the first key or null if none
+	 * Return the key from the map, or null if not set
 	 *
+	 * @param key
 	 * @return
 	 */
-	public E getFirstKey() {
-		return map.isEmpty() ? null : map.keySet().iterator().next();
-	}
-
-	/**
-	 * Return the key from the map, or null if not set
-	 */
-	public T get(E key) {
-		return map.get(key);
+	public V get(K key) {
+		return this.map.get(key);
 	}
 
 	/**
@@ -209,8 +206,28 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param def
 	 * @return
 	 */
-	public T getOrDefault(E key, T def) {
-		return map.getOrDefault(key, def);
+	public V getOrDefault(K key, V def) {
+		return this.map.getOrDefault(key, def);
+	}
+
+	/**
+	 * Returns the first key value from the first pair in map or null if the map is empty
+	 *
+	 * @return
+	 */
+	@Nullable
+	public K firstKey() {
+		return this.map.isEmpty() ? null : this.map.keySet().iterator().next();
+	}
+
+	/**
+	 * Returns the first value from the first pair in the map or null if the map is empty
+	 *
+	 * @return
+	 */
+	@Nullable
+	public V firstValue() {
+		return this.map.isEmpty() ? null : this.map.values().iterator().next();
 	}
 
 	/**
@@ -219,8 +236,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param key
 	 * @return
 	 */
-	public boolean contains(E key) {
-		return key == null ? false : map.containsKey(key);
+	public boolean containsKey(K key) {
+		return key == null ? false : this.map.containsKey(key);
 	}
 
 	/**
@@ -229,8 +246,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @param value
 	 * @return
 	 */
-	public boolean containsValue(T value) {
-		return value == null ? false : map.containsValue(value);
+	public boolean containsValue(V value) {
+		return value == null ? false : this.map.containsValue(value);
 	}
 
 	/**
@@ -238,10 +255,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @param consumer
 	 */
-	public void forEachIterate(BiConsumer<E, T> consumer) {
-		for (final Iterator<Map.Entry<E, T>> it = entrySet().iterator(); it.hasNext();) {
-			final Map.Entry<E, T> entry = it.next();
-
+	public void forEachIterate(BiConsumer<K, V> consumer) {
+		for (Entry<K, V> entry : this.entrySet()) {
 			consumer.accept(entry.getKey(), entry.getValue());
 		}
 	}
@@ -251,8 +266,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Set<Entry<E, T>> entrySet() {
-		return map.entrySet();
+	public Set<Entry<K, V>> entrySet() {
+		return this.map.entrySet();
 	}
 
 	/**
@@ -260,8 +275,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Set<E> keySet() {
-		return map.keySet();
+	public Set<K> keySet() {
+		return this.map.keySet();
 	}
 
 	/**
@@ -269,15 +284,15 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Collection<T> values() {
-		return map.values();
+	public Collection<V> values() {
+		return this.map.values();
 	}
 
 	/**
 	 * Clear the map
 	 */
 	public void clear() {
-		map.clear();
+		this.map.clear();
 	}
 
 	/**
@@ -286,7 +301,7 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return map.isEmpty();
+		return this.map.isEmpty();
 	}
 
 	/**
@@ -294,8 +309,8 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 *
 	 * @return
 	 */
-	public Map<E, T> getSource() {
-		return map;
+	public Map<K, V> getSource() {
+		return this.map;
 	}
 
 	/**
@@ -304,16 +319,16 @@ public final class StrictMap<E, T> extends StrictCollection {
 	 * @return
 	 */
 	public int size() {
-		return map.size();
+		return this.map.size();
 	}
 
 	@Override
 	public Object serialize() {
-		if (!map.isEmpty()) {
+		if (!this.map.isEmpty()) {
 			final Map<Object, Object> copy = new LinkedHashMap<>();
 
-			for (final Entry<E, T> entry : entrySet()) {
-				final T val = entry.getValue();
+			for (final Entry<K, V> entry : this.entrySet()) {
+				final V val = entry.getValue();
 
 				if (val != null)
 					copy.put(SerializeUtil.serialize(entry.getKey()), SerializeUtil.serialize(val));
@@ -322,11 +337,11 @@ public final class StrictMap<E, T> extends StrictCollection {
 			return copy;
 		}
 
-		return getSource();
+		return this.getSource();
 	}
 
 	@Override
 	public String toString() {
-		return map.toString();
+		return this.map.toString();
 	}
 }

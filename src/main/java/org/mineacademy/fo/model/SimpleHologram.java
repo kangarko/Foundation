@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -39,8 +40,14 @@ public abstract class SimpleHologram {
 	private static Set<SimpleHologram> registeredItems = new HashSet<>();
 
 	/**
+	 * The ticking task responsible for calling {@link #onTick()}
+	 */
+	private static volatile BukkitTask tickingTask = null;
+
+	/**
 	 * The armor stand names, each line spawns another invisible stand
 	 */
+	@Getter
 	private final List<ArmorStand> loreEntities = new ArrayList<>();
 
 	/**
@@ -78,6 +85,42 @@ public abstract class SimpleHologram {
 		this.lastTeleportLocation = spawnLocation.clone();
 
 		registeredItems.add(this);
+
+		onReload();
+	}
+
+	/**
+	 * Restart ticking task on reload
+	 *
+	 * @deprecated internal use only, do not call
+	 */
+	@Deprecated
+	public static void onReload() {
+		if (tickingTask != null)
+			tickingTask.cancel();
+
+		tickingTask = scheduleTickingTask();
+	}
+
+	/*
+	 * Helper method to start main anim ticking task
+	 */
+	private static BukkitTask scheduleTickingTask() {
+		return Common.runTimer(1, () -> {
+
+			for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext();) {
+				final SimpleHologram model = it.next();
+
+				if (model.isSpawned())
+					if (!model.getEntity().isValid() || model.getEntity().isDead()) {
+						model.removeLore();
+						model.getEntity().remove();
+
+						it.remove();
+					} else
+						model.tick();
+			}
+		});
 	}
 
 	/**
@@ -174,7 +217,7 @@ public abstract class SimpleHologram {
 	 * Deletes all text that the armor stand has
 	 */
 	public final void removeLore() {
-		this.loreEntities.forEach(stand -> stand.remove());
+		this.loreEntities.forEach(ArmorStand::remove);
 	}
 
 	/**
@@ -225,7 +268,7 @@ public abstract class SimpleHologram {
 	 * @return
 	 */
 	public final Location getLastTeleportLocation() {
-		return lastTeleportLocation.clone();
+		return this.lastTeleportLocation.clone();
 	}
 
 	/**
@@ -269,32 +312,6 @@ public abstract class SimpleHologram {
 	@Override
 	public String toString() {
 		return "ArmorStandItem{spawnLocation=" + Common.shortLocation(this.lastTeleportLocation) + ", spawned=" + this.isSpawned() + "}";
-	}
-
-	/**
-	 * Called internally from Foundation launch ticking mechanism task
-	 *
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	public static final void init() {
-
-		Common.runTimer(1, () -> {
-
-			for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext();) {
-				final SimpleHologram model = it.next();
-
-				if (model.isSpawned()) {
-					if (!model.getEntity().isValid() || model.getEntity().isDead()) {
-						model.removeLore();
-						model.getEntity().remove();
-
-						it.remove();
-					} else
-						model.tick();
-				}
-			}
-		});
 	}
 
 	/**

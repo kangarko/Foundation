@@ -8,16 +8,16 @@ import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.ValidatingPrompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.Variables;
-
-import lombok.SneakyThrows;
 
 /**
  * Represents one question for the player during a server conversation
  */
-public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable {
+public abstract class SimplePrompt extends ValidatingPrompt {
 
 	/**
 	 * Open the players menu back if any?
@@ -52,14 +52,32 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	}
 
 	/**
-	 * Return the question, implemented in own way using colors
+	 * @see SimpleConversation#setMenuAnimatedTitle(String)
 	 *
-	 * @param
 	 * @return
+	 */
+	protected String getMenuAnimatedTitle() {
+		return null;
+	}
+
+	/**
+	 * Return the question, implemented in own way using colors
 	 */
 	@Override
 	public final String getPromptText(final ConversationContext context) {
-		return String.join("\n", Common.splitNewline(Variables.replace(getPrompt(context), getPlayer(context))));
+		String prompt = this.getPrompt(context);
+
+		if (Common.getTellPrefix().isEmpty() /* ignore since we can default to this when no custom prefix is set */
+				&& Messenger.ENABLED
+				&& !prompt.contains(Messenger.getAnnouncePrefix())
+				&& !prompt.contains(Messenger.getErrorPrefix())
+				&& !prompt.contains(Messenger.getInfoPrefix())
+				&& !prompt.contains(Messenger.getQuestionPrefix())
+				&& !prompt.contains(Messenger.getSuccessPrefix())
+				&& !prompt.contains(Messenger.getWarnPrefix()))
+			prompt = Messenger.getQuestionPrefix() + prompt;
+
+		return Variables.replace(prompt, this.getPlayer(context));
 	}
 
 	/**
@@ -110,9 +128,9 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param message
 	 */
 	protected final void tell(final String message) {
-		Valid.checkNotNull(player, "Cannot use tell() when player not yet set!");
+		Valid.checkNotNull(this.player, "Cannot use tell() when player not yet set!");
 
-		tell(player, message);
+		this.tell(this.player, message);
 	}
 
 	/**
@@ -122,7 +140,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param message
 	 */
 	protected final void tell(final ConversationContext context, final String message) {
-		tell(getPlayer(context), message);
+		this.tell(this.getPlayer(context), message);
 	}
 
 	/**
@@ -132,7 +150,7 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param message
 	 */
 	protected final void tell(final Conversable conversable, final String message) {
-		Common.tellConversing(conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
+		Common.tellConversing(conversable, (this.getCustomPrefix() != null ? this.getCustomPrefix() : "") + message);
 	}
 
 	/**
@@ -143,11 +161,11 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * @param message
 	 */
 	protected final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
-		Common.tellLaterConversing(delayTicks, conversable, (getCustomPrefix() != null ? getCustomPrefix() : "") + message);
+		Common.tellLaterConversing(delayTicks, conversable, (this.getCustomPrefix() != null ? this.getCustomPrefix() : "") + message);
 	}
 
 	/**
-	 * Called when the whole conversation is over. This is called before {@link SimpleConversation#onConversationEnd(ConversationAbandonedEvent)}
+	 * Called when the whole conversation is over. This is called before onConversationEnd
 	 *
 	 * @param conversation
 	 * @param event
@@ -158,17 +176,25 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	// Do not allow superclasses to modify this since we have isInputValid here
 	@Override
 	public final Prompt acceptInput(final ConversationContext context, final String input) {
-		if (isInputValid(context, input))
-			return acceptValidatedInput(context, input);
+		try {
+			// Since developers use try-catch blocks to validate input, do not save this as error
+			FoException.setErrorSavedAutomatically(false);
 
-		else {
-			final String failPrompt = getFailedValidationText(context, input);
+			if (this.isInputValid(context, input))
+				return this.acceptValidatedInput(context, input);
 
-			if (failPrompt != null)
-				tellLater(1, context.getForWhom(), Variables.replace("&c" + failPrompt, getPlayer(context)));
+			else {
+				final String failPrompt = this.getFailedValidationText(context, input);
 
-			// Redisplay this prompt to the user to re-collect input
-			return this;
+				if (failPrompt != null)
+					this.tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
+
+				// Redisplay this prompt to the user to re-collect input
+				return this;
+			}
+
+		} finally {
+			FoException.setErrorSavedAutomatically(true);
 		}
 	}
 
@@ -176,13 +202,14 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 	 * Shows this prompt as a conversation to the player
 	 * <p>
 	 * NB: Do not call this as a means to showing this prompt DURING AN EXISTING
-	 * conversation as it will fail! Use {@link #acceptValidatedInput(ConversationContext, String)} instead
+	 * conversation as it will fail! Use acceptValidatedInput instead
 	 * to show the next prompt
 	 *
 	 * @param player
+	 * @return
 	 */
 	public final SimpleConversation show(final Player player) {
-		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + getClass().getSimpleName() + " instead!");
+		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + this.getClass().getSimpleName() + " instead!");
 
 		this.player = player;
 
@@ -199,9 +226,26 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 
 				return prefix != null ? new SimplePrefix(prefix) : super.getPrefix();
 			}
+
+			@Override
+			public String getMenuAnimatedTitle() {
+				return SimplePrompt.this.getMenuAnimatedTitle();
+			}
+
+			@Override
+			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
+				final String message = "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".";
+				final Player player = SimplePrompt.this.getPlayer(event.getContext());
+
+				if (!event.gracefulExit())
+					if (Messenger.ENABLED)
+						Messenger.warn(player, message);
+					else
+						Common.tell(player, message);
+			}
 		};
 
-		if (openMenu) {
+		if (this.openMenu) {
 			final Menu menu = Menu.getMenu(player);
 
 			if (menu != null)
@@ -211,12 +255,6 @@ public abstract class SimplePrompt extends ValidatingPrompt implements Cloneable
 		conversation.start(player);
 
 		return conversation;
-	}
-
-	@SneakyThrows
-	@Override
-	public SimplePrompt clone() {
-		return (SimplePrompt) super.clone();
 	}
 
 	/**

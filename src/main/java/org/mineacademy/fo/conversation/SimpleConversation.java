@@ -13,6 +13,7 @@ import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
@@ -20,6 +21,7 @@ import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -71,7 +73,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		canceller.setConversation(conversation);
 
 		conversation.getCancellers().add(canceller);
-		conversation.getCancellers().add(getCanceller());
+		conversation.getCancellers().add(this.getCanceller());
 
 		conversation.addConversationAbandonedListener(this);
 
@@ -106,15 +108,23 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				lastPrompt.onConversationEnd(this, event);
 		}
 
-		onConversationEnd(event, timeout);
+		this.onConversationEnd(event, timeout);
 
 		if (conversing instanceof Player) {
 			final Player player = (Player) conversing;
 
 			(event.gracefulExit() ? CompSound.SUCCESSFUL_HIT : CompSound.NOTE_BASS).play(player, 1F, 1F);
 
-			if (menuToReturnTo != null && reopenMenu())
-				menuToReturnTo.newInstance().displayTo(player);
+			if (this.menuToReturnTo != null && this.reopenMenu()) {
+				final Menu newMenu = this.menuToReturnTo.newInstance();
+
+				newMenu.displayTo(player);
+
+				final String title = this.getMenuAnimatedTitle();
+
+				if (title != null)
+					Common.runLater(2, () -> newMenu.animateTitle(title));
+			}
 		}
 	}
 
@@ -149,7 +159,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @return
 	 */
 	protected ConversationPrefix getPrefix() {
-		return new SimplePrefix(Common.ADD_TELL_PREFIX ? addLastSpace(Common.getTellPrefix()) : "");
+		return new SimplePrefix(!Common.getTellPrefix().isEmpty() ? this.addLastSpace(Common.getTellPrefix()) : "");
 	}
 
 	/*
@@ -201,8 +211,17 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @param menu
 	 */
-	public void setMenuToReturnTo(final Menu menu) {
+	public final void setMenuToReturnTo(final Menu menu) {
 		this.menuToReturnTo = menu;
+	}
+
+	/**
+	 * The message that flashes in the menu title when opening it back to player
+	 *
+	 * @return the menuAnimatedTitle
+	 */
+	public String getMenuAnimatedTitle() {
+		return null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -258,11 +277,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	private final class CustomCanceller extends InactivityConversationCanceller {
 
 		/**
-		 * @param plugin
-		 * @param timeoutSeconds
 		 */
 		public CustomCanceller() {
-			super(SimplePlugin.getInstance(), getTimeout());
+			super(SimplePlugin.getInstance(), SimpleConversation.this.getTimeout());
 		}
 
 		/**
@@ -288,44 +305,51 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		private CustomConversation(final Conversable forWhom) {
 			super(SimplePlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
 
-			localEchoEnabled = false;
+			this.localEchoEnabled = false;
 
-			if (insertPrefix() && SimpleConversation.this.getPrefix() != null)
-				prefix = SimpleConversation.this.getPrefix();
+			if (SimpleConversation.this.insertPrefix() && SimpleConversation.this.getPrefix() != null)
+				this.prefix = SimpleConversation.this.getPrefix();
 
 		}
 
 		@Override
 		public void outputNextPrompt() {
-			if (currentPrompt == null)
-				abandon(new ConversationAbandonedEvent(this));
+			if (this.currentPrompt == null)
+				try {
+					this.abandon(new ConversationAbandonedEvent(this));
+
+				} catch (final Throwable t) {
+					tell(this.context.getForWhom(), (Messenger.ENABLED ? Messenger.getErrorPrefix() : "") + SimpleLocalization.Conversation.CONVERSATION_ERROR);
+
+					t.printStackTrace();
+				}
 
 			else {
 				// Save the time when we showed the question to the player
 				// so that we only show it once per the given threshold
-				final String promptClass = currentPrompt.getClass().getSimpleName();
-				final String question = currentPrompt.getPromptText(context);
+				final String promptClass = this.currentPrompt.getClass().getSimpleName();
+				final String question = this.currentPrompt.getPromptText(this.context);
 
 				try {
-					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) context.getAllSessionData().getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(getTimeout(), TimeUnit.SECONDS).build());
+					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) this.context.getAllSessionData().getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(SimpleConversation.this.getTimeout(), TimeUnit.SECONDS).build());
 
 					if (!askedQuestions.containsKey(question)) {
 						askedQuestions.put(question, null);
 
-						context.setSessionData("Asked_" + promptClass, askedQuestions);
-						context.getForWhom().sendRawMessage(prefix.getPrefix(context) + question);
+						this.context.setSessionData("Asked_" + promptClass, askedQuestions);
+						this.context.getForWhom().sendRawMessage(this.prefix.getPrefix(this.context) + question);
 					}
 				} catch (final NoSuchMethodError ex) {
 					// Unfortunately, old MC version was detected
 				}
 
 				// Save last prompt if it is our class
-				if (currentPrompt instanceof SimplePrompt)
-					lastSimplePrompt = ((SimplePrompt) currentPrompt).clone();
+				if (this.currentPrompt instanceof SimplePrompt)
+					this.lastSimplePrompt = (SimplePrompt) this.currentPrompt;
 
-				if (!currentPrompt.blocksForInput(context)) {
-					currentPrompt = currentPrompt.acceptInput(context, null);
-					outputNextPrompt();
+				if (!this.currentPrompt.blocksForInput(this.context)) {
+					this.currentPrompt = this.currentPrompt.acceptInput(this.context, null);
+					this.outputNextPrompt();
 				}
 			}
 		}

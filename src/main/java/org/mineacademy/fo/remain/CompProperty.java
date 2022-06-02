@@ -1,17 +1,19 @@
 package org.mineacademy.fo.remain;
 
-import java.lang.reflect.Method;
-
-import org.apache.commons.lang.WordUtils;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A convenience class for applying "properies" to certain Bukkit classes
@@ -68,89 +70,113 @@ public enum CompProperty {
 	 */
 	private final Class<?> setterMethodType;
 
+	private final Map<Class<?>, Boolean> isAvailable = new HashMap<>();
+	private final Map<Class<?>, Method> cachedMethods = new HashMap<>();
+
 	/**
-	 * Apply the property to the entity. Class must be compatible with {@link #requiredClass}
+	 * Apply the property to the entity. Class must be compatible with the {@link #getRequiredClass()} of this property.
 	 * <p>
 	 * Example: SILENT.apply(myZombieEntity, true)
 	 *
 	 * @param instance
 	 * @param key
 	 */
-	public final void apply(Object instance, Object key) {
+	public void apply(Object instance, Object key) {
 		Valid.checkNotNull(instance, "instance is null!");
-		Valid.checkBoolean(requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
+		Valid.checkBoolean(this.requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + this.requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
 
-		try {
-			final Method m = getMethod(instance.getClass());
-			m.setAccessible(true);
+		final Method method = this.getMethod(instance.getClass());
 
-			m.invoke(instance, key);
+		if (method == null)
+			this.applyLegacy(instance, key);
 
-		} catch (final ReflectiveOperationException e) {
-			if (e instanceof NoSuchMethodException && MinecraftVersion.olderThan(V.values()[0])) {
-				// Pass through
+		else
+			try {
+				ReflectionUtil.invoke(method, instance, key);
 
-				if (instance instanceof Entity) {
-					final NBTEntity nbtEntity = new NBTEntity((Entity) instance);
+			} catch (final Throwable t) {
+				if (MinecraftVersion.olderThan(V.values()[0]))
+					this.applyLegacy(instance, key);
+				else
+					// Print error when on latest MC version
+					t.printStackTrace();
+			}
+	}
+
+	private void applyLegacy(Object instance, Object key) {
+		if (instance instanceof Entity) {
+			final NBTEntity nbtEntity = new NBTEntity((Entity) instance);
+			final boolean has = Boolean.parseBoolean(key.toString());
+
+			if (this == INVULNERABLE)
+				nbtEntity.setInteger("Invulnerable", has ? 1 : 0);
+
+			else if (this == AI)
+				nbtEntity.setInteger("NoAI", has ? 0 : 1);
+
+			else if (this == CompProperty.GRAVITY)
+				nbtEntity.setInteger("NoGravity", has ? 0 : 1);
+		}
+
+		if (Remain.hasItemMeta() && instance instanceof ItemMeta)
+			if (this == UNBREAKABLE)
+				try {
 					final boolean has = Boolean.parseBoolean(key.toString());
 
-					if (this == INVULNERABLE)
-						nbtEntity.setInteger("Invulnerable", has ? 1 : 0);
+					final Method spigotMethod = instance.getClass().getMethod("spigot");
+					spigotMethod.setAccessible(true);
 
-					else if (this == AI)
-						nbtEntity.setInteger("NoAI", has ? 0 : 1);
+					final Object spigot = spigotMethod.invoke(instance);
 
-					else if (this == CompProperty.GRAVITY)
-						nbtEntity.setInteger("NoGravity", has ? 0 : 1);
+					final Method setUnbreakable = spigot.getClass().getMethod("setUnbreakable", boolean.class);
+					setUnbreakable.setAccessible(true);
+
+					setUnbreakable.invoke(spigot, has);
+
+				} catch (final Throwable t) {
+					if (MinecraftVersion.atLeast(V.v1_8))
+						t.printStackTrace();
 				}
-
-				if (Remain.hasItemMeta() && instance instanceof ItemMeta) {
-					if (this == UNBREAKABLE)
-						try {
-							final boolean has = Boolean.parseBoolean(key.toString());
-
-							final Method spigotMethod = instance.getClass().getMethod("spigot");
-							spigotMethod.setAccessible(true);
-
-							final Object spigot = spigotMethod.invoke(instance);
-
-							final Method setUnbreakable = spigot.getClass().getMethod("setUnbreakable", boolean.class);
-							setUnbreakable.setAccessible(true);
-
-							setUnbreakable.invoke(spigot, has);
-
-						} catch (final Throwable t) {
-							if (MinecraftVersion.atLeast(V.v1_8))
-								t.printStackTrace();
-						}
-				}
-
-			} else
-				e.printStackTrace();
-		}
 	}
 
 	/**
-	 * Can this property be used on this server for the given class? Class must be compatible with {@link #requiredClass}
+	 * Can this property be used on this server for the given class? Class must be compatible with {@link #getRequiredClass()}
 	 * <p>
 	 * Class is for example {@link Entity}
 	 *
 	 * @param clazz
 	 * @return
 	 */
-	public final boolean isAvailable(Class<?> clazz) {
-		try {
-			getMethod(clazz);
-		} catch (final ReflectiveOperationException e) {
-			if (e instanceof NoSuchMethodException && MinecraftVersion.olderThan(V.values()[0]))
-				return false;
-		}
+	public boolean isAvailable(Class<?> clazz) {
 
-		return true;
+		if (this.isAvailable.containsKey(clazz))
+			return this.isAvailable.get(clazz);
+
+		return this.getMethod(clazz) != null;
 	}
 
 	// Automatically returns the correct getter or setter method for class
-	private final Method getMethod(Class<?> clazz) throws ReflectiveOperationException {
-		return clazz.getMethod("set" + (toString().equals("AI") ? "AI" : WordUtils.capitalize(toString().toLowerCase())), setterMethodType);
+	private Method getMethod(Class<?> clazz) {
+
+		if (this.isAvailable.containsKey(clazz) && !this.isAvailable.get(clazz))
+			return null;
+
+		Method method = this.cachedMethods.get(clazz);
+
+		if (method == null)
+			try {
+				method = clazz.getMethod("set" + (this.toString().equals("AI") ? "AI" : ChatUtil.capitalize(this.toString().toLowerCase())), this.setterMethodType);
+				method.setAccessible(true);
+
+				this.isAvailable.put(clazz, true);
+				this.cachedMethods.put(clazz, method);
+
+			} catch (final Throwable t) {
+				this.isAvailable.put(clazz, false);
+
+				return null;
+			}
+
+		return method;
 	}
 }

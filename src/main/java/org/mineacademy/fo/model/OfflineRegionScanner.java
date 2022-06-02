@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Queue;
 import java.util.regex.Matcher;
@@ -93,7 +94,7 @@ public abstract class OfflineRegionScanner {
 
 		try {
 			world.setAutoSave(false);
-			scan0(world);
+			this.scan0(world);
 
 		} finally {
 			world.setAutoSave(hadAutoSave);
@@ -111,7 +112,7 @@ public abstract class OfflineRegionScanner {
 				Common.consoleLine());
 
 		// Disable watch dog
-		disableWatchdog();
+		this.disableWatchdog();
 
 		// Collect files
 		final File[] files = getRegionFiles(world);
@@ -129,7 +130,7 @@ public abstract class OfflineRegionScanner {
 		this.world = world;
 
 		// Start the schedule
-		schedule0(queue);
+		this.schedule0(queue);
 	}
 
 	/*
@@ -151,7 +152,7 @@ public abstract class OfflineRegionScanner {
 
 			} catch (final Throwable t) {
 				Common.log("ERROR: FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
-				Common.callEvent(new RegionScanCompleteEvent(world));
+				Common.callEvent(new RegionScanCompleteEvent(this.world));
 
 				t.printStackTrace();
 				this.finishScan();
@@ -182,15 +183,15 @@ public abstract class OfflineRegionScanner {
 							"Region scanner finished. World saved.",
 							Common.consoleLine());
 
-					Common.callEvent(new RegionScanCompleteEvent(world));
+					Common.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
 
-					finishScan();
-					cancel();
+					OfflineRegionScanner.this.finishScan();
+					this.cancel();
 
 					return;
 				}
 
-				scanFile(file, queue);
+				OfflineRegionScanner.this.scanFile(file, queue);
 			}
 		}.runTask(SimplePlugin.getInstance());
 	}
@@ -207,10 +208,10 @@ public abstract class OfflineRegionScanner {
 		final int regionX = Integer.parseInt(matcher.group(1));
 		final int regionZ = Integer.parseInt(matcher.group(2));
 
-		System.out.print("[" + Math.round((double) processedFilesCount++ / (double) totalFilesCount * 100) + "%] Processing " + file);
+		System.out.print("[" + Math.round((double) this.processedFilesCount++ / (double) this.totalFilesCount * 100) + "%] Processing " + file);
 
 		// Calculate time, collect memory and increase pauses in between if running out of memory
-		if (System.currentTimeMillis() - lastTick > 4000) {
+		if (System.currentTimeMillis() - this.lastTick > 4000) {
 			final long free = Runtime.getRuntime().freeMemory() / 1_000_000;
 
 			if (free < 200) {
@@ -223,7 +224,7 @@ public abstract class OfflineRegionScanner {
 			} else
 				System.out.print(" [free memory = " + free + " mb]");
 
-			lastTick = System.currentTimeMillis();
+			this.lastTick = System.currentTimeMillis();
 		}
 
 		System.out.println();
@@ -232,21 +233,28 @@ public abstract class OfflineRegionScanner {
 		final Object region = RegionAccessor.getRegionFile(this.world.getName(), file);
 
 		// Load each chunk within that file
+		scan:
 		for (int x = 0; x < 32; x++)
 			for (int z = 0; z < 32; z++) {
 				final int chunkX = x + (regionX << 5);
 				final int chunkZ = z + (regionZ << 5);
 
-				if (RegionAccessor.isChunkSaved(region, x, z)) {
+				if (RegionAccessor.isChunkSaved(region, x, z))
 					if (this.fastMode)
 						this.onChunkScanFast(chunkX, chunkZ);
 
 					else {
-						final Chunk chunk = world.getChunkAt(chunkX, chunkZ);
+						final Chunk chunk = this.world.getChunkAt(chunkX, chunkZ);
 
-						onChunkScan(chunk);
+						try {
+							this.onChunkScan(chunk);
+
+						} catch (final Throwable t) {
+							Common.error(t, "Failed to scan chunk " + chunk + ", aborting for safety");
+
+							break scan;
+						}
 					}
-				}
 			}
 
 		// Save
@@ -262,7 +270,7 @@ public abstract class OfflineRegionScanner {
 			this.schedule0(queue);
 
 		else
-			Common.runLater(WAIT_TIME_BETWEEN_SCAN_SECONDS, () -> schedule0(queue));
+			Common.runLater(WAIT_TIME_BETWEEN_SCAN_SECONDS, () -> this.schedule0(queue));
 
 	}
 
@@ -290,8 +298,8 @@ public abstract class OfflineRegionScanner {
 	 */
 	private void finishScan() {
 
-		if (watchdog != null)
-			watchdog.resume();
+		if (this.watchdog != null)
+			this.watchdog.resume();
 
 		this.onScanFinished();
 	}
@@ -345,7 +353,7 @@ public abstract class OfflineRegionScanner {
 	public static int getEstimatedWaitTimeSec(World world) {
 		final File[] files = getRegionFiles(world);
 
-		return (WAIT_TIME_BETWEEN_SCAN_SECONDS + 2) * files.length;
+		return (int) (Math.round(WAIT_TIME_BETWEEN_SCAN_SECONDS * 1.5D) * files.length);
 	}
 }
 
@@ -357,7 +365,7 @@ class RegionAccessor {
 	private static Constructor<?> regionFileConstructor;
 	private static Method isChunkSaved;
 
-	private static final boolean atleast1_13, atleast1_14, atleast1_15, atleast1_16;
+	private static final boolean atleast1_13, atleast1_14, atleast1_15, atleast1_16, atleast1_18;
 	private static final String saveMethodName;
 
 	static {
@@ -365,13 +373,19 @@ class RegionAccessor {
 		atleast1_14 = MinecraftVersion.atLeast(V.v1_14);
 		atleast1_15 = MinecraftVersion.atLeast(V.v1_15);
 		atleast1_16 = MinecraftVersion.atLeast(V.v1_16);
+		atleast1_18 = MinecraftVersion.atLeast(V.v1_18);
 
 		saveMethodName = atleast1_13 ? "close" : "c";
 
 		try {
 			final Class<?> regionFileClass = ReflectionUtil.getNMSClass("RegionFile", "net.minecraft.world.level.chunk.storage.RegionFile");
-			regionFileConstructor = atleast1_16 ? regionFileClass.getConstructor(File.class, File.class, boolean.class) : atleast1_15 ? regionFileClass.getConstructor(File.class, File.class) : regionFileClass.getConstructor(File.class);
-			isChunkSaved = atleast1_14 ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair")) : regionFileClass.getMethod(atleast1_13 ? "b" : "c", int.class, int.class);
+			regionFileConstructor = atleast1_18 ? regionFileClass.getConstructor(Path.class, Path.class, boolean.class)
+					: atleast1_16 ? regionFileClass.getConstructor(File.class, File.class, boolean.class)
+							: atleast1_15 ? regionFileClass.getConstructor(File.class, File.class)
+									: regionFileClass.getConstructor(File.class);
+
+			isChunkSaved = atleast1_14 ? regionFileClass.getMethod("b", ReflectionUtil.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair"))
+					: regionFileClass.getMethod(atleast1_13 ? "b" : "c", int.class, int.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			Remain.sneaky(ex);
@@ -382,7 +396,11 @@ class RegionAccessor {
 		try {
 			final File container = new File(Bukkit.getWorldContainer(), worldName);
 
-			return atleast1_16 ? regionFileConstructor.newInstance(file, container, true) : atleast1_15 ? regionFileConstructor.newInstance(file, container) : regionFileConstructor.newInstance(file);
+			return atleast1_18 ? regionFileConstructor.newInstance(file.toPath(), container.toPath(), false)
+					: atleast1_16 ? regionFileConstructor.newInstance(file, container, false)
+							: atleast1_15 ? regionFileConstructor.newInstance(file, container)
+									: regionFileConstructor.newInstance(file);
+
 		} catch (final Throwable ex) {
 			throw new RuntimeException("Could not create region file from " + file, ex);
 		}
@@ -391,7 +409,8 @@ class RegionAccessor {
 	static boolean isChunkSaved(Object region, int x, int z) {
 		try {
 			if (MinecraftVersion.newerThan(V.v1_13)) {
-				final Object chunkCoordinates = ReflectionUtil.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair").getConstructor(int.class, int.class).newInstance(x, z);
+				final Object chunkCoordinates = ReflectionUtil.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair")
+						.getConstructor(int.class, int.class).newInstance(x, z);
 
 				return (boolean) isChunkSaved.invoke(region, chunkCoordinates);
 			}

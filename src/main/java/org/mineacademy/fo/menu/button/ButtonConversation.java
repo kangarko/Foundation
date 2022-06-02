@@ -50,16 +50,6 @@ public final class ButtonConversation extends Button {
 	 * @param convo
 	 * @param item
 	 */
-	public ButtonConversation(SimpleConversation convo, ItemCreator.ItemCreatorBuilder item) {
-		this(convo, null, item.hideTags(true).build().make());
-	}
-
-	/**
-	 * Create a new button that starts a server conversation when clicked
-	 *
-	 * @param convo
-	 * @param item
-	 */
 	public ButtonConversation(SimpleConversation convo, ItemCreator item) {
 		this(convo, null, item.make());
 	}
@@ -83,17 +73,7 @@ public final class ButtonConversation extends Button {
 	 * @param item
 	 */
 	public ButtonConversation(SimplePrompt prompt, ItemCreator item) {
-		this(null, prompt, item.make());
-	}
-
-	/**
-	 * Create a new conversation from a single prompt
-	 *
-	 * @param prompt
-	 * @param item
-	 */
-	public ButtonConversation(SimplePrompt prompt, ItemCreator.ItemCreatorBuilder item) {
-		this(null, prompt, item.hideTags(true).build().make());
+		this(null, prompt, item.hideTags(true).make());
 	}
 
 	private ButtonConversation(SimpleConversation conversation, SimplePrompt prompt, ItemStack item) {
@@ -104,15 +84,15 @@ public final class ButtonConversation extends Button {
 
 	@Override
 	public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
-		Valid.checkBoolean(conversation != null || prompt != null, "Conversation and prompt cannot be null!");
+		Valid.checkBoolean(this.conversation != null || this.prompt != null, "Conversation and prompt cannot be null!");
 
-		if (conversation != null) {
-			conversation.setMenuToReturnTo(menu);
+		if (this.conversation != null) {
+			this.conversation.setMenuToReturnTo(menu);
 
-			conversation.start(player);
+			this.conversation.start(player);
 
 		} else
-			prompt.show(player);
+			this.prompt.show(player);
 
 	}
 }

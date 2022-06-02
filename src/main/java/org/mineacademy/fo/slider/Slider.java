@@ -5,6 +5,7 @@ package org.mineacademy.fo.slider;
  *
  * A slider takes in a list of items (or a string) and
  * then moves them in the precreated direction using the {@link #next()} method.
+ * @param <T>
  */
 public interface Slider<T> {
 

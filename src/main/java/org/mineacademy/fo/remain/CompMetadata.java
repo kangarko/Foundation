@@ -10,7 +10,6 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +22,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
@@ -30,9 +30,11 @@ import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
-import org.mineacademy.fo.settings.YamlSectionConfig;
+import org.mineacademy.fo.settings.YamlConfig;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -42,16 +44,13 @@ import lombok.RequiredArgsConstructor;
  * We apply scoreboard tags to ensure permanent metadata storage
  * if supported, otherwise it is lost on reload
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CompMetadata {
 
 	/**
 	 * The tag delimiter
 	 */
 	private final static String DELIMITER = "%-%";
-
-	// Static access
-	private CompMetadata() {
-	}
 
 	// ----------------------------------------------------------------------------------------
 	// Setting metadata
@@ -61,7 +60,6 @@ public final class CompMetadata {
 	 * A shortcut for setting a tag with key-value pair on an item
 	 *
 	 * @param item
-	 * @param compoundTag
 	 * @param key
 	 * @param value
 	 * @return
@@ -96,9 +94,9 @@ public final class CompMetadata {
 	public static void setMetadata(final Entity entity, final String key, final String value) {
 		Valid.checkNotNull(entity);
 
-		final String tag = format(key, value);
-
 		if (Remain.hasScoreboardTags()) {
+			final String tag = format(key, value);
+
 			if (!entity.getScoreboardTags().contains(tag))
 				entity.addScoreboardTag(tag);
 
@@ -152,7 +150,6 @@ public final class CompMetadata {
 	 * A shortcut from reading a certain key from an item's given compound tag
 	 *
 	 * @param item
-	 * @param compoundTag
 	 * @param key
 	 * @return
 	 */
@@ -205,7 +202,7 @@ public final class CompMetadata {
 	 * Return saved tile entity metadata, or null if none
 	 *
 	 * @param tileEntity
-	 * @param key,       or null if none
+	 * @param key       or null if none
 	 * @return
 	 */
 	public static String getMetadata(final BlockState tileEntity, final String key) {
@@ -235,7 +232,7 @@ public final class CompMetadata {
 
 	/**
 	 * Return true if the given itemstack has the given key stored at its compound
-	 * tag {@link FoConstants.NBT#TAG}
+	 * tag {@link org.mineacademy.fo.constants.FoConstants.NBT#TAG}
 	 *
 	 * @param item
 	 * @param key
@@ -315,7 +312,7 @@ public final class CompMetadata {
 	 * @param tag
 	 */
 	public static void setTempMetadata(final Entity entity, final String tag) {
-		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), tag));
+		entity.setMetadata(tag, new FixedMetadataValue(SimplePlugin.getInstance(), tag));
 	}
 
 	/**
@@ -329,7 +326,7 @@ public final class CompMetadata {
 	 * @param key
 	 */
 	public static void setTempMetadata(final Entity entity, final String tag, final Object key) {
-		entity.setMetadata(createTempMetadataKey(tag), new FixedMetadataValue(SimplePlugin.getInstance(), key));
+		entity.setMetadata(tag, new FixedMetadataValue(SimplePlugin.getInstance(), key));
 	}
 
 	/**
@@ -339,37 +336,33 @@ public final class CompMetadata {
 	 * because otherwise the tag is the same as the value we return
 	 *
 	 * @param entity
-	 * @param tag
+	 * @param key
 	 * @return
 	 */
-	public static MetadataValue getTempMetadata(final Entity entity, final String tag) {
-		final String key = createTempMetadataKey(tag);
-
+	public static MetadataValue getTempMetadata(final Entity entity, final String key) {
 		return entity.hasMetadata(key) ? entity.getMetadata(key).get(0) : null;
 	}
 
+	/**
+	 * Return true if player has the given temporary metadata
+	 *
+	 * @param player
+	 * @param tag
+	 * @return
+	 */
 	public static boolean hasTempMetadata(final Entity player, final String tag) {
-		return player.hasMetadata(createTempMetadataKey(tag));
+		return player.hasMetadata(tag);
 	}
 
 	/**
 	 * Remove temporary metadata from the entity
 	 *
 	 * @param player
-	 * @param tag
+	 * @param key
 	 */
-	public static void removeTempMetadata(final Entity player, final String tag) {
-		final String key = createTempMetadataKey(tag);
-
+	public static void removeTempMetadata(final Entity player, final String key) {
 		if (player.hasMetadata(key))
 			player.removeMetadata(key, SimplePlugin.getInstance());
-	}
-
-	/*
-	 * Create a new temporary metadata key
-	 */
-	private static String createTempMetadataKey(final String tag) {
-		return SimplePlugin.getNamed() + "_" + tag;
 	}
 
 	/**
@@ -379,7 +372,8 @@ public final class CompMetadata {
 	 * <p>
 	 * internal use only
 	 */
-	public static final class MetadataFile extends YamlSectionConfig {
+	@AutoRegister
+	public static final class MetadataFile extends YamlConfig {
 
 		private static volatile Object LOCK = new Object();
 
@@ -390,69 +384,75 @@ public final class CompMetadata {
 		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
 
 		private MetadataFile() {
-			super("Metadata");
+			this.setPathPrefix("Metadata");
+			this.setSaveEmptyValues(false);
 
-			loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
+			this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
 		}
 
 		@Override
-		protected void onLoadFinish() {
+		protected void onLoad() {
 			synchronized (LOCK) {
-				loadEntities();
-				loadBlockStates();
+				this.loadEntities();
 
-				save();
+				this.loadBlockStates();
 			}
+		}
+
+		@Override
+		protected void onSave() {
+			this.set("Entity", this.entityMetadataMap);
+			this.set("Block", this.blockMetadataMap);
 		}
 
 		private void loadEntities() {
 			synchronized (LOCK) {
-				entityMetadataMap.clear();
+				this.entityMetadataMap.clear();
 
-				for (final String uuidName : getMap("Entity").keySet()) {
+				for (final String uuidName : this.getMap("Entity").keySet()) {
 					final UUID uuid = UUID.fromString(uuidName);
 
 					// Remove broken key
-					if (!(getObject("Entity." + uuidName) instanceof List)) {
-						setNoSave("Entity." + uuidName, null);
+					if (!(this.getObject("Entity." + uuidName) instanceof List)) {
+						this.set("Entity." + uuidName, null);
 
 						continue;
 					}
 
-					final List<String> metadata = getStringList("Entity." + uuidName);
+					final List<String> metadata = this.getStringList("Entity." + uuidName);
 					final Entity entity = Remain.getEntity(uuid);
 
 					// Check if the entity is still real
 					if (!metadata.isEmpty() && entity != null && entity.isValid() && !entity.isDead()) {
-						entityMetadataMap.put(uuid, metadata);
+						this.entityMetadataMap.put(uuid, metadata);
 
-						applySavedMetadata(metadata, entity);
+						this.applySavedMetadata(metadata, entity);
 					}
 				}
 
-				save("Entity", this.entityMetadataMap);
+				this.set("Entity", this.entityMetadataMap);
 			}
 		}
 
 		private void loadBlockStates() {
 			synchronized (LOCK) {
-				blockMetadataMap.clear();
+				this.blockMetadataMap.clear();
 
-				for (final String locationRaw : getMap("Block").keySet()) {
+				for (final String locationRaw : this.getMap("Block").keySet()) {
 					final Location location = SerializeUtil.deserializeLocation(locationRaw);
-					final BlockCache blockCache = get("Block." + locationRaw, BlockCache.class);
+					final BlockCache blockCache = this.get("Block." + locationRaw, BlockCache.class);
 
 					final Block block = location.getBlock();
 
 					// Check if the block remained the same
 					if (!CompMaterial.isAir(block) && CompMaterial.fromBlock(block) == blockCache.getType()) {
-						blockMetadataMap.put(location, blockCache);
+						this.blockMetadataMap.put(location, blockCache);
 
-						applySavedMetadata(blockCache.getMetadata(), block);
+						this.applySavedMetadata(blockCache.getMetadata(), block);
 					}
 				}
 
-				save("Block", this.blockMetadataMap);
+				this.set("Block", this.blockMetadataMap);
 			}
 		}
 
@@ -475,7 +475,7 @@ public final class CompMetadata {
 
 		protected void addMetadata(final Entity entity, @NonNull final String key, final String value) {
 			synchronized (LOCK) {
-				final List<String> metadata = entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
+				final List<String> metadata = this.entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
 				for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
 					final String meta = i.next();
@@ -490,13 +490,13 @@ public final class CompMetadata {
 					metadata.add(formatted);
 				}
 
-				save("Entity", entityMetadataMap);
+				this.save("Entity", this.entityMetadataMap);
 			}
 		}
 
 		protected void addMetadata(final BlockState blockState, final String key, final String value) {
 			synchronized (LOCK) {
-				final BlockCache blockCache = blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
+				final BlockCache blockCache = this.blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
 				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
 					final String meta = i.next();
@@ -512,10 +512,10 @@ public final class CompMetadata {
 				}
 
 				{ // Save
-					for (final Map.Entry<Location, BlockCache> entry : blockMetadataMap.entrySet())
-						setNoSave("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+					for (final Map.Entry<Location, BlockCache> entry : this.blockMetadataMap.entrySet())
+						this.set("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
 
-					save();
+					this.save();
 				}
 			}
 		}
@@ -537,15 +537,11 @@ public final class CompMetadata {
 			public SerializedMap serialize() {
 				final SerializedMap map = new SerializedMap();
 
-				map.put("Type", type.toString());
-				map.put("Metadata", metadata);
+				map.put("Type", this.type.toString());
+				map.put("Metadata", this.metadata);
 
 				return map;
 			}
-		}
-
-		public static void onReload() {
-			instance = new MetadataFile();
 		}
 	}
 }

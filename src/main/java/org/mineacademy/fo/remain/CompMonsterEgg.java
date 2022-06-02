@@ -1,10 +1,6 @@
 package org.mineacademy.fo.remain;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import lombok.NonNull;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,7 +14,10 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
-import lombok.NonNull;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Utility class for manipulating Monster Eggs
@@ -94,7 +93,7 @@ public final class CompMonsterEgg {
 		if (type == null && acceptUnsafeEggs)
 			type = EntityType.UNKNOWN;
 
-		Valid.checkNotNull(type, "Could not detect monster type from " + item + " (data = " + item.getData() + ", dura = " + item.getDurability() + ")");
+		Valid.checkNotNull(type, "Could not detect monster type from " + item + ")");
 		return type;
 	}
 
@@ -190,7 +189,7 @@ public final class CompMonsterEgg {
 	 */
 	public static ItemStack setEntity(ItemStack item, final EntityType type) {
 		Valid.checkNotNull(item, "Item == null");
-		Valid.checkBoolean(type.isSpawnable(), type + " cannot be spawned and thus set into a monster egg!");
+		Valid.checkBoolean(type.isSpawnable(), "EntityType." + type + " cannot be spawned and set into a monster egg!");
 
 		if (MinecraftVersion.atLeast(V.v1_13)) {
 			item.setType(CompMaterial.makeMonsterEgg(type).getMaterial());

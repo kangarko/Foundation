@@ -1,7 +1,7 @@
 package org.mineacademy.fo.visual;
 
-import java.util.HashSet;
-
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.FallingBlock;
@@ -15,8 +15,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import java.util.HashSet;
 
 /**
  * A utility class for displaying glowing block corners
@@ -32,7 +31,7 @@ public class BlockVisualizer {
 	/**
 	 * Starts visualizing the block at the given location
 	 *
-	 * @param location
+	 * @param block
 	 * @param mask
 	 * @param blockName
 	 */
@@ -72,7 +71,7 @@ public class BlockVisualizer {
 	/**
 	 * Stops visualizing the block at the given location
 	 *
-	 * @param location
+	 * @param block
 	 */
 	public void stopVisualizing(@NonNull final Block block) {
 		Valid.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");
@@ -107,6 +106,6 @@ public class BlockVisualizer {
 	 * @return
 	 */
 	public boolean isVisualized(@NonNull final Block block) {
-		return visualizedBlocks.contains(block.getLocation());
+		return visualizedBlocks.containsKey(block.getLocation());
 	}
 }

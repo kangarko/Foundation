@@ -1,9 +1,9 @@
 package org.mineacademy.fo.remain;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 
@@ -224,7 +224,7 @@ public enum CompSound {
 		this.versionDependentNames = versionDependentNames;
 
 		// Assume most servers use the latest version so reverse for performance
-		ArrayUtils.reverse(this.versionDependentNames);
+		Common.reverse(this.versionDependentNames);
 	}
 
 	/**
@@ -233,20 +233,19 @@ public enum CompSound {
 	 * @param player
 	 */
 	public final void play(Player player) {
-		play(player, 1F, 1F);
+		this.play(player, 1F, 1F);
 	}
 
 	/**
 	 * Plays a sound for the given player
 	 *
 	 * @param player
-	 * @param sound
 	 * @param volume
 	 * @param pitch
 	 */
 	public final void play(Player player, float volume, float pitch) {
 		try {
-			player.playSound(player.getLocation(), getSound(), volume, pitch);
+			player.playSound(player.getLocation(), this.getSound(), volume, pitch);
 		} catch (final Throwable t) {
 			// Fail-through
 		}
@@ -258,20 +257,19 @@ public enum CompSound {
 	 * @param loc
 	 */
 	public final void play(Location loc) {
-		play(loc, 1F, 1F);
+		this.play(loc, 1F, 1F);
 	}
 
 	/**
 	 * Plays a sound on a specific location
 	 *
 	 * @param loc
-	 * @param sound
 	 * @param volume
 	 * @param pitch
 	 */
 	public final void play(Location loc, float volume, float pitch) {
 		try {
-			loc.getWorld().playSound(loc, getSound(), volume, pitch);
+			loc.getWorld().playSound(loc, this.getSound(), volume, pitch);
 		} catch (final Throwable t) {
 			// Fail-through
 		}
@@ -285,12 +283,12 @@ public enum CompSound {
 	 * @return corresponding {@link org.bukkit.Sound}
 	 */
 	public final Sound getSound() {
-		if (cached != null)
-			return cached;
+		if (this.cached != null)
+			return this.cached;
 
-		for (final String name : versionDependentNames)
+		for (final String name : this.versionDependentNames)
 			try {
-				return cached = org.bukkit.Sound.valueOf(name);
+				return this.cached = org.bukkit.Sound.valueOf(name);
 			} catch (final IllegalArgumentException ex) {
 				// try next
 			}

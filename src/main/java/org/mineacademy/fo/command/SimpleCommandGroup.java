@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -23,17 +26,14 @@ import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * A command group contains a set of different subcommands
  * associated with the main command, for example: /arena join, /arena leave etc.
  */
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class SimpleCommandGroup {
 
 	/**
@@ -48,12 +48,71 @@ public abstract class SimpleCommandGroup {
 	private SimpleCommand mainCommand;
 
 	/**
-	 * How many commands shall we display per page by default?
-	 *
-	 * Defaults to 12
+	 * The label to execute subcommands in this group, example: for ChatControl it's /chatcontrol
 	 */
-	@Setter(value = AccessLevel.PROTECTED)
-	private int commandsPerPage = 12;
+	@Getter
+	private String label;
+
+	/**
+	 * What other commands trigger this command group? Example: for ChatControl it's /chc and /chatc
+	 */
+	@Getter
+	private List<String> aliases;
+
+	/**
+	 * The temporary sender that is currently about to see the command group, mostly used in
+	 * compiling info messages such as in {@link #getNoParamsHeader()}
+	 */
+	@Nullable
+	@Getter
+	protected CommandSender sender;
+
+	/**
+	 * Create a new simple command group using {@link SimpleSettings#MAIN_COMMAND_ALIASES}
+	 */
+	protected SimpleCommandGroup() {
+		this(findMainCommandAliases());
+	}
+
+	/*
+	 * A helper method to aid developers implement this command properly.
+	 */
+	private static StrictList<String> findMainCommandAliases() {
+		final StrictList<String> aliases = SimpleSettings.MAIN_COMMAND_ALIASES;
+
+		Valid.checkBoolean(!aliases.isEmpty(), "Called SimpleCommandGroup with no args constructor which uses SimpleSettings' MAIN_COMMAND_ALIASES field WHICH WAS EMPTY."
+				+ " To make this work, make a settings class extending SimpleSettings and write 'Command_Aliases: [/yourmaincommand]' key-value pair with a list of aliases to your settings.yml file.");
+
+		return aliases;
+	}
+
+	/**
+	 * Create a new simple command group with the given label and aliases bundled in a list
+	 */
+	protected SimpleCommandGroup(StrictList<String> labelAndAliases) {
+		this(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictList<String>()).getSource());
+	}
+
+	/**
+	 * Create a new simple command group with the given label and aliases
+	 */
+	protected SimpleCommandGroup(String label, List<String> aliases) {
+		this.label = label;
+		this.aliases = aliases;
+	}
+
+	/**
+	 * Create a new simple command group with the given label and aliases automatically
+	 * separated by | or /
+	 *
+	 * Example: channel|ch will create a /channel command group that can also be called by using /ch
+	 */
+	protected SimpleCommandGroup(String labelAndAliases) {
+		final String[] split = labelAndAliases.split("(\\||\\/)");
+
+		this.label = split[0];
+		this.aliases = split.length > 0 ? Arrays.asList(Arrays.copyOfRange(split, 1, split.length)) : new ArrayList<>();
+	}
 
 	// ----------------------------------------------------------------------
 	// Main functions
@@ -61,20 +120,8 @@ public abstract class SimpleCommandGroup {
 
 	/**
 	 * Register this command group into Bukkit and start using it
-	 *
-	 * @param labelAndAliases
 	 */
-	public final void register(final StrictList<String> labelAndAliases) {
-		register(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictList<String>()).getSource());
-	}
-
-	/**
-	 * Register this command group into Bukkit and start using it
-	 *
-	 * @param label
-	 * @param aliases
-	 */
-	public final void register(final String label, final List<String> aliases) {
+	public final void register() {
 		Valid.checkBoolean(!isRegistered(), "Main command already registered as: " + mainCommand);
 
 		mainCommand = new MainCommand(label);
@@ -86,7 +133,7 @@ public abstract class SimpleCommandGroup {
 		registerSubcommands();
 
 		// Sort A-Z
-		Collections.sort(subcommands.getSource(), (f, s) -> f.getSublabel().compareTo(s.getSublabel()));
+		Collections.sort(subcommands.getSource(), Comparator.comparing(SimpleSubCommand::getSublabel));
 
 		// Check for collision
 		checkSubCommandAliasesCollision();
@@ -128,22 +175,6 @@ public abstract class SimpleCommandGroup {
 	}
 
 	/**
-	 * Scans all of your plugin's classes and registers commands extending the given class
-	 * automatically.
-	 *
-	 * @param <T>
-	 * @param ofClass
-	 *
-	 * @deprecated produces unexpected results if called more than once from your code, deal with caution!
-	 */
-	@Deprecated
-	protected final <T extends SimpleSubCommand> void autoRegisterSubcommands(final Class<T> ofClass) {
-		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), ofClass))
-			if (!Modifier.isAbstract(clazz.getModifiers()))
-				registerSubcommand(ReflectionUtil.instantiate(clazz));
-	}
-
-	/**
 	 * Extending method to register subcommands, call
 	 * {@link #registerSubcommand(SimpleSubCommand)} and {@link #registerHelpLine(String...)}
 	 * there for your command group.
@@ -163,6 +194,22 @@ public abstract class SimpleCommandGroup {
 	}
 
 	/**
+	 * Automatically registers all extending classes for the given parent class into this command group.
+	 * We automatically ignore abstract classes for you. ENSURE TO MAKE YOUR CHILDREN CLASSES FINAL.
+	 *
+	 * @param parentClass
+	 */
+	protected final void registerSubcommand(Class<? extends SimpleSubCommand> parentClass) {
+		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), parentClass)) {
+			if (Modifier.isAbstract(clazz.getModifiers()))
+				continue;
+
+			Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Make child of " + parentClass.getSimpleName() + " class " + clazz.getSimpleName() + " final to auto register it!");
+			registerSubcommand(ReflectionUtil.instantiate(clazz));
+		}
+	}
+
+	/**
 	 * Registers a simple help message for this group, used in /{label} help|?
 	 * since we add help for all subcommands automatically
 	 *
@@ -175,27 +222,29 @@ public abstract class SimpleCommandGroup {
 	}
 
 	// ----------------------------------------------------------------------
-	// Shortcuts
+	// Setters
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Get the label for this command group, failing if not yet registered
+	 * Updates the command label, only works if the command is not registered
 	 *
-	 * @return
+	 * @param label the label to set
 	 */
-	public final String getLabel() {
-		Valid.checkBoolean(isRegistered(), "Main command has not yet been set!");
+	public void setLabel(String label) {
+		Valid.checkBoolean(!this.isRegistered(), "Cannot use setLabel(" + label + ") for already registered command /" + this.getLabel());
 
-		return mainCommand.getMainLabel();
+		this.label = label;
 	}
 
 	/**
-	 * Return aliases for the main command
+	 * Updates the command aliases, only works if the command is not registered
 	 *
-	 * @return
+	 * @param aliases the aliases to set
 	 */
-	public final List<String> getAliases() {
-		return mainCommand.getAliases();
+	public void setAliases(List<String> aliases) {
+		Valid.checkBoolean(!this.isRegistered(), "Cannot use setAliases(" + aliases + ") for already registered command /" + this.getLabel());
+
+		this.aliases = aliases;
 	}
 
 	// ----------------------------------------------------------------------
@@ -213,7 +262,7 @@ public abstract class SimpleCommandGroup {
 	 *               may be null
 	 * @return
 	 */
-	protected List<SimpleComponent> getNoParamsHeader(CommandSender sender) {
+	protected List<SimpleComponent> getNoParamsHeader() {
 		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -295,7 +344,7 @@ public abstract class SimpleCommandGroup {
 				getHeaderPrefix() + "  " + SimplePlugin.getNamed() + getTrademark() + " &7" + SimplePlugin.getVersion(),
 				" ",
 				"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
-				"&6  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
+				this.getTheme() + "  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
 				" "
 		};
 	}
@@ -315,7 +364,25 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected String getHeaderPrefix() {
-		return "" + ChatColor.GOLD + ChatColor.BOLD;
+		return this.getTheme() + "" + ChatColor.BOLD;
+	}
+
+	/**
+	 * Return the color used in some places of the automatically generated command help
+	 *
+	 * @return
+	 */
+	protected ChatColor getTheme() {
+		return ChatColor.GOLD;
+	}
+
+	/**
+	 * How many commands shall we display per page by default?
+	 *
+	 * Defaults to 12
+	 */
+	protected int getCommandsPerPage() {
+		return 12;
 	}
 
 	// ----------------------------------------------------------------------
@@ -349,12 +416,15 @@ public abstract class SimpleCommandGroup {
 		@Override
 		protected void onCommand() {
 
+			// Pass through sender to the command group itself
+			SimpleCommandGroup.this.sender = this.sender;
+
 			// Print a special message on no arguments
 			if (args.length == 0) {
 				if (sendHelpIfNoArgs())
 					tellSubcommandsHelp();
 				else
-					tell(getNoParamsHeader(sender));
+					tell(getNoParamsHeader());
 
 				return;
 			}
@@ -380,8 +450,9 @@ public abstract class SimpleCommandGroup {
 			}
 
 			// Handle help argument
-			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel()))
+			else if (!getHelpLabel().isEmpty() && Valid.isInList(argument, getHelpLabel())) {
 				tellSubcommandsHelp();
+			}
 
 			// Handle unknown argument
 			else
@@ -406,6 +477,10 @@ public abstract class SimpleCommandGroup {
 
 				for (final SimpleSubCommand subcommand : subcommands)
 					if (subcommand.showInHelp() && hasPerm(subcommand.getPermission())) {
+
+						// Simulate the sender to enable permission checks in getMultilineHelp for ex.
+						subcommand.sender = sender;
+
 						if (subcommand instanceof FillerSubCommand) {
 							tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
 
@@ -441,6 +516,12 @@ public abstract class SimpleCommandGroup {
 							} else
 								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage));
 
+							for (int i = 0; i < hover.size(); i++) {
+								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 65));
+
+								hover.set(i, hoverLine);
+							}
+
 							line.onHover(hover);
 							line.onClickSuggestCmd("/" + getLabel() + " " + subcommand.getSublabel());
 						}
@@ -449,15 +530,18 @@ public abstract class SimpleCommandGroup {
 					}
 
 				if (!lines.isEmpty()) {
-					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), commandsPerPage), ChatColor.DARK_GRAY);
+					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), getCommandsPerPage()), ChatColor.DARK_GRAY);
 
 					if (getHelpHeader() != null)
 						pages.setHeader(getHelpHeader());
 
 					pages.setPages(lines);
 
+					// Allow "? <page>" page parameter
+					final int page = (args.length > 1 && Valid.isInteger(args[1]) ? Integer.parseInt(args[1]) : 1);
+
 					// Send the component on the main thread
-					Common.runLater(() -> pages.send(sender));
+					Common.runLater(() -> pages.send(sender, page));
 
 				} else
 					tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS_PERMISSION);
