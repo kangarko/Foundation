@@ -1182,6 +1182,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		return true;
 	}
 
+        /**
+        * Should we send a suggestion to use paper if using spigot?
+        * 
+        * @return defaults to true
+        */
+        public boolean suggestPaper() {
+                return true;
+        }
+
 	/**
 	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#sendPluginMessage(org.mineacademy.fo.bungee.BungeeMessageType, Object...)}
 	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
