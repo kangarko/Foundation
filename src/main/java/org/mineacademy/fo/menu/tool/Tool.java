@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu.tool;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -13,11 +14,24 @@ import org.mineacademy.fo.menu.model.ItemCreator;
  */
 public abstract class Tool {
 
+	private final boolean isConsumable;
+	private final boolean isDropForbidden;
+
+	protected Tool(){
+		this(false);
+	}
+
+	protected Tool(boolean isConsumable){
+		this(isConsumable, false);
+	}
+
 	/**
 	 * Create a new tool
 	 */
-	protected Tool() {
+	protected Tool(boolean isConsumable, boolean isDropForbidden) {
 
+		this.isConsumable = isConsumable;
+		this.isDropForbidden = isDropForbidden;
 		// A hacky way of automatically registering it AFTER the parent constructor, assuming all went okay
 		new Thread(() -> {
 
@@ -32,6 +46,14 @@ public abstract class Tool {
 			if (!ToolRegistry.isRegistered(instance))
 				ToolRegistry.register(instance);
 		}).start();
+	}
+
+	public final boolean isConsumable(){
+		return isConsumable;
+	}
+
+	public final boolean isDropForbidden(){
+		return isDropForbidden;
 	}
 
 	/**
@@ -135,6 +157,12 @@ public abstract class Tool {
 	 */
 	public final void give(final Player player) {
 		player.getInventory().addItem(getItem());
+	}
+
+	public final void removeOne(final Player player){
+		if (this.isConsumable() && player.getGameMode() != GameMode.CREATIVE){
+			player.getInventory().removeItem(this.getItem());
+		}
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
@@ -25,13 +26,13 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     /**
      * Slots and their raw {@link #elements}.
      */
-    @Getter
     private final TreeMap<Integer, T> elementsSlots = new TreeMap<>();
-    /**
-     * Defines if we should fill all empty locked slots with {@link #getWrapperItem()}. True by default.
-     */
-    @Getter @Setter
-    protected boolean fillWithWrapper = true;
+    @Getter(AccessLevel.PRIVATE)
+    private int previousButtonSlot;
+    @Getter(AccessLevel.PRIVATE)
+    private int nextButtonSlot;
+    private boolean isPreviousSlotSet;
+    private boolean isNextSlotSet;
     /**
      * Raw elements that should be converted to itemStacks.<br>
      * These can be enumerable objects (Tasks, EntityType, Sound, etc.)
@@ -48,29 +49,31 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     /**
      * Current page opened in the player's menu.
      */
-    @Getter
     private int currentPage = 1;
     /**
      * Defines if the previous and next buttons are displayed even if the menu has only one page.
      * False by default.
      */
-    @Getter @Setter
     private boolean isPrevNextButtonsEnabledNoPages = false;
     /**
      * The ItemStack that the previous button should have.
      * Default: Material: Spectral_arrow, Name: "&7Previous page"
      */
-    @Getter @Setter
+    @Setter
     private ItemStack previousButtonItem = ItemCreator.of(CompMaterial.SPECTRAL_ARROW, "&7Previous page").build().make();
     /**
      * The ItemStack that the next button should have.
      * Default: Material: Tipped_arrow, Name: "&7Next page"
      */
-    @Getter @Setter
+    @Setter
     private ItemStack nextButtonItem = ItemCreator.of(CompMaterial.TIPPED_ARROW, "&7Next page").build().make();
 
     public AdvancedMenuPagged(Player player){
         super(player);
+    }
+
+    protected final TreeMap<Integer, T> getElementsSlots(){
+        return elementsSlots;
     }
 
     /**
@@ -85,33 +88,48 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
         addPrevNextButtons(getPreviousButtonSlot(), getNextButtonSlot());
     }
 
+    protected final void setPrevNextButtonsEnabledNoPages(boolean isEnabled){
+        isPrevNextButtonsEnabledNoPages = isEnabled;
+    }
+
+    protected final void initButtonsSlots(){
+        if (!isPreviousSlotSet){
+            this.previousButtonSlot = getSize() - 9;
+        }
+        if (!isNextSlotSet){
+            this.nextButtonSlot = getSize() - 1;
+        }
+    }
+
+    protected final void setPreviousButtonSlot(int slot){
+        this.previousButtonSlot = slot;
+        this.isPreviousSlotSet = true;
+    }
+
+    protected final void setNextButtonSlot(int slot){
+        this.nextButtonSlot = slot;
+        this.isNextSlotSet = true;
+    }
+
+    protected final ItemStack getPreviousButtonItem(){
+        return previousButtonItem;
+    }
+
+    protected final ItemStack getNextButtonItem(){
+        return nextButtonItem;
+    }
+
     /**
      * Add previous and next buttons with specified slots.<br>
      * Default slots are left bottom corner and right bottom corner for previous and next buttons correspondingly.<br>
      * By default, buttons are only displayed when there is more than one page
-     * or {@link #isPrevNextButtonsEnabledNoPages()} is set to true.
+     * or {@link #isPrevNextButtonsEnabledNoPages} is set to true.
      */
     private void addPrevNextButtons(int prevSlot, int nextSlot){
         if (getMaxPage() > 1 || isPrevNextButtonsEnabledNoPages){
             addButton(prevSlot, formPreviousButton(getPreviousButtonItem()));
             addButton(nextSlot, formNextButton(getNextButtonItem()));
         }
-    }
-
-    /**
-     * Get the slot of the previous page button.
-     * Override it to set your own slot.
-     */
-    protected int getPreviousButtonSlot(){
-        return getSize() - 9;
-    }
-
-    /**
-     * Get the slot of the next page button.
-     * Override it to set your own slot.
-     */
-    protected int getNextButtonSlot(){
-        return getSize() - 1;
     }
 
     /**
@@ -245,6 +263,7 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
     @Override
     public void display(){
         setup();
+        initButtonsSlots();
         updateElements();
         displayTo(getPlayer());
     }
@@ -261,7 +280,7 @@ public abstract class AdvancedMenuPagged<T> extends AdvancedMenu {
         if (getItems().containsKey(slot)){
             return getItems().get(slot);
         }
-        if (isFillWithWrapper() && lockedSlots.contains(slot)){
+        if (lockedSlots.contains(slot)){
             return getWrapperItem();
         }
         else{

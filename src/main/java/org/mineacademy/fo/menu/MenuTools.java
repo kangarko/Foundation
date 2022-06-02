@@ -63,20 +63,14 @@ public abstract class MenuTools extends Menu {
 	 * @param pluginToolClasses We will scan your plugin for this kind of class and
 	 *                          all classes extending it will be loaded into the
 	 *                          menu
-	 * @param description       the menu description
 	 * @return
 	 */
-	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
+	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses) {
 		return new MenuTools() {
 
 			@Override
 			protected Object[] compileTools() {
 				return lookupTools(pluginToolClasses);
-			}
-
-			@Override
-			protected String[] getInfo() {
-				return description;
 			}
 		};
 	}
@@ -161,11 +155,6 @@ public abstract class MenuTools extends Menu {
 				return h;
 
 		return null;
-	}
-
-	@Override
-	protected int getInfoButtonPosition() {
-		return getSize() - 1;
 	}
 }
 

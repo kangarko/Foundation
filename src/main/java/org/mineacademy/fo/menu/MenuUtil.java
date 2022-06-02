@@ -13,5 +13,6 @@ public class MenuUtil {
     public static ItemStack defaultRefreshItem = ItemCreator.of(CompMaterial.REDSTONE, "&7Refresh menu").build().make();
     public static ItemStack defaultInfoItem = ItemCreator.of(CompMaterial.BOOK).build().make();
     public static ItemStack defaultMenuItem = ItemCreator.of(CompMaterial.APPLE).build().make();
+    public static CompMaterial defaultWrapperMaterial = CompMaterial.GRAY_STAINED_GLASS_PANE;
 
 }

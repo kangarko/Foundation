@@ -1,13 +1,10 @@
 package org.mineacademy.fo.menu;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.Messenger;
@@ -40,40 +37,30 @@ public abstract class AdvancedMenu extends Menu {
     /**
      * Contains buttons and their slots.
      */
-    @Getter
     private final TreeMap<Integer, Button> buttons = new TreeMap<>();
     /**
      * Custom slots and their itemStacks.<br>
      * You can define them in {@link #addItem} method.
      */
-    @Getter
     private final TreeMap<Integer, ItemStack> items = new TreeMap<>();
     /**
      * In AdvancedMenu, locked slots are filled with {@link #getWrapperItem()}.<br>
      * In AdvancedMenuPaginated, <i>elementsItems</i> are not displayed on these slots and slots
-     * are filled with {@link #getWrapperItem()} only if {@link AdvancedMenuPagged#fillWithWrapper} is true.
+     * are filled with {@link #getWrapperItem()}.
      */
-    @Getter
     protected List<Integer> lockedSlots = new ArrayList<>();
     /**
      * The menu which is opened from {@link #getReturnBackButton}.
      */
     private Class<? extends AdvancedMenu> parentMenu = getClass();
     /**
-     * The material of the wrapper item.
-     * See {@link #wrapperItem} for more info.
-     */
-    @Getter @Setter
-    private CompMaterial wrapperMaterial = CompMaterial.GRAY_STAINED_GLASS_PANE;
-    /**
      * Convenient item that you can use to close some menu slots.<br>
      * By default, displays on empty locked slots in MenuPaginated.<br>
      * Default item is gray stained-glass.
-     * Set this item to whether you want by {@link #setWrapperItem}.
+     * Set this item to whether you want by {@link #setWrapper}.
      * To disable item set it to null.
      */
-    @Getter @Setter @Nullable
-    private ItemStack wrapperItem = ItemCreator.of(wrapperMaterial, "").build().make();
+    private ItemStack wrapperItem = ItemCreator.of(MenuUtil.defaultWrapperMaterial, "").build().make();
 
     public AdvancedMenu(Player player){
         this.player = player;
@@ -85,7 +72,7 @@ public abstract class AdvancedMenu extends Menu {
      * @param slot the slot the button should be displayed on
      * @param btn the button
      */
-    protected void addButton(Integer slot, Button btn){
+    protected final void addButton(Integer slot, Button btn){
         buttons.put(slot, btn);
     }
 
@@ -96,7 +83,7 @@ public abstract class AdvancedMenu extends Menu {
      * @param slot the slot the item should be placed on
      * @param item the item
      */
-    protected void addItem(Integer slot, ItemStack item){
+    protected final void addItem(Integer slot, ItemStack item){
         items.put(slot, item);
     }
 
@@ -115,6 +102,56 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
+     * Get the {@link #items}
+     */
+    protected final TreeMap<Integer, ItemStack> getItems(){
+        return items;
+    }
+
+    /**
+     * Get the {@link #buttons}
+     */
+    protected final TreeMap<Integer, Button> getButtons(){
+        return buttons;
+    }
+
+    /**
+     * Get the {@link #lockedSlots}
+     */
+    protected final List<Integer> getLockedSlots(){
+        return lockedSlots;
+    }
+
+    /**
+     * For {@link AdvancedMenu}, set the slots that should be filled with {@link #wrapperItem}.
+     * For {@link AdvancedMenuPagged}, set the slots the main elements should NOT be placed on.
+     */
+    protected final void setLockedSlots(Integer... slots){
+        lockedSlots.clear();
+        lockedSlots.addAll(Arrays.asList(slots));
+    }
+
+    /**
+     * See {@link #setLockedSlots(Integer...)} for the detailed description.<br><br>
+     * Figures available: 9x6_bounds, 9x6_circle, 9x6_rows, 9x6_columns, 9x6_six_slots,
+     * 9x6_two_slots, 9x3_bounds, 9x3_one_slot, 9x1_one_slot.
+     */
+    protected final void setLockedSlots(String figure){
+        switch (figure) {
+            case ("9x6_bounds"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
+            case ("9x6_circle"): setUnlockedSlots(12, 13, 14, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 39, 40, 41); break;
+            case ("9x6_rows"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
+            case ("9x6_columns"): setLockedSlots(0, 8, 9, 18, 27, 36, 45, 17, 26, 35, 44, 53); break;
+            case ("9x6_six_slots"): setUnlockedSlots(21, 22, 23, 30, 31, 32); break;
+            case ("9x6_two_slots"): setUnlockedSlots(22, 31); break;
+            case ("9x3_bounds"): setUnlockedSlots(10, 11, 12, 13, 14, 15, 16); break;
+            case ("9x3_one_slot"): setUnlockedSlots(13); break;
+            case ("9x1_one_slot"): setUnlockedSlots(4); break;
+            default: new ArrayList<>();
+        }
+    }
+
+    /**
      * Get the {@link #parentMenu}.
      */
     protected final Class<? extends AdvancedMenu> getParentMenu(){
@@ -129,6 +166,21 @@ public abstract class AdvancedMenu extends Menu {
     }
 
     /**
+     * Get the {@link #wrapperItem}
+     */
+    protected final ItemStack getWrapperItem(){
+        return wrapperItem;
+    }
+
+    protected final void setWrapper(CompMaterial material){
+        wrapperItem = ItemCreator.of(material, "").build().make();
+    }
+
+    protected final void setWrapper(ItemStack item){
+        wrapperItem = item;
+    }
+
+    /**
      * Display this menu to the player given in the constructor.
      */
     public void display(){
@@ -140,7 +192,7 @@ public abstract class AdvancedMenu extends Menu {
      * Does the same as {@link #getReturnBackButton(ItemStack)}.
      * Uses the default button from {@link MenuUtil#defaultReturnBackItem}.
      */
-    protected Button getReturnBackButton(){
+    protected final Button getReturnBackButton(){
         return getReturnBackButton(MenuUtil.defaultReturnBackItem);
     }
 
@@ -150,10 +202,9 @@ public abstract class AdvancedMenu extends Menu {
      * If item is not given, it will get its item from {@link MenuUtil#defaultReturnBackItem}.<br><br>
      * <b>NOTE</b> that this button returns player to the non-personalized menu.
      * To use personalized menus, use {@link #getMenuButton}.<br><br>
-     * You can override this button and add some your logic.
      * @return the return button
      */
-    protected Button getReturnBackButton(@NotNull ItemStack item){
+    protected final Button getReturnBackButton(@NotNull ItemStack item){
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
@@ -171,18 +222,17 @@ public abstract class AdvancedMenu extends Menu {
      * Does the same as {@link #getRefreshButton(ItemStack)}.
      * Uses the default button from {@link MenuUtil#defaultRefreshItem}.
      */
-    protected Button getRefreshButton(){
+    protected final Button getRefreshButton(){
         return getRefreshButton(MenuUtil.defaultRefreshItem);
     }
 
     /**
      * Get the button that refreshes the menu.<br>
      * If the given item is null, it will get its item from {@link MenuUtil#defaultRefreshItem}.<br>
-     * This button does not imply additional behavior, but you still
-     * can override it if you want to add some logic.
+     * This button does not imply any additional behavior.
      * @return the refresh button
      */
-    protected Button getRefreshButton(@NotNull ItemStack item){
+    protected final Button getRefreshButton(@NotNull ItemStack item){
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
@@ -204,7 +254,7 @@ public abstract class AdvancedMenu extends Menu {
      * Does the same as {@link #getMenuButton(ItemStack, AdvancedMenu)}.
      * Uses the default button from {@link MenuUtil#defaultMenuItem}.
      */
-    protected Button getMenuButton(AdvancedMenu to){
+    protected final Button getMenuButton(AdvancedMenu to){
         return getMenuButton(MenuUtil.defaultMenuItem, to);
     }
 
@@ -217,7 +267,7 @@ public abstract class AdvancedMenu extends Menu {
      * @param to what menu the player should be sent to
      * @return the button
      */
-    protected Button getMenuButton(ItemStack item, AdvancedMenu to){
+    protected final Button getMenuButton(ItemStack item, AdvancedMenu to){
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
@@ -235,7 +285,7 @@ public abstract class AdvancedMenu extends Menu {
      * Does the same as {@link #getMenuButton(ItemStack, Class)}.
      * Uses default item from {@link MenuUtil#defaultMenuItem}.
      */
-    protected Button getMenuButton(Class<? extends AdvancedMenu> to){
+    protected final Button getMenuButton(Class<? extends AdvancedMenu> to){
         return getMenuButton(MenuUtil.defaultMenuItem, to);
     }
 
@@ -245,7 +295,7 @@ public abstract class AdvancedMenu extends Menu {
      * @param to what menu the player should be sent to
      * @return the button
      */
-    protected Button getMenuButton(ItemStack item, Class<? extends AdvancedMenu> to){
+    protected final Button getMenuButton(ItemStack item, Class<? extends AdvancedMenu> to){
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
@@ -280,31 +330,44 @@ public abstract class AdvancedMenu extends Menu {
      * This button gets its additional lore depending on if player has the tool
      * in the inventory from {@link #getAlreadyHaveLore()} and {@link #getClickToGetLore()}
      * so you can override them to set your custom items and messages.<br>
-     * Or you can override this whole method to set your custom items and logic.
      * @param tool the tool we should give
      * @return the button
      */
-    protected Button getToolButton(Tool tool){
+    protected final Button getToolButton(Tool tool){
         return new Button() {
             @Override
             public void onClickedInMenu(Player player, AdvancedMenu menu, ClickType click) {
-                if (!player.getInventory().contains(tool.getItem())){
+                if (tool.isConsumable()){
                     SoundUtil.Play.POP_HIGH(player);
                     player.getInventory().addItem(tool.getItem());
                 }
                 else{
-                    SoundUtil.Play.POP_LOW(player);
-                    player.getInventory().removeItem(tool.getItem());
+                    if (!player.getInventory().containsAtLeast(tool.getItem(), 1)){
+                        SoundUtil.Play.POP_HIGH(player);
+                        player.getInventory().addItem(tool.getItem());
+                    }
+                    else{
+                        SoundUtil.Play.POP_LOW(player);
+                        player.getInventory().removeItem(tool.getItem());
+                    }
                 }
                 refreshMenu();
             }
 
             @Override
             public ItemStack getItem() {
+                List<String> lore;
+                boolean isConsumable = tool.isConsumable();
                 boolean hasTool = hasItem(player, tool);
-                List<String> lore = hasTool ? getAlreadyHaveLore() : getClickToGetLore();
 
-                return ItemCreator.of(tool.getItem()).lores(lore).glow(hasTool).build().make();
+                if (isConsumable){
+                    lore = getClickToGetLore();
+                }
+                else{
+                    lore = hasTool ? getAlreadyHaveLore() : getClickToGetLore();
+                }
+
+                return ItemCreator.of(tool.getItem()).lores(lore).glow(!isConsumable && hasTool).build().make();
             }
         };
     }
@@ -313,7 +376,7 @@ public abstract class AdvancedMenu extends Menu {
      * Checks if the player has the specified tool in the inventory.
      */
     private boolean hasItem(Player player, Tool tool){
-        return player.getInventory().contains(tool.getItem());
+        return player.getInventory().containsAtLeast(tool.getItem(), 1);
     }
 
     /**
@@ -334,7 +397,7 @@ public abstract class AdvancedMenu extends Menu {
      * Does the same as {@link #getInfoButton(ItemStack)}.
      * Uses the default button from {@link MenuUtil#defaultInfoItem}.
      */
-    protected Button getInfoButton(){
+    protected final Button getInfoButton(){
         return getInfoButton(MenuUtil.defaultInfoItem);
     }
 
@@ -345,7 +408,7 @@ public abstract class AdvancedMenu extends Menu {
      * So you can override them and set your custom name and lore.
      * @return the button
      */
-    protected Button getInfoButton(ItemStack item){
+    protected final Button getInfoButton(ItemStack item){
         return Button.makeDummy(ItemCreator.of(item).name(getInfoName())
                 .lores(Arrays.asList(getInfoLore())).hideTags(true));
     }
@@ -375,45 +438,14 @@ public abstract class AdvancedMenu extends Menu {
     /**
      * For {@link AdvancedMenu}, set the slots that should NOT be filled with {@link #wrapperItem}.<br>
      * For {@link AdvancedMenuPagged}, set the slots the main elements can only be placed on.
-     * To fill the rest slots with wrapper, set {@link AdvancedMenuPagged#isFillWithWrapper()} to true.<br>
      * Note that all unspecified slots are locked.
      */
     @SuppressWarnings("BoxingBoxedValue")
-    protected void setUnlockedSlots(Integer... slots){
+    protected final void setUnlockedSlots(Integer... slots){
         lockedSlots.clear();
         lockedSlots = IntStream.rangeClosed(0, 53).boxed().collect(Collectors.toList());
         for (Integer slot : slots){
             lockedSlots.remove(Integer.valueOf(slot));
-        }
-    }
-
-    /**
-     * For {@link AdvancedMenu}, set the slots that should be filled with {@link #wrapperItem}.
-     * For {@link AdvancedMenuPagged}, set the slots the main elements should NOT be placed on.
-     * To fill these slots with wrapper item, set {@link AdvancedMenuPagged#isFillWithWrapper()} to true.
-     */
-    protected void setLockedSlots(Integer... slots){
-        lockedSlots.clear();
-        lockedSlots.addAll(Arrays.asList(slots));
-    }
-
-    /**
-     * See {@link #setLockedSlots(Integer...)} for the detailed description.<br><br>
-     * Figures available: 9x6_bounds, 9x6_circle, 9x6_rows, 9x6_columns, 9x6_six_slots,
-     * 9x6_two_slots, 9x3_bounds, 9x3_one_slot, 9x1_one_slot.
-     */
-    protected final void setLockedSlots(String figure){
-        switch (figure) {
-            case ("9x6_bounds"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
-            case ("9x6_circle"): setUnlockedSlots(12, 13, 14, 20, 21, 22, 23, 24, 29, 30, 31, 32, 33, 39, 40, 41); break;
-            case ("9x6_rows"): setLockedSlots(0, 1, 2, 3, 4, 5, 6, 7, 8, 45, 46, 47, 48, 49, 50, 51, 52, 53); break;
-            case ("9x6_columns"): setLockedSlots(0, 8, 9, 18, 27, 36, 45, 17, 26, 35, 44, 53); break;
-            case ("9x6_six_slots"): setUnlockedSlots(21, 22, 23, 30, 31, 32); break;
-            case ("9x6_two_slots"): setUnlockedSlots(22, 31); break;
-            case ("9x3_bounds"): setUnlockedSlots(10, 11, 12, 13, 14, 15, 16); break;
-            case ("9x3_one_slot"): setUnlockedSlots(13); break;
-            case ("9x1_one_slot"): setUnlockedSlots(4); break;
-            default: new ArrayList<>();
         }
     }
 
@@ -452,49 +484,49 @@ public abstract class AdvancedMenu extends Menu {
     /**
      * Send a message to the {@link #getPlayer()}
      */
-    public void tell(String... messages) {
-        Common.tell(this.player, messages);
+    public void tell(Object... messages) {
+        Common.tell(this.player, Arrays.toString(messages));
     }
 
     /**
      * Send an information message to the {@link #getPlayer()}
      */
-    public void tellInfo(String message) {
-        Messenger.info(this.player, message);
+    public void tellInfo(Object message) {
+        Messenger.info(this.player, message.toString());
     }
 
     /**
      * Send a success message to the {@link #getPlayer()}
      */
-    public void tellSuccess(String message) {
-        Messenger.success(this.player, message);
+    public void tellSuccess(Object message) {
+        Messenger.success(this.player, message.toString());
     }
 
     /**
      * Send a warning message to the {@link #getPlayer()}
      */
-    public void tellWarn(String message) {
-        Messenger.warn(this.player, message);
+    public void tellWarn(Object message) {
+        Messenger.warn(this.player, message.toString());
     }
 
     /**
      * Send an error message to the {@link #getPlayer()}
      */
-    public void tellError(String message) {
-        Messenger.error(this.player, message);
+    public void tellError(Object message) {
+        Messenger.error(this.player, message.toString());
     }
 
     /**
      * Send a question message to the {@link #getPlayer()}
      */
-    public void tellQuestion(String message) {
-        Messenger.question(this.player, message);
+    public void tellQuestion(Object message) {
+        Messenger.question(this.player, message.toString());
     }
 
     /**
      * Send an announcement message to the {@link #getPlayer()}
      */
-    public void tellAnnounce(String message) {
-        Messenger.announce(this.player, message);
+    public void tellAnnounce(Object message) {
+        Messenger.announce(this.player, message.toString());
     }
 }

@@ -1,6 +1,5 @@
 package org.mineacademy.fo.menu;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -31,7 +30,9 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * The core class of Menu. Represents a simple menu.
@@ -114,7 +115,6 @@ public abstract class Menu {
 	/**
 	 * The description of the menu
 	 */
-	@Getter(value = AccessLevel.PROTECTED)
 	private String[] info = null;
 
 	/**
@@ -377,9 +377,6 @@ public abstract class Menu {
 		// Draw the menu
 		final InventoryDrawer drawer = InventoryDrawer.of(size, title);
 
-		// Compile bottom bar
-		compileBottomBar0().forEach(drawer::setItem);
-
 		// Set items defined by classes upstream
 		for (int i = 0; i < drawer.getSize(); i++) {
 			final ItemStack item = getItemAt(i);
@@ -487,24 +484,7 @@ public abstract class Menu {
 			inv.setItem(i, item);
 		}
 
-		compileBottomBar0().forEach(inv::setItem);
 		getViewer().updateInventory();
-	}
-
-	/**
-	 * Draws the bottom bar for the player inventory
-	 * Adds the info and the return button.
-	 *
-	 * @deprecated Items are now compiled using {@link #getItemAt}.
-	 */
-	@Deprecated
-	private Map<Integer, ItemStack> compileBottomBar0() {
-		final Map<Integer, ItemStack> items = new HashMap<>();
-
-		if (addInfoButton() && getInfo() != null)
-			items.put(getInfoButtonPosition(), Button.makeInfo(getInfo()).getItem());
-
-		return items;
 	}
 
 	// --------------------------------------------------------------------------------
@@ -627,55 +607,6 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 	// Menu functions
 	// --------------------------------------------------------------------------------
-
-	/**
-	 * Get the info button position
-	 *
-	 * @return the slot which info buttons is located on
-	 *
-	 * @deprecated use {@link AdvancedMenu#addButton} to set the slot
-	 * and {@link AdvancedMenu#getInfoButton()} to get the button.
-	 */
-	@Deprecated
-	protected int getInfoButtonPosition() {
-		return size - 9;
-	}
-
-	/**
-	 * Should we automatically add the return button to the bottom left corner?
-	 *
-	 * @return true if the return button should be added, true by default
-	 *
-	 * @deprecated Use {@link AdvancedMenu#addButton} to add any button to the menu.
-	 */
-	@Deprecated
-	protected boolean addReturnButton() {
-		return false;
-	}
-
-	/**
-	 * Should we automatically add an info button {@link #getInfo()} at the
-	 * {@link #getInfoButtonPosition()} ?
-	 *
-	 * @deprecated use {@link AdvancedMenu#addButton} to add any button to the menu.
-	 */
-	@Deprecated
-	protected boolean addInfoButton() {
-		return false;
-	}
-
-	/**
-	 * Get the return button position
-	 *
-	 * @return the slot which return buttons is located on
-	 *
-	 * @deprecated use {@link AdvancedMenu#getReturnBackButton()} to get the item
-	 * and {@link AdvancedMenu#addButton(Integer, Button)} to set its slot.
-	 */
-	@Deprecated
-	protected int getReturnButtonPosition() {
-		return size - 1;
-	}
 
 	/**
 	 * Calculates the center slot of this menu

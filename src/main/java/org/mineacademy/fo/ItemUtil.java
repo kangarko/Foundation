@@ -1,10 +1,12 @@
 package org.mineacademy.fo;
 
-import java.util.ArrayList;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -15,9 +17,7 @@ import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
 
 /**
  * Utility class for managing items.
@@ -221,6 +221,22 @@ public final class ItemUtil {
 			return false; // one has but another hasn't, cannot be same
 
 		return firstNbt.getString(key).equals(secondNbt.getString(key));
+	}
+
+	/**
+	 * Get the amount of the given item in the player's inventory.
+	 */
+	public static int getAmount(Player player, ItemStack item){
+		if (item == null) return 0;
+		item.setAmount(1);
+		if (!player.getInventory().containsAtLeast(item, 1)) return 0;
+		for (int i = 0; i < player.getInventory().getSize(); i++) {
+			if (isSimilar(player.getInventory().getItem(i), item)){
+				if (player.getInventory().getItem(0) == null) continue;
+				return player.getInventory().getItem(i).getAmount();
+			}
+		}
+		return 0;
 	}
 }
 
