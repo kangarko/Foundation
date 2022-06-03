@@ -222,7 +222,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		final String version = Bukkit.getVersion();
 
-		if (!version.contains("Paper")
+		if (suggestPaper() && !version.contains("Paper")
 				&& !version.contains("Purpur")
 				&& !version.contains("NachoSpigot")
 				&& !version.contains("-Spigot")
@@ -1181,6 +1181,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	public boolean similarityStripAccents() {
 		return true;
 	}
+
+        /**
+        * Should we send a suggestion to use paper if using spigot?
+        * 
+        * @return defaults to true
+        */
+        public boolean suggestPaper() {
+                return true;
+        }
 
 	/**
 	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#sendPluginMessage(org.mineacademy.fo.bungee.BungeeMessageType, Object...)}
