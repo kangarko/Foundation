@@ -1144,10 +1144,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param message
 	 * @return
 	 */
-	private String replaceBasicPlaceholders0(String message) {
+	private String replaceBasicPlaceholders0(final String message) {
 
 		// Replace hard variables
-		message = Variables.replace(message, null);
+		Variables.replace(message, null);
 
 		return message
 				.replace("{label}", this.getLabel())
