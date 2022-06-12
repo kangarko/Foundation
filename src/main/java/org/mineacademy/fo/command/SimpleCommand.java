@@ -1439,7 +1439,35 @@ public abstract class SimpleCommand extends Command {
 	protected final void setCooldownMessage(final String cooldownMessage) {
 		this.cooldownMessage = cooldownMessage;
 	}
+	
+	/**
+	 * Get a cooldown converted into the readable string,
+	 * with plural support also.
+	 *
+	 * Example:
+	 * 1 second
+	 * 2+ seconds
+	 *
+	 * @param ofWhat
+	 */
+	protected final String getReadableCooldown(String ofWhat) {
+		return Common.plural(this.cooldownSeconds, ofWhat);
+	}
 
+	/**
+	 * Get a cooldown converted into the readable string,
+	 * with plural from the "second" also.
+	 *
+	 * Example:
+	 * 1 second
+	 * 2+ seconds
+	 *
+	 * @param ofWhat
+	 */
+	protected final String getReadableCooldown() {
+		return Common.plural(this.cooldownSeconds, "second");
+	}
+	
 	/**
 	 * Get the permission for this command, either the one you set or our from Localization
 	 */
