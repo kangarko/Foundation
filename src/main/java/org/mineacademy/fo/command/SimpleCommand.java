@@ -106,6 +106,12 @@ public abstract class SimpleCommand extends Command {
 	 */
 	@Getter
 	private int cooldownSeconds = 0;
+	
+	/**
+	 * The command updated cooldown from cooldownSeconds
+	 */
+	@Getter
+	private int updatedCooldownSeconds = 0;
 
 	/**
 	 * A custom message when the player attempts to run this command
@@ -448,11 +454,12 @@ public abstract class SimpleCommand extends Command {
 
 			final long lastRun = this.cooldownMap.getOrDefault(player.getUniqueId(), 0L);
 			final long difference = (System.currentTimeMillis() - lastRun) / 1000;
-
+			this.updatedCooldownSeconds = this.cooldownSeconds - difference + 1;
+			
 			// Check if the command was run earlier within the wait threshold
 			if (lastRun != 0)
 				this.checkBoolean(difference > this.cooldownSeconds, Common.getOrDefault(this.cooldownMessage, SimpleLocalization.Commands.COOLDOWN_WAIT)
-						.replace("{duration}", String.valueOf(this.cooldownSeconds - difference + 1)));
+						.replace("{duration}", String.valueOf(this.updatedCooldownSeconds)));
 
 			// Update the last try with the current time
 			this.cooldownMap.put(player.getUniqueId(), System.currentTimeMillis());
@@ -1451,7 +1458,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param ofWhat
 	 */
 	protected final String getReadableCooldown(String ofWhat) {
-		return Common.plural(this.cooldownSeconds, ofWhat);
+		return Common.plural(this.updatedCooldownSeconds, ofWhat);
 	}
 
 	/**
@@ -1465,7 +1472,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param ofWhat
 	 */
 	protected final String getReadableCooldown() {
-		return Common.plural(this.cooldownSeconds, "second");
+		return Common.plural(this.updatedCooldownSeconds, "second");
 	}
 	
 	/**
