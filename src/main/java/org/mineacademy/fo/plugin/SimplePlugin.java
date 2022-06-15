@@ -10,16 +10,8 @@
  */
 package org.mineacademy.fo.plugin;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import lombok.Getter;
+import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -32,12 +24,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.SimpleCommand;
@@ -50,24 +38,16 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
-import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.FolderWatcher;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.JavaScriptExecutor;
-import org.mineacademy.fo.model.SimpleHologram;
-import org.mineacademy.fo.model.SimpleScoreboard;
-import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.FileConfig;
-import org.mineacademy.fo.settings.Lang;
-import org.mineacademy.fo.settings.SimpleLocalization;
-import org.mineacademy.fo.settings.SimpleSettings;
-import org.mineacademy.fo.settings.YamlConfig;
+import org.mineacademy.fo.settings.*;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
-import lombok.Getter;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 /**
  * Represents a basic Java plugin using enhanced library functionality,
@@ -439,19 +419,19 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		else
 			methodLibraryLoader:
-			for (final Library library : manualLibraries) {
+					for (final Library library : manualLibraries) {
 
-				// Detect conflicts
-				for (final Library otherLibrary : libraries)
-					if (library.getArtifactId().equals(otherLibrary.getArtifactId()) && library.getGroupId().equals(otherLibrary.getGroupId())) {
-						Common.warning("Detected library conflict: '" + library.getGroupId() + "." + library.getArtifactId() + "' is defined both in getLibraries() and plugin.yml! "
-								+ "We'll prefer the version from plugin.yml, if you want to use the one from getLibraries() then remove it from your plugin.yml file.");
+						// Detect conflicts
+						for (final Library otherLibrary : libraries)
+							if (library.getArtifactId().equals(otherLibrary.getArtifactId()) && library.getGroupId().equals(otherLibrary.getGroupId())) {
+								Common.warning("Detected library conflict: '" + library.getGroupId() + "." + library.getArtifactId() + "' is defined both in getLibraries() and plugin.yml! "
+										+ "We'll prefer the version from plugin.yml, if you want to use the one from getLibraries() then remove it from your plugin.yml file.");
 
-						continue methodLibraryLoader;
+								continue methodLibraryLoader;
+							}
+
+						library.load();
 					}
-
-				library.load();
-			}
 	}
 
 	/**
@@ -480,11 +460,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * A list of libraries to automatically download and load.
-	 *
+	 * <p>
 	 * **REQUIRES JAVA 8 FOR THE TIME BEING**
 	 *
-	 * @deprecated requires Java 8 thus only works on Minecraft 1.16 or lower with such Java version installed
 	 * @return
+	 * @deprecated requires Java 8 thus only works on Minecraft 1.16 or lower with such Java version installed
 	 */
 	@Deprecated
 	protected List<Library> getLibraries() {
@@ -493,12 +473,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	/**
 	 * Register a simple bungee class as a custom bungeecord listener.
-	 *
+	 * <p>
 	 * DO NOT use this if you only have that one field there with a getter, we already register it automatically,
 	 * this method is intended to be used if you have multiple fields there and want to register multiple channels.
 	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
-	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
+	protected final void registerBungeeCord(@NonNull final BungeeListener bungee) {
 		final Messenger messenger = this.getServer().getMessenger();
 
 		messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee);
@@ -877,9 +857,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Convenience method for quickly registering events in all classes in your plugin that
 	 * extend the given class.
-	 *
+	 * <p>
 	 * NB: You must have a no arguments constructor otherwise it will not be registered
-	 *
+	 * <p>
 	 * TIP: Set your Debug key in your settings.yml to ["auto-register"] to see what is registered.
 	 *
 	 * @param extendingClass
@@ -941,9 +921,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Convenience method for quickly registering all command classes in your plugin that
 	 * extend the given class.
-	 *
+	 * <p>
 	 * NB: You must have a no arguments constructor otherwise it will not be registered
-	 *
+	 * <p>
 	 * TIP: Set your Debug key in your settings.yml to ["auto-register"] to see what is registered.
 	 *
 	 * @param extendingClass
@@ -1006,7 +986,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Shortcut for calling {@link SimpleCommandGroup#register()}
 	 *
-	 * @param labelAndAliases
 	 * @param group
 	 */
 	protected final void registerCommands(final SimpleCommandGroup group) {
@@ -1067,11 +1046,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * @deprecated do not use, internal use only
 	 * @param group
+	 * @deprecated do not use, internal use only
 	 */
 	@Deprecated
-	public final void setMainCommand(SimpleCommandGroup group) {
+	public final void setMainCommand(final SimpleCommandGroup group) {
 		Valid.checkBoolean(this.mainCommand == null, "Main command has already been set to " + this.mainCommand);
 
 		this.mainCommand = group;
@@ -1111,7 +1090,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Foundation automatically can filter console commands for you, including
 	 * messages from other plugins or the server itself, preventing unnecessary console spam.
-	 *
+	 * <p>
 	 * You can return a list of messages that will be matched using "startsWith OR contains" method
 	 * and will be filtered.
 	 *
@@ -1182,21 +1161,21 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		return true;
 	}
 
-        /**
-        * Should we send a suggestion to use paper if using spigot?
-        * 
-        * @return defaults to true
-        */
-        public boolean suggestPaper() {
-                return true;
-        }
+	/**
+	 * Should we send a suggestion to use paper if using spigot?
+	 *
+	 * @return defaults to true
+	 */
+	public boolean suggestPaper() {
+		return true;
+	}
 
 	/**
 	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#sendPluginMessage(org.mineacademy.fo.bungee.BungeeMessageType, Object...)}
 	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
 	 *
-	 * @deprecated only returns the first found bungee listener, if you have multiple, do not use, order not guaranteed
 	 * @return
+	 * @deprecated only returns the first found bungee listener, if you have multiple, do not use, order not guaranteed
 	 */
 	@Deprecated
 	public final BungeeListener getBungeeCord() {
@@ -1206,22 +1185,32 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Sets the first valid bungee listener
 	 *
-	 * @deprecated INTERNAL USE ONLY, DO NOT USE! can only set one bungee listener, if you have multiple, order not guaranteed
 	 * @param bungeeListener
+	 * @deprecated INTERNAL USE ONLY, DO NOT USE! can only set one bungee listener, if you have multiple, order not guaranteed
 	 */
 	@Deprecated
-	public final void setBungeeCord(BungeeListener bungeeListener) {
+	public final void setBungeeCord(final BungeeListener bungeeListener) {
 		this.bungeeListener = bungeeListener;
 	}
 
 	/**
-	 * Should we listen for {@link Tool} in this plugin and
+	 * Should we listen for {@link org.mineacademy.fo.menu.tool.Tool} in this plugin and
 	 * handle clicking events automatically? Disable to increase performance
 	 * if you do not want to use our tool system. Enabled by default.
 	 *
 	 * @return
 	 */
 	public boolean areToolsEnabled() {
+		return true;
+	}
+
+	/**
+	 * Should we enable Auto Register warnings?
+	 * Override this method, if not.
+	 *
+	 * @return
+	 */
+	public boolean areAutoRegisterWarningsEnabled() {
 		return true;
 	}
 
@@ -1308,4 +1297,5 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private FoException unsupported(final String method) {
 		return new FoException("Cannot call " + method + " in " + this.getDataFolder().getName() + ", use YamlConfig or SimpleCommand classes in Foundation for that!");
 	}
+
 }
