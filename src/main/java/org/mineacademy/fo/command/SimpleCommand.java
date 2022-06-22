@@ -1146,12 +1146,15 @@ public abstract class SimpleCommand extends Command {
 	 */
 	private String replaceBasicPlaceholders0(String message) {
 
+		// First, replace label and sublabel
+		message = message
+				.replace("{label}", this.getLabel())
+				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel());
+
 		// Replace hard variables
 		message = Variables.replace(message, null);
 
-		return message
-				.replace("{label}", this.getLabel())
-				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel());
+		return message;
 	}
 
 	/**
