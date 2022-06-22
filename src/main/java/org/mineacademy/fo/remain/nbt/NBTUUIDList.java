@@ -62,5 +62,4 @@ public class NBTUUIDList extends NBTList<UUID> {
 	private static int[] leastMostToIntArray(long l, long m) {
 		return new int[] { (int) (l >> 32), (int) l, (int) (m >> 32), (int) m };
 	}
-
 }

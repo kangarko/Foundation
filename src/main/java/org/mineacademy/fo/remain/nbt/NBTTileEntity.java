@@ -1,6 +1,10 @@
 package org.mineacademy.fo.remain.nbt;
 
+import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 
 /**
  * NBT class to access vanilla tags from TileEntities. TileEntities don't
@@ -27,11 +31,15 @@ public class NBTTileEntity extends NBTCompound {
 
 	@Override
 	public Object getCompound() {
+		if (!Bukkit.isPrimaryThread())
+			throw new FoException("BlockEntity NBT needs to be accessed sync!");
 		return NBTReflectionUtil.getTileEntityNBTTagCompound(this.tile);
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
+		if (!Bukkit.isPrimaryThread())
+			throw new FoException("BlockEntity NBT needs to be accessed sync!");
 		NBTReflectionUtil.setTileEntityNBTTagCompound(this.tile, compound);
 	}
 
@@ -42,6 +50,8 @@ public class NBTTileEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTTileEntity#getPersistentDataContainer requires Minecraft 1.14+");
+
 		if (this.hasKey("PublicBukkitValues"))
 			return this.getCompound("PublicBukkitValues");
 		else {

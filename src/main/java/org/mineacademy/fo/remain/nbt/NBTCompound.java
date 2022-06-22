@@ -787,6 +787,14 @@ public class NBTCompound {
 	}
 
 	/**
+	 * Remove all keys from this compound
+	 */
+	public void clearNBT() {
+		for (final String key : this.getKeys())
+			this.removeKey(key);
+	}
+
+	/**
 	 * @deprecated Just use toString()
 	 * @return A {@link String} representation of the NBT in Mojang JSON. This is different from normal JSON!
 	 */
@@ -797,7 +805,10 @@ public class NBTCompound {
 			final Object comp = NBTReflectionUtil.gettoCompount(this.getCompound(), this);
 			if (comp == null)
 				return "{}";
-			return comp.toString();
+			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
+				return Forge1710Mappings.toString(comp);
+			else
+				return comp.toString();
 		} finally {
 			this.readLock.unlock();
 		}

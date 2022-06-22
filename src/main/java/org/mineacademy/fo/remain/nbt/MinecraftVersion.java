@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.Common;
 
 /**
  * This class acts as the "Brain" of the NBTApi. It contains the main logger for
@@ -29,9 +28,11 @@ enum MinecraftVersion {
 	MC1_16_R3(1163),
 	MC1_17_R1(1171),
 	MC1_18_R1(1181, true),
-	MC1_18_R2(1182, true);
+	MC1_18_R2(1182, true),
+	MC1_19_R1(1191, true);
 
 	private static MinecraftVersion version;
+	private static Boolean isForgePresent;
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -67,7 +68,6 @@ enum MinecraftVersion {
 	public String getPackageName() {
 		if (this == UNKNOWN)
 			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
 		return this.name().replace("MC", "v");
 	}
 
@@ -100,19 +100,33 @@ enum MinecraftVersion {
 	public static MinecraftVersion getVersion() {
 		if (version != null)
 			return version;
-
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
-
 		} catch (final IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
 		}
 
-		if (version == UNKNOWN)
-			Common.warning("[NBT-API] Your server version " + ver + " is not supported by NBT-API. Some functions will not be available.");
-
 		return version;
+	}
+
+	/**
+	 * @return True, if Forge is present
+	 */
+	public static boolean isForgePresent() {
+		if (isForgePresent != null)
+			return isForgePresent;
+		try {
+			if (getVersion() == MinecraftVersion.MC1_7_R4)
+				Class.forName("cpw.mods.fml.common.Loader");
+			else
+				Class.forName("net.minecraftforge.fml.common.Loader");
+
+			isForgePresent = true;
+		} catch (final Exception ex) {
+			isForgePresent = false;
+		}
+		return isForgePresent;
 	}
 }
