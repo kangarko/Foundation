@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 
 /**
  * Utility class for translating NBTApi calls to reflections into NMS code All
- * methods are allowed to throw {@link FoException}
+ * methods are allowed to throw {@link NbtApiException}
  *
  * @author tr7zw
  *
@@ -27,7 +27,6 @@ import com.google.gson.Gson;
 public class NBTReflectionUtil {
 
 	private static final Gson gson = new Gson();
-
 	private static Field field_unhandledTags = null;
 
 	static {
@@ -168,6 +167,7 @@ public class NBTReflectionUtil {
 	 * @param meta ItemMeta from which tags should be retrieved
 	 * @return Map containing unhandled (custom) NBT tags
 	 */
+
 	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
 		try {
 			return (Map<String, Object>) field_unhandledTags.get(meta);
@@ -427,6 +427,7 @@ public class NBTReflectionUtil {
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalide type
 	 */
+
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null)
@@ -503,10 +504,8 @@ public class NBTReflectionUtil {
 	 */
 	public static void setObject(NBTCompound comp, String key, Object value) {
 		try {
-			final String json = getJsonString(value);
-
+			final String json = getString(value);
 			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
-
 		} catch (final Exception e) {
 			throw new FoException("Exception while setting the Object '" + value + "'!", e);
 		}
@@ -522,40 +521,9 @@ public class NBTReflectionUtil {
 	 */
 	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
 		final String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
-
 		if (json == null)
 			return null;
-
 		return deserializeJson(json, type);
-	}
-
-	/**
-	 * Turns Objects into Json Strings
-	 *
-	 * @param obj
-	 * @return Json, representing the Object
-	 */
-	public static String getJsonString(Object obj) {
-		return gson.toJson(obj);
-	}
-
-	/**
-	 * Creates an Object of the given type using the Json String
-	 *
-	 * @param json
-	 * @param type
-	 * @return Object that got created, or null if the json is null
-	 */
-	public static <T> T deserializeJson(String json, Class<T> type) {
-		try {
-			if (json == null)
-				return null;
-
-			final T obj = gson.fromJson(json, type);
-			return type.cast(obj);
-		} catch (final Exception ex) {
-			throw new FoException("Error while converting json to " + type.getName(), ex);
-		}
 	}
 
 	/**
@@ -581,6 +549,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
+
 	public static Set<String> getKeys(NBTCompound comp) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null)
@@ -630,6 +599,35 @@ public class NBTReflectionUtil {
 			throw new FoException("The Compound wasn't able to be linked back to the root!");
 		final Object workingtag = gettoCompount(rootnbttag, comp);
 		return type.run(workingtag, key);
+	}
+
+	/**
+	 * Turns Objects into Json Strings
+	 *
+	 * @param obj
+	 * @return Json, representing the Object
+	 */
+	public static String getString(Object obj) {
+		return gson.toJson(obj);
+	}
+
+	/**
+	 * Creates an Object of the given type using the Json String
+	 *
+	 * @param json
+	 * @param type
+	 * @return Object that got created, or null if the json is null
+	 */
+	public static <T> T deserializeJson(String json, Class<T> type) {
+		try {
+			if (json == null)
+				return null;
+
+			final T obj = gson.fromJson(json, type);
+			return type.cast(obj);
+		} catch (final Exception ex) {
+			throw new FoException(ex, "Error while converting json to " + type.getName());
+		}
 	}
 
 }

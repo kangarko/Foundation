@@ -54,7 +54,9 @@ enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()))
+		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
+			return;
+		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
 		this.enabled = true;
 		try {
@@ -62,12 +64,14 @@ enum ClassWrapper {
 				this.clazz = Class.forName(mojangMap + "." + clazzName);
 			else if (packageId == PackageWrapper.NONE)
 				this.clazz = Class.forName(clazzName);
+			else if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4 && Forge1710Mappings.getClassMappings().get(this.name()) != null)
+				this.clazz = Class.forName(clazzName = Forge1710Mappings.getClassMappings().get(this.name()));
 			else {
 				final String version = MinecraftVersion.getVersion().getPackageName();
 				this.clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "[NBT-API] Error while trying to resolve the class '" + clazzName + "'!");
+			Common.error(ex, "[Foundation NBT API] Error while trying to resolve the class '" + clazzName + "'!");
 		}
 	}
 

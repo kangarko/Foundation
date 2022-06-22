@@ -6,8 +6,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.exception.FoException;
 
 /**
@@ -127,7 +127,9 @@ enum ReflectionMethod {
 	ReflectionMethod(ClassWrapper targetClass, Class<?>[] args, MinecraftVersion addedSince, MinecraftVersion removedAfter, Since... methodnames) {
 		this.removedAfter = removedAfter;
 		this.parentClassWrapper = targetClass;
-		if (!MinecraftVersion.isAtLeastVersion(addedSince) || (this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter)))
+		//Special Case for Modded 1.7.10
+		final boolean specialCase = (MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE") && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4); //COMPOUND_MERGE is only present on Crucible, not on vanilla 1.7.10
+		if (!specialCase && (!MinecraftVersion.isAtLeastVersion(addedSince) || (this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter))))
 			return;
 		this.compatible = true;
 		final MinecraftVersion server = MinecraftVersion.getVersion();
@@ -137,15 +139,15 @@ enum ReflectionMethod {
 				target = s;
 		this.targetVersion = target;
 		String targetMethodName = this.targetVersion.name;
-
 		try {
-			if (this.targetVersion.version.isMojangMapping())
+			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
+				targetMethodName = Forge1710Mappings.getMethodMapping().getOrDefault(this.name(), targetMethodName);
+			else if (this.targetVersion.version.isMojangMapping())
 				targetMethodName = MojangToMapping.getMapping().getOrDefault(targetClass.getMojangName() + "#" + this.targetVersion.name, "Unmapped" + this.targetVersion.name);
 			this.method = targetClass.getClazz().getDeclaredMethod(targetMethodName, args);
 			this.method.setAccessible(true);
 			this.loaded = true;
 			this.methodName = this.targetVersion.name;
-
 		} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
 			try {
 				if (this.targetVersion.version.isMojangMapping())
@@ -154,9 +156,8 @@ enum ReflectionMethod {
 				this.method.setAccessible(true);
 				this.loaded = true;
 				this.methodName = this.targetVersion.name;
-
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				Bukkit.getLogger().info("[NBT-API] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
+				Common.error(ex, "[Foundation NBT API] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this); //NOSONAR This gets loaded before the logger is loaded
 			}
 		}
 	}

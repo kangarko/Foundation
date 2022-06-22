@@ -49,7 +49,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
-	 * {@link FoException} in case something goes wrong.
+	 * {@link NbtApiException} in case something goes wrong.
 	 *
 	 * @param nbtString
 	 */
