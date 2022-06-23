@@ -65,7 +65,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 
 		// If the default perm was not changed, improve it
 		if (this.getRawPermission().equals(getDefaultPermission()))
-			if (SimplePlugin.getInstance().getMainCommand() != null && SimplePlugin.getInstance().getMainCommand().getLabel().equals(this.getMainLabel()))
+			if (SimplePlugin.getInstance().getMainCommand() != null && SimplePlugin.getInstance().getMainCommand().getLabel().equals(this.getLabel()))
 				this.setPermission(this.getRawPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
 
 			else
