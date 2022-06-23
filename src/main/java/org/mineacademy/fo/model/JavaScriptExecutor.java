@@ -164,7 +164,17 @@ public final class JavaScriptExecutor {
 					javascript = javascript.replace(matcher.group(), "false");
 			}
 
-			final Object result = engine.eval(javascript);
+			Object result = engine.eval(javascript);
+
+			if (result instanceof String) {
+				String resultString = Common.stripColors((String) result).toLowerCase();
+
+				if (resultString.equals("true") || resultString.equals("yes"))
+					result = true;
+
+				else if (resultString.equals("false") || resultString.equals("no"))
+					result = false;
+			}
 
 			if (sender instanceof Player) {
 				if (cached == null)
