@@ -77,12 +77,17 @@ public abstract class SimpleCommand extends Command {
 
 	/**
 	 * The command label, eg. boss for /boss
-	 * <p>
+	 */
+	private final String label;
+
+	/**
+	 * The command label used at last command execution
+	 *
 	 * This variable is updated dynamically when the command is run with the
 	 * last known version of the label, e.g. /boss or /b will set it to boss or b
 	 * respectively
 	 */
-	private String label;
+	private String currentLabel;
 
 	/**
 	 * Has this command been already registered?
@@ -181,6 +186,7 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkBoolean(!(this instanceof CommandExecutor), "Please do not write 'implements CommandExecutor' for /" + super.getLabel() + " cmd, we already have a listener there");
 		Valid.checkBoolean(!(this instanceof TabCompleter), "Please do not write 'implements TabCompleter' for /" + super.getLabel() + " cmd, simply override tabComplete method");
 
+		this.label = label;
 		this.setLabel(label);
 
 		if (aliases != null)
@@ -322,7 +328,7 @@ public abstract class SimpleCommand extends Command {
 
 		// Set variables to re-use later
 		this.sender = sender;
-		this.label = label;
+		this.currentLabel = label;
 		this.args = args;
 
 		// Set tell prefix only if the parent setting was on
@@ -376,8 +382,8 @@ public abstract class SimpleCommand extends Command {
 					}
 
 					paginator
-							.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
-							.setPages(Common.toArray(pages));
+					.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
+					.setPages(Common.toArray(pages));
 
 					// Force sending on the main thread
 					Common.runLater(() -> paginator.send(sender));
@@ -1269,7 +1275,7 @@ public abstract class SimpleCommand extends Command {
 	@Override
 	public final List<String> tabComplete(final CommandSender sender, final String alias, final String[] args) throws IllegalArgumentException {
 		this.sender = sender;
-		this.label = alias;
+		this.currentLabel = alias;
 		this.args = args;
 
 		if (this.hasPerm(this.getPermission())) {
@@ -1532,7 +1538,7 @@ public abstract class SimpleCommand extends Command {
 	public final String getUsage() {
 		final String bukkitUsage = super.getUsage();
 
-		return bukkitUsage.equals("/" + this.getMainLabel()) ? "" : bukkitUsage;
+		return bukkitUsage.equals("/" + this.getCurrentLabel()) ? "" : bukkitUsage;
 	}
 
 	/**
@@ -1544,22 +1550,22 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Get the label given when the command was created or last updated with {@link #setLabel(String)}
-	 *
-	 * @return
-	 */
-	public final String getMainLabel() {
-		return super.getLabel();
-	}
-
-	/**
 	 * Updates the label of this command
 	 */
 	@Override
 	public final boolean setLabel(final String label) {
-		this.label = label;
+		this.currentLabel = label;
 
 		return super.setLabel(label);
+	}
+
+	/**
+	 * Get the label given when the command was created or last updated
+	 *
+	 * @return
+	 */
+	public final String getCurrentLabel() {
+		return Common.getOrDefault(this.currentLabel, this.label);
 	}
 
 	/**
