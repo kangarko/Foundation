@@ -138,7 +138,7 @@ public final class BossBarInternals implements Listener {
 
 		final NMSDragon oldDragon = this.getDragon(player, "");
 
-		if (oldDragon instanceof NMSDragon_v1_9)
+		if (oldDragon instanceof NMSDragon_v1_9 || oldDragon == null)
 			return;
 
 		Common.runLater(2, () -> {
