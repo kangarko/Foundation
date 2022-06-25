@@ -229,8 +229,20 @@ public final class ChatUtil {
 	 * @param message  the String to capitalize, may be null
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
-	public static String capitalizeFully(String message) {
-		return capitalize(message == null ? null : message.toLowerCase());
+	public static String capitalizeFully(String str) {
+		return capitalizeFully(str, (char[]) null);
+	}
+
+	private static String capitalizeFully(String str, char[] delimiters) {
+		int delimLen = delimiters == null ? -1 : delimiters.length;
+
+		if (str != null && str.length() != 0 && delimLen != 0) {
+			str = str.toLowerCase();
+
+			return capitalize(str, delimiters);
+		}
+
+		return str;
 	}
 
 	/**
@@ -253,42 +265,51 @@ public final class ChatUtil {
 	 * @param message  the String to capitalize, may be null
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
-	public static String capitalize(String message) {
-		if (message == null || message.length() == 0)
-			return message;
+	public static String capitalize(String str) {
+		return capitalize(str, (char[]) null);
+	}
 
-		final int length = message.length();
-		final StringBuffer buffer = new StringBuffer(length);
+	private static String capitalize(String str, char[] delimiters) {
+		int delimLen = delimiters == null ? -1 : delimiters.length;
+		if (str != null && str.length() != 0 && delimLen != 0) {
+			int strLen = str.length();
+			StringBuffer buffer = new StringBuffer(strLen);
+			boolean capitalizeNext = true;
 
-		boolean next = true;
-		boolean skipColor = false;
+			for (int i = 0; i < strLen; ++i) {
+				char ch = str.charAt(i);
 
-		for (int i = 0; i < length; i++) {
-			final char letter = message.charAt(i);
+				if (isDelimiter(ch, delimiters)) {
+					buffer.append(ch);
 
-			if (next && !skipColor) {
+					capitalizeNext = true;
 
-				if ((letter == ChatColor.COLOR_CHAR || letter == '&') && i + 1 < message.length()) {
-					final char evenNext = message.charAt(i + 1);
+				} else if (capitalizeNext) {
+					buffer.append(Character.toTitleCase(ch));
 
-					if (Common.hasColors("&" + evenNext)) {
-						buffer.append(letter);
+					capitalizeNext = false;
+				} else
+					buffer.append(ch);
 
-						skipColor = true;
-						continue;
-					}
-				}
+			}
 
-				buffer.append(Character.toTitleCase(letter));
-				next = false;
-
-			} else
-				buffer.append(letter);
-
-			skipColor = false;
+			return buffer.toString();
 		}
 
-		return buffer.toString();
+		return str;
+	}
+
+	private static boolean isDelimiter(char ch, char[] delimiters) {
+		if (delimiters == null)
+			return Character.isWhitespace(ch);
+
+		int i = 0;
+
+		for (int isize = delimiters.length; i < isize; ++i)
+			if (ch == delimiters[i])
+				return true;
+
+		return false;
 	}
 
 	/**
