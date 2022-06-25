@@ -367,7 +367,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			JavaScriptExecutor.run("");
 
 			// Finish off by starting metrics (currently bStats)
-			if (this.getMetricsPluginId() != -1)
+			if (this.areMetricsEnabled())
 				new Metrics(this, this.getMetricsPluginId());
 
 			// Set the logging and tell prefix
@@ -1106,6 +1106,21 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public int getMetricsPluginId() {
 		return -1;
+	}
+
+	/**
+	 * If you want to use bStats.org metrics system,
+	 * returns true to enable or false to disable.
+	 * <p>
+	 *
+	 *
+	 * @return
+	 */
+	public Boolean areMetricsEnabled() {
+		if (getMetricsPluginId() == -1)
+			return false;
+
+		return true;
 	}
 
 	/**
