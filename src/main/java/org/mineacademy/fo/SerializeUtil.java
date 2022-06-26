@@ -308,7 +308,7 @@ public final class SerializeUtil {
 
 							for (final Object listValue : (List<?>) value)
 								if (listValue == null || listValue instanceof Boolean || listValue instanceof Character || listValue instanceof String || listValue instanceof Number
-										|| listValue instanceof JSONArray || listValue instanceof JSONObject)
+								|| listValue instanceof JSONArray || listValue instanceof JSONObject)
 									array.add(listValue);
 
 								else
@@ -618,7 +618,7 @@ public final class SerializeUtil {
 					return ReflectionUtil.invokeStatic(deserialize, mode == Mode.JSON ? SerializedMap.fromJson(object.toString()) : SerializedMap.of(object));
 
 				throw new SerializeFailedException("Unable to deserialize " + classOf.getSimpleName()
-						+ ", please write 'public static deserialize(SerializedMap map) or deserialize(SerializedMap map, X arg1, Y arg2, etc.) method to deserialize: " + object);
+				+ ", please write 'public static deserialize(SerializedMap map) or deserialize(SerializedMap map, X arg1, Y arg2, etc.) method to deserialize: " + object);
 			}
 
 			// Step 3 - Search for "getByName" method used by us or some Bukkit classes such as Enchantment
