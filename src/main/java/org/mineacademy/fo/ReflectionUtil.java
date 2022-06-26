@@ -428,8 +428,11 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invokeStatic(final Method method, final Object... params) {
+	public static <T> T invokeStatic(@NonNull final Method method, final Object... params) {
 		try {
+			Valid.checkBoolean(Modifier.isStatic(method.getModifiers()),
+					"Method " + method.getName() + " must be static to be invoked through invokeStatic with params: " + Common.join(params));
+
 			return (T) method.invoke(null, params);
 
 		} catch (final ReflectiveOperationException ex) {
