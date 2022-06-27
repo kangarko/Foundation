@@ -410,7 +410,7 @@ public final class BlockUtil {
 		final World world = location.getWorld();
 
 		final int chunkX = location.getBlockX() >> 4;
-		final int chunkZ = location.getBlockZ() >> 4;
+				final int chunkZ = location.getBlockZ() >> 4;
 
 		for (int x = chunkX - radius; x <= chunkX + radius; ++x)
 			for (int z = chunkZ - radius; z <= chunkZ + radius; ++z)
@@ -652,7 +652,9 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
-		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
+		int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+
+		for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
 			if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
@@ -660,7 +662,52 @@ public final class BlockUtil {
 		}
 
 		return -1;
+	}
 
+	/**
+	 * Scans the coordinates to find the highest Y non-air coordinate that matches
+	 * the given predicate. For nether worlds, we recommend you see {@link #findHighestNetherAirBlock(World, int, int)}
+	 *
+	 * @param location
+	 * @param predicate
+	 * @return
+	 */
+	public static int findAirBlock(final Location location, final boolean topDown, final Predicate<Material> predicate) {
+		return findAirBlock(location.getWorld(), location.getBlockX(), location.getBlockZ(), topDown, predicate);
+	}
+
+	/**
+	 * Scans the coordinates to find the highest Y non-air coordinate that matches
+	 * the given predicate. For nether worlds, we recommend you see {@link #findHighestNetherAirBlock(World, int, int)}
+	 *
+	 * @param world
+	 * @param x
+	 * @param z
+	 * @param topDown
+	 * @param predicate
+	 * @return
+	 */
+	public static int findAirBlock(final World world, final int x, final int z, final boolean topDown, final Predicate<Material> predicate) {
+		int minHeight = (MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0) + 1;
+
+		if (topDown)
+			for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
+				final Block block = world.getBlockAt(x, y, z);
+
+				if (block != null && !CompMaterial.isAir(block) && predicate.test(block.getType()))
+					return y + 1;
+			}
+		else
+			for (int y = minHeight; y < world.getMaxHeight() - 1; y++) {
+				final Block block = world.getBlockAt(x, y, z);
+				final Block blockAbove = block.getRelative(BlockFace.UP);
+				final Block blockTwoAbove = blockAbove.getRelative(BlockFace.UP);
+
+				if (block != null && CompMaterial.isAir(blockAbove) && CompMaterial.isAir(blockTwoAbove) && predicate.test(block.getType()))
+					return y + 1;
+			}
+
+		return -1;
 	}
 
 	/**
