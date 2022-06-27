@@ -1,11 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.Valid;
 
@@ -132,32 +126,33 @@ public final class RangedValue {
 	 * Create a {@link RangedValue} from a line
 	 * Example: 1-10
 	 * 5 - 60
+	 * -5 - 5
+	 * -5 - -2
 	 * 4
-	 * <p>
-	 * or
-	 * <p>
-	 * 10 seconds - 20 minutes (will be converted to seconds)
 	 * @param line
 	 * @return
 	 */
 	public static RangedValue parse(String line) {
 
-		String parts[];
+		line = line.replace(" ", "").trim();
 
-		// Support negative values
-		if (line.split("\\-").length != 2) {
-			final Pattern pattern = Pattern.compile("(-|)[0-9]{1,}");
-			final Matcher matcher = pattern.matcher(line);
-			final List<String> found = new ArrayList<>();
+		boolean firstNegative = false;
 
-			while (matcher.find())
-				found.add(matcher.group());
+		if (line.startsWith("-")) {
+			firstNegative = true;
 
-			parts = Common.toArray(found);
+			line = line.substring(1);
 		}
 
+		String[] parts;
+		String[] split = line.split("\\-");
+
+		boolean secondNegative = split.length == 3;
+
+		if (split.length == 1)
+			parts = new String[] { (firstNegative ? "-" : "") + line };
 		else
-			parts = line.startsWith("-") ? new String[] { line } : line.split("\\-");
+			parts = new String[] { (firstNegative ? "-" : "") + split[0], (secondNegative ? "-" + split[2] : split[1]) };
 
 		Valid.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
 
@@ -177,11 +172,11 @@ public final class RangedValue {
 		// Check if 1<2
 		if (first.contains("."))
 			Valid.checkBoolean(firstNumber.longValue() <= secondNumber.longValue(),
-					"First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
+			"First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
 
 		else
 			Valid.checkBoolean(firstNumber.doubleValue() <= secondNumber.doubleValue(),
-					"First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
+			"First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
 
 		return new RangedValue(firstNumber, secondNumber);
 	}
