@@ -44,6 +44,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -68,6 +69,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -344,7 +346,7 @@ public final class Remain {
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
 								" &cinclude &elibraries required&c for this plugin to\n" +
 								" &crun. Install the following plugin for compatibility:\n" +
-								" &fhttps://mineacademy.org/plugins/#misc");
+						" &fhttps://mineacademy.org/plugins/#misc");
 			}
 
 			try {
@@ -479,20 +481,38 @@ public final class Remain {
 	 * @param packet the packet
 	 */
 	public static void sendPacket(final Player player, final Object packet) {
-		if (getHandle == null || fieldPlayerConnection == null || sendPacket == null) {
-			Common.log("Cannot send packet " + packet.getClass().getSimpleName() + " on your server sofware (known to be broken on Cauldron).");
+		try {
+			final Object playerConnection = getPlayerConnection(player);
 
-			return;
+			if (playerConnection != null)
+				sendPacket.invoke(playerConnection, packet);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new ReflectionException(ex, "Error sending packet " + packet.getClass() + " to player " + player.getName());
+		}
+	}
+
+	/**
+	 * Return the player connection field in EntityPlayer in NMS
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static Object getPlayerConnection(Player player) {
+		if (getHandle == null || fieldPlayerConnection == null || sendPacket == null) {
+			Common.log("Cannot get player connection on your server sofware (known to be broken on Cauldron).");
+
+			return null;
 		}
 
 		try {
 			final Object handle = getHandle.invoke(player);
 			final Object playerConnection = fieldPlayerConnection.get(handle);
 
-			sendPacket.invoke(playerConnection, packet);
+			return playerConnection;
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new ReflectionException(ex, "Error sending packet " + packet.getClass() + " to player " + player.getName());
+			throw new ReflectionException(ex, "Error getting player connection for player " + player.getName());
 		}
 	}
 
