@@ -619,6 +619,11 @@ public class SimpleDatabase {
 		if (sqls.size() == 0)
 			return;
 
+		this.checkEstablished();
+
+		if (!this.isConnected())
+			this.connectUsingLastCredentials();
+
 		try {
 			final Statement batchStatement = this.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			final int processedCount = sqls.size();
@@ -642,7 +647,7 @@ public class SimpleDatabase {
 				@Override
 				public void run() {
 					if (SimpleDatabase.this.batchUpdateGoingOn)
-						Common.log("Database batch update is still processing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER.");
+						Common.log("Database batch update is still processing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER. (Total size: " + sqls.size() + " queries)");
 					else
 						this.cancel();
 				}
@@ -676,6 +681,7 @@ public class SimpleDatabase {
 		} finally {
 			try {
 				this.getConnection().setAutoCommit(true);
+				this.close();
 
 			} catch (final SQLException ex) {
 				ex.printStackTrace();
