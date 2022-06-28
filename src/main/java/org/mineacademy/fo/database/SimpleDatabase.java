@@ -681,7 +681,6 @@ public class SimpleDatabase {
 		} finally {
 			try {
 				this.getConnection().setAutoCommit(true);
-				this.close();
 
 			} catch (final SQLException ex) {
 				ex.printStackTrace();
