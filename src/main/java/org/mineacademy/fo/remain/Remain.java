@@ -1503,6 +1503,7 @@ public final class Remain {
 
 			if (MinecraftVersion.atLeast(V.v1_17) || MinecraftVersion.atLeast(V.v1_18)) {
 				final boolean is1_18 = MinecraftVersion.atLeast(V.v1_18);
+				final boolean is1_19 = MinecraftVersion.atLeast(V.v1_19);
 
 				final Object nmsPlayer = Remain.getHandleEntity(player);
 				final Object chatComponent = toIChatBaseComponentPlain(ChatColor.translateAlternateColorCodes('&', title));
@@ -1538,8 +1539,9 @@ public final class Remain {
 						container.getClass(),
 						ReflectionUtil.lookupClass("net.minecraft.network.chat.IChatBaseComponent"));
 
+
 				final String version = MinecraftVersion.getServerVersion(); // special fix for MC 1.18.2
-				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, is1_18 ? version.contains("R2") ? "bV" : "bW" : "bV");
+				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, is1_19 ? "bU" : is1_18 ? version.contains("R2") ? "bV" : "bW" : "bV");
 				final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
 
 				final Method method = is1_18 ? ReflectionUtil.getMethod(nmsPlayer.getClass(), "a", ReflectionUtil.lookupClass("net.minecraft.world.inventory.Container")) : null;
