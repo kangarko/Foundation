@@ -509,7 +509,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
-		@Subscribe(priority = ListenerPriority.HIGHEST)
+		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceived(DiscordGuildMessagePreProcessEvent event) {
 			for (final DiscordListener listener : registeredListeners)
 				try {
@@ -532,7 +532,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
-		@Subscribe(priority = ListenerPriority.HIGHEST)
+		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
 			for (final DiscordListener listener : registeredListeners)
 				try {
@@ -556,7 +556,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
-		@Subscribe(priority = ListenerPriority.HIGHEST)
+		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageSend(GameChatMessagePreProcessEvent event) {
 			for (final DiscordListener listener : registeredListeners)
 				try {
