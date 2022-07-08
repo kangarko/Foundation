@@ -2179,6 +2179,7 @@ class PlaceholderAPIHook {
 	}
 
 	private String setPlaceholders(final OfflinePlayer player, String text) {
+		final String oldText = text;
 		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
 
 		if (hooks.isEmpty())
@@ -2226,6 +2227,7 @@ class PlaceholderAPIHook {
 							"our end, please contact the expansion author.",
 							"",
 							"Variable: " + identifier,
+							"Text: " + oldText,
 							"Player: " + (player == null ? "none" : player.getName()));
 
 					currentThread.stop();
@@ -3362,16 +3364,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
