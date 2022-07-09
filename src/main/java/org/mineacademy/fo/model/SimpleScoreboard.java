@@ -25,8 +25,9 @@ import lombok.NonNull;
 
 /**
  * A simple way of rendering custom scoreboards for players with close to no flickering.
+ * Using &c takes 2 characters. Since the text gets split in 3 parts, with colors = (total - (3 * 2)) = (total - 6)
  * Maximum line lengths:
- *  - 1.8: 42 with colors, 48 without colors
+ *  - 1.8: 66 with colors, 70 without colors
  *  - 1.13: 98 with colors, 104 without colors
  *  - 1.18: 32889 with colors, 32895 without colors
  * Maximum title lengths:
@@ -167,6 +168,7 @@ public class SimpleScoreboard {
         final int maxTitleLength = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13) ? 128 : 32;
         final String colorizedTitle = Common.colorize(title);
         this.title = colorizedTitle.length() > maxTitleLength ? colorizedTitle.substring(0, maxTitleLength) : colorizedTitle;
+        this.title = this.title.endsWith(COLOR_CHAR) ? this.title.substring(0, this.title.length() - 1) : this.title;
     }
 
     public List<String> getRows() {
@@ -500,8 +502,8 @@ public class SimpleScoreboard {
             final String text = textReplaceFunction.apply(this.text);
             final boolean mc1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
             final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
-            final int[] splitPoints = mc1_13 ? new int[]{64, mc1_18 ? 32831 : 40} : new int[]{16, 32};
-            final int length = mc1_18 ? 32895 : (mc1_13 ? 168 : 48);
+            final int[] splitPoints = mc1_13 ? new int[]{64, mc1_18 ? 32831 : 104} : new int[]{16, 56};
+            final int length = mc1_18 ? 32895 : (mc1_13 ? 168 : 70);
             final List<String> copy = copyColors(text, length, splitPoints);
 
             line[0] = Common.colorize(copy.isEmpty() ? "" : copy.get(0)); //Team Prefix
