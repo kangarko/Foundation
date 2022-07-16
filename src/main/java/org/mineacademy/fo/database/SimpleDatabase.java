@@ -60,6 +60,11 @@ public class SimpleDatabase {
 	private final StrictMap<String, String> sqlVariables = new StrictMap<>();
 
 	/**
+	 * The raw URL from which the connection was created
+	 */
+	private String url;
+
+	/**
 	 * The last credentials from the connect function, or null if never called
 	 */
 	private LastCredentials lastCredentials;
@@ -160,6 +165,7 @@ public class SimpleDatabase {
 	 */
 	public final void connect(final String url, final String user, final String password, final String table) {
 
+		this.url = url;
 		this.connecting = true;
 
 		try {
@@ -364,7 +370,9 @@ public class SimpleDatabase {
 			columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
 
 		try {
-			this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;");
+			boolean isSQLite = this.url != null && this.url.startsWith("jdbc:sqlite");
+
+			this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ")" + (isSQLite ? "" : " DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") +";");
 
 		} catch (final Throwable t) {
 			if (t.toString().contains("Unknown collation")) {
