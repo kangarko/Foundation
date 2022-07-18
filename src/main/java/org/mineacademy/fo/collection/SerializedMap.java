@@ -42,11 +42,6 @@ import lombok.NonNull;
 public final class SerializedMap extends StrictCollection implements Iterable<Map.Entry<String, Object>> {
 
 	/**
-	 * A fallback Json parser
-	 */
-	private final static JSONParser jsonSimple = new JSONParser();
-
-	/**
 	 * The internal map with values
 	 */
 	private final StrictMap<String, Object> map = new StrictMap<>();
@@ -974,7 +969,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 				final Object value = SerializeUtil.serialize(entry.getValue());
 
 				if (key != null && value != null)
-					jsonMap.put(key, value);
+					jsonMap.put(key.toString(), value);
 			}
 
 			return jsonMap.toString();
@@ -1208,24 +1203,22 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 */
 	public static SerializedMap fromJson(@NonNull final String json) {
 
-		synchronized (jsonSimple) {
-			if (json.isEmpty() || "[]".equals(json) || "{}".equals(json))
-				return new SerializedMap(true);
+		if (json.isEmpty() || "[]".equals(json) || "{}".equals(json))
+			return new SerializedMap(true);
 
-			// Fallback to simple
-			try {
-				final Object parsed = jsonSimple.parse(json);
+		// Fallback to simple
+		try {
+			final Object parsed = JSONParser.deserialize(json);
 
-				if (parsed instanceof JSONObject)
-					return of(parsed, true);
+			if (parsed instanceof JSONObject)
+				return of(parsed, true);
 
-				throw new FoException("Unable to deserialize " + (parsed != null ? parsed.getClass() : "unknown class") + " from json: " + json);
+			throw new FoException("Unable to deserialize " + (parsed != null ? parsed.getClass() : "unknown class") + " from json: " + json);
 
-			} catch (final Throwable secondThrowable) {
-				Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
+		} catch (final Throwable secondThrowable) {
+			Common.throwError(secondThrowable, "Failed to parse JSON from " + json);
 
-				return null;
-			}
+			return null;
 		}
 	}
 }

@@ -37,8 +37,8 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.jsonsimple.JSONArray;
 import org.mineacademy.fo.jsonsimple.JSONObject;
-import org.mineacademy.fo.jsonsimple.JSONParseException;
 import org.mineacademy.fo.jsonsimple.JSONParser;
+import org.mineacademy.fo.jsonsimple.JSONParseException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -247,26 +247,24 @@ public final class SerializeUtil {
 					for (Object element : object instanceof IsInList ? ((IsInList<?>) object).getList() : (Iterable<?>) object) {
 						element = serialize(element);
 
-						try {
-							if (element != null)
-								jsonList.add(JSONParser.getInstance().parse(element.toString()));
-
-						} catch (final ClassCastException | JSONParseException e) {
-							jsonList.add(element);
-						}
+						if (element != null)
+							try {
+								jsonList.add(JSONParser.deserialize(element.toString()));
+							} catch (final JSONParseException ex) {
+								Common.throwError(ex, "Failed to deserialize JSON from string: " + element);
+							}
 					}
 
 				else
 					for (Object element : (Object[]) object) {
 						element = serialize(element);
 
-						try {
-							if (element != null)
-								jsonList.add(JSONParser.getInstance().parse(element.toString()));
-
-						} catch (final JSONParseException e) {
-							jsonList.add(element);
-						}
+						if (element != null)
+							try {
+								jsonList.add(JSONParser.deserialize(element.toString()));
+							} catch (final JSONParseException ex) {
+								Common.throwError(ex, "Failed to deserialize JSON from string: " + element);
+							}
 					}
 
 				return jsonList;
@@ -303,10 +301,10 @@ public final class SerializeUtil {
 							else
 								throw new FoException("JSON requires List to only contain primitive types or strings, found " + listValue.getClass().getSimpleName() + ": " + listValue);
 
-						json.put(key == null ? null : key, array);
+						json.put(key == null ? null : (String) key, array);
 
 					} else
-						json.put(key == null ? null : key, value == null ? null : value);
+						json.put(key == null ? null : (String) key, value == null ? null : value);
 				}
 
 				return json;

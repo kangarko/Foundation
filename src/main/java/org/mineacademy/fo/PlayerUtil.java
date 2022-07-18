@@ -224,7 +224,7 @@ public final class PlayerUtil {
 
 		if (statFile.exists())
 			try {
-				final JSONObject json = (JSONObject) JSONParser.getInstance().parse(new FileReader(statFile));
+				final JSONObject json = (JSONObject) JSONParser.deserialize(new FileReader(statFile));
 				final String name = Remain.getNMSStatisticName(statistic, material, entityType);
 
 				JSONObject section = json.getObject("stats");

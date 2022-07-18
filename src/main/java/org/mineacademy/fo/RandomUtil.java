@@ -253,6 +253,30 @@ public final class RandomUtil {
 	}
 
 	/**
+	 * Returns a random location, between the min and the max radius:
+	 * Example: Min radius is 500 and max is 2000, then we return locations around 500-2000 blocks away from the origin
+	 *
+	 * @param origin
+	 * @param minRadius
+	 * @param maxRadius
+	 * @param is3D true for sphere, false for cylinder search
+	 * @return
+	 */
+	public static Location nextLocation(final Location origin, final double minRadius, final double maxRadius, final boolean is3D) {
+		Valid.checkBoolean(maxRadius > 0 && minRadius > 0, "Max and min radius must be over 0");
+		Valid.checkBoolean(maxRadius > minRadius, "Max radius must be greater than min radius");
+
+		final double randomRadius = minRadius + (random.nextDouble() * (maxRadius - minRadius));
+		final double theta = Math.toRadians(random.nextDouble() * 360);
+		final double phi = Math.toRadians(random.nextDouble() * 180 - 90);
+
+		final double x = randomRadius * Math.cos(theta) * Math.sin(phi);
+		final double z = randomRadius * Math.cos(phi);
+
+		return origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
+	}
+
+	/**
 	 * Return a random x location within that chunk
 	 *
 	 * @param chunk
