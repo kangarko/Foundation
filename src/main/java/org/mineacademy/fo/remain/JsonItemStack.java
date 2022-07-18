@@ -336,11 +336,10 @@ public class JsonItemStack {
 		if (string == null || string.isEmpty() || "{}".equals(string))
 			return null;
 
-		final JSONParser parser = JSONParser.getInstance();
 		Object element;
 
 		try {
-			element = parser.parse(string);
+			element = JSONParser.deserialize(string);
 
 		} catch (final JSONParseException ex) {
 			Remain.sneaky(ex);
