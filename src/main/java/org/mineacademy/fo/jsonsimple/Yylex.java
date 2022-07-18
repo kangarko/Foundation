@@ -1,485 +1,398 @@
-/*
- *                                  Apache License
- *                            Version 2.0, January 2004
- *                         http://www.apache.org/licenses/
- *
- *    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
- *
- *    1. Definitions.
- *
- *       "License" shall mean the terms and conditions for use, reproduction,
- *       and distribution as defined by Sections 1 through 9 of this document.
- *
- *       "Licensor" shall mean the copyright owner or entity authorized by
- *       the copyright owner that is granting the License.
- *
- *       "Legal Entity" shall mean the union of the acting entity and all
- *       other entities that control, are controlled by, or are under common
- *       control with that entity. For the purposes of this definition,
- *       "control" means (i) the power, direct or indirect, to cause the
- *       direction or management of such entity, whether by contract or
- *       otherwise, or (ii) ownership of fifty percent (50%) or more of the
- *       outstanding shares, or (iii) beneficial ownership of such entity.
- *
- *       "You" (or "Your") shall mean an individual or Legal Entity
- *       exercising permissions granted by this License.
- *
- *       "Source" form shall mean the preferred form for making modifications,
- *       including but not limited to software source code, documentation
- *       source, and configuration files.
- *
- *       "Object" form shall mean any form resulting from mechanical
- *       transformation or translation of a Source form, including but
- *       not limited to compiled object code, generated documentation,
- *       and conversions to other media types.
- *
- *       "Work" shall mean the work of authorship, whether in Source or
- *       Object form, made available under the License, as indicated by a
- *       copyright notice that is included in or attached to the work
- *       (an example is provided in the Appendix below).
- *
- *       "Derivative Works" shall mean any work, whether in Source or Object
- *       form, that is based on (or derived from) the Work and for which the
- *       editorial revisions, annotations, elaborations, or other modifications
- *       represent, as a whole, an original work of authorship. For the purposes
- *       of this License, Derivative Works shall not include works that remain
- *       separable from, or merely link (or bind by name) to the interfaces of,
- *       the Work and Derivative Works thereof.
- *
- *       "Contribution" shall mean any work of authorship, including
- *       the original version of the Work and any modifications or additions
- *       to that Work or Derivative Works thereof, that is intentionally
- *       submitted to Licensor for inclusion in the Work by the copyright owner
- *       or by an individual or Legal Entity authorized to submit on behalf of
- *       the copyright owner. For the purposes of this definition, "submitted"
- *       means any form of electronic, verbal, or written communication sent
- *       to the Licensor or its representatives, including but not limited to
- *       communication on electronic mailing lists, source code control systems,
- *       and issue tracking systems that are managed by, or on behalf of, the
- *       Licensor for the purpose of discussing and improving the Work, but
- *       excluding communication that is conspicuously marked or otherwise
- *       designated in writing by the copyright owner as "Not a Contribution."
- *
- *       "Contributor" shall mean Licensor and any individual or Legal Entity
- *       on behalf of whom a Contribution has been received by Licensor and
- *       subsequently incorporated within the Work.
- *
- *    2. Grant of Copyright License. Subject to the terms and conditions of
- *       this License, each Contributor hereby grants to You a perpetual,
- *       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
- *       copyright license to reproduce, prepare Derivative Works of,
- *       publicly display, publicly perform, sublicense, and distribute the
- *       Work and such Derivative Works in Source or Object form.
- *
- *    3. Grant of Patent License. Subject to the terms and conditions of
- *       this License, each Contributor hereby grants to You a perpetual,
- *       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
- *       (except as stated in this section) patent license to make, have made,
- *       use, offer to sell, sell, import, and otherwise transfer the Work,
- *       where such license applies only to those patent claims licensable
- *       by such Contributor that are necessarily infringed by their
- *       Contribution(s) alone or by combination of their Contribution(s)
- *       with the Work to which such Contribution(s) was submitted. If You
- *       institute patent litigation against any entity (including a
- *       cross-claim or counterclaim in a lawsuit) alleging that the Work
- *       or a Contribution incorporated within the Work constitutes direct
- *       or contributory patent infringement, then any patent licenses
- *       granted to You under this License for that Work shall terminate
- *       as of the date such litigation is filed.
- *
- *    4. Redistribution. You may reproduce and distribute copies of the
- *       Work or Derivative Works thereof in any medium, with or without
- *       modifications, and in Source or Object form, provided that You
- *       meet the following conditions:
- *
- *       (a) You must give any other recipients of the Work or
- *           Derivative Works a copy of this License; and
- *
- *       (b) You must cause any modified files to carry prominent notices
- *           stating that You changed the files; and
- *
- *       (c) You must retain, in the Source form of any Derivative Works
- *           that You distribute, all copyright, patent, trademark, and
- *           attribution notices from the Source form of the Work,
- *           excluding those notices that do not pertain to any part of
- *           the Derivative Works; and
- *
- *       (d) If the Work includes a "NOTICE" text file as part of its
- *           distribution, then any Derivative Works that You distribute must
- *           include a readable copy of the attribution notices contained
- *           within such NOTICE file, excluding those notices that do not
- *           pertain to any part of the Derivative Works, in at least one
- *           of the following places: within a NOTICE text file distributed
- *           as part of the Derivative Works; within the Source form or
- *           documentation, if provided along with the Derivative Works; or,
- *           within a display generated by the Derivative Works, if and
- *           wherever such third-party notices normally appear. The contents
- *           of the NOTICE file are for informational purposes only and
- *           do not modify the License. You may add Your own attribution
- *           notices within Derivative Works that You distribute, alongside
- *           or as an addendum to the NOTICE text from the Work, provided
- *           that such additional attribution notices cannot be construed
- *           as modifying the License.
- *
- *       You may add Your own copyright statement to Your modifications and
- *       may provide additional or different license terms and conditions
- *       for use, reproduction, or distribution of Your modifications, or
- *       for any such Derivative Works as a whole, provided Your use,
- *       reproduction, and distribution of the Work otherwise complies with
- *       the conditions stated in this License.
- *
- *    5. Submission of Contributions. Unless You explicitly state otherwise,
- *       any Contribution intentionally submitted for inclusion in the Work
- *       by You to the Licensor shall be under the terms and conditions of
- *       this License, without any additional terms or conditions.
- *       Notwithstanding the above, nothing herein shall supersede or modify
- *       the terms of any separate license agreement you may have executed
- *       with Licensor regarding such Contributions.
- *
- *    6. Trademarks. This License does not grant permission to use the trade
- *       names, trademarks, service marks, or product names of the Licensor,
- *       except as required for reasonable and customary use in describing the
- *       origin of the Work and reproducing the content of the NOTICE file.
- *
- *    7. Disclaimer of Warranty. Unless required by applicable law or
- *       agreed to in writing, Licensor provides the Work (and each
- *       Contributor provides its Contributions) on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *       implied, including, without limitation, any warranties or conditions
- *       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
- *       PARTICULAR PURPOSE. You are solely responsible for determining the
- *       appropriateness of using or redistributing the Work and assume any
- *       risks associated with Your exercise of permissions under this License.
- *
- *    8. Limitation of Liability. In no event and under no legal theory,
- *       whether in tort (including negligence), contract, or otherwise,
- *       unless required by applicable law (such as deliberate and grossly
- *       negligent acts) or agreed to in writing, shall any Contributor be
- *       liable to You for damages, including any direct, indirect, special,
- *       incidental, or consequential damages of any character arising as a
- *       result of this License or out of the use or inability to use the
- *       Work (including but not limited to damages for loss of goodwill,
- *       work stoppage, computer failure or malfunction, or any and all
- *       other commercial damages or losses), even if such Contributor
- *       has been advised of the possibility of such damages.
- *
- *    9. Accepting Warranty or Additional Liability. While redistributing
- *       the Work or Derivative Works thereof, You may choose to offer,
- *       and charge a fee for, acceptance of support, warranty, indemnity,
- *       or other liability obligations and/or rights consistent with this
- *       License. However, in accepting such obligations, You may act only
- *       on Your own behalf and on Your sole responsibility, not on behalf
- *       of any other Contributor, and only if You agree to indemnify,
- *       defend, and hold each Contributor harmless for any liability
- *       incurred by, or claims asserted against, such Contributor by reason
- *       of your accepting any such warranty or additional liability.
- *
- *    END OF TERMS AND CONDITIONS
- *
- *    APPENDIX: How to apply the Apache License to your work.
- *
- *       To apply the Apache License to your work, attach the following
- *       boilerplate notice, with the fields enclosed by brackets "{}"
- *       replaced with your own identifying information. (Don't include
- *       the brackets!)  The text should be enclosed in the appropriate
- *       comment syntax for the file format. We also recommend that a
- *       file or class name and description of purpose be included on the
- *       same "printed page" as the copyright notice for easier
- *       identification within third-party archives.
- *
- *    Copyright {yyyy} {name of copyright owner}
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// DO NOT EDIT
+// Generated by JFlex 1.8.2 http://jflex.de/
+// source: src/main/lex/jsonstrict.lex
+
 package org.mineacademy.fo.jsonsimple;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+// See https://github.com/jflex-de/jflex/issues/222
+class Yylex {
 
-/* The following code was generated by JFlex 1.4.2 */
-
-/**
- * @author FangYidong(fangyidong @ yahoo.com.cn)
- * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
- * @version 2.0.0
- * @since 1.0.0
- */
-public class Yylex {
-
-	// ==== 11.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-	// -	Properly formatted this class
-	// -	Replaced switch-case block with if-else blocks because they are faster
-	// ====
-
-	public static final int YYINITIAL = 0;
-	public static final int STRING_BEGIN = 2;
+	/** This character denotes the end of file. */
 	public static final int YYEOF = -1;
 
+	/** Initial size of the lookahead buffer. */
 	private static final int ZZ_BUFFERSIZE = 16384;
-	private static final int ZZ_LEXSTATE[] = { 0, 0, 1, 1 };
-	private static final String ZZ_CMAP_PACKED = "\11\0\1\7\1\7\2\0\1\7\22\0\1\7\1\0\1\11\10\0\1\6\1\31\1\2\1\4\1\12\12\3\1\32\6\0\4\1\1\5\1\1\24\0\1\27\1\10\1\30\3\0\1\22\1\13\2\1\1\21\1\14\5\0\1\23\1\0\1\15\3\0\1\16\1\24\1\17\1\20\5\0\1\25\1\0\1\26\uff82\0";
-	private static final char[] ZZ_CMAP = Yylex.zzUnpackCMap(Yylex.ZZ_CMAP_PACKED);
-	private static final int[] ZZ_ACTION = Yylex.zzUnpackAction();
-	private static final String ZZ_ACTION_PACKED_0 = "\2\0\2\1\1\2\1\3\1\4\3\1\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\5\0\1\14\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\0\1\25\1\0\1\25\4\0\1\26\1\27\2\0\1\30";
-	private static final int[] ZZ_ROWMAP = Yylex.zzUnpackRowMap();
-	private static final String ZZ_ROWMAP_PACKED_0 = "\0\0\0\33\0\66\0\121\0\154\0\207\0\66\0\242\0\275\0\330\0\66\0\66\0\66\0\66\0\66\0\66\0\363\0\u010e\0\66\0\u0129\0\u0144\0\u015f\0\u017a\0\u0195\0\66\0\66\0\66\0\66\0\66\0\66\0\66\0\66\0\u01b0\0\u01cb\0\u01e6\0\u01e6\0\u0201\0\u021c\0\u0237\0\u0252\0\66\0\66\0\u026d\0\u0288\0\66";
-	private static final int ZZ_UNKNOWN_ERROR = 0;
-	private static final int ZZ_NO_MATCH = 1;
-	private static final int ZZ_PUSHBACK_2BIG = 2;
-	private static final String[] ZZ_ERROR_MSG = { "Unkown internal scanner error", "Error: could not match input", "Error: pushback value was too large" };
-	private static final int[] ZZ_ATTRIBUTE = Yylex.zzUnpackAttribute();
-	private static final String ZZ_ATTRIBUTE_PACKED_0 = "\2\0\1\11\3\1\1\11\3\1\6\11\2\1\1\11\5\0\10\11\1\0\1\1\1\0\1\1\4\0\2\11\2\0\1\11";
-	private static final int[] ZZ_TRANS = {
 
-			2, 2, 3, 4, 2, 2, 2, 5, 2, 6,
-			2, 2, 7, 8, 2, 9, 2, 2, 2, 2,
-			2, 10, 11, 12, 13, 14, 15, 16, 16, 16,
-			16, 16, 16, 16, 16, 17, 18, 16, 16, 16,
-			16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-			16, 16, 16, 16, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, 4, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, 4, 19, 20, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, 20, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, 5, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			21, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, 22, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			23, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, 16, 16, 16, 16, 16, 16, 16,
-			16, -1, -1, 16, 16, 16, 16, 16, 16, 16,
-			16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-			-1, -1, -1, -1, -1, -1, -1, -1, 24, 25,
-			26, 27, 28, 29, 30, 31, 32, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			33, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, 34, 35, -1, -1,
-			34, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			36, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, 37, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, 38, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, 39, -1, 39, -1, 39, -1, -1,
-			-1, -1, -1, 39, 39, -1, -1, -1, -1, 39,
-			39, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, 33, -1, 20, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, 20, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, 35,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, 38, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, 40,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, 41, -1, -1, -1, -1, -1,
-			-1, -1, -1, -1, -1, 42, -1, 42, -1, 42,
-			-1, -1, -1, -1, -1, 42, 42, -1, -1, -1,
-			-1, 42, 42, -1, -1, -1, -1, -1, -1, -1,
-			-1, -1, 43, -1, 43, -1, 43, -1, -1, -1,
-			-1, -1, 43, 43, -1, -1, -1, -1, 43, 43,
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, 44,
-			-1, 44, -1, 44, -1, -1, -1, -1, -1, 44,
-			44, -1, -1, -1, -1, 44, 44, -1, -1, -1,
-			-1, -1, -1, -1, -1,
+	// Lexical states.
+	public static final int YYINITIAL = 0;
+	public static final int STRING_BEGIN = 2;
+
+	/**
+	 * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
+	 * ZZ_LEXSTATE[l+1] is the state in the DFA for the lexical state l
+	 *                  at the beginning of a line
+	 * l is of the form l = 2*k, k a non negative integer
+	 */
+	private static final int ZZ_LEXSTATE[] = {
+			0, 0, 1, 1
 	};
 
-	private Reader zzReader;
-	private int zzLexicalState = Yylex.YYINITIAL;
-	private char zzBuffer[] = new char[Yylex.ZZ_BUFFERSIZE];
-	private int zzMarkedPos;
-	private int zzCurrentPos;
-	private int zzStartRead;
-	private int zzEndRead;
-	private int yychar;
-	private boolean zzAtEOF;
-	private StringBuffer sb = new StringBuffer();
+	/**
+	 * Top-level table for translating characters to character classes
+	 */
+	private static final int[] ZZ_CMAP_TOP = zzUnpackcmap_top();
+
+	private static final String ZZ_CMAP_TOP_PACKED_0 = "\1\0\327\u0100\10\u0200\u1020\u0100";
+
+	private static int[] zzUnpackcmap_top() {
+		final int[] result = new int[4352];
+		int offset = 0;
+		offset = zzUnpackcmap_top(ZZ_CMAP_TOP_PACKED_0, offset, result);
+		return result;
+	}
+
+	private static int zzUnpackcmap_top(String packed, int offset, int[] result) {
+		int i = 0; /* index in packed string  */
+		int j = offset; /* index in unpacked array */
+		final int l = packed.length();
+		while (i < l) {
+			int count = packed.charAt(i++);
+			final int value = packed.charAt(i++);
+			do
+				result[j++] = value;
+			while (--count > 0);
+		}
+		return j;
+	}
+
+	/**
+	 * Second-level tables for translating characters to character classes
+	 */
+	private static final int[] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
+
+	private static final String ZZ_CMAP_BLOCKS_PACKED_0 = "\11\0\2\1\2\0\1\1\22\0\1\1\1\0\1\2" +
+			"\10\0\1\3\1\4\1\5\1\6\1\7\12\10\1\11" +
+			"\6\0\4\12\1\13\1\12\24\0\1\14\1\15\1\16" +
+			"\3\0\1\17\1\20\2\12\1\21\1\22\5\0\1\23" +
+			"\1\0\1\24\3\0\1\25\1\26\1\27\1\30\5\0" +
+			"\1\31\1\0\1\32\u0182\0\u0100\33";
+
+	private static int[] zzUnpackcmap_blocks() {
+		final int[] result = new int[768];
+		int offset = 0;
+		offset = zzUnpackcmap_blocks(ZZ_CMAP_BLOCKS_PACKED_0, offset, result);
+		return result;
+	}
+
+	private static int zzUnpackcmap_blocks(String packed, int offset, int[] result) {
+		int i = 0; /* index in packed string  */
+		int j = offset; /* index in unpacked array */
+		final int l = packed.length();
+		while (i < l) {
+			int count = packed.charAt(i++);
+			final int value = packed.charAt(i++);
+			do
+				result[j++] = value;
+			while (--count > 0);
+		}
+		return j;
+	}
+
+	/**
+	 * Translates DFA states to action switch labels.
+	 */
+	private static final int[] ZZ_ACTION = zzUnpackAction();
+
+	private static final String ZZ_ACTION_PACKED_0 = "\2\0\1\1\1\2\1\3\1\4\1\1\1\5\1\6" +
+			"\1\7\1\10\3\1\1\11\1\12\1\13\1\14\1\15" +
+			"\5\0\1\16\1\17\1\15\1\20\1\21\1\22\1\23" +
+			"\1\24\1\0\1\5\1\0\1\5\4\0\1\25\1\26" +
+			"\2\0\1\27";
 
 	private static int[] zzUnpackAction() {
-
 		final int[] result = new int[45];
 		int offset = 0;
-		offset = Yylex.zzUnpackAction(Yylex.ZZ_ACTION_PACKED_0, offset, result);
+		offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
 		return result;
 	}
 
 	private static int zzUnpackAction(String packed, int offset, int[] result) {
-
-		int i = 0;
-		int j = offset;
+		int i = 0; /* index in packed string  */
+		int j = offset; /* index in unpacked array */
 		final int l = packed.length();
-
 		while (i < l) {
-
 			int count = packed.charAt(i++);
 			final int value = packed.charAt(i++);
-
 			do
 				result[j++] = value;
 			while (--count > 0);
 		}
-
 		return j;
 	}
 
-	private static int[] zzUnpackRowMap() {
+	/**
+	 * Translates a state to a row index in the transition table
+	 */
+	private static final int[] ZZ_ROWMAP = zzUnpackRowMap();
 
+	private static final String ZZ_ROWMAP_PACKED_0 = "\0\0\0\34\0\70\0\124\0\70\0\70\0\160\0\214" +
+			"\0\70\0\70\0\70\0\250\0\304\0\340\0\70\0\70" +
+			"\0\374\0\70\0\u0118\0\u0134\0\u0150\0\u016c\0\u0188\0\u01a4" +
+			"\0\70\0\70\0\70\0\70\0\70\0\70\0\70\0\70" +
+			"\0\u01c0\0\u01dc\0\u01f8\0\u01f8\0\u0214\0\u0230\0\u024c\0\u0268" +
+			"\0\70\0\70\0\u0284\0\u02a0\0\70";
+
+	private static int[] zzUnpackRowMap() {
 		final int[] result = new int[45];
 		int offset = 0;
-		offset = Yylex.zzUnpackRowMap(Yylex.ZZ_ROWMAP_PACKED_0, offset, result);
+		offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
 		return result;
 	}
 
 	private static int zzUnpackRowMap(String packed, int offset, int[] result) {
-
-		int i = 0;
-		int j = offset;
+		int i = 0; /* index in packed string  */
+		int j = offset; /* index in unpacked array */
 		final int l = packed.length();
-
 		while (i < l) {
-
 			final int high = packed.charAt(i++) << 16;
 			result[j++] = high | packed.charAt(i++);
 		}
-
 		return j;
 	}
 
-	private static int[] zzUnpackAttribute() {
+	/**
+	 * The transition table of the DFA
+	 */
+	private static final int[] ZZ_TRANS = zzUnpackTrans();
 
-		final int[] result = new int[45];
+	private static final String ZZ_TRANS_PACKED_0 = "\1\3\1\4\1\5\1\3\1\6\1\7\2\3\1\10" +
+			"\1\11\2\3\1\12\1\3\1\13\3\3\1\14\1\3" +
+			"\1\15\2\3\1\16\1\3\1\17\1\20\1\0\2\21" +
+			"\1\22\12\21\1\23\16\21\35\0\1\4\42\0\1\10" +
+			"\31\0\1\24\1\0\1\10\2\0\1\25\5\0\1\25" +
+			"\31\0\1\26\44\0\1\27\30\0\1\30\6\0\2\21" +
+			"\1\0\12\21\1\0\16\21\2\0\1\31\4\0\1\32" +
+			"\5\0\1\33\2\0\1\34\1\0\1\35\1\0\1\36" +
+			"\1\37\1\0\1\40\1\41\13\0\1\42\26\0\1\43" +
+			"\1\0\1\43\2\0\1\44\46\0\1\45\33\0\1\46" +
+			"\40\0\1\47\13\0\1\50\1\0\2\50\3\0\4\50" +
+			"\21\0\1\42\2\0\1\25\5\0\1\25\22\0\1\44" +
+			"\51\0\1\47\30\0\1\51\31\0\1\52\22\0\1\53" +
+			"\1\0\2\53\3\0\4\53\21\0\1\54\1\0\2\54" +
+			"\3\0\4\54\21\0\1\55\1\0\2\55\3\0\4\55" +
+			"\11\0";
+
+	private static int[] zzUnpackTrans() {
+		final int[] result = new int[700];
 		int offset = 0;
-		offset = Yylex.zzUnpackAttribute(Yylex.ZZ_ATTRIBUTE_PACKED_0, offset, result);
+		offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
 		return result;
 	}
 
-	private static int zzUnpackAttribute(String packed, int offset, int[] result) {
-
-		int i = 0;
-		int j = offset;
+	private static int zzUnpackTrans(String packed, int offset, int[] result) {
+		int i = 0; /* index in packed string  */
+		int j = offset; /* index in unpacked array */
 		final int l = packed.length();
-
 		while (i < l) {
-
 			int count = packed.charAt(i++);
-			final int value = packed.charAt(i++);
-
+			int value = packed.charAt(i++);
+			value--;
 			do
 				result[j++] = value;
 			while (--count > 0);
 		}
-
 		return j;
 	}
 
-	public int getPosition() {
+	/** Error code for "Unknown internal scanner error". */
+	private static final int ZZ_UNKNOWN_ERROR = 0;
+	/** Error code for "could not match input". */
+	private static final int ZZ_NO_MATCH = 1;
+	/** Error code for "pushback value was too large". */
+	private static final int ZZ_PUSHBACK_2BIG = 2;
 
+	/**
+	 * Error messages for {@link #ZZ_UNKNOWN_ERROR}, {@link #ZZ_NO_MATCH}, and
+	 * {@link #ZZ_PUSHBACK_2BIG} respectively.
+	 */
+	private static final String ZZ_ERROR_MSG[] = {
+			"Unknown internal scanner error",
+			"Error: could not match input",
+			"Error: pushback value was too large"
+	};
+
+	/**
+	 * ZZ_ATTRIBUTE[aState] contains the attributes of state {@code aState}
+	 */
+	private static final int[] ZZ_ATTRIBUTE = zzUnpackAttribute();
+
+	private static final String ZZ_ATTRIBUTE_PACKED_0 = "\2\0\1\11\1\1\2\11\2\1\3\11\3\1\2\11" +
+			"\1\1\1\11\1\1\5\0\10\11\1\0\1\1\1\0" +
+			"\1\1\4\0\2\11\2\0\1\11";
+
+	private static int[] zzUnpackAttribute() {
+		final int[] result = new int[45];
+		int offset = 0;
+		offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
+		return result;
+	}
+
+	private static int zzUnpackAttribute(String packed, int offset, int[] result) {
+		int i = 0; /* index in packed string  */
+		int j = offset; /* index in unpacked array */
+		final int l = packed.length();
+		while (i < l) {
+			int count = packed.charAt(i++);
+			final int value = packed.charAt(i++);
+			do
+				result[j++] = value;
+			while (--count > 0);
+		}
+		return j;
+	}
+
+	/** Input device. */
+	private java.io.Reader zzReader;
+
+	/** Current state of the DFA. */
+	private int zzState;
+
+	/** Current lexical state. */
+	private int zzLexicalState = YYINITIAL;
+
+	/**
+	 * This buffer contains the current text to be matched and is the source of the {@link #yytext()}
+	 * string.
+	 */
+	private char zzBuffer[] = new char[ZZ_BUFFERSIZE];
+
+	/** Text position at the last accepting state. */
+	private int zzMarkedPos;
+
+	/** Current text position in the buffer. */
+	private int zzCurrentPos;
+
+	/** Marks the beginning of the {@link #yytext()} string in the buffer. */
+	private int zzStartRead;
+
+	/** Marks the last character in the buffer, that has been read from input. */
+	private int zzEndRead;
+
+	/**
+	 * Whether the scanner is at the end of file.
+	 * @see #yyatEOF
+	 */
+	private boolean zzAtEOF;
+
+	/**
+	 * The number of occupied positions in {@link #zzBuffer} beyond {@link #zzEndRead}.
+	 *
+	 * <p>When a lead/high surrogate has been read from the input stream into the final
+	 * {@link #zzBuffer} position, this will have a value of 1; otherwise, it will have a value of 0.
+	 */
+	private int zzFinalHighSurrogate = 0;
+
+	/** Number of newlines encountered up to the start of the matched text. */
+	@SuppressWarnings("unused")
+	private int yyline;
+
+	/** Number of characters from the last newline up to the start of the matched text. */
+	@SuppressWarnings("unused")
+	private int yycolumn;
+
+	/** Number of characters up to the start of the matched text. */
+	private long yychar;
+
+	/** Whether the scanner is currently at the beginning of a line. */
+	@SuppressWarnings("unused")
+	private boolean zzAtBOL = true;
+
+	/** Whether the user-EOF-code has already been executed. */
+	@SuppressWarnings("unused")
+	private boolean zzEOFDone;
+
+	/* user code: */
+	private StringBuilder sb = new StringBuilder();
+
+	long getPosition() {
 		return this.yychar;
 	}
 
-	public Yylex(Reader in) {
-
+	/**
+	 * Creates a new scanner
+	 *
+	 * @param   in  the java.io.Reader to read input from.
+	 */
+	Yylex(java.io.Reader in) {
 		this.zzReader = in;
 	}
 
-	public Yylex(InputStream in) {
-
-		this(new InputStreamReader(in));
+	/**
+	 * Translates raw input code points to DFA table row
+	 */
+	private static int zzCMap(int input) {
+		final int offset = input & 255;
+		return offset == input ? ZZ_CMAP_BLOCKS[offset] : ZZ_CMAP_BLOCKS[ZZ_CMAP_TOP[input >> 8] | offset];
 	}
 
-	private static char[] zzUnpackCMap(String packed) {
+	/**
+	 * Refills the input buffer.
+	 *
+	 * @return {@code false} iff there was new input.
+	 * @exception java.io.IOException  if any I/O-Error occurs
+	 */
+	private boolean zzRefill() throws java.io.IOException {
 
-		final char[] map = new char[0x10000];
-		int i = 0;
-		int j = 0;
-
-		while (i < 90) {
-
-			int count = packed.charAt(i++);
-			final char value = packed.charAt(i++);
-
-			do
-				map[j++] = value;
-			while (--count > 0);
-		}
-
-		return map;
-	}
-
-	private boolean zzRefill() throws IOException {
-
+		/* first: make room (if you can) */
 		if (this.zzStartRead > 0) {
+			this.zzEndRead += this.zzFinalHighSurrogate;
+			this.zzFinalHighSurrogate = 0;
+			System.arraycopy(this.zzBuffer, this.zzStartRead,
+					this.zzBuffer, 0,
+					this.zzEndRead - this.zzStartRead);
 
-			System.arraycopy(this.zzBuffer, this.zzStartRead, this.zzBuffer, 0, this.zzEndRead - this.zzStartRead);
-
+			/* translate stored positions */
 			this.zzEndRead -= this.zzStartRead;
 			this.zzCurrentPos -= this.zzStartRead;
 			this.zzMarkedPos -= this.zzStartRead;
 			this.zzStartRead = 0;
 		}
 
-		if (this.zzCurrentPos >= this.zzBuffer.length) {
-
-			final char[] newBuffer = new char[this.zzCurrentPos * 2];
+		/* is the buffer big enough? */
+		if (this.zzCurrentPos >= this.zzBuffer.length - this.zzFinalHighSurrogate) {
+			/* if not: blow it up */
+			final char newBuffer[] = new char[this.zzBuffer.length * 2];
 			System.arraycopy(this.zzBuffer, 0, newBuffer, 0, this.zzBuffer.length);
 			this.zzBuffer = newBuffer;
+			this.zzEndRead += this.zzFinalHighSurrogate;
+			this.zzFinalHighSurrogate = 0;
 		}
 
-		final int numRead = this.zzReader.read(this.zzBuffer, this.zzEndRead, this.zzBuffer.length - this.zzEndRead);
+		/* fill the buffer with new input */
+		final int requested = this.zzBuffer.length - this.zzEndRead;
+		final int numRead = this.zzReader.read(this.zzBuffer, this.zzEndRead, requested);
 
+		/* not supposed to occur according to specification of java.io.Reader */
+		if (numRead == 0)
+			throw new java.io.IOException(
+					"Reader returned 0 characters. See JFlex examples/zero-reader for a workaround.");
 		if (numRead > 0) {
-
 			this.zzEndRead += numRead;
+			if (Character.isHighSurrogate(this.zzBuffer[this.zzEndRead - 1]))
+				if (numRead == requested) { // We requested too few chars to encode a full Unicode character
+					--this.zzEndRead;
+					this.zzFinalHighSurrogate = 1;
+				} else { // There is room in the buffer for at least one more char
+					final int c = this.zzReader.read(); // Expecting to read a paired low surrogate char
+					if (c == -1)
+						return true;
+					else
+						this.zzBuffer[this.zzEndRead++] = (char) c;
+				}
+			/* potentially more input available */
 			return false;
 		}
 
-		if (numRead == 0) {
-
-			final int c = this.zzReader.read();
-
-			if (c == -1)
-				return true;
-			else {
-
-				this.zzBuffer[this.zzEndRead++] = (char) c;
-				return false;
-			}
-		}
-
+		/* numRead < 0 ==> end of stream */
 		return true;
 	}
 
-	public final void yyclose() throws IOException {
-
+	/**
+	 * Closes the input reader.
+	 *
+	 * @throws java.io.IOException if the reader could not be closed.
+	 */
+	public final void yyclose() throws java.io.IOException {
 		this.zzAtEOF = true; // indicate end of file
 		this.zzEndRead = this.zzStartRead; // invalidate buffer
 
@@ -487,219 +400,382 @@ public class Yylex {
 			this.zzReader.close();
 	}
 
-	public final void yyreset(Reader reader) {
-
+	/**
+	 * Resets the scanner to read from a new input stream.
+	 *
+	 * <p>Does not close the old reader.
+	 *
+	 * <p>All internal variables are reset, the old input stream <b>cannot</b> be reused (internal
+	 * buffer is discarded and lost). Lexical state is set to {@code ZZ_INITIAL}.
+	 *
+	 * <p>Internal scan buffer is resized down to its initial length, if it has grown.
+	 *
+	 * @param reader The new input stream.
+	 */
+	public final void yyreset(java.io.Reader reader) {
 		this.zzReader = reader;
-		this.zzAtEOF = false;
-		this.zzEndRead = this.zzStartRead = 0;
-		this.zzCurrentPos = this.zzMarkedPos = 0;
-		this.yychar = 0;
-		this.zzLexicalState = Yylex.YYINITIAL;
+		this.zzEOFDone = false;
+		this.yyResetPosition();
+		this.zzLexicalState = YYINITIAL;
+		if (this.zzBuffer.length > ZZ_BUFFERSIZE)
+			this.zzBuffer = new char[ZZ_BUFFERSIZE];
 	}
 
-	public final int yystate() {
+	/**
+	 * Resets the input position.
+	 */
+	private final void yyResetPosition() {
+		this.zzAtBOL = true;
+		this.zzAtEOF = false;
+		this.zzCurrentPos = 0;
+		this.zzMarkedPos = 0;
+		this.zzStartRead = 0;
+		this.zzEndRead = 0;
+		this.zzFinalHighSurrogate = 0;
+		this.yyline = 0;
+		this.yycolumn = 0;
+		this.yychar = 0L;
+	}
 
+	/**
+	 * Returns whether the scanner has reached the end of the reader it reads from.
+	 *
+	 * @return whether the scanner has reached EOF.
+	 */
+	public final boolean yyatEOF() {
+		return this.zzAtEOF;
+	}
+
+	/**
+	 * Returns the current lexical state.
+	 *
+	 * @return the current lexical state.
+	 */
+	public final int yystate() {
 		return this.zzLexicalState;
 	}
 
+	/**
+	 * Enters a new lexical state.
+	 *
+	 * @param newState the new lexical state
+	 */
 	public final void yybegin(int newState) {
-
 		this.zzLexicalState = newState;
 	}
 
+	/**
+	 * Returns the text matched by the current regular expression.
+	 *
+	 * @return the matched text.
+	 */
 	public final String yytext() {
-
 		return new String(this.zzBuffer, this.zzStartRead, this.zzMarkedPos - this.zzStartRead);
 	}
 
-	public final char yycharat(int pos) {
-
-		return this.zzBuffer[this.zzStartRead + pos];
+	/**
+	 * Returns the character at the given position from the matched text.
+	 *
+	 * <p>It is equivalent to {@code yytext().charAt(pos)}, but faster.
+	 *
+	 * @param position the position of the character to fetch. A value from 0 to {@code yylength()-1}.
+	 *
+	 * @return the character at {@code position}.
+	 */
+	public final char yycharat(int position) {
+		return this.zzBuffer[this.zzStartRead + position];
 	}
 
+	/**
+	 * How many characters were matched.
+	 *
+	 * @return the length of the matched text region.
+	 */
 	public final int yylength() {
-
 		return this.zzMarkedPos - this.zzStartRead;
 	}
 
-	private void zzScanError(int errorCode) {
-
+	/**
+	 * Reports an error that occurred while scanning.
+	 *
+	 * <p>In a well-formed scanner (no or only correct usage of {@code yypushback(int)} and a
+	 * match-all fallback rule) this method will only be called with things that
+	 * "Can't Possibly Happen".
+	 *
+	 * <p>If this method is called, something is seriously wrong (e.g. a JFlex bug producing a faulty
+	 * scanner etc.).
+	 *
+	 * <p>Usual syntax/scanner level error handling should be done in error fallback rules.
+	 *
+	 * @param errorCode the code of the error message to display.
+	 */
+	private static void zzScanError(int errorCode) {
 		String message;
-
 		try {
-
-			message = Yylex.ZZ_ERROR_MSG[errorCode];
-
-		} catch (final ArrayIndexOutOfBoundsException exception) {
-
-			message = Yylex.ZZ_ERROR_MSG[Yylex.ZZ_UNKNOWN_ERROR];
+			message = ZZ_ERROR_MSG[errorCode];
+		} catch (final ArrayIndexOutOfBoundsException e) {
+			message = ZZ_ERROR_MSG[ZZ_UNKNOWN_ERROR];
 		}
-
-		// ==== 17.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-		// DO NOT CHANGE!
-		// Even if Codacy says so.
-		// ====
 
 		throw new Error(message);
 	}
 
+	/**
+	 * Pushes the specified amount of characters back into the input stream.
+	 *
+	 * <p>They will be read again by then next call of the scanning method.
+	 *
+	 * @param number the number of characters to be read again. This number must not be greater than
+	 *     {@link #yylength()}.
+	 */
 	public void yypushback(int number) {
-
 		if (number > this.yylength())
-			this.zzScanError(Yylex.ZZ_PUSHBACK_2BIG);
+			zzScanError(ZZ_PUSHBACK_2BIG);
 
 		this.zzMarkedPos -= number;
 	}
 
-	public Yytoken yylex() throws IOException, JSONParseException {
-
+	/**
+	 * Resumes scanning until the next regular expression is matched, the end of input is encountered
+	 * or an I/O-Error occurs.
+	 *
+	 * @return the next token.
+	 * @exception java.io.IOException if any I/O-Error occurs.
+	 */
+	public Yytoken yylex() throws java.io.IOException, JSONParseException {
 		int zzInput;
 		int zzAction;
+
+		// cached fields:
 		int zzCurrentPosL;
 		int zzMarkedPosL;
 		int zzEndReadL = this.zzEndRead;
 		char[] zzBufferL = this.zzBuffer;
-		final char[] zzCMapL = Yylex.ZZ_CMAP;
-		final int[] zzTransL = Yylex.ZZ_TRANS;
-		final int[] zzRowMapL = Yylex.ZZ_ROWMAP;
-		final int[] zzAttrL = Yylex.ZZ_ATTRIBUTE;
+
+		final int[] zzTransL = ZZ_TRANS;
+		final int[] zzRowMapL = ZZ_ROWMAP;
+		final int[] zzAttrL = ZZ_ATTRIBUTE;
 
 		while (true) {
-
 			zzMarkedPosL = this.zzMarkedPos;
+
 			this.yychar += zzMarkedPosL - this.zzStartRead;
+
 			zzAction = -1;
+
 			zzCurrentPosL = this.zzCurrentPos = this.zzStartRead = zzMarkedPosL;
-			int zzState = Yylex.ZZ_LEXSTATE[this.zzLexicalState];
+
+			this.zzState = ZZ_LEXSTATE[this.zzLexicalState];
+
+			// set up zzAction for empty match case:
+			int zzAttributes = zzAttrL[this.zzState];
+			if ((zzAttributes & 1) == 1)
+				zzAction = this.zzState;
 
 			zzForAction:
 			{
-
 				while (true) {
 
-					if (zzCurrentPosL < zzEndReadL)
-						zzInput = zzBufferL[zzCurrentPosL++];
-					else if (this.zzAtEOF) {
-
-						zzInput = Yylex.YYEOF;
+					if (zzCurrentPosL < zzEndReadL) {
+						zzInput = Character.codePointAt(zzBufferL, zzCurrentPosL, zzEndReadL);
+						zzCurrentPosL += Character.charCount(zzInput);
+					} else if (this.zzAtEOF) {
+						zzInput = YYEOF;
 						break zzForAction;
-
 					} else {
-
 						// store back cached positions
 						this.zzCurrentPos = zzCurrentPosL;
 						this.zzMarkedPos = zzMarkedPosL;
 						final boolean eof = this.zzRefill();
-
 						// get translated positions and possibly new buffer
 						zzCurrentPosL = this.zzCurrentPos;
 						zzMarkedPosL = this.zzMarkedPos;
 						zzBufferL = this.zzBuffer;
 						zzEndReadL = this.zzEndRead;
-
 						if (eof) {
-
-							zzInput = Yylex.YYEOF;
+							zzInput = YYEOF;
 							break zzForAction;
-
-						} else
-							zzInput = zzBufferL[zzCurrentPosL++];
+						} else {
+							zzInput = Character.codePointAt(zzBufferL, zzCurrentPosL, zzEndReadL);
+							zzCurrentPosL += Character.charCount(zzInput);
+						}
 					}
-
-					final int zzNext = zzTransL[zzRowMapL[zzState] + zzCMapL[zzInput]];
-
+					final int zzNext = zzTransL[zzRowMapL[this.zzState] + zzCMap(zzInput)];
 					if (zzNext == -1)
 						break zzForAction;
+					this.zzState = zzNext;
 
-					zzState = zzNext;
-
-					final int zzAttributes = zzAttrL[zzState];
-
+					zzAttributes = zzAttrL[this.zzState];
 					if ((zzAttributes & 1) == 1) {
-
-						zzAction = zzState;
+						zzAction = this.zzState;
 						zzMarkedPosL = zzCurrentPosL;
-
 						if ((zzAttributes & 8) == 8)
 							break zzForAction;
 					}
+
 				}
 			}
 
 			// store back cached position
 			this.zzMarkedPos = zzMarkedPosL;
-			final int value = zzAction < 0 ? zzAction : ZZ_ACTION[zzAction];
 
-			if (value < 25 || value > 48)
-				if (value == 11)
-					this.sb.append(this.yytext());
-				else if (value == 4) {
-
-					this.sb = new StringBuffer();
-					this.yybegin(Yylex.STRING_BEGIN);
-
-				} else if (value == 16)
-					this.sb.append('\b');
-				else if (value == 6)
-					return new Yytoken(Yytoken.TYPE_RIGHT_BRACE, null);
-				else if (value == 23)
-					return new Yytoken(Yytoken.TYPE_VALUE, Boolean.valueOf(this.yytext()));
-				else if (value == 22)
-					return new Yytoken(Yytoken.TYPE_VALUE, null);
-				else if (value == 13) {
-
-					this.yybegin(Yylex.YYINITIAL);
-					return new Yytoken(Yytoken.TYPE_VALUE, this.sb.toString());
-
-				} else if (value == 12)
-					this.sb.append('\\');
-				else if (value == 21)
-					return new Yytoken(Yytoken.TYPE_VALUE, Double.valueOf(this.yytext()));
-				else if (value == 1)
-					throw new JSONParseException(this.yychar, JSONParseException.ERROR_UNEXPECTED_CHAR, this.yycharat(0));
-				else if (value == 8)
-					return new Yytoken(Yytoken.TYPE_RIGHT_SQUARE, null);
-				else if (value == 19)
-					this.sb.append('\r');
-				else if (value == 15)
-					this.sb.append('/');
-				else if (value == 10)
-					return new Yytoken(Yytoken.TYPE_COLON, null);
-				else if (value == 14)
-					this.sb.append('"');
-				else if (value == 5)
-					return new Yytoken(Yytoken.TYPE_LEFT_BRACE, null);
-				else if (value == 17)
-					this.sb.append('\f');
-				else if (value == 24)
-					try {
-
-						final int ch = Integer.parseInt(this.yytext().substring(2), 16);
-						this.sb.append((char) ch);
-
-					} catch (final Exception exception) {
-
-						throw new JSONParseException(this.yychar, JSONParseException.ERROR_UNEXPECTED_EXCEPTION, exception);
+			if (zzInput == YYEOF && this.zzStartRead == this.zzCurrentPos) {
+				this.zzAtEOF = true;
+				return null;
+			} else
+				switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
+					case 1: {
+						throw new JSONParseException(this.yychar, JSONParseException.Problems.UNEXPECTED_CHARACTER, new Character(this.yycharat(0)));
 					}
-				else if (value == 20)
-					this.sb.append('\t');
-				else if (value == 7)
-					return new Yytoken(Yytoken.TYPE_LEFT_SQUARE, null);
-				else if (value == 2)
-					return new Yytoken(Yytoken.TYPE_VALUE, Long.valueOf(this.yytext()));
-				else if (value == 18)
-					this.sb.append('\n');
-				else if (value == 9)
-					return new Yytoken(Yytoken.TYPE_COMMA, null);
-				else if (value == 3) {
-
-				} else if (zzInput == Yylex.YYEOF && this.zzStartRead == this.zzCurrentPos) {
-
-					this.zzAtEOF = true;
-					return null;
-
-				} else
-					this.zzScanError(Yylex.ZZ_NO_MATCH);
+					// fall through
+					case 24:
+						break;
+					case 2: {
+					}
+					// fall through
+					case 25:
+						break;
+					case 3: {
+						this.sb = null;
+						this.sb = new StringBuilder();
+						this.yybegin(STRING_BEGIN);
+					}
+					// fall through
+					case 26:
+						break;
+					case 4: {
+						return new Yytoken(Yytoken.Types.COMMA, null);
+					}
+					// fall through
+					case 27:
+						break;
+					case 5: {
+						final java.math.BigDecimal val = new java.math.BigDecimal(this.yytext());
+						return new Yytoken(Yytoken.Types.DATUM, val);
+					}
+					// fall through
+					case 28:
+						break;
+					case 6: {
+						return new Yytoken(Yytoken.Types.COLON, null);
+					}
+					// fall through
+					case 29:
+						break;
+					case 7: {
+						return new Yytoken(Yytoken.Types.LEFT_SQUARE, null);
+					}
+					// fall through
+					case 30:
+						break;
+					case 8: {
+						return new Yytoken(Yytoken.Types.RIGHT_SQUARE, null);
+					}
+					// fall through
+					case 31:
+						break;
+					case 9: {
+						return new Yytoken(Yytoken.Types.LEFT_BRACE, null);
+					}
+					// fall through
+					case 32:
+						break;
+					case 10: {
+						return new Yytoken(Yytoken.Types.RIGHT_BRACE, null);
+					}
+					// fall through
+					case 33:
+						break;
+					case 11: {
+						this.sb.append(this.yytext());
+					}
+					// fall through
+					case 34:
+						break;
+					case 12: {
+						this.yybegin(YYINITIAL);
+						return new Yytoken(Yytoken.Types.DATUM, this.sb.toString());
+					}
+					// fall through
+					case 35:
+						break;
+					case 13: {
+						this.sb.append('\\');
+					}
+					// fall through
+					case 36:
+						break;
+					case 14: {
+						this.sb.append('"');
+					}
+					// fall through
+					case 37:
+						break;
+					case 15: {
+						this.sb.append('/');
+					}
+					// fall through
+					case 38:
+						break;
+					case 16: {
+						this.sb.append('\b');
+					}
+					// fall through
+					case 39:
+						break;
+					case 17: {
+						this.sb.append('\f');
+					}
+					// fall through
+					case 40:
+						break;
+					case 18: {
+						this.sb.append('\n');
+					}
+					// fall through
+					case 41:
+						break;
+					case 19: {
+						this.sb.append('\r');
+					}
+					// fall through
+					case 42:
+						break;
+					case 20: {
+						this.sb.append('\t');
+					}
+					// fall through
+					case 43:
+						break;
+					case 21: {
+						return new Yytoken(Yytoken.Types.DATUM, null);
+					}
+					// fall through
+					case 44:
+						break;
+					case 22: {
+						final Boolean val = Boolean.valueOf(this.yytext());
+						return new Yytoken(Yytoken.Types.DATUM, val);
+					}
+					// fall through
+					case 45:
+						break;
+					case 23: {
+						try {
+							final int ch = Integer.parseInt(this.yytext().substring(2), 16);
+							this.sb.append((char) ch);
+						} catch (final Exception e) {
+							/* The lexer is broken if it can build a 4 byte character code and fail to append the character. */
+							throw new JSONParseException(this.yychar, JSONParseException.Problems.UNEXPECTED_EXCEPTION, e);
+						}
+					}
+					// fall through
+					case 46:
+						break;
+					default:
+						zzScanError(ZZ_NO_MATCH);
+				}
 		}
 	}
+
 }
