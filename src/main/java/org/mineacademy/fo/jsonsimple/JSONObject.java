@@ -1,307 +1,48 @@
-/*
- *                                  Apache License
- *                            Version 2.0, January 2004
- *                         http://www.apache.org/licenses/
- *
- *    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
- *
- *    1. Definitions.
- *
- *       "License" shall mean the terms and conditions for use, reproduction,
- *       and distribution as defined by Sections 1 through 9 of this document.
- *
- *       "Licensor" shall mean the copyright owner or entity authorized by
- *       the copyright owner that is granting the License.
- *
- *       "Legal Entity" shall mean the union of the acting entity and all
- *       other entities that control, are controlled by, or are under common
- *       control with that entity. For the purposes of this definition,
- *       "control" means (i) the power, direct or indirect, to cause the
- *       direction or management of such entity, whether by contract or
- *       otherwise, or (ii) ownership of fifty percent (50%) or more of the
- *       outstanding shares, or (iii) beneficial ownership of such entity.
- *
- *       "You" (or "Your") shall mean an individual or Legal Entity
- *       exercising permissions granted by this License.
- *
- *       "Source" form shall mean the preferred form for making modifications,
- *       including but not limited to software source code, documentation
- *       source, and configuration files.
- *
- *       "Object" form shall mean any form resulting from mechanical
- *       transformation or translation of a Source form, including but
- *       not limited to compiled object code, generated documentation,
- *       and conversions to other media types.
- *
- *       "Work" shall mean the work of authorship, whether in Source or
- *       Object form, made available under the License, as indicated by a
- *       copyright notice that is included in or attached to the work
- *       (an example is provided in the Appendix below).
- *
- *       "Derivative Works" shall mean any work, whether in Source or Object
- *       form, that is based on (or derived from) the Work and for which the
- *       editorial revisions, annotations, elaborations, or other modifications
- *       represent, as a whole, an original work of authorship. For the purposes
- *       of this License, Derivative Works shall not include works that remain
- *       separable from, or merely link (or bind by name) to the interfaces of,
- *       the Work and Derivative Works thereof.
- *
- *       "Contribution" shall mean any work of authorship, including
- *       the original version of the Work and any modifications or additions
- *       to that Work or Derivative Works thereof, that is intentionally
- *       submitted to Licensor for inclusion in the Work by the copyright owner
- *       or by an individual or Legal Entity authorized to submit on behalf of
- *       the copyright owner. For the purposes of this definition, "submitted"
- *       means any form of electronic, verbal, or written communication sent
- *       to the Licensor or its representatives, including but not limited to
- *       communication on electronic mailing lists, source code control systems,
- *       and issue tracking systems that are managed by, or on behalf of, the
- *       Licensor for the purpose of discussing and improving the Work, but
- *       excluding communication that is conspicuously marked or otherwise
- *       designated in writing by the copyright owner as "Not a Contribution."
- *
- *       "Contributor" shall mean Licensor and any individual or Legal Entity
- *       on behalf of whom a Contribution has been received by Licensor and
- *       subsequently incorporated within the Work.
- *
- *    2. Grant of Copyright License. Subject to the terms and conditions of
- *       this License, each Contributor hereby grants to You a perpetual,
- *       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
- *       copyright license to reproduce, prepare Derivative Works of,
- *       publicly display, publicly perform, sublicense, and distribute the
- *       Work and such Derivative Works in Source or Object form.
- *
- *    3. Grant of Patent License. Subject to the terms and conditions of
- *       this License, each Contributor hereby grants to You a perpetual,
- *       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
- *       (except as stated in this section) patent license to make, have made,
- *       use, offer to sell, sell, import, and otherwise transfer the Work,
- *       where such license applies only to those patent claims licensable
- *       by such Contributor that are necessarily infringed by their
- *       Contribution(s) alone or by combination of their Contribution(s)
- *       with the Work to which such Contribution(s) was submitted. If You
- *       institute patent litigation against any entity (including a
- *       cross-claim or counterclaim in a lawsuit) alleging that the Work
- *       or a Contribution incorporated within the Work constitutes direct
- *       or contributory patent infringement, then any patent licenses
- *       granted to You under this License for that Work shall terminate
- *       as of the date such litigation is filed.
- *
- *    4. Redistribution. You may reproduce and distribute copies of the
- *       Work or Derivative Works thereof in any medium, with or without
- *       modifications, and in Source or Object form, provided that You
- *       meet the following conditions:
- *
- *       (a) You must give any other recipients of the Work or
- *           Derivative Works a copy of this License; and
- *
- *       (b) You must cause any modified files to carry prominent notices
- *           stating that You changed the files; and
- *
- *       (c) You must retain, in the Source form of any Derivative Works
- *           that You distribute, all copyright, patent, trademark, and
- *           attribution notices from the Source form of the Work,
- *           excluding those notices that do not pertain to any part of
- *           the Derivative Works; and
- *
- *       (d) If the Work includes a "NOTICE" text file as part of its
- *           distribution, then any Derivative Works that You distribute must
- *           include a readable copy of the attribution notices contained
- *           within such NOTICE file, excluding those notices that do not
- *           pertain to any part of the Derivative Works, in at least one
- *           of the following places: within a NOTICE text file distributed
- *           as part of the Derivative Works; within the Source form or
- *           documentation, if provided along with the Derivative Works; or,
- *           within a display generated by the Derivative Works, if and
- *           wherever such third-party notices normally appear. The contents
- *           of the NOTICE file are for informational purposes only and
- *           do not modify the License. You may add Your own attribution
- *           notices within Derivative Works that You distribute, alongside
- *           or as an addendum to the NOTICE text from the Work, provided
- *           that such additional attribution notices cannot be construed
- *           as modifying the License.
- *
- *       You may add Your own copyright statement to Your modifications and
- *       may provide additional or different license terms and conditions
- *       for use, reproduction, or distribution of Your modifications, or
- *       for any such Derivative Works as a whole, provided Your use,
- *       reproduction, and distribution of the Work otherwise complies with
- *       the conditions stated in this License.
- *
- *    5. Submission of Contributions. Unless You explicitly state otherwise,
- *       any Contribution intentionally submitted for inclusion in the Work
- *       by You to the Licensor shall be under the terms and conditions of
- *       this License, without any additional terms or conditions.
- *       Notwithstanding the above, nothing herein shall supersede or modify
- *       the terms of any separate license agreement you may have executed
- *       with Licensor regarding such Contributions.
- *
- *    6. Trademarks. This License does not grant permission to use the trade
- *       names, trademarks, service marks, or product names of the Licensor,
- *       except as required for reasonable and customary use in describing the
- *       origin of the Work and reproducing the content of the NOTICE file.
- *
- *    7. Disclaimer of Warranty. Unless required by applicable law or
- *       agreed to in writing, Licensor provides the Work (and each
- *       Contributor provides its Contributions) on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *       implied, including, without limitation, any warranties or conditions
- *       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
- *       PARTICULAR PURPOSE. You are solely responsible for determining the
- *       appropriateness of using or redistributing the Work and assume any
- *       risks associated with Your exercise of permissions under this License.
- *
- *    8. Limitation of Liability. In no event and under no legal theory,
- *       whether in tort (including negligence), contract, or otherwise,
- *       unless required by applicable law (such as deliberate and grossly
- *       negligent acts) or agreed to in writing, shall any Contributor be
- *       liable to You for damages, including any direct, indirect, special,
- *       incidental, or consequential damages of any character arising as a
- *       result of this License or out of the use or inability to use the
- *       Work (including but not limited to damages for loss of goodwill,
- *       work stoppage, computer failure or malfunction, or any and all
- *       other commercial damages or losses), even if such Contributor
- *       has been advised of the possibility of such damages.
- *
- *    9. Accepting Warranty or Additional Liability. While redistributing
- *       the Work or Derivative Works thereof, You may choose to offer,
- *       and charge a fee for, acceptance of support, warranty, indemnity,
- *       or other liability obligations and/or rights consistent with this
- *       License. However, in accepting such obligations, You may act only
- *       on Your own behalf and on Your sole responsibility, not on behalf
- *       of any other Contributor, and only if You agree to indemnify,
- *       defend, and hold each Contributor harmless for any liability
- *       incurred by, or claims asserted against, such Contributor by reason
- *       of your accepting any such warranty or additional liability.
- *
- *    END OF TERMS AND CONDITIONS
- *
- *    APPENDIX: How to apply the Apache License to your work.
- *
- *       To apply the Apache License to your work, attach the following
- *       boilerplate notice, with the fields enclosed by brackets "{}"
- *       replaced with your own identifying information. (Don't include
- *       the brackets!)  The text should be enclosed in the appropriate
- *       comment syntax for the file format. We also recommend that a
- *       file or class name and description of purpose be included on the
- *       same "printed page" as the copyright notice for easier
- *       identification within third-party archives.
- *
- *    Copyright {yyyy} {name of copyright owner}
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* Copyright 2016-2017 Clifton Labs
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
 package org.mineacademy.fo.jsonsimple;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.LinkedHashMap;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
-/**
- * Represents a JSON object.
- *
- * @author FangYidong(fangyidong @ yahoo.com.cn)
- * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
- * @version 2.0.0
- * @since 1.0.0
- */
-public class JSONObject extends LinkedHashMap<Object, Object> {
+/** JsonObject is a common non-thread safe data format for string to data mappings. The contents of a JsonObject are
+ * only validated as JSON values on serialization. Meaning all values added to a JsonObject must be recognized by the
+ * Jsoner for it to be a true 'JsonObject', so it is really a JsonableHashMap that will serialize to a JsonObject if all
+ * of its contents are valid JSON.
+ * @author https://cliftonlabs.github.io/json-simple/
+ * @since 2.0.0 */
+public class JSONObject extends HashMap<String, Object> implements Jsonable {
+	/** The serialization version this class is compatible with. This value doesn't need to be incremented if and only
+	 * if the only changes to occur were updating comments, updating javadocs, adding new fields to the class, changing
+	 * the fields from static to non-static, or changing the fields from transient to non transient. All other changes
+	 * require this number be incremented. */
+	private static final long serialVersionUID = 2L;
 
-	// ==== 11.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-	// -	Removed the interfaces JSONAware and JSONStreamAware
-	// -	Renamed the "writeJSONString" method to simply "write"
-	// ====
-
-	private static final long serialVersionUID = -503443796854799292L;
-
-	/**
-	 * Constructs an empty {@linkplain JSONObject}
-	 *
-	 * @since 1.0.0
-	 */
+	/** Instantiates an empty JsonObject. */
 	public JSONObject() {
 	}
 
-	/**
-	 * Allows creation of a {@linkplain JSONObject} from a {@linkplain Map}. After that, both the
-	 * generated {@linkplain JSONObject} and the {@linkplain Map} can be modified independently.
-	 *
-	 * @param map the {@linkplain Map} from which the {@linkplain JSONObject} should be created
-	 * @since 1.0.0
-	 */
-	public JSONObject(Map<?, ?> map) {
-
+	/** Instantiate a new JsonObject by accepting a map's entries, which could lead to de/serialization issues of the
+	 * resulting JsonObject since the entry values aren't validated as JSON values.
+	 * @param map represents the mappings to produce the JsonObject with. */
+	public JSONObject(final Map<String, ?> map) {
 		super(map);
-	}
-
-	/**
-	 * Constructs a {@linkplain JSONObject} from JSON data.
-	 *
-	 * @param json the JSON data
-	 * @throws JSONParseException if the JSON data is invalid
-	 * @since 1.0.0
-	 */
-	public JSONObject(String json) throws JSONParseException {
-
-		super((JSONObject) new JSONParser().parse(json));
-	}
-
-	/**
-	 * Constructs a {@linkplain JSONObject} with JSON data from a {@linkplain Reader}.
-	 *
-	 * @param reader the {@linkplain Reader} with the JSON data
-	 * @throws IOException        if an I/O error occurred
-	 * @throws JSONParseException if the JSON is invalid
-	 * @since 1.0.0
-	 */
-	public JSONObject(Reader reader) throws IOException, JSONParseException {
-
-		super((JSONObject) new JSONParser().parse(reader));
-	}
-
-	/**
-	 * Writes this {@linkplain JSONObject} on a given {@linkplain Writer}.
-	 *
-	 * @param writer the {@linkplain Writer}
-	 * @throws IOException if an I/O error occurred
-	 * @since 1.0.0
-	 */
-	public void write(Writer writer) throws IOException {
-
-		JsonSimpleUtil.write(this, writer);
-	}
-
-	/**
-	 * @return a new {@linkplain JSONObject} without any {@code null} values
-	 * @since 1.1.0
-	 */
-	public JSONObject compact() {
-
-		final JSONObject object = new JSONObject();
-
-		this.forEach((key, value) -> {
-
-			if (value != null)
-				object.put(key, value);
-		});
-
-		return object;
 	}
 
 	/**
@@ -311,267 +52,463 @@ public class JSONObject extends LinkedHashMap<Object, Object> {
 	 *
 	 * @param key key of the value
 	 * @return a {@linkplain JSONObject} or {@code null}
-	 * @since 1.0.0
 	 */
 	public JSONObject getObject(String key) {
+		final Object value = this.get(key);
 
-		return JsonSimpleUtil.getObject(this.get(key));
-	}
+		if (value != null)
+			if (value instanceof JSONObject)
+				return (JSONObject) value;
 
-	/**
-	 * If the value already is a {@linkplain JSONArray}, it will be casted and returned.
-	 * If the value is an array or {@linkplain Collection}, it will be wrapped in a {@linkplain JSONArray}.
-	 * The result is returned.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain JSONArray} or {@code null}
-	 * @since 1.0.0
-	 */
-	public JSONArray getArray(String key) {
-
-		return JsonSimpleUtil.getArray(this.get(key));
-	}
-
-	/**
-	 * If the value is already a {@linkplain Boolean}, it will be casted and returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Number}, this method will return {@code true} in case its {@code long} value is {@code 1}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Boolean} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Boolean getBoolean(String key) {
-
-		return JsonSimpleUtil.getBoolean(this.get(key));
-	}
-
-	/**
-	 * If the value is a {@linkplain Number}, its {@code byte} value is returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Byte} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Byte getByte(String key) {
-
-		return JsonSimpleUtil.getByte(this.get(key));
-	}
-
-	/**
-	 * If the value is a {@linkplain Number}, its {@code short} value is returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Short} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Short getShort(String key) {
-
-		return JsonSimpleUtil.getShort(this.get(key));
-	}
-
-	/**
-	 * If the value is a {@linkplain Number}, its {@code int} value is returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Integer} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Integer getInteger(String key) {
-
-		return JsonSimpleUtil.getInteger(this.get(key));
-	}
-
-	/**
-	 * If the value is a {@linkplain Number}, its {@code long} value is returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Long} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Long getLong(String key) {
-
-		return JsonSimpleUtil.getLong(this.get(key));
-	}
-
-	/**
-	 * If the value is a {@linkplain Number}, its {@code float} value is returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Float} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Float getFloat(String key) {
-
-		return JsonSimpleUtil.getFloat(this.get(key));
-	}
-
-	/**
-	 * If the value is a {@linkplain Number}, its {@code double} value is returned.
-	 * If the value is a {@linkplain String}, it will be parsed. The result is returned.
-	 * If the value is a {@linkplain Boolean}, this method returns {@code 1} in case the value is {@code true} otherwise {@code 0}.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain Double} or {@code null}
-	 * @since 1.0.0
-	 */
-	public Double getDouble(String key) {
-
-		return JsonSimpleUtil.getDouble(this.get(key));
-	}
-
-	/**
-	 * Returns the same as the value's {@link Object#toString()} method.
-	 * If the actual value is {@code null}, this method will return {@code null}.
-	 *
-	 * @param key key of the value
-	 * @return a {@linkplain String} or {@code null}
-	 * @since 1.0.0
-	 */
-	public String getString(String key) {
-
-		return JsonSimpleUtil.getString(this.get(key));
-	}
-
-	/**
-	 * If the value already is a {@linkplain Date}, it will be casted and returned.
-	 * Otherwise the result of the value's {@link Object#toString()} will be parsed by the given
-	 * {@linkplain DateFormat}. The result is returned.
-	 * If the actual value is {@code null}, this method will return {@code null}.
-	 *
-	 * @param key    key of the value
-	 * @param format the {@linkplain DateFormat} to parse the date with
-	 * @return a {@linkplain Date} or {@code null}
-	 * @throws ParseException if the date could not be parsed
-	 * @since 1.0.0
-	 */
-	public Date getDate(String key, DateFormat format) throws ParseException {
-
-		return JsonSimpleUtil.getDate(this.get(key), format);
-	}
-
-	/**
-	 * If the {@linkplain String} representation of the value equals the name of the enum constant
-	 * in the given enum type, it will return the enum constant.
-	 * In any other case this method returns {@code null}.
-	 *
-	 * @param key  key of the value
-	 * @param type the enum type
-	 * @param <T>  the generic return type
-	 * @return an {@linkplain Enum} or {@code null}
-	 * @since 1.0.0
-	 */
-	public <T extends Enum<T>> T getEnum(String key, Class<T> type) {
-
-		return JsonSimpleUtil.getEnum(this.get(key), type);
-	}
-
-	/**
-	 * @return a {@linkplain String} representation of this {@linkplain JSONObject}.
-	 * @since 1.0.0
-	 */
-	@Override
-	public String toString() {
-
-		try (StringWriter writer = new StringWriter()) {
-
-			JsonSimpleUtil.write(this, writer);
-			return writer.toString();
-
-		} catch (final IOException exception) {
-
-			// WILL NEVER HAPPEN!
-			// DO NOTHING!
-		}
+			else if (value instanceof Map)
+				return new JSONObject((Map<String, ?>) value);
 
 		return null;
 	}
 
-	@Override
-	public boolean equals(Object object) {
+	/** A convenience method that assumes there is a BigDecimal, Number, or String at the given key. If a Number is
+	 * there its Number#toString() is used to construct a new BigDecimal(String). If a String is there it is used to
+	 * construct a new BigDecimal(String).
+	 * @param key representing where the value ought to be paired with.
+	 * @return a BigDecimal representing the value paired with the key.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see BigDecimal
+	 * @see Number#toString()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public BigDecimal getBigDecimal(final String key) {
+		Object returnable = this.get(key);
+		if (returnable instanceof BigDecimal) {
+			/* Success there was a BigDecimal or it defaulted. */
+		} else if (returnable instanceof Number)
+			/* A number can be used to construct a BigDecimal */
+			returnable = new BigDecimal(returnable.toString());
+		else if (returnable instanceof String)
+			/* A number can be used to construct a BigDecimal */
+			returnable = new BigDecimal((String) returnable);
+		return (BigDecimal) returnable;
+	}
 
-		// ==== 17.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-		// -	Fixed some weird behavior
-		// ====
+	/** A convenience method that assumes there is a BigDecimal, Number, or String at the given key. If a Number is
+	 * there its Number#toString() is used to construct a new BigDecimal(String). If a String is there it is used to
+	 * construct a new BigDecimal(String).
+	 * @param key representing where the value ought to be paired with.
+	 * @return a BigDecimal representing the value paired with the key or JsonKey#getValue() if the key isn't present.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see BigDecimal
+	 * @see Number#toString()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public BigDecimal getBigDecimalOrDefault(final String key, final BigDecimal def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
 
-		if (object instanceof Map) {
+		if (returnable instanceof BigDecimal) {
+			/* Success there was a BigDecimal or it defaulted. */
+		} else if (returnable instanceof Number)
+			/* A number can be used to construct a BigDecimal */
+			returnable = new BigDecimal(returnable.toString());
+		else if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal */
+			returnable = new BigDecimal((String) returnable);
+		return (BigDecimal) returnable;
+	}
 
-			final Map<?, ?> map = (Map<?, ?>) object;
+	/** A convenience method that assumes there is a Boolean or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Boolean representing the value paired with the key.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Boolean getBoolean(final String key) {
+		Object returnable = this.get(key);
+		if (returnable instanceof String)
+			returnable = Boolean.valueOf((String) returnable);
+		return (Boolean) returnable;
+	}
 
-			if (this.size() == map.size()) {
+	/** A convenience method that assumes there is a Boolean or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Boolean representing the value paired with the key or JsonKey#getValue() if the key isn't present.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Boolean getBooleanOrDefault(final String key, final boolean def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		if (returnable instanceof String)
+			returnable = Boolean.valueOf((String) returnable);
+		return (Boolean) returnable;
+	}
 
-				for (final Map.Entry<Object, Object> thisEntry : this.entrySet()) {
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Byte representing the value paired with the key (which may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#byteValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Byte getByte(final String key) {
+		Object returnable = this.get(key);
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).byteValue();
+	}
 
-					final Object key = thisEntry.getKey();
-					final Object value = thisEntry.getValue();
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Byte representing the value paired with the key or JsonKey#getValue() if the key isn't present (which
+	 *         may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#byteValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Byte getByteOrDefault(final String key, final byte def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).byteValue();
+	}
 
-					if (!map.containsKey(key) || !value.equals(map.get(key)))
-						return false;
-				}
+	/** A convenience method that assumes there is a Collection at the given key.
+	 * @param <T> the kind of collection to expect at the key. Note unless manually added, collection values will be a
+	 *        JsonArray.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Collection representing the value paired with the key.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
 
-				return true;
-			}
+	public JSONArray getArray(final String key) {
+		final Object collection = this.get(key);
+
+		if (collection instanceof JSONArray)
+			return (JSONArray) collection;
+
+		else if (collection instanceof Collection)
+			return new JSONArray((Collection<?>) collection);
+
+		return null;
+	}
+
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Double representing the value paired with the key (which may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#doubleValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Double getDouble(final String key) {
+		Object returnable = this.get(key);
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).doubleValue();
+	}
+
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Double representing the value paired with the key or JsonKey#getValue() if the key isn't present (which
+	 *         may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#doubleValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Double getDoubleOrDefault(final String key, final double def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).doubleValue();
+	}
+
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return an Integer representing the value paired with the key (which may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#intValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Integer getInteger(final String key) {
+		Object returnable = this.get(key);
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).intValue();
+	}
+
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return an Integer representing the value paired with the key or JsonKey#getValue() if the key isn't present
+	 *         (which may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#intValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Integer getIntegerOrDefault(final String key, final int def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).intValue();
+	}
+
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Long representing the value paired with the key (which may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#longValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Long getLong(final String key) {
+		Object returnable = this.get(key);
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).longValue();
+	}
+
+	/** A convenience method that assumes there is a Number or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Long representing the value paired with the key or JsonKey#getValue() if the key isn't present (which
+	 *         may involve rounding or truncation).
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
+	 *         represents the double or float Infinity or NaN.
+	 * @see Number#longValue()
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public Long getLongOrDefault(final String key, final long def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		if (returnable == null)
+			return null;
+		if (returnable instanceof String)
+			/* A String can be used to construct a BigDecimal. */
+			returnable = new BigDecimal((String) returnable);
+		return ((Number) returnable).longValue();
+	}
+
+	/** A convenience method that assumes there is a Map at the given key.
+	 * @param <T> the kind of map to expect at the key. Note unless manually added, Map values will be a JsonObject.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Map representing the value paired with the key.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+
+	public <T extends Map<?, ?>> T getMap(final String key) {
+		/* The unchecked warning is suppressed because there is no way of guaranteeing at compile time the cast will
+		 * work. */
+		return (T) this.get(key);
+	}
+
+	/** A convenience method that assumes there is a Map at the given key.
+	 * @param <T> the kind of map to expect at the key. Note unless manually added, Map values will be a JsonObject.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a Map representing the value paired with the key or JsonKey#getValue() if the key isn't present.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+
+	public <T extends Map<?, ?>> T getMapOrDefault(final String key, final T def) {
+		/* The unchecked warning is suppressed because there is no way of guaranteeing at compile time the cast will
+		 * work. */
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		return (T) returnable;
+	}
+
+	/** A convenience method that assumes there is a Boolean, Number, or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a String representing the value paired with the key.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public String getString(final String key) {
+		Object returnable = this.get(key);
+		if (returnable instanceof Boolean)
+			returnable = returnable.toString();
+		else if (returnable instanceof Number)
+			returnable = returnable.toString();
+		return (String) returnable;
+	}
+
+	/** A convenience method that assumes there is a Boolean, Number, or String value at the given key.
+	 * @param key representing where the value ought to be paired with.
+	 * @return a String representing the value paired with the key or JsonKey#getValue() if the key isn't present.
+	 * @throws ClassCastException if the value didn't match the assumed return type.
+	 *
+	 * @since 2.3.0 to utilize JsonKey */
+	public String getStringOrDefault(final String key, final String def) {
+		Object returnable;
+		if (this.containsKey(key))
+			returnable = this.get(key);
+		else
+			returnable = def;
+		if (returnable instanceof Boolean)
+			returnable = returnable.toString();
+		else if (returnable instanceof Number)
+			returnable = returnable.toString();
+		return (String) returnable;
+	}
+
+	/** Calls putAll for the given map, but returns the JsonObject for chaining calls.
+	 * @param map represents the map to be copied into the JsonObject.
+	 * @return the JsonObject to allow chaining calls.
+	 * @see Map#putAll(Map)
+	 * @since 3.1.0 for inline instantiation. */
+	public JSONObject putAllChain(final Map<String, Object> map) {
+		this.putAll(map);
+		return this;
+	}
+
+	/** Calls put for the given key and value, but returns the JsonObject for chaining calls.
+	 * @param key represents the value's association in the map.
+	 * @param value represents the key's association in the map.
+	 * @return the JsonObject to allow chaining calls.
+	 * @see Map#put(Object, Object)
+	 * @since 3.1.0 for inline instantiation. */
+	public JSONObject putChain(final String key, final Object value) {
+		this.put(key, value);
+		return this;
+	}
+
+	/** Convenience method that calls remove for the given key.
+	 * @param key represents the value's association in the map.
+	 * @return an object representing the removed value or null if there wasn't one.
+	 * @since 3.1.1 to use JsonKey instead of calling JsonKey#getKey() each time.
+	 * @see Map#remove(Object) */
+	public Object remove(final String key) {
+		return this.remove(key);
+	}
+
+	/** Convenience method that calls remove for the given key and value.
+	 * @param key represents the value's association in the map.
+	 * @param value represents the expected value at the given key.
+	 * @return a boolean, which is true if the value was removed. It is false otherwise.
+	 * @since 3.1.1 to use JsonKey instead of calling JsonKey#getKey() each time.
+	 * @see Map#remove(Object, Object) */
+	public boolean remove(final String key, final Object value) {
+		return this.remove(key, value);
+	}
+
+	/** Ensures the given keys are present.
+	 * @param keys represents the keys that must be present.
+	 * @throws NoSuchElementException if any of the given keys are missing.
+	 * @since 2.3.0 to ensure critical keys are in the JsonObject. */
+	public void requireKeys(final String... keys) {
+		/* Track all of the missing keys. */
+		final Set<String> missing = new HashSet<>();
+		for (final String subkey : keys)
+			if (!this.containsKey(subkey))
+				missing.add(subkey);
+		if (!missing.isEmpty()) {
+			/* Report any missing keys in the exception. */
+			final StringBuilder sb = new StringBuilder();
+			for (final String subkey : missing)
+				sb.append(subkey).append(", ");
+			sb.setLength(sb.length() - 2);
+			final String s = missing.size() > 1 ? "s" : "";
+			throw new NoSuchElementException("A JsonObject is missing required key" + s + ": " + sb.toString());
 		}
+	}
 
-		return false;
+	/* (non-Javadoc)
+	 * @see org.json.simple.Jsonable#toJson() */
+	@Override
+	public String toJson() {
+		final StringWriter writable = new StringWriter();
+		try {
+			this.toJson(writable);
+		} catch (final IOException caught) {
+			/* See java.io.StringWriter. */
+		}
+		return writable.toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.json.simple.Jsonable#toJson(java.io.Writer) */
+	@Override
+	public void toJson(final Writer writable) throws IOException {
+		/* Writes the map in JSON object format. */
+		boolean isFirstEntry = true;
+		writable.write('{');
+		for (final Entry<String, Object> entry : this.entrySet()) {
+			if (isFirstEntry)
+				isFirstEntry = false;
+			else
+				writable.write(',');
+			JSONParser.serialize(entry.getKey(), writable);
+			writable.write(':');
+			JSONParser.serialize(entry.getValue(), writable);
+		}
+		writable.write('}');
 	}
 
 	/**
-	 * @param rootName the name of the root element
-	 * @return this JSON Object in XML
-	 * @since 1.1.0
+	 * @see #toJson()
 	 */
-	public String toXML(String rootName) {
-
-		final StringBuilder builder = new StringBuilder();
-
-		builder.append('<');
-		builder.append(rootName);
-		builder.append('>');
-
-		this.forEach((key, value) -> {
-
-			if (value instanceof JSONObject)
-				builder.append(((JSONObject) value).toXML(key.toString()));
-			else if (value instanceof JSONArray)
-				builder.append(((JSONArray) value).toXML(key.toString()));
-			else {
-
-				builder.append('<');
-				builder.append(key);
-				builder.append('>');
-
-				if (value != null)
-					builder.append(String.valueOf(value));
-
-				builder.append("</");
-				builder.append(key);
-				builder.append('>');
-			}
-		});
-
-		builder.append("</");
-		builder.append(rootName);
-		builder.append('>');
-
-		return builder.toString();
+	@Override
+	public String toString() {
+		return this.toJson();
 	}
 }

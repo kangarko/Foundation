@@ -1,764 +1,809 @@
-/*
- *                                  Apache License
- *                            Version 2.0, January 2004
- *                         http://www.apache.org/licenses/
- *
- *    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
- *
- *    1. Definitions.
- *
- *       "License" shall mean the terms and conditions for use, reproduction,
- *       and distribution as defined by Sections 1 through 9 of this document.
- *
- *       "Licensor" shall mean the copyright owner or entity authorized by
- *       the copyright owner that is granting the License.
- *
- *       "Legal Entity" shall mean the union of the acting entity and all
- *       other entities that control, are controlled by, or are under common
- *       control with that entity. For the purposes of this definition,
- *       "control" means (i) the power, direct or indirect, to cause the
- *       direction or management of such entity, whether by contract or
- *       otherwise, or (ii) ownership of fifty percent (50%) or more of the
- *       outstanding shares, or (iii) beneficial ownership of such entity.
- *
- *       "You" (or "Your") shall mean an individual or Legal Entity
- *       exercising permissions granted by this License.
- *
- *       "Source" form shall mean the preferred form for making modifications,
- *       including but not limited to software source code, documentation
- *       source, and configuration files.
- *
- *       "Object" form shall mean any form resulting from mechanical
- *       transformation or translation of a Source form, including but
- *       not limited to compiled object code, generated documentation,
- *       and conversions to other media types.
- *
- *       "Work" shall mean the work of authorship, whether in Source or
- *       Object form, made available under the License, as indicated by a
- *       copyright notice that is included in or attached to the work
- *       (an example is provided in the Appendix below).
- *
- *       "Derivative Works" shall mean any work, whether in Source or Object
- *       form, that is based on (or derived from) the Work and for which the
- *       editorial revisions, annotations, elaborations, or other modifications
- *       represent, as a whole, an original work of authorship. For the purposes
- *       of this License, Derivative Works shall not include works that remain
- *       separable from, or merely link (or bind by name) to the interfaces of,
- *       the Work and Derivative Works thereof.
- *
- *       "Contribution" shall mean any work of authorship, including
- *       the original version of the Work and any modifications or additions
- *       to that Work or Derivative Works thereof, that is intentionally
- *       submitted to Licensor for inclusion in the Work by the copyright owner
- *       or by an individual or Legal Entity authorized to submit on behalf of
- *       the copyright owner. For the purposes of this definition, "submitted"
- *       means any form of electronic, verbal, or written communication sent
- *       to the Licensor or its representatives, including but not limited to
- *       communication on electronic mailing lists, source code control systems,
- *       and issue tracking systems that are managed by, or on behalf of, the
- *       Licensor for the purpose of discussing and improving the Work, but
- *       excluding communication that is conspicuously marked or otherwise
- *       designated in writing by the copyright owner as "Not a Contribution."
- *
- *       "Contributor" shall mean Licensor and any individual or Legal Entity
- *       on behalf of whom a Contribution has been received by Licensor and
- *       subsequently incorporated within the Work.
- *
- *    2. Grant of Copyright License. Subject to the terms and conditions of
- *       this License, each Contributor hereby grants to You a perpetual,
- *       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
- *       copyright license to reproduce, prepare Derivative Works of,
- *       publicly display, publicly perform, sublicense, and distribute the
- *       Work and such Derivative Works in Source or Object form.
- *
- *    3. Grant of Patent License. Subject to the terms and conditions of
- *       this License, each Contributor hereby grants to You a perpetual,
- *       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
- *       (except as stated in this section) patent license to make, have made,
- *       use, offer to sell, sell, import, and otherwise transfer the Work,
- *       where such license applies only to those patent claims licensable
- *       by such Contributor that are necessarily infringed by their
- *       Contribution(s) alone or by combination of their Contribution(s)
- *       with the Work to which such Contribution(s) was submitted. If You
- *       institute patent litigation against any entity (including a
- *       cross-claim or counterclaim in a lawsuit) alleging that the Work
- *       or a Contribution incorporated within the Work constitutes direct
- *       or contributory patent infringement, then any patent licenses
- *       granted to You under this License for that Work shall terminate
- *       as of the date such litigation is filed.
- *
- *    4. Redistribution. You may reproduce and distribute copies of the
- *       Work or Derivative Works thereof in any medium, with or without
- *       modifications, and in Source or Object form, provided that You
- *       meet the following conditions:
- *
- *       (a) You must give any other recipients of the Work or
- *           Derivative Works a copy of this License; and
- *
- *       (b) You must cause any modified files to carry prominent notices
- *           stating that You changed the files; and
- *
- *       (c) You must retain, in the Source form of any Derivative Works
- *           that You distribute, all copyright, patent, trademark, and
- *           attribution notices from the Source form of the Work,
- *           excluding those notices that do not pertain to any part of
- *           the Derivative Works; and
- *
- *       (d) If the Work includes a "NOTICE" text file as part of its
- *           distribution, then any Derivative Works that You distribute must
- *           include a readable copy of the attribution notices contained
- *           within such NOTICE file, excluding those notices that do not
- *           pertain to any part of the Derivative Works, in at least one
- *           of the following places: within a NOTICE text file distributed
- *           as part of the Derivative Works; within the Source form or
- *           documentation, if provided along with the Derivative Works; or,
- *           within a display generated by the Derivative Works, if and
- *           wherever such third-party notices normally appear. The contents
- *           of the NOTICE file are for informational purposes only and
- *           do not modify the License. You may add Your own attribution
- *           notices within Derivative Works that You distribute, alongside
- *           or as an addendum to the NOTICE text from the Work, provided
- *           that such additional attribution notices cannot be construed
- *           as modifying the License.
- *
- *       You may add Your own copyright statement to Your modifications and
- *       may provide additional or different license terms and conditions
- *       for use, reproduction, or distribution of Your modifications, or
- *       for any such Derivative Works as a whole, provided Your use,
- *       reproduction, and distribution of the Work otherwise complies with
- *       the conditions stated in this License.
- *
- *    5. Submission of Contributions. Unless You explicitly state otherwise,
- *       any Contribution intentionally submitted for inclusion in the Work
- *       by You to the Licensor shall be under the terms and conditions of
- *       this License, without any additional terms or conditions.
- *       Notwithstanding the above, nothing herein shall supersede or modify
- *       the terms of any separate license agreement you may have executed
- *       with Licensor regarding such Contributions.
- *
- *    6. Trademarks. This License does not grant permission to use the trade
- *       names, trademarks, service marks, or product names of the Licensor,
- *       except as required for reasonable and customary use in describing the
- *       origin of the Work and reproducing the content of the NOTICE file.
- *
- *    7. Disclaimer of Warranty. Unless required by applicable law or
- *       agreed to in writing, Licensor provides the Work (and each
- *       Contributor provides its Contributions) on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *       implied, including, without limitation, any warranties or conditions
- *       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
- *       PARTICULAR PURPOSE. You are solely responsible for determining the
- *       appropriateness of using or redistributing the Work and assume any
- *       risks associated with Your exercise of permissions under this License.
- *
- *    8. Limitation of Liability. In no event and under no legal theory,
- *       whether in tort (including negligence), contract, or otherwise,
- *       unless required by applicable law (such as deliberate and grossly
- *       negligent acts) or agreed to in writing, shall any Contributor be
- *       liable to You for damages, including any direct, indirect, special,
- *       incidental, or consequential damages of any character arising as a
- *       result of this License or out of the use or inability to use the
- *       Work (including but not limited to damages for loss of goodwill,
- *       work stoppage, computer failure or malfunction, or any and all
- *       other commercial damages or losses), even if such Contributor
- *       has been advised of the possibility of such damages.
- *
- *    9. Accepting Warranty or Additional Liability. While redistributing
- *       the Work or Derivative Works thereof, You may choose to offer,
- *       and charge a fee for, acceptance of support, warranty, indemnity,
- *       or other liability obligations and/or rights consistent with this
- *       License. However, in accepting such obligations, You may act only
- *       on Your own behalf and on Your sole responsibility, not on behalf
- *       of any other Contributor, and only if You agree to indemnify,
- *       defend, and hold each Contributor harmless for any liability
- *       incurred by, or claims asserted against, such Contributor by reason
- *       of your accepting any such warranty or additional liability.
- *
- *    END OF TERMS AND CONDITIONS
- *
- *    APPENDIX: How to apply the Apache License to your work.
- *
- *       To apply the Apache License to your work, attach the following
- *       boilerplate notice, with the fields enclosed by brackets "{}"
- *       replaced with your own identifying information. (Don't include
- *       the brackets!)  The text should be enclosed in the appropriate
- *       comment syntax for the file format. We also recommend that a
- *       file or class name and description of purpose be included on the
- *       same "printed page" as the copyright notice for easier
- *       identification within third-party archives.
- *
- *    Copyright {yyyy} {name of copyright owner}
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* Copyright 2016 Clifton Labs
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
 package org.mineacademy.fo.jsonsimple;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.List;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.Stack;
+import java.util.Set;
 
-import org.mineacademy.fo.exception.FoException;
-
-import lombok.Getter;
-
-/**
- * Parses JSON data (<u>not</u> thread-safe).
+/** Jsoner provides JSON utilities for escaping strings to be JSON compatible, thread safe parsing (RFC 7159) JSON
+ * strings, and thread safe serializing data to strings in JSON format.
  *
- * @author FangYidong(fangyidong @ yahoo.com.cn)
- * @author Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
- * @version 2.0.0
- * @since 1.0.0
- */
+ * @author https://cliftonlabs.github.io/json-simple/
+ * @since 2.0.0 */
 public class JSONParser {
-
-	// ==== 11.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-	// -	Removed the ContainerFactory
-	// -	Updated the documentation
-	// ====
-
-	@Getter
-	private static final JSONParser instance = new JSONParser();
-
-	private static final int S_INIT = 0;
-	private static final int S_IN_FINISHED_VALUE = 1;
-	private static final int S_IN_OBJECT = 2;
-	private static final int S_IN_ARRAY = 3;
-	private static final int S_PASSED_PAIR_KEY = 4;
-	private static final int S_IN_PAIR_VALUE = 5;
-	private static final int S_END = 6;
-	private static final int S_IN_ERROR = -1;
-
-	private Stack<Object> handlerStatusStack;
-	private final Yylex lexer = new Yylex((Reader) null);
-	private Yytoken token;
-	private int status = JSONParser.S_INIT;
-
-	private final void nextToken() throws JSONParseException, IOException {
-
-		this.token = this.lexer.yylex();
-
-		if (this.token == null)
-			this.token = new Yytoken(Yytoken.TYPE_EOF, null);
+	/** Flags to tweak the behavior of the primary deserialization method. */
+	private enum DeserializationOptions {
+		/** Whether multiple JSON values can be deserialized as a root element. */
+		ALLOW_CONCATENATED_JSON_VALUES,
+		/** Whether a JsonArray can be deserialized as a root element. */
+		ALLOW_JSON_ARRAYS,
+		/** Whether a boolean, null, Number, or String can be deserialized as a root element. */
+		ALLOW_JSON_DATA,
+		/** Whether a JsonObject can be deserialized as a root element. */
+		ALLOW_JSON_OBJECTS;
 	}
 
-	private final void init(Stack<Object> statusStack, Stack<Object> valueStack) {
-
-		if (this.token.type == Yytoken.TYPE_VALUE) {
-
-			this.status = JSONParser.S_IN_FINISHED_VALUE;
-			statusStack.push(this.status);
-			valueStack.push(this.token.value);
-
-		} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
-
-			this.status = JSONParser.S_IN_OBJECT;
-			statusStack.push(this.status);
-			valueStack.push(new JSONObject());
-
-		} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
-
-			this.status = JSONParser.S_IN_ARRAY;
-			statusStack.push(this.status);
-			valueStack.push(new JSONArray());
-
-		} else
-			this.status = JSONParser.S_IN_ERROR;
+	/** Flags to tweak the behavior of the primary serialization method. */
+	private enum SerializationOptions {
+		/** Instead of aborting serialization on non-JSON values it will continue serialization by serializing the
+		 * non-JSON value directly into the now invalid JSON. Be mindful that invalid JSON will not successfully
+		 * deserialize. */
+		ALLOW_INVALIDS,
+		/** Instead of aborting serialization on non-JSON values that implement Jsonable it will continue serialization
+		 * by deferring serialization to the Jsonable.
+		 * @see Jsonable */
+		ALLOW_JSONABLES;
 	}
 
-	private final Object inFinishedValue(Stack<Object> valueStack) throws JSONParseException {
-
-		if (this.token.type == Yytoken.TYPE_EOF)
-			return valueStack.pop();
-		else
-			throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
-	}
-
-	private final void inObject(Stack<Object> statusStack, Stack<Object> valueStack) {
-
-		if (this.token.type == Yytoken.TYPE_VALUE) {
-
-			if (this.token.value instanceof String) {
-
-				final String key = (String) this.token.value;
-				valueStack.push(key);
-				this.status = JSONParser.S_PASSED_PAIR_KEY;
-				statusStack.push(this.status);
-
-			} else
-				this.status = S_IN_ERROR;
-
-		} else if (this.token.type == Yytoken.TYPE_RIGHT_BRACE) {
-
-			if (valueStack.size() > 1) {
-
-				statusStack.pop();
-				valueStack.pop();
-				this.status = (int) statusStack.peek();
-
-			} else
-				this.status = JSONParser.S_IN_FINISHED_VALUE;
-
-		} else if (this.token.type != Yytoken.TYPE_COMMA)
-			this.status = JSONParser.S_IN_ERROR;
-	}
-
-	private final void inPassedPairKey(Stack<Object> statusStack, Stack<Object> valueStack) {
-
-		if (this.token.type == Yytoken.TYPE_VALUE) {
-
-			statusStack.pop();
-			final String key = (String) valueStack.pop();
-			final Map<Object, Object> parent = (Map<Object, Object>) valueStack.peek();
-			parent.put(key, this.token.value);
-			this.status = (int) statusStack.peek();
-
-		} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
-
-			statusStack.pop();
-			final String key = (String) valueStack.pop();
-			final Map<Object, Object> parent = (Map<Object, Object>) valueStack.peek();
-			final List<Object> newArray = new JSONArray();
-			parent.put(key, newArray);
-			this.status = JSONParser.S_IN_ARRAY;
-			statusStack.push(this.status);
-			valueStack.push(newArray);
-
-		} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
-
-			statusStack.pop();
-			final String key = (String) valueStack.pop();
-			final Map<Object, Object> parent = (Map<Object, Object>) valueStack.peek();
-			final Map<Object, Object> newObject = new JSONObject();
-			parent.put(key, newObject);
-			this.status = JSONParser.S_IN_OBJECT;
-			statusStack.push(this.status);
-			valueStack.push(newObject);
-
-		} else if (this.token.type != Yytoken.TYPE_COLON)
-			this.status = JSONParser.S_IN_ERROR;
-	}
-
-	private final void inArray(Stack<Object> statusStack, Stack<Object> valueStack) {
-
-		if (this.token.type == Yytoken.TYPE_VALUE) {
-
-			final List<Object> val = (List<Object>) valueStack.peek();
-			val.add(this.token.value);
-
-		} else if (this.token.type == Yytoken.TYPE_RIGHT_SQUARE) {
-
-			if (valueStack.size() > 1) {
-
-				statusStack.pop();
-				valueStack.pop();
-				this.status = (int) statusStack.peek();
-
-			} else
-				this.status = JSONParser.S_IN_FINISHED_VALUE;
-
-		} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
-
-			final List<Object> val = (List<Object>) valueStack.peek();
-			final Map<Object, Object> newObject = new JSONObject();
-			val.add(newObject);
-			this.status = JSONParser.S_IN_OBJECT;
-			statusStack.push(this.status);
-			valueStack.push(newObject);
-
-		} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
-
-			final List<Object> val = (List<Object>) valueStack.peek();
-			final List<Object> newArray = new JSONArray();
-			val.add(newArray);
-			this.status = JSONParser.S_IN_ARRAY;
-			statusStack.push(this.status);
-			valueStack.push(newArray);
-
-		} else if (this.token.type != Yytoken.TYPE_COMMA)
-			this.status = JSONParser.S_IN_ERROR;
+	/** The possible States of a JSON deserializer. */
+	private enum States {
+		/** Post-parsing state. */
+		DONE,
+		/** Pre-parsing state. */
+		INITIAL,
+		/** Parsing error, ParsingException should be thrown. */
+		PARSED_ERROR,
+		PARSING_ARRAY,
+		/** Parsing a key-value pair inside of an object. */
+		PARSING_ENTRY,
+		PARSING_OBJECT;
 	}
 
 	/**
-	 * Resets the parser to the initial state without resetting the underlying reader.
+	 * Returns a new instance of the json parser
 	 *
-	 * @since 1.0.0
-	 */
-	public void reset() {
-
-		this.token = null;
-		this.status = JSONParser.S_INIT;
-		this.handlerStatusStack = null;
-	}
-
-	/**
-	 * Resets the parser to the initial state with a new character reader.
+	 * @deprecated simply call static methods instead
 	 *
-	 * @param reader the new character reader
-	 * @since 1.0.0
+	 * @return
 	 */
-	public void reset(Reader reader) {
+	@Deprecated
+	public static JSONParser getInstance() {
+		return new JSONParser();
+	}
 
-		this.lexer.yyreset(reader);
-		this.reset();
+	private JSONParser() {
+		/* Jsoner is purely static so instantiation is unnecessary. */
 	}
 
 	/**
-	 * @return the position where the current token begins
-	 * @since 1.0.0
-	 */
-	public int getPosition() {
-
-		return this.lexer.getPosition();
-	}
-
-	/**
-	 * Parses JSON data.
+	 * @see #deserialize(String)
 	 *
-	 * @param json the JSON data
-	 * @return An instance of:
-	 * <ul>
-	 * <li>{@linkplain JSONObject}</li>
-	 * <li>{@linkplain JSONArray}</li>
-	 * <li>{@linkplain String}</li>
-	 * <li>{@linkplain Number}</li>
-	 * <li>{@linkplain Boolean}</li>
-	 * <li>{@code null}</li>
-	 * </ul>
-	 * @throws JSONParseException if the JSON is invalid
-	 * @since 1.0.0
+	 * @param json
+	 * @return
+	 * @throws JsonException
+	 * @deprecated use {@link #deserialize(Reader))} instead
+	 *
 	 */
-	public Object parse(String json) throws JSONParseException {
-
-		try (StringReader reader = new StringReader(json)) {
-
-			return this.parse(reader);
-
-		} catch (final IOException exception) {
-
-			// WILL NEVER HAPPEN!
-			throw new FoException(exception);
-		}
+	@Deprecated
+	public static Object parse(Reader reader) throws JSONParseException {
+		return deserialize(reader);
 	}
 
 	/**
-	 * Parses JSON data from a {@linkplain Reader}.
+	 * @see #deserialize(String)
 	 *
-	 * @param reader the {@linkplain Reader}
-	 * @return An instance of:
-	 * <ul>
-	 * <li>{@linkplain JSONObject}</li>
-	 * <li>{@linkplain JSONArray}</li>
-	 * <li>{@linkplain String}</li>
-	 * <li>{@linkplain Number}</li>
-	 * <li>{@linkplain Boolean}</li>
-	 * <li>{@code null}</li>
-	 * </ul>
-	 * @throws IOException        if an I/O error occurs
-	 * @throws JSONParseException if the JSON is invalid
-	 * @since 1.0.0
+	 * @param json
+	 * @return
+	 * @throws JsonException
+	 * @deprecated use {@link #deserialize(String)} instead
+	 *
 	 */
-	public Object parse(Reader reader) throws IOException, JSONParseException {
+	@Deprecated
+	public static Object parse(String json) throws JSONParseException {
+		return deserialize(json);
+	}
 
-		// ==== 11.03.2018 | Ralph Niemitz/RalleYTN(ralph.niemitz@gmx.de)
-		// -	Removed the unnecessary try-catch block
-		// ====
+	/** Deserializes a readable stream according to the RFC 7159 JSON specification.
+	 * @param readableDeserializable representing content to be deserialized as JSON.
+	 * @return either a boolean, null, Number, String, JsonObject, or JsonArray that best represents the deserializable.
+	 * @throws JsonException if an unexpected token is encountered in the deserializable. To recover from a
+	 *         JsonException: fix the deserializable to no longer have an unexpected token and try again. */
+	public static Object deserialize(final Reader readableDeserializable) throws JSONParseException {
+		return JSONParser.deserialize(readableDeserializable, EnumSet.of(DeserializationOptions.ALLOW_JSON_ARRAYS, DeserializationOptions.ALLOW_JSON_OBJECTS, DeserializationOptions.ALLOW_JSON_DATA)).get(0);
+	}
 
-		this.reset(reader);
-		final Stack<Object> statusStack = new Stack<>();
-		final Stack<Object> valueStack = new Stack<>();
-
+	/** Deserialize a stream with all deserialized JSON values are wrapped in a JsonArray.
+	 * @param deserializable representing content to be deserialized as JSON.
+	 * @param flags representing the allowances and restrictions on deserialization.
+	 * @return the allowable object best represented by the deserializable.
+	 * @throws JsonException if a disallowed or unexpected token is encountered in the deserializable. To recover from a
+	 *         JsonException: fix the deserializable to no longer have a disallowed or unexpected token and try
+	 *         again. */
+	private static JSONArray deserialize(final Reader deserializable, final Set<DeserializationOptions> flags) throws JSONParseException {
+		final Yylex lexer = new Yylex(deserializable);
+		Yytoken token;
+		States currentState;
+		int returnCount = 1;
+		final LinkedList<States> stateStack = new LinkedList<>();
+		final LinkedList<Object> valueStack = new LinkedList<>();
+		stateStack.addLast(States.INITIAL);
 		do {
-
-			this.nextToken();
-
-			if (this.status == JSONParser.S_INIT)
-				this.init(statusStack, valueStack);
-			else if (this.status == JSONParser.S_IN_FINISHED_VALUE)
-				return this.inFinishedValue(valueStack);
-			else if (this.status == JSONParser.S_IN_OBJECT)
-				this.inObject(statusStack, valueStack);
-			else if (this.status == JSONParser.S_PASSED_PAIR_KEY)
-				this.inPassedPairKey(statusStack, valueStack);
-			else if (this.status == JSONParser.S_IN_ARRAY)
-				this.inArray(statusStack, valueStack);
-
-			if (this.status == JSONParser.S_IN_ERROR)
-				throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
-
-		} while (this.token.type != Yytoken.TYPE_EOF);
-
-		throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
+			/* Parse through the parsable string's tokens. */
+			currentState = JSONParser.popNextState(stateStack);
+			token = JSONParser.lexNextToken(lexer);
+			switch (currentState) {
+				case DONE:
+					/* The parse has finished a JSON value. */
+					if (!flags.contains(DeserializationOptions.ALLOW_CONCATENATED_JSON_VALUES) || Yytoken.Types.END.equals(token.getType()))
+						/* Break if concatenated values are not allowed or if an END token is read. */
+						break;
+					/* Increment the amount of returned JSON values and treat the token as if it were a fresh parse. */
+					returnCount += 1;
+					/* Fall through to the case for the initial state. */
+					//$FALL-THROUGH$
+				case INITIAL:
+					/* The parse has just started. */
+					switch (token.getType()) {
+						case DATUM:
+							/* A boolean, null, Number, or String could be detected. */
+							if (flags.contains(DeserializationOptions.ALLOW_JSON_DATA)) {
+								valueStack.addLast(token.getValue());
+								stateStack.addLast(States.DONE);
+							} else
+								throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.DISALLOWED_TOKEN, token);
+							break;
+						case LEFT_BRACE:
+							/* An object is detected. */
+							if (flags.contains(DeserializationOptions.ALLOW_JSON_OBJECTS)) {
+								valueStack.addLast(new JSONObject());
+								stateStack.addLast(States.PARSING_OBJECT);
+							} else
+								throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.DISALLOWED_TOKEN, token);
+							break;
+						case LEFT_SQUARE:
+							/* An array is detected. */
+							if (flags.contains(DeserializationOptions.ALLOW_JSON_ARRAYS)) {
+								valueStack.addLast(new JSONArray());
+								stateStack.addLast(States.PARSING_ARRAY);
+							} else
+								throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.DISALLOWED_TOKEN, token);
+							break;
+						default:
+							/* Neither a JSON array or object was detected. */
+							throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.UNEXPECTED_TOKEN, token);
+					}
+					break;
+				case PARSED_ERROR:
+					/* The parse could be in this state due to the state stack not having a state to pop off. */
+					throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.UNEXPECTED_TOKEN, token);
+				case PARSING_ARRAY:
+					switch (token.getType()) {
+						case COMMA:
+							/* The parse could detect a comma while parsing an array since it separates each element. */
+							stateStack.addLast(currentState);
+							break;
+						case DATUM:
+							/* The parse found an element of the array. */
+							JSONArray val = (JSONArray) valueStack.getLast();
+							val.add(token.getValue());
+							stateStack.addLast(currentState);
+							break;
+						case LEFT_BRACE:
+							/* The parse found an object in the array. */
+							val = (JSONArray) valueStack.getLast();
+							final JSONObject object = new JSONObject();
+							val.add(object);
+							valueStack.addLast(object);
+							stateStack.addLast(currentState);
+							stateStack.addLast(States.PARSING_OBJECT);
+							break;
+						case LEFT_SQUARE:
+							/* The parse found another array in the array. */
+							val = (JSONArray) valueStack.getLast();
+							final JSONArray array = new JSONArray();
+							val.add(array);
+							valueStack.addLast(array);
+							stateStack.addLast(currentState);
+							stateStack.addLast(States.PARSING_ARRAY);
+							break;
+						case RIGHT_SQUARE:
+							/* The parse found the end of the array. */
+							if (valueStack.size() > returnCount)
+								valueStack.removeLast();
+							else
+								/* The parse has been fully resolved. */
+								stateStack.addLast(States.DONE);
+							break;
+						default:
+							/* Any other token is invalid in an array. */
+							throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.UNEXPECTED_TOKEN, token);
+					}
+					break;
+				case PARSING_OBJECT:
+					/* The parse has detected the start of an object. */
+					switch (token.getType()) {
+						case COMMA:
+							/* The parse could detect a comma while parsing an object since it separates each key value
+							 * pair. Continue parsing the object. */
+							stateStack.addLast(currentState);
+							break;
+						case DATUM:
+							/* The token ought to be a key. */
+							if (token.getValue() instanceof String) {
+								/* JSON keys are always strings, strings are not always JSON keys but it is going to be
+								 * treated as one. Continue parsing the object. */
+								final String key = (String) token.getValue();
+								valueStack.addLast(key);
+								stateStack.addLast(currentState);
+								stateStack.addLast(States.PARSING_ENTRY);
+							} else
+								/* Abort! JSON keys are always strings and it wasn't a string. */
+								throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.UNEXPECTED_TOKEN, token);
+							break;
+						case RIGHT_BRACE:
+							/* The parse has found the end of the object. */
+							if (valueStack.size() > returnCount)
+								/* There are unresolved values remaining. */
+								valueStack.removeLast();
+							else
+								/* The parse has been fully resolved. */
+								stateStack.addLast(States.DONE);
+							break;
+						default:
+							/* The parse didn't detect the end of an object or a key. */
+							throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.UNEXPECTED_TOKEN, token);
+					}
+					break;
+				case PARSING_ENTRY:
+					switch (token.getType()) {
+						/* Parsed pair keys can only happen while parsing objects. */
+						case COLON:
+							/* The parse could detect a colon while parsing a key value pair since it separates the key
+							 * and value from each other. Continue parsing the entry. */
+							stateStack.addLast(currentState);
+							break;
+						case DATUM:
+							/* The parse has found a value for the parsed pair key. */
+							String key = (String) valueStack.removeLast();
+							JSONObject parent = (JSONObject) valueStack.getLast();
+							parent.put(key, token.getValue());
+							break;
+						case LEFT_BRACE:
+							/* The parse has found an object for the parsed pair key. */
+							key = (String) valueStack.removeLast();
+							parent = (JSONObject) valueStack.getLast();
+							final JSONObject object = new JSONObject();
+							parent.put(key, object);
+							valueStack.addLast(object);
+							stateStack.addLast(States.PARSING_OBJECT);
+							break;
+						case LEFT_SQUARE:
+							/* The parse has found an array for the parsed pair key. */
+							key = (String) valueStack.removeLast();
+							parent = (JSONObject) valueStack.getLast();
+							final JSONArray array = new JSONArray();
+							parent.put(key, array);
+							valueStack.addLast(array);
+							stateStack.addLast(States.PARSING_ARRAY);
+							break;
+						default:
+							/* The parse didn't find anything for the parsed pair key. */
+							throw new JSONParseException(lexer.getPosition(), JSONParseException.Problems.UNEXPECTED_TOKEN, token);
+					}
+					break;
+				default:
+					break;
+			}
+			/* If we're not at the END and DONE then do the above again. */
+		} while (!(States.DONE.equals(currentState) && Yytoken.Types.END.equals(token.getType())));
+		return new JSONArray(valueStack);
 	}
 
-	/**
-	 * Goes over a JSON string step by step using a {@linkplain JSONContentHandler}.
-	 *
-	 * @param string         the JSON string
-	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
-	 * @since 1.0.0
-	 */
-	public void parse(String string, JSONContentHandler contentHandler) throws JSONParseException {
-
-		this.parse(string != null ? string.trim() : null, contentHandler, false);
-	}
-
-	/**
-	 * Goes over a JSON string step by step using a {@linkplain JSONContentHandler}.
-	 *
-	 * @param string         the JSON string
-	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @param resume         Indicates if the previous parsing operation should be continued.
-	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
-	 * @since 1.0.0
-	 */
-	public void parse(String string, JSONContentHandler contentHandler, boolean resume) throws JSONParseException {
-
-		try (StringReader reader = new StringReader(string != null ? string.trim() : null)) {
-
-			this.parse(reader, contentHandler, resume);
-
-		} catch (final IOException exception) {
-
-			throw new JSONParseException(-1, JSONParseException.ERROR_UNEXPECTED_EXCEPTION, exception);
-		}
-	}
-
-	/**
-	 * Goes over JSON data step by step using a {@linkplain JSONContentHandler}.
-	 *
-	 * @param reader         the {@linkplain Reader}
-	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @throws IOException        if an I/O error occurs or the {@linkplain JSONContentHandler} throws it
-	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
-	 * @since 1.0.0
-	 */
-	public void parse(Reader reader, JSONContentHandler contentHandler) throws IOException, JSONParseException {
-
-		this.parse(reader, contentHandler, false);
-	}
-
-	/**
-	 * Goes over JSON data step by step using a {@linkplain JSONContentHandler}.
-	 *
-	 * @param reader         the {@linkplain Reader}
-	 * @param contentHandler the {@linkplain JSONContentHandler}
-	 * @param resume         Indicates if the previous parsing operation should be continued.
-	 * @throws IOException        if an I/O error occurs or the {@linkplain JSONContentHandler} throws it
-	 * @throws JSONParseException if the JSON is invalid or the {@linkplain JSONContentHandler} throws it
-	 * @see JSONContentHandler
-	 * @since 1.0.0
-	 */
-	public void parse(Reader reader, JSONContentHandler contentHandler, boolean resume) throws IOException, JSONParseException {
-
-		if (!resume) {
-
-			this.reset(reader);
-			this.handlerStatusStack = new Stack<>();
-
-		} else if (this.handlerStatusStack == null) {
-
-			this.reset(reader);
-			this.handlerStatusStack = new Stack<>();
-		}
-
-		final Stack<Object> statusStack = this.handlerStatusStack;
-
+	/** A convenience method that assumes a StringReader to deserialize a string.
+	 * @param deserializable representing content to be deserialized as JSON.
+	 * @return either a boolean, null, Number, String, JsonObject, or JsonArray that best represents the deserializable.
+	 * @throws JsonException if an unexpected token is encountered in the deserializable. To recover from a
+	 *         JsonException: fix the deserializable to no longer have an unexpected token and try again.
+	 * @see Jsoner#deserialize(Reader)
+	 * @see StringReader */
+	public static Object deserialize(final String deserializable) throws JSONParseException {
+		Object returnable;
+		StringReader readableDeserializable = null;
 		try {
-
-			do {
-
-				if (this.status == JSONParser.S_INIT) {
-
-					contentHandler.startJSON();
-					this.nextToken();
-
-					if (this.token.type == Yytoken.TYPE_VALUE) {
-
-						this.status = JSONParser.S_IN_FINISHED_VALUE;
-						statusStack.push(this.status);
-
-						if (!contentHandler.primitive(this.token.value))
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
-
-						this.status = JSONParser.S_IN_OBJECT;
-						statusStack.push(this.status);
-
-						if (!contentHandler.startObject())
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
-
-						this.status = JSONParser.S_IN_ARRAY;
-						statusStack.push(this.status);
-
-						if (!contentHandler.startArray())
-							return;
-
-					} else
-						this.status = JSONParser.S_IN_ERROR;
-
-				} else if (this.status == JSONParser.S_IN_FINISHED_VALUE) {
-
-					this.nextToken();
-
-					if (this.token.type == Yytoken.TYPE_EOF) {
-
-						contentHandler.endJSON();
-						this.status = JSONParser.S_END;
-						return;
-
-					} else
-						this.status = JSONParser.S_IN_ERROR;
-
-				} else if (this.status == JSONParser.S_IN_OBJECT) {
-
-					this.nextToken();
-
-					if (this.token.type == Yytoken.TYPE_VALUE) {
-
-						if (this.token.value instanceof String) {
-
-							final String key = (String) this.token.value;
-							this.status = JSONParser.S_PASSED_PAIR_KEY;
-							statusStack.push(this.status);
-
-							if (!contentHandler.startObjectEntry(key))
-								return;
-
-						} else
-							this.status = JSONParser.S_IN_ERROR;
-
-					} else if (this.token.type == Yytoken.TYPE_RIGHT_BRACE) {
-
-						if (statusStack.size() > 1) {
-
-							statusStack.pop();
-							this.status = (int) statusStack.peek();
-
-						} else
-							this.status = JSONParser.S_IN_FINISHED_VALUE;
-
-						if (!contentHandler.endObject())
-							return;
-
-					} else if (this.token.type != Yytoken.TYPE_COMMA)
-						this.status = JSONParser.S_IN_ERROR;
-
-				} else if (this.status == JSONParser.S_PASSED_PAIR_KEY) {
-
-					this.nextToken();
-
-					if (this.token.type == Yytoken.TYPE_VALUE) {
-
-						statusStack.pop();
-						this.status = (int) statusStack.peek();
-
-						if (!contentHandler.primitive(this.token.value) || !contentHandler.endObjectEntry())
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
-
-						statusStack.pop();
-						statusStack.push(JSONParser.S_IN_PAIR_VALUE);
-						this.status = JSONParser.S_IN_ARRAY;
-						statusStack.push(this.status);
-
-						if (!contentHandler.startArray())
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
-
-						statusStack.pop();
-						statusStack.push(JSONParser.S_IN_PAIR_VALUE);
-						this.status = JSONParser.S_IN_OBJECT;
-						statusStack.push(this.status);
-
-						if (!contentHandler.startObject())
-							return;
-
-					} else if (this.token.type != Yytoken.TYPE_COLON)
-						this.status = JSONParser.S_IN_ERROR;
-
-				} else if (this.status == JSONParser.S_IN_PAIR_VALUE) {
-
-					statusStack.pop();
-					this.status = (int) statusStack.peek();
-
-					if (!contentHandler.endObjectEntry())
-						return;
-
-				} else if (this.status == JSONParser.S_IN_ARRAY) {
-
-					this.nextToken();
-
-					if (this.token.type == Yytoken.TYPE_VALUE) {
-
-						if (!contentHandler.primitive(this.token.value))
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_RIGHT_SQUARE) {
-
-						if (statusStack.size() > 1) {
-
-							statusStack.pop();
-							this.status = (int) statusStack.peek();
-
-						} else
-							this.status = JSONParser.S_IN_FINISHED_VALUE;
-
-						if (!contentHandler.endArray())
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_LEFT_BRACE) {
-
-						this.status = JSONParser.S_IN_OBJECT;
-						statusStack.push(this.status);
-
-						if (!contentHandler.startObject())
-							return;
-
-					} else if (this.token.type == Yytoken.TYPE_LEFT_SQUARE) {
-
-						this.status = JSONParser.S_IN_ARRAY;
-						statusStack.push(this.status);
-
-						if (!contentHandler.startArray())
-							return;
-
-					} else if (this.token.type != Yytoken.TYPE_COMMA)
-						this.status = JSONParser.S_IN_ERROR;
-
-				} else if (this.status == JSONParser.S_END)
-					return;
-
-				if (this.status == JSONParser.S_IN_ERROR)
-					throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
-
-			} while (this.token.type != Yytoken.TYPE_EOF);
-
-		} catch (IOException | JSONParseException | RuntimeException | Error exception) {
-
-			this.status = JSONParser.S_IN_ERROR;
-			throw exception;
+			readableDeserializable = new StringReader(deserializable);
+			returnable = JSONParser.deserialize(readableDeserializable);
+		} catch (final NullPointerException caught) {
+			/* They both have the same recovery scenario.
+			 * See StringReader.
+			 * If deserializable is null, it should be reasonable to expect null back. */
+			returnable = null;
+		} finally {
+			if (readableDeserializable != null)
+				readableDeserializable.close();
 		}
+		return returnable;
+	}
 
-		this.status = JSONParser.S_IN_ERROR;
-		throw new JSONParseException(this.getPosition(), JSONParseException.ERROR_UNEXPECTED_TOKEN, this.token);
+	/** A convenience method that assumes a JsonArray must be deserialized.
+	 * @param deserializable representing content to be deserializable as a JsonArray.
+	 * @param defaultValue representing what would be returned if deserializable isn't a JsonArray or an IOException,
+	 *        NullPointerException, or JsonException occurs during deserialization.
+	 * @return a JsonArray that represents the deserializable, or the defaultValue if there isn't a JsonArray that
+	 *         represents deserializable.
+	 * @see Jsoner#deserialize(Reader) */
+	public static JSONArray deserialize(final String deserializable, final JSONArray defaultValue) {
+		StringReader readable = null;
+		JSONArray returnable;
+		try {
+			readable = new StringReader(deserializable);
+			returnable = JSONParser.deserialize(readable, EnumSet.of(DeserializationOptions.ALLOW_JSON_ARRAYS)).getArray(0);
+		} catch (NullPointerException | JSONParseException caught) {
+			/* Don't care, just return the default value. */
+			returnable = defaultValue;
+		} finally {
+			if (readable != null)
+				readable.close();
+		}
+		return returnable;
+	}
+
+	/** A convenience method that assumes a JsonObject must be deserialized.
+	 * @param deserializable representing content to be deserializable as a JsonObject.
+	 * @param defaultValue representing what would be returned if deserializable isn't a JsonObject or an IOException,
+	 *        NullPointerException, or JsonException occurs during deserialization.
+	 * @return a JsonObject that represents the deserializable, or the defaultValue if there isn't a JsonObject that
+	 *         represents deserializable.
+	 * @see Jsoner#deserialize(Reader) */
+	public static JSONObject deserialize(final String deserializable, final JSONObject defaultValue) {
+		StringReader readable = null;
+		JSONObject returnable;
+		try {
+			readable = new StringReader(deserializable);
+			returnable = JSONParser.deserialize(readable, EnumSet.of(DeserializationOptions.ALLOW_JSON_OBJECTS)).<JSONObject>getMap(0);
+		} catch (NullPointerException | JSONParseException caught) {
+			/* Don't care, just return the default value. */
+			returnable = defaultValue;
+		} finally {
+			if (readable != null)
+				readable.close();
+		}
+		return returnable;
+	}
+
+	/** A convenience method that assumes multiple RFC 7159 JSON values (except numbers) have been concatenated together
+	 * for deserilization which will be collectively returned in a JsonArray wrapper.
+	 * There may be numbers included, they just must not be concatenated together as it is prone to
+	 * NumberFormatExceptions (thus causing a JsonException) or the numbers no longer represent their
+	 * respective values.
+	 * Examples:
+	 * "123null321" returns [123, null, 321]
+	 * "nullnullnulltruefalse\"\"{}[]" returns [null, null, null, true, false, "", {}, []]
+	 * "123" appended to "321" returns [123321]
+	 * "12.3" appended to "3.21" throws JsonException(NumberFormatException)
+	 * "123" appended to "-321" throws JsonException(NumberFormatException)
+	 * "123e321" appended to "-1" throws JsonException(NumberFormatException)
+	 * "null12.33.21null" throws JsonException(NumberFormatException)
+	 * @param deserializable representing concatenated content to be deserialized as JSON in one reader. Its contents
+	 *        may not contain two numbers concatenated together.
+	 * @return a JsonArray that contains each of the concatenated objects as its elements. Each concatenated element is
+	 *         either a boolean, null, Number, String, JsonArray, or JsonObject that best represents the concatenated
+	 *         content inside deserializable.
+	 * @throws JsonException if an unexpected token is encountered in the deserializable. To recover from a
+	 *         JsonException: fix the deserializable to no longer have an unexpected token and try again. */
+	public static JSONArray deserializeMany(final Reader deserializable) throws JSONParseException {
+		return JSONParser.deserialize(deserializable, EnumSet.of(DeserializationOptions.ALLOW_JSON_ARRAYS, DeserializationOptions.ALLOW_JSON_OBJECTS, DeserializationOptions.ALLOW_JSON_DATA, DeserializationOptions.ALLOW_CONCATENATED_JSON_VALUES));
+	}
+
+	/** Escapes potentially confusing or important characters in the String provided.
+	 * @param escapable an unescaped string.
+	 * @return an escaped string for usage in JSON; An escaped string is one that has escaped all of the quotes ("),
+	 *         backslashes (\), return character (\r), new line character (\n), tab character (\t),
+	 *         backspace character (\b), form feed character (\f) and other control characters [u0000..u001F] or
+	 *         characters [u007F..u009F], [u2000..u20FF] with a
+	 *         backslash (\) which itself must be escaped by the backslash in a java string. */
+	public static String escape(final String escapable) {
+		final StringBuilder builder = new StringBuilder();
+		final int characters = escapable.length();
+		for (int i = 0; i < characters; i++) {
+			final char character = escapable.charAt(i);
+			switch (character) {
+				case '"':
+					builder.append("\\\"");
+					break;
+				case '\\':
+					builder.append("\\\\");
+					break;
+				case '\b':
+					builder.append("\\b");
+					break;
+				case '\f':
+					builder.append("\\f");
+					break;
+				case '\n':
+					builder.append("\\n");
+					break;
+				case '\r':
+					builder.append("\\r");
+					break;
+				case '\t':
+					builder.append("\\t");
+					break;
+				default:
+					/* The many characters that get replaced are benign to software but could be mistaken by people
+					 * reading it for a JSON relevant character. */
+					if (((character >= '\u0000') && (character <= '\u001F')) || ((character >= '\u007F') && (character <= '\u009F')) || ((character >= '\u2000') && (character <= '\u20FF'))) {
+						final String characterHexCode = Integer.toHexString(character);
+						builder.append("\\u");
+						for (int k = 0; k < (4 - characterHexCode.length()); k++)
+							builder.append("0");
+						builder.append(characterHexCode.toUpperCase());
+					} else
+						/* Character didn't need escaping. */
+						builder.append(character);
+			}
+		}
+		return builder.toString();
+	}
+
+	/** Processes the lexer's reader for the next token.
+	 * @param lexer represents a text processor being used in the deserialization process.
+	 * @return a token representing a meaningful element encountered by the lexer.
+	 * @throws JsonException if an unexpected character is encountered while processing the text. */
+	private static Yytoken lexNextToken(final Yylex lexer) throws JSONParseException {
+		Yytoken returnable;
+		/* Parse through the next token. */
+		try {
+			returnable = lexer.yylex();
+		} catch (final IOException caught) {
+			throw new JSONParseException(-1, JSONParseException.Problems.UNEXPECTED_EXCEPTION, caught);
+		}
+		if (returnable == null)
+			/* If there isn't another token, it must be the end. */
+			returnable = new Yytoken(Yytoken.Types.END, null);
+		return returnable;
+	}
+
+	/** Used for state transitions while deserializing.
+	 * @param stateStack represents the deserialization states saved for future processing.
+	 * @return a state for deserialization context so it knows how to consume the next token. */
+	private static States popNextState(final LinkedList<States> stateStack) {
+		if (stateStack.size() > 0)
+			return stateStack.removeLast();
+		else
+			return States.PARSED_ERROR;
+	}
+
+	/** Makes the JSON input more easily human readable using indentation and newline of the caller's choice. This means
+	 * the validity of the JSON printed by this method is dependent on the caller's choice of indentation and newlines.
+	 * @param readable representing a JSON formatted string with out extraneous characters, like one returned from
+	 *        Jsoner#serialize(Object).
+	 * @param writable represents where the pretty printed JSON should be written to.
+	 * @param indentation representing the indentation used to format the JSON string. NOT validated as a proper
+	 *        indentation. It is recommended to use tabs ("\t"), but 3 or 4 spaces are common alternatives.
+	 * @param newline representing the newline used to format the JSON string. NOT validated as a proper newline. It is
+	 *        recommended to use "\n", but "\r" or "/r/n" are common alternatives.
+	 * @throws IOException if the provided writer encounters an IO issue.
+	 * @throws JsonException if the provided reader encounters an IO issue.
+	 * @see Jsoner#prettyPrint(String)
+	 * @since 3.1.0 made public to allow large JSON inputs and more pretty print control. */
+	public static void prettyPrint(final Reader readable, final Writer writable, final String indentation, final String newline) throws IOException, JSONParseException {
+		final Yylex lexer = new Yylex(readable);
+		Yytoken lexed;
+		int level = 0;
+		do {
+			lexed = JSONParser.lexNextToken(lexer);
+			switch (lexed.getType()) {
+				case COLON:
+					writable.append(lexed.getValue().toString());
+					writable.append(' ');
+					break;
+				case COMMA:
+					writable.append(lexed.getValue().toString());
+					writable.append(newline);
+					for (int i = 0; i < level; i++)
+						writable.append(indentation);
+					break;
+				case END:
+					break;
+				case LEFT_BRACE:
+				case LEFT_SQUARE:
+					writable.append(lexed.getValue().toString());
+					writable.append(newline);
+					level++;
+					for (int i = 0; i < level; i++)
+						writable.append(indentation);
+					break;
+				case RIGHT_BRACE:
+				case RIGHT_SQUARE:
+					writable.append(newline);
+					level--;
+					for (int i = 0; i < level; i++)
+						writable.append(indentation);
+					writable.append(lexed.getValue().toString());
+					break;
+				default:
+					if (lexed.getValue() == null)
+						writable.append("null");
+					else if (lexed.getValue() instanceof String) {
+						writable.append("\"");
+						writable.append(JSONParser.escape((String) lexed.getValue()));
+						writable.append("\"");
+					} else
+						writable.append(lexed.getValue().toString());
+					break;
+			}
+		} while (!lexed.getType().equals(Yytoken.Types.END));
+		writable.flush();
+	}
+
+	/** A convenience method to pretty print a String with tabs ("\t") and "\n" for newlines.
+	 * @param printable representing a JSON formatted string with out extraneous characters, like one returned from
+	 *        Jsoner#serialize(Object).
+	 * @return printable except it will have '\n' then '\t' characters inserted after '[', '{', ',' and before ']' '}'
+	 *         tokens in the JSON. It will return null if printable isn't a JSON string. */
+	public static String prettyPrint(final String printable) {
+		final StringWriter writer = new StringWriter();
+		try {
+			JSONParser.prettyPrint(new StringReader(printable), writer, "\t", "\n");
+		} catch (final IOException caught) {
+			/* See java.io.StringReader.
+			 * See java.io.StringWriter. */
+		} catch (final JSONParseException caught) {
+			/* Would have been caused by a an IO exception while lexing, but the StringReader does not throw them. See
+			 * java.io.StringReader. */
+		}
+		return writer.toString();
+	}
+
+	/** A convenience method that assumes a StringWriter.
+	 * @param jsonSerializable represents the object that should be serialized as a string in JSON format.
+	 * @return a string, in JSON format, that represents the object provided.
+	 * @throws IllegalArgumentException if the jsonSerializable isn't serializable in JSON.
+	 * @see Jsoner#serialize(Object, Writer)
+	 * @see StringWriter */
+	public static String serialize(final Object jsonSerializable) {
+		final StringWriter writableDestination = new StringWriter();
+		try {
+			JSONParser.serialize(jsonSerializable, writableDestination);
+		} catch (final IOException caught) {
+			/* See java.io.StringWriter. */
+		}
+		return writableDestination.toString();
+	}
+
+	/** Serializes values according to the RFC 7159 JSON specification. It will also trust the serialization provided by
+	 * any Jsonables it serializes.
+	 * @param jsonSerializable represents the object that should be serialized in JSON format.
+	 * @param writableDestination represents where the resulting JSON text is written to.
+	 * @throws IOException if the writableDestination encounters an I/O problem, like being closed while in use.
+	 * @throws IllegalArgumentException if the jsonSerializable isn't serializable in JSON. */
+	public static void serialize(final Object jsonSerializable, final Writer writableDestination) throws IOException {
+		JSONParser.serialize(jsonSerializable, writableDestination, EnumSet.of(SerializationOptions.ALLOW_JSONABLES));
+	}
+
+	/** Serialize values to JSON and write them to the provided writer based on behavior flags.
+	 * @param jsonSerializable represents the object that should be serialized to a string in JSON format.
+	 * @param writableDestination represents where the resulting JSON text is written to.
+	 * @param flags represents the allowances and restrictions on serialization.
+	 * @throws IOException if the writableDestination encounters an I/O problem.
+	 * @throws IllegalArgumentException if the jsonSerializable isn't serializable in JSON.
+	 * @see SerializationOptions */
+	private static void serialize(final Object jsonSerializable, final Writer writableDestination, final Set<SerializationOptions> flags) throws IOException {
+		if (jsonSerializable == null)
+			/* When a null is passed in the word null is supported in JSON. */
+			writableDestination.write("null");
+		else if (((jsonSerializable instanceof Jsonable) && flags.contains(SerializationOptions.ALLOW_JSONABLES)))
+			/* Writes the writable as defined by the writable. */
+			((Jsonable) jsonSerializable).toJson(writableDestination);
+		else if (jsonSerializable instanceof String) {
+			/* Make sure the string is properly escaped. */
+			writableDestination.write('"');
+			writableDestination.write(JSONParser.escape((String) jsonSerializable));
+			writableDestination.write('"');
+		} else if (jsonSerializable instanceof Character)
+			/* Make sure the string is properly escaped.
+			 * Quotes for some reason are necessary for String, but not Character. */
+			writableDestination.write(JSONParser.escape(jsonSerializable.toString()));
+		else if (jsonSerializable instanceof Double) {
+			if (((Double) jsonSerializable).isInfinite() || ((Double) jsonSerializable).isNaN())
+				/* Infinite and not a number are not supported by the JSON specification, so null is used instead. */
+				writableDestination.write("null");
+			else
+				writableDestination.write(jsonSerializable.toString());
+		} else if (jsonSerializable instanceof Float) {
+			if (((Float) jsonSerializable).isInfinite() || ((Float) jsonSerializable).isNaN())
+				/* Infinite and not a number are not supported by the JSON specification, so null is used instead. */
+				writableDestination.write("null");
+			else
+				writableDestination.write(jsonSerializable.toString());
+		} else if (jsonSerializable instanceof Number)
+			writableDestination.write(jsonSerializable.toString());
+		else if (jsonSerializable instanceof Boolean)
+			writableDestination.write(jsonSerializable.toString());
+		else if (jsonSerializable instanceof Map) {
+			/* Writes the map in JSON object format. */
+			boolean isFirstEntry = true;
+			@SuppressWarnings("rawtypes")
+			final Iterator entries = ((Map) jsonSerializable).entrySet().iterator();
+			writableDestination.write('{');
+			while (entries.hasNext()) {
+				if (isFirstEntry)
+					isFirstEntry = false;
+				else
+					writableDestination.write(',');
+				@SuppressWarnings("rawtypes")
+				final Map.Entry entry = (Map.Entry) entries.next();
+				JSONParser.serialize(entry.getKey(), writableDestination, flags);
+				writableDestination.write(':');
+				JSONParser.serialize(entry.getValue(), writableDestination, flags);
+			}
+			writableDestination.write('}');
+		} else if (jsonSerializable instanceof Collection) {
+			/* Writes the collection in JSON array format. */
+			boolean isFirstElement = true;
+			@SuppressWarnings("rawtypes")
+			final Iterator elements = ((Collection) jsonSerializable).iterator();
+			writableDestination.write('[');
+			while (elements.hasNext()) {
+				if (isFirstElement)
+					isFirstElement = false;
+				else
+					writableDestination.write(',');
+				JSONParser.serialize(elements.next(), writableDestination, flags);
+			}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof byte[]) {
+			/* Writes the array in JSON array format. */
+			final byte[] writableArray = (byte[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof short[]) {
+			/* Writes the array in JSON array format. */
+			final short[] writableArray = (short[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof int[]) {
+			/* Writes the array in JSON array format. */
+			final int[] writableArray = (int[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof long[]) {
+			/* Writes the array in JSON array format. */
+			final long[] writableArray = (long[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof float[]) {
+			/* Writes the array in JSON array format. */
+			final float[] writableArray = (float[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof double[]) {
+			/* Writes the array in JSON array format. */
+			final double[] writableArray = (double[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof boolean[]) {
+			/* Writes the array in JSON array format. */
+			final boolean[] writableArray = (boolean[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(',');
+				}
+			writableDestination.write(']');
+		} else if (jsonSerializable instanceof char[]) {
+			/* Writes the array in JSON array format. */
+			final char[] writableArray = (char[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write("[\"");
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write("\",\"");
+				}
+			writableDestination.write("\"]");
+		} else if (jsonSerializable instanceof Object[]) {
+			/* Writes the array in JSON array format. */
+			final Object[] writableArray = (Object[]) jsonSerializable;
+			final int numberOfElements = writableArray.length;
+			writableDestination.write('[');
+			for (int i = 0; i < numberOfElements; i++)
+				if (i == (numberOfElements - 1))
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+				else {
+					JSONParser.serialize(writableArray[i], writableDestination, flags);
+					writableDestination.write(",");
+				}
+			writableDestination.write(']');
+		} else /* It cannot by any measure be safely serialized according to specification. */
+		if (flags.contains(SerializationOptions.ALLOW_INVALIDS))
+			/* Can be helpful for debugging how it isn't valid. */
+			writableDestination.write(jsonSerializable.toString());
+		else
+			/* Notify the caller the cause of failure for the serialization. */
+			throw new IllegalArgumentException("Encountered a: " + jsonSerializable.getClass().getName() + " as: " + jsonSerializable.toString()
+					+ "  that isn't JSON serializable.\n  Try:\n    1) Implementing the Jsonable interface for the object to return valid JSON. If it already does it probably has a bug.\n    2) If you cannot edit the source of the object or couple it with this library consider wrapping it in a class that does implement the Jsonable interface.\n    3) Otherwise convert it to a boolean, null, number, JsonArray, JsonObject, or String value before serializing it.\n    4) If you feel it should have serialized you could use a more tolerant serialization for debugging purposes.");
+	}
+
+	/** Serializes like the first version of this library.
+	 * It has been adapted to use Jsonable for serializing custom objects, but otherwise works like the old JSON string
+	 * serializer. It will allow non-JSON values in its output like the old one. It can be helpful for last resort log
+	 * statements and debugging errors in self generated JSON. Anything serialized using this method isn't guaranteed to
+	 * be deserializable.
+	 * @param jsonSerializable represents the object that should be serialized in JSON format.
+	 * @param writableDestination represents where the resulting JSON text is written to.
+	 * @throws IOException if the writableDestination encounters an I/O problem, like being closed while in use. */
+	public static void serializeCarelessly(final Object jsonSerializable, final Writer writableDestination) throws IOException {
+		JSONParser.serialize(jsonSerializable, writableDestination, EnumSet.of(SerializationOptions.ALLOW_JSONABLES, SerializationOptions.ALLOW_INVALIDS));
+	}
+
+	/** Serializes JSON values and only JSON values according to the RFC 7159 JSON specification.
+	 * @param jsonSerializable represents the object that should be serialized in JSON format.
+	 * @param writableDestination represents where the resulting JSON text is written to.
+	 * @throws IOException if the writableDestination encounters an I/O problem, like being closed while in use.
+	 * @throws IllegalArgumentException if the jsonSerializable isn't serializable in raw JSON. */
+	public static void serializeStrictly(final Object jsonSerializable, final Writer writableDestination) throws IOException {
+		JSONParser.serialize(jsonSerializable, writableDestination, EnumSet.noneOf(SerializationOptions.class));
 	}
 }
