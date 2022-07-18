@@ -27,12 +27,13 @@ import lombok.NonNull;
  * A simple way of rendering custom scoreboards for players with close to no flickering.
  * Using &c takes 2 characters. Since the text gets split in 3 parts, with colors = (total - (3 * 2)) = (total - 6)
  * Maximum line lengths:
- *  - 1.8: 66 with colors, 70 without colors
- *  - 1.13: 98 with colors, 104 without colors
- *  - 1.18: 32889 with colors, 32895 without colors
+ * - 1.8: 66 with colors, 70 without colors
+ * - 1.13: 98 with colors, 104 without colors
+ * - 1.18: 32889 with colors, 32895 without colors
  * Maximum title lengths:
- *  - 1.8: 30 with colors, 32 without colors
- *  - 1.13: 126 with colors, 128 without colors
+ * - 1.8: 30 with colors, 32 without colors
+ * - 1.13: 126 with colors, 128 without colors
+ *
  * @author kangarko and Tijn (<a href="https://github.com/Tvhee-Dev">Tvhee-Dev</a>)
  */
 public class SimpleScoreboard {
@@ -52,7 +53,8 @@ public class SimpleScoreboard {
     /**
      * Unique chat color identifiers for specific team entries
      */
-    private static final String[] colors = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
+    private static final String[] colors =
+            new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 
     /**
      * Stored scoreboard lines
@@ -106,7 +108,9 @@ public class SimpleScoreboard {
      */
     public SimpleScoreboard(String title, int updateDelayTicks) {
         //Scoreboards were introduced in 1.5, objectives were added in 1.7.2
-        Valid.checkBoolean(MinecraftVersion.atLeast(MinecraftVersion.V.v1_7), "Scoreboards (with objectives) are not supported below Minecraft version 1.7!");
+        Valid.checkBoolean(
+                MinecraftVersion.atLeast(MinecraftVersion.V.v1_7),
+                "Scoreboards (with objectives) are not supported below Minecraft version 1.7!");
 
         this.setTitle(title);
         this.setUpdateDelayTicks(updateDelayTicks);
@@ -167,7 +171,8 @@ public class SimpleScoreboard {
     public final void setTitle(String title) {
         final int maxTitleLength = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13) ? 128 : 32;
         final String colorizedTitle = Common.colorize(title);
-        this.title = colorizedTitle.length() > maxTitleLength ? colorizedTitle.substring(0, maxTitleLength) : colorizedTitle;
+        this.title =
+                colorizedTitle.length() > maxTitleLength ? colorizedTitle.substring(0, maxTitleLength) : colorizedTitle;
         this.title = this.title.endsWith(COLOR_CHAR) ? this.title.substring(0, this.title.length() - 1) : this.title;
     }
 
@@ -197,8 +202,11 @@ public class SimpleScoreboard {
      * @param player
      */
     public final void show(final Player player) {
-        Valid.checkBoolean(this.title != null && !this.title.isEmpty(), "Before calling show(Player) you need to use setTitle() for " + this);
-        Valid.checkBoolean(!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
+        Valid.checkBoolean(
+                this.title != null && !this.title.isEmpty(),
+                "Before calling show(Player) you need to use setTitle() for " + this);
+        Valid.checkBoolean(
+                !this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
 
         if (this.updateTask == null)
             this.start();
@@ -214,7 +222,9 @@ public class SimpleScoreboard {
      * @param player
      */
     public final void hide(final Player player) {
-        Valid.checkBoolean(this.isViewing(player), "Player " + player.getName() + " is not viewing scoreboard: " + this.getTitle());
+        Valid.checkBoolean(
+                this.isViewing(player),
+                "Player " + player.getName() + " is not viewing scoreboard: " + this.getTitle());
 
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         this.viewers.remove(player.getUniqueId());
@@ -271,12 +281,16 @@ public class SimpleScoreboard {
      * @param entries
      */
     public final void addRows(final List<Object> entries) {
-        Valid.checkBoolean((this.rows.size() + entries.size()) < 17, "You are trying to add too many rows (the limit is 16)");
-        this.rows.addAll(Common.convert(Common.colorize(Common.convert(entries, Object::toString)), ScoreboardLine::new));
+        Valid.checkBoolean(
+                (this.rows.size() + entries.size()) < 17, "You are trying to add too many rows (the limit is 16)");
+        this.rows.addAll(
+                Common.convert(Common.colorize(Common.convert(entries, Object::toString)), ScoreboardLine::new));
     }
 
     public final void changeRow(final int index, Object value) {
-        Valid.checkBoolean(index < this.rows.size(), "The row for index " + index + " is currently not existing. Please use addRows()!");
+        Valid.checkBoolean(
+                index < this.rows.size(),
+                "The row for index " + index + " is currently not existing. Please use addRows()!");
         this.rows.get(index).setText(Common.colorize(value.toString()));
     }
 
@@ -334,11 +348,7 @@ public class SimpleScoreboard {
             } catch (final Throwable t) {
                 final String lines = String.join(" ", getRows());
 
-                Common.error(t,
-                        "Error displaying " + this,
-                        "Entries: " + lines,
-                        "Title: " + title,
-                        "%error",
+                Common.error(t, "Error displaying " + this, "Entries: " + lines, "Title: " + title, "%error",
                         "Stopping rendering for safety.");
 
                 this.stop();
@@ -350,7 +360,8 @@ public class SimpleScoreboard {
      * Stops this scoreboard and removes it from all viewers
      */
     public final void stop() {
-        this.viewers.forEach(viewerId -> {
+        this.viewers.forEach(viewerId ->
+        {
             Player viewer = Bukkit.getPlayer(viewerId);
 
             if (viewer != null && viewer.isOnline()) {
@@ -438,8 +449,8 @@ public class SimpleScoreboard {
                 final ScoreboardLine scoreboardLine = this.rows.get(lineNumber);
                 final Function<String, String> replaceFunction = (lineText) -> this.replaceTheme(
                         this.replaceVariables(player, lineText.replace("{player}", player.getName())));
-                final String[] createdLine = scoreboardLine.createLine(
-                        COLOR_CHAR + colors[lineNumber] + COLOR_CHAR + "r", replaceFunction);
+                final String[] createdLine =
+                        scoreboardLine.createLine(COLOR_CHAR + colors[lineNumber] + COLOR_CHAR + "r", replaceFunction);
 
                 final String prefix = createdLine[0];
                 final String entry = createdLine[1];
@@ -620,7 +631,8 @@ public class SimpleScoreboard {
                 if (index == stringLengths.size() - 1)
                     length = Math.max(length, maxLength);
 
-                final String subString = textWithMarge.substring(previousLength, Math.min(textWithMarge.length(), previousLength + length));
+                final String subString = textWithMarge.substring(previousLength,
+                        Math.min(textWithMarge.length(), previousLength + length));
 
                 if (!subString.isEmpty())
                     newSplitText.add(subString);
