@@ -22,6 +22,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.NonNull;
+
 /** Jsoner provides JSON utilities for escaping strings to be JSON compatible, thread safe parsing (RFC 7159) JSON
  * strings, and thread safe serializing data to strings in JSON format.
  *
@@ -313,7 +315,14 @@ public class JSONParser {
 	 *         JsonException: fix the deserializable to no longer have an unexpected token and try again.
 	 * @see Jsoner#deserialize(Reader)
 	 * @see StringReader */
-	public static Object deserialize(final String deserializable) throws JSONParseException {
+	public static Object deserialize(@NonNull final String deserializable) throws JSONParseException {
+
+		final String trimmed = deserializable.trim();
+
+		// Assume it's just a normal string
+		if (!trimmed.startsWith("{") && !trimmed.endsWith("}"))
+			return deserializable;
+
 		Object returnable;
 		StringReader readableDeserializable = null;
 		try {
