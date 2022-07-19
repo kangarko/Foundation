@@ -418,6 +418,16 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 */
 		public static String CONVERSATION_ERROR = "&cOups! There was a problem in this conversation! Please contact the administrator to review the console for details.";
 
+		/**
+		 * Called in {@link org.mineacademy.fo.conversation.SimplePrompt#show(org.bukkit.entity.Player)}
+		 */
+		public static String CONVERSATION_CANCELLED = "Your pending chat answer has been canceled.";
+
+		/**
+		 * Called in {@link org.mineacademy.fo.conversation.SimplePrompt#show(org.bukkit.entity.Player)}
+		 */
+		public static String CONVERSATION_CANCELLED_INACTIVE = "Your pending chat answer has been canceled because you were inactive.";
+
 		private static void init() {
 			setPathPrefix("Conversation");
 
@@ -429,6 +439,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Conversation_Error"))
 				CONVERSATION_ERROR = getString("Error");
+
+			if (isSetDefault("Conversation_Cancelled"))
+				CONVERSATION_CANCELLED = getString("Conversation_Cancelled");
+
+			if (isSetDefault("Conversation_Cancelled_Inactive"))
+				CONVERSATION_CANCELLED_INACTIVE = getString("Conversation_Cancelled_Inactive");
 		}
 	}
 

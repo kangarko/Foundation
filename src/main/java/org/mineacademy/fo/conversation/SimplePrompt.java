@@ -13,6 +13,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
  * Represents one question for the player during a server conversation
@@ -234,7 +235,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 
 			@Override
 			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
-				final String message = "Your pending chat answer has been canceled" + (canceledFromInactivity ? " because you were inactive" : "") + ".";
+				final String message = canceledFromInactivity ? SimpleLocalization.Conversation.CONVERSATION_CANCELLED_INACTIVE : SimpleLocalization.Conversation.CONVERSATION_CANCELLED;
 				final Player player = SimplePrompt.this.getPlayer(event.getContext());
 
 				if (!event.gracefulExit())
