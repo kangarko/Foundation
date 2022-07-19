@@ -347,7 +347,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					preparedComponent.addExtra(component);
 		}
 
-		final TextComponent currentComponent = this.currentComponent.toTextComponent(true, receiver);
+		final TextComponent currentComponent = this.currentComponent == null ? null : this.currentComponent.toTextComponent(true, receiver);
 
 		if (currentComponent != null)
 			if (preparedComponent == null)
