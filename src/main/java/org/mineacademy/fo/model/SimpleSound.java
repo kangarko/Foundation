@@ -3,7 +3,7 @@ package org.mineacademy.fo.model;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.CompSound;
 
@@ -86,15 +86,10 @@ public final class SimpleSound {
 		}
 
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
+		final CompSound compSound = CompSound.fromName(values[0]);
 
-		try {
-			this.sound = CompSound.convert(values[0]);
-
-		} catch (final IllegalArgumentException ex) {
-			Common.throwError(ex, "Sound '" + values[0] + "' does not exists (in your Minecraft version)!",
-					"Notice: Sound names has changed as per 1.9. See:",
-					"https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html");
-		}
+		Valid.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getServerVersion() + ")! Pick one from mineacademy.org/sounds");
+		this.sound = compSound.getSound();
 
 		if (values.length == 1) {
 			this.volume = 1F;
@@ -180,4 +175,5 @@ public final class SimpleSound {
 	public String toString() {
 		return this.enabled ? this.sound + " " + this.volume + " " + (this.randomPitch ? "random" : this.pitch) : "none";
 	}
+
 }
