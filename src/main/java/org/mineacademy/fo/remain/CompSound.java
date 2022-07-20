@@ -1,23 +1,46 @@
 package org.mineacademy.fo.remain;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.Instrument;
 import org.bukkit.Location;
+import org.bukkit.Note;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.plugin.SimplePlugin;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * Version independent Spigot sounds.
- * <p>
- * Enum mapping to sound names for different
- * minecraft versions.
- * <p>
- * Source: https://gist.github.com/NiklasEi/7bd0ffd136f8459df0940e4501d47a8a
+ * CompSound - Compatible Minecraft sound support
+ * for all Minecraft versions. Please note that many sound
+ * names are missing from old MC versions.
  *
- * @author NiklasEi
+ * Sounds are thread-safe. But this doesn't mean you should
+ * use a bukkit async scheduler for every {@link Player#playSound} call.
+ *
+ * <b>Volume:</b> 0.0 - 1.0f (normal) - Using higher values increase the distance from which the sound can be heard.<br>
+ * <b>Pitch:</b> 0.5-2.0 - 1.0f (normal) - How fast the sound is play.
+ *
+ * Inspired from: https://github.com/CryptoMorin/XSeries
+ *
+ * @author Matej Pacan and Crypto Morin
  */
 public enum CompSound {
+
 	AMBIENCE_CAVE("AMBIENCE_CAVE", "AMBIENT_CAVE"),
 	AMBIENCE_RAIN("AMBIENCE_RAIN", "WEATHER_RAIN"),
 	AMBIENCE_THUNDER("AMBIENCE_THUNDER", "ENTITY_LIGHTNING_THUNDER", "ENTITY_LIGHTNING_BOLT_THUNDER"),
@@ -25,44 +48,145 @@ public enum CompSound {
 	ANVIL_LAND("ANVIL_LAND", "BLOCK_ANVIL_LAND"),
 	ANVIL_USE("ANVIL_USE", "BLOCK_ANVIL_USE"),
 	ARROW_HIT("ARROW_HIT", "ENTITY_ARROW_HIT"),
+	BAT_DEATH("BAT_DEATH", "ENTITY_BAT_DEATH"),
+	BAT_HURT("BAT_HURT", "ENTITY_BAT_HURT"),
+	BAT_IDLE("BAT_IDLE", "ENTITY_BAT_AMBIENT"),
+	BAT_LOOP("BAT_LOOP", "ENTITY_BAT_LOOP"),
+	BAT_TAKEOFF("BAT_TAKEOFF", "ENTITY_BAT_TAKEOFF"),
+	BLAZE_BREATH("BLAZE_BREATH", "ENTITY_BLAZE_AMBIENT"),
+	BLAZE_DEATH("BLAZE_DEATH", "ENTITY_BLAZE_DEATH"),
+	BLAZE_HIT("BLAZE_HIT", "ENTITY_BLAZE_HURT"),
 	BURP("BURP", "ENTITY_PLAYER_BURP"),
+	CAT_HISS("CAT_HISS", "ENTITY_CAT_HISS"),
+	CAT_HIT("CAT_HIT", "ENTITY_CAT_HURT"),
+	CAT_MEOW("CAT_MEOW", "ENTITY_CAT_AMBIENT"),
+	CAT_PURR("CAT_PURR", "ENTITY_CAT_PURR"),
+	CAT_PURREOW("CAT_PURREOW", "ENTITY_CAT_PURREOW"),
 	CHEST_CLOSE("CHEST_CLOSE", "ENTITY_CHEST_CLOSE", "BLOCK_CHEST_CLOSE"),
 	CHEST_OPEN("CHEST_OPEN", "ENTITY_CHEST_OPEN", "BLOCK_CHEST_OPEN"),
+	CHICKEN_EGG_POP("CHICKEN_EGG_POP", "ENTITY_CHICKEN_EGG"),
+	CHICKEN_HURT("CHICKEN_HURT", "ENTITY_CHICKEN_HURT"),
+	CHICKEN_IDLE("CHICKEN_IDLE", "ENTITY_CHICKEN_AMBIENT"),
+	CHICKEN_WALK("CHICKEN_WALK", "ENTITY_CHICKEN_STEP"),
 	CLICK("CLICK", "UI_BUTTON_CLICK"),
+	COW_HURT("COW_HURT", "ENTITY_COW_HURT"),
+	COW_IDLE("COW_IDLE", "ENTITY_COW_AMBIENT"),
+	COW_WALK("COW_WALK", "ENTITY_COW_STEP"),
+	CREEPER_DEATH("CREEPER_DEATH", "ENTITY_CREEPER_DEATH"),
+	CREEPER_HISS("CREEPER_HISS", "ENTITY_CREEPER_PRIMED"),
+	DIG_GRASS("DIG_GRASS", "BLOCK_GRASS_BREAK"),
+	DIG_GRAVEL("DIG_GRAVEL", "BLOCK_GRAVEL_BREAK"),
+	DIG_SAND("DIG_SAND", "BLOCK_SAND_BREAK"),
+	DIG_SNOW("DIG_SNOW", "BLOCK_SNOW_BREAK"),
+	DIG_STONE("DIG_STONE", "BLOCK_STONE_BREAK"),
+	DIG_WOOD("DIG_WOOD", "BLOCK_WOOD_BREAK"),
+	DIG_WOOL("DIG_WOOL", "BLOCK_CLOTH_BREAK", "BLOCK_WOOL_BREAK"),
+	DONKEY_ANGRY("DONKEY_ANGRY", "ENTITY_DONKEY_ANGRY"),
+	DONKEY_DEATH("DONKEY_DEATH", "ENTITY_DONKEY_DEATH"),
+	DONKEY_HIT("DONKEY_HIT", "ENTITY_DONKEY_HURT"),
+	DONKEY_IDLE("DONKEY_IDLE", "ENTITY_DONKEY_AMBIENT"),
 	DOOR_CLOSE("DOOR_CLOSE", "BLOCK_WOODEN_DOOR_CLOSE"),
 	DOOR_OPEN("DOOR_OPEN", "BLOCK_WOODEN_DOOR_OPEN"),
 	DRINK("DRINK", "ENTITY_GENERIC_DRINK"),
 	EAT("EAT", "ENTITY_GENERIC_EAT"),
+	ENDERDRAGON_DEATH("ENDERDRAGON_DEATH", "ENTITY_ENDERDRAGON_DEATH", "ENTITY_ENDER_DRAGON_DEATH"),
+	ENDERDRAGON_GROWL("ENDERDRAGON_GROWL", "ENTITY_ENDERDRAGON_GROWL", "ENTITY_ENDER_DRAGON_GROWL"),
+	ENDERDRAGON_HIT("ENDERDRAGON_HIT", "ENTITY_ENDERDRAGON_HURT", "ENTITY_ENDER_DRAGON_HURT"),
+	ENDERDRAGON_WINGS("ENDERDRAGON_WINGS", "ENTITY_ENDERDRAGON_FLAP", "ENTITY_ENDER_DRAGON_FLAP"),
+	ENDERMAN_DEATH("ENDERMAN_DEATH", "ENTITY_ENDERMEN_DEATH", "ENTITY_ENDERMAN_DEATH"),
+	ENDERMAN_HIT("ENDERMAN_HIT", "ENTITY_ENDERMEN_HURT", "ENTITY_ENDERMAN_HURT"),
+	ENDERMAN_IDLE("ENDERMAN_IDLE", "ENTITY_ENDERMEN_AMBIENT", "ENTITY_ENDERMAN_AMBIENT"),
+	ENDERMAN_SCREAM("ENDERMAN_SCREAM", "ENTITY_ENDERMEN_SCREAM", "ENTITY_ENDERMAN_SCREAM"),
+	ENDERMAN_STARE("ENDERMAN_STARE", "ENTITY_ENDERMEN_STARE", "ENTITY_ENDERMAN_STARE"),
+	ENDERMAN_TELEPORT("ENDERMAN_TELEPORT", "ENTITY_ENDERMEN_TELEPORT", "ENTITY_ENDERMAN_TELEPORT"),
 	EXPLODE("EXPLODE", "ENTITY_GENERIC_EXPLODE"),
 	FALL_BIG("FALL_BIG", "ENTITY_GENERIC_BIG_FALL"),
 	FALL_SMALL("FALL_SMALL", "ENTITY_GENERIC_SMALL_FALL"),
 	FIRE("FIRE", "BLOCK_FIRE_AMBIENT"),
+	FIREWORK_BLAST("FIREWORK_BLAST", "ENTITY_FIREWORK_BLAST", "ENTITY_FIREWORK_ROCKET_BLAST"),
+	FIREWORK_BLAST2("FIREWORK_BLAST2", "ENTITY_FIREWORK_BLAST_FAR", "ENTITY_FIREWORK_ROCKET_BLAST_FAR"),
+	FIREWORK_LARGE_BLAST("FIREWORK_LARGE_BLAST", "ENTITY_FIREWORK_LARGE_BLAST", "ENTITY_FIREWORK_ROCKET_LARGE_BLAST"),
+	FIREWORK_LARGE_BLAST2("FIREWORK_LARGE_BLAST2", "ENTITY_FIREWORK_LARGE_BLAST_FAR", "ENTITY_FIREWORK_ROCKET_LARGE_BLAST_FAR"),
+	FIREWORK_LAUNCH("FIREWORK_LAUNCH", "ENTITY_FIREWORK_LAUNCH", "ENTITY_FIREWORK_ROCKET_LAUNCH"),
+	FIREWORK_TWINKLE("FIREWORK_TWINKLE", "ENTITY_FIREWORK_TWINKLE", "ENTITY_FIREWORK_ROCKET_TWINKLE"),
+	FIREWORK_TWINKLE2("FIREWORK_TWINKLE2", "ENTITY_FIREWORK_TWINKLE_FAR", "ENTITY_FIREWORK_ROCKET_TWINKLE_FAR"),
 	FIRE_IGNITE("FIRE_IGNITE", "ITEM_FLINTANDSTEEL_USE"),
 	FIZZ("FIZZ", "BLOCK_FIRE_EXTINGUISH"),
 	FUSE("FUSE", "ENTITY_TNT_PRIMED"),
+	GHAST_CHARGE("GHAST_CHARGE", "ENTITY_GHAST_WARN"),
+	GHAST_DEATH("GHAST_DEATH", "ENTITY_GHAST_DEATH"),
+	GHAST_FIREBALL("GHAST_FIREBALL", "ENTITY_GHAST_SHOOT"),
+	GHAST_MOAN("GHAST_MOAN", "ENTITY_GHAST_AMBIENT"),
+	GHAST_SCREAM("GHAST_SCREAM", "ENTITY_GHAST_SCREAM"),
+	GHAST_SCREAM2("GHAST_SCREAM2", "ENTITY_GHAST_HURT"),
 	GLASS("GLASS", "BLOCK_GLASS_BREAK"),
+	HORSE_ANGRY("HORSE_ANGRY", "ENTITY_HORSE_ANGRY"),
+	HORSE_ARMOR("HORSE_ARMOR", "ENTITY_HORSE_ARMOR"),
+	HORSE_BREATHE("HORSE_BREATHE", "ENTITY_HORSE_BREATHE"),
+	HORSE_DEATH("HORSE_DEATH", "ENTITY_HORSE_DEATH"),
+	HORSE_GALLOP("HORSE_GALLOP", "ENTITY_HORSE_GALLOP"),
+	HORSE_HIT("HORSE_HIT", "ENTITY_HORSE_HURT"),
+	HORSE_IDLE("HORSE_IDLE", "ENTITY_HORSE_AMBIENT"),
+	HORSE_JUMP("HORSE_JUMP", "ENTITY_HORSE_JUMP"),
+	HORSE_LAND("HORSE_LAND", "ENTITY_HORSE_LAND"),
+	HORSE_SADDLE("HORSE_SADDLE", "ENTITY_HORSE_SADDLE"),
+	HORSE_SKELETON_DEATH("HORSE_SKELETON_DEATH", "ENTITY_SKELETON_HORSE_DEATH"),
+	HORSE_SKELETON_HIT("HORSE_SKELETON_HIT", "ENTITY_SKELETON_HORSE_HURT"),
+	HORSE_SKELETON_IDLE("HORSE_SKELETON_IDLE", "ENTITY_SKELETON_HORSE_AMBIENT"),
+	HORSE_SOFT("HORSE_SOFT", "ENTITY_HORSE_STEP"),
+	HORSE_WOOD("HORSE_WOOD", "ENTITY_HORSE_STEP_WOOD"),
+	HORSE_ZOMBIE_DEATH("HORSE_ZOMBIE_DEATH", "ENTITY_ZOMBIE_HORSE_DEATH"),
+	HORSE_ZOMBIE_HIT("HORSE_ZOMBIE_HIT", "ENTITY_ZOMBIE_HORSE_HURT"),
+	HORSE_ZOMBIE_IDLE("HORSE_ZOMBIE_IDLE", "ENTITY_ZOMBIE_HORSE_AMBIENT"),
 	HURT_FLESH("HURT_FLESH", "ENTITY_PLAYER_HURT"),
+	IRONGOLEM_ATTACK("IRONGOLEM_THROW", "ENTITY_IRONGOLEM_ATTACK", "ENTITY_IRON_GOLEM_ATTACK"),
+	IRONGOLEM_DEATH("IRONGOLEM_DEATH", "ENTITY_IRONGOLEM_DEATH", "ENTITY_IRON_GOLEM_DEATH"),
+	IRONGOLEM_HIT("IRONGOLEM_HIT", "ENTITY_IRONGOLEM_HURT", "ENTITY_IRON_GOLEM_HURT"),
+	IRONGOLEM_WALK("IRONGOLEM_WALK", "ENTITY_IRONGOLEM_STEP", "ENTITY_IRON_GOLEM_STEP"),
 	ITEM_BREAK("ITEM_BREAK", "ENTITY_ITEM_BREAK"),
 	ITEM_PICKUP("ITEM_PICKUP", "ENTITY_ITEM_PICKUP"),
 	LAVA("LAVA", "BLOCK_LAVA_AMBIENT"),
 	LAVA_POP("LAVA_POP", "BLOCK_LAVA_POP"),
 	LEVEL_UP("LEVEL_UP", "ENTITY_PLAYER_LEVELUP"),
+	MAGMACUBE_JUMP("MAGMACUBE_JUMP", "ENTITY_MAGMACUBE_JUMP", "ENTITY_MAGMA_CUBE_JUMP"),
+	MAGMACUBE_WALK("MAGMACUBE_WALK", "ENTITY_MAGMACUBE_SQUISH", "ENTITY_MAGMA_CUBE_SQUISH"),
+	MAGMACUBE_WALK2("MAGMACUBE_WALK2", "ENTITY_MAGMACUBE_SQUISH", "ENTITY_MAGMA_CUBE_SQUISH_SMALL"),
 	MINECART_BASE("MINECART_BASE", "ENTITY_MINECART_RIDING"),
 	MINECART_INSIDE("MINECART_INSIDE", "ENTITY_MINECART_RIDING"),
 	NOTE_BASS("NOTE_BASS", "BLOCK_NOTE_BASS", "BLOCK_NOTE_BLOCK_BASS"),
-	NOTE_PIANO("NOTE_PIANO", "BLOCK_NOTE_HARP", "BLOCK_NOTE_BLOCK_HARP"),
 	NOTE_BASS_DRUM("NOTE_BASS_DRUM", "BLOCK_NOTE_BASEDRUM", "BLOCK_NOTE_BLOCK_BASEDRUM"),
-	NOTE_STICKS("NOTE_STICKS", "BLOCK_NOTE_HAT", "BLOCK_NOTE_BLOCK_HAT"),
 	NOTE_BASS_GUITAR("NOTE_BASS_GUITAR", "BLOCK_NOTE_GUITAR", "BLOCK_NOTE_BLOCK_GUITAR", "BLOCK_NOTE_BASS" /* 1.10 doesn't know guitar... */),
-	NOTE_SNARE_DRUM("NOTE_SNARE_DRUM", "BLOCK_NOTE_SNARE", "BLOCK_NOTE_BLOCK_SNARE"),
+	NOTE_PIANO("NOTE_PIANO", "BLOCK_NOTE_HARP", "BLOCK_NOTE_BLOCK_HARP"),
 	NOTE_PLING("NOTE_PLING", "BLOCK_NOTE_PLING", "BLOCK_NOTE_BLOCK_PLING"),
+	NOTE_SNARE_DRUM("NOTE_SNARE_DRUM", "BLOCK_NOTE_SNARE", "BLOCK_NOTE_BLOCK_SNARE"),
+	NOTE_STICKS("NOTE_STICKS", "BLOCK_NOTE_HAT", "BLOCK_NOTE_BLOCK_HAT"),
 	ORB_PICKUP("ORB_PICKUP", "ENTITY_EXPERIENCE_ORB_PICKUP"),
+	PIG_DEATH("PIG_DEATH", "ENTITY_PIG_DEATH"),
+	PIG_IDLE("PIG_IDLE", "ENTITY_PIG_AMBIENT"),
+	PIG_WALK("PIG_WALK", "ENTITY_PIG_STEP"),
 	PISTON_EXTEND("PISTON_EXTEND", "BLOCK_PISTON_EXTEND"),
 	PISTON_RETRACT("PISTON_RETRACT", "BLOCK_PISTON_CONTRACT"),
 	PORTAL("PORTAL", "BLOCK_PORTAL_AMBIENT"),
 	PORTAL_TRAVEL("PORTAL_TRAVEL", "BLOCK_PORTAL_TRAVEL"),
 	PORTAL_TRIGGER("PORTAL_TRIGGER", "BLOCK_PORTAL_TRIGGER"),
+	SHEEP_IDLE("SHEEP_IDLE", "ENTITY_SHEEP_AMBIENT"),
+	SHEEP_SHEAR("SHEEP_SHEAR", "ENTITY_SHEEP_SHEAR"),
+	SHEEP_WALK("SHEEP_WALK", "ENTITY_SHEEP_STEP"),
 	SHOOT_ARROW("SHOOT_ARROW", "ENTITY_ARROW_SHOOT"),
+	SILVERFISH_HIT("SILVERFISH_HIT", "ENTITY_SILVERFISH_HURT"),
+	SILVERFISH_IDLE("SILVERFISH_IDLE", "ENTITY_SILVERFISH_AMBIENT"),
+	SILVERFISH_KILL("SILVERFISH_KILL", "ENTITY_SILVERFISH_DEATH"),
+	SILVERFISH_WALK("SILVERFISH_WALK", "ENTITY_SILVERFISH_STEP"),
+	SKELETON_DEATH("SKELETON_DEATH", "ENTITY_SKELETON_DEATH"),
+	SKELETON_HURT("SKELETON_HURT", "ENTITY_SKELETON_HURT"),
+	SKELETON_IDLE("SKELETON_IDLE", "ENTITY_SKELETON_AMBIENT"),
+	SKELETON_WALK("SKELETON_WALK", "ENTITY_SKELETON_STEP"),
+	SLIME_ATTACK("SLIME_ATTACK", "ENTITY_SLIME_ATTACK"),
+	SLIME_WALK("SLIME_WALK", "ENTITY_SLIME_JUMP"),
+	SLIME_WALK2("SLIME_WALK2", "ENTITY_SLIME_SQUISH"),
+	SPIDER_DEATH("SPIDER_DEATH", "ENTITY_SPIDER_DEATH"),
+	SPIDER_IDLE("SPIDER_IDLE", "ENTITY_SPIDER_AMBIENT"),
+	SPIDER_WALK("SPIDER_WALK", "ENTITY_SPIDER_STEP"),
 	SPLASH("SPLASH", "ENTITY_GENERIC_SPLASH"),
 	SPLASH2("SPLASH2", "ENTITY_BOBBER_SPLASH", "ENTITY_FISHING_BOBBER_SPLASH"),
 	STEP_GRASS("STEP_GRASS", "BLOCK_GRASS_STEP"),
@@ -73,74 +197,15 @@ public enum CompSound {
 	STEP_STONE("STEP_STONE", "BLOCK_STONE_STEP"),
 	STEP_WOOD("STEP_WOOD", "BLOCK_WOOD_STEP"),
 	STEP_WOOL("STEP_WOOL", "BLOCK_CLOTH_STEP", "BLOCK_WOOL_STEP"),
+	SUCCESSFUL_HIT("SUCCESSFUL_HIT", "ENTITY_ARROW_HIT_PLAYER"),
 	SWIM("SWIM", "ENTITY_GENERIC_SWIM"),
+	VILLAGER_DEATH("VILLAGER_DEATH", "ENTITY_VILLAGER_DEATH"),
+	VILLAGER_HIT("VILLAGER_HIT", "ENTITY_VILLAGER_HURT"),
+	VILLAGER_IDLE("VILLAGER_IDLE", "ENTITY_VILLAGER_AMBIENT"),
+	VILLAGER_NO("VILLAGER_NO", "ENTITY_VILLAGER_NO"),
+	VILLAGER_TRADE("VILLAGER_HAGGLE", "ENTITY_VILLAGER_TRADING", "ENTITY_VILLAGER_TRADE"),
+	VILLAGER_YES("VILLAGER_YES", "ENTITY_VILLAGER_YES"),
 	WATER("WATER", "BLOCK_WATER_AMBIENT"),
-	WOOD_CLICK("WOOD_CLICK", "BLOCK_WOOD_BUTTON_CLICK_ON", "BLOCK_WOODEN_BUTTON_CLICK_ON"),
-	BAT_DEATH("BAT_DEATH", "ENTITY_BAT_DEATH"),
-	BAT_HURT("BAT_HURT", "ENTITY_BAT_HURT"),
-	BAT_IDLE("BAT_IDLE", "ENTITY_BAT_AMBIENT"),
-	BAT_LOOP("BAT_LOOP", "ENTITY_BAT_LOOP"),
-	BAT_TAKEOFF("BAT_TAKEOFF", "ENTITY_BAT_TAKEOFF"),
-	BLAZE_BREATH("BLAZE_BREATH", "ENTITY_BLAZE_AMBIENT"),
-	BLAZE_DEATH("BLAZE_DEATH", "ENTITY_BLAZE_DEATH"),
-	BLAZE_HIT("BLAZE_HIT", "ENTITY_BLAZE_HURT"),
-	CAT_HISS("CAT_HISS", "ENTITY_CAT_HISS"),
-	CAT_HIT("CAT_HIT", "ENTITY_CAT_HURT"),
-	CAT_MEOW("CAT_MEOW", "ENTITY_CAT_AMBIENT"),
-	CAT_PURR("CAT_PURR", "ENTITY_CAT_PURR"),
-	CAT_PURREOW("CAT_PURREOW", "ENTITY_CAT_PURREOW"),
-	CHICKEN_IDLE("CHICKEN_IDLE", "ENTITY_CHICKEN_AMBIENT"),
-	CHICKEN_HURT("CHICKEN_HURT", "ENTITY_CHICKEN_HURT"),
-	CHICKEN_EGG_POP("CHICKEN_EGG_POP", "ENTITY_CHICKEN_EGG"),
-	CHICKEN_WALK("CHICKEN_WALK", "ENTITY_CHICKEN_STEP"),
-	COW_IDLE("COW_IDLE", "ENTITY_COW_AMBIENT"),
-	COW_HURT("COW_HURT", "ENTITY_COW_HURT"),
-	COW_WALK("COW_WALK", "ENTITY_COW_STEP"),
-	CREEPER_HISS("CREEPER_HISS", "ENTITY_CREEPER_PRIMED"),
-	CREEPER_DEATH("CREEPER_DEATH", "ENTITY_CREEPER_DEATH"),
-	ENDERDRAGON_DEATH("ENDERDRAGON_DEATH", "ENTITY_ENDERDRAGON_DEATH", "ENTITY_ENDER_DRAGON_DEATH"),
-	ENDERDRAGON_GROWL("ENDERDRAGON_GROWL", "ENTITY_ENDERDRAGON_GROWL", "ENTITY_ENDER_DRAGON_GROWL"),
-	ENDERDRAGON_HIT("ENDERDRAGON_HIT", "ENTITY_ENDERDRAGON_HURT", "ENTITY_ENDER_DRAGON_HURT"),
-	ENDERDRAGON_WINGS("ENDERDRAGON_WINGS", "ENTITY_ENDERDRAGON_FLAP", "ENTITY_ENDER_DRAGON_FLAP"),
-	ENDERMAN_DEATH("ENDERMAN_DEATH", "ENTITY_ENDERMEN_DEATH", "ENTITY_ENDERMAN_DEATH"),
-	ENDERMAN_HIT("ENDERMAN_HIT", "ENTITY_ENDERMEN_HURT", "ENTITY_ENDERMAN_HURT"),
-	ENDERMAN_IDLE("ENDERMAN_IDLE", "ENTITY_ENDERMEN_AMBIENT", "ENTITY_ENDERMAN_AMBIENT"),
-	ENDERMAN_TELEPORT("ENDERMAN_TELEPORT", "ENTITY_ENDERMEN_TELEPORT", "ENTITY_ENDERMAN_TELEPORT"),
-	ENDERMAN_SCREAM("ENDERMAN_SCREAM", "ENTITY_ENDERMEN_SCREAM", "ENTITY_ENDERMAN_SCREAM"),
-	ENDERMAN_STARE("ENDERMAN_STARE", "ENTITY_ENDERMEN_STARE", "ENTITY_ENDERMAN_STARE"),
-	GHAST_SCREAM("GHAST_SCREAM", "ENTITY_GHAST_SCREAM"),
-	GHAST_SCREAM2("GHAST_SCREAM2", "ENTITY_GHAST_HURT"),
-	GHAST_CHARGE("GHAST_CHARGE", "ENTITY_GHAST_WARN"),
-	GHAST_DEATH("GHAST_DEATH", "ENTITY_GHAST_DEATH"),
-	GHAST_FIREBALL("GHAST_FIREBALL", "ENTITY_GHAST_SHOOT"),
-	GHAST_MOAN("GHAST_MOAN", "ENTITY_GHAST_AMBIENT"),
-	IRONGOLEM_ATTACK("IRONGOLEM_THROW", "ENTITY_IRONGOLEM_ATTACK", "ENTITY_IRON_GOLEM_ATTACK"),
-	IRONGOLEM_DEATH("IRONGOLEM_DEATH", "ENTITY_IRONGOLEM_DEATH", "ENTITY_IRON_GOLEM_DEATH"),
-	IRONGOLEM_HIT("IRONGOLEM_HIT", "ENTITY_IRONGOLEM_HURT", "ENTITY_IRON_GOLEM_HURT"),
-	IRONGOLEM_WALK("IRONGOLEM_WALK", "ENTITY_IRONGOLEM_STEP", "ENTITY_IRON_GOLEM_STEP"),
-	MAGMACUBE_WALK("MAGMACUBE_WALK", "ENTITY_MAGMACUBE_SQUISH", "ENTITY_MAGMA_CUBE_SQUISH"),
-	MAGMACUBE_WALK2("MAGMACUBE_WALK2", "ENTITY_MAGMACUBE_SQUISH", "ENTITY_MAGMA_CUBE_SQUISH_SMALL"),
-	MAGMACUBE_JUMP("MAGMACUBE_JUMP", "ENTITY_MAGMACUBE_JUMP", "ENTITY_MAGMA_CUBE_JUMP"),
-	PIG_IDLE("PIG_IDLE", "ENTITY_PIG_AMBIENT"),
-	PIG_DEATH("PIG_DEATH", "ENTITY_PIG_DEATH"),
-	PIG_WALK("PIG_WALK", "ENTITY_PIG_STEP"),
-	SHEEP_IDLE("SHEEP_IDLE", "ENTITY_SHEEP_AMBIENT"),
-	SHEEP_SHEAR("SHEEP_SHEAR", "ENTITY_SHEEP_SHEAR"),
-	SHEEP_WALK("SHEEP_WALK", "ENTITY_SHEEP_STEP"),
-	SILVERFISH_HIT("SILVERFISH_HIT", "ENTITY_SILVERFISH_HURT"),
-	SILVERFISH_KILL("SILVERFISH_KILL", "ENTITY_SILVERFISH_DEATH"),
-	SILVERFISH_IDLE("SILVERFISH_IDLE", "ENTITY_SILVERFISH_AMBIENT"),
-	SILVERFISH_WALK("SILVERFISH_WALK", "ENTITY_SILVERFISH_STEP"),
-	SKELETON_IDLE("SKELETON_IDLE", "ENTITY_SKELETON_AMBIENT"),
-	SKELETON_DEATH("SKELETON_DEATH", "ENTITY_SKELETON_DEATH"),
-	SKELETON_HURT("SKELETON_HURT", "ENTITY_SKELETON_HURT"),
-	SKELETON_WALK("SKELETON_WALK", "ENTITY_SKELETON_STEP"),
-	SLIME_ATTACK("SLIME_ATTACK", "ENTITY_SLIME_ATTACK"),
-	SLIME_WALK("SLIME_WALK", "ENTITY_SLIME_JUMP"),
-	SLIME_WALK2("SLIME_WALK2", "ENTITY_SLIME_SQUISH"),
-	SPIDER_IDLE("SPIDER_IDLE", "ENTITY_SPIDER_AMBIENT"),
-	SPIDER_DEATH("SPIDER_DEATH", "ENTITY_SPIDER_DEATH"),
-	SPIDER_WALK("SPIDER_WALK", "ENTITY_SPIDER_STEP"),
 	WITHER_DEATH("WITHER_DEATH", "ENTITY_WITHER_DEATH"),
 	WITHER_HURT("WITHER_HURT", "ENTITY_WITHER_HURT"),
 	WITHER_IDLE("WITHER_IDLE", "ENTITY_WITHER_AMBIENT"),
@@ -155,65 +220,22 @@ public enum CompSound {
 	WOLF_SHAKE("WOLF_SHAKE", "ENTITY_WOLF_SHAKE"),
 	WOLF_WALK("WOLF_WALK", "ENTITY_WOLF_STEP"),
 	WOLF_WHINE("WOLF_WHINE", "ENTITY_WOLF_WHINE"),
-	ZOMBIE_METAL("ZOMBIE_METAL", "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"),
-	ZOMBIE_WOOD("ZOMBIE_WOOD", "ENTITY_ZOMBIE_ATTACK_DOOR_WOOD", "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"),
-	ZOMBIE_WOODBREAK("ZOMBIE_WOODBREAK", "ENTITY_ZOMBIE_BREAK_DOOR_WOOD", "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"),
-	ZOMBIE_IDLE("ZOMBIE_IDLE", "ENTITY_ZOMBIE_AMBIENT"),
+	WOOD_CLICK("WOOD_CLICK", "BLOCK_WOOD_BUTTON_CLICK_ON", "BLOCK_WOODEN_BUTTON_CLICK_ON"),
 	ZOMBIE_DEATH("ZOMBIE_DEATH", "ENTITY_ZOMBIE_DEATH"),
 	ZOMBIE_HURT("ZOMBIE_HURT", "ENTITY_ZOMBIE_HURT"),
+	ZOMBIE_IDLE("ZOMBIE_IDLE", "ENTITY_ZOMBIE_AMBIENT"),
 	ZOMBIE_INFECT("ZOMBIE_INFECT", "ENTITY_ZOMBIE_INFECT"),
-	ZOMBIE_UNFECT("ZOMBIE_UNFECT", "ENTITY_ZOMBIE_VILLAGER_CONVERTED"),
-	ZOMBIE_REMEDY("ZOMBIE_REMEDY", "ENTITY_ZOMBIE_VILLAGER_CURE"),
-	ZOMBIE_WALK("ZOMBIE_WALK", "ENTITY_ZOMBIE_STEP"),
-	ZOMBIE_PIG_IDLE("ZOMBIE_PIG_IDLE", "ENTITY_ZOMBIE_PIG_AMBIENT", "ENTITY_ZOMBIE_PIGMAN_AMBIENT"),
+	ZOMBIE_METAL("ZOMBIE_METAL", "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"),
 	ZOMBIE_PIG_ANGRY("ZOMBIE_PIG_ANGRY", "ENTITY_ZOMBIE_PIG_ANGRY", "ENTITY_ZOMBIE_PIGMAN_ANGRY"),
 	ZOMBIE_PIG_DEATH("ZOMBIE_PIG_DEATH", "ENTITY_ZOMBIE_PIG_DEATH", "ENTITY_ZOMBIE_PIGMAN_DEATH"),
 	ZOMBIE_PIG_HURT("ZOMBIE_PIG_HURT", "ENTITY_ZOMBIE_PIG_HURT", "ENTITY_ZOMBIE_PIGMAN_HURT"),
-	DIG_WOOL("DIG_WOOL", "BLOCK_CLOTH_BREAK", "BLOCK_WOOL_BREAK"),
-	DIG_GRASS("DIG_GRASS", "BLOCK_GRASS_BREAK"),
-	DIG_GRAVEL("DIG_GRAVEL", "BLOCK_GRAVEL_BREAK"),
-	DIG_SAND("DIG_SAND", "BLOCK_SAND_BREAK"),
-	DIG_SNOW("DIG_SNOW", "BLOCK_SNOW_BREAK"),
-	DIG_STONE("DIG_STONE", "BLOCK_STONE_BREAK"),
-	DIG_WOOD("DIG_WOOD", "BLOCK_WOOD_BREAK"),
-	FIREWORK_BLAST("FIREWORK_BLAST", "ENTITY_FIREWORK_BLAST", "ENTITY_FIREWORK_ROCKET_BLAST"),
-	FIREWORK_BLAST2("FIREWORK_BLAST2", "ENTITY_FIREWORK_BLAST_FAR", "ENTITY_FIREWORK_ROCKET_BLAST_FAR"),
-	FIREWORK_LARGE_BLAST("FIREWORK_LARGE_BLAST", "ENTITY_FIREWORK_LARGE_BLAST", "ENTITY_FIREWORK_ROCKET_LARGE_BLAST"),
-	FIREWORK_LARGE_BLAST2("FIREWORK_LARGE_BLAST2", "ENTITY_FIREWORK_LARGE_BLAST_FAR", "ENTITY_FIREWORK_ROCKET_LARGE_BLAST_FAR"),
-	FIREWORK_LAUNCH("FIREWORK_LAUNCH", "ENTITY_FIREWORK_LAUNCH", "ENTITY_FIREWORK_ROCKET_LAUNCH"),
-	FIREWORK_TWINKLE("FIREWORK_TWINKLE", "ENTITY_FIREWORK_TWINKLE", "ENTITY_FIREWORK_ROCKET_TWINKLE"),
-	FIREWORK_TWINKLE2("FIREWORK_TWINKLE2", "ENTITY_FIREWORK_TWINKLE_FAR", "ENTITY_FIREWORK_ROCKET_TWINKLE_FAR"),
-	SUCCESSFUL_HIT("SUCCESSFUL_HIT", "ENTITY_ARROW_HIT_PLAYER"),
-	HORSE_ANGRY("HORSE_ANGRY", "ENTITY_HORSE_ANGRY"),
-	HORSE_ARMOR("HORSE_ARMOR", "ENTITY_HORSE_ARMOR"),
-	HORSE_BREATHE("HORSE_BREATHE", "ENTITY_HORSE_BREATHE"),
-	HORSE_DEATH("HORSE_DEATH", "ENTITY_HORSE_DEATH"),
-	HORSE_GALLOP("HORSE_GALLOP", "ENTITY_HORSE_GALLOP"),
-	HORSE_HIT("HORSE_HIT", "ENTITY_HORSE_HURT"),
-	HORSE_IDLE("HORSE_IDLE", "ENTITY_HORSE_AMBIENT"),
-	HORSE_JUMP("HORSE_JUMP", "ENTITY_HORSE_JUMP"),
-	HORSE_LAND("HORSE_LAND", "ENTITY_HORSE_LAND"),
-	HORSE_SADDLE("HORSE_SADDLE", "ENTITY_HORSE_SADDLE"),
-	HORSE_SOFT("HORSE_SOFT", "ENTITY_HORSE_STEP"),
-	HORSE_WOOD("HORSE_WOOD", "ENTITY_HORSE_STEP_WOOD"),
-	DONKEY_ANGRY("DONKEY_ANGRY", "ENTITY_DONKEY_ANGRY"),
-	DONKEY_DEATH("DONKEY_DEATH", "ENTITY_DONKEY_DEATH"),
-	DONKEY_HIT("DONKEY_HIT", "ENTITY_DONKEY_HURT"),
-	DONKEY_IDLE("DONKEY_IDLE", "ENTITY_DONKEY_AMBIENT"),
-	HORSE_SKELETON_DEATH("HORSE_SKELETON_DEATH", "ENTITY_SKELETON_HORSE_DEATH"),
-	HORSE_SKELETON_HIT("HORSE_SKELETON_HIT", "ENTITY_SKELETON_HORSE_HURT"),
-	HORSE_SKELETON_IDLE("HORSE_SKELETON_IDLE", "ENTITY_SKELETON_HORSE_AMBIENT"),
-	HORSE_ZOMBIE_DEATH("HORSE_ZOMBIE_DEATH", "ENTITY_ZOMBIE_HORSE_DEATH"),
-	HORSE_ZOMBIE_HIT("HORSE_ZOMBIE_HIT", "ENTITY_ZOMBIE_HORSE_HURT"),
-	HORSE_ZOMBIE_IDLE("HORSE_ZOMBIE_IDLE", "ENTITY_ZOMBIE_HORSE_AMBIENT"),
-	VILLAGER_DEATH("VILLAGER_DEATH", "ENTITY_VILLAGER_DEATH"),
-	VILLAGER_TRADE("VILLAGER_HAGGLE", "ENTITY_VILLAGER_TRADING", "ENTITY_VILLAGER_TRADE"),
-	VILLAGER_HIT("VILLAGER_HIT", "ENTITY_VILLAGER_HURT"),
-	VILLAGER_IDLE("VILLAGER_IDLE", "ENTITY_VILLAGER_AMBIENT"),
-	VILLAGER_NO("VILLAGER_NO", "ENTITY_VILLAGER_NO"),
-	VILLAGER_YES("VILLAGER_YES", "ENTITY_VILLAGER_YES"),
+	ZOMBIE_PIG_IDLE("ZOMBIE_PIG_IDLE", "ENTITY_ZOMBIE_PIG_AMBIENT", "ENTITY_ZOMBIE_PIGMAN_AMBIENT"),
+	ZOMBIE_REMEDY("ZOMBIE_REMEDY", "ENTITY_ZOMBIE_VILLAGER_CURE"),
+	ZOMBIE_UNFECT("ZOMBIE_UNFECT", "ENTITY_ZOMBIE_VILLAGER_CONVERTED"),
+	ZOMBIE_WALK("ZOMBIE_WALK", "ENTITY_ZOMBIE_STEP"),
+	ZOMBIE_WOOD("ZOMBIE_WOOD", "ENTITY_ZOMBIE_ATTACK_DOOR_WOOD", "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"),
+	ZOMBIE_WOODBREAK("ZOMBIE_WOODBREAK", "ENTITY_ZOMBIE_BREAK_DOOR_WOOD", "ENTITY_ZOMBIE_BREAK_WOODEN_DOOR"),
 
-	// New sounds
 	AMBIENT_BASALT_DELTAS_ADDITIONS,
 	AMBIENT_BASALT_DELTAS_LOOP,
 	AMBIENT_BASALT_DELTAS_MOOD,
@@ -1548,83 +1570,298 @@ public enum CompSound {
 	WEATHER_RAIN("AMBIENCE_RAIN"),
 	WEATHER_RAIN_ABOVE;
 
-	private String[] versionDependentNames;
-	private org.bukkit.Sound cached = null;
-
-	CompSound(String... versionDependentNames) {
-		this.versionDependentNames = versionDependentNames;
-
-		// Assume most servers use the latest version so reverse for performance
-		Common.reverse(this.versionDependentNames);
-	}
+	/**
+	 * Cached list of {@link CompSound#values()} to avoid allocating memory for
+	 * calling the method every time.
+	 */
+	public static final CompSound[] VALUES = values();
 
 	/**
-	 * Plays a sound for the given player with 1F volume and 1F pitch
-	 *
-	 * @param player
+	 * The default volume when playing this sound.
 	 */
-	public final void play(Player player) {
-		this.play(player, 1F, 1F);
-	}
+	public static final float DEFAULT_VOLUME = 1.0f;
+	public static final float DEFAULT_PITCH = 1.0f;
 
 	/**
-	 * Plays a sound for the given player
-	 *
-	 * @param player
-	 * @param volume
-	 * @param pitch
+	 * The Bukkit sound representation
 	 */
-	public final void play(Player player, float volume, float pitch) {
-		try {
-			player.playSound(player.getLocation(), this.getSound(), volume, pitch);
-		} catch (final Throwable t) {
-			// Fail-through
-		}
-	}
+	private final Sound sound;
 
 	/**
-	 * Plays a sound at the given location with 1F volume and 1F pitch
-	 *
-	 * @param loc
+	 * Return true if the sound does not have any legacy names and won't work in
+	 * older MC versions.
 	 */
-	public final void play(Location loc) {
-		this.play(loc, 1F, 1F);
-	}
+	@Getter
+	private final boolean modern;
 
-	/**
-	 * Plays a sound on a specific location
-	 *
-	 * @param loc
-	 * @param volume
-	 * @param pitch
-	 */
-	public final void play(Location loc, float volume, float pitch) {
-		try {
-			loc.getWorld().playSound(loc, this.getSound(), volume, pitch);
-		} catch (final Throwable t) {
-			// Fail-through
-		}
-	}
+	CompSound(String... legacyNames) {
+		Sound bukkitSound = Data.BUKKIT_NAMES.get(this.name());
 
-	/**
-	 * Get the bukkit sound for current server version
-	 * <p>
-	 * Caches sound on first call
-	 *
-	 * @return corresponding {@link org.bukkit.Sound}
-	 */
-	public final Sound getSound() {
-		if (this.cached != null)
-			return this.cached;
+		if (bukkitSound == null)
+			for (final String legacy : legacyNames) {
+				bukkitSound = Data.BUKKIT_NAMES.get(legacy);
 
-		for (final String name : this.versionDependentNames)
-			try {
-				return this.cached = org.bukkit.Sound.valueOf(name);
-			} catch (final IllegalArgumentException ex) {
-				// try next
+				if (bukkitSound != null)
+					break;
 			}
 
-		return getFallback();
+		this.sound = bukkitSound;
+		this.modern = legacyNames == null;
+
+		Data.NAMES.put(this.name(), this);
+
+		for (final String legacy : legacyNames)
+			Data.NAMES.putIfAbsent(legacy, this);
+
+	}
+
+	/**
+	 * Plays a normal sound in a location.
+	 *
+	 * @param location the location to play the sound in.
+	 */
+	public void play(Location location) {
+		play(location, DEFAULT_VOLUME, DEFAULT_PITCH);
+	}
+
+	/**
+	 * Plays a normal sound to an entity.
+	 *
+	 * @param entity the entity to play the sound to.
+	 *
+	 * @since 1.0.0
+	 */
+	public void play(Entity entity) {
+		play(entity, DEFAULT_VOLUME, DEFAULT_PITCH);
+	}
+
+	/**
+	 * Plays a sound in a location with the given volume and pitch.
+	 *
+	 * @param location the location to play this sound.
+	 * @param volume   the volume of the sound, 1 is normal.
+	 * @param pitch    the pitch of the sound, 0 is normal.
+	 */
+	public void play(@NonNull Location location, float volume, float pitch) {
+		final Sound sound = this.getSound();
+
+		if (sound != null)
+			location.getWorld().playSound(location, sound, volume, pitch);
+	}
+
+	/**
+	 * Plays a sound to an entity with the given volume and pitch.
+	 *
+	 * @param entity the entity to play the sound to.
+	 * @param volume the volume of the sound, 1 is normal.
+	 * @param pitch  the pitch of the sound, 0 is normal.
+	 */
+	public void play(@NonNull Entity entity, float volume, float pitch) {
+		if (entity instanceof Player) {
+			final Sound sound = this.getSound();
+
+			if (sound != null)
+				((Player) entity).playSound(entity.getLocation(), sound, volume, pitch);
+
+		} else
+			play(entity.getLocation(), volume, pitch);
+
+	}
+
+	/**
+	 * Plays a sound repeatedly with the given delay at a moving target's location.
+	 *
+	 * @param entity the entity to play the sound to. We exactly need an entity to keep the track of location changes.
+	 * @param volume the volume of the sound.
+	 * @param pitch  the pitch of the sound.
+	 * @param repeat the amount of times to repeat playing.
+	 * @param delay  the delay between each repeat.
+	 *
+	 * @return the async task handling this operation.
+	 * @see #play(Location, float, float)
+	 */
+	public BukkitTask playRepeatedly(@NonNull Entity entity, float volume, float pitch, int repeat, int delay) {
+		if (repeat <= 0)
+			throw new IllegalArgumentException("Cannot repeat playing sound " + repeat + " times");
+
+		if (delay <= 0)
+			throw new IllegalArgumentException("Delay ticks must be at least 1");
+
+		return new BukkitRunnable() {
+			int repeating = repeat;
+
+			@Override
+			public void run() {
+				play(entity.getLocation(), volume, pitch);
+				if (repeating-- == 0)
+					cancel();
+			}
+		}.runTaskTimer(SimplePlugin.getInstance(), 0, delay);
+	}
+
+	/**
+	 * Stops playing the specified sound from the player.
+	 *
+	 * @param player the player to stop playing the sound to.
+	 *
+	 * @see #stopMusic(Player)
+	 */
+	public void stopSound(@NonNull Player player) {
+		final Sound sound = this.getSound();
+
+		if (sound != null)
+			try {
+				player.stopSound(sound);
+			} catch (final NoSuchMethodError err) {
+				// Legacy MC
+			}
+	}
+
+	/**
+	 * Return the sound or fallback name if the sound does not exist in the current
+	 * MC version.
+	 *
+	 * @return
+	 */
+	public Sound getSound() {
+		return Common.getOrDefault(this.sound, getFallback());
+	}
+
+	/**
+	 * In most cases your should be using {@link #name()} instead.
+	 *
+	 * @return a friendly readable string name.
+	 */
+	@Override
+	public String toString() {
+		return Arrays.stream(name().split("_"))
+				.map(t -> t.charAt(0) + t.substring(1).toLowerCase())
+				.collect(Collectors.joining(" "));
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Static
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Parses the CompSound with the given bukkit sound.
+	 *
+	 * @param sound the Bukkit sound.
+	 *
+	 * @return a matched sound.
+	 */
+	public static CompSound fromSound(@NonNull Sound sound) {
+		return Data.NAMES.get(sound.name());
+	}
+
+	/**
+	 * Parses the CompSound with the given name.
+	 *
+	 * @param sound the name of the sound.
+	 *
+	 * @return a matched CompSound.
+	 */
+	@Nullable
+	public static CompSound fromName(@NonNull String soundName) {
+		final int len = soundName.length();
+		final char[] chs = new char[len];
+		int count = 0;
+		boolean appendUnderline = false;
+
+		for (int i = 0; i < len; i++) {
+			final char ch = soundName.charAt(i);
+
+			if (!appendUnderline && count != 0 && (ch == '-' || ch == ' ' || ch == '_') && chs[count] != '_')
+				appendUnderline = true;
+
+			else {
+				boolean number = false;
+				// A few sounds have numbers in them.
+				if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (number = (ch >= '0' && ch <= '9'))) {
+					if (appendUnderline) {
+						chs[count++] = '_';
+						appendUnderline = false;
+					}
+
+					if (number)
+						chs[count++] = ch;
+					else
+						chs[count++] = (char) (ch & 0x5f);
+				}
+			}
+		}
+
+		return Data.NAMES.get(new String(chs, 0, count));
+	}
+
+	/**
+	 * Stops all the playing musics (not all the sounds)
+	 * <p>
+	 * Note that this method will only work for the sound
+	 * that are sent from {@link Player#playSound} and
+	 * the sounds played from the client will not be
+	 * affected by this.
+	 *
+	 * @param player the player to stop all the sounds from.
+	 *
+	 * @see #stopSound(Player)
+	 */
+	public static void stopMusic(@NonNull Player player) {
+
+		// We don't need to cache because it's rarely used.
+		final CompSound[] musics = {
+				MUSIC_CREATIVE, MUSIC_CREDITS,
+				MUSIC_DISC_11, MUSIC_DISC_13, MUSIC_DISC_BLOCKS, MUSIC_DISC_CAT, MUSIC_DISC_CHIRP,
+				MUSIC_DISC_FAR, MUSIC_DISC_MALL, MUSIC_DISC_MELLOHI, MUSIC_DISC_STAL,
+				MUSIC_DISC_STRAD, MUSIC_DISC_WAIT, MUSIC_DISC_WARD,
+				MUSIC_DRAGON, MUSIC_END, MUSIC_GAME, MUSIC_MENU, MUSIC_NETHER_BASALT_DELTAS, MUSIC_UNDER_WATER,
+				MUSIC_NETHER_CRIMSON_FOREST, MUSIC_NETHER_WARPED_FOREST
+		};
+
+		for (final CompSound music : musics) {
+			final Sound sound = music.getSound();
+
+			if (sound != null)
+				try {
+					player.stopSound(sound);
+				} catch (final NoSuchMethodError err) {
+					// Legacy MC
+				}
+		}
+	}
+
+	/**
+	 * Plays an instrument's notes in an ascending form.
+	 * This method is not really relevant to this utility class, but a nice feature.
+	 *
+	 * @param player      the player to play the note from.
+	 * @param playTo      the entity to play the note to.
+	 * @param instrument  the instrument.
+	 * @param ascendLevel the ascend level of notes. Can only be positive and not higher than 7
+	 * @param delay       the delay between each play.
+	 *
+	 * @return the async task handling the operation.
+	 */
+	public static BukkitTask playAscendingNote(@NonNull Player player, @NonNull Entity playTo, Instrument instrument, int ascendLevel, int delay) {
+
+		if (ascendLevel <= 0)
+			throw new IllegalArgumentException("Note ascend level cannot be lower than 1");
+		if (ascendLevel > 7)
+			throw new IllegalArgumentException("Note ascend level cannot be greater than 7");
+		if (delay <= 0)
+			throw new IllegalArgumentException("Delay ticks must be at least 1");
+
+		return new BukkitRunnable() {
+			int repeating = ascendLevel;
+
+			@Override
+			public void run() {
+				player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - repeating]));
+
+				if (repeating-- == 0)
+					cancel();
+			}
+		}.runTaskTimerAsynchronously(SimplePlugin.getInstance(), 0, delay);
 	}
 
 	/**
@@ -1635,29 +1872,18 @@ public enum CompSound {
 	public static final Sound getFallback() {
 		return Sound.valueOf(MinecraftVersion.atLeast(V.v1_9) ? "ENTITY_PLAYER_LEVELUP" : "LEVEL_UP");
 	}
+}
 
-	/**
-	 * Converts the string to a valid bukkit Sound
-	 *
-	 * @param soundName
-	 * @return
-	 */
-	public static final Sound convert(String soundName) {
-		CompSound sound = null;
+/**
+ * Bukkit to legacy and back names translation.
+ */
+class Data {
 
-		// Test if we can convert it directly
-		if (MinecraftVersion.atLeast(V.v1_9))
-			try {
-				return Sound.valueOf(soundName.toUpperCase());
-			} catch (final IllegalArgumentException ex) {
-			}
+	static final WeakHashMap<String, Sound> BUKKIT_NAMES = new WeakHashMap<>();
+	static final Map<String, CompSound> NAMES = new HashMap<>();
 
-		// If not, try to find the corresponding new sound
-		for (final CompSound compSound : values())
-			for (final String name : compSound.versionDependentNames)
-				if (name.equalsIgnoreCase(soundName))
-					sound = compSound;
-
-		return sound != null ? sound.getSound() : getFallback();
+	static {
+		for (final Sound sound : Sound.values())
+			BUKKIT_NAMES.put(sound.name(), sound);
 	}
 }
