@@ -234,7 +234,7 @@ public final class ChatUtil {
 	}
 
 	private static String capitalizeFully(String str, char[] delimiters) {
-		int delimLen = delimiters == null ? -1 : delimiters.length;
+		final int delimLen = delimiters == null ? -1 : delimiters.length;
 
 		if (str != null && str.length() != 0 && delimLen != 0) {
 			str = str.toLowerCase();
@@ -270,14 +270,14 @@ public final class ChatUtil {
 	}
 
 	private static String capitalize(String str, char[] delimiters) {
-		int delimLen = delimiters == null ? -1 : delimiters.length;
+		final int delimLen = delimiters == null ? -1 : delimiters.length;
 		if (str != null && str.length() != 0 && delimLen != 0) {
-			int strLen = str.length();
-			StringBuffer buffer = new StringBuffer(strLen);
+			final int strLen = str.length();
+			final StringBuffer buffer = new StringBuffer(strLen);
 			boolean capitalizeNext = true;
 
 			for (int i = 0; i < strLen; ++i) {
-				char ch = str.charAt(i);
+				final char ch = str.charAt(i);
 
 				if (isDelimiter(ch, delimiters)) {
 					buffer.append(ch);
@@ -305,7 +305,7 @@ public final class ChatUtil {
 
 		int i = 0;
 
-		for (int isize = delimiters.length; i < isize; ++i)
+		for (final int isize = delimiters.length; i < isize; ++i)
 			if (ch == delimiters[i])
 				return true;
 
