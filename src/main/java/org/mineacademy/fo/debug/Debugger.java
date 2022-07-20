@@ -152,6 +152,8 @@ public final class Debugger {
 		if (Bukkit.getServer() == null) // Instance not set, e.g. when not using Bukkit
 			return;
 
+		final String systemInfo = "Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version");
+
 		try {
 			final List<String> lines = new ArrayList<>();
 			final String header = SimplePlugin.getNamed() + " " + SimplePlugin.getVersion() + " encountered " + Common.article(t.getClass().getSimpleName());
@@ -160,7 +162,7 @@ public final class Debugger {
 			fill(lines,
 					"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
 					header,
-					"Running " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " and Java " + System.getProperty("java.version"),
+					systemInfo,
 					"Plugins: " + Common.join(Bukkit.getPluginManager().getPlugins(), ", "),
 					"----------------------------------------------------------------------------------------------");
 
@@ -197,7 +199,7 @@ public final class Debugger {
 			fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
 
 			// Log to the console
-			Bukkit.getLogger().severe(header + "! Please check your error.log and report this issue with the information in that file.");
+			Bukkit.getLogger().severe(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
 
 			// Finally, save the error file
 			FileUtil.write(FoConstants.File.ERRORS, lines);
