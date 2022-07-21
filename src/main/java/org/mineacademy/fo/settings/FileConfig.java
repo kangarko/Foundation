@@ -69,6 +69,7 @@ public abstract class FileConfig {
 	 * The file that is being used
 	 */
 	@Nullable
+	@Setter(value = AccessLevel.PROTECTED)
 	File file;
 
 	/*
