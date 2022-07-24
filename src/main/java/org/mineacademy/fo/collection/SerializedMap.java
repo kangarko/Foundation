@@ -658,6 +658,22 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * @return
 	 */
 	public <T> List<T> getList(final String key, final Class<T> type) {
+		return this.getList(key, type, (Object[]) null);
+	}
+
+	/**
+	 * Return a list of objects of the given type, or empty list if map does not contains key.
+	 * <p>
+	 * If the type is your own class make sure to put public static deserialize(SerializedMap)
+	 * method into it that returns the class object from the map!
+	 *
+	 * @param <T>
+	 * @param key
+	 * @param type
+	 * @param parameters, the deserialize parameters applied when creating the list for each list key
+	 * @return
+	 */
+	public <T> List<T> getList(final String key, final Class<T> type, final Object... parameters) {
 		final List<T> list = new ArrayList<>();
 
 		if (!this.map.containsKey(key))
@@ -677,7 +693,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 					SerializeUtil.setJson(true);
 
 				for (final Object object : (Collection<Object>) rawList)
-					list.add(object == null ? null : SerializeUtil.deserialize(type, object));
+					list.add(object == null ? null : SerializeUtil.deserialize(type, object, parameters));
 
 			} finally {
 				SerializeUtil.setJson(wasJson);
