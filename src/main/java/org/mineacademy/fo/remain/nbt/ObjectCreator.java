@@ -20,9 +20,7 @@ enum ObjectCreator {
 	private Class<?> targetClass;
 
 	ObjectCreator(MinecraftVersion from, MinecraftVersion to, Class<?> clazz, Class<?>... args) {
-		if (clazz == null)
-			return;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
+		if (clazz == null || from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
 			return;
 		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
@@ -31,7 +29,7 @@ enum ObjectCreator {
 			this.construct = clazz.getDeclaredConstructor(args);
 			this.construct.setAccessible(true);
 		} catch (final Exception ex) {
-			Common.error(ex, "[Foundation NBT API] Unable to find the constructor for the class '" + clazz.getName() + "'");
+			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
 	}
 

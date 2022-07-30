@@ -54,9 +54,7 @@ enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
-			return;
-		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
+		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId() || to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
 		this.enabled = true;
 		try {

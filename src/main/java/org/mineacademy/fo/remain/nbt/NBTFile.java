@@ -1,9 +1,8 @@
 package org.mineacademy.fo.remain.nbt;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * {@link NBTCompound} implementation backed by a {@link File}
@@ -28,10 +27,9 @@ public class NBTFile extends NBTCompound {
 		if (file == null)
 			throw new NullPointerException("File can't be null!");
 		this.file = file;
-		if (file.exists()) {
-			final FileInputStream inputsteam = new FileInputStream(file);
-			this.nbt = NBTReflectionUtil.readNBT(inputsteam);
-		} else {
+		if (file.exists())
+			this.nbt = NBTReflectionUtil.readNBT(Files.newInputStream(file.toPath()));
+		else {
 			this.nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 			this.save();
 		}
@@ -45,13 +43,7 @@ public class NBTFile extends NBTCompound {
 	public void save() throws IOException {
 		try {
 			this.getWriteLock().lock();
-			if (!this.file.exists()) {
-				this.file.getParentFile().mkdirs();
-				if (!this.file.createNewFile())
-					throw new IOException("Unable to create file at " + this.file.getAbsolutePath());
-			}
-			final FileOutputStream outStream = new FileOutputStream(this.file);
-			NBTReflectionUtil.writeNBT(this.nbt, outStream);
+			saveTo(this.file, this);
 		} finally {
 			this.getWriteLock().unlock();
 		}
@@ -72,6 +64,37 @@ public class NBTFile extends NBTCompound {
 	@Override
 	protected void setCompound(Object compound) {
 		this.nbt = compound;
+	}
+
+	/**
+	 * Reads NBT data from the provided file.
+	 *<p>Returns empty NBTContainer if file does not exist.
+	 *
+	 * @param file file to read
+	 * @return NBTCompound holding file's nbt data
+	 * @throws IOException exception
+	 */
+	public static NBTCompound readFrom(File file) throws IOException {
+		if (!file.exists())
+			return new NBTContainer();
+		return new NBTContainer(NBTReflectionUtil.readNBT(Files.newInputStream(file.toPath())));
+	}
+
+	/**
+	 * Saves NBT data to the provided file.
+	 * <p>Will fully override the file if it already exists.
+	 *
+	 * @param file file
+	 * @param nbt NBT data
+	 * @throws IOException exception
+	 */
+	public static void saveTo(File file, NBTCompound nbt) throws IOException {
+		if (!file.exists()) {
+			file.getParentFile().mkdirs();
+			if (!file.createNewFile())
+				throw new IOException("Unable to create file at " + file.getAbsolutePath());
+		}
+		NBTReflectionUtil.writeNBT(nbt.getCompound(), Files.newOutputStream(file.toPath()));
 	}
 
 }
