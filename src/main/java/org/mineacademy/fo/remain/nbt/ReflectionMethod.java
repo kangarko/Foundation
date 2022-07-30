@@ -128,8 +128,8 @@ enum ReflectionMethod {
 		this.removedAfter = removedAfter;
 		this.parentClassWrapper = targetClass;
 		//Special Case for Modded 1.7.10
-		final boolean specialCase = (MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE") && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4); //COMPOUND_MERGE is only present on Crucible, not on vanilla 1.7.10
-		if (!specialCase && (!MinecraftVersion.isAtLeastVersion(addedSince) || (this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter))))
+		final boolean specialCase = MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE") && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4; //COMPOUND_MERGE is only present on Crucible, not on vanilla 1.7.10
+		if (!specialCase && (!MinecraftVersion.isAtLeastVersion(addedSince) || this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter)))
 			return;
 		this.compatible = true;
 		final MinecraftVersion server = MinecraftVersion.getVersion();
@@ -157,7 +157,7 @@ enum ReflectionMethod {
 				this.loaded = true;
 				this.methodName = this.targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				Common.error(ex, "[Foundation NBT API] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this); //NOSONAR This gets loaded before the logger is loaded
+				Common.error(ex2, "[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
 			}
 		}
 	}

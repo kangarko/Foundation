@@ -14,7 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class NBTItem extends NBTCompound {
 
 	private ItemStack bukkitItem;
-	private final boolean directApply;
+	private boolean directApply;
 	private ItemStack originalSrcStack = null;
 
 	/**

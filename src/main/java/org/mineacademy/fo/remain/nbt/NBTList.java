@@ -19,9 +19,9 @@ import org.mineacademy.fo.exception.FoException;
  */
 public abstract class NBTList<T> implements List<T> {
 
-	private final String listName;
-	private final NBTCompound parent;
-	private final NBTType type;
+	private String listName;
+	private NBTCompound parent;
+	private NBTType type;
 	protected Object listObject;
 
 	protected NBTList(NBTCompound owner, String name, NBTType type, Object list) {
