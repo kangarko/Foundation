@@ -338,11 +338,11 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	}
 
 	/**
-	 * Serializes every value in the list so you can store it in your settings
+	 * Serializes every value in the list so you can store it in your YAML settings
 	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serialize(this.list);
+		return SerializeUtil.serialize(this.getMode(), this.list);
 	}
 
 	/**

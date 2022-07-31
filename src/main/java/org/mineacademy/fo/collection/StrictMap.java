@@ -256,7 +256,7 @@ public final class StrictMap<K, V> extends StrictCollection {
 	 * @param consumer
 	 */
 	public void forEachIterate(BiConsumer<K, V> consumer) {
-		for (Entry<K, V> entry : this.entrySet()) {
+		for (final Entry<K, V> entry : this.entrySet()) {
 			consumer.accept(entry.getKey(), entry.getValue());
 		}
 	}
@@ -322,6 +322,9 @@ public final class StrictMap<K, V> extends StrictCollection {
 		return this.map.size();
 	}
 
+	/**
+	 * Serializes every value in the list so you can store it in your settings
+	 */
 	@Override
 	public Object serialize() {
 		if (!this.map.isEmpty()) {
@@ -331,7 +334,7 @@ public final class StrictMap<K, V> extends StrictCollection {
 				final V val = entry.getValue();
 
 				if (val != null)
-					copy.put(SerializeUtil.serialize(entry.getKey()), SerializeUtil.serialize(val));
+					copy.put(SerializeUtil.serialize(this.getMode(), entry.getKey()), SerializeUtil.serialize(this.getMode(), val));
 			}
 
 			return copy;

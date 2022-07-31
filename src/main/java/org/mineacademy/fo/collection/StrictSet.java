@@ -203,7 +203,7 @@ public final class StrictSet<E> extends StrictCollection implements Iterable<E> 
 	 */
 	@Override
 	public Object serialize() {
-		return SerializeUtil.serialize(this.set);
+		return SerializeUtil.serialize(this.getMode(), this.set);
 	}
 
 	@Override
