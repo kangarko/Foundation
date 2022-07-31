@@ -20,6 +20,7 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -449,7 +450,7 @@ public class SimpleDatabase {
 	 * A helper method to insert compatible value to db
 	 */
 	private final String parseValue(Object value) {
-		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(value).toString() + "'";
+		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(Mode.YAML, value).toString() + "'";
 	}
 
 	/**
@@ -501,24 +502,23 @@ public class SimpleDatabase {
 	 * @param consumer
 	 */
 	protected final void select(String table, String param, ResultReader consumer) {
-		if (this.isLoaded()) {
-			final ResultSet resultSet = this.query("SELECT " + param + " FROM " + table);
+		if (!this.isLoaded())
+			return;
 
-			try {
-				while (resultSet.next())
-					try {
-						consumer.accept(resultSet);
+		try (ResultSet resultSet = this.query("SELECT " + param + " FROM " + table)) {
+			while (resultSet.next())
+				try {
+					consumer.accept(resultSet);
 
-					} catch (final Throwable t) {
-						Common.log("Error reading a row from table " + table + " with param '" + param + "', aborting...");
+				} catch (final Throwable t) {
+					Common.log("Error reading a row from table " + table + " with param '" + param + "', aborting...");
 
-						t.printStackTrace();
-						break;
-					}
+					t.printStackTrace();
+					break;
+				}
 
-			} catch (final Throwable t) {
-				Common.error(t, "Error selecting rows from table " + table + " with param '" + param + "'");
-			}
+		} catch (final Throwable t) {
+			Common.error(t, "Error selecting rows from table " + table + " with param '" + param + "'");
 		}
 	}
 
@@ -549,13 +549,12 @@ public class SimpleDatabase {
 	protected final int count(String table, SerializedMap conditions) {
 
 		// Convert conditions into SQL syntax
-		final Set<String> conditionsList = Common.convertSet(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtil.serialize(entry.getValue()) + "'");
+		final Set<String> conditionsList = Common.convertSet(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtil.serialize(Mode.YAML, entry.getValue()) + "'");
 
 		// Run the query
 		final String sql = "SELECT * FROM " + table + (conditionsList.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditionsList)) + ";";
 
-		try {
-			final ResultSet resultSet = this.query(sql);
+		try (ResultSet resultSet = this.query(sql)) {
 			int count = 0;
 
 			while (resultSet.next())
@@ -627,9 +626,6 @@ public class SimpleDatabase {
 		try (Statement batchStatement = this.getConnection().createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE)) {
 			final int processedCount = sqls.size();
 
-			// Prevent automatically sending db instructions
-			this.getConnection().setAutoCommit(false);
-
 			for (final String sql : sqls)
 				batchStatement.addBatch(this.replaceVariables(sql));
 
@@ -641,7 +637,7 @@ public class SimpleDatabase {
 			this.batchUpdateGoingOn = true;
 
 			// Notify console that progress still is being made
-			new Timer().scheduleAtFixedRate(new TimerTask() {
+			final TimerTask task = new TimerTask() {
 
 				@Override
 				public void run() {
@@ -650,13 +646,26 @@ public class SimpleDatabase {
 					else
 						this.cancel();
 				}
-			}, 1000 * 30, 1000 * 30);
+			};
 
-			// Execute
-			batchStatement.executeBatch();
+			new Timer().scheduleAtFixedRate(task, 1000 * 30, 1000 * 30);
 
-			// This will block the thread
-			this.getConnection().commit();
+			// Prevent automatically sending db instructions
+			this.getConnection().setAutoCommit(false);
+
+			try {
+				// Execute
+				batchStatement.executeBatch();
+
+				// This will block the thread
+				this.getConnection().commit();
+
+			} catch (final Throwable t) {
+				task.cancel();
+
+				// Cancel the task but handle the error upstream
+				throw t;
+			}
 
 		} catch (final Throwable t) {
 			final List<String> errorLog = new ArrayList<>();

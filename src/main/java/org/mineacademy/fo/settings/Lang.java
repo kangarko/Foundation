@@ -6,6 +6,7 @@ import java.util.List;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
@@ -267,7 +268,7 @@ public final class Lang extends YamlConfig {
 			for (int i = 0; i < variables.length; i++) {
 				Object variable = variables[i];
 
-				variable = Common.getOrDefaultStrict(SerializeUtil.serialize(variable), SimpleLocalization.NONE);
+				variable = Common.getOrDefaultStrict(SerializeUtil.serialize(Mode.YAML /* ĺocale is always .yml */, variable), SimpleLocalization.NONE);
 				Valid.checkNotNull(variable, "Failed to replace {" + i + "} as " + variable + " (raw = " + variables[i] + ")");
 
 				key = key.replace("{" + i + "}", variable.toString());

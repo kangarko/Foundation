@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
@@ -69,7 +70,8 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	}
 
 	/**
-	 * Deserialize the given line (it must have the KEY - VALUE syntax) into the given tuple
+	 * Deserialize the given line (it must have the KEY - VALUE syntax) into the given tuple,
+	 * suited for YAML storage not JSON.
 	 *
 	 * @param <K>
 	 * @param <V>
@@ -85,8 +87,8 @@ public final class Tuple<K, V> implements ConfigSerializable {
 		final String split[] = line.split(" - ");
 		Valid.checkBoolean(split.length == 2, "Line must have the syntax <" + keyType.getSimpleName() + "> - <" + valueType.getSimpleName() + "> but got: " + line);
 
-		final K key = SerializeUtil.deserialize(keyType, split[0]);
-		final V value = SerializeUtil.deserialize(valueType, split[1]);
+		final K key = SerializeUtil.deserialize(Mode.YAML, keyType, split[0]);
+		final V value = SerializeUtil.deserialize(Mode.YAML, valueType, split[1]);
 
 		return new Tuple<>(key, value);
 	}

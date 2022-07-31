@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.mineacademy.fo.SerializeUtil.Mode;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -25,24 +27,24 @@ public final class TabUtil {
 	 * @return
 	 */
 	@SafeVarargs
-	public static <T> List<String> complete(String partialName, T... all) {
+	public static <T> List<String> complete(String partialName, T... elements) {
 		final List<String> clone = new ArrayList<>();
 
-		if (all != null)
-			for (final T s : all)
-				if (s != null)
-					if (s instanceof Iterable)
-						for (final Object iterable : (Iterable<?>) s)
-							clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(iterable).toString());
+		if (elements != null)
+			for (final T element : elements)
+				if (element != null)
+					if (element instanceof Iterable)
+						for (final Object iterable : (Iterable<?>) element)
+							clone.add(iterable instanceof Enum ? iterable.toString().toLowerCase() : SerializeUtil.serialize(Mode.YAML, iterable).toString());
 
 					// Trick: Automatically parse enum constants
-					else if (s instanceof Enum[])
-						for (final Object iterable : ((Enum[]) s)[0].getClass().getEnumConstants())
+					else if (element instanceof Enum[])
+						for (final Object iterable : ((Enum[]) element)[0].getClass().getEnumConstants())
 							clone.add(iterable.toString().toLowerCase());
 
 					else {
-						final boolean lowercase = s instanceof Enum;
-						final String parsed = SerializeUtil.serialize(s).toString();
+						final boolean lowercase = element instanceof Enum;
+						final String parsed = SerializeUtil.serialize(Mode.YAML, element).toString();
 
 						if (!"".equals(parsed))
 							clone.add(lowercase ? parsed.toLowerCase() : parsed);
