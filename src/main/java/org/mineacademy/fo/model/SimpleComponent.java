@@ -13,6 +13,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -39,7 +40,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The pattern to match URL addresses when parsing text
 	 */
-	private static final Pattern URL_PATTERN = Pattern.compile("^(https?)://[-a-zA-Z\\d+&@#/%?=~_|!:,.;]*[-a-zA-Z\\d]?([^&]+[^\\da-fk-orA-FK-OR])?$");
+	private static final Pattern URL_PATTERN = Pattern.compile("^(http(s|):\\/\\/|)(www\\.|)[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[a-zA-Z:,.\\?\\!]*)$");
 
 	/**
 	 * The past components
@@ -366,7 +367,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replace(String variable, Object value) {
-		final String serialized = SerializeUtil.serialize(value).toString();
+		final String serialized = SerializeUtil.serialize(Mode.YAML, value).toString();
 
 		for (final Part part : this.pastComponents) {
 			Valid.checkNotNull(part.text);
@@ -667,8 +668,12 @@ public final class SimpleComponent implements ConfigSerializable {
 				final TextComponent old = component;
 				component = new TextComponent(old);
 
-				final String urlString = message.substring(index, pos);
+				String urlString = message.substring(index, pos);
 				component.setText(urlString);
+
+				if (urlString.endsWith(",") || urlString.endsWith(".") || urlString.endsWith(":") || urlString.endsWith("?") || urlString.endsWith("!"))
+					urlString = urlString.substring(0, urlString.length() - 1);
+
 				component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
 				components.add(component);
 
