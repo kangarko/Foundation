@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain.nbt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.Deque;
