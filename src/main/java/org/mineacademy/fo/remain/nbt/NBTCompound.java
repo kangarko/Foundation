@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
@@ -25,8 +24,8 @@ public class NBTCompound {
 	private final Lock readLock = this.readWriteLock.readLock();
 	private final Lock writeLock = this.readWriteLock.writeLock();
 
-	private String compundName;
-	private NBTCompound parent;
+	private final String compundName;
+	private final NBTCompound parent;
 
 	protected NBTCompound(NBTCompound owner, String name) {
 		this.compundName = name;
