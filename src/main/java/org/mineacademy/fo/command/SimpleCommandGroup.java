@@ -14,6 +14,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.RandomUtil;
@@ -470,8 +471,8 @@ public abstract class SimpleCommandGroup {
 					if (Messenger.ENABLED)
 						tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
 					else
-						Common.tell(this.sender, SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS)
-						
+						Common.tell(this.sender, SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
+
 					return;
 				}
 
