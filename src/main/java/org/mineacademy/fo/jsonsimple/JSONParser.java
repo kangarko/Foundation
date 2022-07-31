@@ -320,7 +320,7 @@ public class JSONParser {
 		final String trimmed = deserializable.trim();
 
 		// Assume it's just a normal string
-		if (!trimmed.startsWith("{") && !trimmed.endsWith("}"))
+		if (!trimmed.startsWith("{") || !trimmed.endsWith("}"))
 			return deserializable;
 
 		Object returnable;
