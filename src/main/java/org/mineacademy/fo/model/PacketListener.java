@@ -199,10 +199,15 @@ public abstract class PacketListener {
 		private boolean adventure = false;
 
 		/**
+		 * Support 1.19+ system chat
+		 */
+		private final boolean systemChat = MinecraftVersion.atLeast(V.v1_19);
+
+		/**
 		 * Create new chat listener
 		 */
 		public SimpleChatAdapter() {
-			super(ListenerPriority.HIGHEST, PacketType.Play.Server.CHAT);
+			super(ListenerPriority.HIGHEST, MinecraftVersion.atLeast(V.v1_19) ? PacketType.Play.Server.SYSTEM_CHAT : PacketType.Play.Server.CHAT);
 		}
 
 		@Override
@@ -280,40 +285,45 @@ public abstract class PacketListener {
 
 			// No components for this MC version
 			if (MinecraftVersion.atLeast(V.v1_7)) {
+				if (this.systemChat)
+					this.jsonMessage = event.getPacket().getStrings().read(0);
 
-				final StructureModifier<Object> packet = event.getPacket().getModifier();
-				final StructureModifier<WrappedChatComponent> chat = event.getPacket().getChatComponents();
-				final WrappedChatComponent component = chat.read(0);
+				else {
 
-				try {
-					final ChatType chatType = event.getPacket().getChatTypes().readSafely(0);
+					final StructureModifier<Object> packet = event.getPacket().getModifier();
+					final StructureModifier<WrappedChatComponent> chat = event.getPacket().getChatComponents();
+					final WrappedChatComponent component = chat.read(0);
 
-					if (chatType == ChatType.GAME_INFO)
-						return "";
+					try {
+						final ChatType chatType = event.getPacket().getChatTypes().readSafely(0);
 
-				} catch (final NoSuchMethodError t) {
-					// Silence on legacy MC
-				}
+						if (chatType == ChatType.GAME_INFO)
+							return "";
 
-				if (component != null)
-					this.jsonMessage = component.getJson();
-
-				// Md_5 way of dealing with packets
-				else if (packet.size() > 1) {
-					Object secondField = packet.readSafely(1);
-
-					// Support "Adventure" library in PaperSpigot
-					if (secondField == null) {
-						secondField = packet.readSafely(2);
-
-						if (secondField != null)
-							this.adventure = true;
+					} catch (final NoSuchMethodError t) {
+						// Silence on legacy MC
 					}
 
-					if (secondField instanceof BaseComponent[]) {
-						this.jsonMessage = Remain.toJson((BaseComponent[]) secondField);
+					if (component != null)
+						this.jsonMessage = component.getJson();
 
-						this.isBaseComponent = true;
+					// Md_5 way of dealing with packets
+					else if (packet.size() > 1) {
+						Object secondField = packet.readSafely(1);
+
+						// Support "Adventure" library in PaperSpigot
+						if (secondField == null) {
+							secondField = packet.readSafely(2);
+
+							if (secondField != null)
+								this.adventure = true;
+						}
+
+						if (secondField instanceof BaseComponent[]) {
+							this.jsonMessage = Remain.toJson((BaseComponent[]) secondField);
+
+							this.isBaseComponent = true;
+						}
 					}
 				}
 			}
