@@ -175,22 +175,20 @@ public abstract class YamlStaticConfig {
 		this.invokeMethodsIn(clazz);
 
 		// All sub-classes in superclass.
-		for (final Class<?> subClazz : clazz.getDeclaredClasses()) {
-			this.invokeMethodsIn(subClazz);
-
-			// And classes in sub-classes in superclass.
-			for (final Class<?> subSubClazz : subClazz.getDeclaredClasses())
-				this.invokeMethodsIn(subSubClazz);
-		}
+		for (final Class<?> subClazz : clazz.getDeclaredClasses())
+			this.invokeAll(subClazz);
 	}
 
 	/*
 	 * Invoke all "private static void init()" methods in the class
 	 */
 	private void invokeMethodsIn(final Class<?> clazz) throws Exception {
+		final SimplePlugin instance = SimplePlugin.getInstance();
+
 		for (final Method method : clazz.getDeclaredMethods()) {
 
-			if (!SimplePlugin.getInstance().isEnabled())
+			// After each invocation check if the invoication broke the plugin and ignore
+			if (!instance.isEnabled())
 				return;
 
 			final int mod = method.getModifiers();
