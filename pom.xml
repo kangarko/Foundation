@@ -121,7 +121,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>5.0.0-SNAPSHOT-554</version>
+			<version>5.0.0-SNAPSHOT-586</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
