@@ -345,7 +345,7 @@ public final class SerializeUtil {
 				final String message = ex.getMessage();
 
 				// Apparently not a json string :/
-				if (message.contains("The unexpected character") && message.contains("was found at position 0"))
+				if (message.contains("The unexpected character") && (message.contains("was found at position 0") || message.contains("was found at position 1")))
 					jsonList.add(element.toString());
 				else
 					Common.error(ex, "Failed to deserialize JSON collection from string: " + element);
