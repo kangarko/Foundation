@@ -147,7 +147,17 @@ public final class BungeeUtil {
 					Debugger.put("bungee", datum.toString() + ", ");
 
 					moveHead(actionHead, action, String.class, data);
-					out.writeUTF((String) datum);
+
+					try {
+						out.writeUTF((String) datum);
+
+					} catch (final Throwable t) {
+						if (t.getMessage().contains("too long"))
+							Common.throwError(t, "Too long BungeeCord message to send (" + ((String) datum).length() + ")! Message: ", (String) datum);
+
+						else
+							throw t;
+					}
 
 				} else if (datum instanceof SerializedMap) {
 					Debugger.put("bungee", datum.toString() + ", ");
