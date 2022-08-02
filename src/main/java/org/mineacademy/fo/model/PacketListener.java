@@ -12,7 +12,6 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
@@ -245,8 +244,6 @@ public abstract class PacketListener {
 				String parsedText = legacyText;
 
 				try {
-					Debugger.debug("packet", "Chat packet parsed message: '" + Common.stripColors(parsedText) + "'");
-
 					parsedText = this.onMessage(parsedText);
 
 				} catch (final RegexTimeoutException ex) {
