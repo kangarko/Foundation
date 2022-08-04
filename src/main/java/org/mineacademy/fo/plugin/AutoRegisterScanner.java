@@ -248,7 +248,7 @@ final class AutoRegisterScanner {
 			if (printWarnings) {
 				Bukkit.getLogger().warning("**** WARNING ****");
 				Bukkit.getLogger().warning("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName()
-						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
+				+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
@@ -258,7 +258,7 @@ final class AutoRegisterScanner {
 			if (printWarnings) {
 				Bukkit.getLogger().warning("**** WARNING ****");
 				Bukkit.getLogger().warning("The following class requires DiscordSRV and won't be registered: " + clazz.getName()
-						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
+				+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
@@ -268,7 +268,7 @@ final class AutoRegisterScanner {
 			if (printWarnings && !clazz.equals(EnchantmentPacketListener.class)) {
 				Bukkit.getLogger().warning("**** WARNING ****");
 				Bukkit.getLogger().warning("The following class requires ProtocolLib and won't be registered: " + clazz.getName()
-						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
+				+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
@@ -403,7 +403,7 @@ final class AutoRegisterScanner {
 				try {
 					clazz = SimplePlugin.class.getClassLoader().loadClass(className);
 
-				} catch (final VerifyError | NoClassDefFoundError | ClassNotFoundException | IncompatibleClassChangeError error) {
+				} catch (final ClassFormatError | VerifyError | NoClassDefFoundError | ClassNotFoundException | IncompatibleClassChangeError error) {
 					continue;
 				}
 
