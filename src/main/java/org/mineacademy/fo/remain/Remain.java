@@ -4,18 +4,17 @@ import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
 import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -44,6 +43,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -68,6 +68,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -344,7 +345,7 @@ public final class Remain {
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
 								" &cinclude &elibraries required&c for this plugin to\n" +
 								" &crun. Install the following plugin for compatibility:\n" +
-								" &fhttps://mineacademy.org/plugins/#misc");
+						" &fhttps://mineacademy.org/plugins/#misc");
 			}
 
 			try {
@@ -2555,40 +2556,51 @@ public final class Remain {
 	 * restore it back
 	 */
 	public static void injectServerName() {
-		final Properties properties = new Properties();
-		final File props = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
+		try {
+			// If user has Bungee_Server_Name in their settings, move it automatically
+			final File settingsFile = FileUtil.getFile("settings.yml");
+			String previousName = null;
 
-		// If user has Bungee_Server_Name in their settings, move it automatically
-		final File settingsFile = FileUtil.getFile("settings.yml");
-		String previousName = null;
+			if (settingsFile.exists()) {
+				final YamlConfiguration settings = YamlConfiguration.loadConfiguration(settingsFile);
+				final String previousNameRaw = settings.getString("Bungee_Server_Name");
 
-		if (settingsFile.exists()) {
-			final YamlConfiguration settings = YamlConfiguration.loadConfiguration(settingsFile);
-			final String previousNameRaw = settings.getString("Bungee_Server_Name");
+				if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
+					Common.warning("Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
+							" It has been moved there and you can now delete this key from settings.yml if it was not deleted already.");
 
-			if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
-				Common.warning("Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
-						" It has been moved there and you can now delete this key from settings.yml if it was not deleted already.");
-
-				previousName = previousNameRaw;
-			}
-		}
-
-		try (final FileReader fileReader = new FileReader(props)) {
-			properties.load(fileReader);
-
-			if (!properties.containsKey("server-name") || previousName != null) {
-				properties.setProperty("server-name", previousName != null ? previousName : "Undefined - see mineacademy.org/server-properties to configure");
-
-				try (FileWriter fileWriter = new FileWriter(props)) {
-					properties.store(fileWriter, "Minecraft server properties\nModified by " + SimplePlugin.getNamed() + ", see mineacademy.org/server-properties for more information");
+					previousName = previousNameRaw;
 				}
 			}
 
-			serverName = properties.getProperty("server-name");
+			// Check server.properties for a valid server-name key, if it lacks, add it with instructions on configuring properly
+			final File serverProperties = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
+			final List<String> lines = FileUtil.readLines(serverProperties);
 
-		} catch (final Throwable e) {
-			e.printStackTrace();
+			lines.removeIf(line -> line.equals("server-name=undefined") || line.equals("server-name=Unknown Server"));
+
+			boolean hasServerName = false;
+			String oldName = null;
+
+			for (String line : lines)
+				if (line.startsWith("server-name=")) {
+					hasServerName = true;
+
+					oldName = line.replace("server-name=", "");
+					break;
+				}
+
+			if (!hasServerName) {
+				serverName = previousName == null ? "Undefined - see mineacademy.org/server-properties to configure" : previousName;
+				lines.add("server-name=" + serverName);
+
+				Files.write(serverProperties.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
+			}
+
+			serverName = oldName;
+
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
 	}
 
