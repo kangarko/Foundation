@@ -2117,7 +2117,7 @@ public final class Remain {
 	 * @param message
 	 */
 	public static void sendToast(Player receiver, String message) {
-		sendToast(receiver, message, CompMaterial.BOOK, CompToastStyle.TASK);
+		sendToast(receiver, CompMaterial.BOOK, CompToastStyle.GOAL, message);
 	}
 
 	/**
@@ -2128,10 +2128,10 @@ public final class Remain {
 	 *
 	 * @param receiver
 	 * @param message
-	 * @param toastStyle
+	 * @param style
 	 */
-	public static void sendToast(Player receiver, String message, CompToastStyle toastStyle) {
-		sendToast(receiver, message, CompMaterial.BOOK, toastStyle);
+	public static void sendToast(Player receiver, CompToastStyle style, String message) {
+		sendToast(receiver, CompMaterial.BOOK, style, message);
 	}
 
 	/**
@@ -2143,8 +2143,8 @@ public final class Remain {
 	 * @param receiver
 	 * @param message
 	 */
-	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
-		sendToast(receiver, message, icon, CompToastStyle.TASK);
+	public static void sendToast(final Player receiver, final CompMaterial icon, final String message) {
+		sendToast(receiver, icon, CompToastStyle.TASK, message);
 	}
 
 	/**
@@ -2155,10 +2155,11 @@ public final class Remain {
 	 * You can also pick the first screen from precreated Minecraft screens here.
 	 *
 	 * @param receiver
-	 * @param message
 	 * @param icon
+	 * @param style
+	 * @param message
 	 */
-	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
+	public static void sendToast(final Player receiver, final CompMaterial icon, final CompToastStyle style, final String message) {
 		if (message != null && !message.isEmpty()) {
 			final String colorized = Common.colorize(message);
 
@@ -2166,7 +2167,7 @@ public final class Remain {
 				Valid.checkSync("Toasts may only be sent from the main thread");
 
 				if (hasAdvancements)
-					new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver);
+					new AdvancementAccessor(colorized, icon.toString().toLowerCase(), style).show(receiver);
 
 				else
 					receiver.sendMessage(colorized);
@@ -2183,8 +2184,9 @@ public final class Remain {
 	 * @param receivers
 	 * @param message you can replace player-specific variables in the message here
 	 * @param icon
+	 * @param style
 	 */
-	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
+	public static void sendToast(final List<Player> receivers, final CompMaterial icon, final CompToastStyle style, final Function<Player, String> message) {
 
 		if (hasAdvancements)
 			Common.runLaterAsync(() -> {
@@ -2197,7 +2199,7 @@ public final class Remain {
 						final String colorized = Common.colorize(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), CompToastStyle.GOAL);
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), style);
 
 							if (receiver.isOnline())
 								accessor.show(receiver);

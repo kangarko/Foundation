@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.mineacademy.fo.Common;
 
 /**
  * Represents the different first screens appearing in toast notifications,
@@ -16,4 +17,25 @@ public enum CompToastStyle {
 
 	@Getter
 	private final String key;
+
+
+	/**
+	 * Attempt to load CompToastStyle from the given key
+	 *
+	 * @param key
+	 * @return
+	 */
+	public static CompToastStyle fromKey(String key) {
+		for (final CompToastStyle style : values())
+			if (style.key.equalsIgnoreCase(key))
+				return style;
+
+		throw new IllegalArgumentException("No such CompToastStyle: " + key + ". Available: " + Common.join(values()));
+	}
+
+	@Override
+	public String toString() {
+		return this.key;
+	}
+
 }
