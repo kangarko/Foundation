@@ -272,9 +272,13 @@ public final class Variables {
 		// Default
 		message = replaceHardVariables0(sender, message);
 
-		// Support the & color system
-		if (!message.startsWith("[JSON]"))
+		// Support the & color system and replacing variables in variables
+		if (!message.startsWith("[JSON]")) {
 			message = Common.colorize(message);
+
+			if (!original.equals(message) && (message.contains("{") && message.contains("}")))
+				return replace(message, sender, replacements, colorize);
+		}
 
 		if (senderIsPlayer) {
 			final Map<String, String> map = cache.get(sender.getName());
