@@ -26,6 +26,7 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -250,8 +251,8 @@ public abstract class PacketListener {
 					// Such errors mean the parsed message took too long to process.
 					// Only show such errors every 30 minutes to prevent console spam
 					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(this.jsonMessage, 500)
-							+ "' (possibly longer) took too long time to edit received message and was ignored."
-							+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
+					+ "' (possibly longer) took too long time to edit received message and was ignored."
+					+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
 
 					return;
 
@@ -359,8 +360,6 @@ public abstract class PacketListener {
 
 			if (this.systemChat) {
 				event.getPacket().getStrings().writeSafely(0, this.jsonMessage);
-
-				System.out.println("Fixing: " + message);
 
 			} else if (this.isBaseComponent)
 				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));

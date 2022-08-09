@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 import com.google.common.io.ByteArrayDataInput;
@@ -236,7 +236,5 @@ public final class IncomingMessage extends Message {
 	 */
 	public void forward(Player player) {
 		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.data);
-
-		Debugger.debug("bungee", "Forwarding data on " + this.getChannel() + " channel from " + this.getAction() + " as " + player.getName() + " player to BungeeCord.");
 	}
 }

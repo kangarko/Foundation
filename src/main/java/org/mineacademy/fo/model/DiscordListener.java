@@ -315,8 +315,6 @@ public abstract class DiscordListener implements Listener {
 		// Send the message
 		Common.runAsync(() -> {
 			try {
-				Debugger.debug("discord", "[Minecraft > Discord] Send MC message from '" + channelName + "' to Discord's '" + channel.getName() + "' channel: " + message);
-
 				// You can remove this if you don't want to use webhooks
 				if (sender instanceof Player)
 					WebhookUtil.deliverMessage(channel, (Player) sender, message);

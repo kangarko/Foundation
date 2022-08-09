@@ -66,10 +66,7 @@ public final class Debugger {
 	public static void debug(String section, String... messages) {
 		if (isDebugged(section))
 			for (final String message : messages)
-				if (SimplePlugin.hasInstance())
-					Common.log("[" + section + "] " + message);
-				else
-					System.out.println("[" + section + "] " + message);
+				print("[" + section + "] " + message);
 	}
 
 	/**
@@ -358,9 +355,6 @@ public final class Debugger {
 
 	// Print a simple console message
 	private static void print(String message) {
-		if (SimplePlugin.hasInstance())
-			Common.logNoPrefix(message);
-		else
-			System.out.println(message);
+		System.out.println(message); // our instance may or may not be available yet to log
 	}
 }
