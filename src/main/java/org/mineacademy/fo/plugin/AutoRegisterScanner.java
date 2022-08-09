@@ -24,7 +24,6 @@ import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.tool.Tool;
@@ -374,8 +373,6 @@ final class AutoRegisterScanner {
 		// Register events if needed
 		if (!eventsRegistered && instance instanceof Listener)
 			plugin.registerEvents((Listener) instance);
-
-		Debugger.debug("auto-register", "Automatically registered " + clazz);
 	}
 
 	/*

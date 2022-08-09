@@ -9,7 +9,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
@@ -178,8 +177,6 @@ public final class OutgoingMessage extends Message {
 	 */
 	public void send(Player player) {
 		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.compileData());
-
-		Debugger.debug("bungee", "Sending data on " + this.getChannel() + " channel from " + this.getAction() + " as " + player.getName() + " player to BungeeCord.");
 	}
 
 	/**
