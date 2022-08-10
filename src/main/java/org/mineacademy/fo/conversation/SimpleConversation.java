@@ -309,7 +309,6 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 
 			if (SimpleConversation.this.insertPrefix() && SimpleConversation.this.getPrefix() != null)
 				this.prefix = SimpleConversation.this.getPrefix();
-
 		}
 
 		@Override
