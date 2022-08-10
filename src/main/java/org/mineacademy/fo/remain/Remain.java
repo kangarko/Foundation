@@ -2183,8 +2183,23 @@ public final class Remain {
 	 * @param receivers
 	 * @param message you can replace player-specific variables in the message here
 	 * @param icon
+	 * @param goal
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
+		sendToast(receivers, message, icon, CompToastStyle.GOAL);
+	}
+
+	/**
+	 * Send a "toast" notification to the given receivers. This is an advancement notification that cannot
+	 * be modified that much. It imposes a slight performance penalty the more players to send to.
+	 *
+	 * Each player sending is delayed by 0.1s
+	 *
+	 * @param receivers
+	 * @param message you can replace player-specific variables in the message here
+	 * @param icon
+	 */
+	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon, final CompToastStyle style) {
 
 		if (hasAdvancements)
 			Common.runLaterAsync(() -> {
@@ -2197,7 +2212,7 @@ public final class Remain {
 						final String colorized = Common.colorize(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), CompToastStyle.GOAL);
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), style);
 
 							if (receiver.isOnline())
 								accessor.show(receiver);
