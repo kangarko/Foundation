@@ -1275,16 +1275,16 @@ public abstract class FileConfig {
 
 					final String data = this.saveToString();
 
-					if (data != null) {
-						final Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
+					if (data != null)
+						Common.runAsync(() -> {
+							try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+								writer.write(data);
 
-						try {
-							writer.write(data);
+							} catch (Exception ex) {
+								Remain.sneaky(ex);
+							}
+						});
 
-						} finally {
-							writer.close();
-						}
-					}
 
 					// Update file
 					this.file = file;
