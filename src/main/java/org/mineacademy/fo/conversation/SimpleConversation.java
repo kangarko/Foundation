@@ -207,6 +207,18 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	}
 
 	/**
+	 * Modal true = Bukkit will hide all chat and plugin messages OTHER THAN
+	 * conversational messages from your prompts
+	 *
+	 * Defaults to true
+	 *
+	 * @return
+	 */
+	protected boolean isModal() {
+		return true;
+	}
+
+	/**
 	 * Sets the menu to return to after the end of this conversation
 	 *
 	 * @param menu
@@ -306,6 +318,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 			super(SimplePlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
 
 			this.localEchoEnabled = false;
+			this.modal = SimpleConversation.this.isModal();
 
 			if (SimpleConversation.this.insertPrefix() && SimpleConversation.this.getPrefix() != null)
 				this.prefix = SimpleConversation.this.getPrefix();

@@ -15,6 +15,9 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Represents one question for the player during a server conversation
  */
@@ -24,6 +27,13 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * Open the players menu back if any?
 	 */
 	private boolean openMenu = true;
+
+	/**
+	 * See {@link SimpleConversation#isModal()}
+	 */
+	@Setter
+	@Getter
+	private boolean modal = true;
 
 	/**
 	 * The player who sees the input
@@ -219,6 +229,11 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			@Override
 			protected Prompt getFirstPrompt() {
 				return SimplePrompt.this;
+			}
+
+			@Override
+			protected boolean isModal() {
+				return SimplePrompt.this.modal;
 			}
 
 			@Override
