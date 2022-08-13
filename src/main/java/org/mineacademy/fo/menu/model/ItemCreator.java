@@ -151,7 +151,8 @@ public final class ItemCreator {
 	/**
 	 * If this is a book, you can set its new pages here.
 	 */
-	private final List<String> bookPages = new ArrayList<>();
+	@Nullable
+	private List<String> bookPages = null;
 
 	/**
 	 * If this a book, you can set its author here.
@@ -438,6 +439,10 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public ItemCreator bookPages(List<String> pages) {
+
+		if (this.bookPages == null)
+			this.bookPages = new ArrayList<>();
+
 		this.bookPages.addAll(pages);
 
 		return this;
@@ -523,48 +528,48 @@ public final class ItemCreator {
 
 		// Apply specific material color if possible
 		color:
-		if (this.color != null) {
+			if (this.color != null) {
 
-			if (compiledItem.getType().toString().contains("LEATHER")) {
-				if (MinecraftVersion.atLeast(V.v1_4)) {
-					Valid.checkBoolean(compiledMeta instanceof LeatherArmorMeta, "Expected a leather item, cannot apply color to " + compiledItem);
+				if (compiledItem.getType().toString().contains("LEATHER")) {
+					if (MinecraftVersion.atLeast(V.v1_4)) {
+						Valid.checkBoolean(compiledMeta instanceof LeatherArmorMeta, "Expected a leather item, cannot apply color to " + compiledItem);
 
-					((LeatherArmorMeta) compiledMeta).setColor(this.color.getColor());
-				}
-			}
-
-			else {
-
-				// Hack: If you put WHITE_WOOL and a color, we automatically will change the material to the colorized version
-				if (MinecraftVersion.atLeast(V.v1_13)) {
-					final String dye = this.color.getDye().toString();
-					final List<String> colorableMaterials = Arrays.asList("BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX", "STAINED_GLASS",
-							"STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
-
-					for (final String material : colorableMaterials) {
-						final String suffix = "_" + material;
-
-						if (compiledItem.getType().toString().endsWith(suffix)) {
-							compiledItem.setType(Material.valueOf(dye + suffix));
-
-							break color;
-						}
+						((LeatherArmorMeta) compiledMeta).setColor(this.color.getColor());
 					}
 				}
 
 				else {
-					try {
-						final byte dataValue = this.color.getDye().getWoolData();
 
-						compiledItem.setData(new MaterialData(compiledItem.getType(), dataValue));
-						compiledItem.setDurability(dataValue);
+					// Hack: If you put WHITE_WOOL and a color, we automatically will change the material to the colorized version
+					if (MinecraftVersion.atLeast(V.v1_13)) {
+						final String dye = this.color.getDye().toString();
+						final List<String> colorableMaterials = Arrays.asList("BANNER", "BED", "CARPET", "CONCRETE", "GLAZED_TERRACOTTA", "SHULKER_BOX", "STAINED_GLASS",
+								"STAINED_GLASS_PANE", "TERRACOTTA", "WALL_BANNER", "WOOL");
 
-					} catch (final NoSuchMethodError err) {
-						// Ancient MC, ignore
+						for (final String material : colorableMaterials) {
+							final String suffix = "_" + material;
+
+							if (compiledItem.getType().toString().endsWith(suffix)) {
+								compiledItem.setType(Material.valueOf(dye + suffix));
+
+								break color;
+							}
+						}
+					}
+
+					else {
+						try {
+							final byte dataValue = this.color.getDye().getWoolData();
+
+							compiledItem.setData(new MaterialData(compiledItem.getType(), dataValue));
+							compiledItem.setDurability(dataValue);
+
+						} catch (final NoSuchMethodError err) {
+							// Ancient MC, ignore
+						}
 					}
 				}
 			}
-		}
 
 		// Fix monster eggs
 		if (compiledItem.getType().toString().endsWith("SPAWN_EGG") || compiledItem.getType().toString().equals("MONSTER_EGG")) {
@@ -636,15 +641,15 @@ public final class ItemCreator {
 			if (this.bookPages != null)
 				bookMeta.setPages(Common.colorize(this.bookPages));
 
-			if (this.bookAuthor == null)
+			if (this.bookAuthor != null)
 				bookMeta.setAuthor(Common.getOrEmpty(this.bookAuthor));
 
-			if (this.bookTitle == null)
+			if (this.bookTitle != null)
 				bookMeta.setTitle(Common.getOrEmpty(this.bookTitle));
 
 			// Fix "Corrupted NBT tag" error when any of these fields are not set
 			if (bookMeta.getPages() == null)
-				bookMeta.setPages("");
+				bookMeta.setPages(Arrays.asList(""));
 
 			if (bookMeta.getAuthor() == null)
 				bookMeta.setAuthor("Anonymous");
