@@ -1,12 +1,12 @@
 package org.mineacademy.fo.model;
 
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Consumer;
 import org.mineacademy.fo.menu.model.ItemCreator;
-import org.mineacademy.fo.remain.CompMaterial;
-
-import lombok.Getter;
 
 /**
  *
@@ -17,7 +17,7 @@ public class SimpleHologramStand extends SimpleHologram {
 	/**
 	 * The material this hologram will have
 	 */
-	private final CompMaterial material;
+	private final ItemStack item;
 
 	/**
 	 * Is this item stand small?
@@ -33,12 +33,12 @@ public class SimpleHologramStand extends SimpleHologram {
 	 * Create a new simple hologram using armor stand showing the given material
 	 *
 	 * @param spawnLocation
-	 * @param material
+	 * @param item
 	 */
-	public SimpleHologramStand(Location spawnLocation, CompMaterial material) {
+	public SimpleHologramStand(final Location spawnLocation, final ItemStack item) {
 		super(spawnLocation);
 
-		this.material = material;
+		this.item = item;
 	}
 
 	/**
@@ -46,22 +46,21 @@ public class SimpleHologramStand extends SimpleHologram {
 	 */
 	@Override
 	protected final Entity createEntity() {
-		final ArmorStand armorStand = this.getLastTeleportLocation().getWorld().spawn(this.getLastTeleportLocation(), ArmorStand.class);
+		final Consumer<ArmorStand> consumer = armorStand -> {
+			armorStand.setGravity(false);
+			armorStand.setHelmet(ItemCreator.of(this.item).glow(this.glowing).make());
+			armorStand.setVisible(false);
+			armorStand.setSmall(this.small);
+		};
 
-		armorStand.setGravity(false);
-		armorStand.setHelmet(ItemCreator.of(this.material).glow(this.glowing).make());
-		armorStand.setVisible(false);
-		armorStand.setSmall(this.small);
-
-		return armorStand;
+		return this.getLastTeleportLocation().getWorld().spawn(this.getLastTeleportLocation(), ArmorStand.class, consumer);
 	}
 
 	/**
-	 *
 	 * @param glowing
 	 * @return
 	 */
-	public final SimpleHologram setGlowing(boolean glowing) {
+	public final SimpleHologram setGlowing(final boolean glowing) {
 		this.glowing = glowing;
 
 		return this;
@@ -71,7 +70,7 @@ public class SimpleHologramStand extends SimpleHologram {
 	 * @param small the small to set
 	 * @return
 	 */
-	public final SimpleHologram setSmall(boolean small) {
+	public final SimpleHologram setSmall(final boolean small) {
 		this.small = small;
 
 		return this;
