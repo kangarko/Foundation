@@ -40,7 +40,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The pattern to match URL addresses when parsing text
 	 */
-	private static final Pattern URL_PATTERN = Pattern.compile("^(https?:\\/\\/|)(www\\.|)[\\w-:._\\d]{1,256}\\.[\\w()]{1,12}\\b([\\w-@:%.,_+~#=?!&$/\\d]*)$");
+	private static final Pattern URL_PATTERN = Pattern.compile("^(https?:\\/\\/|)(www\\.|)[\\w-:.\\d]{1,256}\\.[\\w()]{1,12}\\b([\\w-@:%.,+~#=?!&$/\\d]*)$");
 
 	/**
 	 * The past components
