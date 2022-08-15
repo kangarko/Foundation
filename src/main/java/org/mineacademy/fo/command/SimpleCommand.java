@@ -269,11 +269,8 @@ public abstract class SimpleCommand extends Command {
 
 		final PluginCommand oldCommand = Bukkit.getPluginCommand(this.getLabel());
 
-		if (oldCommand != null && unregisterOldCommand) {
-			final String owningPlugin = oldCommand.getPlugin().getName();
-
+		if (oldCommand != null && unregisterOldCommand)
 			Remain.unregisterCommand(oldCommand.getLabel(), unregisterOldAliases);
-		}
 
 		Remain.registerCommand(this);
 		this.registered = true;
