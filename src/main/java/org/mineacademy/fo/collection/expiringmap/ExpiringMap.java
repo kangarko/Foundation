@@ -788,7 +788,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(key, value);
+			return Objects.hash(this.key, this.value);
 		}
 
 		@Override
@@ -802,9 +802,8 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 			final ExpiringEntry<?, ?> other = (ExpiringEntry<?, ?>) obj;
 			if (!this.key.equals(other.key))
 				return false;
-			if (!Objects.equals(this.value, other.value)) {
+			if (!Objects.equals(this.value, other.value))
 				return false;
-			}
 			return true;
 		}
 

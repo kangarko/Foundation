@@ -410,7 +410,7 @@ public final class BlockUtil {
 		final World world = location.getWorld();
 
 		final int chunkX = location.getBlockX() >> 4;
-				final int chunkZ = location.getBlockZ() >> 4;
+		final int chunkZ = location.getBlockZ() >> 4;
 
 		for (int x = chunkX - radius; x <= chunkX + radius; ++x)
 			for (int z = chunkZ - radius; z <= chunkZ + radius; ++z)
@@ -652,7 +652,7 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
-		int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+		final int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
 
 		for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
 			final Block block = world.getBlockAt(x, y, z);
@@ -688,7 +688,7 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static int findAirBlock(final World world, final int x, final int z, final boolean topDown, final Predicate<Material> predicate) {
-		int minHeight = (MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0) + 1;
+		final int minHeight = (MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0) + 1;
 
 		if (topDown)
 			for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {

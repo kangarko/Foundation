@@ -1621,7 +1621,7 @@ public enum CompSound {
 	 * @param location the location to play the sound in.
 	 */
 	public void play(Location location) {
-		play(location, DEFAULT_VOLUME, DEFAULT_PITCH);
+		this.play(location, DEFAULT_VOLUME, DEFAULT_PITCH);
 	}
 
 	/**
@@ -1632,7 +1632,7 @@ public enum CompSound {
 	 * @since 1.0.0
 	 */
 	public void play(Entity entity) {
-		play(entity, DEFAULT_VOLUME, DEFAULT_PITCH);
+		this.play(entity, DEFAULT_VOLUME, DEFAULT_PITCH);
 	}
 
 	/**
@@ -1664,7 +1664,7 @@ public enum CompSound {
 				((Player) entity).playSound(entity.getLocation(), sound, volume, pitch);
 
 		} else
-			play(entity.getLocation(), volume, pitch);
+			this.play(entity.getLocation(), volume, pitch);
 
 	}
 
@@ -1692,9 +1692,9 @@ public enum CompSound {
 
 			@Override
 			public void run() {
-				play(entity.getLocation(), volume, pitch);
-				if (repeating-- == 0)
-					cancel();
+				CompSound.this.play(entity.getLocation(), volume, pitch);
+				if (this.repeating-- == 0)
+					this.cancel();
 			}
 		}.runTaskTimer(SimplePlugin.getInstance(), 0, delay);
 	}
@@ -1734,7 +1734,7 @@ public enum CompSound {
 	 */
 	@Override
 	public String toString() {
-		return Arrays.stream(name().split("_"))
+		return Arrays.stream(this.name().split("_"))
 				.map(t -> t.charAt(0) + t.substring(1).toLowerCase())
 				.collect(Collectors.joining(" "));
 	}
@@ -1856,10 +1856,10 @@ public enum CompSound {
 
 			@Override
 			public void run() {
-				player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - repeating]));
+				player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - this.repeating]));
 
-				if (repeating-- == 0)
-					cancel();
+				if (this.repeating-- == 0)
+					this.cancel();
 			}
 		}.runTaskTimerAsynchronously(SimplePlugin.getInstance(), 0, delay);
 	}

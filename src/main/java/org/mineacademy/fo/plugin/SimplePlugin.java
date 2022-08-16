@@ -32,7 +32,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -223,7 +222,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		final String version = Bukkit.getVersion();
 
-		if (suggestPaper() && !version.contains("Paper")
+		if (this.suggestPaper() && !version.contains("Paper")
 				&& !version.contains("Purpur")
 				&& !version.contains("NachoSpigot")
 				&& !version.contains("-Spigot")
@@ -440,19 +439,19 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		else
 			methodLibraryLoader:
-				for (final Library library : manualLibraries) {
+			for (final Library library : manualLibraries) {
 
-					// Detect conflicts
-					for (final Library otherLibrary : libraries)
-						if (library.getArtifactId().equals(otherLibrary.getArtifactId()) && library.getGroupId().equals(otherLibrary.getGroupId())) {
-							Common.warning("Detected library conflict: '" + library.getGroupId() + "." + library.getArtifactId() + "' is defined both in getLibraries() and plugin.yml! "
-									+ "We'll prefer the version from plugin.yml, if you want to use the one from getLibraries() then remove it from your plugin.yml file.");
+				// Detect conflicts
+				for (final Library otherLibrary : libraries)
+					if (library.getArtifactId().equals(otherLibrary.getArtifactId()) && library.getGroupId().equals(otherLibrary.getGroupId())) {
+						Common.warning("Detected library conflict: '" + library.getGroupId() + "." + library.getArtifactId() + "' is defined both in getLibraries() and plugin.yml! "
+								+ "We'll prefer the version from plugin.yml, if you want to use the one from getLibraries() then remove it from your plugin.yml file.");
 
-							continue methodLibraryLoader;
-						}
+						continue methodLibraryLoader;
+					}
 
-					library.load();
-				}
+				library.load();
+			}
 	}
 
 	/**
@@ -893,21 +892,21 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		Valid.checkBoolean(!extendingClass.equals(SimpleListener.class), "registerAllEvents does not support SimpleListener.class due to conflicts, create your own middle class instead");
 
 		classLookup:
-			for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+		for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
 
-				// AutoRegister means the class is already being registered
-				if (pluginClass.isAnnotationPresent(AutoRegister.class))
-					continue;
+			// AutoRegister means the class is already being registered
+			if (pluginClass.isAnnotationPresent(AutoRegister.class))
+				continue;
 
-				for (final Constructor<?> con : pluginClass.getConstructors())
-					if (con.getParameterCount() == 0) {
-						final T instance = (T) ReflectionUtil.instantiate(con);
+			for (final Constructor<?> con : pluginClass.getConstructors())
+				if (con.getParameterCount() == 0) {
+					final T instance = (T) ReflectionUtil.instantiate(con);
 
-						this.registerEvents(instance);
+					this.registerEvents(instance);
 
-						continue classLookup;
-					}
-			}
+					continue classLookup;
+				}
+		}
 	}
 
 	/**
@@ -954,33 +953,33 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		Valid.checkBoolean(!extendingClass.equals(SimpleSubCommand.class), "registerAllCommands does not support SubCommand.class");
 
 		classLookup:
-			for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
+		for (final Class<? extends T> pluginClass : ReflectionUtil.getClasses(instance, extendingClass)) {
 
-				// AutoRegister means the class is already being registered
-				if (pluginClass.isAnnotationPresent(AutoRegister.class))
-					continue;
+			// AutoRegister means the class is already being registered
+			if (pluginClass.isAnnotationPresent(AutoRegister.class))
+				continue;
 
-				if (SimpleSubCommand.class.isAssignableFrom(pluginClass))
-					continue;
+			if (SimpleSubCommand.class.isAssignableFrom(pluginClass))
+				continue;
 
-				try {
-					for (final Constructor<?> con : pluginClass.getConstructors())
-						if (con.getParameterCount() == 0) {
-							final T instance = (T) ReflectionUtil.instantiate(con);
+			try {
+				for (final Constructor<?> con : pluginClass.getConstructors())
+					if (con.getParameterCount() == 0) {
+						final T instance = (T) ReflectionUtil.instantiate(con);
 
-							if (instance instanceof SimpleCommand)
-								this.registerCommand(instance);
+						if (instance instanceof SimpleCommand)
+							this.registerCommand(instance);
 
-							else
-								this.registerCommand(instance);
+						else
+							this.registerCommand(instance);
 
-							continue classLookup;
-						}
+						continue classLookup;
+					}
 
-				} catch (final LinkageError ex) {
-					Common.log("Unable to register commands in '" + pluginClass.getSimpleName() + "' due to error: " + ex);
-				}
+			} catch (final LinkageError ex) {
+				Common.log("Unable to register commands in '" + pluginClass.getSimpleName() + "' due to error: " + ex);
 			}
+		}
 	}
 
 	/**

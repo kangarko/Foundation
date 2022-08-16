@@ -256,9 +256,8 @@ public final class StrictMap<K, V> extends StrictCollection {
 	 * @param consumer
 	 */
 	public void forEachIterate(BiConsumer<K, V> consumer) {
-		for (final Entry<K, V> entry : this.entrySet()) {
+		for (final Entry<K, V> entry : this.entrySet())
 			consumer.accept(entry.getKey(), entry.getValue());
-		}
 	}
 
 	/**

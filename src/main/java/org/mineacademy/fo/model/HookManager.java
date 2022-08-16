@@ -50,7 +50,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
@@ -2181,8 +2180,8 @@ class PlaceholderAPIHook {
 		if (hooks.isEmpty())
 			return text;
 
-		text = setPlaceholders(player, oldText, text, hooks, Variables.VARIABLE_PATTERN.matcher(text));
-		text = setPlaceholders(player, oldText, text, hooks, Variables.BRACKET_VARIABLE_PATTERN.matcher(text));
+		text = this.setPlaceholders(player, oldText, text, hooks, Variables.VARIABLE_PATTERN.matcher(text));
+		text = this.setPlaceholders(player, oldText, text, hooks, Variables.BRACKET_VARIABLE_PATTERN.matcher(text));
 
 		return text;
 	}
@@ -2278,8 +2277,8 @@ class PlaceholderAPIHook {
 		if (hooks.isEmpty())
 			return text;
 
-		text = setRelationalPlaceholders(one, two, text, hooks, Variables.REL_VARIABLE_PATTERN.matcher(text));
-		text = setRelationalPlaceholders(one, two, text, hooks, Variables.BRACKET_REL_VARIABLE_PATTERN.matcher(text));
+		text = this.setRelationalPlaceholders(one, two, text, hooks, Variables.REL_VARIABLE_PATTERN.matcher(text));
+		text = this.setRelationalPlaceholders(one, two, text, hooks, Variables.BRACKET_REL_VARIABLE_PATTERN.matcher(text));
 
 		return text;
 	}
@@ -3376,16 +3375,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
