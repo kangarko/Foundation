@@ -375,8 +375,8 @@ public abstract class SimpleCommand extends Command {
 					}
 
 					paginator
-					.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
-					.setPages(Common.toArray(pages));
+							.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
+							.setPages(Common.toArray(pages));
 
 					// Force sending on the main thread
 					Common.runLater(() -> paginator.send(sender));

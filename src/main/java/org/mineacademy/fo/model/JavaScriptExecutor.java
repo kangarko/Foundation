@@ -163,7 +163,7 @@ public final class JavaScriptExecutor {
 			Object result = engine.eval(javascript);
 
 			if (result instanceof String) {
-				String resultString = Common.stripColors((String) result).toLowerCase();
+				final String resultString = Common.stripColors((String) result).toLowerCase();
 
 				if (resultString.equals("true") || resultString.equals("yes"))
 					result = true;

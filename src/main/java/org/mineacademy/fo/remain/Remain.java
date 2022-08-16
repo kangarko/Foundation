@@ -43,7 +43,6 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -68,7 +67,6 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -345,7 +343,7 @@ public final class Remain {
 						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
 								" &cinclude &elibraries required&c for this plugin to\n" +
 								" &crun. Install the following plugin for compatibility:\n" +
-						" &fhttps://mineacademy.org/plugins/#misc");
+								" &fhttps://mineacademy.org/plugins/#misc");
 			}
 
 			try {
@@ -2597,7 +2595,7 @@ public final class Remain {
 			boolean hasServerName = false;
 			String oldName = null;
 
-			for (String line : lines)
+			for (final String line : lines)
 				if (line.startsWith("server-name=")) {
 					hasServerName = true;
 
@@ -2614,7 +2612,7 @@ public final class Remain {
 
 			serverName = oldName;
 
-		} catch (Throwable t) {
+		} catch (final Throwable t) {
 			t.printStackTrace();
 		}
 	}
