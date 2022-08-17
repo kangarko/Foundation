@@ -130,7 +130,6 @@ public abstract class SimpleHologram {
 	 */
 	public SimpleHologram spawn() {
 		Valid.checkBoolean(!this.isSpawned(), this + " is already spawned!");
-		Valid.checkNotEmpty(this.loreLines, "Call lore() first before calling spawn method for " + this);
 
 		this.entity = this.createEntity();
 		Valid.checkNotNull(this.entity, "Failed to spawn entity from " + this);
@@ -151,6 +150,8 @@ public abstract class SimpleHologram {
 	 * Set a lore for this armor stand
 	 */
 	private void drawLore(Location location) {
+		if (this.loreLines.isEmpty())
+			return;
 
 		if (this.entity instanceof ArmorStand && ((ArmorStand) this.entity).isSmall())
 			location = location.add(0, -0.5, 0);
