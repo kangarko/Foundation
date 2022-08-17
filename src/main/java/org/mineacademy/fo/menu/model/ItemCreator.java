@@ -924,4 +924,28 @@ public final class ItemCreator {
 
 		return new ItemCreator().material(mat);
 	}
+
+	/**
+	 * Takes in an object that is casted to CompMaterial or ItemStack and gets the creator of it
+	 *
+	 * @param itemOrMaterial existing object
+	 * @return the new item creator
+	 */
+	public static ItemCreator of(final Object itemOrMaterial) {
+		if (itemOrMaterial instanceof ItemStack) {
+			final ItemCreator builder = new ItemCreator();
+			final ItemMeta meta = ((ItemStack) itemOrMaterial).getItemMeta();
+
+			if (meta != null && meta.getLore() != null)
+				builder.lore(meta.getLore());
+
+			return builder.item((ItemStack) itemOrMaterial);
+		} else if (itemOrMaterial instanceof CompMaterial) {
+			Valid.checkNotNull(itemOrMaterial, "Material cannot be null!");
+
+			return new ItemCreator().material((CompMaterial) itemOrMaterial);
+		}
+
+		return null;
+	}
 }
