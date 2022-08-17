@@ -269,11 +269,8 @@ public abstract class SimpleCommand extends Command {
 
 		final PluginCommand oldCommand = Bukkit.getPluginCommand(this.getLabel());
 
-		if (oldCommand != null && unregisterOldCommand) {
-			final String owningPlugin = oldCommand.getPlugin().getName();
-
+		if (oldCommand != null && unregisterOldCommand)
 			Remain.unregisterCommand(oldCommand.getLabel(), unregisterOldAliases);
-		}
 
 		Remain.registerCommand(this);
 		this.registered = true;
@@ -378,8 +375,8 @@ public abstract class SimpleCommand extends Command {
 					}
 
 					paginator
-					.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
-					.setPages(Common.toArray(pages));
+							.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
+							.setPages(Common.toArray(pages));
 
 					// Force sending on the main thread
 					Common.runLater(() -> paginator.send(sender));

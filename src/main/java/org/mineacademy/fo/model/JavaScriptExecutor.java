@@ -156,18 +156,14 @@ public final class JavaScriptExecutor {
 				engine.put("event", event);
 
 			if (sender instanceof DiscordSender) {
-				final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(javascript);
-
-				while (matcher.find())
-					// We do not support variables when the message sender is Discord,
-					// so just replace those that were not translated earlier with false value.
-					javascript = javascript.replace(matcher.group(), "false");
+				javascript = replaceVariables(javascript, Variables.VARIABLE_PATTERN.matcher(javascript));
+				javascript = replaceVariables(javascript, Variables.BRACKET_VARIABLE_PATTERN.matcher(javascript));
 			}
 
 			Object result = engine.eval(javascript);
 
 			if (result instanceof String) {
-				String resultString = Common.stripColors((String) result).toLowerCase();
+				final String resultString = Common.stripColors((String) result).toLowerCase();
 
 				if (resultString.equals("true") || resultString.equals("yes"))
 					result = true;
@@ -208,6 +204,17 @@ public final class JavaScriptExecutor {
 
 			throw new RuntimeException(error + " '" + javascript + "'", ex);
 		}
+	}
+
+	/*
+	 * We do not support variables when the message sender is Discord,
+	 * so just replace those that were not translated earlier with false value.
+	 */
+	private static String replaceVariables(String javascript, Matcher matcher) {
+		while (matcher.find())
+			javascript = javascript.replace(matcher.group(), "false");
+
+		return javascript;
 	}
 
 	/**
