@@ -145,9 +145,9 @@ public final class RangedValue {
 		}
 
 		String[] parts;
-		String[] split = line.split("\\-");
+		final String[] split = line.split("\\-");
 
-		boolean secondNegative = split.length == 3;
+		final boolean secondNegative = split.length == 3;
 
 		if (split.length == 1)
 			parts = new String[] { (firstNegative ? "-" : "") + line };
@@ -172,11 +172,11 @@ public final class RangedValue {
 		// Check if 1<2
 		if (first.contains("."))
 			Valid.checkBoolean(firstNumber.longValue() <= secondNumber.longValue(),
-			"First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
+					"First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
 
 		else
 			Valid.checkBoolean(firstNumber.doubleValue() <= secondNumber.doubleValue(),
-			"First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
+					"First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
 
 		return new RangedValue(firstNumber, secondNumber);
 	}

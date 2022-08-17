@@ -50,7 +50,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
@@ -2181,8 +2180,13 @@ class PlaceholderAPIHook {
 		if (hooks.isEmpty())
 			return text;
 
-		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(text);
+		text = this.setPlaceholders(player, oldText, text, hooks, Variables.VARIABLE_PATTERN.matcher(text));
+		text = this.setPlaceholders(player, oldText, text, hooks, Variables.BRACKET_VARIABLE_PATTERN.matcher(text));
 
+		return text;
+	}
+
+	private String setPlaceholders(OfflinePlayer player, String oldText, String text, Map<String, PlaceholderHook> hooks, Matcher matcher) {
 		while (matcher.find()) {
 			String format = matcher.group(1);
 			boolean frontSpace = false;
@@ -2273,8 +2277,13 @@ class PlaceholderAPIHook {
 		if (hooks.isEmpty())
 			return text;
 
-		final Matcher matcher = Variables.BRACKET_REL_PLACEHOLDER_PATTERN.matcher(text);
+		text = this.setRelationalPlaceholders(one, two, text, hooks, Variables.REL_VARIABLE_PATTERN.matcher(text));
+		text = this.setRelationalPlaceholders(one, two, text, hooks, Variables.BRACKET_REL_VARIABLE_PATTERN.matcher(text));
 
+		return text;
+	}
+
+	private String setRelationalPlaceholders(final Player one, final Player two, String text, Map<String, PlaceholderHook> hooks, Matcher matcher) {
 		while (matcher.find()) {
 			final String format = matcher.group(2);
 			final int index = format.indexOf("_");
@@ -2671,15 +2680,15 @@ class WorldGuardHook {
 				}
 			else
 				((com.sk89q.worldguard.protection.managers.RegionManager) rm)
-				.getRegions().values().forEach(reg -> {
-					if (reg == null || reg.getId() == null)
-						return;
+						.getRegions().values().forEach(reg -> {
+							if (reg == null || reg.getId() == null)
+								return;
 
-					final String name = Common.stripColors(reg.getId());
+							final String name = Common.stripColors(reg.getId());
 
-					if (!name.startsWith("__"))
-						list.add(name);
-				});
+							if (!name.startsWith("__"))
+								list.add(name);
+						});
 		}
 
 		return list;
@@ -3366,16 +3375,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}

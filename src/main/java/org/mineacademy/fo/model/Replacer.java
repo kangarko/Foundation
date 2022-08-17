@@ -73,8 +73,13 @@ public final class Replacer {
 		if ("".equals(message))
 			return "";
 
-		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
+		message = replaceVariables(message, variables, Variables.VARIABLE_PATTERN.matcher(message));
+		message = replaceVariables(message, variables, Variables.BRACKET_VARIABLE_PATTERN.matcher(message));
 
+		return message;
+	}
+
+	private static String replaceVariables(String message, SerializedMap variables, Matcher matcher) {
 		while (matcher.find()) {
 			String variable = matcher.group(1);
 

@@ -34,19 +34,29 @@ import org.mineacademy.fo.settings.SimpleSettings;
 public final class Variables {
 
 	/**
-	 * The pattern to find singular [syntax_name] variables
+	 * The pattern to find singular [syntax_name] variables.
 	 */
-	public static final Pattern MESSAGE_PLACEHOLDER_PATTERN = Pattern.compile("[\\[]([^\\[\\]]+)[\\]]");
+	public static final Pattern MESSAGE_VARIABLE_PATTERN = Pattern.compile("[\\[]([^\\[\\]]+)[\\]]");
 
 	/**
-	 * The pattern to find simple {} placeholders
+	 * The pattern to find simple %syntax% placeholders.
 	 */
-	public static final Pattern BRACKET_PLACEHOLDER_PATTERN = Pattern.compile("[({|%)]([^{}]+)[(}|%)]");
+	public static final Pattern VARIABLE_PATTERN = Pattern.compile("[%]([^%]+)[%]");
 
 	/**
-	 * The patter to find simple {} placeholders starting with {rel_ (used for PlaceholderAPI)
+	 * The pattern to find simple {syntax} placeholders.
 	 */
-	public static final Pattern BRACKET_REL_PLACEHOLDER_PATTERN = Pattern.compile("[({|%)](rel_)([^}]+)[(}|%)]");
+	public static final Pattern BRACKET_VARIABLE_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
+
+	/**
+	 * The patter to find simple %syntax% placeholders starting with %rel_% (used for PlaceholderAPI)
+	 */
+	public static final Pattern REL_VARIABLE_PATTERN = Pattern.compile("[%](rel_)([^%]+)[%]");
+
+	/**
+	 * The patter to find simple {syntax} placeholders starting with {rel_} (used for PlaceholderAPI)
+	 */
+	public static final Pattern BRACKET_REL_VARIABLE_PATTERN = Pattern.compile("[({)](rel_)([^}]+)[(})]");
 
 	/**
 	 * Player - [Original Message - Translated Message]
@@ -276,8 +286,9 @@ public final class Variables {
 		if (!message.startsWith("[JSON]")) {
 			message = Common.colorize(message);
 
-			if (!original.equals(message) && (message.contains("{") && message.contains("}")))
+			if (!original.equals(message) && ((message.contains("{") && message.contains("}")) || message.contains("%")))
 				return replace(message, sender, replacements, colorize);
+
 		}
 
 		if (senderIsPlayer) {
@@ -297,8 +308,13 @@ public final class Variables {
 	 */
 	private static String replaceJavascriptVariables0(String message, CommandSender sender, Map<String, Object> replacements) {
 
-		final Matcher matcher = BRACKET_PLACEHOLDER_PATTERN.matcher(message);
+		message = replaceJavascriptVariables0(message, sender, replacements, VARIABLE_PATTERN.matcher(message));
+		message = replaceJavascriptVariables0(message, sender, replacements, BRACKET_VARIABLE_PATTERN.matcher(message));
 
+		return message;
+	}
+
+	private static String replaceJavascriptVariables0(String message, CommandSender sender, Map<String, Object> replacements, Matcher matcher) {
 		while (matcher.find()) {
 			final String variableKey = matcher.group();
 
@@ -327,7 +343,15 @@ public final class Variables {
 	 * Replaces our hardcoded variables in the message, using a cache for better performance
 	 */
 	private static String replaceHardVariables0(CommandSender sender, String message) {
-		final Matcher matcher = Variables.BRACKET_PLACEHOLDER_PATTERN.matcher(message);
+
+		message = replaceHardVariables0(sender, message, Variables.VARIABLE_PATTERN.matcher(message));
+		message = replaceHardVariables0(sender, message, Variables.BRACKET_VARIABLE_PATTERN.matcher(message));
+		message = Messenger.replacePrefixes(message);
+
+		return message;
+	}
+
+	private static String replaceHardVariables0(CommandSender sender, String message, Matcher matcher) {
 		final Player player = sender instanceof Player ? (Player) sender : null;
 
 		while (matcher.find()) {
@@ -356,8 +380,6 @@ public final class Variables {
 				message = message.replace(matcher.group(), value);
 			}
 		}
-
-		message = Messenger.replacePrefixes(message);
 
 		return message;
 	}
