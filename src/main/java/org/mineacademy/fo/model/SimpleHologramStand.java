@@ -3,6 +3,8 @@ package org.mineacademy.fo.model;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Consumer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
@@ -15,9 +17,9 @@ import lombok.Getter;
 public class SimpleHologramStand extends SimpleHologram {
 
 	/**
-	 * The material this hologram will have
+	 * The item or material this hologram will have
 	 */
-	private final CompMaterial material;
+	private final Object itemOrMaterial;
 
 	/**
 	 * Is this item stand small?
@@ -30,15 +32,27 @@ public class SimpleHologramStand extends SimpleHologram {
 	private boolean glowing;
 
 	/**
+	 * Create a new simple hologram using armor stand showing the given itemstack
+	 *
+	 * @param spawnLocation
+	 * @param item
+	 */
+	public SimpleHologramStand(final Location spawnLocation, final ItemStack item) {
+		super(spawnLocation);
+
+		this.itemOrMaterial = item;
+	}
+
+	/**
 	 * Create a new simple hologram using armor stand showing the given material
 	 *
 	 * @param spawnLocation
 	 * @param material
 	 */
-	public SimpleHologramStand(Location spawnLocation, CompMaterial material) {
+	public SimpleHologramStand(final Location spawnLocation, final CompMaterial material) {
 		super(spawnLocation);
 
-		this.material = material;
+		this.itemOrMaterial = material;
 	}
 
 	/**
@@ -46,22 +60,29 @@ public class SimpleHologramStand extends SimpleHologram {
 	 */
 	@Override
 	protected final Entity createEntity() {
-		final ArmorStand armorStand = this.getLastTeleportLocation().getWorld().spawn(this.getLastTeleportLocation(), ArmorStand.class);
 
-		armorStand.setGravity(false);
-		armorStand.setHelmet(ItemCreator.of(this.material).glow(this.glowing).make());
-		armorStand.setVisible(false);
-		armorStand.setSmall(this.small);
+		final ItemCreator item;
 
-		return armorStand;
+		if (this.itemOrMaterial instanceof ItemStack)
+			item = ItemCreator.of((ItemStack) this.itemOrMaterial);
+		else
+			item = ItemCreator.of((CompMaterial) this.itemOrMaterial);
+
+		final Consumer<ArmorStand> consumer = armorStand -> {
+			armorStand.setGravity(false);
+			armorStand.setHelmet(item.glow(this.glowing).make());
+			armorStand.setVisible(false);
+			armorStand.setSmall(this.small);
+		};
+
+		return getLastTeleportLocation().getWorld().spawn(getLastTeleportLocation(), ArmorStand.class, consumer);
 	}
 
 	/**
-	 *
 	 * @param glowing
 	 * @return
 	 */
-	public final SimpleHologram setGlowing(boolean glowing) {
+	public final SimpleHologram setGlowing(final boolean glowing) {
 		this.glowing = glowing;
 
 		return this;
@@ -71,7 +92,7 @@ public class SimpleHologramStand extends SimpleHologram {
 	 * @param small the small to set
 	 * @return
 	 */
-	public final SimpleHologram setSmall(boolean small) {
+	public final SimpleHologram setSmall(final boolean small) {
 		this.small = small;
 
 		return this;
