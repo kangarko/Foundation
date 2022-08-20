@@ -35,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BlockUtil {
 
-	// TEst
 	/**
 	 * Matches all DOUBLE or STEP block names
 	 */
