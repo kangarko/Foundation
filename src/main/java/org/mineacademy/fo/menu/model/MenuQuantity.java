@@ -57,6 +57,17 @@ public enum MenuQuantity {
 	private final double amountPercent;
 
 	/**
+	 * @deprecated rounds the amount number, you need to decide if you will support
+	 * decimal quantities and use either {@link #getAmountDouble()} or if not, use {@link #getAmountPercent()}
+	 *
+	 * @return
+	 */
+	@Deprecated
+	public int getAmount() {
+		return (int) Math.round(this.getAmountPercent());
+	}
+
+	/**
 	 * Get the amount from 0.00 to 1.00
 	 *
 	 * @return
