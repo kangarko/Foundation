@@ -60,6 +60,18 @@ public interface MenuQuantitable {
 	}
 
 	/**
+	 * @deprecated rounds the amount number, you need to decide if you will support
+	 * decimal quantities and use either {@link #getAmountDouble()} or if not, use {@link #getAmountPercent()}
+	 *
+	 * @param clickType
+	 * @return
+	 */
+	@Deprecated
+	default int getNextQuantity(ClickType clickType) {
+		return (int) Math.round(this.getNextQuantityPercent(clickType));
+	}
+
+	/**
 	 * Get the next edit quantity from click from 0.0 to 1.0
 	 *
 	 * @param clickType the click type
@@ -77,6 +89,18 @@ public interface MenuQuantitable {
 	 */
 	default double getNextQuantityPercent(ClickType clickType) {
 		return clickType == ClickType.LEFT ? -this.getQuantity().getAmountPercent() : this.getQuantity().getAmountPercent();
+	}
+
+	/**
+	 * @see #getQuantityButton(Menu)
+	 * @deprecated renamed to {@link #getQuantityButton(Menu)}
+	 *
+	 * @param menu
+	 * @return
+	 */
+	@Deprecated
+	default Button getEditQuantityButton(Menu menu) {
+		return this.getQuantityButton(menu);
 	}
 
 	/**

@@ -259,6 +259,15 @@ public abstract class YamlStaticConfig {
 		TEMPORARY_INSTANCE.move(fromRelative, toAbsolute);
 	}
 
+	/**
+	 * @deprecated renamed, use {@link #setPathPrefix(String)} instead
+	 * @param pathPrefix
+	 */
+	@Deprecated
+	protected static final void pathPrefix(final String pathPrefix) {
+		setPathPrefix(pathPrefix);
+	}
+
 	protected static final void setPathPrefix(final String pathPrefix) {
 		TEMPORARY_INSTANCE.setPathPrefix(pathPrefix);
 	}
