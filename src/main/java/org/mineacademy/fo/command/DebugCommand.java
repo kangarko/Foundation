@@ -11,7 +11,6 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
@@ -81,7 +80,7 @@ public final class DebugCommand extends SimpleSubCommand {
 				" Debug log generated " + TimeUtil.getFormattedDate(),
 				Common.consoleLine(),
 				"Plugin: " + SimplePlugin.getInstance().getDescription().getFullName(),
-				"Server Version: " + Bukkit.getName() + " " + MinecraftVersion.getServerVersion(),
+				"Server Version: " + Bukkit.getVersion(),
 				"Java: " + System.getProperty("java.version") + " (" + System.getProperty("java.specification.vendor") + "/" + System.getProperty("java.vm.vendor") + ")",
 				"OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"),
 				"Online mode: " + Bukkit.getOnlineMode(),

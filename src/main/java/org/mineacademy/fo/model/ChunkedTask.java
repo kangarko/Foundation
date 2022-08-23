@@ -133,6 +133,15 @@ public abstract class ChunkedTask {
 	 * @param gracefully true if natural end, false if {@link #cancel()} used
 	 */
 	protected void onFinish(boolean gracefully) {
+		this.onFinish();
+	}
+
+	/**
+	 * @see #onFinish(boolean)
+	 * @deprecated it is prefered to call {@link #onFinish(boolean)} instead
+	 */
+	@Deprecated
+	protected void onFinish() {
 	}
 
 	/**
