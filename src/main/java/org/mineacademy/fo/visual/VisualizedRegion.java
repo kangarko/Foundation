@@ -27,14 +27,10 @@ import lombok.Setter;
 public final class VisualizedRegion extends Region {
 
 	/**
-	 * @deprecated Instead of calling VisualizedRegion.EMPTY, call new VisualizedRegion() instead
+	 * @deprecated DOES NOT WORK, call new VisualizedRegion() instead
 	 */
 	@Deprecated
-	public final static VisualizedRegion EMPTY = dummyThrow();
-
-	private static VisualizedRegion dummyThrow() {
-		throw new RuntimeException("Instead of calling VisualizedRegion.EMPTY, call new VisualizedRegion() instead");
-	}
+	public final static VisualizedRegion EMPTY = null;
 
 	/**
 	 * A list of players who can see the particles, along with the particle color (requires {@link #particle} to be REDSTONE)
