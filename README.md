@@ -10,7 +10,7 @@
 
 Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
-Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting their ideas out there.
+Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting your ideas out there.
 
 Check out https://mineacademy.org/plugins for our official list of plugins that use Foundation.
 
@@ -90,7 +90,7 @@ All infringements will be prosecuted.
 
 No guarantee - this software is provided AS IS, without any guarantee on its
 functionality. We made our best efforts to make Foundation an enterprise-level
-solution for anyone looking to accelerate their coding however we are not
+solution for anyone looking to accelerate his coding however we are not
 taking any responsibility for the success or failure you achieve using it.
 
 **A tutorial on how to use this library is a part of our Project Orion training available at https://mineacademy.org**
