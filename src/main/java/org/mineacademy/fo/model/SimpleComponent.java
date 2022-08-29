@@ -345,7 +345,7 @@ public final class SimpleComponent implements ConfigSerializable {
 				if (preparedComponent == null)
 					preparedComponent = component;
 				else
-					preparedComponent.addExtra(component);
+					addExtra(preparedComponent, component);
 		}
 
 		final TextComponent currentComponent = this.currentComponent == null ? null : this.currentComponent.toTextComponent(true, receiver);
@@ -354,9 +354,27 @@ public final class SimpleComponent implements ConfigSerializable {
 			if (preparedComponent == null)
 				preparedComponent = currentComponent;
 			else
-				preparedComponent.addExtra(currentComponent);
+				addExtra(preparedComponent, currentComponent);
 
 		return Common.getOrDefault(preparedComponent, new TextComponent(""));
+	}
+
+	/*
+	 * Mostly resolving some ancient MC version incompatibility: "UnsupportedOperationException"
+	 */
+	private void addExtra(BaseComponent component, BaseComponent extra) {
+		try {
+			component.addExtra(extra);
+
+		} catch (final Throwable t) {
+			final List<BaseComponent> safeList = new ArrayList<>();
+
+			if (component.getExtra() != null)
+				safeList.addAll(component.getExtra());
+
+			safeList.add(extra);
+			component.setExtra(safeList);
+		}
 	}
 
 	/**
