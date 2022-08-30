@@ -1698,7 +1698,7 @@ class AdvancedVanishHook {
 	}
 
 	void setVanished(Player player, boolean vanished) {
-		if (player != null && !isVanished(player))
+		if (player != null && isVanished(player) != vanished)
 			setVanished(player, false);
 	}
 }
