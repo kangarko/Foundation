@@ -181,9 +181,10 @@ final class FoundationListener implements Listener {
 		if (!player.hasMetadata("vanished")) {
 			final boolean essVanished = HookManager.isVanishedEssentials(player);
 			final boolean cmiVanished = HookManager.isVanishedCMI(player);
+			final boolean advVanished = HookManager.isVanishedAdvancedVanish(player);
 
-			if (essVanished || cmiVanished) {
-				final Plugin plugin = Bukkit.getPluginManager().getPlugin(essVanished ? "Essentials" : "CMI");
+			if (essVanished || cmiVanished || advVanished) {
+				final Plugin plugin = Bukkit.getPluginManager().getPlugin(essVanished ? "Essentials" : cmiVanished ? "CMI" : "AdvancedVanish");
 
 				player.setMetadata("vanished", new FixedMetadataValue(plugin, true));
 			}
