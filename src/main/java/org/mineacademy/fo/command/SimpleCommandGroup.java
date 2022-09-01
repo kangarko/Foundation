@@ -162,8 +162,6 @@ public abstract class SimpleCommandGroup {
 
 		this.mainCommand.unregister();
 		this.mainCommand = null;
-
-		this.subcommands.clear();
 	}
 
 	/**
