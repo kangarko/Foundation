@@ -1656,7 +1656,7 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	@Override
-	public final String toString() {
+	public String toString() {
 		return "Command{label=/" + this.label + "}";
 	}
 }

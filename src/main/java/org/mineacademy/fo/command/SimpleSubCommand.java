@@ -92,6 +92,11 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	}
 
 	@Override
+	public String toString() {
+		return "SubCommand{parent=/" + this.getLabel() + ", label=" + this.getSublabel() + "}";
+	}
+
+	@Override
 	public final boolean equals(Object obj) {
 		return obj instanceof SimpleSubCommand ? Arrays.equals(((SimpleSubCommand) obj).sublabels, this.sublabels) : false;
 	}
