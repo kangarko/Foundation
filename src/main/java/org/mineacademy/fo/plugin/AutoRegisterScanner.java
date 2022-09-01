@@ -141,7 +141,7 @@ final class AutoRegisterScanner {
 			}
 
 		// Register command groups later
-		registerCommandGroup(classes);
+		registerCommandGroups();
 	}
 
 	/*
@@ -217,7 +217,7 @@ final class AutoRegisterScanner {
 	/*
 	 * Registers command groups, automatically assuming the main command group from the main command label
 	 */
-	private static void registerCommandGroup(List<Class<?>> classes) {
+	private static void registerCommandGroups() {
 		boolean mainCommandGroupFound = false;
 
 		for (final SimpleCommandGroup group : registeredCommandGroups) {
