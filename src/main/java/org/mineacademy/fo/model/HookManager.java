@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import me.quantiom.advancedvanish.util.AdvancedVanishAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -108,6 +109,7 @@ public final class HookManager {
 	// Store hook classes separately for below, avoiding no such method/field errors
 	// ------------------------------------------------------------------------------------------------------------
 
+	private static AdvancedVanishHook advancedVanishHook;
 	private static AuthMeHook authMeHook;
 	private static BanManagerHook banManagerHook;
 	private static BentoBoxHook bentoBoxHook;
@@ -148,6 +150,9 @@ public final class HookManager {
 	 * Detect various plugins and load their methods into this library so you can use it later
 	 */
 	public static void loadDependencies() {
+
+		if (Common.doesPluginExist("AdvancedVanish"))
+			advancedVanishHook = new AdvancedVanishHook();
 
 		if (Common.doesPluginExist("AuthMe"))
 			authMeHook = new AuthMeHook();
@@ -316,6 +321,15 @@ public final class HookManager {
 	// ------------------------------------------------------------------------------------------------------------
 	// Methods for determining which plugins were loaded after you call the load method
 	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Is AdvancedVanish loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isAdvancedVanishLoaded() {
+		return advancedVanishHook != null;
+	}
 
 	/**
 	 * Is AuthMe Reloaded loaded? We only support the latest version
@@ -760,7 +774,7 @@ public final class HookManager {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// EssentialsX or CMI
+	// EssentialsX, CMI or AdvancedVanish
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -801,7 +815,19 @@ public final class HookManager {
 	}
 
 	/**
-	 * Sets the vanish status for player in CMI and Essentials
+	 * Return true if the given player is vanished in AdvancedVanish
+	 *
+	 * @deprecated this does not call metadata check for most plugins nor NMS check, see {@link PlayerUtil#isVanished(Player)}
+	 * @param player
+	 * @return
+	 */
+	@Deprecated
+	public static boolean isVanishedAdvancedVanish(final Player player) {
+		return isAdvancedVanishLoaded() && AdvancedVanishAPI.INSTANCE.isPlayerVanished(player);
+	}
+
+	/**
+	 * Sets the vanish status for player in CMI, Essentials and AdvancedVanish
 	 *
 	 * @deprecated this does not remove vanish metadata and NMS invisibility, use {@link PlayerUtil#setVanished(Player, boolean)} for that
 	 * @param player
@@ -814,6 +840,9 @@ public final class HookManager {
 
 		if (isCMILoaded())
 			CMIHook.setVanished(player, vanished);
+
+		if (isAdvancedVanishLoaded())
+			advancedVanishHook.setVanished(player, vanished);
 	}
 
 	/**
@@ -1661,6 +1690,18 @@ public final class HookManager {
 // and getting data from them. Due to often changes we do not keep those documented.
 //
 // ------------------------------------------------------------------------------------------------------------
+
+class AdvancedVanishHook {
+
+	boolean isVanished(final Player player) {
+		return player != null && AdvancedVanishAPI.INSTANCE.isPlayerVanished(player);
+	}
+
+	void setVanished(Player player, boolean vanished) {
+		if (player != null && isVanished(player) != vanished)
+			setVanished(player, false);
+	}
+}
 
 class AuthMeHook {
 
