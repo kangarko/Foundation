@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import me.quantiom.advancedvanish.util.AdvancedVanishAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -823,7 +822,7 @@ public final class HookManager {
 	 */
 	@Deprecated
 	public static boolean isVanishedAdvancedVanish(final Player player) {
-		return isAdvancedVanishLoaded() && AdvancedVanishAPI.INSTANCE.isPlayerVanished(player);
+		return isAdvancedVanishLoaded() && advancedVanishHook.isVanished(player);
 	}
 
 	/**
@@ -834,7 +833,7 @@ public final class HookManager {
 	 * @param vanished
 	 */
 	@Deprecated
-	public static void setVanished(Player player, boolean vanished) {
+	public static void setVanished(@NonNull Player player, boolean vanished) {
 		if (isEssentialsLoaded())
 			essentialsHook.setVanished(player.getName(), vanished);
 
@@ -1693,13 +1692,33 @@ public final class HookManager {
 
 class AdvancedVanishHook {
 
-	boolean isVanished(final Player player) {
-		return player != null && AdvancedVanishAPI.INSTANCE.isPlayerVanished(player);
+	boolean isVanished(Player player) {
+		final Class<?> clazz = ReflectionUtil.lookupClass("me.quantiom.advancedvanish.util.AdvancedVanishAPI");
+		final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "INSTANCE");
+
+		final Method isPlayerVanished = ReflectionUtil.getMethod(clazz, "isPlayerVanished", Player.class);
+
+		return ReflectionUtil.invoke(isPlayerVanished, instance, player);
 	}
 
 	void setVanished(Player player, boolean vanished) {
-		if (player != null && isVanished(player) != vanished)
-			setVanished(player, false);
+		final Class<?> clazz = ReflectionUtil.lookupClass("me.quantiom.advancedvanish.util.AdvancedVanishAPI");
+		final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "INSTANCE");
+
+		if (vanished) {
+			if (!isVanished(player)) {
+				final Method vanishPlayer = ReflectionUtil.getMethod(clazz, "vanishPlayer", Player.class, boolean.class);
+
+				ReflectionUtil.invoke(vanishPlayer, instance, player, false);
+			}
+
+		} else {
+			if (isVanished(player)) {
+				final Method unVanishPlayer = ReflectionUtil.getMethod(clazz, "unVanishPlayer", Player.class, boolean.class);
+
+				ReflectionUtil.invoke(unVanishPlayer, instance, player, false);
+			}
+		}
 	}
 }
 
@@ -3563,16 +3582,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
