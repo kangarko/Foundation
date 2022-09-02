@@ -187,7 +187,10 @@ public abstract class SimpleCommandGroup {
 	 */
 	protected final void registerSubcommand(final SimpleSubCommand command) {
 		Valid.checkNotNull(this.mainCommand, "Cannot add subcommands when main command is missing! Call register()");
-		Valid.checkBoolean(!this.subcommands.contains(command), "Subcommand /" + this.mainCommand.getLabel() + " " + command.getSublabel() + " already registered when trying to add " + command.getClass());
+
+		// Fixes reloading issue where all subcommands are cleared
+		if (this.subcommands.contains(command))
+			this.subcommands.remove(command);
 
 		this.subcommands.add(command);
 	}
