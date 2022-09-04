@@ -133,6 +133,16 @@ public abstract class MenuPagged<T> extends Menu {
 	/**
 	 * Create a new paged menu with automatic page size
 	 *
+	 * @param slots  the slots where the items should be placed on a page
+	 * @param items  the pages the pages
+	 */
+	protected MenuPagged(final List<Integer> slots, final Iterable<T> items) {
+		this(null, slots, items, false);
+	}
+	
+	/**
+	 * Create a new paged menu with automatic page size
+	 *
 	 * @param parent the parent menu
 	 * @param slots  the slots where the items should be placed on a page
 	 * @param items  the pages the pages
