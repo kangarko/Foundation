@@ -202,7 +202,7 @@ public class ChatInternals {
 	}
 
 	// http://wiki.vg/Protocol#Chat_Message
-	private static void sendChat(final Player pl, final String text, final byte type) {
+	private static void sendChat(final Player player, final String text, final byte type) {
 		try {
 			final Object message = serializeText(text);
 			Valid.checkNotNull(message, "Message cannot be null!");
@@ -217,10 +217,10 @@ public class ChatInternals {
 			} else
 				packet = chatMessageConstructor.newInstance(message, type);
 
-			Remain.sendPacket(pl, packet);
+			Remain.sendPacket(player, packet);
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.error(ex, "Failed to send chat packet type " + type + " to " + pl.getName() + ", message: " + text);
+			Common.error(ex, "Failed to send chat packet type " + type + " to " + player.getName() + ", message: " + text);
 		}
 	}
 
