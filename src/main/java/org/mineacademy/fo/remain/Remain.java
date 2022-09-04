@@ -43,6 +43,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -67,6 +68,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -80,6 +82,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -1044,7 +1047,7 @@ public final class Remain {
 		}
 
 		try {
-			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Common.colorize(text)));
+			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, SimpleComponent.of(Common.colorize(text)).build(player));
 
 		} catch (final NoSuchMethodError err) {
 			ChatInternals.sendActionBarLegacy(player, text);
