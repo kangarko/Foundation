@@ -80,6 +80,11 @@ final class FoundationFilter {
 		if (message.endsWith("which is not a depend, softdepend or loadbefore of this plugin."))
 			return true;
 
+		// Disable some annoying hikaripool or discordsrv messages
+		if (message.contains("HikariPool-1 - Starting...") || message.contains("HikariPool-1 - Start completed.")
+				|| message.contains("[DiscordSRV] [JDA] Login Successful!") || message.contains("[DiscordSRV] [JDA] Connected to WebSocket"))
+			return true;
+
 		message = message.toLowerCase();
 
 		// Only filter this after plugin has been fully enabled
