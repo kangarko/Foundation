@@ -98,7 +98,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items
 	 */
 	protected MenuPagged(@NonNull final T... items) {
-		this(null, Arrays.asList(items));
+		this(null, null, null, Arrays.asList(items), false);
 	}
 
 	/**
@@ -107,7 +107,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items the pages
 	 */
 	protected MenuPagged(final Iterable<T> items) {
-		this(null, items);
+		this(null, null, null, items, false);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items  the pages the pages
 	 */
 	protected MenuPagged(final Menu parent, @NonNull final T... items) {
-		this(parent, Arrays.asList(items));
+		this(null, parent, null, Arrays.asList(items), false);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items  the pages the pages
 	 */
 	protected MenuPagged(final Menu parent, final Iterable<T> items) {
-		this(parent, items, false);
+		this(null, parent, null, items, false);
 	}
 
 	/**
@@ -137,9 +137,9 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items  the pages the pages
 	 */
 	protected MenuPagged(final List<Integer> slots, final Iterable<T> items) {
-		this(null, slots, items, false);
+		this(null, null, slots, items, false);
 	}
-	
+
 	/**
 	 * Create a new paged menu with automatic page size
 	 *
@@ -148,7 +148,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items  the pages the pages
 	 */
 	protected MenuPagged(final Menu parent, final List<Integer> slots, final Iterable<T> items) {
-		this(parent, slots, items, false);
+		this(null, parent, slots, items, false);
 	}
 
 	/**
@@ -159,7 +159,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param returnMakesNewInstance
 	 */
 	protected MenuPagged(final Menu parent, final Iterable<T> items, final boolean returnMakesNewInstance) {
-		this(parent, null, items, returnMakesNewInstance);
+		this(null, parent, null, items, returnMakesNewInstance);
 	}
 
 	/**
@@ -182,7 +182,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items    the pages
 	 */
 	protected MenuPagged(final int pageSize, @NonNull final T... items) {
-		this(pageSize, (Menu) null, Arrays.asList(items));
+		this(pageSize, null, null, Arrays.asList(items), false);
 	}
 
 	/**
@@ -193,7 +193,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items    the pages
 	 */
 	protected MenuPagged(final int pageSize, final Iterable<T> items) {
-		this(pageSize, (Menu) null, items);
+		this(pageSize, null, null, items, false);
 	}
 
 	/**
@@ -216,7 +216,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items    the pages the pages
 	 */
 	protected MenuPagged(final int pageSize, final Menu parent, @NonNull T... items) {
-		this(pageSize, parent, Arrays.asList(items), false);
+		this(pageSize, parent, null, Arrays.asList(items), false);
 	}
 
 	/**
@@ -228,7 +228,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items    the pages the pages
 	 */
 	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> items) {
-		this(pageSize, parent, items, false);
+		this(pageSize, parent, null, items, false);
 	}
 
 	/**
@@ -240,7 +240,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param returnMakesNewInstance
 	 */
 	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> items, final boolean returnMakesNewInstance) {
-		this((Integer) pageSize, parent, null, items, returnMakesNewInstance);
+		this(pageSize, parent, null, items, returnMakesNewInstance);
 	}
 
 	/**
