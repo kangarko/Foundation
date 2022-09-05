@@ -382,7 +382,7 @@ public abstract class MenuPagged<T> extends Menu {
 	private String compileTitle0() {
 		final boolean canAddNumbers = this.addPageNumbers() && this.pages.size() > 1;
 
-		return this.getTitle() + (canAddNumbers ? " &8" + this.currentPage + "/" + this.pages.size() : "");
+		return "&0" + this.getTitle() + (canAddNumbers ? " &8" + this.currentPage + "/" + this.pages.size() : "");
 	}
 
 	/**
