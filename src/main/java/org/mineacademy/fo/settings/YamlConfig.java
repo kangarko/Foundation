@@ -329,6 +329,16 @@ public class YamlConfig extends FileConfig {
 		return string.trim().isEmpty() ? "" : string + "\n";
 	}
 
+	@Override
+	public int hashCode() {
+		return this.getFileName().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof YamlConfig && ((YamlConfig) obj).getFileName().equals(this.getFileName());
+	}
+
 	// -----------------------------------------------------------------------------------------------------
 	// Static
 	// -----------------------------------------------------------------------------------------------------
