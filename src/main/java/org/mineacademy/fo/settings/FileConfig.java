@@ -151,8 +151,11 @@ public abstract class FileConfig {
 	 *
 	 * @param deep
 	 * @return
+	 *
+	 * @deprecated it is recommended that you use getMap("") instead or for loop in getKeys(deep) and getMap(key) for each
+	 * 			   key and print out the results to console to understand the differences
 	 */
-	@NonNull
+	@Deprecated
 	public final Map<String, Object> getValues(boolean deep) {
 		return this.section.getValues(deep);
 	}
