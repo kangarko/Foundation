@@ -35,6 +35,7 @@ import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -1182,8 +1183,13 @@ public abstract class FileConfig {
 				} else
 					this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
-				this.onLoad();
-				this.onLoadFinish();
+				try {
+					this.onLoad();
+					this.onLoadFinish();
+
+				} catch (final EventHandledException ex) {
+					// Handled successfully in the polymorphism pipeline
+				}
 
 				if (this.shouldSave) {
 					this.loading = false;
@@ -1238,6 +1244,8 @@ public abstract class FileConfig {
 	/**
 	 * Called automatically when the configuration has been loaded, used to load your
 	 * fields in your class here.
+	 *
+	 * You can throw {@link EventHandledException} here to indicate to your child class to interrupt loading
 	 */
 	protected void onLoad() {
 	}
@@ -1277,7 +1285,12 @@ public abstract class FileConfig {
 				this.onPreSave();
 
 				if (this.canSaveFile()) {
-					this.onSave();
+
+					try {
+						this.onSave();
+					} catch (final EventHandledException ex) {
+						// Ignore, indicated that we exited polymorphism inheritance prematurely by intention
+					}
 
 					final File parent = file.getCanonicalFile().getParentFile();
 
