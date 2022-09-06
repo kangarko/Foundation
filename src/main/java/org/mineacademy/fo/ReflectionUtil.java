@@ -165,7 +165,15 @@ public final class ReflectionUtil {
 			if (reflectionDataCache.containsKey(clazz))
 				return reflectionDataCache.get(clazz).getConstructor(params);
 
-			final Constructor<?> constructor = clazz.getConstructor(params);
+			Constructor<?> constructor;
+
+			try {
+				constructor = clazz.getConstructor(params);
+
+			} catch (final NoSuchMethodException err) {
+				constructor = clazz.getDeclaredConstructor(params);
+			}
+
 			constructor.setAccessible(true);
 
 			return constructor;
@@ -572,6 +580,8 @@ public final class ReflectionUtil {
 	 */
 	public static <T> T instantiate(final Constructor<T> constructor, final Object... params) {
 		try {
+			constructor.setAccessible(true);
+
 			return constructor.newInstance(params);
 
 		} catch (final ReflectiveOperationException ex) {
@@ -1160,16 +1170,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-		
+
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-		
+
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
+
 			cacheMethod(method);
-		
+
 			return method;
 		}*/
 
