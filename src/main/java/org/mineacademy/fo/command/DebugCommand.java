@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
@@ -109,11 +108,11 @@ public final class DebugCommand extends SimpleSubCommand {
 					final YamlConfig config = YamlConfig.fromFile(file);
 					final YamlConfig copyConfig = YamlConfig.fromFile(copy);
 
-					for (final Map.Entry<String, Object> entry : config.getValues(true).entrySet()) {
-						final String key = entry.getKey();
+					for (final String key : config.getKeys(true)) {
+						final Object value = config.getObject(key);
 
 						if (!key.contains("MySQL"))
-							copyConfig.set(key, entry.getValue());
+							copyConfig.set(key, value);
 					}
 
 					copyConfig.save(copy);
