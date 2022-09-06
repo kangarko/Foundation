@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -18,7 +17,6 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 
 import lombok.NonNull;
@@ -58,10 +56,10 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * Examples where this can be useful: If you have a minigame plugin and want to store
 	 * different minigames in one folder such as MobArena and BedWars both in games/ folder,
-	 * then you will read the "Type" key in each arena file using the serialized map provided
-	 * in the bifunction and return the specific arena class from that key.
+	 * then you will read the "Type" key in each arena file by opening the file name provided
+	 * in the function as config and returning the specific arena class from a key in that file.
 	 */
-	private final BiFunction<String, SerializedMap, Class<T>> prototypeCreator;
+	private final Function<String, Class<T>> prototypeCreator;
 
 	/**
 	 * Are all items stored in a single file?
@@ -76,7 +74,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeCreator
 	 * @param singleFile
 	 */
-	private ConfigItems(String type, String folder, BiFunction<String, SerializedMap, Class<T>> prototypeCreator, boolean singleFile) {
+	private ConfigItems(String type, String folder, Function<String, Class<T>> prototypeCreator, boolean singleFile) {
 		this.type = type;
 		this.folder = folder;
 		this.prototypeCreator = prototypeCreator;
@@ -92,7 +90,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
-		return fromFolder(folder, (fileName, fileConfig) -> prototypeClass);
+		return fromFolder(folder, fileName -> prototypeClass);
 	}
 
 	/**
@@ -103,7 +101,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeCreator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, BiFunction<String, SerializedMap, Class<P>> prototypeCreator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Function<String, Class<P>> prototypeCreator) {
 		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeCreator, false);
 	}
 
@@ -117,7 +115,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
-		return fromFile(path, file, (fileName, fileConfig) -> prototypeClass);
+		return fromFile(path, file, fileName -> prototypeClass);
 	}
 
 	/**
@@ -129,7 +127,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeCreator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, BiFunction<String, SerializedMap, Class<P>> prototypeCreator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Function<String, Class<P>> prototypeCreator) {
 		return new ConfigItems<>(path, file, prototypeCreator, true);
 	}
 
@@ -213,7 +211,7 @@ public final class ConfigItems<T extends YamlConfig> {
 				Constructor<T> constructor;
 				boolean nameConstructor = true;
 
-				final Class<T> prototypeClass = this.prototypeCreator.apply(name, this.loadConfigMap(name));
+				final Class<T> prototypeClass = this.prototypeCreator.apply(name);
 				Valid.checkNotNull(prototypeClass);
 
 				try {
@@ -247,22 +245,6 @@ public final class ConfigItems<T extends YamlConfig> {
 
 		Valid.checkNotNull(item, "Failed to initiliaze " + name + " from " + this.folder);
 		return item;
-	}
-
-	/*
-	 * A helper method to quickly open the file name in your plugin folder for reading
-	 * and return the root map containing all key-value pairs
-	 */
-	private SerializedMap loadConfigMap(@Nullable String fileName) {
-		final File file = FileUtil.getFile(this.singleFile ? this.folder : fileName);
-
-		if (file.exists()) {
-			final YamlConfig config = YamlConfig.fromFileFast(file);
-
-			return config.getMap(this.singleFile ? this.type : "");
-		}
-
-		return new SerializedMap();
 	}
 
 	/**
