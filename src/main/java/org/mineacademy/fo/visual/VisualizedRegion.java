@@ -220,6 +220,11 @@ public final class VisualizedRegion extends Region {
 	 * @return
 	 */
 	public static VisualizedRegion deserialize(final SerializedMap map) {
+
+		// Support loading an empty key with "{}" empty map
+		if (map.isEmpty())
+			return new VisualizedRegion();
+
 		Valid.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
 
 		final String name = map.getString("Name");
