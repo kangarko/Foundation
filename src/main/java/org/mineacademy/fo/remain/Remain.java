@@ -80,6 +80,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -1044,7 +1045,7 @@ public final class Remain {
 		}
 
 		try {
-			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Common.colorize(text)));
+			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, SimpleComponent.of(Common.colorize(text)).build(player));
 
 		} catch (final NoSuchMethodError err) {
 			ChatInternals.sendActionBarLegacy(player, text);

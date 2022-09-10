@@ -67,6 +67,8 @@ public class SimpleHologramStand extends SimpleHologram {
 		};
 
 		return this.getLastTeleportLocation().getWorld().spawn(this.getLastTeleportLocation(), ArmorStand.class, consumer);
+
+		
 	}
 
 	/**

@@ -383,7 +383,7 @@ public final class FileUtil {
 		File file = new File(SimplePlugin.getData(), to);
 
 		final List<String> lines = getInternalFileContent(from);
-		Valid.checkNotNull(lines, "Inbuilt " + from + " not found! Did you reload?");
+		Valid.checkNotNull(lines, "Inbuilt " + file.getAbsolutePath() + " not found! Did you reload?");
 
 		if (file.exists())
 			return file;

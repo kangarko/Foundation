@@ -68,10 +68,11 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
-	 * The default sound when switching between menus.
+	 * The default sound when switching between menus. Set to null to disable
 	 */
 	@Getter
 	@Setter
+	@Nullable
 	private static SimpleSound sound = new SimpleSound(CompSound.NOTE_STICKS.getSound(), .4F);
 
 	/**
@@ -443,7 +444,8 @@ public abstract class Menu {
 		}
 
 		// Play the pop sound
-		sound.play(player);
+		if (sound != null)
+			sound.play(player);
 
 		// Register previous menu if exists
 		{
@@ -838,6 +840,22 @@ public abstract class Menu {
 	 * by default
 	 */
 	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor, InventoryAction action) {
+		return this.isActionAllowed(location, slot, clicked, cursor);
+	}
+
+	/**
+	 * Should we prevent the click or drag?
+	 *
+	 * @param location the click location
+	 * @param slot     the slot
+	 * @param clicked  the clicked item
+	 * @param cursor   the cursor
+	 * @param action   the inventory action
+	 *
+	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
+	 * by default
+	 */
+	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor) {
 		return false;
 	}
 

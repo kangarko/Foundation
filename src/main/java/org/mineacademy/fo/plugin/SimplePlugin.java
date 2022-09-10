@@ -1054,7 +1054,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @return
 	 */
 	@Nullable
-	public final SimpleCommandGroup getMainCommand() {
+	public SimpleCommandGroup getMainCommand() {
 		return this.mainCommand;
 	}
 

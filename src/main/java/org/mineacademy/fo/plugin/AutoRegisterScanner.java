@@ -24,6 +24,7 @@ import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
+import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.tool.Tool;
@@ -108,6 +109,9 @@ final class AutoRegisterScanner {
 						|| PacketListener.class.isAssignableFrom(clazz)
 						|| DiscordListener.class.isAssignableFrom(clazz)) {
 
+					Valid.checkBoolean(!SimpleSubCommand.class.isAssignableFrom(clazz), "@AutoRegister cannot be used on sub command class: " + clazz + "! Rather write registerSubcommand(Class) in registerSubcommands()"
+							+ " method where Class is your own middle-men abstract class extending SimpleSubCommand that all of your subcommands extend.");
+
 					Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for it to be registered automatically (or via @AutoRegister)");
 
 					try {
@@ -141,7 +145,7 @@ final class AutoRegisterScanner {
 			}
 
 		// Register command groups later
-		registerCommandGroup(classes);
+		registerCommandGroups();
 	}
 
 	/*
@@ -217,7 +221,7 @@ final class AutoRegisterScanner {
 	/*
 	 * Registers command groups, automatically assuming the main command group from the main command label
 	 */
-	private static void registerCommandGroup(List<Class<?>> classes) {
+	private static void registerCommandGroups() {
 		boolean mainCommandGroupFound = false;
 
 		for (final SimpleCommandGroup group : registeredCommandGroups) {

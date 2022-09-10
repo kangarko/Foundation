@@ -10,7 +10,7 @@
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>6.0.10</version>
+	<version>6.1.4</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
@@ -49,14 +49,14 @@
 			<version>2.18.0</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<!-- The Spigot API -->
+		
+		<!-- The core Spigot-API -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.19.2-R0.1-SNAPSHOT</version>
 		</dependency>
-		
+				
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -65,8 +65,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>BentoBox</artifactId>
+			<version>1.20.1</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CitizensAPI</artifactId>
-			<version>2.0.29-b839</version>
+			<version>2.0.30-b879</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>

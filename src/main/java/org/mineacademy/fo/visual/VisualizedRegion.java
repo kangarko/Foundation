@@ -27,6 +27,12 @@ import lombok.Setter;
 public final class VisualizedRegion extends Region {
 
 	/**
+	 * @deprecated DOES NOT WORK, call new VisualizedRegion() instead
+	 */
+	@Deprecated
+	public final static VisualizedRegion EMPTY = null;
+
+	/**
 	 * A list of players who can see the particles, along with the particle color (requires {@link #particle} to be REDSTONE)
 	 */
 	private final StrictMap<Player, Color> viewers = new StrictMap<>();
@@ -214,6 +220,11 @@ public final class VisualizedRegion extends Region {
 	 * @return
 	 */
 	public static VisualizedRegion deserialize(final SerializedMap map) {
+
+		// Support loading an empty key with "{}" empty map
+		if (map.isEmpty())
+			return new VisualizedRegion();
+
 		Valid.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
 
 		final String name = map.getString("Name");

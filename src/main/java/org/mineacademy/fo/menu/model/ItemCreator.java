@@ -29,6 +29,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.model.SimpleEnchant;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
@@ -285,6 +286,16 @@ public final class ItemCreator {
 	/**
 	 * Add the given enchant to the item.
 	 *
+	 * @param enchant
+	 * @return
+	 */
+	public ItemCreator enchant(SimpleEnchant enchant) {
+		return this.enchant(enchant.getEnchant(), enchant.getLevel());
+	}
+
+	/**
+	 * Add the given enchant to the item.
+	 *
 	 * @param enchantment
 	 * @return
 	 */
@@ -303,6 +314,17 @@ public final class ItemCreator {
 		this.enchants.put(enchantment, level);
 
 		return this;
+	}
+
+	/**
+	 * @see #flags(CompItemFlag...)
+	 * @deprecated call {@link #flags(CompItemFlag...)} instead
+	 * @param flags
+	 * @return
+	 */
+	@Deprecated
+	public ItemCreator flag(CompItemFlag... flags) {
+		return this.flags(flags);
 	}
 
 	/**
@@ -488,6 +510,25 @@ public final class ItemCreator {
 	// ----------------------------------------------------------------------------------------
 	// Constructing items
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * @deprecated no longer needed, will simply return itself. Instead of calling "built().make()", now simple call "make()"
+	 * @return
+	 */
+	@Deprecated
+	public ItemCreator build() {
+		return this;
+	}
+
+	/**
+	 *
+	 * @deprecated simply returns {@link #make()} now, call that instead
+	 * @return
+	 */
+	@Deprecated
+	public ItemStack makeSurvival() {
+		return this.make();
+	}
 
 	/**
 	 * Make an unbreakable item with all attributes hidden, suitable for menu use.

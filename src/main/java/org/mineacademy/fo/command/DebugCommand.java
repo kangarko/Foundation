@@ -6,12 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
@@ -81,7 +79,7 @@ public final class DebugCommand extends SimpleSubCommand {
 				" Debug log generated " + TimeUtil.getFormattedDate(),
 				Common.consoleLine(),
 				"Plugin: " + SimplePlugin.getInstance().getDescription().getFullName(),
-				"Server Version: " + Bukkit.getName() + " " + MinecraftVersion.getServerVersion(),
+				"Server Version: " + Bukkit.getVersion(),
 				"Java: " + System.getProperty("java.version") + " (" + System.getProperty("java.specification.vendor") + "/" + System.getProperty("java.vm.vendor") + ")",
 				"OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"),
 				"Online mode: " + Bukkit.getOnlineMode(),
@@ -110,11 +108,11 @@ public final class DebugCommand extends SimpleSubCommand {
 					final YamlConfig config = YamlConfig.fromFile(file);
 					final YamlConfig copyConfig = YamlConfig.fromFile(copy);
 
-					for (final Map.Entry<String, Object> entry : config.getValues(true).entrySet()) {
-						final String key = entry.getKey();
+					for (final String key : config.getKeys(true)) {
+						final Object value = config.getObject(key);
 
 						if (!key.contains("MySQL"))
-							copyConfig.set(key, entry.getValue());
+							copyConfig.set(key, value);
 					}
 
 					copyConfig.save(copy);

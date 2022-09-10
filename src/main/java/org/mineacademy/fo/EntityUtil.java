@@ -60,7 +60,7 @@ public final class EntityUtil {
 	public static <T extends LivingEntity> T findNearestEntity(Location center, double range3D, Class<T> entityClass) {
 		final List<T> found = new ArrayList<>();
 
-		for (final Entity nearby : center.getWorld().getNearbyEntities(center, range3D, range3D, range3D))
+		for (final Entity nearby : Remain.getNearbyEntities(center, range3D))
 			if (nearby instanceof LivingEntity && entityClass.isAssignableFrom(nearby.getClass()))
 				found.add((T) nearby);
 

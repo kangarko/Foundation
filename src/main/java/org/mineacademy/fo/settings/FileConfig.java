@@ -35,6 +35,7 @@ import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -151,8 +152,11 @@ public abstract class FileConfig {
 	 *
 	 * @param deep
 	 * @return
+	 *
+	 * @deprecated it is recommended that you use getMap("") instead or for loop in getKeys(deep) and getMap(key) for each
+	 * 			   key and print out the results to console to understand the differences
 	 */
-	@NonNull
+	@Deprecated
 	public final Map<String, Object> getValues(boolean deep) {
 		return this.section.getValues(deep);
 	}
@@ -1179,7 +1183,13 @@ public abstract class FileConfig {
 				} else
 					this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
-				this.onLoad();
+				try {
+					this.onLoad();
+					this.onLoadFinish();
+
+				} catch (final EventHandledException ex) {
+					// Handled successfully in the polymorphism pipeline
+				}
 
 				if (this.shouldSave) {
 					this.loading = false;
@@ -1234,8 +1244,19 @@ public abstract class FileConfig {
 	/**
 	 * Called automatically when the configuration has been loaded, used to load your
 	 * fields in your class here.
+	 *
+	 * You can throw {@link EventHandledException} here to indicate to your child class to interrupt loading
 	 */
 	protected void onLoad() {
+	}
+
+	/**
+	 * @see #onLoad()
+	 *
+	 * @deprecated Renamed to {@link #onLoad()}, use that instead.
+	 */
+	@Deprecated
+	protected void onLoadFinish() {
 	}
 
 	/**
@@ -1264,7 +1285,12 @@ public abstract class FileConfig {
 				this.onPreSave();
 
 				if (this.canSaveFile()) {
-					this.onSave();
+
+					try {
+						this.onSave();
+					} catch (final EventHandledException ex) {
+						// Ignore, indicated that we exited polymorphism inheritance prematurely by intention
+					}
 
 					final File parent = file.getCanonicalFile().getParentFile();
 
@@ -1305,6 +1331,10 @@ public abstract class FileConfig {
 	 */
 	protected void onSave() {
 		final SerializedMap map = this.saveToMap();
+		final SerializedMap legacy = this.serialize();
+
+		if (legacy != null)
+			map.put(legacy);
 
 		if (map != null)
 			for (final Map.Entry<String, Object> entry : map.entrySet())
@@ -1337,6 +1367,17 @@ public abstract class FileConfig {
 	 * @return
 	 */
 	public SerializedMap saveToMap() {
+		return null;
+	}
+
+	/**
+	 * @see #saveToMap()
+	 * @deprecated renamed, override {@link #saveToMap()} instead
+	 *
+	 * @return
+	 */
+	@Deprecated
+	protected SerializedMap serialize() {
 		return null;
 	}
 
@@ -1466,16 +1507,6 @@ public abstract class FileConfig {
 	 */
 	public final boolean isEmpty() {
 		return this.section.isEmpty();
-	}
-
-	/**
-	 * @deprecated unused, see {@link #saveToMap()}
-	 *
-	 * @return
-	 */
-	@Deprecated
-	public final SerializedMap serialize() {
-		throw new RuntimeException("serialize() is no longer used, override saveToMap() and use it manually instead. If you absolutely must use serialize, call getMap(\"\").serialize()");
 	}
 
 	// ------------------------------------------------------------------------------------

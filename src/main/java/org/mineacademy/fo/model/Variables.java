@@ -67,7 +67,7 @@ public final class Variables {
 	 * Should we replace javascript placeholders from variables/ folder automatically?
 	 * Used internally to prevent race condition
 	 */
-	static boolean REPLACE_JAVASCRIPT = true;
+	volatile static boolean REPLACE_JAVASCRIPT = true;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Custom variables
@@ -240,67 +240,69 @@ public final class Variables {
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize) {
-		if (message == null || message.isEmpty())
-			return "";
+		synchronized (cache) {
+			if (message == null || message.isEmpty())
+				return "";
 
-		final String original = message;
-		final boolean senderIsPlayer = sender instanceof Player;
+			final String original = message;
+			final boolean senderIsPlayer = sender instanceof Player;
 
-		// Replace custom variables first
-		if (replacements != null && !replacements.isEmpty())
-			message = Replacer.replaceArray(message, replacements);
+			// Replace custom variables first
+			if (replacements != null && !replacements.isEmpty())
+				message = Replacer.replaceArray(message, replacements);
 
-		if (senderIsPlayer) {
+			if (senderIsPlayer) {
 
-			// Already cached ? Return.
-			final Map<String, String> cached = cache.get(sender.getName());
-			final String cachedVar = cached != null ? cached.get(message) : null;
+				// Already cached ? Return.
+				final Map<String, String> cached = cache.get(sender.getName());
+				final String cachedVar = cached != null ? cached.get(message) : null;
 
-			if (cachedVar != null)
-				return cachedVar;
-		}
-
-		// Custom placeholders
-		if (REPLACE_JAVASCRIPT) {
-			REPLACE_JAVASCRIPT = false;
-
-			try {
-				message = replaceJavascriptVariables0(message, sender, replacements);
-
-			} finally {
-				REPLACE_JAVASCRIPT = true;
+				if (cachedVar != null)
+					return cachedVar;
 			}
+
+			// Custom placeholders
+			if (REPLACE_JAVASCRIPT) {
+				REPLACE_JAVASCRIPT = false;
+
+				try {
+					message = replaceJavascriptVariables0(message, sender, replacements);
+
+				} finally {
+					REPLACE_JAVASCRIPT = true;
+				}
+			}
+
+			// PlaceholderAPI and MvdvPlaceholderAPI
+			if (senderIsPlayer)
+				message = HookManager.replacePlaceholders((Player) sender, message);
+
+			else if (sender instanceof DiscordSender)
+				message = HookManager.replacePlaceholders(((DiscordSender) sender).getOfflinePlayer(), message);
+
+			// Default
+			message = replaceHardVariables0(sender, message);
+
+			// Support the & color system and replacing variables in variables
+			if (!message.startsWith("[JSON]")) {
+				message = Common.colorize(message);
+
+				if (!original.equals(message) && ((message.contains("{") && message.contains("}")) || message.contains("%")))
+					return replace(message, sender, replacements, colorize);
+
+			}
+
+			if (senderIsPlayer) {
+				final Map<String, String> map = cache.get(sender.getName());
+
+				if (map != null)
+					map.put(original, message);
+				else
+					cache.put(sender.getName(), Common.newHashMap(original, message));
+			}
+
+			return message;
 		}
-
-		// PlaceholderAPI and MvdvPlaceholderAPI
-		if (senderIsPlayer)
-			message = HookManager.replacePlaceholders((Player) sender, message);
-
-		else if (sender instanceof DiscordSender)
-			message = HookManager.replacePlaceholders(((DiscordSender) sender).getOfflinePlayer(), message);
-
-		// Default
-		message = replaceHardVariables0(sender, message);
-
-		// Support the & color system and replacing variables in variables
-		if (!message.startsWith("[JSON]")) {
-			message = Common.colorize(message);
-
-			if (!original.equals(message) && ((message.contains("{") && message.contains("}")) || message.contains("%")))
-				return replace(message, sender, replacements, colorize);
-
-		}
-
-		if (senderIsPlayer) {
-			final Map<String, String> map = cache.get(sender.getName());
-
-			if (map != null)
-				map.put(original, message);
-			else
-				cache.put(sender.getName(), Common.newHashMap(original, message));
-		}
-
-		return message;
 	}
 
 	/*

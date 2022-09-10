@@ -6,11 +6,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -30,9 +28,9 @@ import javax.net.ssl.HttpsURLConnection;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 
 /**
  * bStats collects some data for plugin authors.
@@ -120,7 +118,7 @@ public class Metrics {
 	}
 
 	private void appendPlatformData(JsonObjectBuilder builder) {
-		builder.appendField("playerAmount", this.getPlayerAmount());
+		builder.appendField("playerAmount", Remain.getOnlinePlayers().size());
 		builder.appendField("onlineMode", Bukkit.getOnlineMode() ? 1 : 0);
 		builder.appendField("bukkitVersion", Bukkit.getVersion());
 		builder.appendField("bukkitName", Bukkit.getName());
@@ -133,21 +131,6 @@ public class Metrics {
 
 	private void appendServiceData(JsonObjectBuilder builder) {
 		builder.appendField("pluginVersion", SimplePlugin.getVersion());
-	}
-
-	private int getPlayerAmount() {
-		try {
-			// Around MC 1.8 the return type was changed from an array to a collection,
-			// This fixes java.lang.NoSuchMethodError:
-			// org.bukkit.Bukkit.getOnlinePlayers()Ljava/util/Collection;
-			final Method onlinePlayersMethod = Class.forName("org.bukkit.Server").getMethod("getOnlinePlayers");
-			return onlinePlayersMethod.getReturnType().equals(Collection.class)
-					? ((Collection<?>) onlinePlayersMethod.invoke(Bukkit.getServer())).size()
-					: ((Player[]) onlinePlayersMethod.invoke(Bukkit.getServer())).length;
-		} catch (final Exception e) {
-			// Just use the new method if the reflection failed
-			return Bukkit.getOnlinePlayers().size();
-		}
 	}
 
 	public static class MetricsBase {
