@@ -59,7 +59,7 @@ public class SkullCreator {
 	 * @return The head of the Player.
 	 *
 	 */
-	public static ItemStack itemFromName(String name) {
+	public static ItemStack itemFromName(final String name) {
 		return itemWithName(createSkull(), name);
 	}
 
@@ -69,7 +69,7 @@ public class SkullCreator {
 	 * @param id The Player's UUID.
 	 * @return The head of the Player.
 	 */
-	public static ItemStack itemFromUuid(UUID id) {
+	public static ItemStack itemFromUuid(final UUID id) {
 		return itemWithUuid(createSkull(), id);
 	}
 
@@ -79,7 +79,7 @@ public class SkullCreator {
 	 * @param url The Mojang URL.
 	 * @return The head of the Player.
 	 */
-	public static ItemStack itemFromUrl(String url) {
+	public static ItemStack itemFromUrl(final String url) {
 		return itemWithUrl(createSkull(), url);
 	}
 
@@ -89,7 +89,7 @@ public class SkullCreator {
 	 * @param base64 The Mojang URL.
 	 * @return The head of the Player.
 	 */
-	public static ItemStack itemFromBase64(String base64) {
+	public static ItemStack itemFromBase64(final String base64) {
 		return itemWithBase64(createSkull(), base64);
 	}
 
@@ -100,7 +100,7 @@ public class SkullCreator {
 	 * @param name The Player's name.
 	 * @return The head of the Player.
 	 */
-	public static ItemStack itemWithName(@NonNull ItemStack item, @NonNull String name) {
+	public static ItemStack itemWithName(@NonNull final ItemStack item, @NonNull final String name) {
 		final SkullMeta meta = (SkullMeta) item.getItemMeta();
 
 		meta.setOwner(name);
@@ -116,7 +116,7 @@ public class SkullCreator {
 	 * @param id   The Player's UUID.
 	 * @return The head of the Player.
 	 */
-	public static ItemStack itemWithUuid(@NonNull ItemStack item, @NonNull UUID id) {
+	public static ItemStack itemWithUuid(@NonNull final ItemStack item, @NonNull final UUID id) {
 		final SkullMeta meta = (SkullMeta) item.getItemMeta();
 
 		try {
@@ -138,7 +138,7 @@ public class SkullCreator {
 	 * @param url  The URL of the Mojang skin.
 	 * @return The head associated with the URL.
 	 */
-	public static ItemStack itemWithUrl(@NonNull ItemStack item, @NonNull String url) {
+	public static ItemStack itemWithUrl(@NonNull final ItemStack item, @NonNull final String url) {
 		return itemWithBase64(item, urlToBase64(url));
 	}
 
@@ -149,7 +149,7 @@ public class SkullCreator {
 	 * @param base64 The base64 string containing the texture.
 	 * @return The head with a custom texture.
 	 */
-	public static ItemStack itemWithBase64(@NonNull ItemStack item, @NonNull String base64) {
+	public static ItemStack itemWithBase64(@NonNull final ItemStack item, @NonNull final String base64) {
 		if (!(item.getItemMeta() instanceof SkullMeta))
 			return null;
 
@@ -169,7 +169,7 @@ public class SkullCreator {
 	 * @param url The URL of the Mojang skin.
 	 * @return
 	 */
-	public static SkullMeta metaWithUrl(@NonNull SkullMeta meta, @NonNull String url) {
+	public static SkullMeta metaWithUrl(@NonNull final SkullMeta meta, @NonNull final String url) {
 		final String base64 = urlToBase64(url);
 
 		mutateItemMeta(meta, base64);
@@ -183,10 +183,11 @@ public class SkullCreator {
 	 * @param block The block to set.
 	 * @param id    The player to set it to.
 	 */
-	public static void blockWithUuid(@NonNull Block block, @NonNull UUID id) {
+	public static void blockWithUuid(@NonNull final Block block, @NonNull final UUID id) {
 		setToSkull(block);
 
 		final Skull state = (Skull) block.getState();
+		state.setRawData((byte) 0x1);
 
 		try {
 			state.setOwningPlayer(Remain.getOfflinePlayerByUUID(id));
@@ -204,7 +205,7 @@ public class SkullCreator {
 	 * @param block The block to set.
 	 * @param url   The mojang URL to set it to use.
 	 */
-	public static void blockWithUrl(@NonNull Block block, @NonNull String url) {
+	public static void blockWithUrl(@NonNull final Block block, @NonNull final String url) {
 		blockWithBase64(block, urlToBase64(url));
 	}
 
@@ -214,7 +215,7 @@ public class SkullCreator {
 	 * @param block  The block to set.
 	 * @param base64 The base64 to set it to use.
 	 */
-	public static void blockWithBase64(@NonNull Block block, @NonNull String base64) {
+	public static void blockWithBase64(@NonNull final Block block, @NonNull final String base64) {
 		setToSkull(block);
 
 		final Skull state = (Skull) block.getState();
@@ -223,7 +224,7 @@ public class SkullCreator {
 		state.update(false, false);
 	}
 
-	private static void setToSkull(Block block) {
+	private static void setToSkull(final Block block) {
 
 		try {
 			block.setType(Material.valueOf("PLAYER_HEAD"), false);
@@ -232,14 +233,15 @@ public class SkullCreator {
 			block.setType(Material.valueOf("SKULL"), false);
 			final Skull state = (Skull) block.getState();
 			state.setSkullType(SkullType.PLAYER);
+			state.setRawData((byte) 0x1);
 			state.update(false, false);
 		}
 	}
 
-	private static String urlToBase64(String url) {
+	private static String urlToBase64(final String url) {
 		Valid.checkBoolean(url.startsWith("http://") || url.startsWith("https://"), "URL for skull must start with http:// or https://, given: " + url);
 
-		URI actualUrl;
+		final URI actualUrl;
 		try {
 			actualUrl = new URI(url);
 		} catch (final URISyntaxException e) {
@@ -249,7 +251,7 @@ public class SkullCreator {
 		return Base64.getEncoder().encodeToString(toEncode.getBytes());
 	}
 
-	private static Object makeProfile(String b64) {
+	private static Object makeProfile(final String b64) {
 		// random uuid based on the b64 string
 		final UUID id = new UUID(
 				b64.substring(b64.length() - 20).hashCode(),
@@ -275,7 +277,7 @@ public class SkullCreator {
 		}
 	}
 
-	private static void mutateBlockState(Skull block, String b64) {
+	private static void mutateBlockState(final Skull block, final String b64) {
 		try {
 			if (blockProfileField == null) {
 				blockProfileField = block.getClass().getDeclaredField("profile");
@@ -287,7 +289,7 @@ public class SkullCreator {
 		}
 	}
 
-	private static void mutateItemMeta(SkullMeta meta, String b64) {
+	private static void mutateItemMeta(final SkullMeta meta, final String b64) {
 		try {
 			if (metaSetProfileMethod == null) {
 				metaSetProfileMethod = meta.getClass().getDeclaredMethod("setProfile", ReflectionUtil.lookupClass("com.mojang.authlib.GameProfile"));
