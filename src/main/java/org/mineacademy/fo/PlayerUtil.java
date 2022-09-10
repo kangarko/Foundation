@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +35,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.jsonsimple.JSONObject;
 import org.mineacademy.fo.jsonsimple.JSONParser;
@@ -64,6 +66,11 @@ public final class PlayerUtil {
 	 * Stores a list of currently pending title animation tasks to restore the tile to its original one
 	 */
 	private static final Map<UUID, BukkitTask> titleRestoreTasks = new ConcurrentHashMap<>();
+
+	/**
+	 * Stores temporarily saved player inventories, their health, attributes and other states
+	 */
+	private static final Map<UUID, SerializedMap> storedPlayerStates = new HashMap<>();
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Misc
@@ -329,7 +336,22 @@ public final class PlayerUtil {
 			if (cleanInventory) {
 				cleanInventoryAndFood(player);
 
-				player.resetMaxHealth();
+				try {
+					CompAttribute.GENERIC_MAX_HEALTH.set(player, 20);
+
+				} catch (final Throwable t) {
+					try {
+						player.setMaxHealth(20);
+
+					} catch (final Throwable tt) {
+
+						try {
+							player.resetMaxHealth();
+						} catch (final Throwable ttt) {
+							// Minecraft 1.2.5 lol
+						}
+					}
+				}
 
 				try {
 					player.setHealth(20);
@@ -438,6 +460,152 @@ public final class PlayerUtil {
 				return false;
 
 		return true;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Player states
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Set the players snapshot to be stored locally in the cache
+	 *
+	 * @param player
+	 */
+	public static void storeState(final Player player) {
+		Valid.checkBoolean(!hasStoredState(player), "Player " + player.getName() + " already has a stored state!");
+
+		final SerializedMap data = SerializedMap.ofArray(
+				"gameMode", player.getGameMode(),
+				"content", player.getInventory().getContents(),
+				"armorContent", player.getInventory().getArmorContents(),
+				"maxHealth", Remain.getMaxHealth(player),
+				"health", Remain.getHealth(player),
+				"healthScaled", player.isHealthScaled(),
+				"remainingAir", player.getRemainingAir(),
+				"maximumAir", player.getMaximumAir(),
+				"fallDistance", player.getFallDistance(),
+				"fireTicks", player.getFireTicks(),
+				"totalExp", player.getTotalExperience(),
+				"level", player.getLevel(),
+				"exp", player.getExp(),
+				"foodLevel", player.getFoodLevel(),
+				"exhaustion", player.getExhaustion(),
+				"saturation", player.getSaturation(),
+				"flySpeed", player.getFlySpeed(),
+				"walkSpeed", player.getWalkSpeed(),
+				"potionEffects", player.getActivePotionEffects());
+
+		// Attributes
+		final Map<CompAttribute, Double> attributes = new HashMap<>();
+
+		for (final CompAttribute attribute : CompAttribute.values()) {
+			final Double value = attribute.get(player);
+
+			if (value != null)
+				attributes.put(attribute, value);
+		}
+
+		data.put("attributes", attributes);
+
+		// From now on we have to surround each method with try-catch since
+		// those are not available in older MC versions
+
+		try {
+			data.put("extraContent", player.getInventory().getExtraContents());
+		} catch (final Throwable t) {
+		}
+
+		try {
+			data.put("invulnerable", player.isInvulnerable());
+		} catch (final Throwable t) {
+		}
+
+		try {
+			data.put("silent", player.isSilent());
+		} catch (final Throwable t) {
+		}
+
+		try {
+			data.put("glowing", player.isGlowing());
+		} catch (final Throwable t) {
+		}
+
+		storedPlayerStates.put(player.getUniqueId(), data);
+	}
+
+	/**
+	 * Restores the player inventory and properties
+	 *
+	 * @param player
+	 */
+	public static void restoreState(final Player player) {
+		final SerializedMap data = storedPlayerStates.remove(player.getUniqueId());
+		Valid.checkNotNull(data, "Player " + player.getName() + " does not have a stored game state!");
+
+		player.setGameMode(data.get("gameMode", GameMode.class));
+		player.getInventory().setContents((ItemStack[]) data.getObject("content"));
+		player.getInventory().setArmorContents((ItemStack[]) data.getObject("armorContent"));
+		player.setMaxHealth(data.getInteger("maxHealth"));
+		player.setHealth(data.getInteger("health"));
+		player.setHealthScaled(data.getBoolean("healthScaled"));
+		player.setRemainingAir(data.getInteger("remainingAir"));
+		player.setMaximumAir(data.getInteger("maximumAir"));
+		player.setFallDistance(data.getFloat("fallDistance"));
+		player.setFireTicks(data.getInteger("fireTicks"));
+		player.setTotalExperience(data.getInteger("totalExp"));
+		player.setLevel(data.getInteger("level"));
+		player.setExp(data.getFloat("exp"));
+		player.setFoodLevel(data.getInteger("foodLevel"));
+		player.setExhaustion(data.getFloat("exhaustion"));
+		player.setSaturation(data.getFloat("saturation"));
+		player.setFlySpeed(data.getFloat("flySpeed"));
+		player.setWalkSpeed(data.getFloat("walkSpeed"));
+
+		// Remove old potion effects
+		for (final PotionEffect effect : player.getActivePotionEffects())
+			player.removePotionEffect(effect.getType());
+
+		// And add news
+		for (final PotionEffect effect : data.getList("potionEffects", PotionEffect.class))
+			player.addPotionEffect(effect);
+
+		// Attributes
+		final Map<CompAttribute, Double> attributes = (Map<CompAttribute, Double>) data.getObject("attributes");
+
+		for (final Entry<CompAttribute, Double> entry : attributes.entrySet())
+			entry.getKey().set(player, entry.getValue());
+
+		// From now on we have to surround each method with try-catch since
+		// those are not available in older MC versions
+
+		try {
+			player.getInventory().setExtraContents((ItemStack[]) data.getObject("extraContent"));
+		} catch (final Throwable t) {
+		}
+
+		try {
+			player.setInvulnerable(data.getBoolean("invulnerable"));
+		} catch (final Throwable t) {
+		}
+
+		try {
+			player.setSilent(data.getBoolean("silent"));
+		} catch (final Throwable t) {
+		}
+
+		try {
+			player.setGlowing(data.getBoolean("glowing"));
+		} catch (final Throwable t) {
+		}
+	}
+
+	/**
+	 * Return true if the player has a stored snapshot of inventory and properties
+	 *
+	 * @return
+	 */
+	public static boolean hasStoredState(Player player) {
+		return storedPlayerStates.containsKey(player.getUniqueId());
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
