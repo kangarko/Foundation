@@ -33,7 +33,7 @@ public final class IncomingMessage extends Message {
 	/**
 	 * The input we use to read our data array
 	 */
-	private final ByteArrayDataInput input;
+	private ByteArrayDataInput input;
 
 	/**
 	 * The internal stream
@@ -68,8 +68,13 @@ public final class IncomingMessage extends Message {
 
 		this.data = data;
 		this.stream = new ByteArrayInputStream(data);
-		this.input = ByteStreams.newDataInput(this.stream);
 
+		try {
+			this.input = ByteStreams.newDataInput(this.stream);
+
+		} catch (final Throwable t) {
+			this.input = ByteStreams.newDataInput(data);
+		}
 		// -----------------------------------------------------------------
 		// We are automatically reading the first two strings assuming the
 		// first is the senders server name and the second is the action
