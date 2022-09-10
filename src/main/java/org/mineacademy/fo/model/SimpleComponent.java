@@ -862,7 +862,11 @@ public final class SimpleComponent implements ConfigSerializable {
 					part.setClickEvent(this.clickEvent);
 
 				if (this.insertion != null)
-					part.setInsertion(this.insertion);
+					try {
+						part.setInsertion(this.insertion);
+					} catch (final Throwable t) {
+						// Unsupported MC version
+					}
 			}
 
 			return new TextComponent(base.toArray(new BaseComponent[base.size()]));
