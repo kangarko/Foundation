@@ -49,14 +49,14 @@
 			<version>2.18.0</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<!-- The Spigot API -->
+		
+		<!-- The core Spigot-API -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.19.2-R0.1-SNAPSHOT</version>
 		</dependency>
-		
+				
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
