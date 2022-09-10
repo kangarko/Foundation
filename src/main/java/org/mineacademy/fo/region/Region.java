@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -310,6 +312,21 @@ public class Region implements ConfigSerializable {
 	 */
 	public final void setLocation(Location location, ClickType click) {
 		this.setLocation(location, click, false);
+	}
+
+	/**
+	 * Sets the primary and/or secondary locations points if they are not
+	 * null.
+	 *
+	 * @param primary
+	 * @param secondary
+	 */
+	public final void updateLocation(@Nullable Location primary, @Nullable Location secondary) {
+		if (primary != null)
+			this.setPrimary(primary);
+
+		if (secondary != null)
+			this.setSecondary(secondary);
 	}
 
 	/**
