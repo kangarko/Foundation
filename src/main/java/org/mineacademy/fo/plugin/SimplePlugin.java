@@ -227,14 +227,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				&& !version.contains("NachoSpigot")
 				&& !version.contains("-Spigot")
 				&& MinecraftVersion.atLeast(V.v1_8)) {
-			Bukkit.getLogger().severe(Common.consoleLine());
-			Bukkit.getLogger().warning("Warning about " + named + ": You're not using Paper!");
-			Bukkit.getLogger().warning("Detected: " + version);
-			Bukkit.getLogger().warning("");
-			Bukkit.getLogger().warning("Third party forks are known to alter server in unwanted");
-			Bukkit.getLogger().warning("ways. If you have issues with " + named + " use Paper");
-			Bukkit.getLogger().warning("from PaperMC.io otherwise you may not receive our support.");
-			Bukkit.getLogger().severe(Common.consoleLine());
+			this.getLogger().warning(Common.consoleLine());
+			this.getLogger().warning("Warning about " + named + ": You're not using Paper!");
+			this.getLogger().warning("Detected: " + version);
+			this.getLogger().warning("");
+			this.getLogger().warning("Third party forks are known to alter server in unwanted");
+			this.getLogger().warning("ways. If you have issues with " + named + " use Paper");
+			this.getLogger().warning("from PaperMC.io otherwise you may not receive our support.");
+			this.getLogger().warning(Common.consoleLine());
 		}
 
 		// Load libraries where Spigot does not do this automatically
@@ -249,7 +249,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		// Disabled upstream
 		if (!this.canLoad) {
-			Bukkit.getLogger().severe("Not loading, the plugin is disabled (look for console errors above)");
+			this.getLogger().severe("Not loading, the plugin is disabled (look for console errors above)");
 
 			return;
 		}
