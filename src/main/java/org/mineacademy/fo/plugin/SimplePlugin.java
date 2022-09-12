@@ -55,6 +55,7 @@ import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleHologram;
+import org.mineacademy.fo.model.SimpleProtectionListener;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -362,6 +363,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 				this.reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
+
+			if (SimpleProtectionListener.countListeners() > 0)
+				this.reloadables.registerEvents(SimpleProtectionListener.ProtectionEvents.getInstance());
 
 			// Prepare Nashorn engine
 			JavaScriptExecutor.run("");
@@ -790,8 +794,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			this.unregisterReloadables();
 
-			FileConfig.clearLoadedSections();
-
 			// Load our dependency system
 			try {
 				HookManager.loadDependencies();
@@ -834,6 +836,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				this.reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
+			if (SimpleProtectionListener.countListeners() > 0)
+				this.reloadables.registerEvents(SimpleProtectionListener.ProtectionEvents.getInstance());
+
 			Common.log(Common.consoleLineSmooth());
 
 		} catch (final Throwable t) {
@@ -852,6 +857,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		BlockVisualizer.stopAll();
 		FolderWatcher.stopThreads();
+
+		FileConfig.clearLoadedSections();
+		SimpleProtectionListener.clearListeners();
 
 		try {
 			if (HookManager.isDiscordSRVLoaded())

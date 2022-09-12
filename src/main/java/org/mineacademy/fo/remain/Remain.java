@@ -36,6 +36,7 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
@@ -2357,6 +2358,34 @@ public final class Remain {
 			for (final Entity nearby : event.getEntity().getNearbyEntities(radius, radius, radius))
 				if (nearby instanceof LivingEntity)
 					return (LivingEntity) nearby;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Attempts to resolve the hit block from projectile hit event
+	 *
+	 * @param event
+	 * @return
+	 */
+	public static Block getHitBlock(ProjectileHitEvent event) {
+		try {
+			return event.getHitBlock();
+
+		} catch (final Throwable t) {
+
+			final Block entityBlock = event.getEntity().getLocation().getBlock();
+
+			if (!CompMaterial.isAir(entityBlock))
+				return entityBlock;
+
+			for (final BlockFace face : Arrays.asList(BlockFace.UP, BlockFace.DOWN, BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH)) {
+				final Block adjucentBlock = entityBlock.getRelative(face);
+
+				if (!CompMaterial.isAir(adjucentBlock))
+					return adjucentBlock;
+			}
 		}
 
 		return null;
