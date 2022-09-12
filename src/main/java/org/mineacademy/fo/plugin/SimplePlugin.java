@@ -229,12 +229,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				&& !version.contains("-Spigot")
 				&& MinecraftVersion.atLeast(V.v1_8)) {
 			this.getLogger().warning(Common.consoleLine());
-			this.getLogger().warning("Warning about " + named + ": You're not using Paper!");
+			this.getLogger().warning("You're not using Paper!");
 			this.getLogger().warning("Detected: " + version);
 			this.getLogger().warning("");
-			this.getLogger().warning("Third party forks are known to alter server in unwanted");
-			this.getLogger().warning("ways. If you have issues with " + named + " use Paper");
-			this.getLogger().warning("from PaperMC.io otherwise you may not receive our support.");
+			this.getLogger().warning("Third party forks are known to alter server in unwanted ways.");
+			this.getLogger().warning("If you experience issues with " + named + ", download Paper");
+			this.getLogger().warning("from PaperMC.io, otherwise you may not receive support.");
 			this.getLogger().warning(Common.consoleLine());
 		}
 
