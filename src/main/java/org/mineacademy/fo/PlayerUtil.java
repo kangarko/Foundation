@@ -22,6 +22,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -63,6 +64,12 @@ public final class PlayerUtil {
 	public static final int USABLE_PLAYER_INV_SIZE = 36;
 
 	/**
+	 * Stores block faces to use for later conversion
+	 */
+	private static final BlockFace[] FACE_AXIS = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
+	private static final BlockFace[] FACE_RADIAL = { BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST };
+
+	/**
 	 * Stores a list of currently pending title animation tasks to restore the tile to its original one
 	 */
 	private static final Map<UUID, BukkitTask> titleRestoreTasks = new ConcurrentHashMap<>();
@@ -94,6 +101,53 @@ public final class PlayerUtil {
 	 */
 	public static int getPing(final Player player) {
 		return Remain.getPing(player);
+	}
+
+	/**
+	 * Converts where the player is looking into a block face
+	 * Source: https://bukkit.org/threads/400099/
+	 *
+	 * @param player
+	 * @param useSubDirections
+	 * @return
+	 */
+	public BlockFace getBlockFace(Player player, boolean useSubDirections) {
+		return getBlockFace(player.getLocation().getYaw(), useSubDirections);
+	}
+
+	/**
+	 * Converts the given yaw into a block face
+	 * Source: https://bukkit.org/threads/400099/
+	 *
+	 * @param yaw
+	 * @param useSubDirections
+	 * @return
+	 */
+	public BlockFace getBlockFace(float yaw, boolean useSubDirections) {
+		if (useSubDirections)
+			return FACE_RADIAL[Math.round(yaw / 45f) & 0x7].getOppositeFace();
+
+		return FACE_AXIS[Math.round(yaw / 90f) & 0x3].getOppositeFace();
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Statistics
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return the total amount of time the player has spent on the server.
+	 * This will get reset if you delete the playerdata folder inside your main world folder.
+	 *
+	 * **For Minecraft 1.12 and older this returns a tick value, otherwise this returns the
+	 * amount of minutes!**
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static long getPlayTimeTicksOrSeconds(OfflinePlayer player) {
+		final Statistic playTime = Remain.getPlayTimeStatisticName();
+
+		return getStatistic(player, playTime);
 	}
 
 	/**
@@ -146,22 +200,6 @@ public final class PlayerUtil {
 		}
 
 		return statistics;
-	}
-
-	/**
-	 * Return the total amount of time the player has spent on the server.
-	 * This will get reset if you delete the playerdata folder inside your main world folder.
-	 *
-	 * **For Minecraft 1.12 and older this returns a tick value, otherwise this returns the
-	 * amount of minutes!**
-	 *
-	 * @param player
-	 * @return
-	 */
-	public static long getPlayTimeTicksOrSeconds(OfflinePlayer player) {
-		final Statistic playTime = Remain.getPlayTimeStatisticName();
-
-		return getStatistic(player, playTime);
 	}
 
 	/**
