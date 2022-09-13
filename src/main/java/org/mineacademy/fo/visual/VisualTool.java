@@ -98,7 +98,7 @@ public abstract class VisualTool extends BlockTool {
 	 * @see org.mineacademy.fo.menu.tool.Tool#onHotbarFocused(org.bukkit.entity.Player)
 	 */
 	@Override
-	protected final void onHotbarFocused(final Player player) {
+	protected void onHotbarFocused(final Player player) {
 		this.visualize(player);
 	}
 
@@ -106,7 +106,7 @@ public abstract class VisualTool extends BlockTool {
 	 * @see org.mineacademy.fo.menu.tool.Tool#onHotbarDefocused(org.bukkit.entity.Player)
 	 */
 	@Override
-	protected final void onHotbarDefocused(final Player player) {
+	protected void onHotbarDefocused(final Player player) {
 		this.stopVisualizing(player);
 	}
 
