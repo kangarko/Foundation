@@ -147,6 +147,20 @@ public abstract class MenuTools extends Menu {
 	}
 
 	/**
+	 * Compiles an automated tools menu and shows to player.
+	 *
+	 * @param player
+	 * @param pluginToolClasses We will scan your plugin for this kind of class and
+	 *                          all classes extending it will be loaded into the
+	 *                          menu
+	 * @param description       the menu description
+	 * @return
+	 */
+	public static final void display(final Player player, final Class<? extends Tool> pluginToolClasses, final String... description) {
+		of(pluginToolClasses, description).displayTo(player);
+	}
+
+	/**
 	 * Compiles an automated tools menu.
 	 *
 	 * @param pluginToolClasses We will scan your plugin for this kind of class and
