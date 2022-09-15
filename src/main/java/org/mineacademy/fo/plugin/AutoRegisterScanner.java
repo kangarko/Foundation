@@ -34,7 +34,6 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.PacketListener;
 import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.model.SimpleExpansion;
-import org.mineacademy.fo.model.SimpleProtectionListener;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
@@ -360,10 +359,7 @@ final class AutoRegisterScanner {
 			// Automatically registered in its constructor that is called when we find instance
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
-		else if (SimpleProtectionListener.class.isAssignableFrom(clazz)) {
-			// Automatically registered in its constructor that is called when we find instance
-
-		} else if (instance instanceof Listener) {
+		else if (instance instanceof Listener) {
 			// Pass-through to register events later
 		}
 
