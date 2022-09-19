@@ -39,6 +39,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
@@ -721,6 +722,66 @@ public final class Remain {
 			} catch (final ReflectiveOperationException ex) {
 				ex.printStackTrace();
 			}
+	}
+
+	/**
+	 * This will attempt to place a bed block to the initial block and the other head block in the facing direction
+	 *
+	 * Use {@link PlayerUtil#getFacing(Player)} to get where a player is looking at
+	 *
+	 * @param initialLocation
+	 * @param facing
+	 */
+	public static void setBed(Location initialLocation, BlockFace facing) {
+		setBed(initialLocation.getBlock(), facing);
+	}
+
+	/**
+	 * This will attempt to place a bed block to the initial block and the other head block in the facing direction
+	 *
+	 * Use {@link PlayerUtil#getFacing(Player)} to get where a player is looking at
+	 *
+	 * @param initialBlock
+	 * @param facing
+	 */
+	public static void setBed(Block initialBlock, BlockFace facing) {
+
+		if (MinecraftVersion.atLeast(V.v1_13))
+			for (final Bed.Part part : Bed.Part.values()) {
+				initialBlock.setBlockData(Bukkit.createBlockData(CompMaterial.WHITE_BED.getMaterial(), data -> {
+					((Bed) data).setPart(part);
+					((Bed) data).setFacing(facing);
+				}));
+
+				initialBlock = initialBlock.getRelative(facing.getOppositeFace());
+			}
+
+		else {
+			initialBlock = initialBlock.getRelative(facing);
+
+			Material bedMaterial = Material.valueOf("BED_BLOCK");
+			Block bedFootBlock = initialBlock.getRelative(facing.getOppositeFace());
+
+			BlockState bedFootState = bedFootBlock.getState();
+			bedFootState.setType(bedMaterial);
+
+			org.bukkit.material.Bed bedFootData = new org.bukkit.material.Bed(bedMaterial);
+			bedFootData.setHeadOfBed(false);
+			bedFootData.setFacingDirection(facing);
+
+			bedFootState.setData(bedFootData);
+			bedFootState.update(true);
+
+			BlockState bedHeadState = initialBlock.getState();
+			bedHeadState.setType(bedMaterial);
+
+			org.bukkit.material.Bed bedHeadData = new org.bukkit.material.Bed(bedMaterial);
+			bedHeadData.setHeadOfBed(true);
+			bedHeadData.setFacingDirection(facing);
+
+			bedHeadState.setData(bedHeadData);
+			bedHeadState.update(true);
+		}
 	}
 
 	/**
