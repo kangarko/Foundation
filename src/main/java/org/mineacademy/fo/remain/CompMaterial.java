@@ -1797,6 +1797,26 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Returns true if the given material is a bed block (any color) or a bed item.
+	 *
+	 * @param block
+	 * @return
+	 */
+	public static boolean isBed(final Block block) {
+		return isBed(block.getType());
+	}
+
+	/**
+	 * Returns true if the given material is a bed block (any color) or a bed item.
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static boolean isBed(final Material mat) {
+		return nameEquals(mat, "BED", "BED_BLOCK") || nameContains(mat, "_BED");
+	}
+
+	/**
 	 * Returns true if the given material is a horse armor (prev. named barding).
 	 *
 	 * @param mat
