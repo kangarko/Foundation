@@ -3,9 +3,7 @@
 	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
 	owner of the MineAcademy.org End User License then you may use it for your 
 	own use in plugins but not for any other purpose. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.mineacademy</groupId>
@@ -33,7 +31,7 @@
 	</repositories>
 
 	<dependencies>
-	
+
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -49,14 +47,14 @@
 			<version>2.18.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- The core Spigot-API -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
 			<version>1.19.2-R0.1-SNAPSHOT</version>
 		</dependency>
-				
+
 		<!-- MineAcademy guaranteed availability repos for plugins -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -67,7 +65,7 @@
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>BentoBox</artifactId>
 			<version>1.20.1</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CitizensAPI</artifactId>
@@ -137,7 +135,7 @@
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>SimpleClans</artifactId>
 			<version>2.16.2-SNAPSHOT-283</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>Towny</artifactId>
@@ -181,22 +179,22 @@
 				</configuration>
 			</plugin>
 			<plugin>
-			    <groupId>org.projectlombok</groupId>
-			    <artifactId>lombok-maven-plugin</artifactId>
-			    <version>1.18.20.0</version>
-			    <configuration>
-			        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-			        <outputDirectory>${delombok.output}</outputDirectory>
-			        <addOutputDirectory>false</addOutputDirectory>
-			    </configuration>
-			    <executions>
-			        <execution>
-			            <phase>generate-sources</phase>
-			            <goals>
-			                <goal>delombok</goal>
-			            </goals>
-			        </execution>
-			    </executions>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok-maven-plugin</artifactId>
+				<version>1.18.20.0</version>
+				<configuration>
+					<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+					<outputDirectory>${delombok.output}</outputDirectory>
+					<addOutputDirectory>false</addOutputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>delombok</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
