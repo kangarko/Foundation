@@ -994,7 +994,18 @@ public abstract class FileConfig {
 		if (exists)
 			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
 				final Key key = SerializeUtil.deserialize(this.mode, keyType, entry.getKey());
-				final Value value = SerializeUtil.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
+				final Value value;
+
+				if (LocationList.class.isAssignableFrom(valueType)) {
+					final List<?> list = SerializeUtil.deserialize(this.mode, List.class, entry.getValue());
+					final List<Location> copy = new ArrayList<>();
+
+					list.forEach(locationRaw -> copy.add(SerializeUtil.deserializeLocation(locationRaw)));
+
+					value = (Value) new LocationList(this, copy);
+
+				} else
+					value = SerializeUtil.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
 
 				// Ensure the pair values are valid for the given paramenters
 				this.checkAssignable(path, key, keyType);
