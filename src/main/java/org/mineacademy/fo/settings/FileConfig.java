@@ -1638,6 +1638,10 @@ public abstract class FileConfig {
 		private final FileConfig settings;
 		private final List<Location> points;
 
+		public LocationList(final FileConfig settings) {
+			this(settings, new ArrayList<>());
+		}
+
 		private LocationList(final FileConfig settings, final List<Location> points) {
 			this.settings = settings;
 			this.points = points;
