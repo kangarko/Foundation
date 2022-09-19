@@ -119,18 +119,7 @@ public final class SerializeUtil {
 		if (serializers.containsKey(object.getClass()))
 			return serializers.get(object.getClass()).apply(object);
 
-		if (object instanceof ConfigurationSerializable) {
-
-			if (isJson) {
-				if (object instanceof ItemStack)
-					return JsonItemStack.toJson((ItemStack) object);
-
-				throw new FoException("serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
-			}
-
-			return object;
-
-		} else if (object instanceof ConfigSerializable)
+		if (object instanceof ConfigSerializable)
 			return serialize(mode, ((ConfigSerializable) object).serialize().serialize());
 
 		else if (object instanceof StrictCollection)
@@ -319,6 +308,19 @@ public final class SerializeUtil {
 			final BigDecimal big = (BigDecimal) object;
 
 			return big.toPlainString();
+		}
+
+		else if (object instanceof ConfigurationSerializable) {
+
+			if (isJson) {
+				if (object instanceof ItemStack)
+					return JsonItemStack.toJson((ItemStack) object);
+
+				throw new FoException("serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
+			}
+
+			return object;
+
 		}
 
 		throw new SerializeFailedException("Does not know how to serialize " + object.getClass().getSimpleName() + "! Does it extends ConfigSerializable? Data: " + object);
