@@ -108,11 +108,22 @@ public final class PlayerUtil {
 	 * Source: https://bukkit.org/threads/400099/
 	 *
 	 * @param player
+	 * @return
+	 */
+	public static BlockFace getFacing(Player player) {
+		return getFacing(player.getLocation().getYaw(), false);
+	}
+
+	/**
+	 * Converts where the player is looking into a block face
+	 * Source: https://bukkit.org/threads/400099/
+	 *
+	 * @param player
 	 * @param useSubDirections
 	 * @return
 	 */
-	public BlockFace getBlockFace(Player player, boolean useSubDirections) {
-		return getBlockFace(player.getLocation().getYaw(), useSubDirections);
+	public static BlockFace getFacing(Player player, boolean useSubDirections) {
+		return getFacing(player.getLocation().getYaw(), useSubDirections);
 	}
 
 	/**
@@ -123,7 +134,7 @@ public final class PlayerUtil {
 	 * @param useSubDirections
 	 * @return
 	 */
-	public BlockFace getBlockFace(float yaw, boolean useSubDirections) {
+	public static BlockFace getFacing(float yaw, boolean useSubDirections) {
 		if (useSubDirections)
 			return FACE_RADIAL[Math.round(yaw / 45f) & 0x7].getOppositeFace();
 
