@@ -1708,18 +1708,16 @@ class AdvancedVanishHook {
 		final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "INSTANCE");
 
 		if (vanished) {
-			if (!isVanished(player)) {
+			if (!this.isVanished(player)) {
 				final Method vanishPlayer = ReflectionUtil.getMethod(clazz, "vanishPlayer", Player.class, boolean.class);
 
 				ReflectionUtil.invoke(vanishPlayer, instance, player, false);
 			}
 
-		} else {
-			if (isVanished(player)) {
-				final Method unVanishPlayer = ReflectionUtil.getMethod(clazz, "unVanishPlayer", Player.class, boolean.class);
+		} else if (this.isVanished(player)) {
+			final Method unVanishPlayer = ReflectionUtil.getMethod(clazz, "unVanishPlayer", Player.class, boolean.class);
 
-				ReflectionUtil.invoke(unVanishPlayer, instance, player, false);
-			}
+			ReflectionUtil.invoke(unVanishPlayer, instance, player, false);
 		}
 	}
 }
@@ -3588,16 +3586,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
