@@ -467,8 +467,8 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	@Override
 	public ItemStack getItemAt(final int slot) {
-		if (slots.contains(slot) && slots.indexOf(slot) < getCurrentPageItems().size()) {
-			final T object = getCurrentPageItems().get(slots.indexOf(slot));
+		if (this.slots.contains(slot) && this.slots.indexOf(slot) < this.getCurrentPageItems().size()) {
+			final T object = this.getCurrentPageItems().get(this.slots.indexOf(slot));
 
 			if (object != null)
 				return this.convertToItemStack(object);
@@ -508,8 +508,8 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	@Override
 	public final void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
-		if (slots.contains(slot) && slots.indexOf(slot) < getCurrentPageItems().size()) {
-			final T obj = getCurrentPageItems().get(slots.indexOf(slot));
+		if (this.slots.contains(slot) && this.slots.indexOf(slot) < this.getCurrentPageItems().size()) {
+			final T obj = this.getCurrentPageItems().get(this.slots.indexOf(slot));
 
 			if (obj != null) {
 				final val prevType = player.getOpenInventory().getType();

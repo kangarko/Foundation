@@ -759,23 +759,23 @@ public final class Remain {
 		else {
 			initialBlock = initialBlock.getRelative(facing);
 
-			Material bedMaterial = Material.valueOf("BED_BLOCK");
-			Block bedFootBlock = initialBlock.getRelative(facing.getOppositeFace());
+			final Material bedMaterial = Material.valueOf("BED_BLOCK");
+			final Block bedFootBlock = initialBlock.getRelative(facing.getOppositeFace());
 
-			BlockState bedFootState = bedFootBlock.getState();
+			final BlockState bedFootState = bedFootBlock.getState();
 			bedFootState.setType(bedMaterial);
 
-			org.bukkit.material.Bed bedFootData = new org.bukkit.material.Bed(bedMaterial);
+			final org.bukkit.material.Bed bedFootData = new org.bukkit.material.Bed(bedMaterial);
 			bedFootData.setHeadOfBed(false);
 			bedFootData.setFacingDirection(facing);
 
 			bedFootState.setData(bedFootData);
 			bedFootState.update(true);
 
-			BlockState bedHeadState = initialBlock.getState();
+			final BlockState bedHeadState = initialBlock.getState();
 			bedHeadState.setType(bedMaterial);
 
-			org.bukkit.material.Bed bedHeadData = new org.bukkit.material.Bed(bedMaterial);
+			final org.bukkit.material.Bed bedHeadData = new org.bukkit.material.Bed(bedMaterial);
 			bedHeadData.setHeadOfBed(true);
 			bedHeadData.setFacingDirection(facing);
 
