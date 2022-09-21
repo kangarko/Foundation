@@ -102,6 +102,15 @@ public abstract class RandomNoRepeatPicker<T> {
 	}
 
 	/**
+	 * Return the remaining count of elements
+	 *
+	 * @return
+	 */
+	public int remaining() {
+		return this.list.size();
+	}
+
+	/**
 	 * Should return true if the player can obtain the given item
 	 *
 	 * @param player
