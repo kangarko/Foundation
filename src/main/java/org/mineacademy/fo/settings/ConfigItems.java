@@ -3,8 +3,9 @@ package org.mineacademy.fo.settings;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -222,7 +223,9 @@ public final class ConfigItems<T extends YamlConfig> {
 					nameConstructor = false;
 				}
 
-				Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()), "Your class " + prototypeClass + " must have private constructor taking a String or nothing!");
+				Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()) || Modifier.isProtected(constructor.getModifiers()),
+						"Your class " + prototypeClass + " must have a private or protected constructor taking a String or nothing!");
+
 				constructor.setAccessible(true);
 
 				try {
@@ -306,8 +309,8 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @return
 	 */
-	public Collection<T> getItems() {
-		return Collections.unmodifiableCollection(this.loadedItemsMap.values());
+	public List<T> getItems() {
+		return Collections.unmodifiableList(new ArrayList<>(this.loadedItemsMap.values()));
 	}
 
 	/**
