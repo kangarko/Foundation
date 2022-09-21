@@ -10,6 +10,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.menu.model.ItemCreator;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ public enum CompEquipmentSlot {
 	 * @param item
 	 */
 	public void applyTo(LivingEntity entity, ItemStack item) {
-		this.applyTo(entity, null);
+		this.applyTo(entity, item, null);
 	}
 
 	/**
@@ -61,58 +62,60 @@ public enum CompEquipmentSlot {
 	 * @param dropChance
 	 */
 	public void applyTo(LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
-		final EntityEquipment equip = entity.getEquipment();
+		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
+		Valid.checkNotNull(equipment);
+
 		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND");
 
 		switch (this) {
 
 			case HAND:
-				equip.setItemInHand(item);
+				equipment.setItemInHand(item);
 
 				if (dropChance != null && !lacksDropChance)
-					equip.setItemInHandDropChance(dropChance.floatValue());
+					equipment.setItemInHandDropChance(dropChance.floatValue());
 
 				break;
 
 			case OFF_HAND:
 				Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_9), "Setting off hand item requires Minecraft 1.9+");
 
-				equip.setItemInOffHand(item);
+				equipment.setItemInOffHand(item);
 
 				if (dropChance != null && !lacksDropChance)
-					equip.setItemInOffHandDropChance(dropChance.floatValue());
+					equipment.setItemInOffHandDropChance(dropChance.floatValue());
 
 				break;
 
 			case HEAD:
-				equip.setHelmet(item);
+				equipment.setHelmet(item);
 
 				if (dropChance != null && !lacksDropChance)
-					equip.setHelmetDropChance(dropChance.floatValue());
+					equipment.setHelmetDropChance(dropChance.floatValue());
 
 				break;
 
 			case CHEST:
-				equip.setChestplate(item);
+				equipment.setChestplate(item);
 
 				if (dropChance != null && !lacksDropChance)
-					equip.setChestplateDropChance(dropChance.floatValue());
+					equipment.setChestplateDropChance(dropChance.floatValue());
 
 				break;
 
 			case LEGS:
-				equip.setLeggings(item);
+				equipment.setLeggings(item);
 
 				if (dropChance != null && !lacksDropChance)
-					equip.setLeggingsDropChance(dropChance.floatValue());
+					equipment.setLeggingsDropChance(dropChance.floatValue());
 
 				break;
 
 			case FEET:
-				equip.setBoots(item);
+				equipment.setBoots(item);
 
 				if (dropChance != null && !lacksDropChance)
-					equip.setBootsDropChance(dropChance.floatValue());
+					equipment.setBootsDropChance(dropChance.floatValue());
 
 				break;
 		}
@@ -133,6 +136,31 @@ public enum CompEquipmentSlot {
 				return slot;
 
 		throw new FoException("No such equipment slot from key: " + key);
+	}
+
+	/**
+	 * A convenience shortcut to quickly give the entity a full leather armor in the given color
+	 * that does not drop.
+	 *
+	 * @param entity
+	 * @param color
+	 */
+	public static void applyDyeToAllSlots(LivingEntity entity, CompColor color) {
+		applyDyeToAllSlots(entity, color, 0D);
+	}
+
+	/**
+	 * A convenience shortcut to quickly give the entity a full leather armor in the given color
+	 *
+	 * @param entity
+	 * @param color
+	 * @param dropChance
+	 */
+	public static void applyDyeToAllSlots(LivingEntity entity, CompColor color, Double dropChance) {
+		CompEquipmentSlot.HEAD.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_HELMET).color(color).make(), dropChance);
+		CompEquipmentSlot.CHEST.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_CHESTPLATE).color(color).make(), dropChance);
+		CompEquipmentSlot.LEGS.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_LEGGINGS).color(color).make(), dropChance);
+		CompEquipmentSlot.FEET.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_BOOTS).color(color).make(), dropChance);
 	}
 
 	@Override
