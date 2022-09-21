@@ -356,9 +356,11 @@ public abstract class Menu {
 			// TODO rewrite to use cache instead of for loop so that two buttons that are the same won't collide
 			for (final Button button : this.registeredButtons.keySet()) {
 				Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
-				Valid.checkNotNull(button.getItem(), "Menu " + this.getTitle() + " contained button " + button + " with empty item!");
 
-				if (ItemUtil.isSimilar(fromItem, button.getItem()))
+				ItemStack item = button.getItem();
+				Valid.checkNotNull(item, "Menu " + this.getTitle() + " contained button " + button.getClass().getSimpleName() + " with empty item!");
+
+				if (ItemUtil.isSimilar(fromItem, item))
 					return button;
 			}
 
@@ -515,23 +517,37 @@ public abstract class Menu {
 	 */
 	public final void restartMenu(final String animatedTitle) {
 
-		final Inventory inventory = this.getViewer().getOpenInventory().getTopInventory();
-		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, this.getViewer().getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
+		final Player player = this.getViewer();
+		Valid.checkNotNull(player, "Cannot restartMenu if it was not yet shown to a player! Menu: " + this);
 
-		this.registerButtons();
+		final Inventory inventory = player.getOpenInventory().getTopInventory();
+		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
-		// Call before calling getItemAt
-		this.onRestart();
+		// Due to a Bukkit bug we need to delay it later -> otherwise the getContent() will return an outdated array
+		Common.runLater(2, () -> {
 
-		this.compileItems().forEach((slot, item) -> inventory.setItem(slot, item));
-		this.getViewer().updateInventory();
+			this.registerButtons();
 
-		if (animatedTitle != null)
-			this.animateTitle(animatedTitle);
+			// Call before calling getItemAt
+			this.onRestart();
+
+			ItemStack[] content = inventory.getContents();
+			Map<Integer, ItemStack> newContent = this.compileItems();
+
+			for (int i = 0; i < content.length; i++)
+				content[i] = newContent.get(i);
+
+			inventory.setContents(content);
+
+			if (animatedTitle != null)
+				this.animateTitle(animatedTitle);
+		});
 	}
 
+	/*
+	 * Internal hook before calling getItemAt
+	 */
 	void onRestart() {
-
 	}
 
 	/**
