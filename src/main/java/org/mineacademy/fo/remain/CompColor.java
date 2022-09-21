@@ -180,6 +180,15 @@ public final class CompColor {
 		return this.color != null ? this.color : this.dye.getColor();
 	}
 
+	/**
+	 * Converts this into a wool material
+	 *
+	 * @return
+	 */
+	public CompMaterial getWool() {
+		return CompColor.toWool(this.chatColor);
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Static access
 	// ----------------------------------------------------------------------------------------------------
