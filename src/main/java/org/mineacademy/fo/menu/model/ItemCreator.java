@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -505,6 +506,15 @@ public final class ItemCreator {
 	 */
 	public void give(final Player player) {
 		player.getInventory().addItem(this.make());
+	}
+
+	/**
+	 * Convenience method for dropping this item at the given location
+	 *
+	 * @param location
+	 */
+	public void drop(final Location location) {
+		location.getWorld().dropItem(location, this.make());
 	}
 
 	// ----------------------------------------------------------------------------------------
