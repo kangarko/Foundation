@@ -278,6 +278,30 @@ public class Region implements ConfigSerializable {
 	}
 
 	/**
+	 * Returns true if X and Z coordinates irrespective of height of the given location are within
+	 * this region.
+	 *
+	 * @param location
+	 * @return
+	 */
+	public final boolean isWithinXZ(@NonNull final Location location) {
+		Valid.checkBoolean(this.isWhole(), "Cannot perform isWithinXZ on a non-complete region: " + this.toString());
+
+		if (!location.getWorld().getName().equals(this.primary.getWorld().getName()))
+			return false;
+
+		final Location[] centered = this.getCorrectedPoints();
+		final Location primary = centered[0];
+		final Location secondary = centered[1];
+
+		final int x = (int) location.getX();
+		final int z = (int) location.getZ();
+
+		return x >= primary.getX() && x <= secondary.getX()
+				&& z >= primary.getZ() && z <= secondary.getZ();
+	}
+
+	/**
 	 * Return true if both region points are set
 	 *
 	 * @return
