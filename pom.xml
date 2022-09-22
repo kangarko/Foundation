@@ -154,7 +154,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.2.10</version>
+			<version>7.3.0-SNAPSHOT-6267</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
