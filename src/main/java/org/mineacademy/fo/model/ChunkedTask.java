@@ -4,14 +4,12 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /**
  * Splits manipulating with large about of items in a list
  * into smaller pieces
  */
-@RequiredArgsConstructor
 public abstract class ChunkedTask {
 
 	/**
@@ -37,6 +35,28 @@ public abstract class ChunkedTask {
 	@Getter
 	private boolean processing = false;
 	private boolean firstLaunch = false;
+
+	/**
+	 * Create a new task that will process the given amount of times on each run
+	 * (see {@link #waitPeriodTicks}) and wait for 1 second between each time
+	 *
+	 * @param processAmount
+	 */
+	public ChunkedTask(int processAmount) {
+		this.processAmount = processAmount;
+	}
+
+	/**
+	 * Create a new task that will process the given amount of times on each run
+	 * and wait the given amount of ticks between each time
+	 *
+	 * @param processAmount
+	 * @param waitPeriodTicks
+	 */
+	public ChunkedTask(int processAmount, int waitPeriodTicks) {
+		this.processAmount = processAmount;
+		this.waitPeriodTicks = waitPeriodTicks;
+	}
 
 	/**
 	 * Start the chain, will run several sync tasks until done
@@ -71,8 +91,19 @@ public abstract class ChunkedTask {
 					break;
 				}
 
-				this.onProcess(i);
 				processed++;
+
+				try {
+					this.onProcess(i);
+
+				} catch (Throwable t) {
+					Common.error(t, "Error in " + this + " processing index " + processed);
+					this.processing = false;
+					this.firstLaunch = false;
+
+					this.onFinish(false);
+					return;
+				}
 			}
 
 			if (processed > 0 || !finished)
@@ -106,7 +137,7 @@ public abstract class ChunkedTask {
 	 *
 	 * @param item
 	 */
-	protected abstract void onProcess(int index);
+	protected abstract void onProcess(int index) throws Throwable;
 
 	/**
 	 * Return if the task may execute the next index
