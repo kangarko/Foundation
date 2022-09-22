@@ -523,25 +523,21 @@ public abstract class Menu {
 		final Inventory inventory = player.getOpenInventory().getTopInventory();
 		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
-		// Due to a Bukkit bug we need to delay it later -> otherwise the getContent() will return an outdated array
-		Common.runLater(2, () -> {
+		this.registerButtons();
 
-			this.registerButtons();
+		// Call before calling getItemAt
+		this.onRestart();
 
-			// Call before calling getItemAt
-			this.onRestart();
+		ItemStack[] content = inventory.getContents();
+		Map<Integer, ItemStack> newContent = this.compileItems();
 
-			ItemStack[] content = inventory.getContents();
-			Map<Integer, ItemStack> newContent = this.compileItems();
+		for (int i = 0; i < content.length; i++)
+			content[i] = newContent.get(i);
 
-			for (int i = 0; i < content.length; i++)
-				content[i] = newContent.get(i);
+		inventory.setContents(content);
 
-			inventory.setContents(content);
-
-			if (animatedTitle != null)
-				this.animateTitle(animatedTitle);
-		});
+		if (animatedTitle != null)
+			this.animateTitle(animatedTitle);
 	}
 
 	/*

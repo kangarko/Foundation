@@ -885,8 +885,32 @@ public final class PlayerUtil {
 		if (!containsAtLeast(player, amount, material))
 			return false;
 
-		for (int i = 0; i < amount; i++)
-			takeFirstOnePiece(player, material);
+		final Inventory inventory = player.getInventory();
+		final ItemStack[] content = inventory.getContents();
+
+		for (int slot = 0; slot < content.length; slot++) {
+			ItemStack item = content[slot];
+
+			if (item != null && material.is(item)) {
+				int itemAmount = item.getAmount();
+				int newAmount = itemAmount - amount;
+
+				if (newAmount < 0) {
+					amount = amount - itemAmount;
+
+					content[slot] = null;
+				}
+
+				else {
+					item.setAmount(newAmount);
+
+					content[slot] = item;
+					break;
+				}
+			}
+		}
+
+		inventory.setContents(content);
 
 		return true;
 	}
