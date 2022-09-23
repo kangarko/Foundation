@@ -138,9 +138,36 @@ public final class PlayerUtil {
 	 */
 	public static BlockFace getFacing(float yaw, boolean useSubDirections) {
 		if (useSubDirections)
-			return FACE_RADIAL[Math.round(yaw / 45f) & 0x7].getOppositeFace();
+			return FACE_RADIAL[Math.round(yaw / 45F) & 0x7].getOppositeFace();
 
-		return FACE_AXIS[Math.round(yaw / 90f) & 0x3].getOppositeFace();
+		return FACE_AXIS[Math.round(yaw / 90F) & 0x3].getOppositeFace();
+	}
+
+	/**
+	 * Return a yaw from BlockFace
+	 *
+	 * @param face
+	 * @param useSubDirections
+	 * @return
+	 */
+	public static int getFacing(BlockFace face, boolean useSubDirections) {
+		return (useSubDirections ? face.ordinal() * 45 : face.ordinal() * 90) - 180;
+	}
+
+	/**
+	 * Converts the given yaw into the closest valid blockface and then back to yaw
+	 *
+	 * Used to align entities to look in one of the 4 or 8 directions without you needing
+	 * to stand perfectly straight.
+	 *
+	 * @param yaw
+	 * @param useSubDirections
+	 * @return
+	 */
+	public static float alignYaw(float yaw, boolean useSubDirections) {
+		BlockFace face = getFacing(yaw, useSubDirections);
+
+		return getFacing(face, useSubDirections);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
