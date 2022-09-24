@@ -292,7 +292,7 @@ public class AnimationUtil {
 					if (animateOnce) {
 						this.run = false;
 
-						Remain.removeBossBar(player);
+						Remain.removeBossbar(player);
 					}
 				}
 			}
