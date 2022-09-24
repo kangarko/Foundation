@@ -550,6 +550,23 @@ public final class Remain {
 	}
 
 	/**
+	 * Returns the player's view distance
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static int getViewDistance(Player player) {
+		try {
+			return player.getClientViewDistance();
+
+		} catch (NoSuchMethodError err) {
+			Method getViewDistance = ReflectionUtil.getMethod(player.spigot().getClass(), "getViewDistance");
+
+			return ReflectionUtil.invoke(getViewDistance, player.spigot());
+		}
+	}
+
+	/**
 	 * Spawn a falling block at the given block location
 	 *
 	 * @param block
