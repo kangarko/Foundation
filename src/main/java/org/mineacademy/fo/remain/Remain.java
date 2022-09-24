@@ -1186,7 +1186,7 @@ public final class Remain {
 	 *
 	 * @param player
 	 */
-	public static void removeBossBar(final Player player) {
+	public static void removeBossbar(final Player player) {
 		BossBarInternals.getInstance().removeBar(player);
 	}
 
