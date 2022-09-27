@@ -64,7 +64,15 @@ public class YamlConfig extends FileConfig {
 
 			try {
 				final LoaderOptions loaderOptions = new LoaderOptions();
+
 				loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
+
+				try {
+					loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
+				} catch (Throwable t) {
+					// Thankfully unsupported
+					// https://i.imgur.com/wAgKukK.png
+				}
 
 				yaml = new Yaml(constructor, representer, dumperOptions, loaderOptions);
 
