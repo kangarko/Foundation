@@ -353,25 +353,52 @@ public abstract class SimpleCommand extends Command {
 					final String usage = this.getMultilineUsageMessage() != null ? String.join("\n&c", this.getMultilineUsageMessage()) : this.getUsage() != null ? this.getUsage() : null;
 					Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + this.getLabel() + sublabel + "' command!");
 
+					String description = this.replacePlaceholders("&c" + this.getDescription());
+					List<String> usages = new ArrayList<>();
+					String singleLineUsage = null;
+
 					final ChatPaginator paginator = new ChatPaginator(SimpleLocalization.Commands.HEADER_SECONDARY_COLOR);
 					final List<String> pages = new ArrayList<>();
 
 					if (!Common.getOrEmpty(this.getDescription()).isEmpty()) {
 						pages.add(this.replacePlaceholders(SimpleLocalization.Commands.LABEL_DESCRIPTION));
-						pages.add(this.replacePlaceholders("&c" + this.getDescription()));
+						pages.add(description);
 					}
 
 					if (this.getMultilineUsageMessage() != null) {
 						pages.add("");
 						pages.add(this.replacePlaceholders(SimpleLocalization.Commands.LABEL_USAGES));
 
-						for (final String usagePart : usage.split("\n"))
-							pages.add(this.replacePlaceholders("&c" + usagePart));
+						for (String usagePart : usage.split("\n")) {
+							usagePart = this.replacePlaceholders("&c" + usagePart);
+
+							usages.add(usagePart);
+							pages.add(usagePart);
+						}
 
 					} else {
+						singleLineUsage = "&c" + this.replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : ""));
+
 						pages.add("");
 						pages.add(SimpleLocalization.Commands.LABEL_USAGE);
-						pages.add("&c" + this.replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : "")));
+						pages.add(singleLineUsage);
+					}
+
+					if (SimpleLocalization.Commands.SIMPLE_HELP_DESIGN) {
+						Common.tellNoPrefix(sender, addSpaceIfNeeded(SimpleLocalization.Commands.LABEL_DESCRIPTION) + description);
+
+						if (usages.isEmpty())
+							Common.tellNoPrefix(sender, addSpaceIfNeeded(SimpleLocalization.Commands.LABEL_USAGE) + singleLineUsage);
+
+						else {
+							Common.tellNoPrefix(sender, SimpleLocalization.Commands.LABEL_USAGES);
+
+							for (String usagePart : usages)
+								Common.tellNoPrefix(sender, usagePart);
+
+						}
+
+						return;
 					}
 
 					paginator
@@ -423,6 +450,10 @@ public abstract class SimpleCommand extends Command {
 		}
 
 		return true;
+	}
+
+	private String addSpaceIfNeeded(String message) {
+		return message + (Common.stripColors(message).endsWith(" ") ? "" : " ");
 	}
 
 	/*
