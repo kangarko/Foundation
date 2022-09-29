@@ -516,7 +516,7 @@ public abstract class SimpleCommandGroup {
 									hover.add("&f" + this.replacePlaceholders(this.colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
 
 							} else
-								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage));
+								hover.add(this.replacePlaceholders(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage)));
 
 							for (int i = 0; i < hover.size(); i++) {
 								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 65));
