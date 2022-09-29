@@ -51,6 +51,7 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
@@ -97,6 +98,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
+import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.RanksManager;
 
 /**
@@ -683,81 +685,81 @@ public final class HookManager {
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxVisitors(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandVisitors(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxVisitors(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandVisitors(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxCoops(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandCoops(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxCoops(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandCoops(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxTrustees(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandTrustees(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxTrustees(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandTrustees(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxMembers(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandMembers(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxMembers(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandMembers(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxSubOwners(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandSubOwners(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxSubOwners(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandSubOwners(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxOwners(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandOwners(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxOwners(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandOwners(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxMods(Location islandLocation) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandMods(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxMods(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandMods(player) : new HashSet<>();
 	}
 
 	/**
 	 * Return BentoBox island members if the given location is an island, or empty set if null
 	 *
-	 * @param islandLocation
+	 * @param player
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxAdmins(Location islandLocation, int rank) {
-		return isBentoBoxLoaded() ? bentoBoxHook.getIslandAdmins(islandLocation) : new HashSet<>();
+	public static Set<UUID> getBentoBoxAdmins(Player player) {
+		return isBentoBoxLoaded() ? bentoBoxHook.getIslandAdmins(player) : new HashSet<>();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -3411,45 +3413,60 @@ class BanManagerHook {
 
 class BentoBoxHook {
 
-	Set<UUID> getIslandVisitors(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.VISITOR_RANK);
+	Set<UUID> getIslandVisitors(Player player) {
+		return this.getIslandUsers(player, RanksManager.VISITOR_RANK);
 	}
 
-	Set<UUID> getIslandCoops(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.COOP_RANK);
+	Set<UUID> getIslandCoops(Player player) {
+		return this.getIslandUsers(player, RanksManager.COOP_RANK);
 	}
 
-	Set<UUID> getIslandTrustees(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.TRUSTED_RANK);
+	Set<UUID> getIslandTrustees(Player player) {
+		return this.getIslandUsers(player, RanksManager.TRUSTED_RANK);
 	}
 
-	Set<UUID> getIslandMembers(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.MEMBER_RANK);
+	Set<UUID> getIslandMembers(Player player) {
+		return this.getIslandUsers(player, RanksManager.MEMBER_RANK);
 	}
 
-	Set<UUID> getIslandSubOwners(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.SUB_OWNER_RANK);
+	Set<UUID> getIslandSubOwners(Player player) {
+		return this.getIslandUsers(player, RanksManager.SUB_OWNER_RANK);
 	}
 
-	Set<UUID> getIslandOwners(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.OWNER_RANK);
+	Set<UUID> getIslandOwners(Player player) {
+		return this.getIslandUsers(player, RanksManager.OWNER_RANK);
 	}
 
-	Set<UUID> getIslandMods(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.MOD_RANK);
+	Set<UUID> getIslandMods(Player player) {
+		return this.getIslandUsers(player, RanksManager.MOD_RANK);
 	}
 
-	Set<UUID> getIslandAdmins(Location islandLocation) {
-		return this.getIslandUsers(islandLocation, RanksManager.ADMIN_RANK);
+	Set<UUID> getIslandAdmins(Player player) {
+		return this.getIslandUsers(player, RanksManager.ADMIN_RANK);
 	}
 
-	private Set<UUID> getIslandUsers(Location islandLocation, int rank) {
-		final Optional<Island> maybeIsland = BentoBox.getInstance().getIslands().getIslandAt(islandLocation);
+	private Set<UUID> getIslandUsers(Player player, int rank) {
+		final IslandsManager manager = BentoBox.getInstance().getIslands();
+		final Optional<Island> maybeIsland = manager.getIslandAt(player.getLocation());
 
 		if (maybeIsland.isPresent()) {
 			final Island island = maybeIsland.get();
 
 			return island.getMemberSet(rank);
+
+		} else {
+			final UUID uniqueId = player.getUniqueId();
+
+			for (World world : Bukkit.getWorlds()) {
+				try {
+					Island island = manager.getIsland(world, uniqueId);
+
+					if (island != null)
+						return island.getMemberSet(rank);
+
+				} catch (Throwable t) {
+				}
+			}
 		}
 
 		return new HashSet<>();
