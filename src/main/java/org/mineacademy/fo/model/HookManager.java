@@ -683,7 +683,7 @@ public final class HookManager {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island visitors for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -693,7 +693,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island coops for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -703,7 +703,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island trustees for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -713,7 +713,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island members for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -723,7 +723,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island subowners for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -733,7 +733,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island owners for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -743,7 +743,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island moderators for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
@@ -753,7 +753,7 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return BentoBox island members if the given location is an island, or empty set if null
+	 * Return BentoBox island admins for the specified player's island, or empty set if null
 	 *
 	 * @param player
 	 * @return
