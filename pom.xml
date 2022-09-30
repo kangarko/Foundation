@@ -8,7 +8,7 @@
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>6.2.0</version>
+	<version>6.2.1</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
@@ -154,12 +154,12 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldEdit</artifactId>
-			<version>7.3.0-SNAPSHOT-6267</version>
+			<version>7.2.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>WorldGuard</artifactId>
-			<version>7.0.7</version>
+			<version>7.0.5</version>
 		</dependency>
 	</dependencies>
 	<build>
