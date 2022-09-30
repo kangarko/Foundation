@@ -86,10 +86,7 @@ public final class ButtonReturnBack extends Button {
 
 			this.parentMenu.newInstance().displayTo(player);
 
-		} else {
+		} else
 			this.parentMenu.displayTo(player);
-
-			this.parentMenu.restartMenu();
-		}
 	}
 }
