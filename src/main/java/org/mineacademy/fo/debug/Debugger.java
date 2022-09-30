@@ -355,6 +355,9 @@ public final class Debugger {
 
 	// Print a simple console message
 	private static void print(String message) {
-		System.out.println(message); // our instance may or may not be available yet to log
+		if (Bukkit.getConsoleSender() != null)
+			Bukkit.getConsoleSender().sendMessage(Common.colorize(message));
+		else
+			System.out.println(Common.stripColors(message)); // our instance may or may not be available yet to log
 	}
 }
