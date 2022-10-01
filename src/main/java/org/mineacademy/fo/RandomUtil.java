@@ -266,6 +266,7 @@ public final class RandomUtil {
 		Valid.checkBoolean(maxRadius > 0 && minRadius > 0, "Max and min radius must be over 0");
 		Valid.checkBoolean(maxRadius > minRadius, "Max radius must be greater than min radius");
 
+		
 		final double randomRadius = minRadius + (random.nextDouble() * (maxRadius - minRadius));
 		final double theta = Math.toRadians(random.nextDouble() * 360);
 		final double phi = Math.toRadians(random.nextDouble() * 180 - 90);
