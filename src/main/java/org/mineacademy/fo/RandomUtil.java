@@ -242,14 +242,31 @@ public final class RandomUtil {
 	 * @return
 	 */
 	public static Location nextLocation(final Location origin, final double radius, final boolean is3D) {
-		final double randomRadius = random.nextDouble() * radius;
-		final double theta = Math.toRadians(random.nextDouble() * 360);
-		final double phi = Math.toRadians(random.nextDouble() * 180 - 90);
+		final double rectX = random.nextDouble() * radius;
+		final double rectZ = random.nextDouble() * radius;
+		final double offsetX;
+		final double offsetZ;
+		double offsetY = 0;
+		final int transform = random.nextInt(4);
+		if (is3D) {
+			final double rectY = random.nextDouble() * radius;
+			offsetY = getYCords( transform, rectY);
+		}
+		if (transform == 0) {
+			offsetX = rectX;
+			offsetZ = rectZ;
+		} else if (transform == 1) {
+			offsetX = -rectZ;
+			offsetZ = rectX;
+		} else if (transform == 2) {
+			offsetX = -rectX;
+			offsetZ = -rectZ;
+		} else {
+			offsetX = rectZ;
+			offsetZ = -rectX;
+		}
 
-		final double x = randomRadius * Math.cos(theta) * Math.sin(phi);
-		final double z = randomRadius * Math.cos(phi);
-
-		return origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
+		return origin.clone().add(offsetX, offsetY, offsetZ);
 	}
 
 	/**
@@ -266,14 +283,43 @@ public final class RandomUtil {
 		Valid.checkBoolean(maxRadius > 0 && minRadius > 0, "Max and min radius must be over 0");
 		Valid.checkBoolean(maxRadius > minRadius, "Max radius must be greater than min radius");
 
-		final double randomRadius = minRadius + (random.nextDouble() * (maxRadius - minRadius));
-		final double theta = Math.toRadians(random.nextDouble() * 360);
-		final double phi = Math.toRadians(random.nextDouble() * 180 - 90);
 
-		final double x = randomRadius * Math.cos(theta) * Math.sin(phi);
-		final double z = randomRadius * Math.cos(phi);
+		final double rectX = random.nextDouble() * (maxRadius - minRadius) + minRadius;
+		final double rectZ = random.nextDouble() * (maxRadius + minRadius) - minRadius;
+		final double offsetX;
+		final double offsetZ;
+		double offsetY = 0;
+		final int transform = random.nextInt(4);
+		if (is3D) {
+			final double rectY = random.nextDouble() * (maxRadius + minRadius) - minRadius;
+			offsetY = getYCords( transform, rectY);
+		}
+		if (transform == 0) {
+			offsetX = rectX;
+			offsetZ = rectZ;
+		} else if (transform == 1) {
+			offsetX = -rectZ;
+			offsetZ = rectX;
+		} else if (transform == 2) {
+			offsetX = -rectX;
+			offsetZ = -rectZ;
+		} else {
+			offsetX = rectZ;
+			offsetZ = -rectX;
+		}
 
-		return origin.clone().add(x, is3D ? randomRadius * Math.sin(theta) * Math.cos(phi) : 0, z);
+		return origin.clone().add(offsetX, offsetY, offsetZ);
+	}
+
+	public static double getYCords( int transform, double rectY) {
+		double offsetY;
+		double nextY = random.nextDouble();
+		if (transform < 2) {
+			offsetY = nextY >= 0.5 ? -rectY : rectY;
+		} else {
+			offsetY = nextY >= 0.5 ? rectY : -rectY;
+		}
+		return offsetY;
 	}
 
 	/**
