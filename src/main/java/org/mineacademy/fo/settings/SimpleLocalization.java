@@ -82,6 +82,14 @@ public class SimpleLocalization extends YamlStaticConfig {
 		return 1;
 	}
 
+	/**
+	 * Always keep the lang file up to date.
+	 */
+	@Override
+	protected final boolean alwaysSaveOnLoad() {
+		return true;
+	}
+
 	// --------------------------------------------------------------------
 	// Shared values
 	// --------------------------------------------------------------------
