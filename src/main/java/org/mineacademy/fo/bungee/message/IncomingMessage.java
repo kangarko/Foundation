@@ -41,6 +41,12 @@ public final class IncomingMessage extends Message {
 	private final ByteArrayInputStream stream;
 
 	/**
+	 * Channel name
+	 */
+	@Getter
+	private final String channel;
+
+	/**
 	 * Create a new incoming message from the given array
 	 * <p>
 	 * NB: This uses the standardized Foundation model where the first
@@ -64,8 +70,13 @@ public final class IncomingMessage extends Message {
 	 * @param data
 	 */
 	public IncomingMessage(BungeeListener listener, byte[] data) {
+		this(listener, listener.getChannel(), data);
+	}
+
+	private IncomingMessage(BungeeListener listener, String channel, byte[] data) {
 		super(listener);
 
+		this.channel = channel;
 		this.data = data;
 		this.stream = new ByteArrayInputStream(data);
 
@@ -79,6 +90,9 @@ public final class IncomingMessage extends Message {
 		// We are automatically reading the first two strings assuming the
 		// first is the senders server name and the second is the action
 		// -----------------------------------------------------------------
+
+		// Read channel name, dispose, set above
+		this.input.readUTF();
 
 		// Read senders UUID
 		this.setSenderUid(this.input.readUTF());
@@ -205,7 +219,7 @@ public final class IncomingMessage extends Message {
 	 *
 	 * @return
 	 */
-	public int writeInt() {
+	public int readInt() {
 		this.moveHead(Integer.class);
 
 		return this.input.readInt();
@@ -239,6 +253,6 @@ public final class IncomingMessage extends Message {
 	 * @param player
 	 */
 	public void forward(Player player) {
-		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.data);
+		player.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", this.data);
 	}
 }

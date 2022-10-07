@@ -73,9 +73,10 @@ public final class BungeeUtil {
 	 *
 	 * OBS! The data written always start with:
 	 *
-	 * 1. The recipient UUID
-	 * 2. {@link Remain#getServerName()}
-	 * 3. The action parameter
+	 * 1. The channel name (to avoid "Unknown custom packed identifier: plugin:chcred" console spam we use "BungeeCord")
+	 * 2. The recipient UUID
+	 * 3. {@link Remain#getServerName()}
+	 * 4. The action parameter
 	 *
 	 *
 	 * @param <T>
@@ -104,6 +105,7 @@ public final class BungeeUtil {
 
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
+		out.writeUTF(channel);
 		out.writeUTF(sender.getUniqueId().toString());
 		out.writeUTF(Remain.getServerName());
 		out.writeUTF(action.toString());
@@ -197,7 +199,7 @@ public final class BungeeUtil {
 		final byte[] byteArray = out.toByteArray();
 
 		try {
-			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+			sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", byteArray);
 
 		} catch (final ChannelNotRegisteredException ex) {
 			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "

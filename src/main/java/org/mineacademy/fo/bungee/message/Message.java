@@ -132,7 +132,7 @@ abstract class Message {
 	 *
 	 * @return
 	 */
-	public final String getChannel() {
+	public String getChannel() {
 		return this.listener.getChannel();
 	}
 }
