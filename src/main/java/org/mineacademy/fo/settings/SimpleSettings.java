@@ -50,7 +50,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * Always keep settings.yml file up to date
 	 */
 	@Override
-	protected boolean alwaysSaveOnLoad() {
+	protected final boolean alwaysSaveOnLoad() {
 		return true;
 	}
 
