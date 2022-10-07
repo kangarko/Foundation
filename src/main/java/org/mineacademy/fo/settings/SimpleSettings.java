@@ -46,6 +46,14 @@ public class SimpleSettings extends YamlStaticConfig {
 		return FoConstants.File.SETTINGS;
 	}
 
+	/**
+	 * Always keep settings.yml file up to date
+	 */
+	@Override
+	protected boolean alwaysSaveOnLoad() {
+		return true;
+	}
+
 	// --------------------------------------------------------------------
 	// Version
 	// --------------------------------------------------------------------
