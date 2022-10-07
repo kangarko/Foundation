@@ -1202,7 +1202,7 @@ public abstract class FileConfig {
 					// Handled successfully in the polymorphism pipeline
 				}
 
-				if (this.shouldSave) {
+				if (this.shouldSave || this.alwaysSaveOnLoad()) {
 					this.loading = false;
 					this.save();
 
@@ -1326,6 +1326,15 @@ public abstract class FileConfig {
 				Remain.sneaky(ex);
 			}
 		}
+	}
+
+	/**
+	 * Return true if we should always save the file after loading it.
+	 *
+	 * @return
+	 */
+	protected boolean alwaysSaveOnLoad() {
+		return false;
 	}
 
 	/**

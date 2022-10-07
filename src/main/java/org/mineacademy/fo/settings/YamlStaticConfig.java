@@ -61,6 +61,11 @@ public abstract class YamlStaticConfig {
 			}
 
 			@Override
+			protected boolean alwaysSaveOnLoad() {
+				return YamlStaticConfig.this.alwaysSaveOnLoad();
+			}
+
+			@Override
 			protected List<String> getUncommentedSections() {
 				return YamlStaticConfig.this.getUncommentedSections();
 			}
@@ -129,6 +134,15 @@ public abstract class YamlStaticConfig {
 	 */
 	protected boolean saveComments() {
 		return true;
+	}
+
+	/**
+	 * Return true if we should always save the file after loading it.
+	 *
+	 * @return
+	 */
+	protected boolean alwaysSaveOnLoad() {
+		return false;
 	}
 
 	/**
