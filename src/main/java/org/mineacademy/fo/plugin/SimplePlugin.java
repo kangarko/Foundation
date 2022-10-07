@@ -503,9 +503,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		final Messenger messenger = this.getServer().getMessenger();
 
-		messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee);
-		messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
+		if (!messenger.isIncomingChannelRegistered(this, "BungeeCord"))
+			messenger.registerIncomingPluginChannel(this, "BungeeCord", new BungeeListener.CommonBungeeListener());
 
+		BungeeListener.addRegisteredListener(bungee);
 		this.reloadables.registerEvents(bungee);
 	}
 
@@ -859,6 +860,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		BlockVisualizer.stopAll();
 		FolderWatcher.stopThreads();
 
+		BungeeListener.clearRegisteredListeners();
 		FileConfig.clearLoadedSections();
 
 		try {
