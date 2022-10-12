@@ -315,23 +315,20 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	public Button formPreviousButton() {
 		return new Button() {
-			final boolean canGo = MenuPagged.this.currentPage > 1;
+			final boolean canGo = getCurrentPage() > 1;
 
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
-				if (this.canGo) {
-					MenuPagged.this.currentPage = MathUtil.range(MenuPagged.this.currentPage - 1, 1, MenuPagged.this.pages.size());
-
-					MenuPagged.this.updatePage();
-				}
+				if (this.canGo)
+					setCurrentPage(MathUtil.range(getCurrentPage() - 1, 1, getPages().size()));
 			}
 
 			@Override
 			public ItemStack getItem() {
-				final int previousPage = MenuPagged.this.currentPage - 1;
+				final int previousPage = getCurrentPage() - 1;
 
 				return ItemCreator
-						.of(this.canGo ? activePageButton : inactivePageButton)
+						.of(this.canGo ? MenuPagged.getActivePageButton() : MenuPagged.getInactivePageButton())
 						.name(previousPage == 0 ? SimpleLocalization.Menu.PAGE_FIRST : SimpleLocalization.Menu.PAGE_PREVIOUS.replace("{page}", String.valueOf(previousPage)))
 						.make();
 			}
@@ -346,27 +343,35 @@ public abstract class MenuPagged<T> extends Menu {
 	 */
 	public Button formNextButton() {
 		return new Button() {
-			final boolean canGo = MenuPagged.this.currentPage < MenuPagged.this.pages.size();
+			final boolean canGo = getCurrentPage() < getPages().size();
 
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
-				if (this.canGo) {
-					MenuPagged.this.currentPage = MathUtil.range(MenuPagged.this.currentPage + 1, 1, MenuPagged.this.pages.size());
-
-					MenuPagged.this.updatePage();
-				}
+				if (this.canGo)
+					setCurrentPage(MathUtil.range(getCurrentPage() + 1, 1, getPages().size()));
 			}
 
 			@Override
 			public ItemStack getItem() {
-				final boolean lastPage = MenuPagged.this.currentPage == MenuPagged.this.pages.size();
+				final boolean lastPage = getCurrentPage() == getPages().size();
 
 				return ItemCreator
-						.of(this.canGo ? activePageButton : inactivePageButton)
-						.name(lastPage ? SimpleLocalization.Menu.PAGE_LAST : SimpleLocalization.Menu.PAGE_NEXT.replace("{page}", String.valueOf(MenuPagged.this.currentPage + 1)))
+						.of(this.canGo ? MenuPagged.getActivePageButton() : MenuPagged.getInactivePageButton())
+						.name(lastPage ? SimpleLocalization.Menu.PAGE_LAST : SimpleLocalization.Menu.PAGE_NEXT.replace("{page}", String.valueOf(getCurrentPage() + 1)))
 						.make();
 			}
 		};
+	}
+
+	/**
+	 * Shows items for the current page
+	 *
+	 * @param currentPage
+	 */
+	protected void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+
+		this.updatePage();
 	}
 
 	// Reinits the menu and plays the anvil sound
