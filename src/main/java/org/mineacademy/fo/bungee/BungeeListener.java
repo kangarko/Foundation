@@ -126,11 +126,12 @@ public abstract class BungeeListener implements Listener {
 				return;
 			}
 
-			final IncomingMessage message = new IncomingMessage(data);
-
 			for (BungeeListener listener : registeredListeners)
-				if (listener.getChannel().equals(ourChannelName))
+				if (listener.getChannel().equals(ourChannelName)) {
+					final IncomingMessage message = new IncomingMessage(data);
+
 					listener.onMessageReceived(player, message);
+				}
 		}
 	}
 }
