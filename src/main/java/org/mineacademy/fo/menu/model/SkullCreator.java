@@ -187,6 +187,7 @@ public class SkullCreator {
 		setToSkull(block);
 
 		final Skull state = (Skull) block.getState();
+		state.setRawData((byte) 0x1);
 
 		try {
 			state.setOwningPlayer(Remain.getOfflinePlayerByUUID(id));
@@ -232,6 +233,7 @@ public class SkullCreator {
 			block.setType(Material.valueOf("SKULL"), false);
 			final Skull state = (Skull) block.getState();
 			state.setSkullType(SkullType.PLAYER);
+			state.setRawData((byte) 0x1);
 			state.update(false, false);
 		}
 	}
