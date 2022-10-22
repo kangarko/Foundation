@@ -615,7 +615,7 @@ public class SimpleDatabase {
 	 * @param sqls
 	 */
 	protected final void batchUpdate(@NonNull List<String> sqls) {
-		if (sqls.size() == 0)
+		if (sqls.isEmpty())
 			return;
 
 		this.checkEstablished();
@@ -641,9 +641,21 @@ public class SimpleDatabase {
 
 				@Override
 				public void run() {
-					if (SimpleDatabase.this.batchUpdateGoingOn)
+					if (SimpleDatabase.this.batchUpdateGoingOn) {
 						Common.log("Database batch update is still processing, " + RandomUtil.nextItem("keep calm", "stand by", "watch the show", "check your db", "drink water", "call your friend") + " and DO NOT SHUTDOWN YOUR SERVER. (Total size: " + sqls.size() + " queries)");
-					else
+
+						// Temporary debug start
+						List<String> messages = new ArrayList<>();
+						messages.add(TimeUtil.getFormattedDate() + " -------------- Updating database with the following batch queries:");
+
+						for (int i = 0; i < sqls.size(); i++)
+							messages.add((i + 1) + ". " + sqls.get(i));
+
+						messages.add("");
+						FileUtil.write("sql-batch.log", messages);
+						// Temporary debug end
+
+					} else
 						this.cancel();
 				}
 			};
