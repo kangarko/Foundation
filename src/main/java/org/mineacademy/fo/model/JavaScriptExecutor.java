@@ -166,10 +166,10 @@ public final class JavaScriptExecutor {
 			if (result instanceof String) {
 				final String resultString = Common.stripColors((String) result).toLowerCase();
 
-				if (resultString.equals("true") || resultString.equals("yes"))
+				if (resultString.equals("true"))
 					result = true;
 
-				else if (resultString.equals("false") || resultString.equals("no"))
+				else if (resultString.equals("false"))
 					result = false;
 			}
 

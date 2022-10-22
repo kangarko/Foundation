@@ -16,6 +16,8 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -45,20 +47,20 @@ public class SimpleScoreboard {
 	private static final String COLOR_CHAR = "\u00A7";
 
 	/**
+	 * Unique chat color identifiers for specific team entries
+	 */
+	private static final String[] COLORS = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+
+	/**
 	 * List of all active scoreboard (added upon creating a new instance)
 	 */
 	@Getter
 	private static final List<SimpleScoreboard> registeredBoards = new ArrayList<>();
 
 	/**
-	 * Unique chat color identifiers for specific team entries
-	 */
-	private static final String[] colors = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
-
-	/**
 	 * Stored scoreboard lines
 	 */
-	private final List<ScoreboardLine> rows = new ArrayList<>();
+	private final List<String> rows = new ArrayList<>();
 
 	/**
 	 * Stored players viewing THIS scoreboard
@@ -106,10 +108,8 @@ public class SimpleScoreboard {
 	 * Create a new scoreboard with customizable updateDelayTicks
 	 */
 	public SimpleScoreboard(String title, int updateDelayTicks) {
-		//Scoreboards were introduced in 1.5, objectives were added in 1.7.2
-		Valid.checkBoolean(
-				MinecraftVersion.atLeast(MinecraftVersion.V.v1_7),
-				"Scoreboards (with objectives) are not supported below Minecraft version 1.7!");
+		// Scoreboards were introduced in 1.5, objectives were added in 1.7.2
+		Valid.checkBoolean(MinecraftVersion.atLeast(MinecraftVersion.V.v1_7), "Scoreboards (with objectives) are not supported below Minecraft version 1.7!");
 
 		this.setTitle(title);
 		this.setUpdateDelayTicks(updateDelayTicks);
@@ -170,12 +170,18 @@ public class SimpleScoreboard {
 	public final void setTitle(String title) {
 		final int maxTitleLength = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13) ? 128 : 32;
 		final String colorizedTitle = Common.colorize(title);
+
 		this.title = colorizedTitle.length() > maxTitleLength ? colorizedTitle.substring(0, maxTitleLength) : colorizedTitle;
 		this.title = this.title.endsWith(COLOR_CHAR) ? this.title.substring(0, this.title.length() - 1) : this.title;
 	}
 
+	/**
+	 * Return the list of rows you can modify
+	 *
+	 * @return
+	 */
 	public List<String> getRows() {
-		return Common.convert(this.rows, ScoreboardLine::getText);
+		return this.rows;
 	}
 
 	/**
@@ -200,11 +206,8 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	public final void show(final Player player) {
-		Valid.checkBoolean(
-				this.title != null && !this.title.isEmpty(),
-				"Before calling show(Player) you need to use setTitle() for " + this);
-		Valid.checkBoolean(
-				!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
+		Valid.checkBoolean(this.title != null && !this.title.isEmpty(), "Before calling show(Player) you need to use setTitle() for " + this);
+		Valid.checkBoolean(!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
 
 		if (this.updateTask == null)
 			this.start();
@@ -220,9 +223,7 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	public final void hide(final Player player) {
-		Valid.checkBoolean(
-				this.isViewing(player),
-				"Player " + player.getName() + " is not viewing scoreboard: " + this.getTitle());
+		Valid.checkBoolean(this.isViewing(player), "Player " + player.getName() + " is not viewing scoreboard: " + this.getTitle());
 
 		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 		this.viewers.remove(player.getUniqueId());
@@ -279,17 +280,25 @@ public class SimpleScoreboard {
 	 * @param entries
 	 */
 	public final void addRows(final List<Object> entries) {
-		Valid.checkBoolean(
-				(this.rows.size() + entries.size()) < 17, "You are trying to add too many rows (the limit is 16)");
-		this.rows.addAll(
-				Common.convert(Common.colorize(Common.convert(entries, Object::toString)), ScoreboardLine::new));
+		Valid.checkBoolean((this.rows.size() + entries.size()) < 17, "You are trying to add too many rows (the limit is 16)");
+		final List<String> lines = new ArrayList<>();
+
+		for (Object object : entries)
+			lines.add(object == null ? "" : Common.colorize(SerializeUtil.serialize(Mode.YAML, object).toString()));
+
+		this.rows.addAll(lines);
 	}
 
-	public final void changeRow(final int index, Object value) {
-		Valid.checkBoolean(
-				index < this.rows.size(),
-				"The row for index " + index + " is currently not existing. Please use addRows()!");
-		this.rows.get(index).setText(Common.colorize(value.toString()));
+	/**
+	 * Changes the row at the given index, if exists
+	 *
+	 * @param index
+	 * @param value
+	 */
+	public final void setRow(final int index, final Object value) {
+		Valid.checkBoolean(index < this.rows.size(), "The row for index " + index + " is currently not existing. Please use addRows()!");
+
+		this.rows.set(index, value == null ? "" : Common.colorize(value.toString()));
 	}
 
 	/**
@@ -314,7 +323,7 @@ public class SimpleScoreboard {
 	 * @param thatContains
 	 */
 	public final void removeRow(final String thatContains) {
-		this.rows.removeIf(row -> row.getText().contains(thatContains));
+		this.rows.removeIf(row -> row.contains(thatContains));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -343,9 +352,11 @@ public class SimpleScoreboard {
 				}
 
 			} catch (final Throwable t) {
-				final String lines = String.join(" ", this.getRows());
-
-				Common.error(t, "Error displaying " + this, "Entries: " + lines, "Title: " + this.title, "%error",
+				Common.error(t,
+						"Error displaying " + this,
+						"Entries: " + this.rows,
+						"Title: " + this.title,
+						"%error",
 						"Stopping rendering for safety.");
 
 				this.stop();
@@ -441,10 +452,9 @@ public class SimpleScoreboard {
 				if (line == null)
 					line = scoreboard.registerNewTeam("line" + scoreboardLineNumber);
 
-				final ScoreboardLine scoreboardLine = this.rows.get(lineNumber);
-				final Function<String, String> replaceFunction = lineText -> this.replaceTheme(
-						this.replaceVariables(player, lineText.replace("{player}", player.getName())));
-				final String[] createdLine = scoreboardLine.createLine(COLOR_CHAR + colors[lineNumber] + COLOR_CHAR + "r", replaceFunction);
+				final String scoreboardLine = this.rows.get(lineNumber);
+				final Function<String, String> replaceFunction = lineText -> this.replaceTheme(this.replaceVariables(player, lineText.replace("{player}", player.getName())));
+				final String[] createdLine = createLine(scoreboardLine, COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r", replaceFunction);
 
 				final String prefix = createdLine[0];
 				final String entry = createdLine[1];
@@ -460,6 +470,7 @@ public class SimpleScoreboard {
 				if (!line.getEntries().contains(entry)) {
 					if (!line.getEntries().isEmpty()) {
 						oldEntry = new ArrayList<>(line.getEntries()).get(0);
+
 						line.removeEntry(oldEntry);
 					}
 
@@ -482,159 +493,145 @@ public class SimpleScoreboard {
 		}
 	}
 
-	// ------------------------------------------------------------------------------------------------------------
-	// Classes
-	// ------------------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 * @param text
+	 * @param lineIdentifier
+	 * @param textReplaceFunction
+	 * @return
+	 */
+	private static String[] createLine(String rawText, String lineIdentifier, Function<String, String> textReplaceFunction) {
+		final String[] line = new String[3];
 
-	private static class ScoreboardLine {
-		private String text;
+		final String text = textReplaceFunction.apply(rawText);
+		final boolean mc1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
+		final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
+		final int[] splitPoints = mc1_13 ? new int[] { 64, mc1_18 ? 32831 : 104 } : new int[] { 16, 56 };
+		final int length = mc1_18 ? 32895 : (mc1_13 ? 168 : 70);
+		final List<String> copy = copyColors(text, length, splitPoints);
 
-		private ScoreboardLine(String text) {
-			this.text = text;
+		line[0] = Common.colorize(copy.isEmpty() ? "" : copy.get(0)); //Team Prefix
+		line[1] = Common.colorize(copy.size() < 2 ? lineIdentifier : copy.get(1)); //Score entry
+		line[2] = Common.colorize(copy.size() < 3 ? "" : copy.get(2)); //Team Suffix
+
+		return line;
+	}
+
+	/**
+	 * @param text        The text containing the color codes
+	 * @param maxLength   The maximum length the text can have all added
+	 * @param splitPoints The points to split the text
+	 * @return The method will split the text at the given splitPoints and will copy the colors over
+	 */
+	private static List<String> copyColors(String text, int maxLength, int... splitPoints) {
+		if (maxLength < 1)
+			return new ArrayList<>();
+
+		List<String> splitText = new ArrayList<>();
+		int lastSplitPoint = 0;
+
+		for (final int splitPoint : splitPoints) {
+
+			if (splitPoint < 0)
+				throw new IllegalArgumentException("SplitPoints cannot be negative!");
+			else if (splitPoint <= lastSplitPoint)
+				throw new IllegalArgumentException("Please put your splitPoints in order from small to large!");
+			else if (splitPoint >= text.length() || splitPoint >= maxLength)
+				break;
+
+			splitText.add(text.substring(lastSplitPoint, splitPoint));
+			lastSplitPoint = splitPoint;
 		}
 
-		public String getText() {
-			return this.text;
-		}
+		if (text.length() > lastSplitPoint)
+			splitText.add(text.substring(lastSplitPoint, Math.min(text.length(), maxLength)));
 
-		public void setText(String text) {
-			this.text = text;
-		}
+		for (int index = 1; index < splitText.size(); index++) {
+			final int currentSplitPoint = splitPoints.length > index ? splitPoints[index] : maxLength;
+			final int previousSplitPoint = splitPoints.length > index - 1 ? splitPoints[index - 1] : 0;
+			final int maxSubStringLength = currentSplitPoint - previousSplitPoint;
+			final boolean lastLoop = index == splitText.size() - 1;
+			String previousText = splitText.get(index - 1);
+			final String currentText = splitText.get(index);
+			String fixedText = currentText;
+			String marge = null;
 
-		public String[] createLine(String lineIdentifier, Function<String, String> textReplaceFunction) {
-			final String[] line = new String[3];
+			if (previousText.endsWith(SimpleScoreboard.COLOR_CHAR)) {
+				previousText = previousText.substring(0, previousText.length() - 1);
+				fixedText = SimpleScoreboard.COLOR_CHAR + currentText;
 
-			final String text = textReplaceFunction.apply(this.text);
-			final boolean mc1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
-			final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
-			final int[] splitPoints = mc1_13 ? new int[] { 64, mc1_18 ? 32831 : 104 } : new int[] { 16, 56 };
-			final int length = mc1_18 ? 32895 : (mc1_13 ? 168 : 70);
-			final List<String> copy = this.copyColors(text, length, splitPoints);
-
-			line[0] = Common.colorize(copy.isEmpty() ? "" : copy.get(0)); //Team Prefix
-			line[1] = Common.colorize(copy.size() < 2 ? lineIdentifier : copy.get(1)); //Score entry
-			line[2] = Common.colorize(copy.size() < 3 ? "" : copy.get(2)); //Team Suffix
-
-			return line;
-		}
-
-		/**
-		 * @param text        The text containing the color codes
-		 * @param maxLength   The maximum length the text can have all added
-		 * @param splitPoints The points to split the text
-		 * @return The method will split the text at the given splitPoints and will copy the colors over
-		 */
-		private List<String> copyColors(String text, int maxLength, int... splitPoints) {
-			if (maxLength < 1)
-				return new ArrayList<>();
-
-			List<String> splitText = new ArrayList<>();
-			int lastSplitPoint = 0;
-
-			for (final int splitPoint : splitPoints) {
-
-				if (splitPoint < 0)
-					throw new IllegalArgumentException("SplitPoints cannot be negative!");
-				else if (splitPoint <= lastSplitPoint)
-					throw new IllegalArgumentException("Please put your splitPoints in order from small to large!");
-				else if (splitPoint >= text.length() || splitPoint >= maxLength)
-					break;
-
-				splitText.add(text.substring(lastSplitPoint, splitPoint));
-				lastSplitPoint = splitPoint;
-			}
-
-			if (text.length() > lastSplitPoint)
-				splitText.add(text.substring(lastSplitPoint, Math.min(text.length(), maxLength)));
-
-			for (int index = 1; index < splitText.size(); index++) {
-				final int currentSplitPoint = splitPoints.length > index ? splitPoints[index] : maxLength;
-				final int previousSplitPoint = splitPoints.length > index - 1 ? splitPoints[index - 1] : 0;
-				final int maxSubStringLength = currentSplitPoint - previousSplitPoint;
-				final boolean lastLoop = index == splitText.size() - 1;
-				String previousText = splitText.get(index - 1);
-				final String currentText = splitText.get(index);
-				String fixedText = currentText;
-				String marge = null;
-
-				if (previousText.endsWith(SimpleScoreboard.COLOR_CHAR)) {
-					previousText = previousText.substring(0, previousText.length() - 1);
-					fixedText = SimpleScoreboard.COLOR_CHAR + currentText;
-
-					if (!lastLoop) {
-						marge = fixedText.substring(fixedText.length() - 1);
-						fixedText = fixedText.substring(0, fixedText.length() - 1);
-					}
-				} else if (!currentText.startsWith(SimpleScoreboard.COLOR_CHAR)) {
-					final String lastColor = ChatColor.getLastColors(previousText);
-					fixedText = lastColor + currentText;
-
-					if (!lastLoop) {
-						marge = fixedText.substring(fixedText.length() - 2);
-						fixedText = fixedText.substring(0, fixedText.length() - 2);
-					}
+				if (!lastLoop) {
+					marge = fixedText.substring(fixedText.length() - 1);
+					fixedText = fixedText.substring(0, fixedText.length() - 1);
 				}
+			} else if (!currentText.startsWith(SimpleScoreboard.COLOR_CHAR)) {
+				final String lastColor = ChatColor.getLastColors(previousText);
+				fixedText = lastColor + currentText;
 
-				if (fixedText.length() > maxSubStringLength) {
-					marge = fixedText.substring(maxSubStringLength);
-					fixedText = fixedText.substring(0, maxSubStringLength);
+				if (!lastLoop) {
+					marge = fixedText.substring(fixedText.length() - 2);
+					fixedText = fixedText.substring(0, fixedText.length() - 2);
 				}
-
-				splitText.set(index - 1, previousText);
-				splitText.set(index, fixedText);
-
-				List<String> linesWithMarge = new ArrayList<>();
-
-				for (int j = index + 1; j < splitText.size(); j++)
-					linesWithMarge.add(splitText.get(j));
-
-				linesWithMarge = this.passMergeThrough(marge, linesWithMarge, maxLength);
-
-				for (int j = 0; j < linesWithMarge.size(); j++)
-					splitText.set(index + 1 + j, linesWithMarge.get(j));
 			}
 
-			int stringLength = 0;
+			if (fixedText.length() > maxSubStringLength) {
+				marge = fixedText.substring(maxSubStringLength);
+				fixedText = fixedText.substring(0, maxSubStringLength);
+			}
 
-			for (final String line : splitText)
-				stringLength += line.length();
+			splitText.set(index - 1, previousText);
+			splitText.set(index, fixedText);
 
-			if (stringLength > maxLength)
-				splitText = this.passMergeThrough(null, splitText, maxLength);
+			List<String> linesWithMarge = new ArrayList<>();
 
-			return splitText;
+			for (int j = index + 1; j < splitText.size(); j++)
+				linesWithMarge.add(splitText.get(j));
+
+			linesWithMarge = passMergeThrough(marge, linesWithMarge, maxLength);
+
+			for (int j = 0; j < linesWithMarge.size(); j++)
+				splitText.set(index + 1 + j, linesWithMarge.get(j));
 		}
 
-		private List<String> passMergeThrough(String marge, List<String> text, int maxLength) {
-			final StringBuilder textBuilder = new StringBuilder(marge == null ? "" : marge);
-			final List<Integer> stringLengths = new ArrayList<>();
-			final List<String> newSplitText = new ArrayList<>();
+		int stringLength = 0;
 
-			for (final String line : text) {
-				stringLengths.add(line.length());
-				textBuilder.append(line);
-			}
+		for (final String line : splitText)
+			stringLength += line.length();
 
-			String textWithMarge = textBuilder.toString();
-			textWithMarge = textWithMarge.substring(0, Math.min(maxLength, textWithMarge.length()));
-			int previousLength = 0;
+		if (stringLength > maxLength)
+			splitText = passMergeThrough(null, splitText, maxLength);
 
-			for (int index = 0; index < stringLengths.size(); index++) {
-				int length = stringLengths.get(index);
+		return splitText;
+	}
 
-				if (index == stringLengths.size() - 1)
-					length = Math.max(length, maxLength);
+	private static List<String> passMergeThrough(String marge, List<String> text, int maxLength) {
+		final StringBuilder textBuilder = new StringBuilder(marge == null ? "" : marge);
+		final List<Integer> stringLengths = new ArrayList<>();
+		final List<String> newSplitText = new ArrayList<>();
 
-				final String subString = textWithMarge.substring(previousLength,
-						Math.min(textWithMarge.length(), previousLength + length));
-
-				if (!subString.isEmpty())
-					newSplitText.add(subString);
-
-				previousLength += length;
-			}
-
-			return newSplitText;
+		for (final String line : text) {
+			stringLengths.add(line.length());
+			textBuilder.append(line);
 		}
+
+		String textWithMarge = textBuilder.toString();
+		textWithMarge = textWithMarge.substring(0, Math.min(maxLength, textWithMarge.length()));
+		int previousLength = 0;
+
+		for (int index = 0; index < stringLengths.size(); index++) {
+			int length = stringLengths.get(index);
+
+			if (index == stringLengths.size() - 1)
+				length = Math.max(length, maxLength);
+
+			final String subString = textWithMarge.substring(previousLength, Math.min(textWithMarge.length(), previousLength + length));
+
+			if (!subString.isEmpty())
+				newSplitText.add(subString);
+
+			previousLength += length;
+		}
+
+		return newSplitText;
 	}
 }
