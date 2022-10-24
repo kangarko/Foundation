@@ -341,18 +341,19 @@ final class AutoRegisterScanner {
 		else if (DiscordListener.class.isAssignableFrom(clazz))
 			// Automatically registered in its constructor
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+
 		else if (SimpleEnchantment.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered in its constructor
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 			if (!enchantListenersRegistered) {
+				enchantListenersRegistered = true;
+
 				plugin.registerEvents(FoundationEnchantmentListener.getInstance());
 
 				EnchantmentPacketListener.getInstance().onRegister();
 			}
-
-			enchantListenersRegistered = true;
 		}
 
 		else if (Tool.class.isAssignableFrom(clazz))
