@@ -496,6 +496,7 @@ public final class Common {
 				else
 					try {
 						sender.sendMessage(toSend);
+
 					} catch (final Throwable t) {
 						Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
 
