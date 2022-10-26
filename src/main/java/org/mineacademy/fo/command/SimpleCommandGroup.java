@@ -123,7 +123,7 @@ public abstract class SimpleCommandGroup {
 	 * Register this command group into Bukkit and start using it
 	 */
 	public final void register() {
-		Valid.checkBoolean(!this.isRegistered(), "Main command already registered as: " + this.mainCommand);
+		Valid.checkBoolean(!this.isRegistered(), "Command group already registered as: " + this.mainCommand);
 
 		this.mainCommand = new MainCommand(this.label);
 
