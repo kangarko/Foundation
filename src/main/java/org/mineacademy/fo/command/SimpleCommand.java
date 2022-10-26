@@ -324,12 +324,6 @@ public abstract class SimpleCommand extends Command {
 		this.currentLabel = label;
 		this.args = args;
 
-		// Set tell prefix only if the parent setting was on
-		final String oldTellPrefix = Common.getTellPrefix();
-
-		if (this.tellPrefix != null)
-			Common.setTellPrefix(this.tellPrefix);
-
 		// Optional sublabel if this is a sub command
 		final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
 
@@ -442,7 +436,6 @@ public abstract class SimpleCommand extends Command {
 			Common.error(t, "Failed to execute command /" + this.getLabel() + sublabel + " " + String.join(" ", args));
 
 		} finally {
-			Common.setTellPrefix(oldTellPrefix);
 
 			// Prevent duplication since MainCommand delegates this
 			if (!(this instanceof MainCommand))
