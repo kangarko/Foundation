@@ -307,7 +307,6 @@ final class YamlComments {
 
 			if (o instanceof Map) {
 				int entryIndex = 0;
-				final int mapSize = ((Map<?, ?>) o).size();
 
 				for (final Map.Entry<?, ?> entry : ((Map<?, ?>) o).entrySet()) {
 					builder.append(prefixSpaces);
@@ -319,9 +318,6 @@ final class YamlComments {
 
 					builder.append(entry.getKey()).append(": ").append(yaml.dump(entry.getValue()));
 					entryIndex++;
-
-					if (entryIndex != mapSize)
-						builder.append("\n");
 				}
 
 			} else if (o instanceof String || o instanceof Character)
