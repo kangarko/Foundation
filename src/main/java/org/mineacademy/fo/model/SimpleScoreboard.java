@@ -76,7 +76,7 @@ public class SimpleScoreboard {
 	 */
 	@Getter
 	@Setter
-	private final int updateDelayTicks = 20;
+	private int updateDelayTicks = 20;
 	/**
 	 * The title of this scoreboard
 	 */
