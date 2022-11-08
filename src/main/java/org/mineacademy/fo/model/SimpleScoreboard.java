@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -75,13 +74,11 @@ public class SimpleScoreboard {
 	 * The update tick delay
 	 */
 	@Getter
-	@Setter
 	private int updateDelayTicks = 20;
 	/**
 	 * The title of this scoreboard
 	 */
 	@Getter
-	@Setter
 	private String title;
 	/**
 	 * The running update task
@@ -156,6 +153,14 @@ public class SimpleScoreboard {
 	 */
 	protected String replaceVariables(final Player player, final String message) {
 		return message;
+	}
+
+	public final void setUpdateDelayTicks(int updateDelayTicks) {
+		this.updateDelayTicks = updateDelayTicks;
+	}
+
+	public final void setTitle(String title) {
+		this.title = title;
 	}
 
 	/**
@@ -241,7 +246,7 @@ public class SimpleScoreboard {
 	// ------------------------------------------------------------------------------------------------------------
 
 	public List<String> getRows() {
-		return new ArrayList<>(this.rows);
+		return this.rows;
 	}
 
 	/**
@@ -259,19 +264,19 @@ public class SimpleScoreboard {
 	 *
 	 * @param entries
 	 */
-	public final void addRows(final Collection<String> entries) {
+	public final void addRows(final Collection<Object> entries) {
 		Valid.checkBoolean((this.rows.size() + entries.size()) < 16,
 				"You are trying to add too many rows (the limit is 15)");
 
-		for (final String entry : entries)
-			this.rows.add(Common.colorize(String.valueOf(entry)));
+		for (final Object entry : entries)
+			this.rows.add(Common.colorize(String.valueOf(entry.toString())));
 	}
 
-	public final void changeRow(final int index, final String value) {
+	public final void setRow(final int index, final Object value) {
 		Valid.checkBoolean(index < this.rows.size(),
 				"The row for index " + index + " is currently not existing. Please use addRows()!");
 
-		this.rows.set(index, Common.colorize(value));
+		this.rows.set(index, Common.colorize(value.toString()));
 	}
 
 	/**
