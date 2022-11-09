@@ -345,7 +345,7 @@ public class AnimationUtil {
 				if (subtitleFrames != null)
 					this.subtitle = subtitleFrames.get(this.frame % subtitleFrames.size());
 
-				Remain.sendTitle(who, 10, 70, 20, this.title, this.subtitle);
+				Remain.sendTitle(who, this.title, this.subtitle, 10, 70, 20);
 
 				this.frame++;
 

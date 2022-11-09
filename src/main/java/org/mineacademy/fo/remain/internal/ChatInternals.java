@@ -104,7 +104,7 @@ public class ChatInternals {
 	 * @param title
 	 * @param subtitle
 	 */
-	public static void sendTitleLegacy(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
+	public static void sendTitleLegacy(final Player player, final String title, final String subtitle, final int fadeIn, final int stay, final int fadeOut) {
 		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {

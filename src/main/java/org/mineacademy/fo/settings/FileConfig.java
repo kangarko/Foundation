@@ -1632,7 +1632,7 @@ public abstract class FileConfig {
 		}
 
 		public void playLong(final Player player, final Function<String, String> replacer) {
-			this.play(player, 5, 4 * 20, 15, replacer);
+			this.play(player, replacer, 5, 4 * 20, 15);
 		}
 
 		public void playShort(final Player player) {
@@ -1640,15 +1640,15 @@ public abstract class FileConfig {
 		}
 
 		public void playShort(final Player player, final Function<String, String> replacer) {
-			this.play(player, 3, 2 * 20, 5, replacer);
+			this.play(player, replacer, 3, 2 * 20, 5);
 		}
 
 		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut) {
-			this.play(player, fadeIn, stay, fadeOut, null);
+			this.play(player, null, fadeIn, stay, fadeOut);
 		}
 
-		public void play(final Player player, final int fadeIn, final int stay, final int fadeOut, Function<String, String> replacer) {
-			Remain.sendTitle(player, fadeIn, stay, fadeOut, replacer != null ? replacer.apply(this.title) : this.title, replacer != null ? replacer.apply(this.subtitle) : this.subtitle);
+		public void play(final Player player, Function<String, String> replacer, final int fadeIn, final int stay, final int fadeOut) {
+			Remain.sendTitle(player, replacer != null ? replacer.apply(this.title) : this.title, replacer != null ? replacer.apply(this.subtitle) : this.subtitle, fadeIn, stay, fadeOut);
 		}
 	}
 

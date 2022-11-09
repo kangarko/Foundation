@@ -1056,7 +1056,7 @@ public final class Remain {
 	 * @param subtitle
 	 */
 	public static void sendTitle(final Player player, final String title, final String subtitle) {
-		sendTitle(player, 20, 3 * 20, 20, title, subtitle);
+		sendTitle(player, title, subtitle, 20, 3 * 20, 20);
 	}
 
 	/**
@@ -1069,12 +1069,12 @@ public final class Remain {
 	 * @param title    the title, will be colorized
 	 * @param subtitle the subtitle, will be colorized
 	 */
-	public static void sendTitle(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
+	public static void sendTitle(final Player player, final String title, final String subtitle, final int fadeIn, final int stay, final int fadeOut) {
 		if (MinecraftVersion.newerThan(V.v1_7))
 			if (hasExtendedPlayerTitleAPI)
 				player.sendTitle(Common.colorize(title), Common.colorize(subtitle), fadeIn, stay, fadeOut);
 			else
-				ChatInternals.sendTitleLegacy(player, fadeIn, stay, fadeOut, title, subtitle);
+				ChatInternals.sendTitleLegacy(player, title, subtitle, fadeIn, stay, fadeOut);
 		else {
 			Common.tell(player, title);
 			Common.tell(player, subtitle);

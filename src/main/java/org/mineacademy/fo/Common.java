@@ -449,9 +449,12 @@ public final class Common {
 				final String[] split = stripped.split("\\|");
 				final String title = split[0];
 				final String subtitle = split.length > 1 ? Common.joinRange(1, split) : null;
+				final int fadeIn = split.length > 2 ? Integer.parseInt(Common.joinRange(2, split)) : 10;
+				final int stay = split.length > 3 ? Integer.parseInt(Common.joinRange(3, split)) : 30;
+				final int fadeOut = split.length > 4 ? Integer.parseInt(Common.joinRange(4, split)) : 10;
 
 				if (sender instanceof Player)
-					Remain.sendTitle((Player) sender, title, subtitle);
+					Remain.sendTitle((Player) sender, title, subtitle, fadeIn, stay, fadeOut);
 
 				else {
 					tellJson(sender, title);
