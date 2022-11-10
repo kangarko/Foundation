@@ -183,7 +183,7 @@ public final class Variables {
 	 * Replaces variables in the messages using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 * We also support PlaceholderAPI and MVdWPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param messages
 	 * @param sender
@@ -202,7 +202,7 @@ public final class Variables {
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 * We also support PlaceholderAPI and MVdWPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param message
 	 * @param sender
@@ -216,7 +216,7 @@ public final class Variables {
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 * We also support PlaceholderAPI and MVdWPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param message
 	 * @param sender
@@ -231,7 +231,7 @@ public final class Variables {
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
-	 * We also support PlaceholderAPI and MvdvPlaceholderAPI (only if sender is a Player).
+	 * We also support PlaceholderAPI and MVdWPlaceholderAPI (only if sender is a Player).
 	 *
 	 * @param message
 	 * @param sender
@@ -273,7 +273,7 @@ public final class Variables {
 				}
 			}
 
-			// PlaceholderAPI and MvdvPlaceholderAPI
+			// PlaceholderAPI and MVdWPlaceholderAPI
 			if (senderIsPlayer)
 				message = HookManager.replacePlaceholders((Player) sender, message);
 
