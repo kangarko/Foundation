@@ -120,6 +120,18 @@ public final class StrictMap<K, V> extends StrictCollection {
 	 *
 	 * @param m
 	 */
+	public void putAll(StrictMap<? extends K, ? extends V> m) {
+		for (final Map.Entry<? extends K, ? extends V> e : m.entrySet())
+			Valid.checkBoolean(!this.map.containsKey(e.getKey()), String.format(this.getCannotAddMessage(), e.getKey(), this.map.get(e.getKey())));
+
+		this.override(m);
+	}
+
+	/**
+	 * Put the given map into this one, failing if a key already exists
+	 *
+	 * @param m
+	 */
 	public void putAll(Map<? extends K, ? extends V> m) {
 		for (final Map.Entry<? extends K, ? extends V> e : m.entrySet())
 			Valid.checkBoolean(!this.map.containsKey(e.getKey()), String.format(this.getCannotAddMessage(), e.getKey(), this.map.get(e.getKey())));
@@ -156,8 +168,17 @@ public final class StrictMap<K, V> extends StrictCollection {
 	 *
 	 * @param m
 	 */
-	public void override(Map<? extends K, ? extends V> m) {
-		this.map.putAll(m);
+	public void override(StrictMap<? extends K, ? extends V> map) {
+		this.override(map.map);
+	}
+
+	/**
+	 * Put new pairs into the map, overriding old one
+	 *
+	 * @param m
+	 */
+	public void override(Map<? extends K, ? extends V> map) {
+		this.map.putAll(map);
 	}
 
 	/**
