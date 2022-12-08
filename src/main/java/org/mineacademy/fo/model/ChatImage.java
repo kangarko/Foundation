@@ -6,6 +6,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 
@@ -19,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Represents a way to show an image in chat
@@ -29,9 +31,37 @@ import lombok.NonNull;
 public final class ChatImage {
 
 	/**
+	 * Returns the default length, 8
+	 */
+	public final static int DEFAULT_HEIGHT = 8;
+
+	/**
 	 * Represents empty char
 	 */
 	private final static char TRANSPARENT_CHAR = ' ';
+
+	/**
+	 * Represents Minotar API endpoint from where we fetch the image
+	 */
+	private final static String MINOTAR_API_ENDPOINT = "https://minotar.net/avatar/{PLAYER_NAME}/{HEIGHT}.png";
+
+	/**
+	 * The strategy to resize the image. By default, the TYPE_NEAREST_NEIGHBOR does not
+	 * "smooth" edges, which is suitable for avatars and Minecraft assets. Change to
+	 * {@link AffineTransformOp#TYPE_BILINEAR} to antialias the downsized image.
+	 *
+	 * @see AffineTransformOp
+	 */
+	@Getter
+	@Setter
+	private static int resizeMethod = AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
+
+	/**
+	 * Edit the color used as background for PNG images, by default WHITE
+	 */
+	@Getter
+	@Setter
+	private static Color backgroundColor = Color.WHITE;
 
 	/**
 	 * Represents the currently loaded lines
@@ -58,6 +88,7 @@ public final class ChatImage {
 
 	/**
 	 * Appends the given text as centered, next to the image
+	 * Beware that using formatting colors or unicode might break centering!
 	 *
 	 * @param text
 	 * @return
@@ -101,7 +132,7 @@ public final class ChatImage {
 	 *
 	 * @param sender
 	 */
-	public void sendToPlayer(CommandSender sender) {
+	public void send(CommandSender sender) {
 		for (final String line : this.lines)
 			sender.sendMessage(Variables.replace(line, sender));
 	}
@@ -109,6 +140,117 @@ public final class ChatImage {
 	/* ------------------------------------------------------------------------------- */
 	/* Static */
 	/* ------------------------------------------------------------------------------- */
+
+	/**
+	 * Create a player head image from the player username. Uses DARK_SHADE font
+	 * and {@link #DEFAULT_HEIGHT}. Invokes a blocking web request to
+	 * {@link #MINOTAR_API_ENDPOINT} and throws an error on any failure.
+	 *
+	 * @param playerName
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromHead(String playerName) throws IOException {
+		return fromHead(playerName, DEFAULT_HEIGHT);
+	}
+
+	/**
+	 * Create a player head image from the player username. Uses DARK_SHADE font.
+	 * Invokes a blocking web request to {@link #MINOTAR_API_ENDPOINT} and throws
+	 * an error on any failure.
+	 *
+	 * @param playerName
+	 * @param height
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromHead(String playerName, int height) throws IOException {
+		return fromHead(playerName, height, ChatImage.Type.DARK_SHADE);
+	}
+
+	/**
+	 * Create a player head image from the player username. Invokes a blocking web request
+	 * to {@link #MINOTAR_API_ENDPOINT} and throws an error on any failure.
+	 *
+	 * @param playerName
+	 * @param height
+	 * @param characterType
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromHead(String playerName, int height, Type characterType) throws IOException {
+		return fromImage(MINOTAR_API_ENDPOINT.replace("{PLAYER_NAME}", playerName).replace("{HEIGHT}", String.valueOf(height)), height, characterType);
+	}
+
+	/**
+	 * Create a chat image from the given remote URL, the {@link #DEFAULT_HEIGHT} and DARK_SHADE
+	 * character type. Invokes a blocking web request and throws an error on any failure.
+	 *
+	 * @param webUrl
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromImage(String webUrl) throws IOException {
+		return fromImage(webUrl, DEFAULT_HEIGHT);
+	}
+
+	/**
+	 * Create a chat image from the given remote URL, the given line height and DARK_SHADE character type.
+	 * Invokes a blocking web request and throws an error on any failure.
+	 *
+	 * @param webUrl
+	 * @param height
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromImage(String webUrl, int height) throws IOException {
+		return fromImage(webUrl, height, Type.DARK_SHADE);
+	}
+
+	/**
+	 * Create a chat image from the given remote URL, the given line height and character type.
+	 * Invokes a blocking web request and throws an error on any failure.
+	 *
+	 * @param webUrl
+	 * @param height
+	 * @param characterType
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromImage(@NonNull String webUrl, int height, Type characterType) throws IOException {
+		final BufferedImage image = ImageIO.read(new URL(webUrl));
+
+		if (image == null)
+			throw new NullPointerException("Unable to load image from URL ");
+
+		else
+			return fromSource(image, height, characterType);
+	}
+
+	/**
+	 * Create an image to show in a chat message from the given path
+	 * in your plugin's JAR, with {@link #DEFAULT_HEIGHT} and DARK_SHADE character type.
+	 *
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromFile(@NonNull File file) throws IOException {
+		return fromFile(file, DEFAULT_HEIGHT);
+	}
+
+	/**
+	 * Create an image to show in a chat message from the given path
+	 * in your plugin's JAR, with the given height and DARK_SHADE character type.
+	 *
+	 * @param file
+	 * @param height
+	 * @return
+	 * @throws IOException
+	 */
+	public static ChatImage fromFile(@NonNull File file, int height) throws IOException {
+		return fromFile(file, height, ChatImage.Type.DARK_SHADE);
+	}
 
 	/**
 	 * Create an image to show in a chat message from the given path
@@ -127,31 +269,31 @@ public final class ChatImage {
 
 		if (image == null)
 			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
-		else {
 
-			final BufferedImage newImage = new BufferedImage(
-					image.getWidth(),
-					image.getHeight(),
-					BufferedImage.TYPE_INT_RGB);
+		else
+			return fromSource(image, height, characterType);
+	}
 
-			newImage.createGraphics()
-					.drawImage(image,
-							0,
-							0,
-							Color.WHITE,
-							null);
+	/*
+	 * Helper to load the image
+	 */
+	private static ChatImage fromSource(@NonNull BufferedImage image, int height, @NonNull Type characterType) {
+		Valid.checkBoolean(height >= 2, "File image height must be equal or above 2");
 
-			final CompChatColor[][] chatColors = parseImage(newImage, height);
-			final ChatImage chatImage = new ChatImage();
+		final BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+		newImage.createGraphics().drawImage(image, 0, 0, backgroundColor, null);
 
-			chatImage.lines = parseColors(chatColors, characterType);
+		final CompChatColor[][] chatColors = parseImage(newImage, height);
+		final ChatImage chatImage = new ChatImage();
 
-			return chatImage;
-		}
+		chatImage.lines = parseColors(chatColors, characterType);
+
+		return chatImage;
 	}
 
 	/**
 	 * Return a chat image from finished lines that were already created from {@link #fromFile(File, int, Type)}
+	 * Useful when loading from a disk file or a remote databsae
 	 *
 	 * @param lines
 	 * @return
@@ -197,7 +339,7 @@ public final class ChatImage {
 				width / (double) originalImage.getWidth(),
 				height / (double) originalImage.getHeight());
 
-		final AffineTransformOp operation = new AffineTransformOp(af, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		final AffineTransformOp operation = new AffineTransformOp(af, resizeMethod);
 
 		return operation.filter(originalImage, null);
 	}
@@ -233,6 +375,7 @@ public final class ChatImage {
 	 * @author bobacadodl
 	 */
 	public enum Type {
+
 		BLOCK('\u2588'),
 		DARK_SHADE('\u2593'),
 		MEDIUM_SHADE('\u2592'),
