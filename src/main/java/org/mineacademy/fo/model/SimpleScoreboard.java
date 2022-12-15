@@ -167,9 +167,8 @@ public class SimpleScoreboard {
 	 */
 	public final void setTitle(String title) {
 		final int maxTitleLength = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13) ? 128 : 32;
-		final String colorizedTitle = Common.colorize(title);
 
-		this.title = colorizedTitle.length() > maxTitleLength ? colorizedTitle.substring(0, maxTitleLength) : colorizedTitle;
+		this.title = title.length() > maxTitleLength ? title.substring(0, maxTitleLength) : title;
 		this.title = this.title.endsWith(COLOR_CHAR) ? this.title.substring(0, this.title.length() - 1) : this.title;
 	}
 
@@ -282,7 +281,7 @@ public class SimpleScoreboard {
 		final List<String> lines = new ArrayList<>();
 
 		for (String entry : entries)
-			lines.add(entry == null ? "" : Common.colorize(entry));
+			lines.add(entry == null ? "" : entry);
 
 		this.rows.addAll(lines);
 	}
@@ -296,7 +295,7 @@ public class SimpleScoreboard {
 	public final void setRow(final int index, final String value) {
 		Valid.checkBoolean(index < this.rows.size(), "The row for index " + index + " is currently not existing. Please use addRows()!");
 
-		this.rows.set(index, value == null ? "" : Common.colorize(value));
+		this.rows.set(index, value == null ? "" : value);
 	}
 
 	/**
@@ -430,21 +429,21 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	private void reloadEntries(Player player) throws IllegalArgumentException {
-		final int size = this.rows.size();
+		final String colorizedTitle = Common.colorize(this.title);
 		final Scoreboard scoreboard = player.getScoreboard();
 		Objective mainboard = scoreboard.getObjective("mainboard");
 
 		if (mainboard == null) {
 			mainboard = scoreboard.registerNewObjective("mainboard", "dummy");
-			mainboard.setDisplayName(this.title);
+			mainboard.setDisplayName(colorizedTitle);
 			mainboard.setDisplaySlot(DisplaySlot.SIDEBAR);
 		}
 
-		if (!mainboard.getDisplayName().equals(this.title))
-			mainboard.setDisplayName(this.title);
+		if (!mainboard.getDisplayName().equals(colorizedTitle))
+			mainboard.setDisplayName(colorizedTitle);
 
 		for (int lineNumber = 0; lineNumber < 15; lineNumber++) {
-			final int scoreboardLineNumber = size - lineNumber;
+			final int scoreboardLineNumber = this.rows.size() - lineNumber;
 			Team line = scoreboard.getTeam("line" + scoreboardLineNumber);
 
 			if (lineNumber < this.rows.size()) {
@@ -455,11 +454,11 @@ public class SimpleScoreboard {
 				final boolean mc1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
 				final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
 				final int[] splitPoints = new int[]{mc1_13 ? 64 : 16, mc1_18 ? 32767 : 40, mc1_13 ? 64 : 16};
-				final List<String> copy = copyColors(replaceTheme(this.replaceVariables(player, scoreboardLineRaw)), splitPoints);
+				final List<String> copy = copyColors(Common.colorize(replaceTheme(this.replaceVariables(player, scoreboardLineRaw))), splitPoints);
 
-				final String prefix = Common.colorize(copy.isEmpty() ? "" : copy.get(0));
-				final String entry = Common.colorize(copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1));
-				final String suffix = Common.colorize(copy.size() < 3 ? "" : copy.get(2));
+				final String prefix = copy.isEmpty() ? "" : copy.get(0);
+				final String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1);
+				final String suffix = copy.size() < 3 ? "" : copy.get(2);
 				String oldEntry = null;
 
 				if (!line.getPrefix().equals(prefix))
