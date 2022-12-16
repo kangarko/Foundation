@@ -454,15 +454,16 @@ public class SimpleScoreboard {
 				final String scoreboardLineRaw = this.rows.get(lineNumber).replace("{player}", player.getName());
 				final boolean mc1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
 				final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
-				final int[] splitPoints = new int[]{mc1_13 ? 64 : 16, mc1_18 ? 32767 : 40, mc1_13 ? 64 : 16};
 				final String finishedRow = Common.colorize(replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
+				final boolean rowUsed = rowsDone.contains(finishedRow);
+				final int[] splitPoints = new int[]{mc1_13 ? 64 : 16, mc1_18 ? 32767 : 40, mc1_13 ? 64 : 16};
 
-				if(rowsDone.contains(finishedRow))
+				if(rowUsed)
 					splitPoints[1] = splitPoints[1] - 2;
 
 				final List<String> copy = copyColors(finishedRow, splitPoints);
 				final String prefix = copy.isEmpty() ? "" : copy.get(0);
-				final String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1);
+				final String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1) + (rowUsed ? COLOR_CHAR + COLORS[lineNumber] : "");
 				final String suffix = copy.size() < 3 ? "" : copy.get(2);
 				String oldEntry = null;
 
