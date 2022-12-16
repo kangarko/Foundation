@@ -431,6 +431,7 @@ public class SimpleScoreboard {
 	private void reloadEntries(Player player) throws IllegalArgumentException {
 		final String colorizedTitle = Common.colorize(this.title);
 		final Scoreboard scoreboard = player.getScoreboard();
+		final List<String> rowsDone = new ArrayList<>();
 		Objective mainboard = scoreboard.getObjective("mainboard");
 
 		if (mainboard == null) {
@@ -454,8 +455,12 @@ public class SimpleScoreboard {
 				final boolean mc1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
 				final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
 				final int[] splitPoints = new int[]{mc1_13 ? 64 : 16, mc1_18 ? 32767 : 40, mc1_13 ? 64 : 16};
-				final List<String> copy = copyColors(Common.colorize(replaceTheme(this.replaceVariables(player, scoreboardLineRaw))), splitPoints);
+				final String finishedRow = Common.colorize(replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
 
+				if(rowsDone.contains(finishedRow))
+					splitPoints[1] = splitPoints[1] - 2;
+
+				final List<String> copy = copyColors(finishedRow, splitPoints);
 				final String prefix = copy.isEmpty() ? "" : copy.get(0);
 				final String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1);
 				final String suffix = copy.size() < 3 ? "" : copy.get(2);
@@ -488,6 +493,7 @@ public class SimpleScoreboard {
 					scoreboard.resetScores(oldEntry);
 
 				mainboard.getScore(entry).setScore(scoreboardLineNumber);
+				rowsDone.add(finishedRow);
 			} else if (line != null) {
 				for (final String oldEntry : line.getEntries())
 					scoreboard.resetScores(oldEntry);
