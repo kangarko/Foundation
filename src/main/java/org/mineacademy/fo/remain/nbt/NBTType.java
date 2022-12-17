@@ -21,7 +21,7 @@ public enum NBTType {
 	NBTTagCompound(10);
 
 	NBTType(int i) {
-		this.id = i;
+		id = i;
 	}
 
 	private final int id;
@@ -30,7 +30,7 @@ public enum NBTType {
 	 * @return Id used by Minecraft internally
 	 */
 	public int getId() {
-		return this.id;
+		return id;
 	}
 
 	/**
@@ -38,7 +38,7 @@ public enum NBTType {
 	 * @return Enum representing the id, NBTTagEnd for invalide ids
 	 */
 	public static NBTType valueOf(int id) {
-		for (final NBTType t : values())
+		for (NBTType t : values())
 			if (t.getId() == id)
 				return t;
 		return NBTType.NBTTagEnd;

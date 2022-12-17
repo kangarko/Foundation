@@ -4,8 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import org.mineacademy.fo.exception.FoException;
-
 final class ReflectionUtil {
 
 	private static Field field_modifiers;
@@ -14,30 +12,32 @@ final class ReflectionUtil {
 		try {
 			field_modifiers = Field.class.getDeclaredField("modifiers");
 			field_modifiers.setAccessible(true);
-		} catch (final NoSuchFieldException ex) {
+		} catch (NoSuchFieldException ex) {
 			try {
 				// This hacky workaround is for newer jdk versions 11+?
-				final Method fieldGetter = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+				Method fieldGetter = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
 				fieldGetter.setAccessible(true);
-				final Field[] fields = (Field[]) fieldGetter.invoke(Field.class, false);
-				for (final Field f : fields)
+				Field[] fields = (Field[]) fieldGetter.invoke(Field.class, false);
+				for (Field f : fields)
 					if (f.getName().equals("modifiers")) {
 						field_modifiers = f;
 						field_modifiers.setAccessible(true);
 						break;
 					}
-			} catch (final Exception e) {
-				throw new FoException(e);
+			} catch (Exception e) {
+				throw new NbtApiException(e);
 			}
 		}
-		if (field_modifiers == null)
-			throw new FoException("Unable to init the modifiers Field.");
+		if (field_modifiers == null) {
+			throw new NbtApiException("Unable to init the modifiers Field.");
+		}
 	}
 
 	public static Field makeNonFinal(Field field) throws IllegalArgumentException, IllegalAccessException {
-		final int mods = field.getModifiers();
-		if (Modifier.isFinal(mods))
+		int mods = field.getModifiers();
+		if (Modifier.isFinal(mods)) {
 			field_modifiers.set(field, mods & ~Modifier.FINAL);
+		}
 		return field;
 	}
 

@@ -4,8 +4,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mineacademy.fo.exception.FoException;
-
 /**
  * Temporary solution to hold Forge1710 mappings.
  *
@@ -19,7 +17,7 @@ class Forge1710Mappings {
 	private static Method crucible_toString;
 
 	static {
-		//Fields
+		// Fields
 		classMap.put("NMS_NBTBASE", "net.minecraft.nbt.NBTBase");
 		classMap.put("NMS_NBTTAGSTRING", "net.minecraft.nbt.NBTTagString");
 		classMap.put("NMS_NBTTAGINT", "net.minecraft.nbt.NBTTagInt");
@@ -42,7 +40,7 @@ class Forge1710Mappings {
 		classMap.put("NMS_GAMEPROFILESERIALIZER", "net.minecraft.nbt.NBTUtil");
 		classMap.put("NMS_IREGISTRY", "net.minecraft.util.IRegistry");
 
-		//Methods
+		// Methods
 		methodMap.put("COMPOUND_SET_FLOAT", "func_74776_a");
 		methodMap.put("COMPOUND_SET_STRING", "func_74778_a");
 		methodMap.put("COMPOUND_SET_INT", "func_74768_a");
@@ -53,7 +51,7 @@ class Forge1710Mappings {
 		methodMap.put("COMPOUND_SET_BYTE", "func_74774_a");
 		methodMap.put("COMPOUND_SET_DOUBLE", "func_74780_a");
 		methodMap.put("COMPOUND_SET_BOOLEAN", "func_74757_a");
-		methodMap.put("COMPOUND_MERGE", "merge");//Only present on Crucible
+		methodMap.put("COMPOUND_MERGE", "merge");// Only present on Crucible
 		methodMap.put("COMPOUND_SET", "func_74782_a");
 		methodMap.put("COMPOUND_GET", "func_74781_a");
 		methodMap.put("COMPOUND_GET_LIST", "func_150295_c");
@@ -93,10 +91,11 @@ class Forge1710Mappings {
 		methodMap.put("PARSE_NBT", "getTagFromJson");
 		methodMap.put("GAMEPROFILE_DESERIALIZE", "func_152459_a");
 
-		//Crucible
+		// Crucible
 		try {
-			crucible_toString = Class.forName("net.minecraft.nbt.NBTTagCompound").getDeclaredMethod("crucible_toString");
-		} catch (final Exception e) {
+			crucible_toString = Class.forName("net.minecraft.nbt.NBTTagCompound")
+					.getDeclaredMethod("crucible_toString");
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -111,11 +110,14 @@ class Forge1710Mappings {
 
 	public static String toString(Object nbtTagCompound) {
 		if (crucible_toString == null)
-			throw new FoException("Method not loaded! 'Forge1710Mappings.crucible_toString' ");
+			throw new NbtApiException("Method not loaded! 'Forge1710Mappings.crucible_toString' ");
 		try {
 			return (String) crucible_toString.invoke(nbtTagCompound);
-		} catch (final Exception ex) {
-			throw new FoException("Error while calling the method 'crucible_toString', from Forge1710Mappings. Passed Class: " + Forge1710Mappings.class, ex);
+		} catch (Exception ex) {
+			throw new NbtApiException(
+					"Error while calling the method 'crucible_toString', from Forge1710Mappings. Passed Class: "
+							+ Forge1710Mappings.class,
+					ex);
 		}
 	}
 

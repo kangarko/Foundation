@@ -29,10 +29,14 @@ enum MinecraftVersion {
 	MC1_17_R1(1171),
 	MC1_18_R1(1181, true),
 	MC1_18_R2(1182, true),
-	MC1_19_R1(1191, true);
+	MC1_19_R1(1191, true),
+	MC1_19_R2(1192, true);
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
+
+	// NBT-API Version
+	protected static final String VERSION = "2.11.1";
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -50,24 +54,27 @@ enum MinecraftVersion {
 	 * @return A simple comparable Integer, representing the version.
 	 */
 	public int getVersionId() {
-		return this.versionId;
+		return versionId;
 	}
 
 	/**
-	 * @return True if method names are in Mojang format and need to be remapped internally
+	 * @return True if method names are in Mojang format and need to be remapped
+	 *         internally
 	 */
 	public boolean isMojangMapping() {
-		return this.mojangMapping;
+		return mojangMapping;
 	}
 
 	/**
-	 * This method is required to hot-wire the plugin during mappings generation for newer mc versions thanks to md_5 not used mojmap.
+	 * This method is required to hot-wire the plugin during mappings generation for
+	 * newer mc versions thanks to md_5 not used mojmap.
 	 *
 	 * @return
 	 */
 	public String getPackageName() {
-		if (this == UNKNOWN)
+		if (this == UNKNOWN) {
 			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		}
 		return this.name().replace("MC", "v");
 	}
 
@@ -98,13 +105,14 @@ enum MinecraftVersion {
 	 * @return The enum for the MinecraftVersion this server is running
 	 */
 	public static MinecraftVersion getVersion() {
-		if (version != null)
+		if (version != null) {
 			return version;
+		}
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
-		} catch (final IllegalArgumentException ex) {
+		} catch (IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
 		}
 
@@ -115,18 +123,15 @@ enum MinecraftVersion {
 	 * @return True, if Forge is present
 	 */
 	public static boolean isForgePresent() {
-		if (isForgePresent != null)
+		if (isForgePresent != null) {
 			return isForgePresent;
+		}
 		try {
-			if (getVersion() == MinecraftVersion.MC1_7_R4)
-				Class.forName("cpw.mods.fml.common.Loader");
-			else
-				Class.forName("net.minecraftforge.fml.common.Loader");
-
 			isForgePresent = true;
-		} catch (final Exception ex) {
+		} catch (Exception ex) {
 			isForgePresent = false;
 		}
 		return isForgePresent;
 	}
+
 }

@@ -5,38 +5,38 @@ package org.mineacademy.fo.remain.nbt;
  * {@link NBTCompoundList} This Compound implementation is missing the ability
  * for further subCompounds and Lists. This class probably will change in the
  * future
- *
+ * 
  * @author tr7zw
  *
  */
 public class NBTListCompound extends NBTCompound {
 
-	private final NBTList<?> owner;
-	private Object compound;
+    private NBTList<?> owner;
+    private Object compound;
 
-	protected NBTListCompound(NBTList<?> parent, Object obj) {
-		super(null, null);
-		this.owner = parent;
-		this.compound = obj;
-	}
+    protected NBTListCompound(NBTList<?> parent, Object obj) {
+        super(null, null);
+        owner = parent;
+        compound = obj;
+    }
 
-	public NBTList<?> getListParent() {
-		return this.owner;
-	}
+    public NBTList<?> getListParent() {
+        return owner;
+    }
 
-	@Override
-	public Object getCompound() {
-		return this.compound;
-	}
+    @Override
+    public Object getCompound() {
+        return compound;
+    }
 
-	@Override
-	protected void setCompound(Object compound) {
-		this.compound = compound;
-	}
+    @Override
+    protected void setCompound(Object compound) {
+        this.compound = compound;
+    }
 
-	@Override
-	protected void saveCompound() {
-		this.owner.save();
-	}
+    @Override
+    protected void saveCompound() {
+        owner.save();
+    }
 
 }
