@@ -310,8 +310,7 @@ public abstract class Menu {
 			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
 			final Position position = field.getAnnotation(Position.class);
 
-			if (!(button instanceof DummyButton))
-				this.registeredButtons.put(button, position);
+			this.registeredButtons.put(button, position);
 
 		} else if (Button[].class.isAssignableFrom(type))
 			throw new FoException("Button[] is no longer supported in menu for " + this.getClass());
