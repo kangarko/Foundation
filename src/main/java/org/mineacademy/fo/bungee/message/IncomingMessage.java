@@ -91,9 +91,6 @@ public final class IncomingMessage extends Message {
 		// first is the senders server name and the second is the action
 		// -----------------------------------------------------------------
 
-		// Read channel name, dispose, set above
-		this.input.readUTF();
-
 		// Read senders UUID
 		this.setSenderUid(this.input.readUTF());
 
@@ -253,6 +250,6 @@ public final class IncomingMessage extends Message {
 	 * @param player
 	 */
 	public void forward(Player player) {
-		player.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", this.data);
+		player.sendPluginMessage(SimplePlugin.getInstance(), this.channel, this.data);
 	}
 }

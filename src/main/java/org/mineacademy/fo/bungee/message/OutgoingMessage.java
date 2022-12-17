@@ -57,7 +57,7 @@ public final class OutgoingMessage extends Message {
 		// first is the senders server name and the second is the action
 		// -----------------------------------------------------------------
 
-		this.queue.add(listener.getChannel());
+		//this.queue.add(listener.getChannel());
 		this.queue.add(senderUid);
 		this.queue.add(this.getServerName());
 		this.queue.add(this.getAction().name());
@@ -177,7 +177,7 @@ public final class OutgoingMessage extends Message {
 	 * @param player
 	 */
 	public void send(Player player) {
-		player.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", this.compileData());
+		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.compileData());
 	}
 
 	/**
