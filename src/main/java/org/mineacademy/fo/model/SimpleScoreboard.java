@@ -2,7 +2,6 @@ package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -17,6 +16,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -267,7 +267,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param entries
 	 */
-	public final void addRows(final String... entries) {
+	public final void addRows(final Object... entries) {
 		this.addRows(Arrays.asList(entries));
 	}
 
@@ -276,12 +276,12 @@ public class SimpleScoreboard {
 	 *
 	 * @param entries
 	 */
-	public final void addRows(final Collection<String> entries) {
-		Valid.checkBoolean((this.rows.size() + entries.size()) < 16, "You are trying to add too many rows (the limit is 15)");
+	public final void addRows(final List<Object> entries) {
+		Valid.checkBoolean((this.rows.size() + entries.size()) <= 15, "You are trying to add too many rows (the limit is 15)");
 		final List<String> lines = new ArrayList<>();
 
-		for (String entry : entries)
-			lines.add(entry == null ? "" : entry);
+		for (Object object : entries)
+			lines.add(object == null ? "" : Common.colorize(SerializeUtil.serialize(SerializeUtil.Mode.YAML, object).toString()));
 
 		this.rows.addAll(lines);
 	}
@@ -326,7 +326,6 @@ public class SimpleScoreboard {
 	// ------------------------------------------------------------------------------------------------------------
 	// Start / stop
 	// ------------------------------------------------------------------------------------------------------------
-
 
 	/**
 	 * Starts visualizing this scoreboard
@@ -456,9 +455,9 @@ public class SimpleScoreboard {
 				final boolean mc1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
 				final String finishedRow = Common.colorize(replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
 				final boolean rowUsed = rowsDone.contains(finishedRow);
-				final int[] splitPoints = new int[]{mc1_13 ? 64 : 16, mc1_18 ? 32767 : 40, mc1_13 ? 64 : 16};
+				final int[] splitPoints = { mc1_13 ? 64 : 16, mc1_18 ? 32767 : 40, mc1_13 ? 64 : 16 };
 
-				if(rowUsed)
+				if (rowUsed)
 					splitPoints[1] = splitPoints[1] - 2;
 
 				final List<String> copy = copyColors(finishedRow, splitPoints);
