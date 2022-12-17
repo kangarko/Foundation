@@ -1899,7 +1899,9 @@ class EssentialsHook {
 
 		if (user == null)
 			try {
-				user = this.ess.getUserMap().getUserFromBukkit(name);
+				Method getUserFromBukkit = ReflectionUtil.getMethod(this.ess.getUserMap().getClass(), "getUserFromBukkit", String.class);
+
+				user = ReflectionUtil.invoke(getUserFromBukkit, this.ess.getUserMap(), name);
 
 			} catch (final Throwable ex) {
 				user = this.ess.getUser(name);
@@ -3602,16 +3604,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
