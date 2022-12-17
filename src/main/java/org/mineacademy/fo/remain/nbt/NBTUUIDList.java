@@ -4,8 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
-import org.mineacademy.fo.exception.FoException;
-
 /**
  * Integer implementation for NBTLists
  *
@@ -24,27 +22,27 @@ public class NBTUUIDList extends NBTList<UUID> {
 	@Override
 	protected Object asTag(UUID object) {
 		try {
-			final Constructor<?> con = ClassWrapper.NMS_NBTTAGINTARRAY.getClazz().getDeclaredConstructor(int[].class);
+			Constructor<?> con = ClassWrapper.NMS_NBTTAGINTARRAY.getClazz().getDeclaredConstructor(int[].class);
 			con.setAccessible(true);
 			return con.newInstance(uuidToIntArray(object));
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			throw new FoException("Error while wrapping the Object " + object + " to it's NMS object!", e);
+			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
 		}
 	}
 
 	@Override
 	public UUID get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
-			ReflectionMethod.COMPOUND_SET.run(this.tmpContainer.getCompound(), "tmp", obj);
-			final int[] val = this.tmpContainer.getIntArray("tmp");
-			this.tmpContainer.removeKey("tmp");
+			Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			ReflectionMethod.COMPOUND_SET.run(tmpContainer.getCompound(), "tmp", obj);
+			int[] val = tmpContainer.getIntArray("tmp");
+			tmpContainer.removeKey("tmp");
 			return uuidFromIntArray(val);
-		} catch (final NumberFormatException nf) {
+		} catch (NumberFormatException nf) {
 			return null;
-		} catch (final Exception ex) {
-			throw new FoException(ex);
+		} catch (Exception ex) {
+			throw new NbtApiException(ex);
 		}
 	}
 
@@ -54,13 +52,12 @@ public class NBTUUIDList extends NBTList<UUID> {
 	}
 
 	public static int[] uuidToIntArray(UUID uUID) {
-		final long l = uUID.getMostSignificantBits();
-		final long m = uUID.getLeastSignificantBits();
+		long l = uUID.getMostSignificantBits();
+		long m = uUID.getLeastSignificantBits();
 		return leastMostToIntArray(l, m);
 	}
 
 	private static int[] leastMostToIntArray(long l, long m) {
 		return new int[] { (int) (l >> 32), (int) l, (int) (m >> 32), (int) m };
 	}
-
 }

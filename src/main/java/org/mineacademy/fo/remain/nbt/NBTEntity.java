@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 
 /**
  * NBT class to access vanilla tags from Entities. Entities don't support custom
@@ -23,35 +22,36 @@ public class NBTEntity extends NBTCompound {
 	 */
 	public NBTEntity(Entity entity) {
 		super(null, null);
-		if (entity == null)
+		if (entity == null) {
 			throw new NullPointerException("Entity can't be null!");
-		this.ent = entity;
+		}
+		ent = entity;
 	}
 
 	@Override
 	public Object getCompound() {
 		if (!Bukkit.isPrimaryThread())
-			throw new FoException("Entity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(this.ent));
+			throw new NbtApiException("Entity NBT needs to be accessed sync!");
+		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(ent));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
 		if (!Bukkit.isPrimaryThread())
-			throw new FoException("Entity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(this.ent));
+			throw new NbtApiException("Entity NBT needs to be accessed sync!");
+		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
 	}
 
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 *
+	 * 
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer requires Minecraft 1.14+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer() requires MC 1.14+");
 
-		return new NBTPersistentDataContainer(this.ent.getPersistentDataContainer());
+		return new NBTPersistentDataContainer(ent.getPersistentDataContainer());
 	}
 
 }

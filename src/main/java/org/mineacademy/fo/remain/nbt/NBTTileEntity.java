@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 
 /**
  * NBT class to access vanilla tags from TileEntities. TileEntities don't
@@ -24,42 +23,43 @@ public class NBTTileEntity extends NBTCompound {
 	 */
 	public NBTTileEntity(BlockState tile) {
 		super(null, null);
-		if (tile == null || MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced())
+		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced())) {
 			throw new NullPointerException("Tile can't be null/not placed!");
+		}
 		this.tile = tile;
 	}
 
 	@Override
 	public Object getCompound() {
 		if (!Bukkit.isPrimaryThread())
-			throw new FoException("BlockEntity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getTileEntityNBTTagCompound(this.tile);
+			throw new NbtApiException("BlockEntity NBT needs to be accessed sync!");
+		return NBTReflectionUtil.getTileEntityNBTTagCompound(tile);
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
 		if (!Bukkit.isPrimaryThread())
-			throw new FoException("BlockEntity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setTileEntityNBTTagCompound(this.tile, compound);
+			throw new NbtApiException("BlockEntity NBT needs to be accessed sync!");
+		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, compound);
 	}
 
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 *
+	 * 
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer requires Minecraft 1.14+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer() requires MC 1.14+");
 
-		if (this.hasTag("PublicBukkitValues"))
-			return this.getCompound("PublicBukkitValues");
-		else {
-			final NBTContainer container = new NBTContainer();
+		if (hasTag("PublicBukkitValues")) {
+			return getCompound("PublicBukkitValues");
+		} else {
+			NBTContainer container = new NBTContainer();
 			container.addCompound("PublicBukkitValues").setString("__nbtapi",
 					"Marker to make the PersistentDataContainer have content");
-			this.mergeCompound(container);
-			return this.getCompound("PublicBukkitValues");
+			mergeCompound(container);
+			return getCompound("PublicBukkitValues");
 		}
 	}
 
