@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.bukkit.entity.Player;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -242,14 +241,5 @@ public final class IncomingMessage extends Message {
 		this.moveHead(Short.class);
 
 		return this.input.readShort();
-	}
-
-	/**
-	 * Forwards this message to a player
-	 *
-	 * @param player
-	 */
-	public void forward(Player player) {
-		player.sendPluginMessage(SimplePlugin.getInstance(), this.channel, this.data);
 	}
 }

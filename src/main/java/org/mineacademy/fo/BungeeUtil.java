@@ -2,6 +2,7 @@ package org.mineacademy.fo;
 
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.ChannelNotRegisteredException;
@@ -197,7 +198,7 @@ public final class BungeeUtil {
 		final byte[] byteArray = out.toByteArray();
 
 		try {
-			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+			Bukkit.getServer().sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
 
 		} catch (final ChannelNotRegisteredException ex) {
 			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "
