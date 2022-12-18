@@ -75,7 +75,7 @@ public final class CompMonsterEgg {
 	 * @return the entity type, or unknown or error if not found, see
 	 * {@link #acceptUnsafeEggs}
 	 */
-	public static EntityType getEntity(final ItemStack item) {
+	public static EntityType getEntity(@NonNull final ItemStack item) {
 		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 		EntityType type = null;
 
