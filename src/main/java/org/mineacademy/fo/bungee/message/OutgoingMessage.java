@@ -169,18 +169,14 @@ public final class OutgoingMessage extends Message {
 		this.queue.add(object);
 	}
 
-	@Override
-	protected byte[] getData() {
-		return this.compileData();
-	}
-
 	/**
 	 * Delegate write methods for the byte array data output
 	 * based on the queue
 	 *
 	 * @return
 	 */
-	private byte[] compileData() {
+	@Override
+	protected byte[] getData() {
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
 		for (final Object object : this.queue)
