@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.bungee.BungeeMessageType;
@@ -170,13 +169,9 @@ public final class OutgoingMessage extends Message {
 		this.queue.add(object);
 	}
 
-	/**
-	 * Send this message with the current data for the given player!
-	 *
-	 * @param player
-	 */
-	public void send(Player player) {
-		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.compileData());
+	@Override
+	protected byte[] getData() {
+		return this.compileData();
 	}
 
 	/**
