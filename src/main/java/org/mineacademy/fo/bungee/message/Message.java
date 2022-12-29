@@ -2,7 +2,7 @@ package org.mineacademy.fo.bungee.message;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.bungee.BungeeMessageType;
@@ -146,7 +146,7 @@ abstract class Message {
 	 *
 	 * @param player
 	 */
-	public final void sendToBungee() {
-		Bukkit.getServer().sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.getData());
+	public final void sendToBungee(Player player) {
+		player.sendPluginMessage(SimplePlugin.getInstance(), this.getChannel(), this.getData());
 	}
 }
