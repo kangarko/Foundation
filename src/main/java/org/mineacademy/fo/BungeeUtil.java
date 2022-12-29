@@ -2,7 +2,6 @@ package org.mineacademy.fo;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.ChannelNotRegisteredException;
@@ -198,7 +197,7 @@ public final class BungeeUtil {
 		final byte[] byteArray = out.toByteArray();
 
 		try {
-			Bukkit.getServer().sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
 
 		} catch (final ChannelNotRegisteredException ex) {
 			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "
@@ -257,6 +256,7 @@ public final class BungeeUtil {
 				throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
 		}
 
+		// Can't use "Bukkit.getServer()" since it will send one message for each player, creating duplicates (i.e. 4X join message bug)
 		sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", out.toByteArray());
 	}
 
