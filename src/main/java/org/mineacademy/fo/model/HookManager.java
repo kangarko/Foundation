@@ -3555,25 +3555,29 @@ class MythicMobsHook {
 		} catch (final NoSuchElementException ex) {
 		}
 
-		return null;
+		return Remain.getName(entity);
 	}
 
 	private String getBossNameV5(Entity entity) {
+		try {
+			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
+			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
 
-		final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
-		final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
+			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
+			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
 
-		final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
-		final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
+			for (final Object mob : activeMobs) {
+				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
 
-		for (final Object mob : activeMobs) {
-			final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
+				if (uniqueId.equals(entity.getUniqueId()))
+					return ReflectionUtil.invoke("getName", mob);
+			}
 
-			if (uniqueId.equals(entity.getUniqueId()))
-				return ReflectionUtil.invoke("getName", mob);
+		} catch (Throwable t) {
+			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}
 
-		return null;
+		return Remain.getName(entity);
 	}
 }
 

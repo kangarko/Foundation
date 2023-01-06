@@ -85,6 +85,14 @@ final class FoundationFilter {
 				|| message.contains("[DiscordSRV] [JDA] Login Successful!") || message.contains("[DiscordSRV] [JDA] Connected to WebSocket"))
 			return true;
 
+		// Workaround for Spigot/Paper not removing [Not Secure] console misinformation
+		// The only thing that is insecure is Microsoft itself from it not being able to read your messages
+		if (message.trim().startsWith("[Not Secure] ")) {
+			System.out.println(message.replace("[Not Secure] ", ""));
+
+			return true;
+		}
+
 		message = message.toLowerCase();
 
 		// Only filter this after plugin has been fully enabled
