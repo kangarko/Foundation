@@ -51,7 +51,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
@@ -3614,16 +3613,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
