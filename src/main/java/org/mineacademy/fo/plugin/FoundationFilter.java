@@ -14,6 +14,7 @@ import org.apache.logging.log4j.message.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
+import org.mineacademy.fo.Common;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -88,7 +89,13 @@ final class FoundationFilter {
 		// Workaround for Spigot/Paper not removing [Not Secure] console misinformation
 		// The only thing that is insecure is Microsoft itself from it not being able to read your messages
 		if (message.trim().startsWith("[Not Secure] ")) {
-			System.out.println(message.replace("[Not Secure] ", ""));
+			message = message.replace("[Not Secure] ", "");
+
+			// Color support
+			if (Bukkit.getConsoleSender() != null)
+				Bukkit.getConsoleSender().sendMessage(Common.colorize(message));
+			else
+				System.out.println(message);
 
 			return true;
 		}
