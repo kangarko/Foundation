@@ -357,7 +357,7 @@ public abstract class Menu {
 				Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 
 				ItemStack item = button.getItem();
-				Valid.checkNotNull(item, "Menu " + this.getTitle() + " contained button " + button.getClass().getSimpleName() + " with empty item!");
+				Valid.checkNotNull(item, "Menu " + this.getTitle() + " contained button " + button.getClass() + " named '" + button.getClass().getSimpleName() + "' with empty item!");
 
 				if (ItemUtil.isSimilar(fromItem, item))
 					return button;
