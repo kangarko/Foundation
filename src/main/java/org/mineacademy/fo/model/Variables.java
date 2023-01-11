@@ -289,7 +289,6 @@ public final class Variables {
 
 				if (!original.equals(message) && ((message.contains("{") && message.contains("}")) || message.contains("%")))
 					return replace(message, sender, replacements, colorize);
-
 			}
 
 			if (senderIsPlayer) {
