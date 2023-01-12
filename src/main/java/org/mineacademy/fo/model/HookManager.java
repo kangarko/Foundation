@@ -80,6 +80,9 @@ import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import io.lumine.mythic.api.MythicProvider;
+import io.lumine.mythic.api.mobs.MobManager;
+import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -3533,7 +3536,7 @@ class MythicMobsHook {
 		if (this.legacyVersion)
 			return this.getBossNameV4(entity);
 
-		return this.getBossNameV5(entity);
+		return this.getBossNameV5Direct(entity);
 	}
 
 	private String getBossNameV4(Entity entity) {
@@ -3557,24 +3560,32 @@ class MythicMobsHook {
 		return Remain.getName(entity);
 	}
 
-	private String getBossNameV5(Entity entity) {
-		try {
+	private String getBossNameV5Direct(Entity entity) {
+		UUID ourUniqueId = entity.getUniqueId();
+		MobManager mobManager = MythicProvider.get().getMobManager();
+
+		for (ActiveMob mob : mobManager.getActiveMobs()) {
+			if (ourUniqueId.equals(mob.getUniqueId()))
+				return mob.getName();
+		}
+
+		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-
+		
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-
+		
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-
+		
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-
+		
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
-		}
+		}*/
 
 		return Remain.getName(entity);
 	}
@@ -3613,16 +3624,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
