@@ -665,7 +665,7 @@ public final class HookManager {
 	 * @param entity
 	 * @return
 	 */
-	public static String getBossName(Entity entity) {
+	public static String getBossName(@NonNull Entity entity) {
 		return isBossLoaded() ? bossHook.getBossName(entity) : null;
 	}
 
@@ -676,7 +676,7 @@ public final class HookManager {
 	 * @param entity
 	 * @return
 	 */
-	public static String getMythicMobName(Entity entity) {
+	public static String getMythicMobName(@NonNull Entity entity) {
 		return isMythicMobsLoaded() ? mythicMobsHook.getBossName(entity) : null;
 	}
 
@@ -3572,17 +3572,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-		
+
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-		
+
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-		
+
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-		
+
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3624,16 +3624,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
