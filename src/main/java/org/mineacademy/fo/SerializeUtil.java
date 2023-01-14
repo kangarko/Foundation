@@ -169,6 +169,9 @@ public final class SerializeUtil {
 		else if (object instanceof PotionEffect)
 			return serializePotionEffect((PotionEffect) object);
 
+		else if (object instanceof Enchantment)
+			return ((Enchantment) object).getName();
+
 		else if (object instanceof ItemCreator)
 			return serialize(mode, ((ItemCreator) object).make());
 
