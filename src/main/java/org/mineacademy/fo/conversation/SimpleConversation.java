@@ -60,7 +60,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 *
 	 * @param player
 	 */
-	public final void start(final Player player) {
+	public final CustomConversation start(final Player player) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing!");
 
 		// Do not allow open inventory since they cannot type anyways
@@ -76,8 +76,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		conversation.getCancellers().add(this.getCanceller());
 
 		conversation.addConversationAbandonedListener(this);
-
 		conversation.begin();
+
+		return conversation;
 	}
 
 	/**
