@@ -19,18 +19,18 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
- * A utility class for displaying glowing block corners
+ * A utility class for displaying glowing block corners.
  */
 @UtilityClass
 public class BlockVisualizer {
 
 	/**
-	 * Stores a map of currently visualized blocks
+	 * Stores a map of currently visualized blocks.
 	 */
-	private final StrictMap<Location, Object /*old MC compatibility*/> visualizedBlocks = new StrictMap<>();
+	private final StrictMap<Location, Object /*Old Minecraft compatibility.*/> visualizedBlocks = new StrictMap<>();
 
 	/**
-	 * Starts visualizing the block at the given location
+	 * Starts visualizing the block at the given location.
 	 *
 	 * @param block
 	 * @param mask
@@ -50,7 +50,7 @@ public class BlockVisualizer {
 	}
 
 	/*
-	 * Spawns a customized falling block at the given location
+	 * Spawns a customized falling block at the given location.
 	 */
 	private FallingBlock spawnFallingBlock(final Location location, final CompMaterial mask, final String blockName) {
 		if (MinecraftVersion.olderThan(V.v1_9))
@@ -70,7 +70,7 @@ public class BlockVisualizer {
 	}
 
 	/**
-	 * Stops visualizing the block at the given location
+	 * Stops visualizing the block at the given location.
 	 *
 	 * @param block
 	 */
@@ -89,7 +89,7 @@ public class BlockVisualizer {
 	}
 
 	/**
-	 * Stop all blocks from being visualized
+	 * Stop all blocks from being visualized.
 	 */
 	public void stopAll() {
 		for (final Location location : new HashSet<>(visualizedBlocks.keySet())) {
@@ -101,7 +101,7 @@ public class BlockVisualizer {
 	}
 
 	/**
-	 * Return true if the given block is currently being visualized
+	 * Return true if the given block is currently being visualized.
 	 *
 	 * @param block
 	 * @return
