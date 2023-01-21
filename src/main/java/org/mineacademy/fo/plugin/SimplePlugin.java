@@ -32,6 +32,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
+import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -349,8 +350,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			// Register our listeners
 			this.registerEvents(this);
-			this.registerEvents(new MenuListener());
 			this.registerEvents(new FoundationListener());
+
+			if (this.areMenusEnabled())
+				this.registerEvents(new MenuListener());
 
 			if (this.areToolsEnabled())
 				this.registerEvents(new ToolsListener());
@@ -1220,6 +1223,18 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Deprecated
 	public final void setBungeeCord(BungeeListener bungeeListener) {
 		this.bungeeListener = bungeeListener;
+	}
+
+	/**
+	 * Should we listen for {@link Menu} class clicking?
+	 *
+	 * True by default. Returning false here will break the entire Foundation menu
+	 * system, useful if you want to use your own.
+	 *
+	 * @return
+	 */
+	public boolean areMenusEnabled() {
+		return true;
 	}
 
 	/**
