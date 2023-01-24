@@ -24,6 +24,7 @@ import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -350,8 +351,8 @@ public final class PlayerUtil {
 	 * @param permission
 	 * @return
 	 */
-	public static boolean hasPerm(final Permissible sender, String permission) {
-		Valid.checkNotNull(sender, "cannot call hasPerm for null sender!");
+	public static boolean hasPerm(final Permissible sender, final String permission) {
+		Valid.checkNotNull(sender, "Cannot call PlayerUtil#hasPerm() for null sender!");
 
 		if (permission == null) {
 			Common.log("THIS IS NOT AN ACTUAL ERROR, YOUR PLUGIN WILL WORK FINE");
@@ -366,6 +367,15 @@ public final class PlayerUtil {
 
 		Valid.checkBoolean(!permission.contains("{plugin_name}") && !permission.contains("{plugin_name_lower}"),
 				"Found {plugin_name} variable calling hasPerm(" + sender + ", " + permission + ")." + "This is now disallowed, contact plugin authors to put " + SimplePlugin.getNamed().toLowerCase() + " in their permission.");
+
+		// Tries calling Vault for the permission check, more support for wildcart operator
+		// See https://github.com/kangarko/ChatControl-Red/issues/2246
+		if (HookManager.isVaultLoaded() && sender instanceof CommandSender) {
+			Boolean result = HookManager.hasVaultPermissionFast((CommandSender) sender, permission);
+
+			if (result != null)
+				return result;
+		}
 
 		return sender.hasPermission(permission);
 	}
