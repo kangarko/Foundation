@@ -1337,6 +1337,27 @@ public final class HookManager {
 	}
 
 	/**
+	 * Checks if the given command sender has the given permission.
+	 *
+	 * You are advised to do the following checks beforehand,
+	 * this method does not have them for maximum performance:
+	 *
+	 * **SENDER AND PERMISSION MUST NOT BE NULL**
+	 * **VAULT MUST BE INSTALLED**
+	 *
+	 * Returns NULL if Vault could not connect to a compatible Permission plugin.
+	 * Returns TRUE or FALSE depending on the result of the Vault check.
+	 * Returns FALSE on exception and fails silently by printing the error to the console.
+	 *
+	 * @param sender
+	 * @param perm
+	 * @return
+	 */
+	public static Boolean hasVaultPermissionFast(final CommandSender sender, final String permission) {
+		return vaultHook.hasPerm(sender, permission);
+	}
+
+	/**
 	 * Returns the player's primary permission group using Vault, or an empty
 	 * string if they don't have one.
 	 *
@@ -2240,6 +2261,24 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 	// Permissions
 	// ------------------------------------------------------------------------------
+
+	@Nullable
+	Boolean hasPerm(final CommandSender sender, final String permission) {
+		if (this.permissions == null)
+			return null;
+
+		try {
+			return this.permissions.has(sender, permission);
+
+		} catch (final Throwable t) {
+			Common.logTimed(900,
+					"SEVERE: Unable to ask Vault plugin if " + sender.getName() + " has '" + permission + "' permission, returning false. "
+							+ "This error only shows every 15 minutes. "
+							+ "Run /vault-info and check if your permissions plugin is running correctly.");
+
+			return false;
+		}
+	}
 
 	Boolean hasPerm(@NonNull final OfflinePlayer player, final String perm) {
 		try {
@@ -3617,17 +3656,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-
+		
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-
+		
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-
+		
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-
+		
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3669,16 +3708,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
