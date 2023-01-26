@@ -371,7 +371,7 @@ public final class PlayerUtil {
 		// Tries calling Vault for the permission check, more support for wildcart operator
 		// See https://github.com/kangarko/ChatControl-Red/issues/2246
 		if (HookManager.isVaultLoaded() && sender instanceof CommandSender) {
-			Boolean result = HookManager.hasVaultPermissionFast((CommandSender) sender, permission);
+			Boolean result = HookManager.hasVaultPermissionFast(null, (CommandSender) sender, permission);
 
 			if (result != null)
 				return result;

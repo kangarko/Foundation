@@ -1316,7 +1316,7 @@ public final class HookManager {
 	 */
 	public static boolean hasProtocolLibPermission(Player player, String perm) {
 		if (isProtocolLibLoaded() && protocolLibHook.isTemporaryPlayer(player))
-			return hasVaultPermission(player, perm);
+			return hasVaultPermission(null, player, perm);
 
 		return PlayerUtil.hasPerm(player, perm);
 	}
@@ -1327,13 +1327,12 @@ public final class HookManager {
 	 *
 	 * @param offlinePlayer the player to check.
 	 * @param perm          the permission to check.
-	 *
 	 * @return
 	 */
-	public static boolean hasVaultPermission(final OfflinePlayer offlinePlayer, final String perm) {
+	public static boolean hasVaultPermission(@Nullable final String world, final OfflinePlayer offlinePlayer, final String perm) {
 		Valid.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
 
-		return vaultHook.hasPerm(offlinePlayer, perm);
+		return vaultHook.hasPerm(world, offlinePlayer.getName(), perm);
 	}
 
 	/**
@@ -1349,12 +1348,13 @@ public final class HookManager {
 	 * Returns TRUE or FALSE depending on the result of the Vault check.
 	 * Returns FALSE on exception and fails silently by printing the error to the console.
 	 *
+	 * @param world
 	 * @param sender
 	 * @param perm
 	 * @return
 	 */
-	public static Boolean hasVaultPermissionFast(final CommandSender sender, final String permission) {
-		return vaultHook.hasPerm(sender, permission);
+	public static Boolean hasVaultPermissionFast(@Nullable final String world, final CommandSender sender, final String permission) {
+		return vaultHook.hasPerm(world, sender.getName(), permission);
 	}
 
 	/**
@@ -2302,7 +2302,7 @@ class VaultHook {
 		}
 	}
 
-	Boolean hasPerm(@NonNull final String world, @NonNull final String player, final String perm) {
+	Boolean hasPerm(@Nullable final String world, @NonNull final String player, final String perm) {
 		try {
 			return this.permissions != null ? perm != null ? this.permissions.has(world, player, perm) : true : null;
 		} catch (final UnsupportedOperationException t) {
