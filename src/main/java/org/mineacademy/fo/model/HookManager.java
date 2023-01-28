@@ -1952,28 +1952,38 @@ class EssentialsHook {
 	}
 
 	private User getUser(final String name) {
+		User user = null;
+
+		try {
+			user = this.ess.getUser(name);
+		} catch (final Throwable t) {
+		}
+
+		if (user != null)
+			return user;
+
 		if (this.ess.getUserMap() == null)
 			return null;
-
-		User user = null;
 
 		try {
 			user = this.ess.getUserMap().getUser(name);
 		} catch (final Throwable t) {
 		}
 
-		if (user == null)
-			try {
-				Method getUserFromBukkit = ReflectionUtil.getMethod(this.ess.getUserMap().getClass(), "getUserFromBukkit", String.class);
+		if (user != null)
+			return user;
 
-				if (getUserFromBukkit == null)
-					throw new NullPointerException(); // handled below
+		try {
+			Method getUserFromBukkit = ReflectionUtil.getMethod(this.ess.getUserMap().getClass(), "getUserFromBukkit", String.class);
 
+			if (getUserFromBukkit == null)
+				user = this.ess.getUser(name);
+			else
 				user = ReflectionUtil.invoke(getUserFromBukkit, this.ess.getUserMap(), name);
 
-			} catch (final Throwable ex) {
-				user = this.ess.getUser(name);
-			}
+		} catch (final Throwable ex) {
+		}
+
 		return user;
 	}
 
