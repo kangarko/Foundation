@@ -1551,8 +1551,8 @@ public final class Common {
 		final SimplePlugin instance = SimplePlugin.getInstance();
 		Pattern pattern = null;
 
-		regex = SimplePlugin.getInstance().regexStripColors() ? stripColors(regex) : regex;
-		regex = SimplePlugin.getInstance().regexStripAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
+		regex = instance.regexStripColors() ? stripColors(regex) : regex;
+		regex = instance.regexStripAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
 
 		try {
 
