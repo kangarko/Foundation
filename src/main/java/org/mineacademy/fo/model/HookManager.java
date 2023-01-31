@@ -2278,7 +2278,7 @@ class VaultHook {
 			return null;
 
 		try {
-			return this.permissions.has(sender, permission);
+			return this.permissions.playerHas((World) null, sender.getName(), permission);
 
 		} catch (final Throwable t) {
 			Common.logTimed(900,
