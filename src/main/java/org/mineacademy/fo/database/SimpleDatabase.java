@@ -33,6 +33,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Represents a simple MySQL database
@@ -45,6 +46,13 @@ import lombok.RequiredArgsConstructor;
  * To use this class you must know the MySQL command syntax!
  */
 public class SimpleDatabase {
+
+	/**
+	 * Should we use the more modern HikariCP connector (if available)?
+	 */
+	@Getter
+	@Setter
+	private static boolean connectUsingHikari = true;
 
 	/**
 	 * The established connection, or null if none
@@ -188,7 +196,7 @@ public class SimpleDatabase {
 			//  - org.slf4j:slf4j-api:1.7.36
 			//  - com.zaxxer:HikariCP:4.0.3
 			//
-			else if (ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig")) {
+			else if (connectUsingHikari && ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig")) {
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
