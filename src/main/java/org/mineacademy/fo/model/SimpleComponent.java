@@ -891,7 +891,20 @@ public final class SimpleComponent implements ConfigSerializable {
 				if (receiver == null)
 					return false;
 
-				final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
+				final Object result;
+
+				try {
+					result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
+
+				} catch (Throwable t) {
+					Common.error(t,
+							"Failed to parse JavaScript view condition for component!",
+							"The javascript code must return a valid true/false boolean value.",
+							"Code: " + this.viewCondition,
+							"Error: " + this);
+
+					return false;
+				}
 
 				if (result != null) {
 					Valid.checkBoolean(result instanceof Boolean, "View condition must return Boolean not " + (result == null ? "null" : result.getClass()) + " for component: " + this);
@@ -899,6 +912,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					if (!((boolean) result))
 						return false;
 				}
+
 			}
 
 			return true;
