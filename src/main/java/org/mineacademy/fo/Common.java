@@ -1517,8 +1517,10 @@ public final class Common {
 	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
 
 		try {
-			String strippedMessage = SimplePlugin.getInstance().regexStripColors() ? stripColors(message) : message;
-			strippedMessage = SimplePlugin.getInstance().regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
+			SimplePlugin instance = SimplePlugin.getInstance();
+
+			String strippedMessage = instance.regexStripColors() ? stripColors(message) : message;
+			strippedMessage = instance.regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
 
 			return pattern.matcher(TimedCharSequence.withSettingsLimit(strippedMessage));
 
@@ -2797,77 +2799,77 @@ public final class Common {
 		 */
 		D convertValue(B value);
 	}
-}
-
-/**
- * Represents a timed chat sequence, used when checking for
- * regular expressions so we time how long it takes and
- * stop the execution if takes too long
- */
-final class TimedCharSequence implements CharSequence {
 
 	/**
-	 * The timed message
+	 * Represents a timed chat sequence, used when checking for
+	 * regular expressions so we time how long it takes and
+	 * stop the execution if takes too long
 	 */
-	private final CharSequence message;
+	public final static class TimedCharSequence implements CharSequence {
 
-	/**
-	 * The timeout limit in millis
-	 */
-	private final long futureTimestampLimit;
+		/**
+		 * The timed message
+		 */
+		private final CharSequence message;
 
-	/*
-	 * Create a new timed message for the given message with a timeout in millis
-	 */
-	private TimedCharSequence(@NonNull final CharSequence message, long futureTimestampLimit) {
-		this.message = message;
-		this.futureTimestampLimit = futureTimestampLimit;
-	}
+		/**
+		 * The timeout limit in millis
+		 */
+		private final long futureTimestampLimit;
 
-	/**
-	 * Gets a character at the given index, or throws an error if
-	 * this is called too late after the constructor.
-	 */
-	@Override
-	public char charAt(final int index) {
-
-		// Temporarily disabled due to a rare condition upstream when we take this message
-		// and run it in a runnable, then this is still being evaluated past limit and it fails
-		//
-		//if (System.currentTimeMillis() > futureTimestampLimit)
-		//	throw new RegexTimeoutException(message, futureTimestampLimit);
-
-		try {
-			return this.message.charAt(index);
-		} catch (final StringIndexOutOfBoundsException ex) {
-
-			// Odd case: Java 8 seems to overflow for too-long unicode characters, security feature
-			return ' ';
+		/*
+		 * Create a new timed message for the given message with a timeout in millis
+		 */
+		private TimedCharSequence(@NonNull final CharSequence message, long futureTimestampLimit) {
+			this.message = message;
+			this.futureTimestampLimit = futureTimestampLimit;
 		}
-	}
 
-	@Override
-	public int length() {
-		return this.message.length();
-	}
+		/**
+		 * Gets a character at the given index, or throws an error if
+		 * this is called too late after the constructor.
+		 */
+		@Override
+		public char charAt(final int index) {
 
-	@Override
-	public CharSequence subSequence(final int start, final int end) {
-		return new TimedCharSequence(this.message.subSequence(start, end), this.futureTimestampLimit);
-	}
+			// Temporarily disabled due to a rare condition upstream when we take this message
+			// and run it in a runnable, then this is still being evaluated past limit and it fails
+			//
+			//if (System.currentTimeMillis() > futureTimestampLimit)
+			//	throw new RegexTimeoutException(message, futureTimestampLimit);
 
-	@Override
-	public String toString() {
-		return this.message.toString();
-	}
+			try {
+				return this.message.charAt(index);
+			} catch (final StringIndexOutOfBoundsException ex) {
 
-	/**
-	 * Compile a new char sequence with limit from settings.yml
-	 *
-	 * @param message
-	 * @return
-	 */
-	static TimedCharSequence withSettingsLimit(CharSequence message) {
-		return new TimedCharSequence(message, System.currentTimeMillis() + SimpleSettings.REGEX_TIMEOUT);
+				// Odd case: Java 8 seems to overflow for too-long unicode characters, security feature
+				return ' ';
+			}
+		}
+
+		@Override
+		public int length() {
+			return this.message.length();
+		}
+
+		@Override
+		public CharSequence subSequence(final int start, final int end) {
+			return new TimedCharSequence(this.message.subSequence(start, end), this.futureTimestampLimit);
+		}
+
+		@Override
+		public String toString() {
+			return this.message.toString();
+		}
+
+		/**
+		 * Compile a new char sequence with limit from settings.yml
+		 *
+		 * @param message
+		 * @return
+		 */
+		public static TimedCharSequence withSettingsLimit(CharSequence message) {
+			return new TimedCharSequence(message, System.currentTimeMillis() + SimpleSettings.REGEX_TIMEOUT);
+		}
 	}
 }
