@@ -17,24 +17,22 @@ import org.mineacademy.fo.model.RangedValue;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /**
  * Utility class for checking conditions and throwing our safe exception that is
  * logged into file.
  */
-@UtilityClass
 public final class Valid {
 
 	/**
 	 * Matching valid integers
 	 */
-	private final Pattern PATTERN_INTEGER = Pattern.compile("-?\\d+");
+	private static final Pattern PATTERN_INTEGER = Pattern.compile("-?\\d+");
 
 	/**
 	 * Matching valid whole numbers
 	 */
-	private final Pattern PATTERN_DECIMAL = Pattern.compile("([0-9]+\\.?[0-9]*|\\.[0-9]+)");
+	private static final Pattern PATTERN_DECIMAL = Pattern.compile("([0-9]+\\.?[0-9]*|\\.[0-9]+)");
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Checking for validity and throwing errors if false or null
@@ -45,7 +43,7 @@ public final class Valid {
 	 *
 	 * @param toCheck
 	 */
-	public void checkNotNull(final Object toCheck) {
+	public static void checkNotNull(final Object toCheck) {
 		if (toCheck == null)
 			throw new FoException();
 	}
@@ -56,7 +54,7 @@ public final class Valid {
 	 * @param toCheck
 	 * @param falseMessage
 	 */
-	public void checkNotNull(final Object toCheck, final String falseMessage) {
+	public static void checkNotNull(final Object toCheck, final String falseMessage) {
 		if (toCheck == null)
 			throw new FoException(falseMessage);
 	}
@@ -66,7 +64,7 @@ public final class Valid {
 	 *
 	 * @param expression
 	 */
-	public void checkBoolean(final boolean expression) {
+	public static void checkBoolean(final boolean expression) {
 		if (!expression)
 			throw new FoException();
 	}
@@ -78,7 +76,7 @@ public final class Valid {
 	 * @param falseMessage
 	 * @param replacements
 	 */
-	public void checkBoolean(final boolean expression, final String falseMessage, final Object... replacements) {
+	public static void checkBoolean(final boolean expression, final String falseMessage, final Object... replacements) {
 		if (!expression) {
 			String message = falseMessage;
 
@@ -99,7 +97,7 @@ public final class Valid {
 	 * @param falseMessage
 	 * @param replacements
 	 */
-	public void checkInteger(final String toCheck, final String falseMessage, final Object... replacements) {
+	public static void checkInteger(final String toCheck, final String falseMessage, final Object... replacements) {
 		if (!Valid.isInteger(toCheck))
 			throw new FoException(String.format(falseMessage, replacements));
 	}
@@ -110,7 +108,7 @@ public final class Valid {
 	 * @param collection
 	 * @param message
 	 */
-	public void checkNotEmpty(final Collection<?> collection, final String message) {
+	public static void checkNotEmpty(final Collection<?> collection, final String message) {
 		if (collection == null || collection.size() == 0)
 			throw new IllegalArgumentException(message);
 	}
@@ -121,7 +119,7 @@ public final class Valid {
 	 * @param message
 	 * @param emptyMessage
 	 */
-	public void checkNotEmpty(final String message, final String emptyMessage) {
+	public static void checkNotEmpty(final String message, final String emptyMessage) {
 		if (message == null || message.length() == 0)
 			throw new IllegalArgumentException(emptyMessage);
 	}
@@ -134,7 +132,7 @@ public final class Valid {
 	 * @param permission
 	 * @return
 	 */
-	public boolean checkPermission(final CommandSender sender, final String permission) {
+	public static boolean checkPermission(final CommandSender sender, final String permission) {
 		if (!PlayerUtil.hasPerm(sender, permission)) {
 			Common.tell(sender, SimpleLocalization.NO_PERMISSION.replace("{permission}", permission));
 
@@ -150,7 +148,7 @@ public final class Valid {
 	 *
 	 * @param asyncErrorMessage
 	 */
-	public void checkSync(final String asyncErrorMessage) {
+	public static void checkSync(final String asyncErrorMessage) {
 		Valid.checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
 	}
 
@@ -160,7 +158,7 @@ public final class Valid {
 	 *
 	 * @param syncErrorMessage
 	 */
-	public void checkAsync(final String syncErrorMessage) {
+	public static void checkAsync(final String syncErrorMessage) {
 		Valid.checkBoolean(!Bukkit.isPrimaryThread(), syncErrorMessage);
 	}
 
@@ -174,7 +172,7 @@ public final class Valid {
 	 * @param raw
 	 * @return
 	 */
-	public boolean isInteger(final String raw) {
+	public static boolean isInteger(final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is an integer!");
 
 		return Valid.PATTERN_INTEGER.matcher(raw).matches();
@@ -186,7 +184,7 @@ public final class Valid {
 	 * @param raw
 	 * @return
 	 */
-	public boolean isDecimal(final String raw) {
+	public static boolean isDecimal(final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is a decimal!");
 
 		return Valid.PATTERN_DECIMAL.matcher(raw).matches();
@@ -306,7 +304,7 @@ public final class Valid {
 	 * @param array
 	 * @return
 	 */
-	public boolean isNullOrEmpty(final Collection<?> array) {
+	public static boolean isNullOrEmpty(final Collection<?> array) {
 		return array == null || Valid.isNullOrEmpty(array.toArray());
 	}
 
@@ -316,7 +314,7 @@ public final class Valid {
 	 * @param map
 	 * @return
 	 */
-	public boolean isNullOrEmptyValues(SerializedMap map) {
+	public static boolean isNullOrEmptyValues(SerializedMap map) {
 		return isNullOrEmptyValues(map == null ? null : map.asMap());
 	}
 
@@ -326,7 +324,7 @@ public final class Valid {
 	 * @param map
 	 * @return
 	 */
-	public boolean isNullOrEmptyValues(final Map<?, ?> map) {
+	public static boolean isNullOrEmptyValues(final Map<?, ?> map) {
 
 		if (map == null)
 			return true;
@@ -344,7 +342,7 @@ public final class Valid {
 	 * @param array
 	 * @return
 	 */
-	public boolean isNullOrEmpty(final Object[] array) {
+	public static boolean isNullOrEmpty(final Object[] array) {
 		if (array != null)
 			for (final Object object : array)
 				if (object instanceof String) {
@@ -363,7 +361,7 @@ public final class Valid {
 	 * @param message
 	 * @return
 	 */
-	public boolean isNullOrEmpty(final String message) {
+	public static boolean isNullOrEmpty(final String message) {
 		return message == null || message.isEmpty();
 	}
 
@@ -374,7 +372,7 @@ public final class Valid {
 	 * @param vector
 	 * @return
 	 */
-	public boolean isFinite(final Vector vector) {
+	public static boolean isFinite(final Vector vector) {
 		return Double.isFinite(vector.getX()) && Double.isFinite(vector.getY()) && Double.isFinite(vector.getZ());
 	}
 
@@ -385,7 +383,7 @@ public final class Valid {
 	 * @param ranged
 	 * @return
 	 */
-	public boolean isInRange(final long value, final RangedValue ranged) {
+	public static boolean isInRange(final long value, final RangedValue ranged) {
 		return value >= ranged.getMinLong() && value <= ranged.getMaxLong();
 	}
 
@@ -397,7 +395,7 @@ public final class Valid {
 	 * @param max
 	 * @return
 	 */
-	public boolean isInRange(final double value, final double min, final double max) {
+	public static boolean isInRange(final double value, final double min, final double max) {
 		return value >= min && value <= max;
 	}
 
@@ -409,7 +407,7 @@ public final class Valid {
 	 * @param max
 	 * @return
 	 */
-	public boolean isInRange(final long value, final long min, final long max) {
+	public static boolean isInRange(final long value, final long min, final long max) {
 		return value >= min && value <= max;
 	}
 
@@ -419,7 +417,7 @@ public final class Valid {
 	 * @param object
 	 * @return
 	 */
-	public boolean isUUID(Object object) {
+	public static boolean isUUID(Object object) {
 		if (object instanceof String) {
 			final String[] components = object.toString().split("-");
 
@@ -440,7 +438,7 @@ public final class Valid {
 	 * @param sec
 	 * @return
 	 */
-	public boolean locationEquals(final Location first, final Location sec) {
+	public static boolean locationEquals(final Location first, final Location sec) {
 
 		if (first == null && sec == null)
 			return true;
@@ -466,7 +464,7 @@ public final class Valid {
 	 * @param second second list to compare with
 	 * @return true if lists are equal
 	 */
-	public <T> boolean listEquals(final List<T> first, final List<T> second) {
+	public static <T> boolean listEquals(final List<T> first, final List<T> second) {
 		if (first == null && second == null)
 			return true;
 
@@ -504,7 +502,7 @@ public final class Valid {
 	 * @param second
 	 * @return
 	 */
-	public boolean colorlessEquals(final String first, final String second) {
+	public static boolean colorlessEquals(final String first, final String second) {
 		return Common.stripColors(first).equalsIgnoreCase(Common.stripColors(second));
 	}
 
@@ -515,7 +513,7 @@ public final class Valid {
 	 * @param second
 	 * @return
 	 */
-	public boolean colorlessEquals(final List<String> first, final List<String> second) {
+	public static boolean colorlessEquals(final List<String> first, final List<String> second) {
 		return colorlessEquals(Common.toArray(first), Common.toArray(second));
 	}
 
@@ -526,7 +524,7 @@ public final class Valid {
 	 * @param secondArray
 	 * @return
 	 */
-	public boolean colorlessEquals(final String[] firstArray, final String[] secondArray) {
+	public static boolean colorlessEquals(final String[] firstArray, final String[] secondArray) {
 		for (int i = 0; i < firstArray.length; i++) {
 			final String first = Common.stripColors(firstArray[i]);
 			final String second = i < secondArray.length ? Common.stripColors(secondArray[i]) : "";
@@ -544,7 +542,7 @@ public final class Valid {
 	 * @param values
 	 * @return
 	 */
-	public boolean valuesEqual(Collection<String> values) {
+	public static boolean valuesEqual(Collection<String> values) {
 		final List<String> copy = new ArrayList<>(values);
 		String lastValue = null;
 
@@ -576,7 +574,7 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInList(final String element, final boolean isBlacklist, final Iterable<String> list) {
+	public static boolean isInList(final String element, final boolean isBlacklist, final Iterable<String> list) {
 		return isBlacklist == Valid.isInList(element, list);
 	}
 
@@ -587,7 +585,7 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInList(final String element, final Iterable<String> list) {
+	public static boolean isInList(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
 				if (removeSlash(element).equalsIgnoreCase(removeSlash(matched)))
@@ -606,7 +604,7 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInListStartsWith(final String element, final Iterable<String> list) {
+	public static boolean isInListStartsWith(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
 				if (removeSlash(element).toLowerCase().startsWith(removeSlash(matched).toLowerCase()))
@@ -627,9 +625,30 @@ public final class Valid {
 	 * @param list
 	 * @return
 	 */
-	public boolean isInListRegex(final String element, final Iterable<String> list) {
+	public static boolean isInListRegex(final String element, final Iterable<String> list) {
 		try {
 			for (final String regex : list)
+				if (Common.regExMatch(regex, element))
+					return true;
+
+		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
+		}
+
+		return false;
+	}
+
+	/**
+	 * Return true if any element in the given list matches your given element.
+	 *
+	 * A regular expression is compiled from that list element.
+	 *
+	 * @param element
+	 * @param list
+	 * @return
+	 */
+	public static boolean isInListRegexFast(final String element, final Iterable<Pattern> list) {
+		try {
+			for (final Pattern regex : list)
 				if (Common.regExMatch(regex, element))
 					return true;
 
@@ -646,7 +665,7 @@ public final class Valid {
 	 * @param enumeration
 	 * @return
 	 */
-	public boolean isInListEnum(final String element, final Enum<?>[] enumeration) {
+	public static boolean isInListEnum(final String element, final Enum<?>[] enumeration) {
 		for (final Enum<?> constant : enumeration)
 			if (constant.name().equalsIgnoreCase(element))
 				return true;
@@ -664,7 +683,7 @@ public final class Valid {
 	 * @deprecated can lead to unwanted matches such as when /time is in list, /t will also get caught
 	 */
 	@Deprecated
-	public boolean isInListContains(final String element, final Iterable<String> list) {
+	public static boolean isInListContains(final String element, final Iterable<String> list) {
 		try {
 			for (final String matched : list)
 				if (removeSlash(element).toLowerCase().contains(removeSlash(matched).toLowerCase()))
@@ -682,7 +701,7 @@ public final class Valid {
 	 * @param message
 	 * @return
 	 */
-	private String removeSlash(String message) {
+	private static String removeSlash(String message) {
 		return message.startsWith("/") ? message.substring(1) : message;
 	}
 }
