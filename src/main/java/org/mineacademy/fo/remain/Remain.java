@@ -660,7 +660,15 @@ public final class Remain {
 			final Object bukkitItem = craftItemClass.getConstructor(craftServerClass, nmsItemClass).newInstance(Bukkit.getServer(), nmsEntity);
 			Valid.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
 
-			modifier.accept((Item) bukkitItem);
+			// Default delay to 750ms
+			try {
+				((Item) bukkitItem).setPickupDelay(15);
+			} catch (Throwable t) {
+				// unsupported
+			}
+
+			if (modifier != null)
+				modifier.accept((Item) bukkitItem);
 
 			{ // add to the world + call event
 				final Method addEntity = location.getWorld().getClass().getMethod("addEntity", nmsEntityClass, SpawnReason.class);
