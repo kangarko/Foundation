@@ -314,7 +314,7 @@ public abstract class SimpleCommand extends Command {
 	public final boolean execute(final CommandSender sender, final String label, final String[] args) {
 
 		if (SimplePlugin.isReloading() || !SimplePlugin.getInstance().isEnabled()) {
-			Common.tell(sender, SimpleLocalization.Commands.USE_WHILE_NULL.replace("{state}", SimplePlugin.isReloading() ? SimpleLocalization.Commands.RELOADING : SimpleLocalization.Commands.DISABLED));
+			Common.tell(sender, SimpleLocalization.Commands.CANNOT_USE_WHILE_NULL.replace("{state}", SimplePlugin.isReloading() ? SimpleLocalization.Commands.RELOADING : SimpleLocalization.Commands.DISABLED));
 
 			return false;
 		}
@@ -718,6 +718,12 @@ public abstract class SimpleCommand extends Command {
 	 * @return
 	 */
 	protected final World findWorld(String name) {
+		if ("~".equals(name)) {
+			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CANNOT_AUTODETECT_WORLD);
+
+			return this.getPlayer().getWorld();
+		}
+
 		final World world = Bukkit.getWorld(name);
 
 		this.checkNotNull(world, SimpleLocalization.Commands.INVALID_WORLD.replace("{world}", name).replace("{available}", Common.join(Bukkit.getWorlds())));
