@@ -127,8 +127,11 @@ public abstract class RuleSetReader<T extends Rule> {
 
 					// Found another match, assuming previous rule is finished creating.
 					if (rule != null)
-						if (this.canFinish(rule))
+						if (this.canFinish(rule)) {
+							rule.onLoadFinish();
+
 							rules.add(rule);
+						}
 
 					try {
 						match = line.replace(this.newKeyword + " ", "");
@@ -163,8 +166,11 @@ public abstract class RuleSetReader<T extends Rule> {
 				}
 
 			// Reached end of the file and a rule is still being created, finish it.
-			if (i + 1 == lines.size() && rule != null && this.canFinish(rule))
+			if (i + 1 == lines.size() && rule != null && this.canFinish(rule)) {
+				rule.onLoadFinish();
+
 				rules.add(rule);
+			}
 		}
 
 		return rules;
