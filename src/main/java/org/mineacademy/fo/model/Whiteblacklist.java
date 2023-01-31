@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
@@ -15,13 +17,23 @@ import lombok.NonNull;
  * Represents a simple way of checking for whitelist or blacklist according
  * to the list, see {@link #Whiteblacklist(List)}
  */
-@Getter
 public final class Whiteblacklist {
 
 	/**
 	 * The list of items
 	 */
+	@Getter
 	private final Set<String> items;
+
+	/**
+	 * The list of items in precompiled pattern formats
+	 */
+	private final Set<Pattern> patterns;
+
+	/**
+	 * Were patterns compiled?
+	 */
+	private final boolean compileAsPatterns;
 
 	/**
 	 * Used for matching items against an item
@@ -29,12 +41,14 @@ public final class Whiteblacklist {
 	 * true = except
 	 * false = only
 	 */
+	@Getter
 	private final boolean whitelist;
 
 	/**
 	 * Special flag if the list is set to ["*"], that will always return true for
 	 * everything
 	 */
+	@Getter
 	private final boolean entireList;
 
 	/**
@@ -42,9 +56,26 @@ public final class Whiteblacklist {
 	 *
 	 * If the first line equals to '@blacklist', matching will be
 	 * blacklisting (only rules), otherwise this will be a whitelist (except rules)
+	 *
 	 * @param items
 	 */
 	public Whiteblacklist(@NonNull List<String> items) {
+		this(items, false);
+	}
+
+	/**
+	 * Create a new white black list from the given list
+	 *
+	 * If the first line equals to '@blacklist', matching will be
+	 * blacklisting (only rules), otherwise this will be a whitelist (except rules)
+	 *
+	 * @param items
+	 * @param compileRegex shall we precompile the list for maximum performance?
+	 */
+	public Whiteblacklist(@NonNull List<String> items, boolean compileAsPatterns) {
+		this.patterns = new HashSet<>();
+		this.compileAsPatterns = compileAsPatterns;
+
 		if (!items.isEmpty()) {
 			final String firstLine = items.get(0);
 			final String secondLine = items.size() > 1 ? items.get(1) : "";
@@ -60,13 +91,18 @@ public final class Whiteblacklist {
 
 			final List<String> copyList = new ArrayList<>();
 
-			for (final String oldItem : items)
-				if (!"*".equals(oldItem) && !"@blacklist".equals(oldItem))
-					copyList.add(oldItem);
+			for (final String item : items)
+				if (!"*".equals(item) && !"@blacklist".equals(item))
+					copyList.add(item);
 
 			this.items = new HashSet<>(copyList);
 			this.whitelist = whitelist;
 			this.entireList = entireList;
+			this.patterns.clear();
+
+			if (compileAsPatterns)
+				for (String item : this.items)
+					this.patterns.add(Common.compilePattern(item));
 		}
 
 		else {
@@ -124,7 +160,7 @@ public final class Whiteblacklist {
 		if (this.entireList)
 			return this.whitelist;
 
-		final boolean match = Valid.isInListRegex(item, this.items);
+		final boolean match = this.compileAsPatterns ? Valid.isInListRegexFast(item, this.patterns) : Valid.isInListRegex(item, this.items);
 
 		return this.whitelist ? match : !match;
 	}
