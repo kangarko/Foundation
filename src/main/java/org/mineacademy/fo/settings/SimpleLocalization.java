@@ -228,7 +228,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown when plugin is reloading or was disabled and player attempts to run command
 		 */
-		public static String USE_WHILE_NULL = "&cCannot use this command while the plugin is {state}.";
+		public static String CANNOT_USE_WHILE_NULL = "&cCannot use this command while the plugin is {state}.";
+
+		/**
+		 * The message shown in {@link org.mineacademy.fo.command.SimpleCommand#findWorld()}
+		 */
+		public static String CANNOT_AUTODETECT_WORLD = "Only living players can use ~ for their world!";
 
 		/**
 		 * The keys below are used in the {@link DebugCommand}
@@ -363,7 +368,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 				DISABLED = getString("Disabled");
 
 			if (isSet("Use_While_Null"))
-				USE_WHILE_NULL = getString("Use_While_Null");
+				CANNOT_USE_WHILE_NULL = getString("Use_While_Null");
+
+			if (isSet("Cannot_Autodetect_World"))
+				CANNOT_AUTODETECT_WORLD = getString("Cannot_Autodetect_World");
 
 			if (isSetDefault("Debug_Description"))
 				DEBUG_DESCRIPTION = getString("Debug_Description");
