@@ -74,7 +74,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CMI-API</artifactId>
-			<version>9.0.0.0</version>
+			<version>9.3.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
