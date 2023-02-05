@@ -7,7 +7,7 @@
 
 ### Foundation is a library for bootstrapping Minecraft plugins.
 [![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
-[![Javadoc](http://www.javadoc.io/badge2/foundation.icon/icon-sdk/javadoc.svg)]([http://www.javadoc.io/doc/foundation.icon/icon-sdk](https://javadoc.jitpack.io/#kangarko/Foundation/))
+[![](https://javadoc.jitpack.io/v/kangarko/Foundation.svg)](https://javadoc.jitpack.io/#kangarko/Foundation)
 
 Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
