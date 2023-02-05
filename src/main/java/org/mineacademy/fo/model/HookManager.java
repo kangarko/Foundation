@@ -267,16 +267,17 @@ public final class HookManager {
 		}
 
 		if (Common.doesPluginExist("ProtocolLib")) {
-			protocolLibHook = new ProtocolLibHook();
-
 			// Also check if the library is loaded properly.
 			try {
+				protocolLibHook = new ProtocolLibHook();
+
 				if (MinecraftVersion.newerThan(V.v1_6))
 					Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
+
 			} catch (final Throwable t) {
 				protocolLibHook = null;
 
-				Common.throwError(t, "You are running an old and unsupported version of ProtocolLib, please update it.");
+				Common.error(t, "You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
 			}
 		}
 
