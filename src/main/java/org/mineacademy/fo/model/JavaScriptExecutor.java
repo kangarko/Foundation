@@ -14,6 +14,7 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -72,27 +73,32 @@ public final class JavaScriptExecutor {
 			}
 		}
 
-		engine = scriptEngine;
+		if (Bukkit.getName().equals("Mohist"))
+			engine = null;
 
-		if (engine == null) {
-			final List<String> warningMessage = Common.newList(
-					"ERROR: JavaScript placeholders will not function!",
-					"",
-					"Your Java version/distribution lacks the",
-					"Nashorn library for JavaScript placeholders.");
+		else {
+			engine = scriptEngine;
 
-			if (Remain.getJavaVersion() >= 15)
-				warningMessage.addAll(Arrays.asList(
+			if (engine == null) {
+				final List<String> warningMessage = Common.newList(
+						"ERROR: JavaScript placeholders will not function!",
 						"",
-						"To fix this, install the NashornPlus",
-						"plugin from mineacademy.org/nashorn"));
-			else
-				warningMessage.addAll(Arrays.asList(
-						"",
-						"To fix this, install Java 11 from Oracle",
-						"or other vendor that supports Nashorn."));
+						"Your Java version/distribution lacks the",
+						"Nashorn library for JavaScript placeholders.");
 
-			Common.logFramed(false, Common.toArray(warningMessage));
+				if (Remain.getJavaVersion() >= 15)
+					warningMessage.addAll(Arrays.asList(
+							"",
+							"To fix this, install the NashornPlus",
+							"plugin from mineacademy.org/nashorn"));
+				else
+					warningMessage.addAll(Arrays.asList(
+							"",
+							"To fix this, install Java 11 from Oracle",
+							"or other vendor that supports Nashorn."));
+
+				Common.logFramed(false, Common.toArray(warningMessage));
+			}
 		}
 	}
 
