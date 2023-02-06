@@ -6,11 +6,10 @@ import java.util.UUID;
 
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.plugin.SimplePlugin;
 
 import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 
 import lombok.Getter;
 
@@ -30,6 +29,18 @@ public final class IncomingMessage extends Message {
 	private final byte[] data;
 
 	/**
+	 * The sender UUID
+	 */
+	@Getter
+	private final UUID senderUid;
+
+	/**
+	 * The serverName
+	 */
+	@Getter
+	private final String serverName;
+
+	/**
 	 * The input we use to read our data array
 	 */
 	private ByteArrayDataInput input;
@@ -40,64 +51,31 @@ public final class IncomingMessage extends Message {
 	private final ByteArrayInputStream stream;
 
 	/**
-	 * Channel name
-	 */
-	@Getter
-	private final String channel;
-
-	/**
 	 * Create a new incoming message from the given array
-	 * <p>
-	 * NB: This uses the standardized Foundation model where the first
-	 * string is the server name and the second string is the
-	 * {@link BungeeMessageType} by its name *read automatically*.
 	 *
-	 * @param data
-	 */
-	public IncomingMessage(byte[] data) {
-		this(SimplePlugin.getInstance().getBungeeCord(), data);
-	}
-
-	/**
-	 * Create a new incoming message from the given array
-	 * <p>
-	 * NB: This uses the standardized Foundation model where the first
-	 * string is the server name and the second string is the
-	 * {@link BungeeMessageType} by its name *read automatically*.
+	 * NB: This uses the standardized Foundation header:
+	 *
+	 * 1. Channel name (string) (because we broadcast on BungeeCord channel)
+	 * 2. Sender UUID (string)
+	 * 3. Server name (string)
+	 * 4  Action (String converted to enum of {@link BungeeMessageType})
 	 *
 	 * @param listener
+	 * @param senderUid
+	 * @param serverName
+	 * @param type
 	 * @param data
+	 * @param input
+	 * @param stream
 	 */
-	public IncomingMessage(BungeeListener listener, byte[] data) {
-		this(listener, listener.getChannel(), data);
-	}
+	public IncomingMessage(BungeeListener listener, UUID senderUid, String serverName, BungeeMessageType type, byte[] data, ByteArrayDataInput input, ByteArrayInputStream stream) {
+		super(listener, type);
 
-	private IncomingMessage(BungeeListener listener, String channel, byte[] data) {
-		super(listener);
-
-		this.channel = channel;
 		this.data = data;
-		this.stream = new ByteArrayInputStream(data);
-
-		try {
-			this.input = ByteStreams.newDataInput(this.stream);
-
-		} catch (final Throwable t) {
-			this.input = ByteStreams.newDataInput(data);
-		}
-		// -----------------------------------------------------------------
-		// We are automatically reading the first two strings assuming the
-		// first is the senders server name and the second is the action
-		// -----------------------------------------------------------------
-
-		// Read senders UUID
-		this.setSenderUid(this.input.readUTF());
-
-		// Read server name
-		this.setServerName(this.input.readUTF());
-
-		// Read action
-		this.setAction(this.input.readUTF());
+		this.senderUid = senderUid;
+		this.serverName = serverName;
+		this.input = input;
+		this.stream = stream;
 	}
 
 	/**
@@ -241,5 +219,13 @@ public final class IncomingMessage extends Message {
 		this.moveHead(Short.class);
 
 		return this.input.readShort();
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public String getChannel() {
+		return this.getListener().getChannel();
 	}
 }

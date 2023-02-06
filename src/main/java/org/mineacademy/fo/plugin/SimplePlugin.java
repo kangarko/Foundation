@@ -314,6 +314,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			final Messenger messenger = this.getServer().getMessenger();
 
 			// Always make the main channel available
+			if (!messenger.isIncomingChannelRegistered(this, "BungeeCord"))
+				messenger.registerIncomingPluginChannel(this, "BungeeCord", BungeeListener.BungeeListenerImpl.getInstance());
+
 			if (!messenger.isOutgoingChannelRegistered(this, "BungeeCord"))
 				messenger.registerOutgoingPluginChannel(this, "BungeeCord");
 
@@ -503,14 +506,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
-		final Messenger messenger = this.getServer().getMessenger();
-
-		if (!messenger.isIncomingChannelRegistered(this, bungee.getChannel()))
-			messenger.registerIncomingPluginChannel(this, bungee.getChannel(), bungee);
-
-		if (!messenger.isOutgoingChannelRegistered(this, bungee.getChannel()))
-			messenger.registerOutgoingPluginChannel(this, bungee.getChannel());
-
 		this.reloadables.registerEvents(bungee);
 	}
 
@@ -800,6 +795,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			final Messenger messenger = this.getServer().getMessenger();
 
 			// Always make the main channel available
+			if (!messenger.isIncomingChannelRegistered(this, "BungeeCord"))
+				messenger.registerIncomingPluginChannel(this, "BungeeCord", BungeeListener.BungeeListenerImpl.getInstance());
+
 			if (!messenger.isOutgoingChannelRegistered(this, "BungeeCord"))
 				messenger.registerOutgoingPluginChannel(this, "BungeeCord");
 

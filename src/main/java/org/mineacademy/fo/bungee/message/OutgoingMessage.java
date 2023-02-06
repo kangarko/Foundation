@@ -10,7 +10,6 @@ import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.Remain;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -30,35 +29,20 @@ public final class OutgoingMessage extends Message {
 	/**
 	 * Create a new outgoing message, see header of this class
 	 *
-	 * @param senderUid
 	 * @param action
 	 */
-	public OutgoingMessage(UUID senderUid, BungeeMessageType action) {
-		this(SimplePlugin.getInstance().getBungeeCord(), senderUid, action);
+	public OutgoingMessage(BungeeMessageType action) {
+		this(SimplePlugin.getInstance().getBungeeCord(), action);
 	}
 
 	/**
 	 * Create a new outgoing message, see header of this class
 	 *
 	 * @param listener
-	 * @param senderUid
 	 * @param action
 	 */
-	public OutgoingMessage(BungeeListener listener, UUID senderUid, BungeeMessageType action) {
-		super(listener);
-
-		this.setSenderUid(senderUid.toString());
-		this.setServerName(Remain.getServerName());
-		this.setAction(action);
-
-		// -----------------------------------------------------------------
-		// We are automatically writing the first two strings assuming the
-		// first is the senders server name and the second is the action
-		// -----------------------------------------------------------------
-
-		this.queue.add(senderUid);
-		this.queue.add(this.getServerName());
-		this.queue.add(this.getAction().name());
+	public OutgoingMessage(BungeeListener listener, BungeeMessageType action) {
+		super(listener, action);
 	}
 
 	/**
@@ -173,11 +157,21 @@ public final class OutgoingMessage extends Message {
 	 * Delegate write methods for the byte array data output
 	 * based on the queue
 	 *
+	 * @param serverName
 	 * @return
 	 */
-	@Override
-	protected byte[] getData() {
+	public byte[] getData(String serverName) {
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+
+		// -----------------------------------------------------------------
+		// We are automatically writing the first two strings assuming the
+		// first is the senders server name and the second is the action
+		// -----------------------------------------------------------------
+
+		out.writeUTF(this.getListener().getChannel());
+		out.writeUTF(UUID.fromString("00000000-0000-0000-0000-000000000000").toString());
+		out.writeUTF(serverName);
+		out.writeUTF(this.getAction().name());
 
 		for (final Object object : this.queue)
 			if (object instanceof String)
@@ -214,5 +208,13 @@ public final class OutgoingMessage extends Message {
 				throw new FoException("Unsupported write of " + object.getClass().getSimpleName() + " to channel " + this.getChannel() + " with action " + this.getAction().toString());
 
 		return out.toByteArray();
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	protected String getChannel() {
+		return this.getListener().getChannel();
 	}
 }
