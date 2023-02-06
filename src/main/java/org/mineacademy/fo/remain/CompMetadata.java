@@ -1,11 +1,15 @@
 package org.mineacademy.fo.remain;
 
-import lombok.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -28,7 +32,11 @@ import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.YamlConfig;
 
-import java.util.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Utility class for persistent metadata manipulation
@@ -194,7 +202,7 @@ public final class CompMetadata {
 	 * Return saved tile entity metadata, or null if none
 	 *
 	 * @param tileEntity
-	 * @param key        or null if none
+	 * @param key       or null if none
 	 * @return
 	 */
 	public static String getMetadata(final BlockState tileEntity, final String key) {
@@ -283,6 +291,17 @@ public final class CompMetadata {
 		return tileEntity.hasMetadata(key);
 	}
 
+	private static boolean hasNamedspaced(final TileState tile, final String key) {
+		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING);
+	}
+
+	// Parses the tag and gets its value
+	private static boolean hasTag(final String raw, final String tag) {
+		final String[] parts = raw.split(DELIMITER);
+
+		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
+	}
+	
 	// ----------------------------------------------------------------------------------------
 	// Removing permanent metadata
 	// ----------------------------------------------------------------------------------------
@@ -316,21 +335,6 @@ public final class CompMetadata {
 			tileEntity.removeMetadata(key, SimplePlugin.getInstance());
 			tileEntity.update();
 		}
-	}
-
-	private static boolean hasNamedspaced(final TileState tile, final String key) {
-		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING);
-	}
-
-	private static void removeNamedspaced(final TileState tile, final String key) {
-		tile.getPersistentDataContainer().remove(new NamespacedKey(SimplePlugin.getInstance(), key));
-	}
-
-	// Parses the tag and gets its value
-	private static boolean hasTag(final String raw, final String tag) {
-		final String[] parts = raw.split(DELIMITER);
-
-		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
 	}
 
 	/**
@@ -508,7 +512,7 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				final List<String> metadata = this.entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
 
-				for (final Iterator<String> i = metadata.iterator(); i.hasNext(); ) {
+				for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
 					final String meta = i.next();
 
 					if (getTag(meta, key) != null)
@@ -529,7 +533,7 @@ public final class CompMetadata {
 			synchronized (LOCK) {
 				final BlockCache blockCache = this.blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
 
-				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext(); ) {
+				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
 					final String meta = i.next();
 
 					if (getTag(meta, key) != null)
