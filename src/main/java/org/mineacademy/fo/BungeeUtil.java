@@ -71,12 +71,12 @@ public final class BungeeUtil {
 	 * Sends message via a channel to the bungee network (upstreams). You need an
 	 * implementation in bungee to handle it, otherwise nothing will happen.
 	 *
-	 * OBS! The data written always start with:
+	 * OBS! The data written always start with the following header data:
 	 *
-	 * 1. The recipient UUID
-	 * 2. {@link Remain#getServerName()}
-	 * 3. The action parameter
-	 *
+	 * 1. The channel name (String)
+	 * 2. The recipient UUID (String)
+	 * 3. {@link Remain#getServerName()} (String)
+	 * 4. The action parameter (enum to String)
 	 *
 	 * @param <T>
 	 * @param sender through which sender to send
@@ -97,13 +97,15 @@ public final class BungeeUtil {
 
 		// This server is empty, do not send
 		if (sender == null) {
-			Debugger.put("bungee", "Cannot send " + action + " bungee channel '" + channel + "' message because this server has no players");
+			Debugger.debug("bungee", "&eWarning: Cannot send " + action + " bungee message to channel '" + channel + "' because this server has no players");
 
 			return;
 		}
 
 		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
+		// Write Foundation header
+		out.writeUTF(channel);
 		out.writeUTF(sender.getUniqueId().toString());
 		out.writeUTF(Remain.getServerName());
 		out.writeUTF(action.toString());
@@ -197,7 +199,7 @@ public final class BungeeUtil {
 		final byte[] byteArray = out.toByteArray();
 
 		try {
-			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+			sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", byteArray);
 
 		} catch (final ChannelNotRegisteredException ex) {
 			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "

@@ -73,33 +73,29 @@ public final class JavaScriptExecutor {
 			}
 		}
 
-		if (Bukkit.getName().equals("Mohist"))
-			engine = null;
+		engine = scriptEngine;
 
-		else {
-			engine = scriptEngine;
+		if (engine == null) {
+			final List<String> warningMessage = Common.newList(
+					"ERROR: JavaScript placeholders will not function!",
+					"",
+					"Your Java version/distribution lacks the",
+					"Nashorn library for JavaScript placeholders.");
 
-			if (engine == null) {
-				final List<String> warningMessage = Common.newList(
-						"ERROR: JavaScript placeholders will not function!",
+			if (Remain.getJavaVersion() >= 15)
+				warningMessage.addAll(Arrays.asList(
 						"",
-						"Your Java version/distribution lacks the",
-						"Nashorn library for JavaScript placeholders.");
+						"To fix this, install the NashornPlus",
+						"plugin from mineacademy.org/nashorn"));
+			else
+				warningMessage.addAll(Arrays.asList(
+						"",
+						"To fix this, install Java 11 from Oracle",
+						"or other vendor that supports Nashorn."));
 
-				if (Remain.getJavaVersion() >= 15)
-					warningMessage.addAll(Arrays.asList(
-							"",
-							"To fix this, install the NashornPlus",
-							"plugin from mineacademy.org/nashorn"));
-				else
-					warningMessage.addAll(Arrays.asList(
-							"",
-							"To fix this, install Java 11 from Oracle",
-							"or other vendor that supports Nashorn."));
-
-				Common.logFramed(false, Common.toArray(warningMessage));
-			}
+			Common.logFramed(false, Common.toArray(warningMessage));
 		}
+
 	}
 
 	/**
@@ -134,6 +130,11 @@ public final class JavaScriptExecutor {
 	 * @return
 	 */
 	public static Object run(@NonNull String javascript, final CommandSender sender, final Event event) {
+
+		// Mohist is unsupported
+		if (Bukkit.getName().equals("Mohist"))
+			return null;
+
 		final String oldCode = new String(javascript);
 
 		// Cache for highest performance
@@ -233,6 +234,10 @@ public final class JavaScriptExecutor {
 	 * @return
 	 */
 	public static Object run(final String javascript, final Map<String, Object> replacements) {
+
+		// Mohist is unsupported
+		if (Bukkit.getName().equals("Mohist"))
+			return javascript;
 
 		if (engine == null) {
 			Common.warning("Not running script because JavaScript library is missing "
