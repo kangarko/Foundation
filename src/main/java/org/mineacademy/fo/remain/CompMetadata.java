@@ -301,6 +301,41 @@ public final class CompMetadata {
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
 	}
+	
+	// ----------------------------------------------------------------------------------------
+	// Removing permanent metadata
+	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Remove permanent metadata from the entity
+	 *
+	 * @param entity
+	 * @param key
+	 */
+	public static void removeMetadata(final Entity entity, final String key) {
+		if (!CompMetadata.hasMetadata(entity, key)) return;
+		entity.getScoreboardTags().remove(key);
+	}
+
+	/**
+	 * Remove permanent metadata from the tile entity block
+	 *
+	 * @param tileEntity
+	 * @param key
+	 */
+	public static void removeMetadata(final BlockState tileEntity, final String key) {
+		if (!CompMetadata.hasMetadata(tileEntity, key)) return;
+		if (MinecraftVersion.atLeast(V.v1_14)) {
+			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
+
+			removeNamedspaced((TileState) tileEntity, key);
+			tileEntity.update();
+
+		} else {
+			tileEntity.removeMetadata(key, SimplePlugin.getInstance());
+			tileEntity.update();
+		}
+	}
 
 	/**
 	 * Sets a temporary metadata to entity. This metadata is NOT persistent
