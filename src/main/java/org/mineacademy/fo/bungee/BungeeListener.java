@@ -139,12 +139,14 @@ public abstract class BungeeListener implements Listener {
 
 			// read channel name
 			final String channelName = input.readUTF();
-			final UUID senderUid = UUID.fromString(input.readUTF());
-			final String serverName = input.readUTF();
-			final String actionName = input.readUTF();
 
 			for (final BungeeListener listener : registeredListeners)
 				if (channelName.equals(listener.getChannel())) {
+
+					final UUID senderUid = UUID.fromString(input.readUTF());
+					final String serverName = input.readUTF();
+					final String actionName = input.readUTF();
+
 					final BungeeMessageType action = BungeeMessageType.getByName(listener, actionName);
 					Valid.checkNotNull(action, "Unknown plugin action '" + actionName + "'. IF YOU UPDATED THE PLUGIN BY RELOADING, stop your entire network, ensure all servers were updated and start it again.");
 
