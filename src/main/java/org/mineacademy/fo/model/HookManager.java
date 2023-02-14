@@ -3688,24 +3688,52 @@ class MythicMobsHook {
 
 class LandsHook {
 
-	private final Object lands;
+	private final Object landsClass;
+	private final Method getArea;
 	private final Method getLand;
+	private final Method getName;
 
 	LandsHook() {
-		final Class<?> landsIntegration = ReflectionUtil.lookupClass("me.angeschossen.lands.api.integration.LandsIntegration");
-		final Constructor<?> con = ReflectionUtil.getConstructor(landsIntegration, Plugin.class);
+		final Class<?> lands = ReflectionUtil.lookupClass("me.angeschossen.lands.api.LandsIntegration");
+		final Class<?> area = ReflectionUtil.lookupClass("me.angeschossen.lands.api.land.Area");
+		final Class<?> land = ReflectionUtil.lookupClass("me.angeschossen.lands.api.land.Land");
 
-		this.lands = ReflectionUtil.instantiate(con, SimplePlugin.getInstance());
-		this.getLand = ReflectionUtil.getMethod(landsIntegration, "getLand", Location.class);
+		final Method of = ReflectionUtil.getMethod(lands, "of", Plugin.class);
+
+		this.landsClass = ReflectionUtil.invokeStatic(of, SimplePlugin.getInstance());
+		this.getArea = ReflectionUtil.getMethod(lands, "getArea", Location.class);
+		this.getLand = ReflectionUtil.getMethod(area, "getLand");
+		this.getName = ReflectionUtil.getMethod(land, "getName");
 	}
 
-	Collection<Player> getLandPlayers(Player player) {
-		final Object land = ReflectionUtil.invoke(this.getLand, this.lands, player.getLocation());
+	Collection<Player> getLandPlayers(Player sender) {
+		final List<Player> playersAtLocation = new ArrayList<>();
 
-		if (land != null)
-			return (Collection<Player>) ReflectionUtil.invoke("getOnlinePlayers", land);
+		Object senderArea = ReflectionUtil.invoke(this.getArea, this.landsClass, sender.getLocation());
+		Object senderLand = senderArea != null ? ReflectionUtil.invoke(this.getLand, senderArea) : null;
 
-		return new ArrayList<>();
+		boolean senderInWilderness = senderLand == null;
+		String senderLandName = senderInWilderness ? "" : ReflectionUtil.invoke(this.getName, senderLand);
+
+		for (Player recipient : Remain.getOnlinePlayers()) {
+
+			Object recipientArea = ReflectionUtil.invoke(this.getArea, this.landsClass, recipient.getLocation());
+			Object recipientLand = recipientArea != null ? ReflectionUtil.invoke(this.getLand, recipientArea) : null;
+			boolean recipientInWilderness = recipientLand == null;
+
+			// Both in wilderness
+			if (recipientInWilderness && senderInWilderness)
+				playersAtLocation.add(recipient);
+
+			// Other player in land
+			if (senderLand == null)
+				continue;
+
+			if (recipientLand != null && ReflectionUtil.invoke(this.getName, recipientLand).equals(senderLandName))
+				playersAtLocation.add(recipient);
+		}
+
+		return playersAtLocation;
 	}
 }
 
