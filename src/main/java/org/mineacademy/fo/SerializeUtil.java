@@ -513,6 +513,9 @@ public final class SerializeUtil {
 		else if (classOf == CompChatColor.class)
 			object = CompChatColor.of(object.toString());
 
+		//else if (classOf == ChatColor.class)
+		//	object = CompColor.fromName(object.toString()).getChatColor();
+
 		else if (classOf == ItemStack.class)
 			object = deserializeItemStack(mode, object);
 
