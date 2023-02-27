@@ -335,6 +335,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				return;
 			}
 
+			// AutoRegister finds this class and saves it
+			CompMetadata.MetadataFile.saveOnce();
+
 			this.onReloadablesStart();
 
 			this.startingReloadables = false;
@@ -866,6 +869,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		BlockVisualizer.stopAll();
 		FolderWatcher.stopThreads();
+
+		// Force metadata save on old MC versions upon reload/disable
+		CompMetadata.MetadataFile.saveOnce();
 
 		FileConfig.clearLoadedSections();
 
