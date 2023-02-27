@@ -380,6 +380,8 @@ public final class CompMetadata {
 		@Getter
 		private static volatile MetadataFile instance = new MetadataFile();
 
+		private static volatile boolean canSave = false;
+
 		private final StrictMap<UUID, List<String>> entityMetadataMap = new StrictMap<>();
 		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
 
@@ -397,6 +399,11 @@ public final class CompMetadata {
 
 				this.loadBlockStates();
 			}
+		}
+
+		@Override
+		protected boolean canSaveFile() {
+			return canSave;
 		}
 
 		@Override
@@ -517,6 +524,17 @@ public final class CompMetadata {
 
 					this.save();
 				}
+			}
+
+		}
+
+		public static void saveOnce() {
+			try {
+				canSave = true;
+				instance.save();
+
+			} finally {
+				canSave = false;
 			}
 		}
 

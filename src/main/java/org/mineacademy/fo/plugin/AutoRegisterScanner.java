@@ -443,6 +443,9 @@ final class AutoRegisterScanner {
 					for (final Field field : clazz.getDeclaredFields()) {
 						final int fieldMods = field.getModifiers();
 
+						if (!field.getType().isAssignableFrom(clazz) || field.getType() == Object.class)
+							continue;
+
 						if (Modifier.isPrivate(fieldMods) && Modifier.isStatic(fieldMods) && (Modifier.isFinal(fieldMods) || Modifier.isVolatile(fieldMods)))
 							instanceField = field;
 					}
@@ -455,6 +458,8 @@ final class AutoRegisterScanner {
 			}
 
 		}
+
+		Valid.checkBoolean(!(instance instanceof Boolean), "Used " + mode + " to find instance of " + clazz.getSimpleName() + " but got a boolean instead!");
 
 		Valid.checkNotNull(instance, "Your class " + clazz + " using @AutoRegister must EITHER have 1) one public no arguments constructor,"
 				+ " OR 2) one private no arguments constructor plus a 'private static final " + clazz.getSimpleName() + " instance' instance field.");
