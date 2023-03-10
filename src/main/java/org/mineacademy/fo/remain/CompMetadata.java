@@ -227,6 +227,41 @@ public final class CompMetadata {
 	}
 
 	// ----------------------------------------------------------------------------------------
+	// Removing metadata
+	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Remove persistent tile entity metadata
+	 *
+	 * @param tileEntity
+	 * @param key
+	 */
+	public static void removeMetadata(final BlockState tileEntity, final String key) {
+		Valid.checkNotNull(tileEntity);
+		Valid.checkNotNull(key);
+
+		if (!hasMetadata(tileEntity, key))
+			return;
+
+		if (MinecraftVersion.atLeast(V.v1_14)) {
+			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
+
+			removeNamedspaced((TileState) tileEntity, key);
+			tileEntity.update();
+
+		} else {
+			tileEntity.removeMetadata(key, SimplePlugin.getInstance());
+			tileEntity.update();
+
+			MetadataFile.getInstance().removeMetadata(tileEntity, key);
+		}
+	}
+
+	private static void removeNamedspaced(final TileState tile, final String key) {
+		tile.getPersistentDataContainer().remove(new NamespacedKey(SimplePlugin.getInstance(), key));
+	}
+
+	// ----------------------------------------------------------------------------------------
 	// Checking for metadata
 	// ----------------------------------------------------------------------------------------
 
@@ -526,6 +561,35 @@ public final class CompMetadata {
 				}
 			}
 
+		}
+
+		protected void removeMetadata(final BlockState blockState, final String key) {
+			synchronized (LOCK) {
+				if (!blockMetadataMap.containsKey(blockState.getLocation()))
+					return;
+
+				final BlockCache blockCache = blockMetadataMap.get(blockState.getLocation());
+
+				for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
+					final String meta = i.next();
+
+					if (getTag(meta, key) != null) {
+						i.remove();
+						break;
+					}
+				}
+
+				if (blockCache.getMetadata().isEmpty()) {
+					blockMetadataMap.remove(blockState.getLocation());
+				}
+
+				{ // Save
+					for (final Map.Entry<Location, BlockCache> entry : this.blockMetadataMap.entrySet())
+						this.set("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+
+					this.save();
+				}
+			}
 		}
 
 		public static void saveOnce() {
