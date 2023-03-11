@@ -120,29 +120,27 @@ public abstract class BungeeListener implements Listener {
 		private static final BungeeListenerImpl instance = new BungeeListenerImpl();
 
 		@Override
-		public void onPluginMessageReceived(String channel, Player player, byte[] data) {
+		public void onPluginMessageReceived(String channelName, Player player, byte[] data) {
 
 			// Check if the message is for a server (ignore client messages)
-			if (!channel.equals("BungeeCord"))
-				return;
-
-			// Read the plugin message
-			final ByteArrayInputStream stream = new ByteArrayInputStream(data);
-			ByteArrayDataInput input;
-
-			try {
-				input = ByteStreams.newDataInput(stream);
-
-			} catch (final Throwable t) {
-				input = ByteStreams.newDataInput(data);
-			}
-
-			// read channel name
-			final String channelName = input.readUTF();
+			//if (!channelName.equals("BungeeCord"))
+			//	return;
 
 			for (final BungeeListener listener : registeredListeners)
 				if (channelName.equals(listener.getChannel())) {
 
+					// Read the plugin message
+					final ByteArrayInputStream stream = new ByteArrayInputStream(data);
+					ByteArrayDataInput input;
+
+					try {
+						input = ByteStreams.newDataInput(stream);
+
+					} catch (final Throwable t) {
+						input = ByteStreams.newDataInput(data);
+					}
+
+					input.readUTF(); // unused channel name
 					final UUID senderUid = UUID.fromString(input.readUTF());
 					final String serverName = input.readUTF();
 					final String actionName = input.readUTF();

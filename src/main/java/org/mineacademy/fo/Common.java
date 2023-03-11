@@ -1,5 +1,7 @@
 package org.mineacademy.fo;
 
+import static org.bukkit.ChatColor.COLOR_CHAR;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -81,7 +83,7 @@ public final class Common {
 	/**
 	 * Pattern used to match colors with & or {@link ChatColor#COLOR_CHAR}
 	 */
-	private static final Pattern COLOR_AND_DECORATION_REGEX = Pattern.compile("(&|" + ChatColor.COLOR_CHAR + ")[0-9a-fk-orA-FK-OR]");
+	private static final Pattern COLOR_AND_DECORATION_REGEX = Pattern.compile("(&|" + COLOR_CHAR + ")[0-9a-fk-orA-FK-OR]");
 
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
@@ -93,7 +95,12 @@ public final class Common {
 	/**
 	 * Pattern used to match colors with #HEX code for MC 1.16+
 	 */
-	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + ChatColor.COLOR_CHAR + "x)(" + ChatColor.COLOR_CHAR + "[0-9a-fA-F]){6}");
+	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + COLOR_CHAR + "x)(" + COLOR_CHAR + "[0-9a-fA-F]){6}");
+
+	/**
+	 * High performance regular expression matcher for colors, used in {@link #stripColors(String)}
+	 */
+	private static final Pattern ALL_IN_ONE = Pattern.compile("((&|" + COLOR_CHAR + ")[0-9a-fk-or])|(" + COLOR_CHAR + "x(" + COLOR_CHAR + "[0-9a-fA-F]){6})|((?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|))");
 
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
@@ -681,25 +688,25 @@ public final class Common {
 			return message;
 
 		// Replace & color codes
-		Matcher matcher = COLOR_AND_DECORATION_REGEX.matcher(message);
+		Matcher matcher = ALL_IN_ONE.matcher(message);
 
 		while (matcher.find())
 			message = matcher.replaceAll("");
 
 		// Replace hex colors, both raw and parsed
-		if (Remain.hasHexColors()) {
+		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
-		}
+		}*/
 
 		return message;
 	}
