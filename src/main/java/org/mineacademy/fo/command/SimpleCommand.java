@@ -112,6 +112,12 @@ public abstract class SimpleCommand extends Command {
 	private int cooldownSeconds = 0;
 
 	/**
+	 * The permission for players to bypass this command's cooldown, if it is set
+	 */
+	@Getter
+	private String cooldownBypassPermission = null;
+
+	/**
 	 * A custom message when the player attempts to run this command
 	 * within {@link #cooldownSeconds}. By default we use the one found in
 	 * {@link SimpleLocalization.Commands#COOLDOWN_WAIT}
@@ -469,6 +475,12 @@ public abstract class SimpleCommand extends Command {
 		if (this.isPlayer()) {
 			final Player player = this.getPlayer();
 
+			if (this.cooldownBypassPermission != null && this.hasPerm(this.cooldownBypassPermission))
+				return;
+
+			if (!this.isCooldownApplied(player))
+				return;
+
 			final long lastRun = this.cooldownMap.getOrDefault(player.getUniqueId(), 0L);
 			final long difference = (System.currentTimeMillis() - lastRun) / 1000;
 
@@ -480,6 +492,17 @@ public abstract class SimpleCommand extends Command {
 			// Update the last try with the current time
 			this.cooldownMap.put(player.getUniqueId(), System.currentTimeMillis());
 		}
+	}
+
+	/**
+	 * Override this if you need to customize if the specific player should have the cooldown
+	 * for this command.
+	 *
+	 * @param player
+	 * @return
+	 */
+	protected boolean isCooldownApplied(Player player) {
+		return true;
 	}
 
 	/**
@@ -1459,6 +1482,15 @@ public abstract class SimpleCommand extends Command {
 		Valid.checkBoolean(cooldown >= 0, "Cooldown must be >= 0 for /" + this.getLabel());
 
 		this.cooldownSeconds = (int) unit.toSeconds(cooldown);
+	}
+
+	/**
+	 * Set the permission to bypass the cooldown, only works if the {@link #setCooldown(int, TimeUnit)} is set
+	 *
+	 * @param cooldownBypassPermission
+	 */
+	protected final void setCooldownBypassPermission(String cooldownBypassPermission) {
+		this.cooldownBypassPermission = cooldownBypassPermission;
 	}
 
 	/**
