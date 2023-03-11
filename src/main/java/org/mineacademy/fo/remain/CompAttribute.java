@@ -129,7 +129,7 @@ public enum CompAttribute {
 		try {
 			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(this.toString()));
 
-			return instance != null ? instance.getBaseValue() : null;
+			return instance != null ? instance.getValue() : null;
 
 		} catch (IllegalArgumentException | NoSuchMethodError | NoClassDefFoundError ex) {
 			try {
