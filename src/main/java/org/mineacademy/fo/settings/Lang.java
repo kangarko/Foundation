@@ -11,7 +11,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.JavaScriptExecutor;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 
 /**
@@ -254,7 +253,6 @@ public final class Lang extends YamlConfig {
 
 			key = Messenger.replacePrefixes(key);
 			key = translate(key, variables);
-			key = Replacer.replaceArray(key, variables);
 
 			return key;
 		}
