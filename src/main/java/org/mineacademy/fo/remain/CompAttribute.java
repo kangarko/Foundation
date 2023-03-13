@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import java.lang.reflect.Method;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
@@ -12,8 +12,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Method;
 
 /**
  * Wrapper for {@link Attribute}
@@ -129,7 +128,7 @@ public enum CompAttribute {
 		try {
 			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(this.toString()));
 
-			return instance != null ? instance.getBaseValue() : null;
+			return instance != null ? instance.getValue() : null;
 
 		} catch (IllegalArgumentException | NoSuchMethodError | NoClassDefFoundError ex) {
 			try {
