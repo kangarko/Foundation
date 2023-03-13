@@ -9,6 +9,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
 
+import lombok.Getter;
 
 /**
  *
