@@ -900,8 +900,8 @@ public final class SimpleComponent implements ConfigSerializable {
 					Common.error(t,
 							"Failed to parse JavaScript view condition for component!",
 							"The javascript code must return a valid true/false boolean value.",
-							"Code: " + this.viewCondition,
-							"Error: " + this);
+							"Component: " + this,
+							"Error: %error%");
 
 					return false;
 				}
