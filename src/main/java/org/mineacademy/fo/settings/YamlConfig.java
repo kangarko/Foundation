@@ -1,7 +1,6 @@
 package org.mineacademy.fo.settings;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -218,12 +217,7 @@ public class YamlConfig extends FileConfig {
 		}
 
 		// Special case, write using comments engine
-		try {
-			YamlComments.writeComments(this.defaultsPath, this.file, null, this.getUncommentedSections());
-
-		} catch (final IOException ex) {
-			ex.printStackTrace();
-		}
+		YamlComments.writeComments(this.defaultsPath, this.file, this.getUncommentedSections());
 
 		return null;
 	}
