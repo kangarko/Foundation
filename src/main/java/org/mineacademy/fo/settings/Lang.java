@@ -9,7 +9,6 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleComponent;
 
@@ -232,7 +231,15 @@ public final class Lang extends YamlConfig {
 			result = JavaScriptExecutor.run(script, scriptVariables.asMap());
 
 		} catch (final Throwable t) {
-			throw new FoException(t, "Failed to compile localization key '" + path + "' with script: " + script + " (this must be a valid JavaScript code)");
+			Common.error(t, "Failed to compile localization key!",
+					"It must be a valid JavaScript code, if you modified it, check the syntax!",
+					"Path: " + path,
+					"Variables: " + scriptVariables,
+					"String variables: " + Common.join(stringVariables),
+					"Script: " + script,
+					"Error: %error%");
+
+			return "";
 		}
 
 		return result.toString();
