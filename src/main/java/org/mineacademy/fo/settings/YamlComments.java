@@ -27,6 +27,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import lombok.NonNull;
+import lombok.SneakyThrows;
 
 /**
  * A class to update/add new sections/keys to your config while keeping your current values and keeping your comments
@@ -52,17 +53,15 @@ final class YamlComments {
 	 *
 	 * @throws IOException If an IOException occurs
 	 */
-	static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @Nullable String oldContents, @NonNull List<String> ignoredSections) throws IOException {
+	@SneakyThrows
+	public static void writeComments(@NonNull String jarPath, @NonNull File diskFile, @NonNull List<String> ignoredSections) {
 
 		final List<String> newLines = FileUtil.getInternalFileContent(jarPath);
 
 		final YamlConfiguration oldConfig = new YamlConfiguration();
 
 		try {
-			if (oldContents != null)
-				oldConfig.loadFromString(oldContents);
-			else
-				oldConfig.load(diskFile);
+			oldConfig.load(diskFile);
 
 		} catch (final Throwable t) {
 			Remain.sneaky(t);
@@ -118,7 +117,7 @@ final class YamlComments {
 		dumperOptions.setWidth(4096);
 
 		final Yaml yaml = new Yaml(dumperOptions);
-		final Map<String, String> comments = parseComments(newLines, ignoredSections, oldConfig, yaml);
+		final Map<String, String> comments = parseComments(newLines, oldConfig);
 
 		write(newConfig, oldConfig, comments, ignoredSections, writer, yaml);
 	}
@@ -337,7 +336,7 @@ final class YamlComments {
 
 	//Key is the config key, value = comment and/or ignored sections
 	//Parses comments, blank lines, and ignored sections
-	private static Map<String, String> parseComments(List<String> lines, List<String> ignoredSections, FileConfiguration oldConfig, Yaml yaml) {
+	private static Map<String, String> parseComments(List<String> lines, FileConfiguration oldConfig) {
 		final Map<String, String> comments = new HashMap<>();
 		final StringBuilder builder = new StringBuilder();
 		final StringBuilder keyBuilder = new StringBuilder();
