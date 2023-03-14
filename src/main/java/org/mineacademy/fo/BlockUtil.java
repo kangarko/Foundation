@@ -16,6 +16,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -184,6 +185,35 @@ public final class BlockUtil {
 		}
 
 		return ShapeVectors;
+	}
+
+	/**
+	 * Get the first block the vector intersects
+	 *
+	 * @param start
+	 * @param direction
+	 * @return
+	 */
+	public static Block getBlockIntersectionWithVector(final Location start, final Vector direction) {
+		final int length = (int) Math.floor(direction.length());
+
+		if (length >= 1) {
+			try {
+				final BlockIterator blockIterator = new BlockIterator(start.getWorld(), start.toVector(), direction, 0, length);
+				Block block;
+
+				while (blockIterator.hasNext()) {
+					block = blockIterator.next();
+
+					if (block.getType().isSolid())
+						return block;
+				}
+			} catch (final IllegalStateException exception) {
+				return null;
+			}
+		}
+
+		return null;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
