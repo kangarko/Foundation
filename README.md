@@ -5,13 +5,22 @@
   </a>
 </p>
 
-### Foundation is a library for bootstrapping Minecraft plugins.
+### Foundation is a Spigot/Paper API library to develop highly-customized Minecraft plugins.
 [![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
 [![](https://javadoc.jitpack.io/v/kangarko/Foundation.svg)](https://javadoc.jitpack.io/#kangarko/Foundation)
 
-Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
+Foundation enables people develop Minecraft plugins faster, saving boilerplate code and thus focusing on what matters the most, putting your ideas out there.
 
-Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting your ideas out there.
+Some features include:
+
+- GUI menu APIs
+- Compatibility wrappers: Example: Send title/animations/packets on multiple MC versions with a single call
+- Advanced command system without the need of editing plugin.yml
+- Localization support
+- Auto-updating configuration with comments support
+- Time-saving wrappers: Example: Spawn holograms, custom head skulls, hook into third party plugins without importing them (i.e. Citizens, ProtocolLib), and so much more! 
+
+Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
 Check out https://mineacademy.org/plugins for our official list of plugins that use Foundation.
 
@@ -21,14 +30,14 @@ Please see [this link](https://github.com/kangarko/plugintemplate) for a sample 
 
 ### Compatibility
 
-We aim to provide extreme compatibility layer enabling these Minecraft versions to work:
+We aim to provide broad compatibility layer enabling the below Minecraft versions to work:
 
-- 1.2.5 (from 2012) - Of course, there are things that don't work due to lacking API, but it loads and you can build with Foundation!
-- 1.3.2, 1.4.7, 1.5.2, 1.6.4
+- 1.2.5 (from 2012) - See mineacademy.org/oldmcsupport for setup instructions.
+- 1.3.2, 1.4.7, 1.5.2, 1.6.4 - Many APIs are missing due to lack of features/access.
 - 1.7.10
 - 1.8.8
 - 1.9.x, 1.10.x, 1.11.x, 1.12.x
-- 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, 1.18.x
+- 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, 1.18.x, 1.19.x
 - We continously update for newer versions but sometimes forget to update it here, but it does not mean that the library is incompatible!
 
 ### Compiling and using
