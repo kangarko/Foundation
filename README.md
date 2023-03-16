@@ -19,7 +19,9 @@ Some features include:
 
 Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
-Check out https://mineacademy.org/plugins for our official list of plugins that use Foundation.
+### Tutorial
+
+A tutorial on how to use this library is a part of our Project Orion training available [here](https://mineacademy.org/project-orion)
 
 ### Sample usage
 
@@ -78,26 +80,20 @@ If you downloaded Foundation to your disk, do not place any repository to your p
 
 ### Important Licencing Information
 
-2013 - 2021 © MineAcademy.org
+© MineAcademy.org
 
-If you are a paying student of MineAcademy.org then you are granted full
+1) **If you are a paying student of MineAcademy.org** then you are granted full
 unlimited licence to use, modify and reproduce Foundation both commercially
-and non-commercially, for yourself, your team or network. You can also
-modify the library however you like and include it in your plugins you publish
-or sell without stating that you are using this library.
+and non-commercially for yourself, your team or network without stating 
+that you are using this library.
 
-If you are not a paying student of MineAcademy.org then you may
-use this library for non-commercial purposes only. You are allowed
-to make changes to this library however as long as those are only
-minor changes you must clearly attribute that you are using Foundation
-in your software.
+2) **If you are not a paying student of MineAcademy.org** then you may
+use this library as stated above however you must clearly attribute that you
+are using Foundation in your software by linking to this GitHub page.
 
-For both parties, do not sell or claim any part of this library as your own.
-All infringements will be prosecuted.
+In both of the above cases, do not sell or claim any part of this library as your own.
 
 No guarantee - this software is provided AS IS, without any guarantee on its
 functionality. We made our best efforts to make Foundation an enterprise-level
 solution for anyone looking to accelerate his coding however we are not
 taking any responsibility for the success or failure you achieve using it.
-
-**A tutorial on how to use this library is a part of our Project Orion training available at https://mineacademy.org**
