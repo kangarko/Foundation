@@ -2,11 +2,10 @@
   <img src="https://i.imgur.com/AeprAug.jpg" />
 </a>
 
-### Foundation is a Spigot/Paper API library to develop highly-customized Minecraft plugins.
 [![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
 [![](https://javadoc.jitpack.io/v/kangarko/Foundation.svg)](https://javadoc.jitpack.io/#kangarko/Foundation)
 
-Foundation enables people develop Minecraft plugins faster, saving boilerplate code and thus focusing on what matters the most, putting your ideas out there.
+Foundation enables people develop Minecraft plugins faster, saving boilerplate code and so that you can focus on what matters the most, putting your ideas into reality.
 
 Some features include:
 
@@ -14,8 +13,9 @@ Some features include:
 - Compatibility wrappers: Example: Send title/animations/packets on multiple MC versions with a single call
 - Advanced command system without the need of editing plugin.yml
 - Localization support
+- Third party hooks: Packets, Discord, Citizens, Towny, etc.
 - Auto-updating configuration with comments support
-- Time-saving wrappers: Example: Spawn holograms, custom head skulls, hook into third party plugins without importing them (i.e. Citizens, ProtocolLib), and so much more! 
+- Time-saving wrappers: Databases (flatfile SQL, HikariCP, MySQL), holograms API, custom items and skulls API, and so much more! 
 
 Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
