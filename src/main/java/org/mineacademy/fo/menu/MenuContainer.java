@@ -78,9 +78,6 @@ public abstract class MenuContainer extends Menu {
 		if (location != MenuClickLocation.MENU)
 			return true;
 
-		if (slot >= this.getSize() - 9)
-			return false;
-
 		if (!this.canEditItem(location, slot, clicked, cursor, action))
 			return false;
 
@@ -93,6 +90,8 @@ public abstract class MenuContainer extends Menu {
 	 *
 	 * This is called from {@link #isActionAllowed(MenuClickLocation, int, ItemStack, ItemStack)} and
 	 * by defaults forwards the call to {@link #canEditItem(int)}
+	 *
+	 * Bottom row is always protected by
 	 *
 	 * @param location
 	 * @param slot
@@ -118,7 +117,7 @@ public abstract class MenuContainer extends Menu {
 	 * @return
 	 */
 	protected boolean canEditItem(int slot) {
-		return true;
+		return slot >= this.getSize() - 9;
 	}
 
 	/**
