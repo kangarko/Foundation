@@ -332,6 +332,10 @@ final class AutoRegisterScanner {
 
 		else if (PacketListener.class.isAssignableFrom(clazz)) {
 
+			// Handled in SimpleEnchantment
+			if (clazz.equals(EnchantmentPacketListener.class))
+				return;
+
 			// Automatically registered by means of adding packet adapters
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
