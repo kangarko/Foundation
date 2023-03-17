@@ -1,19 +1,27 @@
-<p align="center">
-  Do you want to learn Java and code highly-customized Minecraft plugins? I've made a training for you!
-  <a href="https://bit.ly/3GHdIQI">
-    <img src="https://i.imgur.com/lpZ2pJN.jpg" />
-  </a>
-</p>
+<a href="https://bit.ly/3GHdIQI">
+  <img src="https://i.imgur.com/AeprAug.jpg" />
+</a>
 
-### Foundation is a library for bootstrapping Minecraft plugins.
 [![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
 [![](https://javadoc.jitpack.io/v/kangarko/Foundation.svg)](https://javadoc.jitpack.io/#kangarko/Foundation)
 
+Foundation enables people develop Minecraft plugins faster, saving boilerplate code and so that you can focus on what matters the most, putting your ideas into reality.
+
+Some features include:
+
+- GUI menu APIs
+- Compatibility wrappers: Example: Send title/animations/packets on multiple MC versions with a single call
+- Advanced command system without the need of editing plugin.yml
+- Localization support
+- Third party hooks: Packets, Discord, Citizens, Towny, etc.
+- Auto-updating configuration with comments support
+- Time-saving wrappers: Databases (flatfile SQL, HikariCP, MySQL), holograms API, custom items and skulls API, and so much more! 
+
 Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
-Foundation has never been publicly released before MineAcademy. We decided to release its sources to the public and teach it to enable people develop plugins faster, saving boilerplate code and thus focus on what matters the most, putting your ideas out there.
+### Tutorial
 
-Check out https://mineacademy.org/plugins for our official list of plugins that use Foundation.
+A tutorial on how to use this library is a part of our Project Orion training available [here](https://mineacademy.org/project-orion)
 
 ### Sample usage
 
@@ -21,14 +29,14 @@ Please see [this link](https://github.com/kangarko/plugintemplate) for a sample 
 
 ### Compatibility
 
-We aim to provide extreme compatibility layer enabling these Minecraft versions to work:
+We aim to provide broad compatibility layer enabling the below Minecraft versions to work:
 
-- 1.2.5 (from 2012) - Of course, there are things that don't work due to lacking API, but it loads and you can build with Foundation!
-- 1.3.2, 1.4.7, 1.5.2, 1.6.4
+- 1.2.5 (from 2012) - See mineacademy.org/oldmcsupport for setup instructions.
+- 1.3.2, 1.4.7, 1.5.2, 1.6.4 - Many APIs are missing due to lack of features/access.
 - 1.7.10
 - 1.8.8
 - 1.9.x, 1.10.x, 1.11.x, 1.12.x
-- 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, 1.18.x
+- 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, 1.18.x, 1.19.x
 - We continously update for newer versions but sometimes forget to update it here, but it does not mean that the library is incompatible!
 
 ### Compiling and using
@@ -72,26 +80,20 @@ If you downloaded Foundation to your disk, do not place any repository to your p
 
 ### Important Licencing Information
 
-2013 - 2021 © MineAcademy.org
+© MineAcademy.org
 
-If you are a paying student of MineAcademy.org then you are granted full
+1) **If you are a paying student of MineAcademy.org** then you are granted full
 unlimited licence to use, modify and reproduce Foundation both commercially
-and non-commercially, for yourself, your team or network. You can also
-modify the library however you like and include it in your plugins you publish
-or sell without stating that you are using this library.
+and non-commercially for yourself, your team or network without stating 
+that you are using this library.
 
-If you are not a paying student of MineAcademy.org then you may
-use this library for non-commercial purposes only. You are allowed
-to make changes to this library however as long as those are only
-minor changes you must clearly attribute that you are using Foundation
-in your software.
+2) **If you are not a paying student of MineAcademy.org** then you may
+use this library as stated above however you must clearly attribute that you
+are using Foundation in your software by linking to this GitHub page.
 
-For both parties, do not sell or claim any part of this library as your own.
-All infringements will be prosecuted.
+In both of the above cases, do not sell or claim any part of this library as your own.
 
 No guarantee - this software is provided AS IS, without any guarantee on its
 functionality. We made our best efforts to make Foundation an enterprise-level
 solution for anyone looking to accelerate his coding however we are not
 taking any responsibility for the success or failure you achieve using it.
-
-**A tutorial on how to use this library is a part of our Project Orion training available at https://mineacademy.org**
