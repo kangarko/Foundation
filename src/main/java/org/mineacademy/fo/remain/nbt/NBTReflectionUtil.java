@@ -25,9 +25,9 @@ import com.google.gson.Gson;
  */
 public class NBTReflectionUtil {
 
-	private static Field field_unhandledTags = null;
-
 	private static Gson gson = new Gson();
+
+	private static Field field_unhandledTags = null;
 
 	static {
 		try {
@@ -169,7 +169,7 @@ public class NBTReflectionUtil {
 	 * @param meta ItemMeta from which tags should be retrieved
 	 * @return Map containing unhandled (custom) NBT tags
 	 */
-
+	
 	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
 		try {
 			return (Map<String, Object>) field_unhandledTags.get(meta);
@@ -443,7 +443,7 @@ public class NBTReflectionUtil {
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalide type
 	 */
-
+	
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
@@ -525,8 +525,10 @@ public class NBTReflectionUtil {
 	 */
 	public static void setObject(NBTCompound comp, String key, Object value) {
 		try {
-			String json = getJsonString(value);
+			String json = gson.toJson(value);
+
 			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
+
 		} catch (Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
 		}
@@ -542,9 +544,10 @@ public class NBTReflectionUtil {
 	 */
 	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
 		String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
-		if (json == null) {
+
+		if (json == null)
 			return null;
-		}
+
 		return deserializeJson(json, type);
 	}
 
@@ -572,7 +575,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
-
+	
 	public static Set<String> getKeys(NBTCompound comp) {
 		Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null) {
@@ -628,23 +631,13 @@ public class NBTReflectionUtil {
 	}
 
 	/**
-	* Turns Objects into Json Strings
-	*
-	* @param obj
-	* @return Json, representing the Object
+	* Creates an Object of the given type using the Json String
+	* 
+	* @param json
+	* @param type
+	* @return Object that got created, or null if the json is null
 	*/
-	private static String getJsonString(Object obj) {
-		return gson.toJson(obj);
-	}
-
-	/**
-	 * Creates an Object of the given type using the Json String
-	 *
-	 * @param json
-	 * @param type
-	 * @return Object that got created, or null if the json is null
-	 */
-	private static <T> T deserializeJson(String json, Class<T> type) {
+	public static <T> T deserializeJson(String json, Class<T> type) {
 		try {
 			if (json == null) {
 				return null;

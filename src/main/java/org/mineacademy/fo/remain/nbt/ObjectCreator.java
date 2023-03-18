@@ -10,6 +10,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
+
 enum ObjectCreator {
 	NMS_NBTTAGCOMPOUND(null, null, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_BLOCKPOSITION(null, null, ClassWrapper.NMS_BLOCKPOSITION.getClazz(), int.class, int.class, int.class),

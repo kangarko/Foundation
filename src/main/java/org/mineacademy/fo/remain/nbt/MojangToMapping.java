@@ -9,7 +9,7 @@ import java.util.Map;
  * @author tr7zw
  *
  */
-class MojangToMapping {
+final class MojangToMapping {
 
 	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_18R1 = new HashMap<String, String>() {

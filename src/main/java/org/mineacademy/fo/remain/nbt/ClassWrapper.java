@@ -8,6 +8,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
+
 enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),

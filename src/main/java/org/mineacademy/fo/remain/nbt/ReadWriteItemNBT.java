@@ -11,12 +11,12 @@ public interface ReadWriteItemNBT extends ReadWriteNBT {
 	 * 
 	 * @return true when custom tags are present
 	 */
-	boolean hasCustomNbtData();
+	public boolean hasCustomNbtData();
 
 	/**
 	 * Remove all custom (non-vanilla) NBT tags from the NBTItem.
 	 */
-	void clearCustomNBT();
+	public void clearCustomNBT();
 
 	/**
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
@@ -28,7 +28,7 @@ public interface ReadWriteItemNBT extends ReadWriteNBT {
 	 * 
 	 * @param handler
 	 */
-	void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler);
+	public void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler);
 
 	/**
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
@@ -40,6 +40,6 @@ public interface ReadWriteItemNBT extends ReadWriteNBT {
 	 * 
 	 * @param handler
 	 */
-	<T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler);
+	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler);
 
 }

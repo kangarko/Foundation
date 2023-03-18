@@ -45,7 +45,7 @@ public class NBTEntity extends NBTCompound {
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 * 
+	 *
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
