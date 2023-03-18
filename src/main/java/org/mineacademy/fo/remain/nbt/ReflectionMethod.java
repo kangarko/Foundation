@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
+
 enum ReflectionMethod {
 
 	COMPOUND_SET_FLOAT(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, float.class },
@@ -322,9 +323,10 @@ enum ReflectionMethod {
 				method.setAccessible(true);
 				loaded = true;
 				methodName = targetVersion.name;
+
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
+				// This gets loaded before the logger is loaded
 				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
-				// NOSONAR This gets loaded	 before the logger is loaded
 			}
 		}
 	}

@@ -30,13 +30,11 @@ enum MinecraftVersion {
 	MC1_18_R1(1181, true),
 	MC1_18_R2(1182, true),
 	MC1_19_R1(1191, true),
-	MC1_19_R2(1192, true);
+	MC1_19_R2(1192, true),
+	MC1_19_R3(1193, true);
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
-
-	// NBT-API Version
-	protected static final String VERSION = "2.11.1";
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -105,13 +103,14 @@ enum MinecraftVersion {
 	 * @return The enum for the MinecraftVersion this server is running
 	 */
 	public static MinecraftVersion getVersion() {
-		if (version != null) {
+		if (version != null)
 			return version;
-		}
+
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
+
 		} catch (IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
 		}
@@ -128,10 +127,10 @@ enum MinecraftVersion {
 		}
 		try {
 			isForgePresent = true;
+
 		} catch (Exception ex) {
 			isForgePresent = false;
 		}
 		return isForgePresent;
 	}
-
 }
