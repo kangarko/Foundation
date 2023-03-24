@@ -224,6 +224,13 @@ public final class BungeeUtil {
 
 		final byte[] byteArray = out.toByteArray();
 
+		if (byteArray.length > 30_000) { // Safety margin
+			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
+
+			actionHead = 0;
+			return;
+		}
+
 		try {
 			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
 
@@ -232,7 +239,7 @@ public final class BungeeUtil {
 					+ "Use @AutoRegister above your class extending BungeeListener and return its instance in getBungeeCord in your main plugin class.");
 
 		} catch (final MessageTooLargeException ex) {
-			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
+			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32,766 bytes, got " + byteArray.length + " bytes.");
 		}
 
 		actionHead = 0;
