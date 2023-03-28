@@ -51,6 +51,7 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
 import com.earth2me.essentials.CommandSource;
@@ -3332,8 +3333,16 @@ class CMIHook {
 	void setGodMode(final Player player, final boolean godMode) {
 		final CMIUser user = this.getUser(player);
 
-		if (user != null)
-			user.setGod(godMode);
+		if (user != null) {
+			try {
+				Method setGod = ReflectionUtil.getMethod(CMIUser.class, "setGod", Boolean.class);
+
+				ReflectionUtil.invoke(setGod, user, godMode);
+
+			} catch (Throwable t) {
+				// Removed in most recent CMI versions
+			}
+		}
 	}
 
 	void setLastTeleportLocation(final Player player, final Location location) {
@@ -3667,17 +3676,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-
+		
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-
+		
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-
+		
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-
+		
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3747,16 +3756,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
