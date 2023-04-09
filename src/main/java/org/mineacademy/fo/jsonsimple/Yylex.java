@@ -625,7 +625,7 @@ class Yylex {
 			} else
 				switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
 					case 1: {
-						throw new JSONParseException(this.yychar, JSONParseException.Problems.UNEXPECTED_CHARACTER, new Character(this.yycharat(0)));
+						throw new JSONParseException(this.yychar, JSONParseException.Problems.UNEXPECTED_CHARACTER, String.valueOf(this.yycharat(0)));
 					}
 					// fall through
 					case 24:
