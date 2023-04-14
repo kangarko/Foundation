@@ -1,6 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,13 +28,11 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * Represents packet handling using ProtocolLib
@@ -46,7 +43,7 @@ public abstract class PacketListener {
 	/**
 	 * Stores 1.19 system chat packet constructor and Adventure stuff for maximum performance
 	 */
-	private static Constructor<?> packetConst;
+	//private static Constructor<?> packetConst;
 	private static Class<?> textComponentClass;
 
 	/**
@@ -174,16 +171,16 @@ public abstract class PacketListener {
 	/*
 	 * Sends a system chat packet to the player
 	 */
-	private static void sendSystemChatPacket(Player player, String message) {
+	/*private static void sendSystemChatPacket(Player player, String message) {
 		if (packetConst == null) {
 			Class<?> packetClass = ReflectionUtil.lookupClass("net.minecraft.network.protocol.game.ClientboundSystemChatPacket");
 
 			packetConst = ReflectionUtil.getConstructor(packetClass, BaseComponent[].class, boolean.class);
 		}
 
-		Object newPacket = ReflectionUtil.instantiate(packetConst, TextComponent.fromLegacyText(message), false /* not on action bar */);
+		Object newPacket = ReflectionUtil.instantiate(packetConst, TextComponent.fromLegacyText(message), false); // false overlay = not actionbar
 		Remain.sendPacket(player, newPacket);
-	}
+	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Classes
@@ -423,8 +420,8 @@ public abstract class PacketListener {
 				// Need to cancel due to Record class having final fields and write our own packet, so much for simplicity of Adventure-Paper impl
 				event.setCancelled(true);
 
-				// We simply send a new packet instead
-				sendSystemChatPacket(this.player, message);
+				// WONTFIX: Sending a custom packet will create a race condition where protocollib will catch it again, and again, including in other plugins
+				//sendSystemChatPacket(this.player, message);
 
 			} else if (this.isBaseComponent)
 				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
