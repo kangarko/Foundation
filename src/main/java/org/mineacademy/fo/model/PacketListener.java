@@ -1,5 +1,7 @@
 package org.mineacademy.fo.model;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
@@ -26,17 +29,25 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * Represents packet handling using ProtocolLib
  */
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PacketListener {
+
+	/**
+	 * Stores 1.19 system chat packet constructor and Adventure stuff for maximum performance
+	 */
+	private static Constructor<?> packetConst;
+	private static Class<?> textComponentClass;
 
 	/**
 	 * Called automatically when you use \@AutoRegister, inject
@@ -154,6 +165,24 @@ public abstract class PacketListener {
 		}
 
 		return profiles;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Stati
+	// ------------------------------------------------------------------------------------------------------------
+
+	/*
+	 * Sends a system chat packet to the player
+	 */
+	private static void sendSystemChatPacket(Player player, String message) {
+		if (packetConst == null) {
+			Class<?> packetClass = ReflectionUtil.lookupClass("net.minecraft.network.protocol.game.ClientboundSystemChatPacket");
+
+			packetConst = ReflectionUtil.getConstructor(packetClass, BaseComponent[].class, boolean.class);
+		}
+
+		Object newPacket = ReflectionUtil.instantiate(packetConst, TextComponent.fromLegacyText(message), false /* not on action bar */);
+		Remain.sendPacket(player, newPacket);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -280,12 +309,25 @@ public abstract class PacketListener {
 			// Reset
 			this.jsonMessage = null;
 
-			// No components for this MC version
+			// Components
 			if (MinecraftVersion.atLeast(V.v1_7)) {
-				if (this.systemChat)
+
+				// System chat
+				if (this.systemChat) {
 					this.jsonMessage = event.getPacket().getStrings().read(0);
 
-				else {
+					final Object adventureContent = ReflectionUtil.getFieldContent(event.getPacket().getHandle(), "adventure$content");
+
+					if (adventureContent != null) {
+						final List<String> contents = new ArrayList<>();
+
+						this.mergeChildren(adventureContent, contents);
+						final String mergedContents = String.join("", contents);
+
+						return mergedContents;
+					}
+
+				} else {
 
 					final StructureModifier<Object> packet = event.getPacket().getModifier();
 					final StructureModifier<WrappedChatComponent> chat = event.getPacket().getChatComponents();
@@ -325,6 +367,7 @@ public abstract class PacketListener {
 				}
 			}
 
+			// No components for this MC version
 			else
 				this.jsonMessage = event.getPacket().getStrings().read(0);
 
@@ -350,6 +393,24 @@ public abstract class PacketListener {
 		}
 
 		/*
+		 * Helper method to get content of all children of the given component
+		 */
+		private void mergeChildren(Object component, List<String> contents) {
+			final Method contentMethod = ReflectionUtil.getMethod(component.getClass(), "content");
+			final Method childrenMethod = ReflectionUtil.getMethod(component.getClass(), "children");
+
+			if (textComponentClass == null)
+				textComponentClass = ReflectionUtil.lookupClass("net.kyori.adventure.text.TextComponent");
+
+			if (textComponentClass.isAssignableFrom(component.getClass())) {
+				contents.add(ReflectionUtil.invoke(contentMethod, component));
+
+				for (Object child : (List<?>) ReflectionUtil.invoke(childrenMethod, component))
+					mergeChildren(child, contents);
+			}
+		}
+
+		/*
 		 * Writes the edited message as JSON format from the event
 		 */
 		private void writeEditedMessage(String message, PacketEvent event) {
@@ -357,9 +418,15 @@ public abstract class PacketListener {
 
 			this.jsonMessage = Remain.toJson(message);
 
-			if (this.systemChat)
-				event.getPacket().getStrings().writeSafely(0, this.jsonMessage);
-			else if (this.isBaseComponent)
+			if (this.systemChat) {
+
+				// Need to cancel due to Record class having final fields and write our own packet, so much for simplicity of Adventure-Paper impl
+				event.setCancelled(true);
+
+				// We simply send a new packet instead
+				sendSystemChatPacket(this.player, message);
+
+			} else if (this.isBaseComponent)
 				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
 
 			else if (MinecraftVersion.atLeast(V.v1_7))
