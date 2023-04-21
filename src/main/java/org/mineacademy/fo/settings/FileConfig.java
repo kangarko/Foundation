@@ -1531,7 +1531,7 @@ public abstract class FileConfig {
 	 * @return
 	 */
 	public final String getFileName() {
-		return this.file == null ? "null" : this.file.getName();
+		return this.file == null ? "no file" : this.file.getName();
 	}
 
 	/**
