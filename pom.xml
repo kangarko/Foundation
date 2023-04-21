@@ -28,6 +28,10 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
 		</repository>
+		<repository>
+			<id>projectlombok.org</id>
+			<url>https://projectlombok.org/edge-releases</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -36,7 +40,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.26</version>
+			<version>edge-SNAPSHOT</version>
 		</dependency>
 
 		<!-- This is NOT used anywhere in Foundation, only here to prevent compile 
