@@ -25,6 +25,7 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.wrappers.AdventureComponentConverter;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
@@ -58,8 +59,6 @@ public abstract class PacketListener {
 	 * @param adapter
 	 */
 	protected void addPacketListener(final SimpleAdapter adapter) {
-		//Valid.checkBoolean(HookManager.isVaultLoaded(), "ProtocolLib integration requires Vault to be installed. Please install that plugin before continuing.");
-
 		HookManager.addPacketListener(adapter);
 	}
 
@@ -163,24 +162,6 @@ public abstract class PacketListener {
 
 		return profiles;
 	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Stati
-	// ------------------------------------------------------------------------------------------------------------
-
-	/*
-	 * Sends a system chat packet to the player
-	 */
-	/*private static void sendSystemChatPacket(Player player, String message) {
-		if (packetConst == null) {
-			Class<?> packetClass = ReflectionUtil.lookupClass("net.minecraft.network.protocol.game.ClientboundSystemChatPacket");
-
-			packetConst = ReflectionUtil.getConstructor(packetClass, BaseComponent[].class, boolean.class);
-		}
-
-		Object newPacket = ReflectionUtil.instantiate(packetConst, TextComponent.fromLegacyText(message), false); // false overlay = not actionbar
-		Remain.sendPacket(player, newPacket);
-	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Classes
@@ -417,11 +398,19 @@ public abstract class PacketListener {
 
 			if (this.systemChat) {
 
-				// Need to cancel due to Record class having final fields and write our own packet, so much for simplicity of Adventure-Paper impl
-				event.setCancelled(true);
+				// We first need to get rid of Adventure library adding an extra field, so that the string JSON will be used below
+				// Thanks to lukalt for help! https://github.com/dmulloy2/ProtocolLib/issues/2330#issuecomment-1517542145
+				try {
+					StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
 
-				// WONTFIX: Sending a custom packet will create a race condition where protocollib will catch it again, and again, including in other plugins
-				//sendSystemChatPacket(this.player, message);
+					if (!adventureModifier.getFields().isEmpty())
+						adventureModifier.write(0, null);
+
+				} catch (Throwable ignored) {
+					// Ignore if Adventure is unavailable
+				}
+
+				event.getPacket().getStrings().write(0, this.jsonMessage);
 
 			} else if (this.isBaseComponent)
 				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
