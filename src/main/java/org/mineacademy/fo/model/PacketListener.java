@@ -44,7 +44,6 @@ public abstract class PacketListener {
 	/**
 	 * Stores 1.19 system chat packet constructor and Adventure stuff for maximum performance
 	 */
-	//private static Constructor<?> packetConst;
 	private static Class<?> textComponentClass;
 
 	/**
@@ -294,6 +293,30 @@ public abstract class PacketListener {
 				if (this.systemChat) {
 					this.jsonMessage = event.getPacket().getStrings().read(0);
 
+					if (this.jsonMessage != null)
+						return Remain.toLegacyText(jsonMessage);
+
+					try {
+						final StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
+
+						if (!adventureModifier.getFields().isEmpty()) {
+							final Object comp = adventureModifier.read(0);
+
+							final Class<?> serializerClass = ReflectionUtil.lookupClass("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer");
+							final Object gsonInstance = ReflectionUtil.invokeStatic(serializerClass, "gson");
+
+							final Class<?> componentClass = ReflectionUtil.lookupClass("net.kyori.adventure.text.Component");
+							final Method gsonMethod = ReflectionUtil.getMethod(gsonInstance.getClass(), "serialize", componentClass);
+
+							final String json = ReflectionUtil.invoke(gsonMethod, gsonInstance, comp);
+							this.jsonMessage = WrappedChatComponent.fromJson(json).getJson();
+						}
+
+					} catch (Throwable ignored) {
+						ignored.printStackTrace();
+						// Ignore if Adventure is unavailable
+					}
+
 					final Object adventureContent = ReflectionUtil.getFieldContent(event.getPacket().getHandle(), "adventure$content");
 
 					if (adventureContent != null) {
@@ -306,7 +329,6 @@ public abstract class PacketListener {
 					}
 
 				} else {
-
 					final StructureModifier<Object> packet = event.getPacket().getModifier();
 					final StructureModifier<WrappedChatComponent> chat = event.getPacket().getChatComponents();
 					final WrappedChatComponent component = chat.read(0);
@@ -401,7 +423,7 @@ public abstract class PacketListener {
 				// We first need to get rid of Adventure library adding an extra field, so that the string JSON will be used below
 				// Thanks to lukalt for help! https://github.com/dmulloy2/ProtocolLib/issues/2330#issuecomment-1517542145
 				try {
-					StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
+					final StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
 
 					if (!adventureModifier.getFields().isEmpty())
 						adventureModifier.write(0, null);
