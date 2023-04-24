@@ -294,7 +294,7 @@ public abstract class PacketListener {
 					this.jsonMessage = event.getPacket().getStrings().read(0);
 
 					if (this.jsonMessage != null)
-						return Remain.toLegacyText(jsonMessage);
+						return Remain.toLegacyText(this.jsonMessage, false);
 
 					try {
 						final StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
