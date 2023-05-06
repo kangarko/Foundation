@@ -53,7 +53,6 @@ import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
@@ -372,9 +371,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 				this.reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
-
-			// Prepare Nashorn engine
-			JavaScriptExecutor.run("");
 
 			// Finish off by starting metrics (currently bStats)
 			if (this.getMetricsPluginId() != -1)
