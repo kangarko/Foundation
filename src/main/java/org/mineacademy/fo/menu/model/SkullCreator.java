@@ -1,8 +1,13 @@
 package org.mineacademy.fo.menu.model;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Base64;
+import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.block.Block;
@@ -15,13 +20,9 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.Remain;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Base64;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * A library for the Bukkit API to create player skulls
@@ -259,17 +260,19 @@ public class SkullCreator {
 				b64.substring(b64.length() - 10).hashCode());
 
 		try {
-			final Class<?> gameProfileClass = ReflectionUtil.lookupClass("com.mojang.authlib.GameProfile");
+			Class<?> gameProfileClass = ReflectionUtil.lookupClass("com.mojang.authlib.GameProfile");
+			Class<?> propertyClass = ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property");
 
-			final Object profile = ReflectionUtil.instantiate(gameProfileClass.getConstructor(UUID.class, String.class), id, "aaaaa");
+			Object fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class).newInstance(id, "aaaaa");
+			Object propertyInstance = propertyClass.getConstructor(String.class, String.class).newInstance("textures", b64);
 
-			final Class<?> propertyClass = ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property");
-			final Object property = ReflectionUtil.instantiate(propertyClass.getConstructor(String.class, String.class), "textures", b64);
-			final Object propertyMap = ReflectionUtil.invoke("getProperties", profile);
+			Method getProperties = fakeProfileInstance.getClass().getMethod("getProperties");
+			Object propertyMap = getProperties.invoke(fakeProfileInstance);
 
-			ReflectionUtil.invoke("put", propertyMap, "textures", property);
+			Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
+			putMethod.invoke("textures", propertyInstance);
 
-			return profile;
+			return fakeProfileInstance;
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.throwError(ex);
@@ -325,7 +328,7 @@ public class SkullCreator {
 	 * @param skull
 	 * @param blockFace
 	 */
-	public static void rotateSkull(final Skull skull, final BlockFace blockFace) { 
+	public static void rotateSkull(final Skull skull, final BlockFace blockFace) {
 		skull.setRotation(blockFace);
 		skull.update(true);
 	}
