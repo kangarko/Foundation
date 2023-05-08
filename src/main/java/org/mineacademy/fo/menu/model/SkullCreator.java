@@ -270,7 +270,7 @@ public class SkullCreator {
 			Object propertyMap = getProperties.invoke(fakeProfileInstance);
 
 			Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
-			putMethod.invoke("textures", propertyInstance);
+			putMethod.invoke(propertyMap,"textures", propertyInstance);
 
 			return fakeProfileInstance;
 
