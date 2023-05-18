@@ -29,6 +29,7 @@ import com.comphenix.protocol.wrappers.AdventureComponentConverter;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -270,7 +271,7 @@ public abstract class PacketListener {
 				if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
 					this.onJsonMessage(this.jsonMessage);
 
-				if (!Common.stripColors(legacyText).equals(Common.stripColors(parsedText)))
+				if (!legacyText.equals(parsedText))
 					this.writeEditedMessage(parsedText, event);
 
 			} finally {
