@@ -69,6 +69,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -1586,9 +1587,9 @@ public final class Remain {
 
 		try {
 
-			if (MinecraftVersion.atLeast(V.v1_17) || MinecraftVersion.atLeast(V.v1_18)) {
-				final boolean is1_18 = MinecraftVersion.atLeast(V.v1_18);
-				final boolean is1_19 = MinecraftVersion.atLeast(V.v1_19);
+			if (MinecraftVersion.atLeast(V.v1_17)) {
+				final boolean is1_17 = MinecraftVersion.equals(V.v1_17);
+				final boolean is1_18 = MinecraftVersion.equals(V.v1_18);
 
 				final Object nmsPlayer = Remain.getHandleEntity(player);
 				final Object chatComponent = toIChatBaseComponentPlain(ChatColor.translateAlternateColorCodes('&', title));
@@ -1625,18 +1626,30 @@ public final class Remain {
 						ReflectionUtil.lookupClass("net.minecraft.network.chat.IChatBaseComponent"));
 
 				final String version = MinecraftVersion.getServerVersion(); // special fix for MC 1.18.2
-				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, is1_19 ? version.contains("R3") ? "bP" : "bU" : is1_18 ? version.contains("R2") ? "bV" : "bW" : "bV");
-				final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
+				String activeContainerName;
 
-				final Method method = is1_18 ? ReflectionUtil.getMethod(nmsPlayer.getClass(), "a", ReflectionUtil.lookupClass("net.minecraft.world.inventory.Container")) : null;
+				if (is1_17)
+					activeContainerName = "bV";
+
+				else if (is1_18)
+					activeContainerName = version.contains("R2") ? "bV" : "bW";
+
+				else
+					activeContainerName = version.contains("R3") ? "bP" : "bU";
+
+				final Object activeContainer = ReflectionUtil.getFieldContent(nmsPlayer, activeContainerName);
+				final int windowId = ReflectionUtil.getFieldContent(activeContainer, "j");
 
 				Remain.sendPacket(player, ReflectionUtil.instantiate(packetConstructor, windowId, container, chatComponent));
 
-				if (is1_18)
-					ReflectionUtil.invoke(method, nmsPlayer, activeContainer);
+				// Re-initialize the menu internally
+				Method method = ReflectionUtil.getMethod(nmsPlayer.getClass(), "initMenu", ReflectionUtil.lookupClass("net.minecraft.world.inventory.Container"));
 
-				else
-					ReflectionUtil.invoke("initMenu", nmsPlayer, activeContainer);
+				if (method == null)
+					method = ReflectionUtil.getMethod(nmsPlayer.getClass(), "a", ReflectionUtil.lookupClass("net.minecraft.world.inventory.Container"));
+
+				if (method != null)
+					ReflectionUtil.invoke(method, nmsPlayer, activeContainer);
 
 				return;
 			}
