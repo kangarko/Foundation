@@ -110,14 +110,11 @@ public abstract class MenuContainer extends Menu {
 	 * items to get edited in your menu (if you do not want
 	 * to allow editing the entire container window).
 	 *
-	 * If you want users to edit chances for all items except
-	 * bottom bar, simply always return true here.
-	 *
 	 * @param slot
 	 * @return
 	 */
 	protected boolean canEditItem(int slot) {
-		return slot >= this.getSize() - 9;
+		return slot <= this.getSize() - 9;
 	}
 
 	/**
