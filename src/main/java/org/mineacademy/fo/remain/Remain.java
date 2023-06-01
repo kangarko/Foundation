@@ -2112,7 +2112,13 @@ public final class Remain {
 			Valid.checkNotNull(nmsEntity, "setInvisible requires either a LivingEntity or a NMS Entity, got: " + entity.getClass());
 
 			// https://www.spigotmc.org/threads/how-do-i-make-an-entity-go-invisible-without-using-potioneffects.321227/
-			Common.runLater(2, () -> ReflectionUtil.invoke("setInvisible", nmsEntity, invisible));
+			Common.runLater(2, () -> {
+				try {
+					ReflectionUtil.invoke("setInvisible", nmsEntity, invisible);
+				} catch (Throwable t) {
+					// unsupported
+				}
+			});
 		}
 	}
 

@@ -35,6 +35,8 @@ import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
@@ -945,6 +947,9 @@ public abstract class FileConfig {
 	 */
 	public final List<Object> getList(final String path) {
 		final Object obj = this.getObject(path);
+
+		if (obj != null && obj.toString().equals("[]"))
+			return new ArrayList<>();
 
 		return obj instanceof Collection<?> ? new ArrayList<>((Collection<Object>) obj) : obj != null ? Arrays.asList(obj) : new ArrayList<>();
 	}
