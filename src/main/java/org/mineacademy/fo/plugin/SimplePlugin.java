@@ -227,9 +227,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
-		// Load scheduler
-		scheduler = new MorePaperLib(instance).scheduling();
-
 		final String version = Bukkit.getVersion();
 
 		if (this.suggestPaper() && !version.contains("Paper")
@@ -249,6 +246,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		// Load libraries where Spigot does not do this automatically
 		this.loadLibraries();
+
+		// Load scheduler
+		scheduler = new MorePaperLib(instance).scheduling();
 
 		// Call parent
 		this.onPluginLoad();
