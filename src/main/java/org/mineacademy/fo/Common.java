@@ -2561,7 +2561,7 @@ public final class Common {
 	 * A compatibility method that converts the given task id into a bukkit task
 	 */
 	@Deprecated
-	private static BukkitTask getTaskFromId(int taskId) {
+	private static ScheduledTask getTaskFromId(int taskId) {
 		//for (final BukkitTask task : Bukkit.getScheduler().getPendingTasks())
 		//	if (task.getTaskId() == taskId)
 		//		return task;

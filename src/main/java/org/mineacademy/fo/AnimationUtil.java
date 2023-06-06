@@ -275,9 +275,9 @@ public class AnimationUtil {
 
 			if (countdownBar != null)
 				if (countdownBar.isSmooth)
-					health.updateAndGet(v -> new Float((float) (v - countdownBar.duration / (10D * finalSmoothnessLevel))));
+					health.updateAndGet(v -> (float) (v - countdownBar.duration / (10D * finalSmoothnessLevel)));
 				else
-					health.updateAndGet(v -> new Float((float) (v - countdownBar.duration / 10D)));
+					health.updateAndGet(v -> (float) (v - countdownBar.duration / 10D));
 
 			frame.getAndIncrement();
 
