@@ -28,7 +28,7 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
 		</repository>
-		<repository>
+    <repository>
 			<id>projectlombok.org</id>
 			<url>https://projectlombok.org/edge-releases</url>
 		</repository>
@@ -44,7 +44,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>edge-SNAPSHOT</version>
+			<version>1.18.28</version>
 		</dependency>
 
 		<!-- This is NOT used anywhere in Foundation, only here to prevent compile 
@@ -198,7 +198,7 @@
 					<target>${java.version}</target>
 				</configuration>
 			</plugin>
-			<plugin>
+			<!--<plugin>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok-maven-plugin</artifactId>
 				<version>1.18.20.0</version>
@@ -231,7 +231,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
 </project>
