@@ -1,6 +1,7 @@
 package org.mineacademy.fo.menu;
 
 import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.Messenger;
@@ -46,6 +46,7 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * The core class of Menu. Represents a simple menu.
@@ -709,7 +710,7 @@ public abstract class Menu {
 	 * @param task
 	 */
 	protected final void animate(int periodTicks, MenuRunnable task) {
-		Common.runTimer(2, periodTicks, this.wrapAnimation(task));
+		SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(scheduledTask -> this.wrapAnimation(task, scheduledTask), 2, 1);
 	}
 
 	/**
@@ -722,32 +723,25 @@ public abstract class Menu {
 	 * @param task
 	 */
 	protected final void animateAsync(int periodTicks, MenuRunnable task) {
-		Common.runTimerAsync(2, periodTicks, this.wrapAnimation(task));
+		SimplePlugin.getScheduler().asyncScheduler().runAtFixedRate(scheduledTask -> this.wrapAnimation(task, scheduledTask), Duration.ofMillis(2), Duration.ofMillis(1));
 	}
 
 	/*
 	 * Helper method to create a bukkit runnable
 	 */
-	private BukkitRunnable wrapAnimation(MenuRunnable task) {
-		return new BukkitRunnable() {
-
-			@Override
-			public void run() {
-
+	private void wrapAnimation(MenuRunnable task, ScheduledTask scheduledTask) {
 				if (Menu.this.closed) {
-					this.cancel();
+					scheduledTask.cancel();
 
 					return;
 				}
-
 				try {
 					task.run();
 
 				} catch (final EventHandledException ex) {
-					this.cancel();
+					scheduledTask.cancel();
 				}
-			}
-		};
+
 	}
 
 	/**

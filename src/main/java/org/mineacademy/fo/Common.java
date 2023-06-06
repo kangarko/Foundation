@@ -1,31 +1,10 @@
 package org.mineacademy.fo;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.annotation.Nullable;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -41,9 +20,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -65,12 +41,22 @@ import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.settings.ConfigSection;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import net.md_5.bungee.api.chat.TextComponent;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.time.Duration;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import static org.bukkit.ChatColor.COLOR_CHAR;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions
@@ -2471,7 +2457,7 @@ public final class Common {
 	 * @param task the task
 	 * @return the task or null
 	 */
-	public static <T extends Runnable> BukkitTask runLater(final T task) {
+	public static <T extends Runnable> ScheduledTask runLater(final T task) {
 		return runLater(1, task);
 	}
 
@@ -2482,19 +2468,8 @@ public final class Common {
 	 * @param task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLater(final int delayTicks, Runnable task) {
-		final BukkitScheduler scheduler = Bukkit.getScheduler();
-		final JavaPlugin instance = SimplePlugin.getInstance();
-
-		try {
-			return runIfDisabled(task) ? null : delayTicks == 0 ? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTask(instance) : scheduler.runTask(instance, task) : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLater(instance, delayTicks) : scheduler.runTaskLater(instance, task, delayTicks);
-		} catch (final NoSuchMethodError err) {
-
-			return runIfDisabled(task) ? null
-					: delayTicks == 0
-							? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTask(instance) : getTaskFromId(scheduler.scheduleSyncDelayedTask(instance, task))
-							: task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLater(instance, delayTicks) : getTaskFromId(scheduler.scheduleSyncDelayedTask(instance, task, delayTicks));
-		}
+	public static ScheduledTask runLater(final int delayTicks, Runnable task) {
+		return SimplePlugin.getScheduler().globalRegionalScheduler().runDelayed(task, delayTicks+1);
 	}
 
 	/**
@@ -2505,8 +2480,8 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runAsync(final Runnable task) {
-		return runLaterAsync(0, task);
+	public static ScheduledTask runAsync(final Runnable task) {
+		return SimplePlugin.getScheduler().asyncScheduler().run(task);
 	}
 
 	/**
@@ -2517,8 +2492,8 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runLaterAsync(final Runnable task) {
-		return runLaterAsync(0, task);
+	public static ScheduledTask runLaterAsync(final Runnable task) {
+		return SimplePlugin.getScheduler().asyncScheduler().runDelayed(task, Duration.ofMillis(20));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -2532,19 +2507,8 @@ public final class Common {
 	 * @param task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLaterAsync(final int delayTicks, Runnable task) {
-		final BukkitScheduler scheduler = Bukkit.getScheduler();
-		final JavaPlugin instance = SimplePlugin.getInstance();
-
-		try {
-			return runIfDisabled(task) ? null : delayTicks == 0 ? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskAsynchronously(instance) : scheduler.runTaskAsynchronously(instance, task) : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLaterAsynchronously(instance, delayTicks) : scheduler.runTaskLaterAsynchronously(instance, task, delayTicks);
-
-		} catch (final NoSuchMethodError err) {
-			return runIfDisabled(task) ? null
-					: delayTicks == 0
-							? getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task))
-							: getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task, delayTicks));
-		}
+	public static ScheduledTask runLaterAsync(final int delayTicks, Runnable task) {
+		return SimplePlugin.getScheduler().asyncScheduler().runDelayed(task, Duration.ofSeconds(delayTicks / 20));
 	}
 
 	/**
@@ -2554,8 +2518,8 @@ public final class Common {
 	 * @param task        the task
 	 * @return the bukkit task or null
 	 */
-	public static BukkitTask runTimer(final int repeatTicks, final Runnable task) {
-		return runTimer(0, repeatTicks, task);
+	public static ScheduledTask runTimer(final int repeatTicks, final Runnable task) {
+		return SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(task, 1, repeatTicks);
 	}
 
 	/**
@@ -2566,15 +2530,8 @@ public final class Common {
 	 * @param task        the task
 	 * @return the bukkit task or null if error
 	 */
-	public static BukkitTask runTimer(final int delayTicks, final int repeatTicks, Runnable task) {
-
-		try {
-			return runIfDisabled(task) ? null : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks) : Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
-
-		} catch (final NoSuchMethodError err) {
-			return runIfDisabled(task) ? null
-					: getTaskFromId(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
-		}
+	public static ScheduledTask runTimer(final int delayTicks, final int repeatTicks, Runnable task) {
+		return SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(task, delayTicks, repeatTicks);
 	}
 
 	/**
@@ -2584,8 +2541,8 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runTimerAsync(final int repeatTicks, final Runnable task) {
-		return runTimerAsync(0, repeatTicks, task);
+	public static ScheduledTask runTimerAsync(final int repeatTicks, final Runnable task) {
+		return SimplePlugin.getScheduler().asyncScheduler().runAtFixedRate(task, Duration.ofSeconds(1), Duration.ofSeconds(repeatTicks / 20));
 	}
 
 	/**
@@ -2596,28 +2553,23 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable task) {
-
-		try {
-			return runIfDisabled(task) ? null : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks) : Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
-
-		} catch (final NoSuchMethodError err) {
-			return runIfDisabled(task) ? null
-					: getTaskFromId(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
-		}
+	public static ScheduledTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable task) {
+		return SimplePlugin.getScheduler().asyncScheduler().runAtFixedRate(task, Duration.ofSeconds(delayTicks / 20), Duration.ofSeconds(repeatTicks / 20));
 	}
 
 	/*
 	 * A compatibility method that converts the given task id into a bukkit task
 	 */
+	@Deprecated
 	private static BukkitTask getTaskFromId(int taskId) {
-
-		for (final BukkitTask task : Bukkit.getScheduler().getPendingTasks())
-			if (task.getTaskId() == taskId)
-				return task;
+		//for (final BukkitTask task : Bukkit.getScheduler().getPendingTasks())
+		//	if (task.getTaskId() == taskId)
+		//		return task;
 
 		return null;
 	}
+
+
 
 	// Check our plugin instance if it's enabled
 	// In case it is disabled, just runs the task and returns true

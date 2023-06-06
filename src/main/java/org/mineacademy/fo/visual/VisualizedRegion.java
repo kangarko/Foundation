@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
@@ -20,6 +18,7 @@ import org.mineacademy.fo.remain.CompParticle;
 
 import lombok.Getter;
 import lombok.Setter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * A simply way to visualize two locations in the world
@@ -40,7 +39,7 @@ public final class VisualizedRegion extends Region {
 	/**
 	 * The task responsible for sending particles
 	 */
-	private BukkitTask task;
+	private ScheduledTask task;
 
 	/**
 	 * The particle that is being sent out
@@ -172,32 +171,29 @@ public final class VisualizedRegion extends Region {
 		Valid.checkBoolean(this.task == null, "Already visualizing region " + this + "!");
 		Valid.checkBoolean(this.isWhole(), "Cannot visualize incomplete region " + this + "!");
 
-		this.task = Common.runTimer(this.delayTicks, new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (VisualizedRegion.this.viewers.isEmpty()) {
-					VisualizedRegion.this.stopVisualizing();
+		this.task = Common.runTimer(this.delayTicks, () -> {
+			if (VisualizedRegion.this.viewers.isEmpty()) {
+				VisualizedRegion.this.stopVisualizing();
 
-					return;
+				return;
+			}
+
+			final Set<Location> blocks = BlockUtil.getBoundingBox(VisualizedRegion.this.getPrimary(), VisualizedRegion.this.getSecondary());
+
+			for (final Location location : blocks)
+				for (final Map.Entry<Player, Color> entry : VisualizedRegion.this.viewers.entrySet()) {
+					final Player viewer = entry.getKey();
+					final Color color = entry.getValue();
+					final Location viewerLocation = viewer.getLocation();
+
+					if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
+						if (color != null)
+							CompParticle.REDSTONE.spawn(viewer, location, color, 0.5F);
+
+						else
+							VisualizedRegion.this.particle.spawn(viewer, location);
 				}
 
-				final Set<Location> blocks = BlockUtil.getBoundingBox(VisualizedRegion.this.getPrimary(), VisualizedRegion.this.getSecondary());
-
-				for (final Location location : blocks)
-					for (final Map.Entry<Player, Color> entry : VisualizedRegion.this.viewers.entrySet()) {
-						final Player viewer = entry.getKey();
-						final Color color = entry.getValue();
-						final Location viewerLocation = viewer.getLocation();
-
-						if (viewerLocation.getWorld().equals(location.getWorld()) && viewerLocation.distance(location) < 100)
-							if (color != null)
-								CompParticle.REDSTONE.spawn(viewer, location, color, 0.5F);
-
-							else
-								VisualizedRegion.this.particle.spawn(viewer, location);
-					}
-
-			}
 		});
 	}
 

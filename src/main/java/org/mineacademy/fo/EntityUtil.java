@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
@@ -27,10 +28,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -275,17 +276,12 @@ public final class EntityUtil {
 	public static void track(Entity entity, int timeoutTicks, Runnable flyListener, Runnable hitGroundListener) {
 		if (flyListener == null && hitGroundListener == null)
 			throw new FoException("Cannot track entity with fly and hit listeners on null!");
-
-		Common.runTimer(1, new BukkitRunnable() {
-
-			private int elapsedTicks = 0;
-
-			@Override
-			public void run() {
+		AtomicInteger elapsedTicks = new AtomicInteger();
+		SimplePlugin.getScheduler().entitySpecificScheduler(entity).runAtFixedRate(scheduledTask -> {
 
 				// Cancel after the given timeout to save performance
-				if (this.elapsedTicks++ > timeoutTicks) {
-					this.cancel();
+				if (elapsedTicks.getAndIncrement() > timeoutTicks) {
+					scheduledTask.cancel();
 
 					return;
 				}
@@ -295,7 +291,7 @@ public final class EntityUtil {
 					if (entity instanceof FallingBlock && hitGroundListener != null)
 						hitGroundListener.run();
 
-					this.cancel();
+					scheduledTask.cancel();
 					return;
 				}
 
@@ -304,12 +300,12 @@ public final class EntityUtil {
 					if (hitGroundListener != null)
 						hitGroundListener.run();
 
-					this.cancel();
+					scheduledTask.cancel();
 
 				} else if (flyListener != null)
 					flyListener.run();
-			}
-		});
+
+		},() -> {}, 1, 1);
 	}
 
 	/**

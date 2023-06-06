@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -26,6 +25,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.Setter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * A class that has ability to scan saved regions on the disk and execute
@@ -170,30 +170,26 @@ public abstract class OfflineRegionScanner {
 	 * we reach the end of the queue
 	 */
 	private void schedule0(Queue<File> queue) {
-		new BukkitRunnable() {
+		SimplePlugin.getScheduler().globalRegionalScheduler().run(scheduledTask -> {
+			final File file = queue.poll();
 
-			@Override
-			public void run() {
-				final File file = queue.poll();
+			// Queue finished
+			if (file == null) {
+				Common.log(
+						Common.consoleLine(),
+						"Region scanner finished. World saved.",
+						Common.consoleLine());
 
-				// Queue finished
-				if (file == null) {
-					Common.log(
-							Common.consoleLine(),
-							"Region scanner finished. World saved.",
-							Common.consoleLine());
+				Common.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
 
-					Common.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
+				OfflineRegionScanner.this.finishScan();
+				scheduledTask.cancel();
 
-					OfflineRegionScanner.this.finishScan();
-					this.cancel();
-
-					return;
-				}
-
-				OfflineRegionScanner.this.scanFile(file, queue);
+				return;
 			}
-		}.runTask(SimplePlugin.getInstance());
+
+			OfflineRegionScanner.this.scanFile(file, queue);
+		});
 	}
 
 	/*

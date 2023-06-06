@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -14,8 +16,6 @@ import org.bukkit.Note;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -23,6 +23,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.Getter;
 import lombok.NonNull;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * CompSound - Compatible Minecraft sound support
@@ -1680,23 +1681,22 @@ public enum CompSound {
 	 * @return the async task handling this operation.
 	 * @see #play(Location, float, float)
 	 */
-	public BukkitTask playRepeatedly(@NonNull Entity entity, float volume, float pitch, int repeat, int delay) {
+	public ScheduledTask playRepeatedly(@NonNull Entity entity, float volume, float pitch, int repeat, int delay) {
 		if (repeat <= 0)
 			throw new IllegalArgumentException("Cannot repeat playing sound " + repeat + " times");
 
 		if (delay <= 0)
 			throw new IllegalArgumentException("Delay ticks must be at least 1");
 
-		return new BukkitRunnable() {
-			int repeating = repeat;
+		AtomicInteger repeating = new AtomicInteger(repeat);
+		AtomicReference<ScheduledTask> final_scheduledTask = new AtomicReference<>();
 
-			@Override
-			public void run() {
-				CompSound.this.play(entity.getLocation(), volume, pitch);
-				if (this.repeating-- == 0)
-					this.cancel();
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), 0, delay);
+		SimplePlugin.getScheduler().entitySpecificScheduler(entity).runAtFixedRate(scheduledTask -> {
+			CompSound.this.play(entity.getLocation(), volume, pitch);
+			if (repeating.decrementAndGet() == 0)
+				scheduledTask.cancel();
+		}, () -> {}, 1, delay);
+		return final_scheduledTask.get();
 	}
 
 	/**
@@ -1842,7 +1842,7 @@ public enum CompSound {
 	 *
 	 * @return the async task handling the operation.
 	 */
-	public static BukkitTask playAscendingNote(@NonNull Player player, @NonNull Entity playTo, Instrument instrument, int ascendLevel, int delay) {
+	public static ScheduledTask playAscendingNote(@NonNull Player player, @NonNull Entity playTo, Instrument instrument, int ascendLevel, int delay) {
 
 		if (ascendLevel <= 0)
 			throw new IllegalArgumentException("Note ascend level cannot be lower than 1");
@@ -1851,17 +1851,16 @@ public enum CompSound {
 		if (delay <= 0)
 			throw new IllegalArgumentException("Delay ticks must be at least 1");
 
-		return new BukkitRunnable() {
-			int repeating = ascendLevel;
+		AtomicInteger repeating = new AtomicInteger(ascendLevel);
+		AtomicReference<ScheduledTask> final_scheduledTask = new AtomicReference<>();
+		SimplePlugin.getScheduler().regionSpecificScheduler(player.getLocation()).runAtFixedRate(scheduledTask -> {
+			final_scheduledTask.set(scheduledTask);
+			player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - repeating.get()]));
 
-			@Override
-			public void run() {
-				player.playNote(playTo.getLocation(), instrument, Note.natural(1, Note.Tone.values()[ascendLevel - this.repeating]));
-
-				if (this.repeating-- == 0)
-					this.cancel();
-			}
-		}.runTaskTimerAsynchronously(SimplePlugin.getInstance(), 0, delay);
+			if (repeating.getAndDecrement() == 0)
+				scheduledTask.cancel();
+		}, 1, delay);
+		return final_scheduledTask.get();
 	}
 
 	/**

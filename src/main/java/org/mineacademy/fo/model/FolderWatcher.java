@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.Debugger;
@@ -23,6 +22,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 @Getter(value = AccessLevel.PROTECTED)
 public abstract class FolderWatcher extends Thread {
@@ -45,7 +45,7 @@ public abstract class FolderWatcher extends Thread {
 	/**
 	 * Workaround for duplicated values in the loop
 	 */
-	private final Map<String, BukkitTask> scheduledUpdates = new HashMap<>();
+	private final Map<String, ScheduledTask> scheduledUpdates = new HashMap<>();
 
 	/**
 	 * The folder that is being watched
@@ -103,7 +103,7 @@ public abstract class FolderWatcher extends Thread {
 							final File fileModified = new File(SimplePlugin.getData(), watchEventPath.toFile().getName());
 
 							final String path = fileModified.getAbsolutePath();
-							final BukkitTask pendingTask = this.scheduledUpdates.remove(path);
+							final ScheduledTask pendingTask = this.scheduledUpdates.remove(path);
 
 							// Cancel the old task and reschedule
 							if (pendingTask != null)
@@ -159,7 +159,7 @@ public abstract class FolderWatcher extends Thread {
 
 		this.watching = false;
 
-		for (final BukkitTask task : this.scheduledUpdates.values())
+		for (final ScheduledTask task : this.scheduledUpdates.values())
 			try {
 				task.cancel();
 			} catch (final Exception ex) {

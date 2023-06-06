@@ -20,6 +20,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.Setter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  *
@@ -42,7 +43,7 @@ public abstract class SimpleHologram {
 	/**
 	 * The ticking task responsible for calling {@link #onTick()}
 	 */
-	private static volatile BukkitTask tickingTask = null;
+	private static volatile ScheduledTask tickingTask = null;
 
 	/**
 	 * The armor stand names, each line spawns another invisible stand
@@ -105,7 +106,7 @@ public abstract class SimpleHologram {
 	/*
 	 * Helper method to start main anim ticking task
 	 */
-	private static BukkitTask scheduleTickingTask() {
+	private static ScheduledTask scheduleTickingTask() {
 		return Common.runTimer(1, () -> {
 
 			for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext();) {

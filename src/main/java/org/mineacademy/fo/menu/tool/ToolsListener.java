@@ -3,6 +3,7 @@ package org.mineacademy.fo.menu.tool;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,12 +18,12 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -216,19 +217,14 @@ public final class ToolsListener implements Listener {
 						this.shotRockets.put(copy.getUniqueId(), new ShotRocket(player, rocket));
 						rocket.onLaunch(copy, player);
 
-						Common.runTimer(1, new BukkitRunnable() {
+						AtomicLong elapsedTicks = new AtomicLong();
+						SimplePlugin.getScheduler().regionSpecificScheduler(event.getLocation()).runAtFixedRate(scheduledTask -> {
+							if (!copy.isValid() || copy.isOnGround() || elapsedTicks.getAndIncrement() > 20 * 30 /*Remove after 30 seconds to reduce server strain*/)
+								scheduledTask.cancel();
 
-							private long elapsedTicks = 0;
-
-							@Override
-							public void run() {
-								if (!copy.isValid() || copy.isOnGround() || this.elapsedTicks++ > 20 * 30 /*Remove after 30 seconds to reduce server strain*/)
-									this.cancel();
-
-								else
-									rocket.onFlyTick(copy, player);
-							}
-						});
+							else
+								rocket.onFlyTick(copy, player);
+						}, 1, 1);
 					});
 
 				} else {

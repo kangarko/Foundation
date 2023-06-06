@@ -67,6 +67,8 @@ import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
 import lombok.NonNull;
+import space.arim.morepaperlib.MorePaperLib;
+import space.arim.morepaperlib.scheduling.GracefulScheduling;
 
 /**
  * Represents a basic Java plugin using enhanced library functionality,
@@ -88,6 +90,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	@Getter
 	private static String version;
+
+	/**
+	 * Scheduler with Folia and Bukkit support
+	 */
+	@Getter
+	private static GracefulScheduling scheduler;
 
 	/**
 	 * Shortcut for getName()
@@ -218,6 +226,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		named = instance.getDataFolder().getName();
 		source = instance.getFile();
 		data = instance.getDataFolder();
+
+		// Load scheduler
+		scheduler = new MorePaperLib(instance).scheduling();
 
 		final String version = Bukkit.getVersion();
 
@@ -895,7 +906,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
 		this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
 
-		this.getServer().getScheduler().cancelTasks(this);
+		scheduler.cancelGlobalTasks();
+		//this.getServer().getScheduler().cancelTasks(this);
 
 		this.mainCommand = null;
 	}

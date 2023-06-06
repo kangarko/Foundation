@@ -25,6 +25,7 @@ import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * The classes handling Boss Bar cross-server compatibility are based off of the
@@ -53,7 +54,7 @@ public final class BossBarInternals implements Listener {
 	/**
 	 * Currently running timers (for temporary boss bars)
 	 */
-	private final HashMap<UUID, Integer> timers = new HashMap<>();
+	private final HashMap<UUID, ScheduledTask> scheduledTasks = new HashMap<>();
 
 	// Singleton
 	private BossBarInternals() {
@@ -105,10 +106,10 @@ public final class BossBarInternals implements Listener {
 
 		this.players.clear();
 
-		for (final int timerID : this.timers.values())
-			Bukkit.getScheduler().cancelTask(timerID);
+		for (final ScheduledTask task : this.scheduledTasks.values())
+			task.cancel();
 
-		this.timers.clear();
+		this.scheduledTasks.clear();
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -251,7 +252,7 @@ public final class BossBarInternals implements Listener {
 
 		this.cancelTimer(player);
 
-		this.timers.put(player.getUniqueId(), Common.runTimer(20, 20, () -> {
+		this.scheduledTasks.put(player.getUniqueId(), Common.runTimer(20, 20, () -> {
 			final NMSDragon drag = this.getDragon(player, "");
 			drag.setHealthF(drag.getHealth() - dragonHealthMinus);
 
@@ -261,7 +262,7 @@ public final class BossBarInternals implements Listener {
 			} else
 				this.sendDragon(drag, player);
 
-		}).getTaskId());
+		}));
 
 		this.sendDragon(dragon, player);
 	}
@@ -303,10 +304,10 @@ public final class BossBarInternals implements Listener {
 	}
 
 	private void cancelTimer(final Player player) {
-		final Integer timerID = this.timers.remove(player.getUniqueId());
+		final ScheduledTask task = this.scheduledTasks.remove(player.getUniqueId());
 
-		if (timerID != null)
-			Bukkit.getScheduler().cancelTask(timerID);
+		if (task != null)
+			task.cancel();
 	}
 
 	private void sendDragon(final NMSDragon dragon, final Player player) {

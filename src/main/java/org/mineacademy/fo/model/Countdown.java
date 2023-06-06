@@ -8,6 +8,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * Represents a runnable timer task that counts down to 0 and stops
@@ -43,7 +44,7 @@ public abstract class Countdown implements Runnable {
 	/**
 	 * The internal task from Bukkit associated with this countdown
 	 */
-	private int taskId = -1;
+	private ScheduledTask scheduledTask = null;
 
 	/**
 	 * Create new countdown from the given time
@@ -129,8 +130,7 @@ public abstract class Countdown implements Runnable {
 	public final void launch() {
 		Valid.checkBoolean(!this.isRunning(), "Task " + this + " already scheduled!");
 
-		final BukkitTask task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), this, START_DELAY, TICK_PERIOD);
-		this.taskId = task.getTaskId();
+		this.scheduledTask = SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(this, START_DELAY, TICK_PERIOD);
 
 		this.onStart();
 	}
@@ -139,9 +139,8 @@ public abstract class Countdown implements Runnable {
 	 * Cancels this countdown, failing if it is not scheduled (use {@link #isRunning()})
 	 */
 	public final void cancel() {
-		Bukkit.getScheduler().cancelTask(this.getTaskId());
+		this.scheduledTask.cancel();
 
-		this.taskId = -1;
 		this.secondsSinceStart = 0;
 	}
 
@@ -151,18 +150,30 @@ public abstract class Countdown implements Runnable {
 	 * @return
 	 */
 	public final boolean isRunning() {
-		return this.taskId != -1;
+		return scheduledTask.isCancelled();
 	}
 
 	/**
+	 * NOT WORKING, use getScheduledTask()
 	 * Return the bukkit task or fails if not running
 	 *
 	 * @return
 	 */
+	@Deprecated
 	public final int getTaskId() {
 		Valid.checkBoolean(this.isRunning(), "Task " + this + " not scheduled yet");
 
-		return this.taskId;
+		return -1;
+	}
+
+
+	/**
+	 * Return the ScheduledTask
+	 *
+	 * @return
+	 */
+	public ScheduledTask getScheduledTask() {
+		return scheduledTask;
 	}
 
 	@Override

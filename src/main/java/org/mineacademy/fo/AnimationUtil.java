@@ -3,6 +3,9 @@ package org.mineacademy.fo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
@@ -11,8 +14,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompBarColor;
@@ -21,6 +22,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * Utility class for creating text animations for BossBars, Scoreboards, HUD Titles and Inventories.
@@ -223,20 +225,16 @@ public class AnimationUtil {
 	 * @param period         The period (in ticks) to wait between showing the next frame.
 	 * @return The repeating BukkitTask (Useful to cancel on reload or shutdown).
 	 */
-	public static BukkitTask animateBossBar(Player player, List<String> animatedFrames, long delay, long period) {
-		return new BukkitRunnable() {
-			int frame = 0;
+	public static ScheduledTask animateBossBar(Player player, List<String> animatedFrames, long delay, long period) {
+		AtomicInteger frame = new AtomicInteger();
+		return SimplePlugin.getScheduler().regionSpecificScheduler(player.getLocation()).runAtFixedRate(() -> {
+			Remain.sendBossbarPercent(player, animatedFrames.get(frame.get()), 100);
 
-			@Override
-			public void run() {
-				Remain.sendBossbarPercent(player, animatedFrames.get(this.frame), 100);
+			frame.getAndIncrement();
 
-				this.frame++;
-
-				if (this.frame == animatedFrames.size())
-					this.frame = 0;
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
+			if (frame.get() == animatedFrames.size())
+				frame.set(0);
+		}, delay, period);
 	}
 
 	/**
@@ -251,7 +249,7 @@ public class AnimationUtil {
 	 * @param countdownBar   Leave this as null if you don't want it to act as a countdown.
 	 * @return BukkitTask of the animation
 	 */
-	public static BukkitTask animateBossBar(Player player, List<String> animatedFrames, @Nullable List<CompBarColor> animatedColors, long delay, long period, boolean animateOnce, @Nullable CountdownBar countdownBar) {
+	public static ScheduledTask animateBossBar(Player player, List<String> animatedFrames, @Nullable List<CompBarColor> animatedColors, long delay, long period, boolean animateOnce, @Nullable CountdownBar countdownBar) {
 		int smoothnessLevel = 1;
 
 		if (countdownBar != null && countdownBar.isSmooth)
@@ -259,44 +257,41 @@ public class AnimationUtil {
 
 		final int finalSmoothnessLevel = smoothnessLevel;
 
-		return new BukkitRunnable() {
-			boolean run = true;
-			int frame = 0;
-			float health = 1F;
+		AtomicBoolean run = new AtomicBoolean(true);
+		AtomicInteger frame = new AtomicInteger();
+		AtomicReference<Float> health = new AtomicReference<>(1F);
 
-			@Override
-			public void run() {
-				if (!this.run)
-					return;
+		return SimplePlugin.getScheduler().regionSpecificScheduler(player.getLocation()).runAtFixedRate(() -> {
+			if (!run.get())
+				return;
 
-				final String title = animatedFrames.get(this.frame % (animatedFrames.size() * finalSmoothnessLevel));
+			final String title = animatedFrames.get(frame.get() % (animatedFrames.size() * finalSmoothnessLevel));
 
-				if (animatedColors != null)
-					Remain.sendBossbarPercent(player, title, this.health, animatedColors.get(this.frame % (animatedColors.size() * finalSmoothnessLevel)), CompBarStyle.SOLID);
+			if (animatedColors != null)
+				Remain.sendBossbarPercent(player, title, health.get(), animatedColors.get(frame.get() % (animatedColors.size() * finalSmoothnessLevel)), CompBarStyle.SOLID);
 
+			else
+				Remain.sendBossbarPercent(player, title, health.get());
+
+			if (countdownBar != null)
+				if (countdownBar.isSmooth)
+					health.updateAndGet(v -> new Float((float) (v - countdownBar.duration / (10D * finalSmoothnessLevel))));
 				else
-					Remain.sendBossbarPercent(player, title, this.health);
+					health.updateAndGet(v -> new Float((float) (v - countdownBar.duration / 10D)));
 
-				if (countdownBar != null)
-					if (countdownBar.isSmooth)
-						this.health -= countdownBar.duration / (10D * finalSmoothnessLevel);
-					else
-						this.health -= countdownBar.duration / 10D;
+			frame.getAndIncrement();
 
-				this.frame++;
+			if (frame.get() >= animatedFrames.size()) {
+				frame.set(0);
+				health.set(1F);
 
-				if (this.frame >= animatedFrames.size()) {
-					this.frame = 0;
-					this.health = 1F;
+				if (animateOnce) {
+					run.set(false);
 
-					if (animateOnce) {
-						this.run = false;
-
-						Remain.removeBossbar(player);
-					}
+					Remain.removeBossbar(player);
 				}
 			}
-		}.runTaskTimer(SimplePlugin.getInstance(), delay, period / smoothnessLevel);
+		}, delay, period / smoothnessLevel);
 	}
 
 	/**
@@ -309,19 +304,15 @@ public class AnimationUtil {
 	 * @return The repeating BukkitTask (Useful to cancel on reload or shutdown).
 	 */
 
-	public static BukkitTask animateScoreboardTitle(SimpleScoreboard scoreboard, List<String> animatedFrames, long delay, long period) {
-		return new BukkitRunnable() {
-			int frame = 0;
+	public static ScheduledTask animateScoreboardTitle(SimpleScoreboard scoreboard, List<String> animatedFrames, long delay, long period) {
+		AtomicInteger frame = new AtomicInteger();
+		return SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(() -> {
+			scoreboard.setTitle(animatedFrames.get(this.frame));
+			frame.getAndIncrement();
 
-			@Override
-			public void run() {
-				scoreboard.setTitle(animatedFrames.get(this.frame));
-				this.frame++;
-
-				if (this.frame == animatedFrames.size())
-					this.frame = 0;
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
+			if (frame.get() == animatedFrames.size())
+				frame.set(0);
+		}, delay, period);
 	}
 
 	/**
@@ -333,27 +324,27 @@ public class AnimationUtil {
 	 * @param period         The period (in ticks) to wait between showing the next frame.
 	 * @return the task you can cancel after animation ended
 	 */
-	public static BukkitTask animateTitle(Player who, @Nullable List<String> titleFrames, @Nullable List<String> subtitleFrames, long period) {
-		return new BukkitRunnable() {
-			int frame = 0;
-			String title = "", subtitle = "";
+	public static ScheduledTask animateTitle(Player who, @Nullable List<String> titleFrames, @Nullable List<String> subtitleFrames, long period) {
+		AtomicInteger frame = new AtomicInteger();
+		AtomicReference<String> title = new AtomicReference<>("");
+		AtomicReference<String> subtitle = new AtomicReference<>("");
+		AtomicReference<ScheduledTask> final_scheduledTask = new AtomicReference<>();
+		SimplePlugin.getScheduler().regionSpecificScheduler(who.getLocation()).runAtFixedRate(scheduledTask -> {
+			final_scheduledTask.set(scheduledTask);
+			if (titleFrames != null)
+				title.set(titleFrames.get(frame.get() % titleFrames.size()));
+			if (subtitleFrames != null)
+				subtitle.set(subtitleFrames.get(frame.get() % subtitleFrames.size()));
 
-			@Override
-			public void run() {
-				if (titleFrames != null)
-					this.title = titleFrames.get(this.frame % titleFrames.size());
-				if (subtitleFrames != null)
-					this.subtitle = subtitleFrames.get(this.frame % subtitleFrames.size());
+			Remain.sendTitle(who, 10, 70, 20, title.get(), subtitle.get());
 
-				Remain.sendTitle(who, 10, 70, 20, this.title, this.subtitle);
+			frame.incrementAndGet();
 
-				this.frame++;
-
-				if (this.frame == Math.max(titleFrames != null ? titleFrames.size() : 0,
-						subtitleFrames != null ? subtitleFrames.size() : 0) || SimplePlugin.isReloading())
-					this.cancel();
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), 0, period);
+			if (frame.get() == Math.max(titleFrames != null ? titleFrames.size() : 0,
+					subtitleFrames != null ? subtitleFrames.size() : 0) || SimplePlugin.isReloading())
+				scheduledTask.cancel();
+		}, 1, period);
+		return final_scheduledTask.get();
 	}
 
 	/**
@@ -365,22 +356,18 @@ public class AnimationUtil {
 	 * @param period         The period (in ticks) to wait between showing the next frame.
 	 * @return The repeating BukkitTask (Useful to cancel on reload or shutdown).
 	 */
-	public static BukkitTask animateItemTitle(ItemStack item, List<String> animatedFrames, long delay, long period) {
-		return new BukkitRunnable() {
-			int frame = 0;
+	public static ScheduledTask animateItemTitle(ItemStack item, List<String> animatedFrames, long delay, long period) {
+		AtomicInteger frame = new AtomicInteger();
+		return SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(() -> {
+			final ItemMeta meta = checkMeta(item);
 
-			@Override
-			public void run() {
-				final ItemMeta meta = checkMeta(item);
+			meta.setDisplayName(animatedFrames.get(frame.get()));
+			item.setItemMeta(meta);
 
-				meta.setDisplayName(animatedFrames.get(this.frame));
-				item.setItemMeta(meta);
-
-				this.frame++;
-				if (this.frame > animatedFrames.size())
-					this.frame = 0;
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
+			frame.incrementAndGet();
+			if (frame.get() > animatedFrames.size())
+				frame.set(0);
+		},delay, period);
 	}
 
 	/**
@@ -393,31 +380,27 @@ public class AnimationUtil {
 	 * @throws IndexOutOfBoundsException if the line number is out of range
 	 *                                   ({@code line < 0 || line > lore.size()})
 	 */
-	public static BukkitTask animateItemLore(ItemStack item, int line, List<String> animatedFrames, long delay, long period) {
-		return new BukkitRunnable() {
-			int frame = 0;
+	public static ScheduledTask animateItemLore(ItemStack item, int line, List<String> animatedFrames, long delay, long period) {
+		AtomicInteger frame = new AtomicInteger();
+		return SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(() -> {
+			final String frameText = animatedFrames.get(frame.get() % animatedFrames.size());
+			final ItemMeta meta = checkMeta(item);
+			List<String> lore = meta.getLore();
+			if (lore == null)
+				lore = new ArrayList<>(); // prevents NPE
 
-			@Override
-			public void run() {
-				final String frameText = animatedFrames.get(this.frame % animatedFrames.size());
-				final ItemMeta meta = checkMeta(item);
-				List<String> lore = meta.getLore();
-				if (lore == null)
-					lore = new ArrayList<>(); // prevents NPE
+			if (lore.size() < line)
+				throw new IndexOutOfBoundsException("line #" + line + " is out of range!");
 
-				if (lore.size() < line)
-					throw new IndexOutOfBoundsException("line #" + line + " is out of range!");
+			lore.set(line, frameText); // update line
 
-				lore.set(line, frameText); // update line
+			meta.setLore(lore);
+			item.setItemMeta(meta);
 
-				meta.setLore(lore);
-				item.setItemMeta(meta);
-
-				this.frame++;
-				if (this.frame > animatedFrames.size())
-					this.frame = 0;
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
+			frame.incrementAndGet();
+			if (frame.get() > animatedFrames.size())
+				frame.set(0);
+		},delay, period);
 	}
 
 	/**
@@ -429,18 +412,14 @@ public class AnimationUtil {
 	 * @param period         The period (in ticks) to wait between showing the next frame.
 	 * @return The repeating BukkitTask (Useful to cancel on reload or shutdown).
 	 */
-	public static BukkitTask animateInventoryTitle(Player viewer, List<String> animatedFrames, long delay, long period) {
-		return new BukkitRunnable() {
-			int frame = 0;
-
-			@Override
-			public void run() {
-				PlayerUtil.updateInventoryTitle(viewer, animatedFrames.get(this.frame));
-				this.frame++;
-				if (this.frame > animatedFrames.size())
-					this.frame = 0;
-			}
-		}.runTaskTimer(SimplePlugin.getInstance(), delay, period);
+	public static ScheduledTask animateInventoryTitle(Player viewer, List<String> animatedFrames, long delay, long period) {
+		AtomicInteger frame = new AtomicInteger();
+		return SimplePlugin.getScheduler().regionSpecificScheduler(viewer.getLocation()).runAtFixedRate(() -> {
+			PlayerUtil.updateInventoryTitle(viewer, animatedFrames.get(frame.get()));
+			frame.incrementAndGet();
+			if (frame.get() > animatedFrames.size())
+				frame.set(0);
+		}, delay, period);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

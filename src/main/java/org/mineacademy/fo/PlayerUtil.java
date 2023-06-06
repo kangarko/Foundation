@@ -35,7 +35,6 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -52,6 +51,7 @@ import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * Utility class for managing players.
@@ -74,7 +74,7 @@ public final class PlayerUtil {
 	/**
 	 * Stores a list of currently pending title animation tasks to restore the tile to its original one
 	 */
-	private static final Map<UUID, BukkitTask> titleRestoreTasks = new ConcurrentHashMap<>();
+	private static final Map<UUID, ScheduledTask> titleRestoreTasks = new ConcurrentHashMap<>();
 
 	/**
 	 * Stores temporarily saved player inventories, their health, attributes and other states
@@ -846,27 +846,27 @@ public final class PlayerUtil {
 		updateInventoryTitle(player, MinecraftVersion.atLeast(V.v1_13) ? temporaryTitle.replace("%", "%%") : temporaryTitle);
 
 		// Prevent flashing titles
-		BukkitTask pending = titleRestoreTasks.get(player.getUniqueId());
+		ScheduledTask pending = titleRestoreTasks.get(player.getUniqueId());
 
 		if (pending != null)
 			pending.cancel();
 
-		pending = Common.runLater(duration, () -> {
+		pending = SimplePlugin.getScheduler().regionSpecificScheduler(player.getLocation()).runDelayed(() -> {
 			final Menu futureMenu = Menu.getMenu(player);
 
 			if (futureMenu != null && futureMenu.getClass().getName().equals(menu.getClass().getName()))
 				updateInventoryTitle(player, oldTitle);
-		});
+		}, duration);
 
 		final UUID uid = player.getUniqueId();
 
 		titleRestoreTasks.put(uid, pending);
 
 		// Prevent overloading the map so remove the key afterwards
-		Common.runLater(duration + 1, () -> {
+		SimplePlugin.getScheduler().regionSpecificScheduler(player.getLocation()).runDelayed( () -> {
 			if (titleRestoreTasks.containsKey(uid))
 				titleRestoreTasks.remove(uid);
-		});
+		}, duration + 1);
 	}
 
 	/**

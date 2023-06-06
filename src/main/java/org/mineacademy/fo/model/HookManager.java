@@ -30,7 +30,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -98,6 +97,7 @@ import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.managers.IslandsManager;
@@ -2483,7 +2483,7 @@ class PlaceholderAPIHook {
 				// crashing on PlaceholderAPI variables hanging up on the main thread
 				final Thread currentThread = Thread.currentThread();
 				final boolean main = Bukkit.isPrimaryThread();
-				final BukkitTask watchDog = Common.runLater(main ? 30 : 80, () -> {
+				final ScheduledTask watchDog = Common.runLater(main ? 30 : 80, () -> {
 					Common.logFramed(
 							"IMPORTANT: PREVENTED SERVER CRASH FROM PLACEHOLDERAPI",
 							"",

@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -22,6 +21,7 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.Getter;
 import lombok.NonNull;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 
 /**
  * A simple way of rendering custom scoreboards for players with close to no flickering.
@@ -88,7 +88,7 @@ public class SimpleScoreboard {
 	/**
 	 * The running update task
 	 */
-	private BukkitTask updateTask;
+	private ScheduledTask updateTask;
 
 	/**
 	 * Create a new scoreboard updating every second
@@ -333,7 +333,7 @@ public class SimpleScoreboard {
 	private void start() {
 		Valid.checkBoolean(this.updateTask == null, "Scoreboard " + this + " already running");
 
-		this.updateTask = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), () -> {
+		this.updateTask = SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(() -> {
 			try {
 				this.onUpdate();
 
