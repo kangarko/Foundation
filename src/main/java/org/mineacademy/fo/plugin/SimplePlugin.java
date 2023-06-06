@@ -409,6 +409,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.api.ChatColor"))
 			libraries.add(Library.fromMavenRepo("net.md-5", "bungeecord-chat", "1.16-R0.4"));
 
+		// Force add scheduler lib
+		if (!ReflectionUtil.isClassAvailable("space.arim.morepaperlib.scheduling.GracefulScheduling"))
+			libraries.add(Library.fromOtherRepo("https://mvn-repo.arim.space/lesser-gpl3/", "space.arim.morepaperlib", "morepaperlib", "0.4.2"));
+
 		if (MinecraftVersion.olderThan(V.v1_16)) {
 			final YamlConfiguration pluginFile = new YamlConfiguration();
 

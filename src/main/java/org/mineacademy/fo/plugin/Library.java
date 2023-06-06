@@ -212,6 +212,12 @@ public final class Library {
 		return new Library(groupId, artifactId, version, jarPath);
 	}
 
+	public static Library fromOtherRepo(String otherRepoUrl, String groupId, String artifactId, String version) {
+		final String jarPath = otherRepoUrl + groupId.replace(".", "/") + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".jar";
+
+		return new Library(groupId, artifactId, version, jarPath);
+	}
+
 	/**
 	 * Create a new library from your own custom repository path.
 	 *
