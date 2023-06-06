@@ -69,7 +69,6 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;

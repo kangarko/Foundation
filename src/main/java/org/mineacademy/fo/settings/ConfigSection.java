@@ -355,7 +355,7 @@ public class ConfigSection {
 				.append(this.fullPath)
 				.append("', root='")
 				.append(root == null ? null : root.getClass().getSimpleName())
-				.append("']")
+				.append("', keys=" + this.map + "]")
 				.toString();
 	}
 }
