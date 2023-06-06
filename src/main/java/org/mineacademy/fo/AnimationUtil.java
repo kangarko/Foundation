@@ -307,7 +307,7 @@ public class AnimationUtil {
 	public static ScheduledTask animateScoreboardTitle(SimpleScoreboard scoreboard, List<String> animatedFrames, long delay, long period) {
 		AtomicInteger frame = new AtomicInteger();
 		return SimplePlugin.getScheduler().globalRegionalScheduler().runAtFixedRate(() -> {
-			scoreboard.setTitle(animatedFrames.get(this.frame));
+			scoreboard.setTitle(animatedFrames.get(frame.get()));
 			frame.getAndIncrement();
 
 			if (frame.get() == animatedFrames.size())

@@ -178,6 +178,6 @@ public abstract class Countdown implements Runnable {
 
 	@Override
 	public final String toString() {
-		return this.getClass().getSimpleName() + "{" + this.countdownSeconds + ", id=" + this.taskId + "}";
+		return this.getClass().getSimpleName() + "{" + this.countdownSeconds + ", id=" + this.scheduledTask + "}";
 	}
 }
