@@ -1146,7 +1146,7 @@ public final class Common {
 			return false;
 
 		if (!found.isEnabled())
-			runLaterAsync(0, () -> Valid.checkBoolean(found.isEnabled(), SimplePlugin.getNamed() + " could not hook into " + pluginName + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getNamed() + ", look for errors above and contact support of '" + pluginName + "')"));
+			runAsync(() -> Valid.checkBoolean(found.isEnabled(), SimplePlugin.getNamed() + " could not hook into " + pluginName + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getNamed() + ", look for errors above and contact support of '" + pluginName + "')"));
 
 		return true;
 	}
@@ -1216,7 +1216,7 @@ public final class Common {
 
 		final String finalCommand = command;
 
-		runLater(() -> playerSender.performCommand(colorize(finalCommand.replace("{player}", resolveSenderName(playerSender)))));
+		SimplePlugin.getScheduler().regionSpecificScheduler(playerSender.getLocation()).runDelayed(() -> playerSender.performCommand(colorize(finalCommand.replace("{player}", resolveSenderName(playerSender)))), 1);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
