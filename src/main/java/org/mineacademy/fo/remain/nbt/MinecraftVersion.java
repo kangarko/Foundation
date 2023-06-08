@@ -31,10 +31,14 @@ enum MinecraftVersion {
 	MC1_18_R2(1182, true),
 	MC1_19_R1(1191, true),
 	MC1_19_R2(1192, true),
-	MC1_19_R3(1193, true);
+	MC1_19_R3(1193, true),
+	MC1_20_R1(1201, true);
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
+
+	// NBT-API Version
+	protected static final String VERSION = "2.11.3";
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -52,7 +56,7 @@ enum MinecraftVersion {
 	 * @return A simple comparable Integer, representing the version.
 	 */
 	public int getVersionId() {
-		return versionId;
+		return this.versionId;
 	}
 
 	/**
@@ -60,7 +64,7 @@ enum MinecraftVersion {
 	 *         internally
 	 */
 	public boolean isMojangMapping() {
-		return mojangMapping;
+		return this.mojangMapping;
 	}
 
 	/**
@@ -70,9 +74,8 @@ enum MinecraftVersion {
 	 * @return
 	 */
 	public String getPackageName() {
-		if (this == UNKNOWN) {
+		if (this == UNKNOWN)
 			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-		}
 		return this.name().replace("MC", "v");
 	}
 
@@ -105,12 +108,11 @@ enum MinecraftVersion {
 	public static MinecraftVersion getVersion() {
 		if (version != null)
 			return version;
-
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
-			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 
+			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 		} catch (IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
 		}
@@ -122,15 +124,18 @@ enum MinecraftVersion {
 	 * @return True, if Forge is present
 	 */
 	public static boolean isForgePresent() {
-		if (isForgePresent != null) {
+		if (isForgePresent != null)
 			return isForgePresent;
-		}
 		try {
-			isForgePresent = true;
+			@SuppressWarnings("unused")
+			Object forge = (getVersion() == MinecraftVersion.MC1_7_R4 ? Class.forName("cpw.mods.fml.common.Loader")
+					: Class.forName("net.minecraftforge.fml.common.Loader"));
 
+			isForgePresent = true;
 		} catch (Exception ex) {
 			isForgePresent = false;
 		}
 		return isForgePresent;
 	}
+
 }

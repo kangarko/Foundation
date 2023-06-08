@@ -23,7 +23,7 @@ public class NBT {
 	 * It takes an ItemStack, and a function that takes a ReadableNBT and returns a
 	 * generic type T. It then returns the result of the function applied to a new
 	 * NBTItem
-	 * 
+	 *
 	 * @param item   The itemstack you want to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
 	 *               T.
@@ -36,7 +36,7 @@ public class NBT {
 	/**
 	 * It takes an entity and a function that takes a ReadableNBT and returns a
 	 * generic type T, and returns the result of the function
-	 * 
+	 *
 	 * @param entity The entity to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value.
 	 * @return The NBTEntity class is being returned.
@@ -49,7 +49,7 @@ public class NBT {
 	 * It takes a block state and a function that takes a readable NBT and returns a
 	 * value of type T. It then returns the value of the function applied to a new
 	 * NBTTileEntity created from the block state
-	 * 
+	 *
 	 * @param blockState The block state of the block you want to get the NBT from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
 	 *                   type T.
@@ -63,7 +63,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadableNBT and returns a
 	 * generic type T, and returns the result of the function, applied to the
 	 * entities persistent data container
-	 * 
+	 *
 	 * @param entity The entity to get the data from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
 	 *               T.
@@ -77,7 +77,7 @@ public class NBT {
 	 * It takes an block entity and a function that takes a ReadableNBT and returns
 	 * a generic type T, and returns the result of the function, applied to the
 	 * block entities persistent data container
-	 * 
+	 *
 	 * @param blockState The block state of the block you want to get the data from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
 	 *                   type T.
@@ -90,7 +90,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack, applies a function to its NBT, and returns the result
 	 * of the function
-	 * 
+	 *
 	 * @param item     The item you want to modify
 	 * @param function The function that will be applied to the item.
 	 * @return The return value of the function.
@@ -105,7 +105,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
 	 * the Consumer to the ItemStacks NBT
-	 * 
+	 *
 	 * @param item     The item you want to modify
 	 * @param consumer The consumer that will be used to modify the NBT.
 	 */
@@ -118,7 +118,7 @@ public class NBT {
 	/**
 	 * It takes an entity and a function that takes a ReadWriteNBT and returns a
 	 * generic type T. It then returns the result of the function
-	 * 
+	 *
 	 * @param entity   The entity to modify
 	 * @param function The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -130,7 +130,7 @@ public class NBT {
 	/**
 	 * It takes an entity and a function that takes a ReadWriteNBT and applies the
 	 * function to the entity
-	 * 
+	 *
 	 * @param entity   The entity to modify
 	 * @param consumer The consumer that will be called with the NBTEntity.
 	 */
@@ -142,7 +142,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadWriteNBT from the entities
 	 * persistent data and returns a generic type T. It then returns the result of
 	 * the function
-	 * 
+	 *
 	 * @param entity   The entity to modify the data of.
 	 * @param function The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -154,7 +154,7 @@ public class NBT {
 	/**
 	 * It allows you to modify the persistent data of an entity without any return
 	 * value
-	 * 
+	 *
 	 * @param entity   The entity to modify
 	 * @param consumer The consumer that will be used to modify the persistent data.
 	 */
@@ -165,7 +165,7 @@ public class NBT {
 	/**
 	 * It takes a block state and a function that takes a ReadWriteNBT and returns a
 	 * generic type T. It then returns the result of the function
-	 * 
+	 *
 	 * @param blockState The blockstate you want to modify
 	 * @param function   The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -178,7 +178,7 @@ public class NBT {
 	 * It takes a block state and a consumer, and then it creates a new
 	 * NBTTileEntity object with the block state, and then it passes that
 	 * NBTTileEntity object to the consumer
-	 * 
+	 *
 	 * @param blockState The blockstate you want to modify
 	 * @param consumer   A Consumer&lt;ReadWriteNBT&gt;. This is a function that
 	 *                   takes a ReadWriteNBT and does something with it.
@@ -191,7 +191,7 @@ public class NBT {
 	 * It takes a block state and a function that takes a ReadWriteNBT of the block
 	 * entities persistent data and returns a generic type T. It then returns the
 	 * result of the function
-	 * 
+	 *
 	 * @param blockState The block state of the block you want to modify.
 	 * @param function   The function that will be called to modify the NBT data.
 	 * @return The return type is the same as the return type of the function.
@@ -203,7 +203,7 @@ public class NBT {
 	/**
 	 * It takes a block state and a consumer, and then it calls the consumer with
 	 * the persistent data container of the block entity
-	 * 
+	 *
 	 * @param blockState The block state of the block you want to modify.
 	 * @param consumer   A Consumer&lt;ReadWriteNBT&gt;. This is a function that
 	 *                   takes a ReadWriteNBT and does something with it.
@@ -214,7 +214,7 @@ public class NBT {
 
 	/**
 	 * It converts an ItemStack to a ReadWriteNBT object
-	 * 
+	 *
 	 * @param itemStack The item stack you want to convert to NBT.
 	 * @return A ReadWriteNBT object.
 	 */
@@ -224,7 +224,7 @@ public class NBT {
 
 	/**
 	 * It converts a ReadableNBT object into an ItemStack
-	 * 
+	 *
 	 * @param compound The NBT tag to convert to an ItemStack
 	 * @return An ItemStack
 	 */
@@ -234,7 +234,7 @@ public class NBT {
 
 	/**
 	 * It converts an array of ItemStacks into a ReadWriteNBT object
-	 * 
+	 *
 	 * @param itemStacks The ItemStack[] you want to convert to NBT
 	 * @return An NBTItem object.
 	 */
@@ -244,7 +244,7 @@ public class NBT {
 
 	/**
 	 * It converts a ReadableNBT object into an array of ItemStacks
-	 * 
+	 *
 	 * @param compound The NBT tag to convert to an ItemStack array.
 	 * @return An array of ItemStacks.
 	 */
@@ -254,7 +254,7 @@ public class NBT {
 
 	/**
 	 * Create a new NBTContainer object and return it.
-	 * 
+	 *
 	 * @return A new instance of the NBTContainer class.
 	 */
 	public static ReadWriteNBT createNBTObject() {
@@ -263,7 +263,7 @@ public class NBT {
 
 	/**
 	 * It takes a nbt json string, and returns a ReadWriteNBT object
-	 * 
+	 *
 	 * @param nbtString The NBT string to parse.
 	 * @return A new NBTContainer object.
 	 */
