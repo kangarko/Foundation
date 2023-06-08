@@ -10,7 +10,6 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
 enum ObjectCreator {
 	NMS_NBTTAGCOMPOUND(null, null, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_BLOCKPOSITION(null, null, ClassWrapper.NMS_BLOCKPOSITION.getClazz(), int.class, int.class, int.class),
@@ -29,8 +28,8 @@ enum ObjectCreator {
 			return;
 		try {
 			this.targetClass = clazz;
-			construct = clazz.getDeclaredConstructor(args);
-			construct.setAccessible(true);
+			this.construct = clazz.getDeclaredConstructor(args);
+			this.construct.setAccessible(true);
 		} catch (Exception ex) {
 			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
@@ -44,9 +43,9 @@ enum ObjectCreator {
 	 */
 	public Object getInstance(Object... args) {
 		try {
-			return construct.newInstance(args);
+			return this.construct.newInstance(args);
 		} catch (Exception ex) {
-			throw new NbtApiException("Exception while creating a new instance of '" + targetClass + "'", ex);
+			throw new NbtApiException("Exception while creating a new instance of '" + this.targetClass + "'", ex);
 		}
 	}
 

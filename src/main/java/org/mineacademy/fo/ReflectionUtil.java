@@ -204,7 +204,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T getFieldContent(Class<?> clazz, final String field, final Object instance) {
-		final String originalClassName = clazz.getSimpleName();
+		final String originalClassName = new String(clazz.getName());
 
 		do
 			// note: getDeclaredFields() fails if any of the fields are classes that cannot be loaded
@@ -1172,16 +1172,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-		
+
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-		
+
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
+
 			cacheMethod(method);
-		
+
 			return method;
 		}*/
 

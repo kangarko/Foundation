@@ -19,9 +19,9 @@ public class NBTChunk {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "getPersistentDataContainer() requires MC 1.16+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer() requires MC 1.14+");
 
-		return new NBTPersistentDataContainer(chunk.getPersistentDataContainer());
+		return new NBTPersistentDataContainer(this.chunk.getPersistentDataContainer());
 	}
 
 }

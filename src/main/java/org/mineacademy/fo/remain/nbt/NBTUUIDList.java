@@ -34,10 +34,10 @@ public class NBTUUIDList extends NBTList<UUID> {
 	@Override
 	public UUID get(int index) {
 		try {
-			Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
-			ReflectionMethod.COMPOUND_SET.run(tmpContainer.getCompound(), "tmp", obj);
-			int[] val = tmpContainer.getIntArray("tmp");
-			tmpContainer.removeKey("tmp");
+			Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
+			ReflectionMethod.COMPOUND_SET.run(this.tmpContainer.getCompound(), "tmp", obj);
+			int[] val = this.tmpContainer.getIntArray("tmp");
+			this.tmpContainer.removeKey("tmp");
 			return uuidFromIntArray(val);
 		} catch (NumberFormatException nf) {
 			return null;
