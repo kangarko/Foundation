@@ -8,38 +8,38 @@ public interface ReadWriteItemNBT extends ReadWriteNBT {
 
 	/**
 	 * True, if the item has any tags now known for this item type.
-	 * 
+	 *
 	 * @return true when custom tags are present
 	 */
-	public boolean hasCustomNbtData();
+	boolean hasCustomNbtData();
 
 	/**
 	 * Remove all custom (non-vanilla) NBT tags from the NBTItem.
 	 */
-	public void clearCustomNBT();
+	void clearCustomNBT();
 
 	/**
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
 	 * Supported operations while inside this scope: - any get/set method of
 	 * {@link ItemMeta} - any getter on {@link NBTItem}
-	 * 
+	 *
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 * 
+	 *
 	 * @param handler
 	 */
-	public void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler);
+	void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler);
 
 	/**
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
 	 * Supported operations while inside this scope: - any get/set method of
 	 * {@link ItemMeta} - any getter on {@link NBTItem}
-	 * 
+	 *
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 * 
+	 *
 	 * @param handler
 	 */
-	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler);
+	<T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler);
 
 }

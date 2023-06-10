@@ -22,24 +22,23 @@ public class NBTEntity extends NBTCompound {
 	 */
 	public NBTEntity(Entity entity) {
 		super(null, null);
-		if (entity == null) {
+		if (entity == null)
 			throw new NullPointerException("Entity can't be null!");
-		}
-		ent = entity;
+		this.ent = entity;
 	}
 
 	@Override
 	public Object getCompound() {
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(ent));
+		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(this.ent));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
+		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(this.ent));
 	}
 
 	/**
@@ -51,7 +50,7 @@ public class NBTEntity extends NBTCompound {
 	public NBTCompound getPersistentDataContainer() {
 		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer() requires MC 1.14+");
 
-		return new NBTPersistentDataContainer(ent.getPersistentDataContainer());
+		return new NBTPersistentDataContainer(this.ent.getPersistentDataContainer());
 	}
 
 }
