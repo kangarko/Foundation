@@ -10,7 +10,7 @@
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>6.4.1</version>
+	<version>6.4.2</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
@@ -79,7 +79,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>CitizensAPI</artifactId>
-			<version>2.0.30-b2816</version>
+			<version>2.0.32</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
@@ -193,7 +193,7 @@
 					<target>${java.version}</target>
 				</configuration>
 			</plugin>
-			<!--<plugin>
+			<plugin>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok-maven-plugin</artifactId>
 				<version>1.18.20.0</version>
@@ -226,7 +226,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>-->
+			</plugin>
 		</plugins>
 	</build>
 </project>
