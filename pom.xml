@@ -47,12 +47,19 @@
 			<version>2.20.0</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- NOT used anywhere, just for backward compatibility with 1.8.8 -->
+		<dependency>
+		    <groupId>org.yaml</groupId>
+		    <artifactId>snakeyaml</artifactId>
+		    <version>1.33</version>
+		</dependency>
 
 		<!-- The core Spigot-API -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.19.4-R0.1-SNAPSHOT</version>
+			<version>1.20.1-R0.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- MineAcademy guaranteed availability repos for plugins -->

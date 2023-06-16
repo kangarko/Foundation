@@ -48,34 +48,49 @@ public class YamlConfig extends FileConfig {
 	 * Create a new instance (do not load it, use {@link #load(File)} to load)
 	 */
 	protected YamlConfig() {
-		final YamlConstructor constructor = new YamlConstructor();
-		final YamlRepresenter representer = new YamlRepresenter();
-		representer.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-
 		final DumperOptions dumperOptions = new DumperOptions();
 		dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		dumperOptions.setIndent(2);
 		dumperOptions.setWidth(4096); // Do not wrap long lines
 
+		YamlRepresenter representer;
+
+		try {
+			representer = new YamlRepresenter(dumperOptions);
+
+		} catch (Throwable t) {
+			representer = new YamlRepresenter();
+		}
+
+		representer.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
 		// Load options only if available
 		if (ReflectionUtil.isClassAvailable("org.yaml.snakeyaml.LoaderOptions")) {
+			final LoaderOptions loaderOptions = new LoaderOptions();
+
 			Yaml yaml;
+			YamlConstructor constructor;
 
 			try {
-				final LoaderOptions loaderOptions = new LoaderOptions();
+				constructor = new YamlConstructor(loaderOptions);
 
+			} catch (Throwable t) {
+				// 1.12
+				constructor = new YamlConstructor();
+			}
+
+			try {
 				loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
+				loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
 
-				try {
-					loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
-				} catch (Throwable t) {
-					// Thankfully unsupported
-					// https://i.imgur.com/wAgKukK.png
-				}
+			} catch (Throwable t) {
+				// Thankfully unsupported
+				// https://i.imgur.com/wAgKukK.png
+			}
 
+			try {
 				yaml = new Yaml(constructor, representer, dumperOptions, loaderOptions);
-
-			} catch (final NoSuchMethodError ex) {
+			} catch (Throwable t) {
 				yaml = new Yaml(constructor, representer, dumperOptions);
 			}
 
@@ -83,7 +98,7 @@ public class YamlConfig extends FileConfig {
 		}
 
 		else
-			this.yaml = new Yaml(constructor, representer, dumperOptions);
+			this.yaml = new Yaml(new YamlConstructor(), representer, dumperOptions);
 	}
 
 	/**
@@ -438,7 +453,15 @@ public class YamlConfig extends FileConfig {
 	 */
 	private final static class YamlConstructor extends SafeConstructor {
 
+		public YamlConstructor(LoaderOptions options) {
+			super(options);
+
+			this.yamlConstructors.put(Tag.MAP, new ConstructCustomObject());
+		}
+
 		public YamlConstructor() {
+			super();
+
 			this.yamlConstructors.put(Tag.MAP, new ConstructCustomObject());
 		}
 
@@ -478,7 +501,17 @@ public class YamlConfig extends FileConfig {
 	 */
 	private final static class YamlRepresenter extends Representer {
 
+		public YamlRepresenter(DumperOptions options) {
+			super(options);
+
+			this.multiRepresenters.put(ConfigurationSerializable.class, new RepresentConfigurationSerializable());
+			this.multiRepresenters.put(ConfigSection.class, new RepresentConfigurationSection());
+			this.multiRepresenters.remove(Enum.class);
+		}
+
 		public YamlRepresenter() {
+			super();
+
 			this.multiRepresenters.put(ConfigurationSerializable.class, new RepresentConfigurationSerializable());
 			this.multiRepresenters.put(ConfigSection.class, new RepresentConfigurationSection());
 			this.multiRepresenters.remove(Enum.class);
