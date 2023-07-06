@@ -122,7 +122,7 @@ public final class ChatUtil {
 		double compensated = 0;
 
 		while (compensated < toCompensate) {
-			builder.append(" ");
+			builder.append(space);
 
 			compensated += spaceLength;
 		}
