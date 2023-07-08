@@ -368,7 +368,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 		}
 
 		if (!customEnchants.isEmpty()) {
-			final ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
+			final ItemMeta meta = Remain.hasItemMeta() && item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
 			final List<String> originalLore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
 			final List<String> finalLore = new ArrayList<>();
 

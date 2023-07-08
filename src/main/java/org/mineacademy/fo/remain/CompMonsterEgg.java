@@ -82,7 +82,7 @@ public final class CompMonsterEgg {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			type = getTypeFromMaterial(item);
 
-		else if (Remain.hasSpawnEggMeta())
+		else if (Remain.hasItemMeta() && Remain.hasSpawnEggMeta())
 			type = getTypeByMeta(item);
 
 		else
