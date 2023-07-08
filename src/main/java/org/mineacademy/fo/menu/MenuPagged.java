@@ -423,7 +423,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param
 	 */
 	@Override
-	protected final void onDisplay(final InventoryDrawer drawer) {
+	protected final void onPreDisplay(final InventoryDrawer drawer) {
 		drawer.setTitle(this.getTitleWithPageNumbers());
 
 		this.onPostDisplay(drawer);
