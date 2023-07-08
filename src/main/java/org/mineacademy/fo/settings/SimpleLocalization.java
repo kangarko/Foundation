@@ -52,8 +52,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 	/**
 	 * The configuration version number, found in the "Version" key in the file.,
+	 *
+	 * Defaults to 1 if not set in the file.
 	 */
-	protected static Integer VERSION;
+	public static Integer VERSION = 1;
 
 	/**
 	 * Set and update the config version automatically, however the {@link #VERSION} will
@@ -67,8 +69,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 		// Load version first so we can use it later
 		setPathPrefix(null);
 
-		if ((VERSION = getInteger("Version")) != this.getConfigVersion())
-			set("Version", this.getConfigVersion());
+		if (isSetDefault("Version"))
+			if ((VERSION = getInteger("Version")) != this.getConfigVersion())
+				set("Version", this.getConfigVersion());
 	}
 
 	/**
