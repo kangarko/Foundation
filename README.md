@@ -22,7 +22,7 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 1. Import Foundation using Maven/Gradle (see the Importing section).
 2. Change "**extends JavaPlugin**" to "**extends SimplePlugin**" (we need that to register things and listeners on our end automatically)
 3. Change **onEnable()** to **onPluginStart()** and **onDisable()** to **onPluginStop()** (we occupy these methods to perform logic)
-4. If you use a static getInstance() method in your main plugin's class, change it to return **(T) SimplePlugin.getInstance()** where T is your plugin instead.
+4. If you use a **static getInstance()** method in your main plugin's class, change it to return **(T) SimplePlugin.getInstance()** where T is your plugin instead. Delete the instance of your plugin from your class if you use it (if you have myPlugin = this anywhere, remove it).
 
 For a sample plugin, see [PluginTemplate](https://github.com/kangarko/plugintemplate).
 
