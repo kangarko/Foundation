@@ -80,7 +80,7 @@ public final class Debugger {
 		if (!isDebugged(section))
 			return;
 
-		final ArrayList<String> list = pendingMessages.getOrDefault(section, new ArrayList<String>());
+		final ArrayList<String> list = pendingMessages.getOrDefault(section, new ArrayList<>());
 		list.add(message);
 
 		pendingMessages.put(section, list);
@@ -269,13 +269,13 @@ public final class Debugger {
 	/**
 	 * Prints stack trace until we reach the native MC/Bukkit with a custom message
 	 *
-	 * @param message the message to wrap stack trace around
+	 * @param message purely informative message to wrap the thrown stack trace around
 	 */
-	public static void printStackTrace(String message) {
+	public static void printStackTrace(String debugLogMessage) {
 		final StackTraceElement[] trace = new Exception().getStackTrace();
 
 		print("!----------------------------------------------------------------------------------------------------------!");
-		print(message);
+		print(debugLogMessage);
 		print("!----------------------------------------------------------------------------------------------------------!");
 
 		for (int i = 1; i < trace.length; i++) {
