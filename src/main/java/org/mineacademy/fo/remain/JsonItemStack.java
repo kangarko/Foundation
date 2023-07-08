@@ -88,7 +88,7 @@ public class JsonItemStack {
 		if (item.getAmount() != 1)
 			json.put("amount", item.getAmount());
 
-		if (item.hasItemMeta()) {
+		if (Remain.hasItemMeta() && item.hasItemMeta()) {
 			final JSONObject metaJson = new JSONObject();
 			final ItemMeta meta = item.getItemMeta();
 

@@ -15,6 +15,7 @@ import org.mineacademy.fo.SerializeUtil.PotionWrapper;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.AccessLevel;
@@ -145,7 +146,7 @@ public final class ItemUtil {
 
 		final boolean isSkull = CompMaterial.isSkull(first.getType()) && CompMaterial.isSkull(second.getType());
 		boolean dataMatch = !LEGACY_MATERIALS || isSkull || first.getData().getData() == second.getData().getData();
-		final boolean metaMatch = first.hasItemMeta() == second.hasItemMeta();
+		final boolean metaMatch = Remain.hasItemMeta() && first.hasItemMeta() == second.hasItemMeta();
 
 		if (!idMatch || !metaMatch || !(dataMatch || (dataMatch = first.getType() == Material.BOW)))
 			return false;

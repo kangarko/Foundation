@@ -371,6 +371,13 @@ public class AnimationUtil {
 
 			@Override
 			public void run() {
+
+				if (!Remain.hasItemMeta()) {
+					this.cancel();
+
+					return;
+				}
+
 				final ItemMeta meta = checkMeta(item);
 
 				meta.setDisplayName(animatedFrames.get(this.frame));
@@ -394,11 +401,19 @@ public class AnimationUtil {
 	 *                                   ({@code line < 0 || line > lore.size()})
 	 */
 	public static BukkitTask animateItemLore(ItemStack item, int line, List<String> animatedFrames, long delay, long period) {
+
 		return new BukkitRunnable() {
 			int frame = 0;
 
 			@Override
 			public void run() {
+
+				if (!Remain.hasItemMeta()) {
+					this.cancel();
+
+					return;
+				}
+
 				final String frameText = animatedFrames.get(this.frame % animatedFrames.size());
 				final ItemMeta meta = checkMeta(item);
 				List<String> lore = meta.getLore();

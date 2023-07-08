@@ -921,21 +921,25 @@ public final class Remain {
 	 * @return the Json string representation of the item
 	 */
 	public static String toJson(ItemStack item) {
-		// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
-		final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
-		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
+		if (MinecraftVersion.atLeast(V.v1_4)) {
+			// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
+			final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
+			final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
 
-		// NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
-		final Class<?> nmsItemStack = ReflectionUtil.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
-		final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
-		final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.atLeast(V.v1_18) ? "b" : "save", nbtTagCompound);
+			// NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
+			final Class<?> nmsItemStack = ReflectionUtil.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
+			final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
+			final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.atLeast(V.v1_18) ? "b" : "save", nbtTagCompound);
 
-		final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
-		final Object nmsItemStackObj = ReflectionUtil.invoke(asNMSCopyMethod, null, item);
-		final Object itemAsJsonObject = ReflectionUtil.invoke(saveItemstackMethod, nmsItemStackObj, nmsNbtTagCompoundObj);
+			final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
+			final Object nmsItemStackObj = ReflectionUtil.invoke(asNMSCopyMethod, null, item);
+			final Object itemAsJsonObject = ReflectionUtil.invoke(saveItemstackMethod, nmsItemStackObj, nmsNbtTagCompoundObj);
 
-		// Return a string representation of the serialized object
-		return itemAsJsonObject.toString();
+			// Return a string representation of the serialized object
+			return itemAsJsonObject.toString();
+		}
+
+		return item.getType().toString();
 	}
 
 	/**
