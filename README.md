@@ -21,8 +21,8 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 
 To get started with Foundation, import it using Maven/Gradle (see the Importing section), and make the following changes to your main plugin's class:
 
-1. Change "extends JavaPlugin" to "extends SimplePlugin" (we need that to register things and listeners on our end automatically)
-2. Change onEnable() to onPluginStart() and onDisable() to onPluginStop() (we occupy these methods to perform logic)
+1. Change "**extends JavaPlugin**" to "**extends SimplePlugin**" (we need that to register things and listeners on our end automatically)
+2. Change **onEnable()** to **onPluginStart()** and **onDisable()** to **onPluginStop()** (we occupy these methods to perform logic)
 
 For a sample plugin, see [PluginTemplate](https://github.com/kangarko/plugintemplate).
 
