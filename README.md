@@ -3,47 +3,36 @@
 </a>
 
 [![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
-[![](https://javadoc.jitpack.io/v/kangarko/Foundation.svg)](https://javadoc.jitpack.io/#kangarko/Foundation)
 
-Foundation enables people develop Minecraft plugins faster, saving boilerplate code and so that you can focus on what matters the most, putting your ideas into reality.
+Make Minecraft plugins faster, save boilerplate code to focus on putting your ideas out there instead of dealing with limited Spigot/Bukkit/Paper APIs.
 
 Some features include:
 
 - GUI menu APIs
-- Compatibility wrappers: Example: Send title/animations/packets on multiple MC versions with a single call
-- Advanced command system without the need of editing plugin.yml
-- Localization support
-- Third party hooks: Packets, Discord, Citizens, Towny, etc.
+- Advanced commands without using plugin.yml
+- Make plugin work on Minecraft 1.8.8 - the latest version AUTOMATICALLY. (Example: Send title/animations/packets with a single call)
 - Auto-updating configuration with comments support
+- Automatic libraries support: Packets, Discord, Citizens, Towny, etc.
 - Time-saving wrappers: Databases (flatfile SQL, HikariCP, MySQL), holograms API, custom items and skulls API, and so much more! 
 
 Thousands of servers are running on Foundation since 2013. It has been battle tested and proven in plugins ChatControl, Boss, CoreArena, Confiscate, AutoPlay, Puncher, Winter, AnimeX and others.
 
-### Tutorial
+# Quick Start
 
-A tutorial on how to use this library is a part of our Project Orion training available [here](https://mineacademy.org/project-orion)
+To get started with Foundation, import it using Maven/Gradle (see the Importing section), and make the following changes to your main plugin's class:
 
-### Sample usage
+1. Change "extends JavaPlugin" to "extends SimplePlugin" (we need that to register things and listeners on our end automatically)
+2. Change onEnable() to onPluginStart() and onDisable() to onPluginStop() (we occupy these methods to perform logic)
 
-Please see [this link](https://github.com/kangarko/plugintemplate) for a sample plugin demostrating different Foundation abilities.
+For a sample plugin, see [PluginTemplate](https://github.com/kangarko/plugintemplate).
 
-### Compatibility
+A complete tutorial on how to use this library is a part of our Project Orion training available [here](https://mineacademy.org/project-orion)
 
-We aim to provide broad compatibility layer enabling the below Minecraft versions to work:
-
-- 1.2.5 (from 2012) - See mineacademy.org/oldmcsupport for setup instructions.
-- 1.3.2, 1.4.7, 1.5.2, 1.6.4 - Many APIs are missing due to lack of features/access.
-- 1.7.10
-- 1.8.8
-- 1.9.x, 1.10.x, 1.11.x, 1.12.x
-- 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, 1.18.x, 1.19.x
-- We continously update for newer versions but sometimes forget to update it here, but it does not mean that the library is incompatible!
-
-### Compiling and using
+## Importing
 
 We use JitPack to automatically compile and host the latest release of Foundation for you.
 
-#### a) Alternative A: If you don't have Foundation on your computer:
+### a) Method 1 - JitPack repository:
 
 To install Foundation with Maven, open your pom.xml, locate the `<repositories>` section and place this repository within it:
 
@@ -66,9 +55,9 @@ Then locate the `<dependencies>` section of your pom.xml and place the following
 
 For more information, including how to use Foundation with other tools than Maven, please visit: https://jitpack.io/#kangarko/Foundation/
 
-#### b) Alternative B: If you have Foundation on your computer:
+### b) Method 2 - If you have Foundation on your computer:
 
-If you downloaded Foundation to your disk, do not place any repository to your pom.xml file, instead, only place the following dependency. Notice the groupId is different. You can use the LATEST keyword to automatically synchronize changes you make to your local copy of Foundation with your plugin source code (now that's fast!).
+This is great if you want to make changes to Foundation to suit your needs. After you downloaded and compiled Foundation (run maven "clean install" goal), do not place any repository to your pom.xml file, instead, only place the following dependency. Notice the groupId is different. You can use the LATEST keyword to automatically synchronize changes you make to your local copy of Foundation with your plugin source code.
 
 ```xml
 <dependency>
@@ -78,7 +67,19 @@ If you downloaded Foundation to your disk, do not place any repository to your p
 </dependency>
 ```
 
-### Important Licencing Information
+# Compatibility
+
+We aim to provide broad compatibility layer enabling the below Minecraft versions to work:
+
+- 1.2.5 (from 2012) - Limited, see mineacademy.org/oldmcsupport for setup instructions.
+- 1.3.2, 1.4.7, 1.5.2, 1.6.4 - Many APIs are missing due to lack of features/access.
+- 1.7.10
+- 1.8.8
+- 1.9.x, 1.10.x, 1.11.x, 1.12.x
+- 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, 1.18.x, 1.19.x, 1.20.x
+- We continously update for newer versions but sometimes forget to update it here, but it does not mean that the library is incompatible!
+
+# Licencing Information
 
 © MineAcademy.org
 
