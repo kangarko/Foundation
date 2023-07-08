@@ -32,7 +32,7 @@ A complete tutorial on how to use this library is a part of our Project Orion tr
 
 We use JitPack to automatically compile and host the latest release of Foundation for you.
 
-### a) Method 1 - JitPack repository:
+### a) Method 1 - (Recommended) JitPack:
 
 To install Foundation with Maven, open your pom.xml, locate the `<repositories>` section and place this repository within it:
 
@@ -55,7 +55,7 @@ Then locate the `<dependencies>` section of your pom.xml and place the following
 
 For more information, including how to use Foundation with other tools than Maven, please visit: https://jitpack.io/#kangarko/Foundation/
 
-### b) Method 2 - If you have Foundation on your computer:
+### b) Method 2 - Downloading to disk:
 
 This is great if you want to make changes to Foundation to suit your needs. After you downloaded and compiled Foundation (run maven "clean install" goal), do not place any repository to your pom.xml file, instead, only place the following dependency. Notice the groupId is different. You can use the LATEST keyword to automatically synchronize changes you make to your local copy of Foundation with your plugin source code.
 
