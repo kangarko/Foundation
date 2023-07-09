@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -63,11 +62,6 @@ public abstract class OfflineRegionScanner {
 	 */
 	@Getter
 	private World world;
-
-	/**
-	 * Changing flag: The Spigot/Paper watch dog we need to temporarily suspend
-	 */
-	private Thread watchdog;
 
 	/**
 	 * Changing flag: Last time an operation was done successfully
@@ -137,31 +131,14 @@ public abstract class OfflineRegionScanner {
 	 * Disable to prevent lag warnings since we scan chunks on the main thread
 	 */
 	private void disableWatchdog() {
-		Thread watchdog = null;
-
 		try {
-			final Field instanceField = Class.forName("org.spigotmc.WatchdogThread").getDeclaredField("instance");
+			final Class<?> watchDog = Class.forName("org.spigotmc.WatchdogThread");
+			final Method doStop = ReflectionUtil.getMethod(watchDog, "doStop");
 
-			try {
-				instanceField.setAccessible(true);
-
-				watchdog = (Thread) instanceField.get(null);
-				watchdog.suspend();
-
-				this.watchdog = watchdog;
-
-			} catch (final Throwable t) {
-				Common.log("ERROR: FAILED TO DISABLE WATCHDOG, ABORTING! See below and report to us. NO DATA WERE MANIPULATED.");
-				Common.callEvent(new RegionScanCompleteEvent(this.world));
-
-				t.printStackTrace();
-				this.finishScan();
-
-				return;
-			}
+			ReflectionUtil.invokeStatic(doStop);
 
 		} catch (final ReflectiveOperationException err) {
-			// pass through, probably not using Paper
+			// pass through, probably not using Spigot
 		}
 	}
 
@@ -185,7 +162,7 @@ public abstract class OfflineRegionScanner {
 
 					Common.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
 
-					OfflineRegionScanner.this.finishScan();
+					OfflineRegionScanner.this.onScanFinished();
 					this.cancel();
 
 					return;
@@ -291,17 +268,6 @@ public abstract class OfflineRegionScanner {
 	 * @param chunkZ
 	 */
 	protected void onChunkScanFast(int chunkX, int chunkZ) {
-	}
-
-	/*
-	 * Called upon this scan being completed
-	 */
-	private void finishScan() {
-
-		if (this.watchdog != null)
-			this.watchdog.resume();
-
-		this.onScanFinished();
 	}
 
 	/**
