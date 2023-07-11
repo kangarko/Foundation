@@ -124,6 +124,15 @@ public enum CompEquipmentSlot {
 	}
 
 	/**
+	 * Clear this equipment slot.
+	 *
+	 * @param entity
+	 */
+	public void clear(LivingEntity entity) {
+		this.applyTo(entity, (ItemStack) null, (Double) null);
+	}
+
+	/**
 	 * Applies this equipment slot to the given entity with the given item,
 	 * and optional drop chance from 0 to 1.0
 	 *
