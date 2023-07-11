@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -58,7 +59,12 @@ public enum CompProperty {
 	/**
 	 * The god mode entity property
 	 */
-	INVULNERABLE(Entity.class, boolean.class);
+	INVULNERABLE(Entity.class, boolean.class),
+
+	/**
+	 * Set if this entity will be subject to collisions with other entities.
+	 */
+	COLLIDABLE(LivingEntity.class, boolean.class);
 
 	/**
 	 * The class that this enum applies for, for example {@link Entity}
