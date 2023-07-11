@@ -78,6 +78,7 @@ import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.TimeUtil;
@@ -1270,6 +1271,28 @@ public final class Remain {
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Unable to create command: /" + label);
 		}
+	}
+
+	/**
+	 * A shortcut method to generate a new {@link NamespacedKey}. Requires MC 1.13+
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static NamespacedKey newNamespaced(String name) {
+		return new NamespacedKey(SimplePlugin.getInstance(), name);
+	}
+
+	/**
+	 * A shortcut method to generate a new {@link NamespacedKey}. Requires MC 1.13+
+	 *
+	 * The name is randomly assigned in the format YOURPLUGIN_RANDOM where YOURPLUGIN
+	 * is your plugin's name and RANDOM are 16 random letters.
+	 *
+	 * @return
+	 */
+	public static NamespacedKey newNamespaced() {
+		return new NamespacedKey(SimplePlugin.getInstance(), SimplePlugin.getNamed() + "_" + RandomUtil.nextString(16));
 	}
 
 	/**
