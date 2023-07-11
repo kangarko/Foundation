@@ -133,6 +133,8 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 	 *
 	 * @param filler
 	 * @param highlighted
+	 * @param side
+	 * @param corner
 	 * @return
 	 */
 	public static ItemFrameBounceSlider from(final CompMaterial filler, final CompMaterial highlighted, final CompMaterial side, final CompMaterial corner) {
@@ -144,6 +146,8 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 	 *
 	 * @param filler
 	 * @param highlighted
+	 * @param side
+	 * @param corner
 	 * @return
 	 */
 	public static ItemFrameBounceSlider from(final ItemCreator filler, final ItemCreator highlighted, final ItemCreator side, final ItemCreator corner) {
@@ -155,6 +159,8 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 	 *
 	 * @param filler
 	 * @param highlighted
+	 * @param side
+	 * @param corner
 	 * @return
 	 */
 	public static ItemFrameBounceSlider from(final ItemStack filler, final ItemStack highlighted, final ItemStack side, final ItemStack corner) {

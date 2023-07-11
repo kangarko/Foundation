@@ -4,6 +4,7 @@ import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
 import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -45,6 +46,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -69,6 +71,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -2253,6 +2256,7 @@ public final class Remain {
 	 *
 	 * @param receiver
 	 * @param message
+	 * @param icon
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon) {
 		sendToast(receiver, message, icon, CompToastStyle.TASK);
@@ -2268,6 +2272,7 @@ public final class Remain {
 	 * @param receiver
 	 * @param message
 	 * @param icon
+	 * @param toastStyle
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
@@ -2294,7 +2299,6 @@ public final class Remain {
 	 * @param receivers
 	 * @param message you can replace player-specific variables in the message here
 	 * @param icon
-	 * @param goal
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon) {
 		sendToast(receivers, message, icon, CompToastStyle.GOAL);
@@ -2309,6 +2313,7 @@ public final class Remain {
 	 * @param receivers
 	 * @param message you can replace player-specific variables in the message here
 	 * @param icon
+	 * @param style
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon, final CompToastStyle style) {
 
@@ -2809,6 +2814,8 @@ public final class Remain {
 	 * Attempts to set render distance of the player to the given value
 	 * returning false if we got a reflective exception (such as when not using PaperSpigot
 	 * or on an outdated MC version).
+	 * @param player
+	 * @param viewDistanceChunks
 	 *
 	 * @return
 	 */

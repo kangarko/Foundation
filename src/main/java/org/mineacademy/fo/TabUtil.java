@@ -23,7 +23,7 @@ public final class TabUtil {
 	 *
 	 * @param <T>
 	 * @param partialName
-	 * @param all
+	 * @param elements
 	 * @return
 	 */
 	@SafeVarargs

@@ -2,6 +2,8 @@ package org.mineacademy.fo.model;
 
 import java.io.File;
 
+import org.mineacademy.fo.Common;
+
 public interface Rule {
 
 	/**

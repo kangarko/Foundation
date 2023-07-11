@@ -680,6 +680,7 @@ public final class PlayerUtil {
 
 	/**
 	 * Return true if the player has a stored snapshot of inventory and properties
+	 * @param player
 	 *
 	 * @return
 	 */

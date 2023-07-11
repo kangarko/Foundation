@@ -1,9 +1,14 @@
 package org.mineacademy.fo.settings;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.DebugCommand;
+import org.mineacademy.fo.command.PermsCommand;
+import org.mineacademy.fo.command.ReloadCommand;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**
@@ -234,7 +239,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String CANNOT_USE_WHILE_NULL = "&cCannot use this command while the plugin is {state}.";
 
 		/**
-		 * The message shown in {@link org.mineacademy.fo.command.SimpleCommand#findWorld()}
+		 * The message shown in SimpleCommand.findWorld()
 		 */
 		public static String CANNOT_AUTODETECT_WORLD = "Only living players can use ~ for their world!";
 

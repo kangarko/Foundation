@@ -269,7 +269,7 @@ public final class Debugger {
 	/**
 	 * Prints stack trace until we reach the native MC/Bukkit with a custom message
 	 *
-	 * @param message purely informative message to wrap the thrown stack trace around
+	 * @param debugLogMessage purely informative message to wrap the thrown stack trace around
 	 */
 	public static void printStackTrace(String debugLogMessage) {
 		final StackTraceElement[] trace = new Exception().getStackTrace();

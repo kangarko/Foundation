@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.menu.model.ItemCreator;
 
 /**
  * Represents a tool. A tool is a simple ItemStack that is registered within the

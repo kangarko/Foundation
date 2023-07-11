@@ -59,6 +59,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * Start a conversation with the player, throwing error if {@link Player#isConversing()}
 	 *
 	 * @param player
+	 * @return
 	 */
 	public final CustomConversation start(final Player player) {
 		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing!");

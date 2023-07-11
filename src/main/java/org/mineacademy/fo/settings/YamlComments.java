@@ -46,12 +46,9 @@ final class YamlComments {
 	/**
 	 * Update a yaml file from a resource inside your plugin jar
 	 *
-	 * @param jarPath The yaml file name to update from, typically config.yml
-	 * @param diskFile The yaml file to update
-	 * @param oldContents the actual yaml content from the old file, to prevent overriding values
+	 * @param resourceName The yaml file name to update from, typically config.yml
+	 * @param toUpdate The yaml file to update
 	 * @param ignoredSections The sections to ignore from being forcefully updated & comments set
-	 *
-	 * @throws IOException If an IOException occurs
 	 */
 	@SneakyThrows
 	public static void writeComments(@NonNull String resourceName, @NonNull File toUpdate, @NonNull List<String> ignoredSections) {

@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.function.BiConsumer;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public interface ReadWriteItemNBT extends ReadWriteNBT {
@@ -37,6 +38,8 @@ public interface ReadWriteItemNBT extends ReadWriteNBT {
 	 *
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
+	 * @param type
+	 * @param <T>
 	 *
 	 * @param handler
 	 */
