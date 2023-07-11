@@ -229,8 +229,8 @@ public final class ChatUtil {
 	 * @param message  the String to capitalize, may be null
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
-	public static String capitalizeFully(String str) {
-		return capitalizeFully(str, (char[]) null);
+	public static String capitalizeFully(String message) {
+		return capitalizeFully(message, (char[]) null);
 	}
 
 	private static String capitalizeFully(String str, char[] delimiters) {
@@ -265,8 +265,8 @@ public final class ChatUtil {
 	 * @param message  the String to capitalize, may be null
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
-	public static String capitalize(String str) {
-		return capitalize(str, (char[]) null);
+	public static String capitalize(String message) {
+		return capitalize(message, (char[]) null);
 	}
 
 	private static String capitalize(String str, char[] delimiters) {

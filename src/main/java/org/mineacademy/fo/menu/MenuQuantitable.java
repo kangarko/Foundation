@@ -61,7 +61,7 @@ public interface MenuQuantitable {
 
 	/**
 	 * @deprecated rounds the amount number, you need to decide if you will support
-	 * decimal quantities and use either {@link #getAmountDouble()} or if not, use {@link #getAmountPercent()}
+	 * decimal quantities and use either {@link #getNextQuantityDouble(ClickType)} or if not, use {@link #getNextQuantityPercent(ClickType)}
 	 *
 	 * @param clickType
 	 * @return

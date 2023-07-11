@@ -166,7 +166,7 @@ public final class StrictMap<K, V> extends StrictCollection {
 	/**
 	 * Put new pairs into the map, overriding old one
 	 *
-	 * @param m
+	 * @param map
 	 */
 	public void override(StrictMap<? extends K, ? extends V> map) {
 		this.override(map.map);
@@ -175,7 +175,7 @@ public final class StrictMap<K, V> extends StrictCollection {
 	/**
 	 * Put new pairs into the map, overriding old one
 	 *
-	 * @param m
+	 * @param map
 	 */
 	public void override(Map<? extends K, ? extends V> map) {
 		this.map.putAll(map);

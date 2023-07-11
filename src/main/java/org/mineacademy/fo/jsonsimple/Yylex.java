@@ -540,7 +540,8 @@ class Yylex {
 	 * or an I/O-Error occurs.
 	 *
 	 * @return the next token.
-	 * @exception java.io.IOException if any I/O-Error occurs.
+	 * @throws JSONParseException if any I/O-Error occurs.
+	 * @throws java.io.IOException
 	 */
 	public Yytoken yylex() throws java.io.IOException, JSONParseException {
 		int zzInput;

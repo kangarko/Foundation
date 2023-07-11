@@ -8,6 +8,9 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.debug.LagCatcher;
+import org.mineacademy.fo.model.SpigotUpdater;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**

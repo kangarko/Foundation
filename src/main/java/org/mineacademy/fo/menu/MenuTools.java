@@ -154,7 +154,7 @@ public abstract class MenuTools extends Menu {
 	 *                          all classes extending it will be loaded into the
 	 *                          menu
 	 * @param description       the menu description
-	 * @return
+	 *
 	 */
 	public static final void display(final Player player, final Class<? extends Tool> pluginToolClasses, final String... description) {
 		of(pluginToolClasses, description).displayTo(player);

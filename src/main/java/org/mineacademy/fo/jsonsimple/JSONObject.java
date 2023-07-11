@@ -95,6 +95,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 	 * there its Number#toString() is used to construct a new BigDecimal(String). If a String is there it is used to
 	 * construct a new BigDecimal(String).
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return a BigDecimal representing the value paired with the key or JsonKey#getValue() if the key isn't present.
 	 * @throws ClassCastException if the value didn't match the assumed return type.
 	 * @throws NumberFormatException if a String isn't a valid representation of a BigDecimal or if the Number
@@ -136,6 +137,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 
 	/** A convenience method that assumes there is a Boolean or String value at the given key.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return a Boolean representing the value paired with the key or JsonKey#getValue() if the key isn't present.
 	 * @throws ClassCastException if the value didn't match the assumed return type.
 	 *
@@ -172,6 +174,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 
 	/** A convenience method that assumes there is a Number or String value at the given key.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return a Byte representing the value paired with the key or JsonKey#getValue() if the key isn't present (which
 	 *         may involve rounding or truncation).
 	 * @throws ClassCastException if the value didn't match the assumed return type.
@@ -195,8 +198,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 	}
 
 	/** A convenience method that assumes there is a Collection at the given key.
-	 * @param <T> the kind of collection to expect at the key. Note unless manually added, collection values will be a
-	 *        JsonArray.
+	 *
 	 * @param key representing where the value ought to be paired with.
 	 * @return a Collection representing the value paired with the key.
 	 * @throws ClassCastException if the value didn't match the assumed return type.
@@ -236,6 +238,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 
 	/** A convenience method that assumes there is a Number or String value at the given key.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return a Double representing the value paired with the key or JsonKey#getValue() if the key isn't present (which
 	 *         may involve rounding or truncation).
 	 * @throws ClassCastException if the value didn't match the assumed return type.
@@ -279,6 +282,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 
 	/** A convenience method that assumes there is a Number or String value at the given key.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return an Integer representing the value paired with the key or JsonKey#getValue() if the key isn't present
 	 *         (which may involve rounding or truncation).
 	 * @throws ClassCastException if the value didn't match the assumed return type.
@@ -322,6 +326,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 
 	/** A convenience method that assumes there is a Number or String value at the given key.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return a Long representing the value paired with the key or JsonKey#getValue() if the key isn't present (which
 	 *         may involve rounding or truncation).
 	 * @throws ClassCastException if the value didn't match the assumed return type.
@@ -359,8 +364,8 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 	}
 
 	/** A convenience method that assumes there is a Map at the given key.
-	 * @param <T> the kind of map to expect at the key. Note unless manually added, Map values will be a JsonObject.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def the kind of map to expect at the key. Note unless manually added, Map values will be a JsonObject.
 	 * @return a Map representing the value paired with the key or JsonKey#getValue() if the key isn't present.
 	 * @throws ClassCastException if the value didn't match the assumed return type.
 	 *
@@ -394,6 +399,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 
 	/** A convenience method that assumes there is a Boolean, Number, or String value at the given key.
 	 * @param key representing where the value ought to be paired with.
+	 * @param def
 	 * @return a String representing the value paired with the key or JsonKey#getValue() if the key isn't present.
 	 * @throws ClassCastException if the value didn't match the assumed return type.
 	 *

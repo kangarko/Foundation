@@ -699,6 +699,7 @@ public final class BlockUtil {
 	 * the given predicate. For nether worlds, we recommend you see {@link #findHighestNetherAirBlock(World, int, int)}
 	 *
 	 * @param location
+	 * @param topDown
 	 * @param predicate
 	 * @return
 	 */

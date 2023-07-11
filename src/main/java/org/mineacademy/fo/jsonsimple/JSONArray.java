@@ -172,9 +172,8 @@ public class JSONArray extends ArrayList<Object> implements Jsonable {
 	}
 
 	/** A convenience method that assumes there is a Collection at the given key.
-	 * @param <T> the kind of collection to expect at the key. Note unless manually added, collection values will be a
-	 *        JsonArray.
-	 * @param key representing where the value ought to be paired with.
+	 *
+	 * @param index representing where the value ought to be paired with.
 	 * @return a Collection representing the value paired with the key.
 	 * @throws ClassCastException if the value didn't match the assumed return type.
 	 *

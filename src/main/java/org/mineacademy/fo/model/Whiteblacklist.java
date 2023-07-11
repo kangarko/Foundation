@@ -70,7 +70,7 @@ public final class Whiteblacklist {
 	 * blacklisting (only rules), otherwise this will be a whitelist (except rules)
 	 *
 	 * @param items
-	 * @param compileRegex shall we precompile the list for maximum performance?
+	 * @param compileAsPatterns shall we precompile the list for maximum performance?
 	 */
 	public Whiteblacklist(@NonNull List<String> items, boolean compileAsPatterns) {
 		this.patterns = new HashSet<>();

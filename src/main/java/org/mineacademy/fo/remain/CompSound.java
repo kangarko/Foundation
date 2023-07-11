@@ -1757,7 +1757,7 @@ public enum CompSound {
 	/**
 	 * Parses the CompSound with the given name.
 	 *
-	 * @param sound the name of the sound.
+	 * @param soundName the name of the sound.
 	 *
 	 * @return a matched CompSound.
 	 */

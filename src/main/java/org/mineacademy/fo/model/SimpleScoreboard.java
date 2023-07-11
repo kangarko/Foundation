@@ -104,6 +104,8 @@ public class SimpleScoreboard {
 
 	/**
 	 * Create a new scoreboard with customizable updateDelayTicks
+	 * @param title
+	 * @param updateDelayTicks
 	 */
 	public SimpleScoreboard(String title, int updateDelayTicks) {
 		// Scoreboards were introduced in 1.5, objectives were added in 1.7.2
