@@ -17,11 +17,12 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 
 	private ItemStack bukkitItem;
 	private boolean directApply;
+	private boolean readOnly;
 	private ItemStack originalSrcStack = null;
 
 	/**
 	 * Constructor for NBTItems. The ItemStack will be cloned!
-	 *
+	 * 
 	 * @param item
 	 */
 	public NBTItem(ItemStack item) {
@@ -29,10 +30,32 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	}
 
 	/**
+	 * @param item
+	 * @param directApply
+	 * @param readOnly    When turned on, no copy of the source item is created.
+	 *                    Modifying the stack in that case is not valid! Also
+	 *                    overwrites directApply
+	 */
+	protected NBTItem(ItemStack item, boolean directApply, boolean readOnly) {
+		super(null, null);
+		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0)
+			throw new NullPointerException("ItemStack can't be null/air/amount of 0! This is not a NBTAPI bug!");
+		if (readOnly) {
+			this.bukkitItem = item;
+			this.readOnly = true;
+		} else {
+			this.directApply = directApply;
+			this.bukkitItem = item.clone();
+			if (directApply)
+				this.originalSrcStack = item;
+		}
+	}
+
+	/**
 	 * Constructor for NBTItems. The ItemStack will be cloned! If directApply is
 	 * true, all changed will be mapped to the original item. Changes to the NBTItem
 	 * will overwrite changes done to the original item in that case.
-	 *
+	 * 
 	 * @param item
 	 * @param directApply
 	 */
@@ -48,11 +71,15 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 
 	@Override
 	public Object getCompound() {
+		if (this.readOnly && ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(this.bukkitItem.getClass()))
+			return NBTReflectionUtil.getItemRootNBTTagCompound(NBTReflectionUtil.getCraftItemHandle(this.bukkitItem));
 		return NBTReflectionUtil.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
+		if (this.readOnly)
+			throw new NbtApiException("Tried setting data in read only mode!");
 		Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem);
 		ReflectionMethod.ITEMSTACK_SET_TAG.run(stack, compound);
 		this.bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
@@ -102,7 +129,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 
 	/**
 	 * True, if the item has any tags now known for this item type.
-	 *
+	 * 
 	 * @return true when custom tags are present
 	 */
 	@Override
@@ -134,7 +161,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 
 	/**
 	 * This may return true even when the NBT is empty.
-	 *
+	 * 
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
 	public boolean hasNBTData() {
@@ -145,10 +172,10 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
 	 * Supported operations while inside this scope: - any get/set method of
 	 * {@link ItemMeta} - any getter on {@link NBTItem}
-	 *
+	 * 
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 *
+	 * 
 	 * @param handler
 	 */
 	@Override
@@ -164,14 +191,15 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
 	 * Supported operations while inside this scope: - any get/set method of
 	 * {@link ItemMeta} - any getter on {@link NBTItem}
-	 *
+	 * 
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 *
+	 * 
 	 * @param handler
 	 */
 	@Override
 	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler) {
+
 		T meta = (T) this.bukkitItem.getItemMeta();
 		handler.accept(this, meta);
 		this.bukkitItem.setItemMeta(meta);
@@ -182,7 +210,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	/**
 	 * Helper method that converts {@link ItemStack} to {@link NBTContainer} with
 	 * all it's data like Material, Damage, Amount and Tags.
-	 *
+	 * 
 	 * @param item
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
@@ -193,7 +221,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	/**
 	 * Helper method to do the inverse of "convertItemtoNBT". Creates an
 	 * {@link ItemStack} using the {@link NBTCompound}
-	 *
+	 * 
 	 * @param comp
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */
@@ -206,7 +234,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Helper method that converts {@link ItemStack}[] to {@link NBTContainer} with
 	 * all it data like Material, Damage, Amount and Tags. This is a custom
 	 * implementation and won't work with vanilla code(Shulker content etc).
-	 *
+	 * 
 	 * @param items
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
@@ -229,10 +257,10 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Helper method to do the inverse of "convertItemArraytoNBT". Creates an
 	 * {@link ItemStack}[] using the {@link NBTCompound}. This is a custom
 	 * implementation and won't work with vanilla code(Shulker content etc).
-	 *
+	 * 
 	 * Will return null for invalid data. Empty slots in the array are filled with
 	 * AIR Stacks!
-	 *
+	 * 
 	 * @param comp
 	 * @return ItemStack[] using the {@link NBTCompound}'s data
 	 */

@@ -15,10 +15,11 @@ public enum NBTType {
 	NBTTagFloat(5),
 	NBTTagDouble(6),
 	NBTTagByteArray(7),
-	NBTTagIntArray(11),
 	NBTTagString(8),
 	NBTTagList(9),
-	NBTTagCompound(10);
+	NBTTagCompound(10),
+	NBTTagIntArray(11),
+	NBTTagLongArray(12);
 
 	NBTType(int i) {
 		this.id = i;

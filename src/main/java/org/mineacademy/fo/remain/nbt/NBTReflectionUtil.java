@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.gson.Gson;
@@ -26,43 +27,21 @@ import com.google.gson.Gson;
  */
 public class NBTReflectionUtil {
 
-	private static Field field_unhandledTags = null;
-
 	private static Gson gson = new Gson();
 
-	/**
-	 * Turns Objects into Json Strings
-	 *
-	 * @param obj
-	 * @return Json, representing the Object
-	 */
-	public static String getJsonString(Object obj) {
-		return gson.toJson(obj);
-	}
-
-	/**
-	 * Creates an Object of the given type using the Json String
-	 *
-	 * @param json
-	 * @param type
-	 * @return Object that got created, or null if the json is null
-	 */
-	public static <T> T deserializeJson(String json, Class<T> type) {
-		try {
-			if (json == null)
-				return null;
-
-			T obj = gson.fromJson(json, type);
-			return type.cast(obj);
-		} catch (Exception ex) {
-			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
-		}
-	}
+	private static Field field_unhandledTags = null;
+	private static Field field_handle = null;
 
 	static {
 		try {
 			field_unhandledTags = ClassWrapper.CRAFT_METAITEM.getClazz().getDeclaredField("unhandledTags");
 			field_unhandledTags.setAccessible(true);
+		} catch (NoSuchFieldException e) {
+
+		}
+		try {
+			field_handle = ClassWrapper.CRAFT_ITEMSTACK.getClazz().getDeclaredField("handle");
+			field_handle.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 
 		}
@@ -119,6 +98,21 @@ public class NBTReflectionUtil {
 			return ReflectionMethod.NBTFILE_WRITE.run(null, nbt, stream);
 		} catch (Exception e) {
 			throw new NbtApiException("Exception while writing NBT!", e);
+		}
+	}
+
+	/**
+	 * Gets the nms handle ItemStack from a CraftItemStack. Passing Spigot
+	 * ItemStacks will cause an error!
+	 *
+	 * @param item
+	 * @return
+	 */
+	public static Object getCraftItemHandle(ItemStack item) {
+		try {
+			return field_handle.get(item);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new NbtApiException("Error getting handle from " + item.getClass(), e);
 		}
 	}
 
@@ -504,7 +498,13 @@ public class NBTReflectionUtil {
 			String fieldname = "type";
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1))
 				fieldname = "w";
-			Field f = nbt.getClass().getDeclaredField(fieldname);
+			Field f;
+			try {
+				f = nbt.getClass().getDeclaredField(fieldname);
+			} catch (NoSuchFieldException ignore) {
+				// fallback try mojang mapped/legacy
+				f = nbt.getClass().getDeclaredField("type");
+			}
 			f.setAccessible(true);
 			return NBTType.valueOf(f.getByte(nbt));
 		} catch (Exception ex) {
@@ -556,6 +556,35 @@ public class NBTReflectionUtil {
 		if (json == null)
 			return null;
 		return deserializeJson(json, type);
+	}
+
+	/**
+	 * Turns Objects into Json Strings
+	 *
+	 * @param obj
+	 * @return Json, representing the Object
+	 */
+	public static String getJsonString(Object obj) {
+		return gson.toJson(obj);
+	}
+
+	/**
+	 * Creates an Object of the given type using the Json String
+	 *
+	 * @param json
+	 * @param type
+	 * @return Object that got created, or null if the json is null
+	 */
+	public static <T> T deserializeJson(String json, Class<T> type) {
+		try {
+			if (json == null)
+				return null;
+
+			T obj = gson.fromJson(json, type);
+			return type.cast(obj);
+		} catch (Exception ex) {
+			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
+		}
 	}
 
 	/**

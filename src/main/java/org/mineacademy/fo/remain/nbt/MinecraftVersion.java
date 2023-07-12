@@ -36,9 +36,7 @@ enum MinecraftVersion {
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
-
-	// NBT-API Version
-	protected static final String VERSION = "2.11.3";
+	private static Boolean isFoliaPresent;
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -111,7 +109,6 @@ enum MinecraftVersion {
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
-
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 		} catch (IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
@@ -127,15 +124,32 @@ enum MinecraftVersion {
 		if (isForgePresent != null)
 			return isForgePresent;
 		try {
-			@SuppressWarnings("unused")
-			Object forge = (getVersion() == MinecraftVersion.MC1_7_R4 ? Class.forName("cpw.mods.fml.common.Loader")
-					: Class.forName("net.minecraftforge.fml.common.Loader"));
+			if (getVersion() == MinecraftVersion.MC1_7_R4)
+				Class.forName("cpw.mods.fml.common.Loader");
+			else
+				Class.forName("net.minecraftforge.fml.common.Loader");
 
 			isForgePresent = true;
+
 		} catch (Exception ex) {
 			isForgePresent = false;
 		}
 		return isForgePresent;
 	}
 
+	/**
+	 * @return True, if Folia is present
+	 */
+	public static boolean isFoliaPresent() {
+		if (isFoliaPresent != null)
+			return isFoliaPresent;
+		try {
+			Class.forName("io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler");
+
+			isFoliaPresent = true;
+		} catch (Exception ex) {
+			isFoliaPresent = false;
+		}
+		return isFoliaPresent;
+	}
 }

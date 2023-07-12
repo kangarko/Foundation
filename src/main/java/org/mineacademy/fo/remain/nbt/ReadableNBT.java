@@ -94,6 +94,17 @@ public interface ReadableNBT {
 	int[] getIntArray(String key);
 
 	/**
+	 * Returns the value associated with the given key as an array of longs, or null
+	 * if the key does not exist.
+	 * 
+	 * Requires 1.16+
+	 * 
+	 * @param key The key of the value you want to get.
+	 * @return An array of integers.
+	 */
+	long[] getLongArray(String key);
+
+	/**
 	 * Returns the value associated with the given key, or false if the key is not
 	 * found.
 	 * 
@@ -219,8 +230,8 @@ public interface ReadableNBT {
 	 * Returns the stored value if exists, or provided value otherwise.
 	 * <p>
 	 * Supported types:
-	 * {@code byte/Byte, short/Short, int/Integer, long/Long, float/Float, double/Double, byte[], int[]},
-	 * {@link String}, {@link UUID}
+	 * {@code Boolean, Byte, Short, Integer, Long, Float, Double, byte[], int[], long[]},
+	 * {@link String}, {@link UUID}, and {@link Enum}
 	 *
 	 * @param key          key
 	 * @param defaultValue default non-null value
@@ -233,8 +244,8 @@ public interface ReadableNBT {
 	 * Returns the stored value if exists, or null.
 	 * <p>
 	 * Supported types:
-	 * {@code Byte, Short, Integer, Long, Float, Double, byte[], int[]},
-	 * {@link String}, {@link UUID}
+	 * {@code Boolean, Byte, Short, Integer, Long, Float, Double, byte[], int[], long[]},
+	 * {@link String}, {@link UUID}, and {@link Enum}
 	 *
 	 * @param key  key
 	 * @param type data type
@@ -267,10 +278,10 @@ public interface ReadableNBT {
 	 */
 	void writeCompound(OutputStream stream);
 
-	@Override
 	/**
 	 * @return The NBT as printable NBT-Json.
 	 */
+	@Override
 	String toString();
 
 }
