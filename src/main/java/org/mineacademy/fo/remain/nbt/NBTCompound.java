@@ -11,6 +11,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -391,6 +393,47 @@ public class NBTCompound implements ReadWriteNBT {
 		try {
 			this.readLock.lock();
 			return (int[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_INTARRAY, key);
+		} finally {
+			this.readLock.unlock();
+		}
+	}
+
+	/**
+	 * Setter
+	 *
+	 * Requires at least 1.16
+	 *
+	 * @param key
+	 * @param value
+	 */
+	@Override
+	public void setLongArray(String key, long[] value) {
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "MC 1.16 R1 required!");
+
+		try {
+			this.writeLock.lock();
+			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONGARRAY, key, value);
+			this.saveCompound();
+		} finally {
+			this.writeLock.unlock();
+		}
+	}
+
+	/**
+	 * Getter
+	 *
+	 * Requires at least 1.16
+	 *
+	 * @param key
+	 * @return The stored value or NMS fallback
+	 */
+	@Override
+	public long[] getLongArray(String key) {
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "MC 1.16 R1 required!");
+
+		try {
+			this.readLock.lock();
+			return (long[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_LONGARRAY, key);
 		} finally {
 			this.readLock.unlock();
 		}
@@ -851,7 +894,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * Returns the stored value if exists, or provided value otherwise.
 	 * <p>
 	 * Supported types:
-	 * {@code Boolean, Byte, Short, Integer, Long, Float, Double, byte[], int[]},
+	 * {@code Boolean, Byte, Short, Integer, Long, Float, Double, byte[], int[], long[]},
 	 * {@link String}, {@link UUID}, and {@link Enum}
 	 *
 	 * @param key          key
@@ -860,6 +903,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @return Stored or provided value
 	 */
 	@Override
+
 	public <T> T getOrDefault(String key, T defaultValue) {
 		if (defaultValue == null)
 			throw new NullPointerException("Default type in getOrDefault can't be null!");
@@ -885,6 +929,8 @@ public class NBTCompound implements ReadWriteNBT {
 			return (T) this.getByteArray(key);
 		if (clazz == int[].class)
 			return (T) this.getIntArray(key);
+		if (clazz == long[].class)
+			return (T) this.getLongArray(key);
 		if (clazz == String.class)
 			return (T) this.getString(key);
 		if (clazz == UUID.class) {
@@ -904,7 +950,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * Returns the stored value if exists, or null.
 	 * <p>
 	 * Supported types:
-	 * {@code Boolean, Byte, Short, Integer, Long, Float, Double, byte[], int[]},
+	 * {@code Boolean, Byte, Short, Integer, Long, Float, Double, byte[], int[], long[]},
 	 * {@link String}, {@link UUID}, and {@link Enum}
 	 *
 	 * @param key  key
@@ -913,7 +959,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @return Stored value or null
 	 */
 	@Override
-	@SuppressWarnings({ "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	public <T> T getOrNull(String key, Class<?> type) {
 		if (type == null)
 			throw new NullPointerException("Default type in getOrNull can't be null!");
@@ -938,6 +984,8 @@ public class NBTCompound implements ReadWriteNBT {
 			return (T) this.getByteArray(key);
 		if (type == int[].class)
 			return (T) this.getIntArray(key);
+		if (type == long[].class)
+			return (T) this.getLongArray(key);
 		if (type == String.class)
 			return (T) this.getString(key);
 		if (type == UUID.class)
@@ -1132,6 +1180,8 @@ public class NBTCompound implements ReadWriteNBT {
 				return compA.getShort(key).equals(compB.getShort(key));
 			case NBTTagString:
 				return compA.getString(key).equals(compB.getString(key));
+			case NBTTagLongArray:
+				return Arrays.equals(compA.getLongArray(key), compB.getLongArray(key));
 		}
 		return false;
 	}

@@ -10,7 +10,7 @@ package org.mineacademy.fo.remain.nbt;
 public class NbtApiException extends RuntimeException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -993309714559452334L;
 	/**
@@ -21,7 +21,7 @@ public class NbtApiException extends RuntimeException {
 	public static Boolean confirmedBroken = null;
 
 	/**
-	 * 
+	 *
 	 */
 	public NbtApiException() {
 	}
@@ -59,16 +59,7 @@ public class NbtApiException extends RuntimeException {
 	}
 
 	private static String generateMessage(String message) {
-		if (message == null)
-			return null;
-		if (confirmedBroken == null)
-			return "[?]" + message;
-		else if (!confirmedBroken)
-			return "[Selfchecked]" + message;
-
-		return "[" + MinecraftVersion.getVersion()
-				+ "]There were errors detected during the server self-check! Please, make sure that NBT-API is up to date. Error message: "
-				+ message;
+		return message;
 	}
 
 }

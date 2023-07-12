@@ -20,6 +20,7 @@ public class NBTPersistentDataContainer extends NBTCompound {
 
 	@Override
 	protected void setCompound(Object compound) {
+
 		Map<Object, Object> map = (Map<Object, Object>) ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_GET_MAP
 				.run(this.container);
 		map.clear();

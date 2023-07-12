@@ -89,6 +89,16 @@ public interface ReadWriteNBT extends ReadableNBT {
 	/**
 	 * Setter
 	 * 
+	 * Requires 1.16+
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	void setLongArray(String key, long[] value);
+
+	/**
+	 * Setter
+	 * 
 	 * @param key
 	 * @param value
 	 */
@@ -131,11 +141,11 @@ public interface ReadWriteNBT extends ReadableNBT {
 	 */
 	ReadWriteNBT getOrCreateCompound(String name);
 
-	@Override
 	/**
 	 * @param name
 	 * @return The Compound instance or null
 	 */
+	@Override
 	ReadWriteNBT getCompound(String name);
 
 	/**

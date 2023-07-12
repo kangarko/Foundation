@@ -32,6 +32,9 @@ enum ReflectionMethod {
 	COMPOUND_SET_INTARRAY(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, int[].class },
 			MinecraftVersion.MC1_7_R4, new Since(MinecraftVersion.MC1_7_R4, "setIntArray"),
 			new Since(MinecraftVersion.MC1_18_R1, "putIntArray(java.lang.String,int[])")),
+	COMPOUND_SET_LONGARRAY(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, long[].class },
+			MinecraftVersion.MC1_16_R1, new Since(MinecraftVersion.MC1_16_R1, "a"),
+			new Since(MinecraftVersion.MC1_18_R1, "putLongArray(java.lang.String,long[])")),
 	COMPOUND_SET_LONG(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, long.class },
 			MinecraftVersion.MC1_7_R4, new Since(MinecraftVersion.MC1_7_R4, "setLong"),
 			new Since(MinecraftVersion.MC1_18_R1, "putLong(java.lang.String,long)")),
@@ -52,7 +55,7 @@ enum ReflectionMethod {
 			new Since(MinecraftVersion.MC1_18_R1, "putUUID(java.lang.String,java.util.UUID)")),
 	COMPOUND_MERGE(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz() },
 			MinecraftVersion.MC1_8_R3, new Since(MinecraftVersion.MC1_8_R3, "a"),
-			new Since(MinecraftVersion.MC1_18_R1, "put(java.lang.String,net.minecraft.nbt.Tag)")),
+			new Since(MinecraftVersion.MC1_18_R1, "merge(net.minecraft.nbt.CompoundTag)")),
 	COMPOUND_SET(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, ClassWrapper.NMS_NBTBASE.getClazz() },
 			MinecraftVersion.MC1_7_R4, new Since(MinecraftVersion.MC1_7_R4, "set"),
 			new Since(MinecraftVersion.MC1_18_R1, "put(java.lang.String,net.minecraft.nbt.Tag)")),
@@ -81,6 +84,9 @@ enum ReflectionMethod {
 	COMPOUND_GET_INTARRAY(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class }, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "getIntArray"),
 			new Since(MinecraftVersion.MC1_18_R1, "getIntArray(java.lang.String)")),
+	COMPOUND_GET_LONGARRAY(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class }, MinecraftVersion.MC1_16_R1,
+			new Since(MinecraftVersion.MC1_16_R1, "getLongArray"),
+			new Since(MinecraftVersion.MC1_18_R1, "getLongArray(java.lang.String)")),
 	COMPOUND_GET_LONG(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class }, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "getLong"),
 			new Since(MinecraftVersion.MC1_18_R1, "getLong(java.lang.String)")),
@@ -163,7 +169,7 @@ enum ReflectionMethod {
 			new Since(MinecraftVersion.MC1_7_R4, "getHandle")),
 	NMS_WORLD_GET_TILEENTITY(ClassWrapper.NMS_WORLDSERVER, new Class[] { ClassWrapper.NMS_BLOCKPOSITION.getClazz() },
 			MinecraftVersion.MC1_8_R3, new Since(MinecraftVersion.MC1_8_R3, "getTileEntity"),
-			new Since(MinecraftVersion.MC1_18_R1, "getBlockEntity(net.minecraft.core.BlockPos)")),
+			new Since(MinecraftVersion.MC1_18_R1, "getBlockState(net.minecraft.core.BlockPos)")),
 	NMS_WORLD_SET_TILEENTITY(ClassWrapper.NMS_WORLDSERVER,
 			new Class[] { ClassWrapper.NMS_BLOCKPOSITION.getClazz(), ClassWrapper.NMS_TILEENTITY.getClazz() },
 			MinecraftVersion.MC1_8_R3, MinecraftVersion.MC1_16_R3,
@@ -304,9 +310,21 @@ enum ReflectionMethod {
 		try {
 			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
 				targetMethodName = Forge1710Mappings.getMethodMapping().getOrDefault(this.name(), targetMethodName);
-			else if (this.targetVersion.version.isMojangMapping())
+			else if (this.targetVersion.version.isMojangMapping()) {
+				try {
+					// check for mojang mapped method
+					String name = this.targetVersion.name.split("\\(")[0];
+					this.method = targetClass.getClazz().getMethod(name, args);
+					this.method.setAccessible(true);
+					this.loaded = true;
+					this.methodName = name;
+					return;
+				} catch (NoSuchMethodException ignore) {
+					// not mojang mapped
+				}
 				targetMethodName = MojangToMapping.getMapping().getOrDefault(
 						targetClass.getMojangName() + "#" + this.targetVersion.name, "Unmapped" + this.targetVersion.name);
+			}
 			this.method = targetClass.getClazz().getDeclaredMethod(targetMethodName, args);
 			this.method.setAccessible(true);
 			this.loaded = true;
@@ -321,7 +339,11 @@ enum ReflectionMethod {
 				this.loaded = true;
 				this.methodName = this.targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
+				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '"
+						+ (targetClass.getClazz() == null ? targetClass.getMojangName()
+								: targetClass.getClazz().getSimpleName())
+						+ "' Args: " + Arrays.toString(args) + " Enum: " + this); // NOSONAR This gets loaded
+																																																																					// before the logger is loaded
 			}
 		}
 	}

@@ -76,6 +76,14 @@ enum ClassWrapper {
 			return;
 		this.enabled = true;
 		try {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1) && mojangName != null)
+				// check for Mojmapped enviroment
+				try {
+					this.clazz = Class.forName(mojangName);
+					return;
+				} catch (ClassNotFoundException ex) {
+					// ignored, not mojang mapped
+				}
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && mojangMap != null)
 				this.clazz = Class.forName(mojangMap + "." + clazzName);
 			else if (packageId == PackageWrapper.NONE)

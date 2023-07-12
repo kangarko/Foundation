@@ -26,10 +26,12 @@ class MojangToMapping {
 			this.put("net.minecraft.nbt.CompoundTag#getIntArray(java.lang.String)", "n");
 			this.put("net.minecraft.nbt.CompoundTag#remove(java.lang.String)", "r");
 			this.put("net.minecraft.nbt.CompoundTag#get(java.lang.String)", "c");
-			this.put("net.minecraft.nbt.CompoundTag#put(java.lang.String,net.minecraft.nbt.Tag)", "a");
+			this.put("net.minecraft.nbt.CompoundTag#merge(net.minecraft.nbt.CompoundTag)", "a");
 			this.put("net.minecraft.nbt.CompoundTag#putBoolean(java.lang.String,boolean)", "a");
 			this.put("net.minecraft.nbt.CompoundTag#getTagType(java.lang.String)", "d");
 			this.put("net.minecraft.nbt.CompoundTag#putLong(java.lang.String,long)", "a");
+			this.put("net.minecraft.nbt.CompoundTag#putLongArray(java.lang.String,long[])", "a");
+			this.put("net.minecraft.nbt.CompoundTag#getLongArray(java.lang.String)", "o");
 			this.put("net.minecraft.nbt.CompoundTag#getString(java.lang.String)", "l");
 			this.put("net.minecraft.nbt.CompoundTag#getInt(java.lang.String)", "h");
 			this.put("net.minecraft.nbt.CompoundTag#putString(java.lang.String,java.lang.String)", "a");
@@ -68,7 +70,7 @@ class MojangToMapping {
 			this.put("net.minecraft.world.level.block.entity.BlockEntity#saveWithId()", "n");
 			this.put("net.minecraft.world.level.block.entity.BlockEntity#getBlockState()", "q");
 			this.put("net.minecraft.world.level.block.entity.BlockEntity#load(net.minecraft.nbt.CompoundTag)", "a");
-			this.put("net.minecraft.server.level.ServerLevel#getBlockEntity(net.minecraft.core.BlockPos)", "c_");
+			this.put("net.minecraft.server.level.ServerLevel#getBlockState(net.minecraft.core.BlockPos)", "c_");
 		}
 
 	};
