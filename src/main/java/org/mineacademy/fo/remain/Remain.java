@@ -23,6 +23,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
@@ -2067,17 +2069,32 @@ public final class Remain {
 	 * @param name
 	 */
 	public static void setCustomName(final Entity entity, final String name) {
+		setCustomName(entity, name, true);
+	}
+
+	/**
+	 * Sets a custom name to entity
+	 *
+	 * @param entity
+	 * @param name
+	 * @param visible
+	 */
+	public static void setCustomName(final Entity entity, @Nullable final String name, final boolean visible) {
 		try {
-			entity.setCustomNameVisible(true);
-			entity.setCustomName(Common.colorize(name));
+			entity.setCustomNameVisible(visible);
+
+			if (name != null)
+				entity.setCustomName(Common.colorize(name));
 
 		} catch (final NoSuchMethodError er) {
 			Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "setCustomName requires Minecraft 1.7.10+");
 
 			final NBTEntity nbt = new NBTEntity(entity);
 
-			nbt.setInteger("CustomNameVisible", 1);
-			nbt.setString("CustomName", Common.colorize(name));
+			nbt.setInteger("CustomNameVisible", visible ? 1 : 0);
+
+			if (name != null)
+				nbt.setString("CustomName", Common.colorize(name));
 		}
 	}
 
