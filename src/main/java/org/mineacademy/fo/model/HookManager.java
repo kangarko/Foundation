@@ -3333,16 +3333,20 @@ class CMIHook {
 	void setGodMode(final Player player, final boolean godMode) {
 		final CMIUser user = this.getUser(player);
 
-		if (user != null) {
+		if (user != null)
 			try {
-				Method setGod = ReflectionUtil.getMethod(CMIUser.class, "setGod", Boolean.class);
+				CMI.getInstance().getNMS().changeGodMode(player, godMode);
 
-				ReflectionUtil.invoke(setGod, user, godMode);
+			} catch (Throwable tt) {
+				try {
+					Method setGod = CMIUser.class.getMethod("setGod", Boolean.class);
 
-			} catch (Throwable t) {
-				// Removed in most recent CMI versions
+					setGod.invoke(user, godMode);
+
+				} catch (Throwable t) {
+					// unavailable
+				}
 			}
-		}
 	}
 
 	void setLastTeleportLocation(final Player player, final Location location) {
