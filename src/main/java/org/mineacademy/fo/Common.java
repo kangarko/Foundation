@@ -608,7 +608,7 @@ public final class Common {
 
         for (int index = 0; index < letters.length - 1; index++)
             if (letters[index] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx".indexOf(letters[index + 1]) > -1) {
-                letters[index] = ChatColor.COLOR_CHAR;
+                letters[index] = COLOR_CHAR;
 
                 letters[index + 1] = Character.toLowerCase(letters[index + 1]);
             }
@@ -678,7 +678,7 @@ public final class Common {
      * @return the reverted message.
      */
     public static String revertColorizing(final String message) {
-        return message.replaceAll("(?i)" + ChatColor.COLOR_CHAR + "([0-9a-fk-or])", "&$1");
+        return message.replaceAll("(?i)" + COLOR_CHAR + "([0-9a-fk-or])", "&$1");
     }
 
     /**
@@ -744,7 +744,7 @@ public final class Common {
     public static String lastColor(final String message) {
         // RGB colors
         if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
-            final int c = message.lastIndexOf(ChatColor.COLOR_CHAR);
+            final int c = message.lastIndexOf(COLOR_CHAR);
             final Matcher match = RGB_X_COLOR_REGEX.matcher(message);
 
             String lastColor = null;
@@ -780,7 +780,7 @@ public final class Common {
      * @return the last color from the given message, or an empty {@link String} if it doesn't exist.
      */
     public static String lastColorChar(final String message) {
-        return lastColor(message, ChatColor.COLOR_CHAR);
+        return lastColor(message, COLOR_CHAR);
     }
 
     private static String lastColor(final String msg, final char colorChar) {
