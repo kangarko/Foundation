@@ -76,7 +76,7 @@ public final class JavaScriptExecutor {
 		engine = scriptEngine;
 
 		if (engine == null) {
-			final List<String> warningMessage = Common.newList(
+			final List<String> warningMessage = Common.newArrayList(
 					"ERROR: JavaScript placeholders will not function!",
 					"",
 					"Your Java version/distribution lacks the",
