@@ -285,7 +285,9 @@ public final class Variables {
 
 			// Support the & color system and replacing variables in variables
 			if (!message.startsWith("[JSON]")) {
-				message = Common.colorize(message);
+
+				if (colorize)
+					message = Common.colorize(message);
 
 				if (!original.equals(message) && ((message.contains("{") && message.contains("}")) || message.contains("%")))
 					return replace(message, sender, replacements, colorize);
