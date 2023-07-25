@@ -534,7 +534,6 @@ public abstract class Menu {
 
 		this.registerButtons();
 
-		// Call before calling getItemAt
 		this.onRestart();
 
 		ItemStack[] content = inventory.getContents();
@@ -549,10 +548,10 @@ public abstract class Menu {
 			this.animateTitle(animatedTitle);
 	}
 
-	/*
-	 * Internal hook before calling getItemAt
+	/** 
+	 * Called automatically when a menu is restarted. Called before getItemAt() and after registerButtons()
 	 */
-	void onRestart() {
+	protected void onRestart() {
 	}
 
 	/**
