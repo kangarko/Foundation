@@ -590,7 +590,7 @@ public final class ChatUtil {
 
 			final Color stepColor = new Color(red, green, blue);
 
-			gradient += CompChatColor.of(stepColor).toString() + String.join("", decorations) + letters[i];
+			gradient += CompChatColor.of(stepColor) + String.join("", decorations) + letters[i];
 		}
 
 		return gradient;
