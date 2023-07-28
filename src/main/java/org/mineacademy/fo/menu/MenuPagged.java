@@ -433,7 +433,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * Reload pages when the menu is restarted
 	 */
 	@Override
-	void onRestart() {
+	final void onRestartInternal() {
 		this.calculatePages();
 	}
 
