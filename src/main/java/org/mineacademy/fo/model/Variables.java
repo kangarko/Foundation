@@ -269,7 +269,7 @@ public final class Variables {
 				message = HookManager.replacePlaceholders(((DiscordSender) sender).getOfflinePlayer(), message);
 
 			// Default
-			message = replaceHardVariables0(sender, message);
+			message = replaceHardVariables(sender, message);
 
 			// Custom placeholders
 			if (REPLACE_JAVASCRIPT) {
@@ -342,10 +342,14 @@ public final class Variables {
 		return message;
 	}
 
-	/*
+	/**
 	 * Replaces our hardcoded variables in the message, using a cache for better performance
+	 *
+	 * @param sender
+	 * @param message
+	 * @return
 	 */
-	private static String replaceHardVariables0(CommandSender sender, String message) {
+	public static String replaceHardVariables(CommandSender sender, String message) {
 
 		message = replaceHardVariables0(sender, message, Variables.VARIABLE_PATTERN.matcher(message));
 		message = replaceHardVariables0(sender, message, Variables.BRACKET_VARIABLE_PATTERN.matcher(message));
