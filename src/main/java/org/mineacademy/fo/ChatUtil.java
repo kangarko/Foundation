@@ -561,22 +561,22 @@ public final class ChatUtil {
 				final char decoration = letters[i + 1];
 
 				if (decoration == 'k')
-					decorations.add("§k");
+					decorations.add(ChatColor.MAGIC.toString());
 
 				else if (decoration == 'l')
-					decorations.add("§l");
+					decorations.add(ChatColor.BOLD.toString());
 
 				else if (decoration == 'm')
-					decorations.add("§m");
+					decorations.add(ChatColor.STRIKETHROUGH.toString());
 
 				else if (decoration == 'n')
-					decorations.add("§n");
+					decorations.add(ChatColor.UNDERLINE.toString());
 
 				else if (decoration == 'o')
-					decorations.add("§o");
+					decorations.add(ChatColor.ITALIC.toString());
 
 				else if (decoration == 'r')
-					decorations.add("§r");
+					decorations.add(ChatColor.RESET.toString());
 
 				i++;
 				continue;
