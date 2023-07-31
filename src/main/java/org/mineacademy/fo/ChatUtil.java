@@ -551,7 +551,7 @@ public final class ChatUtil {
 		final char[] letters = message.toCharArray();
 		String gradient = "";
 
-		ChatColor lastDecoration = null;
+		final List<String> decorations = new ArrayList<>();
 
 		for (int i = 0; i < letters.length; i++) {
 			final char letter = letters[i];
@@ -561,22 +561,22 @@ public final class ChatUtil {
 				final char decoration = letters[i + 1];
 
 				if (decoration == 'k')
-					lastDecoration = ChatColor.MAGIC;
+					decorations.add("§k");
 
 				else if (decoration == 'l')
-					lastDecoration = ChatColor.BOLD;
+					decorations.add("§l");
 
 				else if (decoration == 'm')
-					lastDecoration = ChatColor.STRIKETHROUGH;
+					decorations.add("§m");
 
 				else if (decoration == 'n')
-					lastDecoration = ChatColor.UNDERLINE;
+					decorations.add("§n");
 
 				else if (decoration == 'o')
-					lastDecoration = ChatColor.ITALIC;
+					decorations.add("§o");
 
 				else if (decoration == 'r')
-					lastDecoration = null;
+					decorations.add("§r");
 
 				i++;
 				continue;
@@ -590,7 +590,7 @@ public final class ChatUtil {
 
 			final Color stepColor = new Color(red, green, blue);
 
-			gradient += CompChatColor.of(stepColor).toString() + (lastDecoration == null ? "" : lastDecoration.toString()) + letters[i];
+			gradient += CompChatColor.of(stepColor) + String.join("", decorations) + letters[i];
 		}
 
 		return gradient;
