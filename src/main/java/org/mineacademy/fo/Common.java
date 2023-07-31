@@ -698,15 +698,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -1680,6 +1680,20 @@ public final class Common {
 		}
 
 		return message.endsWith(", ") ? message.substring(0, message.length() - 2) : message;
+	}
+
+	/**
+	 * A special method that will return all key names from the given enum. The enum
+	 * must have "getKey()" method for every constant.
+	 *
+	 * Returns for example: "apple, banana, carrot" etc.
+	 *
+	 * @param <T>
+	 * @param enumeration
+	 * @return
+	 */
+	public static <T extends Enum<?>> String keys(Class<T> enumeration) {
+		return Common.join(enumeration.getEnumConstants(), (Stringer<T>) object -> ReflectionUtil.invoke("getKey", object));
 	}
 
 	/**
