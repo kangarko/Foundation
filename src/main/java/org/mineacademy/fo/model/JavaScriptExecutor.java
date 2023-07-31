@@ -163,6 +163,8 @@ public final class JavaScriptExecutor {
 			if (event != null)
 				engine.put("event", event);
 
+			javascript = Variables.replaceHardVariables(sender, javascript);
+
 			if (sender instanceof DiscordSender) {
 				javascript = replaceVariables(javascript, Variables.VARIABLE_PATTERN.matcher(javascript));
 				javascript = replaceVariables(javascript, Variables.BRACKET_VARIABLE_PATTERN.matcher(javascript));
