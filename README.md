@@ -28,6 +28,8 @@ For a sample plugin, see [PluginTemplate](https://github.com/kangarko/plugintemp
 
 A complete tutorial on how to use this library is a part of our Project Orion training available [here](https://mineacademy.org/project-orion)
 
+If you just want a quick start into Minecraft plugin development, [check out this guick gist](https://gist.github.com/kangarko/456d9cfce52dc971b93dbbd12a95f43c).
+
 ## Importing
 
 We use JitPack to automatically compile and host the latest release of Foundation for you.
