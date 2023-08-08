@@ -212,7 +212,7 @@ public final class JavaScriptExecutor {
 				throw new EventHandledException(true);
 			}
 
-			throw new RuntimeException(error + " '" + oldCode + "'", ex);
+			throw new RuntimeException(error + " '" + oldCode + "', sender: " + (sender == null ? "null" : sender.getClass() + ": " + sender), ex);
 		}
 	}
 
