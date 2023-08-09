@@ -1594,6 +1594,19 @@ public final class HookManager {
 	}
 
 	/**
+	 * Removes a {@link PacketAdapter} packet listener from ProtocolLib.
+	 * <p>
+	 * If the plugin is missing, or the listener hasn't been registered, an error will be thrown
+	 *
+	 * @param adapter the adapter to remove.
+	 */
+	public static void removePacketListener(final Object adapter) {
+		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot remove packet listeners if ProtocolLib isn't installed");
+
+		protocolLibHook.removePacketListener(adapter);
+	}
+
+	/**
 	 * Send a {@link PacketContainer} to the given player.
 	 *
 	 * @param player          the player to send the packet container to.
@@ -2229,6 +2242,22 @@ class ProtocolLibHook {
 		}
 
 		this.registeredListeners.add(listener);
+	}
+
+	final void removePacketListener(final Object listener) {
+		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
+		Valid.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
+
+		try {
+			this.manager.removePacketListener((PacketListener) listener);
+
+		} catch (final Throwable t) {
+			Common.error(t, "Failed to unregister ProtocolLib packet listener!");
+
+			return;
+		}
+
+		this.registeredListeners.remove(listener);
 	}
 
 	final void removePacketListeners(final Plugin plugin) {
