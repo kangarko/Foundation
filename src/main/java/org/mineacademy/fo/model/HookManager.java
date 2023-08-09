@@ -137,6 +137,7 @@ public final class HookManager {
 	private static NickyHook nickyHook;
 	private static PlaceholderAPIHook placeholderAPIHook;
 	private static PlotSquaredHook plotSquaredHook;
+	private static PremiumVanishHook premiumVanishHook;
 	private static ProtocolLibHook protocolLibHook;
 	private static ResidenceHook residenceHook;
 	private static TownyHook townyHook;
@@ -266,6 +267,9 @@ public final class HookManager {
 			else
 				Common.warning("Could not hook into PlotSquared. Version 3.x, 5.x or 6.x required, you have " + ver);
 		}
+
+		if (Common.doesPluginExist("PremiumVanish"))
+			premiumVanishHook = new PremiumVanishHook();
 
 		if (Common.doesPluginExist("ProtocolLib")) {
 			// Also check if the library is loaded properly.
@@ -569,6 +573,15 @@ public final class HookManager {
 	}
 
 	/**
+	 * Is PremiumVanish loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isPremiumVanishLoaded() {
+		return premiumVanishHook != null;
+	}
+
+	/**
 	 * Is ProtocolLib loaded?
 	 * <p>
 	 * This will not only check if the plugin is in the plugins folder, but
@@ -848,8 +861,45 @@ public final class HookManager {
 	}
 
 	/**
-	 * Sets the vanish status for the player in AdvancedVanish, CMI and
-	 * EssentialsX.
+	 * Return true if the given player is vanished in PremiumVanish.
+	 *
+	 * @deprecated this does not a call metadata check for most plugins,
+	 *             nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
+	 * @param player the player to check.
+	 * @return
+	 */
+	@Deprecated
+	public static boolean isVanishedPremiumVanish(final Player player) {
+		return isPremiumVanishLoaded() && premiumVanishHook.isVanished(player);
+	}
+
+	/**
+	 * Returns if the player is vanished from plugins AdvancedVanish, CMI,
+	 * PremiumVanish and EssentialsX.
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static boolean isVanished(final Player player) {
+
+		if (isVanishedPremiumVanish(player))
+			return true;
+
+		if (isVanishedAdvancedVanish(player))
+			return true;
+
+		if (isVanishedCMI(player))
+			return true;
+
+		if (isVanishedEssentials(player))
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Sets the vanish status for the player in AdvancedVanish, CMI,
+	 * PremiumVanish and EssentialsX.
 	 *
 	 * @deprecated this does not remove the vanish metadata and NMS
 	 * invisibility. Use {@link PlayerUtil#setVanished(Player, boolean)}
@@ -867,6 +917,9 @@ public final class HookManager {
 
 		if (isAdvancedVanishLoaded())
 			advancedVanishHook.setVanished(player, vanished);
+
+		if (isPremiumVanishLoaded())
+			premiumVanishHook.setVanished(player, vanished);
 	}
 
 	/**
@@ -2750,6 +2803,36 @@ class MVdWPlaceholderHook {
 	}
 }
 
+class PremiumVanishHook {
+
+	private final Method isInvisible;
+	private final Method hidePlayer;
+	private final Method showPlayer;
+
+	public PremiumVanishHook() {
+		final Class<?> clazz = ReflectionUtil.lookupClass("de.myzelyam.api.vanish.VanishAPI");
+
+		this.isInvisible = ReflectionUtil.getMethod(clazz, "isInvisible", Player.class);
+		this.hidePlayer = ReflectionUtil.getMethod(clazz, "hidePlayer", Player.class, boolean.class, boolean.class);
+		this.showPlayer = ReflectionUtil.getMethod(clazz, "showPlayer", Player.class, boolean.class);
+	}
+
+	boolean isVanished(Player player) {
+		return ReflectionUtil.invokeStatic(this.isInvisible, player);
+	}
+
+	void setVanished(Player player, boolean vanished) {
+		if (vanished) {
+			if (!this.isVanished(player))
+				ReflectionUtil.invokeStatic(this.hidePlayer, player, true, false);
+
+		} else {
+			if (this.isVanished(player))
+				ReflectionUtil.invokeStatic(this.showPlayer, player, true);
+		}
+	}
+}
+
 class LWCHook {
 
 	private final Class<?> mainClass;
@@ -3680,17 +3763,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-
+		
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-
+		
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-
+		
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-
+		
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3760,16 +3843,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
