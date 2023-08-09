@@ -2173,13 +2173,17 @@ public final class Remain {
 		else {
 			final Object nmsEntity = entity.getClass().toString().contains("net.minecraft.server") ? entity : entity instanceof LivingEntity ? getHandleEntity((LivingEntity) entity) : null;
 			Valid.checkNotNull(nmsEntity, "setInvisible requires either a LivingEntity or a NMS Entity, got: " + entity.getClass());
+			final Method setInvisible = ReflectionUtil.getMethod(nmsEntity.getClass(), "setInvisible", boolean.class);
 
 			// https://www.spigotmc.org/threads/how-do-i-make-an-entity-go-invisible-without-using-potioneffects.321227/
 			Common.runLater(2, () -> {
 				try {
-					ReflectionUtil.invoke("setInvisible", nmsEntity, invisible);
+					ReflectionUtil.invoke(setInvisible, nmsEntity, invisible);
+
 				} catch (Throwable t) {
+
 					// unsupported
+					t.printStackTrace();
 				}
 			});
 		}
