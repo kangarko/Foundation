@@ -1,49 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.StrictSet;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.region.Region;
-import org.mineacademy.fo.remain.Remain;
-
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.Zrips.CMI.Modules.TabList.TabListManager;
@@ -54,11 +10,7 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketListener;
-import com.earth2me.essentials.CommandSource;
-import com.earth2me.essentials.Essentials;
-import com.earth2me.essentials.IUser;
-import com.earth2me.essentials.User;
-import com.earth2me.essentials.UserMap;
+import com.earth2me.essentials.*;
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -70,13 +22,8 @@ import com.massivecraft.massivecore.ps.PS;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import com.palmergames.bukkit.towny.TownyUniverse;
-import com.palmergames.bukkit.towny.object.Nation;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.WorldCoord;
+import com.palmergames.bukkit.towny.object.*;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 import fr.xephi.authme.api.v3.AuthMeApi;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
@@ -99,10 +46,36 @@ import net.citizensnpcs.api.npc.NPCRegistry;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+import org.mineacademy.fo.*;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.collection.StrictSet;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.region.Region;
+import org.mineacademy.fo.remain.Remain;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 import world.bentobox.bentobox.managers.IslandsManager;
 import world.bentobox.bentobox.managers.RanksManager;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Our main class for hooking into different plugins, providing you
@@ -317,7 +290,6 @@ public final class HookManager {
 	 * Removes packet listeners from ProtocolLib for a plugin.
 	 *
 	 * @param plugin the plugin to use.
-	 *
 	 * @deprecated internal use only, please do not call.
 	 */
 	@Deprecated
@@ -824,10 +796,10 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is vanished in EssentialsX.
 	 *
-	 * @deprecated this does not call a metadata check for most plugins,
-	 *             nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 * @param player the player to check.
 	 * @return
+	 * @deprecated this does not call a metadata check for most plugins,
+	 * nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 */
 	@Deprecated
 	public static boolean isVanishedEssentials(final Player player) {
@@ -837,10 +809,10 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is vanished in CMI.
 	 *
-	 * @deprecated this does not call a metadata check for most plugins,
-	 *             nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 * @param player the player to check.
 	 * @return
+	 * @deprecated this does not call a metadata check for most plugins,
+	 * nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 */
 	@Deprecated
 	public static boolean isVanishedCMI(final Player player) {
@@ -850,10 +822,10 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is vanished in AdvancedVanish.
 	 *
-	 * @deprecated this does not a call metadata check for most plugins,
-	 *             nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 * @param player the player to check.
 	 * @return
+	 * @deprecated this does not a call metadata check for most plugins,
+	 * nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 */
 	@Deprecated
 	public static boolean isVanishedAdvancedVanish(final Player player) {
@@ -863,10 +835,10 @@ public final class HookManager {
 	/**
 	 * Return true if the given player is vanished in PremiumVanish.
 	 *
-	 * @deprecated this does not a call metadata check for most plugins,
-	 *             nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 * @param player the player to check.
 	 * @return
+	 * @deprecated this does not a call metadata check for most plugins,
+	 * nor an NMS check. See {@link PlayerUtil#isVanished(Player)}.
 	 */
 	@Deprecated
 	public static boolean isVanishedPremiumVanish(final Player player) {
@@ -901,11 +873,11 @@ public final class HookManager {
 	 * Sets the vanish status for the player in AdvancedVanish, CMI,
 	 * PremiumVanish and EssentialsX.
 	 *
+	 * @param player   the player whose vanish status you want to set.
+	 * @param vanished the state to set the player's vanish to.
 	 * @deprecated this does not remove the vanish metadata and NMS
 	 * invisibility. Use {@link PlayerUtil#setVanished(Player, boolean)}
 	 * for that.
-	 * @param player   the player whose vanish status you want to set.
-	 * @param vanished the state to set the player's vanish to.
 	 */
 	@Deprecated
 	public static void setVanished(@NonNull Player player, boolean vanished) {
@@ -1070,7 +1042,6 @@ public final class HookManager {
 	 *
 	 * @param sender      the player whose nickname you want to get.
 	 * @param stripColors should we strip colors from the nickname?
-	 *
 	 * @return
 	 */
 	private static String getNick(final CommandSender sender, boolean stripColors) {
@@ -1382,7 +1353,6 @@ public final class HookManager {
 	 *
 	 * @param offlinePlayer the player to check.
 	 * @param perm          the permission to check.
-	 *
 	 * @return
 	 */
 	public static boolean hasVaultPermission(final OfflinePlayer offlinePlayer, final String perm) {
@@ -1393,13 +1363,13 @@ public final class HookManager {
 
 	/**
 	 * Checks if the given command sender has the given permission.
-	 *
+	 * <p>
 	 * You are advised to do the following checks beforehand,
 	 * this method does not have them for maximum performance:
-	 *
+	 * <p>
 	 * **SENDER AND PERMISSION MUST NOT BE NULL**
 	 * **VAULT MUST BE INSTALLED**
-	 *
+	 * <p>
 	 * Returns NULL if Vault could not connect to a compatible Permission plugin.
 	 * Returns TRUE or FALSE depending on the result of the Vault check.
 	 * Returns FALSE on exception and fails silently by printing the error to the console.
@@ -1495,19 +1465,19 @@ public final class HookManager {
 	 * If PlaceholderAPI is loaded, this method registers a new placeholder
 	 * within it with the given variable and value.
 	 * <p>
-	 * 		The variable is automatically prepended with your plugin name,
-	 *      lowercased + _, such as chatcontrol_ or boss_ + your variable.
+	 * The variable is automatically prepended with your plugin name,
+	 * lowercased + _, such as chatcontrol_ or boss_ + your variable.
 	 * <p>
-	 * 		Example: if the variable is player health in ChatControl: "chatcontrol_health".
+	 * Example: if the variable is player health in ChatControl: "chatcontrol_health".
 	 * <p>
-	 * 		The value will be called against the given player.
+	 * The value will be called against the given player.
 	 * <p>
-	 *
-	 * 	 * ATTENTION: We now have a new system where you register variables
-	 *                through {@link Variables#addExpansion(SimpleExpansion)}
-	 * 			      instead. It gives you better flexibility and, like
-	 *                PlaceholderAPI, you can replace different variables on
-	 *                the fly.
+	 * <p>
+	 * * ATTENTION: We now have a new system where you register variables
+	 * through {@link Variables#addExpansion(SimpleExpansion)}
+	 * instead. It gives you better flexibility and, like
+	 * PlaceholderAPI, you can replace different variables on
+	 * the fly.
 	 *
 	 * @param variable the variable to add.
 	 * @param value    the value of the variable.
@@ -1591,6 +1561,19 @@ public final class HookManager {
 		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot add packet listeners if ProtocolLib isn't installed");
 
 		protocolLibHook.addPacketListener(adapter);
+	}
+
+	/**
+	 * Removes a {@link PacketAdapter} packet listener from ProtocolLib.
+	 * <p>
+	 * If the plugin is missing, or the listener hasn't been registered, an error will be thrown
+	 *
+	 * @param adapter the adapter to remove.
+	 */
+	public static void removePacketListener(final Object adapter) {
+		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot remove packet listeners if ProtocolLib isn't installed");
+
+		protocolLibHook.removePacketListener(adapter);
 	}
 
 	/**
@@ -2231,6 +2214,22 @@ class ProtocolLibHook {
 		this.registeredListeners.add(listener);
 	}
 
+	final void removePacketListener(final Object listener) {
+		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
+		Valid.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
+
+		try {
+			this.manager.removePacketListener((PacketListener) listener);
+
+		} catch (final Throwable t) {
+			Common.error(t, "Failed to unregister ProtocolLib packet listener!");
+
+			return;
+		}
+
+		this.registeredListeners.remove(listener);
+	}
+
 	final void removePacketListeners(final Plugin plugin) {
 		this.manager.removePacketListeners(plugin);
 
@@ -2693,7 +2692,7 @@ class PlaceholderAPIHook {
 		/**
 		 * Replace Foundation variables but with our plugin name added as a
 		 * prefix.
-		 *
+		 * <p>
 		 * We return null if an invalid placeholder (i.e. %ourplugin_nonexistingplaceholder%)
 		 * is provided.
 		 */
