@@ -25,6 +25,11 @@ import lombok.RequiredArgsConstructor;
 public final class BoxedMessage {
 
 	/**
+	 * The top and bottom line itself
+	 */
+	public static String LINE = Common.chatLineSmooth();
+
+	/**
 	 * The color of the top and bottom line
 	 */
 	public static ChatColor LINE_COLOR = ChatColor.DARK_GRAY;
@@ -128,7 +133,7 @@ public final class BoxedMessage {
 	}
 
 	private void sendLine() {
-		this.send(LINE_COLOR + Common.chatLineSmooth());
+		this.send(LINE_COLOR + LINE);
 	}
 
 	private int length() {
