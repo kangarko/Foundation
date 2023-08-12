@@ -152,7 +152,7 @@ public abstract class BungeeListener implements Listener {
 
 					listener.data = data;
 
-					Debugger.debug("bungee", "Channel " + channelName + " received " + message.getAction() + " message from " + message.getServerName() + " server.");
+					Debugger.debug("bungee-all", "Channel " + channelName + " received " + message.getAction() + " message from " + message.getServerName() + " server.");
 					listener.onMessageReceived(player, message);
 
 					break;
