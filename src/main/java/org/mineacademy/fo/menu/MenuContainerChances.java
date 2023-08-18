@@ -94,9 +94,6 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
 				final MenuContainerChances instance = MenuContainerChances.this;
 
-				// Call event to properly save data without us having to restart the menu completely
-				instance.onMenuClose(player, player.getOpenInventory().getTopInventory());
-
 				// Simulate mode chance in the menu
 				instance.mode = MenuContainerChances.this.mode.next();
 				instance.setTitle("&0Editing " + instance.mode.getKey());

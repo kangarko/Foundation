@@ -358,7 +358,7 @@ public abstract class Menu {
 			for (final Button button : this.registeredButtons.keySet()) {
 				Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 
-				ItemStack item = button.getItem();
+				final ItemStack item = button.getItem();
 				Valid.checkNotNull(item, "Menu " + this.getTitle() + " contained button " + button.getClass() + " named '" + button.getClass().getSimpleName() + "' with empty item!");
 
 				if (ItemUtil.isSimilar(fromItem, item))
@@ -533,14 +533,17 @@ public abstract class Menu {
 		final Inventory inventory = player.getOpenInventory().getTopInventory();
 		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
+		// Most plugins save items here
+		this.onMenuClose(player, inventory);
+
 		this.registerButtons();
 
 		// Call before calling getItemAt
 		this.onRestartInternal();
 		this.onRestart();
 
-		ItemStack[] content = inventory.getContents();
-		Map<Integer, ItemStack> newContent = this.compileItems();
+		final ItemStack[] content = inventory.getContents();
+		final Map<Integer, ItemStack> newContent = this.compileItems();
 
 		for (int i = 0; i < content.length; i++)
 			content[i] = newContent.get(i);
