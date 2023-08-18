@@ -111,8 +111,12 @@ public final class MenuListener implements Listener {
 				}
 
 			} else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY || whereClicked != MenuClickLocation.PLAYER_INVENTORY) {
-				event.setResult(Result.DENY);
-				player.updateInventory();
+
+				if (!allowed) {
+					event.setResult(Result.DENY);
+
+					player.updateInventory();
+				}
 
 				// Spigot bug
 				if (player.getGameMode() == GameMode.CREATIVE && event.getClick().toString().equals("SWAP_OFFHAND"))
