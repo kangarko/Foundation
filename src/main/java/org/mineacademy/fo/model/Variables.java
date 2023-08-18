@@ -67,7 +67,7 @@ public final class Variables {
 	 * Should we replace javascript placeholders from variables/ folder automatically?
 	 * Used internally to prevent race condition
 	 */
-	volatile static boolean REPLACE_JAVASCRIPT = true;
+	private volatile static boolean REPLACE_JAVASCRIPT = true;
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Custom variables
@@ -240,6 +240,23 @@ public final class Variables {
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize) {
+		return replace(message, sender, replacements, colorize, true);
+	}
+
+	/**
+	 * Replaces variables in the message using the message sender as an object to replace
+	 * player-related placeholders.
+	 *
+	 * We also support PlaceholderAPI and MVdWPlaceholderAPI (only if sender is a Player).
+	 *
+	 * @param message
+	 * @param sender
+	 * @param replacements
+	 * @param colorize
+	 * @param script
+	 * @return
+	 */
+	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize, boolean script) {
 		synchronized (cache) {
 			if (message == null || message.isEmpty())
 				return "";
@@ -272,7 +289,7 @@ public final class Variables {
 			message = replaceHardVariables(sender, message);
 
 			// Custom placeholders
-			if (REPLACE_JAVASCRIPT) {
+			if (REPLACE_JAVASCRIPT && script) {
 				REPLACE_JAVASCRIPT = false;
 
 				try {

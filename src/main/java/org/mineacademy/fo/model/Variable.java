@@ -200,14 +200,12 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	public String getValue(CommandSender sender, Map<String, Object> replacements) {
-		Variables.REPLACE_JAVASCRIPT = false;
 
 		try {
 			// Replace variables in script
-			final String script = Variables.replace(this.value, sender, replacements);
-			final String result = String.valueOf(JavaScriptExecutor.run(script, sender));
+			final String script = Variables.replace(this.value, sender, replacements, true, false);
 
-			return result;
+			return JavaScriptExecutor.run(script, sender).toString();
 
 		} catch (final RuntimeException ex) {
 
@@ -216,9 +214,6 @@ public final class Variable extends YamlConfig {
 				throw ex;
 
 			return "";
-
-		} finally {
-			Variables.REPLACE_JAVASCRIPT = true;
 		}
 	}
 
@@ -236,7 +231,7 @@ public final class Variable extends YamlConfig {
 			return SimpleComponent.of("");
 
 		if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
-			final Object result = JavaScriptExecutor.run(this.senderCondition, sender);
+			final Object result = JavaScriptExecutor.run(Variables.replace(this.senderCondition, sender, replacements, true, false), sender);
 
 			if (result != null) {
 				Valid.checkBoolean(result instanceof Boolean, "Variable '" + this.getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
@@ -252,7 +247,7 @@ public final class Variable extends YamlConfig {
 			return SimpleComponent.of("");
 
 		final SimpleComponent component = existingComponent
-				.append(Variables.replace(value, sender, replacements))
+				.append(value)
 				.viewPermission(this.receiverPermission)
 				.viewCondition(this.receiverCondition);
 
@@ -260,7 +255,7 @@ public final class Variable extends YamlConfig {
 			component.onHover(Variables.replace(this.hoverText, sender, replacements));
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
-			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements), sender);
+			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements, true, false), sender);
 			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + this.getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
 			component.onHover((ItemStack) result);
