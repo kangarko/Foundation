@@ -135,6 +135,13 @@ public final class JavaScriptExecutor {
 		if (Bukkit.getName().equals("Mohist"))
 			return null;
 
+		// Speed up
+		if (javascript.equals("true") || javascript.equals("!false"))
+			return true;
+
+		if (javascript.equals("false") || javascript.equals("!true"))
+			return false;
+
 		final String oldCode = new String(javascript);
 
 		// Cache for highest performance
@@ -163,17 +170,35 @@ public final class JavaScriptExecutor {
 			if (event != null)
 				engine.put("event", event);
 
-			javascript = Variables.replaceHardVariables(sender, javascript);
-
+			// Find and replace all %syntax% and {syntax} variables since they were not replaced for Discord
 			if (sender instanceof DiscordSender) {
-				javascript = replaceVariables(javascript, Variables.VARIABLE_PATTERN.matcher(javascript));
-				javascript = replaceVariables(javascript, Variables.BRACKET_VARIABLE_PATTERN.matcher(javascript));
+
+				// Replace by line to avoid the {...} in "function() { return false; }" being replaced to "function() false"
+				final String[] copy = javascript.split("\n");
+				final String[] replaced = new String[copy.length];
+
+				for (int i = 0; i < copy.length; i++) {
+					String line = copy[i];
+
+					line = replaceVariables(line, Variables.VARIABLE_PATTERN.matcher(line));
+					line = replaceVariables(line, Variables.BRACKET_VARIABLE_PATTERN.matcher(line));
+
+					replaced[i] = line;
+				}
+
+				javascript = String.join("\n", replaced);
 			}
 
 			Object result = engine.eval(javascript);
 
 			if (result instanceof String) {
-				final String resultString = Common.stripColors((String) result).toLowerCase();
+				String resultString = Common.stripColors((String) result).trim().toLowerCase();
+
+				if (resultString.startsWith("\"") || resultString.startsWith("'"))
+					resultString = resultString.substring(1);
+
+				if (resultString.endsWith("\"") || resultString.endsWith("'"))
+					resultString = resultString.substring(0, resultString.length() - 1);
 
 				if (resultString.equals("true"))
 					result = true;
