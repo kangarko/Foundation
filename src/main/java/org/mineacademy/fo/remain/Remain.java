@@ -265,12 +265,6 @@ public final class Remain {
 
 			CompParticle.CRIT.getClass();
 
-			for (final Material bukkitMaterial : Material.values())
-				CompMaterial.fromString(bukkitMaterial.toString());
-
-			for (final CompMaterial compMaterial : CompMaterial.values())
-				compMaterial.getMaterial();
-
 			getNMSClass("Entity", "net.minecraft.world.entity.Entity");
 
 		} catch (final Throwable t) {
@@ -426,7 +420,7 @@ public final class Remain {
 
 				isFolia = true;
 
-			} catch (Exception ex) {
+			} catch (final Exception ex) {
 				isFolia = false;
 			}
 
@@ -579,8 +573,8 @@ public final class Remain {
 		try {
 			return player.getClientViewDistance();
 
-		} catch (NoSuchMethodError err) {
-			Method getViewDistance = ReflectionUtil.getMethod(player.spigot().getClass(), "getViewDistance");
+		} catch (final NoSuchMethodError err) {
+			final Method getViewDistance = ReflectionUtil.getMethod(player.spigot().getClass(), "getViewDistance");
 
 			return ReflectionUtil.invoke(getViewDistance, player.spigot());
 		}
@@ -683,7 +677,7 @@ public final class Remain {
 			// Default delay to 750ms
 			try {
 				((Item) bukkitItem).setPickupDelay(15);
-			} catch (Throwable t) {
+			} catch (final Throwable t) {
 				// unsupported
 			}
 
@@ -2180,7 +2174,7 @@ public final class Remain {
 				try {
 					ReflectionUtil.invoke(setInvisible, nmsEntity, invisible);
 
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 
 					// unsupported
 					t.printStackTrace();
@@ -2376,7 +2370,7 @@ public final class Remain {
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon, final CompToastStyle style) {
 
 		if (hasAdvancements)
-			Common.runLaterAsync(() -> {
+			Common.runAsync(() -> {
 				for (final Player receiver : receivers) {
 
 					// Sleep to mitigate sending not working at once

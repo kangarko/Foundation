@@ -24,7 +24,7 @@ import lombok.Setter;
 /**
  * A simple class performing an update check for Spigot free and premium resources
  */
-public class SpigotUpdater implements Runnable {
+public class SpigotUpdater extends SimpleRunnable {
 
 	/**
 	 * The Spigot resource ID for your plugin

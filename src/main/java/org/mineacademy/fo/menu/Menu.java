@@ -16,7 +16,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.Messenger;
@@ -38,6 +37,7 @@ import org.mineacademy.fo.menu.button.annotation.Position;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
+import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -752,8 +752,8 @@ public abstract class Menu {
 	/*
 	 * Helper method to create a bukkit runnable
 	 */
-	private BukkitRunnable wrapAnimation(MenuRunnable task) {
-		return new BukkitRunnable() {
+	private SimpleRunnable wrapAnimation(MenuRunnable task) {
+		return new SimpleRunnable() {
 
 			@Override
 			public void run() {

@@ -8,13 +8,13 @@ import javax.annotation.Nullable;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
+import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompParticle;
 
@@ -172,7 +172,7 @@ public final class VisualizedRegion extends Region {
 		Valid.checkBoolean(this.task == null, "Already visualizing region " + this + "!");
 		Valid.checkBoolean(this.isWhole(), "Cannot visualize incomplete region " + this + "!");
 
-		this.task = Common.runTimer(this.delayTicks, new BukkitRunnable() {
+		this.task = Common.runTimer(this.delayTicks, new SimpleRunnable() {
 			@Override
 			public void run() {
 				if (VisualizedRegion.this.viewers.isEmpty()) {

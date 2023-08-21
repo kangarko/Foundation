@@ -99,7 +99,7 @@ public class Metrics {
 				enabled,
 				this::appendPlatformData,
 				this::appendServiceData,
-				submitDataTask -> Bukkit.getScheduler().runTask(SimplePlugin.getInstance(), submitDataTask),
+				Common::runLater,
 				() -> true,
 				(message, error) -> Common.error(error, message),
 				Common::log,

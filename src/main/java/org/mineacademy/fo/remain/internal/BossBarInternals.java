@@ -18,6 +18,7 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompBarColor;
@@ -53,7 +54,7 @@ public final class BossBarInternals implements Listener {
 	/**
 	 * Currently running timers (for temporary boss bars)
 	 */
-	private final HashMap<UUID, Integer> timers = new HashMap<>();
+	private final HashMap<UUID, SimpleTask> timers = new HashMap<>();
 
 	// Singleton
 	private BossBarInternals() {
@@ -105,8 +106,8 @@ public final class BossBarInternals implements Listener {
 
 		this.players.clear();
 
-		for (final int timerID : this.timers.values())
-			Bukkit.getScheduler().cancelTask(timerID);
+		for (final SimpleTask task : this.timers.values())
+			task.cancel();
 
 		this.timers.clear();
 	}
@@ -261,7 +262,7 @@ public final class BossBarInternals implements Listener {
 			} else
 				this.sendDragon(drag, player);
 
-		}).getTaskId());
+		}));
 
 		this.sendDragon(dragon, player);
 	}
@@ -303,10 +304,10 @@ public final class BossBarInternals implements Listener {
 	}
 
 	private void cancelTimer(final Player player) {
-		final Integer timerID = this.timers.remove(player.getUniqueId());
+		final SimpleTask task = this.timers.remove(player.getUniqueId());
 
-		if (timerID != null)
-			Bukkit.getScheduler().cancelTask(timerID);
+		if (task != null)
+			task.cancel();
 	}
 
 	private void sendDragon(final NMSDragon dragon, final Player player) {

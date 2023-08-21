@@ -29,6 +29,7 @@ import com.comphenix.protocol.wrappers.AdventureComponentConverter;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -129,6 +130,14 @@ public abstract class PacketListener {
 
 				if (event.getPlayer() != null)
 					consumer.accept(event);
+			}
+
+			@Override
+			public void onPacketReceiving(PacketEvent event) {
+				if (type == PacketType.Play.Server.CHAT || type == PacketType.Play.Client.CHAT) {
+					// Packet can be both sided
+				} else
+					super.onPacketReceiving(event);
 			}
 		});
 	}
@@ -312,7 +321,7 @@ public abstract class PacketListener {
 							this.jsonMessage = WrappedChatComponent.fromJson(json).getJson();
 						}
 
-					} catch (Throwable ignored) {
+					} catch (final Throwable ignored) {
 						ignored.printStackTrace();
 						// Ignore if Adventure is unavailable
 					}
@@ -405,7 +414,7 @@ public abstract class PacketListener {
 			if (textComponentClass.isAssignableFrom(component.getClass())) {
 				contents.add(ReflectionUtil.invoke(contentMethod, component));
 
-				for (Object child : (List<?>) ReflectionUtil.invoke(childrenMethod, component))
+				for (final Object child : (List<?>) ReflectionUtil.invoke(childrenMethod, component))
 					mergeChildren(child, contents);
 			}
 		}
@@ -428,7 +437,7 @@ public abstract class PacketListener {
 					if (!adventureModifier.getFields().isEmpty())
 						adventureModifier.write(0, null);
 
-				} catch (Throwable ignored) {
+				} catch (final Throwable ignored) {
 					// Ignore if Adventure is unavailable
 				}
 
