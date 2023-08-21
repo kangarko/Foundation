@@ -14,6 +14,7 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.RangedValue;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.NonNull;
@@ -159,7 +160,7 @@ public final class Valid {
 	 * @param syncErrorMessage
 	 */
 	public static void checkAsync(final String syncErrorMessage) {
-		Valid.checkBoolean(!Bukkit.isPrimaryThread(), syncErrorMessage);
+		Valid.checkBoolean(!Bukkit.isPrimaryThread() || Remain.isFolia(), syncErrorMessage);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

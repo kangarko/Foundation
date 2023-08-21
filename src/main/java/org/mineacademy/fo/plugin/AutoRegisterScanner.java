@@ -48,7 +48,7 @@ import org.mineacademy.fo.settings.YamlStaticConfig;
 final class AutoRegisterScanner {
 
 	/**
-	 * Prevent duplicating registering of our {@link EnchantmentPacketListener}
+	 * Prevent duplicating registering of our {@link FoundationPacketListener}
 	 */
 	private static boolean enchantListenersRegistered = false;
 
@@ -267,7 +267,7 @@ final class AutoRegisterScanner {
 		}
 
 		if (PacketListener.class.isAssignableFrom(clazz) && !HookManager.isProtocolLibLoaded()) {
-			if (printWarnings && !clazz.equals(EnchantmentPacketListener.class)) {
+			if (printWarnings && !clazz.equals(FoundationPacketListener.class)) {
 				Bukkit.getLogger().warning("**** WARNING ****");
 				Bukkit.getLogger().warning("The following class requires ProtocolLib and won't be registered: " + clazz.getName()
 						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
@@ -333,7 +333,7 @@ final class AutoRegisterScanner {
 		else if (PacketListener.class.isAssignableFrom(clazz)) {
 
 			// Handled in SimpleEnchantment
-			if (clazz.equals(EnchantmentPacketListener.class))
+			if (clazz.equals(FoundationPacketListener.class))
 				return;
 
 			// Automatically registered by means of adding packet adapters
@@ -356,7 +356,7 @@ final class AutoRegisterScanner {
 
 				plugin.registerEvents(FoundationEnchantmentListener.getInstance());
 
-				EnchantmentPacketListener.getInstance().onRegister();
+				FoundationPacketListener.getInstance().onRegister();
 			}
 		}
 

@@ -5,6 +5,7 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -41,10 +43,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -57,6 +55,7 @@ import org.mineacademy.fo.exception.RegexTimeoutException;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
+import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -690,7 +689,7 @@ public final class Common {
 			return message;
 
 		// Replace & color codes
-		Matcher matcher = ALL_IN_ONE.matcher(message);
+		final Matcher matcher = ALL_IN_ONE.matcher(message);
 
 		while (matcher.find())
 			message = matcher.replaceAll("");
@@ -698,15 +697,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -1050,7 +1049,7 @@ public final class Common {
 		String name = ItemUtil.bountifyCapitalized(item.getType());
 
 		if (Remain.hasItemMeta() && item.hasItemMeta()) {
-			ItemMeta meta = item.getItemMeta();
+			final ItemMeta meta = item.getItemMeta();
 
 			name += "{";
 
@@ -1526,7 +1525,7 @@ public final class Common {
 	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
 
 		try {
-			SimplePlugin instance = SimplePlugin.getInstance();
+			final SimplePlugin instance = SimplePlugin.getInstance();
 
 			String strippedMessage = instance.regexStripColors() ? stripColors(message) : message;
 			strippedMessage = instance.regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
@@ -2479,13 +2478,41 @@ public final class Common {
 	// Scheduling
 	// ------------------------------------------------------------------------------------------------------------
 
+	private static Object foliaScheduler;
+	private static Method runAtFixedRate;
+	private static Method runDelayed;
+	private static Method execute;
+	private static Method cancel;
+	private static Method cancelTasks;
+
+	static {
+		if (Remain.isFolia()) {
+			foliaScheduler = ReflectionUtil.invoke("getGlobalRegionScheduler", org.bukkit.Bukkit.getServer());
+			runAtFixedRate = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class);
+			execute = ReflectionUtil.getMethod(foliaScheduler.getClass(), "run", Plugin.class, Consumer.class);
+			runDelayed = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class);
+			cancelTasks = ReflectionUtil.getMethod(foliaScheduler.getClass(), "cancelTasks", Plugin.class);
+			cancel = ReflectionUtil.getMethod(ReflectionUtil.lookupClass("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), "cancel");
+		}
+	}
+
+	/**
+	 * Attempts to cancel all tasks
+	 */
+	public static void cancelTasks() {
+		if (Remain.isFolia())
+			ReflectionUtil.invoke(cancelTasks, foliaScheduler, SimplePlugin.getInstance());
+		else
+			Bukkit.getScheduler().cancelTasks(SimplePlugin.getInstance());
+	}
+
 	/**
 	 * Runs the task if the plugin is enabled correctly
 	 *
 	 * @param task the task
 	 * @return the task or null
 	 */
-	public static <T extends Runnable> BukkitTask runLater(final T task) {
+	public static SimpleTask runLater(final Runnable task) {
 		return runLater(1, task);
 	}
 
@@ -2496,18 +2523,26 @@ public final class Common {
 	 * @param task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLater(final int delayTicks, Runnable task) {
-		final BukkitScheduler scheduler = Bukkit.getScheduler();
-		final JavaPlugin instance = SimplePlugin.getInstance();
+	public static SimpleTask runLater(final int delayTicks, Runnable task) {
+		if (runIfDisabled(task))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle;
+
+			if (delayTicks == 0)
+				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) (t -> task.run()));
+			else
+				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) (t -> task.run()), delayTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
 
 		try {
-			return runIfDisabled(task) ? null : delayTicks == 0 ? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTask(instance) : scheduler.runTask(instance, task) : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLater(instance, delayTicks) : scheduler.runTaskLater(instance, task, delayTicks);
-		} catch (final NoSuchMethodError err) {
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), task, delayTicks));
 
-			return runIfDisabled(task) ? null
-					: delayTicks == 0
-							? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTask(instance) : getTaskFromId(scheduler.scheduleSyncDelayedTask(instance, task))
-							: task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLater(instance, delayTicks) : getTaskFromId(scheduler.scheduleSyncDelayedTask(instance, task, delayTicks));
+		} catch (final NoSuchMethodError err) {
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), task, delayTicks), false);
 		}
 	}
 
@@ -2519,25 +2554,9 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runAsync(final Runnable task) {
+	public static SimpleTask runAsync(final Runnable task) {
 		return runLaterAsync(0, task);
 	}
-
-	/**
-	 * Runs the task async even if the plugin is disabled for some reason.
-	 * <p>
-	 * Schedules the run on the next tick.
-	 *
-	 * @param task
-	 * @return
-	 */
-	public static BukkitTask runLaterAsync(final Runnable task) {
-		return runLaterAsync(0, task);
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Bukkit scheduling
-	// ------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Runs the task async even if the plugin is disabled for some reason.
@@ -2546,18 +2565,26 @@ public final class Common {
 	 * @param task
 	 * @return the task or null
 	 */
-	public static BukkitTask runLaterAsync(final int delayTicks, Runnable task) {
-		final BukkitScheduler scheduler = Bukkit.getScheduler();
-		final JavaPlugin instance = SimplePlugin.getInstance();
+	public static SimpleTask runLaterAsync(final int delayTicks, Runnable task) {
+		if (runIfDisabled(task))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle;
+
+			if (delayTicks == 0)
+				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) (t -> task.run()));
+			else
+				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) (t -> task.run()), delayTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
 
 		try {
-			return runIfDisabled(task) ? null : delayTicks == 0 ? task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskAsynchronously(instance) : scheduler.runTaskAsynchronously(instance, task) : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskLaterAsynchronously(instance, delayTicks) : scheduler.runTaskLaterAsynchronously(instance, task, delayTicks);
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), task, delayTicks));
 
 		} catch (final NoSuchMethodError err) {
-			return runIfDisabled(task) ? null
-					: delayTicks == 0
-							? getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task))
-							: getTaskFromId(scheduler.scheduleAsyncDelayedTask(instance, task, delayTicks));
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), task, delayTicks), true);
 		}
 	}
 
@@ -2568,7 +2595,7 @@ public final class Common {
 	 * @param task        the task
 	 * @return the bukkit task or null
 	 */
-	public static BukkitTask runTimer(final int repeatTicks, final Runnable task) {
+	public static SimpleTask runTimer(final int repeatTicks, final Runnable task) {
 		return runTimer(0, repeatTicks, task);
 	}
 
@@ -2580,14 +2607,21 @@ public final class Common {
 	 * @param task        the task
 	 * @return the bukkit task or null if error
 	 */
-	public static BukkitTask runTimer(final int delayTicks, final int repeatTicks, Runnable task) {
+	public static SimpleTask runTimer(final int delayTicks, final int repeatTicks, Runnable task) {
+		if (runIfDisabled(task))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) (t -> task.run()), Math.max(1, delayTicks), repeatTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
 
 		try {
-			return runIfDisabled(task) ? null : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks) : Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
 
 		} catch (final NoSuchMethodError err) {
-			return runIfDisabled(task) ? null
-					: getTaskFromId(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks), false);
 		}
 	}
 
@@ -2598,7 +2632,7 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runTimerAsync(final int repeatTicks, final Runnable task) {
+	public static SimpleTask runTimerAsync(final int repeatTicks, final Runnable task) {
 		return runTimerAsync(0, repeatTicks, task);
 	}
 
@@ -2610,27 +2644,22 @@ public final class Common {
 	 * @param task
 	 * @return
 	 */
-	public static BukkitTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable task) {
+	public static SimpleTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable task) {
+		if (runIfDisabled(task))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) (t -> task.run()), Math.max(1, delayTicks), repeatTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
 
 		try {
-			return runIfDisabled(task) ? null : task instanceof BukkitRunnable ? ((BukkitRunnable) task).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks) : Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), task, delayTicks, repeatTicks);
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
 
 		} catch (final NoSuchMethodError err) {
-			return runIfDisabled(task) ? null
-					: getTaskFromId(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks));
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), task, delayTicks, repeatTicks), true);
 		}
-	}
-
-	/*
-	 * A compatibility method that converts the given task id into a bukkit task
-	 */
-	private static BukkitTask getTaskFromId(int taskId) {
-
-		for (final BukkitTask task : Bukkit.getScheduler().getPendingTasks())
-			if (task.getTaskId() == taskId)
-				return task;
-
-		return null;
 	}
 
 	// Check our plugin instance if it's enabled

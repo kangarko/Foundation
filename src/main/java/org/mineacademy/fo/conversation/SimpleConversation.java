@@ -9,7 +9,6 @@ import org.bukkit.conversations.ConversationAbandonedListener;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationPrefix;
-import org.bukkit.conversations.InactivityConversationCanceller;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
@@ -18,6 +17,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.BoxedMessage;
+import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
@@ -288,20 +288,64 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	// Classes
 	// ------------------------------------------------------------------------------------------------------------
 
-	private final class CustomCanceller extends InactivityConversationCanceller {
+	private final class CustomCanceller implements ConversationCanceller {
+
+		protected Conversation conversation;
+
+		private final int timeoutSeconds;
+		private SimpleTask task = null;
 
 		/**
 		 */
 		public CustomCanceller() {
-			super(SimplePlugin.getInstance(), SimpleConversation.this.getTimeout());
+			this.timeoutSeconds = SimpleConversation.this.getTimeout();
 		}
 
-		/**
-		 * @see org.bukkit.conversations.InactivityConversationCanceller#cancelling(org.bukkit.conversations.Conversation)
-		 */
 		@Override
-		protected void cancelling(Conversation conversation) {
-			conversation.getContext().setSessionData("FLP#TIMEOUT", true);
+		public void setConversation(Conversation conversation) {
+			this.conversation = conversation;
+
+			this.startTimer();
+		}
+
+		@Override
+		public boolean cancelBasedOnInput(ConversationContext context, String input) {
+			this.stopTimer();
+			this.startTimer();
+
+			return false;
+		}
+
+		@Override
+		public ConversationCanceller clone() {
+			return new CustomCanceller();
+		}
+
+		/*
+		 * Starts an inactivity timer.
+		 */
+		private void startTimer() {
+			this.task = Common.runLater(this.timeoutSeconds * 20, (Runnable) () -> {
+				if (this.conversation.getState() == Conversation.ConversationState.UNSTARTED)
+					this.startTimer();
+
+				else if (this.conversation.getState() == Conversation.ConversationState.STARTED) {
+					this.conversation.getContext().setSessionData("FLP#TIMEOUT", true);
+
+					this.conversation.abandon(new ConversationAbandonedEvent(this.conversation, this));
+				}
+			});
+		}
+
+		/*
+		 * Stops the active inactivity timer.
+		 */
+		private void stopTimer() {
+			if (this.task != null) {
+				this.task.cancel();
+
+				this.task = null;
+			}
 		}
 	}
 

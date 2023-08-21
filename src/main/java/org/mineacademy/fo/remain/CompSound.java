@@ -14,11 +14,11 @@ import org.bukkit.Note;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.Getter;
@@ -1687,7 +1687,7 @@ public enum CompSound {
 		if (delay <= 0)
 			throw new IllegalArgumentException("Delay ticks must be at least 1");
 
-		return new BukkitRunnable() {
+		return new SimpleRunnable() {
 			int repeating = repeat;
 
 			@Override
@@ -1851,7 +1851,7 @@ public enum CompSound {
 		if (delay <= 0)
 			throw new IllegalArgumentException("Delay ticks must be at least 1");
 
-		return new BukkitRunnable() {
+		return new SimpleRunnable() {
 			int repeating = ascendLevel;
 
 			@Override

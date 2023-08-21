@@ -1,10 +1,7 @@
 package org.mineacademy.fo.model;
 
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.plugin.SimplePlugin;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -43,7 +40,7 @@ public abstract class Countdown implements Runnable {
 	/**
 	 * The internal task from Bukkit associated with this countdown
 	 */
-	private int taskId = -1;
+	private SimpleTask task = null;
 
 	/**
 	 * Create new countdown from the given time
@@ -129,8 +126,7 @@ public abstract class Countdown implements Runnable {
 	public final void launch() {
 		Valid.checkBoolean(!this.isRunning(), "Task " + this + " already scheduled!");
 
-		final BukkitTask task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), this, START_DELAY, TICK_PERIOD);
-		this.taskId = task.getTaskId();
+		this.task = Common.runTimer(START_DELAY, TICK_PERIOD, this);
 
 		this.onStart();
 	}
@@ -139,9 +135,9 @@ public abstract class Countdown implements Runnable {
 	 * Cancels this countdown, failing if it is not scheduled (use {@link #isRunning()})
 	 */
 	public final void cancel() {
-		Bukkit.getScheduler().cancelTask(this.getTaskId());
+		this.task.cancel();
 
-		this.taskId = -1;
+		this.task = null;
 		this.secondsSinceStart = 0;
 	}
 
@@ -151,22 +147,11 @@ public abstract class Countdown implements Runnable {
 	 * @return
 	 */
 	public final boolean isRunning() {
-		return this.taskId != -1;
-	}
-
-	/**
-	 * Return the bukkit task or fails if not running
-	 *
-	 * @return
-	 */
-	public final int getTaskId() {
-		Valid.checkBoolean(this.isRunning(), "Task " + this + " not scheduled yet");
-
-		return this.taskId;
+		return this.task != null;
 	}
 
 	@Override
 	public final String toString() {
-		return this.getClass().getSimpleName() + "{" + this.countdownSeconds + ", id=" + this.taskId + "}";
+		return this.getClass().getSimpleName() + "{" + this.countdownSeconds + ", taskId=" + (this.isRunning() ? this.task.getTaskId() : "not running") + "}";
 	}
 }

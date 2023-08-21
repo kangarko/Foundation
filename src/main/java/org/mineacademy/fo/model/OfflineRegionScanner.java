@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -147,7 +146,7 @@ public abstract class OfflineRegionScanner {
 	 * we reach the end of the queue
 	 */
 	private void schedule0(Queue<File> queue) {
-		new BukkitRunnable() {
+		new SimpleRunnable() {
 
 			@Override
 			public void run() {
