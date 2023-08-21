@@ -40,7 +40,7 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.28</version>
 		</dependency>
-
+		
 		<!-- This is NOT used anywhere in Foundation, only here to prevent
 		compile 
 			errors from missing the log4j dependency that is shipped in the server jar -->
