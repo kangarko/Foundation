@@ -219,23 +219,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		source = instance.getFile();
 		data = instance.getDataFolder();
 
-		final String version = Bukkit.getVersion();
-
-		if (this.suggestPaper() && !version.contains("Paper")
-				&& !version.contains("Purpur")
-				&& !version.contains("NachoSpigot")
-				&& !version.contains("-Spigot")
-				&& MinecraftVersion.atLeast(V.v1_8)) {
-			this.getLogger().warning(Common.consoleLine());
-			this.getLogger().warning("You're not using Paper!");
-			this.getLogger().warning("Detected: " + version + " / " + Bukkit.getName());
-			this.getLogger().warning("");
-			this.getLogger().warning("Third party forks are known to alter server in unwanted ways.");
-			this.getLogger().warning("If you experience issues with " + named + ", download Paper");
-			this.getLogger().warning("from PaperMC.io, otherwise you may not receive support.");
-			this.getLogger().warning(Common.consoleLine());
-		}
-
 		// Load libraries where Spigot does not do this automatically
 		this.loadLibraries();
 
@@ -505,8 +488,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
-		String chanelName = bungee.getChannel();
-		Messenger messenger = this.getServer().getMessenger();
+		final String chanelName = bungee.getChannel();
+		final Messenger messenger = this.getServer().getMessenger();
 
 		if (!messenger.isIncomingChannelRegistered(this, chanelName))
 			messenger.registerIncomingPluginChannel(this, chanelName, BungeeListener.BungeeListenerImpl.getInstance());
@@ -895,7 +878,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
 		this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
 
-		this.getServer().getScheduler().cancelTasks(this);
+		Common.cancelTasks();
 
 		this.mainCommand = null;
 	}
@@ -1199,15 +1182,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @return defaults to true
 	 */
 	public boolean similarityStripAccents() {
-		return true;
-	}
-
-	/**
-	 * Should we send a suggestion to use PaperSpigot if not using it?
-	 *
-	 * @return defaults to true
-	 */
-	public boolean suggestPaper() {
 		return true;
 	}
 
