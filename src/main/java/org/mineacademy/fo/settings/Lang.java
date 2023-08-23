@@ -233,7 +233,7 @@ public final class Lang extends YamlConfig {
 		} catch (final Throwable t) {
 			Common.error(t, "Failed to compile localization key!",
 					"It must be a valid JavaScript code, if you modified it, check the syntax!",
-					"Path: " + path,
+					"Locale path: '" + path + "'",
 					"Variables: " + scriptVariables,
 					"String variables: " + Common.join(stringVariables),
 					"Script: " + script,
