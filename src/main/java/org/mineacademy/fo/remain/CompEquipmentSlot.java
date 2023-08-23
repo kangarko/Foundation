@@ -5,7 +5,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Enderman;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
@@ -149,10 +151,24 @@ public enum CompEquipmentSlot {
 		switch (this) {
 
 			case HAND:
-				equipment.setItemInHand(item);
 
-				if (dropChance != null && !lacksDropChance)
-					equipment.setItemInHandDropChance(dropChance.floatValue());
+				if (entity instanceof Enderman) {
+					final Enderman enderman = (Enderman) entity;
+
+					if (item.getType().isBlock())
+						try {
+							enderman.setCarriedBlock(Bukkit.createBlockData(item.getType()));
+
+						} catch (final Throwable t) {
+							enderman.setCarriedMaterial(item.getData());
+						}
+
+				} else {
+					equipment.setItemInHand(item);
+
+					if (dropChance != null && !lacksDropChance)
+						equipment.setItemInHandDropChance(dropChance.floatValue());
+				}
 
 				break;
 
@@ -321,7 +337,7 @@ public enum CompEquipmentSlot {
 		if (type == Type.NETHERITE && MinecraftVersion.olderThan(V.v1_16))
 			type = Type.DIAMOND;
 
-		String name = type == Type.GOLD ? "GOLDEN" : type.toString();
+		final String name = type == Type.GOLD ? "GOLDEN" : type.toString();
 
 		if (!ignoredSlots.contains(HEAD))
 			HEAD.applyTo(entity, CompMaterial.valueOf(name + "_HELMET").toItem(), dropChance);
@@ -361,7 +377,7 @@ public enum CompEquipmentSlot {
 		 * @return
 		 */
 		public static Type fromArmor(CompMaterial armorMaterial) {
-			String n = armorMaterial.name();
+			final String n = armorMaterial.name();
 
 			Valid.checkBoolean(n.contains("LEATHER") || n.contains("CHAINMAIL") || n.contains("IRON") || n.contains("GOLD") || n.contains("DIAMOND") || n.contains("NETHERITE"),
 					"Only leather to netherite armors are supported, not: " + armorMaterial);
