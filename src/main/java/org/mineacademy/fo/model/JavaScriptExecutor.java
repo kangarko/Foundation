@@ -273,17 +273,19 @@ public final class JavaScriptExecutor {
 			return javascript;
 		}
 
-		try {
-			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		synchronized (engine) {
+			try {
+				engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-			if (replacements != null)
-				for (final Map.Entry<String, Object> replacement : replacements.entrySet())
-					engine.put(replacement.getKey(), replacement.getValue());
+				if (replacements != null)
+					for (final Map.Entry<String, Object> replacement : replacements.entrySet())
+						engine.put(replacement.getKey(), replacement.getValue());
 
-			return engine.eval(javascript);
+				return engine.eval(javascript);
 
-		} catch (final ScriptException ex) {
-			throw new RuntimeException("Script execution failed for '" + javascript + "'", ex);
+			} catch (final ScriptException ex) {
+				throw new RuntimeException("Script execution failed for '" + javascript + "'", ex);
+			}
 		}
 	}
 }
