@@ -119,7 +119,14 @@ public abstract class SimpleRunnable implements Runnable {
 			throw new IllegalStateException("Already scheduled");
 	}
 
-	private BukkitTask setupTask(final BukkitTask task) {
+	/**
+	 * @deprecated internal use only
+	 *
+	 * @param task
+	 * @return
+	 */
+	@Deprecated
+	public BukkitTask setupTask(final BukkitTask task) {
 		this.task = task;
 
 		return task;

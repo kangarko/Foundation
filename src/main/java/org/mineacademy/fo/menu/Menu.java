@@ -754,12 +754,14 @@ public abstract class Menu {
 	 */
 	private SimpleRunnable wrapAnimation(MenuRunnable task) {
 		return new SimpleRunnable() {
+			boolean canceled = false;
 
 			@Override
 			public void run() {
 
 				if (Menu.this.closed) {
-					this.cancel();
+					if (!canceled)
+						this.cancel();
 
 					return;
 				}
@@ -768,6 +770,8 @@ public abstract class Menu {
 					task.run();
 
 				} catch (final EventHandledException ex) {
+					canceled = true;
+
 					this.cancel();
 				}
 			}
