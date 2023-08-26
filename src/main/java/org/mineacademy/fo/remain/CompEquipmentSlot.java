@@ -155,7 +155,7 @@ public enum CompEquipmentSlot {
 				if (entity instanceof Enderman) {
 					final Enderman enderman = (Enderman) entity;
 
-					if (item.getType().isBlock())
+					if (item != null && item.getType().isBlock())
 						try {
 							enderman.setCarriedBlock(Bukkit.createBlockData(item.getType()));
 
