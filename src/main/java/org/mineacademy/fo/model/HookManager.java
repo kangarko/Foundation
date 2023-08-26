@@ -262,7 +262,7 @@ public final class HookManager {
 		if (Common.doesPluginExist("PlotSquared")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
 
-			if (ver.startsWith("6.") || ver.startsWith("5.") || ver.startsWith("3."))
+			if (ver.startsWith("7.") || ver.startsWith("6.") || ver.startsWith("5.") || ver.startsWith("3."))
 				plotSquaredHook = new PlotSquaredHook();
 			else
 				Common.warning("Could not hook into PlotSquared. Version 3.x, 5.x or 6.x required, you have " + ver);
@@ -2042,7 +2042,7 @@ class EssentialsHook {
 			return user;
 
 		try {
-			Method getUserFromBukkit = ReflectionUtil.getMethod(this.ess.getUserMap().getClass(), "getUserFromBukkit", String.class);
+			final Method getUserFromBukkit = ReflectionUtil.getMethod(this.ess.getUserMap().getClass(), "getUserFromBukkit", String.class);
 
 			if (getUserFromBukkit == null)
 				user = this.ess.getUser(name);
@@ -3368,19 +3368,17 @@ class PlotSquaredHook {
 		Method wrap;
 
 		try {
-			wrap = plotPlayerClass.getMethod("wrap", Player.class);
+			wrap = plotPlayerClass.getMethod("from", Object.class);
 
-		} catch (final ReflectiveOperationException ex) {
-
+		} catch (final ReflectiveOperationException ex3) {
 			try {
 				wrap = plotPlayerClass.getMethod("wrap", Object.class);
 
 			} catch (final ReflectiveOperationException ex2) {
-
 				try {
-					wrap = plotPlayerClass.getMethod("from", Object.class);
+					wrap = plotPlayerClass.getMethod("wrap", Player.class);
 
-				} catch (final ReflectiveOperationException ex3) {
+				} catch (final ReflectiveOperationException ex) {
 					throw new FoException(ex3, "PlotSquared could not convert " + player.getName() + " into PlotPlayer! Is the integration outdated?");
 				}
 			}
@@ -3449,13 +3447,13 @@ class CMIHook {
 			try {
 				CMI.getInstance().getNMS().changeGodMode(player, godMode);
 
-			} catch (Throwable tt) {
+			} catch (final Throwable tt) {
 				try {
-					Method setGod = CMIUser.class.getMethod("setGod", Boolean.class);
+					final Method setGod = CMIUser.class.getMethod("setGod", Boolean.class);
 
 					setGod.invoke(user, godMode);
 
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 					// unavailable
 				}
 			}
@@ -3684,14 +3682,14 @@ class BentoBoxHook {
 		} else {
 			final UUID uniqueId = player.getUniqueId();
 
-			for (World world : Bukkit.getWorlds()) {
+			for (final World world : Bukkit.getWorlds()) {
 				try {
-					Island island = manager.getIsland(world, uniqueId);
+					final Island island = manager.getIsland(world, uniqueId);
 
 					if (island != null)
 						return island.getMemberSet(rank);
 
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 				}
 			}
 		}
@@ -3781,10 +3779,10 @@ class MythicMobsHook {
 	}
 
 	private String getBossNameV5Direct(Entity entity) {
-		UUID ourUniqueId = entity.getUniqueId();
-		MobManager mobManager = MythicProvider.get().getMobManager();
+		final UUID ourUniqueId = entity.getUniqueId();
+		final MobManager mobManager = MythicProvider.get().getMobManager();
 
-		for (ActiveMob mob : mobManager.getActiveMobs()) {
+		for (final ActiveMob mob : mobManager.getActiveMobs()) {
 			if (ourUniqueId.equals(mob.getUniqueId()))
 				return mob.getName();
 		}
@@ -3834,17 +3832,17 @@ class LandsHook {
 	Collection<Player> getLandPlayers(Player sender) {
 		final List<Player> playersAtLocation = new ArrayList<>();
 
-		Object senderArea = ReflectionUtil.invoke(this.getArea, this.landsClass, sender.getLocation());
-		Object senderLand = senderArea != null ? ReflectionUtil.invoke(this.getLand, senderArea) : null;
+		final Object senderArea = ReflectionUtil.invoke(this.getArea, this.landsClass, sender.getLocation());
+		final Object senderLand = senderArea != null ? ReflectionUtil.invoke(this.getLand, senderArea) : null;
 
-		boolean senderInWilderness = senderLand == null;
-		String senderLandName = senderInWilderness ? "" : ReflectionUtil.invoke(this.getName, senderLand);
+		final boolean senderInWilderness = senderLand == null;
+		final String senderLandName = senderInWilderness ? "" : ReflectionUtil.invoke(this.getName, senderLand);
 
-		for (Player recipient : Remain.getOnlinePlayers()) {
+		for (final Player recipient : Remain.getOnlinePlayers()) {
 
-			Object recipientArea = ReflectionUtil.invoke(this.getArea, this.landsClass, recipient.getLocation());
-			Object recipientLand = recipientArea != null ? ReflectionUtil.invoke(this.getLand, recipientArea) : null;
-			boolean recipientInWilderness = recipientLand == null;
+			final Object recipientArea = ReflectionUtil.invoke(this.getArea, this.landsClass, recipient.getLocation());
+			final Object recipientLand = recipientArea != null ? ReflectionUtil.invoke(this.getLand, recipientArea) : null;
+			final boolean recipientInWilderness = recipientLand == null;
 
 			// Both in wilderness
 			if (recipientInWilderness && senderInWilderness)
