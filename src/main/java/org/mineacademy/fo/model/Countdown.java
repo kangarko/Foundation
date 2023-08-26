@@ -38,6 +38,11 @@ public abstract class Countdown implements Runnable {
 	private int secondsSinceStart = 0;
 
 	/**
+	 * Is this countdown currently paused ?
+	 */
+	private boolean paused = false;
+
+	/**
 	 * The internal task from Bukkit associated with this countdown
 	 */
 	private SimpleTask task = null;
@@ -121,14 +126,64 @@ public abstract class Countdown implements Runnable {
 	}
 
 	/**
+	 * Returns the amount of time that has passed since the start in seconds
+	 *
+	 * @return
+	 */
+	public int getElapsedTime() {
+		return this.secondsSinceStart;
+	}
+
+	/**
+	 * Set how much time has passed for this countdown.
+	 *
+	 * @param time
+	 */
+	public void setElapsedTime(final SimpleTime time) {
+		this.setElapsedTime((int) time.getTimeSeconds());
+	}
+
+	/**
+	 * Set how much time has passed for this countdown.
+	 *
+	 * @param secondsElapsed The time in seconds
+	 */
+	public void setElapsedTime(final int secondsElapsed) {
+		this.secondsSinceStart = secondsElapsed;
+	}
+
+	/**
 	 * Starts this countdown failing if it is already running
 	 */
 	public final void launch() {
 		Valid.checkBoolean(!this.isRunning(), "Task " + this + " already scheduled!");
+		Valid.checkBoolean(!this.paused, "You cannot launch a countdown that is paused!");
 
 		this.task = Common.runTimer(START_DELAY, TICK_PERIOD, this);
 
 		this.onStart();
+	}
+
+	/**
+	 * Pauses this countdown, failing if it is not scheduled
+	 */
+	public final void pause() {
+		Valid.checkBoolean(this.isRunning(), "Countdown must be scheduled in order to pause it!");
+
+		this.task.cancel();
+
+		this.task = null;
+		this.paused = true;
+	}
+
+	/**
+	 * Resumes this countdown, failing if it is not already paused (use {@link #isPaused()})
+	 */
+	public final void resume() {
+		Valid.checkBoolean(this.paused, "Countdown must be paused in order to resume it!");
+
+		this.task = Common.runTimer(START_DELAY, TICK_PERIOD, this);
+		this.paused = false;
 	}
 
 	/**
@@ -148,6 +203,15 @@ public abstract class Countdown implements Runnable {
 	 */
 	public final boolean isRunning() {
 		return this.task != null;
+	}
+
+	/**
+	 * Returns whether this countdown is paused.
+	 *
+	 * @return
+	 */
+	public final boolean isPaused() {
+		return this.paused;
 	}
 
 	@Override
