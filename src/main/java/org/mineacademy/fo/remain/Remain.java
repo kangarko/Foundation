@@ -415,14 +415,7 @@ public final class Remain {
 				// unsupported
 			}
 
-			try {
-				Class.forName("io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler");
-
-				isFolia = true;
-
-			} catch (final Exception ex) {
-				isFolia = false;
-			}
+			isFolia = Bukkit.getVersion().contains("Folia");
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new UnsupportedOperationException("Failed to set up reflection, " + SimplePlugin.getNamed() + " won't work properly", ex);
