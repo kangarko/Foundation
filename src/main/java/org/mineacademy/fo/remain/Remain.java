@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2753,65 +2751,13 @@ public final class Remain {
 	}
 
 	/**
-	 * New Minecraft versions lack server-name that we rely on for BungeeCord,
-	 * restore it back
-	 */
-	public static void injectServerName() {
-		try {
-			// If user has Bungee_Server_Name in their settings, move it automatically
-			final File settingsFile = FileUtil.getFile("settings.yml");
-			String previousName = null;
-
-			if (settingsFile.exists()) {
-				final YamlConfiguration settings = YamlConfiguration.loadConfiguration(settingsFile);
-				final String previousNameRaw = settings.getString("Bungee_Server_Name");
-
-				if (previousNameRaw != null && !previousNameRaw.isEmpty() && !"none".equals(previousNameRaw) && !"undefined".equals(previousNameRaw)) {
-					Common.warning("Detected Bungee_Server_Name being used in your settings.yml that is now located in server.properties." +
-							" It has been moved there and you can now delete this key from settings.yml if it was not deleted already.");
-
-					previousName = previousNameRaw;
-				}
-			}
-
-			// Check server.properties for a valid server-name key, if it lacks, add it with instructions on configuring properly
-			final File serverProperties = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
-			final List<String> lines = FileUtil.readLines(serverProperties);
-
-			lines.removeIf(line -> line.equals("server-name=undefined") || line.equals("server-name=Unknown Server"));
-
-			boolean hasServerName = false;
-			String oldName = null;
-
-			for (final String line : lines)
-				if (line.startsWith("server-name=")) {
-					hasServerName = true;
-
-					oldName = line.replace("server-name=", "");
-					break;
-				}
-
-			if (!hasServerName) {
-				serverName = previousName == null ? "Undefined - see mineacademy.org/server-properties to configure" : previousName;
-				lines.add("server-name=" + serverName);
-
-				Files.write(serverProperties.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
-			}
-
-			serverName = oldName;
-
-		} catch (final Throwable t) {
-			t.printStackTrace();
-		}
-	}
-
-	/**
 	 * Return the server name identifier (used for BungeeCord)
 	 *
 	 * @return
 	 */
 	public static String getServerName() {
-		Valid.checkBoolean(isServerNameChanged(), "Detected getServerName call, please configure your 'server-name' in server.properties according to mineacademy.org/server-properties");
+		if (!hasServerName())
+			throw new IllegalArgumentException("Please write a 'server-name' key to your server.properties according to https://mineacademy.org/server-properties (do NOT report this, this is NOT a bug)");
 
 		return serverName;
 	}
@@ -2821,11 +2767,39 @@ public final class Remain {
 	 *
 	 * @return
 	 */
-	public static boolean isServerNameChanged() {
+	public static boolean hasServerName() {
 		if (serverName == null)
-			injectServerName();
+			loadServerName();
 
-		return serverName != null && !"see mineacademy.org/server-properties to configure".contains(serverName) && !"undefined".equals(serverName) && !"Unknown Server".equals(serverName);
+		return serverName != null && !serverName.isEmpty() && !"mineacademy.org/server-properties".contains(serverName) && !"undefined".equals(serverName) && !"Unknown Server".equals(serverName);
+	}
+
+	/**
+	 * New Minecraft versions lack server-name that we rely on for BungeeCord,
+	 * restore it back
+	 */
+	private static void loadServerName() {
+		try {
+			// Check server.properties for a valid server-name key, if it lacks, add it with instructions on configuring properly
+			final File serverProperties = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
+			final List<String> lines = FileUtil.readLines(serverProperties);
+
+			lines.removeIf(line -> line.equals("server-name=undefined") || line.equals("server-name=Unknown Server"));
+
+			String oldName = "";
+
+			for (final String line : lines)
+				if (line.startsWith("server-name=")) {
+					oldName = line.replace("server-name=", "");
+
+					break;
+				}
+
+			serverName = oldName;
+
+		} catch (final Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	/**

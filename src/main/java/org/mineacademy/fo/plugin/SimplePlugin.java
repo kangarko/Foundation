@@ -272,9 +272,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.setLogPrefix(oldLogPrefix);
 		}
 
-		// Inject server-name to newer MC versions that lack it
-		Remain.injectServerName();
-
 		// Load our dependency system
 		try {
 			HookManager.loadDependencies();
