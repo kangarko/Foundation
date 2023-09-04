@@ -526,6 +526,10 @@ public abstract class Menu {
 	 * @param animatedTitle the animated title
 	 */
 	public final void restartMenu(final String animatedTitle) {
+		this.restartMenu(animatedTitle, true);
+	}
+
+	final void restartMenu(final String animatedTitle, boolean callOnMenuClose) {
 
 		final Player player = this.getViewer();
 		Valid.checkNotNull(player, "Cannot restartMenu if it was not yet shown to a player! Menu: " + this);
@@ -534,7 +538,8 @@ public abstract class Menu {
 		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
 		// Most plugins save items here
-		this.onMenuClose(player, inventory);
+		if (callOnMenuClose)
+			this.onMenuClose(player, inventory);
 
 		this.registerButtons();
 
