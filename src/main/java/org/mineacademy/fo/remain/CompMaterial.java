@@ -2393,13 +2393,16 @@ public enum CompMaterial {
 		final String material = item.getType().name();
 		final byte data = (byte) (Data.ISFLAT || item.getType().getMaxDurability() > 0 ? 0 : item.getDurability());
 
-		final CompMaterial compmaterial = fromLegacy(material, data);
+		CompMaterial compmaterial = fromLegacy(material, data);
 
 		// Exception for legacy eggs for non existing entities
 		if (material.equals("MONSTER_EGG") && compmaterial == null)
 			return CompMaterial.SHEEP_SPAWN_EGG;
 
-		Valid.checkNotNull(compmaterial, "Unsupported material from item: " + material + " (" + data + ')');
+		if (compmaterial == null)
+			compmaterial = fromString(material);
+
+		Valid.checkNotNull(compmaterial, "Could not convert item to CompMaterial. Item: " + item);
 
 		return compmaterial;
 	}
