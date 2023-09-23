@@ -24,6 +24,7 @@ public class NbtApiException extends RuntimeException {
 	 *
 	 */
 	public NbtApiException() {
+		super();
 	}
 
 	/**
@@ -59,7 +60,10 @@ public class NbtApiException extends RuntimeException {
 	}
 
 	private static String generateMessage(String message) {
-		return message;
+		if (message == null)
+			return null;
+
+		return "[" + MinecraftVersion.getVersion() + "] " + message;
 	}
 
 }

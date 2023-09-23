@@ -95,7 +95,7 @@ class Forge1710Mappings {
 		try {
 			crucible_toString = Class.forName("net.minecraft.nbt.NBTTagCompound")
 					.getDeclaredMethod("crucible_toString");
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -113,7 +113,7 @@ class Forge1710Mappings {
 			throw new NbtApiException("Method not loaded! 'Forge1710Mappings.crucible_toString' ");
 		try {
 			return (String) crucible_toString.invoke(nbtTagCompound);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException(
 					"Error while calling the method 'crucible_toString', from Forge1710Mappings. Passed Class: "
 							+ Forge1710Mappings.class,
