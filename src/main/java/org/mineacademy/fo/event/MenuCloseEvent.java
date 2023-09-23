@@ -7,14 +7,13 @@ import org.mineacademy.fo.menu.Menu;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 /**
  * Triggered when a menu is closed from a player at the very end of the pipeline.
  */
 @Getter
 @RequiredArgsConstructor
-public final class MenuCloseEvent extends SimpleEvent {
+public final class MenuCloseEvent extends SimpleCancellableEvent {
 
 	private static final HandlerList handlers = new HandlerList();
 
@@ -32,12 +31,6 @@ public final class MenuCloseEvent extends SimpleEvent {
 	 * The player
 	 */
 	private final Player player;
-
-	/**
-	 * Should we prevent to display this menu?
-	 */
-	@Setter
-	private boolean cancelled;
 
 	@Override
 	public HandlerList getHandlers() {
