@@ -1,5 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.util.logging.Logger;
+
 import org.bukkit.Bukkit;
 
 /**
@@ -32,11 +34,17 @@ enum MinecraftVersion {
 	MC1_19_R1(1191, true),
 	MC1_19_R2(1192, true),
 	MC1_19_R3(1193, true),
-	MC1_20_R1(1201, true);
+	MC1_20_R1(1201, true),
+	MC1_20_R2(1201, true);
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
 	private static Boolean isFoliaPresent;
+
+	/**
+	 * Logger used by the api
+	 */
+	private static Logger logger = Logger.getLogger("NBTAPI");
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -54,7 +62,7 @@ enum MinecraftVersion {
 	 * @return A simple comparable Integer, representing the version.
 	 */
 	public int getVersionId() {
-		return this.versionId;
+		return versionId;
 	}
 
 	/**
@@ -62,7 +70,7 @@ enum MinecraftVersion {
 	 *         internally
 	 */
 	public boolean isMojangMapping() {
-		return this.mojangMapping;
+		return mojangMapping;
 	}
 
 	/**
@@ -72,8 +80,9 @@ enum MinecraftVersion {
 	 * @return
 	 */
 	public String getPackageName() {
-		if (this == UNKNOWN)
+		if (this == UNKNOWN) {
 			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+		}
 		return this.name().replace("MC", "v");
 	}
 
@@ -104,13 +113,14 @@ enum MinecraftVersion {
 	 * @return The enum for the MinecraftVersion this server is running
 	 */
 	public static MinecraftVersion getVersion() {
-		if (version != null)
+		if (version != null) {
 			return version;
+		}
 		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 		try {
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
-		} catch (IllegalArgumentException ex) {
+		} catch (final IllegalArgumentException ex) {
 			version = MinecraftVersion.UNKNOWN;
 		}
 
@@ -121,17 +131,15 @@ enum MinecraftVersion {
 	 * @return True, if Forge is present
 	 */
 	public static boolean isForgePresent() {
-		if (isForgePresent != null)
+		if (isForgePresent != null) {
 			return isForgePresent;
+		}
 		try {
-			if (getVersion() == MinecraftVersion.MC1_7_R4)
-				Class.forName("cpw.mods.fml.common.Loader");
-			else
-				Class.forName("net.minecraftforge.fml.common.Loader");
-
+			logger.info("[NBTAPI] Found Forge: "
+					+ (getVersion() == MinecraftVersion.MC1_7_R4 ? Class.forName("cpw.mods.fml.common.Loader")
+							: Class.forName("net.minecraftforge.fml.common.Loader")));
 			isForgePresent = true;
-
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			isForgePresent = false;
 		}
 		return isForgePresent;
@@ -141,15 +149,35 @@ enum MinecraftVersion {
 	 * @return True, if Folia is present
 	 */
 	public static boolean isFoliaPresent() {
-		if (isFoliaPresent != null)
+		if (isFoliaPresent != null) {
 			return isFoliaPresent;
+		}
 		try {
-			Class.forName("io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler");
-
+			logger.info("[NBTAPI] Found Folia: "
+					+ Class.forName("io.papermc.paper.threadedregions.RegionizedServer"));
 			isFoliaPresent = true;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			isFoliaPresent = false;
 		}
 		return isFoliaPresent;
 	}
+
+	/**
+	 * @return Logger used by the NBT-API
+	 */
+	public static Logger getLogger() {
+		return logger;
+	}
+
+	/**
+	 * Replaces the NBT-API logger with a custom implementation.
+	 *
+	 * @param logger The new logger(can not be null!)
+	 */
+	public static void replaceLogger(Logger logger) {
+		if (logger == null)
+			throw new NullPointerException("Logger can not be null!");
+		MinecraftVersion.logger = logger;
+	}
+
 }

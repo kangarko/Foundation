@@ -5,38 +5,57 @@ package org.mineacademy.fo.remain.nbt;
  * {@link NBTCompoundList} This Compound implementation is missing the ability
  * for further subCompounds and Lists. This class probably will change in the
  * future
- *
+ * 
  * @author tr7zw
  *
  */
 public class NBTListCompound extends NBTCompound {
 
-	private NBTList<?> owner;
-	private Object compound;
+    private NBTList<?> owner;
+    private Object compound;
 
-	protected NBTListCompound(NBTList<?> parent, Object obj) {
-		super(null, null);
-		this.owner = parent;
-		this.compound = obj;
-	}
+    protected NBTListCompound(NBTList<?> parent, Object obj) {
+        super(null, null);
+        owner = parent;
+        compound = obj;
+    }
 
-	public NBTList<?> getListParent() {
-		return this.owner;
-	}
+    public NBTList<?> getListParent() {
+        return owner;
+    }
 
-	@Override
-	public Object getCompound() {
-		return this.compound;
-	}
+    @Override
+    protected boolean isClosed() {
+        return owner.getParent().isClosed();
+    }
 
-	@Override
-	protected void setCompound(Object compound) {
-		this.compound = compound;
-	}
+    @Override
+    protected boolean isReadOnly() {
+        return owner.getParent().isReadOnly();
+    }
 
-	@Override
-	protected void saveCompound() {
-		this.owner.save();
-	}
+    @Override
+    public Object getCompound() {
+        if (isClosed()) {
+            throw new NbtApiException("Tried using closed NBT data!");
+        }
+        return compound;
+    }
+
+    @Override
+    protected void setCompound(Object compound) {
+        if (isClosed()) {
+            throw new NbtApiException("Tried using closed NBT data!");
+        }
+        if (isReadOnly()) {
+            throw new NbtApiException("Tried setting data in read only mode!");
+        }
+        this.compound = compound;
+    }
+
+    @Override
+    protected void saveCompound() {
+        owner.save();
+    }
 
 }

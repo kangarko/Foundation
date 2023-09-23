@@ -18,6 +18,7 @@ public class NBTEntity extends NBTCompound {
 	private final Entity ent;
 	private final boolean readonly;
 	private final Object compound;
+	private boolean closed = false;
 
 	/**
 	 * @param entity   Any valid Bukkit Entity
@@ -25,14 +26,16 @@ public class NBTEntity extends NBTCompound {
 	 */
 	protected NBTEntity(Entity entity, boolean readonly) {
 		super(null, null);
-		if (entity == null)
+		if (entity == null) {
 			throw new NullPointerException("Entity can't be null!");
+		}
 		this.readonly = readonly;
-		this.ent = entity;
-		if (readonly)
-			this.compound = this.getCompound();
-		else
+		ent = entity;
+		if (readonly) {
+			this.compound = getCompound();
+		} else {
 			this.compound = null;
+		}
 	}
 
 	/**
@@ -40,30 +43,48 @@ public class NBTEntity extends NBTCompound {
 	 */
 	public NBTEntity(Entity entity) {
 		super(null, null);
-		if (entity == null)
+		if (entity == null) {
 			throw new NullPointerException("Entity can't be null!");
+		}
 		this.readonly = false;
 		this.compound = null;
-		this.ent = entity;
+		ent = entity;
+	}
+
+	@Override
+	protected void setClosed() {
+		this.closed = true;
+	}
+
+	@Override
+	protected boolean isClosed() {
+		return closed;
+	}
+
+	@Override
+	protected boolean isReadOnly() {
+		return readonly;
 	}
 
 	@Override
 	public Object getCompound() {
 		// this runs before async check, since it's just a copy
-		if (this.readonly && this.compound != null)
-			return this.compound;
+		if (readonly && compound != null) {
+			return compound;
+		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(this.ent));
+		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(ent));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		if (this.readonly)
+		if (readonly) {
 			throw new NbtApiException("Tried setting data in read only mode!");
+		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(this.ent));
+		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
 	}
 
 	/**
@@ -73,9 +94,9 @@ public class NBTEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "MC 1.14 required!");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer needs MC 1.14+");
 
-		return new NBTPersistentDataContainer(this.ent.getPersistentDataContainer());
+		return new NBTPersistentDataContainer(ent.getPersistentDataContainer());
 	}
 
 }
