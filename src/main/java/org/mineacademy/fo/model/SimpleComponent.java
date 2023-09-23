@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -16,9 +18,11 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.event.SimpleComponentSendEvent;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.Getter;
 import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -51,6 +55,12 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * The current component being created
 	 */
 	private Part currentComponent;
+
+	/**
+	 * Shall this component call {@link SimpleComponentSendEvent} each time? Defaults to false
+	 */
+	@Getter
+	private boolean firingEvent = false;
 
 	/**
 	 * Create a new interactive chat component
@@ -440,12 +450,21 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param sender
 	 * @param receivers
 	 */
-	public <T extends CommandSender> void sendAs(CommandSender sender, Iterable<T> receivers) {
+	public <T extends CommandSender> void sendAs(@Nullable CommandSender sender, Iterable<T> receivers) {
 		for (final CommandSender receiver : receivers) {
-			final TextComponent component = this.build(receiver);
+			TextComponent component = this.build(receiver);
 
 			if (receiver instanceof Player && sender instanceof Player)
 				this.setRelationPlaceholders(component, (Player) receiver, (Player) sender);
+
+			if (this.firingEvent) {
+				final SimpleComponentSendEvent event = new SimpleComponentSendEvent(sender, receiver, component);
+
+				if (!Common.callEvent(event))
+					continue;
+
+				component = event.getComponent();
+			}
 
 			// Prevent clients being kicked out, so we just send plain message instead
 			if (STRIP_OVERSIZED_COMPONENTS && Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
@@ -502,6 +521,18 @@ public final class SimpleComponent implements ConfigSerializable {
 				// Then repeat for the extra parts in the text itself
 				this.setRelationPlaceholders(text, receiver, sender);
 			}
+	}
+
+	/**
+	 * Set if this component should call {@link SimpleComponentSendEvent}? Defaults to false to prevent overloading
+	 *
+	 * @param firingEvent
+	 * @return
+	 */
+	public SimpleComponent setFiringEvent(boolean firingEvent) {
+		this.firingEvent = firingEvent;
+
+		return this;
 	}
 
 	/**
@@ -896,7 +927,7 @@ public final class SimpleComponent implements ConfigSerializable {
 				try {
 					result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
 
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 					Common.error(t,
 							"Failed to parse JavaScript view condition for component!",
 							"The javascript code must return a valid true/false boolean value.",
