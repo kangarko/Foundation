@@ -698,15 +698,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
