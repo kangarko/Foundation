@@ -1,22 +1,7 @@
 package org.mineacademy.fo;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.annotation.Nullable;
-
+import lombok.*;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -51,8 +36,21 @@ import org.mineacademy.fo.settings.ConfigSection;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.*;
-import net.md_5.bungee.api.chat.TextComponent;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import static org.bukkit.ChatColor.COLOR_CHAR;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions
@@ -1161,7 +1159,7 @@ public final class Common {
 	 *
 	 * @param pluginName the name of the plugin to check.
 	 * @return {@code true} if the given plugin is enabled (this doesn't mean it works correctly), {@code false}
-	 *         otherwise.
+	 * otherwise.
 	 */
 	public static boolean doesPluginExist(final String pluginName) {
 		Plugin lookup = null;
@@ -1540,7 +1538,7 @@ public final class Common {
 	 * @param pattern the regular expression {@link Pattern} to compile.
 	 * @param message the message to match against the regular expression.
 	 * @return a {@link Matcher} that matches the given message against the compiled regular expression {@link Pattern},
-	 *         or {@code null} if a regex timeout exception occurs.
+	 * or {@code null} if a regex timeout exception occurs.
 	 */
 	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
 		try {
@@ -1679,7 +1677,7 @@ public final class Common {
 	 * @param nameToIgnore the name of the player to be ignored.
 	 * @param <T>          the type of elements in the array (must extend {@link CommandSender}).
 	 * @return a {@link String} containing the names of the players from the input {@link Iterable array}, excluding the
-	 *         specified player name.
+	 * specified player name.
 	 */
 	public static <T extends CommandSender> String joinPlayersExcept(final Iterable<T> array, final String nameToIgnore) {
 		final Iterator<T> iterator = array.iterator();
@@ -1739,7 +1737,7 @@ public final class Common {
 	 * @param array      the input {@link String} array.
 	 * @param delimiter  the delimiter used to separate the joined elements.
 	 * @return a {@link String} containing the joined elements within the specified range, separated by the given
-	 *         delimiter.
+	 * delimiter.
 	 */
 	public static String joinRange(final int startIndex, final int stopIndex, final String[] array, final String delimiter) {
 		final StringBuilder joined = new StringBuilder();
@@ -1795,7 +1793,7 @@ public final class Common {
 	 * @param delimiter the delimiter used to separate the joined elements.
 	 * @param <T>       the type of elements in the array.
 	 * @return a {@link String} containing the joined elements of the {@link Iterable array} with the specified
-	 *         delimiter.
+	 * delimiter.
 	 */
 	public static <T> String join(final Iterable<T> array, final String delimiter) {
 		return join(array, delimiter, object -> object == null ? "" : simplify(object));
@@ -1838,7 +1836,7 @@ public final class Common {
 	 * @param stringer the {@link Stringer} used to convert each element to its String representation.
 	 * @param <T>      the type of elements in the array.
 	 * @return a {@link String} containing the joined elements of the {@link Iterable array} with the specified
-	 *         delimiter.
+	 * delimiter.
 	 */
 	public static <T> String join(final Iterable<T> array, final Stringer<T> stringer) {
 		return join(array, ", ", stringer);
@@ -1853,7 +1851,7 @@ public final class Common {
 	 * @param stringer  the {@link Stringer} used to convert each element to its String representation.
 	 * @param <T>       the type of elements in the array.
 	 * @return a {@link String} containing the joined elements of the {@link Iterable array} with the specified
-	 *         delimiter.
+	 * delimiter.
 	 */
 	public static <T> String join(final Iterable<T> array, final String delimiter, final Stringer<T> stringer) {
 		final Iterator<T> iterator = array.iterator();
@@ -2300,7 +2298,7 @@ public final class Common {
 	 *
 	 * @param input the input {@link String}.
 	 * @return the input {@link String} if it is not {@code null} and not equal to "none", otherwise an empty
-	 *         {@link String}.
+	 * {@link String}.
 	 */
 	public static String getOrEmpty(final String input) {
 		return input == null || "none".equalsIgnoreCase(input) ? "" : input;
@@ -2312,7 +2310,7 @@ public final class Common {
 	 *
 	 * @param input the input {@link String}.
 	 * @return the input {@link String} if it is not {@code null}, not equal to "none", and not empty, otherwise
-	 *         {@code null}.
+	 * {@code null}.
 	 */
 	public static String getOrNull(final String input) {
 		return input == null || "none".equalsIgnoreCase(input) || input.isEmpty() ? null : input;
@@ -2356,7 +2354,7 @@ public final class Common {
 	 * @param forward should the index be increased?
 	 * @param <T>     the type of elements in the list.
 	 * @return the next element in the {@link List}. Returns {@code null} if the given element is {@code null} and the
-	 *         list is empty.
+	 * list is empty.
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getNext(final T given, final List<T> list, final boolean forward) {
@@ -2419,7 +2417,7 @@ public final class Common {
 	 * @param array the array of elements to convert.
 	 * @param <T>   the type of elements in the array.
 	 * @return an {@link List} containing the elements from the array. Returns an empty {@link List} if the array is
-	 *         {@code null}.
+	 * {@code null}.
 	 */
 	@SafeVarargs
 	public static <T> List<T> toList(final T... array) {
@@ -2432,7 +2430,7 @@ public final class Common {
 	 * @param iterable the {@link Iterable} to convert.
 	 * @param <T>      the type of elements in the iterable.
 	 * @return a {@link List} containing the elements from the {@link Iterable}. Returns an empty {@link List} if the
-	 *         {@link Iterable} is {@code null}.
+	 * {@link Iterable} is {@code null}.
 	 */
 	public static <T> List<T> toList(final Iterable<T> iterable) {
 		final List<T> list = new ArrayList<>();
@@ -2810,7 +2808,7 @@ public final class Common {
 
 		final Map<String, Object> map = mapOrSection instanceof ConfigSection ? ((ConfigSection) mapOrSection).getValues(false)
 				: mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection
-						: mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
+				: mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
 
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
