@@ -29,8 +29,11 @@ import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.nbt.NBT;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
+import org.mineacademy.fo.remain.nbt.ReadWriteNBT;
+import org.mineacademy.fo.remain.nbt.ReadableNBT;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
@@ -58,8 +61,14 @@ public final class CompMetadata {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * A shortcut for setting a tag with key-value pair on an item
-	 *
+	 * A shortcut for setting a tag with key-value pair on an item.
+	 * <p>&nbsp;</p>
+	 * <p>
+	 * NOTE: The current behavior, where it clones the item, may change in the future. This change is aimed
+	 * at improving performance and consistency in behavior, as it is not clear this method clones the
+	 * item. You will still have the option to clone the item itself; the return value will not be
+	 * removed, only adjusted to return the item you provide.
+	 * </p>
 	 * @param item
 	 * @param key
 	 * @param value
@@ -68,11 +77,14 @@ public final class CompMetadata {
 	public static ItemStack setMetadata(final ItemStack item, final String key, final String value) {
 		Valid.checkNotNull(item, "Setting NBT tag got null item");
 
-		final NBTItem nbt = new NBTItem(item);
-		final NBTCompound tag = nbt.addCompound(FoConstants.NBT.TAG);
-
-		tag.setString(key, value);
-		return nbt.getItem();
+		ItemStack clone = new ItemStack(item);
+		return NBT.modify(clone, tag -> {
+			ReadWriteNBT compound = tag.getOrCreateCompound(FoConstants.NBT.TAG);
+			if (compound != null) {
+				compound.setString(key, value);
+			}
+			return clone;
+		});
 	}
 
 	/**
@@ -159,13 +171,18 @@ public final class CompMetadata {
 
 		if (item == null || CompMaterial.isAir(item.getType()))
 			return null;
-
 		final String compoundTag = FoConstants.NBT.TAG;
-		final NBTItem nbt = new NBTItem(item);
 
-		final String value = nbt.hasKey(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
-
-		return Common.getOrNull(value);
+		return NBT.get(item, nbt -> {
+			final boolean hasTag = nbt.hasTag(compoundTag);
+			if (hasTag) {
+				ReadableNBT compound = nbt.getCompound(compoundTag);
+				if (compound != null) {
+					return compound.getString(key);
+				}
+			}
+			return null;
+		});
 	}
 
 	/**
