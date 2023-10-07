@@ -55,7 +55,7 @@ import lombok.NonNull;
  * This class is mainly designed to support {@link ItemStack}. If you want to use it on blocks, you'll have to use
  * <a href="https://github.com/CryptoMorin/XSeries/blob/master/src/main/java/com/cryptomorin/xseries/XBlock.java">XBlock</a>
  * <p>
- * Pre-flattening: https://minecraft.gamepedia.com/Java_Edition_data_values/Pre-flattening
+ * Pre-flattening: https://minecraft.wiki/w/Java_Edition_data_values/Pre-flattening
  * Materials: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
  * Materials (1.12): https://helpch.at/docs/1.12.2/index.html?org/bukkit/Material.html
  * Material IDs: https://minecraft-ids.grahamedgecombe.com/
@@ -64,7 +64,7 @@ import lombok.NonNull;
  * <p>
  * This class will throw a "unsupported material" error if someone tries to use an item with an invalid data value which can only happen in 1.12 servers and below or when the
  * utility is missing a new material in that specific version.
- * To get an invalid item, (aka <a href="https://minecraft.fandom.com/wiki/Missing_Texture_Block">Missing Texture Block</a>) you can use the command
+ * To get an invalid item, (aka <a href="https://minecraft.wiki/w/Missing_textures_and_models#Missing_texture">Missing Texture Block</a>) you can use the command
  * <b>/give @p minecraft:dirt 1 10</b> where 1 is the item amount, and 10 is the data value. The material {@link #DIRT} with a data value of {@code 10} doesn't exist.
  *
  * @author Crypto Morin, forked by kangarko from MineAcademy.org
@@ -91,7 +91,7 @@ public enum CompMaterial {
 	ACACIA_WOOD(0, "LOG_2"),
 	ACTIVATOR_RAIL,
 	/**
-	 * <a href="https://minecraft.gamepedia.com/Air">Air</a>
+	 * <a href="https://minecraft.wiki/w/Air">Air</a>
 	 * {@link Material#isAir()}
 	 *
 	 * @see #VOID_AIR
@@ -970,7 +970,7 @@ public enum CompMaterial {
 	NETHER_SPROUTS,
 	NETHER_STAR,
 	/**
-	 * Just like mentioned in <a href="https://minecraft.gamepedia.com/Nether_Wart">Nether Wart</a>
+	 * Just like mentioned in <a href="https://minecraft.wiki/w/Nether_Wart">Nether Wart</a>
 	 * Nether wart is also known as nether stalk in the code.
 	 * NETHER_STALK is the planted state of nether warts.
 	 */
@@ -1655,7 +1655,7 @@ public enum CompMaterial {
 	}
 
 	/**
-	 * The data value of this material <a href="https://minecraft.gamepedia.com/Java_Edition_data_values/Pre-flattening">pre-flattening</a>.
+	 * The data value of this material <a href="https://minecraft.wiki/w/Java_Edition_data_values/Pre-flattening">pre-flattening</a>.
 	 *
 	 * Can be accessed with {@link ItemStack#getData()} then {@code MaterialData#getData()}
 	 * or {@link ItemStack#getDurability()} if not damageable.
