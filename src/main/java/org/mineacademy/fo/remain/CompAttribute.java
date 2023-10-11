@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
 /**
  * Wrapper for {@link Attribute}
  * <p>
- * See https://minecraft.gamepedia.com/Attribute for more information
+ * See https://minecraft.wiki/w/Attribute for more information
  */
 @RequiredArgsConstructor
 public enum CompAttribute {
@@ -40,7 +40,7 @@ public enum CompAttribute {
 	/**
 	 * Movement speed of an Entity.
 	 * <p>
-	 * For default values see https://minecraft.gamepedia.com/Attribute
+	 * For default values see https://minecraft.wiki/w/Attribute
 	 */
 	GENERIC_MOVEMENT_SPEED("generic.movementSpeed", "MOVEMENT_SPEED"),
 
