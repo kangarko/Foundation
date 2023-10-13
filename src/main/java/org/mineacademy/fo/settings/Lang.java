@@ -216,8 +216,11 @@ public final class Lang extends YamlConfig {
 	 * @param path
 	 * @param scriptVariables
 	 * @param stringVariables
+	 * @deprecated unstable, JavaScript executor might desynchronize and break scriptVariables
+	 *
 	 * @return
 	 */
+	@Deprecated
 	public static String ofScript(String path, SerializedMap scriptVariables, Object... stringVariables) {
 		String script = of(path, stringVariables);
 		Object result;
