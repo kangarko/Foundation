@@ -698,15 +698,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -2445,6 +2445,72 @@ public final class Common {
 	public static <A, B> Map<A, B> newHashMap(final A firstKey, final B firstValue) {
 		final Map<A, B> map = new HashMap<>();
 		map.put(firstKey, firstValue);
+
+		return map;
+	}
+
+	/**
+	 * Creates a new {@link HashMap} with a single key-value pair.
+	 *
+	 * @param <A>        the type of the key.
+	 * @param <B>        the type of the value.
+	 * @param firstKey   the key of the first entry.
+	 * @param firstValue the value of the first entry.
+	 * @param secondKey
+	 * @param secondValue
+	 * @return a new {@link HashMap} with the specified key-value pair.
+	 */
+	public static <A, B> Map<A, B> newHashMap(final A firstKey, final B firstValue, final A secondKey, final B secondValue) {
+		final Map<A, B> map = new HashMap<>();
+		map.put(firstKey, firstValue);
+		map.put(secondKey, secondValue);
+
+		return map;
+	}
+
+	/**
+	 * Creates a new {@link HashMap} with a single key-value pair.
+	 *
+	 * @param <A>        the type of the key.
+	 * @param <B>        the type of the value.
+	 * @param firstKey   the key of the first entry.
+	 * @param firstValue the value of the first entry.
+	 * @param secondKey
+	 * @param secondValue
+	 * @param thirdKey
+	 * @param thirdValue
+	 * @return a new {@link HashMap} with the specified key-value pair.
+	 */
+	public static <A, B> Map<A, B> newHashMap(final A firstKey, final B firstValue, final A secondKey, final B secondValue, final A thirdKey, final B thirdValue) {
+		final Map<A, B> map = new HashMap<>();
+		map.put(firstKey, firstValue);
+		map.put(secondKey, secondValue);
+		map.put(thirdKey, thirdValue);
+
+		return map;
+	}
+
+	/**
+	 * Creates a new {@link HashMap} with a single key-value pair.
+	 *
+	 * @param <A>        the type of the key.
+	 * @param <B>        the type of the value.
+	 * @param firstKey   the key of the first entry.
+	 * @param firstValue the value of the first entry.
+	 * @param secondKey
+	 * @param secondValue
+	 * @param thirdKey
+	 * @param thirdValue
+	 * @param forthKey
+	 * @param forthValue
+	 * @return a new {@link HashMap} with the specified key-value pair.
+	 */
+	public static <A, B> Map<A, B> newHashMap(final A firstKey, final B firstValue, final A secondKey, final B secondValue, final A thirdKey, final B thirdValue, final A forthKey, final B forthValue) {
+		final Map<A, B> map = new HashMap<>();
+		map.put(firstKey, firstValue);
+		map.put(secondKey, secondValue);
+		map.put(thirdKey, thirdValue);
+		map.put(forthKey, forthValue);
 
 		return map;
 	}
