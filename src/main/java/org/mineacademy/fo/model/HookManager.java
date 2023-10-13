@@ -3542,9 +3542,15 @@ class CMIHook {
 class CitizensHook {
 
 	boolean isNPC(final Entity entity) {
-		final NPCRegistry reg = CitizensAPI.getNPCRegistry();
+		try {
+			final NPCRegistry reg = CitizensAPI.getNPCRegistry();
 
-		return reg != null ? reg.isNPC(entity) : false;
+			return reg != null ? reg.isNPC(entity) : false;
+		} catch (final NoClassDefFoundError err) {
+			Common.logTimed(60 * 30, "Unable to check if " + entity + " is Citizens NPC, got " + err + ". This error only shows once per 30min.");
+
+			return false;
+		}
 	}
 
 	Entity getNPCTarget(Entity entity) {
@@ -3790,17 +3796,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-		
+
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-		
+
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-		
+
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-		
+
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3870,16 +3876,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
