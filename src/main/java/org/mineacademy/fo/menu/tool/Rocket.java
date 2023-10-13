@@ -75,7 +75,7 @@ public abstract class Rocket extends Tool {
 	 * Create a new rocket with the given projectile and its speed (1=normal, 5=insane, 10=max,buggy)
 	 * as well as the explosion power (1-30 although it bugs over 15 already) and if it should break blocks
 	 * <p>
-	 * For explosion powers see https://minecraft.gamepedia.com/Explosion
+	 * For explosion powers see https://minecraft.wiki/w/Explosion
 	 *
 	 * @param projectile
 	 * @param flightSpeed

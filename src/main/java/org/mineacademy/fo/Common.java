@@ -494,16 +494,19 @@ public final class Common {
 				if (sender instanceof Conversable) {
 					final Conversable conversable = (Conversable) sender;
 
-					if (conversable.isConversing())
+					if (conversable.isConversing()) {
 						conversable.sendRawMessage(toSend);
-				} else
-					try {
-						sender.sendMessage(toSend);
-					} catch (final Throwable t) {
-						Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: '" + toSend + "'.");
-
-						t.printStackTrace();
+						return;
 					}
+				}
+				
+				try {
+					sender.sendMessage(toSend);
+				} catch (final Throwable t) {
+					Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: '" + toSend + "'.");
+
+					t.printStackTrace();
+				}
 			}
 	}
 
