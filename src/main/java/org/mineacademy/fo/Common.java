@@ -44,7 +44,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
@@ -160,24 +159,13 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Broadcast the message as per {@link Replacer#replaceArray(String, Object...)} mechanics
-	 * such as broadcastReplaced("Hello {world} from {player}", "world", "survival_world", "player", "kangarko")
-	 *
-	 * @param message
-	 * @param replacements
-	 */
-	public static void broadcastReplaced(final String message, final Object... replacements) {
-		broadcast(Replacer.replaceArray(message, replacements));
-	}
-
-	/**
 	 * Broadcast the message replacing {player} variable with the given command sender
 	 *
 	 * @param message
-	 * @param sender
+	 * @param playerReplacement
 	 */
-	public static void broadcast(final String message, final CommandSender sender) {
-		broadcast(message, resolveSenderName(sender));
+	public static void broadcast(final String message, final CommandSender playerReplacement) {
+		broadcast(message, resolveSenderName(playerReplacement));
 	}
 
 	/**
@@ -196,7 +184,7 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void broadcast(final String... messages) {
-		if (!Valid.isNullOrEmpty(messages))
+		if (messages != null)
 			for (final String message : messages) {
 				for (final Player online : Remain.getOnlinePlayers())
 					tellJson(online, message);
@@ -212,8 +200,8 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void broadcastTo(final Iterable<? extends CommandSender> recipients, final String... messages) {
-		for (final CommandSender sender : recipients)
-			tell(sender, messages);
+		for (final CommandSender recipient : recipients)
+			tell(recipient, messages);
 	}
 
 	/**
@@ -224,7 +212,7 @@ public final class Common {
 	 * @param log
 	 */
 	public static void broadcastWithPerm(final String showPermission, final String message, final boolean log) {
-		if (message != null && !message.equals("none")) {
+		if (message != null) {
 			for (final Player online : Remain.getOnlinePlayers())
 				if (PlayerUtil.hasPerm(online, showPermission))
 					tellJson(online, message);
@@ -385,8 +373,7 @@ public final class Common {
 	 */
 	public static void tell(final CommandSender sender, final String... messages) {
 		for (final String message : messages)
-			if (message != null && !"none".equals(message))
-				tellJson(sender, message);
+			tellJson(sender, message);
 	}
 
 	/**
@@ -409,7 +396,7 @@ public final class Common {
 	 * Finally, a prefix to non-json messages is added, see {@link #getTellPrefix()}
 	 */
 	private static void tellJson(@NonNull final CommandSender sender, String message) {
-		if (message.isEmpty() || "none".equals(message))
+		if (message == null || message.isEmpty() || "none".equals(message))
 			return;
 
 		// Has prefix already? This is replaced when colorizing
@@ -423,17 +410,14 @@ public final class Common {
 		if (!hasJSON)
 			message = colorize(message);
 
-		// Used for matching
-		final String colorlessMessage = stripColors(message);
-
 		// Send [JSON] prefixed messages as json component
 		if (hasJSON) {
-			final String stripped = message.substring(6).trim();
+			final String stripped = message.replace("[JSON]", "").trim();
 
 			if (!stripped.isEmpty())
 				Remain.sendJson(sender, stripped);
 
-		} else if (colorlessMessage.startsWith("<actionbar>")) {
+		} else if (message.startsWith("<actionbar>")) {
 			final String stripped = message.replace("<actionbar>", "");
 
 			if (!stripped.isEmpty())
@@ -442,7 +426,7 @@ public final class Common {
 				else
 					tellJson(sender, stripped);
 
-		} else if (colorlessMessage.startsWith("<toast>")) {
+		} else if (message.startsWith("<toast>")) {
 			final String stripped = message.replace("<toast>", "");
 
 			if (!stripped.isEmpty())
@@ -451,7 +435,7 @@ public final class Common {
 				else
 					tellJson(sender, stripped);
 
-		} else if (colorlessMessage.startsWith("<title>")) {
+		} else if (message.startsWith("<title>")) {
 			final String stripped = message.replace("<title>", "");
 
 			if (!stripped.isEmpty()) {
@@ -470,7 +454,7 @@ public final class Common {
 				}
 			}
 
-		} else if (colorlessMessage.startsWith("<bossbar>")) {
+		} else if (message.startsWith("<bossbar>")) {
 			final String stripped = message.replace("<bossbar>", "");
 
 			if (!stripped.isEmpty())
@@ -485,32 +469,21 @@ public final class Common {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
 				final String prefix = !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
 
-				String toSend;
+				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
 
-				if (Common.stripColors(part).startsWith("<center>"))
-					toSend = ChatUtil.center(prefix + part.replace("<center>", ""));
-				else
-					toSend = prefix + part;
+				try {
+					// Make player engaged in a server conversation still receive the message
+					if (sender instanceof Conversable && ((Conversable) sender).isConversing())
+						((Conversable) sender).sendRawMessage(toSend);
 
-				if (MinecraftVersion.olderThan(V.v1_9) && toSend.length() + 1 >= Short.MAX_VALUE) {
-					toSend = toSend.substring(0, Short.MAX_VALUE / 2);
-
-					Common.warning("Message to " + sender.getName() + " was too large, sending the first 16,000 letters: " + toSend);
-				}
-
-				// Make player engaged in a server conversation still receive the message
-				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
-					((Conversable) sender).sendRawMessage(toSend);
-
-				else
-					try {
+					else
 						sender.sendMessage(toSend);
 
-					} catch (final Throwable t) {
-						Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
+				} catch (final Throwable t) {
+					Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
 
-						t.printStackTrace();
-					}
+					t.printStackTrace();
+				}
 			}
 	}
 
@@ -1348,7 +1321,7 @@ public final class Common {
 			if (message == null || message.equals("none"))
 				continue;
 
-			if (stripColors(message).replace(" ", "").isEmpty()) {
+			if (message.replace(" ", "").isEmpty()) {
 				console.sendMessage("  ");
 
 				continue;
