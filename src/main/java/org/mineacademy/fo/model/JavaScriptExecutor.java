@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -260,7 +261,7 @@ public final class JavaScriptExecutor {
 	 *
 	 * @return
 	 */
-	public static Object run(final String javascript, final Map<String, Object> replacements) {
+	public static Object run(@NonNull final String javascript, @NonNull final Map<String, Object> replacements) {
 
 		// Mohist is unsupported
 		if (Bukkit.getName().equals("Mohist"))
@@ -277,9 +278,15 @@ public final class JavaScriptExecutor {
 			try {
 				engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-				if (replacements != null)
-					for (final Map.Entry<String, Object> replacement : replacements.entrySet())
-						engine.put(replacement.getKey(), replacement.getValue());
+				for (final Map.Entry<String, Object> replacement : replacements.entrySet()) {
+					final String key = replacement.getKey();
+					Valid.checkNotNull(key, "Key can't be null in javascript variables for code " + javascript + ": " + replacements);
+
+					final Object value = replacement.getValue();
+					Valid.checkNotNull(value, "Value can't be null in javascript variables for key " + key + ": " + replacements);
+
+					engine.put(key, value);
+				}
 
 				return engine.eval(javascript);
 
