@@ -1,33 +1,10 @@
 package org.mineacademy.fo;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.annotation.Nullable;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -51,11 +28,7 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
-import org.mineacademy.fo.model.DiscordSender;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.Replacer;
-import org.mineacademy.fo.model.SimpleRunnable;
-import org.mineacademy.fo.model.SimpleTask;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -65,14 +38,24 @@ import org.mineacademy.fo.settings.ConfigSection;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import net.md_5.bungee.api.chat.TextComponent;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import static org.bukkit.ChatColor.COLOR_CHAR;
 
 /**
- * Our main utility class hosting a large variety of different convenience functions
+ * Our main utility class hosting a large variety of different convenience functions.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Common {
@@ -82,37 +65,37 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Pattern used to match colors with & or {@link ChatColor#COLOR_CHAR}
+	 * {@link Pattern} used to match colors with & or {@link ChatColor#COLOR_CHAR}.
 	 */
 	private static final Pattern COLOR_AND_DECORATION_REGEX = Pattern.compile("(&|" + COLOR_CHAR + ")[0-9a-fk-orA-FK-OR]");
 
 	/**
-	 * Pattern used to match colors with #HEX code for MC 1.16+
-	 *
-	 * Matches {#CCCCCC} or &#CCCCCC or #CCCCCC
+	 * {@link Pattern} used to match colors with #HEX code for Minecraft 1.16+.
+	 * <p>
+	 * Matches {#CCCCCC}, &#CCCCCC or #CCCCCC.
 	 */
 	public static final Pattern HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|)");
 
 	/**
-	 * Pattern used to match colors with #HEX code for MC 1.16+
+	 * {@link Pattern} used to match colors with #HEX code for Minecraft 1.16+.
 	 */
 	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + COLOR_CHAR + "x)(" + COLOR_CHAR + "[0-9a-fA-F]){6}");
 
 	/**
-	 * High performance regular expression matcher for colors, used in {@link #stripColors(String)}
+	 * High-performance regular expression {@link Pattern} for colors, used in {@link #stripColors(String)}.
 	 */
 	private static final Pattern ALL_IN_ONE = Pattern.compile("((&|" + COLOR_CHAR + ")[0-9a-fk-or])|(" + COLOR_CHAR + "x(" + COLOR_CHAR + "[0-9a-fA-F]){6})|((?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|))");
 
 	/**
-	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
-	 * in a restricted region, we will not spam their chat with "You cannot break this block here" 120x times,
-	 * instead, we only send this message once per X seconds. This cache holds the last times when we
-	 * sent that message so we know how long to wait before the next one.
+	 * Used to send messages to players without repetition. For example, if they attempt to break a block in a
+	 * restricted region, we will not spam their chat with "You cannot break this block here" 120 times. Instead, we
+	 * only send this message once per X seconds. This cache holds the last times when we sent that message, so we know
+	 * how long to wait before sending the next one.
 	 */
 	private static final Map<String, Long> TIMED_TELL_CACHE = new HashMap<>();
 
 	/**
-	 * See {@link #TIMED_TELL_CACHE}, but this is for sending messages to your console
+	 * See {@link #TIMED_TELL_CACHE}, but this is for sending messages to your console.
 	 */
 	private static final Map<String, Long> TIMED_LOG_CACHE = new HashMap<>();
 
@@ -121,34 +104,34 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * The tell prefix applied on tell() methods, defaults to empty
+	 * The tell prefix applied on {@code tell()} methods, defaults to an empty {@link String}.
 	 */
 	@Getter
 	private static String tellPrefix = "";
 
 	/**
-	 * The log prefix applied on log() methods, defaults to [PluginName]
+	 * The log prefix applied on {@code log()} methods, defaults to [PluginName].
 	 */
 	@Getter
 	private static String logPrefix = "[" + SimplePlugin.getNamed() + "]";
 
 	/**
-	 * Set the tell prefix applied for messages to players from tell() methods
+	 * Sets the tell prefix applied for messages to players from {@code tell()} methods
 	 * <p>
-	 * Colors with & letter are translated automatically.
+	 * & color codes are translated automatically.
 	 *
-	 * @param prefix
+	 * @param prefix the new tell prefix to set.
 	 */
 	public static void setTellPrefix(final String prefix) {
 		tellPrefix = prefix == null ? "" : colorize(prefix);
 	}
 
 	/**
-	 * Set the log prefix applied for messages in the console from log() methods.
+	 * Sets the log prefix applied for messages in the console from {@code log()} methods.
 	 * <p>
-	 * Colors with & letter are translated automatically.
+	 * & color codes are translated automatically.
 	 *
-	 * @param prefix
+	 * @param prefix the new log prefix to set.
 	 */
 	public static void setLogPrefix(final String prefix) {
 		logPrefix = prefix == null ? "" : colorize(prefix);
@@ -159,29 +142,29 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Broadcast the message replacing {player} variable with the given command sender
+	 * Broadcasts the message, replacing {player} with the given {@link CommandSender}.
 	 *
-	 * @param message
-	 * @param playerReplacement
+	 * @param message           the message to broadcast.
+	 * @param playerReplacement the {@link CommandSender} to replace {player} with.
 	 */
 	public static void broadcast(final String message, final CommandSender playerReplacement) {
 		broadcast(message, resolveSenderName(playerReplacement));
 	}
 
 	/**
-	 * Broadcast the message replacing {player} variable with the given player replacement
+	 * Broadcasts the message, replacing {player} with the given player replacement.
 	 *
-	 * @param message
-	 * @param playerReplacement
+	 * @param message           the message to broadcast.
+	 * @param playerReplacement the name to replace {player} with.
 	 */
 	public static void broadcast(final String message, final String playerReplacement) {
 		broadcast(message.replace("{player}", playerReplacement));
 	}
 
 	/**
-	 * Broadcast the message to everyone and logs it
+	 * Broadcasts the given messages to everyone and logs them.
 	 *
-	 * @param messages
+	 * @param messages the messages to broadcast.
 	 */
 	public static void broadcast(final String... messages) {
 		if (messages != null)
@@ -194,10 +177,10 @@ public final class Common {
 	}
 
 	/**
-	 * Sends messages to all recipients
+	 * Sends the given messages to all recipients.
 	 *
-	 * @param recipients
-	 * @param messages
+	 * @param recipients the recipients to send the messages to.
+	 * @param messages   the messages to send.
 	 */
 	public static void broadcastTo(final Iterable<? extends CommandSender> recipients, final String... messages) {
 		for (final CommandSender recipient : recipients)
@@ -205,11 +188,11 @@ public final class Common {
 	}
 
 	/**
-	 * Broadcast the message to everyone with permission
+	 * Broadcasts the message to everyone with the given permission.
 	 *
-	 * @param showPermission
-	 * @param message
-	 * @param log
+	 * @param showPermission the permission required to see the message.
+	 * @param message        the message to broadcast.
+	 * @param log            should the message be logged to the console?
 	 */
 	public static void broadcastWithPerm(final String showPermission, final String message, final boolean log) {
 		if (message != null) {
@@ -223,11 +206,11 @@ public final class Common {
 	}
 
 	/**
-	 * Broadcast the text component message to everyone with permission
+	 * Broadcasts the {@link TextComponent} message to everyone with permission.
 	 *
-	 * @param permission
-	 * @param message
-	 * @param log
+	 * @param permission the permission required to see the message.
+	 * @param message    the {@link TextComponent} to broadcast.
+	 * @param log        should the message be logged to the console?
 	 */
 	public static void broadcastWithPerm(final String permission, @NonNull final TextComponent message, final boolean log) {
 		final String legacy = message.toLegacyText();
@@ -247,15 +230,14 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Sends a message to the player and saves the time when it was sent.
-	 * The delay in seconds is the delay between which we won't send player the
-	 * same message, in case you call this method again.
+	 * Sends a message to the {@link CommandSender} and saves the time it was sent. The delay in seconds is the delay
+	 * between which we won't send the sender the same message, in case you call this method again.
+	 * <p>
+	 * Does not prepend the message with {@link #getTellPrefix()}.
 	 *
-	 * Does not prepend the message with {@link #getTellPrefix()}
-	 *
-	 * @param delaySeconds
-	 * @param sender
-	 * @param message
+	 * @param delaySeconds the delay (in seconds) to wait before sending the message to the sender again.
+	 * @param sender       the {@link CommandSender} to send the message to.
+	 * @param message      the message to send.
 	 */
 	public static void tellTimedNoPrefix(final int delaySeconds, final CommandSender sender, final String message) {
 		final String oldPrefix = getTellPrefix();
@@ -266,17 +248,15 @@ public final class Common {
 	}
 
 	/**
-	 * Sends a message to the player and saves the time when it was sent.
-	 * The delay in seconds is the delay between which we won't send player the
-	 * same message, in case you call this method again.
+	 * Sends a message to the {@link CommandSender} and saves the time it was sent. The delay in seconds is the delay
+	 * between which we won't send the sender the same message, in case you call this method again.
 	 *
-	 * @param delaySeconds
-	 * @param sender
-	 * @param message
+	 * @param delaySeconds the delay (in seconds) to wait before sending the message to the sender again.
+	 * @param sender       the {@link CommandSender} to send the message to.
+	 * @param message      the message to send.
 	 */
 	public static void tellTimed(final int delaySeconds, final CommandSender sender, final String message) {
-
-		// No previous message stored, just tell the player now
+		// No previous message stored, just tell the player now.
 		if (!TIMED_TELL_CACHE.containsKey(message)) {
 			tell(sender, message);
 
@@ -292,32 +272,36 @@ public final class Common {
 	}
 
 	/**
-	 * Sends the conversable a message later
+	 * Sends the {@link Conversable} a message after the given delay.
 	 *
-	 * @param delayTicks
-	 * @param conversable
-	 * @param message
+	 * @param delayTicks  the delay (in ticks) to wait before sending the message.
+	 * @param conversable the {@link Conversable} to send the message to.
+	 * @param message     the message to send.
 	 */
 	public static void tellLaterConversing(final int delayTicks, final Conversable conversable, final String message) {
 		runLater(delayTicks, () -> tellConversing(conversable, message));
 	}
 
 	/**
-	 * Sends the conversable player a colorized message
+	 * Sends the {@link Conversable} a message.
+	 * <p>
+	 * & color codes are translated automatically.
 	 *
-	 * @param conversable
-	 * @param message
+	 * @param conversable the {@link Conversable} to send the message to.
+	 * @param message     the message to send.
 	 */
 	public static void tellConversing(final Conversable conversable, final String message) {
 		conversable.sendRawMessage(colorize((message.contains(tellPrefix) ? "" : addLastSpace(tellPrefix)) + removeFirstSpaces(message)).trim());
 	}
 
 	/**
-	 * Sends a message to the sender with a given delay, colors & are supported
+	 * Sends messages to the specified {@link CommandSender} after the given delay.
+	 * <p>
+	 * & color codes are translated automatically.
 	 *
-	 * @param sender
-	 * @param delayTicks
-	 * @param messages
+	 * @param sender     the {@link CommandSender} to send the messages to.
+	 * @param delayTicks the delay (in ticks) to wait before sending the message.
+	 * @param messages   the messages to send.
 	 */
 	public static void tellLater(final int delayTicks, final CommandSender sender, final String... messages) {
 		runLater(delayTicks, () -> {
@@ -329,47 +313,57 @@ public final class Common {
 	}
 
 	/**
-	 * Sends the sender a bunch of messages, colors & are supported
-	 * without {@link #getTellPrefix()} prefix
+	 * Sends messages to the specified {@link CommandSender}.
+	 * <p>
+	 * & color codes are translated automatically.
+	 * <p>
+	 * This method does not prepend the messages with {@link #getTellPrefix()}.
 	 *
-	 * @param sender
-	 * @param messages
+	 * @param sender   the {@link CommandSender} to send the messages to.
+	 * @param messages the messages to send.
 	 */
 	public static void tellNoPrefix(final CommandSender sender, final Collection<String> messages) {
 		tellNoPrefix(sender, Common.toArray(messages));
 	}
 
 	/**
-	 * Sends the sender a bunch of messages, colors & are supported
-	 * without {@link #getTellPrefix()} prefix
+	 * Sends messages to the specified {@link CommandSender}.
+	 * <p>
+	 * & color codes are translated automatically.
+	 * <p>
+	 * This method does not prepend the messages with {@link #getTellPrefix()}.
 	 *
-	 * @param sender
-	 * @param messages
+	 * @param sender   the {@link CommandSender} to send the messages to.
+	 * @param messages the messages to send.
 	 */
 	public static void tellNoPrefix(final CommandSender sender, final String... messages) {
 		final String oldPrefix = getTellPrefix();
-
 		setTellPrefix("");
+
 		tell(sender, messages);
 		setTellPrefix(oldPrefix);
 	}
 
 	/**
-	 * Send the sender a bunch of messages, colors & are supported
+	 * Sends messages to the specified {@link CommandSender}.
+	 * <p>
+	 * & color codes are translated automatically.
 	 *
-	 * @param sender
-	 * @param messages
+	 * @param sender   the {@link CommandSender} to send the messages to.
+	 * @param messages the messages to send.
 	 */
 	public static void tell(final CommandSender sender, final Collection<String> messages) {
 		tell(sender, toArray(messages));
 	}
 
 	/**
-	 * Sends sender a bunch of messages, ignoring the ones that equal "none" or null,
-	 * replacing & colors and {player} with his variable
+	 * Sends messages to the {@link CommandSender}, ignoring ones that equal "none" or are {@code null} and replacing
+	 * {player} with the sender's name.
+	 * <p>
+	 * & color codes are translated automatically.
 	 *
-	 * @param sender
-	 * @param messages
+	 * @param sender   the {@link CommandSender} to send the messages to.
+	 * @param messages the messages to send.
 	 */
 	public static void tell(final CommandSender sender, final String... messages) {
 		for (final String message : messages)
@@ -377,46 +371,52 @@ public final class Common {
 	}
 
 	/**
-	 * Sends a message to the player replacing the given associative array of placeholders in the given message
+	 * Sends a message to the specified {@link CommandSender}, replacing variables in the
+	 * {@link Replacer#replaceArray(String, Object...)} format.
+	 * <p>
+	 * & color codes are translated automatically.
 	 *
-	 * @param recipient
-	 * @param message
-	 * @param replacements
+	 * @param recipient    the {@link CommandSender} to send the message to.
+	 * @param message      the message to send.
+	 * @param replacements optional variables to replace in the message.
 	 */
-	public static void tellReplaced(CommandSender recipient, String message, Object... replacements) {
+	public static void tellReplaced(final CommandSender recipient, final String message, final Object... replacements) {
 		tell(recipient, Replacer.replaceArray(message, replacements));
 	}
 
-	/*
-	 * Tells the sender a basic message with & colors replaced and {player} with his variable replaced.
+	/**
+	 * Sends a message to the specified {@link CommandSender}, replacing {player} with the sender's name.
 	 * <p>
-	 * If the message starts with [JSON] than we remove the [JSON] prefix and handle the message
-	 * as a valid JSON component.
+	 * & color codes are translated automatically.
 	 * <p>
-	 * Finally, a prefix to non-json messages is added, see {@link #getTellPrefix()}
+	 * If the message starts with [JSON], we remove the [JSON] prefix and treat the message as a valid JSON component.
+	 * <p>
+	 * Finally, a prefix is added to non-JSON messages (see {@link #getTellPrefix()}).
+	 *
+	 * @param sender  the {@link CommandSender} to send the message to.
+	 * @param message the message to send.
 	 */
 	private static void tellJson(@NonNull final CommandSender sender, String message) {
 		if (message == null || message.isEmpty() || "none".equals(message))
 			return;
 
-		// Has prefix already? This is replaced when colorizing
+		// Is the prefix already present? This is replaced when colorizing.
 		final boolean hasPrefix = message.contains("{prefix}");
 		final boolean hasJSON = message.startsWith("[JSON]");
 
-		// Replace player
+		// Replace {player}.
 		message = message.replace("{player}", resolveSenderName(sender));
 
-		// Replace colors
+		// Replace colors.
 		if (!hasJSON)
 			message = colorize(message);
 
-		// Send [JSON] prefixed messages as json component
+		// Send [JSON]-prefixed messages as JSON components.
 		if (hasJSON) {
 			final String stripped = message.replace("[JSON]", "").trim();
 
 			if (!stripped.isEmpty())
 				Remain.sendJson(sender, stripped);
-
 		} else if (message.startsWith("<actionbar>")) {
 			final String stripped = message.replace("<actionbar>", "");
 
@@ -425,7 +425,6 @@ public final class Common {
 					Remain.sendActionBar((Player) sender, stripped);
 				else
 					tellJson(sender, stripped);
-
 		} else if (message.startsWith("<toast>")) {
 			final String stripped = message.replace("<toast>", "");
 
@@ -434,7 +433,6 @@ public final class Common {
 					Remain.sendToast((Player) sender, stripped);
 				else
 					tellJson(sender, stripped);
-
 		} else if (message.startsWith("<title>")) {
 			final String stripped = message.replace("<title>", "");
 
@@ -445,7 +443,6 @@ public final class Common {
 
 				if (sender instanceof Player)
 					Remain.sendTitle((Player) sender, title, subtitle);
-
 				else {
 					tellJson(sender, title);
 
@@ -453,13 +450,12 @@ public final class Common {
 						tellJson(sender, subtitle);
 				}
 			}
-
 		} else if (message.startsWith("<bossbar>")) {
 			final String stripped = message.replace("<bossbar>", "");
 
 			if (!stripped.isEmpty())
 				if (sender instanceof Player)
-					// cannot provide time here so we show it for 10 seconds
+					// The time cannot be provided here, so we show it for 10 seconds.
 					Remain.sendBossbarTimed((Player) sender, stripped, 10);
 				else
 					tellJson(sender, stripped);
@@ -472,13 +468,11 @@ public final class Common {
 				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
 
 				try {
-					// Make player engaged in a server conversation still receive the message
+					// Make players engaged in a server conversation still receive the message.
 					if (sender instanceof Conversable && ((Conversable) sender).isConversing())
 						((Conversable) sender).sendRawMessage(toSend);
-
 					else
 						sender.sendMessage(toSend);
-
 				} catch (final Throwable t) {
 					Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
 
@@ -488,16 +482,22 @@ public final class Common {
 	}
 
 	/**
-	 * Return the sender's name if it's a player or discord sender, or simply {@link SimpleLocalization#CONSOLE_NAME} if it is a console
+	 * Returns the given {@link CommandSender}'s name if it's a {@link Player} or {@link DiscordSender}, or simply
+	 * {@link SimpleLocalization#CONSOLE_NAME} if it's a console.
 	 *
-	 * @param sender
-	 * @return
+	 * @param sender the {@link CommandSender} to resolve the name of.
+	 * @return the name of the given {@link CommandSender}.
 	 */
 	public static String resolveSenderName(final CommandSender sender) {
 		return sender instanceof Player || sender instanceof DiscordSender ? sender.getName() : SimpleLocalization.CONSOLE_NAME;
 	}
 
-	// Remove first spaces from the given message
+	/**
+	 * Removes the leading spaces from the given message.
+	 *
+	 * @param message the message to remove the leading spaces from.
+	 * @return the message without the leading spaces.
+	 */
 	private static String removeFirstSpaces(String message) {
 		message = getOrEmpty(message);
 
@@ -507,12 +507,17 @@ public final class Common {
 		return message;
 	}
 
-	// Helper method used to add spaces between tell/log prefix and the message
+	/**
+	 * Adds a space at the end of the given message if it doesn't already end with a space.
+	 *
+	 * @param message the message to add a space to.
+	 * @return the message with a space at the end.
+	 */
 	private static String addLastSpace(String message) {
 		message = message.trim();
 
 		if (!message.endsWith(" "))
-			message = message + " ";
+			message += " ";
 
 		return message;
 	}
@@ -522,8 +527,7 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Replaces & colors for every string in the list
-	 * A new list is created only containing non-null list values
+	 * Replaces & colors for every string in the list A new list is created only containing non-null list values
 	 *
 	 * @param list
 	 * @return
@@ -838,9 +842,7 @@ public final class Common {
 	}
 
 	/**
-	 * Convenience method for printing count with what the list actually contains.
-	 * Example:
-	 * "X bosses: Creeper, Zombie
+	 * Convenience method for printing count with what the list actually contains. Example: "X bosses: Creeper, Zombie
 	 *
 	 * @param iterable
 	 * @param ofWhat
@@ -967,9 +969,7 @@ public final class Common {
 	/**
 	 * Generates a bar indicating progress. Example:
 	 * <p>
-	 * ##-----
-	 * ###----
-	 * ####---
+	 * ##----- ###---- ####---
 	 *
 	 * @param min            the min progress
 	 * @param minChar
@@ -994,7 +994,7 @@ public final class Common {
 
 	/**
 	 * Formats the vector location to one digit decimal points
-	 *
+	 * <p>
 	 * DO NOT USE FOR SAVING, ONLY INTENDED FOR DEBUGGING
 	 *
 	 * @param vec
@@ -1005,15 +1005,14 @@ public final class Common {
 	}
 
 	/**
-	 * Formats the item stack into a readable useful console log
-	 * printing only its name, lore and nbt tags
-	 *
+	 * Formats the item stack into a readable useful console log printing only its name, lore and nbt tags
+	 * <p>
 	 * DO NOT USE FOR SAVING, ONLY INTENDED FOR DEBUGGING
 	 *
 	 * @param item
 	 * @return
 	 */
-	public static String shortItemStack(ItemStack item) {
+	public static String shortItemStack(final ItemStack item) {
 		if (item == null)
 			return "null";
 
@@ -1071,14 +1070,14 @@ public final class Common {
 
 	/**
 	 * A very simple helper for duplicating the given text the given amount of times.
-	 *
+	 * <p>
 	 * Example: duplicate("apple", 2) will produce "appleapple"
 	 *
 	 * @param text
 	 * @param nTimes
 	 * @return
 	 */
-	public static String duplicate(String text, int nTimes) {
+	public static String duplicate(String text, final int nTimes) {
 		if (nTimes == 0)
 			return "";
 
@@ -1091,14 +1090,13 @@ public final class Common {
 	}
 
 	/**
-	 * Limits the string to the given length maximum
-	 * appending "..." at the end when it is cut
+	 * Limits the string to the given length maximum appending "..." at the end when it is cut
 	 *
 	 * @param text
 	 * @param maxLength
 	 * @return
 	 */
-	public static String limit(String text, int maxLength) {
+	public static String limit(final String text, final int maxLength) {
 		final int length = text.length();
 
 		return maxLength >= length ? text : text.substring(0, maxLength) + "...";
@@ -1109,8 +1107,8 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Checks if a plugin is enabled. We also schedule an async task to make
-	 * sure the plugin is loaded correctly when the server is done booting
+	 * Checks if a plugin is enabled. We also schedule an async task to make sure the plugin is loaded correctly when
+	 * the server is done booting
 	 * <p>
 	 * Return true if it is loaded (this does not mean it works correctly)
 	 *
@@ -1144,14 +1142,14 @@ public final class Common {
 
 	/**
 	 * Runs the given command (without /) as the console, replacing {player} with sender
-	 *
-	 * You can prefix the command with @(announce|warn|error|info|question|success) to send a formatted
-	 * message to playerReplacement directly.
+	 * <p>
+	 * You can prefix the command with @(announce|warn|error|info|question|success) to send a formatted message to
+	 * playerReplacement directly.
 	 *
 	 * @param playerReplacement
 	 * @param command
 	 */
-	public static void dispatchCommand(@Nullable CommandSender playerReplacement, @NonNull String command) {
+	public static void dispatchCommand(@Nullable final CommandSender playerReplacement, @NonNull String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
@@ -1211,8 +1209,8 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Logs the message, and saves the time it was logged. If you call this method
-	 * to log exactly the same message within the delay in seconds, it will not be logged.
+	 * Logs the message, and saves the time it was logged. If you call this method to log exactly the same message
+	 * within the delay in seconds, it will not be logged.
 	 * <p>
 	 * Saves console spam.
 	 *
@@ -1233,8 +1231,8 @@ public final class Common {
 	}
 
 	/**
-	 * Works similarly to {@link String#format(String, Object...)} however
-	 * all arguments are explored, so player names are properly given, location is shortened etc.
+	 * Works similarly to {@link String#format(String, Object...)} however all arguments are explored, so player names
+	 * are properly given, location is shortened etc.
 	 *
 	 * @param format
 	 * @param args
@@ -1246,8 +1244,7 @@ public final class Common {
 	}
 
 	/**
-	 * Replace boring CraftPlayer{name=noob} into a proper player name,
-	 * works fine with entities, worlds, and locations
+	 * Replace boring CraftPlayer{name=noob} into a proper player name, works fine with entities, worlds, and locations
 	 * <p>
 	 * Example use: format("Hello %s from world %s", player, player.getWorld())
 	 *
@@ -1267,12 +1264,11 @@ public final class Common {
 	}
 
 	/**
-	 * A dummy helper method adding "&cWarning: &f" to the given message
-	 * and logging it.
+	 * A dummy helper method adding "&cWarning: &f" to the given message and logging it.
 	 *
 	 * @param message
 	 */
-	public static void warning(String message) {
+	public static void warning(final String message) {
 		log("&cWarning: &7" + message);
 	}
 
@@ -1378,13 +1374,12 @@ public final class Common {
 	}
 
 	/**
-	 * Saves the error, prints the stack trace and logs it in frame.
-	 * Possible to use %error variable
+	 * Saves the error, prints the stack trace and logs it in frame. Possible to use %error variable
 	 *
 	 * @param throwable
 	 * @param messages
 	 */
-	public static void error(@NonNull Throwable throwable, String... messages) {
+	public static void error(@NonNull Throwable throwable, final String... messages) {
 
 		if (throwable instanceof InvocationTargetException && throwable.getCause() != null)
 			throwable = throwable.getCause();
@@ -1397,15 +1392,14 @@ public final class Common {
 	}
 
 	/**
-	 * Logs the messages in frame (if not null),
-	 * saves the error to errors.log and then throws it
+	 * Logs the messages in frame (if not null), saves the error to errors.log and then throws it
 	 * <p>
 	 * Possible to use %error variable
 	 *
 	 * @param t
 	 * @param messages
 	 */
-	public static void throwError(Throwable t, final String... messages) {
+	public static void throwError(final Throwable t, final String... messages) {
 
 		// Delegate to only print out the relevant stuff
 		if (t instanceof FoException)
@@ -1466,9 +1460,8 @@ public final class Common {
 	}
 
 	/**
-	 * Returns true if the given matcher matches. We also evaluate
-	 * how long the evaluation took and stop it in case it takes too long,
-	 * see {@link SimplePlugin#getRegexTimeout()}
+	 * Returns true if the given matcher matches. We also evaluate how long the evaluation took and stop it in case it
+	 * takes too long, see {@link SimplePlugin#getRegexTimeout()}
 	 *
 	 * @param matcher
 	 * @return
@@ -1489,8 +1482,8 @@ public final class Common {
 	/**
 	 * Compiles a matches for the given pattern and message. Colors are stripped.
 	 * <p>
-	 * We also evaluate how long the evaluation took and stop it in case it takes too long,
-	 * see {@link SimplePlugin#getRegexTimeout()}
+	 * We also evaluate how long the evaluation took and stop it in case it takes too long, see
+	 * {@link SimplePlugin#getRegexTimeout()}
 	 *
 	 * @param pattern
 	 * @param message
@@ -1525,8 +1518,7 @@ public final class Common {
 	}
 
 	/**
-	 * Compiles a pattern from the given regex, stripping colors and making
-	 * it case insensitive
+	 * Compiles a pattern from the given regex, stripping colors and making it case insensitive
 	 *
 	 * @param regex
 	 * @return
@@ -1569,7 +1561,7 @@ public final class Common {
 	 * @param ex
 	 * @param pattern
 	 */
-	public static void handleRegexTimeoutException(RegexTimeoutException ex, Pattern pattern) {
+	public static void handleRegexTimeoutException(final RegexTimeoutException ex, final Pattern pattern) {
 		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
 
 		Common.error(ex,
@@ -1633,8 +1625,7 @@ public final class Common {
 	}
 
 	/**
-	 * A convenience method for converting array of command senders into array of their names
-	 * except the given player
+	 * A convenience method for converting array of command senders into array of their names except the given player
 	 *
 	 * @param <T>
 	 * @param array
@@ -1656,16 +1647,16 @@ public final class Common {
 	}
 
 	/**
-	 * A special method that will return all key names from the given enum. The enum
-	 * must have "getKey()" method for every constant.
-	 *
+	 * A special method that will return all key names from the given enum. The enum must have "getKey()" method for
+	 * every constant.
+	 * <p>
 	 * Returns for example: "apple, banana, carrot" etc.
 	 *
 	 * @param <T>
 	 * @param enumeration
 	 * @return
 	 */
-	public static <T extends Enum<?>> String keys(Class<T> enumeration) {
+	public static <T extends Enum<?>> String keys(final Class<T> enumeration) {
 		return Common.join(enumeration.getEnumConstants(), (Stringer<T>) object -> ReflectionUtil.invoke("getKey", object));
 	}
 
@@ -1711,8 +1702,8 @@ public final class Common {
 	}
 
 	/**
-	 * A convenience method for converting array of objects into array of strings
-	 * We invoke "toString" for each object given it is not null, or return "" if it is
+	 * A convenience method for converting array of objects into array of strings We invoke "toString" for each object
+	 * given it is not null, or return "" if it is
 	 *
 	 * @param <T>
 	 * @param array
@@ -1723,8 +1714,8 @@ public final class Common {
 	}
 
 	/**
-	 * A convenience method for converting list of objects into array of strings
-	 * We invoke "toString" for each object given it is not null, or return "" if it is
+	 * A convenience method for converting list of objects into array of strings We invoke "toString" for each object
+	 * given it is not null, or return "" if it is
 	 *
 	 * @param <T>
 	 * @param array
@@ -1735,8 +1726,8 @@ public final class Common {
 	}
 
 	/**
-	 * A convenience method for converting list of objects into array of strings
-	 * We invoke "toString" for each object given it is not null, or return "" if it is
+	 * A convenience method for converting list of objects into array of strings We invoke "toString" for each object
+	 * given it is not null, or return "" if it is
 	 *
 	 * @param <T>
 	 * @param array
@@ -1748,8 +1739,8 @@ public final class Common {
 	}
 
 	/**
-	 * A convenience method for converting list of objects into array of strings
-	 * We invoke "toString" for each object given it is not null, or return "" if it is
+	 * A convenience method for converting list of objects into array of strings We invoke "toString" for each object
+	 * given it is not null, or return "" if it is
 	 *
 	 * @param <T>
 	 * @param array
@@ -1761,8 +1752,8 @@ public final class Common {
 	}
 
 	/**
-	 * Joins an array of a given type using the ", " delimiter and a helper interface
-	 * to convert each element in the array into string
+	 * Joins an array of a given type using the ", " delimiter and a helper interface to convert each element in the
+	 * array into string
 	 *
 	 * @param <T>
 	 * @param array
@@ -1774,8 +1765,8 @@ public final class Common {
 	}
 
 	/**
-	 * Joins an array of a given type using the given delimiter and a helper interface
-	 * to convert each element in the array into string
+	 * Joins an array of a given type using the given delimiter and a helper interface to convert each element in the
+	 * array into string
 	 *
 	 * @param <T>
 	 * @param array
@@ -1790,8 +1781,8 @@ public final class Common {
 	}
 
 	/**
-	 * Joins a list of a given type using the comma delimiter and a helper interface
-	 * to convert each element in the array into string
+	 * Joins a list of a given type using the comma delimiter and a helper interface to convert each element in the
+	 * array into string
 	 *
 	 * @param <T>
 	 * @param array
@@ -1803,8 +1794,8 @@ public final class Common {
 	}
 
 	/**
-	 * Joins a list of a given type using the given delimiter and a helper interface
-	 * to convert each element in the array into string
+	 * Joins a list of a given type using the given delimiter and a helper interface to convert each element in the
+	 * array into string
 	 *
 	 * @param <T>
 	 * @param array
@@ -1832,7 +1823,7 @@ public final class Common {
 	 * @param arg
 	 * @return
 	 */
-	public static String simplify(Object arg) {
+	public static String simplify(final Object arg) {
 		if (arg instanceof Entity)
 			return Remain.getName((Entity) arg);
 
@@ -1878,7 +1869,7 @@ public final class Common {
 	 * @param items
 	 * @return
 	 */
-	public static <T> Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
+	public static <T> Map<Integer, List<T>> fillPages(final int cellSize, final Iterable<T> items) {
 		final List<T> allItems = Common.toList(items);
 
 		final Map<Integer, List<T>> pages = new HashMap<>();
@@ -1915,7 +1906,7 @@ public final class Common {
 	 * @param list
 	 * @return
 	 */
-	public static <T> T last(List<T> list) {
+	public static <T> T last(final List<T> list) {
 		return list == null || list.isEmpty() ? null : list.get(list.size() - 1);
 	}
 
@@ -1926,7 +1917,7 @@ public final class Common {
 	 * @param array
 	 * @return
 	 */
-	public static <T> T last(T[] array) {
+	public static <T> T last(final T[] array) {
 		return array == null || array.length == 0 ? null : array[array.length - 1];
 	}
 
@@ -1954,8 +1945,7 @@ public final class Common {
 	}
 
 	/**
-	 * Convenience method for getting a list of player names
-	 * that optionally, are vanished
+	 * Convenience method for getting a list of player names that optionally, are vanished
 	 *
 	 * @param includeVanished
 	 * @return
@@ -1965,15 +1955,13 @@ public final class Common {
 	}
 
 	/**
-	 * Convenience method for getting a list of player names
-	 * that optionally, the other player can see
+	 * Convenience method for getting a list of player names that optionally, the other player can see
 	 *
 	 * @param includeVanished
 	 * @param otherPlayer
-	 *
 	 * @return
 	 */
-	public static List<String> getPlayerNames(final boolean includeVanished, Player otherPlayer) {
+	public static List<String> getPlayerNames(final boolean includeVanished, final Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -2003,7 +1991,7 @@ public final class Common {
 	 * @param otherPlayer
 	 * @return
 	 */
-	public static List<String> getPlayerNicknames(final boolean includeVanished, Player otherPlayer) {
+	public static List<String> getPlayerNicknames(final boolean includeVanished, final Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -2150,7 +2138,7 @@ public final class Common {
 	 * @param maxLineLength
 	 * @return
 	 */
-	public static String[] split(String input, int maxLineLength) {
+	public static String[] split(final String input, final int maxLineLength) {
 		final StringTokenizer tok = new StringTokenizer(input, " ");
 		final StringBuilder output = new StringBuilder(input.length());
 
@@ -2257,7 +2245,7 @@ public final class Common {
 
 	/**
 	 * Returns the value or its default counterpart in case it is null
-	 *
+	 * <p>
 	 * PSA: If values are strings, we return default if the value is empty or equals to "none"
 	 *
 	 * @param value the primary value
@@ -2284,8 +2272,7 @@ public final class Common {
 	}
 
 	/**
-	 * Get next element in the list increasing the index by 1 if forward is true,
-	 * or decreasing it by 1 if it is false
+	 * Get next element in the list increasing the index by 1 if forward is true, or decreasing it by 1 if it is false
 	 *
 	 * @param <T>
 	 * @param given
@@ -2306,8 +2293,7 @@ public final class Common {
 	}
 
 	/**
-	 * Get next element in the list increasing the index by 1 if forward is true,
-	 * or decreasing it by 1 if it is false
+	 * Get next element in the list increasing the index by 1 if forward is true, or decreasing it by 1 if it is false
 	 *
 	 * @param <T>
 	 * @param given
@@ -2425,10 +2411,10 @@ public final class Common {
 	/**
 	 * Creates a new {@link HashMap} with a single key-value pair.
 	 *
-	 * @param <A>        the type of the key.
-	 * @param <B>        the type of the value.
-	 * @param firstKey   the key of the first entry.
-	 * @param firstValue the value of the first entry.
+	 * @param <A>         the type of the key.
+	 * @param <B>         the type of the value.
+	 * @param firstKey    the key of the first entry.
+	 * @param firstValue  the value of the first entry.
 	 * @param secondKey
 	 * @param secondValue
 	 * @return a new {@link HashMap} with the specified key-value pair.
@@ -2444,10 +2430,10 @@ public final class Common {
 	/**
 	 * Creates a new {@link HashMap} with a single key-value pair.
 	 *
-	 * @param <A>        the type of the key.
-	 * @param <B>        the type of the value.
-	 * @param firstKey   the key of the first entry.
-	 * @param firstValue the value of the first entry.
+	 * @param <A>         the type of the key.
+	 * @param <B>         the type of the value.
+	 * @param firstKey    the key of the first entry.
+	 * @param firstValue  the value of the first entry.
 	 * @param secondKey
 	 * @param secondValue
 	 * @param thirdKey
@@ -2466,10 +2452,10 @@ public final class Common {
 	/**
 	 * Creates a new {@link HashMap} with a single key-value pair.
 	 *
-	 * @param <A>        the type of the key.
-	 * @param <B>        the type of the value.
-	 * @param firstKey   the key of the first entry.
-	 * @param firstValue the value of the first entry.
+	 * @param <A>         the type of the key.
+	 * @param <B>         the type of the value.
+	 * @param firstKey    the key of the first entry.
+	 * @param firstValue  the value of the first entry.
 	 * @param secondKey
 	 * @param secondValue
 	 * @param thirdKey
@@ -2563,7 +2549,7 @@ public final class Common {
 	 * @param runnable
 	 * @return the task or null
 	 */
-	public static SimpleTask runLater(final int delayTicks, Runnable runnable) {
+	public static SimpleTask runLater(final int delayTicks, final Runnable runnable) {
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2610,7 +2596,7 @@ public final class Common {
 	 * @param runnable
 	 * @return the task or null
 	 */
-	public static SimpleTask runLaterAsync(final int delayTicks, Runnable runnable) {
+	public static SimpleTask runLaterAsync(final int delayTicks, final Runnable runnable) {
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2654,10 +2640,10 @@ public final class Common {
 	 *
 	 * @param delayTicks  the delay before first run
 	 * @param repeatTicks the delay between each run
-	 * @param runnable        the task
+	 * @param runnable    the task
 	 * @return the bukkit task or null if error
 	 */
-	public static SimpleTask runTimer(final int delayTicks, final int repeatTicks, Runnable runnable) {
+	public static SimpleTask runTimer(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2699,7 +2685,7 @@ public final class Common {
 	 * @param runnable
 	 * @return
 	 */
-	public static SimpleTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable runnable) {
+	public static SimpleTask runTimerAsync(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2737,8 +2723,7 @@ public final class Common {
 	}
 
 	/**
-	 * Call an event in Bukkit and return whether it was fired
-	 * successfully through the pipeline (NOT cancelled)
+	 * Call an event in Bukkit and return whether it was fired successfully through the pipeline (NOT cancelled)
 	 *
 	 * @param event the event
 	 * @return true if the event was NOT cancelled
@@ -2773,7 +2758,7 @@ public final class Common {
 
 		final Map<String, Object> map = mapOrSection instanceof ConfigSection ? ((ConfigSection) mapOrSection).getValues(false)
 				: mapOrSection instanceof Map ? (Map<String, Object>) mapOrSection
-						: mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
+				: mapOrSection instanceof MemorySection ? ReflectionUtil.getFieldContent(mapOrSection, "map") : null;
 
 		Valid.checkNotNull(map, "Unexpected " + mapOrSection.getClass().getSimpleName() + " '" + mapOrSection + "'. Must be Map or MemorySection! (Do not just send config name here, but the actual section with get('section'))");
 
@@ -2912,8 +2897,7 @@ public final class Common {
 	}
 
 	/**
-	 * Represents a timed chat sequence, used when checking for
-	 * regular expressions so we time how long it takes and
+	 * Represents a timed chat sequence, used when checking for regular expressions so we time how long it takes and
 	 * stop the execution if takes too long
 	 */
 	public final static class TimedCharSequence implements CharSequence {
@@ -2931,14 +2915,13 @@ public final class Common {
 		/*
 		 * Create a new timed message for the given message with a timeout in millis
 		 */
-		private TimedCharSequence(@NonNull final CharSequence message, long futureTimestampLimit) {
+		private TimedCharSequence(@NonNull final CharSequence message, final long futureTimestampLimit) {
 			this.message = message;
 			this.futureTimestampLimit = futureTimestampLimit;
 		}
 
 		/**
-		 * Gets a character at the given index, or throws an error if
-		 * this is called too late after the constructor.
+		 * Gets a character at the given index, or throws an error if this is called too late after the constructor.
 		 */
 		@Override
 		public char charAt(final int index) {
@@ -2979,7 +2962,7 @@ public final class Common {
 		 * @param message
 		 * @return
 		 */
-		public static TimedCharSequence withSettingsLimit(CharSequence message) {
+		public static TimedCharSequence withSettingsLimit(final CharSequence message) {
 			return new TimedCharSequence(message, System.currentTimeMillis() + SimpleSettings.REGEX_TIMEOUT);
 		}
 	}
