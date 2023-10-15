@@ -475,7 +475,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
-		Valid.checkNotNull(method, "Method cannot be null for " + instance);
+		Valid.checkNotNull(method, "Method cannot be null for instance " + instance + " with params " + Common.join(params, ", "));
 
 		try {
 			return (T) method.invoke(instance, params);
@@ -1172,16 +1172,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 
