@@ -205,8 +205,8 @@ public final class ItemUtil {
 
 	// Compares the NBT string tag of two items
 	private static boolean matchNbt(String key, NBTItem firstNbt, NBTItem secondNbt) {
-		final boolean firstHas = firstNbt.hasKey(key);
-		final boolean secondHas = secondNbt.hasKey(key);
+		final boolean firstHas = firstNbt.hasTag(key);
+		final boolean secondHas = secondNbt.hasTag(key);
 
 		if (!firstHas && !secondHas)
 			return true; // nothing has, essentially same
