@@ -88,7 +88,7 @@ public abstract class Button {
 		lores.add(" ");
 
 		for (final String line : description)
-			lores.add("&7" + line);
+			lores.add(line);
 
 		return makeDummy(ItemCreator.of(infoButtonMaterial).name(infoButtonTitle).hideTags(true).lore(lores));
 	}
