@@ -45,6 +45,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * ItemCreator allows you to create highly customized {@link ItemStack}
@@ -53,6 +54,15 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ItemCreator {
+
+	/**
+	 * The lore prefix automatically inserted before each lore.
+	 * Defaults to "&7" to make lores gray instead of pink italics like the vanilla.
+	 */
+	@Setter
+	@Getter
+	@Nullable
+	private static String lorePrefix = "&7";
 
 	/**
 	 * The {@link ItemStack}, if any, to start building with. Either this, or {@link #material} must be set.
@@ -726,7 +736,7 @@ public final class ItemCreator {
 				for (final String lore : this.lores)
 					if (lore != null)
 						for (final String subLore : lore.split("\n"))
-							coloredLores.add(Common.colorize("&7" + subLore));
+							coloredLores.add(Common.colorize((lorePrefix != null ? lorePrefix : "") + subLore));
 
 				((ItemMeta) compiledMeta).setLore(coloredLores);
 			}

@@ -184,7 +184,7 @@ public interface MenuQuantitable {
 
 				// Lore
 				"",
-				"&7" + this.getLevelLoreLabel() + ": &6{level}",
+				this.getLevelLoreLabel() + ": &6{level}",
 				"",
 				"   &8(Mouse click)",
 				"  &7&l< &4-{quantity}    &2+{quantity} &7&l>"),
