@@ -722,7 +722,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 	public static String CONSOLE_NAME = "Console";
 
 	/**
-	 * The message when a section is missing from data.db file (typically we use
+	 * The message when a section is missing from data file (the one ending in .db) (typically we use
 	 * this file to store serialized values such as arenas from minigame plugins).
 	 */
 	public static String DATA_MISSING = "&c{name} lacks database information! Please only create {type} in-game! Skipping..";
