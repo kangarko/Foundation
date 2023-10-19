@@ -34,7 +34,6 @@ import org.mineacademy.fo.remain.nbt.NBT;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 import org.mineacademy.fo.remain.nbt.ReadWriteNBT;
-import org.mineacademy.fo.remain.nbt.ReadableNBT;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
@@ -172,17 +171,13 @@ public final class CompMetadata {
 
 		if (item == null || CompMaterial.isAir(item.getType()))
 			return null;
+
 		final String compoundTag = FoConstants.NBT.TAG;
 
 		return NBT.get(item, nbt -> {
-			final boolean hasTag = nbt.hasTag(compoundTag);
-			if (hasTag) {
-				final ReadableNBT compound = nbt.getCompound(compoundTag);
-				if (compound != null) {
-					return compound.getString(key);
-				}
-			}
-			return null;
+			final String value = nbt.hasTag(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
+
+			return Common.getOrNull(value);
 		});
 	}
 
