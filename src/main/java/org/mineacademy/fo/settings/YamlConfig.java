@@ -58,7 +58,7 @@ public class YamlConfig extends FileConfig {
 		try {
 			representer = new YamlRepresenter(dumperOptions);
 
-		} catch (Throwable t) {
+		} catch (final Throwable t) {
 			representer = new YamlRepresenter();
 		}
 
@@ -74,7 +74,7 @@ public class YamlConfig extends FileConfig {
 			try {
 				constructor = new YamlConstructor(loaderOptions);
 
-			} catch (Throwable t) {
+			} catch (final Throwable t) {
 				// 1.12
 				constructor = new YamlConstructor();
 			}
@@ -83,14 +83,14 @@ public class YamlConfig extends FileConfig {
 				loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
 				loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
 
-			} catch (Throwable t) {
+			} catch (final Throwable t) {
 				// Thankfully unsupported
 				// https://i.imgur.com/wAgKukK.png
 			}
 
 			try {
 				yaml = new Yaml(constructor, representer, dumperOptions, loaderOptions);
-			} catch (Throwable t) {
+			} catch (final Throwable t) {
 				yaml = new Yaml(constructor, representer, dumperOptions);
 			}
 
@@ -212,7 +212,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	@NonNull
 	@Override
-	final String saveToString() {
+	public final String saveToString() {
 
 		// Do not use comments
 		if (this.defaults == null || !this.saveComments()) {
