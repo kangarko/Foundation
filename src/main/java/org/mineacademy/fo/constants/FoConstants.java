@@ -25,17 +25,17 @@ public final class FoConstants {
 		public static final String SETTINGS = "settings.yml";
 
 		/**
-		 * The error.log file created automatically to log errors to
+		 * The error file created automatically to log errors to
 		 */
 		public static final String ERRORS = "error.log";
 
 		/**
-		 * The debug.log file to log debug messages to
+		 * The debug file to log debug messages to
 		 */
 		public static final String DEBUG = "debug.log";
 
 		/**
-		 * The data.db file (uses YAML) for saving various data
+		 * The data file (uses YAML) for saving various data
 		 */
 		public static final String DATA = "data.db";
 
@@ -84,7 +84,7 @@ public final class FoConstants {
 	public static final class Header {
 
 		/**
-		 * The header for data.db file
+		 * The header for data file
 		 *
 		 * Use YamlConfig/setHeader() to override this.
 		 */
