@@ -1395,7 +1395,7 @@ public abstract class FileConfig {
 	 * @return
 	 */
 	@NonNull
-	abstract String saveToString();
+	public abstract String saveToString();
 
 	/**
 	 * Override to implement custom saving mechanism, used automatically in {@link #onSave()}
