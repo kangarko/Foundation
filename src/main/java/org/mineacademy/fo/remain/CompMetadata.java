@@ -27,7 +27,6 @@ import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBT;
@@ -50,6 +49,12 @@ import lombok.RequiredArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CompMetadata {
+
+	/**
+	 * Legacy <1.14 uses a hard file storage in data.db for metadata
+	 */
+	@Getter
+	private static boolean legacy = MinecraftVersion.olderThan(V.v1_14);
 
 	/**
 	 * The tag delimiter
@@ -80,9 +85,10 @@ public final class CompMetadata {
 		final ItemStack clone = new ItemStack(item);
 		return NBT.modify(clone, tag -> {
 			final ReadWriteNBT compound = tag.getOrCreateCompound(FoConstants.NBT.TAG);
-			if (compound != null) {
+
+			if (compound != null)
 				compound.setString(key, value);
-			}
+
 			return clone;
 		});
 	}
@@ -137,7 +143,7 @@ public final class CompMetadata {
 		Valid.checkNotNull(key);
 		Valid.checkNotNull(value);
 
-		if (MinecraftVersion.atLeast(V.v1_14)) {
+		if (!legacy) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
 			setNamedspaced((TileState) tileEntity, key, value);
@@ -257,7 +263,7 @@ public final class CompMetadata {
 		if (!hasMetadata(tileEntity, key))
 			return;
 
-		if (MinecraftVersion.atLeast(V.v1_14)) {
+		if (!legacy) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
 			removeNamedspaced((TileState) tileEntity, key);
@@ -433,11 +439,9 @@ public final class CompMetadata {
 		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
 
 		private MetadataFile() {
-			if (!Remain.hasScoreboardTags()) {
+			if (CompMetadata.legacy) {
 				this.setPathPrefix("Metadata");
 				this.setSaveEmptyValues(false);
-
-				Debugger.printStackTrace("Loading data.db metadat");
 
 				this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
 			}
@@ -445,7 +449,7 @@ public final class CompMetadata {
 
 		@Override
 		protected void onLoad() {
-			if (!Remain.hasScoreboardTags()) {
+			if (CompMetadata.legacy) {
 				this.loadEntities();
 
 				this.loadBlockStates();
@@ -458,8 +462,13 @@ public final class CompMetadata {
 		}
 
 		@Override
+		protected boolean skipSaveIfNoFile() {
+			return true;
+		}
+
+		@Override
 		protected void onSave() {
-			if (!Remain.hasScoreboardTags()) {
+			if (CompMetadata.legacy) {
 				this.set("Entity", this.entityMetadataMap);
 				this.set("Block", this.blockMetadataMap);
 			}
@@ -599,7 +608,7 @@ public final class CompMetadata {
 		}
 
 		public static void saveOnce() {
-			if (!Remain.hasScoreboardTags()) {
+			if (CompMetadata.legacy) {
 				try {
 					canSave = true;
 					instance.save();
