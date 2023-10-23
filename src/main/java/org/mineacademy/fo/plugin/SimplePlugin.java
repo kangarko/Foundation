@@ -801,9 +801,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			this.onPluginPreReload();
 			this.reloadables.reload();
 
-			final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
-			metadata.save();
-			metadata.reload();
+			if (CompMetadata.isLegacy()) {
+				final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
+
+				metadata.save();
+				metadata.reload();
+			}
 
 			SimpleHologram.onReload();
 
