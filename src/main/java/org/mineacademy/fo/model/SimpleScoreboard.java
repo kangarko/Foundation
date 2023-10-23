@@ -16,6 +16,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -282,7 +283,7 @@ public class SimpleScoreboard {
 		Valid.checkBoolean((this.rows.size() + entries.size()) <= 15, "You are trying to add too many rows (the limit is 15)");
 		final List<String> lines = new ArrayList<>();
 
-		for (Object object : entries)
+		for (final Object object : entries)
 			lines.add(object == null ? "" : Common.colorize(SerializeUtil.serialize(SerializeUtil.Mode.YAML, object).toString()));
 
 		this.rows.addAll(lines);
@@ -464,7 +465,11 @@ public class SimpleScoreboard {
 
 				final List<String> copy = copyColors(finishedRow, splitPoints);
 				final String prefix = copy.isEmpty() ? "" : copy.get(0);
-				final String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1) + (rowUsed ? COLOR_CHAR + COLORS[lineNumber] : "");
+				String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1) + (rowUsed ? COLOR_CHAR + COLORS[lineNumber] : "");
+
+				if (MinecraftVersion.olderThan(V.v1_13) && entry.length() > 16)
+					entry = entry.substring(0, 16);
+
 				final String suffix = copy.size() < 3 ? "" : copy.get(2);
 				String oldEntry = null;
 
@@ -472,7 +477,7 @@ public class SimpleScoreboard {
 					line.setPrefix(prefix);
 
 				if (line.getEntries().size() > 1) {
-					for (String teamEntry : line.getEntries()) {
+					for (final String teamEntry : line.getEntries()) {
 						line.removeEntry(teamEntry);
 						scoreboard.resetScores(teamEntry);
 					}
@@ -512,15 +517,15 @@ public class SimpleScoreboard {
 	 */
 	private List<String> copyColors(String text, int... splitPoints) {
 		//Removes useless colors in front of only spaces (e.g. [§a     §aText] becomes [     §aText])
-		Pattern spaceMatcher = Pattern.compile("^( )+(" + COLOR_CHAR + ")");
-		List<String> splitText = new ArrayList<>();
+		final Pattern spaceMatcher = Pattern.compile("^( )+(" + COLOR_CHAR + ")");
+		final List<String> splitText = new ArrayList<>();
 
-		for (int splitPoint : splitPoints) {
-			String lastEntry = splitText.isEmpty() ? "" : splitText.get(splitText.size() - 1);
-			String lastColor = ChatColor.getLastColors(lastEntry);
+		for (final int splitPoint : splitPoints) {
+			final String lastEntry = splitText.isEmpty() ? "" : splitText.get(splitText.size() - 1);
+			final String lastColor = ChatColor.getLastColors(lastEntry);
 
-			boolean addColor = !text.startsWith(COLOR_CHAR) && !lastColor.isEmpty() && !spaceMatcher.matcher(text).find();
-			int realSplitPoint = Math.min(splitPoint - (addColor ? 2 : 0), text.length());
+			final boolean addColor = !text.startsWith(COLOR_CHAR) && !lastColor.isEmpty() && !spaceMatcher.matcher(text).find();
+			final int realSplitPoint = Math.min(splitPoint - (addColor ? 2 : 0), text.length());
 			String line = (addColor ? lastColor : "") + text.substring(0, realSplitPoint);
 
 			text = text.substring(realSplitPoint);
