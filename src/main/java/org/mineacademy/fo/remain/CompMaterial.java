@@ -43,7 +43,6 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.debug.Debugger;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -2216,6 +2215,8 @@ public enum CompMaterial {
 	 * @return the corresponding egg, or Sheep Monster Egg if does not exist
 	 */
 	public static CompMaterial makeMonsterEgg(final EntityType type) {
+		CompMaterial created = CompMaterial.SHEEP_SPAWN_EGG;
+
 		try {
 			String name = type.toString() + "_SPAWN_EGG";
 
@@ -2232,16 +2233,18 @@ public enum CompMaterial {
 			// Parse normally, backwards compatible
 			final CompMaterial mat = fromString(name);
 
-			if (mat == CompMaterial.STONE)
-				return CompMaterial.SHEEP_SPAWN_EGG;
+			if (mat == null || mat.getMaterial().toString().equals("STONE"))
+				created = CompMaterial.SHEEP_SPAWN_EGG;
 
-			// Return the egg or sheep egg if does not exist
-			return Common.getOrDefault(mat, CompMaterial.SHEEP_SPAWN_EGG);
+			else
+				// Return the egg or sheep egg if does not exist
+				created = Common.getOrDefault(mat, CompMaterial.SHEEP_SPAWN_EGG);
 
 		} catch (final Throwable throwable) {
-			Debugger.saveError(throwable, "Something went wrong while creating spawn egg!", "Type: " + type);
+			Common.error(throwable, "Something went wrong while creating spawn egg!", "Type: " + type);
 		}
-		return CompMaterial.SHEEP_SPAWN_EGG;
+
+		return created;
 	}
 
 	/**
