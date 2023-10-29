@@ -18,6 +18,7 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Slime;
@@ -94,7 +95,14 @@ public final class EntityUtil {
 	public static Entity getTarget(Entity entity) {
 		Entity target = null;
 
-		if (entity instanceof Creature)
+		try {
+			if (entity instanceof Mob)
+				target = ((Mob) entity).getTarget();
+		} catch (final Throwable t) {
+			// Old MC
+		}
+
+		if (target == null && entity instanceof Creature)
 			target = ((Creature) entity).getTarget();
 
 		if (target == null)
