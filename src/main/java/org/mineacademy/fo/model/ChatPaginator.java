@@ -16,6 +16,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -106,7 +107,25 @@ public final class ChatPaginator {
 	 * @return
 	 */
 	public ChatPaginator setFoundationHeader(String title) {
-		return this.setHeader("&r", this.themeColor + "&m" + ChatUtil.center("&r" + this.themeColor + " " + title + " &m", '-', 150), "&r");
+		final String format = SimpleLocalization.Commands.HEADER_FORMAT
+				.replace("{theme_color}", this.themeColor.toString())
+				.replace("{title}", title);
+
+		for (String message : format.split("\n")) {
+
+			// Support centering inside the message itself
+			final String[] centeredParts = message.split("\\<center\\>");
+
+			if (centeredParts.length > 1) {
+				Valid.checkBoolean(centeredParts.length == 2, "Cannot use <center> more than once in: " + title);
+
+				message = centeredParts[0] + ChatUtil.center(centeredParts[1], SimpleLocalization.Commands.HEADER_CENTER_LETTER.charAt(0), SimpleLocalization.Commands.HEADER_CENTER_PADDING);
+			}
+
+			this.header.add(SimpleComponent.of(message));
+		}
+
+		return this;
 	}
 
 	/**
