@@ -28,7 +28,7 @@ public class SimpleHologram implements ConfigSerializable {
 	private static double loreLineHeight = 0.26D;
 
 	/**
-	 * A registry of created animated items
+	 * A turretData of created animated items
 	 */
 	@Getter
 	private static final Set<SimpleHologram> registeredItems = new HashSet<>();
@@ -327,11 +327,6 @@ public class SimpleHologram implements ConfigSerializable {
 		registeredItems.remove(this);
 	}
 
-	/**
-	 * update the lore of the hologram
-	 *
-	 * @param loreLines
-	 */
 	public final void updateLore(final String... loreLines) {
 		final List<String> list = new ArrayList<>(Arrays.asList(loreLines));
 
@@ -363,7 +358,7 @@ public class SimpleHologram implements ConfigSerializable {
 	/**
 	 * Deletes all floating items on the server
 	 */
-	public static void deleteAll() {
+	public static final void deleteAll() {
 
 		for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext();) {
 			final SimpleHologram item = it.next();
