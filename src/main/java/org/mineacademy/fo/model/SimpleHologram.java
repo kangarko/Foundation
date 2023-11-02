@@ -1,24 +1,30 @@
 package org.mineacademy.fo.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Consumer;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompParticle;
-import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
-import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
 
-public class SimpleHologram implements ConfigSerializable {
+/**
+ *
+ */
+public abstract class SimpleHologram {
 
 	/**
 	 * The distance between each line of lore for this item
@@ -28,10 +34,10 @@ public class SimpleHologram implements ConfigSerializable {
 	private static double loreLineHeight = 0.26D;
 
 	/**
-	 * A turretData of created animated items
+	 * A registry of created animated items
 	 */
 	@Getter
-	private static final Set<SimpleHologram> registeredItems = new HashSet<>();
+	private static Set<SimpleHologram> registeredItems = new HashSet<>();
 
 	/**
 	 * The ticking task responsible for calling {@link #onTick()}
@@ -55,6 +61,11 @@ public class SimpleHologram implements ConfigSerializable {
 	@Getter
 	private final List<String> loreLines = new ArrayList<>();
 
+	/**
+	 * Optional particles spawning below the hologram
+	 */
+	@Getter
+	private final List<Tuple<CompParticle, Object>> particles = new ArrayList<>();
 
 	/**
 	 * The displayed entity
@@ -67,17 +78,11 @@ public class SimpleHologram implements ConfigSerializable {
 	 */
 	private Location pendingTeleport = null;
 
-	/**
-	 * Optional particles spawning below the hologram
-	 */
-	@Getter
-	private final List<Tuple<CompParticle, Object>> particles = new ArrayList<>();
-
 	/*
 	 * Constructs a new item and registers it
 	 */
-	public SimpleHologram(final Location spawnLocation) {
-		this.lastTeleportLocation = spawnLocation;
+	protected SimpleHologram(Location spawnLocation) {
+		this.lastTeleportLocation = spawnLocation.clone();
 
 		registeredItems.add(this);
 
@@ -103,7 +108,7 @@ public class SimpleHologram implements ConfigSerializable {
 	private static BukkitTask scheduleTickingTask() {
 		return Common.runTimer(1, () -> {
 
-			for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext(); ) {
+			for (final Iterator<SimpleHologram> it = registeredItems.iterator(); it.hasNext();) {
 				final SimpleHologram model = it.next();
 
 				if (model.isSpawned())
@@ -129,7 +134,7 @@ public class SimpleHologram implements ConfigSerializable {
 		this.entity = this.createEntity();
 		Valid.checkNotNull(this.entity, "Failed to spawn entity from " + this);
 
-		this.drawLore(this.getLastTeleportLocation());
+		this.drawLore(this.lastTeleportLocation);
 
 		return this;
 	}
@@ -139,73 +144,29 @@ public class SimpleHologram implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	private ArmorStand createEntity() {
-		final Location location = this.getLastTeleportLocation();
-		final ArmorStand armorStand;
-
-		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_11)) {
-			final Consumer<ArmorStand> consumer = stand -> {
-				stand.setMarker(true);
-				CompProperty.GRAVITY.apply(stand, false);
-				stand.setSmall(true);
-				stand.setVisible(false);
-			};
-
-			armorStand = location.getWorld().spawn(location, ArmorStand.class, consumer);
-		} else {
-			final ArmorStand stand = location.getWorld().spawn(location, ArmorStand.class);
-
-			CompProperty.GRAVITY.apply(stand, false);
-			stand.setVisible(false);
-			stand.setMarker(true);
-			stand.setSmall(true);
-
-			armorStand = stand;
-		}
-
-		return armorStand;
-	}
-
-	private ArmorStand createLoreEntity(final Location location) {
-		final ArmorStand armorStand;
-
-		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_11)) {
-			final Consumer<ArmorStand> consumer = stand -> {
-				stand.setMarker(true);
-				CompProperty.GRAVITY.apply(stand, false);
-				stand.setSmall(true);
-				stand.setVisible(false);
-			};
-
-			armorStand = location.getWorld().spawn(location, ArmorStand.class, consumer);
-		} else {
-			armorStand = location.getWorld().spawn(location, ArmorStand.class);
-
-			armorStand.setMarker(true);
-			CompProperty.GRAVITY.apply(armorStand, false);
-			armorStand.setSmall(true);
-			armorStand.setVisible(false);
-		}
-
-		this.loreEntities.add(armorStand);
-		return armorStand;
-	}
+	protected abstract Entity createEntity();
 
 	/*
 	 * Set a lore for this armor stand
 	 */
-	public void drawLore(Location location) {
+	private void drawLore(Location location) {
 		if (this.loreLines.isEmpty())
 			return;
 
 		if (this.entity instanceof ArmorStand && ((ArmorStand) this.entity).isSmall())
-			location = location.clone().add(0, -0.5, 0);
+			location = location.add(0, -0.5, 0);
 
 		for (final String loreLine : this.loreLines) {
-			final ArmorStand armorStand = createLoreEntity(location);
+			final ArmorStand armorStand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+
+			armorStand.setGravity(false);
+			armorStand.setVisible(false);
 
 			Remain.setCustomName(armorStand, loreLine);
+
 			location = location.subtract(0, loreLineHeight, 0);
+
+			this.loreEntities.add(armorStand);
 		}
 	}
 
@@ -225,6 +186,17 @@ public class SimpleHologram implements ConfigSerializable {
 		}
 
 		this.onTick();
+
+		for (final Tuple<CompParticle, Object> tuple : this.particles) {
+			final CompParticle particle = tuple.getKey();
+			final Object extra = tuple.getValue();
+
+			if (extra instanceof CompMaterial)
+				particle.spawn(this.getLocation(), (CompMaterial) extra);
+
+			else if (extra instanceof Double)
+				particle.spawn(this.getLocation(), (double) extra);
+		}
 	}
 
 	/**
@@ -239,7 +211,7 @@ public class SimpleHologram implements ConfigSerializable {
 	 * @return
 	 */
 	public final boolean isSpawned() {
-		return this.entity != null && this.entity.isValid();
+		return this.entity != null;
 	}
 
 	/**
@@ -250,11 +222,34 @@ public class SimpleHologram implements ConfigSerializable {
 	}
 
 	/**
+	 *
 	 * @param lore
+	 * @return
 	 */
-	public final void setLore(final String... lore) {
+	public final SimpleHologram setLore(String... lore) {
 		this.loreLines.clear();
 		this.loreLines.addAll(Arrays.asList(lore));
+
+		return this;
+	}
+
+	/**
+	 * Add particle effect for this hologram
+	 *
+	 * @param particle
+	 */
+	public final void addParticleEffect(CompParticle particle) {
+		this.addParticleEffect(particle, null);
+	}
+
+	/**
+	 * Add particle effect for this hologram
+	 *
+	 * @param particle
+	 * @param data
+	 */
+	public final void addParticleEffect(CompParticle particle, CompMaterial data) {
+		this.particles.add(new Tuple<>(particle, data));
 	}
 
 	/**
@@ -282,7 +277,7 @@ public class SimpleHologram implements ConfigSerializable {
 	 *
 	 * @param location
 	 */
-	public final void teleport(final Location location) {
+	public final void teleport(Location location) {
 		Valid.checkBoolean(this.pendingTeleport == null, this + " is already pending teleport to " + this.pendingTeleport);
 		this.checkSpawned("teleport");
 
@@ -294,32 +289,10 @@ public class SimpleHologram implements ConfigSerializable {
 	}
 
 	/**
-	 * Add particle effect for this hologram
-	 *
-	 * @param particle
-	 */
-	public final void addParticleEffect(CompParticle particle) {
-		this.addParticleEffect(particle, null);
-	}
-
-	/**
-	 * Add particle effect for this hologram
-	 *
-	 * @param particle
-	 * @param data
-	 */
-	public final void addParticleEffect(CompParticle particle, CompMaterial data) {
-		this.particles.add(new Tuple<>(particle, data));
-	}
-
-	/**
 	 * Deletes this armor stand
 	 */
 	public final void remove() {
-		for (final Entity entity : this.loreEntities)
-			entity.remove();
-
-		this.loreEntities.clear();
+		this.removeLore();
 
 		if (this.entity != null)
 			this.entity.remove();
@@ -327,23 +300,10 @@ public class SimpleHologram implements ConfigSerializable {
 		registeredItems.remove(this);
 	}
 
-	public final void updateLore(final String... loreLines) {
-		final List<String> list = new ArrayList<>(Arrays.asList(loreLines));
-
-		for (int i = 0; i < list.size(); i++) {
-			if (this.getLoreEntities().get(i) == null)
-				this.getLoreEntities().add(this.createLoreEntity(this.getLoreEntities().get(i - 1).getLocation()));
-
-			Remain.setCustomName(this.getLoreEntities().get(i), list.get(i));
-		}
-
-		this.setLore(loreLines);
-	}
-
 	/*
 	 * A helper method to check if this entity is spawned
 	 */
-	private void checkSpawned(final String method) {
+	private void checkSpawned(String method) {
 		Valid.checkBoolean(this.isSpawned(), this + " is not spawned, cannot call " + method + "!");
 	}
 
@@ -369,26 +329,5 @@ public class SimpleHologram implements ConfigSerializable {
 			item.removeLore();
 			it.remove();
 		}
-	}
-
-	public static SimpleHologram deserialize(final SerializedMap map) {
-		final Location location = map.getLocation("Location");
-		final String[] lines = map.getStringList("Lore").toArray(new String[0]);
-
-		final SimpleHologram hologram = new SimpleHologram(location.clone().add(0.5, 0.5, 0.5));
-
-		hologram.setLore(lines);
-
-		return hologram;
-	}
-
-	@Override
-	public SerializedMap serialize() {
-		final SerializedMap map = new SerializedMap();
-
-		map.put("Location", this.lastTeleportLocation);
-		map.put("Lore", this.loreLines);
-
-		return map;
 	}
 }
