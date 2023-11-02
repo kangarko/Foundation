@@ -56,7 +56,12 @@ public class SimpleHologramStand extends SimpleHologram {
 		this.itemOrMaterial = material;
 	}
 
-	private Entity createEntity() {
+	/**
+	 * @see org.mineacademy.fo.model.SimpleHologram#createEntity()
+	 */
+	@Override
+	protected final Entity createEntity() {
+
 		final ItemCreator item;
 
 		if (this.itemOrMaterial instanceof ItemStack)
