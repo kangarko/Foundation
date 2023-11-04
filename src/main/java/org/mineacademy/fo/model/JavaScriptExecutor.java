@@ -23,6 +23,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.EventHandledException;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -137,13 +138,11 @@ public final class JavaScriptExecutor {
 			return null;
 
 		// Speed up
-		if (javascript.equals("true") || javascript.equals("!false"))
+		if (javascript.equals("true") || javascript.equals("!false") || javascript.equals("yes"))
 			return true;
 
-		if (javascript.equals("false") || javascript.equals("!true"))
+		if (javascript.equals("false") || javascript.equals("!true") || javascript.equals("no"))
 			return false;
-
-		final String oldCode = new String(javascript);
 
 		// Cache for highest performance
 		Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
@@ -161,6 +160,8 @@ public final class JavaScriptExecutor {
 
 			return null;
 		}
+
+		Object result = null;
 
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
@@ -190,7 +191,7 @@ public final class JavaScriptExecutor {
 				javascript = String.join("\n", replaced);
 			}
 
-			Object result = engine.eval(javascript);
+			result = engine.eval(javascript);
 
 			if (result instanceof String) {
 				String resultString = Common.stripColors((String) result).trim().toLowerCase();
@@ -220,10 +221,10 @@ public final class JavaScriptExecutor {
 
 		} catch (final Throwable ex) {
 			final String message = ex.toString();
-			String error = "Script execution failed for";
+			String errorMessage = message;
 
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
-				error = "Found invalid or unparsed variable in";
+				errorMessage = "Found invalid or unparsed variable in " + javascript + ": " + ex.getMessage();
 
 			// Special support for throwing exceptions in the JS code so that users
 			// can send messages to player directly if upstream supports that
@@ -238,7 +239,7 @@ public final class JavaScriptExecutor {
 				throw new EventHandledException(true);
 			}
 
-			throw new RuntimeException(error + " '" + oldCode + "', sender: " + (sender == null ? "null" : sender.getClass() + ": " + sender), ex);
+			throw new FoException(ex, errorMessage);
 		}
 	}
 
