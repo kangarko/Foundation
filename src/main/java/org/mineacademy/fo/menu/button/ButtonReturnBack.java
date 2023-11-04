@@ -47,6 +47,13 @@ public final class ButtonReturnBack extends Button {
 	private static List<String> lore = Arrays.asList(SimpleLocalization.Menu.BUTTON_RETURN_LORE);
 
 	/**
+	 * You can override how this entire itemstack of the button will look like.
+	 */
+	@Getter
+	@Setter
+	private static ItemStack itemStack = ItemCreator.of(material).name(title).lore(lore).make();
+
+	/**
 	 * The parent menu
 	 */
 	@NonNull
@@ -64,7 +71,7 @@ public final class ButtonReturnBack extends Button {
 	 */
 	@Override
 	public ItemStack getItem() {
-		return ItemCreator.of(material).name(title).lore(lore).make();
+		return itemStack;
 	}
 
 	/**
