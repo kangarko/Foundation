@@ -19,6 +19,7 @@ import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.event.SimpleComponentSendEvent;
+import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -927,14 +928,16 @@ public final class SimpleComponent implements ConfigSerializable {
 				try {
 					result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
 
-				} catch (final Throwable t) {
-					Common.error(t,
-							"Failed to parse JavaScript view condition for component!",
-							"The javascript code must return a valid true/false boolean value.",
+				} catch (final FoScriptException ex) {
+					Common.logFramed(
+							"Failed parsing View_Condition for component!",
+							"",
+							"The View_Condition must be a JavaScript code that returns a boolean!",
 							"Component: " + this,
-							"Error: %error%");
+							"Line: " + ex.getErrorLine(),
+							"Error: " + ex.getMessage());
 
-					return false;
+					throw ex;
 				}
 
 				if (result != null) {
