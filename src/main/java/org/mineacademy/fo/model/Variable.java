@@ -7,12 +7,13 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
+import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -201,21 +202,58 @@ public final class Variable extends YamlConfig {
 	 */
 	public String getValue(CommandSender sender, Map<String, Object> replacements) {
 
+		// Replace variables in script
+		final String script;
+
 		try {
-			// Replace variables in script
-			final String script = Variables.replace(this.value, sender, replacements, true, false);
-			final Object result = JavaScriptExecutor.run(script, sender);
+			script = Variables.replace(this.value, sender, replacements, true, false);
 
-			return result != null ? result.toString() : "";
+		} catch (final Throwable t) {
+			final String errorHeadline = "Error replacing placeholders in variable!";
 
-		} catch (final RuntimeException ex) {
+			Common.logFramed(
+					errorHeadline,
+					"",
+					"Variable: " + this.value,
+					"Sender: " + sender,
+					"Replacements: " + replacements,
+					"Error: " + t.getMessage(),
+					"",
+					"Please report this issue!");
 
-			// Assume console or Discord lack proper methods to call
-			if (sender instanceof Player)
-				throw ex;
+			if (FoException.isErrorSavedAutomatically())
+				Debugger.saveError(t, errorHeadline);
 
 			return "";
 		}
+
+		Object result = null;
+
+		try {
+			result = JavaScriptExecutor.run(script, sender);
+
+		} catch (final Throwable t) {
+
+			final String errorHeadline = "Error executing JavaScript variable!";
+
+			Common.logFramed(
+					errorHeadline,
+					"",
+					"Raw script: " + this.value,
+					"Script: " + script,
+					"Sender: " + sender,
+					"Replacements: " + replacements,
+					"Error: " + t.getMessage(),
+					"",
+					"This is likely NOT a plugin bug,",
+					"check your JavaScript code before",
+					"reporting this issue.");
+
+			if (FoException.isErrorSavedAutomatically())
+				Debugger.saveError(t, errorHeadline);
+		}
+
+		return result != null ? result.toString() : "";
 	}
 
 	/**
