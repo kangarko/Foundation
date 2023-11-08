@@ -14,6 +14,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -232,25 +233,19 @@ public final class Variable extends YamlConfig {
 		try {
 			result = JavaScriptExecutor.run(script, sender);
 
-		} catch (final Throwable t) {
-
-			final String errorHeadline = "Error executing JavaScript variable!";
-
+		} catch (final FoScriptException ex) {
 			Common.logFramed(
-					errorHeadline,
-					"",
-					"Raw script: " + this.value,
-					"Script: " + script,
+					"Error executing JavaScript in a variable!",
+					"Variable: " + this.getFileName(),
+					"Line: " + ex.getErrorLine(),
 					"Sender: " + sender,
 					"Replacements: " + replacements,
-					"Error: " + t.getMessage(),
+					"Error: " + ex.getMessage(),
 					"",
-					"This is likely NOT a plugin bug,",
-					"check your JavaScript code before",
-					"reporting this issue.");
+					"This is likely NOT our plugin bug, check Value key in " + this.getFileName(),
+					"that it returns a valid JavaScript code before reporting!");
 
-			if (FoException.isErrorSavedAutomatically())
-				Debugger.saveError(t, errorHeadline);
+			throw ex;
 		}
 
 		return result != null ? result.toString() : "";
@@ -270,13 +265,32 @@ public final class Variable extends YamlConfig {
 			return SimpleComponent.of("");
 
 		if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
-			final Object result = JavaScriptExecutor.run(Variables.replace(this.senderCondition, sender, replacements, true, false), sender);
 
-			if (result != null) {
-				Valid.checkBoolean(result instanceof Boolean, "Variable '" + this.getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+			try {
+				final Object result = JavaScriptExecutor.run(Variables.replace(this.senderCondition, sender, replacements, true, false), sender);
 
-				if (!((boolean) result))
-					return SimpleComponent.of("");
+				if (result != null) {
+					Valid.checkBoolean(result instanceof Boolean, "Variable '" + this.getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+
+					if (!((boolean) result))
+						return SimpleComponent.of("");
+				}
+
+			} catch (final FoScriptException ex) {
+				Common.logFramed(
+						"Error executing Sender_Condition in a variable!",
+						"Variable: " + this.getFileName(),
+						"Sender condition: " + this.senderCondition,
+						"Sender: " + sender,
+						"Replacements: " + replacements,
+						"Error: " + ex.getMessage(),
+						"",
+						"This is likely NOT a plugin bug,",
+						"check your JavaScript code in",
+						this.getFileName() + " in the 'Sender_Condition' key",
+						"before reporting it to us.");
+
+				throw ex;
 			}
 		}
 
@@ -294,10 +308,29 @@ public final class Variable extends YamlConfig {
 			component.onHover(Variables.replace(this.hoverText, sender, replacements));
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
-			final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements, true, false), sender);
-			Valid.checkBoolean(result instanceof ItemStack, "Variable '" + this.getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
-			component.onHover((ItemStack) result);
+			try {
+				final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, sender, replacements, true, false), sender);
+
+				Valid.checkBoolean(result instanceof ItemStack, "Variable '" + this.getFileName() + "' option Hover_Item must return ItemStack not " + result.getClass());
+				component.onHover((ItemStack) result);
+
+			} catch (final FoScriptException ex) {
+				Common.logFramed(
+						"Error executing Hover_Item in a variable!",
+						"Variable: " + this.getFileName(),
+						"Hover Item: " + this.hoverItem,
+						"Sender: " + sender,
+						"Replacements: " + replacements,
+						"Error: " + ex.getMessage(),
+						"",
+						"This is likely NOT a plugin bug,",
+						"check your JavaScript code in",
+						this.getFileName() + " in the 'Hover_Item' key",
+						"before reporting it to us.");
+
+				throw ex;
+			}
 		}
 
 		if (this.openUrl != null && !this.openUrl.isEmpty())

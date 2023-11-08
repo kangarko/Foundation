@@ -23,7 +23,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.exception.EventHandledException;
-import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -105,8 +105,9 @@ public final class JavaScriptExecutor {
 	 *
 	 * @param javascript
 	 * @return
+	 * @throws FoScriptException
 	 */
-	public static Object run(final String javascript) {
+	public static Object run(final String javascript) throws FoScriptException {
 		return run(javascript, null, null);
 	}
 
@@ -117,8 +118,10 @@ public final class JavaScriptExecutor {
 	 * @param javascript
 	 * @param sender
 	 * @return
+	 *
+	 * @throws FoScriptException
 	 */
-	public static Object run(final String javascript, final CommandSender sender) {
+	public static Object run(final String javascript, final CommandSender sender) throws FoScriptException {
 		return run(javascript, sender, null);
 	}
 
@@ -130,8 +133,9 @@ public final class JavaScriptExecutor {
 	 * @param sender
 	 * @param event
 	 * @return
+	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, final CommandSender sender, final Event event) {
+	public static Object run(@NonNull String javascript, final CommandSender sender, final Event event) throws FoScriptException {
 
 		// Mohist is unsupported
 		if (Bukkit.getName().equals("Mohist"))
@@ -219,12 +223,12 @@ public final class JavaScriptExecutor {
 
 			return result;
 
-		} catch (final Throwable ex) {
+		} catch (final ScriptException ex) {
 			final String message = ex.toString();
-			String errorMessage = "Unable to parse JavaScript code '" + javascript + "' for " + sender + ". Error: " + message;
+			String errorMessage = "Unable to parse JavaScript code on line '" + ex.getLineNumber() + "' for " + sender + ". Error: " + message;
 
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
-				errorMessage = "Found invalid or unparsed variable in " + javascript + ": " + ex.getMessage();
+				errorMessage = "Found invalid or unparsed variable on line " + ex.getLineNumber() + ": " + ex.getMessage();
 
 			// Special support for throwing exceptions in the JS code so that users
 			// can send messages to player directly if upstream supports that
@@ -239,7 +243,7 @@ public final class JavaScriptExecutor {
 				throw new EventHandledException(true);
 			}
 
-			throw new FoException(ex, errorMessage);
+			throw new FoScriptException(errorMessage, javascript, ex.getLineNumber(), ex);
 		}
 	}
 
@@ -261,8 +265,9 @@ public final class JavaScriptExecutor {
 	 * @param replacements
 	 *
 	 * @return
+	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull final String javascript, @NonNull final Map<String, Object> replacements) {
+	public static Object run(@NonNull final String javascript, @NonNull final Map<String, Object> replacements) throws FoScriptException {
 
 		// Mohist is unsupported
 		if (Bukkit.getName().equals("Mohist"))
@@ -275,25 +280,23 @@ public final class JavaScriptExecutor {
 			return javascript;
 		}
 
-		synchronized (engine) {
-			try {
-				engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
-				for (final Map.Entry<String, Object> replacement : replacements.entrySet()) {
-					final String key = replacement.getKey();
-					Valid.checkNotNull(key, "Key can't be null in javascript variables for code " + javascript + ": " + replacements);
+		for (final Map.Entry<String, Object> replacement : replacements.entrySet()) {
+			final String key = replacement.getKey();
+			Valid.checkNotNull(key, "Key can't be null in javascript variables for code " + javascript + ": " + replacements);
 
-					final Object value = replacement.getValue();
-					Valid.checkNotNull(value, "Value can't be null in javascript variables for key " + key + ": " + replacements);
+			final Object value = replacement.getValue();
+			Valid.checkNotNull(value, "Value can't be null in javascript variables for key " + key + ": " + replacements);
 
-					engine.put(key, value);
-				}
+			engine.put(key, value);
+		}
 
-				return engine.eval(javascript);
+		try {
+			return engine.eval(javascript);
 
-			} catch (final ScriptException ex) {
-				throw new RuntimeException("Script execution failed for '" + javascript + "'", ex);
-			}
+		} catch (final ScriptException ex) {
+			throw new FoScriptException(ex.getMessage(), javascript, ex.getLineNumber(), ex);
 		}
 	}
 }
