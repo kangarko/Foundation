@@ -221,7 +221,7 @@ public final class JavaScriptExecutor {
 
 		} catch (final Throwable ex) {
 			final String message = ex.toString();
-			String errorMessage = message;
+			String errorMessage = "Unable to parse JavaScript code '" + javascript + "' for " + sender + ". Error: " + message;
 
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
 				errorMessage = "Found invalid or unparsed variable in " + javascript + ": " + ex.getMessage();
