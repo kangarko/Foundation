@@ -234,9 +234,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String HEADER_CENTER_LETTER = "-";
 
 		/**
-		 * The padding of the header in case \<cente\> is used
+		 * The padding of the header in case \<center\> is used
 		 */
-		public static Integer HEADER_CENTER_PADDING = 150;
+		public static Integer HEADER_CENTER_PADDING = 130;
 
 		/**
 		 * Key for when plugin is reloading {@link org.mineacademy.fo.plugin.SimplePlugin}
