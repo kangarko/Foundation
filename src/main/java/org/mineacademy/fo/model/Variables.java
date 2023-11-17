@@ -63,12 +63,6 @@ public final class Variables {
 	 */
 	private static final Map<String, Map<String, String>> cache = ExpiringMap.builder().expiration(500, TimeUnit.MILLISECONDS).build();
 
-	/**
-	 * Should we replace javascript placeholders from variables/ folder automatically?
-	 * Used internally to prevent race condition
-	 */
-	private volatile static boolean REPLACE_JAVASCRIPT = true;
-
 	// ------------------------------------------------------------------------------------------------------------
 	// Custom variables
 	// ------------------------------------------------------------------------------------------------------------
@@ -180,25 +174,6 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Replaces variables in the messages using the message sender as an object to replace
-	 * player-related placeholders.
-	 *
-	 * We also support PlaceholderAPI and MVdWPlaceholderAPI (only if sender is a Player).
-	 *
-	 * @param messages
-	 * @param sender
-	 * @param replacements
-	 * @return
-	 */
-	public static List<String> replace(Iterable<String> messages, CommandSender sender, Map<String, Object> replacements) {
-
-		// Trick: Join the lines to only parse variables at once -- performance++ -- then split again
-		final String deliminer = "%FLVJ%";
-
-		return Arrays.asList(replace(String.join(deliminer, messages), sender, replacements).split(deliminer));
-	}
-
-	/**
 	 * Replaces variables in the message using the message sender as an object to replace
 	 * player-related placeholders.
 	 *
@@ -253,10 +228,10 @@ public final class Variables {
 	 * @param sender
 	 * @param replacements
 	 * @param colorize
-	 * @param script
+	 * @param replaceScript
 	 * @return
 	 */
-	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize, boolean script) {
+	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize, boolean replaceScript) {
 		if (message == null || message.isEmpty())
 			return "";
 
@@ -288,16 +263,8 @@ public final class Variables {
 		message = replaceHardVariables(sender, message);
 
 		// Custom placeholders
-		if (REPLACE_JAVASCRIPT && script) {
-			REPLACE_JAVASCRIPT = false;
-
-			try {
-				message = replaceJavascriptVariables0(message, sender, replacements);
-
-			} finally {
-				REPLACE_JAVASCRIPT = true;
-			}
-		}
+		if (replaceScript)
+			message = replaceJavascriptVariables0(message, sender, replacements);
 
 		// Support the & color system and replacing variables in variables
 		if (!message.startsWith("[JSON]")) {
@@ -340,11 +307,7 @@ public final class Variables {
 			final Variable variable = Variable.findVariable(variableKey.substring(1, variableKey.length() - 1));
 
 			if (variable != null && variable.getType() == Variable.Type.FORMAT) {
-				final SimpleComponent component = variable.build(sender, SimpleComponent.empty(), replacements);
-
-				// We do not support interact chat elements in format variables,
-				// so we just flatten the variable. Use formatting or chat variables instead.
-				String plain = component.getPlainMessage();
+				String plain = variable.buildPlain(sender, replacements);
 
 				// And we remove the white prefix that is by default added in every component
 				if (plain.startsWith(ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "f"))
