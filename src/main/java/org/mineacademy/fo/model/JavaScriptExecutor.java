@@ -142,10 +142,10 @@ public final class JavaScriptExecutor {
 			return null;
 
 		// Speed up
-		if (javascript.equals("true") || javascript.equals("!false") || javascript.equals("yes"))
+		if (javascript.equalsIgnoreCase("true") || javascript.equalsIgnoreCase("!false") || javascript.equalsIgnoreCase("yes"))
 			return true;
 
-		if (javascript.equals("false") || javascript.equals("!true") || javascript.equals("no"))
+		if (javascript.equalsIgnoreCase("false") || javascript.equalsIgnoreCase("!true") || javascript.equalsIgnoreCase("no"))
 			return false;
 
 		// Cache for highest performance
@@ -206,10 +206,10 @@ public final class JavaScriptExecutor {
 				if (resultString.endsWith("\"") || resultString.endsWith("'"))
 					resultString = resultString.substring(0, resultString.length() - 1);
 
-				if (resultString.equals("true"))
+				if (resultString.equalsIgnoreCase("true"))
 					result = true;
 
-				else if (resultString.equals("false"))
+				else if (resultString.equalsIgnoreCase("false"))
 					result = false;
 			}
 
