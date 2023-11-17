@@ -252,6 +252,53 @@ public final class Variable extends YamlConfig {
 	}
 
 	/**
+	 * Builds this variable without additional components
+	 *
+	 * @param sender
+	 * @param replacements
+	 * @return
+	 */
+	public String buildPlain(CommandSender sender, Map<String, Object> replacements) {
+
+		if (this.senderPermission != null && !this.senderPermission.isEmpty() && !PlayerUtil.hasPerm(sender, this.senderPermission))
+			return "";
+
+		if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
+
+			try {
+				final Object result = JavaScriptExecutor.run(Variables.replace(this.senderCondition, sender, replacements, true, false), sender);
+
+				if (result != null) {
+					Valid.checkBoolean(result instanceof Boolean, "Variable '" + this.getFileName() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+
+					if (!((boolean) result))
+						return "";
+				}
+
+			} catch (final FoScriptException ex) {
+				Common.logFramed(
+						"Error executing Sender_Condition in a variable!",
+						"Variable: " + this.getFileName(),
+						"Sender condition: " + this.senderCondition,
+						"Sender: " + sender,
+						"Replacements: " + replacements,
+						"Error: " + ex.getMessage(),
+						"",
+						"This is likely NOT a plugin bug,",
+						"check your JavaScript code in",
+						this.getFileName() + " in the 'Sender_Condition' key",
+						"before reporting it to us.");
+
+				throw ex;
+			}
+		}
+
+		final String value = this.getValue(sender, replacements);
+
+		return value == null || value.isEmpty() || "null".equals(value) ? "" : value;
+	}
+
+	/**
 	 * Create the variable and append it to the existing component as if the player initiated it
 	 *
 	 * @param sender
@@ -304,8 +351,12 @@ public final class Variable extends YamlConfig {
 				.viewPermission(this.receiverPermission)
 				.viewCondition(this.receiverCondition);
 
-		if (!Valid.isNullOrEmpty(this.hoverText))
-			component.onHover(Variables.replace(this.hoverText, sender, replacements));
+		if (!Valid.isNullOrEmpty(this.hoverText)) {
+			// Trick: Join the lines to only parse variables at once -- performance++ -- then split again
+			final String deliminer = "%FLVJ%";
+
+			component.onHover(Variables.replace(String.join(deliminer, this.hoverText), sender, replacements, true, false).split(deliminer));
+		}
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 
@@ -334,13 +385,13 @@ public final class Variable extends YamlConfig {
 		}
 
 		if (this.openUrl != null && !this.openUrl.isEmpty())
-			component.onClickOpenUrl(Variables.replace(this.openUrl, sender, replacements));
+			component.onClickOpenUrl(Variables.replace(this.openUrl, sender, replacements, true, false));
 
 		if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
-			component.onClickSuggestCmd(Variables.replace(this.suggestCommand, sender, replacements));
+			component.onClickSuggestCmd(Variables.replace(this.suggestCommand, sender, replacements, true, false));
 
 		if (this.runCommand != null && !this.runCommand.isEmpty())
-			component.onClickRunCmd(Variables.replace(this.runCommand, sender, replacements));
+			component.onClickRunCmd(Variables.replace(this.runCommand, sender, replacements, true, false));
 
 		return component;
 	}
