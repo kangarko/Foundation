@@ -287,6 +287,7 @@ public final class Remain {
 
 		try {
 
+			final String version = Bukkit.getVersion();
 			final boolean hasNMS = MinecraftVersion.atLeast(V.v1_4);
 
 			// Load optional parts
@@ -413,7 +414,7 @@ public final class Remain {
 				// unsupported
 			}
 
-			isFolia = Bukkit.getVersion().contains("Folia");
+			isFolia = version.contains("Folia") || version.contains("Kaiiju");
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new UnsupportedOperationException("Failed to set up reflection, " + SimplePlugin.getNamed() + " won't work properly", ex);
