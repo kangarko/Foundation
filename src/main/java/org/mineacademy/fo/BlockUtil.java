@@ -644,7 +644,7 @@ public final class BlockUtil {
 		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
-			if (!CompMaterial.isAir(block)) {
+			if (!CompMaterial.isAir(block) && !block.getType().toString().equals("BARRIER")) {
 
 				if (block.getType() == CompMaterial.SNOW_BLOCK.getMaterial())
 					return -1;
