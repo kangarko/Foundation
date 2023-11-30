@@ -416,6 +416,7 @@ public final class PlayerUtil {
 
 				try {
 					CompAttribute.GENERIC_MAX_HEALTH.set(player, 20);
+					CompAttribute.GENERIC_ATTACK_SPEED.set(player, 4.0);
 
 				} catch (final Throwable t) {
 					try {
