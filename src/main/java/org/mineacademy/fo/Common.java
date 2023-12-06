@@ -43,6 +43,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
@@ -671,15 +673,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -2579,12 +2581,20 @@ public final class Common {
 		}
 
 		try {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), runnable, delayTicks));
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskLater(SimplePlugin.getInstance(), delayTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), runnable, delayTicks);
+
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
 
 			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(task);
+				((SimpleRunnable) runnable).setupTask(simpleTask);
 
-			return task;
+			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
 			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
@@ -2626,12 +2636,20 @@ public final class Common {
 		}
 
 		try {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks));
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskLaterAsynchronously(SimplePlugin.getInstance(), delayTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks);
+
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
 
 			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(task);
+				((SimpleRunnable) runnable).setupTask(simpleTask);
 
-			return task;
+			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
 			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
@@ -2668,12 +2686,20 @@ public final class Common {
 		}
 
 		try {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks));
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
+
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
 
 			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(task);
+				((SimpleRunnable) runnable).setupTask(simpleTask);
 
-			return task;
+			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
 			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
@@ -2710,12 +2736,20 @@ public final class Common {
 		}
 
 		try {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks));
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
+
+			final SimpleTask simplTask = SimpleTask.fromBukkit(task);
 
 			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(task);
+				((SimpleRunnable) runnable).setupTask(simplTask);
 
-			return task;
+			return simplTask;
 
 		} catch (final NoSuchMethodError err) {
 			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
