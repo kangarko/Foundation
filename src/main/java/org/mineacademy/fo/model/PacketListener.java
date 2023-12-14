@@ -300,7 +300,14 @@ public abstract class PacketListener {
 
 				// System chat
 				if (this.systemChat) {
-					this.jsonMessage = event.getPacket().getStrings().read(0);
+
+					try {
+						// Minecraft 1.20.4+ uses Component field instead of text
+						this.jsonMessage = event.getPacket().getChatComponents().read(0).getJson();
+
+					} catch (final Exception ex) {
+						this.jsonMessage = event.getPacket().getStrings().read(0);
+					}
 
 					if (this.jsonMessage != null)
 						return Remain.toLegacyText(this.jsonMessage, false);
