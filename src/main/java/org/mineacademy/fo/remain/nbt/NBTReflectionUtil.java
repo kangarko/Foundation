@@ -31,38 +31,6 @@ public class NBTReflectionUtil {
 	private static Field field_unhandledTags = null;
 	private static Field field_handle = null;
 
-	private static Gson gson = new Gson();
-
-	/**
-	 * Turns Objects into Json Strings
-	 *
-	 * @param obj
-	 * @return Json, representing the Object
-	 */
-	public static String getGsonString(Object obj) {
-		return gson.toJson(obj);
-	}
-
-	/**
-	 * Creates an Object of the given type using the Json String
-	 *
-	 * @param json
-	 * @param type
-	 * @return Object that got created, or null if the json is null
-	 */
-	public static <T> T deserializeJson(String json, Class<T> type) {
-		try {
-			if (json == null) {
-				return null;
-			}
-
-			final T obj = gson.fromJson(json, type);
-			return type.cast(obj);
-		} catch (final Exception ex) {
-			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
-		}
-	}
-
 	static {
 		try {
 			field_unhandledTags = ClassWrapper.CRAFT_METAITEM.getClazz().getDeclaredField("unhandledTags");
@@ -107,7 +75,11 @@ public class NBTReflectionUtil {
 	 */
 	public static Object readNBT(InputStream stream) {
 		try {
-			return ReflectionMethod.NBTFILE_READ.run(null, stream);
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R3)) {
+				return ReflectionMethod.NBTFILE_READV2.run(null, stream, ReflectionMethod.NBTACCOUNTER_CREATE_UNLIMITED.run(null));
+			} else {
+				return ReflectionMethod.NBTFILE_READ.run(null, stream);
+			}
 		} catch (final Exception e) {
 			try {
 				stream.close();
@@ -535,6 +507,8 @@ public class NBTReflectionUtil {
 		}
 	}
 
+	private static Gson gson = new Gson();
+
 	/**
 	 * Uses Gson to set a {@link Serializable} value in a Compound
 	 *
@@ -544,7 +518,7 @@ public class NBTReflectionUtil {
 	 */
 	public static void setObject(NBTCompound comp, String key, Object value) {
 		try {
-			final String json = getGsonString(value);
+			final String json = gson.toJson(value);
 			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
@@ -567,6 +541,19 @@ public class NBTReflectionUtil {
 		return deserializeJson(json, type);
 	}
 
+	private static <T> T deserializeJson(String json, Class<T> type) {
+		try {
+			if (json == null) {
+				return null;
+			}
+
+			final T obj = gson.fromJson(json, type);
+			return type.cast(obj);
+		} catch (final Exception ex) {
+			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
+		}
+	}
+
 	/**
 	 * Deletes the given key
 	 *
@@ -575,10 +562,7 @@ public class NBTReflectionUtil {
 	 */
 	public static void remove(NBTCompound comp, String key) {
 		final Object rootnbttag = comp.getCompound();
-		if (rootnbttag == null) {
-			return;
-		}
-		if (!valideCompound(comp))
+		if ((rootnbttag == null) || !valideCompound(comp))
 			return;
 		final Object workingtag = gettoCompount(rootnbttag, comp);
 		ReflectionMethod.COMPOUND_REMOVE_KEY.run(workingtag, key);

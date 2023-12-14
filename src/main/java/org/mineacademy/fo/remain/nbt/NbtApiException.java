@@ -60,10 +60,7 @@ public class NbtApiException extends RuntimeException {
 	}
 
 	private static String generateMessage(String message) {
-		if (message == null)
-			return null;
-
-		return "[" + MinecraftVersion.getVersion() + "] " + message;
+		return message;
 	}
 
 }

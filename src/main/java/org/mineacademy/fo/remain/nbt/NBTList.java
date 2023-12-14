@@ -18,9 +18,9 @@ import java.util.function.Predicate;
  */
 public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 
-	private final String listName;
-	private final NBTCompound parent;
-	private final NBTType type;
+	private String listName;
+	private NBTCompound parent;
+	private NBTType type;
 	protected Object listObject;
 
 	protected NBTList(NBTCompound owner, String name, NBTType type, Object list) {
@@ -76,7 +76,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 			}
 			save();
 			return true;
-		} catch (final Exception ex) {
+		} catch (Exception ex) {
 			throw new NbtApiException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
@@ -95,7 +95,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, asTag(element));
 			}
 			save();
-		} catch (final Exception ex) {
+		} catch (Exception ex) {
 			throw new NbtApiException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
@@ -108,11 +108,11 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateWritable();
 		try {
 			parent.getWriteLock().lock();
-			final T prev = get(index);
+			T prev = get(index);
 			ReflectionMethod.LIST_SET.run(listObject, index, asTag(element));
 			save();
 			return prev;
-		} catch (final Exception ex) {
+		} catch (Exception ex) {
 			throw new NbtApiException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
@@ -125,11 +125,11 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateWritable();
 		try {
 			parent.getWriteLock().lock();
-			final T old = get(i);
+			T old = get(i);
 			ReflectionMethod.LIST_REMOVE_KEY.run(listObject, i);
 			save();
 			return old;
-		} catch (final Exception ex) {
+		} catch (Exception ex) {
 			throw new NbtApiException(ex);
 		} finally {
 			parent.getWriteLock().unlock();
@@ -142,7 +142,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		try {
 			parent.getReadLock().lock();
 			return (int) ReflectionMethod.LIST_SIZE.run(listObject);
-		} catch (final Exception ex) {
+		} catch (Exception ex) {
 			throw new NbtApiException(ex);
 		} finally {
 			parent.getReadLock().unlock();
@@ -204,8 +204,8 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getWriteLock().lock();
-			final int size = size();
-			for (final T ele : c) {
+			int size = size();
+			for (T ele : c) {
 				add(ele);
 			}
 			return size != size();
@@ -219,8 +219,8 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getWriteLock().lock();
-			final int size = size();
-			for (final T ele : c) {
+			int size = size();
+			for (T ele : c) {
 				add(index++, ele);
 			}
 			return size != size();
@@ -234,7 +234,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getReadLock().lock();
-			for (final Object ele : c) {
+			for (Object ele : c) {
 				if (!contains(ele))
 					return false;
 			}
@@ -265,8 +265,8 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getWriteLock().lock();
-			final int size = size();
-			for (final Object obj : c) {
+			int size = size();
+			for (Object obj : c) {
 				remove(obj);
 			}
 			return size != size();
@@ -280,8 +280,8 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getWriteLock().lock();
-			final int size = size();
-			for (final Object obj : c) {
+			int size = size();
+			for (Object obj : c) {
 				for (int i = 0; i < size(); i++) {
 					if (!obj.equals(get(i))) {
 						remove(i--);
@@ -299,7 +299,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getWriteLock().lock();
-			final int size = size();
+			int size = size();
 			int id = -1;
 			while ((id = indexOf(o)) != -1) {
 				remove(id);
@@ -405,7 +405,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getReadLock().lock();
-			final Object[] ar = new Object[size()];
+			Object[] ar = new Object[size()];
 			for (int i = 0; i < size(); i++)
 				ar[i] = get(i);
 			return ar;
@@ -419,11 +419,11 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getReadLock().lock();
-			final E[] ar = Arrays.copyOf(a, size());
+			E[] ar = Arrays.copyOf(a, size());
 			Arrays.fill(ar, null);
-			final Class<?> arrayclass = a.getClass().getComponentType();
+			Class<?> arrayclass = a.getClass().getComponentType();
 			for (int i = 0; i < size(); i++) {
-				final T obj = get(i);
+				T obj = get(i);
 				if (arrayclass.isInstance(obj)) {
 					ar[i] = (E) get(i);
 				} else {
@@ -441,7 +441,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		validateClosed();
 		try {
 			parent.getReadLock().lock();
-			final ArrayList<T> list = new ArrayList<>();
+			ArrayList<T> list = new ArrayList<>();
 			for (int i = fromIndex; i < toIndex; i++)
 				list.add(get(i));
 			return list;

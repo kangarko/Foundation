@@ -21,9 +21,7 @@ enum ObjectCreator {
 	private Class<?> targetClass;
 
 	ObjectCreator(MinecraftVersion from, MinecraftVersion to, Class<?> clazz, Class<?>... args) {
-		if (clazz == null)
-			return;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
+		if ((clazz == null) || (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()))
 			return;
 		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
 			return;

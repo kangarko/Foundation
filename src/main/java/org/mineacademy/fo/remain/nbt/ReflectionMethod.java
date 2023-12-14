@@ -234,8 +234,19 @@ enum ReflectionMethod {
 			new Since(MinecraftVersion.MC1_14_R1, "getSaveID"), new Since(MinecraftVersion.MC1_18_R1, "getEncodeId()")),
 
 	NBTFILE_READ(ClassWrapper.NMS_NBTCOMPRESSEDSTREAMTOOLS, new Class[] { InputStream.class },
-			MinecraftVersion.MC1_7_R4, new Since(MinecraftVersion.MC1_7_R4, "a"),
+			MinecraftVersion.MC1_7_R4, MinecraftVersion.MC1_20_R2, new Since(MinecraftVersion.MC1_7_R4, "a"),
 			new Since(MinecraftVersion.MC1_18_R1, "readCompressed(java.io.InputStream)")),
+
+	NBTFILE_READV2(ClassWrapper.NMS_NBTCOMPRESSEDSTREAMTOOLS,
+			new Class[] { InputStream.class, ClassWrapper.NMS_NBTACCOUNTER.getClazz() }, MinecraftVersion.MC1_20_R3,
+			new Since(MinecraftVersion.MC1_20_R3,
+					"readCompressed(java.io.InputStream,net.minecraft.nbt.NbtAccounter)")),
+
+	NBTACCOUNTER_CREATE_UNLIMITED(ClassWrapper.NMS_NBTACCOUNTER,
+			new Class[] {}, MinecraftVersion.MC1_20_R3,
+			new Since(MinecraftVersion.MC1_20_R3,
+					"unlimitedHeap()")),
+
 	NBTFILE_WRITE(ClassWrapper.NMS_NBTCOMPRESSEDSTREAMTOOLS,
 			new Class[] { ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz(), OutputStream.class }, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "a"),
@@ -341,12 +352,10 @@ enum ReflectionMethod {
 				loaded = true;
 				methodName = targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				MinecraftVersion.getLogger()
-						.warning("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '"
-								+ (targetClass.getClazz() == null ? targetClass.getMojangName()
-										: targetClass.getClazz().getSimpleName())
-								+ "' Args: " + Arrays.toString(args) + " Enum: " + this); // NOSONAR This gets loaded
-																																																																												// before the logger is loaded
+				ex2.printStackTrace();
+
+				// NOSONAR This gets loaded before the logger
+				System.out.println("Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
 			}
 		}
 	}
@@ -357,7 +366,7 @@ enum ReflectionMethod {
 
 	/**
 	 * Runs the method on a given target object using the given args.
-	 * 
+	 *
 	 * @param target
 	 * @param args
 	 * @return Value returned by the method

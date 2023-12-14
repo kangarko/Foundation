@@ -8,8 +8,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
-enum ClassWrapper {
+public enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
 	CRAFT_ENTITY(PackageWrapper.CRAFTBUKKIT, "entity.CraftEntity", null, null),
@@ -58,6 +57,7 @@ enum ClassWrapper {
 			"net.minecraft.nbt.NbtUtils"),
 	NMS_IBLOCKDATA(PackageWrapper.NMS, "IBlockData", MinecraftVersion.MC1_8_R3, null,
 			"net.minecraft.world.level.block.state", "net.minecraft.world.level.block.state.BlockState"),
+	NMS_NBTACCOUNTER(PackageWrapper.NMS, "NBTReadLimiter", MinecraftVersion.MC1_20_R3, null, "net.minecraft.nbt", "net.minecraft.nbt.NbtAccounter"),
 	GAMEPROFILE(PackageWrapper.NONE, "com.mojang.authlib.GameProfile", MinecraftVersion.MC1_8_R3, null);
 
 	private Class<?> clazz;
@@ -71,10 +71,7 @@ enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) {
-			return;
-		}
-		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()) {
+		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())) {
 			return;
 		}
 		enabled = true;
@@ -100,7 +97,7 @@ enum ClassWrapper {
 				clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
+			Common.error(ex, "Error while trying to resolve the class '" + clazzName + "'!");
 		}
 	}
 
