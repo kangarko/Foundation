@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.inventory.ItemStack;
 
-public final class NBTHandlers {
+public class NBTHandlers {
 
 	public static final NBTHandler<ItemStack> ITEM_STACK = new NBTHandler<ItemStack>() {
 
@@ -14,13 +14,13 @@ public final class NBTHandlers {
 		@Override
 		public void set(ReadWriteNBT nbt, String key, ItemStack value) {
 			nbt.removeKey(key);
-			final ReadWriteNBT tag = nbt.getOrCreateCompound(key);
+			ReadWriteNBT tag = nbt.getOrCreateCompound(key);
 			tag.mergeCompound(NBT.itemStackToNBT(value));
 		}
 
 		@Override
 		public ItemStack get(ReadableNBT nbt, String key) {
-			final ReadableNBT tag = nbt.getCompound(key);
+			ReadableNBT tag = nbt.getCompound(key);
 			if (tag != null) {
 				return NBT.itemStackFromNBT(tag);
 			}
@@ -44,9 +44,9 @@ public final class NBTHandlers {
 
 		@Override
 		public ReadableNBT get(ReadableNBT nbt, String key) {
-			final ReadableNBT tag = nbt.getCompound(key);
+			ReadableNBT tag = nbt.getCompound(key);
 			if (tag != null) {
-				final ReadWriteNBT value = NBT.createNBTObject();
+				ReadWriteNBT value = NBT.createNBTObject();
 				value.mergeCompound(tag);
 				return value;
 			}
@@ -70,9 +70,9 @@ public final class NBTHandlers {
 
 		@Override
 		public ReadWriteNBT get(ReadableNBT nbt, String key) {
-			final ReadableNBT tag = nbt.getCompound(key);
+			ReadableNBT tag = nbt.getCompound(key);
 			if (tag != null) {
-				final ReadWriteNBT value = NBT.createNBTObject();
+				ReadWriteNBT value = NBT.createNBTObject();
 				value.mergeCompound(tag);
 				return value;
 			}
