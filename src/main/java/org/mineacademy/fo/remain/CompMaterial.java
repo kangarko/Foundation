@@ -2478,10 +2478,17 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static CompMaterial fromMaterial(@NonNull Material material) {
-		final CompMaterial compmaterial = fromLegacy(material.name(), UNKNOWN_DATA_VALUE);
-		Valid.checkNotNull(compmaterial, "Unsupported material with no data value: " + material.name());
 
-		return compmaterial;
+		try {
+			return CompMaterial.valueOf(material.toString());
+
+		} catch (final Throwable t) {
+			final CompMaterial compmaterial = fromLegacy(material.name(), UNKNOWN_DATA_VALUE);
+			Valid.checkNotNull(compmaterial, "Unsupported material with no data value: " + material.name());
+
+			return compmaterial;
+
+		}
 	}
 
 	/**
