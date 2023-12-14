@@ -31,7 +31,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
 
 /**
@@ -68,16 +67,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 	 * @param name
 	 */
 	protected SimpleEnchantment(String name, int maxLevel) {
-		super(toKey(name));
 
-		this.name = name;
-		this.maxLevel = maxLevel;
-
-		Remain.registerEnchantment(this);
-	}
-
-	// Convert a name into a namespace
-	private static NamespacedKey toKey(@NonNull String name) {
 		if (!MinecraftVersion.atLeast(V.v1_13))
 			throw new RuntimeException("SimpleEnchantment requires Minecraft 1.13.2 or greater. Cannot make " + name);
 
@@ -86,6 +76,15 @@ public abstract class SimpleEnchantment extends Enchantment {
 		name = ChatUtil.replaceDiacritic(name);
 
 		Valid.checkBoolean(name != null && VALID_NAMESPACE.matcher(name).matches(), "Enchant name must only contain English alphabet names: " + name);
+
+		this.name = name;
+		this.maxLevel = maxLevel;
+
+		Remain.registerEnchantment(this);
+	}
+
+	@Override
+	public NamespacedKey getKey() {
 		return new NamespacedKey(SimplePlugin.getInstance(), name);
 	}
 

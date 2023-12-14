@@ -1394,31 +1394,43 @@ public final class Remain {
 	 * Register a new enchantment in Bukkit, unregistering it first to avoid errors
 	 *
 	 * @param enchantment
+	 * @deprecated does not work in 1.20+
 	 */
+	@Deprecated
 	public static void registerEnchantment(final Enchantment enchantment) {
-		unregisterEnchantment(enchantment);
 
-		ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
-		Enchantment.registerEnchantment(enchantment);
+		if (MinecraftVersion.olderThan(V.v1_20))
+			try {
+				unregisterEnchantment(enchantment);
+
+				ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
+				Enchantment.class.getDeclaredMethod("registerEnchantment", Enchantment.class).invoke(null, enchantment);
+			} catch (final Throwable t) {
+				t.printStackTrace();
+			}
 	}
 
 	/**
 	 * Unregister an enchantment from Bukkit. Works even for vanilla MC enchantments (found in Enchantment class)
 	 *
 	 * @param enchantment
+	 * @deprecated does not work in 1.20+
 	 */
+	@Deprecated
 	public static void unregisterEnchantment(final Enchantment enchantment) {
 
-		if (MinecraftVersion.atLeast(V.v1_13)) { // Unregister by key
-			final Map<NamespacedKey, Enchantment> byKey = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byKey");
+		if (MinecraftVersion.olderThan(V.v1_20)) {
+			if (MinecraftVersion.atLeast(V.v1_13)) { // Unregister by key
+				final Map<NamespacedKey, Enchantment> byKey = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byKey");
 
-			byKey.remove(enchantment.getKey());
-		}
+				byKey.remove(enchantment.getKey());
+			}
 
-		{ // Unregister by name
-			final Map<String, Enchantment> byName = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byName");
+			{ // Unregister by name
+				final Map<String, Enchantment> byName = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byName");
 
-			byName.remove(enchantment.getName());
+				byName.remove(enchantment.getName());
+			}
 		}
 	}
 
