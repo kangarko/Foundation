@@ -238,19 +238,19 @@ public final class Variables {
 		final String original = message;
 		final boolean senderIsPlayer = sender instanceof Player;
 
-		// Replace custom variables first
-		if (replacements != null && !replacements.isEmpty())
-			message = Replacer.replaceArray(message, replacements);
-
 		if (senderIsPlayer) {
 
 			// Already cached ? Return.
 			final Map<String, String> cached = cache.get(sender.getName());
 			final String cachedVar = cached != null ? cached.get(message) : null;
 
-			if (cachedVar != null)
+			if (cachedVar != null && !cachedVar.contains("flpm_") && !cachedVar.contains("flps_"))
 				return cachedVar;
 		}
+
+		// Replace custom variables first
+		if (replacements != null && !replacements.isEmpty())
+			message = Replacer.replaceArray(message, replacements);
 
 		// PlaceholderAPI and MVdWPlaceholderAPI
 		if (senderIsPlayer)
@@ -259,8 +259,10 @@ public final class Variables {
 		else if (sender instanceof DiscordSender)
 			message = HookManager.replacePlaceholders(((DiscordSender) sender).getOfflinePlayer(), message);
 
-		// Default
-		message = replaceHardVariables(sender, message);
+		// Replace hard variables
+		message = replaceHardVariables0(sender, message, Variables.VARIABLE_PATTERN.matcher(message));
+		message = replaceHardVariables0(sender, message, Variables.BRACKET_VARIABLE_PATTERN.matcher(message));
+		message = Messenger.replacePrefixes(message);
 
 		// Custom placeholders
 		if (replaceScript)
@@ -316,22 +318,6 @@ public final class Variables {
 				message = message.replace(variableKey, plain);
 			}
 		}
-
-		return message;
-	}
-
-	/**
-	 * Replaces our hardcoded variables in the message, using a cache for better performance
-	 *
-	 * @param sender
-	 * @param message
-	 * @return
-	 */
-	public static String replaceHardVariables(CommandSender sender, String message) {
-
-		message = replaceHardVariables0(sender, message, Variables.VARIABLE_PATTERN.matcher(message));
-		message = replaceHardVariables0(sender, message, Variables.BRACKET_VARIABLE_PATTERN.matcher(message));
-		message = Messenger.replacePrefixes(message);
 
 		return message;
 	}
