@@ -23,7 +23,9 @@ import org.mineacademy.fo.remain.Remain;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.FieldAccessException;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.AdventureComponentConverter;
 import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
@@ -430,7 +432,7 @@ public abstract class PacketListener {
 		 * Writes the edited message as JSON format from the event
 		 */
 		private void writeEditedMessage(String message, PacketEvent event) {
-			final StructureModifier<Object> packet = event.getPacket().getModifier();
+			final PacketContainer packet = event.getPacket();
 
 			this.jsonMessage = Remain.toJson(message);
 
@@ -439,7 +441,7 @@ public abstract class PacketListener {
 				// We first need to get rid of Adventure library adding an extra field, so that the string JSON will be used below
 				// Thanks to lukalt for help! https://github.com/dmulloy2/ProtocolLib/issues/2330#issuecomment-1517542145
 				try {
-					final StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
+					final StructureModifier<Object> adventureModifier = packet.getModifier().withType(AdventureComponentConverter.getComponentClass());
 
 					if (!adventureModifier.getFields().isEmpty())
 						adventureModifier.write(0, null);
@@ -448,16 +450,21 @@ public abstract class PacketListener {
 					// Ignore if Adventure is unavailable
 				}
 
-				event.getPacket().getStrings().write(0, this.jsonMessage);
+				try {
+					packet.getChatComponents().write(0, WrappedChatComponent.fromJson(this.jsonMessage));
+
+				} catch (final FieldAccessException t) {
+					packet.getStrings().write(0, this.jsonMessage);
+				}
 
 			} else if (this.isBaseComponent)
-				packet.writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
+				packet.getModifier().writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
 
 			else if (MinecraftVersion.atLeast(V.v1_7))
-				event.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(this.jsonMessage));
+				packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(this.jsonMessage));
 
 			else
-				event.getPacket().getStrings().writeSafely(0, SerializedMap.of("text", this.jsonMessage.substring(1, this.jsonMessage.length() - 1)).toJson());
+				packet.getStrings().writeSafely(0, SerializedMap.of("text", this.jsonMessage.substring(1, this.jsonMessage.length() - 1)).toJson());
 		}
 
 		/**
