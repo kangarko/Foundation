@@ -87,6 +87,8 @@ Foundation works on Bukkit, Spigot, Paper and as of recently also Folia (see the
 
 © MineAcademy.org
 
+Tl;dl: You can do whatever you want as long as you don't claim Foundation as your own or don't sell or resell parts of it. If you are not a paying student of MineAcademy however, you MUST place a link to this GitHub page in your sales pages (example Overview pages on Spigot) if your paid software is using Foundation.
+
 1) **If you are a paying student of MineAcademy.org** then you can use, modify and
 reproduce Foundation both commercially and non-commercially for yourself, your team
 or network without attribution.
