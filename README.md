@@ -87,12 +87,11 @@ Foundation works on Bukkit, Spigot, Paper and as of recently also Folia (see the
 
 © MineAcademy.org
 
-1) **If you are a paying student of MineAcademy.org** then you are granted full
-unlimited licence to use, modify and reproduce Foundation both commercially
-and non-commercially for yourself, your team or network without stating 
-that you are using this library.
+1) **If you are a paying student of MineAcademy.org** then you can use, modify and
+reproduce Foundation both commercially and non-commercially for yourself, your team
+or network without attribution.
 
-2) **If you are not a paying student of MineAcademy.org** then you may
+4) **If you are not a paying student of MineAcademy.org** then you may
 use this library as stated above however you must clearly attribute that you
 are using Foundation in your software by linking to this GitHub page.
 
