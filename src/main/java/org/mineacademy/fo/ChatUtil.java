@@ -533,89 +533,67 @@ public final class ChatUtil {
 		return msg.startsWith("[JSON]") || msg.startsWith("<toast>") || msg.startsWith("<title>") || msg.startsWith("<actionbar>") || msg.startsWith("<bossbar>");
 	}
 
-	/**
-	 * Automatically add gradient for the given string using the two colors as start/ending colors
-	 *
-	 * @param message
-	 * @param fromColor
-	 * @param toColor the color, such as #FF1122 or &c or red
-	 * @return
-	 */
-	public static String generateGradient(String message, String fromColor, String toColor) {
-		return generateGradient(message, CompChatColor.of(fromColor), CompChatColor.of(toColor));
-	}
+    /**
+     * Automatically add gradient for the given string using the two colors as start/ending colors
+     *
+     * @param message
+     * @param fromColor
+     * @param toColor the color, such as #FF1122 or &c or red
+     * @return
+     */
+    public static String generateGradient(String message, String fromColor, String toColor) {
+        return generateGradient(message, CompChatColor.of(fromColor).getColor(), CompChatColor.of(toColor).getColor());
+    }
 
-	/**
-	 * Automatically add gradient for the given string using the two colors as start/ending colors
-	 *
-	 * @param message
-	 * @param fromColor
-	 * @param toColor
-	 * @return
-	 */
-	public static String generateGradient(String message, CompChatColor fromColor, CompChatColor toColor) {
-		return generateGradient(message, fromColor.getColor(), toColor.getColor());
-	}
+    /**
+     * Automatically add gradient for the given string using the two colors as start/ending colors
+     *
+     * @param message
+     * @param fromColor
+     * @param toColor
+     * @return
+     */
+    public static String generateGradient(String message, Color fromColor, Color toColor) {
+        if (!MinecraftVersion.atLeast(V.v1_16))
+            return message;
 
-	/**
-	 * Automatically add gradient for the given string using the two colors as start/ending colors
-	 *
-	 * @param message
-	 * @param fromColor
-	 * @param toColor
-	 * @return
-	 */
-	public static String generateGradient(String message, Color fromColor, Color toColor) {
-		if (!MinecraftVersion.atLeast(V.v1_16))
-			return message;
+        final char[] letters = message.toCharArray();
+        String gradient = "";
+        final List<String> decorations = new ArrayList<>();
+        final int totalSteps = message.length();
 
-		final char[] letters = message.toCharArray();
-		String gradient = "";
+        Gradient gradientGenerator = new Gradient(Arrays.asList(fromColor, toColor), totalSteps);
 
-		final List<String> decorations = new ArrayList<>();
+        for (int i = 0; i < letters.length; i++) {
+            final char letter = letters[i];
 
-		for (int i = 0; i < letters.length; i++) {
-			final char letter = letters[i];
+            // Support color decoration and insert it manually after each character
+            if (letter == ChatColor.COLOR_CHAR && i + 1 < letters.length) {
+                final char decoration = letters[i + 1];
 
-			// Support color decoration and insert it manually after each character
-			if (letter == ChatColor.COLOR_CHAR && i + 1 < letters.length) {
-				final char decoration = letters[i + 1];
+                if (decoration == 'k')
+                    decorations.add(ChatColor.MAGIC.toString());
+                else if (decoration == 'l')
+                    decorations.add(ChatColor.BOLD.toString());
+                else if (decoration == 'm')
+                    decorations.add(ChatColor.STRIKETHROUGH.toString());
+                else if (decoration == 'n')
+                    decorations.add(ChatColor.UNDERLINE.toString());
+                else if (decoration == 'o')
+                    decorations.add(ChatColor.ITALIC.toString());
+                else if (decoration == 'r')
+                    decorations.add(ChatColor.RESET.toString());
 
-				if (decoration == 'k')
-					decorations.add(ChatColor.MAGIC.toString());
+                i++;
+                continue;
+            }
 
-				else if (decoration == 'l')
-					decorations.add(ChatColor.BOLD.toString());
+            Color stepColor = gradientGenerator.next();
+            gradient += CompChatColor.of(stepColor) + String.join("", decorations) + letter;
+        }
 
-				else if (decoration == 'm')
-					decorations.add(ChatColor.STRIKETHROUGH.toString());
-
-				else if (decoration == 'n')
-					decorations.add(ChatColor.UNDERLINE.toString());
-
-				else if (decoration == 'o')
-					decorations.add(ChatColor.ITALIC.toString());
-
-				else if (decoration == 'r')
-					decorations.add(ChatColor.RESET.toString());
-
-				i++;
-				continue;
-			}
-
-			final float ratio = (float) i / (float) letters.length;
-
-			final int red = (int) (toColor.getRed() * ratio + fromColor.getRed() * (1 - ratio));
-			final int green = (int) (toColor.getGreen() * ratio + fromColor.getGreen() * (1 - ratio));
-			final int blue = (int) (toColor.getBlue() * ratio + fromColor.getBlue() * (1 - ratio));
-
-			final Color stepColor = new Color(red, green, blue);
-
-			gradient += CompChatColor.of(stepColor) + String.join("", decorations) + letters[i];
-		}
-
-		return gradient;
-	}
+        return gradient;
+    }
 
 	// --------------------------------------------------------------------------------
 	// Helpers
