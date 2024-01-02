@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -16,7 +15,6 @@ import javax.script.ScriptException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
@@ -149,14 +147,14 @@ public final class JavaScriptExecutor {
 			return false;
 
 		// Cache for highest performance
-		Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
-
+		/*Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
+		
 		if (cached != null) {
 			final Object result = cached.get(javascript);
-
+		
 			if (result != null)
 				return result;
-		}
+		}*/
 
 		if (engine == null) {
 			Common.warning("Not running script" + (sender == null ? "" : " for " + sender.getName()) + " because JavaScript library is missing "
@@ -213,19 +211,19 @@ public final class JavaScriptExecutor {
 					result = false;
 			}
 
-			if (sender instanceof Player) {
+			/*if (sender instanceof Player) {
 				if (cached == null)
 					cached = new HashMap<>();
-
+			
 				cached.put(javascript, result);
 				resultCache.put(((Player) sender).getUniqueId(), cached);
-			}
+			}*/
 
 			return result;
 
 		} catch (final ScriptException ex) {
 			final String message = ex.toString();
-			String errorMessage = "Unable to parse JavaScript code on line '" + ex.getLineNumber() + "' for " + sender + ". Error: " + message;
+			String errorMessage = "Unable to parse JavaScript code on line '" + ex.getLineNumber() + "' for " + (sender == null ? "null sender" : sender.getName()) + ". Error: " + message;
 
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
 				errorMessage = "Found invalid or unparsed variable on line " + ex.getLineNumber() + ": " + ex.getMessage();
