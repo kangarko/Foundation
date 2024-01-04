@@ -148,10 +148,10 @@ public final class JavaScriptExecutor {
 
 		// Cache for highest performance
 		/*Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
-		
+
 		if (cached != null) {
 			final Object result = cached.get(javascript);
-		
+
 			if (result != null)
 				return result;
 		}*/
@@ -193,6 +193,12 @@ public final class JavaScriptExecutor {
 				javascript = String.join("\n", replaced);
 			}
 
+			if (sender == null && javascript.contains("player.")) {
+				Common.warning("Not running JavaScript it contains 'player' but player was not provided. Script: " + javascript);
+
+				return false;
+			}
+
 			result = engine.eval(javascript);
 
 			if (result instanceof String) {
@@ -214,7 +220,7 @@ public final class JavaScriptExecutor {
 			/*if (sender instanceof Player) {
 				if (cached == null)
 					cached = new HashMap<>();
-			
+
 				cached.put(javascript, result);
 				resultCache.put(((Player) sender).getUniqueId(), cached);
 			}*/
@@ -222,11 +228,12 @@ public final class JavaScriptExecutor {
 			return result;
 
 		} catch (final ScriptException ex) {
+			final String senderName = (sender == null ? "null sender" : sender.getName());
 			final String message = ex.toString();
-			String errorMessage = "Unable to parse JavaScript code on line '" + ex.getLineNumber() + "' for " + (sender == null ? "null sender" : sender.getName()) + ". Error: " + message;
+			String errorMessage = "Unable to parse JavaScript code on line '" + ex.getLineNumber() + "' for sender '" + senderName + "'. Error: " + message;
 
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
-				errorMessage = "Found invalid or unparsed variable on line " + ex.getLineNumber() + ": " + ex.getMessage();
+				errorMessage = "Found invalid or unparsed variable for sender '" + senderName + "' on line " + ex.getLineNumber() + ": " + ex.getMessage();
 
 			// Special support for throwing exceptions in the JS code so that users
 			// can send messages to player directly if upstream supports that
