@@ -20,6 +20,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -148,10 +149,10 @@ public final class JavaScriptExecutor {
 
 		// Cache for highest performance
 		/*Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
-
+		
 		if (cached != null) {
 			final Object result = cached.get(javascript);
-
+		
 			if (result != null)
 				return result;
 		}*/
@@ -167,12 +168,6 @@ public final class JavaScriptExecutor {
 
 		try {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-
-			if (sender != null)
-				engine.put("player", sender);
-
-			if (event != null)
-				engine.put("event", event);
 
 			// Find and replace all %syntax% and {syntax} variables since they were not replaced for Discord
 			if (sender instanceof DiscordSender) {
@@ -199,6 +194,14 @@ public final class JavaScriptExecutor {
 				return false;
 			}
 
+			Debugger.debug("javascript", "Sender: " + (sender == null ? "null" : sender.getName()) + " with code: " + javascript);
+
+			if (sender != null)
+				engine.put("player", sender);
+
+			if (event != null)
+				engine.put("event", event);
+
 			result = engine.eval(javascript);
 
 			if (result instanceof String) {
@@ -220,7 +223,7 @@ public final class JavaScriptExecutor {
 			/*if (sender instanceof Player) {
 				if (cached == null)
 					cached = new HashMap<>();
-
+			
 				cached.put(javascript, result);
 				resultCache.put(((Player) sender).getUniqueId(), cached);
 			}*/
