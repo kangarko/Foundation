@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>DiscordSRV</artifactId>
-			<version>1.26.2</version>
+			<version>1.27.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
