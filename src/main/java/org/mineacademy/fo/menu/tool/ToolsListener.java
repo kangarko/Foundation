@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EnderPearl;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -210,7 +211,13 @@ public final class ToolsListener implements Listener {
 
 						final Location directedLoc = player.getEyeLocation().add(player.getEyeLocation().getDirection().setY(0).normalize().multiply(1.05)).add(0, 0.2, 0);
 
-						final Projectile copy = world.spawn(directedLoc, shot.getClass());
+						final Projectile copy;
+
+						if (shot instanceof EnderPearl)
+							copy = (Projectile) world.spawnEntity(directedLoc, EntityType.ENDER_PEARL);
+						else
+							copy = world.spawn(directedLoc, shot.getClass());
+
 						copy.setVelocity(shot.getVelocity());
 
 						this.shotRockets.put(copy.getUniqueId(), new ShotRocket(player, rocket));
