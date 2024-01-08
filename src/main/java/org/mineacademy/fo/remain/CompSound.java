@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
 import org.bukkit.Note;
@@ -1875,6 +1876,13 @@ public enum CompSound {
 	 * @param pitch    the pitch of the sound, 0 is normal.
 	 */
 	public void play(@NonNull Location location, float volume, float pitch) {
+		if (Bukkit.isPrimaryThread())
+			this.play0(location, volume, pitch);
+		else
+			Common.runLater(() -> this.play0(location, volume, pitch));
+	}
+
+	private void play0(@NonNull Location location, float volume, float pitch) {
 		final Sound sound = this.getSound();
 
 		if (sound != null)
@@ -1889,6 +1897,13 @@ public enum CompSound {
 	 * @param pitch  the pitch of the sound, 0 is normal.
 	 */
 	public void play(@NonNull Entity entity, float volume, float pitch) {
+		if (Bukkit.isPrimaryThread())
+			this.play0(entity, volume, pitch);
+		else
+			Common.runLater(() -> this.play0(entity, volume, pitch));
+	}
+
+	private void play0(@NonNull Entity entity, float volume, float pitch) {
 		if (entity instanceof Player) {
 			final Sound sound = this.getSound();
 
@@ -1897,7 +1912,6 @@ public enum CompSound {
 
 		} else
 			this.play(entity.getLocation(), volume, pitch);
-
 	}
 
 	/**
@@ -1939,6 +1953,13 @@ public enum CompSound {
 	 * @see #stopMusic(Player)
 	 */
 	public void stopSound(@NonNull Player player) {
+		if (Bukkit.isPrimaryThread())
+			stopSound0(player);
+		else
+			Common.runLater(() -> stopSound0(player));
+	}
+
+	private void stopSound0(@NonNull Player player) {
 		final Sound sound = this.getSound();
 
 		if (sound != null)
