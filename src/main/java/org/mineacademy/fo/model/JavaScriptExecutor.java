@@ -189,7 +189,13 @@ public final class JavaScriptExecutor {
 			}
 
 			if (sender == null && javascript.contains("player.")) {
-				Common.warning("Not running JavaScript it contains 'player' but player was not provided. Script: " + javascript);
+				Common.warning("Not running JavaScript because it contains 'player' but player was not provided. Script: " + javascript);
+
+				return false;
+			}
+
+			if (sender instanceof DiscordSender && javascript.contains("player.")) {
+				Common.warning("Not running JavaScript because it contains 'player' but player was on Discord. Set Sender_Condition to '{sender_is_player}' to remove this warning next to your code. Script: " + javascript);
 
 				return false;
 			}
