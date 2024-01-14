@@ -1,11 +1,13 @@
 package org.mineacademy.fo.model;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -15,6 +17,7 @@ import javax.script.ScriptException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
@@ -148,14 +151,14 @@ public final class JavaScriptExecutor {
 			return false;
 
 		// Cache for highest performance
-		/*Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
-		
+		Map<String, Object> cached = sender instanceof Player ? resultCache.get(((Player) sender).getUniqueId()) : null;
+
 		if (cached != null) {
 			final Object result = cached.get(javascript);
-		
+
 			if (result != null)
 				return result;
-		}*/
+		}
 
 		if (engine == null) {
 			Common.warning("Not running script" + (sender == null ? "" : " for " + sender.getName()) + " because JavaScript library is missing "
@@ -167,7 +170,17 @@ public final class JavaScriptExecutor {
 		Object result = null;
 
 		try {
-			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+
+			// Workaround hasPermission for null senders (i.e. Discord)
+			final Pattern pattern = Pattern.compile("player\\.hasPermission\\(\"([^\"]+)\"\\)");
+			final Matcher matcher = pattern.matcher(javascript);
+
+			while (matcher.find()) {
+				final String permission = matcher.group(1);
+				final boolean hasPermission = sender == null ? false : sender.hasPermission(permission);
+
+				javascript = javascript.replace(matcher.group(), String.valueOf(hasPermission));
+			}
 
 			// Find and replace all %syntax% and {syntax} variables since they were not replaced for Discord
 			if (sender instanceof DiscordSender) {
@@ -226,13 +239,13 @@ public final class JavaScriptExecutor {
 					result = false;
 			}
 
-			/*if (sender instanceof Player) {
+			if (sender instanceof Player) {
 				if (cached == null)
 					cached = new HashMap<>();
-			
+
 				cached.put(javascript, result);
 				resultCache.put(((Player) sender).getUniqueId(), cached);
-			}*/
+			}
 
 			return result;
 
@@ -258,6 +271,9 @@ public final class JavaScriptExecutor {
 			}
 
 			throw new FoScriptException(errorMessage, javascript, ex.getLineNumber(), ex);
+
+		} finally {
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		}
 	}
 
@@ -294,8 +310,6 @@ public final class JavaScriptExecutor {
 			return javascript;
 		}
 
-		engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-
 		for (final Map.Entry<String, Object> replacement : replacements.entrySet()) {
 			final String key = replacement.getKey();
 			Valid.checkNotNull(key, "Key can't be null in javascript variables for code " + javascript + ": " + replacements);
@@ -311,6 +325,9 @@ public final class JavaScriptExecutor {
 
 		} catch (final ScriptException ex) {
 			throw new FoScriptException(ex.getMessage(), javascript, ex.getLineNumber(), ex);
+
+		} finally {
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 		}
 	}
 }
