@@ -268,15 +268,8 @@ public final class Variables {
 		if (replaceScript)
 			message = replaceJavascriptVariables0(message, sender, replacements);
 
-		// Support the & color system and replacing variables in variables
-		if (!message.startsWith("[JSON]")) {
-
-			if (colorize)
-				message = Common.colorize(message);
-
-			if (!original.equals(message) && ((message.contains("{") && message.contains("}")) || message.contains("%")))
-				return replace(message, sender, replacements, colorize);
-		}
+		if (!message.startsWith("[JSON]") && colorize)
+			message = Common.colorize(message);
 
 		if (senderIsPlayer) {
 			final Map<String, String> map = cache.get(sender.getName());
