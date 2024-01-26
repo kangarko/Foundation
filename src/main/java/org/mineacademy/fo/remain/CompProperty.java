@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -111,6 +112,7 @@ public enum CompProperty {
 	}
 
 	private void applyLegacy(Object instance, Object key) {
+		Valid.checkBoolean(Bukkit.isPrimaryThread(), "Cannot invoke CompProperty#applyLegacy off primary thread");
 		if (instance instanceof Entity) {
 			final NBTEntity nbtEntity = new NBTEntity((Entity) instance);
 			final boolean has = Boolean.parseBoolean(key.toString());
