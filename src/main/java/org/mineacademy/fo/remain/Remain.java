@@ -2782,6 +2782,15 @@ public final class Remain {
 	}
 
 	/**
+	 * Set the server name identifier (used for BungeeCord)
+	 *
+	 * @param serverName
+	 */
+	public static void setServerName(String serverName) {
+		Remain.serverName = serverName;
+	}
+
+	/**
 	 * Return true if the server-name property in server.properties got modified
 	 *
 	 * @return
