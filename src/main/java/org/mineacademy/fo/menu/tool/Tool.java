@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -86,10 +87,14 @@ public abstract class Tool {
 				e.printStackTrace();
 			}
 
-			final Tool instance = Tool.this;
+			// Sync to main thread
+			Common.runLater(() -> {
+				final Tool instance = Tool.this;
 
-			if (!isRegistered(instance))
-				register(instance);
+				if (!isRegistered(instance))
+					register(instance);
+			});
+
 		}).start();
 	}
 
