@@ -254,6 +254,9 @@ public final class JavaScriptExecutor {
 			final String message = ex.toString();
 			String errorMessage = "Unable to parse JavaScript code on line '" + ex.getLineNumber() + "' for sender '" + senderName + "'. Error: " + message;
 
+			if (message.contains("ReferenceError:") && message.contains("\"player\" is not defined"))
+				return false;
+
 			if (message.contains("ReferenceError:") && message.contains("is not defined"))
 				errorMessage = "Found invalid or unparsed variable for sender '" + senderName + "' on line " + ex.getLineNumber() + ": " + ex.getMessage();
 
