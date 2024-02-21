@@ -467,10 +467,13 @@ public final class SimpleComponent implements ConfigSerializable {
 				component = event.getComponent();
 			}
 
+			final String legacy = Common.colorize(component.toLegacyText());
+
+			if (Common.stripColors(legacy).trim().isEmpty())
+				continue;
+
 			// Prevent clients being kicked out, so we just send plain message instead
 			if (STRIP_OVERSIZED_COMPONENTS && Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
-				final String legacy = Common.colorize(component.toLegacyText());
-
 				if (legacy.length() + 1 >= Short.MAX_VALUE)
 					Common.warning("JSON Message to " + receiver.getName() + " was too large and could not be sent: '" + legacy + "'");
 
