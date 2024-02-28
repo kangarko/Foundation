@@ -148,20 +148,14 @@ public final class BoxedMessage {
 	}
 
 	private void send(String message) {
-		message = this.centerMessage0(message);
+		if (Common.stripColors(message).startsWith("<center>"))
+			message = ChatUtil.center(message.replaceFirst("\\<center\\>(\\s|)", ""));
 
 		if (this.recipients == null)
 			this.broadcast0(message);
 
 		else
 			this.tell0(message);
-	}
-
-	private String centerMessage0(String message) {
-		if (message.startsWith("<center>"))
-			return ChatUtil.center(message.replaceFirst("\\<center\\>(\\s|)", ""));
-
-		return message;
 	}
 
 	private void broadcast0(String message) {

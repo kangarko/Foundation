@@ -471,7 +471,7 @@ public final class Common {
 				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
 				final String prefix = !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
 
-				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
+				final String toSend = stripColors(part).startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
 
 				try {
 					// Make player engaged in a server conversation still receive the message
@@ -673,15 +673,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
