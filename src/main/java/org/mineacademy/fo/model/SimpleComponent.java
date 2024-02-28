@@ -64,6 +64,12 @@ public final class SimpleComponent implements ConfigSerializable {
 	private boolean firingEvent = false;
 
 	/**
+	 * Shall this component not send itself when its condition result in the message being empty? Defaults to false
+	 */
+	@Getter
+	private boolean ignoringEmpty = false;
+
+	/**
 	 * Create a new interactive chat component
 	 *
 	 * @param text
@@ -469,7 +475,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			final String legacy = Common.colorize(component.toLegacyText());
 
-			if (Common.stripColors(legacy).trim().isEmpty())
+			if (this.ignoringEmpty && Common.stripColors(legacy).trim().isEmpty())
 				continue;
 
 			// Prevent clients being kicked out, so we just send plain message instead
@@ -535,6 +541,18 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public SimpleComponent setFiringEvent(boolean firingEvent) {
 		this.firingEvent = firingEvent;
+
+		return this;
+	}
+
+	/**
+	 * See {@link #ignoringEmpty}
+	 *
+	 * @param ignoringEmpty
+	 * @return
+	 */
+	public SimpleComponent setIgnoringEmpty(boolean ignoringEmpty) {
+		this.ignoringEmpty = ignoringEmpty;
 
 		return this;
 	}
