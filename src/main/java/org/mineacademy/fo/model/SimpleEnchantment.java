@@ -398,4 +398,9 @@ public abstract class SimpleEnchantment extends Enchantment {
 
 		return null;
 	}
+
+	@Override
+	public String getTranslationKey() {
+		return this.name;
+	}
 }
