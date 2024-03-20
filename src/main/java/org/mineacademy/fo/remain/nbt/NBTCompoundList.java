@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 /**
  * {@link NBTListCompound} implementation for NBTLists
- *
+ * 
  * @author tr7zw
  *
  */
@@ -17,7 +17,6 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 	 * 
 	 * @return The added {@link NBTListCompound}
 	 */
-	@Override
 	public NBTListCompound addCompound() {
 		return (NBTListCompound) addCompound(null);
 	}

@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * This interface only exposes methods that get data without any changes to the
  * underlying object.
- *
+ * 
  * @author tr7zw
  *
  */
@@ -345,7 +345,6 @@ public interface ReadableNBT {
 	/**
 	 * @return The NBT as printable NBT-Json.
 	 */
-	@Override
 	String toString();
 
 }

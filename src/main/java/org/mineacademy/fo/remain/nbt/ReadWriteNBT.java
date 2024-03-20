@@ -147,7 +147,6 @@ public interface ReadWriteNBT extends ReadableNBT {
 	 * @param name
 	 * @return The Compound instance or null
 	 */
-	@Override
 	@Nullable
 	ReadWriteNBT getCompound(String name);
 

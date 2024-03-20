@@ -14,7 +14,7 @@ class DefaultMethodInvoker {
 	static {
 		try {
 			invokeDefaultMethod = InvocationHandler.class.getDeclaredMethod("invokeDefault",
-					Object.class, Method.class, Object[].class);
+					new Class[] { Object.class, Method.class, Object[].class });
 			invokeDefaultMethod.setAccessible(true);
 		} catch (NoSuchMethodException | SecurityException e) {
 			// we are in java 8, use the fallback
@@ -23,8 +23,7 @@ class DefaultMethodInvoker {
 
 	/**
 	 * Using reflections to access reflections, since some are still on java 8.
-	 * @param srcInt
-	 *
+	 * 
 	 * @param target
 	 * @param method
 	 * @param args
@@ -40,11 +39,11 @@ class DefaultMethodInvoker {
 			}
 		} else {
 			try {
-				final Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+				Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
 				constructor.setAccessible(true);
 				return constructor.newInstance(srcInt).in(srcInt).unreflectSpecial(method, srcInt).bindTo(target)
 						.invokeWithArguments(args);
-			} catch (final Throwable e) {
+			} catch (Throwable e) {
 				throw new NbtApiException("Error while trying to invoke a default method for Java 8. " + target + " "
 						+ method + " " + Arrays.toString(args), e);
 			}

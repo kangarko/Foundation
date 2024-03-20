@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 
 /**
  * This class caches method reflections, keeps track of method name changes
@@ -15,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
-
 enum ReflectionMethod {
 
 	COMPOUND_SET_FLOAT(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, float.class },
@@ -352,10 +352,11 @@ enum ReflectionMethod {
 				loaded = true;
 				methodName = targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				ex2.printStackTrace();
-
-				// NOSONAR This gets loaded before the logger
-				System.out.println("Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
+				Common.warning("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '"
+						+ (targetClass.getClazz() == null ? targetClass.getMojangName()
+								: targetClass.getClazz().getSimpleName())
+						+ "' Args: " + Arrays.toString(args) + " Enum: " + this); // NOSONAR This gets loaded
+																																																																				// before the logger is loaded
 			}
 		}
 	}

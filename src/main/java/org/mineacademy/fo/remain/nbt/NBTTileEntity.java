@@ -91,11 +91,12 @@ public class NBTTileEntity extends NBTCompound {
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 *
+	 * 
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "PersistentDataContainer is only available for 1.14+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer requires MC 1.14");
+
 		if (hasTag("PublicBukkitValues")) {
 			return getCompound("PublicBukkitValues");
 		} else {

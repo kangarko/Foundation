@@ -15,11 +15,11 @@ public class NBTChunk {
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.16.4+!
-	 *
+	 * 
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "PersistentDataContainer is only available for 1.16+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "getPersistentDataContainer requires MC 1.16");
 
 		return new NBTPersistentDataContainer(chunk.getPersistentDataContainer());
 	}

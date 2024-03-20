@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * NBT class to access vanilla/custom tags on ItemStacks. This class doesn't
  * autosave to the Itemstack, use getItem to get the changed ItemStack
- *
+ * 
  * @author tr7zw
  *
  */
@@ -218,7 +218,6 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * 
 	 * @return true when custom tags are present
 	 */
-	@Override
 	public boolean hasCustomNbtData() {
 		finalizeChanges();
 		ItemMeta meta = bukkitItem.getItemMeta();
@@ -228,7 +227,6 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	/**
 	 * Remove all custom (non-vanilla) NBT tags from the NBTItem.
 	 */
-	@Override
 	public void clearCustomNBT() {
 		finalizeChanges();
 		ItemMeta meta = bukkitItem.getItemMeta();
@@ -254,7 +252,6 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * 
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
-	@Override
 	public boolean hasNBTData() {
 		return getCompound() != null;
 	}
@@ -269,7 +266,6 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * 
 	 * @param handler
 	 */
-	@Override
 	public void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler) {
 		finalizeChanges();
 		ItemMeta meta = bukkitItem.getItemMeta();
@@ -291,7 +287,6 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * 
 	 * @param handler
 	 */
-	@Override
 	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler) {
 		finalizeChanges();
 

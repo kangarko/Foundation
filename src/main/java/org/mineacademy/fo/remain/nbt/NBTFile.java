@@ -6,7 +6,7 @@ import java.nio.file.Files;
 
 /**
  * {@link NBTCompound} implementation backed by a {@link File}
- *
+ * 
  * @author tr7zw
  *
  */

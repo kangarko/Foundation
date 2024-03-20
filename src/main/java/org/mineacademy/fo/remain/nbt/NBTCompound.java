@@ -12,8 +12,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
+import org.mineacademy.fo.Valid;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -462,7 +463,8 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void setLongArray(String key, long[] value) {
-		Valid.checkBoolean(MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1), "LongArray NBT is only available for 1.16+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "getLongArray requires MC 1.16");
+
 		try {
 			writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONGARRAY, key, value);
@@ -482,7 +484,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public long[] getLongArray(String key) {
-		Valid.checkBoolean(MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1), "LongArray NBT is only available for 1.16+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "getLongArray requires MC 1.16");
 
 		try {
 			readLock.lock();
