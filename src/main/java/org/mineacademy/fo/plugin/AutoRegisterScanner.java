@@ -1,17 +1,5 @@
 package org.mineacademy.fo.plugin;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.regex.Pattern;
-
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,19 +16,24 @@ import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.FoundationEnchantmentListener;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.PacketListener;
-import org.mineacademy.fo.model.SimpleEnchantment;
-import org.mineacademy.fo.model.SimpleExpansion;
-import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
+
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * Utilizes \@AutoRegister annotation to add auto registration support for commands, events and much more.
@@ -60,7 +53,7 @@ final class AutoRegisterScanner {
 	/**
 	 * Automatically register the main command group if there is only one in the code
 	 */
-	private static List<SimpleCommandGroup> registeredCommandGroups = new ArrayList<>();
+	private static final List<SimpleCommandGroup> registeredCommandGroups = new ArrayList<>();
 
 	/**
 	 * Scans your plugin and if your {@link Tool} or {@link SimpleEnchantment} class implements {@link Listener}
@@ -202,9 +195,6 @@ final class AutoRegisterScanner {
 		if (staticSettingsFound.isEmpty() && staticSettingsFileExist)
 			YamlStaticConfig.load(SimpleSettings.class);
 
-		if (staticLocalizations.isEmpty() && staticLocalizationFileExist)
-			YamlStaticConfig.load(SimpleLocalization.class);
-
 		// A dirty solution to prioritize loading settings and then localization
 		final List<Class<?>> delayedLoading = new ArrayList<>();
 
@@ -216,6 +206,10 @@ final class AutoRegisterScanner {
 
 		for (final Class<?> delayedSettings : delayedLoading)
 			YamlStaticConfig.load((Class<? extends YamlStaticConfig>) delayedSettings);
+
+		if (staticLocalizations.isEmpty() && staticLocalizationFileExist)
+			YamlStaticConfig.load(SimpleLocalization.class);
+
 	}
 
 	/*
