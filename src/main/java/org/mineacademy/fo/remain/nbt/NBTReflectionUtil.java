@@ -507,8 +507,6 @@ public class NBTReflectionUtil {
 		}
 	}
 
-	private static Gson gson = new Gson();
-
 	/**
 	 * Uses Gson to set a {@link Serializable} value in a Compound
 	 *
@@ -518,7 +516,8 @@ public class NBTReflectionUtil {
 	 */
 	public static void setObject(NBTCompound comp, String key, Object value) {
 		try {
-			final String json = gson.toJson(value);
+			final String json = getJsonString(value);
+
 			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
@@ -534,24 +533,12 @@ public class NBTReflectionUtil {
 	 * @return The loaded Object or null, if not found
 	 */
 	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
+
 		final String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
 		if (json == null) {
 			return null;
 		}
 		return deserializeJson(json, type);
-	}
-
-	private static <T> T deserializeJson(String json, Class<T> type) {
-		try {
-			if (json == null) {
-				return null;
-			}
-
-			final T obj = gson.fromJson(json, type);
-			return type.cast(obj);
-		} catch (final Exception ex) {
-			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
-		}
 	}
 
 	/**
@@ -562,7 +549,10 @@ public class NBTReflectionUtil {
 	 */
 	public static void remove(NBTCompound comp, String key) {
 		final Object rootnbttag = comp.getCompound();
-		if ((rootnbttag == null) || !valideCompound(comp))
+		if (rootnbttag == null) {
+			return;
+		}
+		if (!valideCompound(comp))
 			return;
 		final Object workingtag = gettoCompount(rootnbttag, comp);
 		ReflectionMethod.COMPOUND_REMOVE_KEY.run(workingtag, key);
@@ -625,6 +615,38 @@ public class NBTReflectionUtil {
 			workingtag = dummyNBT.getCompound();
 		}
 		return type.run(workingtag, key);
+	}
+
+	private static Gson gson = new Gson();
+
+	/**
+	 * Turns Objects into Json Strings
+	 * 
+	 * @param obj
+	 * @return Json, representing the Object
+	 */
+	public static String getJsonString(Object obj) {
+		return gson.toJson(obj);
+	}
+
+	/**
+	 * Creates an Object of the given type using the Json String
+	 * 
+	 * @param json
+	 * @param type
+	 * @return Object that got created, or null if the json is null
+	 */
+	public static <T> T deserializeJson(String json, Class<T> type) {
+		try {
+			if (json == null) {
+				return null;
+			}
+
+			final T obj = gson.fromJson(json, type);
+			return type.cast(obj);
+		} catch (final Exception ex) {
+			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
+		}
 	}
 
 }

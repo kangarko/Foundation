@@ -7,6 +7,6 @@ public interface ReadableItemNBT extends ReadableNBT {
 	 * 
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
-	boolean hasNBTData();
+	public boolean hasNBTData();
 
 }

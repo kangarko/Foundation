@@ -5,7 +5,7 @@ import java.io.InputStream;
 /**
  * A Standalone {@link NBTCompound} implementation. All data is just kept inside
  * this Object.
- *
+ * 
  * @author tr7zw
  *
  */
@@ -87,7 +87,6 @@ public class NBTContainer extends NBTCompound {
 		return closed;
 	}
 
-	@Override
 	protected boolean isReadOnly() {
 		return readOnly;
 	}

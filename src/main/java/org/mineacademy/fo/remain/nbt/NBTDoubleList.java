@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * Double implementation for NBTLists
- *
+ * 
  * @author tr7zw
  *
  */

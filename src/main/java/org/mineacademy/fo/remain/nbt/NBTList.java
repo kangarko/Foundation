@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 /**
  * Abstract List implementation for ListCompounds
- *
+ * 
  * @author tr7zw
  *
  * @param <T>

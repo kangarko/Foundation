@@ -17,7 +17,7 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 	@Override
 	public E get(int index) {
 		ReadWriteNBT tag = nbt.get(index);
-		return new ProxyBuilder<>(tag, proxy).build();
+		return new ProxyBuilder<E>(tag, proxy).build();
 	}
 
 	@Override
@@ -38,7 +38,7 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 	@Override
 	public E addCompound() {
 		ReadWriteNBT tag = nbt.addCompound();
-		return new ProxyBuilder<>(tag, proxy).build();
+		return new ProxyBuilder<E>(tag, proxy).build();
 	}
 
 	@Override
@@ -59,12 +59,10 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 		 */
 		int lastRet = -1;
 
-		@Override
 		public boolean hasNext() {
 			return cursor != size();
 		}
 
-		@Override
 		public E next() {
 			try {
 				int i = cursor;
@@ -77,7 +75,6 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 			}
 		}
 
-		@Override
 		public void remove() {
 			if (lastRet < 0)
 				throw new IllegalStateException();

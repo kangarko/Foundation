@@ -1,7 +1,9 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.Common;
 
 /**
  * This class acts as the "Brain" of the NBTApi. It contains the main logger for
@@ -11,9 +13,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
 enum MinecraftVersion {
-
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
 	MC1_8_R3(183),
@@ -45,6 +45,17 @@ enum MinecraftVersion {
 
 	private final int versionId;
 	private final boolean mojangMapping;
+
+	@SuppressWarnings("serial")
+	private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
+		{
+			this.put("1.20", MC1_20_R1);
+			this.put("1.20.1", MC1_20_R1);
+			this.put("1.20.2", MC1_20_R2);
+			this.put("1.20.3", MC1_20_R3);
+			this.put("1.20.4", MC1_20_R3);
+		}
+	};
 
 	MinecraftVersion(int versionId) {
 		this(versionId, false);
@@ -78,7 +89,11 @@ enum MinecraftVersion {
 	 */
 	public String getPackageName() {
 		if (this == UNKNOWN) {
-			return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+			try {
+				return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+			} catch (final Exception ex) {
+				// ignore, paper without remap, will fail
+			}
 		}
 		return this.name().replace("MC", "v");
 	}
@@ -110,20 +125,18 @@ enum MinecraftVersion {
 	 * @return The enum for the MinecraftVersion this server is running
 	 */
 	public static MinecraftVersion getVersion() {
-		if (version != null)
+		if (version != null) {
 			return version;
-
-		final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
-		try {
-			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
-		} catch (final IllegalArgumentException ex) {
-			version = MinecraftVersion.UNKNOWN;
 		}
+		try {
+			final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
-		if (version == UNKNOWN)
-			Common.warning("NBT-API does not support your server version (" + ver + "). We will try to work as good as we can, but some functions may not work.");
+			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
+		} catch (final Exception ex) {
 
+			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0],
+					MinecraftVersion.UNKNOWN);
+		}
 		return version;
 	}
 
@@ -135,10 +148,17 @@ enum MinecraftVersion {
 			return isForgePresent;
 
 		try {
+			if (getVersion() == MinecraftVersion.MC1_7_R4)
+				Class.forName("cpw.mods.fml.common.Loader");
+			else
+				Class.forName("net.minecraftforge.fml.common.Loader");
+
 			isForgePresent = true;
+
 		} catch (final Exception ex) {
 			isForgePresent = false;
 		}
+
 		return isForgePresent;
 	}
 
@@ -150,6 +170,8 @@ enum MinecraftVersion {
 			return isFoliaPresent;
 		}
 		try {
+			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+
 			isFoliaPresent = true;
 		} catch (final Exception ex) {
 			isFoliaPresent = false;

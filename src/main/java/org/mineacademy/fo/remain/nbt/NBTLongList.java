@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * Long implementation for NBTLists
- *
+ * 
  * @author tr7zw
  *
  */
@@ -33,7 +33,7 @@ public class NBTLongList extends NBTList<Long> {
 			Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
 			return Long.valueOf(obj.toString().replace("L", ""));
 		} catch (NumberFormatException nf) {
-			return 0L;
+			return 0l;
 		} catch (Exception ex) {
 			throw new NbtApiException(ex);
 		}

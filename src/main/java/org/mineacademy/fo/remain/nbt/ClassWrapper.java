@@ -1,5 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
+import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 
 /**
@@ -8,7 +9,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-public enum ClassWrapper {
+enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
 	CRAFT_ENTITY(PackageWrapper.CRAFTBUKKIT, "entity.CraftEntity", null, null),
@@ -57,7 +58,8 @@ public enum ClassWrapper {
 			"net.minecraft.nbt.NbtUtils"),
 	NMS_IBLOCKDATA(PackageWrapper.NMS, "IBlockData", MinecraftVersion.MC1_8_R3, null,
 			"net.minecraft.world.level.block.state", "net.minecraft.world.level.block.state.BlockState"),
-	NMS_NBTACCOUNTER(PackageWrapper.NMS, "NBTReadLimiter", MinecraftVersion.MC1_20_R3, null, "net.minecraft.nbt", "net.minecraft.nbt.NbtAccounter"),
+	NMS_NBTACCOUNTER(PackageWrapper.NMS, "NBTReadLimiter", MinecraftVersion.MC1_20_R3, null, "net.minecraft.nbt",
+			"net.minecraft.nbt.NbtAccounter"),
 	GAMEPROFILE(PackageWrapper.NONE, "com.mojang.authlib.GameProfile", MinecraftVersion.MC1_8_R3, null);
 
 	private Class<?> clazz;
@@ -71,7 +73,10 @@ public enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())) {
+		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) {
+			return;
+		}
+		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()) {
 			return;
 		}
 		enabled = true;
@@ -92,12 +97,16 @@ public enum ClassWrapper {
 			} else if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4
 					&& Forge1710Mappings.getClassMappings().get(this.name()) != null) {
 				clazz = Class.forName(clazzName = Forge1710Mappings.getClassMappings().get(this.name()));
+			} else if (packageId == PackageWrapper.CRAFTBUKKIT) {
+				// this also works for un-remapped Paper 1.20+
+				clazz = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + "." + clazzName);
 			} else {
+				// fallback for old versions pre mojmap and in the nms package
 				final String version = MinecraftVersion.getVersion().getPackageName();
 				clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "Error while trying to resolve the class '" + clazzName + "'!");
+			Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
 		}
 	}
 
