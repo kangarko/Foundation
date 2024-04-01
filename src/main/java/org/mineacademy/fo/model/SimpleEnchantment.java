@@ -399,7 +399,7 @@ public abstract class SimpleEnchantment extends Enchantment {
 		return null;
 	}
 
-	@Override
+	//@Override -> Paper compatibility
 	public String getTranslationKey() {
 		return this.name;
 	}
