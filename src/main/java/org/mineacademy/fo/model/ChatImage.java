@@ -43,7 +43,7 @@ public final class ChatImage {
 	/**
 	 * Represents Minotar API endpoint from where we fetch the image
 	 */
-	private final static String MINOTAR_API_ENDPOINT = "https://minotar.net/avatar/{PLAYER_NAME}/{HEIGHT}.png";
+	public final static String MINOTAR_API_ENDPOINT = "https://minotar.net/avatar/{PLAYER_NAME}/{HEIGHT}.png";
 
 	/**
 	 * The strategy to resize the image. By default, the TYPE_NEAREST_NEIGHBOR does not
@@ -385,7 +385,7 @@ public final class ChatImage {
 		 * The character used to build the image
 		 */
 		@Getter
-		private char character;
+		private final char character;
 
 		Type(char c) {
 			this.character = c;

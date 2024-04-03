@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
  * Hello this is a test!
  * -----------------------------------
  * <p>
- * You can also specify \<center\> in front of the text to center it.
+ * You can also specify &lt;center&gt; in front of the text to center it.
  */
 public final class BoxedMessage {
 
