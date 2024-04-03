@@ -9,11 +9,11 @@
 
 	<groupId>org.mineacademy</groupId>
 	<artifactId>Foundation</artifactId>
-	<version>6.6.6</version>
+	<version>6.7.0</version>
 	<packaging>jar</packaging>
 
 	<name>Foundation</name>
-	<description>A framework for easy creation of rich Bukkit plugins.</description>
+	<description>A framework for the development of Minecraft plugins for Paper.</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
