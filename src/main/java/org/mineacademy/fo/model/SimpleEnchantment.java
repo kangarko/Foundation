@@ -10,16 +10,19 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
+import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.ChatUtil;
@@ -30,8 +33,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
-
-import net.md_5.bungee.api.ChatColor;
 
 /**
  * Represents a simple way of getting your own enchantments into Minecraft
@@ -402,5 +403,40 @@ public abstract class SimpleEnchantment extends Enchantment {
 	//@Override -> Paper compatibility
 	public String getTranslationKey() {
 		return this.name;
+	}
+
+	@Override
+	public String translationKey() {
+		return this.name;
+	}
+
+	@Override
+	public boolean isTradeable() {
+		return false;
+	}
+
+	@Override
+	public boolean isDiscoverable() {
+		return false;
+	}
+
+	@Override
+	public int getMinModifiedCost(int level) {
+		return 0;
+	}
+
+	@Override
+	public int getMaxModifiedCost(int level) {
+		return 0;
+	}
+
+	@Override
+	public float getDamageIncrease(int level, EntityCategory entityCategory) {
+		return 0;
+	}
+
+	@Override
+	public Set<EquipmentSlot> getActiveSlots() {
+		return Common.newSet(EquipmentSlot.values());
 	}
 }
