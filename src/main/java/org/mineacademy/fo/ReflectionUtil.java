@@ -412,7 +412,7 @@ public final class ReflectionUtil {
 				throw new ReflectionException(t, "Error lookup up method " + methodName + " in class " + originalClass + " and her subclasses");
 			}
 
-		throw new ReflectionException("Unable to find method " + methodName + " with params " + Common.join(args) + " in class " + originalClass + " and her subclasses");
+		throw new ReflectionException("Unable to find method " + methodName + (args != null ? " with params " + Common.join(args) : "") + " in class " + originalClass + " and her subclasses");
 	}
 
 	/**
@@ -475,7 +475,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
-		Valid.checkNotNull(method, "Method cannot be null for instance " + instance + " with params " + Common.join(params, ", "));
+		Valid.checkNotNull(method, "Method cannot be null for instance " + instance + " class (" + instance.getClass() + ") with params " + Common.join(params, ", "));
 
 		try {
 			return (T) method.invoke(instance, params);

@@ -2,8 +2,8 @@ package org.mineacademy.fo.plugin;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.PacketListener;
-import org.mineacademy.fo.model.SimpleEnchantment;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -34,7 +34,6 @@ final class FoundationPacketListener extends PacketListener {
 
 		// Auto placement of our lore when items are custom enchanted
 		this.addSendingListener(PacketType.Play.Server.SET_SLOT, event -> {
-
 			final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
 			ItemStack item = itemModifier.read(0);
 

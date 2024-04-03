@@ -1,5 +1,17 @@
 package org.mineacademy.fo.plugin;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
+
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,27 +25,21 @@ import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
+import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.model.*;
+import org.mineacademy.fo.model.DiscordListener;
+import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.PacketListener;
+import org.mineacademy.fo.model.SimpleExpansion;
+import org.mineacademy.fo.model.Tuple;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.settings.YamlStaticConfig;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 
 /**
  * Utilizes \@AutoRegister annotation to add auto registration support for commands, events and much more.
@@ -348,9 +354,12 @@ final class AutoRegisterScanner {
 			if (!enchantListenersRegistered) {
 				enchantListenersRegistered = true;
 
-				plugin.registerEvents(FoundationEnchantmentListener.getInstance());
+				plugin.registerEvents(SimpleEnchantment.Listener.getInstance());
 
-				FoundationPacketListener.getInstance().onRegister();
+				if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null)
+					FoundationPacketListener.getInstance().onRegister();
+				else
+					Common.warning("Custom enchantments require ProtocolLib for lore to be added properly.");
 			}
 		}
 

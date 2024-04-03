@@ -30,8 +30,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.model.SimpleEnchant;
-import org.mineacademy.fo.model.SimpleEnchantment;
+import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -297,11 +296,11 @@ public final class ItemCreator {
 	/**
 	 * Add the given enchant to the item.
 	 *
-	 * @param enchant
+	 * @param enchantment
 	 * @return
 	 */
-	public ItemCreator enchant(SimpleEnchant enchant) {
-		return this.enchant(enchant.getEnchant(), enchant.getLevel());
+	public ItemCreator enchant(SimpleEnchantment enchantment) {
+		return this.enchant(enchantment.toBukkit(), 1);
 	}
 
 	/**
@@ -312,6 +311,19 @@ public final class ItemCreator {
 	 */
 	public ItemCreator enchant(Enchantment enchantment) {
 		return this.enchant(enchantment, 1);
+	}
+
+	/**
+	 * Add the given enchant to the item.
+	 *
+	 * @param enchantment
+	 * @param level
+	 * @return
+	 */
+	public ItemCreator enchant(SimpleEnchantment enchantment, int level) {
+		this.enchants.put(enchantment.toBukkit(), level);
+
+		return this;
 	}
 
 	/**
