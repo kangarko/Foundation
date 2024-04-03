@@ -18,8 +18,8 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompBarColor;
 import org.mineacademy.fo.remain.CompBarStyle;
@@ -261,7 +261,6 @@ public final class BossBarInternals implements Listener {
 				this.cancelTimer(player);
 			} else
 				this.sendDragon(drag, player);
-
 		}));
 
 		this.sendDragon(dragon, player);
@@ -356,7 +355,7 @@ public final class BossBarInternals implements Listener {
 		else if (pitch <= -55)
 			loc.add(0, 3, 0);
 		else
-			loc = loc.getBlock().getRelative(getDirection(loc), Bukkit.getViewDistance() * 16).getLocation();
+			loc = loc.getBlock().getRelative(getDirection(loc), Bukkit.getViewDistance() * 8).getLocation();
 
 		loc.subtract(0, 10, 0);
 
