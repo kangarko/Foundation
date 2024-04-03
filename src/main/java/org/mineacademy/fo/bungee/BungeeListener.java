@@ -57,8 +57,7 @@ public abstract class BungeeListener implements Listener {
 	 * Create a new bungee suite with the given params
 	 *
 	 * @param channel
-	 * @param listener
-	 * @param actions
+	 * @param actionEnum
 	 */
 	protected BungeeListener(@NonNull String channel, Class<? extends BungeeMessageType> actionEnum) {
 		this.channel = channel;

@@ -525,8 +525,7 @@ class Yylex {
 	 *
 	 * <p>They will be read again by then next call of the scanning method.
 	 *
-	 * @param number the number of characters to be read again. This number must not be greater than
-	 *     {@link #yylength()}.
+	 * @param number the number of characters to be read again.
 	 */
 	public void yypushback(int number) {
 		if (number > this.yylength())

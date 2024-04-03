@@ -627,6 +627,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @param throwable
 	 */
+	@SuppressWarnings("removal")
 	protected final void displayError0(Throwable throwable) {
 		Debugger.printStackTrace(throwable);
 

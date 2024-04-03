@@ -546,7 +546,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * See {@link #ignoringEmpty}
+	 * Shall this component not send itself when its condition result in the message being empty? Defaults to false
 	 *
 	 * @param ignoringEmpty
 	 * @return

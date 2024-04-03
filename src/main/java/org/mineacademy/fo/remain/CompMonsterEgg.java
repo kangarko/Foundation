@@ -119,6 +119,7 @@ public final class CompMonsterEgg {
 		return type;
 	}
 
+	@SuppressWarnings("removal")
 	private static EntityType getTypeByMeta(final ItemStack item) {
 		final ItemMeta m = item.getItemMeta();
 
@@ -209,6 +210,7 @@ public final class CompMonsterEgg {
 		return item;
 	}
 
+	@SuppressWarnings("removal")
 	private static ItemStack setTypeByMeta(final ItemStack item, final EntityType type) {
 		final SpawnEggMeta m = (SpawnEggMeta) item.getItemMeta();
 

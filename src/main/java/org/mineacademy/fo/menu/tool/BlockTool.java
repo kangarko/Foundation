@@ -62,7 +62,7 @@ public abstract class BlockTool extends Tool {
 	}
 
 	/**
-	 * Listen for air clicking to invoke {@link #onAirClick(Player, ClickType, Block)}
+	 * Listen for air clicking to invoke onAirClick
 	 *
 	 * @see org.mineacademy.fo.menu.tool.Tool#ignoreCancelled()
 	 */

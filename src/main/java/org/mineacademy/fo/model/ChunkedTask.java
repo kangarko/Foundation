@@ -38,7 +38,7 @@ public abstract class ChunkedTask {
 
 	/**
 	 * Create a new task that will process the given amount of times on each run
-	 * (see {@link #waitPeriodTicks}) and wait for 1 second between each time
+	 * (see getWaitPeriodTicks() and wait for 1 second between each time
 	 *
 	 * @param processAmount
 	 */
@@ -96,7 +96,7 @@ public abstract class ChunkedTask {
 				try {
 					this.onProcess(i);
 
-				} catch (Throwable t) {
+				} catch (final Throwable t) {
 					Common.error(t, "Error in " + this + " processing index " + processed);
 					this.processing = false;
 					this.firstLaunch = false;
