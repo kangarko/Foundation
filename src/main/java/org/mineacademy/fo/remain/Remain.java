@@ -2628,8 +2628,16 @@ public final class Remain {
 			final boolean mojMap = Remain.isUsingMojangMappings();
 			final Object enchantmentRegistry = getEnchantRegistry();
 
-			ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "l", false); // MappedRegistry#frozen
-			ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>()); // MappedRegistry#unregisteredIntrusiveHolders
+			try {
+				// works fine in versions (1.19.3 and up)
+				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "l", false); // MappedRegistry#frozen
+				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>()); // MappedRegistry#unregisteredIntrusiveHolders
+			}catch (Throwable throwable) {
+				// in (1.19 - 1.19.2) the obfuscation is different.
+				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "ca", false); // MappedRegistry#frozen
+				// unregisteredIntrusiveHolders does not exist in this version
+			}
+
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_20))
