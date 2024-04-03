@@ -222,6 +222,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		// Load libraries where Spigot does not do this automatically
 		this.loadLibraries();
 
+		// Unfreeze registries
+		Remain.unfreezeEnchantRegistry();
+
 		// Call parent
 		this.onPluginLoad();
 	}
@@ -323,6 +326,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			this.onPluginStart();
 			// --------------------------------------------
+
+			// Freeze back registries
+			Remain.freezeEnchantRegistry();
 
 			// Return if plugin start indicated a fatal problem
 			if (!this.isEnabled())

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1375,50 +1376,6 @@ public final class Remain {
 	}
 
 	/**
-	 * Register a new enchantment in Bukkit, unregistering it first to avoid errors
-	 *
-	 * @param enchantment
-	 * @deprecated does not work in 1.20+
-	 */
-	@Deprecated
-	public static void registerEnchantment(final Enchantment enchantment) {
-
-		if (MinecraftVersion.olderThan(V.v1_20))
-			try {
-				unregisterEnchantment(enchantment);
-
-				ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
-				Enchantment.class.getDeclaredMethod("registerEnchantment", Enchantment.class).invoke(null, enchantment);
-			} catch (final Throwable t) {
-				t.printStackTrace();
-			}
-	}
-
-	/**
-	 * Unregister an enchantment from Bukkit. Works even for vanilla MC enchantments (found in Enchantment class)
-	 *
-	 * @param enchantment
-	 * @deprecated does not work in 1.20+
-	 */
-	@Deprecated
-	public static void unregisterEnchantment(final Enchantment enchantment) {
-
-		if (MinecraftVersion.olderThan(V.v1_20)) {
-			if (MinecraftVersion.atLeast(V.v1_13)) { // Unregister by key
-				final Map<NamespacedKey, Enchantment> byKey = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byKey");
-
-				byKey.remove(enchantment.getKey());
-			}
-
-			{ // Unregister by name
-				final Map<String, Enchantment> byName = ReflectionUtil.getStaticFieldContent(Enchantment.class, "byName");
-
-				byName.remove(enchantment.getName());
-			}
-		}
-	}
-
-	/**
 	 * Returns the inventory location
 	 *
 	 * @param inv the inventory
@@ -2658,6 +2615,53 @@ public final class Remain {
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final int durationTicks, final int level) {
 		if (hasItemMeta)
 			PotionSetter.setPotion(item, type, durationTicks, level);
+	}
+
+	/**
+	 * Unfreeze enchant registry
+	 *
+	 * @deprecated called internally already in {@link SimplePlugin}
+	 */
+	@Deprecated
+	public static void unfreezeEnchantRegistry() {
+		if (MinecraftVersion.atLeast(V.v1_19)) {
+			final boolean mojMap = Remain.isUsingMojangMappings();
+			final Object enchantmentRegistry = getEnchantRegistry();
+
+			ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "l", false); // MappedRegistry#frozen
+			ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>()); // MappedRegistry#unregisteredIntrusiveHolders
+		}
+
+		if (MinecraftVersion.olderThan(V.v1_20))
+			ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
+	}
+
+	/**
+	 * Freeze back enchant registry
+	 *
+	 * @deprecated called internally already in {@link SimplePlugin}
+	 */
+	@Deprecated
+	public static void freezeEnchantRegistry() {
+		if (MinecraftVersion.atLeast(V.v1_19)) {
+			final Object enchantmentRegistry = getEnchantRegistry();
+			final Method freezeMethod = ReflectionUtil.getDeclaredMethod(enchantmentRegistry.getClass(), Remain.isUsingMojangMappings() ? "freeze" : "l");
+
+			ReflectionUtil.invoke(freezeMethod, enchantmentRegistry);
+		}
+
+		if (MinecraftVersion.olderThan(V.v1_20))
+			ReflectionUtil.invokeStatic(Enchantment.class, "stopAcceptingRegistrations");
+	}
+
+	/*
+	 * Helper to get the registry object
+	 */
+	private static Object getEnchantRegistry() {
+		final Class<?> registryClass = ReflectionUtil.lookupClass("net.minecraft.core.registries.BuiltInRegistries");
+		final Object enchantmentRegistry = ReflectionUtil.getStaticFieldContent(registryClass, Remain.isUsingMojangMappings() ? "ENCHANTMENT" : MinecraftVersion.equals(V.v1_19) ? "g" : "f");
+
+		return enchantmentRegistry;
 	}
 
 	/**
