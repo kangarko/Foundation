@@ -126,12 +126,12 @@ public final class Remain {
 	/**
 	 * The get players method stored here for performance
 	 */
-	private static final Method getPlayersMethod;
+	private static Method getPlayersMethod;
 
 	/**
 	 * The get player health method stored here for performance
 	 */
-	private static final Method getHealthMethod;
+	private static Method getHealthMethod;
 
 	/**
 	 * The CraftPlayer.getHandle method
@@ -213,11 +213,6 @@ public final class Remain {
 	private static boolean hasYamlReaderLoad = true;
 
 	/**
-	 * Does the current server has the "net.md_5.bungee" library present?
-	 */
-	private static boolean bungeeApiPresent = true;
-
-	/**
 	 * Is org/bukkit/inventory/meta/ItemMeta class present? MC 1.4.7+
 	 */
 	private static boolean hasItemMeta = true;
@@ -243,9 +238,24 @@ public final class Remain {
 	private static String serverName;
 
 	/**
+	 * Return true if we are on paper
+	 */
+	private static boolean isPaper = false;
+
+	/**
 	 * Return true if this is a Folia server
 	 */
 	private static boolean isFolia = false;
+
+	/**
+	 * Return true if this server is Thermos
+	 */
+	private static boolean isThermos = false;
+
+	/**
+	 * Return true if we are on mojang remapped server
+	 */
+	private static boolean isUsingMojangMappings = false;
 
 	// Singleton
 	private Remain() {
@@ -255,78 +265,112 @@ public final class Remain {
 	 * Initialize all fields and methods automatically when we set the plugin
 	 */
 	static {
-		Valid.checkBoolean(MinecraftVersion.getCurrent().isTested(), "Your Minecraft version " + MinecraftVersion.getCurrent() + " is unsupported by " + SimplePlugin.getNamed());
+		final String version = Bukkit.getVersion();
+		final boolean hasNMSSafeguard = MinecraftVersion.atLeast(V.v1_4); // TODO removed in 1.20.5 (?)
 
-		// Check compatibility
+		if (!MinecraftVersion.getCurrent().isTested())
+			Bukkit.getLogger().severe("Your Minecraft version " + MinecraftVersion.getCurrent() + " is untested by " + SimplePlugin.getNamed() + ". We'll continue loading but the plugin might malfunction.");
+
 		try {
-			ChatInternals.callStatic();
+			Class.forName("net.md_5.bungee.chat.ComponentSerializer");
 
-			CompParticle.CRIT.getClass();
-
-			getNMSClass("Entity", "net.minecraft.world.entity.Entity");
-
-		} catch (final Throwable t) {
-			boolean isThermos = false;
-
-			try {
-				Class.forName("thermos.ThermosRemapper");
-
-				isThermos = true;
-			} catch (final Throwable tt) {
-			}
-
-			if (!isThermos) {
-				Bukkit.getLogger().severe("** COMPATIBILITY TEST FAILED - THIS PLUGIN WILL NOT FUNCTION PROPERLY **");
-				Bukkit.getLogger().severe("** YOUR MINECRAFT VERSION APPEARS UNSUPPORTED: " + MinecraftVersion.getCurrent() + " **");
-
-				t.printStackTrace();
-
-				Bukkit.getLogger().severe("***************************************************************");
-			}
+		} catch (final Throwable ex) {
+			throw new FoException("&cYour server &f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c doesn't\n" +
+					" &cinclude &elibraries required&c for " + SimplePlugin.getNamed() + " to\n" +
+					" &crun. Install BungeeChatAPI from:\n" +
+					" &fhttps://mineacademy.org/plugins#misc");
 		}
 
 		try {
+			Class.forName("co.aikar.timings.Timing");
 
-			final String version = Bukkit.getVersion();
-			final boolean hasNMS = MinecraftVersion.atLeast(V.v1_4);
+			isPaper = true;
+		} catch (final Throwable e) {
+		}
 
-			// Load optional parts
-			try {
+		isFolia = version.contains("Folia") || version.contains("Kaiiju");
 
-				getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
+		try {
+			Class.forName("thermos.ThermosRemapper");
 
-				fieldPlayerConnection = getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
-						.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : hasNMS ? "playerConnection" : "netServerHandler");
+			isThermos = true;
+		} catch (final Throwable tt) {
+		}
 
-				sendPacket = getNMSClass(hasNMS ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
-						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+		try {
+			Class.forName("net.minecraft.server.level.ServerPlayer");
 
-				if (MinecraftVersion.olderThan(V.v1_12))
-					try {
-						fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
-						fieldEntityInvulnerable.setAccessible(true);
-					} catch (final Throwable t) {
-						// Unavailable
-					}
-				else
-					fieldEntityInvulnerable = null;
+			isUsingMojangMappings = true;
+		} catch (final ClassNotFoundException ex) {
+		}
 
-			} catch (final Throwable t) {
+		try {
+			World.class.getMethod("spawnParticle", org.bukkit.Particle.class, Location.class, int.class);
+		} catch (final Throwable ex) {
+			hasParticleAPI = false;
+		}
 
-				t.printStackTrace();
+		try {
+			Objective.class.getMethod("getScore", String.class);
+		} catch (final Throwable e) {
+			newScoreboardAPI = false;
+		}
 
-				if (MinecraftVersion.atLeast(V.v1_7)) {
-					Bukkit.getLogger().warning("Unable to find setup some parts of reflection. Plugin will still function.");
-					Bukkit.getLogger().warning("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-					Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise check if your server is compatibble.");
-				}
+		try {
+			Class.forName("org.bukkit.event.player.PlayerEditBookEvent").getName();
+		} catch (final Throwable ex) {
+			hasBookEvent = false;
+		}
 
-				fieldPlayerConnection = null;
-				sendPacket = null;
-				getHandle = null;
-			}
+		try {
+			Inventory.class.getMethod("getLocation");
+		} catch (final Throwable ex) {
+			hasInventoryLocation = false;
+		}
 
-			// Load mandatory parts
+		try {
+			Entity.class.getMethod("getScoreboardTags");
+		} catch (final Throwable ex) {
+			hasScoreboardTags = false;
+		}
+
+		try {
+			Class.forName("org.bukkit.inventory.meta.SpawnEggMeta");
+		} catch (final Throwable err) {
+			hasSpawnEggMeta = false;
+		}
+
+		try {
+			Class.forName("org.bukkit.advancement.Advancement");
+			Class.forName("org.bukkit.NamespacedKey");
+		} catch (final Throwable err) {
+			hasAdvancements = false;
+		}
+
+		try {
+			YamlConfiguration.class.getMethod("load", java.io.Reader.class);
+		} catch (final Throwable err) {
+			hasYamlReaderLoad = false;
+		}
+
+		try {
+			org.bukkit.inventory.ItemStack.class.getMethod("getItemMeta");
+		} catch (final Throwable ex) {
+			hasItemMeta = false;
+		}
+
+		try {
+			Entity.class.getMethod("addPassenger", Entity.class);
+		} catch (final Throwable ex) {
+			hasAddPassenger = false;
+		}
+
+		try {
+			sectionPathDataClass = ReflectionUtil.lookupClass("org.bukkit.configuration.SectionPathData");
+		} catch (final Throwable ex) {
+		}
+
+		try {
 			getPlayersMethod = Bukkit.class.getMethod("getOnlinePlayers");
 			isGetPlayersCollection = getPlayersMethod.getReturnType() == Collection.class;
 
@@ -335,89 +379,36 @@ public final class Remain {
 
 			hasExtendedPlayerTitleAPI = MinecraftVersion.atLeast(V.v1_11);
 
-			try {
-				World.class.getMethod("spawnParticle", org.bukkit.Particle.class, Location.class, int.class);
-			} catch (final Throwable ex) {
-				hasParticleAPI = false;
+			CompParticle.CRIT.getClass();
+
+			ChatInternals.init();
+
+			getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
+
+			fieldPlayerConnection = getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
+					.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : hasNMSSafeguard ? "playerConnection" : "netServerHandler");
+
+			sendPacket = getNMSClass(hasNMSSafeguard ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
+					.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+
+			if (MinecraftVersion.olderThan(V.v1_12))
+				try {
+					fieldEntityInvulnerable = ReflectionUtil.getNMSClass("Entity").getDeclaredField("invulnerable");
+					fieldEntityInvulnerable.setAccessible(true);
+				} catch (final Throwable t) {
+					// Unavailable
+				}
+
+		} catch (final Throwable t) {
+			if (isUsingMojangMappings)
+				Bukkit.getLogger().warning("Mojang mappings detected, failing NMS gracefully. Continuing loading but please note that, this is unsupported and only intended for testing.");
+
+			else if (!isThermos && MinecraftVersion.atLeast(V.v1_7)) {
+				Bukkit.getLogger().warning("Unable to setup reflection. Plugin will partially function.");
+				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise report the errors below to the developers of " + SimplePlugin.getNamed() + ".");
+
+				t.printStackTrace();
 			}
-
-			try {
-				Class.forName("net.md_5.bungee.chat.ComponentSerializer");
-			} catch (final Throwable ex) {
-				bungeeApiPresent = false;
-
-				throw new FoException(
-						"&cYour server version (&f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c) doesn't\n" +
-								" &cinclude &elibraries required&c for this plugin to\n" +
-								" &crun. Install the following plugin for compatibility:\n" +
-								" &fhttps://mineacademy.org/plugins/#misc");
-			}
-
-			try {
-				Objective.class.getMethod("getScore", String.class);
-			} catch (final Throwable e) {
-				newScoreboardAPI = false;
-			}
-
-			try {
-				Class.forName("org.bukkit.event.player.PlayerEditBookEvent").getName();
-			} catch (final Throwable ex) {
-				hasBookEvent = false;
-			}
-
-			try {
-				Inventory.class.getMethod("getLocation");
-			} catch (final Throwable ex) {
-				hasInventoryLocation = false;
-			}
-
-			try {
-				Entity.class.getMethod("getScoreboardTags");
-			} catch (final Throwable ex) {
-				hasScoreboardTags = false;
-			}
-
-			try {
-				Class.forName("org.bukkit.inventory.meta.SpawnEggMeta");
-			} catch (final Throwable err) {
-				hasSpawnEggMeta = false;
-			}
-
-			try {
-				Class.forName("org.bukkit.advancement.Advancement");
-				Class.forName("org.bukkit.NamespacedKey");
-			} catch (final Throwable err) {
-				hasAdvancements = false;
-			}
-
-			try {
-				YamlConfiguration.class.getMethod("load", java.io.Reader.class);
-			} catch (final Throwable err) {
-				hasYamlReaderLoad = false;
-			}
-
-			try {
-				org.bukkit.inventory.ItemStack.class.getMethod("getItemMeta");
-			} catch (final Throwable ex) {
-				hasItemMeta = false;
-			}
-
-			try {
-				Entity.class.getMethod("addPassenger", Entity.class);
-			} catch (final Throwable ex) {
-				hasAddPassenger = false;
-			}
-
-			try {
-				sectionPathDataClass = ReflectionUtil.lookupClass("org.bukkit.configuration.SectionPathData");
-			} catch (final Throwable ex) {
-				// unsupported
-			}
-
-			isFolia = version.contains("Folia") || version.contains("Kaiiju");
-
-		} catch (final ReflectiveOperationException ex) {
-			throw new UnsupportedOperationException("Failed to set up reflection, " + SimplePlugin.getNamed() + " won't work properly", ex);
 		}
 	}
 
@@ -841,7 +832,6 @@ public final class Remain {
 	 *                                       unpacked
 	 */
 	public static String toLegacyText(final String json, final boolean denyEvents) throws InteractiveTextFoundException {
-		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
 		final StringBuilder text = new StringBuilder();
 
 		// Translate options does not want to work well with ChatControl
@@ -893,8 +883,6 @@ public final class Remain {
 	 * @return
 	 */
 	public static String toJson(final String message) {
-		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
-
 		return toJson(TextComponent.fromLegacyText(message));
 	}
 
@@ -905,8 +893,6 @@ public final class Remain {
 	 * @return
 	 */
 	public static String toJson(final BaseComponent... comps) {
-		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
-
 		String json;
 
 		try {
@@ -955,8 +941,6 @@ public final class Remain {
 	 * @return
 	 */
 	public static BaseComponent[] toComponent(final String json) {
-		Valid.checkBoolean(bungeeApiPresent, "(Un)packing chat requires Spigot 1.7.10 or newer");
-
 		try {
 			return ComponentSerializer.parse(json);
 
@@ -2913,35 +2897,6 @@ public final class Remain {
 	// ----------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return if the server is running Paper, formerly PaperSpigot software.
-	 * <p>
-	 * Paper is a fork of Spigot compatible with most Bukkit plugins.
-	 * <p>
-	 * We use the method getTPS to determine if Paper is installed.
-	 *
-	 * @return true if the server is running Paper(Spigot)
-	 */
-	public static boolean isPaper() {
-		try {
-			Class.forName("co.aikar.timings.Timing");
-
-			return true;
-
-		} catch (final Throwable e) {
-			return false;
-		}
-	}
-
-	/**
-	 * Is 'net.md_5.bungee.api.chat' package present? Spigot 1.7.10 and never.
-	 *
-	 * @return if the bungee chat API is present
-	 */
-	public static boolean isBungeeApiPresent() {
-		return bungeeApiPresent;
-	}
-
-	/**
 	 * Is this server supporting native scoreboard api?
 	 *
 	 * @return if server supports native scoreboard api
@@ -3030,6 +2985,29 @@ public final class Remain {
 	 */
 	public static boolean isFolia() {
 		return isFolia;
+	}
+
+	/**
+	 * Return if the server is running Paper, formerly PaperSpigot software.
+	 * <p>
+	 * Paper is a fork of Spigot compatible with most Bukkit plugins.
+	 * <p>
+	 * We use the method getTPS to determine if Paper is installed.
+	 *
+	 * @return true if the server is running Paper(Spigot)
+	 */
+	public static boolean isPaper() {
+		return isPaper;
+	}
+
+	/**
+	 * Return true if we are using mojang mappings (note that Foundation's NMS
+	 * does not support them but will fail gracefully)
+	 *
+	 * @return
+	 */
+	public static boolean isUsingMojangMappings() {
+		return isUsingMojangMappings;
 	}
 
 	// ------------------------ Legacy ------------------------

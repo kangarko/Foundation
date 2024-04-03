@@ -4,7 +4,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -41,57 +40,6 @@ public class ChatInternals {
 
 	// Prevent new instance, always call static methods
 	public ChatInternals() {
-	}
-
-	static {
-
-		// New MC versions have native API's
-		if (MinecraftVersion.newerThan(V.v1_6) && MinecraftVersion.olderThan(V.v1_12))
-			try {
-
-				final Class<?> chatBaseComponent = ReflectionUtil.getNMSClass("IChatBaseComponent", "N/A");
-
-				Class<?> serializer = null;
-				if (MinecraftVersion.newerThan(V.v1_7))
-					serializer = chatBaseComponent.getDeclaredClasses()[0];
-				else
-					serializer = ReflectionUtil.getNMSClass("ChatSerializer", "N/A");
-
-				componentSerializer = serializer.getMethod("a", String.class);
-
-				final Class<?> chatPacket = ReflectionUtil.getNMSClass("PacketPlayOutChat", "N/A");
-
-				if (MinecraftVersion.newerThan(V.v1_11))
-					chatMessageConstructor = chatPacket.getConstructor(chatBaseComponent, ReflectionUtil.getNMSClass("ChatMessageType", "N/A"));
-				else
-					chatMessageConstructor = MinecraftVersion.newerThan(V.v1_7) ? chatPacket.getConstructor(chatBaseComponent, byte.class) : chatPacket.getConstructor(chatBaseComponent);
-
-				if (MinecraftVersion.newerThan(V.v1_7)) {
-					final Class<?> titlePacket = ReflectionUtil.getNMSClass("PacketPlayOutTitle", "N/A");
-					final Class<?> enumAction = titlePacket.getDeclaredClasses()[0];
-
-					enumTitle = enumAction.getField("TITLE").get(null);
-					enumSubtitle = enumAction.getField("SUBTITLE").get(null);
-					enumReset = enumAction.getField("RESET").get(null);
-
-					tabConstructor = ReflectionUtil.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A").getConstructor(chatBaseComponent);
-
-					titleTimesConstructor = titlePacket.getConstructor(int.class, int.class, int.class);
-					titleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
-					subtitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
-					resetTitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
-				}
-
-			} catch (final Exception ex) {
-				if (MinecraftVersion.olderThan(V.v1_8))
-					Common.log("Error initiating Chat/Title/ActionBAR API. Assuming Thermos or modded. Some features will not work.");
-
-				else {
-					ex.printStackTrace();
-
-					throw new ReflectionException(ex, "Error initiating Chat/Title/ActionBAR API (incompatible Craftbukkit? - " + Bukkit.getVersion() + " / " + Bukkit.getBukkitVersion() + " / " + MinecraftVersion.getServerVersion() + ")");
-				}
-			}
 	}
 
 	/**
@@ -245,7 +193,42 @@ public class ChatInternals {
 		return Common.colorize(text);
 	}
 
-	public static void callStatic() {
-		// Test compatibility
+	public static void init() throws ReflectiveOperationException {
+
+		// New MC versions have native API's
+		if (MinecraftVersion.newerThan(V.v1_6) && MinecraftVersion.olderThan(V.v1_12)) {
+			final Class<?> chatBaseComponent = ReflectionUtil.getNMSClass("IChatBaseComponent", "N/A");
+
+			Class<?> serializer = null;
+			if (MinecraftVersion.newerThan(V.v1_7))
+				serializer = chatBaseComponent.getDeclaredClasses()[0];
+			else
+				serializer = ReflectionUtil.getNMSClass("ChatSerializer", "N/A");
+
+			componentSerializer = serializer.getMethod("a", String.class);
+
+			final Class<?> chatPacket = ReflectionUtil.getNMSClass("PacketPlayOutChat", "N/A");
+
+			if (MinecraftVersion.newerThan(V.v1_11))
+				chatMessageConstructor = chatPacket.getConstructor(chatBaseComponent, ReflectionUtil.getNMSClass("ChatMessageType", "N/A"));
+			else
+				chatMessageConstructor = MinecraftVersion.newerThan(V.v1_7) ? chatPacket.getConstructor(chatBaseComponent, byte.class) : chatPacket.getConstructor(chatBaseComponent);
+
+			if (MinecraftVersion.newerThan(V.v1_7)) {
+				final Class<?> titlePacket = ReflectionUtil.getNMSClass("PacketPlayOutTitle", "N/A");
+				final Class<?> enumAction = titlePacket.getDeclaredClasses()[0];
+
+				enumTitle = enumAction.getField("TITLE").get(null);
+				enumSubtitle = enumAction.getField("SUBTITLE").get(null);
+				enumReset = enumAction.getField("RESET").get(null);
+
+				tabConstructor = ReflectionUtil.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A").getConstructor(chatBaseComponent);
+
+				titleTimesConstructor = titlePacket.getConstructor(int.class, int.class, int.class);
+				titleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
+				subtitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
+				resetTitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
+			}
+		}
 	}
 }
