@@ -2632,7 +2632,8 @@ public final class Remain {
 				// works fine in versions (1.19.3 and up)
 				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "l", false); // MappedRegistry#frozen
 				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>()); // MappedRegistry#unregisteredIntrusiveHolders
-			}catch (Throwable throwable) {
+
+			} catch (final Throwable t) {
 				// in (1.19 - 1.19.2) the obfuscation is different.
 				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "ca", false); // MappedRegistry#frozen
 				// unregisteredIntrusiveHolders does not exist in this version
@@ -2640,8 +2641,21 @@ public final class Remain {
 
 		}
 
-		if (MinecraftVersion.olderThan(V.v1_20))
+		if (MinecraftVersion.olderThan(V.v1_20)) {
 			ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
+
+			try {
+				final Class<?> enchantCommandClass = ReflectionUtil.lookupClass("org.bukkit.command.defaults.EnchantCommand");
+
+				if (enchantCommandClass != null) {
+					final List<String> enchants = ReflectionUtil.getStaticFieldContent(enchantCommandClass, "ENCHANTMENT_NAMES");
+
+					enchants.clear();
+				}
+			} catch (final Throwable t) {
+				// prob unsupported at server level anymore
+			}
+		}
 	}
 
 	/**

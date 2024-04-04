@@ -16,8 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.annotation.AutoRegister;
@@ -244,17 +242,6 @@ final class AutoRegisterScanner {
 	 * Automatically registers the given class, printing console warnings
 	 */
 	private static void autoRegister(Class<?> clazz, boolean printWarnings) {
-
-		// Special case: Prevent class init error
-		if (SimpleEnchantment.class.isAssignableFrom(clazz) && MinecraftVersion.olderThan(V.v1_13)) {
-			if (printWarnings) {
-				Bukkit.getLogger().warning("**** WARNING ****");
-				Bukkit.getLogger().warning("SimpleEnchantment requires Minecraft 1.13.2 or greater. The following class will not be registered: " + clazz.getName()
-						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
-			}
-
-			return;
-		}
 
 		if (DiscordListener.class.isAssignableFrom(clazz) && !HookManager.isDiscordSRVLoaded()) {
 			if (printWarnings) {

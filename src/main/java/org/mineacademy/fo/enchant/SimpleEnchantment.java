@@ -106,6 +106,12 @@ public abstract class SimpleEnchantment implements Listener {
 	private final NmsEnchant handle;
 
 	/**
+	 * Used internally to pair enchants for MC older than 1.13
+	 */
+	@Deprecated
+	private int id = -1;
+
+	/**
 	 * Create a new enchantment with the given name
 	 *
 	 * @param name
@@ -406,6 +412,15 @@ public abstract class SimpleEnchantment implements Listener {
 		return this.namespacedName;
 	}
 
+	/**
+	 * @deprecated internal use only
+	 * @param id
+	 */
+	@Deprecated
+	public final void setLegacyId(int id) {
+		this.id = id;
+	}
+
 	// ------------------------------------------------------------------------------------------
 	// Static
 	// ------------------------------------------------------------------------------------------
@@ -465,7 +480,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param simpleEnchantment
 	 * @return
 	 */
-	public static boolean hasEnchantment(ItemStack item, SimpleEnchantment simpleEnchantment) {
+	public static boolean hasEnchantment(ItemStack item, @NonNull SimpleEnchantment simpleEnchantment) {
 		if (item == null)
 			return false;
 
@@ -488,7 +503,7 @@ public abstract class SimpleEnchantment implements Listener {
 			final Enchantment enchantment = entry.getKey();
 			final SimpleEnchantment otherSimpleEnchantment = fromBukkit(enchantment);
 
-			if (simpleEnchantment != null && otherSimpleEnchantment.getNamespacedName().equals(simpleEnchantment.getNamespacedName()))
+			if (otherSimpleEnchantment != null && otherSimpleEnchantment.getNamespacedName().equals(simpleEnchantment.getNamespacedName()))
 				return true;
 		}
 
@@ -573,6 +588,17 @@ public abstract class SimpleEnchantment implements Listener {
 			for (final SimpleEnchantment simpleEnchantment : registeredEnchantments)
 				if (simpleEnchantment.name.equals(name))
 					return simpleEnchantment;
+
+			try {
+				final int id = ReflectionUtil.invoke("getId", bukkitEnchantment);
+
+				for (final SimpleEnchantment simpleEnchantment : registeredEnchantments)
+					if (simpleEnchantment.id == id)
+						return simpleEnchantment;
+
+			} catch (final Throwable t) {
+				// Unsupported, very old MC
+			}
 		}
 
 		return null;
