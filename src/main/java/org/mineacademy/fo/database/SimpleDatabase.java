@@ -511,7 +511,7 @@ public class SimpleDatabase {
 					consumer.accept(resultSet);
 
 				} catch (final Throwable t) {
-					Common.log("Error reading a row from table " + table + " with param '" + param + "', aborting...");
+					Common.log("Error reading a row from table " + this.replaceVariables(table) + " with param '" + param + "', aborting...");
 
 					t.printStackTrace();
 					break;
