@@ -43,7 +43,9 @@ public final class ChatImage {
 	/**
 	 * Represents Minotar API endpoint from where we fetch the image
 	 */
-	public final static String MINOTAR_API_ENDPOINT = "https://minotar.net/avatar/{PLAYER_NAME}/{HEIGHT}.png";
+	@Getter
+	@Setter
+	public static String chatHeadEndpoint = "https://mc-heads.net/avatar/{PLAYER_NAME}/{HEIGHT}.png";
 
 	/**
 	 * The strategy to resize the image. By default, the TYPE_NEAREST_NEIGHBOR does not
@@ -144,7 +146,7 @@ public final class ChatImage {
 	/**
 	 * Create a player head image from the player username. Uses DARK_SHADE font
 	 * and {@link #DEFAULT_HEIGHT}. Invokes a blocking web request to
-	 * {@link #MINOTAR_API_ENDPOINT} and throws an error on any failure.
+	 * {@link #chatHeadEndpoint} and throws an error on any failure.
 	 *
 	 * @param playerName
 	 * @return
@@ -156,7 +158,7 @@ public final class ChatImage {
 
 	/**
 	 * Create a player head image from the player username. Uses DARK_SHADE font.
-	 * Invokes a blocking web request to {@link #MINOTAR_API_ENDPOINT} and throws
+	 * Invokes a blocking web request to {@link #chatHeadEndpoint} and throws
 	 * an error on any failure.
 	 *
 	 * @param playerName
@@ -170,7 +172,7 @@ public final class ChatImage {
 
 	/**
 	 * Create a player head image from the player username. Invokes a blocking web request
-	 * to {@link #MINOTAR_API_ENDPOINT} and throws an error on any failure.
+	 * to {@link #chatHeadEndpoint} and throws an error on any failure.
 	 *
 	 * @param playerName
 	 * @param height
@@ -179,7 +181,7 @@ public final class ChatImage {
 	 * @throws IOException
 	 */
 	public static ChatImage fromHead(String playerName, int height, Type characterType) throws IOException {
-		return fromImage(MINOTAR_API_ENDPOINT.replace("{PLAYER_NAME}", playerName).replace("{HEIGHT}", String.valueOf(height)), height, characterType);
+		return fromImage(chatHeadEndpoint.replace("{PLAYER_NAME}", playerName).replace("{HEIGHT}", String.valueOf(height)), height, characterType);
 	}
 
 	/**
