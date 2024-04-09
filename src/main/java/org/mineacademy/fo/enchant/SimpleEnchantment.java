@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -82,6 +84,7 @@ public abstract class SimpleEnchantment implements Listener {
 	/**
 	 * The class that will be instantiated to wrap custom enchants.
 	 */
+	@Getter
 	private static Class<? extends NmsEnchant> handleClass = null;
 
 	/**
@@ -103,7 +106,7 @@ public abstract class SimpleEnchantment implements Listener {
 	/**
 	 * The actual handle injecting this enchant into Minecraft
 	 */
-	private final NmsEnchant handle;
+	private NmsEnchant handle;
 
 	/**
 	 * Used internally to pair enchants for MC older than 1.13
@@ -127,22 +130,20 @@ public abstract class SimpleEnchantment implements Listener {
 		this.namespacedName = namespacedName;
 		this.namespacedNameWithPrefix = "minecraft:" + this.namespacedName;
 		this.maxLevel = maxLevel;
-		this.handle = this.assignHandle();
 
-		this.handle.register();
+		if (handleClass != null) {
+			this.handle = this.assignHandle();
 
-		registeredEnchantments.add(this);
+			this.handle.register();
+
+			registeredEnchantments.add(this);
+		}
 	}
 
 	/*
 	 * Private method to register this enchant
 	 */
 	private NmsEnchant assignHandle() {
-		final V currentVersion = MinecraftVersion.getCurrent();
-
-		Valid.checkNotNull(handleClass, "Custom enchantments are not implemented for " + currentVersion
-				+ ". If you are a developer, implement it and call in SimpleEnchantment#registerEnchantmentHandle in onPluginLoad().");
-
 		Constructor<?> constructor;
 
 		try {
@@ -232,15 +233,29 @@ public abstract class SimpleEnchantment implements Listener {
 	// ------------------------------------------------------------------------------------------
 
 	/**
+	 * Return if this enchant works for the current Minecraft version.
+	 *
+	 * @return
+	 */
+	public final boolean isAvailable() {
+		return this.handle != null;
+	}
+
+	/**
 	 * Converts into Bukkit's class {@link Enchantment}
 	 *
 	 * @return
 	 */
+	@Nullable
 	public final Enchantment toBukkit() {
-		final Enchantment enchantment = this.handle.toBukkit();
-		Valid.checkNotNull(enchantment, "Failed to convert " + this + " into a Bukkit class");
+		if (this.isAvailable()) {
+			final Enchantment enchantment = this.handle.toBukkit();
+			Valid.checkNotNull(enchantment, "Failed to convert " + this + " into a Bukkit class");
 
-		return enchantment;
+			return enchantment;
+		}
+
+		return null;
 	}
 
 	/**
@@ -259,10 +274,12 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @return
 	 */
 	public final ItemStack applyTo(ItemStack item, int level) {
-		final ItemMeta meta = item.getItemMeta();
+		if (this.isAvailable()) {
+			final ItemMeta meta = item.getItemMeta();
 
-		meta.addEnchant(this.toBukkit(), level, true);
-		item.setItemMeta(meta);
+			meta.addEnchant(this.toBukkit(), level, true);
+			item.setItemMeta(meta);
+		}
 
 		return item;
 	}

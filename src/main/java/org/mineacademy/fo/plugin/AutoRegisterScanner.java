@@ -186,7 +186,6 @@ final class AutoRegisterScanner {
 
 				if (name.matches("settings\\.yml"))
 					staticSettingsFileExist = true;
-
 				else if (name.matches("localization\\/messages\\_(.*)\\.yml"))
 					staticLocalizationFileExist = true;
 			}
@@ -246,7 +245,7 @@ final class AutoRegisterScanner {
 		if (DiscordListener.class.isAssignableFrom(clazz) && !HookManager.isDiscordSRVLoaded()) {
 			if (printWarnings) {
 				Bukkit.getLogger().warning("**** WARNING ****");
-				Bukkit.getLogger().warning("The following class requires DiscordSRV and won't be registered: " + clazz.getName()
+				Bukkit.getLogger().warning("The following class requires DiscordSRV and won't be registered: " + clazz.getSimpleName()
 						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
@@ -256,8 +255,19 @@ final class AutoRegisterScanner {
 		if (PacketListener.class.isAssignableFrom(clazz) && !HookManager.isProtocolLibLoaded()) {
 			if (printWarnings && !clazz.equals(FoundationPacketListener.class)) {
 				Bukkit.getLogger().warning("**** WARNING ****");
-				Bukkit.getLogger().warning("The following class requires ProtocolLib and won't be registered: " + clazz.getName()
+				Bukkit.getLogger().warning("The following class requires ProtocolLib and won't be registered: " + clazz.getSimpleName()
 						+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
+			}
+
+			return;
+		}
+
+		if (SimpleEnchantment.class.isAssignableFrom(clazz) && SimpleEnchantment.getHandleClass() == null) {
+			if (printWarnings && !clazz.equals(SimpleEnchantment.class)) {
+				Bukkit.getLogger().warning("**** WARNING ****");
+				Bukkit.getLogger().warning("The following class requires SimpleEnchantment#registerEnchantmentHandle to be implemented and won't be registered: " + clazz.getSimpleName()
+						+ ". See https://www.youtube.com/watch?v=1_W0ISi5ZbM for a sample tutorial."
+						+ " To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
 			}
 
 			return;
@@ -332,7 +342,6 @@ final class AutoRegisterScanner {
 		else if (DiscordListener.class.isAssignableFrom(clazz))
 			// Automatically registered in its constructor
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
-
 		else if (SimpleEnchantment.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered in its constructor
@@ -353,12 +362,9 @@ final class AutoRegisterScanner {
 		else if (Tool.class.isAssignableFrom(clazz))
 			// Automatically registered in its constructor that is called when we find instance
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
-
 		else if (instance instanceof Listener) {
 			// Pass-through to register events later
-		}
-
-		else
+		} else
 			throw new FoException("@AutoRegister cannot be used on " + clazz);
 
 		// Register events if needed
