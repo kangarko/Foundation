@@ -2644,17 +2644,7 @@ public final class Remain {
 		if (MinecraftVersion.olderThan(V.v1_20)) {
 			ReflectionUtil.setStaticField(Enchantment.class, "acceptingNew", true);
 
-			try {
-				final Class<?> enchantCommandClass = ReflectionUtil.lookupClass("org.bukkit.command.defaults.EnchantCommand");
-
-				if (enchantCommandClass != null) {
-					final List<String> enchants = ReflectionUtil.getStaticFieldContent(enchantCommandClass, "ENCHANTMENT_NAMES");
-
-					enchants.clear();
-				}
-			} catch (final Throwable t) {
-				// prob unsupported at server level anymore
-			}
+			clearLegacyEnchantMap();
 		}
 	}
 
@@ -2672,8 +2662,25 @@ public final class Remain {
 			ReflectionUtil.invoke(freezeMethod, enchantmentRegistry);
 		}
 
-		if (MinecraftVersion.olderThan(V.v1_20))
+		if (MinecraftVersion.olderThan(V.v1_20)) {
+			clearLegacyEnchantMap();
+
 			ReflectionUtil.invokeStatic(Enchantment.class, "stopAcceptingRegistrations");
+		}
+	}
+
+	private static void clearLegacyEnchantMap() {
+		try {
+			final Class<?> enchantCommandClass = ReflectionUtil.lookupClass("org.bukkit.command.defaults.EnchantCommand");
+
+			if (enchantCommandClass != null) {
+				final List<String> enchants = ReflectionUtil.getStaticFieldContent(enchantCommandClass, "ENCHANTMENT_NAMES");
+
+				enchants.clear();
+			}
+		} catch (final Throwable t) {
+			// prob unsupported at server level anymore
+		}
 	}
 
 	/*
