@@ -81,7 +81,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * The instance of this plugin
 	 */
-	private static volatile SimplePlugin instance;
+	private static SimplePlugin instance;
 
 	/**
 	 * Shortcut for getDescription().getVersion()
@@ -111,7 +111,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * An internal flag to indicate that the plugin is being reloaded.
 	 */
 	@Getter
-	private static volatile boolean reloading = false;
+	private static boolean reloading = false;
 
 	/**
 	 * Returns the instance of {@link SimplePlugin}.

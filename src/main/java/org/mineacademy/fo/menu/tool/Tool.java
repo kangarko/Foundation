@@ -30,7 +30,7 @@ public abstract class Tool {
 	 *
 	 * @param tool the tool
 	 */
-	static synchronized void register(Tool tool) {
+	static void register(Tool tool) {
 		Valid.checkBoolean(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
 
 		tools.add(tool);
@@ -42,7 +42,7 @@ public abstract class Tool {
 	 * @param tool the tool
 	 * @return true if the tool is registered
 	 */
-	static synchronized boolean isRegistered(Tool tool) {
+	static boolean isRegistered(Tool tool) {
 		return getTool(tool.getItem()) != null;
 	}
 

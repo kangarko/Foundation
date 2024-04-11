@@ -478,7 +478,7 @@ public abstract class DiscordListener implements Listener {
 	public static final class DiscordListenerImpl implements Listener {
 
 		@Getter
-		private static volatile DiscordListenerImpl instance = new DiscordListenerImpl();
+		private static final DiscordListenerImpl instance = new DiscordListenerImpl();
 
 		/**
 		 * Reload the listener

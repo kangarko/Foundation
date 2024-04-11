@@ -631,7 +631,7 @@ public abstract class SimpleEnchantment implements Listener {
 	public static final class Listener implements org.bukkit.event.Listener {
 
 		@Getter
-		private static volatile Listener instance = new Listener();
+		private static final Listener instance = new Listener();
 
 		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 		public void onEntityDamage(EntityDamageByEntityEvent event) {

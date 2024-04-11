@@ -431,9 +431,9 @@ public final class CompMetadata {
 	public static final class MetadataFile extends YamlConfig {
 
 		@Getter
-		private static volatile MetadataFile instance = new MetadataFile();
+		private static final MetadataFile instance = new MetadataFile();
 
-		private static volatile boolean canSave = false;
+		private static boolean canSave = false;
 
 		private final StrictMap<UUID, List<String>> entityMetadataMap = new StrictMap<>();
 		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();

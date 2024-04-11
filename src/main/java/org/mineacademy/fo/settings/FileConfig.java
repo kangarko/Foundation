@@ -1180,54 +1180,52 @@ public abstract class FileConfig {
 	 * Helper to load configuration from a file
 	 */
 	final void load(@NonNull File file) {
-		synchronized (loadedSections) {
-			try {
-				Valid.checkBoolean(!this.loading, "Called load(" + file + ") on already being loaded configuration!");
-				this.loading = true;
+		try {
+			Valid.checkBoolean(!this.loading, "Called load(" + file + ") on already being loaded configuration!");
+			this.loading = true;
 
-				final FileInputStream stream = new FileInputStream(file);
-				final String path = file.getAbsolutePath();
-				boolean loadedBefore = false;
-				ConfigSection section = loadedSections.get(path);
+			final FileInputStream stream = new FileInputStream(file);
+			final String path = file.getAbsolutePath();
+			boolean loadedBefore = false;
+			ConfigSection section = loadedSections.get(path);
 
-				if (section == null) {
-					section = new ConfigSection();
+			if (section == null) {
+				section = new ConfigSection();
 
-					loadedSections.put(path, section);
-				}
-
-				else
-					loadedBefore = true;
-
-				this.section = section;
-				this.file = file;
-
-				if (loadedBefore && !this.alwaysLoad) {
-					// Do not load
-				} else
-					this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
-
-				try {
-					this.onLoad();
-					this.onLoadFinish();
-
-				} catch (final EventHandledException ex) {
-					// Handled successfully in the polymorphism pipeline
-				}
-
-				if (this.shouldSave || this.alwaysSaveOnLoad()) {
-					this.loading = false;
-					this.save();
-
-					this.shouldSave = false;
-				}
-
-			} catch (final Exception ex) {
-				Common.throwError(ex, "Error loading " + file + ": " + ex);
-
-			} finally {
-				this.loading = false;
+				loadedSections.put(path, section);
 			}
+
+			else
+				loadedBefore = true;
+
+			this.section = section;
+			this.file = file;
+
+			if (loadedBefore && !this.alwaysLoad) {
+				// Do not load
+			} else
+				this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+
+			try {
+				this.onLoad();
+				this.onLoadFinish();
+
+			} catch (final EventHandledException ex) {
+				// Handled successfully in the polymorphism pipeline
+			}
+
+			if (this.shouldSave || this.alwaysSaveOnLoad()) {
+				this.loading = false;
+				this.save();
+
+				this.shouldSave = false;
+			}
+
+		} catch (final Exception ex) {
+			Common.throwError(ex, "Error loading " + file + ": " + ex);
+
+		} finally {
+			this.loading = false;
 		}
 	}
 
@@ -1301,55 +1299,52 @@ public abstract class FileConfig {
 	 * @param file
 	 */
 	public final void save(@NonNull File file) {
-		synchronized (loadedSections) {
+		if (this.saving)
+			return;
 
-			if (this.saving)
+		try {
+			if (this.loading) {
+				this.shouldSave = true;
+
 				return;
+			}
 
-			try {
-				if (this.loading) {
-					this.shouldSave = true;
+			this.onPreSave();
 
-					return;
+			if (this.canSaveFile()) {
+
+				try {
+					this.saving = true;
+					this.onSave();
+
+				} catch (final EventHandledException ex) {
+					// Ignore, indicated that we exited polymorphism inheritance prematurely by intention
+
+				} finally {
+					this.saving = false;
 				}
 
-				this.onPreSave();
+				final File parent = file.getCanonicalFile().getParentFile();
 
-				if (this.canSaveFile()) {
+				if (parent != null)
+					parent.mkdirs();
 
-					try {
-						this.saving = true;
-						this.onSave();
+				final String data = this.saveToString();
 
-					} catch (final EventHandledException ex) {
-						// Ignore, indicated that we exited polymorphism inheritance prematurely by intention
+				if (data != null)
+					try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+						writer.write(data);
 
-					} finally {
-						this.saving = false;
+					} catch (final Exception ex) {
+						Remain.sneaky(ex);
 					}
 
-					final File parent = file.getCanonicalFile().getParentFile();
-
-					if (parent != null)
-						parent.mkdirs();
-
-					final String data = this.saveToString();
-
-					if (data != null)
-						try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-							writer.write(data);
-
-						} catch (final Exception ex) {
-							Remain.sneaky(ex);
-						}
-
-					// Update file
-					this.file = file;
-				}
-
-			} catch (final Exception ex) {
-				Remain.sneaky(ex);
+				// Update file
+				this.file = file;
 			}
+
+		} catch (final Exception ex) {
+			Remain.sneaky(ex);
 		}
 	}
 
@@ -1440,14 +1435,12 @@ public abstract class FileConfig {
 	 * Removes the loaded file configuration from the disk.
 	 */
 	public final void deleteFile() {
-		synchronized (loadedSections) {
-			Valid.checkNotNull(this.file, "Cannot unregister null file before settings were loaded!");
+		Valid.checkNotNull(this.file, "Cannot unregister null file before settings were loaded!");
 
-			if (this.file.exists())
-				this.file.delete();
+		if (this.file.exists())
+			this.file.delete();
 
-			loadedSections.remove(this.file.getAbsolutePath());
-		}
+		loadedSections.remove(this.file.getAbsolutePath());
 	}
 
 	// ------------------------------------------------------------------------------------
@@ -1570,9 +1563,7 @@ public abstract class FileConfig {
 
 	@Deprecated // internal use only
 	public static final void clearLoadedSections() {
-		synchronized (loadedSections) {
-			loadedSections.clear();
-		}
+		loadedSections.clear();
 	}
 
 	// ------------------------------------------------------------------------------------

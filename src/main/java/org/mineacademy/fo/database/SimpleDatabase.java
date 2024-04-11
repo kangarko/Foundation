@@ -58,7 +58,7 @@ public class SimpleDatabase {
 	 * The established connection, or null if none
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
-	private volatile Connection connection;
+	private Connection connection;
 
 	/**
 	 * Map of variables you can use with the {} syntax in SQL
