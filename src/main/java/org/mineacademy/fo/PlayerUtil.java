@@ -406,99 +406,97 @@ public final class PlayerUtil {
 	 * @param removeVanish   should we remove vanish from players? most vanish plugins are supported
 	 */
 	public static void normalize(final Player player, final boolean cleanInventory, final boolean removeVanish) {
-		synchronized (titleRestoreTasks) {
-			HookManager.setGodMode(player, false);
+		HookManager.setGodMode(player, false);
 
-			player.setGameMode(GameMode.SURVIVAL);
+		player.setGameMode(GameMode.SURVIVAL);
 
-			if (cleanInventory) {
-				cleanInventoryAndFood(player);
+		if (cleanInventory) {
+			cleanInventoryAndFood(player);
 
+			try {
+				CompAttribute.GENERIC_MAX_HEALTH.set(player, 20);
+				CompAttribute.GENERIC_ATTACK_SPEED.set(player, 4.0);
+
+			} catch (final Throwable t) {
 				try {
-					CompAttribute.GENERIC_MAX_HEALTH.set(player, 20);
-					CompAttribute.GENERIC_ATTACK_SPEED.set(player, 4.0);
+					player.setMaxHealth(20);
 
-				} catch (final Throwable t) {
-					try {
-						player.setMaxHealth(20);
-
-					} catch (final Throwable tt) {
-
-						try {
-							player.resetMaxHealth();
-						} catch (final Throwable ttt) {
-							// Minecraft 1.2.5 lol
-						}
-					}
-				}
-
-				try {
-					player.setHealth(20);
-
-				} catch (final Throwable t) {
-					// Try attribute way
+				} catch (final Throwable tt) {
 
 					try {
-						final double maxHealthAttr = CompAttribute.GENERIC_MAX_HEALTH.get(player);
-
-						player.setHealth(maxHealthAttr);
-
-					} catch (final Throwable tt) {
-						// silence if a third party plugin is controlling health
+						player.resetMaxHealth();
+					} catch (final Throwable ttt) {
+						// Minecraft 1.2.5 lol
 					}
 				}
-
-				player.setHealthScaled(false);
-
-				for (final PotionEffect potion : player.getActivePotionEffects())
-					player.removePotionEffect(potion.getType());
 			}
 
-			player.setTotalExperience(0);
-			player.setLevel(0);
-			player.setExp(0F);
+			try {
+				player.setHealth(20);
 
-			player.resetPlayerTime();
-			player.resetPlayerWeather();
+			} catch (final Throwable t) {
+				// Try attribute way
 
-			player.setFallDistance(0);
-
-			CompProperty.INVULNERABLE.apply(player, false);
-			CompProperty.GLOWING.apply(player, false);
-			CompProperty.SILENT.apply(player, false);
-
-			player.setAllowFlight(false);
-			player.setFlying(false);
-
-			player.setFlySpeed(0.1F);
-			player.setWalkSpeed(0.2F);
-
-			player.setCanPickupItems(true);
-
-			player.setVelocity(new Vector(0, 0, 0));
-			player.eject();
-
-			EntityUtil.removeVehiclesAndPassengers(player);
-
-			if (removeVanish)
 				try {
-					if (player.hasMetadata("vanished")) {
-						final Plugin plugin = player.getMetadata("vanished").get(0).getOwningPlugin();
+					final double maxHealthAttr = CompAttribute.GENERIC_MAX_HEALTH.get(player);
 
-						player.removeMetadata("vanished", plugin);
-					}
+					player.setHealth(maxHealthAttr);
 
-					for (final Player other : Remain.getOnlinePlayers())
-						if (!other.getName().equals(player.getName()) && !other.canSee(player))
-							other.showPlayer(player);
-
-				} catch (final NoSuchMethodError err) {
-					/* old MC */
-
-				} catch (final Exception ex) {
-					ex.printStackTrace();
+				} catch (final Throwable tt) {
+					// silence if a third party plugin is controlling health
 				}
+			}
+
+			player.setHealthScaled(false);
+
+			for (final PotionEffect potion : player.getActivePotionEffects())
+				player.removePotionEffect(potion.getType());
 		}
+
+		player.setTotalExperience(0);
+		player.setLevel(0);
+		player.setExp(0F);
+
+		player.resetPlayerTime();
+		player.resetPlayerWeather();
+
+		player.setFallDistance(0);
+
+		CompProperty.INVULNERABLE.apply(player, false);
+		CompProperty.GLOWING.apply(player, false);
+		CompProperty.SILENT.apply(player, false);
+
+		player.setAllowFlight(false);
+		player.setFlying(false);
+
+		player.setFlySpeed(0.1F);
+		player.setWalkSpeed(0.2F);
+
+		player.setCanPickupItems(true);
+
+		player.setVelocity(new Vector(0, 0, 0));
+		player.eject();
+
+		EntityUtil.removeVehiclesAndPassengers(player);
+
+		if (removeVanish)
+			try {
+				if (player.hasMetadata("vanished")) {
+					final Plugin plugin = player.getMetadata("vanished").get(0).getOwningPlugin();
+
+					player.removeMetadata("vanished", plugin);
+				}
+
+				for (final Player other : Remain.getOnlinePlayers())
+					if (!other.getName().equals(player.getName()) && !other.canSee(player))
+						other.showPlayer(player);
+
+			} catch (final NoSuchMethodError err) {
+				/* old MC */
+
+			} catch (final Exception ex) {
+				ex.printStackTrace();
+			}
 	}
 
 	/*

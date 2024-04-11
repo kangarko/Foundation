@@ -30,7 +30,7 @@ public abstract class FolderWatcher extends Thread {
 	/**
 	 * A list to help Foundation stop threads on reload
 	 */
-	private static volatile Set<FolderWatcher> activeThreads = new HashSet<>();
+	private static final Set<FolderWatcher> activeThreads = new HashSet<>();
 
 	/**
 	 * Stop all active threads
@@ -91,7 +91,6 @@ public abstract class FolderWatcher extends Thread {
 			final WatchKey registration = this.folder.register(service, ENTRY_MODIFY);
 
 			while (this.watching)
-				//synchronized (activeThreads) {
 				try {
 					final WatchKey watchKey = service.take();
 
@@ -134,7 +133,6 @@ public abstract class FolderWatcher extends Thread {
 				} catch (final Throwable t) {
 					Common.error(t, "Error in handling watching thread loop for folder " + this.getFolder());
 				}
-			//}
 
 			registration.cancel();
 

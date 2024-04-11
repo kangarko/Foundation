@@ -42,7 +42,7 @@ public abstract class SimpleHologram {
 	/**
 	 * The ticking task responsible for calling {@link #onTick()}
 	 */
-	private static volatile BukkitTask tickingTask = null;
+	private static BukkitTask tickingTask = null;
 
 	/**
 	 * The armor stand names, each line spawns another invisible stand

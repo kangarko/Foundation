@@ -35,7 +35,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	/**
 	 * A list of all loaded items
 	 */
-	private volatile StrictMap<String, T> loadedItemsMap = new StrictMap<>();
+	private final StrictMap<String, T> loadedItemsMap = new StrictMap<>();
 
 	/**
 	 * The item type this class stores, such as "variable, "format", or "arena class"

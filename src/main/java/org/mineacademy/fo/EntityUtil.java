@@ -46,7 +46,7 @@ public final class EntityUtil {
 	/**
 	 * Used to prevent duplicate registering of {@link HitTracking} listener.
 	 */
-	private volatile static boolean registeredHitListener = false;
+	private static boolean registeredHitListener = false;
 
 	/**
 	 * Returns the closest entity to the center location within the given 3-dimensional range
@@ -348,7 +348,7 @@ class HitTracking implements Listener {
 	 * List of flying projectiles with code to run on impact,
 	 * stop tracking after 30 seconds to prevent overloading the map
 	 */
-	private static volatile ExpiringMap<UUID, List<Consumer<ProjectileHitEvent>>> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
+	private static ExpiringMap<UUID, List<Consumer<ProjectileHitEvent>>> flyingProjectiles = ExpiringMap.builder().expiration(30, TimeUnit.SECONDS).build();
 
 	/**
 	 * Invoke the hit listener when the registered projectile hits something
@@ -357,14 +357,11 @@ class HitTracking implements Listener {
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onHit(ProjectileHitEvent event) {
+		final List<Consumer<ProjectileHitEvent>> hitListeners = flyingProjectiles.remove(event.getEntity().getUniqueId());
 
-		synchronized (flyingProjectiles) {
-			final List<Consumer<ProjectileHitEvent>> hitListeners = flyingProjectiles.remove(event.getEntity().getUniqueId());
-
-			if (hitListeners != null)
-				for (final Consumer<ProjectileHitEvent> listener : hitListeners)
-					listener.accept(event);
-		}
+		if (hitListeners != null)
+			for (final Consumer<ProjectileHitEvent> listener : hitListeners)
+				listener.accept(event);
 	}
 
 	/**
@@ -374,12 +371,10 @@ class HitTracking implements Listener {
 	 * @param hitTask
 	 */
 	static void addFlyingProjectile(Projectile projectile, Consumer<ProjectileHitEvent> hitTask) {
-		synchronized (flyingProjectiles) {
-			final UUID uniqueId = projectile.getUniqueId();
-			final List<Consumer<ProjectileHitEvent>> listeners = flyingProjectiles.getOrDefault(uniqueId, new ArrayList<>());
+		final UUID uniqueId = projectile.getUniqueId();
+		final List<Consumer<ProjectileHitEvent>> listeners = flyingProjectiles.getOrDefault(uniqueId, new ArrayList<>());
 
-			listeners.add(hitTask);
-			flyingProjectiles.put(uniqueId, listeners);
-		}
+		listeners.add(hitTask);
+		flyingProjectiles.put(uniqueId, listeners);
 	}
 }

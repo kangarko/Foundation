@@ -2479,11 +2479,12 @@ class VaultHook {
 
 class PlaceholderAPIHook {
 
-	private static volatile VariablesInjector injector;
+	private final VariablesInjector injector;
 
 	PlaceholderAPIHook() {
+		injector = new VariablesInjector();
+
 		try {
-			injector = new VariablesInjector();
 			injector.register();
 
 		} catch (final Throwable throwable) {

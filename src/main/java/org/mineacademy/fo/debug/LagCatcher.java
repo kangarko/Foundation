@@ -26,12 +26,12 @@ public final class LagCatcher {
 	/**
 	 * Stores sections with the time time they started to be measured
 	 */
-	private static volatile Map<String, Long> startTimesMap = new HashMap<>();
+	private static final Map<String, Long> startTimesMap = new HashMap<>();
 
 	/**
 	 * Stores sections with a list of lag durations for each section
 	 */
-	private static volatile Map<String, List<Long>> durationsMap = new HashMap<>();
+	private static final Map<String, List<Long>> durationsMap = new HashMap<>();
 
 	/**
 	 * Used to completely disable "X took Y ms" messages from being printed in to your console.
