@@ -1570,7 +1570,7 @@ public final class Remain {
 	public static void updateInventoryTitle(final Player player, String title) {
 		final String version = MinecraftVersion.getServerVersion();
 
-		if (MinecraftVersion.newerThan(V.v1_20) || (version.contains("v1_20_R") && Integer.valueOf(version.replace("v1_20_R", "")) >= 2)) {
+		if (MinecraftVersion.newerThan(V.v1_20) || version.contains("v1_20_R") && Integer.valueOf(version.replace("v1_20_R", "")) >= 2) {
 			player.getOpenInventory().setTitle(Common.colorize(title));
 
 			return;
