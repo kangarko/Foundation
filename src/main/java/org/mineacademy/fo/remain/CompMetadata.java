@@ -1,9 +1,11 @@
 package org.mineacademy.fo.remain;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -11,12 +13,14 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
-import org.bukkit.block.TileState;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.metadata.Metadatable;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
 import org.mineacademy.fo.Common;
@@ -24,16 +28,11 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBT;
-import org.mineacademy.fo.remain.nbt.NBTEntity;
-import org.mineacademy.fo.remain.nbt.NBTTileEntity;
-import org.mineacademy.fo.remain.nbt.ReadWriteNBT;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
@@ -52,15 +51,9 @@ import lombok.RequiredArgsConstructor;
 public final class CompMetadata {
 
 	/**
-	 * Legacy <1.14 uses a NBT-API and hard file storage in data.db for metadata
+	 * Minecraft 1.14+ supports persistent metadata meaning entities/tiles can have custom tags easily
 	 */
-	@Getter
-	private static boolean legacy = MinecraftVersion.olderThan(V.v1_14);
-
-	/**
-	 * Minecraft 1.7+ is supported by NBT-API
-	 */
-	private static boolean hasNBTAPI = MinecraftVersion.atLeast(V.v1_7);
+	private static boolean hasPersistentMetadata = MinecraftVersion.atLeast(V.v1_14);
 
 	/**
 	 * The tag delimiter
@@ -86,19 +79,17 @@ public final class CompMetadata {
 	 * @return
 	 */
 	public static ItemStack setMetadata(@NonNull final ItemStack item, @NonNull final String key, final String value) {
-		Valid.checkBoolean(hasNBTAPI, "CompMetadata#setMetadata() requires Minecraft 1.7.10 or newer");
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "Using CompMetadata for ItemStacks requires Minecraft 1.7.10 or newer");
 
-		boolean remove = value == null || "".equals(value);
+		final boolean remove = value == null || "".equals(value);
 		final ItemStack clone = new ItemStack(item);
 
 		return NBT.modify(clone, tag -> {
-			final ReadWriteNBT compound = tag.getOrCreateCompound(FoConstants.NBT.TAG);
-
 			if (remove) {
-				if (compound.hasTag(key))
-					compound.removeKey(key);
+				if (tag.hasTag(key))
+					tag.removeKey(key);
 			} else
-				compound.setString(key, value);
+				tag.setString(key, value);
 
 			return clone;
 		});
@@ -112,86 +103,26 @@ public final class CompMetadata {
 	 * @param value
 	 */
 	public static void setMetadata(@NonNull final Entity entity, @NonNull final String key, final String value) {
-		boolean remove = value == null || "".equals(value);
+		if (hasPersistentMetadata) {
+			setPersistentMetadata(entity, key, value);
 
-		if (Remain.hasScoreboardTags()) {
-			final String tag = formatTag(key, value);
-
-			if (remove) {
-				if (entity.getScoreboardTags().contains(tag))
-					entity.removeScoreboardTag(tag);
-
-			} else if (!entity.getScoreboardTags().contains(tag))
-				entity.addScoreboardTag(tag);
-
-		} else if (hasNBTAPI) {
-			final NBTEntity nbt = new NBTEntity(entity);
-			final ReadWriteNBT compound = nbt.getOrCreateCompound(FoConstants.NBT.TAG);
-
-			if (remove) {
-				if (compound.hasTag(key))
-					compound.removeKey(key);
-			} else
-				compound.setString(key, value);
-
-		} else {
-			if (remove) {
-				entity.removeMetadata(key, SimplePlugin.getInstance());
-
-				MetadataFile.getInstance().removeMetadata(entity, key);
-
-			} else {
-				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
-
-				MetadataFile.getInstance().addMetadata(entity, key, value);
-			}
-		}
+		} else
+			MetadataFile.getInstance().setMetadata(entity, key, value);
 	}
 
 	/**
 	 * Sets persistent tile entity metadata, set value to null to remove
 	 *
-	 * @param tileEntity
+	 * @param entity
 	 * @param key
 	 * @param value
 	 */
-	public static void setMetadata(@NonNull final BlockState tileEntity, @NonNull final String key, final String value) {
-		boolean remove = value == null || "".equals(value);
+	public static void setMetadata(@NonNull final BlockState entity, @NonNull final String key, final String value) {
+		if (hasPersistentMetadata) {
+			setPersistentMetadata(entity, key, value);
 
-		if (!legacy) {
-			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
-
-			if (remove)
-				removeNamedspaced((TileState) tileEntity, key);
-			else
-				setNamedspaced((TileState) tileEntity, key, value);
-
-			tileEntity.update();
-
-		} else if (hasNBTAPI) {
-			final NBTTileEntity nbt = new NBTTileEntity(tileEntity);
-			final ReadWriteNBT compound = nbt.getOrCreateCompound(FoConstants.NBT.TAG);
-
-			if (remove) {
-				if (compound.hasTag(key))
-					compound.removeKey(key);
-			} else
-				compound.setString(key, value);
-
-		} else {
-			if (remove) {
-				tileEntity.removeMetadata(key, SimplePlugin.getInstance());
-
-				MetadataFile.getInstance().removeMetadata(tileEntity, key);
-
-			} else {
-				tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
-
-				MetadataFile.getInstance().addMetadata(tileEntity, key, value);
-			}
-
-			tileEntity.update();
-		}
+		} else
+			MetadataFile.getInstance().setMetadata(entity, key, value);
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -207,7 +138,7 @@ public final class CompMetadata {
 	 * @return
 	 */
 	public static boolean hasMetadata(@NonNull final ItemStack item, @NonNull final String key) {
-		String metadata = getMetadata(item, key);
+		final String metadata = getMetadata(item, key);
 
 		return metadata != null && !metadata.isEmpty();
 	}
@@ -221,7 +152,7 @@ public final class CompMetadata {
 	 * @return
 	 */
 	public static boolean hasMetadata(@NonNull final Entity entity, @NonNull final String key) {
-		String metadata = getMetadata(entity, key);
+		final String metadata = getMetadata(entity, key);
 
 		return metadata != null && !metadata.isEmpty();
 	}
@@ -230,12 +161,12 @@ public final class CompMetadata {
 	 * Return true if the given tile entity block such as {@link CreatureSpawner} has
 	 * the given key
 	 *
-	 * @param tileEntity
+	 * @param entity
 	 * @param key
 	 * @return
 	 */
-	public static boolean hasMetadata(@NonNull final BlockState tileEntity, @NonNull final String key) {
-		String metadata = getMetadata(tileEntity, key);
+	public static boolean hasMetadata(@NonNull final BlockState entity, @NonNull final String key) {
+		final String metadata = getMetadata(entity, key);
 
 		return metadata != null && !metadata.isEmpty();
 	}
@@ -247,16 +178,11 @@ public final class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static String getMetadata(final ItemStack item, @NonNull final String key) {
-		Valid.checkBoolean(hasNBTAPI, "CompMetadata#getMetadata() requires Minecraft 1.7.10 or newer");
+	public static String getMetadata(@NonNull final ItemStack item, @NonNull final String key) {
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "Using CompMetadata for ItemStacks requires Minecraft 1.7.10 or newer");
 
-		if (item == null || CompMaterial.isAir(item.getType()))
-			return null;
-
-		return NBT.get(item, nbt -> {
-			final String value = nbt.hasTag(FoConstants.NBT.TAG) ? nbt.getCompound(FoConstants.NBT.TAG).getString(key) : null;
-
-			return Common.getOrNull(value);
+		return CompMaterial.isAir(item.getType()) ? null : NBT.get(item, nbt -> {
+			return Common.getOrNull(nbt.getString(key));
 		});
 	}
 
@@ -269,6 +195,8 @@ public final class CompMetadata {
 	 * @return the tag, or null
 	 */
 	public static String getMetadata(@NonNull final Entity entity, @NonNull final String key) {
+
+		// PENDING REMOVAL
 		if (Remain.hasScoreboardTags())
 			for (final String line : entity.getScoreboardTags()) {
 				final String tag = getTag(line, key);
@@ -277,39 +205,26 @@ public final class CompMetadata {
 					return tag;
 			}
 
-		else if (hasNBTAPI) {
-			final NBTEntity nbt = new NBTEntity(entity);
-			final ReadWriteNBT compound = nbt.getCompound(FoConstants.NBT.TAG);
+		if (hasPersistentMetadata) {
+			return getPersistentMetadata(entity, key);
 
-			if (compound != null && compound.hasTag(key))
-				return compound.getString(key);
-		}
-
-		return Common.getOrNull(entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null);
+		} else
+			return MetadataFile.getInstance().getMetadata(entity, key);
 	}
 
 	/**
 	 * Return saved tile entity metadata, or null if none
 	 *
-	 * @param tileEntity
+	 * @param entity
 	 * @param key       or null if none
 	 * @return
 	 */
-	public static String getMetadata(@NonNull final BlockState tileEntity, @NonNull final String key) {
-		if (MinecraftVersion.atLeast(V.v1_14)) {
-			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
+	public static String getMetadata(@NonNull final BlockState entity, @NonNull final String key) {
+		if (hasPersistentMetadata) {
+			return getPersistentMetadata(entity, key);
 
-			return getNamedspaced((TileState) tileEntity, key);
-
-		} else if (hasNBTAPI) {
-			final NBTTileEntity nbt = new NBTTileEntity(tileEntity);
-			final ReadWriteNBT compound = nbt.getCompound(FoConstants.NBT.TAG);
-
-			if (compound != null && compound.hasTag(key))
-				return compound.getString(key);
-		}
-
-		return Common.getOrNull(tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : null);
+		} else
+			return MetadataFile.getInstance().getMetadata(entity, key);
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -383,6 +298,15 @@ public final class CompMetadata {
 	// Utility methods
 	// ----------------------------------------------------------------------------------------
 
+	/**
+	 * Return if we are using file storage for metadata (MC older than 1.14).
+	 *
+	 * @return
+	 */
+	public static boolean isLegacy() {
+		return !hasPersistentMetadata;
+	}
+
 	private static String getTag(final String raw, final String key) {
 		final String[] parts = raw.split(DELIMITER);
 
@@ -393,57 +317,55 @@ public final class CompMetadata {
 		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
 	}
 
-	private static String getNamedspaced(final PersistentDataHolder dataHolder, final String key) {
-		return Common.getOrNull(dataHolder.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING));
+	private static String getPersistentMetadata(final Object entity, final String key) {
+		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
+		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
+
+		return Common.getOrNull(data.get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING));
 	}
 
-	private static void setNamedspaced(final PersistentDataHolder dataHolder, final String key, final String value) {
-		dataHolder.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING, value);
-	}
+	private static void setPersistentMetadata(Object entity, String key, String value) {
+		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 
-	private static void removeNamedspaced(final TileState tile, final String key) {
-		tile.getPersistentDataContainer().remove(new NamespacedKey(SimplePlugin.getInstance(), key));
+		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
+		final boolean remove = value == null || "".equals(value);
+
+		if (remove)
+			data.remove(new NamespacedKey(SimplePlugin.getInstance(), key));
+		else
+			data.set(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING, value);
 	}
 
 	/**
 	 * Due to lack of persistent metadata implementation until Minecraft 1.14.x,
-	 * we simply store them in a file during server restart and then apply
-	 * as a temporary metadata for the Bukkit entities.
-	 * <p>
-	 * internal use only
+	 * we store them manually.
 	 */
-	@AutoRegister
-	public static final class MetadataFile extends YamlConfig {
+	public static final class MetadataFile extends YamlConfig implements Listener {
 
 		@Getter
 		private static final MetadataFile instance = new MetadataFile();
 
-		private static boolean canSave = false;
+		/**
+		 * Stores entity metadata by UUID
+		 */
+		private final Map<UUID, Set<String>> entityMetadata = new HashMap<>();
 
-		private final StrictMap<UUID, List<String>> entityMetadataMap = new StrictMap<>();
-		private final StrictMap<Location, BlockCache> blockMetadataMap = new StrictMap<>();
+		/**
+		 * Stores tile entity metadata by Location
+		 */
+		private final Map<Location, BlockCache> blockMetadata = new HashMap<>();
 
 		private MetadataFile() {
-			if (CompMetadata.legacy) {
-				this.setPathPrefix("Metadata");
-				this.setSaveEmptyValues(false);
+			this.setPathPrefix("Metadata");
+			this.setSaveEmptyValues(false);
 
-				this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
-			}
+			this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
 		}
 
 		@Override
 		protected void onLoad() {
-			if (CompMetadata.legacy) {
-				this.loadEntities();
-
-				this.loadBlockStates();
-			}
-		}
-
-		@Override
-		protected boolean canSaveFile() {
-			return canSave;
+			this.loadEntities();
+			this.loadBlockStates();
 		}
 
 		@Override
@@ -452,180 +374,161 @@ public final class CompMetadata {
 		}
 
 		@Override
-		protected void onSave() {
-			if (CompMetadata.legacy) {
-				this.set("Entity", this.entityMetadataMap);
-				this.set("Block", this.blockMetadataMap);
-			}
+		public SerializedMap saveToMap() {
+			return SerializedMap.ofArray(
+					"Entity", this.entityMetadata,
+					"Block", this.blockMetadata);
+		}
+
+		@EventHandler
+		public void onEntityDeath(EntityDeathEvent event) {
+			final Entity entity = event.getEntity();
+			final UUID uniqueId = entity.getUniqueId();
+
+			this.entityMetadata.remove(uniqueId);
+			this.save();
 		}
 
 		private void loadEntities() {
-			this.entityMetadataMap.clear();
+			this.entityMetadata.clear();
 
-			for (final String uuidName : this.getMap("Entity").keySet()) {
-				final UUID uuid = UUID.fromString(uuidName);
+			for (final String uuidString : this.getMap("Entity").keySet()) {
+				final UUID uuid = UUID.fromString(uuidString);
 
-				// Remove broken key
-				if (!(this.getObject("Entity." + uuidName) instanceof List)) {
-					this.set("Entity." + uuidName, null);
+				// Remove broken keys
+				if (!(this.getObject("Entity." + uuidString) instanceof List)) {
+					this.set("Entity." + uuidString, null);
 
 					continue;
 				}
 
-				final List<String> metadata = this.getStringList("Entity." + uuidName);
-				final Entity entity = Remain.getEntity(uuid);
+				final Set<String> metadata = this.getSet("Entity." + uuidString, String.class);
 
-				// Check if the entity is still real
-				if (!metadata.isEmpty() && entity != null && entity.isValid() && !entity.isDead()) {
-					this.entityMetadataMap.put(uuid, metadata);
-
-					this.applySavedMetadata(metadata, entity);
-				}
+				if (!metadata.isEmpty())
+					this.entityMetadata.put(uuid, metadata);
 			}
-
-			this.set("Entity", this.entityMetadataMap);
 		}
 
 		private void loadBlockStates() {
-			this.blockMetadataMap.clear();
+			this.blockMetadata.clear();
 
-			for (final String locationRaw : this.getMap("Block").keySet()) {
-				final Location location = SerializeUtil.deserializeLocation(locationRaw);
-				final BlockCache blockCache = this.get("Block." + locationRaw, BlockCache.class);
+			for (final String locationString : this.getMap("Block").keySet()) {
+				final Location location = SerializeUtil.deserializeLocation(locationString);
 
 				final Block block = location.getBlock();
+				final BlockCache blockCache = this.get("Block." + locationString, BlockCache.class);
 
 				// Check if the block remained the same
-				if (!CompMaterial.isAir(block) && CompMaterial.fromBlock(block) == blockCache.getType()) {
-					this.blockMetadataMap.put(location, blockCache);
-
-					this.applySavedMetadata(blockCache.getMetadata(), block);
-				}
-			}
-
-			this.set("Block", this.blockMetadataMap);
-
-		}
-
-		private void applySavedMetadata(final List<String> metadata, final Metadatable entity) {
-			for (final String metadataLine : metadata) {
-				if (metadataLine.isEmpty())
-					continue;
-
-				final String[] lines = metadataLine.split(DELIMITER);
-				Valid.checkBoolean(lines.length == 3, "Malformed metadata line for " + entity + ". Length 3 != " + lines.length + ". Data: " + metadataLine);
-
-				final String key = lines[1];
-				final String value = lines[2];
-
-				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+				if (block != null && CompMaterial.fromBlock(block) == blockCache.getType())
+					this.blockMetadata.put(location, blockCache);
 			}
 		}
 
-		protected void addMetadata(final Entity entity, @NonNull final String key, final String value) {
-			final List<String> metadata = this.entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
+		protected String getMetadata(Entity entity, @NonNull String key) {
+			final UUID uniqueId = entity.getUniqueId();
+			final Set<String> metadata = this.entityMetadata.getOrDefault(uniqueId, new HashSet<>());
 
-			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
-				final String meta = i.next();
+			for (final Iterator<String> iterator = metadata.iterator(); iterator.hasNext();) {
+				final String meta = iterator.next();
+				final String value = getTag(meta, key);
+
+				if (value != null && !value.isEmpty())
+					return value;
+			}
+
+			return null;
+		}
+
+		protected void setMetadata(final Entity entity, @NonNull final String key, final String value) {
+			final UUID uniqueId = entity.getUniqueId();
+			final Set<String> metadata = this.entityMetadata.getOrDefault(uniqueId, new HashSet<>());
+			final boolean remove = value == null || "".equals(value);
+
+			// Remove the old value
+			for (final Iterator<String> iterator = metadata.iterator(); iterator.hasNext();) {
+				final String meta = iterator.next();
 
 				if (getTag(meta, key) != null)
-					i.remove();
+					iterator.remove();
 			}
 
-			if (value != null && !value.isEmpty()) {
+			if (!remove) {
 				final String formatted = formatTag(key, value);
 
 				metadata.add(formatted);
+				this.entityMetadata.put(uniqueId, metadata);
 			}
 
-			this.save("Entity", this.entityMetadataMap);
+			if (metadata.isEmpty())
+				this.entityMetadata.remove(uniqueId);
+
+			this.save("Entity", this.entityMetadata);
 		}
 
-		protected void addMetadata(final BlockState blockState, final String key, final String value) {
-			final BlockCache blockCache = this.blockMetadataMap.getOrPut(blockState.getLocation(), new BlockCache(CompMaterial.fromBlock(blockState.getBlock()), new ArrayList<>()));
+		protected String getMetadata(BlockState entity, @NonNull String key) {
+			final Location location = entity.getLocation();
+			final BlockCache blockCache = this.blockMetadata.get(location);
 
-			for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
-				final String meta = i.next();
+			if (blockCache == null)
+				return null;
 
-				if (getTag(meta, key) != null)
-					i.remove();
+			final boolean hasSinceChanged = CompMaterial.fromBlock(location.getBlock()) != blockCache.getType();
+
+			for (final Iterator<String> iterator = blockCache.getMetadata().iterator(); iterator.hasNext();) {
+				final String meta = iterator.next();
+				final String value = getTag(meta, key);
+
+				if (value != null && !value.isEmpty()) {
+					if (hasSinceChanged)
+						iterator.remove();
+					else
+						return value;
+				}
 			}
 
-			if (value != null && !value.isEmpty()) {
+			return null;
+		}
+
+		protected void setMetadata(final BlockState entity, final String key, final String value) {
+			final Location location = entity.getLocation();
+			BlockCache blockCache = this.blockMetadata.get(location);
+			final boolean remove = value == null || "".equals(value);
+
+			// Remove the old value
+			if (blockCache != null)
+				for (final Iterator<String> iterator = blockCache.getMetadata().iterator(); iterator.hasNext();) {
+					final String meta = iterator.next();
+
+					if (getTag(meta, key) != null)
+						iterator.remove();
+				}
+
+			if (!remove) {
 				final String formatted = formatTag(key, value);
 
+				if (blockCache == null)
+					blockCache = BlockCache.create(CompMaterial.fromBlock(entity.getBlock()));
+
 				blockCache.getMetadata().add(formatted);
+				this.blockMetadata.put(location, blockCache);
 			}
 
-			{ // Save
-				for (final Map.Entry<Location, BlockCache> entry : this.blockMetadataMap.entrySet())
-					this.set("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
+			if (blockCache != null && blockCache.getMetadata().isEmpty())
+				this.blockMetadata.remove(location);
 
-				this.save();
-			}
-		}
-
-		protected void removeMetadata(final Entity entity, final String key) {
-			final List<String> metadata = this.entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
-
-			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
-				final String meta = i.next();
-
-				if (getTag(meta, key) != null)
-					i.remove();
-			}
-
-			this.save("Entity", this.entityMetadataMap);
-		}
-
-		protected void removeMetadata(final BlockState blockState, final String key) {
-			if (!blockMetadataMap.containsKey(blockState.getLocation()))
-				return;
-
-			final BlockCache blockCache = blockMetadataMap.get(blockState.getLocation());
-
-			for (final Iterator<String> i = blockCache.getMetadata().iterator(); i.hasNext();) {
-				final String meta = i.next();
-
-				if (getTag(meta, key) != null) {
-					i.remove();
-					break;
-				}
-			}
-
-			if (blockCache.getMetadata().isEmpty()) {
-				blockMetadataMap.remove(blockState.getLocation());
-			}
-
-			{ // Save
-				for (final Map.Entry<Location, BlockCache> entry : this.blockMetadataMap.entrySet())
-					this.set("Block." + SerializeUtil.serializeLoc(entry.getKey()), entry.getValue().serialize());
-
-				this.save();
-			}
-		}
-
-		public static void saveOnce() {
-			if (CompMetadata.legacy) {
-				try {
-					canSave = true;
-					instance.save();
-
-				} finally {
-					canSave = false;
-				}
-			}
+			this.save("Block", this.blockMetadata);
 		}
 
 		@Getter
 		@RequiredArgsConstructor
 		public static final class BlockCache implements ConfigSerializable {
+
 			private final CompMaterial type;
-			private final List<String> metadata;
+			private final Set<String> metadata;
 
 			public static BlockCache deserialize(final SerializedMap map) {
 				final CompMaterial type = map.getMaterial("Type");
-				final List<String> metadata = map.getStringList("Metadata");
+				final Set<String> metadata = map.getSet("Metadata", String.class);
 
 				return new BlockCache(type, metadata);
 			}
@@ -638,6 +541,10 @@ public final class CompMetadata {
 				map.put("Metadata", this.metadata);
 
 				return map;
+			}
+
+			public static BlockCache create(CompMaterial type) {
+				return new BlockCache(type, new HashSet<>());
 			}
 		}
 	}

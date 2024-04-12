@@ -62,7 +62,6 @@ import org.mineacademy.fo.settings.FileConfig;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
-import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
@@ -317,8 +316,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				return;
 			}
 
-			// AutoRegister finds this class and saves it
-			CompMetadata.MetadataFile.saveOnce();
+			if (CompMetadata.isLegacy())
+				this.registerEvents(CompMetadata.MetadataFile.getInstance());
 
 			this.onReloadablesStart();
 
@@ -693,6 +692,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.log("&cPlugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
 
+		if (CompMetadata.isLegacy())
+			CompMetadata.MetadataFile.getInstance().save();
+
 		this.unregisterReloadables();
 
 		try {
@@ -785,6 +787,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		try {
 			Debugger.detectDebugMode();
 
+			if (CompMetadata.isLegacy())
+				CompMetadata.MetadataFile.getInstance().save();
+
 			this.unregisterReloadables();
 
 			final Messenger messenger = this.getServer().getMessenger();
@@ -806,13 +811,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			this.onPluginPreReload();
 			this.reloadables.reload();
-
-			if (CompMetadata.isLegacy()) {
-				final YamlConfig metadata = CompMetadata.MetadataFile.getInstance();
-
-				metadata.save();
-				metadata.reload();
-			}
 
 			SimpleHologram.onReload();
 
@@ -864,9 +862,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		BlockVisualizer.stopAll();
 		FolderWatcher.stopThreads();
-
-		// Force metadata save on old MC versions upon reload/disable
-		CompMetadata.MetadataFile.saveOnce();
 
 		FileConfig.clearLoadedSections();
 

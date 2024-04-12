@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.CompMetadata;
 
 /**
  * Stores constants for this plugin
@@ -114,11 +113,6 @@ public final class FoConstants {
 	}
 
 	public static final class NBT {
-
-		/**
-		 * Represents our NBT tag used in {@link CompMetadata}
-		 */
-		public static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
 
 		/**
 		 * An internal metadata tag the player gets when he opens the menu.
