@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.Metadatable;
+import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
@@ -30,8 +31,8 @@ import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBT;
-import org.mineacademy.fo.remain.nbt.NBTCompound;
-import org.mineacademy.fo.remain.nbt.NBTItem;
+import org.mineacademy.fo.remain.nbt.NBTEntity;
+import org.mineacademy.fo.remain.nbt.NBTTileEntity;
 import org.mineacademy.fo.remain.nbt.ReadWriteNBT;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -51,10 +52,15 @@ import lombok.RequiredArgsConstructor;
 public final class CompMetadata {
 
 	/**
-	 * Legacy <1.14 uses a hard file storage in data.db for metadata
+	 * Legacy <1.14 uses a NBT-API and hard file storage in data.db for metadata
 	 */
 	@Getter
 	private static boolean legacy = MinecraftVersion.olderThan(V.v1_14);
+
+	/**
+	 * Minecraft 1.7+ is supported by NBT-API
+	 */
+	private static boolean hasNBTAPI = MinecraftVersion.atLeast(V.v1_7);
 
 	/**
 	 * The tag delimiter
@@ -66,7 +72,7 @@ public final class CompMetadata {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * A shortcut for setting a tag with key-value pair on an item.
+	 * A shortcut for setting a tag with key-value pair on an item. Set value to null to remove
 	 * <p>&nbsp;</p>
 	 * <p>
 	 * NOTE: The current behavior, where it clones the item, may change in the future. This change is aimed
@@ -79,28 +85,23 @@ public final class CompMetadata {
 	 * @param value
 	 * @return
 	 */
-	public static ItemStack setMetadata(final ItemStack item, final String key, final String value) {
-		Valid.checkNotNull(item, "Setting NBT tag got null item");
+	public static ItemStack setMetadata(@NonNull final ItemStack item, @NonNull final String key, final String value) {
+		Valid.checkBoolean(hasNBTAPI, "CompMetadata#setMetadata() requires Minecraft 1.7.10 or newer");
 
+		boolean remove = value == null || "".equals(value);
 		final ItemStack clone = new ItemStack(item);
+
 		return NBT.modify(clone, tag -> {
 			final ReadWriteNBT compound = tag.getOrCreateCompound(FoConstants.NBT.TAG);
 
-			if (compound != null)
+			if (remove) {
+				if (compound.hasTag(key))
+					compound.removeKey(key);
+			} else
 				compound.setString(key, value);
 
 			return clone;
 		});
-	}
-
-	/**
-	 * Attempts to set a persistent metadata for entity
-	 *
-	 * @param entity
-	 * @param tag
-	 */
-	public static void setMetadata(final Entity entity, final String tag) {
-		setMetadata(entity, tag, tag);
 	}
 
 	/**
@@ -110,60 +111,134 @@ public final class CompMetadata {
 	 * @param key
 	 * @param value
 	 */
-	public static void setMetadata(final Entity entity, final String key, final String value) {
-		Valid.checkNotNull(entity);
+	public static void setMetadata(@NonNull final Entity entity, @NonNull final String key, final String value) {
+		boolean remove = value == null || "".equals(value);
 
 		if (Remain.hasScoreboardTags()) {
-			final String tag = format(key, value);
+			final String tag = formatTag(key, value);
 
-			if (!entity.getScoreboardTags().contains(tag))
+			if (remove) {
+				if (entity.getScoreboardTags().contains(tag))
+					entity.removeScoreboardTag(tag);
+
+			} else if (!entity.getScoreboardTags().contains(tag))
 				entity.addScoreboardTag(tag);
 
-		} else {
-			entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+		} else if (hasNBTAPI) {
+			final NBTEntity nbt = new NBTEntity(entity);
+			final ReadWriteNBT compound = nbt.getOrCreateCompound(FoConstants.NBT.TAG);
 
-			MetadataFile.getInstance().addMetadata(entity, key, value);
+			if (remove) {
+				if (compound.hasTag(key))
+					compound.removeKey(key);
+			} else
+				compound.setString(key, value);
+
+		} else {
+			if (remove) {
+				entity.removeMetadata(key, SimplePlugin.getInstance());
+
+				MetadataFile.getInstance().removeMetadata(entity, key);
+
+			} else {
+				entity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+
+				MetadataFile.getInstance().addMetadata(entity, key, value);
+			}
 		}
 	}
 
-	// Format the syntax of stored tags
-	private static String format(final String key, final String value) {
-		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
-	}
-
 	/**
-	 * Sets persistent tile entity metadata
+	 * Sets persistent tile entity metadata, set value to null to remove
 	 *
 	 * @param tileEntity
 	 * @param key
 	 * @param value
 	 */
-	public static void setMetadata(final BlockState tileEntity, final String key, final String value) {
-		Valid.checkNotNull(tileEntity);
-		Valid.checkNotNull(key);
-		Valid.checkNotNull(value);
+	public static void setMetadata(@NonNull final BlockState tileEntity, @NonNull final String key, final String value) {
+		boolean remove = value == null || "".equals(value);
 
 		if (!legacy) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
-			setNamedspaced((TileState) tileEntity, key, value);
+			if (remove)
+				removeNamedspaced((TileState) tileEntity, key);
+			else
+				setNamedspaced((TileState) tileEntity, key, value);
+
 			tileEntity.update();
+
+		} else if (hasNBTAPI) {
+			final NBTTileEntity nbt = new NBTTileEntity(tileEntity);
+			final ReadWriteNBT compound = nbt.getOrCreateCompound(FoConstants.NBT.TAG);
+
+			if (remove) {
+				if (compound.hasTag(key))
+					compound.removeKey(key);
+			} else
+				compound.setString(key, value);
 
 		} else {
-			tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+			if (remove) {
+				tileEntity.removeMetadata(key, SimplePlugin.getInstance());
+
+				MetadataFile.getInstance().removeMetadata(tileEntity, key);
+
+			} else {
+				tileEntity.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+
+				MetadataFile.getInstance().addMetadata(tileEntity, key, value);
+			}
+
 			tileEntity.update();
-
-			MetadataFile.getInstance().addMetadata(tileEntity, key, value);
 		}
-	}
-
-	private static void setNamedspaced(final TileState tile, final String key, final String value) {
-		tile.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING, value);
 	}
 
 	// ----------------------------------------------------------------------------------------
 	// Getting metadata
 	// ----------------------------------------------------------------------------------------
+
+	/**
+	 * Return true if the given itemstack has the given key stored at its compound
+	 * tag {@link org.mineacademy.fo.constants.FoConstants.NBT#TAG}
+	 *
+	 * @param item
+	 * @param key
+	 * @return
+	 */
+	public static boolean hasMetadata(@NonNull final ItemStack item, @NonNull final String key) {
+		String metadata = getMetadata(item, key);
+
+		return metadata != null && !metadata.isEmpty();
+	}
+
+	/**
+	 * Returns if the entity has the given tag by key, first checks scoreboard tags,
+	 * and then bukkit metadata
+	 *
+	 * @param entity
+	 * @param key
+	 * @return
+	 */
+	public static boolean hasMetadata(@NonNull final Entity entity, @NonNull final String key) {
+		String metadata = getMetadata(entity, key);
+
+		return metadata != null && !metadata.isEmpty();
+	}
+
+	/**
+	 * Return true if the given tile entity block such as {@link CreatureSpawner} has
+	 * the given key
+	 *
+	 * @param tileEntity
+	 * @param key
+	 * @return
+	 */
+	public static boolean hasMetadata(@NonNull final BlockState tileEntity, @NonNull final String key) {
+		String metadata = getMetadata(tileEntity, key);
+
+		return metadata != null && !metadata.isEmpty();
+	}
 
 	/**
 	 * A shortcut from reading a certain key from an item's given compound tag
@@ -172,16 +247,14 @@ public final class CompMetadata {
 	 * @param key
 	 * @return
 	 */
-	public static String getMetadata(final ItemStack item, final String key) {
-		Valid.checkNotNull(item, "Reading NBT tag got null item");
+	public static String getMetadata(final ItemStack item, @NonNull final String key) {
+		Valid.checkBoolean(hasNBTAPI, "CompMetadata#getMetadata() requires Minecraft 1.7.10 or newer");
 
 		if (item == null || CompMaterial.isAir(item.getType()))
 			return null;
 
-		final String compoundTag = FoConstants.NBT.TAG;
-
 		return NBT.get(item, nbt -> {
-			final String value = nbt.hasTag(compoundTag) ? nbt.getCompound(compoundTag).getString(key) : null;
+			final String value = nbt.hasTag(FoConstants.NBT.TAG) ? nbt.getCompound(FoConstants.NBT.TAG).getString(key) : null;
 
 			return Common.getOrNull(value);
 		});
@@ -195,9 +268,7 @@ public final class CompMetadata {
 	 * @param key
 	 * @return the tag, or null
 	 */
-	public static String getMetadata(final Entity entity, final String key) {
-		Valid.checkNotNull(entity);
-
+	public static String getMetadata(@NonNull final Entity entity, @NonNull final String key) {
 		if (Remain.hasScoreboardTags())
 			for (final String line : entity.getScoreboardTags()) {
 				final String tag = getTag(line, key);
@@ -206,16 +277,15 @@ public final class CompMetadata {
 					return tag;
 			}
 
-		final String value = entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null;
+		else if (hasNBTAPI) {
+			final NBTEntity nbt = new NBTEntity(entity);
+			final ReadWriteNBT compound = nbt.getCompound(FoConstants.NBT.TAG);
 
-		return Common.getOrNull(value);
-	}
+			if (compound != null && compound.hasTag(key))
+				return compound.getString(key);
+		}
 
-	// Parses the tag and gets its value
-	private static String getTag(final String raw, final String key) {
-		final String[] parts = raw.split(DELIMITER);
-
-		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
+		return Common.getOrNull(entity.hasMetadata(key) ? entity.getMetadata(key).get(0).asString() : null);
 	}
 
 	/**
@@ -225,137 +295,26 @@ public final class CompMetadata {
 	 * @param key       or null if none
 	 * @return
 	 */
-	public static String getMetadata(final BlockState tileEntity, final String key) {
-		Valid.checkNotNull(tileEntity);
-		Valid.checkNotNull(key);
-
+	public static String getMetadata(@NonNull final BlockState tileEntity, @NonNull final String key) {
 		if (MinecraftVersion.atLeast(V.v1_14)) {
 			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
 
 			return getNamedspaced((TileState) tileEntity, key);
+
+		} else if (hasNBTAPI) {
+			final NBTTileEntity nbt = new NBTTileEntity(tileEntity);
+			final ReadWriteNBT compound = nbt.getCompound(FoConstants.NBT.TAG);
+
+			if (compound != null && compound.hasTag(key))
+				return compound.getString(key);
 		}
 
-		final String value = tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : null;
-
-		return Common.getOrNull(value);
-	}
-
-	private static String getNamedspaced(final TileState tile, final String key) {
-		final String value = tile.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING);
-
-		return Common.getOrNull(value);
+		return Common.getOrNull(tileEntity.hasMetadata(key) ? tileEntity.getMetadata(key).get(0).asString() : null);
 	}
 
 	// ----------------------------------------------------------------------------------------
-	// Removing metadata
+	// Temporary metadata
 	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * Remove persistent tile entity metadata
-	 *
-	 * @param tileEntity
-	 * @param key
-	 */
-	public static void removeMetadata(final BlockState tileEntity, final String key) {
-		Valid.checkNotNull(tileEntity);
-		Valid.checkNotNull(key);
-
-		if (!hasMetadata(tileEntity, key))
-			return;
-
-		if (!legacy) {
-			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
-
-			removeNamedspaced((TileState) tileEntity, key);
-			tileEntity.update();
-
-		} else {
-			tileEntity.removeMetadata(key, SimplePlugin.getInstance());
-			tileEntity.update();
-
-			MetadataFile.getInstance().removeMetadata(tileEntity, key);
-		}
-	}
-
-	private static void removeNamedspaced(final TileState tile, final String key) {
-		tile.getPersistentDataContainer().remove(new NamespacedKey(SimplePlugin.getInstance(), key));
-	}
-
-	// ----------------------------------------------------------------------------------------
-	// Checking for metadata
-	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * Return true if the given itemstack has the given key stored at its compound
-	 * tag {@link org.mineacademy.fo.constants.FoConstants.NBT#TAG}
-	 *
-	 * @param item
-	 * @param key
-	 * @return
-	 */
-	public static boolean hasMetadata(final ItemStack item, final String key) {
-		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "NBT ItemStack tags only support MC 1.7.10+");
-		Valid.checkNotNull(item);
-
-		if (CompMaterial.isAir(item.getType()))
-			return false;
-
-		final NBTItem nbt = new NBTItem(item);
-		final NBTCompound tag = nbt.getCompound(FoConstants.NBT.TAG);
-
-		return tag != null && tag.hasKey(key);
-	}
-
-	/**
-	 * Returns if the entity has the given tag by key, first checks scoreboard tags,
-	 * and then bukkit metadata
-	 *
-	 * @param entity
-	 * @param key
-	 * @return
-	 */
-	public static boolean hasMetadata(final Entity entity, final String key) {
-		Valid.checkNotNull(entity);
-
-		if (Remain.hasScoreboardTags())
-			for (final String line : entity.getScoreboardTags())
-				if (hasTag(line, key))
-					return true;
-
-		return entity.hasMetadata(key);
-	}
-
-	/**
-	 * Return true if the given tile entity block such as {@link CreatureSpawner} has
-	 * the given key
-	 *
-	 * @param tileEntity
-	 * @param key
-	 * @return
-	 */
-	public static boolean hasMetadata(final BlockState tileEntity, final String key) {
-		Valid.checkNotNull(tileEntity);
-		Valid.checkNotNull(key);
-
-		if (MinecraftVersion.atLeast(V.v1_14)) {
-			Valid.checkBoolean(tileEntity instanceof TileState, "BlockState must be instance of a TileState not " + tileEntity);
-
-			return hasNamedspaced((TileState) tileEntity, key);
-		}
-
-		return tileEntity.hasMetadata(key);
-	}
-
-	private static boolean hasNamedspaced(final TileState tile, final String key) {
-		return tile.getPersistentDataContainer().has(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING);
-	}
-
-	// Parses the tag and gets its value
-	private static boolean hasTag(final String raw, final String tag) {
-		final String[] parts = raw.split(DELIMITER);
-
-		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(tag);
-	}
 
 	/**
 	 * Sets a temporary metadata to entity. This metadata is NOT persistent
@@ -418,6 +377,32 @@ public final class CompMetadata {
 	public static void removeTempMetadata(final Entity player, final String key) {
 		if (player.hasMetadata(key))
 			player.removeMetadata(key, SimplePlugin.getInstance());
+	}
+
+	// ----------------------------------------------------------------------------------------
+	// Utility methods
+	// ----------------------------------------------------------------------------------------
+
+	private static String getTag(final String raw, final String key) {
+		final String[] parts = raw.split(DELIMITER);
+
+		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
+	}
+
+	private static String formatTag(final String key, final String value) {
+		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
+	}
+
+	private static String getNamedspaced(final PersistentDataHolder dataHolder, final String key) {
+		return Common.getOrNull(dataHolder.getPersistentDataContainer().get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING));
+	}
+
+	private static void setNamedspaced(final PersistentDataHolder dataHolder, final String key, final String value) {
+		dataHolder.getPersistentDataContainer().set(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING, value);
+	}
+
+	private static void removeNamedspaced(final TileState tile, final String key) {
+		tile.getPersistentDataContainer().remove(new NamespacedKey(SimplePlugin.getInstance(), key));
 	}
 
 	/**
@@ -548,7 +533,7 @@ public final class CompMetadata {
 			}
 
 			if (value != null && !value.isEmpty()) {
-				final String formatted = format(key, value);
+				final String formatted = formatTag(key, value);
 
 				metadata.add(formatted);
 			}
@@ -567,7 +552,7 @@ public final class CompMetadata {
 			}
 
 			if (value != null && !value.isEmpty()) {
-				final String formatted = format(key, value);
+				final String formatted = formatTag(key, value);
 
 				blockCache.getMetadata().add(formatted);
 			}
@@ -578,6 +563,19 @@ public final class CompMetadata {
 
 				this.save();
 			}
+		}
+
+		protected void removeMetadata(final Entity entity, final String key) {
+			final List<String> metadata = this.entityMetadataMap.getOrPut(entity.getUniqueId(), new ArrayList<>());
+
+			for (final Iterator<String> i = metadata.iterator(); i.hasNext();) {
+				final String meta = i.next();
+
+				if (getTag(meta, key) != null)
+					i.remove();
+			}
+
+			this.save("Entity", this.entityMetadataMap);
 		}
 
 		protected void removeMetadata(final BlockState blockState, final String key) {
