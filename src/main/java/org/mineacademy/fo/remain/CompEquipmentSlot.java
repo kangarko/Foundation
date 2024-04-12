@@ -148,6 +148,9 @@ public enum CompEquipmentSlot {
 
 		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND");
 
+		if (MinecraftVersion.olderThan(V.v1_9) && item == null)
+			item = new ItemStack(Material.AIR);
+
 		switch (this) {
 
 			case HAND:
