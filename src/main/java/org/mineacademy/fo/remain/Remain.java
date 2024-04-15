@@ -2634,9 +2634,14 @@ public final class Remain {
 				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>()); // MappedRegistry#unregisteredIntrusiveHolders
 
 			} catch (final Throwable t) {
-				// in (1.19 - 1.19.2) the obfuscation is different.
-				ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "ca", false); // MappedRegistry#frozen
-				// unregisteredIntrusiveHolders does not exist in this version
+				try {
+					// in (1.19 - 1.19.2) the obfuscation is different.
+					ReflectionUtil.setDeclaredField(enchantmentRegistry, mojMap ? "frozen" : "ca", false); // MappedRegistry#frozen
+					// unregisteredIntrusiveHolders does not exist in this version
+
+				} catch (final Throwable tt) {
+					// Unable to unfreeze (i.e. 1.20.2, we only support the latest subversion)
+				}
 			}
 
 		}
