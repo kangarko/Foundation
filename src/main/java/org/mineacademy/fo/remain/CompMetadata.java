@@ -130,8 +130,7 @@ public final class CompMetadata {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Return true if the given itemstack has the given key stored at its compound
-	 * tag {@link org.mineacademy.fo.constants.FoConstants.NBT#TAG}
+	 * Return true if the given itemstack has the given key
 	 *
 	 * @param item
 	 * @param key
@@ -234,8 +233,6 @@ public final class CompMetadata {
 	/**
 	 * Sets a temporary metadata to entity. This metadata is NOT persistent
 	 * and is removed on server stop, restart or reload.
-	 * <p>
-	 * Use {@link #setMetadata(Entity, String)} to set persistent custom tags for entities.
 	 *
 	 * @param entity
 	 * @param tag
@@ -247,8 +244,6 @@ public final class CompMetadata {
 	/**
 	 * Sets a temporary metadata to entity. This metadata is NOT persistent
 	 * and is removed on server stop, restart or reload.
-	 * <p>
-	 * Use {@link #setMetadata(Entity, String)} to set persistent custom tags for entities.
 	 *
 	 * @param entity
 	 * @param tag
