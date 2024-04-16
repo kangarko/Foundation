@@ -224,6 +224,11 @@ public final class Remain {
 	private static boolean hasAddPassenger = true;
 
 	/**
+	 * Return true if we have the overcomplicated io.papermc.paper.event.player.AsyncChatEvent
+	 */
+	private static boolean hasAdventureChatEvent = true;
+
+	/**
 	 * Stores player cooldowns for old MC versions
 	 */
 	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
@@ -364,6 +369,13 @@ public final class Remain {
 			Entity.class.getMethod("addPassenger", Entity.class);
 		} catch (final Throwable ex) {
 			hasAddPassenger = false;
+		}
+
+		try {
+			Class.forName("io.papermc.paper.event.player.AsyncChatEvent");
+
+		} catch (final Throwable t) {
+			hasAdventureChatEvent = false;
 		}
 
 		try {
@@ -3014,6 +3026,14 @@ public final class Remain {
 	 */
 	public static boolean hasAddPassenger() {
 		return hasAddPassenger;
+	}
+
+	/**
+	 * Returns true if we have the complicated io.papermc.paper.event.player.AsyncChatEvent
+	 * @return
+	 */
+	public static boolean hasAdventureChatEvent() {
+		return hasAdventureChatEvent;
 	}
 
 	/**
