@@ -658,7 +658,7 @@ public class SimpleDatabase {
 			for (final String statement : sqls)
 				errorLog.add(this.replaceVariables(statement));
 
-			FileUtil.write("sql-error.log", sqls);
+			FileUtil.write("sql-error.log", errorLog);
 
 			t.printStackTrace();
 
