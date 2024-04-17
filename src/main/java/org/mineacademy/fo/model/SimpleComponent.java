@@ -18,6 +18,7 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleComponentSendEvent;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -459,6 +460,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public <T extends CommandSender> void sendAs(@Nullable CommandSender sender, Iterable<T> receivers) {
 		for (final CommandSender receiver : receivers) {
+
 			TextComponent component = this.build(receiver);
 
 			if (receiver instanceof Player && sender instanceof Player)
@@ -475,8 +477,13 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			final String legacy = Common.colorize(component.toLegacyText());
 
-			if (this.ignoringEmpty && Common.stripColors(legacy).trim().isEmpty())
+			Debugger.debug("component", "Sending " + receiver.getName() + " message: " + legacy);
+
+			if (this.ignoringEmpty && Common.stripColors(legacy).trim().isEmpty()) {
+				Debugger.debug("component", "Message is empty, skipping.");
+
 				continue;
+			}
 
 			// Prevent clients being kicked out, so we just send plain message instead
 			if (STRIP_OVERSIZED_COMPONENTS && Remain.toJson(component).length() + 1 >= Short.MAX_VALUE) {
