@@ -17,7 +17,6 @@ import java.util.Set;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
@@ -76,8 +75,6 @@ public abstract class FolderWatcher extends Thread {
 				Common.warning("A duplicate file watcher for '" + folder.getPath() + "' was added. This is untested and may causes fatal issues!");
 
 		activeThreads.add(this);
-
-		Debugger.debug("upload", "Started folder watcher for " + folder + " in " + folder.getAbsolutePath() + " (path: " + this.folder + ")");
 	}
 
 	/**
