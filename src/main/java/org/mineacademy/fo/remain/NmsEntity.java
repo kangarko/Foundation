@@ -192,8 +192,6 @@ final class NmsAccessor {
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
-			Runtime.getRuntime().halt(-0__666_1);
-
 			throw new FoException(ex, "Error setting up nms entity accessor!");
 		}
 	}
