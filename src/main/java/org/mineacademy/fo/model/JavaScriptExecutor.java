@@ -23,7 +23,6 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -212,8 +211,6 @@ public final class JavaScriptExecutor {
 
 				return false;
 			}
-
-			Debugger.debug("javascript", "Sender: " + (sender == null ? "null" : sender.getName()) + " with code: " + javascript);
 
 			if (sender != null)
 				engine.put("player", sender);

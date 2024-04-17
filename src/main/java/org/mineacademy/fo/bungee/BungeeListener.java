@@ -11,7 +11,6 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.message.IncomingMessage;
-import org.mineacademy.fo.debug.Debugger;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
@@ -150,8 +149,6 @@ public abstract class BungeeListener implements Listener {
 					final IncomingMessage message = new IncomingMessage(listener, senderUid, serverName, action, data, input, stream);
 
 					listener.data = data;
-
-					Debugger.debug("bungee-all", "Channel " + channelName + " received " + message.getAction() + " message from " + message.getServerName() + " server.");
 					listener.onMessageReceived(player, message);
 
 					break;
