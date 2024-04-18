@@ -10,6 +10,7 @@ import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.command.ReloadCommand;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.settings.FileConfig.AccusativeHelper;
 
 /**
  * A simple implementation of a basic localization file.
@@ -685,6 +686,45 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Error"))
 				ERROR = getString("Error");
+		}
+	}
+
+	/**
+	 * Keys related to cases
+	 */
+	public static class Cases {
+
+		public static AccusativeHelper SECOND = AccusativeHelper.of("second", "seconds");
+		public static AccusativeHelper MINUTE = AccusativeHelper.of("minute", "minutes");
+		public static AccusativeHelper HOUR = AccusativeHelper.of("hour", "hours");
+		public static AccusativeHelper DAY = AccusativeHelper.of("day", "days");
+		public static AccusativeHelper WEEK = AccusativeHelper.of("week", "weeks");
+		public static AccusativeHelper MONTH = AccusativeHelper.of("month", "months");
+		public static AccusativeHelper YEAR = AccusativeHelper.of("year", "years");
+
+		private static void init() {
+			setPathPrefix("Cases");
+
+			if (isSetDefault("Second"))
+				SECOND = getCasus("Second");
+
+			if (isSetDefault("Minute"))
+				MINUTE = getCasus("Minute");
+
+			if (isSetDefault("Hour"))
+				HOUR = getCasus("Hour");
+
+			if (isSetDefault("Day"))
+				DAY = getCasus("Day");
+
+			if (isSetDefault("Week"))
+				WEEK = getCasus("Week");
+
+			if (isSetDefault("Month"))
+				MONTH = getCasus("Month");
+
+			if (isSetDefault("Year"))
+				YEAR = getCasus("Year");
 		}
 	}
 
