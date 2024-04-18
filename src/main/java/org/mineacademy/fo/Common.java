@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -668,15 +669,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -2466,6 +2467,24 @@ public final class Common {
 		Collections.addAll(list, keys);
 
 		return list;
+	}
+
+	/**
+	 * Return a map sorted by values (i.e. from smallest to highest for numbers)
+	 *
+	 * @param map
+	 * @return
+	 */
+	public static Map<String, Integer> sortByValue(Map<String, Integer> map) {
+		final List<Map.Entry<String, Integer>> list = new LinkedList<>(map.entrySet());
+		list.sort(Map.Entry.comparingByValue());
+
+		final Map<String, Integer> sortedMap = new LinkedHashMap<>();
+
+		for (final Map.Entry<String, Integer> entry : list)
+			sortedMap.put(entry.getKey(), entry.getValue());
+
+		return sortedMap;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
