@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mineacademy.fo.settings.SimpleLocalization.Cases;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -220,11 +222,10 @@ public final class TimeUtil {
 			final long hour = seconds / 60 / 60;
 			minute %= 60;
 
-			hourMsg = hour + (hour == 1 ? " hour" : " hours") + " ";
+			hourMsg = Cases.HOUR.formatWithCount(hour) + " ";
 		}
 
-		return hourMsg + (minute != 0 ? minute : "") + (minute > 0 ? (minute == 1 ? " minute" : " minutes") + " " : "") + Long.parseLong(String.valueOf(second)) + (Long.parseLong(String.valueOf(second)) == 1 ? " second" : " seconds");
-
+		return hourMsg + (minute != 0 ? Cases.MINUTE.formatWithCount(minute) + " " : "") + Cases.SECOND.formatWithCount(second);
 	}
 
 	/**
@@ -238,7 +239,10 @@ public final class TimeUtil {
 		final long hours = minutes / 60;
 		final long days = hours / 24;
 
-		return days + " days " + hours % 24 + " hours " + minutes % 60 + " minutes " + seconds % 60 + " seconds";
+		return (days != 0 ? Cases.DAY.formatWithCount(days) + " " : "")
+				+ (hours % 24 != 0 ? Cases.HOUR.formatWithCount(hours % 24) + " " : "")
+				+ (minutes % 60 != 0 ? Cases.MINUTE.formatWithCount(minutes % 60) + " " : "")
+				+ Cases.SECOND.formatWithCount(seconds % 60);
 	}
 
 	/**
@@ -290,7 +294,7 @@ public final class TimeUtil {
 	 * @param text
 	 * @return
 	 */
-	public static long parseToken(String text) {
+	public static long toMilliseconds(final String text) {
 		final Matcher matcher = TOKEN_PATTERN.matcher(text);
 
 		long years = 0, months = 0, weeks = 0, days = 0, hours = 0, minutes = 0, seconds = 0;
@@ -369,7 +373,7 @@ public final class TimeUtil {
 	/*
 	 * Check value over limit
 	 */
-	private static void checkLimit(String type, long value, int maxLimit) {
+	private static void checkLimit(final String type, final long value, final int maxLimit) {
 		if (value > maxLimit)
 			throw new IllegalArgumentException("Value type " + type + " is out of bounds! Max limit: " + maxLimit + ", given: " + value);
 	}
@@ -389,7 +393,7 @@ public final class TimeUtil {
 	 * @param timestamp
 	 * @return
 	 */
-	public static String toSQLTimestamp(long timestamp) {
+	public static String toSQLTimestamp(final long timestamp) {
 		final java.util.Date date = new Date(timestamp);
 
 		return new Timestamp(date.getTime()).toString();
@@ -401,7 +405,7 @@ public final class TimeUtil {
 	 * @param timestamp
 	 * @return
 	 */
-	public static long fromSQLTimestamp(String timestamp) {
+	public static long fromSQLTimestamp(final String timestamp) {
 		return Timestamp.valueOf(timestamp).getTime();
 	}
 }

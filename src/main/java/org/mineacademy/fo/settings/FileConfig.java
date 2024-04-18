@@ -1625,6 +1625,10 @@ public abstract class FileConfig {
 
 			return this.genitivePlural;
 		}
+
+		public static AccusativeHelper of(String singular, String plural) {
+			return new AccusativeHelper(singular + ", " + plural);
+		}
 	}
 
 	/**
