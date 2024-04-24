@@ -67,12 +67,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	private boolean firingEvent = false;
 
 	/**
-	 * Shall this component not send itself when its condition result in the message being empty? Defaults to false
-	 */
-	@Getter
-	private boolean ignoringEmpty = false;
-
-	/**
 	 * Create a new interactive chat component
 	 *
 	 * @param text
@@ -479,9 +473,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			final String legacy = Common.colorize(component.toLegacyText());
 
-			Debugger.debug("component", "[ignore empty=" + this.ignoringEmpty + "] Sending " + receiver.getName() + " message: '" + Common.stripColors(legacy).trim() + "'");
-
-			if (this.ignoringEmpty && Common.stripColors(legacy).trim().isEmpty()) {
+			if (Common.stripColors(legacy).trim().isEmpty()) {
 				Debugger.debug("component", "Message is empty, skipping.");
 
 				continue;
@@ -550,18 +542,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public SimpleComponent setFiringEvent(final boolean firingEvent) {
 		this.firingEvent = firingEvent;
-
-		return this;
-	}
-
-	/**
-	 * Shall this component not send itself when its condition result in the message being empty? Defaults to false
-	 *
-	 * @param ignoringEmpty
-	 * @return
-	 */
-	public SimpleComponent setIgnoringEmpty(final boolean ignoringEmpty) {
-		this.ignoringEmpty = ignoringEmpty;
 
 		return this;
 	}
@@ -665,7 +645,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					final StringBuilder hex = new StringBuilder("#");
 
 					for (int j = 0; j < 6; j++)
-						hex.append(message.charAt(index + 2 + (j * 2)));
+						hex.append(message.charAt(index + 2 + j * 2));
 
 					try {
 						format = ChatColor.of(hex.toString());
@@ -923,7 +903,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @return
 		 */
 		private TextComponent toTextComponent(final boolean checkForReceiver, final CommandSender receiver) {
-			if ((checkForReceiver && !this.canSendTo(receiver)) || this.isEmpty())
+			if (checkForReceiver && !this.canSendTo(receiver) || this.isEmpty())
 				return null;
 
 			final List<BaseComponent> base = toComponent(this.text, this.inheritFormatting)[0].getExtra();
