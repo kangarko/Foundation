@@ -60,10 +60,9 @@ import lombok.NoArgsConstructor;
 public final class PlayerUtil {
 
 	/**
-	 * Spigot 1.9, for whatever reason, decided to merge the armor and main player inventories without providing a way
-	 * to access the main inventory. There's lots of ugly code in here to work around that.
+	 * The player inventory size which is 3 rows + 1 row for hotbar meaning 9 * 4 = 36.
 	 */
-	public static final int USABLE_PLAYER_INV_SIZE = 36;
+	public static final int PLAYER_INV_SIZE = 36;
 
 	/**
 	 * Stores block faces to use for later conversion
@@ -112,7 +111,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static BlockFace getFacing(Player player) {
+	public static BlockFace getFacing(final Player player) {
 		return getFacing(player.getLocation().getYaw(), false);
 	}
 
@@ -124,7 +123,7 @@ public final class PlayerUtil {
 	 * @param useSubDirections
 	 * @return
 	 */
-	public static BlockFace getFacing(Player player, boolean useSubDirections) {
+	public static BlockFace getFacing(final Player player, final boolean useSubDirections) {
 		return getFacing(player.getLocation().getYaw(), useSubDirections);
 	}
 
@@ -136,7 +135,7 @@ public final class PlayerUtil {
 	 * @param useSubDirections
 	 * @return
 	 */
-	public static BlockFace getFacing(float yaw, boolean useSubDirections) {
+	public static BlockFace getFacing(final float yaw, final boolean useSubDirections) {
 		if (useSubDirections)
 			return FACE_RADIAL[Math.round(yaw / 45F) & 0x7].getOppositeFace();
 
@@ -150,7 +149,7 @@ public final class PlayerUtil {
 	 * @param useSubDirections
 	 * @return
 	 */
-	public static int getFacing(BlockFace face, boolean useSubDirections) {
+	public static int getFacing(final BlockFace face, final boolean useSubDirections) {
 		return (useSubDirections ? face.ordinal() * 45 : face.ordinal() * 90) - 180;
 	}
 
@@ -164,8 +163,8 @@ public final class PlayerUtil {
 	 * @param useSubDirections
 	 * @return
 	 */
-	public static float alignYaw(float yaw, boolean useSubDirections) {
-		BlockFace face = getFacing(yaw, useSubDirections);
+	public static float alignYaw(final float yaw, final boolean useSubDirections) {
+		final BlockFace face = getFacing(yaw, useSubDirections);
 
 		return getFacing(face, useSubDirections);
 	}
@@ -184,7 +183,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static long getPlayTimeTicksOrSeconds(OfflinePlayer player) {
+	public static long getPlayTimeTicksOrSeconds(final OfflinePlayer player) {
 		final Statistic playTime = Remain.getPlayTimeStatisticName();
 
 		return getStatistic(player, playTime);
@@ -683,7 +682,7 @@ public final class PlayerUtil {
 	 *
 	 * @return
 	 */
-	public static boolean hasStoredState(Player player) {
+	public static boolean hasStoredState(final Player player) {
 		return storedPlayerStates.containsKey(player.getUniqueId());
 	}
 
@@ -730,14 +729,14 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param vanished
 	 */
-	public static void setVanished(Player player, boolean vanished) {
+	public static void setVanished(final Player player, final boolean vanished) {
 
 		// Hook into other plugins
 		HookManager.setVanished(player, vanished);
 
 		// Clear any previous metadata
-		for (Iterator<MetadataValue> it = player.getMetadata("vanished").iterator(); it.hasNext();) {
-			MetadataValue meta = it.next();
+		for (final Iterator<MetadataValue> it = player.getMetadata("vanished").iterator(); it.hasNext();) {
+			final MetadataValue meta = it.next();
 
 			if (meta.asBoolean())
 				meta.invalidate();
@@ -814,7 +813,7 @@ public final class PlayerUtil {
 	 * @param name
 	 * @param syncCallback
 	 */
-	public static void lookupOfflinePlayerAsync(String name, Consumer<OfflinePlayer> syncCallback) {
+	public static void lookupOfflinePlayerAsync(final String name, final Consumer<OfflinePlayer> syncCallback) {
 		Common.runAsync(() -> {
 			// If the given name is a nick, try to get the real name
 			final String parsedName = HookManager.getNameFromNick(name);
@@ -909,7 +908,7 @@ public final class PlayerUtil {
 	 * @param amount
 	 * @return
 	 */
-	public static boolean take(Player player, CompMaterial material, int amount) {
+	public static boolean take(final Player player, final CompMaterial material, int amount) {
 		if (!containsAtLeast(player, amount, material))
 			return false;
 
@@ -917,11 +916,11 @@ public final class PlayerUtil {
 		final ItemStack[] content = inventory.getContents();
 
 		for (int slot = 0; slot < content.length; slot++) {
-			ItemStack item = content[slot];
+			final ItemStack item = content[slot];
 
 			if (item != null && material.is(item)) {
-				int itemAmount = item.getAmount();
-				int newAmount = itemAmount - amount;
+				final int itemAmount = item.getAmount();
+				final int newAmount = itemAmount - amount;
 
 				if (newAmount < 0) {
 					amount = amount - itemAmount;
@@ -985,7 +984,7 @@ public final class PlayerUtil {
 	 * @param material
 	 * @return
 	 */
-	public static boolean containsAtLeast(Player player, int atLeastSize, CompMaterial material) {
+	public static boolean containsAtLeast(final Player player, final int atLeastSize, final CompMaterial material) {
 		int foundSize = 0;
 
 		for (final ItemStack item : player.getInventory().getContents())
@@ -1028,7 +1027,7 @@ public final class PlayerUtil {
 	 * @param items
 	 * @return false if inventory was full and some items were dropped at the floor, such as the mic
 	 */
-	public static boolean addItemsOrDrop(Player player, ItemStack... items) {
+	public static boolean addItemsOrDrop(final Player player, final ItemStack... items) {
 		final Map<Integer, ItemStack> leftovers = addItems(player.getInventory(), items);
 
 		final World world = player.getWorld();
@@ -1186,13 +1185,13 @@ public final class PlayerUtil {
 	}
 
 	/**
-	 * Creates a new inventory of {@link #USABLE_PLAYER_INV_SIZE} size
+	 * Creates a new inventory of {@link #PLAYER_INV_SIZE} size
 	 *
 	 * @param playerInventory
 	 * @return
 	 */
 	private static Inventory makeTruncatedInv(final PlayerInventory playerInventory) {
-		final Inventory fake = Bukkit.createInventory(null, USABLE_PLAYER_INV_SIZE);
+		final Inventory fake = Bukkit.createInventory(null, PLAYER_INV_SIZE);
 		fake.setContents(Arrays.copyOf(playerInventory.getContents(), fake.getSize()));
 
 		return fake;
@@ -1205,6 +1204,6 @@ public final class PlayerUtil {
 	 * @return
 	 */
 	private static boolean isCombinedInv(final Inventory inventory) {
-		return inventory instanceof PlayerInventory && inventory.getContents().length > USABLE_PLAYER_INV_SIZE;
+		return inventory instanceof PlayerInventory && inventory.getContents().length > PLAYER_INV_SIZE;
 	}
 }
