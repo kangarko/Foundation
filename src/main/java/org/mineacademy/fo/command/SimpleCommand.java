@@ -35,9 +35,8 @@ import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.command.SimpleCommandGroup.MainCommand;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.CommandException;
-import org.mineacademy.fo.exception.EventHandledException;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
-import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
@@ -80,7 +79,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param permission
 	 */
-	public static void setDefaultPermission(String permission) {
+	public static void setDefaultPermission(final String permission) {
 		defaultPermission = permission;
 	}
 
@@ -372,66 +371,30 @@ public abstract class SimpleCommand extends Command {
 
 			// Check for minimum required arguments and print help
 			if (args.length < this.getMinArguments() || this.autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
+				final List<String> messages = new ArrayList<>();
 
-				Common.runAsync(() -> {
-					final String usage = this.getMultilineUsageMessage() != null ? String.join("\n&c", this.getMultilineUsageMessage()) : this.getUsage() != null ? this.getUsage() : null;
-					Valid.checkNotNull(usage, "getUsage() nor getMultilineUsageMessage() not implemented for '/" + this.getLabel() + sublabel + "' command!");
+				if (this.getDescription() != null) {
+					final String descriptionLabel = SimpleLocalization.Commands.LABEL_DESCRIPTION.trim();
 
-					final String description = this.replacePlaceholders("&c" + this.getDescription());
-					final List<String> usages = new ArrayList<>();
-					String singleLineUsage = null;
+					messages.add(descriptionLabel.contains("{description}") ? descriptionLabel.replace("{description}", "&c" + this.getDescription()) : descriptionLabel + " &c" + this.getDescription());
+				}
 
-					final ChatPaginator paginator = new ChatPaginator(SimpleLocalization.Commands.HEADER_SECONDARY_COLOR);
-					final List<String> pages = new ArrayList<>();
+				if (this.getMultilineUsageMessage() != null) {
+					messages.add(SimpleLocalization.Commands.LABEL_USAGE);
 
-					if (!Common.getOrEmpty(this.getDescription()).isEmpty()) {
-						pages.add(this.replacePlaceholders(SimpleLocalization.Commands.LABEL_DESCRIPTION));
-						pages.add(description);
-					}
+					for (final String usage : this.getMultilineUsageMessage())
+						messages.add("&c" + usage);
 
-					if (this.getMultilineUsageMessage() != null) {
-						pages.add("");
-						pages.add(this.replacePlaceholders(SimpleLocalization.Commands.LABEL_USAGES));
+				} else if (this.getUsage() != null) {
+					final String usage = this.getUsage();
 
-						for (String usagePart : usage.split("\n")) {
-							usagePart = this.replacePlaceholders("&c" + usagePart);
+					messages.add("&c" + (usage.startsWith("/") ? usage : "/{label} {sublabel} " + usage));
 
-							usages.add(usagePart);
-							pages.add(usagePart);
-						}
+				} else
+					throw new FoException("Either getUsage() or getMultilineUsageMessage() must be implemented for '/" + this.getLabel() + sublabel + "' command!");
 
-					} else {
-						singleLineUsage = "&c" + this.replacePlaceholders("/" + label + sublabel + (!usage.startsWith("/") ? " " + Common.stripColors(usage) : ""));
-
-						pages.add("");
-						pages.add(SimpleLocalization.Commands.LABEL_USAGE);
-						pages.add(singleLineUsage);
-					}
-
-					if (SimpleLocalization.Commands.SIMPLE_HELP_DESIGN) {
-						Common.tellNoPrefix(sender, addSpaceIfNeeded(SimpleLocalization.Commands.LABEL_DESCRIPTION) + description);
-
-						if (usages.isEmpty())
-							Common.tellNoPrefix(sender, addSpaceIfNeeded(SimpleLocalization.Commands.LABEL_USAGE) + singleLineUsage);
-
-						else {
-							Common.tellNoPrefix(sender, SimpleLocalization.Commands.LABEL_USAGES);
-
-							for (final String usagePart : usages)
-								Common.tellNoPrefix(sender, usagePart);
-
-						}
-
-						return;
-					}
-
-					paginator
-							.setFoundationHeader(SimpleLocalization.Commands.LABEL_HELP_FOR.replace("{label}", this.getLabel() + sublabel))
-							.setPages(Common.toArray(pages));
-
-					// Force sending on the main thread
-					Common.runLater(() -> paginator.send(sender));
-				});
+				for (final String message : messages)
+					Common.tellNoPrefix(sender, this.replacePlaceholders(message));
 
 				return true;
 			}
@@ -452,10 +415,6 @@ public abstract class SimpleCommand extends Command {
 					this.tellNoPrefix("&c" + line);
 			}
 
-		} catch (final EventHandledException ex) {
-			if (ex.getMessages() != null)
-				this.dynamicTellError(ex.getMessages());
-
 		} catch (final CommandException ex) {
 			if (ex.getMessages() != null)
 				this.dynamicTellError(ex.getMessages());
@@ -473,10 +432,6 @@ public abstract class SimpleCommand extends Command {
 		}
 
 		return true;
-	}
-
-	private String addSpaceIfNeeded(String message) {
-		return message + (Common.stripColors(message).endsWith(" ") ? "" : " ");
 	}
 
 	/*
@@ -525,7 +480,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param player
 	 * @return
 	 */
-	protected boolean isCooldownApplied(Player player) {
+	protected boolean isCooldownApplied(final Player player) {
 		return true;
 	}
 
@@ -583,7 +538,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param perm
 	 * @throws CommandException
 	 */
-	public final void checkPerm(@NonNull CommandSender sender, @NonNull final String perm) throws CommandException {
+	public final void checkPerm(@NonNull final CommandSender sender, @NonNull final String perm) throws CommandException {
 		if (this.isPlayer() && !this.hasPerm(sender, perm))
 			throw new CommandException(this.getPermissionMessage().replace("{permission}", perm));
 	}
@@ -604,7 +559,7 @@ public abstract class SimpleCommand extends Command {
 	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_ARGUMENT}
 	 * message for player if the condition does not meet
 	 */
-	protected final void checkArgs(boolean condition) {
+	protected final void checkArgs(final boolean condition) {
 		this.checkBoolean(condition, SimpleLocalization.Commands.INVALID_ARGUMENT.replace("{label}", this.getLabel()));
 	}
 
@@ -645,22 +600,35 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
-	 * Attempts to find the offline player by name, sends an error message to sender if he did not play before
-	 * or runs the specified callback.
+	 * Attempts to find the offline player by name or string UUID, sends an error message to sender if he did not play before
+	 * or runs the specified callback on successful retrieval.
 	 *
 	 * The offline player lookup is done async, the callback is synchronized.
 	 *
-	 * @param name
+	 * @param name or string UUID
 	 * @param syncCallback
 	 * @throws CommandException
 	 */
-	protected final void findOfflinePlayer(final String name, Consumer<OfflinePlayer> syncCallback) throws CommandException {
-		this.runAsync(() -> {
-			final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
-			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
+	protected final void findOfflinePlayer(final String name, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
+		if (name.length() == 36 && name.charAt(8) == '-' && name.charAt(13) == '-' && name.charAt(18) == '-' && name.charAt(23) == '-') {
+			UUID uuid = null;
 
-			this.runLater(() -> syncCallback.accept(targetPlayer));
-		});
+			try {
+				uuid = UUID.fromString(name);
+
+			} catch (final IllegalArgumentException ex) {
+				this.returnTell("&cInvalid UUID '" + name + "'");
+			}
+
+			this.findOfflinePlayer(uuid, syncCallback);
+
+		} else
+			this.runAsync(() -> {
+				final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
+				this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
+
+				this.runLater(() -> syncCallback.accept(targetPlayer));
+			});
 	}
 
 	/**
@@ -670,10 +638,10 @@ public abstract class SimpleCommand extends Command {
 	 * @param syncCallback
 	 * @throws CommandException
 	 */
-	protected final void findOfflinePlayer(final UUID uniqueId, Consumer<OfflinePlayer> syncCallback) throws CommandException {
+	protected final void findOfflinePlayer(final UUID uniqueId, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
 		this.runAsync(() -> {
 			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUUID(uniqueId);
-			this.checkNotNull(targetPlayer, SimpleLocalization.Player.INVALID_UUID.replace("{uuid}", uniqueId.toString()));
+			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.INVALID_UUID.replace("{uuid}", uniqueId.toString()));
 
 			this.runLater(() -> syncCallback.accept(targetPlayer));
 		});
@@ -735,7 +703,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param name
 	 * @return
 	 */
-	protected Player findPlayerInternal(String name) {
+	protected Player findPlayerInternal(final String name) {
 		return Bukkit.getPlayer(name);
 	}
 
@@ -746,7 +714,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param raw
 	 * @return
 	 */
-	protected final SimpleTime findTime(String raw) {
+	protected final SimpleTime findTime(final String raw) {
 		try {
 			return SimpleTime.from(raw);
 
@@ -764,7 +732,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param name
 	 * @return
 	 */
-	protected final World findWorld(String name) {
+	protected final World findWorld(final String name) {
 		if ("~".equals(name)) {
 			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CANNOT_AUTODETECT_WORLD);
 
@@ -801,13 +769,13 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param <T>
 	 * @param enumType
-	 * @param name
+	 * @param enumValue
 	 * @param falseMessage
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String name, final String falseMessage) throws CommandException {
-		return this.findEnum(enumType, name, null, falseMessage);
+	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final String falseMessage) throws CommandException {
+		return this.findEnum(enumType, enumValue, null, falseMessage);
 	}
 
 	/**
@@ -819,17 +787,17 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param <T>
 	 * @param enumType
-	 * @param name
+	 * @param enumValue
 	 * @param condition
 	 * @param falseMessage
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String name, final Function<T, Boolean> condition, final String falseMessage) throws CommandException {
+	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition, final String falseMessage) throws CommandException {
 		T found = null;
 
 		try {
-			found = ReflectionUtil.lookupEnum(enumType, name);
+			found = ReflectionUtil.lookupEnum(enumType, enumValue);
 
 			if (!condition.apply(found))
 				found = null;
@@ -838,7 +806,7 @@ public abstract class SimpleCommand extends Command {
 			// Not found, pass through below to error out
 		}
 
-		this.checkNotNull(found, falseMessage.replace("{enum}", name).replace("{available}", Common.join(enumType.getEnumConstants())));
+		this.checkNotNull(found, falseMessage.replace("{enum}", enumValue).replace("{available}", Common.join(enumType.getEnumConstants())));
 		return found;
 	}
 
@@ -953,7 +921,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(String permission) {
+	protected final boolean hasPerm(final String permission) {
 		return this.hasPerm(this.sender, permission);
 	}
 
@@ -968,7 +936,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(CommandSender sender, String permission) {
+	protected final boolean hasPerm(final CommandSender sender, final String permission) {
 		return permission == null ? true : PlayerUtil.hasPerm(sender, permission.replace("{label}", this.getLabel()));
 	}
 
@@ -995,7 +963,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param components
 	 */
-	protected final void tell(List<SimpleComponent> components) {
+	protected final void tell(final List<SimpleComponent> components) {
 		if (components != null)
 			this.tell(components.toArray(new SimpleComponent[components.size()]));
 	}
@@ -1007,7 +975,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param components
 	 */
-	protected final void tell(SimpleComponent... components) {
+	protected final void tell(final SimpleComponent... components) {
 		if (components != null)
 			for (final SimpleComponent component : components)
 				component.send(this.sender);
@@ -1018,7 +986,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tell(Collection<String> messages) {
+	protected final void tell(final Collection<String> messages) {
 		if (messages != null)
 			this.tell(messages.toArray(new String[messages.size()]));
 	}
@@ -1028,7 +996,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tellNoPrefix(Collection<String> messages) {
+	protected final void tellNoPrefix(final Collection<String> messages) {
 		this.tellNoPrefix(messages.toArray(new String[messages.size()]));
 	}
 
@@ -1037,7 +1005,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param messages
 	 */
-	protected final void tellNoPrefix(String... messages) {
+	protected final void tellNoPrefix(final String... messages) {
 		final String oldLocalPrefix = this.tellPrefix;
 
 		this.tellPrefix = "";
@@ -1224,8 +1192,10 @@ public abstract class SimpleCommand extends Command {
 
 		// First, replace label and sublabel
 		message = message
-				.replace("{label}", this.getLabel())
-				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel());
+				.replace("{label}", Common.getOrDefault(this.label, this.label))
+				.replace("{current_label}", Common.getOrDefault(this.currentLabel, this.label))
+				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel())
+				.replace("{current_sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabel() : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel());
 
 		// Replace hard variables
 		message = Variables.replace(message, null);
@@ -1442,7 +1412,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param toString
 	 * @return
 	 */
-	protected final <T> List<String> completeLastWord(final Iterable<T> suggestions, Function<T, String> toString) {
+	protected final <T> List<String> completeLastWord(final Iterable<T> suggestions, final Function<T, String> toString) {
 		final List<String> list = new ArrayList<>();
 
 		for (final T suggestion : suggestions)
@@ -1513,7 +1483,7 @@ public abstract class SimpleCommand extends Command {
 	 *
 	 * @param cooldownBypassPermission
 	 */
-	protected final void setCooldownBypassPermission(String cooldownBypassPermission) {
+	protected final void setCooldownBypassPermission(final String cooldownBypassPermission) {
 		this.cooldownBypassPermission = cooldownBypassPermission;
 	}
 
@@ -1620,7 +1590,7 @@ public abstract class SimpleCommand extends Command {
 	public final String getUsage() {
 		final String bukkitUsage = super.getUsage();
 
-		return bukkitUsage.equals("/" + this.getCurrentLabel()) ? "" : bukkitUsage;
+		return bukkitUsage.equals("/" + this.getLabel()) || bukkitUsage.equals("/" + this.getCurrentLabel()) ? "" : bukkitUsage;
 	}
 
 	/**
@@ -1673,7 +1643,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param runnable
 	 * @return
 	 */
-	protected final BukkitTask runLater(Runnable runnable) {
+	protected final BukkitTask runLater(final Runnable runnable) {
 		return Common.runLater(() -> this.delegateTask(runnable));
 	}
 
@@ -1685,7 +1655,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param runnable
 	 * @return
 	 */
-	protected final BukkitTask runLater(int delayTicks, Runnable runnable) {
+	protected final BukkitTask runLater(final int delayTicks, final Runnable runnable) {
 		return Common.runLater(delayTicks, () -> this.delegateTask(runnable));
 	}
 
@@ -1696,7 +1666,7 @@ public abstract class SimpleCommand extends Command {
 	 * @param runnable
 	 * @return
 	 */
-	protected final BukkitTask runAsync(Runnable runnable) {
+	protected final BukkitTask runAsync(final Runnable runnable) {
 		return Common.runAsync(() -> this.delegateTask(runnable));
 	}
 
@@ -1708,14 +1678,14 @@ public abstract class SimpleCommand extends Command {
 	 * @param runnable
 	 * @return
 	 */
-	protected final BukkitTask runAsync(int delayTicks, Runnable runnable) {
+	protected final BukkitTask runAsync(final int delayTicks, final Runnable runnable) {
 		return Common.runLaterAsync(delayTicks, () -> this.delegateTask(runnable));
 	}
 
 	/*
 	 * A helper method to catch command-related exceptions from runnables
 	 */
-	private void delegateTask(Runnable runnable) {
+	private void delegateTask(final Runnable runnable) {
 		try {
 			runnable.run();
 

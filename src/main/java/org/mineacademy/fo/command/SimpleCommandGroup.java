@@ -90,14 +90,14 @@ public abstract class SimpleCommandGroup {
 	/**
 	 * Create a new simple command group with the given label and aliases bundled in a list
 	 */
-	protected SimpleCommandGroup(StrictList<String> labelAndAliases) {
+	protected SimpleCommandGroup(final StrictList<String> labelAndAliases) {
 		this(labelAndAliases.get(0), (labelAndAliases.size() > 1 ? labelAndAliases.range(1) : new StrictList<String>()).getSource());
 	}
 
 	/**
 	 * Create a new simple command group with the given label and aliases
 	 */
-	protected SimpleCommandGroup(String label, List<String> aliases) {
+	protected SimpleCommandGroup(final String label, final List<String> aliases) {
 		this.label = label;
 		this.aliases = aliases;
 	}
@@ -108,7 +108,7 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * Example: channel|ch will create a /channel command group that can also be called by using /ch
 	 */
-	protected SimpleCommandGroup(String labelAndAliases) {
+	protected SimpleCommandGroup(final String labelAndAliases) {
 		final String[] split = labelAndAliases.split("(\\||\\/)");
 
 		this.label = split[0];
@@ -201,7 +201,7 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param parentClass
 	 */
-	protected final void registerSubcommand(Class<? extends SimpleSubCommand> parentClass) {
+	protected final void registerSubcommand(final Class<? extends SimpleSubCommand> parentClass) {
 		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance(), parentClass)) {
 			if (Modifier.isAbstract(clazz.getModifiers()))
 				continue;
@@ -232,7 +232,7 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param label the label to set
 	 */
-	public void setLabel(String label) {
+	public void setLabel(final String label) {
 		Valid.checkBoolean(!this.isRegistered(), "Cannot use setLabel(" + label + ") for already registered command /" + this.getLabel());
 
 		this.label = label;
@@ -243,7 +243,7 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param aliases the aliases to set
 	 */
-	public void setAliases(List<String> aliases) {
+	public void setAliases(final List<String> aliases) {
 		Valid.checkBoolean(!this.isRegistered(), "Cannot use setAliases(" + aliases + ") for already registered command /" + this.getLabel());
 
 		this.aliases = aliases;
@@ -440,10 +440,10 @@ public abstract class SimpleCommandGroup {
 
 				try {
 					// Simulate our main label
-					command.setSublabel(this.args[0]);
+					command.setSublabel(argument);
 
 					// Run the command
-					command.execute(this.sender, this.getLabel(), this.args.length == 1 ? new String[] {} : Arrays.copyOfRange(this.args, 1, this.args.length));
+					command.execute(this.sender, this.getCurrentLabel(), this.args.length == 1 ? new String[] {} : Arrays.copyOfRange(this.args, 1, this.args.length));
 
 				} finally {
 					// Restore old sublabel after the command has been run
@@ -519,7 +519,7 @@ public abstract class SimpleCommandGroup {
 								hover.add(this.replacePlaceholders(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage)));
 
 							for (int i = 0; i < hover.size(); i++) {
-								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 65));
+								final String hoverLine = String.join("\n    ", Common.split(hover.get(i), 80));
 
 								hover.set(i, hoverLine);
 							}
