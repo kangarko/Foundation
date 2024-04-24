@@ -145,7 +145,7 @@ public final class Variable extends YamlConfig {
 		if (this.key == null || this.key.isEmpty())
 			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + this.getFileName());
 
-		if (this.value == null || this.value.isEmpty())
+		if (this.value == null)
 			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + this.getFileName() + " (this can be a JavaScript code)");
 
 		if (this.key.startsWith("{") || this.key.startsWith("[")) {
