@@ -313,7 +313,7 @@ public class SimpleDatabase {
 	 *
 	 * @param resultSet
 	 */
-	public final void close(ResultSet resultSet) {
+	public final void close(final ResultSet resultSet) {
 		try {
 			if (!resultSet.isClosed())
 				resultSet.close();
@@ -348,14 +348,19 @@ public class SimpleDatabase {
 	 *
 	 * @param creator
 	 */
-	protected final void createTable(TableCreator creator) {
+	protected final void createTable(final TableCreator creator) {
+		final boolean isSQLite = this.url != null && this.url.startsWith("jdbc:sqlite");
 		String columns = "";
 
 		for (final TableRow column : creator.getColumns()) {
 			columns += (columns.isEmpty() ? "" : ", ") + "`" + column.getName() + "` " + column.getDataType();
 
 			if (column.getAutoIncrement() != null && column.getAutoIncrement())
-				columns += " NOT NULL AUTO_INCREMENT";
+				if (isSQLite)
+					columns += " AUTO_INCREMENT";
+
+				else
+					columns += " NOT NULL AUTO_INCREMENT";
 
 			else if (column.getNotNull() != null && column.getNotNull())
 				columns += " NOT NULL";
@@ -368,7 +373,12 @@ public class SimpleDatabase {
 			columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
 
 		try {
-			final boolean isSQLite = this.url != null && this.url.startsWith("jdbc:sqlite");
+
+			if (isSQLite) {
+				final String filePath = this.url.replace("jdbc:sqlite:", "");
+
+				FileUtil.createIfNotExists(filePath);
+			}
 
 			this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ")" + (isSQLite ? "" : " DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
 
@@ -388,7 +398,7 @@ public class SimpleDatabase {
 	 *
 	 * @param columsAndValues
 	 */
-	protected final void insert(@NonNull SerializedMap columsAndValues) {
+	protected final void insert(@NonNull final SerializedMap columsAndValues) {
 		this.insert("{table}", columsAndValues);
 	}
 
@@ -399,7 +409,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param serializableObject
 	 */
-	protected final <T extends ConfigSerializable> void insert(String table, @NonNull T serializableObject) {
+	protected final <T extends ConfigSerializable> void insert(final String table, @NonNull final T serializableObject) {
 		this.insert(table, serializableObject.serialize());
 	}
 
@@ -409,7 +419,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param columsAndValues
 	 */
-	protected final void insert(String table, @NonNull SerializedMap columsAndValues) {
+	protected final void insert(final String table, @NonNull final SerializedMap columsAndValues) {
 		final String columns = Common.join(columsAndValues.keySet());
 		final String values = Common.join(columsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + value + "'");
 		final String duplicateUpdate = Common.join(columsAndValues.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
@@ -422,7 +432,7 @@ public class SimpleDatabase {
 	 *
 	 * @param maps
 	 */
-	protected final void insertBatch(@NonNull List<SerializedMap> maps) {
+	protected final void insertBatch(@NonNull final List<SerializedMap> maps) {
 		this.insertBatch("{table}", maps);
 	}
 
@@ -432,7 +442,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param maps
 	 */
-	protected final void insertBatch(String table, @NonNull List<SerializedMap> maps) {
+	protected final void insertBatch(final String table, @NonNull final List<SerializedMap> maps) {
 		final List<String> sqls = new ArrayList<>();
 
 		for (final SerializedMap map : maps) {
@@ -449,7 +459,7 @@ public class SimpleDatabase {
 	/*
 	 * A helper method to insert compatible value to db
 	 */
-	private final String parseValue(Object value) {
+	private final String parseValue(final Object value) {
 		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(Mode.YAML, value).toString() + "'";
 	}
 
@@ -489,7 +499,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param consumer
 	 */
-	protected final void selectAll(String table, ResultReader consumer) {
+	protected final void selectAll(final String table, final ResultReader consumer) {
 		this.select(table, "*", consumer);
 	}
 
@@ -501,7 +511,7 @@ public class SimpleDatabase {
 	 * @param param
 	 * @param consumer
 	 */
-	protected final void select(String table, String param, ResultReader consumer) {
+	protected final void select(final String table, final String param, final ResultReader consumer) {
 		if (!this.isLoaded())
 			return;
 
@@ -532,7 +542,7 @@ public class SimpleDatabase {
 	 * @param array
 	 * @return
 	 */
-	protected final int count(String table, Object... array) {
+	protected final int count(final String table, final Object... array) {
 		return this.count(table, SerializedMap.ofArray(array));
 	}
 
@@ -546,7 +556,7 @@ public class SimpleDatabase {
 	 * @param conditions
 	 * @return
 	 */
-	protected final int count(String table, SerializedMap conditions) {
+	protected final int count(final String table, final SerializedMap conditions) {
 
 		// Convert conditions into SQL syntax
 		final Set<String> conditionsList = Common.convertSet(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtil.serialize(Mode.YAML, entry.getValue()) + "'");
@@ -614,7 +624,7 @@ public class SimpleDatabase {
 	 *
 	 * @param sqls
 	 */
-	protected final void batchUpdate(@NonNull List<String> sqls) {
+	protected final void batchUpdate(@NonNull final List<String> sqls) {
 		if (sqls.isEmpty())
 			return;
 
@@ -705,7 +715,7 @@ public class SimpleDatabase {
 	 * @return
 	 * @throws SQLException
 	 */
-	protected final java.sql.PreparedStatement prepareStatement(String sql, int type, int concurrency) throws SQLException {
+	protected final java.sql.PreparedStatement prepareStatement(String sql, final int type, final int concurrency) throws SQLException {
 		this.checkEstablished();
 
 		if (!this.isConnected())
@@ -746,7 +756,7 @@ public class SimpleDatabase {
 	 * Checks if there's a collation-related error and prints warning message for the user to
 	 * update his database.
 	 */
-	private void handleError(Throwable t, String fallbackMessage) {
+	private void handleError(final Throwable t, final String fallbackMessage) {
 		if (t.toString().contains("Unknown collation")) {
 			Common.log("You need to update your database provider driver. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
 			Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable database connection or update your driver to fix this.");
@@ -772,7 +782,7 @@ public class SimpleDatabase {
 	 * @param key
 	 * @return
 	 */
-	final boolean hasVariable(String key) {
+	final boolean hasVariable(final String key) {
 		return this.sqlVariables.containsKey(key);
 	}
 
@@ -865,7 +875,7 @@ public class SimpleDatabase {
 		 * @param dataType
 		 * @return
 		 */
-		public TableCreator add(String name, String dataType) {
+		public TableCreator add(final String name, final String dataType) {
 			this.columns.add(TableRow.builder().name(name).dataType(dataType).build());
 
 			return this;
@@ -878,7 +888,7 @@ public class SimpleDatabase {
 		 * @param dataType
 		 * @return
 		 */
-		public TableCreator addNotNull(String name, String dataType) {
+		public TableCreator addNotNull(final String name, final String dataType) {
 			this.columns.add(TableRow.builder().name(name).dataType(dataType).notNull(true).build());
 
 			return this;
@@ -891,7 +901,7 @@ public class SimpleDatabase {
 		 * @param dataType
 		 * @return
 		 */
-		public TableCreator addAutoIncrement(String name, String dataType) {
+		public TableCreator addAutoIncrement(final String name, final String dataType) {
 			this.columns.add(TableRow.builder().name(name).dataType(dataType).autoIncrement(true).build());
 
 			return this;
@@ -905,7 +915,7 @@ public class SimpleDatabase {
 		 * @param def
 		 * @return
 		 */
-		public TableCreator addDefault(String name, String dataType, String def) {
+		public TableCreator addDefault(final String name, final String dataType, final String def) {
 			this.columns.add(TableRow.builder().name(name).dataType(dataType).defaultValue(def).build());
 
 			return this;
@@ -917,7 +927,7 @@ public class SimpleDatabase {
 		 * @param primaryColumn
 		 * @return
 		 */
-		public TableCreator setPrimaryColumn(String primaryColumn) {
+		public TableCreator setPrimaryColumn(final String primaryColumn) {
 			this.primaryColumn = primaryColumn;
 
 			return this;
@@ -929,7 +939,7 @@ public class SimpleDatabase {
 		 * @param name
 		 * @return
 		 */
-		public static TableCreator of(String name) {
+		public static TableCreator of(final String name) {
 			return new TableCreator(name);
 		}
 	}
