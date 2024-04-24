@@ -319,7 +319,7 @@ public final class CompMetadata {
 		return Common.getOrNull(data.get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING));
 	}
 
-	private static void setPersistentMetadata(Object entity, String key, String value) {
+	private static void setPersistentMetadata(final Object entity, final String key, final String value) {
 		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 
 		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
@@ -351,10 +351,12 @@ public final class CompMetadata {
 		private final Map<Location, BlockCache> blockMetadata = new HashMap<>();
 
 		private MetadataFile() {
-			this.setPathPrefix("Metadata");
-			this.setSaveEmptyValues(false);
+			if (!hasPersistentMetadata) {
+				this.setPathPrefix("Metadata");
+				this.setSaveEmptyValues(false);
 
-			this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
+				this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
+			}
 		}
 
 		@Override
@@ -369,6 +371,11 @@ public final class CompMetadata {
 		}
 
 		@Override
+		protected boolean canSaveFile() {
+			return !hasPersistentMetadata;
+		}
+
+		@Override
 		public SerializedMap saveToMap() {
 			return SerializedMap.ofArray(
 					"Entity", this.entityMetadata,
@@ -376,7 +383,7 @@ public final class CompMetadata {
 		}
 
 		@EventHandler
-		public void onEntityDeath(EntityDeathEvent event) {
+		public void onEntityDeath(final EntityDeathEvent event) {
 			final Entity entity = event.getEntity();
 			final UUID uniqueId = entity.getUniqueId();
 
@@ -419,7 +426,7 @@ public final class CompMetadata {
 			}
 		}
 
-		protected String getMetadata(Entity entity, @NonNull String key) {
+		protected String getMetadata(final Entity entity, @NonNull final String key) {
 			final UUID uniqueId = entity.getUniqueId();
 			final Set<String> metadata = this.entityMetadata.getOrDefault(uniqueId, new HashSet<>());
 
@@ -460,7 +467,7 @@ public final class CompMetadata {
 			this.save("Entity", this.entityMetadata);
 		}
 
-		protected String getMetadata(BlockState entity, @NonNull String key) {
+		protected String getMetadata(final BlockState entity, @NonNull final String key) {
 			final Location location = entity.getLocation();
 			final BlockCache blockCache = this.blockMetadata.get(location);
 
@@ -538,7 +545,7 @@ public final class CompMetadata {
 				return map;
 			}
 
-			public static BlockCache create(CompMaterial type) {
+			public static BlockCache create(final CompMaterial type) {
 				return new BlockCache(type, new HashSet<>());
 			}
 		}
