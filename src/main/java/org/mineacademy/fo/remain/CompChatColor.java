@@ -439,6 +439,25 @@ public final class CompChatColor {
 	}
 
 	/**
+	 * Replaces & color codes to paragraph character
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String translateColorCodes(String message) {
+		final char[] letters = message.toCharArray();
+
+		for (int index = 0; index < letters.length - 1; index++)
+			if (letters[index] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx".indexOf(letters[index + 1]) > -1) {
+				letters[index] = CompChatColor.COLOR_CHAR;
+
+				letters[index + 1] = Character.toLowerCase(letters[index + 1]);
+			}
+
+		return new String(letters);
+	}
+
+	/**
 	 * Get an array of all defined colors and formats.
 	 *
 	 * @return copied array of all colors and formats

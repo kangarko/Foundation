@@ -576,16 +576,7 @@ public final class Common {
 		if (message == null || message.isEmpty())
 			return "";
 
-		final char[] letters = message.toCharArray();
-
-		for (int index = 0; index < letters.length - 1; index++)
-			if (letters[index] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx".indexOf(letters[index + 1]) > -1) {
-				letters[index] = ChatColor.COLOR_CHAR;
-
-				letters[index + 1] = Character.toLowerCase(letters[index + 1]);
-			}
-
-		String result = new String(letters)
+		String result = CompChatColor.translateColorCodes(message)
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 				.replace("{plugin_name}", SimplePlugin.getNamed())
@@ -669,15 +660,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
