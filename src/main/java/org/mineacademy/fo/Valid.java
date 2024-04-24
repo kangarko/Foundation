@@ -109,6 +109,17 @@ public final class Valid {
 	 * @param collection
 	 * @param message
 	 */
+	public static void checkNotEmpty(final Map<?, ?> collection, final String message) {
+		if (collection == null || collection.size() == 0)
+			throw new IllegalArgumentException(message);
+	}
+
+	/**
+	 * Throw an error with a custom message if the given collection is null or empty
+	 *
+	 * @param collection
+	 * @param message
+	 */
 	public static void checkNotEmpty(final Collection<?> collection, final String message) {
 		if (collection == null || collection.size() == 0)
 			throw new IllegalArgumentException(message);
@@ -205,7 +216,7 @@ public final class Valid {
 	 * @param raw  the <code>String</code> to check
 	 * @return <code>true</code> if the string is a correctly formatted number
 	 */
-	public static boolean isNumber(@NonNull String raw) {
+	public static boolean isNumber(@NonNull final String raw) {
 		Valid.checkNotNull(raw, "Cannot check if null is a Number!");
 
 		if (raw.isEmpty())
@@ -315,7 +326,7 @@ public final class Valid {
 	 * @param map
 	 * @return
 	 */
-	public static boolean isNullOrEmptyValues(SerializedMap map) {
+	public static boolean isNullOrEmptyValues(final SerializedMap map) {
 		return isNullOrEmptyValues(map == null ? null : map.asMap());
 	}
 
@@ -418,7 +429,7 @@ public final class Valid {
 	 * @param object
 	 * @return
 	 */
-	public static boolean isUUID(Object object) {
+	public static boolean isUUID(final Object object) {
 		if (object instanceof String) {
 			final String[] components = object.toString().split("-");
 
@@ -543,7 +554,7 @@ public final class Valid {
 	 * @param values
 	 * @return
 	 */
-	public static boolean valuesEqual(Collection<String> values) {
+	public static boolean valuesEqual(final Collection<String> values) {
 		final List<String> copy = new ArrayList<>(values);
 		String lastValue = null;
 
@@ -702,7 +713,7 @@ public final class Valid {
 	 * @param message
 	 * @return
 	 */
-	private static String removeSlash(String message) {
+	private static String removeSlash(final String message) {
 		return message.startsWith("/") ? message.substring(1) : message;
 	}
 }
