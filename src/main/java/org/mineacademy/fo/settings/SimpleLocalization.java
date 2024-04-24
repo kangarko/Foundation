@@ -112,12 +112,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 	public static final class Commands {
 
 		/**
-		 * true = https://i.imgur.com/us88BCT.png
-		 * false = https://i.imgur.com/N7jLu7v.png
-		 */
-		public static Boolean SIMPLE_HELP_DESIGN = false;
-
-		/**
 		 * The message at "No_Console" key shown when console is denied executing a command.
 		 */
 		public static String NO_CONSOLE = "&cYou may only use this command as a player";
@@ -162,11 +156,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 		 * The required arguments label
 		 */
 		public static String LABEL_REQUIRED_ARGS = "required arguments";
-
-		/**
-		 * The multiline usages label
-		 */
-		public static String LABEL_USAGES = "&c&lUsages:";
 
 		/**
 		 * The usage label
@@ -289,9 +278,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 		private static void init() {
 			setPathPrefix("Commands");
 
-			if (isSetDefault("Simple_Help_Design"))
-				SIMPLE_HELP_DESIGN = getBoolean("Simple_Help_Design");
-
 			if (isSetDefault("No_Console"))
 				NO_CONSOLE = getString("No_Console");
 
@@ -342,9 +328,6 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Label_Subcommand_Description"))
 				LABEL_SUBCOMMAND_DESCRIPTION = getString("Label_Subcommand_Description");
-
-			if (isSetDefault("Label_Usages"))
-				LABEL_USAGES = getString("Label_Usages");
 
 			if (isSetDefault("Help_Tooltip_Description"))
 				HELP_TOOLTIP_DESCRIPTION = getString("Help_Tooltip_Description");
