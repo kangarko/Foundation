@@ -388,7 +388,7 @@ public abstract class SimpleCommand extends Command {
 				} else if (this.getUsage() != null) {
 					final String usage = this.getUsage();
 
-					messages.add("&c" + (usage.startsWith("/") ? usage : "/{label} {sublabel} " + usage));
+					messages.add("&c" + (usage.startsWith("/") ? usage : "/{label} " + (this instanceof SimpleSubCommand ? "{sublabel} " : "") + usage));
 
 				} else
 					throw new FoException("Either getUsage() or getMultilineUsageMessage() must be implemented for '/" + this.getLabel() + sublabel + "' command!");
