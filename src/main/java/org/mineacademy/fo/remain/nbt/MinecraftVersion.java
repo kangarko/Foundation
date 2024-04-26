@@ -37,15 +37,18 @@ enum MinecraftVersion {
 	MC1_19_R3(1193, true),
 	MC1_20_R1(1201, true),
 	MC1_20_R2(1202, true),
-	MC1_20_R3(1203, true);
+	MC1_20_R3(1203, true),
+	MC1_20_R4(1204, true);
 
 	private static MinecraftVersion version;
+
 	private static Boolean isForgePresent;
 	private static Boolean isFoliaPresent;
 
 	private final int versionId;
 	private final boolean mojangMapping;
 
+	// TODO: not nice
 	@SuppressWarnings("serial")
 	private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
 		{
@@ -54,6 +57,7 @@ enum MinecraftVersion {
 			this.put("1.20.2", MC1_20_R2);
 			this.put("1.20.3", MC1_20_R3);
 			this.put("1.20.4", MC1_20_R3);
+			this.put("1.20.5", MC1_20_R4);
 		}
 	};
 
@@ -133,10 +137,9 @@ enum MinecraftVersion {
 
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 		} catch (final Exception ex) {
-
-			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0],
-					MinecraftVersion.UNKNOWN);
+			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0], MinecraftVersion.UNKNOWN);
 		}
+
 		return version;
 	}
 
@@ -144,9 +147,9 @@ enum MinecraftVersion {
 	 * @return True, if Forge is present
 	 */
 	public static boolean isForgePresent() {
-		if (isForgePresent != null)
+		if (isForgePresent != null) {
 			return isForgePresent;
-
+		}
 		try {
 			if (getVersion() == MinecraftVersion.MC1_7_R4)
 				Class.forName("cpw.mods.fml.common.Loader");
@@ -158,7 +161,6 @@ enum MinecraftVersion {
 		} catch (final Exception ex) {
 			isForgePresent = false;
 		}
-
 		return isForgePresent;
 	}
 
@@ -170,7 +172,6 @@ enum MinecraftVersion {
 			return isFoliaPresent;
 		}
 		try {
-			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
 
 			isFoliaPresent = true;
 		} catch (final Exception ex) {

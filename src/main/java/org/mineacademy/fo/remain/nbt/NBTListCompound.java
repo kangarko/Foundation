@@ -5,7 +5,7 @@ package org.mineacademy.fo.remain.nbt;
  * {@link NBTCompoundList} This Compound implementation is missing the ability
  * for further subCompounds and Lists. This class probably will change in the
  * future
- * 
+ *
  * @author tr7zw
  *
  */

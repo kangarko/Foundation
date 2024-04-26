@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 /**
  * {@link NBTListCompound} implementation for NBTLists
- * 
+ *
  * @author tr7zw
  *
  */
@@ -14,9 +14,10 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 
 	/**
 	 * Adds a new Compound to the end of the List and returns it.
-	 * 
+	 *
 	 * @return The added {@link NBTListCompound}
 	 */
+	@Override
 	public NBTListCompound addCompound() {
 		return (NBTListCompound) addCompound(null);
 	}
@@ -24,7 +25,7 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 	/**
 	 * Adds a copy of the Compound to the end of the List and returns it. When null
 	 * is given, a new Compound will be created
-	 * 
+	 *
 	 * @param comp
 	 * @return
 	 */
@@ -33,19 +34,19 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 			throw new NbtApiException("Tried setting data in read only mode!");
 		}
 		try {
-			Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
 			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId()) {
 				ReflectionMethod.LIST_ADD.run(listObject, size(), compound);
 			} else {
 				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, compound);
 			}
 			getParent().saveCompound();
-			NBTListCompound listcomp = new NBTListCompound(this, compound);
+			final NBTListCompound listcomp = new NBTListCompound(this, compound);
 			if (comp != null) {
 				listcomp.mergeCompound(comp);
 			}
 			return listcomp;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}
 	}
@@ -59,8 +60,8 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 
 	/**
 	 * Adds a new Compound to the end of the List.
-	 * 
-	 * 
+	 *
+	 *
 	 * @deprecated Please use addCompound!
 	 * @param empty
 	 * @return True, if compound was added
@@ -80,14 +81,14 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 			throw new NbtApiException("Tried setting data in read only mode!");
 		}
 		try {
-			Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+			final Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
 			if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_14_R1.getVersionId()) {
 				ReflectionMethod.LIST_ADD.run(listObject, index, compound);
 			} else {
 				ReflectionMethod.LEGACY_LIST_ADD.run(listObject, compound);
 			}
 			super.getParent().saveCompound();
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}
 	}
@@ -95,9 +96,9 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 	@Override
 	public NBTListCompound get(int index) {
 		try {
-			Object compound = ReflectionMethod.LIST_GET_COMPOUND.run(listObject, index);
+			final Object compound = ReflectionMethod.LIST_GET_COMPOUND.run(listObject, index);
 			return new NBTListCompound(this, compound);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}
 	}

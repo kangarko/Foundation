@@ -6,7 +6,7 @@ import java.nio.file.Files;
 
 /**
  * {@link NBTCompound} implementation backed by a {@link File}
- * 
+ *
  * @author tr7zw
  *
  */
@@ -18,7 +18,7 @@ public class NBTFile extends NBTCompound {
 	/**
 	 * Creates a NBTFile that uses @param file to store its data. If this file
 	 * exists, the data will be loaded.
-	 * 
+	 *
 	 * @param file
 	 * @throws IOException
 	 */
@@ -38,7 +38,7 @@ public class NBTFile extends NBTCompound {
 
 	/**
 	 * Saves the data to the file
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void save() throws IOException {

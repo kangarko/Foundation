@@ -12,9 +12,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
-import org.mineacademy.fo.Valid;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -96,7 +94,7 @@ public class NBTCompound implements ReadWriteNBT {
 		}
 		if (!NBTReflectionUtil.valideCompound(this))
 			throw new NbtApiException("The Compound wasn't able to be linked back to the root!");
-		final Object workingtag = NBTReflectionUtil.gettoCompount(rootnbttag, this);
+		final Object workingtag = NBTReflectionUtil.getToCompount(rootnbttag, this);
 		if (readOnly) {
 			this.readOnlyCache = workingtag;
 		}
@@ -463,8 +461,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void setLongArray(String key, long[] value) {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "getLongArray requires MC 1.16");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R1);
 		try {
 			writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONGARRAY, key, value);
@@ -484,8 +481,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public long[] getLongArray(String key) {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "getLongArray requires MC 1.16");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R1);
 		try {
 			readLock.lock();
 			return (long[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_LONGARRAY, key);
