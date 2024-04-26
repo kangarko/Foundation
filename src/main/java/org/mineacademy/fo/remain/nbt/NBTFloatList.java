@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * Float implementation for NBTLists
- * 
+ *
  * @author tr7zw
  *
  */
@@ -18,7 +18,7 @@ public class NBTFloatList extends NBTList<Float> {
 	@Override
 	protected Object asTag(Float object) {
 		try {
-			Constructor<?> con = ClassWrapper.NMS_NBTTAGFLOAT.getClazz().getDeclaredConstructor(float.class);
+			final Constructor<?> con = ClassWrapper.NMS_NBTTAGFLOAT.getClazz().getDeclaredConstructor(float.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
@@ -30,11 +30,11 @@ public class NBTFloatList extends NBTList<Float> {
 	@Override
 	public Float get(int index) {
 		try {
-			Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
 			return Float.valueOf(obj.toString());
-		} catch (NumberFormatException nf) {
+		} catch (final NumberFormatException nf) {
 			return 0f;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}
 	}

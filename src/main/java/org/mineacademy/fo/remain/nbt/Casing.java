@@ -9,12 +9,12 @@ public enum Casing {
 		}
 		return Character.toLowerCase(s.charAt(0)) + s.substring(1);
 	}), snake_case(s -> {
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		// Convert the first letter to lowercase
 		result.append(Character.toLowerCase(s.charAt(0)));
 		// Iterate through the rest of the string
 		for (int i = 1; i < s.length(); i++) {
-			char currentChar = s.charAt(i);
+			final char currentChar = s.charAt(i);
 			// Convert uppercase letters to lowercase and add underscore
 			if (Character.isUpperCase(currentChar)) {
 				result.append('_').append(Character.toLowerCase(currentChar));

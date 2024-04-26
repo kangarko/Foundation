@@ -5,7 +5,7 @@ import java.io.InputStream;
 /**
  * A Standalone {@link NBTCompound} implementation. All data is just kept inside
  * this Object.
- * 
+ *
  * @author tr7zw
  *
  */
@@ -25,7 +25,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Takes in any NMS Compound to wrap it
-	 * 
+	 *
 	 * @param nbt
 	 */
 	public NBTContainer(Object nbt) {
@@ -41,7 +41,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Reads in a NBT InputStream
-	 * 
+	 *
 	 * @param inputsteam
 	 */
 	public NBTContainer(InputStream inputsteam) {
@@ -52,7 +52,7 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
 	 * {@link NbtApiException} in case something goes wrong.
-	 * 
+	 *
 	 * @param nbtString
 	 */
 	public NBTContainer(String nbtString) {
@@ -62,7 +62,7 @@ public class NBTContainer extends NBTCompound {
 		}
 		try {
 			nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException("Unable to parse Malformed Json!", ex);
 		}
 	}
@@ -87,6 +87,7 @@ public class NBTContainer extends NBTCompound {
 		return closed;
 	}
 
+	@Override
 	protected boolean isReadOnly() {
 		return readOnly;
 	}

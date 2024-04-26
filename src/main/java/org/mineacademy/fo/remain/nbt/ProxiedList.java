@@ -16,8 +16,8 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 
 	@Override
 	public E get(int index) {
-		ReadWriteNBT tag = nbt.get(index);
-		return new ProxyBuilder<E>(tag, proxy).build();
+		final ReadWriteNBT tag = nbt.get(index);
+		return new ProxyBuilder<>(tag, proxy).build();
 	}
 
 	@Override
@@ -37,8 +37,8 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 
 	@Override
 	public E addCompound() {
-		ReadWriteNBT tag = nbt.addCompound();
-		return new ProxyBuilder<E>(tag, proxy).build();
+		final ReadWriteNBT tag = nbt.addCompound();
+		return new ProxyBuilder<>(tag, proxy).build();
 	}
 
 	@Override
@@ -59,22 +59,25 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 		 */
 		int lastRet = -1;
 
+		@Override
 		public boolean hasNext() {
 			return cursor != size();
 		}
 
+		@Override
 		public E next() {
 			try {
-				int i = cursor;
-				E next = get(i);
+				final int i = cursor;
+				final E next = get(i);
 				lastRet = i;
 				cursor = i + 1;
 				return next;
-			} catch (IndexOutOfBoundsException e) {
+			} catch (final IndexOutOfBoundsException e) {
 				throw new NoSuchElementException();
 			}
 		}
 
+		@Override
 		public void remove() {
 			if (lastRet < 0)
 				throw new IllegalStateException();
@@ -84,7 +87,7 @@ class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 				if (lastRet < cursor)
 					cursor--;
 				lastRet = -1;
-			} catch (IndexOutOfBoundsException e) {
+			} catch (final IndexOutOfBoundsException e) {
 				throw new ConcurrentModificationException();
 			}
 		}

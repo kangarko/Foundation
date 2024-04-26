@@ -14,6 +14,7 @@ enum ClassWrapper {
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
 	CRAFT_ENTITY(PackageWrapper.CRAFTBUKKIT, "entity.CraftEntity", null, null),
 	CRAFT_WORLD(PackageWrapper.CRAFTBUKKIT, "CraftWorld", null, null),
+	CRAFT_SERVER(PackageWrapper.CRAFTBUKKIT, "CraftServer", null, null),
 	CRAFT_PERSISTENTDATACONTAINER(PackageWrapper.CRAFTBUKKIT, "persistence.CraftPersistentDataContainer",
 			MinecraftVersion.MC1_14_R1, null),
 	NMS_NBTBASE(PackageWrapper.NMS, "NBTBase", null, null, "net.minecraft.nbt", "net.minecraft.nbt.Tag"),
@@ -60,6 +61,24 @@ enum ClassWrapper {
 			"net.minecraft.world.level.block.state", "net.minecraft.world.level.block.state.BlockState"),
 	NMS_NBTACCOUNTER(PackageWrapper.NMS, "NBTReadLimiter", MinecraftVersion.MC1_20_R3, null, "net.minecraft.nbt",
 			"net.minecraft.nbt.NbtAccounter"),
+	NMS_CUSTOMDATA(PackageWrapper.NMS, "CustomData", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.world.item.component", "net.minecraft.world.item.component.CustomData"),
+	NMS_DATACOMPONENTTYPE(PackageWrapper.NMS, "DataComponentType", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.core.component", "net.minecraft.core.component.DataComponentType"),
+	NMS_DATACOMPONENTS(PackageWrapper.NMS, "DataComponents", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.core.component", "net.minecraft.core.component.DataComponents"),
+	NMS_DATACOMPONENTHOLDER(PackageWrapper.NMS, "DataComponentHolder", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.core.component", "net.minecraft.core.component.DataComponentHolder"),
+	NMS_PROVIDER(PackageWrapper.NMS, "HolderLookup$a", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.core", "net.minecraft.core.HolderLookup$Provider"),
+	NMS_SERVER(PackageWrapper.NMS, "MinecraftServer", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.server", "net.minecraft.server.MinecraftServer"),
+	NMS_DATAFIXERS(PackageWrapper.NMS, "DataConverterRegistry", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.util.datafix", "net.minecraft.util.datafix.DataFixers"),
+	NMS_REFERENCES(PackageWrapper.NMS, "DataConverterTypes", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.util.datafix.fixes", "net.minecraft.util.datafix.fixes.References"),
+	NMS_NBTOPS(PackageWrapper.NMS, "DynamicOpsNBT", MinecraftVersion.MC1_20_R4, null,
+			"net.minecraft.nbt", "net.minecraft.nbt.NbtOps"),
 	GAMEPROFILE(PackageWrapper.NONE, "com.mojang.authlib.GameProfile", MinecraftVersion.MC1_8_R3, null);
 
 	private Class<?> clazz;
@@ -73,10 +92,7 @@ enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) {
-			return;
-		}
-		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()) {
+		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())) {
 			return;
 		}
 		enabled = true;

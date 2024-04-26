@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * Double implementation for NBTLists
- * 
+ *
  * @author tr7zw
  *
  */
@@ -18,7 +18,7 @@ public class NBTDoubleList extends NBTList<Double> {
 	@Override
 	protected Object asTag(Double object) {
 		try {
-			Constructor<?> con = ClassWrapper.NMS_NBTTAGDOUBLE.getClazz().getDeclaredConstructor(double.class);
+			final Constructor<?> con = ClassWrapper.NMS_NBTTAGDOUBLE.getClazz().getDeclaredConstructor(double.class);
 			con.setAccessible(true);
 			return con.newInstance(object);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
@@ -30,11 +30,11 @@ public class NBTDoubleList extends NBTList<Double> {
 	@Override
 	public Double get(int index) {
 		try {
-			Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
 			return Double.valueOf(obj.toString());
-		} catch (NumberFormatException nf) {
+		} catch (final NumberFormatException nf) {
 			return 0d;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}
 	}

@@ -65,4 +65,5 @@ public class NbtApiException extends RuntimeException {
 
 		return message;
 	}
+
 }
