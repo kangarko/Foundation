@@ -80,7 +80,7 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Pattern used to match colors with & or {@link ChatColor#COLOR_CHAR}
+	 * Pattern used to match colors with & or {@link CompChatColor#COLOR_CHAR}
 	 */
 	private static final Pattern COLOR_AND_DECORATION_REGEX = Pattern.compile("(&|" + COLOR_CHAR + ")[0-9a-fk-orA-FK-OR]");
 
@@ -686,7 +686,7 @@ public final class Common {
 	}
 
 	/**
-	 * Returns if the message contains either {@link ChatColor#COLOR_CHAR} or & letter colors
+	 * Returns if the message contains either {@link CompChatColor#COLOR_CHAR} or & letter colors
 	 *
 	 * @param message
 	 * @return
