@@ -1,5 +1,7 @@
 package org.mineacademy.fo.remain;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +28,6 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -138,7 +139,14 @@ public class JsonItemStack {
 			} else if (meta instanceof BannerMeta) {
 				final BannerMeta bannerMeta = (BannerMeta) meta;
 				final JSONObject extraMeta = new JSONObject();
-				extraMeta.put("base-color", bannerMeta.getBaseColor().name());
+
+				final Method getBaseColor = ReflectionUtil.getMethod(bannerMeta.getClass(), "getBaseColor");
+
+				if (getBaseColor != null) {
+					final String baseColorName = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta)).name();
+
+					extraMeta.put("base-color", baseColorName);
+				}
 
 				if (bannerMeta.numberOfPatterns() > 0) {
 					final JSONArray patterns = new JSONArray();
@@ -211,22 +219,29 @@ public class JsonItemStack {
 
 					extraMeta.put("custom-effects", customEffects);
 
-				} else
+				} else {
+					Class<?> potionDataClass = null;
+
 					try {
-						final PotionType type = pmeta.getBasePotionData().getType();
-						final boolean isExtended = pmeta.getBasePotionData().isExtended();
-						final boolean isUpgraded = pmeta.getBasePotionData().isUpgraded();
+						potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
+					} catch (final Exception e) {
+					}
+
+					if (potionDataClass != null) {
+						final Object potionData = ReflectionUtil.invoke("getBasePotionData", pmeta);
+						final PotionType type = ReflectionUtil.invoke("getType", potionData);
+						final boolean isExtended = ReflectionUtil.invoke("isExtended", potionData);
+						final boolean isUpgraded = ReflectionUtil.invoke("isUpgraded", potionData);
+						final String effectName = type.getEffectType().getName();
 
 						final JSONObject baseEffect = new JSONObject();
 
-						baseEffect.put("type", type.getEffectType().getName());
+						baseEffect.put("type", effectName);
 						baseEffect.put("isExtended", isExtended);
 						baseEffect.put("isUpgraded", isUpgraded);
 						extraMeta.put("base-effect", baseEffect);
-
-					} catch (final NoSuchMethodError err) {
-						// Unsupported
 					}
+				}
 
 				metaJson.put("extra-meta", extraMeta);
 
@@ -434,8 +449,12 @@ public class JsonItemStack {
 									.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(baseColor))
 									.findFirst();
 
-							if (color.isPresent())
-								bmeta.setBaseColor(color.get());
+							if (color.isPresent()) {
+								final Method setBaseColor = ReflectionUtil.getMethod(bmeta.getClass(), "setBaseColor", DyeColor.class);
+
+								if (setBaseColor != null)
+									ReflectionUtil.invoke(setBaseColor, bmeta, color.get());
+							}
 
 						} catch (final NumberFormatException ignored) {
 						}
@@ -538,12 +557,19 @@ public class JsonItemStack {
 						final boolean isExtended = basePotion.getBoolean("isExtended");
 						final boolean isUpgraded = basePotion.getBoolean("isUpgraded");
 
-						try {
-							final PotionData potionData = new PotionData(potionType, isExtended, isUpgraded);
+						Class<?> potionDataClass = null;
 
-							pmeta.setBasePotionData(potionData);
-						} catch (final Throwable t) {
-							// Unsupported
+						try {
+							potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
+						} catch (final Exception e) {
+						}
+
+						if (potionDataClass != null) {
+							final Constructor<?> potionConst = ReflectionUtil.getConstructor(potionDataClass, PotionType.class, boolean.class, boolean.class);
+							final Object potionData = ReflectionUtil.instantiate(potionConst, potionType, isExtended, isUpgraded);
+							final Method setBasePotionData = ReflectionUtil.getMethod(pmeta.getClass(), "setBasePotionData", potionDataClass);
+
+							ReflectionUtil.invoke(setBasePotionData, pmeta, potionData);
 						}
 					}
 
