@@ -27,7 +27,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.projectiles.ProjectileSource;
@@ -41,9 +40,11 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictSet;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.remain.CompEquipmentSlot;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -133,7 +134,6 @@ public abstract class SimpleEnchantment implements Listener {
 
 		if (handleClass != null) {
 			this.handle = this.assignHandle();
-
 			this.handle.register();
 
 			registeredEnchantments.add(this);
@@ -311,8 +311,8 @@ public abstract class SimpleEnchantment implements Listener {
 	 *
 	 * @return
 	 */
-	public Set<EquipmentSlot> getActiveSlots() {
-		return Common.newSet(EquipmentSlot.values());
+	public Set<CompEquipmentSlot> getActiveSlots() {
+		return Common.newSet(CompEquipmentSlot.values());
 	}
 
 	/**
@@ -338,8 +338,10 @@ public abstract class SimpleEnchantment implements Listener {
 	/**
 	 * Get the startup level, 1 by default
 	 *
+	 * @deprecated not used
 	 * @return
 	 */
+	@Deprecated
 	public int getStartLevel() {
 		return 1;
 	}
@@ -347,21 +349,54 @@ public abstract class SimpleEnchantment implements Listener {
 	/**
 	 * Return the min cost for the given level
 	 *
+	 * @deprecated use {@link #getMinCost()}
+	 *
 	 * @param level
 	 * @return
 	 */
+	@Deprecated
 	public int getMinCost(int level) {
+		return this.getMinCost().calculate(level);
+	}
+
+	/**
+	 * Return the min cost for the given level
+	 *
+	 * @return
+	 */
+	public Cost getMinCost() {
+		return new Cost(1, 1);
+	}
+
+	/**
+	 * Return the cost on anvil
+	 *
+	 * @return
+	 */
+	public int getAnvilCost() {
 		return 1;
 	}
 
 	/**
 	 * Return the max cost for the given level
 	 *
+	 * @deprecated use {@link #getMaxCost()}
+	 *
 	 * @param level
 	 * @return
 	 */
+	@Deprecated
 	public int getMaxCost(int level) {
-		return level;
+		return this.getMaxCost().calculate(level);
+	}
+
+	/**
+	 * Return the max cost for the given level
+	 *
+	 * @return
+	 */
+	public Cost getMaxCost() {
+		return new Cost(1, 1);
 	}
 
 	/**
@@ -593,7 +628,7 @@ public abstract class SimpleEnchantment implements Listener {
 
 	private static SimpleEnchantment fromBukkit(Enchantment bukkitEnchantment) {
 		if (hasNamespacedKeys) {
-			final String key = bukkitEnchantment.getKey().asString();
+			final String key = bukkitEnchantment.getKey().getNamespace() + ":" + bukkitEnchantment.getKey().getKey();
 
 			for (final SimpleEnchantment simpleEnchantment : registeredEnchantments)
 				if (simpleEnchantment.namespacedNameWithPrefix.equals(key))
@@ -619,6 +654,24 @@ public abstract class SimpleEnchantment implements Listener {
 		}
 
 		return null;
+	}
+
+	/**
+	 * A wrapper for 1.20.5+ cost handling
+	 */
+	@Data
+	public static final class Cost {
+		private final int base;
+		private final int perLevel;
+
+		public Cost(int var0, int var1) {
+			this.base = var0;
+			this.perLevel = var1;
+		}
+
+		public int calculate(int level) {
+			return this.base + this.perLevel * (level - 1);
+		}
 	}
 
 	/**
