@@ -8,6 +8,8 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
+import org.bukkit.Particle.DustTransition;
+import org.bukkit.Vibration;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -22,102 +24,139 @@ import lombok.SneakyThrows;
  */
 public enum CompParticle {
 
-	EXPLOSION_NORMAL("explode"),
-	EXPLOSION_LARGE("largeexplode"),
-	EXPLOSION_HUGE("hugeexplosion"),
-	FIREWORKS_SPARK("fireworksSpark"),
-	WATER_BUBBLE("bubble"),
-	WATER_SPLASH("splash"),
-	WATER_WAKE("wake"),
-	SUSPENDED("suspend"),
-	SUSPENDED_DEPTH("depthsuspend"),
-	CRIT("crit"),
-	CRIT_MAGIC("magicCrit"),
-	SMOKE_NORMAL("smoke"),
-	SMOKE_LARGE("largesmoke"),
-	SPELL("spell"),
-	SPELL_INSTANT("instantSpell"),
-	SPELL_MOB("mobSpell"),
-	SPELL_MOB_AMBIENT("mobSpellAmbient"),
-	SPELL_WITCH("witchMagic"),
-	DRIP_WATER("dripWater"),
-	DRIP_LAVA("dripLava"),
-	VILLAGER_ANGRY("angryVillager"),
-	VILLAGER_HAPPY("happyVillager"),
-	TOWN_AURA("townaura"),
-	NOTE("note"),
-	PORTAL("portal"),
-	ENCHANTMENT_TABLE("enchantmenttable"),
-	FLAME("flame"),
-	LAVA("lava"),
-	FOOTSTEP("footstep"),
-	CLOUD("cloud"),
-	REDSTONE("reddust"),
-	SNOWBALL("snowballpoof"),
-	SNOW_SHOVEL("snowshovel"),
-	SLIME("slime"),
-	HEART("heart"),
-	BARRIER("barrier"),
-	ITEM_CRACK("iconcrack_"),
-	BLOCK_CRACK("blockcrack_"),
-	BLOCK_DUST("blockdust_"),
-	WATER_DROP("droplet"),
-	ITEM_TAKE("take"),
-	MOB_APPEARANCE("mobappearance"),
+	EXPLOSION_NORMAL("explode", "EXPLOSION_NORMAL", "POOF"),
+	EXPLOSION_LARGE("largeexplode", "EXPLOSION_LARGE", "EXPLOSION"),
+	EXPLOSION_HUGE("hugeexplosion", "EXPLOSION_HUGE", "EXPLOSION_EMITTER"),
+	FIREWORKS_SPARK("fireworksSpark", "FIREWORKS_SPARK", "FIREWORK"),
+	WATER_BUBBLE("bubble", "WATER_BUBBLE", "BUBBLE"),
+	WATER_SPLASH("splash", "WATER_SPLASH", "SPLASH"),
+	WATER_WAKE("wake", "WATER_WAKE", "FISHING"),
+	SUSPENDED("suspend", "SUSPENDED", "UNDERWATER"),
+	SUSPENDED_DEPTH("depthsuspend", "SUSPENDED_DEPTH", "UNDERWATER"),
+	CRIT("crit", "CRIT", "CRIT"),
+	CRIT_MAGIC("magicCrit", "CRIT_MAGIC", "ENCHANTED_HIT"),
+	SMOKE_NORMAL("smoke", "SMOKE_NORMAL", "SMOKE"),
+	SMOKE_LARGE("largesmoke", "SMOKE_LARGE", "LARGE_SMOKE"),
+	SPELL("spell", "SPELL", "EFFECT"),
+	SPELL_INSTANT("instantSpell", "SPELL_INSTANT", "INSTANT_EFFECT"),
+	SPELL_MOB("mobSpell", "SPELL_MOB", "ENTITY_EFFECT"),
+	SPELL_MOB_AMBIENT("mobSpellAmbient", "SPELL_MOB_AMBIENT", "AMBIENT_ENTITY_EFFECT"),
+	SPELL_WITCH("witchMagic", "SPELL_WITCH", "WITCH"),
+	DRIP_WATER("dripWater", "DRIP_WATER", "DRIPPING_WATER"),
+	DRIP_LAVA("dripLava", "DRIP_LAVA", "DRIPPING_LAVA"),
+	VILLAGER_ANGRY("angryVillager", "VILLAGER_ANGRY", "ANGRY_VILLAGER"),
+	VILLAGER_HAPPY("happyVillager", "VILLAGER_HAPPY", "HAPPY_VILLAGER"),
+	TOWN_AURA("townaura", "TOWN_AURA", "MYCELIUM"),
+	NOTE("note", "NOTE", "NOTE"),
+	PORTAL("portal", "PORTAL", "PORTAL"),
+	ENCHANTMENT_TABLE("enchantmenttable", "ENCHANTMENT_TABLE", "ENCHANT"),
+	FLAME("flame", "FLAME", "FLAME"),
+	LAVA("lava", "LAVA", "LAVA"),
+	CLOUD("cloud", "CLOUD", "CLOUD"),
+	REDSTONE("reddust", "REDSTONE", "DUST"),
+	SNOWBALL("snowballpoof", "SNOWBALL", "ITEM_SNOWBALL"),
+	SNOW_SHOVEL("snowshovel", "SNOW_SHOVEL"),
+	SLIME("slime", "SLIME", "ITEM_SLIME"),
+	HEART("heart", "HEART", "HEART"),
+	/**
+	 * @Deprecated removed in 1.13, use {@value CompParticle#BLOCK_DUST} instead with metadata
+	 */
+	BARRIER("barrier", "BARRIER", null),
+	ITEM_CRACK("iconcrack_", "ITEM_CRACK", "ITEM"),
+	BLOCK_CRACK("blockcrack_", "BLOCK_CRACK", "BLOCK"),
+	BLOCK_DUST("blockdust_", "BLOCK_DUST", "BLOCK"),
+	WATER_DROP("droplet", "WATER_DROP", "RAIN"),
+
+	/**
+	 * @deprecated removed in 1.20.5
+	 */
+	ITEM_TAKE("take", "ITEM_TAKE", null),
+	MOB_APPEARANCE("mobappearance", "MOB_APPEARANCE", "ELDER_GUARDIAN"),
 
 	// MC 1.8.8+
-	DRAGON_BREATH,
-	END_ROD,
-	DAMAGE_INDICATOR,
-	SWEEP_ATTACK,
-	FALLING_DUST,
-	TOTEM,
-	SPIT,
-	SQUID_INK,
-	BUBBLE_POP,
-	CURRENT_DOWN,
-	BUBBLE_COLUMN_UP,
-	NAUTILUS,
-	DOLPHIN,
-	SNEEZE,
-	CAMPFIRE_COSY_SMOKE,
-	CAMPFIRE_SIGNAL_SMOKE,
-	COMPOSTER,
-	FLASH,
-	FALLING_LAVA,
-	LANDING_LAVA,
-	FALLING_WATER,
-	DRIPPING_HONEY,
-	FALLING_HONEY,
-	LANDING_HONEY,
-	FALLING_NECTAR,
-	SOUL_FIRE_FLAME,
-	ASH,
-	CRIMSON_SPORE,
-	WARPED_SPORE,
-	SOUL,
-	DRIPPING_OBSIDIAN_TEAR,
-	FALLING_OBSIDIAN_TEAR,
-	LANDING_OBSIDIAN_TEAR,
-	REVERSE_PORTAL,
-	WHITE_ASH,
-	LIGHT,
-	DUST_COLOR_TRANSITION,
-	VIBRATION,
-	FALLING_SPORE_BLOSSOM,
-	SPORE_BLOSSOM_AIR,
-	SMALL_FLAME,
-	SNOWFLAKE,
-	DRIPPING_DRIPSTONE_LAVA,
-	FALLING_DRIPSTONE_LAVA,
-	DRIPPING_DRIPSTONE_WATER,
-	FALLING_DRIPSTONE_WATER,
-	GLOW_SQUID_INK,
-	GLOW,
-	WAX_ON,
-	WAX_OFF,
-	ELECTRIC_SPARK,
-	SCRAPE;
+	DRAGON_BREATH("DRAGON_BREATH", "DRAGON_BREATH"),
+	END_ROD("END_ROD", "END_ROD"),
+	DAMAGE_INDICATOR("DAMAGE_INDICATOR", "DAMAGE_INDICATOR"),
+	SWEEP_ATTACK("SWEEP_ATTACK", "SWEEP_ATTACK"),
+	/**
+	 * Uses {@link BlockData} as DataType
+	 */
+	FALLING_DUST("FALLING_DUST", "FALLING_DUST"),
+	TOTEM("TOTEM", "TOTEM_OF_UNDYING"),
+	SPIT("SPIT", "SPIT"),
+	SQUID_INK("SQUID_INK", "SQUID_INK"),
+	BUBBLE_POP("BUBBLE_POP", "BUBBLE_POP"),
+	CURRENT_DOWN("CURRENT_DOWN", "CURRENT_DOWN"),
+	BUBBLE_COLUMN_UP("BUBBLE_COLUMN_UP", "BUBBLE_COLUMN_UP"),
+	NAUTILUS("NAUTILUS", "NAUTILUS"),
+	DOLPHIN("DOLPHIN", "DOLPHIN"),
+	SNEEZE("SNEEZE", "SNEEZE"),
+	CAMPFIRE_COSY_SMOKE("CAMPFIRE_COSY_SMOKE", "CAMPFIRE_COSY_SMOKE"),
+	CAMPFIRE_SIGNAL_SMOKE("CAMPFIRE_SIGNAL_SMOKE", "CAMPFIRE_SIGNAL_SMOKE"),
+	COMPOSTER("COMPOSTER", "COMPOSTER"),
+	FLASH("FLASH", "FLASH"),
+	FALLING_LAVA("FALLING_LAVA", "FALLING_LAVA"),
+	LANDING_LAVA("LANDING_LAVA", "LANDING_LAVA"),
+	FALLING_WATER("FALLING_WATER", "FALLING_WATER"),
+	DRIPPING_HONEY("DRIPPING_HONEY", "DRIPPING_HONEY"),
+	FALLING_HONEY("FALLING_HONEY", "FALLING_HONEY"),
+	LANDING_HONEY("LANDING_HONEY", "LANDING_HONEY"),
+	FALLING_NECTAR("FALLING_NECTAR", "FALLING_NECTAR"),
+	SOUL_FIRE_FLAME("SOUL_FIRE_FLAME", "SOUL_FIRE_FLAME"),
+	ASH("ASH", "ASH"),
+	CRIMSON_SPORE("CRIMSON_SPORE", "CRIMSON_SPORE"),
+	WARPED_SPORE("WARPED_SPORE", "WARPED_SPORE"),
+	SOUL("SOUL", "SOUL"),
+	DRIPPING_OBSIDIAN_TEAR("DRIPPING_OBSIDIAN_TEAR", "DRIPPING_OBSIDIAN_TEAR"),
+	FALLING_OBSIDIAN_TEAR("FALLING_OBSIDIAN_TEAR", "FALLING_OBSIDIAN_TEAR"),
+	LANDING_OBSIDIAN_TEAR("LANDING_OBSIDIAN_TEAR", "LANDING_OBSIDIAN_TEAR"),
+	REVERSE_PORTAL("REVERSE_PORTAL", "REVERSE_PORTAL"),
+	WHITE_ASH("WHITE_ASH", "WHITE_ASH"),
+	/**
+	 * Uses {@link DustTransition} as DataType
+	 */
+	DUST_COLOR_TRANSITION("DUST_COLOR_TRANSITION", "DUST_COLOR_TRANSITION"),
+	/**
+	 * Uses {@link Vibration} as DataType
+	 */
+	VIBRATION("VIBRATION", "VIBRATION"),
+	FALLING_SPORE_BLOSSOM("FALLING_SPORE_BLOSSOM", "FALLING_SPORE_BLOSSOM"),
+	SPORE_BLOSSOM_AIR("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR"),
+	SMALL_FLAME("SMALL_FLAME", "SMALL_FLAME"),
+	SNOWFLAKE("SNOWFLAKE", "SNOWFLAKE"),
+	DRIPPING_DRIPSTONE_LAVA("DRIPPING_DRIPSTONE_LAVA", "DRIPPING_DRIPSTONE_LAVA"),
+	FALLING_DRIPSTONE_LAVA("FALLING_DRIPSTONE_LAVA", "FALLING_DRIPSTONE_LAVA"),
+	DRIPPING_DRIPSTONE_WATER("DRIPPING_DRIPSTONE_WATER", "DRIPPING_DRIPSTONE_WATER"),
+	FALLING_DRIPSTONE_WATER("FALLING_DRIPSTONE_WATER", "FALLING_DRIPSTONE_WATER"),
+	GLOW_SQUID_INK("GLOW_SQUID_INK", "GLOW_SQUID_INK"),
+	GLOW("GLOW", "GLOW"),
+	WAX_ON("WAX_ON", "WAX_ON"),
+	WAX_OFF("WAX_OFF", "WAX_OFF"),
+	ELECTRIC_SPARK("ELECTRIC_SPARK", "ELECTRIC_SPARK"),
+	SCRAPE("SCRAPE", "SCRAPE"),
+	SONIC_BOOM("SONIC_BOOM", "SONIC_BOOM"),
+	SCULK_SOUL("SCULK_SOUL", "SCULK_SOUL"),
+	/**
+	 * Use {@link Float} as DataType
+	 */
+	SCULK_CHARGE("SCULK_CHARGE", "SCULK_CHARGE"),
+	SCULK_CHARGE_POP("SCULK_CHARGE_POP", "SCULK_CHARGE_POP"),
+	/**
+	 * Use {@link Integer} as DataType
+	 */
+	SHRIEK("SHRIEK", "SHRIEK"),
+	CHERRY_LEAVES("CHERRY_LEAVES", "CHERRY_LEAVES"),
+	EGG_CRACK("EGG_CRACK", "EGG_CRACK"),
+	DUST_PLUME("DUST_PLUME", "DUST_PLUME"),
+	WHITE_SMOKE("WHITE_SMOKE", "WHITE_SMOKE"),
+	GUST("GUST", "GUST"),
+	GUST_EMITTER("GUST_EMITTER", "GUST_EMITTER"),
+	GUST_DUST("GUST_DUST", "GUST_DUST"),
+	TRIAL_SPAWNER_DETECTION("TRIAL_SPAWNER_DETECTION", "TRIAL_SPAWNER_DETECTION"),
+	/**
+	 * Uses {@link BlockData} as DataType
+	 */
+	BLOCK_MARKER("BLOCK_MARKER", "BLOCK_MARKER");
 
 	/**
 	 * Hardcoded values for best performance
@@ -130,6 +169,16 @@ public enum CompParticle {
 	 * The name for Minecraft 1.7.10
 	 */
 	private final String name1_7;
+
+	/**
+	 * The name used until Minecraft 1.20.4
+	 */
+	private final String nameLegacy;
+
+	/**
+	 * The name used since Minecraft 1.20.5
+	 */
+	private final String nameModern;
 
 	/**
 	 * The NMS EnumParticle class cache here for top performance
@@ -151,16 +200,18 @@ public enum CompParticle {
 	/*
 	 * Construct a new compatible particle class
 	 */
-	CompParticle() {
-		this(null);
+	CompParticle(String nameLegacy, String nameModern) {
+		this(null, nameLegacy, nameModern);
 	}
 
 	/*
 	 * Construct a new compatible particle class
 	 */
 	@SuppressWarnings("rawtypes")
-	CompParticle(String name1_7) {
+	CompParticle(String name1_7, String nameLegacy, String nameModern) {
 		this.name1_7 = name1_7;
+		this.nameLegacy = nameLegacy;
+		this.nameModern = nameModern;
 
 		try {
 
@@ -207,7 +258,18 @@ public enum CompParticle {
 			if (MinecraftVersion.atLeast(V.v1_12)) {
 				final Class<Enum> particleClass = ReflectionUtil.lookupClass("org.bukkit.Particle");
 
-				this.bukkitEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
+				Object particleInstance = null;
+
+				if (this.nameModern != null)
+					particleInstance = ReflectionUtil.lookupEnumSilent(particleClass, this.nameModern);
+
+				if (particleInstance == null)
+					particleInstance = ReflectionUtil.lookupEnumSilent(particleClass, this.nameLegacy);
+
+				if (particleInstance == null)
+					particleInstance = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
+
+				this.bukkitEnumParticle = particleInstance;
 
 			} else
 				this.bukkitEnumParticle = null;
@@ -334,6 +396,7 @@ public enum CompParticle {
 		if (this.bukkitEnumParticle != null) {
 			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+
 			else
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 		}

@@ -14,7 +14,6 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.exception.FoException;
 
@@ -23,7 +22,6 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageChannel;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
 
 /**
  * Represents a Discord command sender for Discord integration
@@ -163,10 +161,5 @@ public final class DiscordSender implements CommandSender {
 	@Override
 	public void sendMessage(UUID uuid, String... messages) {
 		this.sendMessage(messages);
-	}
-
-	@Override
-	public @NotNull Component name() {
-		return Component.text(this.name);
 	}
 }

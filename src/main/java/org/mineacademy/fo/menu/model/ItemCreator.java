@@ -32,6 +32,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.remain.CompColor;
+import org.mineacademy.fo.remain.CompEnchantment;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -327,7 +328,8 @@ public final class ItemCreator {
 	}
 
 	/**
-	 * Add the given enchant to the item.
+	 * Add the given enchant to the item. Use {@link CompEnchantment} for
+	 * familiar names.
 	 *
 	 * @param enchantment
 	 * @param level
@@ -695,7 +697,7 @@ public final class ItemCreator {
 				((SkullMeta) compiledMeta).setOwner(this.skullOwner);
 
 			if (this.skullUrl != null)
-				compiledMeta = SkullCreator.metaWithUrl(((SkullMeta) compiledMeta), this.skullUrl);
+				compiledMeta = SkullCreator.metaWithUrl((SkullMeta) compiledMeta, this.skullUrl);
 		}
 
 		if (compiledMeta instanceof BookMeta) {
@@ -723,7 +725,7 @@ public final class ItemCreator {
 
 		if (compiledMeta instanceof ItemMeta) {
 			if (this.glow && this.enchants.isEmpty()) {
-				((ItemMeta) compiledMeta).addEnchant(Enchantment.DURABILITY, 1, true);
+				((ItemMeta) compiledMeta).addEnchant(CompEnchantment.DURABILITY, 1, true);
 
 				this.flags.add(CompItemFlag.HIDE_ENCHANTS);
 			}

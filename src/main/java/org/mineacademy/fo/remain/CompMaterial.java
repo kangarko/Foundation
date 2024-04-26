@@ -2288,7 +2288,7 @@ public enum CompMaterial {
 				else
 					name = "ZOMBIE_PIGMAN_SPAWN_EGG";
 
-			else if (type == EntityType.MUSHROOM_COW)
+			else if (type.name().equals("MUSHROOM_COW") || type.name().equals("MOOSHROOM"))
 				name = "MOOSHROOM_SPAWN_EGG";
 
 			// Parse normally, backwards compatible
@@ -2329,10 +2329,15 @@ public enum CompMaterial {
 				return EntityType.valueOf("PIG_ZOMBIE");
 			}
 
-		else if (name.equals("MOOSHROOM_SPAWN_EGG"))
-			return EntityType.MUSHROOM_COW;
+		else if (name.equals("MOOSHROOM_SPAWN_EGG")) {
+			try {
+				return EntityType.MOOSHROOM;
 
-		else
+			} catch (final Throwable t) {
+				return EntityType.valueOf("MUSHROOM_COW");
+			}
+
+		} else
 			// Parse normally, backwards compatible
 			try {
 				return EntityType.valueOf(name);

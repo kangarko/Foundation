@@ -87,7 +87,6 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -1049,7 +1048,7 @@ public final class Remain {
 			if (t.toString().contains("missing 'text' property"))
 				return;
 
-			throw new RuntimeException("Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json, t);
+			Common.throwError(t, "Malformed JSON when sending message to " + sender.getName() + " with JSON: " + json);
 		}
 	}
 
@@ -1139,7 +1138,7 @@ public final class Remain {
 		}
 
 		try {
-			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, SimpleComponent.of(Common.colorize(text)).build(player));
+			player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Common.colorize(text)));
 
 		} catch (final NoSuchMethodError err) {
 			ChatInternals.sendActionBarLegacy(player, text);
@@ -3140,60 +3139,71 @@ class SneakyThrow {
  */
 class BungeeChatProvider {
 
-	static void sendComponent(final CommandSender sender, final Object comps) {
-		if (comps instanceof TextComponent)
-			sendComponent0(sender, (TextComponent) comps);
+	/**
+	 * Send a JSON component message to the player
+	 *
+	 * @param sender
+	 * @param components
+	 */
+	static void sendComponent(final CommandSender sender, final Object components) {
+		if (components instanceof TextComponent)
+			sendComponent0(sender, (TextComponent) components);
 
 		else
-			sendComponent0(sender, (BaseComponent[]) comps);
+			sendComponent0(sender, (BaseComponent[]) components);
 	}
 
-	private static void sendComponent0(final CommandSender sender, final BaseComponent... comps) {
-		final StringBuilder plainMessage = new StringBuilder();
-
-		for (final BaseComponent comp : comps)
-			plainMessage.append(comp.toLegacyText().replaceAll(ChatColor.COLOR_CHAR + "x", ""));
+	private static void sendComponent0(final CommandSender sender, final BaseComponent... components) {
 
 		if (!(sender instanceof Player)) {
-			tell0(sender, plainMessage.toString());
+			sendAsPlain(sender, components);
 
 			return;
 		}
 
 		try {
-			if (MinecraftVersion.equals(V.v1_7)) {
+			((Player) sender).spigot().sendMessage(components);
+
+		} catch (final Throwable ex) {
+
+			if (MinecraftVersion.olderThan(V.v1_7))
+				sendAsPlain(sender, components);
+
+			// This is the minimum MC version that supports interactive chat
+			else if (MinecraftVersion.equals(V.v1_7)) {
 				final Class<?> chatBaseComponentClass = getNMSClass("IChatBaseComponent", "N/A");
 				final Class<?> packetClass = getNMSClass("PacketPlayOutChat", "N/A");
 
-				final Object chatBaseComponent = Remain.toIChatBaseComponent(comps);
+				final Object chatBaseComponent = Remain.toIChatBaseComponent(components);
 				final Object packet = ReflectionUtil.instantiate(ReflectionUtil.getConstructor(packetClass, chatBaseComponentClass), chatBaseComponent);
 
 				Remain.sendPacket((Player) sender, packet);
 
-			} else
-				((Player) sender).spigot().sendMessage(comps);
+			} else {
 
-		} catch (final Throwable ex) {
+				// Ignore Cauldron
+				if (!Bukkit.getName().contains("Cauldron"))
+					Common.throwError(ex, "Failed to send component: " + TextComponent.toLegacyText(components) + " to " + sender.getName());
 
-			// This is the minimum MC version that supports interactive chat
-			// Ignoring Cauldron
-			if (MinecraftVersion.atLeast(V.v1_7) && !Bukkit.getName().contains("Cauldron"))
-				Common.throwError(ex, "Failed to send component: " + plainMessage.toString() + " to " + sender.getName());
-
-			tell0(sender, plainMessage.toString());
+				sendAsPlain(sender, components);
+			}
 		}
 	}
 
-	private static void tell0(final CommandSender sender, final String msg) {
-		Valid.checkNotNull(sender, "Sender cannot be null");
+	private static void sendAsPlain(final CommandSender sender, final BaseComponent... components) {
+		final StringBuilder plain = new StringBuilder();
 
-		if (msg.isEmpty() || "none".equals(msg))
-			return;
+		for (final BaseComponent component : components)
+			plain.append(component.toLegacyText().replaceAll(ChatColor.COLOR_CHAR + "x", ""));
 
-		final String stripped = msg.startsWith("[JSON]") ? msg.replaceFirst("\\[JSON\\]", "").trim() : msg;
+		final String message = plain.toString();
 
-		for (final String part : stripped.split("\n"))
-			sender.sendMessage(part);
+		if (!message.isEmpty() && !"none".equals(message)) {
+			final String stripped = message.startsWith("[JSON]") ? message.replaceFirst("\\[JSON\\]", "").trim() : message;
+
+			for (final String part : stripped.split("\n"))
+				sender.sendMessage(part);
+		}
 	}
 }
 
@@ -3298,15 +3308,30 @@ class PotionSetter {
 		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
 		final PotionType wrapped = PotionType.getByEffect(type);
 
-		try {
-			if (level > 0 && wrapped == null) {
-				final org.bukkit.potion.PotionData data = new org.bukkit.potion.PotionData(level > 0 && wrapped != null ? wrapped : PotionType.WATER);
+		if (wrapped != null && MinecraftVersion.olderThan(V.v1_20))
+			try {
+				meta.setBasePotionType(wrapped);
 
-				meta.setBasePotionData(data);
-				meta.addEnchant(Enchantment.DURABILITY, 1, true);
+			} catch (final NoSuchMethodError ex) {
 			}
 
-		} catch (final NoSuchMethodError | NoClassDefFoundError ex) {
+		if (level > 0 && wrapped == null) {
+			Class<?> potionDataClass = null;
+
+			try {
+				potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
+			} catch (final Exception e) {
+			}
+
+			if (potionDataClass != null) {
+				final Constructor<?> potionConst = ReflectionUtil.getConstructor(potionDataClass, PotionType.class, boolean.class, boolean.class);
+				final Object potionData = ReflectionUtil.instantiate(potionConst, level > 0 && wrapped != null ? wrapped : PotionType.WATER, false, false);
+				final Method setBasePotionData = ReflectionUtil.getMethod(meta.getClass(), "setBasePotionData", potionDataClass);
+
+				ReflectionUtil.invoke(setBasePotionData, meta, potionData);
+			}
+
+			meta.addEnchant(CompEnchantment.DURABILITY, 1, true);
 		}
 
 		// For some reason this does not get added so we have to add it manually on top of the lore
@@ -3321,7 +3346,7 @@ class PotionSetter {
 			meta.setLore(lore);
 		}
 
-		meta.setMainEffect(type);
+		//meta.setMainEffect(type);
 		meta.addCustomEffect(new PotionEffect(type, durationTicks, level - 1), true);
 
 		item.setItemMeta(meta);
