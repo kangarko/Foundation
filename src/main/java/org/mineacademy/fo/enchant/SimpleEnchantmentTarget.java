@@ -4,12 +4,16 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.remain.CompMaterial;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public enum SimpleEnchantmentTarget {
 
 	/**
 	 * Allows the Enchantment to be placed on armor
 	 */
-	ARMOR {
+	ARMOR("enchantable/armor") {
 		@Override
 		public boolean includes(Material item) {
 			return ARMOR_FEET.includes(item)
@@ -22,7 +26,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on feet slot armor
 	 */
-	ARMOR_FEET {
+	ARMOR_FEET("enchantable/foot_armor") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(Material.LEATHER_BOOTS)
@@ -37,7 +41,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on leg slot armor
 	 */
-	ARMOR_LEGS {
+	ARMOR_LEGS("enchantable/leg_armor") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(Material.LEATHER_LEGGINGS)
@@ -52,7 +56,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on torso slot armor
 	 */
-	ARMOR_CHEST {
+	ARMOR_CHEST("enchantable/chest_armor") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(Material.LEATHER_CHESTPLATE)
@@ -67,7 +71,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on head slot armor
 	 */
-	ARMOR_HEAD {
+	ARMOR_HEAD("enchantable/head_armor") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(Material.LEATHER_HELMET)
@@ -83,7 +87,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on weapons (swords)
 	 */
-	WEAPON {
+	WEAPON("enchantable/sharp_weapon") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.WOODEN_SWORD.getMaterial())
@@ -98,7 +102,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on tools (spades, pickaxe, axes)
 	 */
-	DIGGER {
+	DIGGER("enchantable/mining") {
 		@Override
 		public boolean includes(Material item) {
 			return SHOVEL.includes(item)
@@ -111,7 +115,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on Shovel tools.
 	 */
-	SHOVEL {
+	SHOVEL("shovels") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.WOODEN_SHOVEL.getMaterial())
@@ -126,7 +130,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on Pickaxe tools.
 	 */
-	PICKAXE {
+	PICKAXE("pickaxes") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.WOODEN_PICKAXE.getMaterial())
@@ -141,7 +145,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on Hoe tools.
 	 */
-	AXE {
+	AXE("axes") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.WOODEN_AXE.getMaterial())
@@ -156,7 +160,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on Hoe tools.
 	 */
-	HOE {
+	HOE("hoes") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.WOODEN_HOE.getMaterial())
@@ -171,7 +175,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on bows.
 	 */
-	BOW {
+	BOW("enchantable/bow") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(Material.BOW);
@@ -181,7 +185,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on fishing rods.
 	 */
-	FISHING_ROD {
+	FISHING_ROD("enchantable/fishing") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(Material.FISHING_ROD);
@@ -191,7 +195,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the enchantment to be placed on items with durability.
 	 */
-	BREAKABLE {
+	BREAKABLE("enchantable/durability") {
 		@Override
 		public boolean includes(Material item) {
 			return item.getMaxDurability() > 0 && item.getMaxStackSize() == 1;
@@ -201,7 +205,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the enchantment to be placed on wearable items.
 	 */
-	WEARABLE {
+	WEARABLE("enchantable/equippable") {
 		@Override
 		public boolean includes(Material item) {
 			return ARMOR.includes(item)
@@ -220,7 +224,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allows the Enchantment to be placed on Elytra's.
 	 */
-	ELYTRA {
+	ELYTRA("enchantable/mace") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.ELYTRA.getMaterial());
@@ -230,7 +234,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allow the Enchantment to be placed on tridents.
 	 */
-	TRIDENT {
+	TRIDENT("enchantable/trident") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.TRIDENT.getMaterial());
@@ -240,7 +244,7 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allow the Enchantment to be placed on crossbows.
 	 */
-	CROSSBOW {
+	CROSSBOW("enchantable/crossbow") {
 		@Override
 		public boolean includes(Material item) {
 			return item.equals(CompMaterial.CROSSBOW.getMaterial());
@@ -250,10 +254,10 @@ public enum SimpleEnchantmentTarget {
 	/**
 	 * Allow the Enchantment to be placed on vanishing items.
 	 */
-	VANISHABLE {
+	VANISHABLE("enchantable/vanishing") {
 		@Override
 		public boolean includes(Material item) {
-			return BREAKABLE.includes(item) || (WEARABLE.includes(item) && !item.equals(CompMaterial.ELYTRA.getMaterial())) || item.equals(Material.COMPASS);
+			return BREAKABLE.includes(item) || WEARABLE.includes(item) && !item.equals(CompMaterial.ELYTRA.getMaterial()) || item.equals(Material.COMPASS);
 		}
 	},
 
@@ -261,12 +265,15 @@ public enum SimpleEnchantmentTarget {
 	 * @deprecated use {@link #DIGGER}
 	 */
 	@Deprecated
-	TOOL {
+	TOOL("enchantable/mining") {
 		@Override
 		public boolean includes(Material item) {
 			throw new RuntimeException("Please use SimpleEnchantmentTarget.DIGGER");
 		}
 	};
+
+	@Getter
+	private final String nmsName;
 
 	public abstract boolean includes(Material item);
 
