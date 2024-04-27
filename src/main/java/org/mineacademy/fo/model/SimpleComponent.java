@@ -67,6 +67,11 @@ public final class SimpleComponent implements ConfigSerializable {
 	private boolean firingEvent = false;
 
 	/**
+	 * Shall this component ignore empty components? Defaults to false
+	 */
+	private boolean ignoreEmpty = false;
+
+	/**
 	 * Create a new interactive chat component
 	 *
 	 * @param text
@@ -473,7 +478,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			final String legacy = Common.colorize(component.toLegacyText());
 
-			if (Common.stripColors(legacy).trim().isEmpty()) {
+			if (Common.stripColors(legacy).trim().isEmpty() && this.ignoreEmpty) {
 				Debugger.debug("component", "Message is empty, skipping.");
 
 				continue;
@@ -542,6 +547,18 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public SimpleComponent setFiringEvent(final boolean firingEvent) {
 		this.firingEvent = firingEvent;
+
+		return this;
+	}
+
+	/**
+	 * Set if this component should ignore empty components? Defaults to false
+	 *
+	 * @param ignoreEmpty
+	 * @return
+	 */
+	public SimpleComponent setIgnoreEmpty(final boolean ignoreEmpty) {
+		this.ignoreEmpty = ignoreEmpty;
 
 		return this;
 	}
