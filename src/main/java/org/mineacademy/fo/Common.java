@@ -1844,7 +1844,8 @@ public final class Common {
 				} else
 					break;
 
-			pages.put(i, pageItems);
+			if (!pageItems.isEmpty())
+				pages.put(i, pageItems);
 		}
 
 		return pages;
