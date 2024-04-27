@@ -483,6 +483,8 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param handleClass
 	 */
 	public static void registerEnchantmentHandle(Class<? extends NmsEnchant> handleClass) {
+		Remain.unfreezeEnchantRegistry();
+
 		SimpleEnchantment.handleClass = handleClass;
 	}
 
