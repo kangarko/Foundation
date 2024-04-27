@@ -79,7 +79,7 @@ public enum CompParticle {
 	DAMAGE_INDICATOR("DAMAGE_INDICATOR", "DAMAGE_INDICATOR"),
 	SWEEP_ATTACK("SWEEP_ATTACK", "SWEEP_ATTACK"),
 	/**
-	 * Uses {@link BlockData} as DataType
+	 * Uses BlockData as DataType
 	 */
 	FALLING_DUST("FALLING_DUST", "FALLING_DUST"),
 	TOTEM("TOTEM", "TOTEM_OF_UNDYING"),
@@ -154,7 +154,7 @@ public enum CompParticle {
 	GUST_DUST("GUST_DUST", "GUST_DUST"),
 	TRIAL_SPAWNER_DETECTION("TRIAL_SPAWNER_DETECTION", "TRIAL_SPAWNER_DETECTION"),
 	/**
-	 * Uses {@link BlockData} as DataType
+	 * Uses BlockData as DataType
 	 */
 	BLOCK_MARKER("BLOCK_MARKER", "BLOCK_MARKER");
 
