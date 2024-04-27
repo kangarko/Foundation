@@ -303,6 +303,7 @@ final class AutoRegisterScanner {
 
 		else if (SimpleCommand.class.isAssignableFrom(clazz))
 			plugin.registerCommand((SimpleCommand) instance);
+
 		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
 			final SimpleCommandGroup group = (SimpleCommandGroup) instance;
 
@@ -342,6 +343,7 @@ final class AutoRegisterScanner {
 		else if (DiscordListener.class.isAssignableFrom(clazz))
 			// Automatically registered in its constructor
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+
 		else if (SimpleEnchantment.class.isAssignableFrom(clazz)) {
 
 			// Automatically registered in its constructor

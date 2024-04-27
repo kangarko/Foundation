@@ -96,6 +96,7 @@ import org.mineacademy.fo.remain.nbt.NBTEntity;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import lombok.Getter;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -261,6 +262,12 @@ public final class Remain {
 	 * Return true if we are on mojang remapped server
 	 */
 	private static boolean isUsingMojangMappings = false;
+
+	/**
+	 * Must manually unfreeze in your plugin, resolves https://github.com/kangarko/ChatControl-Red/issues/2662
+	 */
+	@Getter
+	private static boolean enchantRegistryUnfrozen = false;
 
 	// Singleton
 	private Remain() {
@@ -2662,6 +2669,8 @@ public final class Remain {
 
 			clearLegacyEnchantMap();
 		}
+
+		enchantRegistryUnfrozen = true;
 	}
 
 	/**
