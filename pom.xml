@@ -10,7 +10,7 @@
 
     <groupId>org.mineacademy</groupId>
     <artifactId>Foundation</artifactId>
-    <version>6.7.7</version>
+    <version>6.7.8</version>
     <packaging>jar</packaging>
 
     <name>Foundation</name>
@@ -27,9 +27,9 @@
             <url>https://bitbucket.org/kangarko/libraries/raw/master</url>
         </repository>
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
+	    <id>papermc</id>
+	    <url>https://repo.papermc.io/repository/maven-public/</url>
+	</repository>
         <repository>
             <id>minecraft-libraries</id>
             <url>https://libraries.minecraft.net</url>
@@ -72,10 +72,10 @@
 
         <!-- The core Spigot-API -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.20.5-R0.1-SNAPSHOT</version>
-        </dependency>
+	   <groupId>io.papermc.paper</groupId>
+	   <artifactId>paper-api</artifactId>
+	   <version>1.20.5-R0.1-SNAPSHOT</version>
+	</dependency>
 
         <!-- MineAcademy guaranteed availability repos for plugins -->
         <dependency>
