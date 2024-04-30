@@ -18,19 +18,18 @@ public class NBTFile extends NBTCompound {
 	/**
 	 * Creates a NBTFile that uses @param file to store its data. If this file
 	 * exists, the data will be loaded.
-	 *
+	 * 
 	 * @param file
 	 * @throws IOException
 	 */
 	public NBTFile(File file) throws IOException {
 		super(null, null);
-		if (file == null) {
+		if (file == null)
 			throw new NullPointerException("File can't be null!");
-		}
 		this.file = file;
-		if (file.exists()) {
+		if (file.exists())
 			nbt = NBTReflectionUtil.readNBT(Files.newInputStream(file.toPath()));
-		} else {
+		else {
 			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 			save();
 		}
@@ -38,7 +37,7 @@ public class NBTFile extends NBTCompound {
 
 	/**
 	 * Saves the data to the file
-	 *
+	 * 
 	 * @throws IOException
 	 */
 	public void save() throws IOException {

@@ -13,12 +13,6 @@ public class NbtApiException extends RuntimeException {
 	 *
 	 */
 	private static final long serialVersionUID = -993309714559452334L;
-	/**
-	 * Keep track of the plugin selfcheck. Null = not
-	 * checked(silentquickstart/shaded) true = selfcheck failed false = everything
-	 * should be fine, but apparently wasn't?
-	 */
-	public static Boolean confirmedBroken = null;
 
 	/**
 	 *

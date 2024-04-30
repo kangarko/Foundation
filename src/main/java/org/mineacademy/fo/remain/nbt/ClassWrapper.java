@@ -9,6 +9,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
+
 enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
@@ -92,12 +93,11 @@ enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())) {
+		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()))
 			return;
-		}
 		enabled = true;
 		try {
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1) && mojangName != null) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1) && mojangName != null)
 				// check for Mojmapped enviroment
 				try {
 					clazz = Class.forName(mojangName);
@@ -105,18 +105,17 @@ enum ClassWrapper {
 				} catch (final ClassNotFoundException ex) {
 					// ignored, not mojang mapped
 				}
-			}
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && mojangMap != null) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && mojangMap != null)
 				clazz = Class.forName(mojangMap + "." + clazzName);
-			} else if (packageId == PackageWrapper.NONE) {
+			else if (packageId == PackageWrapper.NONE)
 				clazz = Class.forName(clazzName);
-			} else if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4
-					&& Forge1710Mappings.getClassMappings().get(this.name()) != null) {
+			else if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4
+					&& Forge1710Mappings.getClassMappings().get(this.name()) != null)
 				clazz = Class.forName(clazzName = Forge1710Mappings.getClassMappings().get(this.name()));
-			} else if (packageId == PackageWrapper.CRAFTBUKKIT) {
+			else if (packageId == PackageWrapper.CRAFTBUKKIT)
 				// this also works for un-remapped Paper 1.20+
 				clazz = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + "." + clazzName);
-			} else {
+			else {
 				// fallback for old versions pre mojmap and in the nms package
 				final String version = MinecraftVersion.getVersion().getPackageName();
 				clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);

@@ -1,6 +1,6 @@
 package org.mineacademy.fo.remain.nbt;
 
-final class CheckUtil {
+class CheckUtil {
 
 	private CheckUtil() {
 		// util

@@ -22,9 +22,8 @@ public class NBTBlock {
 
 	public NBTBlock(Block block) {
 		this.block = block;
-		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3)) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3))
 			throw new NbtApiException("NBTBlock is only working for 1.16.4+!");
-		}
 		nbtChunk = new NBTChunk(block.getChunk());
 	}
 

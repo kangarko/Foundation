@@ -31,14 +31,14 @@ class DefaultMethodInvoker {
 	 * @return
 	 */
 	public static Object invokeDefault(Class<?> srcInt, Object target, Method method, Object[] args) {
-		if (invokeDefaultMethod != null) { // java 9+
+		if (invokeDefaultMethod != null)
 			try {
 				return invokeDefaultMethod.invoke(null, target, method, args);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				throw new NbtApiException("Error while trying to invoke a default method for Java 9+. " + target + " "
 						+ method + " " + Arrays.toString(args), e);
 			}
-		} else {
+		else
 			try {
 				final Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
 				constructor.setAccessible(true);
@@ -48,7 +48,6 @@ class DefaultMethodInvoker {
 				throw new NbtApiException("Error while trying to invoke a default method for Java 8. " + target + " "
 						+ method + " " + Arrays.toString(args), e);
 			}
-		}
 	}
 
 }

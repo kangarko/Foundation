@@ -25,23 +25,21 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Takes in any NMS Compound to wrap it
-	 *
+	 * 
 	 * @param nbt
 	 */
 	public NBTContainer(Object nbt) {
 		super(null, null);
-		if (nbt == null) {
+		if (nbt == null)
 			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
-		}
-		if (!ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass())) {
+		if (!ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass()))
 			throw new NbtApiException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
-		}
 		this.nbt = nbt;
 	}
 
 	/**
 	 * Reads in a NBT InputStream
-	 *
+	 * 
 	 * @param inputsteam
 	 */
 	public NBTContainer(InputStream inputsteam) {
@@ -52,14 +50,13 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
 	 * {@link NbtApiException} in case something goes wrong.
-	 *
+	 * 
 	 * @param nbtString
 	 */
 	public NBTContainer(String nbtString) {
 		super(null, null);
-		if (nbtString == null) {
+		if (nbtString == null)
 			throw new NullPointerException("The String can't be null!");
-		}
 		try {
 			nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
 		} catch (final Exception ex) {

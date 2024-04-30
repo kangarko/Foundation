@@ -21,9 +21,8 @@ public class NBTHandlers {
 		@Override
 		public ItemStack get(ReadableNBT nbt, String key) {
 			final ReadableNBT tag = nbt.getCompound(key);
-			if (tag != null) {
+			if (tag != null)
 				return NBT.itemStackFromNBT(tag);
-			}
 			return null;
 		}
 
