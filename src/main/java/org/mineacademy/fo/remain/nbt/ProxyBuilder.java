@@ -20,9 +20,8 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 	private boolean readOnly;
 
 	public ProxyBuilder(ReadWriteNBT nbt, Class<T> target) {
-		if (!target.isInterface()) {
+		if (!target.isInterface())
 			throw new NbtApiException("A proxy can only be built from an interface! Check the wiki for examples.");
-		}
 		this.target = target;
 		this.nbt = nbt;
 	}
@@ -60,23 +59,19 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
 	private static Function<Arguments, Object> createFunction(NBTProxy proxy, Method method) {
 		if ("toString".equals(method.getName()) && method.getParameterCount() == 0
-				&& method.getReturnType() == String.class) {
+				&& method.getReturnType() == String.class)
 			return arguments -> arguments.nbt.toString();
-		}
-		if (method.isDefault()) {
+		if (method.isDefault())
 			return arguments -> DefaultMethodInvoker.invokeDefault(arguments.target, arguments.proxy, method,
 					arguments.args);
-		}
 		final Type action = getAction(method);
 		if (action == Type.SET) {
 			final String fieldName = getNBTName(proxy.getCasing(), method);
 			return arguments -> {
-				if (arguments.readOnly) {
+				if (arguments.readOnly)
 					throw new NbtApiException("Tried calling a set method on a read only object.");
-				}
 				return setNBT(arguments.nbt, arguments.proxy, fieldName, arguments.args[0]);
 			};
 		}
@@ -84,29 +79,25 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 			final Class<?> retType = method.getReturnType();
 			final String fieldName = getNBTName(proxy.getCasing(), method);
 			// Allow stacking of proxies
-			if (retType.isInterface() && NBTProxy.class.isAssignableFrom(retType)) {
+			if (retType.isInterface() && NBTProxy.class.isAssignableFrom(retType))
 				return arguments -> {
-					if (arguments.nbt.hasTag(fieldName) && arguments.nbt.getType(fieldName) != NBTType.NBTTagCompound) {
+					if (arguments.nbt.hasTag(fieldName) && arguments.nbt.getType(fieldName) != NBTType.NBTTagCompound)
 						throw new NbtApiException("Tried getting a '" + retType + "' proxy from the field '" + fieldName
 								+ "', but it's not a TagCompound!");
-					}
 					return new ProxyBuilder<>(arguments.nbt.getOrCreateCompound(fieldName),
 							(Class<NBTProxy>) retType).build();
 				};
-			}
 			if (retType == ProxyList.class) {
 
 				final Class<?> parameterType = (Class<?>) ((ParameterizedType) method.getGenericReturnType())
 						.getActualTypeArguments()[0];
 				if (parameterType != null && parameterType.isInterface()
-						&& NBTProxy.class.isAssignableFrom(parameterType)) {
+						&& NBTProxy.class.isAssignableFrom(parameterType))
 					return arguments -> new ProxiedList(arguments.nbt.getCompoundList(fieldName), parameterType);
-				}
 			}
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(retType);
-			if (handler != null) {
+			if (handler != null)
 				return arguments -> handler.get(arguments.nbt, fieldName);
-			}
 			return arguments -> arguments.nbt.getOrNull(fieldName, retType);
 		}
 		if (action == Type.HAS) {
@@ -122,80 +113,72 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 		final NBTTarget target = method.getAnnotation(NBTTarget.class);
 		if (target != null) {
 			if (target.type() == Type.HAS && method.getParameterCount() == 0
-					&& method.getReturnType() == boolean.class) {
+					&& method.getReturnType() == boolean.class)
 				return Type.HAS;
-			}
-			if (target.type() == Type.GET && method.getParameterCount() == 0) {
+			if (target.type() == Type.GET && method.getParameterCount() == 0)
 				return Type.GET;
-			}
-			if (target.type() == Type.SET && method.getParameterCount() == 1) {
+			if (target.type() == Type.SET && method.getParameterCount() == 1)
 				return Type.SET;
-			}
 		}
-		if (method.getName().startsWith("set") && method.getParameterCount() == 1) {
+		if (method.getName().startsWith("set") && method.getParameterCount() == 1)
 			return Type.SET;
-		}
-		if (method.getName().startsWith("get") && method.getParameterCount() == 0) {
+		if (method.getName().startsWith("get") && method.getParameterCount() == 0)
 			return Type.GET;
-		}
 		if (method.getName().startsWith("has") && method.getParameterCount() == 0
-				&& method.getReturnType() == boolean.class) {
+				&& method.getReturnType() == boolean.class)
 			return Type.HAS;
-		}
 		return null;
 	}
 
 	private static String getNBTName(Casing casing, Method method) {
 		final NBTTarget target = method.getAnnotation(NBTTarget.class);
-		if (target != null) {
+		if (target != null)
 			return target.value();
-		}
 		return casing.convertString(method.getName().substring(3));
 	}
 
 	private static Object setNBT(ReadWriteNBT nbt, NBTProxy proxy, String key, Object value) {
 		// welcome to the "I wish we all could use java 17" method. Thanks, legacy mc
 		// versions
-		if (value == null) {
+		if (value == null)
 			nbt.removeKey(key);
-		} else if (value instanceof Boolean) {
+		else if (value instanceof Boolean)
 			nbt.setBoolean(key, (Boolean) value);
-		} else if (value instanceof Byte) {
+		else if (value instanceof Byte)
 			nbt.setByte(key, (Byte) value);
-		} else if (value instanceof Short) {
+		else if (value instanceof Short)
 			nbt.setShort(key, (Short) value);
-		} else if (value instanceof Integer) {
+		else if (value instanceof Integer)
 			nbt.setInteger(key, (Integer) value);
-		} else if (value instanceof Long) {
+		else if (value instanceof Long)
 			nbt.setLong(key, (Long) value);
-		} else if (value instanceof Float) {
+		else if (value instanceof Float)
 			nbt.setFloat(key, (Float) value);
-		} else if (value instanceof Double) {
+		else if (value instanceof Double)
 			nbt.setDouble(key, (Double) value);
-		} else if (value instanceof byte[]) {
+		else if (value instanceof byte[])
 			nbt.setByteArray(key, (byte[]) value);
-		} else if (value instanceof int[]) {
+		else if (value instanceof int[])
 			nbt.setIntArray(key, (int[]) value);
-		} else if (value instanceof long[]) {
+		else if (value instanceof long[])
 			nbt.setLongArray(key, (long[]) value);
-		} else if (value instanceof String) {
+		else if (value instanceof String)
 			nbt.setString(key, (String) value);
-		} else if (value instanceof UUID) {
+		else if (value instanceof UUID)
 			nbt.setUUID(key, (UUID) value);
-		} else if (value.getClass().isEnum()) {
+		else if (value.getClass().isEnum())
 			nbt.setEnum(key, (Enum<?>) value);
-		} else {
+		else {
 
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(value.getClass());
-			if (handler != null) {
+			if (handler != null)
 				handler.set(nbt, key, value);
-			} else {
-				for (final NBTHandler<Object> nbth : proxy.getHandlers()) {
+			else {
+				for (final NBTHandler<Object> nbth : proxy.getHandlers())
 					if (nbth.fuzzyMatch(value)) {
 						nbth.set(nbt, key, value);
 						return null;
 					}
-				}
 				throw new IllegalArgumentException("Tried setting an object of type '" + value.getClass().getName()
 						+ "'. This is not a supported NBT value. Please check the Wiki for examples!");
 			}

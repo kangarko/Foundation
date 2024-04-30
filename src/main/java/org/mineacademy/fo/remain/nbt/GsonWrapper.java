@@ -12,7 +12,7 @@ import com.google.gson.Gson;
  *
  */
 @Deprecated
-final class GsonWrapper {
+class GsonWrapper {
 
 	/**
 	 * Private constructor
@@ -46,9 +46,8 @@ final class GsonWrapper {
 	 */
 	public static <T> T deserializeJson(String json, Class<T> type) {
 		try {
-			if (json == null) {
+			if (json == null)
 				return null;
-			}
 
 			final T obj = gson.fromJson(json, type);
 			return type.cast(obj);

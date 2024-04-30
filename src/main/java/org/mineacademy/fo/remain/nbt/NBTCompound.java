@@ -56,24 +56,20 @@ public class NBTCompound implements ReadWriteNBT {
 	}
 
 	protected void setResolvedObject(Object object) {
-		if (isClosed()) {
+		if (isClosed())
 			throw new NbtApiException("Tried using closed NBT data!");
-		}
-		if (readOnly) {
+		if (readOnly)
 			this.readOnlyCache = object;
-		}
 	}
 
 	protected void setClosed() {
-		if (parent != null) {
+		if (parent != null)
 			parent.setClosed();
-		}
 	}
 
 	protected boolean isClosed() {
-		if (parent != null) {
+		if (parent != null)
 			return parent.isClosed();
-		}
 		return false;
 	}
 
@@ -82,22 +78,18 @@ public class NBTCompound implements ReadWriteNBT {
 	}
 
 	protected Object getResolvedObject() {
-		if (isClosed()) {
+		if (isClosed())
 			throw new NbtApiException("Tried using closed NBT data!");
-		}
-		if (readOnlyCache != null) {
+		if (readOnlyCache != null)
 			return readOnlyCache;
-		}
 		final Object rootnbttag = getCompound();
-		if (rootnbttag == null) {
+		if (rootnbttag == null)
 			return null;
-		}
 		if (!NBTReflectionUtil.valideCompound(this))
 			throw new NbtApiException("The Compound wasn't able to be linked back to the root!");
 		final Object workingtag = NBTReflectionUtil.getToCompount(rootnbttag, this);
-		if (readOnly) {
+		if (readOnly)
 			this.readOnlyCache = workingtag;
-		}
 		return workingtag;
 	}
 
@@ -133,9 +125,8 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @param comp
 	 */
 	public void mergeCompound(NBTCompound comp) {
-		if (comp == null) {
+		if (comp == null)
 			return;
-		}
 		try {
 			writeLock.lock();
 			NBTReflectionUtil.mergeOtherNBTCompound(this, comp);
@@ -147,11 +138,10 @@ public class NBTCompound implements ReadWriteNBT {
 
 	@Override
 	public void mergeCompound(ReadableNBT comp) {
-		if (comp instanceof NBTCompound) {
+		if (comp instanceof NBTCompound)
 			mergeCompound((NBTCompound) comp);
-		} else {
+		else
 			throw new NbtApiException("Unknown NBT object: " + comp);
-		}
 	}
 
 	/**
@@ -648,11 +638,10 @@ public class NBTCompound implements ReadWriteNBT {
 	public void setUUID(String key, UUID value) {
 		try {
 			writeLock.lock();
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1)) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1))
 				NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_UUID, key, value);
-			} else {
+			else
 				setString(key, value.toString());
-			}
 			saveCompound();
 		} finally {
 			writeLock.unlock();
@@ -670,17 +659,16 @@ public class NBTCompound implements ReadWriteNBT {
 		try {
 			readLock.lock();
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1)
-					&& getType(key) == NBTType.NBTTagIntArray) {
+					&& getType(key) == NBTType.NBTTagIntArray)
 				return (UUID) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_UUID, key);
-			} else if (getType(key) == NBTType.NBTTagString) {
+			else if (getType(key) == NBTType.NBTTagString)
 				try {
 					return UUID.fromString(getString(key));
 				} catch (final IllegalArgumentException ex) {
 					return null;
 				}
-			} else {
+			else
 				return null;
-			}
 		} finally {
 			readLock.unlock();
 		}
@@ -1057,27 +1045,22 @@ public class NBTCompound implements ReadWriteNBT {
 			final PathSegment segment = keys.get(i);
 			if (!segment.hasIndex()) {
 				tag = tag.getCompound(segment.getPath());
-				if (tag == null) {
+				if (tag == null)
 					return null;
-				}
-			} else {
-				if (tag.getType(segment.getPath()) == NBTType.NBTTagList
-						&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
-					final NBTCompoundList list = tag.getCompoundList(segment.getPath());
-					if (segment.getIndex() >= 0) {
-						tag = list.get(segment.getIndex());
-					} else {
-						tag = list.get(list.size() + segment.getIndex());
-					}
-				}
+			} else if (tag.getType(segment.getPath()) == NBTType.NBTTagList
+					&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
+				final NBTCompoundList list = tag.getCompoundList(segment.getPath());
+				if (segment.getIndex() >= 0)
+					tag = list.get(segment.getIndex());
+				else
+					tag = list.get(list.size() + segment.getIndex());
 			}
 		}
 		final PathSegment segment = keys.get(keys.size() - 1);
-		if (!segment.hasIndex()) {
+		if (!segment.hasIndex())
 			return tag.getOrNull(segment.getPath(), type);
-		} else {
+		else
 			return getIndexedValue(tag, segment, (Class<T>) type);
-		}
 	}
 
 	@Override
@@ -1088,27 +1071,22 @@ public class NBTCompound implements ReadWriteNBT {
 			final PathSegment segment = keys.get(i);
 			if (!segment.hasIndex()) {
 				tag = tag.getCompound(segment.getPath());
-				if (tag == null) {
+				if (tag == null)
 					return defaultValue;
-				}
-			} else {
-				if (tag.getType(segment.getPath()) == NBTType.NBTTagList
-						&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
-					final NBTCompoundList list = tag.getCompoundList(segment.getPath());
-					if (segment.getIndex() >= 0) {
-						tag = list.get(segment.getIndex());
-					} else {
-						tag = list.get(list.size() + segment.getIndex());
-					}
-				}
+			} else if (tag.getType(segment.getPath()) == NBTType.NBTTagList
+					&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
+				final NBTCompoundList list = tag.getCompoundList(segment.getPath());
+				if (segment.getIndex() >= 0)
+					tag = list.get(segment.getIndex());
+				else
+					tag = list.get(list.size() + segment.getIndex());
 			}
 		}
 		final PathSegment segment = keys.get(keys.size() - 1);
-		if (!segment.hasIndex()) {
+		if (!segment.hasIndex())
 			return tag.getOrDefault(segment.getPath(), defaultValue);
-		} else {
+		else
 			return getIndexedValue(tag, segment, (Class<T>) defaultValue.getClass());
-		}
 	}
 
 	// FIXME: before I'm even done writing this method, this sucks. Needs refactoring at some point
@@ -1116,114 +1094,101 @@ public class NBTCompound implements ReadWriteNBT {
 	private <T> T getIndexedValue(NBTCompound comp, PathSegment segment, Class<T> type) {
 		if (type == String.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
-					&& comp.getListType(segment.getPath()) == NBTType.NBTTagString) {
-				if (segment.getIndex() >= 0) {
+					&& comp.getListType(segment.getPath()) == NBTType.NBTTagString)
+				if (segment.getIndex() >= 0)
 					return (T) comp.getStringList(segment.getPath()).get(segment.getIndex());
-				} else {
+				else {
 					final List<String> list = comp.getStringList(segment.getPath());
 					return (T) list.get(list.size() + segment.getIndex());
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		if (type == int.class || type == Integer.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
 					&& comp.getListType(segment.getPath()) == NBTType.NBTTagInt) {
-				if (segment.getIndex() >= 0) {
+				if (segment.getIndex() >= 0)
 					return (T) comp.getIntegerList(segment.getPath()).get(segment.getIndex());
-				} else {
+				else {
 					final List<Integer> list = comp.getIntegerList(segment.getPath());
 					return (T) list.get(list.size() + segment.getIndex());
 				}
-			} else if (comp.getType(segment.getPath()) == NBTType.NBTTagIntArray) {
+			} else if (comp.getType(segment.getPath()) == NBTType.NBTTagIntArray)
 				if (segment.getIndex() >= 0) {
 					final int[] array = comp.getIntArray(segment.getPath());
-					if (array != null) {
+					if (array != null)
 						return (T) (Integer) array[segment.getIndex()];
-					}
 				} else {
 					final int[] array = comp.getIntArray(segment.getPath());
-					if (array != null) {
+					if (array != null)
 						return (T) (Integer) array[array.length + segment.getIndex()];
-					}
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		if (type == long.class || type == Long.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
 					&& comp.getListType(segment.getPath()) == NBTType.NBTTagLong) {
-				if (segment.getIndex() >= 0) {
+				if (segment.getIndex() >= 0)
 					return (T) comp.getLongList(segment.getPath()).get(segment.getIndex());
-				} else {
+				else {
 					final List<Long> list = comp.getLongList(segment.getPath());
 					return (T) list.get(list.size() + segment.getIndex());
 				}
-			} else if (comp.getType(segment.getPath()) == NBTType.NBTTagLongArray) {
+			} else if (comp.getType(segment.getPath()) == NBTType.NBTTagLongArray)
 				if (segment.getIndex() >= 0) {
 					final long[] array = comp.getLongArray(segment.getPath());
-					if (array != null) {
+					if (array != null)
 						return (T) (Long) array[segment.getIndex()];
-					}
 				} else {
 					final long[] array = comp.getLongArray(segment.getPath());
-					if (array != null) {
+					if (array != null)
 						return (T) (Long) array[array.length + segment.getIndex()];
-					}
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		if (type == float.class || type == Float.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
-					&& comp.getListType(segment.getPath()) == NBTType.NBTTagFloat) {
-				if (segment.getIndex() >= 0) {
+					&& comp.getListType(segment.getPath()) == NBTType.NBTTagFloat)
+				if (segment.getIndex() >= 0)
 					return (T) comp.getFloatList(segment.getPath()).get(segment.getIndex());
-				} else {
+				else {
 					final List<Float> list = comp.getFloatList(segment.getPath());
 					return (T) list.get(list.size() + segment.getIndex());
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		if (type == double.class || type == Double.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
-					&& comp.getListType(segment.getPath()) == NBTType.NBTTagDouble) {
-				if (segment.getIndex() >= 0) {
+					&& comp.getListType(segment.getPath()) == NBTType.NBTTagDouble)
+				if (segment.getIndex() >= 0)
 					return (T) comp.getDoubleList(segment.getPath()).get(segment.getIndex());
-				} else {
+				else {
 					final List<Double> list = comp.getDoubleList(segment.getPath());
 					return (T) list.get(list.size() + segment.getIndex());
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		if (type == int[].class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
-					&& comp.getListType(segment.getPath()) == NBTType.NBTTagIntArray) {
-				if (segment.getIndex() >= 0) {
+					&& comp.getListType(segment.getPath()) == NBTType.NBTTagIntArray)
+				if (segment.getIndex() >= 0)
 					return (T) comp.getIntArrayList(segment.getPath()).get(segment.getIndex());
-				} else {
+				else {
 					final List<int[]> list = comp.getIntArrayList(segment.getPath());
 					return (T) list.get(list.size() + segment.getIndex());
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		if (type == byte.class || type == Byte.class) {
-			if (comp.getType(segment.getPath()) == NBTType.NBTTagByteArray) {
+			if (comp.getType(segment.getPath()) == NBTType.NBTTagByteArray)
 				if (segment.getIndex() >= 0) {
 					final byte[] array = comp.getByteArray(segment.getPath());
-					if (array != null) {
+					if (array != null)
 						return (T) (Byte) array[segment.getIndex()];
-					}
 				} else {
 					final byte[] array = comp.getByteArray(segment.getPath());
-					if (array != null) {
+					if (array != null)
 						return (T) (Byte) array[array.length + segment.getIndex()];
-					}
 				}
-			}
 			throw new NbtApiException("No fitting list/array found for " + segment.getPath() + " of type " + type);
 		}
 		throw new NbtApiException("Unable to get indexed value for type " + type);
@@ -1237,19 +1202,15 @@ public class NBTCompound implements ReadWriteNBT {
 			final PathSegment segment = keys.get(i);
 			if (!segment.hasIndex()) {
 				tag = tag.getCompound(segment.getPath());
-				if (tag == null) {
+				if (tag == null)
 					return null;
-				}
-			} else {
-				if (tag.getType(segment.getPath()) == NBTType.NBTTagList
-						&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
-					final NBTCompoundList list = tag.getCompoundList(segment.getPath());
-					if (segment.getIndex() >= 0) {
-						tag = list.get(segment.getIndex());
-					} else {
-						tag = list.get(list.size() + segment.getIndex());
-					}
-				}
+			} else if (tag.getType(segment.getPath()) == NBTType.NBTTagList
+					&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
+				final NBTCompoundList list = tag.getCompoundList(segment.getPath());
+				if (segment.getIndex() >= 0)
+					tag = list.get(segment.getIndex());
+				else
+					tag = list.get(list.size() + segment.getIndex());
 			}
 		}
 		return tag;
@@ -1263,19 +1224,15 @@ public class NBTCompound implements ReadWriteNBT {
 			final PathSegment segment = keys.get(i);
 			if (!segment.hasIndex()) {
 				tag = tag.getOrCreateCompound(segment.getPath());
-				if (tag == null) {
+				if (tag == null)
 					return null;
-				}
-			} else {
-				if (tag.getType(segment.getPath()) == NBTType.NBTTagList
-						&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
-					final NBTCompoundList list = tag.getCompoundList(segment.getPath());
-					if (segment.getIndex() >= 0) {
-						tag = list.get(segment.getIndex());
-					} else {
-						tag = list.get(list.size() + segment.getIndex());
-					}
-				}
+			} else if (tag.getType(segment.getPath()) == NBTType.NBTTagList
+					&& tag.getListType(segment.getPath()) == NBTType.NBTTagCompound) {
+				final NBTCompoundList list = tag.getCompoundList(segment.getPath());
+				if (segment.getIndex() >= 0)
+					tag = list.get(segment.getIndex());
+				else
+					tag = list.get(list.size() + segment.getIndex());
 			}
 		}
 		return tag;
@@ -1309,9 +1266,8 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public <E extends Enum<E>> E getEnum(String key, Class<E> type) {
-		if (key == null || type == null) {
+		if (key == null || type == null)
 			return null;
-		}
 		final String name = getString(key);
 		if (name == null)
 			return null;
@@ -1396,9 +1352,8 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void clearNBT() {
-		for (final String key : getKeys()) {
+		for (final String key : getKeys())
 			removeKey(key);
-		}
 	}
 
 	/**
@@ -1413,11 +1368,10 @@ public class NBTCompound implements ReadWriteNBT {
 			final Object comp = getResolvedObject();
 			if (comp == null)
 				return "{}";
-			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4) {
+			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
 				return Forge1710Mappings.toString(comp);
-			} else {
+			else
 				return comp.toString();
-			}
 		} finally {
 			readLock.unlock();
 		}
@@ -1440,11 +1394,9 @@ public class NBTCompound implements ReadWriteNBT {
 		if (obj instanceof NBTCompound) {
 			final NBTCompound other = (NBTCompound) obj;
 			if (getKeys().equals(other.getKeys())) {
-				for (final String key : getKeys()) {
-					if (!isEqual(this, other, key)) {
+				for (final String key : getKeys())
+					if (!isEqual(this, other, key))
 						return false;
-					}
-				}
 				return true;
 			}
 		}

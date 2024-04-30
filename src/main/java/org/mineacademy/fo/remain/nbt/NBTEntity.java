@@ -24,16 +24,14 @@ public class NBTEntity extends NBTCompound {
 	 */
 	protected NBTEntity(Entity entity, boolean readonly) {
 		super(null, null);
-		if (entity == null) {
+		if (entity == null)
 			throw new NullPointerException("Entity can't be null!");
-		}
 		this.readonly = readonly;
 		ent = entity;
-		if (readonly) {
+		if (readonly)
 			this.compound = getCompound();
-		} else {
+		else
 			this.compound = null;
-		}
 	}
 
 	/**
@@ -41,9 +39,8 @@ public class NBTEntity extends NBTCompound {
 	 */
 	public NBTEntity(Entity entity) {
 		super(null, null);
-		if (entity == null) {
+		if (entity == null)
 			throw new NullPointerException("Entity can't be null!");
-		}
 		this.readonly = false;
 		this.compound = null;
 		ent = entity;
@@ -67,9 +64,8 @@ public class NBTEntity extends NBTCompound {
 	@Override
 	public Object getCompound() {
 		// this runs before async check, since it's just a copy
-		if (readonly && compound != null) {
+		if (readonly && compound != null)
 			return compound;
-		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
 		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(ent));
@@ -77,9 +73,8 @@ public class NBTEntity extends NBTCompound {
 
 	@Override
 	protected void setCompound(Object compound) {
-		if (readonly) {
+		if (readonly)
 			throw new NbtApiException("Tried setting data in read only mode!");
-		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
 		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
@@ -88,7 +83,7 @@ public class NBTEntity extends NBTCompound {
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 *
+	 * 
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {

@@ -6,6 +6,7 @@ package org.mineacademy.fo.remain.nbt;
  * @author tr7zw
  *
  */
+
 public enum NBTType {
 	NBTTagEnd(0),
 	NBTTagByte(1),

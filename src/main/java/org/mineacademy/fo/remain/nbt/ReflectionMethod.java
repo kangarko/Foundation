@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
+
 enum ReflectionMethod {
 
 	COMPOUND_SET_FLOAT(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, float.class },
@@ -169,7 +170,7 @@ enum ReflectionMethod {
 			new Since(MinecraftVersion.MC1_7_R4, "getHandle")),
 	NMS_WORLD_GET_TILEENTITY(ClassWrapper.NMS_WORLDSERVER, new Class[] { ClassWrapper.NMS_BLOCKPOSITION.getClazz() },
 			MinecraftVersion.MC1_8_R3, new Since(MinecraftVersion.MC1_8_R3, "getTileEntity"),
-			new Since(MinecraftVersion.MC1_18_R1, "getBlockState(net.minecraft.core.BlockPos)")),
+			new Since(MinecraftVersion.MC1_18_R1, "getBlockEntity(net.minecraft.core.BlockPos)")),
 	NMS_WORLD_SET_TILEENTITY(ClassWrapper.NMS_WORLDSERVER,
 			new Class[] { ClassWrapper.NMS_BLOCKPOSITION.getClazz(), ClassWrapper.NMS_TILEENTITY.getClazz() },
 			MinecraftVersion.MC1_8_R3, MinecraftVersion.MC1_16_R3,
@@ -325,26 +326,25 @@ enum ReflectionMethod {
 		this.removedAfter = removedAfter;
 		this.parentClassWrapper = targetClass;
 		// Special Case for Modded 1.7.10
-		final boolean specialCase = MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE")
-				&& MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4; // COMPOUND_MERGE is only present on
+		final boolean specialCase = (MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE")
+				&& MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4); // COMPOUND_MERGE is only present on
 																																														// Crucible, not on vanilla 1.7.10
 		if (!specialCase && (!MinecraftVersion.isAtLeastVersion(addedSince)
-				|| this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter)))
+				|| (this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter))))
 			return;
 		compatible = true;
 		final MinecraftVersion server = MinecraftVersion.getVersion();
 		Since target = methodnames[0];
-		for (final Since s : methodnames) {
+		for (final Since s : methodnames)
 			if (s.version.getVersionId() <= server.getVersionId()
 					&& target.version.getVersionId() < s.version.getVersionId())
 				target = s;
-		}
 		targetVersion = target;
 		String targetMethodName = targetVersion.name;
 		try {
-			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4) {
+			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
 				targetMethodName = Forge1710Mappings.getMethodMapping().getOrDefault(this.name(), targetMethodName);
-			} else if (targetVersion.version.isMojangMapping()) {
+			else if (targetVersion.version.isMojangMapping()) {
 				try {
 					// check for mojang mapped method
 					final String name = targetVersion.name.split("\\(")[0];
@@ -373,8 +373,11 @@ enum ReflectionMethod {
 				loaded = true;
 				methodName = targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				// NOSONAR This gets loaded before the logger is loaded
-				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
+				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '"
+						+ (targetClass.getClazz() == null ? targetClass.getMojangName()
+								: targetClass.getClazz().getSimpleName())
+						+ "' Args: " + Arrays.toString(args) + " Enum: " + this); // NOSONAR This gets loaded
+																																																																					// before the logger is loaded
 			}
 		}
 	}
