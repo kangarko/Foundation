@@ -22,8 +22,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import com.google.common.collect.Sets;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,7 +50,7 @@ public final class BlockUtil {
 	/**
 	 * A list of safe blocks upon which a tree naturally grows
 	 */
-	private final static Set<String> TREE_GROUND_BLOCKS = Sets.newHashSet("GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
+	private final static Set<String> TREE_GROUND_BLOCKS = Common.newSet("GRASS_BLOCK", "COARSE_DIRT", "DIRT", "MYCELIUM", "PODZOL");
 
 	/**
 	 * The vertical gaps when creating locations for a bounding box,
