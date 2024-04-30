@@ -678,15 +678,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -1862,7 +1862,8 @@ public final class Common {
 				} else
 					break;
 
-			if (!pageItems.isEmpty())
+			// If the menu is completely empty, at least allow the first page
+			if (i == 0 || !pageItems.isEmpty())
 				pages.put(i, pageItems);
 		}
 
