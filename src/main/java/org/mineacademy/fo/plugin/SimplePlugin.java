@@ -404,7 +404,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (!libraries.isEmpty() && javaVersion >= 9)
 				Common.logFramed(
 						"Warning: Unsupported Java version: " + javaVersion + " for your server",
-						"version! Minecraft " + MinecraftVersion.getServerVersion() + " was designed for Java 8",
+						"version! Minecraft " + MinecraftVersion.getFullVersion() + " was designed for Java 8",
 						"and we're unable unable to load 'legacy-libraries'",
 						"that this plugin uses:",
 						Common.join(libraries, ", ", Library::getGroupId),
@@ -588,15 +588,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private boolean checkServerVersions0() {
 
 		// Call the static block to test compatibility early
-		if (!MinecraftVersion.getCurrent().isTested())
-			Common.logFramed(
-					"*** WARNING ***",
-					"Your Minecraft version " + MinecraftVersion.getCurrent() + " has not yet",
-					"been officialy tested with the Foundation,",
-					"the library that " + SimplePlugin.getNamed() + " plugin uses.",
-					"",
-					"Loading the plugin at your own risk...",
-					Common.consoleLine());
+		MinecraftVersion.getCurrent();
 
 		// Check min version
 		final V minimumVersion = this.getMinimumVersion();
@@ -643,7 +635,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				"&4             |_|          ",
 				"&4!-----------------------------------------------------!",
 				" &cError loading " + this.getDescription().getName() + " v" + this.getDescription().getVersion() + ", plugin is disabled!",
-				privateDistro ? null : " &cRunning on " + this.getServer().getBukkitVersion() + " (" + MinecraftVersion.getServerVersion() + ") & Java " + System.getProperty("java.version"),
+				privateDistro ? null : " &cRunning on " + Bukkit.getBukkitVersion() + " & Java " + System.getProperty("java.version"),
 				"&4!-----------------------------------------------------!");
 
 		if (throwable instanceof InvalidConfigurationException) {

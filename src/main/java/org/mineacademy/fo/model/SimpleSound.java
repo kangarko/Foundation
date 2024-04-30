@@ -88,7 +88,7 @@ public final class SimpleSound {
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
 		final CompSound compSound = CompSound.fromName(values[0]);
 
-		Valid.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getServerVersion() + ")! Pick one from mineacademy.org/sounds");
+		Valid.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds");
 		this.sound = compSound.getSound();
 
 		if (values.length == 1) {

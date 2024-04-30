@@ -78,7 +78,7 @@ public final class BossBarInternals implements Listener {
 			this.entityClass = NMSDragon_v1_9.class;
 
 		if (MinecraftVersion.atLeast(V.v1_6)) {
-			Valid.checkNotNull(this.entityClass, "Compatible does not support Boss bar on MC version " + MinecraftVersion.getServerVersion() + "!");
+			Valid.checkNotNull(this.entityClass, "Failed to load Boss bar on Minecraft " + MinecraftVersion.getFullVersion() + "!");
 
 			Common.registerEvents(this);
 

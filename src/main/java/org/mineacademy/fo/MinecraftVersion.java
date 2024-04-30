@@ -22,10 +22,16 @@ public final class MinecraftVersion {
 	private static V current;
 
 	/**
+	 * The subversion such as 5 in 1.22.5
+	 */
+	@Getter
+	private static int subversion;
+
+	/**
 	 * The version wrapper
 	 */
 	public enum V {
-		v1_21(21, false),
+		v1_21(21),
 		v1_20(20),
 		v1_19(19),
 		v1_18(18),
@@ -51,29 +57,12 @@ public final class MinecraftVersion {
 		private final int minorVersionNumber;
 
 		/**
-		 * Is this library tested with this Minecraft version?
-		 */
-		@Getter
-		private final boolean tested;
-
-		/**
-		 * Creates new enum for a MC version that is tested
+		 * Creates new enum for a MC version
 		 *
 		 * @param version
 		 */
 		V(int version) {
-			this(version, true);
-		}
-
-		/**
-		 * Creates new enum for a MC version
-		 *
-		 * @param version
-		 * @param tested
-		 */
-		V(int version, boolean tested) {
 			this.minorVersionNumber = version;
-			this.tested = tested;
 		}
 
 		/**
@@ -153,51 +142,40 @@ public final class MinecraftVersion {
 	}
 
 	/**
-	 * Return the class versioning such as v1_14_R1
+	 * Return the full version such as 1.22.6
 	 *
 	 * @return
 	 */
+	public static String getFullVersion() {
+		return current.toString() + "." + subversion;
+	}
+
+	/**
+	 * Return the class versioning such as v1_14_R1 or empty string if not available
+	 *
+	 * @return
+	 * @deprecated use {@link #getFullVersion()} because this returns empty string on 1.20.5+ Paper
+	 */
+	@Deprecated
 	public static String getServerVersion() {
 		return serverVersion.equals("craftbukkit") ? "" : serverVersion;
 	}
 
-	// Initialize the version
 	static {
-		try {
 
-			final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
-			final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
-			final boolean hasGatekeeper = !"craftbukkit".equals(curr) && !"".equals(packageName);
+		// Find NMS package version
+		final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
+		final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
+		serverVersion = !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
 
-			serverVersion = curr;
+		// Find the Bukkit version
+		final String bukkitVersion = Bukkit.getServer().getBukkitVersion(); // 1.20.6-R0.1-SNAPSHOT
+		final String versionString = bukkitVersion.split("\\-")[0]; // 1.20.6
+		final String[] versions = versionString.split("\\.");
 
-			if (hasGatekeeper) {
-				int pos = 0;
+		final int version = Integer.parseInt(versions[1]); // 20
 
-				for (final char ch : curr.toCharArray()) {
-					pos++;
-
-					if (pos > 2 && ch == 'R')
-						break;
-				}
-
-				final String numericVersion = curr.substring(1, pos - 2).replace("_", ".");
-
-				int found = 0;
-
-				for (final char ch : numericVersion.toCharArray())
-					if (ch == '.')
-						found++;
-
-				Valid.checkBoolean(found == 1, "Minecraft Version checker malfunction. Could not detect your server version. Detected: " + numericVersion + " Current: " + curr);
-
-				current = V.parse(Integer.parseInt(numericVersion.split("\\.")[1]));
-
-			} else
-				current = V.v1_3_AND_BELOW;
-
-		} catch (final Throwable t) {
-			Common.error(t, "Error detecting your Minecraft version. Check your server compatibility.");
-		}
+		current = version < 3 ? V.v1_3_AND_BELOW : V.parse(version);
+		subversion = Integer.parseInt(versions[2]);
 	}
 }
