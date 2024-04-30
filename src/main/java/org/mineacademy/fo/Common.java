@@ -221,6 +221,24 @@ public final class Common {
 	}
 
 	/**
+	 * Broadcast the message to everyone with permission without {@link #getTellPrefix()} and {@link #getLogPrefix()}
+	 *
+	 * @param showPermission
+	 * @param message
+	 * @param log
+	 */
+	public static void broadcastWithPermNoPrefix(final String showPermission, final String message, final boolean log) {
+		if (message != null) {
+			for (final Player online : Remain.getOnlinePlayers())
+				if (PlayerUtil.hasPerm(online, showPermission))
+					tellNoPrefix(online, message);
+
+			if (log)
+				logNoPrefix(message);
+		}
+	}
+
+	/**
 	 * Broadcast the text component message to everyone with permission
 	 *
 	 * @param permission
@@ -660,15 +678,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
