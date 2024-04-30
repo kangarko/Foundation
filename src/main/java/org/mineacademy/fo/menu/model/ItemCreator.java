@@ -812,7 +812,7 @@ public final class ItemCreator {
 				compiledItem = CompMetadata.setMetadata(compiledItem, entry.getKey(), entry.getValue());
 
 		else if (!this.tags.isEmpty() && this.item != null)
-			Common.log("Item had unsupported tags " + this.tags + " that are not supported on MC " + MinecraftVersion.getServerVersion() + " Item: " + compiledItem);
+			Common.log("Item had unsupported tags " + this.tags + " that are not supported on MC " + MinecraftVersion.getFullVersion() + " Item: " + compiledItem);
 
 		return compiledItem;
 	}

@@ -685,7 +685,7 @@ public final class ReflectionUtil {
 	 */
 	@Nullable
 	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, final String name) {
-		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + MinecraftVersion.getServerVersion() + "! Available values: {available}");
+		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + MinecraftVersion.getFullVersion() + "! Available values: {available}");
 	}
 
 	/**
