@@ -2840,7 +2840,7 @@ public final class Remain {
 		if (serverName == null)
 			loadServerName();
 
-		return serverName != null && !serverName.isEmpty() && !"mineacademy.org/server-properties".contains(serverName) && !"undefined".equals(serverName) && !"Unknown Server".equals(serverName);
+		return serverName != null && !serverName.isEmpty() && !serverName.contains("mineacademy.org/server-properties") && !"undefined".equals(serverName) && !"Unknown Server".equals(serverName);
 	}
 
 	/**
@@ -2849,7 +2849,7 @@ public final class Remain {
 	 */
 	private static void loadServerName() {
 		try {
-			// Check server.properties for a valid server-name key, if it lacks, add it with instructions on configuring properly
+			// Check server.properties for a valid server-name key
 			final File serverProperties = new File(SimplePlugin.getData().getParentFile().getParentFile(), "server.properties");
 			final List<String> lines = FileUtil.readLines(serverProperties);
 
