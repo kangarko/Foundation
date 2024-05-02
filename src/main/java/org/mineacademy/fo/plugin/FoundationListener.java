@@ -96,8 +96,8 @@ final class FoundationListener implements Listener {
 		// Remove empty lines
 		pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 
-		if (!pages.containsKey(page)) {
-			final String playerMessage = SimpleLocalization.Pages.NO_PAGE;
+		if (pages.isEmpty() || !pages.containsKey(page)) {
+			final String playerMessage = pages.isEmpty() ? SimpleLocalization.Pages.NO_PAGES : SimpleLocalization.Pages.NO_PAGE;
 
 			if (Messenger.ENABLED)
 				Messenger.error(player, playerMessage);
@@ -148,8 +148,8 @@ final class FoundationListener implements Listener {
 				pagination.append(" &6« ").onHover(SimpleLocalization.Pages.GO_TO_PAGE.replace("{page}", String.valueOf(page))).onClickRunCmd("/#flp " + page);
 
 			pagination.append("&f" + (page + 1)).onHover(SimpleLocalization.Pages.GO_TO_FIRST_PAGE).onClickRunCmd("/#flp 1");
-			pagination.append("/");
-			pagination.append(pages.size() + "").onHover(SimpleLocalization.Pages.TOOLTIP);
+			pagination.append("/").onHover(SimpleLocalization.Pages.TOOLTIP);
+			pagination.append(pages.size() + "").onHover(SimpleLocalization.Pages.GO_TO_LAST_PAGE).onClickRunCmd("/#flp " + pages.size());
 
 			if (page + 1 >= pages.size())
 				pagination.append(" &7» ");

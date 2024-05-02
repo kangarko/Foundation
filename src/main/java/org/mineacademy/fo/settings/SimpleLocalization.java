@@ -535,11 +535,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 	public static final class Pages {
 
 		public static String NO_PAGE_NUMBER = "&cPlease specify the page number for this command.";
-		public static String NO_PAGES = "&cYou do not have any pages saved to show.";
+		public static String NO_PAGES = "There are no results to list.";
 		public static String NO_PAGE = "Pages do not contain the given page number.";
 		public static String INVALID_PAGE = "&cYour input '{input}' is not a valid number.";
 		public static String GO_TO_PAGE = "&7Go to page {page}";
 		public static String GO_TO_FIRST_PAGE = "&7Go to the first page";
+		public static String GO_TO_LAST_PAGE = "&7Go to the last page";
 		public static String[] TOOLTIP = {
 				"&7You can also navigate using the",
 				"&7hidden /#flp <page> command."
@@ -568,6 +569,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Go_To_First_Page"))
 				GO_TO_FIRST_PAGE = getString("Go_To_First_Page");
+
+			if (isSetDefault("Go_To_Last_Page"))
+				GO_TO_LAST_PAGE = getString("Go_To_Last_Page");
 
 			if (isSetDefault("Tooltip"))
 				TOOLTIP = Common.toArray(getStringList("Tooltip"));
