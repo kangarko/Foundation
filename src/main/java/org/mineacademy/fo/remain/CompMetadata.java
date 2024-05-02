@@ -51,6 +51,11 @@ import lombok.RequiredArgsConstructor;
 public final class CompMetadata {
 
 	/**
+	 * Should we use file storage for metadata on Minecraft below 1.14?
+	 */
+	public static boolean ENABLE_LEGACY_FILE_STORAGE = true;
+
+	/**
 	 * Minecraft 1.14+ supports persistent metadata meaning entities/tiles can have custom tags easily
 	 */
 	private static boolean hasPersistentMetadata = MinecraftVersion.atLeast(V.v1_14);
@@ -351,7 +356,7 @@ public final class CompMetadata {
 		private final Map<Location, BlockCache> blockMetadata = new HashMap<>();
 
 		private MetadataFile() {
-			if (!hasPersistentMetadata) {
+			if (!hasPersistentMetadata && ENABLE_LEGACY_FILE_STORAGE) {
 				this.setPathPrefix("Metadata");
 				this.setSaveEmptyValues(false);
 
@@ -372,7 +377,7 @@ public final class CompMetadata {
 
 		@Override
 		protected boolean canSaveFile() {
-			return !hasPersistentMetadata;
+			return !hasPersistentMetadata && ENABLE_LEGACY_FILE_STORAGE;
 		}
 
 		@Override

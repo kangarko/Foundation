@@ -313,7 +313,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				return;
 			}
 
-			if (CompMetadata.isLegacy())
+			if (CompMetadata.isLegacy() && CompMetadata.ENABLE_LEGACY_FILE_STORAGE)
 				this.registerEvents(CompMetadata.MetadataFile.getInstance());
 
 			this.onReloadablesStart();
@@ -681,7 +681,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			Common.log("&cPlugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
 
-		if (CompMetadata.isLegacy())
+		if (CompMetadata.isLegacy() && CompMetadata.ENABLE_LEGACY_FILE_STORAGE)
 			CompMetadata.MetadataFile.getInstance().save();
 
 		this.unregisterReloadables();
@@ -776,7 +776,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		try {
 			Debugger.detectDebugMode();
 
-			if (CompMetadata.isLegacy())
+			if (CompMetadata.isLegacy() && CompMetadata.ENABLE_LEGACY_FILE_STORAGE)
 				CompMetadata.MetadataFile.getInstance().save();
 
 			this.unregisterReloadables();
