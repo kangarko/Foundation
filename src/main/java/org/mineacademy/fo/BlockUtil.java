@@ -619,6 +619,25 @@ public final class BlockUtil {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * This method is used to get the center of a block in terms of its location.
+	 * It takes a Location object as an argument, which represents the current location of the block.
+	 * It then modifies the x, y, and z coordinates of the location by adding 0.5 to each of them.
+	 * This effectively moves the location to the center of the block.
+	 * The method then returns the modified Location object.
+	 *
+	 * @param location The current location of the block.
+	 * @return The location at the center of the block.
+	 */
+	public static Location getCenterLocation(Location location) {
+  		Location center = location.clone();
+		center.setX(center.getBlockX() + 0.5);
+		center.setY(center.getBlockY() + 0.5);
+		center.setZ(center.getBlockZ() + 0.5);
+
+		return center;
+	}
+	
+	/**
 	 * Scan the location from top to bottom to find the highest Y coordinate that is not air and not snow.
 	 * This will return the free coordinate above the snow layer.
 	 *
