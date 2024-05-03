@@ -289,14 +289,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Call the main start method
 			// --------------------------------------------
 
-			final Messenger messenger = this.getServer().getMessenger();
-
-			// Always make the main channel available
-			if (!messenger.isIncomingChannelRegistered(this, "BungeeCord"))
-				messenger.registerIncomingPluginChannel(this, "BungeeCord", BungeeListener.BungeeListenerImpl.getInstance());
-
-			if (!messenger.isOutgoingChannelRegistered(this, "BungeeCord"))
-				messenger.registerOutgoingPluginChannel(this, "BungeeCord");
+			this.registerInitBungee(BungeeListener.DEFAULT_CHANNEL);
 
 			// Hide plugin name before console messages
 			final String oldLogPrefix = Common.getLogPrefix();
@@ -487,14 +480,14 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
 	 */
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
-		final String chanelName = bungee.getChannel();
+		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
 
-		if (!messenger.isIncomingChannelRegistered(this, chanelName))
-			messenger.registerIncomingPluginChannel(this, chanelName, BungeeListener.BungeeListenerImpl.getInstance());
+		if (!messenger.isIncomingChannelRegistered(this, channelName))
+			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
 
-		if (!messenger.isOutgoingChannelRegistered(this, chanelName))
-			messenger.registerOutgoingPluginChannel(this, chanelName);
+		if (!messenger.isOutgoingChannelRegistered(this, channelName))
+			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
 		this.reloadables.registerEvents(bungee);
 
@@ -780,15 +773,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				CompMetadata.MetadataFile.getInstance().save();
 
 			this.unregisterReloadables();
-
-			final Messenger messenger = this.getServer().getMessenger();
-
-			// Always make the main channel available
-			if (!messenger.isIncomingChannelRegistered(this, "BungeeCord"))
-				messenger.registerIncomingPluginChannel(this, "BungeeCord", BungeeListener.BungeeListenerImpl.getInstance());
-
-			if (!messenger.isOutgoingChannelRegistered(this, "BungeeCord"))
-				messenger.registerOutgoingPluginChannel(this, "BungeeCord");
+			this.registerInitBungee(BungeeListener.DEFAULT_CHANNEL);
 
 			// Load our dependency system
 			try {
@@ -843,6 +828,19 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			reloading = false;
 		}
+	}
+
+	private void registerInitBungee(String channelName) {
+		final Messenger messenger = this.getServer().getMessenger();
+
+		System.out.println("Registering initial bungee for channel: " + channelName);
+
+		// Always make the main channel available
+		if (!messenger.isIncomingChannelRegistered(this, channelName))
+			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
+
+		if (!messenger.isOutgoingChannelRegistered(this, channelName))
+			messenger.registerOutgoingPluginChannel(this, channelName);
 	}
 
 	private void unregisterReloadables() {

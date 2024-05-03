@@ -232,10 +232,10 @@ public final class BungeeUtil {
 		}
 
 		try {
-			sender.sendPluginMessage(SimplePlugin.getInstance(), channel, byteArray);
+			sender.sendPluginMessage(SimplePlugin.getInstance(), BungeeListener.DEFAULT_CHANNEL, byteArray);
 
 		} catch (final ChannelNotRegisteredException ex) {
-			Common.log("Cannot send Bungee '" + action + "' message because channel '" + channel + "' is not registered. "
+			Common.log("Cannot send Bungee '" + action + "' message because channel '" + BungeeListener.DEFAULT_CHANNEL + "/" + channel + "' is not registered. "
 					+ "Use @AutoRegister above your class extending BungeeListener and return its instance in getBungeeCord in your main plugin class.");
 
 		} catch (final MessageTooLargeException ex) {
