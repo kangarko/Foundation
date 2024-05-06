@@ -2,15 +2,19 @@ package org.mineacademy.fo;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.settings.SimpleLocalization.Cases;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for calculating time from ticks and back.
@@ -407,5 +411,60 @@ public final class TimeUtil {
 	 */
 	public static long fromSQLTimestamp(final String timestamp) {
 		return Timestamp.valueOf(timestamp).getTime();
+	}
+
+	/**
+	 * Checks if the current time is within a specified timeframe.
+	 *
+	 * @param time The time string to be checked. It should be in the format 'dd MMM yyyy, HH:mm' and can contain variables such as {year}, {month}, {day}, {hour}, {minute}, and {second} for the current time periods.
+	 * @param future If true, the method checks if the current time is before the specified time. If false, it checks if the current time is after the specified time.
+	 * @return Returns true if the current time is within the specified timeframe, otherwise returns false.
+	 *
+	 * @throws ParseException If the time string is not in the correct format or contains invalid variables, a ParseException is thrown.
+	 *
+	 * The method works as follows:
+	 * 1. It gets the current time using Calendar.getInstance().
+	 * 2. It replaces short month names (Jan, Feb, etc.) in the time string with full month names (January, February, etc.).
+	 * 3. It replaces variables in the time string ({year}, {month}, etc.) with their current values.
+	 * 4. It parses the time string into a timestamp.
+	 * 5. If the 'future' parameter is true, it checks if the current time is before the timestamp. If the 'future' parameter is false, it checks if the current time is after the timestamp.
+	 * 6. If the current time is not within the specified timeframe, it returns false. Otherwise, it returns true.
+	 */
+	public static boolean isInTimeframe(@NonNull String time, boolean future) {
+		final Calendar calendar = Calendar.getInstance();
+		final String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+		final String[] fullNameMonths = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+
+		for (int i = 0; i < months.length; i++)
+			time = time.replaceAll(months[i] + "\\b", fullNameMonths[i]);
+
+		time = Replacer.replaceArray(time,
+				"year", calendar.get(Calendar.YEAR),
+				"month", fullNameMonths[calendar.get(Calendar.MONTH)],
+				"day", calendar.get(Calendar.DAY_OF_MONTH),
+				"hour", calendar.get(Calendar.HOUR_OF_DAY),
+				"minute", calendar.get(Calendar.MINUTE),
+				"second", calendar.get(Calendar.SECOND));
+
+		try {
+			final long timestamp = DATE_FORMAT_SHORT.parse(time).getTime();
+
+			if (future) {
+				if (System.currentTimeMillis() < timestamp)
+					return false;
+
+			} else {
+				if (System.currentTimeMillis() > timestamp)
+					return false;
+			}
+
+		} catch (final ParseException ex) {
+			Common.throwError(ex,
+					"Syntax error in time operator.",
+					"Valid: 'dd MMM yyyy, HH:mm' with {year/month/day/hour/minute/second} variables.",
+					"Got: " + time);
+		}
+
+		return true;
 	}
 }
