@@ -482,10 +482,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
-
+		
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
 			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-
+		
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
@@ -832,8 +832,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	private void registerInitBungee(String channelName) {
 		final Messenger messenger = this.getServer().getMessenger();
-
-		System.out.println("Registering initial bungee for channel: " + channelName);
 
 		// Always make the main channel available
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
