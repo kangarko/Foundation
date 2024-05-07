@@ -31,6 +31,13 @@ import lombok.RequiredArgsConstructor;
 public final class DiscordSender implements CommandSender {
 
 	private final String name;
+	private final UUID uniqueId;
+	/**
+	 * @deprecated this will store arbitrary player cache value which is used in upstream plugins i.e.
+	 * chatcontrol to contain data, i.e. whether some player ignores this player or not, etc.
+	 */
+	@Deprecated
+	private final Object cache;
 	@Nullable
 	private final OfflinePlayer offlinePlayer;
 	private final User user;
