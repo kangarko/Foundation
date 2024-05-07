@@ -46,6 +46,11 @@ public final class SimpleComponent implements ConfigSerializable {
 	public static boolean STRIP_OVERSIZED_COMPONENTS = true;
 
 	/**
+	 * Shall we automatically make urls clickable in the chat?
+	 */
+	public static boolean AUTO_CREATE_LINKS = true;
+
+	/**
 	 * The pattern to match URL addresses when parsing text
 	 */
 	private static final Pattern URL_PATTERN = Pattern.compile("^(https?:\\/\\/|)(www\\.|)[\\w-:.\\d]{1,256}\\.[\\w()]{1,12}\\b([\\w-@:%.,+~#=?!&$/\\d]*)$");
@@ -751,7 +756,9 @@ public final class SimpleComponent implements ConfigSerializable {
 				if (urlString.endsWith(",") || urlString.endsWith(".") || urlString.endsWith(":") || urlString.endsWith("?") || urlString.endsWith("!"))
 					urlString = urlString.substring(0, urlString.length() - 1);
 
-				component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
+				if (AUTO_CREATE_LINKS)
+					component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, urlString.startsWith("http") ? urlString : "http://" + urlString));
+
 				components.add(component);
 
 				index += pos - index - 1;
