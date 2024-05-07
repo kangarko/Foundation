@@ -2227,43 +2227,54 @@ class ProtocolLibHook {
 
 	ProtocolLibHook() {
 		this.manager = ProtocolLibrary.getProtocolManager();
+
+		if (this.manager == null)
+			Common.warning("Unable to get protocol manager. Ensure ProtocolLib threw no errors in your startup log and is compatible with your server version. "
+					+ "If you're a developer, place ProtocolLib to softDepend in plugin.yml. Packet features won't function.");
 	}
 
 	final void addPacketListener(final Object listener) {
 		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
 
-		try {
-			this.manager.addPacketListener((PacketListener) listener);
+		if (this.manager != null) {
+			try {
+				this.manager.addPacketListener((PacketListener) listener);
 
-		} catch (final Throwable t) {
-			Common.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
 
-			return;
+				return;
+			}
+
+			this.registeredListeners.add(listener);
 		}
-
-		this.registeredListeners.add(listener);
 	}
 
 	final void removePacketListener(final Object listener) {
 		Valid.checkBoolean(listener instanceof PacketListener, "Listener must extend or implements PacketListener or PacketAdapter");
-		Valid.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
 
-		try {
-			this.manager.removePacketListener((PacketListener) listener);
+		if (this.manager != null) {
+			Valid.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
 
-		} catch (final Throwable t) {
-			Common.error(t, "Failed to unregister ProtocolLib packet listener!");
+			try {
+				this.manager.removePacketListener((PacketListener) listener);
 
-			return;
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to unregister ProtocolLib packet listener!");
+
+				return;
+			}
+
+			this.registeredListeners.remove(listener);
 		}
-
-		this.registeredListeners.remove(listener);
 	}
 
 	final void removePacketListeners(final Plugin plugin) {
-		this.manager.removePacketListeners(plugin);
+		if (this.manager != null) {
+			this.manager.removePacketListeners(plugin);
 
-		this.registeredListeners.clear();
+			this.registeredListeners.clear();
+		}
 	}
 
 	final void sendPacket(final PacketContainer packet) {
@@ -2275,12 +2286,13 @@ class ProtocolLibHook {
 		Valid.checkNotNull(player);
 		Valid.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
 
-		try {
-			this.manager.sendServerPacket(player, (PacketContainer) packet);
+		if (this.manager != null)
+			try {
+				this.manager.sendServerPacket(player, (PacketContainer) packet);
 
-		} catch (final Exception e) {
-			Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
-		}
+			} catch (final Exception e) {
+				Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
+			}
 	}
 
 	final boolean isTemporaryPlayer(Player player) {
@@ -3797,17 +3809,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-
+		
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-
+		
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-
+		
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-
+		
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3877,16 +3889,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}
