@@ -1,5 +1,6 @@
 package org.mineacademy.fo.menu;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,9 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -218,10 +221,13 @@ final class ToggleableTool {
 			else if (unparsed instanceof Number && ((Number) unparsed).intValue() == 0)
 				this.item = new ItemStack(Material.AIR);
 
-			else if (unparsed instanceof Class && Tool.class.isAssignableFrom((Class<?>) unparsed))
-				this.item = ((Tool) ReflectionUtil.invokeStatic((Class<?>) unparsed, "getInstance")).getItem();
+			else if (unparsed instanceof Class && Tool.class.isAssignableFrom((Class<?>) unparsed)) {
+				Method getInstance = ReflectionUtil.getMethod((Class<?>) unparsed, "getInstance");
+				Valid.checkNotNull(getInstance, "Class " + unparsed + " must have a public static method getInstance() returning a Tool");
 
-			else
+				this.item = ((Tool) ReflectionUtil.invokeStatic(getInstance)).getItem();
+
+			} else
 				throw new FoException("Unknown tool: " + unparsed + " (we only accept ItemStack, Tool's instance or 0 for air)");
 
 		} else
