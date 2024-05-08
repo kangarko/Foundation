@@ -1,6 +1,7 @@
 package org.mineacademy.fo.remain;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
@@ -20,7 +22,7 @@ import org.mineacademy.fo.ReflectionUtil;
 public final class CompEnchantment {
 
 	/*
-	 * Store all enchantments by name
+	 * Store all items by name
 	 */
 	private static final Map<String, Enchantment> byName = new HashMap<>();
 
@@ -250,6 +252,24 @@ public final class CompEnchantment {
 		return byName.get(name.toUpperCase());
 	}
 
+	/**
+	 * Return all available enchantments
+	 *
+	 * @return
+	 */
+	public static Collection<Enchantment> getEnchantments() {
+		return byName.values();
+	}
+
+	/**
+	 * Return all available enchantment names
+	 *
+	 * @return
+	 */
+	public static Collection<String> getEnchantmentNames() {
+		return Common.convert(getEnchantments(), ench -> ench.getName());
+	}
+
 	/*
 	 * Find the enchantment by ID or name, returns null if unsupported by server
 	 */
@@ -272,6 +292,7 @@ public final class CompEnchantment {
 		if (enchantment != null) {
 			byName.put(oldName, enchantment);
 			byName.put(key.toUpperCase(), enchantment);
+			byName.put(enchantment.getName(), enchantment);
 		}
 
 		return enchantment;
