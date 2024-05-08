@@ -1973,10 +1973,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static boolean isAir(@Nullable ItemStack item) {
-		if (item == null)
-			return true;
-
-		return isAir(item.getType());
+		return item == null || isAir(item.getType());
 	}
 
 	/**
@@ -1986,7 +1983,17 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static boolean isAir(final Material material) {
-		return material == null || nameEquals(material, "AIR", "CAVE_AIR", "VOID_AIR", "LEGACY_AIR");
+		return material == null || isAir(material.name());
+	}
+
+	/**
+	 * Returns if the given material is air
+	 *
+	 * @param material
+	 * @return
+	 */
+	public static boolean isAir(final String materialName) {
+		return materialName == null || "AIR".equals(materialName) || "CAVE_AIR".equals(materialName) || "VOID_AIR".equals(materialName) || "LEGACY_AIR".equals(materialName);
 	}
 
 	/**
