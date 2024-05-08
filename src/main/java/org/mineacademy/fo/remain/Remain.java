@@ -65,6 +65,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -229,6 +230,11 @@ public final class Remain {
 	private static boolean hasAdventureChatEvent = true;
 
 	/**
+	 * Return true if PlayerInventory class has the getExtraContents method
+	 */
+	private static boolean hasPlayerExtraInventoryContent = true;
+
+	/**
 	 * Stores player cooldowns for old MC versions
 	 */
 	private final static StrictMap<UUID /*Player*/, StrictMap<Material, Integer>> cooldowns = new StrictMap<>();
@@ -380,6 +386,11 @@ public final class Remain {
 		} catch (final Throwable t) {
 			hasAdventureChatEvent = false;
 		}
+
+		final Method getExtraContents = ReflectionUtil.getMethod(PlayerInventory.class, "getExtraContents");
+
+		if (getExtraContents == null)
+			hasPlayerExtraInventoryContent = false;
 
 		try {
 			sectionPathDataClass = ReflectionUtil.lookupClass("org.bukkit.configuration.SectionPathData");
@@ -3044,6 +3055,16 @@ public final class Remain {
 	}
 
 	/**
+	 *
+	 * Return true if player inventory class has extra inventory content
+	 *
+	 * @return
+	 */
+	public static boolean hasPlayerExtraInventoryContent() {
+		return hasPlayerExtraInventoryContent;
+	}
+
+	/**
 	 * Return true if this is a Folia server
 	 *
 	 * @return
@@ -3345,11 +3366,14 @@ class PotionSetter {
 		// For some reason this does not get added so we have to add it manually on top of the lore
 		if (MinecraftVersion.olderThan(V.v1_9)) {
 			final List<String> lore = new ArrayList<>();
+			final String potionLine = Common.colorize("&7" + ItemUtil.bountifyCapitalized(type) + " (" + TimeUtil.formatTimeColon(durationTicks / 20) + ")");
 
-			lore.add(Common.colorize("&7" + ItemUtil.bountifyCapitalized(type) + " (" + TimeUtil.formatTimeColon(durationTicks / 20) + ")"));
+			lore.add(potionLine);
 
 			if (meta.getLore() != null)
-				lore.addAll(meta.getLore());
+				for (final String otherLore : meta.getLore())
+					if (!otherLore.contains(potionLine))
+						lore.add(otherLore);
 
 			meta.setLore(lore);
 		}
