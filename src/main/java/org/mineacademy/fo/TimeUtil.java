@@ -286,7 +286,7 @@ public final class TimeUtil {
 
 		return (days > 0 ? (days < 10 ? "0" : "") + days + ":" : "") +
 				(hours > 0 ? (hours < 10 ? "0" : "") + hours + ":" : "") +
-				(minutes > 0 ? (minutes < 10 ? "0" : "") + minutes + ":" : "00") +
+				(minutes > 0 ? (minutes < 10 ? "0" : "") + minutes + ":" : "00:") +
 				(seconds < 10 ? "0" : "") + seconds;
 	}
 
