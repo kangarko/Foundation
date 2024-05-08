@@ -1081,6 +1081,30 @@ public class SimpleDatabase {
 			return value;
 		}
 
+		public int[] getLocationArrayStrict(String columnLabel) throws SQLException {
+			final String value = this.getString(columnLabel);
+
+			if (value == null || "".equals(value)) {
+				Common.warning(SimplePlugin.getNamed() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+
+				throw new InvalidRowException();
+			}
+
+			final String[] split = value.split(" ");
+
+			if (split.length != 3) {
+				Common.warning(SimplePlugin.getNamed() + " found invalid row with invalid location value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+
+				throw new InvalidRowException();
+			}
+
+			return new int[] {
+					Integer.parseInt(split[0]),
+					Integer.parseInt(split[1]),
+					Integer.parseInt(split[2])
+			};
+		}
+
 		public <T extends Enum<T>> T getEnum(String columnLabel, Class<T> typeOf) throws SQLException {
 			final String value = this.getString(columnLabel);
 
