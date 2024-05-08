@@ -34,6 +34,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.entity.Entity;
@@ -51,7 +52,6 @@ import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.RegexTimeoutException;
-import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleRunnable;
@@ -274,11 +274,11 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellTimedNoPrefix(final int delaySeconds, final CommandSender sender, final String message) {
-		final String oldPrefix = getTellPrefix();
-		setTellPrefix("");
+		final String oldPrefix = new String(tellPrefix);
+		tellPrefix = "";
 
 		tellTimed(delaySeconds, sender, message);
-		setTellPrefix(oldPrefix);
+		tellPrefix = oldPrefix;
 	}
 
 	/**
@@ -325,7 +325,9 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellConversing(final Conversable conversable, final String message) {
-		conversable.sendRawMessage(colorize((message.contains(tellPrefix) ? "" : addLastSpace(tellPrefix)) + removeFirstSpaces(message)).trim());
+		String prefix = message.contains(tellPrefix) || tellPrefix.isEmpty() ? "" : tellPrefix + " ";
+
+		conversable.sendRawMessage(colorize(prefix + message));
 	}
 
 	/**
@@ -363,11 +365,11 @@ public final class Common {
 	 * @param messages
 	 */
 	public static void tellNoPrefix(final CommandSender sender, final String... messages) {
-		final String oldPrefix = getTellPrefix();
+		final String oldPrefix = new String(tellPrefix);
 
-		setTellPrefix("");
+		tellPrefix = "";
 		tell(sender, messages);
-		setTellPrefix(oldPrefix);
+		tellPrefix = oldPrefix;
 	}
 
 	/**
@@ -482,24 +484,15 @@ public final class Common {
 
 		} else
 			for (final String part : message.split("\n")) {
-				final String prefixStripped = removeSurroundingSpaces(tellPrefix);
-				final String prefix = !hasPrefix && !prefixStripped.isEmpty() ? prefixStripped + " " : "";
+				final String prefix = !hasPrefix && !tellPrefix.isEmpty() ? tellPrefix + " " : "";
+				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
 
-				final String toSend = stripColors(part).startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
+				// Make player engaged in a server conversation still receive the message
+				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
+					((Conversable) sender).sendRawMessage(toSend);
 
-				try {
-					// Make player engaged in a server conversation still receive the message
-					if (sender instanceof Conversable && ((Conversable) sender).isConversing())
-						((Conversable) sender).sendRawMessage(toSend);
-
-					else
-						sender.sendMessage(toSend);
-
-				} catch (final Throwable t) {
-					Bukkit.getLogger().severe("Failed to send message to " + sender.getName() + ", message: " + toSend);
-
-					t.printStackTrace();
-				}
+				else
+					sender.sendMessage(toSend);
 			}
 	}
 
@@ -510,27 +503,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String resolveSenderName(final CommandSender sender) {
-		return sender instanceof Player || sender instanceof DiscordSender ? sender.getName() : SimpleLocalization.CONSOLE_NAME;
-	}
-
-	// Remove first spaces from the given message
-	private static String removeFirstSpaces(String message) {
-		message = getOrEmpty(message);
-
-		while (message.startsWith(" "))
-			message = message.substring(1);
-
-		return message;
-	}
-
-	// Helper method used to add spaces between tell/log prefix and the message
-	private static String addLastSpace(String message) {
-		message = message.trim();
-
-		if (!message.endsWith(" "))
-			message = message + " ";
-
-		return message;
+		return sender instanceof ConsoleCommandSender ? SimpleLocalization.CONSOLE_NAME : sender.getName();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -595,12 +568,12 @@ public final class Common {
 			return "";
 
 		String result = CompChatColor.translateColorCodes(message)
-				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : removeSurroundingSpaces(tellPrefix.trim()))
+				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : tellPrefix)
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 				.replace("{plugin_name}", SimplePlugin.getNamed())
 				.replace("{plugin_version}", SimplePlugin.getVersion());
 
-		// RGB colors - return the closest color for legacy MC versions
+		// Replace hex colors on 1.16+ or find the closest color for legacy versions
 		final Matcher match = HEX_COLOR_REGEX.matcher(result);
 
 		while (match.find()) {
@@ -624,16 +597,6 @@ public final class Common {
 			result = result.replace("\\#", "#");
 
 		return result;
-	}
-
-	// Remove first and last spaces from the given message
-	private static String removeSurroundingSpaces(String message) {
-		message = getOrEmpty(message);
-
-		while (message.endsWith(" "))
-			message = message.substring(0, message.length() - 1);
-
-		return removeFirstSpaces(message);
 	}
 
 	/**
@@ -678,15 +641,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -1277,12 +1240,10 @@ public final class Common {
 			return;
 
 		final CommandSender console = Bukkit.getConsoleSender();
-
-		if (console == null)
-			throw new FoException("Failed to initialize Console Sender, are you running Foundation under a Bukkit/Spigot server?");
+		Valid.checkNotNull(console, "Failed to initialize Console Sender, are you running Foundation under a Bukkit/Spigot server?");
 
 		for (String message : messages) {
-			if (message == null || message.equals("none"))
+			if (message == null || "none".equals(message))
 				continue;
 
 			if (message.replace(" ", "").isEmpty()) {
@@ -1301,7 +1262,7 @@ public final class Common {
 
 			} else
 				for (final String part : message.split("\n")) {
-					final String log = ((addLogPrefix && !logPrefix.isEmpty() ? removeSurroundingSpaces(logPrefix) + " " : "") + getOrEmpty(part).replace("\n", colorize("\n&r"))).trim();
+					final String log = (addLogPrefix && !logPrefix.isEmpty() ? logPrefix + " " : "") + getOrEmpty(part);
 
 					console.sendMessage(log);
 				}
