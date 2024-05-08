@@ -58,7 +58,7 @@ public abstract class RuleSetReader<T extends Rule> {
 			final String line = lines.get(i);
 
 			// Found our rule
-			if (line.equals(this.newKeyword + " " + rule.getGroupName()))
+			if (line.equals(this.newKeyword + " " + rule.getUniqueName()))
 				found = true;
 
 			// Found something else
