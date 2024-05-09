@@ -160,12 +160,12 @@ public final class ReflectionUtil {
 	 * @param params
 	 * @return
 	 */
-	public static Constructor<?> getConstructor(@NonNull final Class<?> clazz, final Class<?>... params) {
+	public static <T> Constructor<T> getConstructor(@NonNull final Class<T> clazz, final Class<?>... params) {
 		try {
 			if (reflectionDataCache.containsKey(clazz))
-				return reflectionDataCache.get(clazz).getConstructor(params);
+				return (Constructor<T>) reflectionDataCache.get(clazz).getConstructor(params);
 
-			Constructor<?> constructor;
+			Constructor<T> constructor;
 
 			try {
 				constructor = clazz.getConstructor(params);
@@ -509,7 +509,7 @@ public final class ReflectionUtil {
 			if (reflectionDataCache.containsKey(clazz))
 				constructor = ((ReflectionData<T>) reflectionDataCache.get(clazz)).getDeclaredConstructor();
 			else
-				constructor = (Constructor<T>) ReflectionUtil.getConstructor(clazz);
+				constructor = ReflectionUtil.getConstructor(clazz);
 
 			return constructor.newInstance();
 
@@ -1164,16 +1164,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 
