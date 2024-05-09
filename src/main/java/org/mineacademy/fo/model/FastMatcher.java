@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
  * It matches items in four different modes:
  * 1. Start your pattern with * and we will evaluate if the message starts with it,
  * 2. End it with * and we'll evaluate endings,
- * 3. Start with ^ and end with $ to evaluate equal
+ * 3. Start with " and end with " to evaluate equal
  * 4. Otherwise we evaluate if message contains the pattern
  *
  * You can use | to separate multiple matches i.e. DIAMOND_*|GOLDEN_* etc
@@ -69,7 +69,7 @@ public class FastMatcher {
 			return this.pattern.matcher(message).find();
 
 		// Use our matching
-		for (Matcher matcher : this.matchers)
+		for (final Matcher matcher : this.matchers)
 			if (matcher.find(message))
 				return true;
 
@@ -90,9 +90,9 @@ public class FastMatcher {
 		else if (pattern.startsWith("* "))
 			return new FastMatcher(Pattern.compile(pattern.substring(2)), pattern, null);
 
-		List<Matcher> matchers = new ArrayList<>();
+		final List<Matcher> matchers = new ArrayList<>();
 
-		for (String part : pattern.split("\\|"))
+		for (final String part : pattern.split("\\|"))
 			matchers.add(Matcher.compile(part));
 
 		return new FastMatcher(null, pattern, matchers.toArray(new Matcher[matchers.size()]));
@@ -150,7 +150,7 @@ class Matcher {
 			mode = 2;
 			pattern = pattern.substring(0, pattern.length() - 1);
 
-		} else if (pattern.startsWith("^") && pattern.endsWith("$")) {
+		} else if (pattern.startsWith("\"") && pattern.endsWith("\"")) {
 			mode = 3;
 			pattern = pattern.substring(1, pattern.length() - 1);
 		}
