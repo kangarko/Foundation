@@ -79,9 +79,11 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 		if (!event.getClass().equals(this.eventClass))
 			return;
 
+		final boolean eventIgnored = event.getEventName().equals("SimpleChatEvent");
 		final String logName = listener.getClass().getSimpleName() + " listening to " + event.getEventName() + " at " + this.priority + " priority";
 
-		LagCatcher.start(logName);
+		if (!eventIgnored)
+			LagCatcher.start(logName);
 
 		try {
 			this.event = this.eventClass.cast(event);
@@ -111,7 +113,8 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 			Common.error(t, "Unhandled exception listening to " + this.eventClass.getSimpleName());
 
 		} finally {
-			LagCatcher.end(logName);
+			if (!eventIgnored)
+				LagCatcher.end(logName);
 
 			// Do not null the event since this breaks findPlayer for any scheduled tasks
 			//this.event = null;

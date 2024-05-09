@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Method;
+
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
@@ -12,7 +12,8 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
-import java.lang.reflect.Method;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Wrapper for {@link Attribute}
