@@ -30,7 +30,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -47,7 +46,6 @@ import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
-import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
@@ -394,18 +392,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			}
 
 			// Load normally
-			if (!libraries.isEmpty() && javaVersion >= 9)
-				Common.logFramed(
-						"Warning: Unsupported Java version: " + javaVersion + " for your server",
-						"version! Minecraft " + MinecraftVersion.getFullVersion() + " was designed for Java 8",
-						"and we're unable unable to load 'legacy-libraries'",
-						"that this plugin uses:",
-						Common.join(libraries, ", ", Library::getGroupId),
-						"",
-						"To fix this, start your server using Java 8 or",
-						"upgrade to Minecraft 1.16 or greater.");
+			if (!libraries.isEmpty() && javaVersion >= 9) {
+				// Unsupported > upstream should shade libraries manually
 
-			else
+			} else
 				for (final Library library : libraries)
 					library.load();
 		}
