@@ -3359,23 +3359,26 @@ class PotionSetter {
 
 				ReflectionUtil.invoke(setBasePotionData, meta, potionData);
 			}
-
-			meta.addEnchant(CompEnchantment.DURABILITY, 1, true);
 		}
 
 		// For some reason this does not get added so we have to add it manually on top of the lore
 		if (MinecraftVersion.olderThan(V.v1_9)) {
-			final List<String> lore = new ArrayList<>();
-			final String potionLine = Common.colorize("&7" + ItemUtil.bountifyCapitalized(type) + " (" + TimeUtil.formatTimeColon(durationTicks / 20) + ")");
+			if (item.getData().getData() == 0) {
+				final List<String> lore = new ArrayList<>();
+				final String potionLine = Common.colorize("&7" + ItemUtil.bountifyCapitalized(type) + " (" + TimeUtil.formatTimeColon(durationTicks / 20) + ")");
 
-			lore.add(potionLine);
+				lore.add(potionLine);
 
-			if (meta.getLore() != null)
-				for (final String otherLore : meta.getLore())
-					if (!otherLore.contains(potionLine))
-						lore.add(otherLore);
+				if (meta.getLore() != null)
+					for (final String otherLore : meta.getLore())
+						if (!otherLore.contains(potionLine))
+							lore.add(otherLore);
 
-			meta.setLore(lore);
+				item.getData().setData((byte) 45);
+
+				meta.setDisplayName(Common.colorize("&rPotion Of " + ItemUtil.bountifyCapitalized(type)));
+				meta.setLore(lore);
+			}
 		}
 
 		//meta.setMainEffect(type);
