@@ -2,8 +2,6 @@ package org.mineacademy.fo.constants;
 
 import java.util.UUID;
 
-import org.bukkit.entity.Player;
-import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 /**

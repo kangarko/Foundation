@@ -17,7 +17,6 @@ import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 

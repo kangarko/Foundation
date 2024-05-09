@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.menu.MenuQuantitable;
 
 import lombok.RequiredArgsConstructor;
 
