@@ -124,7 +124,7 @@ public abstract class BungeeListener implements Listener {
 
 		@Override
 		public void onPluginMessageReceived(String channel, Player player, byte[] data) {
-			synchronized (registeredListeners) {
+			synchronized (BungeeListener.DEFAULT_CHANNEL) {
 
 				// Check if the message is for a server (ignore client messages)
 				if (!channel.equals(DEFAULT_CHANNEL))
@@ -141,7 +141,7 @@ public abstract class BungeeListener implements Listener {
 					input = ByteStreams.newDataInput(data);
 				}
 
-				String channelName = input.readUTF();
+				final String channelName = input.readUTF();
 
 				for (final BungeeListener listener : registeredListeners)
 					if (channelName.equals(listener.getChannel())) {
