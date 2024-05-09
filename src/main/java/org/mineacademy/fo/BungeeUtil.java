@@ -112,137 +112,139 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessage(@Nullable Player sender, String channel, BungeeMessageType action, T... data) {
-		Valid.checkBoolean(data.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + data.length + " vs needed: " + action.getContent().length);
-		Remain.getServerName(); // check
+		synchronized (BungeeListener.DEFAULT_CHANNEL) {
+			Valid.checkBoolean(data.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + data.length + " vs needed: " + action.getContent().length);
+			Remain.getServerName(); // check
 
-		if (!action.name().equals("PLAYERS_CLUSTER_DATA"))
-			Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
+			if (!action.name().equals("PLAYERS_CLUSTER_DATA"))
+				Debugger.put("bungee", "Server '" + Remain.getServerName() + "' sent bungee message [" + channel + ", " + action + "]: ");
 
-		if (sender == null)
-			sender = findFirstPlayer();
+			if (sender == null)
+				sender = findFirstPlayer();
 
-		// This server is empty, do not send
-		if (sender == null) {
-			Debugger.debug("bungee", "&eWarning: Cannot send " + action + " bungee message to channel '" + channel + "' because this server has no players");
-
-			return;
-		}
-
-		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
-
-		// Write Foundation header
-		out.writeUTF(channel);
-		out.writeUTF(sender.getUniqueId().toString());
-		out.writeUTF(Remain.getServerName());
-		out.writeUTF(action.toString());
-
-		int actionHead = 0;
-
-		for (Object datum : data)
-			try {
-				Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + " (" + t.getClass().getSimpleName() + ")"));
-
-				if (datum instanceof CommandSender)
-					datum = ((CommandSender) datum).getName();
-
-				if (datum instanceof Integer) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, Integer.class, data);
-					out.writeInt((Integer) datum);
-
-				} else if (datum instanceof Double) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, Double.class, data);
-					out.writeDouble((Double) datum);
-
-				} else if (datum instanceof Long) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, Long.class, data);
-					out.writeLong((Long) datum);
-
-				} else if (datum instanceof Boolean) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, Boolean.class, data);
-					out.writeBoolean((Boolean) datum);
-
-				} else if (datum instanceof String) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, String.class, data);
-
-					try {
-						out.writeUTF((String) datum);
-
-					} catch (final Throwable t) {
-						if (t.getMessage().contains("too long"))
-							Common.throwError(t, "Too long BungeeCord message to send (" + ((String) datum).length() + ")! Message: ", (String) datum);
-
-						else
-							throw t;
-					}
-
-				} else if (datum instanceof SerializedMap) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, String.class, data);
-					out.writeUTF(((SerializedMap) datum).toJson());
-
-				} else if (datum instanceof UUID) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, UUID.class, data);
-					out.writeUTF(((UUID) datum).toString());
-
-				} else if (datum instanceof Enum) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, Enum.class, data);
-					out.writeUTF(((Enum<?>) datum).toString());
-
-				} else if (datum instanceof byte[]) {
-					Debugger.put("bungee", datum.toString() + ", ");
-
-					moveHead(actionHead, action, String.class, data);
-					out.write((byte[]) datum);
-
-				} else
-					throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
-
-				actionHead++;
-
-			} catch (final Throwable t) {
-				t.printStackTrace();
+			// This server is empty, do not send
+			if (sender == null) {
+				Debugger.debug("bungee", "&eWarning: Cannot send " + action + " bungee message to channel '" + channel + "' because this server has no players");
 
 				return;
 			}
 
-		Debugger.push("bungee");
+			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-		final byte[] byteArray = out.toByteArray();
+			// Write Foundation header
+			out.writeUTF(channel);
+			out.writeUTF(sender.getUniqueId().toString());
+			out.writeUTF(Remain.getServerName());
+			out.writeUTF(action.toString());
 
-		if (byteArray.length > 30_000) { // Safety margin
-			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
+			int actionHead = 0;
+
+			for (Object datum : data)
+				try {
+					Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", (Stringer<T>) t -> t == null ? "null" : t.toString() + " (" + t.getClass().getSimpleName() + ")"));
+
+					if (datum instanceof CommandSender)
+						datum = ((CommandSender) datum).getName();
+
+					if (datum instanceof Integer) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, Integer.class, data);
+						out.writeInt((Integer) datum);
+
+					} else if (datum instanceof Double) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, Double.class, data);
+						out.writeDouble((Double) datum);
+
+					} else if (datum instanceof Long) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, Long.class, data);
+						out.writeLong((Long) datum);
+
+					} else if (datum instanceof Boolean) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, Boolean.class, data);
+						out.writeBoolean((Boolean) datum);
+
+					} else if (datum instanceof String) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, String.class, data);
+
+						try {
+							out.writeUTF((String) datum);
+
+						} catch (final Throwable t) {
+							if (t.getMessage().contains("too long"))
+								Common.throwError(t, "Too long BungeeCord message to send (" + ((String) datum).length() + ")! Message: ", (String) datum);
+
+							else
+								throw t;
+						}
+
+					} else if (datum instanceof SerializedMap) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, String.class, data);
+						out.writeUTF(((SerializedMap) datum).toJson());
+
+					} else if (datum instanceof UUID) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, UUID.class, data);
+						out.writeUTF(((UUID) datum).toString());
+
+					} else if (datum instanceof Enum) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, Enum.class, data);
+						out.writeUTF(((Enum<?>) datum).toString());
+
+					} else if (datum instanceof byte[]) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, String.class, data);
+						out.write((byte[]) datum);
+
+					} else
+						throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
+
+					actionHead++;
+
+				} catch (final Throwable t) {
+					t.printStackTrace();
+
+					return;
+				}
+
+			Debugger.push("bungee");
+
+			final byte[] byteArray = out.toByteArray();
+
+			if (byteArray.length > 30_000) { // Safety margin
+				Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32766 bytes, got " + byteArray.length + " bytes.");
+
+				actionHead = 0;
+				return;
+			}
+
+			try {
+				sender.sendPluginMessage(SimplePlugin.getInstance(), BungeeListener.DEFAULT_CHANNEL, byteArray);
+
+			} catch (final ChannelNotRegisteredException ex) {
+				Common.log("Cannot send Bungee '" + action + "' message because channel '" + BungeeListener.DEFAULT_CHANNEL + "/" + channel + "' is not registered. "
+						+ "Use @AutoRegister above your class extending BungeeListener and return its instance in getBungeeCord in your main plugin class.");
+
+			} catch (final MessageTooLargeException ex) {
+				Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32,766 bytes, got " + byteArray.length + " bytes.");
+			}
 
 			actionHead = 0;
-			return;
 		}
-
-		try {
-			sender.sendPluginMessage(SimplePlugin.getInstance(), BungeeListener.DEFAULT_CHANNEL, byteArray);
-
-		} catch (final ChannelNotRegisteredException ex) {
-			Common.log("Cannot send Bungee '" + action + "' message because channel '" + BungeeListener.DEFAULT_CHANNEL + "/" + channel + "' is not registered. "
-					+ "Use @AutoRegister above your class extending BungeeListener and return its instance in getBungeeCord in your main plugin class.");
-
-		} catch (final MessageTooLargeException ex) {
-			Common.log("Outgoing bungee message '" + action + "' was oversized, not sending. Max length: 32,766 bytes, got " + byteArray.length + " bytes.");
-		}
-
-		actionHead = 0;
 	}
 
 	/**
@@ -252,9 +254,7 @@ public final class BungeeUtil {
 	 * @param serverName the server name as you have in config.yml of your BungeeCord
 	 */
 	public static void connect(@NonNull Player player, @NonNull String serverName) {
-		sendBungeeMessage(player,
-				"Connect",
-				serverName);
+		sendBungeeMessage(player, "Connect", serverName);
 	}
 
 	/**
