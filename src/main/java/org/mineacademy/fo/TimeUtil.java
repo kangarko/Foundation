@@ -420,7 +420,7 @@ public final class TimeUtil {
 	 * @param future If true, the method checks if the current time is before the specified time. If false, it checks if the current time is after the specified time.
 	 * @return Returns true if the current time is within the specified timeframe, otherwise returns false.
 	 *
-	 * @throws ParseException If the time string is not in the correct format or contains invalid variables, a ParseException is thrown.
+	 * Throws ParseException If the time string is not in the correct format or contains invalid variables, a ParseException is thrown.
 	 *
 	 * The method works as follows:
 	 * 1. It gets the current time using Calendar.getInstance().

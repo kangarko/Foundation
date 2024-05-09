@@ -1988,8 +1988,7 @@ public enum CompMaterial {
 
 	/**
 	 * Returns if the given material is air
-	 *
-	 * @param material
+	 * @param materialName
 	 * @return
 	 */
 	public static boolean isAir(final String materialName) {
