@@ -325,7 +325,7 @@ public final class Common {
 	 * @param message
 	 */
 	public static void tellConversing(final Conversable conversable, final String message) {
-		String prefix = message.contains(tellPrefix) || tellPrefix.isEmpty() ? "" : tellPrefix + " ";
+		final String prefix = message.contains(tellPrefix) || tellPrefix.isEmpty() ? "" : tellPrefix + " ";
 
 		conversable.sendRawMessage(colorize(prefix + message));
 	}
@@ -641,15 +641,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -2427,7 +2427,7 @@ public final class Common {
 	}
 
 	/**
-	 * Create a new array list that is mutable
+	 * Create a new array list that is mutable (if you call Arrays.asList that is unmodifiable)
 	 *
 	 * @param <T>
 	 * @param keys
