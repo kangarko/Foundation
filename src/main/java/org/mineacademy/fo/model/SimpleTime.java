@@ -13,15 +13,18 @@ public final class SimpleTime {
 
 	private final String raw;
 	private final long timeTicks;
+	private final boolean enabled;
 
 	protected SimpleTime(@NonNull final String time) {
 		if ("0".equals(time) || "none".equalsIgnoreCase(time)) {
 			this.raw = "0";
 			this.timeTicks = 0;
+			this.enabled = false;
 
 		} else {
 			this.raw = time;
 			this.timeTicks = TimeUtil.toTicks(time);
+			this.enabled = true;
 		}
 	}
 
