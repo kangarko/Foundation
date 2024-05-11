@@ -97,6 +97,21 @@ public class FastMatcher {
 
 		return new FastMatcher(null, pattern, matchers.toArray(new Matcher[matchers.size()]));
 	}
+
+	/**
+	 * Compile a list of matchers from the given list
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static List<FastMatcher> compileFromList(List<String> list) {
+		final List<FastMatcher> matchers = new ArrayList<>();
+
+		for (final String pattern : list)
+			matchers.add(compile(pattern));
+
+		return matchers;
+	}
 }
 
 @Getter
