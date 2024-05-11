@@ -58,6 +58,34 @@ public final class IsInList<T> implements Iterable<T> {
 	}
 
 	/**
+	 * Evaluates if any item on the list starts with the item.
+	 * Calls toString() case insensitive comparison.
+	 *
+	 * @param toEvaluateAgainst
+	 * @return
+	 */
+	public boolean startsWith(final T toEvaluateAgainst) {
+
+		// Return false when list is empty and we are not always true
+		if (!this.matchAll && this.list.isEmpty())
+			return false;
+
+		if (this.matchAll)
+			return true;
+
+		final String evaluatedString = toEvaluateAgainst.toString().toLowerCase();
+
+		for (final T item : this.list) {
+			final String itemString = item.toString().toLowerCase();
+
+			if (evaluatedString.startsWith(itemString))
+				return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Return true if list is equal to ["*"]
 	 *
 	 * @return
