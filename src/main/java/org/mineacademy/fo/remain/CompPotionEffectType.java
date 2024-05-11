@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.ReflectionUtil;
 
 /**
@@ -19,6 +20,11 @@ public final class CompPotionEffectType {
 	 * Store all items by name
 	 */
 	private static final Map<String, PotionEffectType> byName = new HashMap<>();
+
+	/*
+	 * Holds the formatted name for each potion i.e. "Mining Fatigue" for SLOW_DIGGING etc.
+	 */
+	private static final Map<PotionEffectType, String> loreName = new HashMap<>();
 
 	/**
 	 * Increases movement speed.
@@ -211,6 +217,17 @@ public final class CompPotionEffectType {
 	}
 
 	/**
+	 * Return the name as it appears on the item lore
+	 *
+	 * @param type
+	 * @return
+	 */
+	@Nullable
+	public static String getLoreName(PotionEffectType type) {
+		return loreName.get(type);
+	}
+
+	/**
 	 * Return all available potion effect types
 	 *
 	 * @return
@@ -240,6 +257,8 @@ public final class CompPotionEffectType {
 			byName.put(legacyName, type);
 			byName.put(modernName, type);
 			byName.put(type.getName(), type);
+
+			loreName.put(type, ItemUtil.bountifyCapitalized(modernName));
 		}
 
 		return type;
