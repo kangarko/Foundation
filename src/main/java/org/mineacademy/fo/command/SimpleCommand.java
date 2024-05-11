@@ -675,6 +675,27 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Return the player by the given args index, and, when the args are shorter, return the sender if sender is player.
+	 *
+	 * @param name
+	 * @return
+	 * @throws CommandException
+	 */
+	protected final Player findPlayerOrSelf(final int argsIndex) throws CommandException {
+		if (argsIndex >= this.args.length) {
+			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CONSOLE_MISSING_PLAYER_NAME);
+
+			return this.getPlayer();
+		}
+
+		final String name = this.args[argsIndex];
+		final Player player = this.findPlayerInternal(name);
+		this.checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE.replace("{player}", name));
+
+		return player;
+	}
+
+	/**
 	 * Return the player by the given name, and, when the name is null, return the sender if sender is player.
 	 *
 	 * @param name
