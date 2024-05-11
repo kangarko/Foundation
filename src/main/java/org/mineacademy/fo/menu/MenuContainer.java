@@ -92,7 +92,7 @@ public abstract class MenuContainer extends Menu {
 	@Override
 	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
 
-		if (location != MenuClickLocation.MENU)
+		if (location != MenuClickLocation.MENU && action != InventoryAction.MOVE_TO_OTHER_INVENTORY)
 			return true;
 
 		if (!this.canEditItem(location, slot, clicked, cursor, action))
