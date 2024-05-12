@@ -906,7 +906,7 @@ public abstract class SimpleCommand extends Command {
 				e.printStackTrace();
 		}
 
-		throw new CommandException(this.replacePlaceholders((Messenger.ENABLED ? "" : "&c") + falseMessage));
+		throw new CommandException(this.replacePlaceholders((Messenger.ENABLED ? "" : "&c") + falseMessage.replace("{number}", this.args[index])));
 	}
 
 	/**
