@@ -961,6 +961,8 @@ public abstract class Menu {
 	 * @param size
 	 */
 	protected final void setSize(final Integer size) {
+		Valid.checkBoolean(!this.opened, "Cannot set size after the menu has been opened!");
+
 		this.size = size;
 	}
 
