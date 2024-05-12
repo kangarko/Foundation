@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -740,6 +741,14 @@ public abstract class Menu {
 	 *
 	 * Can impose a performance penalty. Use cancel() to cancel.
 	 *
+	 * IMPORTANT TIPS:
+	 *
+	 * 1. To update items, use {@link #setItem(int, ItemStack)}.
+	 * 2. To update buttons, use {@link Button#getItem()}, get it's metadata, update it and set it back.
+	 * 3. To save on performance, create a separate class in your plugin implementing a Runnable, iterating for all
+	 *    players and calling {@link Menu#getMenu(Player)} for each, checking if the menu is instance of your menu,
+	 *    and then writing onUpdate() method to your menu class and calling it from that timed task instead.
+	 *
 	 * @param periodTicks
 	 * @param task
 	 */
@@ -754,6 +763,14 @@ public abstract class Menu {
 	 * that is automatically stopped if the viewer no longer sees this menu.
 	 *
 	 * Use cancel() to cancel.
+	 *
+	 * IMPORTANT TIPS:
+	 *
+	 * 1. To update items, use {@link #setItem(int, ItemStack)}.
+	 * 2. To update buttons, use {@link Button#getItem()}, get it's metadata, update it and set it back.
+	 * 3. To save on performance, create a separate class in your plugin implementing a Runnable, iterating for all
+	 *    players and calling {@link Menu#getMenu(Player)} for each, checking if the menu is instance of your menu,
+	 *    and then writing onUpdate() method to your menu class and calling it from that timed task instead.
 	 *
 	 * @param periodTicks
 	 * @param task
@@ -795,6 +812,14 @@ public abstract class Menu {
 
 	/**
 	 * A special wrapper for animating menus
+	 *
+	 * IMPORTANT TIPS:
+	 *
+	 * 1. To update items, use {@link #setItem(int, ItemStack)}.
+	 * 2. To update buttons, use {@link Button#getItem()}, get it's metadata, update it and set it back.
+	 * 3. To save on performance, create a separate class in your plugin implementing a Runnable, iterating for all
+	 *    players and calling {@link Menu#getMenu(Player)} for each, checking if the menu is instance of your menu,
+	 *    and then writing onUpdate() method to your menu class and calling it from that timed task instead.
 	 */
 	@FunctionalInterface
 	public interface MenuRunnable extends Runnable {
