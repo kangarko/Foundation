@@ -112,11 +112,16 @@ public class JsonItemStack {
 
 				metaJson.put("enchants", enchants);
 			}
-			if (!meta.getItemFlags().isEmpty()) {
-				final JSONArray flags = new JSONArray();
 
-				meta.getItemFlags().stream().map(ItemFlag::name).forEach(flag -> flags.add(flag));
-				metaJson.put("flags", flags);
+			try {
+				if (!meta.getItemFlags().isEmpty()) {
+					final JSONArray flags = new JSONArray();
+
+					meta.getItemFlags().stream().map(ItemFlag::name).forEach(flag -> flags.add(flag));
+					metaJson.put("flags", flags);
+				}
+			} catch (final NoSuchMethodError err) {
+				// MC incompatible
 			}
 
 			for (final String clazz : BYPASS_CLASS)
@@ -135,29 +140,6 @@ public class JsonItemStack {
 					extraMeta.put("owner", skullMeta.getOwner());
 					metaJson.put("extra-meta", extraMeta);
 				}
-
-			} else if (meta instanceof BannerMeta) {
-				final BannerMeta bannerMeta = (BannerMeta) meta;
-				final JSONObject extraMeta = new JSONObject();
-
-				final Method getBaseColor = ReflectionUtil.getMethod(bannerMeta.getClass(), "getBaseColor");
-
-				if (getBaseColor != null) {
-					final String baseColorName = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta)).name();
-
-					extraMeta.put("base-color", baseColorName);
-				}
-
-				if (bannerMeta.numberOfPatterns() > 0) {
-					final JSONArray patterns = new JSONArray();
-					bannerMeta.getPatterns()
-							.stream()
-							.map(pattern -> pattern.getColor().name() + ":" + pattern.getPattern().getIdentifier())
-							.forEach(str -> patterns.add(new JsonPrimitive(str)));
-					extraMeta.put("patterns", patterns);
-				}
-
-				metaJson.put("extra-meta", extraMeta);
 
 			} else if (meta instanceof EnchantmentStorageMeta) {
 				final EnchantmentStorageMeta esmeta = (EnchantmentStorageMeta) meta;
@@ -332,6 +314,34 @@ public class JsonItemStack {
 				extraMeta.put("scaling", mmeta.isScaling());
 
 				metaJson.put("extra-meta", extraMeta);
+			}
+
+			try {
+				if (meta instanceof BannerMeta) {
+					final BannerMeta bannerMeta = (BannerMeta) meta;
+					final JSONObject extraMeta = new JSONObject();
+
+					final Method getBaseColor = ReflectionUtil.getMethod(bannerMeta.getClass(), "getBaseColor");
+
+					if (getBaseColor != null) {
+						final String baseColorName = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta)).name();
+
+						extraMeta.put("base-color", baseColorName);
+					}
+
+					if (bannerMeta.numberOfPatterns() > 0) {
+						final JSONArray patterns = new JSONArray();
+						bannerMeta.getPatterns()
+								.stream()
+								.map(pattern -> pattern.getColor().name() + ":" + pattern.getPattern().getIdentifier())
+								.forEach(str -> patterns.add(new JsonPrimitive(str)));
+						extraMeta.put("patterns", patterns);
+					}
+
+					metaJson.put("extra-meta", extraMeta);
+				}
+			} catch (final NoClassDefFoundError err) {
+				// Legacy MC
 			}
 
 			json.put("item-meta", metaJson);
