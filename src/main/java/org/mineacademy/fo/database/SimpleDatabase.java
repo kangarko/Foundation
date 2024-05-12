@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
@@ -356,49 +358,51 @@ public class SimpleDatabase {
 	 * @param creator
 	 */
 	protected final void createTable(final TableCreator creator) {
-		String columns = "";
+		synchronized (this.connection) {
+			String columns = "";
 
-		for (final TableRow column : creator.getColumns()) {
-			String dataType = column.getDataType();
+			for (final TableRow column : creator.getColumns()) {
+				String dataType = column.getDataType();
 
-			if (this.isSQLite) {
-				if (dataType.equals("datetime"))
-					dataType = "text";
+				if (this.isSQLite) {
+					if (dataType.equals("datetime"))
+						dataType = "text";
 
-				else if (creator.getPrimaryColumn() != null && creator.getPrimaryColumn().equals(column.getName()))
-					dataType = "INTEGER PRIMARY KEY";
+					else if (creator.getPrimaryColumn() != null && creator.getPrimaryColumn().equals(column.getName()))
+						dataType = "INTEGER PRIMARY KEY";
+				}
+
+				columns += (columns.isEmpty() ? "" : ", ") + "`" + column.getName() + "` " + dataType;
+
+				if (column.getAutoIncrement() != null && column.getAutoIncrement())
+					if (this.isSQLite)
+						columns += " AUTOINCREMENT";
+
+					else
+						columns += " NOT NULL AUTO_INCREMENT";
+
+				else if (column.getNotNull() != null && column.getNotNull())
+					columns += " NOT NULL";
+
+				if (column.getDefaultValue() != null)
+					columns += " DEFAULT " + column.getDefaultValue();
 			}
 
-			columns += (columns.isEmpty() ? "" : ", ") + "`" + column.getName() + "` " + dataType;
+			if (creator.getPrimaryColumn() != null && !this.isSQLite)
+				columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
 
-			if (column.getAutoIncrement() != null && column.getAutoIncrement())
-				if (this.isSQLite)
-					columns += " AUTOINCREMENT";
+			try {
+				this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
+
+			} catch (final Throwable t) {
+				if (t.toString().contains("Unknown collation")) {
+					Common.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
+					Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable database connection or update your driver to fix this.");
+				}
 
 				else
-					columns += " NOT NULL AUTO_INCREMENT";
-
-			else if (column.getNotNull() != null && column.getNotNull())
-				columns += " NOT NULL";
-
-			if (column.getDefaultValue() != null)
-				columns += " DEFAULT " + column.getDefaultValue();
-		}
-
-		if (creator.getPrimaryColumn() != null && !this.isSQLite)
-			columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
-
-		try {
-			this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
-
-		} catch (final Throwable t) {
-			if (t.toString().contains("Unknown collation")) {
-				Common.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
-				Common.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable database connection or update your driver to fix this.");
+					throw t;
 			}
-
-			else
-				throw t;
 		}
 	}
 
@@ -429,11 +433,13 @@ public class SimpleDatabase {
 	 * @param columnsAndValues
 	 */
 	protected final void insert(final String table, @NonNull final SerializedMap columnsAndValues) {
-		final String columns = Common.join(columnsAndValues.keySet());
-		final String values = Common.join(columnsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + value + "'");
-		final String duplicateUpdate = Common.join(columnsAndValues.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
+		synchronized (this.connection) {
+			final String columns = Common.join(columnsAndValues.keySet());
+			final String values = Common.join(columnsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + value + "'");
+			final String duplicateUpdate = Common.join(columnsAndValues.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
-		this.update("INSERT INTO " + this.replaceVariables(table) + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";"));
+			this.update("INSERT INTO " + this.replaceVariables(table) + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";"));
+		}
 	}
 
 	/**
@@ -452,24 +458,33 @@ public class SimpleDatabase {
 	 * @param maps
 	 */
 	protected final void insertBatch(final String table, @NonNull final List<SerializedMap> maps) {
-		final List<String> sqls = new ArrayList<>();
+		synchronized (this.connection) {
+			final List<String> sqls = new ArrayList<>();
 
-		for (final SerializedMap map : maps) {
-			final String columns = Common.join(map.keySet());
-			final String values = Common.join(map.values(), ", ", this::parseValue);
-			final String duplicateUpdate = Common.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
+			for (final SerializedMap map : maps)
+				try {
+					final String columns = Common.join(map.keySet());
+					final String values = Common.join(map.values(), ", ", this::parseValue);
+					final String duplicateUpdate = Common.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
-			sqls.add("INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";"));
+					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
+
+					sqls.add(sql);
+					System.out.println("Adding SQL: " + sql);
+
+				} catch (final Throwable t) {
+					Common.error(t, "Error inserting batch map: " + map);
+				}
+
+			this.batchUpdate(sqls);
 		}
-
-		this.batchUpdate(sqls);
 	}
 
 	/*
 	 * A helper method to insert compatible value to db
 	 */
 	private final String parseValue(final Object value) {
-		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(Mode.YAML, value).toString() + "'";
+		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(this.getTableMode(), value).toString() + "'";
 	}
 
 	/**
@@ -483,66 +498,99 @@ public class SimpleDatabase {
 		if (!this.connecting)
 			Valid.checkAsync("Updating database must be done async! Call: " + sql);
 
-		this.checkEstablished();
+		synchronized (this.connection) {
+			this.checkEstablished();
 
-		if (!this.isConnected())
-			this.connectUsingLastCredentials();
+			if (!this.isConnected())
+				this.connectUsingLastCredentials();
 
-		sql = this.replaceVariables(sql);
-		Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
+			sql = this.replaceVariables(sql);
+			Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
 
-		Debugger.debug("mysql", "Updating database with: " + sql);
+			Debugger.debug("mysql", "Updating database with: " + sql);
 
-		try (Statement statement = this.connection.createStatement()) {
-			statement.executeUpdate(sql);
+			try (Statement statement = this.connection.createStatement()) {
+				statement.executeUpdate(sql);
 
-		} catch (final SQLException e) {
-			this.handleError(e, "Error on updating database with: " + sql);
+			} catch (final SQLException e) {
+				this.handleError(e, "Error on updating database with: " + sql);
+			}
 		}
 	}
 
 	/**
-	 * Lists all rows in the given table with the "*" parameter, listing all rows
+	 * Lists all rows in the given table
 	 *
 	 * @param table
 	 * @param consumer
 	 */
 	protected final void selectAll(final String table, final ResultReader consumer) {
-		this.select(table, "*", consumer);
+		this.select(table, null, consumer);
 	}
 
 	/**
-	 * Lists all rows in the given table with the given parameter.
+	 * Lists all rows in the given table matching the given where clauses. Example use:
+	 *
+	 * Map<String, Object> conditions = new HashMap<>();
+	 *
+	 * conditions.put("name", "John");
+	 * conditions.put("age", 30);
+	 * conditions.put("city", "%New York%");
+	 *
 	 * Do not forget to close the connection when done in your consumer.
 	 *
 	 * @param table
-	 * @param param
+	 * @param where
 	 * @param consumer
 	 */
-	protected final void select(final String table, final String param, final ResultReader consumer) {
-		if (!this.isLoaded())
-			return;
+	protected final void select(final String table, @Nullable final Map<String, Object> where, final ResultReader consumer) {
+		synchronized (this.connection) {
+			if (!this.isLoaded())
+				return;
 
-		final String tableName = this.replaceVariables(table);
+			final String tableName = this.replaceVariables(table);
+			final String sql = this.isSQLite ? "SELECT * FROM " + table + " " + buildWhere(where) : "SELECT * " + buildWhere(where) + " FROM " + table;
 
-		try (ResultSet resultSet = this.query("SELECT " + param + " FROM " + table)) {
-			while (resultSet.next())
-				try {
-					consumer.accept(new SimpleResultSet(tableName, resultSet));
+			try (ResultSet resultSet = this.query(sql)) {
+				while (resultSet.next())
+					try {
+						consumer.accept(new SimpleResultSet(tableName, resultSet));
 
-				} catch (final InvalidRowException ex) {
-					// Pardoned
+					} catch (final InvalidRowException ex) {
+						// Pardoned
 
-				} catch (final Throwable t) {
-					Common.log("Error reading a row from table " + tableName + " with param '" + param + "', aborting...");
+					} catch (final Throwable t) {
+						Common.log("Error reading a row from table " + tableName + " where " + (where == null ? "all" : where) + ", aborting...");
 
-					t.printStackTrace();
-					break;
-				}
+						t.printStackTrace();
+						break;
+					}
 
-		} catch (final Throwable t) {
-			Common.error(t, "Error selecting rows from table " + table + " with param '" + param + "'");
+			} catch (final Throwable t) {
+				Common.error(t, "Error selecting rows from table " + table + " where " + (where == null ? "all" : where));
+			}
 		}
+	}
+
+	private static String buildWhere(Map<String, Object> conditions) {
+		if (conditions == null || conditions.isEmpty())
+			return "";
+
+		final List<String> clauses = new ArrayList<>();
+
+		conditions.forEach((key, value) -> {
+			String clause;
+
+			if (value instanceof String)
+				clause = String.format("%s = '%s'", key, value);
+
+			else
+				clause = String.format("%s = %s", key, value);
+
+			clauses.add(clause);
+		});
+
+		return "WHERE " + String.join(" AND ", clauses);
 	}
 
 	/**
@@ -570,30 +618,31 @@ public class SimpleDatabase {
 	 * @return
 	 */
 	protected final int count(final String table, final SerializedMap conditions) {
+		synchronized (this.connection) {
+			// Convert conditions into SQL syntax
+			final Set<String> conditionsList = Common.convertSet(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtil.serialize(this.getTableMode(), entry.getValue()) + "'");
 
-		// Convert conditions into SQL syntax
-		final Set<String> conditionsList = Common.convertSet(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtil.serialize(Mode.YAML, entry.getValue()) + "'");
+			// Run the query
+			final String sql = "SELECT * FROM " + table + (conditionsList.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditionsList)) + ";";
 
-		// Run the query
-		final String sql = "SELECT * FROM " + table + (conditionsList.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditionsList)) + ";";
+			try (ResultSet resultSet = this.query(sql)) {
+				int count = 0;
 
-		try (ResultSet resultSet = this.query(sql)) {
-			int count = 0;
+				while (resultSet.next())
+					count++;
 
-			while (resultSet.next())
-				count++;
+				return count;
 
-			return count;
+			} catch (final SQLException ex) {
+				Common.throwError(ex,
+						"Unable to count rows!",
+						"Table: " + this.replaceVariables(table),
+						"Conditions: " + conditions,
+						"Query: " + sql);
+			}
 
-		} catch (final SQLException ex) {
-			Common.throwError(ex,
-					"Unable to count rows!",
-					"Table: " + this.replaceVariables(table),
-					"Conditions: " + conditions,
-					"Query: " + sql);
+			return 0;
 		}
-
-		return 0;
 	}
 
 	/**
@@ -607,29 +656,31 @@ public class SimpleDatabase {
 	protected final ResultSet query(String sql) {
 		Valid.checkAsync("Sending database query must be called async, command: " + sql);
 
-		this.checkEstablished();
+		synchronized (this.connection) {
+			this.checkEstablished();
 
-		if (!this.isConnected())
-			this.connectUsingLastCredentials();
+			if (!this.isConnected())
+				this.connectUsingLastCredentials();
 
-		sql = this.replaceVariables(sql);
+			sql = this.replaceVariables(sql);
 
-		Debugger.debug("mysql", "Querying database with: " + sql);
+			Debugger.debug("mysql", "Querying database with: " + sql);
 
-		try {
-			final Statement statement = this.connection.createStatement();
-			final ResultSet resultSet = statement.executeQuery(sql);
+			try {
+				final Statement statement = this.connection.createStatement();
+				final ResultSet resultSet = statement.executeQuery(sql);
 
-			return resultSet;
+				return resultSet;
 
-		} catch (final SQLException ex) {
-			if (ex instanceof SQLSyntaxErrorException && ex.getMessage().startsWith("Table") && ex.getMessage().endsWith("doesn't exist"))
-				return new DummyResultSet();
+			} catch (final SQLException ex) {
+				if (ex instanceof SQLSyntaxErrorException && ex.getMessage().startsWith("Table") && ex.getMessage().endsWith("doesn't exist"))
+					return new DummyResultSet();
 
-			this.handleError(ex, "Error on querying database with: " + sql);
+				this.handleError(ex, "Error on querying database with: " + sql);
+			}
+
+			return null;
 		}
-
-		return null;
 	}
 
 	/**
@@ -641,45 +692,47 @@ public class SimpleDatabase {
 		if (sqls.isEmpty())
 			return;
 
-		this.checkEstablished();
+		synchronized (this.connection) {
+			this.checkEstablished();
 
-		if (!this.isConnected())
-			this.connectUsingLastCredentials();
+			if (!this.isConnected())
+				this.connectUsingLastCredentials();
 
-		try (Statement batchStatement = this.getConnection().createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
-			final int processedCount = sqls.size();
+			try (Statement batchStatement = this.getConnection().createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
+				final int processedCount = sqls.size();
 
-			for (final String sql : sqls)
-				batchStatement.addBatch(this.replaceVariables(sql));
+				for (final String sql : sqls)
+					batchStatement.addBatch(this.replaceVariables(sql));
 
-			if (processedCount > 10_000)
-				Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
-						+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
+				if (processedCount > 10_000)
+					Common.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
+							+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
 
-			// Prevent automatically sending db instructions
-			this.getConnection().setAutoCommit(false);
+				// Prevent automatically sending db instructions
+				this.getConnection().setAutoCommit(false);
 
-			try {
-				// Execute
-				batchStatement.executeBatch();
+				try {
+					// Execute
+					batchStatement.executeBatch();
 
-				// This will block the thread
-				this.getConnection().commit();
+					// This will block the thread
+					this.getConnection().commit();
+
+				} catch (final Throwable t) {
+					// Cancel the task but handle the error upstream
+					throw t;
+				}
 
 			} catch (final Throwable t) {
-				// Cancel the task but handle the error upstream
-				throw t;
-			}
+				t.printStackTrace();
 
-		} catch (final Throwable t) {
-			t.printStackTrace();
+			} finally {
+				try {
+					this.getConnection().setAutoCommit(true);
 
-		} finally {
-			try {
-				this.getConnection().setAutoCommit(true);
-
-			} catch (final SQLException ex) {
-				ex.printStackTrace();
+				} catch (final SQLException ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
 	}
@@ -694,15 +747,17 @@ public class SimpleDatabase {
 	 * @throws SQLException
 	 */
 	protected final java.sql.PreparedStatement prepareStatement(String sql) throws SQLException {
-		this.checkEstablished();
+		synchronized (this.connection) {
+			this.checkEstablished();
 
-		if (!this.isConnected())
-			this.connectUsingLastCredentials();
+			if (!this.isConnected())
+				this.connectUsingLastCredentials();
 
-		sql = this.replaceVariables(sql);
+			sql = this.replaceVariables(sql);
 
-		Debugger.debug("mysql", "Preparing statement: " + sql);
-		return this.connection.prepareStatement(sql);
+			Debugger.debug("mysql", "Preparing statement: " + sql);
+			return this.connection.prepareStatement(sql);
+		}
 	}
 
 	/**
@@ -718,15 +773,17 @@ public class SimpleDatabase {
 	 * @throws SQLException
 	 */
 	protected final java.sql.PreparedStatement prepareStatement(String sql, final int type, final int concurrency) throws SQLException {
-		this.checkEstablished();
+		synchronized (this.connection) {
+			this.checkEstablished();
 
-		if (!this.isConnected())
-			this.connectUsingLastCredentials();
+			if (!this.isConnected())
+				this.connectUsingLastCredentials();
 
-		sql = this.replaceVariables(sql);
+			sql = this.replaceVariables(sql);
 
-		Debugger.debug("mysql", "Preparing statement: " + sql);
-		return this.connection.prepareStatement(sql, type, concurrency);
+			Debugger.debug("mysql", "Preparing statement: " + sql);
+			return this.connection.prepareStatement(sql, type, concurrency);
+		}
 	}
 
 	/**
@@ -842,6 +899,15 @@ public class SimpleDatabase {
 			sql = sql.replace("{" + entry.getKey() + "}", entry.getValue());
 
 		return sql.replace("{table}", this.getTable());
+	}
+
+	/**
+	 * Get the default serialize mode
+	 *
+	 * @return
+	 */
+	protected Mode getTableMode() {
+		return SerializeUtil.Mode.YAML;
 	}
 
 	// --------------------------------------------------------------------
@@ -1286,7 +1352,6 @@ public class SimpleDatabase {
 			}
 		}
 
-		// TODO test on a real mysql
 		public long getTimestampStrict(String columnLabel) throws SQLException {
 			final String rawTimestamp = delegate.getString(columnLabel);
 
