@@ -48,7 +48,6 @@ enum MinecraftVersion {
 	private final int versionId;
 	private final boolean mojangMapping;
 
-	// TODO: not nice
 	@SuppressWarnings("serial")
 	private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
 		{

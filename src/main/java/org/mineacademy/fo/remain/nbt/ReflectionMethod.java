@@ -131,7 +131,6 @@ enum ReflectionMethod {
 	COMPOUND_GET_KEYS(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] {}, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "c"), new Since(MinecraftVersion.MC1_13_R1, "getKeys"),
 			new Since(MinecraftVersion.MC1_18_R1, "getAllKeys()")),
-	// FIXME ?!?
 	LISTCOMPOUND_GET_KEYS(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] {}, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "c"), new Since(MinecraftVersion.MC1_13_R1, "getKeys"),
 			new Since(MinecraftVersion.MC1_18_R1, "getAllKeys()")),
