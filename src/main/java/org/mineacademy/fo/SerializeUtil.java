@@ -236,9 +236,16 @@ public final class SerializeUtil {
 					for (final Object element : object instanceof IsInList ? ((IsInList<?>) object).getList() : (Iterable<?>) object)
 						serialized.add(serialize(mode, element));
 
-				else
-					for (final Object element : (Object[]) object)
+				else {
+					// Supports Object[] as well as primitive arrays
+					final int length = Array.getLength(object);
+
+					for (int i = 0; i < length; i++) {
+						final Object element = Array.get(object, i);
+
 						serialized.add(serialize(mode, element));
+					}
+				}
 
 				return serialized;
 
@@ -315,12 +322,11 @@ public final class SerializeUtil {
 
 		else if (object instanceof ConfigurationSerializable) {
 
-			if (isJson) {
-				if (object instanceof ItemStack)
-					return JsonItemStack.toJson((ItemStack) object);
+			if (object instanceof ItemStack) {
+				return isJson ? JsonItemStack.toJson((ItemStack) object) : serialize(((ItemStack) object).serialize());
 
+			} else if (isJson)
 				throw new FoException("serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
-			}
 
 			return object;
 
