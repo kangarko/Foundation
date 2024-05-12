@@ -33,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.MemorySection;
@@ -43,6 +44,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -1068,6 +1070,45 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 	// Running commands
 	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Find the plugin command from the command.
+	 *
+	 * The command can either just be the label such as "/give" or "give"
+	 * or the full command such as "/give kangarko diamonds", in which case
+	 * we will find the label and just match against "/give"
+	 *
+	 * @param command
+	 * @return
+	 */
+	public static Command findCommand(final String command) {
+		final String[] args = command.split(" ");
+
+		if (args.length > 0) {
+			String label = args[0].toLowerCase();
+
+			if (label.startsWith("/"))
+				label = label.substring(1);
+
+			for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins()) {
+				final JavaPlugin plugin = (JavaPlugin) otherPlugin;
+
+				if (plugin instanceof JavaPlugin) {
+					final Command pluginCommand = plugin.getCommand(label);
+
+					if (pluginCommand != null)
+						return pluginCommand;
+				}
+			}
+
+			final Command serverCommand = Remain.getCommandMap().getCommand(label);
+
+			if (serverCommand != null)
+				return serverCommand;
+		}
+
+		return null;
+	}
 
 	/**
 	 * Runs the given command (without /) as the console, replacing {player} with sender
