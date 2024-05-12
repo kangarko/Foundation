@@ -127,7 +127,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 */
 	@Override
 	public int getQuantityButtonPosition() {
-		return this.mode == EditMode.ITEM ? -1 : MenuQuantitable.super.getQuantityButtonPosition(); // TODO was this.getSize() - 6
+		return this.mode == EditMode.ITEM ? -1 : MenuQuantitable.super.getQuantityButtonPosition();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
