@@ -1,6 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -1087,8 +1088,6 @@ public class NBTCompound implements ReadWriteNBT {
 		else
 			return getIndexedValue(tag, segment, (Class<T>) defaultValue.getClass());
 	}
-
-	// FIXME: before I'm even done writing this method, this sucks. Needs refactoring at some point
 
 	private <T> T getIndexedValue(NBTCompound comp, PathSegment segment, Class<T> type) {
 		if (type == String.class) {
