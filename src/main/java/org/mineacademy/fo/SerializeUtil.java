@@ -218,37 +218,42 @@ public final class SerializeUtil {
 			if (isJson) {
 				final JSONArray jsonList = new JSONArray();
 
-				if (object instanceof Iterable || object instanceof IsInList)
+				if (object instanceof Iterable || object instanceof IsInList) {
 					for (final Object element : object instanceof IsInList ? ((IsInList<?>) object).getList() : (Iterable<?>) object)
 						addJsonElement(element, jsonList);
 
-				else
-					for (final Object element : (Object[]) object)
-						addJsonElement(element, jsonList);
+				} else {
+					final Object[] array = (Object[]) object;
+
+					for (int i = 0; i < array.length; i++)
+						jsonList.add(toJsonElement(array[i]));
+				}
 
 				return jsonList;
 			}
 
 			else {
-				final List<Object> serialized = new ArrayList<>();
+				if (object instanceof Iterable || object instanceof IsInList) {
+					final List<Object> serialized = new ArrayList<>();
 
-				if (object instanceof Iterable || object instanceof IsInList)
 					for (final Object element : object instanceof IsInList ? ((IsInList<?>) object).getList() : (Iterable<?>) object)
 						serialized.add(serialize(mode, element));
 
-				else {
+					return serialized;
+
+				} else {
 					// Supports Object[] as well as primitive arrays
 					final int length = Array.getLength(object);
+					final Object[] serialized = new Object[length];
 
 					for (int i = 0; i < length; i++) {
 						final Object element = Array.get(object, i);
 
-						serialized.add(serialize(mode, element));
+						serialized[i] = serialize(mode, element);
 					}
+
+					return serialized;
 				}
-
-				return serialized;
-
 			}
 
 		} else if (object instanceof Map || object instanceof StrictMap) {
@@ -323,10 +328,10 @@ public final class SerializeUtil {
 		else if (object instanceof ConfigurationSerializable) {
 
 			if (object instanceof ItemStack) {
-				return isJson ? JsonItemStack.toJson((ItemStack) object) : serialize(((ItemStack) object).serialize());
+				return isJson ? JsonItemStack.toJson((ItemStack) object) : object;
 
 			} else if (isJson)
-				throw new FoException("serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
+				throw new FoException("Serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
 
 			return object;
 
@@ -362,6 +367,37 @@ public final class SerializeUtil {
 					Common.error(ex, "Failed to deserialize JSON collection from string: " + element);
 			}
 		}
+	}
+
+	/*
+	 * Helps to add an unknown element into a json list
+	 */
+	private static Object toJsonElement(Object element) {
+		if (element == null)
+			return null;
+
+		if (element instanceof Jsonable)
+			return element;
+
+		else {
+			element = serialize(Mode.JSON, element);
+
+			// Assume the element is a JSON string
+			try {
+				return JSONParser.deserialize(element.toString());
+
+			} catch (final JSONParseException ex) {
+				final String message = ex.getMessage();
+
+				// Apparently not a json string :/
+				if (message.contains("The unexpected character") && (message.contains("was found at position 0") || message.contains("was found at position 1")))
+					return element.toString();
+				else
+					Common.error(ex, "Failed to deserialize JSON collection from string: " + element);
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -634,11 +670,27 @@ public final class SerializeUtil {
 			}
 
 			else {
-				final Object[] rawArray = (Object[]) object;
-				array = (T[]) Array.newInstance(classOf.getComponentType(), rawArray.length);
+				if (ItemStack[].class.isAssignableFrom(classOf)) {
+					// The object is a raw json string. It's a list of json itemstacks. We need to call JsonItemStack#fromJson for each element in the list.
+					final List<ItemStack> list = new ArrayList<>();
 
-				for (int i = 0; i < array.length; i++)
-					array[i] = rawArray[i] == null ? null : (T) deserialize(mode, classOf.getComponentType(), rawArray[i], (Object[]) null);
+					if (isJson) {
+						final JSONArray jsonList = JSONParser.deserialize(object.toString(), new JSONArray());
+
+						for (final Object element : jsonList)
+							list.add(element == null ? null : JsonItemStack.fromJson(element.toString()));
+					} else
+						throw new FoException("Cannot deserialize non-JSON ItemStack[]");
+
+					return (T) list.toArray(new ItemStack[list.size()]);
+
+				} else {
+					final Object[] rawArray = (Object[]) object;
+					array = (T[]) Array.newInstance(classOf.getComponentType(), rawArray.length);
+
+					for (int i = 0; i < array.length; i++)
+						array[i] = rawArray[i] == null ? null : (T) deserialize(mode, classOf.getComponentType(), rawArray[i], (Object[]) null);
+				}
 			}
 
 			return (T) array;
