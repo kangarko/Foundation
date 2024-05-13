@@ -175,7 +175,7 @@ public final class VisualizedRegion extends Region {
 		this.task = Common.runTimer(this.delayTicks, new SimpleRunnable() {
 			@Override
 			public void run() {
-				if (VisualizedRegion.this.viewers.isEmpty()) {
+				if (VisualizedRegion.this.viewers.isEmpty() || !VisualizedRegion.this.isWhole()) {
 					VisualizedRegion.this.stopVisualizing();
 
 					return;
