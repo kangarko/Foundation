@@ -470,7 +470,7 @@ public class SimpleDatabase {
 					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
 
 					sqls.add(sql);
-					System.out.println("Adding SQL: " + sql);
+					System.out.println("Adding batch SQL: " + sql);
 
 				} catch (final Throwable t) {
 					Common.error(t, "Error inserting batch map: " + map);
@@ -484,7 +484,9 @@ public class SimpleDatabase {
 	 * A helper method to insert compatible value to db
 	 */
 	private final String parseValue(final Object value) {
-		return value == null || value.equals("NULL") ? "NULL" : "'" + SerializeUtil.serialize(this.getTableMode(), value).toString() + "'";
+		final Object serialized = SerializeUtil.serialize(this.getTableMode(), value);
+
+		return value == null || value.equals("NULL") ? "NULL" : "'" + serialized.toString() + "'";
 	}
 
 	/**
@@ -1169,6 +1171,27 @@ public class SimpleDatabase {
 					Integer.parseInt(split[1]),
 					Integer.parseInt(split[2])
 			};
+		}
+
+		public ItemStack[] getItemArray(String columnLabel) throws SQLException {
+			final String value = this.getString(columnLabel);
+
+			if (value == null || "".equals(value))
+				return new ItemStack[0];
+
+			return getItemArrayStrict(columnLabel);
+		}
+
+		public ItemStack[] getItemArrayStrict(String columnLabel) throws SQLException {
+			final String value = this.getString(columnLabel);
+
+			if (value == null || "".equals(value)) {
+				Common.warning(SimplePlugin.getNamed() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+
+				throw new InvalidRowException();
+			}
+
+			return SerializeUtil.deserialize(Mode.JSON, ItemStack[].class, value);
 		}
 
 		public <T extends Enum<T>> T getEnum(String columnLabel, Class<T> typeOf) throws SQLException {
