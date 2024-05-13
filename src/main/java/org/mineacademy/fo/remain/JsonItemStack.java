@@ -48,6 +48,8 @@ import com.google.gson.JsonPrimitive;
  */
 public class JsonItemStack {
 
+	private static final Gson gson = new Gson();
+
 	private static final String[] BYPASS_CLASS = {
 			"CraftMetaBlockState",
 			//"CraftMetaItem",
@@ -61,20 +63,17 @@ public class JsonItemStack {
 	 *
 	 * @return The JSON string
 	 */
-	public static String toJsonString(@Nullable ItemStack itemStack) {
-		final Gson gson = new Gson();
-
-		return gson.toJson(toJson(itemStack));
+	public static String toJson(@Nullable ItemStack itemStack) {
+		return gson.toJson(toJson0(itemStack));
 	}
 
-	/**
-	 * Parse the {@link ItemStack} to JSON
-	 *
-	 * @param item The {@link ItemStack} instance
-	 *
-	 * @return The JSON object
+	/*
+	 * Parse the {@link ItemStack} to JSON. This method is private
+	 * because we prefer using GSON to serialize the JSON - the
+	 * SimpleJSON library cannot properly serialize some metadata
+	 * such as potions etc.
 	 */
-	public static JSONObject toJson(@Nullable ItemStack item) {
+	private static JSONObject toJson0(@Nullable ItemStack item) {
 
 		if (item == null)
 			return null;
