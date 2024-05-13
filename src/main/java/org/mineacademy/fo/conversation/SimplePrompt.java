@@ -82,8 +82,8 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	public final String getPromptText(final ConversationContext context) {
 		String prompt = this.getPrompt(context);
 
-		if (Common.getTellPrefix().isEmpty() /* ignore since we can default to this when no custom prefix is set */
-				&& Messenger.ENABLED
+		if (Messenger.ENABLED
+				&& (this.getCustomPrefix() == null || !prompt.contains(this.getCustomPrefix()))
 				&& !prompt.contains(Messenger.getAnnouncePrefix())
 				&& !prompt.contains(Messenger.getErrorPrefix())
 				&& !prompt.contains(Messenger.getInfoPrefix())
@@ -165,7 +165,20 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final Conversable conversable, final String message) {
-		Common.tellConversing(conversable, (this.getCustomPrefix() != null ? this.getCustomPrefix() : "") + message);
+		if (this.getCustomPrefix() != null)
+			Common.tellConversingNoPrefix(conversable, this.getCustomPrefix() + message);
+		else
+			Common.tellConversing(conversable, message);
+	}
+
+	/**
+	 * Sends the message to the player
+	 *
+	 * @param conversable
+	 * @param message
+	 */
+	protected final void tellNoPrefix(final Conversable conversable, final String message) {
+		Common.tellConversingNoPrefix(conversable, message);
 	}
 
 	/**
@@ -176,7 +189,21 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
-		Common.tellLaterConversing(delayTicks, conversable, (this.getCustomPrefix() != null ? this.getCustomPrefix() : "") + message);
+		if (this.getCustomPrefix() != null)
+			Common.tellLaterConversingNoPrefix(delayTicks, conversable, this.getCustomPrefix() + message);
+		else
+			Common.tellLaterConversing(delayTicks, conversable, message);
+	}
+
+	/**
+	 * Sends the message to the player later
+	 *
+	 * @param delayTicks
+	 * @param conversable
+	 * @param message
+	 */
+	protected final void tellLaterNoPrefix(final int delayTicks, final Conversable conversable, final String message) {
+		Common.tellLaterConversingNoPrefix(delayTicks, conversable, message);
 	}
 
 	/**
@@ -202,7 +229,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 				final String failPrompt = this.getFailedValidationText(context, input);
 
 				if (failPrompt != null)
-					this.tellLater(1, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
+					this.tellLaterNoPrefix(0, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
 
 				// Redisplay this prompt to the user to re-collect input
 				return this;
