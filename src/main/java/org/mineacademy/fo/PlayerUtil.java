@@ -91,7 +91,11 @@ public final class PlayerUtil {
 	 * @param message
 	 */
 	public static void kick(final Player player, final String... message) {
-		Common.runLater(() -> player.kickPlayer(Common.colorize(message)));
+		if (Bukkit.isPrimaryThread())
+			player.kickPlayer(Common.colorize(message));
+
+		else
+			Common.runLater(() -> player.kickPlayer(Common.colorize(message)));
 	}
 
 	/**
