@@ -30,6 +30,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
+import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -38,6 +39,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.bungee.BungeeListener;
+import org.mineacademy.fo.command.RegionCommand;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
@@ -54,6 +56,7 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.FileConfig;
@@ -307,6 +310,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			if (CompMetadata.isLegacy() && CompMetadata.ENABLE_LEGACY_FILE_STORAGE)
 				this.registerEvents(CompMetadata.MetadataFile.getInstance());
 
+			if (this.areRegionsEnabled())
+				DiskRegion.loadRegions();
+
 			this.onReloadablesStart();
 
 			this.startingReloadables = false;
@@ -472,10 +478,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
-		
+
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
 			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-		
+
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
@@ -797,6 +803,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			Lang.reloadLang();
 			Lang.loadPrefixes();
+
+			if (this.areRegionsEnabled())
+				DiskRegion.loadRegions();
 
 			this.onReloadablesStart();
 
@@ -1205,6 +1214,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 */
 	public boolean areToolsEnabled() {
 		return true;
+	}
+
+	/**
+	 * Should we enable the region system? Loads {@link DiskRegion#loadRegions()}
+	 * You still need to register the subcommand {@link RegionCommand} manually.
+	 *
+	 * @return
+	 */
+	public boolean areRegionsEnabled() {
+		return false;
 	}
 
 	/**
