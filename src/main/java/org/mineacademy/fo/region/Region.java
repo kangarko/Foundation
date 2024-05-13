@@ -12,12 +12,15 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ConfigSerializable;
+import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -275,6 +278,70 @@ public class Region implements ConfigSerializable {
 		return x >= primary.getX() && x <= secondary.getX()
 				&& y >= primary.getY() && y <= secondary.getY()
 				&& z >= primary.getZ() && z <= secondary.getZ();
+	}
+
+	/**
+	 * Teleport player to region center
+	 *
+	 * @param player
+	 */
+	public void teleportToCenter(Player player) {
+		Valid.checkNotNull(this.isWhole(), "Cannot call teleportToCenter() on a non-complete region: " + this.toString());
+
+		final Location toTeleportLocation = this.getCenter().clone();
+		final Location playerLocation = player.getLocation();
+
+		toTeleportLocation.setYaw(playerLocation.getYaw());
+		toTeleportLocation.setPitch(playerLocation.getPitch());
+
+		player.teleport(this.getHighestLocation(toTeleportLocation));
+	}
+
+	/**
+	 * Gets the highest non-air block's location at a given x and z coordinate within the region's boundaries.
+	 *
+	 * @param location The base location used to find the highest block's location. The x and z coordinates are used,
+	 *                 while y is ignored and recalculated by this method.
+	 * @return The recalculated Location object for the highest non-air block vertically (plus one block height).
+	 * @throws FoException if the region's border is not set.
+	 */
+	public final Location getHighestLocation(Location location) {
+		Valid.checkNotNull(this.isWhole(), "Cannot call getHighestLocation() on a non-complete region: " + this.toString());
+
+		final int x = location.getBlockX();
+		final int z = location.getBlockZ();
+
+		final boolean sameHeight = this.getPrimary().getY() == this.getSecondary().getY();
+		int y = (int) Math.max(this.getPrimary().getY(), this.getSecondary().getY()) - 1;
+
+		if (sameHeight)
+			y = y + 1;
+
+		highestAvailableLookup:
+		{
+			for (; sameHeight ? y < location.getWorld().getMaxHeight() : y > 1; y = y + (sameHeight ? 1 : -1)) {
+				final Block block = location.getWorld().getBlockAt(x, y, z);
+
+				if (sameHeight) {
+					if (CompMaterial.isAir(block)) {
+						location.setY(y - 1);
+
+						break highestAvailableLookup;
+					}
+
+				} else {
+					if (!CompMaterial.isAir(block)) {
+						location.setY(y);
+
+						break highestAvailableLookup;
+					}
+				}
+			}
+
+			location.setY(y);
+		}
+
+		return location.add(0, 1, 0);
 	}
 
 	/**
