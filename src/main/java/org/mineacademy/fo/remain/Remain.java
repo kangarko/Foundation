@@ -46,7 +46,9 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.conversations.ConversationContext;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -71,6 +73,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MathUtil;
@@ -2955,6 +2958,21 @@ public final class Remain {
 	 */
 	public static boolean isMemorySection(Object obj) {
 		return obj != null && sectionPathDataClass == obj.getClass();
+	}
+
+	/**
+	 * Get the session data map from the conversation context.
+	 *
+	 * @param context
+	 * @return
+	 */
+	public static Map<Object, Object> getAllSessionData(ConversationContext context) {
+		try {
+			return context.getAllSessionData();
+
+		} catch (final NoSuchMethodError err) {
+			return ReflectionUtil.getFieldContent(context, "sessionData");
+		}
 	}
 
 	// ----------------------------------------------------------------------------------------------------

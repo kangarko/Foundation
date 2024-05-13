@@ -1,5 +1,6 @@
 package org.mineacademy.fo.conversation;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.conversations.Conversable;
@@ -21,6 +22,7 @@ import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompSound;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AccessLevel;
@@ -97,11 +99,13 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		final ConversationContext context = event.getContext();
 		final Conversable conversing = context.getForWhom();
 
+		final Map<Object, Object> sessionData = Remain.getAllSessionData(context);
+
 		final Object source = event.getSource();
-		final boolean timeout = (boolean) context.getAllSessionData().getOrDefault("FLP#TIMEOUT", false);
+		final boolean timeout = (boolean) sessionData.getOrDefault("FLP#TIMEOUT", false);
 
 		// Remove the session data so that they are invisible to other plugnis
-		context.getAllSessionData().remove("FLP#TIMEOUT");
+		sessionData.remove("FLP#TIMEOUT");
 
 		if (source instanceof CustomConversation) {
 			final SimplePrompt lastPrompt = ((CustomConversation) source).getLastSimplePrompt();
@@ -386,16 +390,19 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				// Save the time when we showed the question to the player
 				// so that we only show it once per the given threshold
 				final String promptClass = this.currentPrompt.getClass().getSimpleName();
-				final String question = this.currentPrompt.getPromptText(this.context);
+				String question = this.currentPrompt.getPromptText(this.context);
 
 				try {
-					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) this.context.getAllSessionData().getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(SimpleConversation.this.getTimeout(), TimeUnit.SECONDS).build());
+					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) Remain.getAllSessionData(this.context).getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(SimpleConversation.this.getTimeout(), TimeUnit.SECONDS).build());
 
 					if (!askedQuestions.containsKey(question)) {
 						askedQuestions.put(question, null);
 
+						if (!question.contains(Common.colorize(Messenger.getQuestionPrefix())))
+							question = this.prefix.getPrefix(this.context) + question;
+
 						this.context.setSessionData("Asked_" + promptClass, askedQuestions);
-						this.context.getForWhom().sendRawMessage(this.prefix.getPrefix(this.context) + question);
+						this.context.getForWhom().sendRawMessage(question);
 					}
 				} catch (final NoSuchMethodError ex) {
 					// Unfortunately, old MC version was detected
