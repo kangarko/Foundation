@@ -333,6 +333,27 @@ public final class Common {
 	}
 
 	/**
+	 * Sends the conversable a message later
+	 *
+	 * @param delayTicks
+	 * @param conversable
+	 * @param message
+	 */
+	public static void tellLaterConversingNoPrefix(final int delayTicks, final Conversable conversable, final String message) {
+		runLater(delayTicks, () -> tellConversingNoPrefix(conversable, message));
+	}
+
+	/**
+	 * Sends the conversable player a colorized message
+	 *
+	 * @param conversable
+	 * @param message
+	 */
+	public static void tellConversingNoPrefix(final Conversable conversable, final String message) {
+		conversable.sendRawMessage(colorize(message));
+	}
+
+	/**
 	 * Sends a message to the sender with a given delay, colors & are supported
 	 *
 	 * @param sender
@@ -643,15 +664,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
