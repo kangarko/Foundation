@@ -14,6 +14,7 @@ import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -185,6 +186,12 @@ public final class BungeeUtil {
 							else
 								throw t;
 						}
+
+					} else if (datum instanceof SimpleComponent) {
+						Debugger.put("bungee", datum.toString() + ", ");
+
+						moveHead(actionHead, action, String.class, data);
+						out.writeUTF(((SimpleComponent) datum).serialize().toJson());
 
 					} else if (datum instanceof SerializedMap) {
 						Debugger.put("bungee", datum.toString() + ", ");
