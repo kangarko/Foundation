@@ -459,7 +459,7 @@ public abstract class Menu {
 		}
 
 		// Register current menu
-		Common.runLater(1, () -> {
+		Common.runLater(() -> {
 			try {
 				this.onDisplay(drawer, player);
 
