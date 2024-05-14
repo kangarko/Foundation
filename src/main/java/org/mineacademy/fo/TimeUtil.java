@@ -1,7 +1,6 @@
 package org.mineacademy.fo;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -11,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.settings.SimpleLocalization.Cases;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -21,21 +21,6 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TimeUtil {
-
-	/**
-	 * The date format in dd.MM.yyy HH:mm:ss
-	 */
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-
-	/**
-	 * The date format in dd.MM.yyy HH:mm
-	 */
-	private static final DateFormat DATE_FORMAT_SHORT = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-
-	/**
-	 * The date format in dd.MM HH:mm
-	 */
-	private static final DateFormat DATE_FORMAT_MONTH = new SimpleDateFormat("dd.MM HH:mm");
 
 	/**
 	 * The pattern recognizing 1d1h1s type of dates
@@ -88,7 +73,8 @@ public final class TimeUtil {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return the current date formatted as DAY.MONTH.YEAR HOUR:MINUTES:SECONDS
+	 * Return the current time formatted as per {@link SimpleSettings#DATE_FORMAT}
+	 * Defaults to DAY.MONTH.YEAR HOUR:MINUTES:SECONDS
 	 *
 	 * @return
 	 */
@@ -97,45 +83,56 @@ public final class TimeUtil {
 	}
 
 	/**
-	 * Return the given date in millis formatted as
-	 * DAY.MONTH.YEAR HOUR:MINUTES:SECONDS
+	 * Return the given timestamp in millis formatted as per {@link SimpleSettings#DATE_FORMAT}
+	 * Defaults to DAY.MONTH.YEAR HOUR:MINUTES:SECONDS
 	 *
 	 * @param time
 	 * @return
 	 */
 	public static String getFormattedDate(final long time) {
-		return DATE_FORMAT.format(time);
+		return SimpleSettings.DATE_FORMAT.format(time);
 	}
 
 	/**
-	 * Return the current date formatted as DAY.MONTH.YEAR HOUR:MINUTES
+	 * Return the current time formatted as per {@link SimpleSettings#DATE_FORMAT_SHORT}
+	 * Defaults to DAY.MONTH.YEAR HOUR:MINUTES
 	 *
 	 * @return
 	 */
 	public static String getFormattedDateShort() {
-		return DATE_FORMAT_SHORT.format(System.currentTimeMillis());
+		return getFormattedDateShort(System.currentTimeMillis());
 	}
 
 	/**
-	 * Return the given date in millis formatted as
-	 * DAY.MONTH.YEAR HOUR:MINUTES
+	 * Return the given date in millis formatted as per {@link SimpleSettings#DATE_FORMAT_SHORT}
+	 * Defaults to DAY.MONTH.YEAR HOUR:MINUTES
 	 *
 	 * @param time
 	 * @return
 	 */
 	public static String getFormattedDateShort(final long time) {
-		return DATE_FORMAT_SHORT.format(time);
+		return SimpleSettings.DATE_FORMAT_SHORT.format(time);
 	}
 
 	/**
-	 * Return the given date in millis formatted as
-	 * dd.MM HH:mm
+	 * Return the current time formatted as per {@link SimpleSettings#DATE_FORMAT_MONTH}
+	 * Defaults to DAY.MONTH HOUR:MINUTES
+	 *
+	 * @return
+	 */
+	public static String getFormattedDateMonth() {
+		return getFormattedDateMonth(System.currentTimeMillis());
+	}
+
+	/**
+	 * Return the given date in millis formatted as per {@link SimpleSettings#DATE_FORMAT_MONTH}
+	 * Defaults to DAY.MONTH HOUR:MINUTES
 	 *
 	 * @param time
 	 * @return
 	 */
 	public static String getFormattedDateMonth(final long time) {
-		return DATE_FORMAT_MONTH.format(time);
+		return SimpleSettings.DATE_FORMAT_MONTH.format(time);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -447,7 +444,7 @@ public final class TimeUtil {
 				"second", calendar.get(Calendar.SECOND));
 
 		try {
-			final long timestamp = DATE_FORMAT_SHORT.parse(time).getTime();
+			final long timestamp = new SimpleDateFormat("dd MMM yyyy, HH:mm").parse(time).getTime();
 
 			if (future) {
 				if (System.currentTimeMillis() < timestamp)

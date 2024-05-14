@@ -26,7 +26,6 @@ import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
  * A simple engine that replaces variables in a message.
@@ -381,10 +380,12 @@ public final class Variables {
 				return MinecraftVersion.getFullVersion();
 			case "nms_version":
 				return MinecraftVersion.getServerVersion();
-			case "timestamp":
-				return SimpleSettings.TIMESTAMP_FORMAT.format(System.currentTimeMillis());
-			case "timestamp_short":
+			case "date":
+				return TimeUtil.getFormattedDate();
+			case "date_short":
 				return TimeUtil.getFormattedDateShort();
+			case "date_month":
+				return TimeUtil.getFormattedDateMonth();
 			case "chat_line":
 				return Common.chatLine();
 			case "chat_line_smooth":
