@@ -26,6 +26,7 @@ import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
@@ -67,6 +68,8 @@ final class AutoRegisterScanner {
 	 */
 	public static void scanAndRegister() {
 
+		final SimplePlugin instance = SimplePlugin.getInstance();
+
 		// Reset
 		enchantListenersRegistered = false;
 		bungeeListenerRegistered = false;
@@ -97,6 +100,9 @@ final class AutoRegisterScanner {
 
 				// Auto register classes
 				final AutoRegister autoRegister = clazz.getAnnotation(AutoRegister.class);
+
+				if (clazz == RegionTool.class && (!instance.areRegionsEnabled() || !instance.areToolsEnabled()))
+					continue;
 
 				// Require our annotation to be used, or support legacy classes from Foundation 5
 				if (autoRegister != null || Tool.class.isAssignableFrom(clazz)

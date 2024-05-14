@@ -1,9 +1,12 @@
 package org.mineacademy.fo.settings;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.PermsCommand;
+import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.FileConfig.AccusativeHelper;
 
@@ -268,6 +271,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String PERMS_NO = "&cno";
 
 		/**
+		 * The keys below are used in the {@link RegionTool}
+		 */
+		public static String REGION_SET_PRIMARY = "Set the primary region point.";
+		public static String REGION_SET_SECONDARY = "Set the secondary region point.";
+
+		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
 		private static void init() {
@@ -434,6 +443,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Perms_No"))
 				PERMS_NO = getString("Perms_No");
+
+			if (isSetDefault("Region_Set_Primary"))
+				REGION_SET_PRIMARY = getString("Region_Set_Primary");
+
+			if (isSetDefault("Region_Set_Secondary"))
+				REGION_SET_SECONDARY = getString("Region_Set_Secondary");
 		}
 	}
 
