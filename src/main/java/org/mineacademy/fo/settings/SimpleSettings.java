@@ -99,9 +99,11 @@ public class SimpleSettings extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
-	 * The {timestamp} format.
+	 * The {timestamp} and {date}, {date_short} and {date_month} formats.
 	 */
-	public static DateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+	public static DateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+	public static DateFormat DATE_FORMAT_SHORT = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+	public static DateFormat DATE_FORMAT_MONTH = new SimpleDateFormat("dd.MM HH:mm");
 
 	/**
 	 * The {location} format.
@@ -185,12 +187,28 @@ public class SimpleSettings extends YamlStaticConfig {
 		setPathPrefix(null);
 		upgradeOldSettings();
 
-		if (isSetDefault("Timestamp_Format"))
+		if (isSetDefault("Date_Format"))
 			try {
-				TIMESTAMP_FORMAT = new SimpleDateFormat(getString("Timestamp_Format"));
+				DATE_FORMAT = new SimpleDateFormat(getString("Date_Format"));
 
 			} catch (final IllegalArgumentException ex) {
-				Common.throwError(ex, "Wrong 'Timestamp_Format '" + getString("Timestamp_Format") + "', see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for examples'");
+				Common.throwError(ex, "Wrong 'Date_Format '" + getString("Date_Format") + "', see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for examples'");
+			}
+
+		if (isSetDefault("Date_Format_Short"))
+			try {
+				DATE_FORMAT_SHORT = new SimpleDateFormat(getString("Date_Format_Short"));
+
+			} catch (final IllegalArgumentException ex) {
+				Common.throwError(ex, "Wrong 'Date_Format_Short '" + getString("Date_Format_Short") + "', see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for examples'");
+			}
+
+		if (isSetDefault("Date_Format_Month"))
+			try {
+				DATE_FORMAT_MONTH = new SimpleDateFormat(getString("Date_Format_Month"));
+
+			} catch (final IllegalArgumentException ex) {
+				Common.throwError(ex, "Wrong 'Date_Format_Month '" + getString("Date_Format_Month") + "', see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for examples'");
 			}
 
 		if (isSetDefault("Location_Format"))
