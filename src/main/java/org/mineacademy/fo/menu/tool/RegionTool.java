@@ -14,12 +14,14 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.visual.VisualTool;
 import org.mineacademy.fo.visual.VisualizedRegion;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Represents the tool used to create arena region for any arena
@@ -34,6 +36,45 @@ public final class RegionTool extends VisualTool {
 	private static final Tool instance = new RegionTool();
 
 	/**
+	 * The region point that is shown above the primary/secondary block when tool is held in hands
+	 */
+	@Getter
+	@Setter
+	private static String blockName = "&f[&aRegion point&f]";
+
+	/**
+	 * The block mask you can customize
+	 */
+	@Getter
+	@Setter
+	private static CompMaterial blockMask = CompMaterial.EMERALD_BLOCK;
+
+	/**
+	 * The item material you can customize
+	 */
+	@Getter
+	@Setter
+	private static CompMaterial itemMaterial = CompMaterial.EMERALD;
+
+	/**
+	 * The item name you can customize
+	 */
+	@Getter
+	@Setter
+	private static String itemName = "Region Tool";
+
+	@Getter
+	@Setter
+	private static String[] lore = {
+			"",
+			"Use this tool to create",
+			"and edit regions.",
+			"",
+			"&4&l< &7Left click &7– &7Primary",
+			"&4&l> &7Right click &7– &7Secondary"
+	};
+
+	/**
 	 * The actual item
 	 */
 	private ItemStack item;
@@ -43,7 +84,7 @@ public final class RegionTool extends VisualTool {
 	 */
 	@Override
 	protected String getBlockName(final Block block, final Player player) {
-		return "&f[&aRegion point&f]";
+		return blockName;
 	}
 
 	/**
@@ -51,7 +92,7 @@ public final class RegionTool extends VisualTool {
 	 */
 	@Override
 	protected CompMaterial getBlockMask(final Block block, final Player player) {
-		return CompMaterial.EMERALD_BLOCK;
+		return blockMask;
 	}
 
 	/**
@@ -60,16 +101,7 @@ public final class RegionTool extends VisualTool {
 	@Override
 	public ItemStack getItem() {
 		if (this.item == null)
-			this.item = ItemCreator.of(
-					CompMaterial.EMERALD,
-					"Region Tool",
-					"",
-					"Use this tool to create",
-					"and edit regions.",
-					"",
-					"&4&l< &7Left click &7– &7Primary",
-					"&4&l> &7Right click &7– &7Secondary")
-					.make();
+			this.item = ItemCreator.of(itemMaterial).name(itemName).lore(lore).make();
 
 		return this.item;
 	}
@@ -93,7 +125,7 @@ public final class RegionTool extends VisualTool {
 		if (whole && !player.isConversing())
 			CreateRegionPrompt.showToOrHint(player);
 		else
-			Messenger.success(player, "Set the " + (primary ? "primary" : "secondary") + " region point.");
+			Messenger.success(player, primary ? SimpleLocalization.Commands.REGION_SET_PRIMARY : SimpleLocalization.Commands.REGION_SET_SECONDARY);
 	}
 
 	/**

@@ -25,7 +25,7 @@ public class SelectRegionMenu extends MenuPagged<String> {
 
 	private int colorMask = CompColor.values().length;
 
-	protected SelectRegionMenu(Menu parent) {
+	public SelectRegionMenu(Menu parent) {
 		super(parent, DiskRegion.getRegionNames());
 
 		this.setTitle("Create Or Edit Regions");

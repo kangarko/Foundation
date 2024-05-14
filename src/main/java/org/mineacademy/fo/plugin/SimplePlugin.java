@@ -478,10 +478,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
-
+		
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
 			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-
+		
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
@@ -697,6 +697,16 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 			t.printStackTrace();
 		}
+
+		if (this.areRegionsEnabled())
+			for (final DiskRegion region : DiskRegion.getRegions())
+				try {
+					region.save();
+				} catch (final Throwable t) {
+					Common.log("Error saving region " + region.getName() + "...");
+
+					t.printStackTrace();
+				}
 
 		Objects.requireNonNull(instance, "Instance of " + this.getDataFolder().getName() + " already nulled!");
 		instance = null;
