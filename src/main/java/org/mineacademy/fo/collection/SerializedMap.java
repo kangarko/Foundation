@@ -1045,6 +1045,27 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		return this.serialize().toString();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof SerializedMap) {
+			final SerializedMap other = (SerializedMap) obj;
+
+			if (this.size() == other.size()) {
+				for (final Entry<String, Object> entry : this.map.entrySet()) {
+					final String key = entry.getKey();
+					final Object value = entry.getValue();
+
+					if (!other.map.containsKey(key) || !value.equals(other.map.get(key)))
+						return false;
+				}
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Static
 	// ----------------------------------------------------------------------------------------------------
