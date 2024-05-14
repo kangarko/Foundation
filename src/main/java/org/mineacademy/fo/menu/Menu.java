@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -393,7 +392,8 @@ public abstract class Menu {
 			t.printStackTrace();
 		}
 
-		throw new FoException("Could not instantiate menu of " + this.getClass() + ", override the method 'newInstance()' or ensure you have a public constructor which takes only one parameter ");
+		throw new FoException(this.getClass().getSimpleName() + " lacks newInstance() method! Store your constructor parameters as fields, "
+				+ "override the method and return a new instance using fields as paramteres here. Example: https://i.imgur.com/5mqJ2nD.png");
 	}
 
 	// --------------------------------------------------------------------------------
