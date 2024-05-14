@@ -470,7 +470,6 @@ public class SimpleDatabase {
 					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
 
 					sqls.add(sql);
-					System.out.println("Adding batch SQL: " + sql);
 
 				} catch (final Throwable t) {
 					Common.error(t, "Error inserting batch map: " + map);
