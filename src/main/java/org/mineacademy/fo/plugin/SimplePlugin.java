@@ -755,11 +755,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		final String oldLogPrefix = Common.getLogPrefix();
 		Common.setLogPrefix("");
 
-		Common.log(Common.consoleLineSmooth());
-		Common.log(" ");
-		Common.log("Reloading plugin " + this.getDataFolder().getName() + " v" + getVersion());
-		Common.log(" ");
-
 		reloading = true;
 
 		try {
@@ -816,8 +811,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 				this.reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
-
-			Common.log(Common.consoleLineSmooth());
 
 		} catch (final Throwable t) {
 			Common.throwError(t, "Error reloading " + this.getDataFolder().getName() + " " + getVersion());
