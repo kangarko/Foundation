@@ -526,7 +526,7 @@ public final class Common {
 	 * @return
 	 */
 	public static String resolveSenderName(final CommandSender sender) {
-		return sender instanceof ConsoleCommandSender ? SimpleLocalization.CONSOLE_NAME : sender.getName();
+		return sender instanceof ConsoleCommandSender ? SimpleLocalization.CONSOLE_NAME : sender != null ? sender.getName() : "";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -989,6 +989,7 @@ public final class Common {
 	 * Formats the vector location to one digit decimal points
 	 *
 	 * DO NOT USE FOR SAVING, ONLY INTENDED FOR DEBUGGING
+	 * Use {@link SerializeUtil#serialize(Object)} to save a vector
 	 *
 	 * @param vec
 	 * @return
@@ -1000,23 +1001,26 @@ public final class Common {
 	/**
 	 * Formats the given location to block points without decimals
 	 *
+	 * DO NOT USE FOR SAVING, ONLY INTENDED FOR DEBUGGING
+	 * Use {@link SerializeUtil#serialize(Object)} to save a location
+	 *
 	 * @param loc
 	 * @return
 	 */
-	public static String shortLocation(final Location loc) {
-		if (loc == null)
+	public static String shortLocation(final Location location) {
+		if (location == null)
 			return "Location(null)";
 
-		if (loc.equals(new Location(null, 0, 0, 0)))
+		if (location.equals(new Location(null, 0, 0, 0)))
 			return "Location(null, 0, 0, 0)";
 
-		Valid.checkNotNull(loc.getWorld(), "Cannot shorten a location with null world!");
+		Valid.checkNotNull(location.getWorld(), "Cannot shorten a location with null world!");
 
 		return Replacer.replaceArray(SimpleSettings.LOCATION_FORMAT,
-				"world", loc.getWorld().getName(),
-				"x", loc.getBlockX(),
-				"y", loc.getBlockY(),
-				"z", loc.getBlockZ());
+				"world", location.getWorld().getName(),
+				"x", location.getBlockX(),
+				"y", location.getBlockY(),
+				"z", location.getBlockZ());
 	}
 
 	/**
