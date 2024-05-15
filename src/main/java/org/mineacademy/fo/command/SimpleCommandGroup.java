@@ -475,7 +475,9 @@ public abstract class SimpleCommandGroup {
 				}
 
 				final List<SimpleComponent> lines = new ArrayList<>();
+
 				final boolean atLeast17 = MinecraftVersion.atLeast(V.v1_7);
+				final boolean atLeast13 = MinecraftVersion.atLeast(V.v1_13);
 
 				for (final SimpleSubCommand subcommand : SimpleCommandGroup.this.subcommands)
 					if (subcommand.showInHelp() && this.hasPerm(subcommand.getPermission())) {
@@ -521,7 +523,7 @@ public abstract class SimpleCommandGroup {
 							final List<String> hoverShortened = new ArrayList<>();
 
 							for (final String hoverLine : hover)
-								for (final String hoverLineSplit : Common.split(hoverLine, 55))
+								for (final String hoverLineSplit : Common.split(hoverLine, atLeast13 ? 100 : 55))
 									hoverShortened.add(hoverLineSplit);
 
 							line.onHover(hoverShortened);
