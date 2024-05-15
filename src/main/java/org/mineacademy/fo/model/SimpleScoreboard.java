@@ -206,8 +206,10 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	public final void show(final Player player) {
-		Valid.checkBoolean(this.title != null && !this.title.isEmpty(), "Before calling show(Player) you need to use setTitle() for " + this);
 		Valid.checkBoolean(!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
+
+		if (this.title == null)
+			this.title = "";
 
 		if (this.updateTask == null)
 			this.start();
