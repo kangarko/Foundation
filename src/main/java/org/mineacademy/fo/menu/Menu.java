@@ -343,26 +343,51 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Attempts to find a clickable registered button in this menu having the same
-	 * icon as the given item stack
+	 * Attempts to find a button having the same icon as the given item stack.
 	 *
 	 * @param fromItem the itemstack to compare to
 	 * @return the buttor or null if not found
+	 *
+	 * @deprecated use Position annotation or Button#getSlot instead because comparing by items can return a survival
+	 *             item as button when the button is the same item with the same meta
 	 */
+	@Deprecated
+	@Nullable
 	protected final Button getButton(final ItemStack fromItem) {
 		this.registerButtonsIfHasnt();
 
-		if (fromItem != null)
-			// TODO rewrite to use cache instead of for loop so that two buttons that are the same won't collide
-			for (final Button button : this.registeredButtons.keySet()) {
-				Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
+		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
+			final Button button = entry.getKey();
+			final Position position = entry.getValue();
 
-				final ItemStack item = button.getItem();
-				Valid.checkNotNull(item, "Menu " + this.getTitle() + " contained button " + button.getClass() + " named '" + button.getClass().getSimpleName() + "' with empty item!");
+			Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 
-				if (ItemUtil.isSimilar(fromItem, item))
-					return button;
-			}
+			if (position == null && button.getSlot() == -1 && ItemUtil.isSimilar(fromItem, button.getItem()))
+				return button;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Return a button at a certain slot from its {@link Position} annotation or {@link Button#getSlot()}
+	 *
+	 * @param slot
+	 * @return
+	 */
+	@Nullable
+	protected final Button getButton(final int slot) {
+		this.registerButtonsIfHasnt();
+
+		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
+			final Button button = entry.getKey();
+			final Position position = entry.getValue();
+
+			Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
+
+			if (position != null && (position.value() == slot || position.value() == button.getSlot()))
+				return button;
+		}
 
 		return null;
 	}
@@ -570,6 +595,21 @@ public abstract class Menu {
 			this.animateTitle(animatedTitle);
 	}
 
+	/**
+	 * Redraws buttons registered using {@link Position} annotation or having {@link Button#getSlot()} set
+	 */
+	public void redrawButtons() {
+		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
+			final Button button = entry.getKey();
+			final Position position = entry.getValue();
+
+			if (position == null && button.getSlot() == -1)
+				continue;
+
+			this.setItem(button.getSlot() != -1 ? button.getSlot() : position.value(), button.getItem());
+		}
+	}
+
 	/*
 	 * Internal hook before calling getItemAt
 	 */
@@ -607,27 +647,29 @@ public abstract class Menu {
 			final Button button = entry.getKey();
 			final Position position = entry.getValue();
 
-			if (position == null)
-				continue;
+			if (button.getSlot() != -1) {
+				items.put(button.getSlot(), button.getItem());
 
-			int slot = position.value();
-			final StartPosition startPosition = position.start();
+			} else if (position != null) {
+				int slot = position.value();
+				final StartPosition startPosition = position.start();
 
-			if (startPosition == StartPosition.CENTER)
-				slot += this.getCenterSlot();
+				if (startPosition == StartPosition.CENTER)
+					slot += this.getCenterSlot();
 
-			else if (startPosition == StartPosition.BOTTOM_CENTER)
-				slot += this.getSize() - 5;
+				else if (startPosition == StartPosition.BOTTOM_CENTER)
+					slot += this.getSize() - 5;
 
-			else if (startPosition == StartPosition.BOTTOM_LEFT)
-				slot += this.getSize() - (hasReturnButton ? 2 : 1);
+				else if (startPosition == StartPosition.BOTTOM_LEFT)
+					slot += this.getSize() - (hasReturnButton ? 2 : 1);
 
-			else if (startPosition == StartPosition.TOP_LEFT)
-				slot += 0;
-			else
-				throw new FoException("Does not know how to implement button position's Slot." + startPosition);
+				else if (startPosition == StartPosition.TOP_LEFT)
+					slot += 0;
+				else
+					throw new FoException("Does not know how to implement button position's Slot." + startPosition);
 
-			items.put(slot, button.getItem());
+				items.put(slot, button.getItem());
+			}
 		}
 
 		// Add quantity edit button
@@ -743,11 +785,12 @@ public abstract class Menu {
 	 *
 	 * IMPORTANT TIPS:
 	 *
-	 * 1. To update items, use {@link #setItem(int, ItemStack)}.
-	 * 2. To update buttons, use {@link Button#getItem()}, get it's metadata, update it and set it back.
-	 * 3. To save on performance, create a separate class in your plugin implementing a Runnable, iterating for all
-	 *    players and calling {@link Menu#getMenu(Player)} for each, checking if the menu is instance of your menu,
-	 *    and then writing onUpdate() method to your menu class and calling it from that timed task instead.
+	 * 1. To update buttons, set their slots via {@link Position} or {@link Button#getSlot()} and then call {@link #redrawButtons()}.
+	 * 2. To animate items more effectivelly, create a new class in your plugin implementing Runnable, iterate for all
+	 *    players and call {@link Menu#getMenu(Player)} for each. Then check if the menu is instance of your menu,
+	 *    write onUpdate() method to that menu class and call it from your runnable instead.
+	 *
+	 * Example of a menu with animated button: https://i.imgur.com/z1VZDcw.png
 	 *
 	 * @param periodTicks
 	 * @param task
@@ -766,11 +809,12 @@ public abstract class Menu {
 	 *
 	 * IMPORTANT TIPS:
 	 *
-	 * 1. To update items, use {@link #setItem(int, ItemStack)}.
-	 * 2. To update buttons, use {@link Button#getItem()}, get it's metadata, update it and set it back.
-	 * 3. To save on performance, create a separate class in your plugin implementing a Runnable, iterating for all
-	 *    players and calling {@link Menu#getMenu(Player)} for each, checking if the menu is instance of your menu,
-	 *    and then writing onUpdate() method to your menu class and calling it from that timed task instead.
+	 * 1. To update buttons, set their slots via {@link Position} or {@link Button#getSlot()} and then call {@link #redrawButtons()}.
+	 * 2. To animate items more effectivelly, create a new class in your plugin implementing Runnable, iterate for all
+	 *    players and call {@link Menu#getMenu(Player)} for each. Then check if the menu is instance of your menu,
+	 *    write onUpdate() method to that menu class and call it from your runnable instead.
+	 *
+	 * Example of a menu with animated button: https://i.imgur.com/z1VZDcw.png
 	 *
 	 * @param periodTicks
 	 * @param task
@@ -812,14 +856,6 @@ public abstract class Menu {
 
 	/**
 	 * A special wrapper for animating menus
-	 *
-	 * IMPORTANT TIPS:
-	 *
-	 * 1. To update items, use {@link #setItem(int, ItemStack)}.
-	 * 2. To update buttons, use {@link Button#getItem()}, get it's metadata, update it and set it back.
-	 * 3. To save on performance, create a separate class in your plugin implementing a Runnable, iterating for all
-	 *    players and calling {@link Menu#getMenu(Player)} for each, checking if the menu is instance of your menu,
-	 *    and then writing onUpdate() method to your menu class and calling it from that timed task instead.
 	 */
 	@FunctionalInterface
 	public interface MenuRunnable extends Runnable {
@@ -1056,7 +1092,8 @@ public abstract class Menu {
 	}
 
 	/**
-	 * Updates a slot in this menu
+	 * Updates a slot in this menu. If your slot is a button and you want it to continue to function,
+	 * use {@link Position} annotation or set the slot in the button itself.
 	 *
 	 * @param slot
 	 * @param item

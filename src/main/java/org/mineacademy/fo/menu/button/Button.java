@@ -48,6 +48,27 @@ public abstract class Button {
 	@Setter
 	private static String infoButtonTitle = SimpleLocalization.Menu.TOOLTIP_INFO;
 
+	/**
+	 * The slot of this button in the menu
+	 */
+	@Getter
+	private int slot = -1;
+
+	/**
+	 * Create a new button with the given slot
+	 *
+	 * @param slot
+	 */
+	public Button(int slot) {
+		this.slot = slot;
+	}
+
+	/**
+	 * Create a new button with no slot.
+	 */
+	public Button() {
+	}
+
 	// ----------------------------------------------------------------
 	// Button functions
 	// ----------------------------------------------------------------
@@ -67,6 +88,20 @@ public abstract class Button {
 	 * @return the item for this button
 	 */
 	public abstract ItemStack getItem();
+
+	/**
+	 * Sets the button's slot in the given menu.
+	 *
+	 * @param slot
+	 * @param menu
+	 */
+	public final void setSlot(int slot, Menu menu) {
+		Valid.checkBoolean(slot >= 0 && slot != -1, "Slot cannot be -1 and must be >0. To hide this button, use Menu#setItem and set the button type to AIR");
+		Valid.checkBoolean(slot < menu.getSize(), "Slot " + slot + " exceeds menu size of " + menu.getSize());
+
+		this.slot = slot;
+		menu.redrawButtons();
+	}
 
 	// ----------------------------------------------------------------
 	// Static methods
