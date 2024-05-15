@@ -3,6 +3,7 @@ package org.mineacademy.fo.slider;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
+import org.mineacademy.fo.Valid;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -110,6 +111,8 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @return
 	 */
 	public static ColoredTextSlider from(String text) {
+		Valid.checkBoolean(!Common.hasColors(text), "Text in a slider may not contain colors: " + text + ", instead, use primaryColor() and secondaryColor()");
+
 		return new ColoredTextSlider(text);
 	}
 }
