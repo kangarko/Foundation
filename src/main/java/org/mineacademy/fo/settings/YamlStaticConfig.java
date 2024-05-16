@@ -336,8 +336,16 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getBoolean(path);
 	}
 
+	protected static final boolean getBoolean(final String path, boolean def) {
+		return TEMPORARY_INSTANCE.getBoolean(path, def);
+	}
+
 	protected static final String getString(final String path) {
 		return TEMPORARY_INSTANCE.getString(path);
+	}
+
+	protected static final String getString(final String path, String def) {
+		return TEMPORARY_INSTANCE.getString(path, def);
 	}
 
 	protected static final int getInteger(final String path) {
