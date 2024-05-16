@@ -1,0 +1,19 @@
+{
+  "name": "foundation",
+  "version": "1.0.0",
+  "description": "private fork of Foundation to test out stuff",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Takivad11/Foundation.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Takivad11/Foundation/issues"
+  },
+  "homepage": "https://github.com/Takivad11/Foundation#readme"
+}
