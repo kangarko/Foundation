@@ -596,34 +596,43 @@ public abstract class SimpleEnchantment implements Listener {
 
 		if (!customEnchants.isEmpty()) {
 			final ItemMeta meta = Remain.hasItemMeta() && item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
-			final List<String> originalLore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
-			final List<String> finalLore = new ArrayList<>();
-
-			final List<String> colorlessOriginals = new ArrayList<>();
-
-			for (final String original : originalLore)
-				colorlessOriginals.add(ChatColor.stripColor(Common.colorize(original)));
-
-			// Place our enchants
-			for (final String customEnchant : customEnchants) {
-				final String colorlessEnchant = ChatColor.stripColor(Common.colorize(customEnchant));
-
-				if (!colorlessOriginals.contains(colorlessEnchant))
-					finalLore.add(customEnchant);
-			}
-
-			// Place the original lore at the bottom
-			finalLore.addAll(originalLore);
-
-			// Set the lore
-			meta.setLore(finalLore);
-
-			// Update the item stack
-			item.setItemMeta(meta);
-
-			return item;
-		}
-
+	            final List<String> originalLore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
+	            final List<String> finalLore = new ArrayList<>();
+	
+	            final List<String> colorlessOriginals = new ArrayList<>();
+	
+	            for (final String original : originalLore)
+	                colorlessOriginals.add(ChatColor.stripColor(Common.colorize(original)));
+	
+	            // Place our enchants
+	            for (final String customEnchant : customEnchants) {
+	                final String colorlessEnchant = ChatColor.stripColor(Common.colorize(customEnchant));
+	
+	                final String enchantNoRoman = colorlessEnchant.substring(0, customEnchant.lastIndexOf(" "));
+	
+	                for (int i = 0; i < colorlessOriginals.size(); i++) {
+	                    if (s.contains(enchantNoRoman)) {
+	                        originalLore.remove(i)
+	                        finalLore.add(customEnchant);
+	                        break;
+	                    } else {
+	                        finalLore.add(customEnchant);
+	                    }
+	                }
+	            }
+	
+	            // Place the original lore at the bottom
+	            finalLore.addAll(originalLore);
+	
+	            // Set the lore
+	            meta.setLore(finalLore);
+	
+	            // Update the item stack
+	            item.setItemMeta(meta);
+	
+	            return item;
+	        }
+	
 		return null;
 	}
 
