@@ -611,13 +611,14 @@ public abstract class SimpleEnchantment implements Listener {
 	                final String enchantNoRoman = colorlessEnchant.substring(0, customEnchant.lastIndexOf(" "));
 	
 	                for (int i = 0; i < colorlessOriginals.size(); i++) {
-	                    if (s.contains(enchantNoRoman)) {
-	                        originalLore.remove(i)
-	                        finalLore.add(customEnchant);
-	                        break;
-	                    } else {
-	                        finalLore.add(customEnchant);
-	                    }
+				String s = colorlessOriginals.get(i);
+	                	if (s.contains(enchantNoRoman)) {
+	                		originalLore.remove(i)
+	                        	finalLore.add(customEnchant);
+	                        	break;
+	                    	} else {
+	                        	finalLore.add(customEnchant);
+	                    	}
 	                }
 	            }
 	
