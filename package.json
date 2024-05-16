@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Takivad11/Foundation/issues"
   },
-  "homepage": "https://github.com/Takivad11/Foundation#readme"
+  "homepage": "https://github.com/Takivad11/Foundation#readme",
+  "publishConfig": {
+    "takivad11:registry": "https://npm.pkg.github.com"
+  }
 }
