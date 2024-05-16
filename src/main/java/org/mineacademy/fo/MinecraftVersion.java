@@ -147,7 +147,7 @@ public final class MinecraftVersion {
 	 * @return
 	 */
 	public static String getFullVersion() {
-		return current.toString() + "." + subversion;
+		return current.toString() + (subversion > 0 ? "." + subversion : "");
 	}
 
 	/**
@@ -172,10 +172,12 @@ public final class MinecraftVersion {
 		final String bukkitVersion = Bukkit.getServer().getBukkitVersion(); // 1.20.6-R0.1-SNAPSHOT
 		final String versionString = bukkitVersion.split("\\-")[0]; // 1.20.6
 		final String[] versions = versionString.split("\\.");
+		Valid.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version: " + versionString + ", expected 2 or 3 parts separated by dots, got " + versions.length + " parts");
 
 		final int version = Integer.parseInt(versions[1]); // 20
 
 		current = version < 3 ? V.v1_3_AND_BELOW : V.parse(version);
-		subversion = Integer.parseInt(versions[2]);
+		subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
+
 	}
 }
