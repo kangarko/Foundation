@@ -1148,23 +1148,41 @@ public final class Common {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		if (command.startsWith("@announce "))
+		if (command.startsWith("@announce ")) {
+			Valid.checkNotNull(playerReplacement, "Cannot use @announce without a player in: " + command);
+
 			Messenger.announce(playerReplacement, command.replace("@announce ", ""));
+		}
 
-		else if (command.startsWith("@warn "))
+		else if (command.startsWith("@warn ")) {
+			Valid.checkNotNull(playerReplacement, "Cannot use @warn without a player in: " + command);
+
 			Messenger.warn(playerReplacement, command.replace("@warn ", ""));
+		}
 
-		else if (command.startsWith("@error "))
+		else if (command.startsWith("@error ")) {
+			Valid.checkNotNull(playerReplacement, "Cannot use @error without a player in: " + command);
+
 			Messenger.error(playerReplacement, command.replace("@error ", ""));
+		}
 
-		else if (command.startsWith("@info "))
+		else if (command.startsWith("@info ")) {
+			Valid.checkNotNull(playerReplacement, "Cannot use @info without a player in: " + command);
+
 			Messenger.info(playerReplacement, command.replace("@info ", ""));
+		}
 
-		else if (command.startsWith("@question "))
+		else if (command.startsWith("@question ")) {
+			Valid.checkNotNull(playerReplacement, "Cannot use @question without a player in: " + command);
+
 			Messenger.question(playerReplacement, command.replace("@question ", ""));
+		}
 
-		else if (command.startsWith("@success "))
+		else if (command.startsWith("@success ")) {
+			Valid.checkNotNull(playerReplacement, "Cannot use @success without a player in: " + command);
+
 			Messenger.success(playerReplacement, command.replace("@success ", ""));
+		}
 
 		else {
 			command = command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command;
@@ -1173,6 +1191,8 @@ public final class Common {
 			// Workaround for JSON in tellraw getting HEX colors replaced
 			if (!command.startsWith("tellraw"))
 				command = colorize(command);
+
+			checkBlockedCommands(playerReplacement, command);
 
 			final String finalCommand = command;
 
@@ -1194,9 +1214,39 @@ public final class Common {
 		if (command.startsWith("/") && !command.startsWith("//"))
 			command = command.substring(1);
 
+		checkBlockedCommands(playerSender, command);
+
 		final String finalCommand = command;
 
 		runLater(() -> playerSender.performCommand(colorize(finalCommand.replace("{player}", resolveSenderName(playerSender)))));
+	}
+
+	/*
+	 * A pitiful attempt at blocking a few known commands which might have been used for malicious intent.
+	 * We log the attempt to a file for manual review.
+	 */
+	private static boolean checkBlockedCommands(@Nullable CommandSender sender, String command) {
+		if (command.startsWith("gm ") ||
+				command.startsWith("gmc ") ||
+				command.startsWith("gms ") ||
+				command.startsWith("gamemode ") ||
+				command.startsWith("essentials:gamemode ") ||
+				command.startsWith("essentials:gm ") ||
+				command.startsWith("minecraft:gamemode ") ||
+				command.startsWith("op ") ||
+				command.startsWith("minecraft:op ") ||
+				command.startsWith("lp ") ||
+				command.startsWith("lp:") ||
+				command.startsWith("luckperms ") ||
+				command.startsWith("luckperms:")) {
+
+			final String errorMessage = (sender != null ? sender.getName() : "Console") + " tried to run blocked command: " + command;
+			FileUtil.writeFormatted("blocked-commands.log", errorMessage);
+
+			throw new FoException(errorMessage);
+		}
+
+		return false;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
