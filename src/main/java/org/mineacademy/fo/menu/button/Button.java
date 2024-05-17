@@ -89,20 +89,6 @@ public abstract class Button {
 	 */
 	public abstract ItemStack getItem();
 
-	/**
-	 * Sets the button's slot in the given menu.
-	 *
-	 * @param slot
-	 * @param menu
-	 */
-	public final void setSlot(int slot, Menu menu) {
-		Valid.checkBoolean(slot >= 0 && slot != -1, "Slot cannot be -1 and must be >0. To hide this button, use Menu#setItem and set the button type to AIR");
-		Valid.checkBoolean(slot < menu.getSize(), "Slot " + slot + " exceeds menu size of " + menu.getSize());
-
-		this.slot = slot;
-		menu.redrawButtons();
-	}
-
 	// ----------------------------------------------------------------
 	// Static methods
 	// ----------------------------------------------------------------
