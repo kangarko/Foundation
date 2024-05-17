@@ -105,6 +105,7 @@ public abstract class Menu {
 	 * Automatically registered Buttons in this menu (using reflection)
 	 */
 	private final Map<Button, Position> registeredButtons = new HashMap<>();
+	private final Map<Integer, Button> registeredButtonPositions = new HashMap<>();
 
 	/**
 	 * The registrator responsible for scanning the class and making buttons
@@ -150,11 +151,6 @@ public abstract class Menu {
 	 * A one way boolean indicating this menu has been opened at least once
 	 */
 	private boolean opened = false;
-
-	/**
-	 * A one way boolean set to true in {@link #handleClose(Inventory)}
-	 */
-	private boolean closed = false;
 
 	/**
 	 * Special case button only registered if this menu is {@link MenuQuantitable}
@@ -379,17 +375,15 @@ public abstract class Menu {
 	protected final Button getButton(final int slot) {
 		this.registerButtonsIfHasnt();
 
-		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
-			final Button button = entry.getKey();
-			final Position position = entry.getValue();
-
+		// Cannot put Button#getSlot into registeredButtonPositions because it can be dynamically set each time the menu is opened
+		for (final Button button : this.registeredButtons.keySet()) {
 			Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 
-			if (position != null && (position.value() == slot || position.value() == button.getSlot()))
+			if (button.getSlot() != -1 && button.getSlot() == slot)
 				return button;
 		}
 
-		return null;
+		return this.registeredButtonPositions.get(slot);
 	}
 
 	/**
@@ -484,7 +478,7 @@ public abstract class Menu {
 		}
 
 		// Register current menu
-		Common.runLater(() -> {
+		Common.runLater(1, () -> {
 			try {
 				this.onDisplay(drawer, player);
 
@@ -599,15 +593,19 @@ public abstract class Menu {
 	 * Redraws buttons registered using {@link Position} annotation or having {@link Button#getSlot()} set
 	 */
 	public void redrawButtons() {
-		for (final Map.Entry<Button, Position> entry : this.registeredButtons.entrySet()) {
-			final Button button = entry.getKey();
-			final Position position = entry.getValue();
 
-			if (position == null && button.getSlot() == -1)
-				continue;
+		// Redraw positions
+		for (final Map.Entry<Integer, Button> entry : this.registeredButtonPositions.entrySet()) {
+			final int slot = entry.getKey();
+			final Button button = entry.getValue();
 
-			this.setItem(button.getSlot() != -1 ? button.getSlot() : position.value(), button.getItem());
+			this.setItem(slot, button.getItem());
 		}
+
+		// Redraw slots
+		for (final Button button : this.registeredButtons.keySet())
+			if (button.getSlot() != -1)
+				this.setItem(button.getSlot(), button.getItem());
 	}
 
 	/*
@@ -628,6 +626,7 @@ public abstract class Menu {
 	 * @return
 	 */
 	private Map<Integer, ItemStack> compileItems() {
+		this.registeredButtonPositions.clear();
 		final Map<Integer, ItemStack> items = new HashMap<>();
 
 		final boolean hasReturnButton = this.addReturnButton() && !(this.returnButton instanceof DummyButton);
@@ -668,6 +667,7 @@ public abstract class Menu {
 				else
 					throw new FoException("Does not know how to implement button position's Slot." + startPosition);
 
+				this.registeredButtonPositions.put(slot, button);
 				items.put(slot, button.getItem());
 			}
 		}
@@ -835,8 +835,8 @@ public abstract class Menu {
 			@Override
 			public void run() {
 
-				if (Menu.this.closed) {
-					if (!canceled)
+				if (!Menu.this.opened) {
+					if (!this.canceled)
 						this.cancel();
 
 					return;
@@ -846,7 +846,7 @@ public abstract class Menu {
 					task.run();
 
 				} catch (final EventHandledException ex) {
-					canceled = true;
+					this.canceled = true;
 
 					this.cancel();
 				}
@@ -1192,7 +1192,7 @@ public abstract class Menu {
 	public final void handleClose(final Inventory inventory) {
 		this.viewer.removeMetadata(FoConstants.NBT.TAG_MENU_CURRENT, SimplePlugin.getInstance());
 		this.viewer.setMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED, new FixedMetadataValue(SimplePlugin.getInstance(), this));
-		this.closed = true;
+		this.opened = false;
 
 		this.onMenuClose(this.viewer, inventory);
 
