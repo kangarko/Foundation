@@ -509,20 +509,22 @@ public abstract class DiscordListener implements Listener {
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceived(DiscordGuildMessagePreProcessEvent event) {
-			for (final DiscordListener listener : registeredListeners)
-				try {
-					listener.handleMessageReceived(event);
+			synchronized (SimplePlugin.getInstance()) {
+				for (final DiscordListener listener : registeredListeners)
+					try {
+						listener.handleMessageReceived(event);
 
-				} catch (final RemovedMessageException ex) {
-					// Fail through since we handled that
+					} catch (final RemovedMessageException ex) {
+						// Fail through since we handled that
 
-				} catch (final Throwable t) {
-					Common.error(t,
-							"Failed to handle DiscordSRV->Minecraft message (pre process)!",
-							"Sender: " + event.getAuthor().getName(),
-							"Channel: " + event.getChannel().getName(),
-							"Message: " + event.getMessage().getContentDisplay());
-				}
+					} catch (final Throwable t) {
+						Common.error(t,
+								"Failed to handle DiscordSRV->Minecraft message (pre process)!",
+								"Sender: " + event.getAuthor().getName(),
+								"Channel: " + event.getChannel().getName(),
+								"Message: " + event.getMessage().getContentDisplay());
+					}
+			}
 		}
 
 		/**
@@ -532,20 +534,22 @@ public abstract class DiscordListener implements Listener {
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
-			for (final DiscordListener listener : registeredListeners)
-				try {
-					listener.handleMessageReceivedLate(event);
+			synchronized (SimplePlugin.getInstance()) {
+				for (final DiscordListener listener : registeredListeners)
+					try {
+						listener.handleMessageReceivedLate(event);
 
-				} catch (final RemovedMessageException ex) {
-					// Fail through since we handled that
+					} catch (final RemovedMessageException ex) {
+						// Fail through since we handled that
 
-				} catch (final Throwable t) {
-					Common.error(t,
-							"Failed to handle DiscordSRV->Minecraft message (post process)!",
-							"Sender: " + event.getAuthor().getName(),
-							"Channel: " + event.getChannel().getName(),
-							"Message: " + event.getMessage().getContentDisplay());
-				}
+					} catch (final Throwable t) {
+						Common.error(t,
+								"Failed to handle DiscordSRV->Minecraft message (post process)!",
+								"Sender: " + event.getAuthor().getName(),
+								"Channel: " + event.getChannel().getName(),
+								"Message: " + event.getMessage().getContentDisplay());
+					}
+			}
 		}
 
 		/**
@@ -556,20 +560,22 @@ public abstract class DiscordListener implements Listener {
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageSend(GameChatMessagePreProcessEvent event) {
-			for (final DiscordListener listener : registeredListeners)
-				try {
-					listener.onMessageSent(event);
+			synchronized (SimplePlugin.getInstance()) {
+				for (final DiscordListener listener : registeredListeners)
+					try {
+						listener.onMessageSent(event);
 
-				} catch (final RemovedMessageException ex) {
-					// Fail through since we handled that
+					} catch (final RemovedMessageException ex) {
+						// Fail through since we handled that
 
-				} catch (final Throwable t) {
-					Common.error(t,
-							"Failed to handle Minecraft->DiscordSRV message!",
-							"Sender: " + event.getPlayer().getName(),
-							"Channel: " + event.getChannel(),
-							"Message: " + event.getMessage());
-				}
+					} catch (final Throwable t) {
+						Common.error(t,
+								"Failed to handle Minecraft->DiscordSRV message!",
+								"Sender: " + event.getPlayer().getName(),
+								"Channel: " + event.getChannel(),
+								"Message: " + event.getMessage());
+					}
+			}
 		}
 	}
 }
