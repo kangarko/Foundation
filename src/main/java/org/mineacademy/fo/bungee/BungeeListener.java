@@ -11,6 +11,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.bungee.message.IncomingMessage;
+import org.mineacademy.fo.plugin.SimplePlugin;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
@@ -124,7 +125,7 @@ public abstract class BungeeListener implements Listener {
 
 		@Override
 		public void onPluginMessageReceived(String channel, Player player, byte[] data) {
-			synchronized (BungeeListener.DEFAULT_CHANNEL) {
+			synchronized (SimplePlugin.getInstance()) {
 
 				// Check if the message is for a server (ignore client messages)
 				if (!channel.equals(DEFAULT_CHANNEL))

@@ -113,7 +113,7 @@ public final class BungeeUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessage(@Nullable Player sender, String channel, BungeeMessageType action, T... data) {
-		synchronized (BungeeListener.DEFAULT_CHANNEL) {
+		synchronized (SimplePlugin.getInstance()) {
 			Valid.checkBoolean(data.length == action.getContent().length, "Data count != valid values count in " + action + "! Given data: " + data.length + " vs needed: " + action.getContent().length);
 			Remain.getServerName(); // check
 
@@ -275,31 +275,33 @@ public final class BungeeUtil {
 	 * @param data  the data
 	 */
 	public static void sendBungeeMessage(@NonNull Player sender, Object... data) {
-		Valid.checkBoolean(data != null && data.length >= 1, "");
+		synchronized (SimplePlugin.getInstance()) {
+			Valid.checkBoolean(data != null && data.length >= 1, "");
 
-		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-		for (final Object datum : data) {
-			Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
+			for (final Object datum : data) {
+				Valid.checkNotNull(datum, "Bungee object in array is null! Array: " + Common.join(data, ", ", t -> t == null ? "null" : t.toString() + "(" + t.getClass().getSimpleName() + ")"));
 
-			if (datum instanceof Integer)
-				out.writeInt((Integer) datum);
+				if (datum instanceof Integer)
+					out.writeInt((Integer) datum);
 
-			else if (datum instanceof Double)
-				out.writeDouble((Double) datum);
+				else if (datum instanceof Double)
+					out.writeDouble((Double) datum);
 
-			else if (datum instanceof Boolean)
-				out.writeBoolean((Boolean) datum);
+				else if (datum instanceof Boolean)
+					out.writeBoolean((Boolean) datum);
 
-			else if (datum instanceof String)
-				out.writeUTF((String) datum);
+				else if (datum instanceof String)
+					out.writeUTF((String) datum);
 
-			else
-				throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
+				else
+					throw new FoException("Unknown type of data: " + datum + " (" + datum.getClass().getSimpleName() + ")");
+			}
+
+			// Can't use "Bukkit.getServer()" since it will send one message for each player, creating duplicates (i.e. 4X join message bug)
+			sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", out.toByteArray());
 		}
-
-		// Can't use "Bukkit.getServer()" since it will send one message for each player, creating duplicates (i.e. 4X join message bug)
-		sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", out.toByteArray());
 	}
 
 	/*
