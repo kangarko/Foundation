@@ -344,10 +344,6 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getInteger(path);
 	}
 
-	protected static final int getInteger(final String path, int def) {
-		return TEMPORARY_INSTANCE.getInteger(path, def);
-	}
-
 	protected static final double getDouble(final String path) {
 		return TEMPORARY_INSTANCE.getDouble(path);
 	}
