@@ -184,7 +184,7 @@ public class ButtonRemove extends Button {
 			if (slot == 9 + 5)
 				return this.returnButton.getItem();
 
-			return null;
+			return NO_ITEM;
 		}
 
 		/**
