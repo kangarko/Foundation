@@ -1192,7 +1192,9 @@ public final class Common {
 			if (!command.startsWith("tellraw"))
 				command = colorize(command);
 
-			checkBlockedCommands(playerReplacement, command);
+			String commandName = command.split(" ")[0];
+
+			checkBlockedCommands(playerReplacement, commandName, command);
 
 			final String finalCommand = command;
 
