@@ -6,6 +6,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +36,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class FastMatcher {
+public class FastMatcher implements ConfigSerializable {
 
 	/**
 	 * The full regex class
@@ -64,16 +67,42 @@ public class FastMatcher {
 		if (this.matchers == null)
 			return true;
 
+		if (message.isEmpty())
+			return false;
+
 		// Indicate regex is used
 		if (this.pattern != null)
 			return this.pattern.matcher(message).find();
 
 		// Use our matching
-		for (final Matcher matcher : this.matchers)
+		for (final Matcher matcher : this.matchers) {
+			Valid.checkNotEmpty(matcher.getPattern(), "Matcher pattern cannot be empty! Use * instead to match everything in " + this);
+
 			if (matcher.find(message))
 				return true;
+		}
 
 		return false;
+	}
+
+	@Override
+	public String toString() {
+		return "FastMatcher{pattern=" + rawPattern + "}";
+	}
+
+	@Override
+	public SerializedMap serialize() {
+		return SerializedMap.ofArray("Pattern", this.rawPattern);
+	}
+
+	/**
+	 * Deserialize the matcher
+	 *
+	 * @param map
+	 * @return
+	 */
+	public static FastMatcher deserialize(SerializedMap map) {
+		return compile(map.getString("Pattern"));
 	}
 
 	/**
