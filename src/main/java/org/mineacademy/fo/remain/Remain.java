@@ -2541,9 +2541,13 @@ public final class Remain {
 	 *
 	 * @param location
 	 * @param radius
+	 * @param loadChunks should it load the chunks if needed?
 	 * @return
 	 */
-	public static Collection<Entity> getNearbyEntities(final Location location, final double radius) {
+	public static Collection<Entity> getNearbyEntities(final Location location, final double radius, final boolean loadChunks) {
+
+		if(!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4) && !loadChunks) return new ArrayList<>();
+
 		try {
 			return location.getWorld().getNearbyEntities(location, radius, radius, radius);
 
