@@ -1036,12 +1036,12 @@ public final class Common {
 		if (nTimes == 0)
 			return "";
 
-		final String toDuplicate = new String(text);
+		StringBuilder builder = new StringBuilder(text);
 
 		for (int i = 1; i < nTimes; i++)
-			text += toDuplicate;
+			builder.append(text);
 
-		return text;
+		return builder.toString();
 	}
 
 	/**
