@@ -468,6 +468,7 @@ public class SimpleDatabase {
 					final String duplicateUpdate = Common.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
 					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
+					Debugger.debug("mysql", "Inserting batch SQL: " + sql);
 
 					sqls.add(sql);
 
@@ -550,9 +551,8 @@ public class SimpleDatabase {
 				return;
 
 			final String tableName = this.replaceVariables(table);
-			final String sql = this.isSQLite ? "SELECT * FROM " + table + " " + buildWhere(where) : "SELECT * " + buildWhere(where) + " FROM " + table;
 
-			try (ResultSet resultSet = this.query(sql)) {
+			try (ResultSet resultSet = this.query("SELECT * FROM " + table + " " + buildWhere(where))) {
 				while (resultSet.next())
 					try {
 						consumer.accept(new SimpleResultSet(tableName, resultSet));
