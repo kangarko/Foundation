@@ -1192,7 +1192,9 @@ public final class Common {
 			if (!command.startsWith("tellraw"))
 				command = colorize(command);
 
-			checkBlockedCommands(playerReplacement, command);
+			String commandName = command.split(" ")[0];
+
+			checkBlockedCommands(playerReplacement, commandName, command);
 
 			final String finalCommand = command;
 
@@ -1214,7 +1216,9 @@ public final class Common {
 		if (command.startsWith("/") && !command.startsWith("//"))
 			command = command.substring(1);
 
-		checkBlockedCommands(playerSender, command);
+		String commandName = command.split(" ")[0];
+
+		checkBlockedCommands(playerSender, commandName, command);
 
 		final String finalCommand = command;
 
@@ -1225,22 +1229,22 @@ public final class Common {
 	 * A pitiful attempt at blocking a few known commands which might have been used for malicious intent.
 	 * We log the attempt to a file for manual review.
 	 */
-	private static boolean checkBlockedCommands(@Nullable CommandSender sender, String command) {
-		if (command.startsWith("gm ") ||
-				command.startsWith("gmc ") ||
-				command.startsWith("gms ") ||
-				command.startsWith("gamemode ") ||
-				command.startsWith("essentials:gamemode ") ||
-				command.startsWith("essentials:gm ") ||
-				command.startsWith("minecraft:gamemode ") ||
-				command.startsWith("op ") ||
-				command.startsWith("minecraft:op ") ||
-				command.startsWith("lp ") ||
-				command.startsWith("lp:") ||
-				command.startsWith("luckperms ") ||
-				command.startsWith("luckperms:")) {
+	private static boolean checkBlockedCommands(@Nullable CommandSender sender, String commandName, String command) {
 
-			final String errorMessage = (sender != null ? sender.getName() : "Console") + " tried to run blocked command: " + command;
+		if(commandName.startsWith("gm") ||
+				commandName.equals("gamemode") ||
+				commandName.equals("essentials:gamemode") ||
+				commandName.equals("essentials:gm") ||
+				commandName.equals("minecraft:gamemode") ||
+				commandName.equals("op") ||
+				commandName.equals("minecraft:op") ||
+				commandName.equals("lp") ||
+				commandName.equals("lp:") ||
+				commandName.equals("luckperms") ||
+				commandName.equals("luckperms:")) {
+
+
+			final String errorMessage = (sender != null ? sender.getName() : "Console") + " tried to run blocked command: " + commandName;
 			FileUtil.writeFormatted("blocked-commands.log", errorMessage);
 
 			throw new FoException(errorMessage);
