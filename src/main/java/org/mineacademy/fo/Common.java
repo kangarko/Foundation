@@ -1004,7 +1004,7 @@ public final class Common {
 	 * DO NOT USE FOR SAVING, ONLY INTENDED FOR DEBUGGING
 	 * Use {@link SerializeUtil#serialize(Object)} to save a location
 	 *
-	 * @param loc
+	 * @param location
 	 * @return
 	 */
 	public static String shortLocation(final Location location) {
