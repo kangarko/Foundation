@@ -468,7 +468,6 @@ public class SimpleDatabase {
 					final String duplicateUpdate = Common.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
 					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
-					Debugger.debug("mysql", "Inserting batch SQL: " + sql);
 
 					sqls.add(sql);
 
