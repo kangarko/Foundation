@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.collection.SerializedMap;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.RequiredArgsConstructor;
  * Example: 3 > 2, 4 <= 5, 1 == 1
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FastMathMatcher {
+public final class FastMathMatcher implements ConfigSerializable {
 
 	/**
 	 * The mode to compare:
@@ -46,6 +47,29 @@ public final class FastMathMatcher {
 		return false;
 	}
 
+	@Override
+	public String toString() {
+		return "FastMathMatcher{mode=" + this.mode + ", limit=" + this.limit + "}";
+	}
+
+	@Override
+	public SerializedMap serialize() {
+		return SerializedMap.ofArray("mode", this.mode, "limit", this.limit);
+	}
+
+	/**
+	 * Deserialize the matcher
+	 *
+	 * @param map
+	 * @return
+	 */
+	public static FastMathMatcher deserialize(SerializedMap map) {
+		final int mode = map.getInteger("mode");
+		final int limit = map.getInteger("limit");
+
+		return new FastMathMatcher(mode, limit);
+	}
+
 	/**
 	 * Compile the given input into a matcher
 	 *
@@ -54,6 +78,19 @@ public final class FastMathMatcher {
 	 */
 	public static FastMathMatcher compile(String input) {
 		final String[] parts = input.split(" ");
+
+		if (parts.length == 1) {
+			int limit = 0;
+
+			try {
+				limit = Integer.parseInt(parts[0]);
+			} catch (final NumberFormatException ex) {
+				throw new IllegalArgumentException("Invalid number: " + parts[0]);
+			}
+
+			return new FastMathMatcher(1, limit);
+		}
+
 		Valid.checkBoolean(parts.length == 2, "Invalid syntax. Expected: <mode> <number> (i.e. '< 3'). Got: " + input);
 
 		final String mode = parts[0];
