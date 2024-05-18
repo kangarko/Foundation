@@ -56,16 +56,17 @@ public final class EntityUtil {
 	 * @param center
 	 * @param range3D
 	 * @param entityClass
+	 * @param loadChunks should the function attempt to run even if the chunk isn't loaded, it will most likely cause it to load itself.
 	 * @return
 	 */
-	public static <T extends LivingEntity> T findNearestEntity(Location center, double range3D, Class<T> entityClass) {
+	public static <T extends LivingEntity> T findNearestEntity(Location center, double range3D, Class<T> entityClass, boolean loadChunks) {
 		final List<T> found = new ArrayList<>();
 
-		for (final Entity nearby : Remain.getNearbyEntities(center, range3D))
+		for (final Entity nearby : Remain.getNearbyEntities(center, range3D, loadChunks))
 			if (nearby instanceof LivingEntity && entityClass.isAssignableFrom(nearby.getClass()))
 				found.add((T) nearby);
 
-		Collections.sort(found, (first, second) -> Double.compare(first.getLocation().distance(center), second.getLocation().distance(center)));
+		found.sort((first, second) -> Double.compare(first.getLocation().distance(center), second.getLocation().distance(center)));
 
 		return found.isEmpty() ? null : found.get(0);
 	}
