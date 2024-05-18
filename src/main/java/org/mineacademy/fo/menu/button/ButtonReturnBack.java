@@ -51,7 +51,7 @@ public final class ButtonReturnBack extends Button {
 	 */
 	@Getter
 	@Setter
-	private static ItemStack itemStack = ItemCreator.of(material).name(title).lore(lore).make();
+	private static ItemStack itemStack = null;
 
 	/**
 	 * The parent menu
@@ -71,6 +71,10 @@ public final class ButtonReturnBack extends Button {
 	 */
 	@Override
 	public ItemStack getItem() {
+
+		if (itemStack == null)
+			return ItemCreator.of(material).name(title).lore(lore).make();
+
 		return itemStack;
 	}
 
