@@ -97,6 +97,7 @@ public abstract class RuleSetReader<T extends Rule> {
 
 	/**
 	 * Load rules from the given file path in your plugin folder
+	 * The file will be extract from your jar so it must exists.
 	 *
 	 * @param path
 	 * @return
@@ -107,10 +108,13 @@ public abstract class RuleSetReader<T extends Rule> {
 		return this.loadFromFile(file);
 	}
 
-	/*
+	/**
 	 * Load rules from the given file
+	 *
+	 * @param file
+	 * @return
 	 */
-	private final List<T> loadFromFile(File file) {
+	protected final List<T> loadFromFile(File file) {
 		final List<T> rules = new ArrayList<>();
 		final List<String> lines = FileUtil.readLines(file);
 
