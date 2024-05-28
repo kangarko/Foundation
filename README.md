@@ -19,6 +19,8 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 
 # Quick Start
 
+**New**: Check out this video tutorial on installing Foundation: https://www.youtube.com/watch?v=gXbZnKYE7ww 
+
 1. Import Foundation using Maven/Gradle (see the Importing section).
 2. Important: Configure shading to only include Foundation and the libraries you need otherwise all of our dependencies will be shaded to your jar! [See this link](https://github.com/kangarko/PluginTemplate/blob/master/pom.xml#L130) for sample usage.
 3. Change "**extends JavaPlugin**" to "**extends SimplePlugin**" (we need that to register things and listeners on our end automatically)
