@@ -20,7 +20,7 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 # Quick Start
 
 1. Import Foundation using Maven/Gradle (see the Importing section).
-2. Important: Configure shading to only include Foundation and the libraries you need otherwise all of our dependencies will be shaded to your jar! [See this link]([url](https://github.com/kangarko/PluginTemplate/blob/master/pom.xml#L130)) for sample usage.
+2. Important: Configure shading to only include Foundation and the libraries you need otherwise all of our dependencies will be shaded to your jar! [See this link](https://github.com/kangarko/PluginTemplate/blob/master/pom.xml#L130) for sample usage.
 3. Change "**extends JavaPlugin**" to "**extends SimplePlugin**" (we need that to register things and listeners on our end automatically)
 4. Change **onEnable()** to **onPluginStart()** and **onDisable()** to **onPluginStop()** (we occupy these methods to perform logic)
 5. If you use a **static getInstance()** method in your main plugin's class, change it to return **(T) SimplePlugin.getInstance()** where T is your plugin instead. Delete the instance of your plugin from your class if you use it (if you have myPlugin = this anywhere, remove it).
