@@ -231,7 +231,7 @@ public final class Variables {
 	 * @return
 	 */
 	public static String replace(String message, CommandSender sender, Map<String, Object> replacements, boolean colorize, boolean replaceScript) {
-		if (message == null || message.isEmpty())
+		if (message == null || message.isEmpty() || message.equals("none"))
 			return "";
 
 		final String original = message;
