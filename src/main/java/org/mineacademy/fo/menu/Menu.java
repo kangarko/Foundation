@@ -1,6 +1,7 @@
 package org.mineacademy.fo.menu;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,11 @@ public abstract class Menu {
 	 */
 	private final Map<Button, Position> registeredButtons = new HashMap<>();
 	private final Map<Integer, Button> registeredButtonPositions = new HashMap<>();
+
+	/**
+	 * A list of manually registered buttons, in case you do not want to store them as fields.
+	 */
+	private final List<Button> buttons = new ArrayList<>();
 
 	/**
 	 * The registrator responsible for scanning the class and making buttons
@@ -265,6 +271,19 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 
 	/**
+	 * Registers a button to this menu manually without the button needing to be a field.
+	 *
+	 * DO NOT USE ON BUTTONS THAT ARE FIELDS, FIELD BUTTONS ARE AUTOMATICALLY REGISTERED
+	 *
+	 * @param button
+	 */
+	protected final void registerButton(final Button button) {
+		Valid.checkBoolean(button.getSlot() != -1, "When calling registerButton, you must set the slot of the button either in the constructor or by overriding Button#getSlot()!");
+
+		this.buttons.add(button);
+	}
+
+	/**
 	 * Scans the menu class this menu extends and registers buttons
 	 */
 	final void registerButtons() {
@@ -282,6 +301,12 @@ public abstract class Menu {
 
 				this.registeredButtons.putAll(buttonsRemapped);
 			}
+		}
+
+		// Register buttons from the list
+		{
+			for (final Button button : this.buttons)
+				this.registeredButtons.put(button, null);
 		}
 
 		// Register buttons declared as fields
