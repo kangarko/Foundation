@@ -131,7 +131,7 @@ public abstract class MenuContainer extends Menu {
 	 * @return
 	 */
 	protected boolean canEditItem(int slot) {
-		return slot <= this.getSize() - 9;
+		return slot < this.getSize() - 9;
 	}
 
 	/**
