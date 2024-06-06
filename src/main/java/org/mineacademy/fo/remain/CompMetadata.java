@@ -28,7 +28,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBT;
@@ -306,16 +305,25 @@ public final class CompMetadata {
 		return !hasPersistentMetadata;
 	}
 
+	/*
+	 * Helper method to get a tag from a raw string
+	 */
 	private static String getTag(final String raw, final String key) {
 		final String[] parts = raw.split(DELIMITER);
 
 		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
 	}
 
+	/*
+	 * Helper method to format a tag
+	 */
 	private static String formatTag(final String key, final String value) {
 		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
 	}
 
+	/*
+	 * Returns persistent metadata with our plugin assigned as namedspaced key for MC 1.14+
+	 */
 	private static String getPersistentMetadata(final Object entity, final String key) {
 		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
@@ -323,6 +331,9 @@ public final class CompMetadata {
 		return Common.getOrNull(data.get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING));
 	}
 
+	/*
+	 * Sets persistent metadata with our plugin assigned as namedspaced key for MC 1.14+
+	 */
 	private static void setPersistentMetadata(final Object entity, final String key, final String value) {
 		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 
@@ -392,7 +403,8 @@ public final class CompMetadata {
 			final UUID uniqueId = entity.getUniqueId();
 
 			this.entityMetadata.remove(uniqueId);
-			this.save();
+
+			//this.save(); -> handled in onPluginStop()
 		}
 
 		private void loadEntities() {
@@ -468,7 +480,7 @@ public final class CompMetadata {
 			if (metadata.isEmpty())
 				this.entityMetadata.remove(uniqueId);
 
-			this.save("Entity", this.entityMetadata);
+			//this.save("Entity", this.entityMetadata); -> handled in onPluginStop()
 		}
 
 		protected String getMetadata(final BlockState entity, @NonNull final String key) {
@@ -522,7 +534,7 @@ public final class CompMetadata {
 			if (blockCache != null && blockCache.getMetadata().isEmpty())
 				this.blockMetadata.remove(location);
 
-			this.save("Block", this.blockMetadata);
+			//this.save("Block", this.blockMetadata); -> handled in onPluginStop()
 		}
 
 		@Getter
