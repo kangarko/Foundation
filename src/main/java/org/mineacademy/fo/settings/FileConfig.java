@@ -103,7 +103,7 @@ public abstract class FileConfig {
 	 * Optional config header
 	 */
 	@Nullable
-	private String header;
+	private String[] header;
 
 	/**
 	 * Path prefix to automatically append when calling any getX method
@@ -123,7 +123,7 @@ public abstract class FileConfig {
 	 * Internal flag to only save once during loading and save automatically
 	 * after loading if any changes were made.
 	 */
-	private boolean shouldSave = false;
+	boolean shouldSave = false;
 
 	/*
 	 * Internal flag to avoid duplicate save calls during loading
@@ -1499,7 +1499,7 @@ public abstract class FileConfig {
 	 *
 	 * @return
 	 */
-	public final String getHeader() {
+	public final String[] getHeader() {
 		return this.header;
 	}
 
@@ -1510,10 +1510,22 @@ public abstract class FileConfig {
 	 * @param values
 	 */
 	public final void setHeader(String... values) {
-		this.header = values == null ? null
-				: String.join("\n", values)
-						.replace("{plugin}", SimplePlugin.getNamed())
-						.replace("{label}", !SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty() ? SimpleSettings.MAIN_COMMAND_ALIASES.first() : "");
+		if (values == null)
+			this.header = null;
+
+		else {
+			final String mainCommandLabel = Common.getOrEmpty(SimpleSettings.MAIN_COMMAND_ALIASES.first());
+			final List<String> header = new ArrayList<>();
+
+			for (int i = 0; i < values.length; i++) {
+				final String line = Common.getOrEmpty(values[i]);
+
+				for (final String subline : line.replace("{plugin}", SimplePlugin.getNamed()).replace("{label}", mainCommandLabel).split("\n"))
+					header.add(subline);
+			}
+
+			this.header = Common.toArray(header);
+		}
 	}
 
 	/**
