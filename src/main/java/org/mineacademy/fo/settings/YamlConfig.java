@@ -189,8 +189,16 @@ public class YamlConfig extends FileConfig {
 			this.defaultsPath = from;
 		}
 
-		else
-			file = FileUtil.getOrMakeFile(to);
+		else {
+			file = FileUtil.getFile(to);
+
+			if (!file.exists()) {
+				FileUtil.createIfNotExists(file);
+
+				if (this.getHeader() != null)
+					this.shouldSave = true;
+			}
+		}
 
 		this.load(file);
 	}
@@ -216,7 +224,15 @@ public class YamlConfig extends FileConfig {
 
 		// Do not use comments
 		if (this.defaults == null || !this.saveComments()) {
-			final String header = this.getHeader() == null ? "" : "# " + String.join("\n# ", this.getHeader().split("\n")) + "\n\n";
+			String header = "";
+
+			if (this.getHeader() != null) {
+				for (final String line : this.getHeader())
+					header += "# " + line + "\n";
+
+				header += "\n";
+			}
+
 			final Map<String, Object> values = this.section.getValues(false);
 
 			if (!this.saveEmptyValues)
