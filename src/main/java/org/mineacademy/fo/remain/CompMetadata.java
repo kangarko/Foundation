@@ -365,6 +365,8 @@ public final class CompMetadata {
 		 */
 		private final Map<Location, BlockCache> blockMetadata = new HashMap<>();
 
+		private boolean loaded = false;
+
 		private MetadataFile() {
 			if (!hasPersistentMetadata && ENABLE_LEGACY_FILE_STORAGE) {
 				this.setPathPrefix("Metadata");
@@ -374,9 +376,17 @@ public final class CompMetadata {
 						"-------------------------------------------------------------------------------------------------",
 						"This file is used to store metadata for entities and blocks in Minecraft versions below 1.14.",
 						"If you delete this file or upgrade to Minecraft 1.14+, all metadata will be lost.",
+						"",
+						"THIS FILE IS MACHINE GENERATED. DO NOT EDIT",
 						"-------------------------------------------------------------------------------------------------");
+			}
+		}
 
+		private void loadIfHasnt() {
+			if (!this.loaded) {
 				this.loadConfiguration(NO_DEFAULT, "legacy-metadata.yml");
+
+				this.loaded = true;
 			}
 		}
 
@@ -449,6 +459,8 @@ public final class CompMetadata {
 		}
 
 		protected String getMetadata(final Entity entity, @NonNull final String key) {
+			this.loadIfHasnt();
+
 			final UUID uniqueId = entity.getUniqueId();
 			final Set<String> metadata = this.entityMetadata.getOrDefault(uniqueId, new HashSet<>());
 
@@ -464,6 +476,8 @@ public final class CompMetadata {
 		}
 
 		protected void setMetadata(final Entity entity, @NonNull final String key, final String value) {
+			this.loadIfHasnt();
+
 			final UUID uniqueId = entity.getUniqueId();
 			final Set<String> metadata = this.entityMetadata.getOrDefault(uniqueId, new HashSet<>());
 			final boolean remove = value == null || "".equals(value);
@@ -490,6 +504,8 @@ public final class CompMetadata {
 		}
 
 		protected String getMetadata(final BlockState entity, @NonNull final String key) {
+			this.loadIfHasnt();
+
 			final Location location = entity.getLocation();
 			final BlockCache blockCache = this.blockMetadata.get(location);
 
@@ -514,6 +530,8 @@ public final class CompMetadata {
 		}
 
 		protected void setMetadata(final BlockState entity, final String key, final String value) {
+			this.loadIfHasnt();
+
 			final Location location = entity.getLocation();
 			BlockCache blockCache = this.blockMetadata.get(location);
 			final boolean remove = value == null || "".equals(value);
