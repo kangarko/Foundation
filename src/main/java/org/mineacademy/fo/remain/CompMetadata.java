@@ -370,7 +370,13 @@ public final class CompMetadata {
 				this.setPathPrefix("Metadata");
 				this.setSaveEmptyValues(false);
 
-				this.loadConfiguration(NO_DEFAULT, FoConstants.File.DATA);
+				this.setHeader(
+						"-------------------------------------------------------------------------------------------------",
+						"This file is used to store metadata for entities and blocks in Minecraft versions below 1.14.",
+						"If you delete this file or upgrade to Minecraft 1.14+, all metadata will be lost.",
+						"-------------------------------------------------------------------------------------------------");
+
+				this.loadConfiguration(NO_DEFAULT, "legacy-metadata.yml");
 			}
 		}
 
