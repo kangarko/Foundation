@@ -820,6 +820,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				this.reloadables.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
+			if (CompMetadata.isLegacy() && CompMetadata.ENABLE_LEGACY_FILE_STORAGE)
+				this.registerEvents(CompMetadata.MetadataFile.getInstance());
+
 		} catch (final Throwable t) {
 			Common.throwError(t, "Error reloading " + this.getDataFolder().getName() + " " + getVersion());
 
