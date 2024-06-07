@@ -60,7 +60,7 @@ Then locate the `<dependencies>` section of your pom.xml and place the following
 
 See step 2 from the Quick Start guide above first.
 
-Foundation comes with some plugins available for you such as WorldEdit, etc. so that you don't need to include them as dependencies on your own.
+Foundation comes with some plugins available for you such as WorldEdit, etc. so that you can access them when you are coding but don't need to include them as dependencies on your own.
 
 Maven has a limitation whereby these plugins will end up in your plugin .jar file if you don't configure the maven-shade-plugin's includes section properly.
 
