@@ -473,7 +473,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
-		Valid.checkNotNull(method, "Method cannot be null for instance " + instance + " class (" + (instance == null ? "no instance - static" : instance.getClass()) + ") with params " + Common.join(params, ", "));
+		Valid.checkNotNull(method, "Cannot invoke a null method for " + (instance == null ? "static" : instance.getClass().getSimpleName() + "") + " instance '" + instance + "' " + " with params " + Common.join(params, ", "));
 
 		try {
 			return (T) method.invoke(instance, params);
