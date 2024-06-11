@@ -133,7 +133,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param item
 	 * @return
 	 */
-	public SimpleComponent onHover(final ItemStack item) {
+	public SimpleComponent onHover(@NonNull final ItemStack item) {
 		if (CompMaterial.isAir(item.getType()))
 			return this.onHover("Air");
 
