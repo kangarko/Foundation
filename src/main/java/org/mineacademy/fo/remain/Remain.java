@@ -481,6 +481,26 @@ public final class Remain {
 	}
 
 	/**
+	 * Get the server handle
+	 *
+	 * @return
+	 */
+	public static Object getHandleServer() {
+		Object nms_server = null;
+
+		final org.bukkit.Server server = Bukkit.getServer();
+		final Method handle = ReflectionUtil.getMethod(server.getClass(), "getServer");
+
+		try {
+			nms_server = handle.invoke(server);
+		} catch (final ReflectiveOperationException e) {
+			e.printStackTrace();
+		}
+
+		return nms_server;
+	}
+
+	/**
 	 * Returns true if we are running a 1.8 protocol hack
 	 *
 	 * @return
@@ -946,17 +966,36 @@ public final class Remain {
 			final Class<?> craftItemstack = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
 			final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
 
+			Valid.checkNotNull(asNMSCopyMethod, "Unable to find " + craftItemstack + "#asNMSCopy() method for server version " + Bukkit.getBukkitVersion());
+
 			// NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
 			final Class<?> nmsItemStack = ReflectionUtil.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
-			final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
-			final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.atLeast(V.v1_18) ? "b" : "save", nbtTagCompound);
-
-			final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
 			final Object nmsItemStackObj = ReflectionUtil.invoke(asNMSCopyMethod, null, item);
-			final Object itemAsJsonObject = ReflectionUtil.invoke(saveItemstackMethod, nmsItemStackObj, nmsNbtTagCompoundObj);
 
-			// Return a string representation of the serialized object
-			return itemAsJsonObject.toString();
+			if (MinecraftVersion.newerThan(V.v1_20) || (MinecraftVersion.atLeast(V.v1_20) && MinecraftVersion.getSubversion() > 4)) {
+				if (Remain.isPaper()) {
+					final Class<?> providerClass = ReflectionUtil.lookupClass("net.minecraft.core.HolderLookup$Provider");
+					final Method saveMethod = ReflectionUtil.getMethod(nmsItemStack, "saveOptional", providerClass);
+
+					final Object registryAccess = ReflectionUtil.invoke("registryAccess", Remain.getHandleServer());
+					final Object compoundTag = ReflectionUtil.invoke(saveMethod, nmsItemStackObj, registryAccess);
+
+					return compoundTag.toString();
+				} else
+					// Spigot has different mappings so we just give up and render the base item
+					return "{Count:" + item.getAmount() + "b,id:\"" + item.getType().getKey().toString() + "\"}";
+
+			} else {
+				final Class<?> nbtTagCompound = ReflectionUtil.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
+				final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.equals(V.v1_18) || MinecraftVersion.equals(V.v1_19) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() < 5) ? "b" : "save", nbtTagCompound);
+
+				Valid.checkNotNull(saveItemstackMethod, "Unable to find " + nmsItemStack + "#save() method for server version " + Bukkit.getBukkitVersion());
+
+				final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
+				final Object itemAsJsonObject = ReflectionUtil.invoke(saveItemstackMethod, nmsItemStackObj, nmsNbtTagCompoundObj);
+
+				return itemAsJsonObject.toString();
+			}
 		}
 
 		return item.getType().toString();
