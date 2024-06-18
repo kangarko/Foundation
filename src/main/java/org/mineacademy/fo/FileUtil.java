@@ -109,7 +109,7 @@ public final class FileUtil {
 			try {
 				file.createNewFile();
 			} catch (final Throwable t) {
-				Common.throwError(t, "Could not create new " + file + " due to " + t);
+				Common.throwError(t, "Could not create new file '" + file + "' due to " + t);
 			}
 
 		return file;

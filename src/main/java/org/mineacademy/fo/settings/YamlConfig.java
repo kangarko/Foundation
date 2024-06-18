@@ -193,7 +193,7 @@ public class YamlConfig extends FileConfig {
 			file = FileUtil.getFile(to);
 
 			if (!file.exists()) {
-				FileUtil.createIfNotExists(file);
+				FileUtil.createIfNotExists(to);
 
 				if (this.getHeader() != null)
 					this.shouldSave = true;
