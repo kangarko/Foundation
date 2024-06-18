@@ -281,14 +281,13 @@ public final class Remain {
 	 * Initialize all fields and methods automatically when we set the plugin
 	 */
 	static {
-		final String version = Bukkit.getVersion();
 		final boolean atLeast1_4 = MinecraftVersion.atLeast(V.v1_4);
 
 		try {
 			Class.forName("net.md_5.bungee.chat.ComponentSerializer");
 
 		} catch (final Throwable ex) {
-			throw new FoException("&cYour server &f" + Bukkit.getBukkitVersion().replace("-SNAPSHOT", "") + "&c doesn't\n" +
+			throw new FoException("&cYour server &f" + Bukkit.getVersion().replace("-SNAPSHOT", "") + "&c doesn't\n" +
 					" &cinclude &elibraries required&c for " + SimplePlugin.getNamed() + " to\n" +
 					" &crun. Install BungeeChatAPI from:\n" +
 					" &fhttps://mineacademy.org/plugins#misc");
@@ -301,7 +300,7 @@ public final class Remain {
 		} catch (final Throwable e) {
 		}
 
-		isFolia = version.contains("Folia") || version.contains("Kaiiju");
+		isFolia = ReflectionUtil.isClassAvailable("io.papermc.paper.threadedregions.RegionizedServer");
 
 		try {
 			Class.forName("thermos.ThermosRemapper");
