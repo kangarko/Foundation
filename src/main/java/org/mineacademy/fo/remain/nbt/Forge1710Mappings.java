@@ -10,7 +10,7 @@ import java.util.Map;
  * @author EverNife
  *
  */
-class Forge1710Mappings {
+final class Forge1710Mappings {
 
 	private static Map<String, String> classMap = new HashMap<>();
 	private static Map<String, String> methodMap = new HashMap<>();

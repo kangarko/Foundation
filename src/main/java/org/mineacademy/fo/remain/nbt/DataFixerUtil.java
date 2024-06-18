@@ -5,7 +5,7 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-class DataFixerUtil {
+final class DataFixerUtil {
 
 	public static final int VERSION1_12_2 = 1343;
 	public static final int VERSION1_16_5 = 2586;
@@ -44,7 +44,7 @@ class DataFixerUtil {
 	 * an exception, when the target version is before 1.12.2. (Assuming no one will
 	 * update 1.8 items to 1.11, if so, provide the version numbers to the converter
 	 * method directly)
-	 *
+	 * 
 	 * @return
 	 */
 	public static int getCurrentVersion() {

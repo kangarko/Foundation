@@ -1,5 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
+import org.mineacademy.fo.exception.FoException;
+
 /**
  * A generic {@link RuntimeException} that can be thrown by most methods in the
  * NBTAPI.
@@ -7,7 +9,7 @@ package org.mineacademy.fo.remain.nbt;
  * @author tr7zw
  *
  */
-public class NbtApiException extends RuntimeException {
+public class NbtApiException extends FoException {
 
 	/**
 	 *
@@ -24,40 +26,22 @@ public class NbtApiException extends RuntimeException {
 	/**
 	 * @param message
 	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace
-	 */
-	public NbtApiException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(generateMessage(message), cause, enableSuppression, writableStackTrace);
-	}
-
-	/**
-	 * @param message
-	 * @param cause
 	 */
 	public NbtApiException(String message, Throwable cause) {
-		super(generateMessage(message), cause);
+		super(message, cause);
 	}
 
 	/**
 	 * @param message
 	 */
 	public NbtApiException(String message) {
-		super(generateMessage(message));
+		super(message);
 	}
 
 	/**
 	 * @param cause
 	 */
 	public NbtApiException(Throwable cause) {
-		super(generateMessage(cause == null ? null : cause.toString()), cause);
+		super(cause == null ? null : cause.toString(), cause);
 	}
-
-	private static String generateMessage(String message) {
-		if (message == null)
-			return null;
-
-		return message;
-	}
-
 }

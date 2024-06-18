@@ -26,10 +26,13 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	private boolean closed = false;
 
 	/**
-	 * Constructor for NBTItems. The ItemStack will be cloned!
+	 * Constructor for NBTItems. The ItemStack will be cloned! Deprecated: Please
+	 * use the NBT class to work with items. It's up to 400% faster and provides
+	 * less ways to mess up code.
 	 * 
 	 * @param item
 	 */
+	@Deprecated
 	public NBTItem(ItemStack item) {
 		this(item, false);
 	}
@@ -165,6 +168,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 *
 	 * @param item ItemStack that should get the new NBT data
 	 */
+	@Deprecated
 	public void applyNBT(ItemStack item) {
 		if (item == null || item.getType() == Material.AIR)
 			throw new NullPointerException("ItemStack can't be null/Air! This is not a NBTAPI bug!");
@@ -178,6 +182,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 *
 	 * @param item ItemStack that should get the new NBT data
 	 */
+	@Deprecated
 	public void mergeNBT(ItemStack item) {
 		final NBTItem nbti = new NBTItem(item);
 		nbti.mergeCompound(this);
@@ -281,7 +286,8 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 		updateCachedCompound();
 		if (directApply) {
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
-				throw new NbtApiException("Direct apply mode meta changes don't work anymore in 1.20.5+. Please switch to the modern NBT.modify sytnax!");
+				throw new NbtApiException(
+						"Direct apply mode meta changes don't work anymore in 1.20.5+. Please switch to the modern NBT.modify sytnax!");
 			applyNBT(originalSrcStack);
 		}
 	}
@@ -315,6 +321,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param item
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
+	@Deprecated
 	public static NBTContainer convertItemtoNBT(ItemStack item) {
 		return NBTReflectionUtil.convertNMSItemtoNBTCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, item));
 	}
@@ -327,6 +334,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */
 	@Nullable
+	@Deprecated
 	public static ItemStack convertNBTtoItem(NBTCompound comp) {
 		return (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null,
 				NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
@@ -340,6 +348,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param items
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
+	@Deprecated
 	public static NBTContainer convertItemArraytoNBT(ItemStack[] items) {
 		final NBTContainer container = new NBTContainer();
 		container.setInteger("size", items.length);
@@ -367,6 +376,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @return ItemStack[] using the {@link NBTCompound}'s data
 	 */
 	@Nullable
+	@Deprecated
 	public static ItemStack[] convertNBTtoItemArray(NBTCompound comp) {
 		if (!comp.hasTag("size"))
 			return null;
