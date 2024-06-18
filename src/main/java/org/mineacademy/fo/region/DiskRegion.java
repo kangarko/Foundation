@@ -28,7 +28,7 @@ import lombok.NonNull;
 import lombok.Setter;
 
 /**
- * Represents a region in a ylm file in regions/ folder in your plugin's folder.
+ * Represents a region in a yml file in regions/ folder in your plugin's folder.
  *
  * To use this, enable regions in {@link SimplePlugin#areRegionsEnabled()}.
  */
