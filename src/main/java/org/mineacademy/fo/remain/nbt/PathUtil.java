@@ -27,12 +27,7 @@ final class PathUtil {
 		private final String path;
 		private final Integer index;
 
-		public PathSegment(String path, int index) {
-			this.path = path;
-			this.index = index;
-		}
-
-		public PathSegment(String path) {
+		private PathSegment(String path) {
 			final Matcher matcher = indexPattern.matcher(path);
 			if (matcher.find()) {
 				this.path = path.substring(0, path.indexOf("["));

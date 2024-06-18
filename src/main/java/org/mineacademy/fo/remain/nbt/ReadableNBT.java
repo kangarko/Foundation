@@ -342,10 +342,10 @@ public interface ReadableNBT {
 	 */
 	void writeCompound(OutputStream stream);
 
+	@Override
 	/**
 	 * @return The NBT as printable NBT-Json.
 	 */
-	@Override
 	String toString();
 
 }

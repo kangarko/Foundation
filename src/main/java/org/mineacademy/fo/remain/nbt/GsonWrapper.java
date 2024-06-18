@@ -12,7 +12,7 @@ import com.google.gson.Gson;
  *
  */
 @Deprecated
-class GsonWrapper {
+final class GsonWrapper {
 
 	/**
 	 * Private constructor
