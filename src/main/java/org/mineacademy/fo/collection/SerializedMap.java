@@ -686,10 +686,15 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 		if (type == String.class && rawList instanceof String)
 			list.add((T) rawList);
 		else {
-			Valid.checkBoolean(rawList instanceof Collection<?>, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead! Try putting '' quotes around the message: " + rawList);
+			if (rawList instanceof Object[])
+				for (final Object object : (Object[]) rawList)
+					list.add(object == null ? null : SerializeUtil.deserialize(this.mode, type, object, parameters));
+			else {
+				Valid.checkBoolean(rawList instanceof Collection<?>, "Key '" + key + "' expected to have a list, got " + rawList.getClass().getSimpleName() + " instead! Try putting '' quotes around the message: " + rawList);
 
-			for (final Object object : (Collection<Object>) rawList)
-				list.add(object == null ? null : SerializeUtil.deserialize(this.mode, type, object, parameters));
+				for (final Object object : (Collection<Object>) rawList)
+					list.add(object == null ? null : SerializeUtil.deserialize(this.mode, type, object, parameters));
+			}
 		}
 
 		return list;
