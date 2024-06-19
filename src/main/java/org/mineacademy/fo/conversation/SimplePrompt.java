@@ -81,15 +81,11 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	@Override
 	public final String getPromptText(final ConversationContext context) {
 		String prompt = this.getPrompt(context);
+		final String promptColorless = Common.stripColors(prompt);
 
 		if (Messenger.ENABLED
-				&& (this.getCustomPrefix() == null || !prompt.contains(this.getCustomPrefix()))
-				&& !prompt.contains(Messenger.getAnnouncePrefix())
-				&& !prompt.contains(Messenger.getErrorPrefix())
-				&& !prompt.contains(Messenger.getInfoPrefix())
-				&& !prompt.contains(Messenger.getQuestionPrefix())
-				&& !prompt.contains(Messenger.getSuccessPrefix())
-				&& !prompt.contains(Messenger.getWarnPrefix()))
+				&& (this.getCustomPrefix() == null || !promptColorless.contains(Common.stripColors(this.getCustomPrefix())))
+				&& !promptColorless.contains(Common.stripColors(Messenger.getSuccessPrefix())))
 			prompt = Messenger.getQuestionPrefix() + prompt;
 
 		return Variables.replace(prompt, this.getPlayer(context));
@@ -228,8 +224,12 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			else {
 				final String failPrompt = this.getFailedValidationText(context, input);
 
-				if (failPrompt != null)
-					this.tellLaterNoPrefix(0, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPrompt.contains(Messenger.getErrorPrefix()) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
+				if (failPrompt != null) {
+					final String failPromptColorless = Common.stripColors(failPrompt);
+					final String prefixColorless = Common.stripColors(Messenger.getErrorPrefix());
+
+					this.tellLaterNoPrefix(0, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPromptColorless.contains(prefixColorless) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
+				}
 
 				// Redisplay this prompt to the user to re-collect input
 				return this;
