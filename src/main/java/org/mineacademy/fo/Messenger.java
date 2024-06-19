@@ -230,17 +230,17 @@ public class Messenger {
 	public static String replacePrefixes(String message) {
 		return Replacer.replaceArray(message,
 				"plugin_prefix", SimpleSettings.PLUGIN_PREFIX,
-				"info_prefix", infoPrefix,
-				"prefix_info", infoPrefix,
-				"success_prefix", successPrefix,
-				"prefix_success", successPrefix,
-				"warn_prefix", warnPrefix,
-				"prefix_warn", warnPrefix,
-				"error_prefix", errorPrefix,
-				"prefix_error", errorPrefix,
-				"question_prefix", questionPrefix,
-				"prefix_question", questionPrefix,
-				"announce_prefix", announcePrefix,
-				"prefix_announce", announcePrefix);
+				"info_prefix", message.contains(infoPrefix) ? "" : infoPrefix,
+				"prefix_info", message.contains(infoPrefix) ? "" : infoPrefix,
+				"success_prefix", message.contains(successPrefix) ? "" : successPrefix,
+				"prefix_success", message.contains(successPrefix) ? "" : successPrefix,
+				"warn_prefix", message.contains(warnPrefix) ? "" : warnPrefix,
+				"prefix_warn", message.contains(warnPrefix) ? "" : warnPrefix,
+				"error_prefix", message.contains(errorPrefix) ? "" : errorPrefix,
+				"prefix_error", message.contains(errorPrefix) ? "" : errorPrefix,
+				"question_prefix", message.contains(questionPrefix) ? "" : questionPrefix,
+				"prefix_question", message.contains(questionPrefix) ? "" : questionPrefix,
+				"announce_prefix", message.contains(announcePrefix) ? "" : announcePrefix,
+				"prefix_announce", message.contains(announcePrefix) ? "" : announcePrefix);
 	}
 }
