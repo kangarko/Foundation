@@ -1727,7 +1727,7 @@ public final class Remain {
 						final int inventorySize = player.getOpenInventory().getTopInventory().getSize() / 9;
 
 						if (inventorySize < 1 || inventorySize > 6) {
-							Common.log("Cannot update title for " + player.getName() + " as their inventory has non typical size: " + inventorySize + " rows");
+							Common.log("Cannot update title for " + player.getName() + " as his inventory has non typical size: " + inventorySize + " rows");
 
 							return;
 						}
