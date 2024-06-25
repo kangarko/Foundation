@@ -720,6 +720,15 @@ public class SimpleDatabase {
 					this.getConnection().commit();
 
 				} catch (final Throwable t) {
+					final List<String> errorMessage = new ArrayList<>();
+
+					errorMessage.add("Error executing a batch update with " + sqls.size() + " SQLs:");
+
+					for (final String sql : sqls)
+						errorMessage.add(sql);
+
+					Common.error(t, Common.toArray(errorMessage));
+
 					// Cancel the task but handle the error upstream
 					throw t;
 				}
