@@ -9,6 +9,8 @@ import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
@@ -19,12 +21,12 @@ import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.val;
 
 /**
  * An advanced menu listing items with automatic page support
@@ -540,11 +542,14 @@ public abstract class MenuPagged<T> extends Menu {
 			final T obj = this.getCurrentPageItems().get(this.slots.indexOf(slot));
 
 			if (obj != null) {
-				final val prevType = player.getOpenInventory().getType();
+				final InventoryType prevType = Remain.invokeOpenInventoryMethod(player, "getType");
 				this.onPageClick(player, obj, click);
 
-				if (prevType == player.getOpenInventory().getType())
-					player.getOpenInventory().getTopInventory().setItem(slot, this.getItemAt(slot));
+				if (prevType == Remain.invokeOpenInventoryMethod(player, "getType")) {
+					final Inventory topInventory = Remain.getTopInventoryFromOpenInventory(player);
+
+					topInventory.setItem(slot, this.getItemAt(slot));
+				}
 			}
 		}
 	}

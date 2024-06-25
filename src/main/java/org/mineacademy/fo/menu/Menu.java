@@ -42,6 +42,7 @@ import org.mineacademy.fo.model.SimpleSound;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
@@ -589,7 +590,7 @@ public abstract class Menu {
 		final Player player = this.getViewer();
 		Valid.checkNotNull(player, "Cannot restartMenu if it was not yet shown to a player! Menu: " + this);
 
-		final Inventory inventory = player.getOpenInventory().getTopInventory();
+		final Inventory inventory = Remain.getTopInventoryFromOpenInventory(player);
 		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
 		// Most plugins save items here
@@ -1089,7 +1090,7 @@ public abstract class Menu {
 	protected final Inventory getInventory() {
 		Valid.checkNotNull(this.viewer, "Cannot get inventory when there is no viewer!");
 
-		final Inventory topInventory = this.viewer.getOpenInventory().getTopInventory();
+		final Inventory topInventory = Remain.getTopInventoryFromOpenInventory(this.viewer);
 		Valid.checkNotNull(topInventory, "Top inventory is null!");
 
 		return topInventory;

@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.AllArgsConstructor;
@@ -90,7 +91,7 @@ public final class ButtonReturnBack extends Button {
 			//
 			// Example: In the Boss plugin, players can create new submenus and returning back to the main
 			// menu they were not able to see the new submenus in the list before this change.
-			final Inventory currentChestInventory = player.getOpenInventory().getTopInventory();
+			final Inventory currentChestInventory = Remain.getTopInventoryFromOpenInventory(player);
 
 			if (currentChestInventory != null)
 				menu.handleClose(currentChestInventory);
