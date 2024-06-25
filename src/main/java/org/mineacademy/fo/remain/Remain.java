@@ -40,6 +40,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
@@ -1576,6 +1577,35 @@ public final class Remain {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Opens the sign for the player - on legacy versions, the sign is uneditable.
+	 *
+	 * @param player
+	 * @param signBlock
+	 */
+	public static void openSign(Player player, Block signBlock) {
+		final BlockState state = signBlock.getState();
+		Valid.checkBoolean(state instanceof Sign, "Block is not a sign: " + signBlock);
+
+		final Sign sign = (Sign) state;
+
+		try {
+			player.openSign(sign);
+
+		} catch (final NoSuchMethodError ex) {
+			final Class<?> chatComponentClass = ReflectionUtil.getNMSClass("IChatBaseComponent");
+			final Class<?> blockPositionClass = ReflectionUtil.getNMSClass("BlockPosition");
+
+			final Object blockPosition = ReflectionUtil.instantiate(ReflectionUtil.getConstructor(blockPositionClass, int.class, int.class, int.class), signBlock.getX(), signBlock.getY(), signBlock.getZ());
+			final Object[] chatComponent = (Object[]) java.lang.reflect.Array.newInstance(chatComponentClass, 4);
+
+			for (int i = 0; i < 4; i++)
+				chatComponent[i] = Remain.toIChatBaseComponentPlain(sign.getLine(i));
+
+			Remain.sendPacket(player, ReflectionUtil.instantiate(ReflectionUtil.getConstructorNMS("PacketPlayOutOpenSignEditor", blockPositionClass), blockPosition));
+		}
 	}
 
 	/**
