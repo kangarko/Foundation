@@ -77,6 +77,7 @@ public class RegionCommand extends SimpleSubCommand {
 			final List<SimpleComponent> components = new ArrayList<>();
 
 			for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
+
 				final String longestText = "&7Secondary: &2" + Common.shortLocation(otherRegion.getSecondary());
 
 				components.add(SimpleComponent

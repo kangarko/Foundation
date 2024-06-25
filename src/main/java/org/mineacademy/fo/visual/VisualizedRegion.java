@@ -213,6 +213,14 @@ public final class VisualizedRegion extends Region {
 		this.viewers.clear();
 	}
 
+	@Override
+	public VisualizedRegion clone() {
+		return new VisualizedRegion(
+				this.getName() != null ? new String(this.getName()) : null,
+				this.getPrimary() != null ? this.getPrimary().clone() : null,
+				this.getSecondary() != null ? this.getSecondary().clone() : null);
+	}
+
 	/**
 	 * Converts a saved map from your yaml/json file into a region if it contains Primary and Secondary keys
 	 *

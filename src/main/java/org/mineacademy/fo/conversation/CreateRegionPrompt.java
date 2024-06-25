@@ -37,7 +37,7 @@ public class CreateRegionPrompt extends CreatePrompt<DiskRegion> {
 
 	@Override
 	protected DiskRegion create(String name) {
-		return DiskRegion.createRegion(name, this.region);
+		return DiskRegion.createRegion(name, this.region.clone());
 	}
 
 	@Override
