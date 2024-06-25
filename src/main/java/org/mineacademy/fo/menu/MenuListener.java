@@ -158,9 +158,11 @@ public final class MenuListener implements Listener {
 
 			final Player player = (Player) event.getWhoClicked();
 			final Menu menu = Menu.getMenu(player);
+			final InventoryType inventoryType = Remain.invokeInventoryViewMethod(event, "getType");
 
-			if (menu != null && event.getView().getType() == InventoryType.CHEST) {
-				final int size = event.getView().getTopInventory().getSize();
+			if (menu != null && inventoryType == InventoryType.CHEST) {
+				final Inventory topInventory = Remain.invokeInventoryViewMethod(event, "getTopInventory");
+				final int size = topInventory.getSize();
 
 				for (final int slot : event.getRawSlots()) {
 					if (slot > size)

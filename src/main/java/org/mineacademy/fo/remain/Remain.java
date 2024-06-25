@@ -59,10 +59,10 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
@@ -1980,9 +1980,27 @@ public final class Remain {
 	 */
 	public static Inventory getClickedInventory(final InventoryClickEvent event) {
 		final int slot = event.getRawSlot();
-		final InventoryView view = event.getView();
 
-		return slot < 0 ? null : view.getTopInventory() != null && slot < view.getTopInventory().getSize() ? view.getTopInventory() : view.getBottomInventory();
+		if (slot < 0)
+			return null;
+
+		final Inventory topInventory = invokeInventoryViewMethod(event, "getTopInventory");
+		final Inventory bottomInventory = invokeInventoryViewMethod(event, "getBottomInventory");
+
+		return topInventory != null && slot < topInventory.getSize() ? topInventory : bottomInventory;
+	}
+
+	/**
+	 *
+	 * @param <T>
+	 * @param event
+	 * @param methodName
+	 * @return
+	 */
+	public static <T> T invokeInventoryViewMethod(InventoryEvent event, String methodName) {
+		final Object view = ReflectionUtil.invoke("getView", event);
+
+		return ReflectionUtil.invoke(methodName, view);
 	}
 
 	/**
