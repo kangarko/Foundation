@@ -16,6 +16,7 @@ import org.mineacademy.fo.menu.model.MenuClickLocation;
 import org.mineacademy.fo.menu.model.MenuQuantity;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -95,7 +96,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 				final MenuContainerChances instance = MenuContainerChances.this;
 
 				// Call event to properly save data early
-				instance.onMenuClose(player, player.getOpenInventory().getTopInventory());
+				instance.onMenuClose(player, Remain.getTopInventoryFromOpenInventory(player));
 
 				// Simulate mode chance in the menu
 				instance.mode = MenuContainerChances.this.mode.next();

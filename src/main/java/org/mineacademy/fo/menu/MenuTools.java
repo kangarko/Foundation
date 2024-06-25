@@ -16,6 +16,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
@@ -221,7 +222,7 @@ final class ToggleableTool {
 				this.item = new ItemStack(Material.AIR);
 
 			else if (unparsed instanceof Class && Tool.class.isAssignableFrom((Class<?>) unparsed)) {
-				Method getInstance = ReflectionUtil.getMethod((Class<?>) unparsed, "getInstance");
+				final Method getInstance = ReflectionUtil.getMethod((Class<?>) unparsed, "getInstance");
 				Valid.checkNotNull(getInstance, "Class " + unparsed + " must have a public static method getInstance() returning a Tool");
 
 				this.item = ((Tool) ReflectionUtil.invokeStatic(getInstance)).getItem();
@@ -246,8 +247,8 @@ final class ToggleableTool {
 		return this.playerHasTool ? this.getToolWhenHas() : this.getToolWhenHasnt();
 	}
 
-	private void update(final Player pl) {
-		this.playerHasTool = pl.getOpenInventory().getBottomInventory().containsAtLeast(this.item, 1);
+	private void update(final Player player) {
+		this.playerHasTool = Remain.getBottomInventoryFromOpenInventory(player).containsAtLeast(this.item, 1);
 	}
 
 	// Return the dummy placeholder tool when the player already has it
