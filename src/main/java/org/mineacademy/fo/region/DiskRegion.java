@@ -205,6 +205,11 @@ public final class DiskRegion extends YamlConfig {
 		return obj instanceof DiskRegion && ((DiskRegion) obj).border != null && this.getName().equals(((DiskRegion) obj).getName());
 	}
 
+	@Override
+	public String toString() {
+		return "DiskRegion{name=" + getName() + ", primary=" + Common.shortLocation(getPrimary()) + ", secondary=" + Common.shortLocation(getSecondary()) + "}";
+	}
+
 	/* ------------------------------------------------------------------------------- */
 	/* Static */
 	/* ------------------------------------------------------------------------------- */

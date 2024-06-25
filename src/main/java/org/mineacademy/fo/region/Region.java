@@ -491,6 +491,14 @@ public class Region implements ConfigSerializable {
 		return this.getClass().getSimpleName() + "{name=" + this.name + ",location=" + Common.shortLocation(this.primary) + " - " + Common.shortLocation(this.secondary) + "}";
 	}
 
+	@Override
+	public Region clone() {
+		return new Region(
+				this.name != null ? new String(this.name) : null,
+				this.primary != null ? this.primary.clone() : null,
+				this.secondary != null ? this.secondary.clone() : null);
+	}
+
 	/**
 	 * Saves the region data into a map you can save in your yaml or json file
 	 */
