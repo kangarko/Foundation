@@ -527,7 +527,46 @@ public class SimpleDatabase {
 	 * @param consumer
 	 */
 	protected final void selectAll(final String table, final ResultReader consumer) {
-		this.select(table, null, consumer);
+		this.select(table, (String) null, consumer);
+	}
+
+	/**
+	 * Lists all rows in the given table matching the given where clauses. Example use:
+	 *
+	 * select(table, "PlayerUid = " + player.getUniqueId(), resultSet);
+	 *
+	 * Do not forget to close the connection when done in your consumer.
+	 *
+	 * @param table
+	 * @param where
+	 * @param consumer
+	 */
+	protected final void select(final String table, @Nullable final String where, final ResultReader consumer) {
+		synchronized (this.connection) {
+			if (!this.isLoaded())
+				return;
+
+			final String tableName = this.replaceVariables(table);
+
+			try (ResultSet resultSet = this.query("SELECT * FROM " + table + " WHERE " + where)) {
+				while (resultSet.next())
+					try {
+						consumer.accept(new SimpleResultSet(tableName, resultSet));
+
+					} catch (final InvalidRowException ex) {
+						// Pardoned
+
+					} catch (final Throwable t) {
+						Common.log("Error reading a row from table " + tableName + " where " + (where == null ? "all" : where) + ", aborting...");
+
+						t.printStackTrace();
+						break;
+					}
+
+			} catch (final Throwable t) {
+				Common.error(t, "Error selecting rows from table " + table + " where " + (where == null ? "all" : where));
+			}
+		}
 	}
 
 	/**
