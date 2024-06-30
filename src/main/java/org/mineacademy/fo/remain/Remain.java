@@ -3412,7 +3412,10 @@ class AdvancementAccessor {
 		final JsonObject json = new JsonObject();
 
 		final JsonObject icon = new JsonObject();
-		icon.addProperty("item", this.icon);
+		if (MinecraftVersion.atLeast(V.v1_20)) {
+			icon.addProperty("id", this.icon);
+		} else
+			icon.addProperty("item", this.icon);
 
 		final JsonObject display = new JsonObject();
 		display.add("icon", icon);
