@@ -302,11 +302,12 @@ public final class SimpleComponent implements ConfigSerializable {
 			}
 
 			text = String.join("\n", formatContents);
+			text = Common.colorize(text);
 		}
 
 		this.pastComponents.add(this.currentComponent);
 
-		this.currentComponent = new Part(colorize ? Common.colorize(text) : text);
+		this.currentComponent = new Part(text);
 		this.currentComponent.inheritFormatting = inherit;
 
 		return this;
