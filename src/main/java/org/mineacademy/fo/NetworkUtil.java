@@ -136,8 +136,6 @@ public final class NetworkUtil {
 				while ((input = reader.readLine()) != null)
 					responseBuilder.append(input);
 
-				System.out.println("[DEBUG] " + endpoint + " response: " + responseBuilder.toString());
-
 				return responseBuilder.toString();
 			}
 
@@ -191,8 +189,6 @@ public final class NetworkUtil {
 
 				while ((input = reader.readLine()) != null)
 					responseBuilder.append(input);
-
-				System.out.println("[DEBUG] " + endpoint + " response: " + responseBuilder.toString());
 
 				return responseBuilder.toString();
 			}
