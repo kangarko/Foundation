@@ -19,6 +19,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.InvalidWorldException;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.visual.VisualizedRegion;
@@ -217,7 +218,7 @@ public final class DiskRegion extends YamlConfig {
 	/**
 	 * Return the region the player is currently creating
 	 *
-	 * @param regionGetter
+	 * @param player
 	 */
 	public static VisualizedRegion getCreatedRegion(Player player) {
 		Valid.checkNotNull(regionGetter, "Please call DiskRegion#setRegionGetter before getting the region for player!");

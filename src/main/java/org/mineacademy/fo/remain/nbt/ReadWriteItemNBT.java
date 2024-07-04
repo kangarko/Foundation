@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.function.BiConsumer;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public interface ReadWriteItemNBT extends ReadWriteNBT, ReadableItemNBT {

@@ -1,9 +1,15 @@
 package org.mineacademy.fo.settings;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.command.DebugCommand;
+import org.mineacademy.fo.command.PermsCommand;
+import org.mineacademy.fo.command.ReloadCommand;
+import org.mineacademy.fo.menu.tool.RegionTool;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.FileConfig.AccusativeHelper;
 
