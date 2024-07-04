@@ -31,6 +31,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBT;
+import org.mineacademy.fo.remain.nbt.ReadableNBT;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.AccessLevel;
@@ -184,7 +185,16 @@ public final class CompMetadata {
 		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_7), "Using CompMetadata for ItemStacks requires Minecraft 1.7.10 or newer");
 
 		return CompMaterial.isAir(item.getType()) ? null : NBT.get(item, nbt -> {
-			return Common.getOrNull(nbt.getString(key));
+			String value = Common.getOrNull(nbt.getString(key));
+
+			if (value == null) {
+				final ReadableNBT compound = nbt.getCompound(SimplePlugin.getNamed() + "_NbtTag");
+
+				if (compound != null && compound.hasTag(key))
+					value = Common.getOrNull(compound.getString(key));
+			}
+
+			return value;
 		});
 	}
 
