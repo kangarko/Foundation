@@ -179,6 +179,16 @@ public final class Valid {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return true if the given object is null
+	 *
+	 * @param raw
+	 * @param falseMessage
+	 */
+	public static void checkInteger(final String raw, String falseMessage) {
+		Valid.checkBoolean(isInteger(raw), falseMessage);
+	}
+
+	/**
 	 * Return true if the given string is a valid integer
 	 *
 	 * @param raw
@@ -188,6 +198,16 @@ public final class Valid {
 		Valid.checkNotNull(raw, "Cannot check if null is an integer!");
 
 		return Valid.PATTERN_INTEGER.matcher(raw).matches();
+	}
+
+	/**
+	 * Check if the given string is a valid integer, if not throw an error
+	 *
+	 * @param raw
+	 * @param falseMessage
+	 */
+	public static void checkDecimal(final String raw, final String falseMessage) {
+		Valid.checkBoolean(isDecimal(raw), falseMessage);
 	}
 
 	/**
