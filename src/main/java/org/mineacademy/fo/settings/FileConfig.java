@@ -35,6 +35,8 @@ import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
+import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.BoxedMessage;
@@ -1000,28 +1002,27 @@ public abstract class FileConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		if (exists)
-			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
-				final Key key = SerializeUtil.deserialize(this.mode, keyType, entry.getKey());
-				final Value value;
+		for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
+			final Key key = SerializeUtil.deserialize(this.mode, keyType, entry.getKey());
+			final Value value;
 
-				if (LocationList.class.isAssignableFrom(valueType)) {
-					final List<?> list = SerializeUtil.deserialize(this.mode, List.class, entry.getValue());
-					final List<Location> copy = new ArrayList<>();
+			if (LocationList.class.isAssignableFrom(valueType)) {
+				final List<?> list = SerializeUtil.deserialize(this.mode, List.class, entry.getValue());
+				final List<Location> copy = new ArrayList<>();
 
-					list.forEach(locationRaw -> copy.add(SerializeUtil.deserializeLocation(locationRaw)));
+				list.forEach(locationRaw -> copy.add(SerializeUtil.deserializeLocation(locationRaw)));
 
-					value = (Value) new LocationList(this, copy);
+				value = (Value) new LocationList(this, copy);
 
-				} else
-					value = SerializeUtil.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
+			} else
+				value = SerializeUtil.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
 
-				// Ensure the pair values are valid for the given paramenters
-				this.checkAssignable(path, key, keyType);
-				this.checkAssignable(path, value, valueType);
+			// Ensure the pair values are valid for the given paramenters
+			this.checkAssignable(path, key, keyType);
+			this.checkAssignable(path, value, valueType);
 
-				map.put(key, value);
-			}
+			map.put(key, value);
+		}
 
 		return map;
 	}

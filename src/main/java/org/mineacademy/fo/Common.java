@@ -664,15 +664,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -1004,7 +1004,7 @@ public final class Common {
 	 * DO NOT USE FOR SAVING, ONLY INTENDED FOR DEBUGGING
 	 * Use {@link SerializeUtil#serialize(Object)} to save a location
 	 *
-	 * @param loc
+	 * @param location
 	 * @return
 	 */
 	public static String shortLocation(final Location location) {

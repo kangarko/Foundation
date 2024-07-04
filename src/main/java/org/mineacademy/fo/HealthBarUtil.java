@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;

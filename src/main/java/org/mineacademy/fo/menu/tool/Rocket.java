@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.event.RocketExplosionEvent;
 
 import lombok.Getter;
 

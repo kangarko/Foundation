@@ -107,7 +107,6 @@ public final class JavaScriptExecutor {
 	 *
 	 * @param javascript
 	 * @param sender
-	 * @param event
 	 * @return
 	 * @throws FoScriptException
 	 */
@@ -191,7 +190,6 @@ public final class JavaScriptExecutor {
 	 * as well as the bukkit event (use "event" variable there)
 	 *
 	 * @param javascript
-	 * @param sender
 	 * @param replacements
 	 * @return
 	 * @throws FoScriptException

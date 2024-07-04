@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
+import org.mineacademy.fo.model.SimpleComponent;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
