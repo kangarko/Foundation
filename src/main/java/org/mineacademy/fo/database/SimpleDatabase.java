@@ -548,7 +548,7 @@ public class SimpleDatabase {
 
 			final String tableName = this.replaceVariables(table);
 
-			try (ResultSet resultSet = this.query("SELECT * FROM " + table + " WHERE " + where)) {
+			try (ResultSet resultSet = this.query("SELECT * FROM " + table + (where == null ? "" : " WHERE " + where))) {
 				while (resultSet.next())
 					try {
 						consumer.accept(new SimpleResultSet(tableName, resultSet));
