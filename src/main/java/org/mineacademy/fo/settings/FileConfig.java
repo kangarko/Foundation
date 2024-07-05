@@ -1002,27 +1002,30 @@ public abstract class FileConfig {
 		}
 
 		// Load key-value pairs from config to our map
-		for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
-			final Key key = SerializeUtil.deserialize(this.mode, keyType, entry.getKey());
-			final Value value;
+		final Object savedKeys = this.section.retrieve(path);
 
-			if (LocationList.class.isAssignableFrom(valueType)) {
-				final List<?> list = SerializeUtil.deserialize(this.mode, List.class, entry.getValue());
-				final List<Location> copy = new ArrayList<>();
+		if (savedKeys != null)
+			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
+				final Key key = SerializeUtil.deserialize(this.mode, keyType, entry.getKey());
+				final Value value;
 
-				list.forEach(locationRaw -> copy.add(SerializeUtil.deserializeLocation(locationRaw)));
+				if (LocationList.class.isAssignableFrom(valueType)) {
+					final List<?> list = SerializeUtil.deserialize(this.mode, List.class, entry.getValue());
+					final List<Location> copy = new ArrayList<>();
 
-				value = (Value) new LocationList(this, copy);
+					list.forEach(locationRaw -> copy.add(SerializeUtil.deserializeLocation(locationRaw)));
 
-			} else
-				value = SerializeUtil.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
+					value = (Value) new LocationList(this, copy);
 
-			// Ensure the pair values are valid for the given paramenters
-			this.checkAssignable(path, key, keyType);
-			this.checkAssignable(path, value, valueType);
+				} else
+					value = SerializeUtil.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
 
-			map.put(key, value);
-		}
+				// Ensure the pair values are valid for the given paramenters
+				this.checkAssignable(path, key, keyType);
+				this.checkAssignable(path, value, valueType);
+
+				map.put(key, value);
+			}
 
 		return map;
 	}
