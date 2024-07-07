@@ -224,7 +224,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		if (this.mode == EditMode.CHANCE)
 			return false;
 
-		if (location != MenuClickLocation.MENU)
+		if (location != MenuClickLocation.MENU && action != InventoryAction.MOVE_TO_OTHER_INVENTORY)
 			return true;
 
 		if (!this.canEditItem(location, slot, clicked, cursor, action))
