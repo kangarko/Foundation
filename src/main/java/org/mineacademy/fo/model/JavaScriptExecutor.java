@@ -248,7 +248,7 @@ public final class JavaScriptExecutor {
 
 				return result;
 
-			} catch (final ScriptException ex) {
+			} catch (ClassCastException | ScriptException ex) {
 
 				// Special support for throwing exceptions in the JS code so that users
 				// can send messages to player directly if upstream supports that
@@ -267,12 +267,17 @@ public final class JavaScriptExecutor {
 				final String message = ex.toString();
 				final List<String> errorMessage = Common.newList("Error parsing JavaScript!");
 
+				if (message.contains("Cannot cast org.openjdk.nashorn.internal.runtime.Undefined to org.bukkit.Statistic"))
+					errorMessage.add("Your code uses invalid Statistic enum for your MC version. Do NOT report this, check Bukkit javadocs.");
+
 				if (message.contains("ReferenceError:") && message.contains("is not defined"))
 					errorMessage.add("Invalid or unparsed variable!");
 
-				errorMessage.add("Line: " + ex.getLineNumber() + ". Error: " + ex.getMessage());
-
-				throw new FoScriptException(String.join(" ", errorMessage), javascript, ex.getLineNumber(), ex);
+				if (ex instanceof ScriptException)
+					errorMessage.add("Line: " + ((ScriptException) ex).getLineNumber() + ". Error: " + ex.getMessage());
+				else
+					errorMessage.add("Error: " + ex.getMessage());
+				throw new FoScriptException(String.join(" ", errorMessage), javascript, ex instanceof ScriptException ? ((ScriptException) ex).getLineNumber() : -1, ex);
 			}
 		}
 	}
