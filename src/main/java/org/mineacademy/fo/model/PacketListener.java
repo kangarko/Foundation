@@ -235,6 +235,7 @@ public abstract class PacketListener {
 			this.player = event.getPlayer();
 
 			final String playerName = event.getPlayer().getName();
+			final PacketContainer packet = event.getPacket();
 
 			// Ignore temporary players
 			try {
@@ -250,6 +251,11 @@ public abstract class PacketListener {
 
 			// Prevent deadlock
 			if (this.processedPlayers.contains(playerName))
+				return;
+
+			// Ignore actionbar messages
+			if (MinecraftVersion.atLeast(V.v1_19) && packet.getHandle().getClass().getSimpleName().equals("ClientboundSystemChatPacket") &&
+					!packet.getBooleans().getFields().isEmpty() && packet.getBooleans().read(0) == true)
 				return;
 
 			// Lock processing to one instance only to prevent another packet filtering
@@ -279,7 +285,7 @@ public abstract class PacketListener {
 				}
 
 				if (this.jsonMessage != null && !this.jsonMessage.isEmpty())
-					this.onJsonMessage(this.jsonMessage);
+					this.jsonMessage = this.onJsonMessage(this.jsonMessage);
 
 				if (!legacyText.equals(parsedText))
 					this.writeEditedMessage(parsedText, event);
@@ -434,7 +440,8 @@ public abstract class PacketListener {
 		private void writeEditedMessage(String message, PacketEvent event) {
 			final PacketContainer packet = event.getPacket();
 
-			this.jsonMessage = Remain.toJson(message);
+			if (!this.editJson())
+				this.jsonMessage = Remain.toJson(message);
 
 			if (this.systemChat) {
 
@@ -484,11 +491,24 @@ public abstract class PacketListener {
 		 * Called automatically when we receive the chat message and decipher it into plain json.
 		 * You can use {@link #getEvent()} and {@link #getPlayer()} here.
 		 * <p>
-		 * If you edit the jsonMessage we do NOT set it back.
+		 * If you edit the jsonMessage we do NOT set it back unless you call {@link #editJson()} and set it to true.
 		 *
 		 * @param jsonMessage
+		 *
+		 * @return
 		 */
-		protected void onJsonMessage(final String jsonMessage) {
+		protected String onJsonMessage(final String jsonMessage) {
+			return jsonMessage;
+		}
+
+		/**
+		 * false (default) = we edit the message based on {@link #onMessage(String)}
+		 * true = we edit the message based on {@link #onJsonMessage(String)}
+		 *
+		 * @return
+		 */
+		protected boolean editJson() {
+			return false;
 		}
 	}
 
