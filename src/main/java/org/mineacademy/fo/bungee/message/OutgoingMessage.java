@@ -9,6 +9,7 @@ import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.bungee.BungeeMessageType;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.plugin.SimplePlugin;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -43,6 +44,15 @@ public final class OutgoingMessage extends Message {
 	 */
 	public OutgoingMessage(BungeeListener listener, BungeeMessageType action) {
 		super(listener, action);
+	}
+
+	/**
+	 * Write a compatible object into the message
+	 *
+	 * @param map
+	 */
+	public void write(ConfigSerializable map) {
+		this.write(map.serialize().toJson(), String.class);
 	}
 
 	/**
