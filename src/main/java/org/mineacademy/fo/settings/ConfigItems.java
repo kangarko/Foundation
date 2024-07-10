@@ -209,7 +209,7 @@ public final class ConfigItems<T extends YamlConfig> {
 				item = instantiator.get();
 
 			else {
-				Constructor<T> constructor;
+				Constructor<T> constructor = null;
 				boolean nameConstructor = true;
 
 				final Class<T> prototypeClass = this.prototypeCreator.apply(name);
@@ -218,13 +218,18 @@ public final class ConfigItems<T extends YamlConfig> {
 				try {
 					constructor = prototypeClass.getDeclaredConstructor(String.class);
 
-				} catch (final Exception e) {
-					constructor = prototypeClass.getDeclaredConstructor();
-					nameConstructor = false;
+				} catch (final Throwable t) {
+					try {
+						constructor = prototypeClass.getDeclaredConstructor();
+
+						nameConstructor = false;
+					} catch (final Throwable tt) {
+						// User forgot his constructor
+					}
 				}
 
-				Valid.checkBoolean(Modifier.isPrivate(constructor.getModifiers()) || Modifier.isProtected(constructor.getModifiers()),
-						"Your class " + prototypeClass + " must have a private or protected constructor taking a String or nothing!");
+				Valid.checkBoolean(constructor != null && (Modifier.isPrivate(constructor.getModifiers()) || Modifier.isProtected(constructor.getModifiers())),
+						"Your class " + prototypeClass + " must also have a private or a protected constructor taking a String or nothing! Found: " + constructor);
 
 				constructor.setAccessible(true);
 
