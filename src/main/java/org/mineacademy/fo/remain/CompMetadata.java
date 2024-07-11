@@ -299,8 +299,7 @@ public final class CompMetadata {
 	 * @param key
 	 */
 	public static void removeTempMetadata(final Entity player, final String key) {
-		if (player.hasMetadata(key))
-			player.removeMetadata(key, SimplePlugin.getInstance());
+		player.removeMetadata(key, SimplePlugin.getInstance());
 	}
 
 	// ----------------------------------------------------------------------------------------
