@@ -227,6 +227,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.api.ChatColor"))
 			this.loadLibrary("net.md-5", "bungeecord-chat", "1.16-R0.4");
 
+		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
+			this.loadLibrary("com.google.code.gson", "gson", "2.11.0");
+
 		if (getJavaVersion() >= 11)
 			this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
 
@@ -261,7 +264,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			return;
 
 		// Before all, check if necessary libraries and the minimum required MC version
-		if (!this.checkLibraries0() || !this.checkServerVersions0()) {
+		if (!this.checkServerVersions0()) {
 			this.setEnabled(false);
 
 			return;
@@ -442,7 +445,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		public ShadingException() {
 			if (!SimplePlugin.getNamed().equals(SimplePlugin.this.getDescription().getName())) {
-				Bukkit.getLogger().severe(Common.consoleLine());
 				Bukkit.getLogger().severe("We have a class path problem in the Foundation library");
 				Bukkit.getLogger().severe("preventing " + SimplePlugin.this.getDescription().getName() + " from loading correctly!");
 				Bukkit.getLogger().severe("");
@@ -453,50 +455,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				Bukkit.getLogger().severe("");
 				Bukkit.getLogger().severe("Possible cause: " + SimplePlugin.getNamed());
 				Bukkit.getLogger().severe("Foundation package: " + SimplePlugin.class.getPackage().getName());
-				Bukkit.getLogger().severe(Common.consoleLine());
 
 				throw new FoException("Shading exception, see above for details.");
 			}
 		}
-	}
-
-	/**
-	 * Check if both md5 chat and gson libraries are present,
-	 * or suggest an additional plugin to fix their lack
-	 *
-	 * @return
-	 */
-	private boolean checkLibraries0() {
-
-		boolean md_5 = false;
-		boolean gson = false;
-
-		try {
-			Class.forName("net.md_5.bungee.api.chat.BaseComponent");
-			md_5 = true;
-		} catch (final ClassNotFoundException ex) {
-		}
-
-		try {
-			Class.forName("com.google.gson.JsonSyntaxException");
-			gson = true;
-
-		} catch (final ClassNotFoundException ex) {
-		}
-
-		if (!md_5 || !gson) {
-			Bukkit.getLogger().severe(Common.consoleLine());
-			Bukkit.getLogger().severe("Your Minecraft version (" + MinecraftVersion.getCurrent() + ")");
-			Bukkit.getLogger().severe("lacks libraries " + this.getDataFolder().getName() + " needs:");
-			Bukkit.getLogger().severe("JSON Chat (by md_5) found: " + md_5);
-			Bukkit.getLogger().severe("Gson (by Google) found: " + gson);
-			Bukkit.getLogger().severe(" ");
-			Bukkit.getLogger().severe("To fix that, please install BungeeChatAPI:");
-			Bukkit.getLogger().severe("https://mineacademy.org/plugins/#misc");
-			Bukkit.getLogger().severe(Common.consoleLine());
-		}
-
-		return true;
 	}
 
 	/**
