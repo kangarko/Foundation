@@ -513,7 +513,7 @@ public class SimpleDatabase {
 			sql = this.replaceVariables(sql);
 			Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
 
-			Debugger.debug("mysql", "Updating " + this.connection + " database with: " + sql);
+			Debugger.debug("mysql", "Updating database with: " + sql);
 
 			try (Statement statement = this.connection.createStatement()) {
 				statement.executeUpdate(sql);
