@@ -124,7 +124,10 @@ public final class JavaScriptExecutor {
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, @Nullable final CommandSender sender, @NonNull Map<String, Object> replacements) throws FoScriptException {
+	public static Object run(@NonNull String javascript, @Nullable final CommandSender sender, Map<String, Object> replacements) throws FoScriptException {
+
+		if (replacements == null)
+			replacements = new HashMap<>();
 
 		// Workaround hasPermission for null senders (i.e. Discord)
 		final Pattern pattern = Pattern.compile("player\\.hasPermission\\(\"([^\"]+)\"\\)");
@@ -194,8 +197,11 @@ public final class JavaScriptExecutor {
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, @NonNull final Map<String, Object> replacements) throws FoScriptException {
+	public static Object run(@NonNull String javascript, Map<String, Object> replacements) throws FoScriptException {
 		synchronized (SimplePlugin.getInstance()) {
+			if (replacements == null)
+				replacements = new HashMap<>();
+
 			// Mohist is unsupported
 			if (Bukkit.getName().equals("Mohist"))
 				return null;

@@ -26,7 +26,7 @@ public final class NetworkUtil {
 	/**
 	 * Mask user agent to Chrome 126 by default, you can override this in your request properties.
 	 */
-	private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+	public final static String HTTP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
 	/**
 	 * Makes a GET request to the specified endpoint and returns the response as a JSON object.
@@ -205,7 +205,7 @@ public final class NetworkUtil {
 			final URL url = new URL(endpoint);
 			final URLConnection connection = url.openConnection();
 
-			connection.setRequestProperty("User-Agent", USER_AGENT);
+			connection.setRequestProperty("User-Agent", HTTP_USER_AGENT);
 
 			if (requestProperties != null)
 				for (final Map.Entry<String, Object> entry : requestProperties.entrySet())
@@ -274,7 +274,7 @@ public final class NetworkUtil {
 			connection.setDoOutput(true);
 
 			connection.setRequestProperty("Content-Type", "application/json");
-			connection.setRequestProperty("User-Agent", USER_AGENT);
+			connection.setRequestProperty("User-Agent", HTTP_USER_AGENT);
 
 			if (requestProperties != null)
 				for (final Map.Entry<String, Object> entry : requestProperties.entrySet())
