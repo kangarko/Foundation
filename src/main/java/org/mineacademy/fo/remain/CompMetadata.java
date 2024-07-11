@@ -212,10 +212,13 @@ public final class CompMetadata {
 		// PENDING REMOVAL
 		if (Remain.hasScoreboardTags())
 			for (final String line : entity.getScoreboardTags()) {
-				final String tag = getTag(line, key);
+				final String value = getTag(line, key);
 
-				if (tag != null && !tag.isEmpty())
-					return tag;
+				if (value != null && !value.isEmpty()) {
+					setMetadata(entity, key, value); // Set the metadata the new way
+
+					return value;
+				}
 			}
 
 		if (hasPersistentMetadata) {
