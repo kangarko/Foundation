@@ -138,5 +138,12 @@ public final class FoConstants {
 		 * Used in {@link Menu#getLastClosedMenu(Player)}
 		 */
 		public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getNamed() + "_Last_Closed_Menu";
+
+		/**
+		 * An internal metadata tag the player gets when he opens a sign on legacy Minecraft version.
+		 *
+		 * We use this in the sign update packet listener to handle sign updating.
+		 */
+		public static final String METADATA_OPENED_SIGN = SimplePlugin.getNamed() + "_OpenedSign";
 	}
 }
