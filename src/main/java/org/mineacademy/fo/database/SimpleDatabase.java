@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtil.Mode;
@@ -175,37 +176,30 @@ public class SimpleDatabase {
 	 * @param table
 	 */
 	public final void connect(final String url, final String user, final String password, final String table) {
-		this.connecting = true;
+		final SimplePlugin instance = SimplePlugin.getInstance();
 
 		try {
+			this.connecting = true;
 
-			// Support local storage of databases on your disk, typically in your plugin's folder
-			// Make sure to load the library using "libraries" and "legacy-libraries" feature in plugin.yml:
-			//
-			// libraries:
-			// - org.xerial:sqlite-jdbc:3.36.0.3
-			//
-			// legacy-libraries:
-			// - org.xerial:sqlite-jdbc:3.36.0.3
-			//
 			if (url.startsWith("jdbc:sqlite")) {
+				instance.loadLibrary("org.xerial", "sqlite-jdbc", "3.46.0.0");
+
 				Class.forName("org.sqlite.JDBC");
 
-				this.connection = DriverManager.getConnection(url);
+				final String urlHeadless = url.replace("jdbc:sqlite://", "");
+
+				if (urlHeadless.split("\\.").length == 2 && !urlHeadless.contains("\\") && !urlHeadless.contains("/")) {
+					final String path = FileUtil.getFile(urlHeadless).getPath();
+
+					this.connection = DriverManager.getConnection("jdbc:sqlite:" + path);
+				} else
+					this.connection = DriverManager.getConnection(url);
+
 				this.isSQLite = true;
 			}
 
-			// Avoid using imports so that Foundation users don't have to include Hikari, you can
-			// optionally load the library using "libraries" and "legacy-libraries" feature in plugin.yml:
-			//
-			// libraries:
-			// - com.zaxxer:HikariCP:5.0.1
-			// legacy-libraries:
-			//  - org.slf4j:slf4j-simple:1.7.36
-			//  - org.slf4j:slf4j-api:1.7.36
-			//  - com.zaxxer:HikariCP:4.0.3
-			//
-			else if (connectUsingHikari && ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig")) {
+			else if (connectUsingHikari) {
+				instance.loadLibrary("com.zaxxer", "HikariCP", Remain.getJavaVersion() >= 11 ? "5.1.0" : "4.0.3");
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
@@ -255,14 +249,18 @@ public class SimpleDatabase {
 			 * Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL)
 			 */
 			else {
-				if (url.startsWith("jdbc:mariadb://") && ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
+				if (url.startsWith("jdbc:mariadb://")) {
+					instance.loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.4.0");
+
 					Class.forName("org.mariadb.jdbc.Driver");
 
-				else if (url.startsWith("jdbc:mysql://") && ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+				} else if (url.startsWith("jdbc:mysql://")) {
+					instance.loadLibrary("com.mysql", "mysql-connector-j", "9.0.0");
+
 					Class.forName("com.mysql.cj.jdbc.Driver");
 
-				else {
-					Common.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your database or switching to MariaDB. You can safely ignore this warning");
+				} else {
+					Common.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your Java version. You can safely ignore this warning");
 
 					Class.forName("com.mysql.jdbc.Driver");
 				}
@@ -276,7 +274,7 @@ public class SimpleDatabase {
 		} catch (final Exception ex) {
 
 			if (Common.getOrEmpty(ex.getMessage()).contains("No suitable driver found"))
-				Common.logFramed(true,
+				Common.logFramed(
 						"Failed to look up database driver! If you had database disabled,",
 						"then enable it and reload - this is expected.",
 						"",
@@ -286,7 +284,7 @@ public class SimpleDatabase {
 						"If this problem persists after a restart, please contact",
 						"your hosting provider with the error message below.");
 			else
-				Common.logFramed(true,
+				Common.logFramed(
 						"Failed to connect to database",
 						"URL: " + url,
 						"Error: " + ex.getMessage());
@@ -362,11 +360,17 @@ public class SimpleDatabase {
 			String columns = "";
 
 			for (final TableRow column : creator.getColumns()) {
-				String dataType = column.getDataType();
+				String dataType = column.getDataType().toLowerCase();
 
 				if (this.isSQLite) {
-					if (dataType.equals("datetime"))
+					if (dataType.equals("datetime") || dataType.equals("longtext"))
 						dataType = "text";
+
+					else if (dataType.startsWith("varchar"))
+						dataType = "text";
+
+					else if (dataType.startsWith("bigint"))
+						dataType = "integer";
 
 					else if (creator.getPrimaryColumn() != null && creator.getPrimaryColumn().equals(column.getName()))
 						dataType = "INTEGER PRIMARY KEY";
@@ -435,7 +439,7 @@ public class SimpleDatabase {
 	protected final void insert(final String table, @NonNull final SerializedMap columnsAndValues) {
 		synchronized (this.connection) {
 			final String columns = Common.join(columnsAndValues.keySet());
-			final String values = Common.join(columnsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : "'" + value + "'");
+			final String values = Common.join(columnsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : (value instanceof Number ? String.valueOf(value) : "'" + value + "'"));
 			final String duplicateUpdate = Common.join(columnsAndValues.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
 
 			this.update("INSERT INTO " + this.replaceVariables(table) + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";"));
@@ -509,7 +513,7 @@ public class SimpleDatabase {
 			sql = this.replaceVariables(sql);
 			Valid.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
 
-			Debugger.debug("mysql", "Updating database with: " + sql);
+			Debugger.debug("mysql", "Updating " + this.connection + " database with: " + sql);
 
 			try (Statement statement = this.connection.createStatement()) {
 				statement.executeUpdate(sql);
@@ -957,6 +961,15 @@ public class SimpleDatabase {
 	 */
 	protected Mode getTableMode() {
 		return SerializeUtil.Mode.YAML;
+	}
+
+	/**
+	 * Return if the database is SQLite
+	 *
+	 * @return
+	 */
+	protected final boolean isSQLite() {
+		return this.isSQLite;
 	}
 
 	// --------------------------------------------------------------------
