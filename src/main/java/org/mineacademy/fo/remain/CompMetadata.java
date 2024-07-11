@@ -126,6 +126,8 @@ public final class CompMetadata {
 		if (hasPersistentMetadata) {
 			setPersistentMetadata(entity, key, value);
 
+			entity.update(true);
+
 		} else
 			MetadataFile.getInstance().setMetadata(entity, key, value);
 	}
