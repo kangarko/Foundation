@@ -344,7 +344,7 @@ public abstract class LibraryManager {
 	 */
 	protected byte[] downloadLibrary(String url) {
 		try {
-			Common.log("Downloading library " + url);
+			//Common.log("Downloading library " + url);
 
 			final URLConnection connection = new URL(requireNonNull(url, "url")).openConnection();
 
