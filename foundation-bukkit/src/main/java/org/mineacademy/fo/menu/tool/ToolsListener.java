@@ -1,0 +1,291 @@
+package org.mineacademy.fo.menu.tool;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.EnderPearl;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.projectiles.ProjectileSource;
+import org.mineacademy.fo.Common;
+import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.event.RocketExplosionEvent;
+import org.mineacademy.fo.model.SimpleRunnable;
+import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.Lang;
+
+import lombok.Data;
+
+/**
+ * The event listener class responsible for firing events in tools
+ */
+public final class ToolsListener implements Listener {
+
+	/**
+	 * Stores rockets that were shot
+	 */
+	private final Map<UUID, ShotRocket> shotRockets = new HashMap<>();
+
+	/**
+	 * Represents a shot rocket with the shooter
+	 */
+	@Data
+	private final class ShotRocket {
+		private final Player shooter;
+		private final Rocket rocket;
+	}
+
+	// -------------------------------------------------------------------------------------------
+	// Main tool listener
+	// -------------------------------------------------------------------------------------------
+
+	/**
+	 * Handles clicking tools and shooting rocket
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+	public void onToolClick(final PlayerInteractEvent event) {
+		if (!Remain.isInteractEventPrimaryHand(event))
+			return;
+
+		final Player player = event.getPlayer();
+		final Tool tool = Tool.getTool(player.getItemInHand());
+
+		if (tool != null)
+			try {
+				if ((event.isCancelled() || !event.hasBlock()) && tool.ignoreCancelled())
+					return;
+
+				if (tool instanceof Rocket) {
+					final Rocket rocket = (Rocket) tool;
+
+					if (rocket.canLaunch(player, player.getEyeLocation()))
+						player.launchProjectile(rocket.getProjectile(), player.getEyeLocation().getDirection().multiply(rocket.getFlightSpeed()));
+					else
+						event.setCancelled(true);
+
+				} else
+					tool.onBlockClick(event);
+
+				if (tool.autoCancel())
+					event.setCancelled(true);
+
+			} catch (final Throwable t) {
+				event.setCancelled(true);
+
+				Common.tell(player, Lang.component("tool-error"));
+				Common.error(t, "Failed to handle " + event.getAction() + " using tool: " + tool.getClass());
+			}
+	}
+
+	/**
+	 * Handles block placing
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onToolPlaceBlock(final BlockPlaceEvent event) {
+		final Player player = event.getPlayer();
+		final Tool tool = Tool.getTool(player.getItemInHand());
+
+		if (tool != null)
+			try {
+				if (event.isCancelled() && tool.ignoreCancelled())
+					return;
+
+				tool.onBlockPlace(event);
+
+				if (tool.autoCancel())
+					event.setCancelled(true);
+
+			} catch (final Throwable t) {
+				event.setCancelled(true);
+
+				Common.tell(player, Lang.component("tool-error"));
+				Common.error(t, "Failed to handle placing " + event.getBlock() + " using tool: " + tool.getClass());
+			}
+	}
+
+	/**
+	 * Handles hotbar focus/defocus for tools
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onHeldItem(final PlayerItemHeldEvent event) {
+		final Player player = event.getPlayer();
+
+		final Tool current = Tool.getTool(player.getInventory().getItem(event.getNewSlot()));
+		final Tool previous = Tool.getTool(player.getInventory().getItem(event.getPreviousSlot()));
+
+		// Player has attained focus
+		if (current != null) {
+
+			if (previous != null) {
+
+				// Not really
+				if (previous.equals(current))
+					return;
+
+				previous.onHotbarDefocused(player);
+			}
+
+			current.onHotbarFocused(player);
+		}
+		// Player lost focus
+		else if (previous != null)
+			previous.onHotbarDefocused(player);
+	}
+
+	/**
+	 * Handles item drop for tools
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onItemDrop(final PlayerDropItemEvent event) {
+		final Item item = event.getItemDrop();
+
+		// Automatically remove dropped tools
+		if (Tool.getTool(item.getItemStack()) != null)
+			item.remove();
+	}
+
+	// -------------------------------------------------------------------------------------------
+	// Rockets
+	// -------------------------------------------------------------------------------------------
+
+	/**
+	 * Handles launching a rocket
+	 *
+	 * @param event the event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onRocketShoot(final ProjectileLaunchEvent event) {
+		final Projectile shot = event.getEntity();
+		final ProjectileSource shooter = shot.getShooter();
+
+		if (!(shooter instanceof Player))
+			return;
+
+		if (this.shotRockets.containsKey(shot.getUniqueId()))
+			return;
+
+		final Player player = (Player) shooter;
+		final Tool tool = Tool.getTool(player.getItemInHand());
+
+		if (tool instanceof Rocket)
+			try {
+				final Rocket rocket = (Rocket) tool;
+
+				if (event.isCancelled() && tool.ignoreCancelled())
+					return;
+
+				if (!rocket.canLaunch(player, shot.getLocation())) {
+					event.setCancelled(true);
+
+					return;
+				}
+
+				if (tool.autoCancel() || shot instanceof EnderPearl) {
+					final World world = shot.getWorld();
+					final Location loc = shot.getLocation();
+
+					Platform.runTask(() -> shot.remove());
+
+					Platform.runTask(1, () -> {
+						Valid.checkNotNull(shot, "shot = null");
+						Valid.checkNotNull(world, "shot.world = null");
+						Valid.checkNotNull(loc, "shot.location = null");
+
+						final Location directedLoc = player.getEyeLocation().add(player.getEyeLocation().getDirection().setY(0).normalize().multiply(1.05)).add(0, 0.2, 0);
+
+						final Projectile copy;
+
+						if (shot instanceof EnderPearl)
+							copy = (Projectile) world.spawnEntity(directedLoc, EntityType.ENDER_PEARL);
+						else
+							copy = world.spawn(directedLoc, shot.getClass());
+
+						copy.setVelocity(shot.getVelocity());
+
+						this.shotRockets.put(copy.getUniqueId(), new ShotRocket(player, rocket));
+						rocket.onLaunch(copy, player);
+
+						Platform.runTaskTimer(1, new SimpleRunnable() {
+
+							private long elapsedTicks = 0;
+
+							@Override
+							public void run() {
+								if (!copy.isValid() || copy.isOnGround() || this.elapsedTicks++ > 20 * 30 /*Remove after 30 seconds to reduce server strain*/)
+									this.cancel();
+
+								else
+									rocket.onFlyTick(copy, player);
+							}
+						});
+					});
+
+				} else {
+					this.shotRockets.put(shot.getUniqueId(), new ShotRocket(player, rocket));
+					rocket.onLaunch(shot, player);
+				}
+
+			} catch (final Throwable t) {
+				event.setCancelled(true);
+
+				Common.tell(player, Lang.component("tool-error"));
+				Common.error(t, "Failed to shoot rocket " + tool.getClass());
+			}
+	}
+
+	/**
+	 * Handles rockets on impacts
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onRocketHit(final ProjectileHitEvent event) {
+		final Projectile projectile = event.getEntity();
+		final ShotRocket shot = this.shotRockets.remove(projectile.getUniqueId());
+
+		if (shot != null) {
+			final Rocket rocket = shot.getRocket();
+			final Player shooter = shot.getShooter();
+
+			try {
+				if (rocket.canExplode(projectile, shooter)) {
+					final RocketExplosionEvent rocketEvent = new RocketExplosionEvent(rocket, projectile, rocket.getExplosionPower(), rocket.isBreakBlocks());
+
+					if (Platform.callEvent(rocketEvent)) {
+						final Location location = projectile.getLocation();
+
+						shot.getRocket().onExplode(projectile, shot.getShooter());
+						projectile.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), rocketEvent.getPower(), false, rocketEvent.isBreakBlocks());
+					}
+
+				} else
+					projectile.remove();
+
+			} catch (final Throwable t) {
+				Common.tell(shooter, Lang.component("tool-error"));
+				Common.error(t, "Failed to handle impact by rocket " + shot.getRocket().getClass());
+			}
+		}
+	}
+}

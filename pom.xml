@@ -1,34 +1,41 @@
-<!-- (c) All rights reserved. Do not share, copy, reproduce 
-	or sell any part of this library unless you have written permission from 
-	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
-	owner of the MineAcademy.org End User License then you may use it for your 
-	own use in plugins but not for any other purpose. -->
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.mineacademy</groupId>
-    <artifactId>Foundation</artifactId>
-    <version>6.9.1</version>
-    <packaging>jar</packaging>
-
-    <name>Foundation</name>
-    <description>A framework for the development of Minecraft plugins for Paper.</description>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
-    </properties>
+    <artifactId>foundation-parent</artifactId>
+    <version>7.0.0</version>
+    <packaging>pom</packaging>
+    
+    <modules>
+        <module>foundation-bukkit</module>
+        <module>foundation-velocity</module>
+        <module>foundation-bungee</module>
+        <module>foundation-core</module>
+    </modules>
 
     <repositories>
         <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+	    <repository>
+	        <id>spigot-repo</id>
+	        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+	    </repository>
+		<repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>  
+		<repository>
+            <id>bungeecord-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>	    
+	    <repository>
             <id>mineacademy-repo</id>
             <url>https://bitbucket.org/kangarko/libraries/raw/master</url>
-        </repository>
-        <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
             <id>minecraft-libraries</id>
@@ -36,9 +43,7 @@
         </repository>
     </repositories>
 
-    <dependencies>
-
-        <!-- Lombok -->
+	<dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -50,195 +55,105 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.23.1</version>
+            <version>2.24.0</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- NOT used anywhere, just for backward compatibility with 1.8.8 -->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <!-- DO NOT CHANGE VERSION - breaks 1.8.8 -->
-            <version>1.33</version>
-        </dependency>
-
-        <!-- Only needed for NBT-API -->
-        <dependency>
-            <groupId>com.mojang</groupId>
-            <artifactId>datafixerupper</artifactId>
-            <version>4.0.26</version>
-        </dependency>
-
-        <!-- The core Spigot-API -->
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.21-R0.1-SNAPSHOT</version>
-        </dependency>
-
-        <!-- MineAcademy guaranteed availability repos for plugins -->
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>AuthMe</artifactId>
-            <version>5.6.0-SNAPSHOT-2622</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>BentoBox</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>CitizensAPI</artifactId>
-            <version>2.0.33-36</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>CMIAPI</artifactId>
-            <version>9.6.5.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>DiscordSRV</artifactId>
-            <version>1.28.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>EssentialsX</artifactId>
-            <version>2.21.0-SNAPSHOT-1565</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>Factions</artifactId>
-            <version>3.3.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>FactionsUUID</artifactId>
-            <version>1.6.9.5-U0.6.39-b341</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>MassiveCore</artifactId>
-            <version>3.3.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>mcMMO</artifactId>
-            <version>2.1.231</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>MultiverseCore</artifactId>
-            <version>4.3.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>MythicMobs</artifactId>
-            <version>5.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>NuVotifier</artifactId>
-            <version>2.7.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>PlaceholderAPI</artifactId>
-            <version>2.11.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>5.1.0-SNAPSHOT-679</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>Residence</artifactId>
-            <version>5.1.4.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>SimpleClans</artifactId>
-            <version>2.19.3-SNAPSHOT-418</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>Towny</artifactId>
-            <version>0.100.1.21</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>TownyChat</artifactId>
-            <version>0.115</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>Vault</artifactId>
-            <version>1.7.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>WorldEdit</artifactId>
-            <version>7.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mineacademy.plugin</groupId>
-            <artifactId>WorldGuard</artifactId>
-            <version>7.0.9</version>
-        </dependency>
+        
+		<!-- Adventure -->
+		 <dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-api</artifactId>
+		    <version>4.17.0</version>
+		    <scope>provided</scope>
+		 </dependency>
+		 <dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-text-minimessage</artifactId>
+		    <version>4.17.0</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-text-serializer-plain</artifactId>
+		    <version>4.17.0</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-text-serializer-gson</artifactId>
+		    <version>4.17.0</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-text-serializer-legacy</artifactId>
+		    <version>4.17.0</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-text-serializer-bungeecord</artifactId>
+		    <version>4.3.4</version>
+		    <scope>provided</scope>
+		</dependency>		
+		
+		<!-- We have our own config implementation updated to YAML 1.2 -->
+		<dependency>
+		    <groupId>org.snakeyaml</groupId>
+		    <artifactId>snakeyaml-engine</artifactId>
+		    <version>2.8</version>
+		    <scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.11.0</version>
+		    <scope>provided</scope>
+		</dependency>
     </dependencies>
-    <build>
+
+    <properties>
+    	<author>kangarko</author>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.showWarnings>false</maven.compiler.showWarnings>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+	<build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.1</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
+                <version>3.13.0</version>
             </plugin>
-            <!-- Incompatible with Java 21 and jitpack -->
-            <!--<plugin>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-maven-plugin</artifactId>
-                <version>1.18.20.0</version>
-                <configuration>
-                    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-                    <outputDirectory>${delombok.output}</outputDirectory>
-                    <addOutputDirectory>false</addOutputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>delombok</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.3</version>
-                <configuration>
-                    <doclint>none</doclint>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<artifactSet>
+						<includes>
+							<include>org.mineacademy:foundation-core*</include>
+						</includes>
+					</artifactSet>
+				</configuration>
+			</plugin>
         </plugins>
     </build>
+
 </project>
