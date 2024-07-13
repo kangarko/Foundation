@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.mineacademy.fo.Common;
@@ -326,6 +327,14 @@ public abstract class YamlStaticConfig {
 
 	protected static final <E> List<E> getList(final String path, final Class<E> listType) {
 		return TEMPORARY_INSTANCE.getList(path, listType);
+	}
+
+	protected static final List<SerializedMap> getMapList(final String path) {
+		return TEMPORARY_INSTANCE.getMapList(path);
+	}
+
+	protected static final <K, V> Map<K, List<V>> getMapList(final String path, final Class<K> keyType, Class<V> setType, Object setDeserializerParams) {
+		return TEMPORARY_INSTANCE.getMapList(path, keyType, setType, setDeserializerParams);
 	}
 
 	protected static final <E> IsInList<E> getIsInList(final String path, final Class<E> listType) {
