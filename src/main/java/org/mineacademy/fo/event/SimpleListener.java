@@ -1,5 +1,9 @@
 package org.mineacademy.fo.event;
 
+import java.lang.reflect.Method;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -12,16 +16,13 @@ import org.bukkit.plugin.EventExecutor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
-import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -48,10 +49,10 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	private final boolean ignoreCancelled;
 
 	/**
-	 * The run event temporary placeholder
+	 * The optional player implementation for some helper methods
 	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private T event;
+	@Nullable
+	private Player player;
 
 	/**
 	 * Creates a new listener using the normal priority
@@ -80,31 +81,37 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 			return;
 
 		final boolean eventIgnored = event.getEventName().equals("SimpleChatEvent");
-		final String logName = listener.getClass().getSimpleName() + " listening to " + event.getEventName() + " at " + this.priority + " priority";
+		final String logName = (listener != null ? listener.getClass().getSimpleName() + " listening to " : "") + event.getEventName() + " at " + this.priority + " priority";
 
 		if (!eventIgnored)
 			LagCatcher.start(logName);
 
-		try {
-			this.event = this.eventClass.cast(event);
+		if (event instanceof PlayerEvent)
+			this.player = ((PlayerEvent) event).getPlayer();
 
-			this.execute((T) event);
+		else {
+			try {
+				final Method getPlayer = ReflectionUtil.getMethod(event.getClass(), "getPlayer");
+
+				if (getPlayer != null)
+					this.player = ReflectionUtil.invoke(getPlayer, event);
+			} catch (final Throwable ignored) {
+			}
+		}
+
+		try {
+			this.execute(this.eventClass.cast(event));
 
 		} catch (final EventHandledException ex) {
 			final String[] messages = ex.getMessages();
 			final boolean cancelled = ex.isCancelled();
 
-			final Player player = this.findPlayer();
-
-			if (messages != null && player != null)
-				for (String message : messages) {
-					message = Variables.replace(message, player);
-
+			if (messages != null && this.player != null)
+				for (final String message : messages)
 					if (Messenger.ENABLED)
-						Messenger.error(player, message);
+						Messenger.error(this.player, message);
 					else
-						Common.tell(player, "&c" + message);
-				}
+						Common.tell(this.player, "&c" + message);
 
 			if (cancelled && event instanceof Cancellable)
 				((Cancellable) event).setCancelled(true);
@@ -129,18 +136,22 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	protected abstract void execute(T event);
 
 	/**
+	 * Call this in your event to set the player.
+	 *
+	 * @param player
+	 */
+	protected final void setPlayer(Player player) {
+		this.player = player;
+	}
+
+	/*
 	 * Return a player from this event, null if none,
 	 * used for messaging
-	 *
-	 * @return
 	 */
-	protected Player findPlayer() {
-		Valid.checkNotNull(this.event, "Called findPlayer for null event!");
+	private Player findPlayer() {
+		Valid.checkNotNull(this.player, "Call setPlayer() early in your event to set the player");
 
-		if (this.event instanceof PlayerEvent)
-			return ((PlayerEvent) this.event).getPlayer();
-
-		throw new FoException("Called findPlayer but not method not implemented for event " + this.event);
+		return this.player;
 	}
 
 	/**
@@ -194,11 +205,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param falseMessage
 	 */
 	protected final void checkPerm(String permission, String falseMessage) {
-		final Player player = this.findPlayer();
-		Valid.checkNotNull(player, "Player cannot be null for " + this.event + "!");
-
-		if (!PlayerUtil.hasPerm(player, permission))
-			throw new EventHandledException(true, falseMessage.replace("{permission}", permission));
+		this.checkBoolean(this.findPlayer().hasPermission(permission), falseMessage.replace("{permission}", permission));
 	}
 
 	/**
