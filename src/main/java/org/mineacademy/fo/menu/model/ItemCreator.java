@@ -459,6 +459,8 @@ public final class ItemCreator {
 	 * Places an invisible custom tag to the item, for most server instances it
 	 * will persist across saves/restarts (you should check just to be safe).
 	 *
+	 * To get the tag, use CompMetadata#getMetadata
+	 *
 	 * @param key
 	 * @param value
 	 * @return
