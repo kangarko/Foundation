@@ -5,16 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * A simple yet effective way to calculate duration
@@ -32,15 +29,6 @@ public final class LagCatcher {
 	 * Stores sections with a list of lag durations for each section
 	 */
 	private static final Map<String, List<Long>> durationsMap = new HashMap<>();
-
-	/**
-	 * Used to completely disable "X took Y ms" messages from being printed in to your console.
-	 *
-	 * Defaults to true.
-	 */
-	@Setter
-	@Getter
-	private static boolean printingMessages = true;
 
 	/**
 	 * Puts the code section with the current ms time to the timings map
@@ -94,8 +82,7 @@ public final class LagCatcher {
 					.replace("{section}", section)
 					.replace("{time}", MathUtil.formatTwoDigits(lag));
 
-			if (printingMessages)
-				System.out.println(message);
+			System.out.println(message);
 		}
 	}
 
@@ -179,23 +166,6 @@ public final class LagCatcher {
 		final long duration = System.nanoTime() - nanoTime;
 
 		sectionDurations.set(index, duration);
-	}
-
-	/**
-	 * Calculates how long a section took (in ms) but does not remove it from the map
-	 * it will continue being measure
-	 *
-	 * @param section
-	 */
-	public static void took(String section) {
-		final Long nanoTime = startTimesMap.get(section);
-		final String message = section + " took " + MathUtil.formatTwoDigits(nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D) + " ms";
-
-		if (printingMessages)
-			if (SimplePlugin.hasInstance())
-				Common.logNoPrefix("[{plugin_name} {plugin_version}] " + message);
-			else
-				System.out.println("[LagCatcher] " + message);
 	}
 
 	/**
