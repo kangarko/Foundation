@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import lombok.NonNull;
@@ -28,7 +29,7 @@ public final class BukkitLibraryManager extends LibraryManager {
 	 * @param plugin the plugin to manage
 	 */
 	public BukkitLibraryManager(@NonNull Plugin plugin) {
-		super(plugin.getDataFolder().toPath());
+		super(Bukkit.getWorldContainer().toPath().resolve("libraries"));
 
 		this.classLoader = new URLClassLoaderHelper((URLClassLoader) plugin.getClass().getClassLoader(), this);
 		this.plugin = plugin;

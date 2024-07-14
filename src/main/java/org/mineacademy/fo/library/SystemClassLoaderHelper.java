@@ -8,13 +8,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import lombok.NonNull;
-
 /**
  * A reflection-based wrapper around SystemClassLoader for adding URLs to
  * the classpath.
- *
- * @author https://github.com/jonesdevelopment/libby
  */
 final class SystemClassLoaderHelper extends ClassLoaderHelper {
 
@@ -49,7 +45,7 @@ final class SystemClassLoaderHelper extends ClassLoaderHelper {
 	}
 
 	@Override
-	public void addToClasspath(@NonNull URL url) {
+	public void addToClasspath(URL url) {
 		try {
 			if (this.appendInstrumentation != null)
 				this.appendInstrumentation.appendToSystemClassLoaderSearch(new JarFile(url.toURI().getPath()));

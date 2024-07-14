@@ -1,6 +1,7 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
+import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -8,29 +9,30 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 
 /**
  * A reflection-based helper for resolving transitive dependencies. It automatically
  * downloads Libby Maven Resolver to resolve transitive dependencies.
  *
- * @author https://github.com/jonesdevelopment/libby
+ * @see <a href="https://github.com/AlessioDP/libby-maven-resolver">Libby Maven Resolver</a>
  */
+@SuppressWarnings("resource")
 final class TransitiveDependencyHelper {
 
 	/**
 	 * com.alessiodp.libby.maven.resolver.TransitiveDependencyCollector class name for reflections
 	 */
-	private static final String TRANSITIVE_DEPENDENCY_COLLECTOR_CLASS = "com.alessiodp.libby.maven.resolver.TransitiveDependencyCollector";
+	private static final String TRANSITIVE_DEPENDENCY_COLLECTOR_CLASS = replaceWithDots("com{}alessiodp{}libby{}maven{}resolver{}TransitiveDependencyCollector");
 
 	/**
 	 * org.eclipse.aether.artifact.Artifact class name for reflections
 	 */
-	private static final String ARTIFACT_CLASS = "org.eclipse.aether.artifact.Artifact";
+	private static final String ARTIFACT_CLASS = replaceWithDots("org{}eclipse{}aether{}artifact{}Artifact");
 
 	/**
 	 * TransitiveDependencyCollector class instance, used in {@link #findTransitiveLibraries(Library)}
@@ -59,18 +61,20 @@ final class TransitiveDependencyHelper {
 	 * @param libraryManager the library manager used to download dependencies
 	 * @param saveDirectory  the directory where all transitive dependencies would be saved
 	 */
-	@SuppressWarnings("resource")
 	public TransitiveDependencyHelper(LibraryManager libraryManager, Path saveDirectory) {
 		requireNonNull(libraryManager, "libraryManager");
 		this.libraryManager = libraryManager;
 
 		final IsolatedClassLoader classLoader = new IsolatedClassLoader();
-		final Library resolver = new Library("com.alessiodp.libby.maven.resolver", "libby-maven-resolver", "1.0.1");
 
-		resolver.setChecksumFromBase64("EmsSUwjtqSeYTt8WEw7LPI/5Yz8bWSxf23XcdLEM7dk=");
-		resolver.setRepository("https://repo.alessiodp.com/releases");
-
-		classLoader.addPath(libraryManager.downloadLibrary(resolver));
+		classLoader.addPath(libraryManager.downloadLibrary(Library.builder()
+				.groupId("com{}alessiodp{}libby{}maven{}resolver")
+				.artifactId("libby-maven-resolver")
+				.version("1.0.1")
+				.checksumFromBase64("EmsSUwjtqSeYTt8WEw7LPI/5Yz8bWSxf23XcdLEM7dk=")
+				.fallbackRepository(Repositories.MAVEN_CENTRAL)
+				.fallbackRepository("https://repo.alessiodp.com/releases")
+				.build()));
 
 		try {
 			final Class<?> transitiveDependencyCollectorClass = classLoader.loadClass(TRANSITIVE_DEPENDENCY_COLLECTOR_CLASS);
@@ -118,11 +122,12 @@ final class TransitiveDependencyHelper {
 
 	public Collection<Library> findTransitiveLibraries(Library library) {
 		final List<Library> transitiveLibraries = new ArrayList<>();
+		final Set<ExcludedDependency> excludedDependencies = new HashSet<>(library.getExcludedTransitiveDependencies());
 
 		final Collection<String> globalRepositories = this.libraryManager.getRepositories();
 		final Collection<String> libraryRepositories = library.getRepositories();
-
-		if (globalRepositories.isEmpty() && libraryRepositories.isEmpty())
+		final Collection<String> libraryFallbackRepositories = library.getFallbackRepositories();
+		if (globalRepositories.isEmpty() && libraryRepositories.isEmpty() && libraryFallbackRepositories.isEmpty())
 			throw new IllegalArgumentException("No repositories have been added before resolving transitive dependencies");
 
 		final Stream<String> repositories = this.libraryManager.resolveRepositories(library).stream();
@@ -136,7 +141,7 @@ final class TransitiveDependencyHelper {
 			for (final Object resolved : resolvedArtifacts) {
 				final Entry<?, ?> resolvedEntry = (Entry<?, ?>) resolved;
 				final Object artifact = resolvedEntry.getKey();
-				@Nullable
+
 				String repository = (String) resolvedEntry.getValue();
 
 				final String groupId = (String) this.artifactGetGroupIdMethod.invoke(artifact);
@@ -144,15 +149,20 @@ final class TransitiveDependencyHelper {
 				final String baseVersion = (String) this.artifactGetBaseVersionMethod.invoke(artifact);
 				final String classifier = (String) this.artifactGetClassifierMethod.invoke(artifact);
 
-				if (library.getGroupId().equals(groupId) && library.getArtifactId().equals(artifactId))
+				if ((library.getGroupId().equals(groupId) && library.getArtifactId().equals(artifactId)) || excludedDependencies.contains(new ExcludedDependency(groupId, artifactId)))
 					continue;
 
-				final Library lib = new Library(groupId, artifactId, baseVersion);
-
-				lib.setLoaderId(library.getLoaderId());
+				final Library.Builder libraryBuilder = Library.builder()
+						.groupId(groupId)
+						.artifactId(artifactId)
+						.version(baseVersion)
+						.isolatedLoad(library.isIsolatedLoad())
+						.loaderId(library.getLoaderId());
 
 				if (classifier != null && !classifier.isEmpty())
-					lib.setClassifier(classifier);
+					libraryBuilder.classifier(classifier);
+
+				library.getRelocations().forEach(libraryBuilder::relocate);
 
 				if (repository != null) {
 					// Construct direct download URL
@@ -169,15 +179,16 @@ final class TransitiveDependencyHelper {
 					// For snapshots, getVersion() returns version-timestamp-buildNumber instead of version-SNAPSHOT
 					final String version = (String) this.artifactGetVersionMethod.invoke(artifact);
 
-					final String partialPath = Library.craftPartialPath(artifactId, groupId, baseVersion);
-					final String path = Library.craftPath(partialPath, artifactId, version, classifier);
+					final String partialPath = Util.craftPartialPath(artifactId, groupId, baseVersion);
+					final String path = Util.craftPath(partialPath, artifactId, version, classifier);
 
-					lib.setUrl(repository + path);
+					libraryBuilder.url(repository + path);
+				} else {
+					library.getRepositories().forEach(libraryBuilder::repository);
+					library.getFallbackRepositories().forEach(libraryBuilder::fallbackRepository);
+				}
 
-				} else
-					library.getRepositories().forEach(lib::setRepository);
-
-				transitiveLibraries.add(lib);
+				transitiveLibraries.add(libraryBuilder.build());
 			}
 		} catch (final ReflectiveOperationException e) {
 			throw new RuntimeException(e);
