@@ -1,130 +1,234 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
+import static org.mineacademy.fo.library.Util.craftPartialPath;
+import static org.mineacademy.fo.library.Util.craftPath;
+import static org.mineacademy.fo.library.Util.hexStringToByteArray;
+import static org.mineacademy.fo.library.Util.replaceWithDots;
 
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 
 /**
- * An representation of a Maven artifact that can be downloaded,
+ * An immutable representation of a Maven artifact that can be downloaded,
  * relocated and then loaded into a classloader classpath at runtime.
  *
- * @author https://github.com/jonesdevelopment/libby
+ * @see #builder()
  */
-@Getter
-public final class Library {
+public class Library {
 
 	/**
 	 * Direct download URLs for this library
 	 */
-	private List<String> urls = new ArrayList<>();
+	private final Collection<String> urls;
 
 	/**
 	 * Repository URLs for this library
 	 */
-	private List<String> repositories = new ArrayList<>();
+
+	private final Collection<String> repositories;
+
+	/**
+	 * Fallback repository URLs for this library
+	 */
+
+	private final Collection<String> fallbackRepositories;
 
 	/**
 	 * Maven group ID
 	 */
-	private String groupId;
+
+	private final String groupId;
 
 	/**
 	 * Maven artifact ID
 	 */
-	private String artifactId;
+
+	private final String artifactId;
 
 	/**
 	 * Artifact version
 	 */
-	private String version;
+
+	private final String version;
 
 	/**
 	 * Artifact classifier
 	 */
-	@Nullable
-	private String classifier;
+
+	private final String classifier;
 
 	/**
 	 * Binary SHA-256 checksum for this library's jar file
 	 */
-	private byte[] checksum;
+	private final byte[] checksum;
 
 	/**
-	 * The isolated loader id for this library
+	 * Jar relocations to apply
 	 */
-	@Nullable
-	private String loaderId;
+
+	private final Collection<Relocation> relocations;
 
 	/**
 	 * Relative Maven path to this library's artifact
 	 */
+
 	private final String path;
 
 	/**
 	 * Relative partial Maven path to this library
 	 */
+
 	private final String partialPath;
 
 	/**
-	 * Whether to resolve transitive dependencies for this library
+	 * Relative path to this library's relocated jar
 	 */
-	private boolean resolveTransitiveDependencies;
+
+	private final String relocatedPath;
+
+	/**
+	 * Should this library be loaded in an isolated class loader?
+	 */
+	private final boolean isolatedLoad;
+
+	/**
+	 * The isolated loader id for this library
+	 */
+
+	private final String loaderId;
+
+	/**
+	 * Should transitive dependencies be resolved for this library?
+	 */
+	private final boolean resolveTransitiveDependencies;
+
+	/**
+	 * Transitive dependencies that would be excluded on transitive resolution
+	 */
+
+	private final Collection<ExcludedDependency> excludedTransitiveDependencies;
 
 	/**
 	 * Creates a new library.
 	 *
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
+	 * @param urls         direct download URLs
+	 * @param repositories repository URLs
+	 * @param groupId      Maven group ID, any {@code "{}"} is replaced with a {@code "."}
+	 * @param artifactId   Maven artifact ID, any {@code "{}"} is replaced with a {@code "."}
+	 * @param version      artifact version
+	 * @param classifier   artifact classifier or null
+	 * @param checksum     binary SHA-256 checksum or null
+	 * @param relocations  jar relocations or null
+	 * @param isolatedLoad isolated load for this library
+	 * @param loaderId     the loader ID for this library
+	 * @param resolveTransitiveDependencies transitive dependencies resolution for this library
+	 * @param excludedTransitiveDependencies excluded transitive dependencies or null
 	 */
-	public Library(String groupId, String artifactId, String version) {
-		this(groupId, artifactId, version, false);
-	}
+	private Library(Collection<String> urls,
+			Collection<String> repositories,
+			Collection<String> fallbackRepositories,
+			String groupId,
+			String artifactId,
+			String version,
+			String classifier,
+			byte[] checksum,
+			Collection<Relocation> relocations,
+			boolean isolatedLoad,
+			String loaderId,
+			boolean resolveTransitiveDependencies,
+			Collection<ExcludedDependency> excludedTransitiveDependencies) {
 
-	/**
-	 * Creates a new library.
-	 *
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 * @param resolveTransitiveDependencies
-	 */
-	public Library(String groupId, String artifactId, String version, boolean resolveTransitiveDependencies) {
-		this(null, null, groupId, artifactId, version, null, null, null, resolveTransitiveDependencies);
-	}
-
-	/**
-	 * Creates a new library.
-	 *
-	 * @param urls
-	 * @param repositories
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 * @param classifier
-	 * @param checksum
-	 * @param loaderId
-	 * @param resolveTransitiveDependencies
-	 */
-	public Library(List<String> urls, List<String> repositories, @NonNull String groupId, @NonNull String artifactId, @NonNull String version, String classifier, byte[] checksum, String loaderId, boolean resolveTransitiveDependencies) {
-		this.urls = urls != null ? urls : new ArrayList<>();
-		this.groupId = groupId;
-		this.artifactId = artifactId;
-		this.version = version;
+		this.urls = urls != null ? Collections.unmodifiableList(new LinkedList<>(urls)) : Collections.emptyList();
+		this.groupId = replaceWithDots(requireNonNull(groupId, "groupId"));
+		this.artifactId = replaceWithDots(requireNonNull(artifactId, "artifactId"));
+		this.version = requireNonNull(version, "version");
 		this.classifier = classifier;
 		this.checksum = checksum;
+		this.relocations = relocations != null ? Collections.unmodifiableList(new LinkedList<>(relocations)) : Collections.emptyList();
+
 		this.partialPath = craftPartialPath(this.artifactId, this.groupId, version);
 		this.path = craftPath(this.partialPath, this.artifactId, this.version, this.classifier);
-		this.repositories = repositories != null ? repositories : new ArrayList<>();
+
+		this.repositories = repositories != null ? Collections.unmodifiableList(new LinkedList<>(repositories)) : Collections.emptyList();
+		this.fallbackRepositories = fallbackRepositories != null ? Collections.unmodifiableList(new LinkedList<>(fallbackRepositories)) : Collections.emptyList();
+		this.relocatedPath = this.hasRelocations() ? this.path + "-relocated-" + Math.abs(this.relocations.hashCode()) + ".jar" : null;
+		this.isolatedLoad = isolatedLoad;
 		this.loaderId = loaderId;
 		this.resolveTransitiveDependencies = resolveTransitiveDependencies;
+		this.excludedTransitiveDependencies = excludedTransitiveDependencies != null ? Collections.unmodifiableList(new LinkedList<>(excludedTransitiveDependencies)) : Collections.emptyList();
+	}
+
+	/**
+	 * Gets the direct download URLs for this library.
+	 *
+	 * @return direct download URLs
+	 */
+
+	public Collection<String> getUrls() {
+		return this.urls;
+	}
+
+	/**
+	 * Gets the repository URLs for this library.
+	 *
+	 * @return repository URLs
+	 */
+
+	public Collection<String> getRepositories() {
+		return this.repositories;
+	}
+
+	/**
+	 * Gets the fallback repository URLs for this library.
+	 *
+	 * @return fallback repository URLs
+	 */
+
+	public Collection<String> getFallbackRepositories() {
+		return this.fallbackRepositories;
+	}
+
+	/**
+	 * Gets the Maven group ID for this library.
+	 *
+	 * @return Maven group ID
+	 */
+
+	public String getGroupId() {
+		return this.groupId;
+	}
+
+	/**
+	 * Gets the Maven artifact ID for this library.
+	 *
+	 * @return Maven artifact ID
+	 */
+
+	public String getArtifactId() {
+		return this.artifactId;
+	}
+
+	/**
+	 * Gets the artifact version for this library.
+	 *
+	 * @return artifact version
+	 */
+
+	public String getVersion() {
+		return this.version;
+	}
+
+	/**
+	 * Gets the artifact classifier for this library.
+	 *
+	 * @return artifact classifier or null
+	 */
+
+	public String getClassifier() {
+		return this.classifier;
 	}
 
 	/**
@@ -137,12 +241,89 @@ public final class Library {
 	}
 
 	/**
+	 * Gets the binary SHA-256 checksum of this library's jar file.
+	 *
+	 * @return checksum or null
+	 */
+	public byte[] getChecksum() {
+		return this.checksum;
+	}
+
+	/**
 	 * Gets whether this library has a checksum.
 	 *
 	 * @return true if library has checksum, false otherwise
 	 */
 	public boolean hasChecksum() {
 		return this.checksum != null;
+	}
+
+	/**
+	 * Gets the jar relocations to apply to this library.
+	 *
+	 * @return jar relocations to apply
+	 */
+
+	public Collection<Relocation> getRelocations() {
+		return this.relocations;
+	}
+
+	/**
+	 * Gets whether this library has any jar relocations.
+	 *
+	 * @return true if library has relocations, false otherwise
+	 */
+	public boolean hasRelocations() {
+		return !this.relocations.isEmpty();
+	}
+
+	/**
+	 * Gets the relative Maven path to this library's artifact.
+	 *
+	 * @return relative Maven path for this library
+	 */
+
+	public String getPath() {
+		return this.path;
+	}
+
+	/**
+	 * Gets the relative partial Maven path to this library.
+	 *
+	 * @return relative partial Maven path for this library
+	 */
+
+	public String getPartialPath() {
+		return this.partialPath;
+	}
+
+	/**
+	 * Gets the relative path to this library's relocated jar.
+	 *
+	 * @return path to relocated artifact or null if it has no relocations
+	 */
+
+	public String getRelocatedPath() {
+		return this.relocatedPath;
+	}
+
+	/**
+	 * Is the library loaded isolated?
+	 *
+	 * @return true if the library is loaded isolated
+	 */
+	public boolean isIsolatedLoad() {
+		return this.isolatedLoad;
+	}
+
+	/**
+	 * Get the isolated loader ID
+	 *
+	 * @return the loader ID
+	 */
+
+	public String getLoaderId() {
+		return this.loaderId;
 	}
 
 	/**
@@ -155,114 +336,22 @@ public final class Library {
 	}
 
 	/**
-	 * Adds a direct download URL for this library.
+	 * Should transitive dependencies of this resolved
 	 *
-	 * @param url direct download URL
+	 * @return true if the transitive dependencies of this library would be resolved
 	 */
-	public void setUrl(String url) {
-		this.urls.add(requireNonNull(url, "url"));
+	public boolean resolveTransitiveDependencies() {
+		return this.resolveTransitiveDependencies;
 	}
 
 	/**
-	 * Adds a repository URL for this library.
-	 * <p>Most common repositories can be found in repositories.
-	 * <p>Note that repositories should be preferably added to the {@link LibraryManager} via {@link LibraryManager#addRepository(String)}.
+	 * Gets the excluded dependencies during transitive dependencies resolution.
 	 *
-	 * @param url repository URL
+	 * @return The dependencies excluded during transitive dependencies resolution.
 	 */
-	public void setRepository(String url) {
-		this.repositories.add(requireNonNull(url, "repository").endsWith("/") ? url : url + '/');
-	}
 
-	/**
-	 * Sets the Maven group ID for this library.
-	 *
-	 * @param groupId Maven group ID
-	 */
-	public void setGroupId(String groupId) {
-		this.groupId = requireNonNull(groupId, "groupId");
-	}
-
-	/**
-	 * Sets the Maven artifact ID for this library.
-	 *
-	 * @param artifactId Maven artifact ID
-	 */
-	public void setArtifactId(String artifactId) {
-		this.artifactId = requireNonNull(artifactId, "artifactId");
-	}
-
-	/**
-	 * Sets the artifact version for this library.
-	 *
-	 * @param version artifact version
-	 */
-	public void setVersion(String version) {
-		this.version = requireNonNull(version, "version");
-	}
-
-	/**
-	 * Sets the artifact classifier for this library.
-	 *
-	 * @param classifier artifact classifier
-	 */
-	public void setClassifier(@Nullable String classifier) {
-		this.classifier = classifier;
-	}
-
-	/**
-	 * Sets the binary SHA-256 checksum for this library.
-	 *
-	 * @param checksum binary SHA-256 checksum
-	 */
-	public void setChecksum(byte[] checksum) {
-		this.checksum = checksum;
-	}
-
-	/**
-	 * Sets the SHA-256 checksum for this library.
-	 *
-	 * @param checksum SHA-256 checksum
-	 */
-	public void setChecksum(@Nullable String checksum) {
-		if (checksum != null) {
-			final int len = checksum.length();
-			final byte[] data = new byte[len / 2];
-			for (int i = 0; i < len; i += 2)
-				data[i / 2] = (byte) ((Character.digit(checksum.charAt(i), 16) << 4)
-						+ Character.digit(checksum.charAt(i + 1), 16));
-
-			this.setChecksum(data);
-
-		}
-	}
-
-	/**
-	 * Sets the Base64 hexadecimal bytes encoded SHA-256 checksum for this library.
-	 *
-	 * @param checksum Base64 binary encoded SHA-256 checksum
-	 */
-	public void setChecksumFromBase64(@Nullable String checksum) {
-		if (checksum != null)
-			this.setChecksum(Base64.getDecoder().decode(checksum));
-	}
-
-	/**
-	 * Sets the loader ID for this library.
-	 *
-	 * @param loaderId the ID
-	 */
-	public void setLoaderId(@Nullable String loaderId) {
-		this.loaderId = loaderId;
-	}
-
-	/**
-	 * Sets whether to resolve transitive dependencies for this library.
-	 *
-	 * @param resolveTransitiveDependencies
-	 */
-	public void setResolveTransitiveDependencies(boolean resolveTransitiveDependencies) {
-		this.resolveTransitiveDependencies = resolveTransitiveDependencies;
+	public Collection<ExcludedDependency> getExcludedTransitiveDependencies() {
+		return this.excludedTransitiveDependencies;
 	}
 
 	/**
@@ -273,47 +362,315 @@ public final class Library {
 	@Override
 	public String toString() {
 		String name = this.groupId + ':' + this.artifactId + ':' + this.version;
-
 		if (this.hasClassifier())
 			name += ':' + this.classifier;
 
 		return name;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof Library && ((Library) obj).toString().equals(this.toString());
+	/**
+	 * Creates a new library builder.
+	 *
+	 * @return new library builder
+	 */
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	/**
-	 * Constructs the partial path of a {@link Library} given its artifactId, groupId and version.
-	 *
-	 * @param artifactId The artifactId of the library.
-	 * @param groupId The groupId of the library.
-	 * @param version The version of the library.
-	 * @return The partial path of the library.
-	 * @see Library#getPartialPath()
+	 * Due to the constructor complexity of an immutable {@link Library},
+	 * instead this fluent builder is used to configure and then construct
+	 * a new library.
 	 */
-	public static String craftPartialPath(@NonNull String artifactId, @NonNull String groupId, @NonNull String version) {
-		return groupId.replace('.', '/') + '/' + artifactId + '/' + version + '/';
-	}
+	public static class Builder {
+		/**
+		 * Direct download URLs for this library
+		 */
+		private final Collection<String> urls = new LinkedList<>();
 
-	/**
-	 * Constructs the path of a {@link Library} given its partialPath, artifactId, version and classifier.
-	 *
-	 * @param partialPath The partialPath of the library.
-	 * @param artifactId The artifactId of the library.
-	 * @param version The version of the library.
-	 * @param classifier The classifier of the library. May be null.
-	 * @return The path of the library.
-	 * @see Library#getPath()
-	 */
-	public static String craftPath(@NonNull String partialPath, @NonNull String artifactId, @NonNull String version, String classifier) {
-		String path = partialPath + artifactId + '-' + version;
+		/**
+		 * Repository URLs for this library
+		 */
+		private final Collection<String> repositories = new LinkedList<>();
 
-		if (classifier != null && !classifier.isEmpty())
-			path += '-' + classifier;
+		/**
+		 * Fallback repository URLs for this library
+		 */
+		private final Collection<String> fallbackRepositories = new LinkedList<>();
 
-		return path + ".jar";
+		/**
+		 * Maven group ID
+		 */
+		private String groupId;
+
+		/**
+		 * Maven artifact ID
+		 */
+		private String artifactId;
+
+		/**
+		 * Artifact version
+		 */
+		private String version;
+
+		/**
+		 * Artifact classifier
+		 */
+		private String classifier;
+
+		/**
+		 * Binary SHA-256 checksum for this library's jar file
+		 */
+		private byte[] checksum;
+
+		/**
+		 * Isolated load
+		 */
+		private boolean isolatedLoad;
+
+		/**
+		 * Loader ID
+		 */
+		private String loaderId;
+
+		/**
+		 * Jar relocations to apply
+		 */
+		private final Collection<Relocation> relocations = new LinkedList<>();
+
+		/**
+		 * Resolve transitive dependencies
+		 */
+		private boolean resolveTransitiveDependencies;
+
+		/**
+		 * Resolve transitive dependencies exclusions
+		 */
+		private final Collection<ExcludedDependency> excludedTransitiveDependencies = new LinkedList<>();
+
+		/**
+		 * Adds a direct download URL for this library.
+		 *
+		 * @param url direct download URL
+		 * @return this builder
+		 */
+
+		public Builder url(String url) {
+			this.urls.add(requireNonNull(url, "url"));
+			return this;
+		}
+
+		/**
+		 * Adds a repository URL for this library.
+		 * <p>Most common repositories can be found in Repositories class as constants.
+		 * <p>Note that repositories should be preferably added to the {@link LibraryManager} via {@link LibraryManager#addRepository(String)}.
+		 *
+		 * @param url repository URL
+		 * @return this builder
+		 */
+
+		public Builder repository(String url) {
+			this.repositories.add(requireNonNull(url, "repository").endsWith("/") ? url : url + '/');
+			return this;
+		}
+
+		/**
+		 * Adds a fallback repository URL for this library. See {@link #repository(String)}.
+		 *
+		 * @param url fallback repository URL
+		 * @return this builder
+		 */
+
+		public Builder fallbackRepository(String url) {
+			this.fallbackRepositories.add(requireNonNull(url, "fallbackRepository").endsWith("/") ? url : url + '/');
+			return this;
+		}
+
+		/**
+		 * Sets the Maven group ID for this library.
+		 * <p>
+		 * To avoid issues with shading and relocation, any {@code "{}"} inside the provided groupId string
+		 * is replaced with a {@code "."}.
+		 *
+		 * @param groupId Maven group ID
+		 * @return this builder
+		 */
+
+		public Builder groupId(String groupId) {
+			this.groupId = requireNonNull(groupId, "groupId");
+			return this;
+		}
+
+		/**
+		 * Sets the Maven artifact ID for this library.
+		 * <p>
+		 * To avoid issues with shading and relocation, any {@code "{}"} inside the provided artifactId string
+		 * is replaced with a {@code "."}.
+		 *
+		 * @param artifactId Maven artifact ID
+		 * @return this builder
+		 */
+
+		public Builder artifactId(String artifactId) {
+			this.artifactId = requireNonNull(artifactId, "artifactId");
+			return this;
+		}
+
+		/**
+		 * Sets the artifact version for this library.
+		 *
+		 * @param version artifact version
+		 * @return this builder
+		 */
+
+		public Builder version(String version) {
+			this.version = requireNonNull(version, "version");
+			return this;
+		}
+
+		/**
+		 * Sets the artifact classifier for this library.
+		 *
+		 * @param classifier artifact classifier
+		 * @return this builder
+		 */
+
+		public Builder classifier(String classifier) {
+			this.classifier = classifier;
+			return this;
+		}
+
+		/**
+		 * Sets the binary SHA-256 checksum for this library.
+		 *
+		 * @param checksum binary SHA-256 checksum
+		 * @return this builder
+		 */
+
+		public Builder checksum(byte[] checksum) {
+			this.checksum = checksum;
+			return this;
+		}
+
+		/**
+		 * Sets the SHA-256 checksum for this library.
+		 *
+		 * @param checksum SHA-256 checksum
+		 * @return this builder
+		 */
+
+		public Builder checksum(String checksum) {
+			return checksum != null ? this.checksum(hexStringToByteArray(checksum)) : this;
+		}
+
+		/**
+		 * Sets the Base64 hexadecimal bytes encoded SHA-256 checksum for this library.
+		 *
+		 * @param checksum Base64 binary encoded SHA-256 checksum
+		 * @return this builder
+		 */
+
+		public Builder checksumFromBase64(String checksum) {
+			return checksum != null ? this.checksum(Base64.getDecoder().decode(checksum)) : this;
+		}
+
+		/**
+		 * Sets the isolated load for this library.
+		 *
+		 * @param isolatedLoad the isolated load boolean
+		 * @return this builder
+		 */
+
+		public Builder isolatedLoad(boolean isolatedLoad) {
+			this.isolatedLoad = isolatedLoad;
+			return this;
+		}
+
+		/**
+		 * Sets the loader ID for this library.
+		 *
+		 * @param loaderId the ID
+		 * @return this builder
+		 */
+
+		public Builder loaderId(String loaderId) {
+			this.loaderId = loaderId;
+			return this;
+		}
+
+		/**
+		 * Adds a jar relocation to apply to this library.
+		 *
+		 * @param relocation jar relocation to apply
+		 * @return this builder
+		 */
+
+		public Builder relocate(Relocation relocation) {
+			requireNonNull(relocation, "relocation");
+			if (!relocation.getPattern().equals(relocation.getRelocatedPattern()))
+				this.relocations.add(relocation);
+			return this;
+		}
+
+		/**
+		 * Adds a jar relocation to apply to this library.
+		 *
+		 * @param pattern          search pattern
+		 * @param relocatedPattern replacement pattern
+		 * @return this builder
+		 */
+
+		public Builder relocate(String pattern, String relocatedPattern) {
+			return this.relocate(new Relocation(pattern, relocatedPattern));
+		}
+
+		/**
+		 * Sets the transitive dependency resolution for this library.
+		 *
+		 * @param resolveTransitiveDependencies the transitive dependency resolution
+		 * @return this builder
+		 * @see #excludeTransitiveDependency(ExcludedDependency)
+		 */
+
+		public Builder resolveTransitiveDependencies(boolean resolveTransitiveDependencies) {
+			this.resolveTransitiveDependencies = resolveTransitiveDependencies;
+			return this;
+		}
+
+		/**
+		 * Excludes transitive dependency for this library.
+		 *
+		 * @param excludedDependency Excluded transitive dependency
+		 * @return this builder
+		 * @see #resolveTransitiveDependencies(boolean)
+		 */
+
+		public Builder excludeTransitiveDependency(ExcludedDependency excludedDependency) {
+			this.excludedTransitiveDependencies.add(requireNonNull(excludedDependency, "excludedDependency"));
+			return this;
+		}
+
+		/**
+		 * Excludes transitive dependency for this library.
+		 *
+		 * @param groupId Excluded transitive dependency group ID
+		 * @param artifactId Excluded transitive dependency artifact ID
+		 * @return this builder
+		 * @see #excludeTransitiveDependency(ExcludedDependency)
+		 */
+
+		public Builder excludeTransitiveDependency(String groupId, String artifactId) {
+			return this.excludeTransitiveDependency(new ExcludedDependency(groupId, artifactId));
+		}
+
+		/**
+		 * Creates a new library using this builder's configuration.
+		 *
+		 * @return new library
+		 */
+
+		public Library build() {
+			return new Library(this.urls, this.repositories, this.fallbackRepositories, this.groupId, this.artifactId, this.version, this.classifier, this.checksum, this.relocations, this.isolatedLoad, this.loaderId, this.resolveTransitiveDependencies, this.excludedTransitiveDependencies);
+		}
 	}
 }

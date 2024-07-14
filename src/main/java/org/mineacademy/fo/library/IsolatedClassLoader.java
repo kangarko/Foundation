@@ -10,14 +10,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 
-import lombok.NonNull;
-
 /**
  * This class loader is a simple child of {@code URLClassLoader} that uses
  * the JVM's Extensions Class Loader as the parent instead of the system class
  * loader to provide an unpolluted classpath.
- *
- * @author https://github.com/jonesdevelopment/libby
  */
 final class IsolatedClassLoader extends URLClassLoader {
 	static {
@@ -29,7 +25,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 *
 	 * @param urls the URLs to add to the classpath
 	 */
-	public IsolatedClassLoader(@NonNull URL... urls) {
+	public IsolatedClassLoader(URL... urls) {
 		super(requireNonNull(urls, "urls"), ClassLoader.getSystemClassLoader().getParent());
 	}
 
@@ -39,7 +35,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 * @param url the URL to add
 	 */
 	@Override
-	public void addURL(@NonNull URL url) {
+	public void addURL(URL url) {
 		super.addURL(url);
 	}
 
@@ -48,7 +44,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 *
 	 * @param path the path to add
 	 */
-	public void addPath(@NonNull Path path) {
+	public void addPath(Path path) {
 		try {
 			this.addURL(requireNonNull(path, "path").toUri().toURL());
 		} catch (final MalformedURLException e) {
@@ -65,9 +61,8 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 * @return The defined class
 	 * @throws IOException If an exception occurs while reading the provided {@link InputStream}
 	 * @throws ClassFormatError If the bytes provided by the {@link InputStream} doesn't contain valid class
-	 *
 	 */
-	public Class<?> defineClass(@NonNull String name, @NonNull InputStream classBytes) throws IOException, ClassFormatError {
+	public Class<?> defineClass(String name, InputStream classBytes) throws IOException, ClassFormatError {
 		final byte[] bytes = readAllBytes(classBytes);
 		return super.defineClass(name, bytes, 0, bytes.length);
 	}
@@ -80,7 +75,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 * @throws IOException If {@link InputStream} has been closed, or bytes cannot be read, or other I/O error occurs.
 	 * @see InputStream#read(byte[], int, int)
 	 */
-	private static byte[] readAllBytes(@NonNull InputStream inputStream) throws IOException {
+	private static byte[] readAllBytes(InputStream inputStream) throws IOException {
 		final int bufLen = 4 * 0x400; // 4KB
 		final byte[] buf = new byte[bufLen];
 		int readLen;
