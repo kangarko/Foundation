@@ -6,15 +6,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
+import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -112,7 +114,18 @@ public final class Variable extends YamlConfig {
 	private Variable(String file) {
 		final String prototypePath = PROTOTYPE_PATH.apply(file);
 
-		this.setHeader(FoConstants.Header.VARIABLE_FILE);
+		this.setHeader(
+				"-------------------------------------------------------------------------------------------------",
+				SimplePlugin.getNamed() + " supports dynamic, high performance JavaScript variables! They will",
+				"automatically be used when calling Variables#replace for your messages.",
+				"",
+				"Because variables return a JavaScript value, you can sneak in code to play sounds or spawn",
+				"monsters directly in your variable instead of it just displaying text!",
+				"",
+				"For example of how variables can be used, see our plugin ChatControl's wikipedia article:",
+				"https://github.com/kangarko/ChatControl-Red/wiki/JavaScript-Variables",
+				" -------------------------------------------------------------------------------------------------");
+
 		this.loadConfiguration(prototypePath, "variables/" + file + ".yml");
 	}
 
@@ -346,17 +359,12 @@ public final class Variable extends YamlConfig {
 		if (value == null || value.isEmpty() || "null".equals(value))
 			return SimpleComponent.of("");
 
-		final SimpleComponent component = existingComponent
-				.append(value)
+		final SimpleComponent component = (existingComponent == null ? SimpleComponent.of(value) : existingComponent.append(value))
 				.viewPermission(this.receiverPermission)
 				.viewCondition(this.receiverCondition);
 
-		if (!Valid.isNullOrEmpty(this.hoverText)) {
-			// Trick: Join the lines to only parse variables at once -- performance++ -- then split again
-			final String deliminer = "%FLVJ%";
-
-			component.onHover(Variables.replace(String.join(deliminer, this.hoverText), sender, replacements, true, false).split(deliminer));
-		}
+		if (!Valid.isNullOrEmpty(this.hoverText))
+			component.onHover(Variables.replace(String.join("\n", this.hoverText), sender, replacements, true, false));
 
 		if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 
@@ -450,8 +458,20 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	public static Variable findVariable(@NonNull final String name) {
+		return findVariable(name, null);
+	}
+
+	/**
+	 * Return a variable, or null if not loaded
+	 *
+	 * @param name
+	 * @param type
+	 *
+	 * @return
+	 */
+	public static Variable findVariable(@NonNull final String name, @Nullable final Type type) {
 		for (final Variable item : getVariables())
-			if (item.getKey().equalsIgnoreCase(name))
+			if (item.getKey().equalsIgnoreCase(name) && (type == null || item.getType() == type))
 				return item;
 
 		return null;

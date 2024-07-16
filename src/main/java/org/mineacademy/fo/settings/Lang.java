@@ -9,6 +9,7 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtil.Mode;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.model.JavaScriptExecutor;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -32,16 +33,8 @@ public final class Lang extends YamlConfig {
 	 */
 	private Lang(String filePath) {
 		this.loadConfiguration(filePath);
-	}
 
-	/*
-	 * Return a key from our localization, failing if not exists
-	 */
-	private String getStringStrict(String path) {
-		final String key = this.getString(path);
-		Valid.checkNotNull(key, "Missing localization key '" + path + "' from " + this.getFileName());
-
-		return key;
+		this.setFastMode(true);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -256,7 +249,10 @@ public final class Lang extends YamlConfig {
 	public static String of(String path, Object... variables) {
 		checkInit();
 
-		String key = instance.getStringStrict(path);
+		String key = instance.getString(path);
+
+		if (key == null)
+			throw new FoException("Missing localization key '" + path + "' from " + instance.getFileName());
 
 		key = Messenger.replacePrefixes(key);
 		key = translate(key, variables);
@@ -274,9 +270,16 @@ public final class Lang extends YamlConfig {
 			for (int i = 0; i < variables.length; i++) {
 				Object variable = variables[i];
 
-				variable = Common.getOrDefaultStrict(SerializeUtil.serialize(Mode.YAML /* ĺocale is always .yml */, variable), SimpleLocalization.NONE);
-				Valid.checkNotNull(variable, "Failed to replace {" + i + "} as " + variable + " (raw = " + variables[i] + ")");
+				if (variable == null)
+					variable = SimpleLocalization.NONE;
 
+				else if (variable instanceof String)
+					variable = variable.toString();
+
+				else
+					variable = Common.getOrDefaultStrict(SerializeUtil.serialize(Mode.YAML /* ĺocale is always .yml */, variable), SimpleLocalization.NONE);
+
+				Valid.checkNotNull(variable, "Failed to replace {" + i + "} as " + variable + " (raw = " + variables[i] + ")");
 				key = key.replace("{" + i + "}", variable.toString());
 			}
 

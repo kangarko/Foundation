@@ -7,7 +7,6 @@ import java.util.List;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.model.SpigotUpdater;
@@ -46,7 +45,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * @return
 	 */
 	protected String getSettingsFileName() {
-		return FoConstants.File.SETTINGS;
+		return "settings.yml";
 	}
 
 	/**

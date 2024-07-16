@@ -37,7 +37,7 @@ public final class DiscordSender implements CommandSender {
 	 * chatcontrol to contain data, i.e. whether some player ignores this player or not, etc.
 	 */
 	@Deprecated
-	private final Object cache;
+	private final Cache cache;
 	@Nullable
 	private final OfflinePlayer offlinePlayer;
 	private final User user;
@@ -56,12 +56,18 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public boolean hasPermission(String perm) {
+		if (HookManager.isVaultLoaded()) {
+			final Boolean result = HookManager.hasVaultPermission(this.offlinePlayer, perm);
+
+			return result != null && result;
+		}
+
 		return false;
 	}
 
 	@Override
 	public boolean hasPermission(Permission perm) {
-		return false;
+		return this.hasPermission(perm.getName());
 	}
 
 	@Override

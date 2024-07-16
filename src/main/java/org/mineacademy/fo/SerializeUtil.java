@@ -30,7 +30,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictCollection;
 import org.mineacademy.fo.collection.StrictMap;
@@ -59,9 +58,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
+import net.kyori.adventure.text.Component;
 
 /**
  * Utility class for serializing objects to writeable YAML data and back.
@@ -131,12 +128,6 @@ public final class SerializeUtil {
 		else if (object instanceof CompChatColor)
 			return ((CompChatColor) object).toSaveableString();
 
-		else if (object instanceof net.md_5.bungee.api.ChatColor) {
-			final net.md_5.bungee.api.ChatColor color = (net.md_5.bungee.api.ChatColor) object;
-
-			return MinecraftVersion.atLeast(V.v1_16) ? color.toString() : color.name();
-		}
-
 		else if (object instanceof CompMaterial)
 			return object.toString();
 
@@ -190,25 +181,8 @@ public final class SerializeUtil {
 		else if (object instanceof RangedSimpleTime)
 			return ((RangedSimpleTime) object).toLine();
 
-		else if (object instanceof BaseComponent)
-			return Remain.toJson((BaseComponent) object);
-
-		else if (object instanceof BaseComponent[])
-			return Remain.toJson((BaseComponent[]) object);
-
-		else if (object instanceof HoverEvent) {
-			final HoverEvent event = (HoverEvent) object;
-			final SerializedMap map = SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue());
-
-			return isJson ? serialize(mode, map.asMap()) : map.serialize();
-		}
-
-		else if (object instanceof ClickEvent) {
-			final ClickEvent event = (ClickEvent) object;
-			final SerializedMap map = SerializedMap.ofArray("Action", event.getAction(), "Value", event.getValue());
-
-			return isJson ? serialize(mode, map.asMap()) : map.serialize();
-		}
+		else if (object instanceof Component)
+			return Remain.convertAdventureToJson((Component) object);
 
 		else if (object instanceof Path)
 			throw new FoException("Cannot serialize Path " + object + ", did you mean to convert it into a name?");
@@ -549,9 +523,6 @@ public final class SerializeUtil {
 		else if (classOf == RangedSimpleTime.class)
 			object = RangedSimpleTime.parse(object.toString());
 
-		else if (classOf == net.md_5.bungee.api.ChatColor.class)
-			throw new FoException("Instead of net.md_5.bungee.api.ChatColor, use our CompChatColor");
-
 		else if (classOf == CompChatColor.class)
 			object = CompChatColor.of(object.toString());
 
@@ -564,30 +535,8 @@ public final class SerializeUtil {
 		else if (classOf == UUID.class)
 			object = UUID.fromString(object.toString());
 
-		else if (classOf == BaseComponent.class) {
-			final BaseComponent[] deserialized = Remain.toComponent(object.toString());
-			Valid.checkBoolean(deserialized.length == 1, "Failed to deserialize into singular BaseComponent: " + object);
-
-			object = deserialized[0];
-
-		} else if (classOf == BaseComponent[].class)
-			object = Remain.toComponent(object.toString());
-
-		else if (classOf == HoverEvent.class) {
-			final SerializedMap serialized = isJson ? SerializedMap.fromJson(object.toString()) : SerializedMap.of(object);
-			final HoverEvent.Action action = serialized.get("Action", HoverEvent.Action.class);
-			final BaseComponent[] value = serialized.get("Value", BaseComponent[].class);
-
-			object = new HoverEvent(action, value);
-		}
-
-		else if (classOf == ClickEvent.class) {
-			final SerializedMap serialized = isJson ? SerializedMap.fromJson(object.toString()) : SerializedMap.of(object);
-			final ClickEvent.Action action = serialized.get("Action", ClickEvent.Action.class);
-			final String value = serialized.getString("Value");
-
-			object = new ClickEvent(action, value);
-		}
+		else if (classOf == Component.class)
+			object = Remain.convertJsonToAdventure(object.toString());
 
 		else if (Enchantment.class.isAssignableFrom(classOf)) {
 			String name = object.toString().toLowerCase();

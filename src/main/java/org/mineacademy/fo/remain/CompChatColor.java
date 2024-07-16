@@ -15,6 +15,10 @@ import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 /**
  * Simplistic enumeration of all supported color values for chat.
@@ -281,6 +285,92 @@ public final class CompChatColor {
 	 */
 	public String toSaveableString() {
 		return this.getName();
+	}
+
+	/**
+	 * Return true if this is a format
+	 *
+	 * @return
+	 */
+	public boolean isFormat() {
+		return this.color == null;
+	}
+
+	/**
+	 * Convert this color to Adventure text color or format
+	 *
+	 * @return
+	 */
+	public Style toStyle() {
+		return Style.style(this.isFormat() ? this.toTextFormat() : this.toTextColor());
+	}
+
+	/**
+	 * Get the Adventure text color
+	 *
+	 * @return the color or null if reset
+	 */
+	public TextColor toTextColor() {
+		if (this == BLACK)
+			return NamedTextColor.BLACK;
+		else if (this == DARK_BLUE)
+			return NamedTextColor.DARK_BLUE;
+		else if (this == DARK_GREEN)
+			return NamedTextColor.DARK_GREEN;
+		else if (this == DARK_AQUA)
+			return NamedTextColor.DARK_AQUA;
+		else if (this == DARK_RED)
+			return NamedTextColor.DARK_RED;
+		else if (this == DARK_PURPLE)
+			return NamedTextColor.DARK_PURPLE;
+		else if (this == GOLD)
+			return NamedTextColor.GOLD;
+		else if (this == GRAY)
+			return NamedTextColor.GRAY;
+		else if (this == DARK_GRAY)
+			return NamedTextColor.DARK_GRAY;
+		else if (this == BLUE)
+			return NamedTextColor.BLUE;
+		else if (this == GREEN)
+			return NamedTextColor.GREEN;
+		else if (this == AQUA)
+			return NamedTextColor.AQUA;
+		else if (this == RED)
+			return NamedTextColor.RED;
+		else if (this == LIGHT_PURPLE)
+			return NamedTextColor.LIGHT_PURPLE;
+		else if (this == YELLOW)
+			return NamedTextColor.YELLOW;
+		else if (this == WHITE)
+			return NamedTextColor.WHITE;
+		else if (this == RESET)
+			return null;
+		else if (this.color == null)
+			throw new RuntimeException("Cannot convert " + this + " to a text color");
+		else
+			return TextColor.color(this.color.getRGB());
+	}
+
+	/**
+	 * Get the Adventure text format
+	 *
+	 * @return the format or null for reset
+	 */
+	public TextDecoration toTextFormat() {
+		if (this == BOLD)
+			return TextDecoration.BOLD;
+		else if (this == STRIKETHROUGH)
+			return TextDecoration.STRIKETHROUGH;
+		else if (this == UNDERLINE)
+			return TextDecoration.UNDERLINED;
+		else if (this == ITALIC)
+			return TextDecoration.ITALIC;
+		else if (this == MAGIC)
+			return TextDecoration.OBFUSCATED;
+		else if (this == RESET)
+			return null;
+
+		throw new RuntimeException("Cannot convert " + this + " to a text format");
 	}
 
 	/**

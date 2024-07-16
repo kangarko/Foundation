@@ -34,6 +34,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.bukkit.Bukkit;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.NetworkUtil;
 import org.w3c.dom.Document;
@@ -281,16 +282,26 @@ public abstract class LibraryManager {
 			}
 		} catch (final MalformedURLException e) {
 			throw new IllegalArgumentException(e);
-		} catch (final IOException e) {
-			if (e instanceof FileNotFoundException)
-				Common.error(e, "File not found: " + url);
-			else if (e instanceof SocketTimeoutException)
-				Common.error(e, "Connect timed out: " + url);
-			else if (e instanceof UnknownHostException)
-				Common.error(e, "Unknown host: " + url);
-			else
-				Common.error(e, "Unexpected IOException");
+		} catch (final IOException ex) {
+			if (ex instanceof FileNotFoundException) {
+				Bukkit.getLogger().severe("File not found: " + url);
 
+				ex.printStackTrace();
+
+			} else if (ex instanceof SocketTimeoutException) {
+				Bukkit.getLogger().severe("Connect timed out: " + url);
+
+				ex.printStackTrace();
+			} else if (ex instanceof UnknownHostException) {
+				Bukkit.getLogger().severe("Unknown host: " + url);
+
+				ex.printStackTrace();
+
+			} else {
+				Bukkit.getLogger().severe("Unexpected IOException");
+
+				ex.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -371,6 +382,8 @@ public abstract class LibraryManager {
 	 */
 	protected byte[] downloadLibrary(String url) {
 		try {
+			System.out.println("Downloading library " + url);
+
 			final URLConnection connection = new URL(requireNonNull(url, "url")).openConnection();
 
 			connection.setConnectTimeout(5000);
@@ -390,20 +403,30 @@ public abstract class LibraryManager {
 					return null;
 				}
 
-				System.out.println("Downloaded library " + connection.getURL());
 				return out.toByteArray();
 			}
 		} catch (final MalformedURLException e) {
 			throw new IllegalArgumentException(e);
-		} catch (final IOException e) {
-			if (e instanceof FileNotFoundException)
-				Common.error(e, "File not found: " + url);
-			else if (e instanceof SocketTimeoutException)
-				Common.error(e, "Connect timed out: " + url);
-			else if (e instanceof UnknownHostException)
-				Common.error(e, "Unknown host: " + url);
-			else
-				Common.error(e, "Unexpected IOException");
+		} catch (final IOException ex) {
+			if (ex instanceof FileNotFoundException) {
+				Bukkit.getLogger().severe("File not found: " + url);
+
+				ex.printStackTrace();
+
+			} else if (ex instanceof SocketTimeoutException) {
+				Bukkit.getLogger().severe("Connect timed out: " + url);
+
+				ex.printStackTrace();
+
+			} else if (ex instanceof UnknownHostException) {
+				Bukkit.getLogger().severe("Unknown host: " + url);
+
+				ex.printStackTrace();
+			} else {
+				Bukkit.getLogger().severe("Unexpected IOException");
+
+				ex.printStackTrace();
+			}
 
 			return null;
 		}
@@ -439,6 +462,7 @@ public abstract class LibraryManager {
 
 	public Path downloadLibrary(Library library) {
 		Path file = this.saveDirectory.resolve(requireNonNull(library, "library").getPath());
+
 		if (Files.exists(file)) {
 			// Early return only if library isn't a snapshot, since snapshot libraries are always re-downloaded
 			if (!library.isSnapshot()) {
@@ -483,12 +507,12 @@ public abstract class LibraryManager {
 				if (md != null) {
 					final byte[] checksum = md.digest(bytes);
 					if (!Arrays.equals(checksum, library.getChecksum())) {
-						Common.logFramed(
-								"*** INVALID CHECKSUM ***",
-								" Library :  " + library,
-								" URL :  " + url,
-								" Expected :  " + Base64.getEncoder().encodeToString(library.getChecksum()),
-								" Actual :  " + Base64.getEncoder().encodeToString(checksum));
+						Bukkit.getLogger().severe("*** INVALID CHECKSUM ***");
+						Bukkit.getLogger().severe("Library :  " + library);
+						Bukkit.getLogger().severe("URL :  " + url);
+						Bukkit.getLogger().severe("Expected :  " + Base64.getEncoder().encodeToString(library.getChecksum()));
+						Bukkit.getLogger().severe("Actual :  " + Base64.getEncoder().encodeToString(checksum));
+
 						continue;
 					}
 				}
@@ -602,13 +626,14 @@ public abstract class LibraryManager {
 	 * @see #downloadLibrary(Library)
 	 */
 	public void loadLibrary(Library library) {
-		System.out.println("Loading library " + library);
 		final Path file = this.downloadLibrary(requireNonNull(library, "library"));
+
 		if (library.resolveTransitiveDependencies())
 			this.resolveTransitiveLibraries(library);
 
 		if (library.isIsolatedLoad())
 			this.addToIsolatedClasspath(library, file);
+
 		else
 			this.addToClasspath(file);
 	}

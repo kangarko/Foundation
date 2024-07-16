@@ -116,7 +116,7 @@ final class FoundationListener implements Listener {
 			int count = 1;
 
 			for (final SimpleComponent comp : messagesOnPage)
-				comp.replace("{count}", page + count++).send(player);
+				comp.replace("{count}", String.valueOf(page + count++)).send(player);
 
 			int whiteLines = chatPages.getLinesPerPage();
 

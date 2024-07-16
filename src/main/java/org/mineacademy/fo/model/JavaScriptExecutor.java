@@ -150,7 +150,6 @@ public final class JavaScriptExecutor {
 			for (int i = 0; i < copy.length; i++) {
 				String line = copy[i];
 
-				line = replaceVariables(line, Variables.VARIABLE_PATTERN.matcher(line));
 				line = replaceVariables(line, Variables.BRACKET_VARIABLE_PATTERN.matcher(line));
 
 				replaced[i] = line;

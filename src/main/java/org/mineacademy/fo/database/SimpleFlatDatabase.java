@@ -269,8 +269,7 @@ public abstract class SimpleFlatDatabase<T> extends SimpleDatabase {
 				if (data == null || data.isEmpty()) {
 					this.update("DELETE FROM {table} WHERE UUID= '" + uuid + "';");
 
-					if (Debugger.isDebugged("mysql"))
-						Debugger.debug("mysql", "Data was empty, row has been removed.");
+					Debugger.debug("mysql", "Data was empty, row has been removed.");
 
 				} else if (this.isStored(uuid))
 					this.update("UPDATE {table} SET Data='" + data.toJson() + "', Updated='" + System.currentTimeMillis() + "' WHERE UUID='" + uuid + "';");

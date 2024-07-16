@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.DebugCommand;
 import org.mineacademy.fo.command.PermsCommand;
@@ -815,6 +816,24 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 		if (isSetDefault("None"))
 			NONE = getString("None");
+
+		if (isSetDefault("Prefix.Announce"))
+			Messenger.setAnnouncePrefix(getString("Prefix.Announce"));
+
+		if (isSetDefault("Prefix.Error"))
+			Messenger.setErrorPrefix(getString("Prefix.Error"));
+
+		if (isSetDefault("Prefix.Info"))
+			Messenger.setInfoPrefix(getString("Prefix.Info"));
+
+		if (isSetDefault("Prefix.Question"))
+			Messenger.setQuestionPrefix(getString("Prefix.Question"));
+
+		if (isSetDefault("Prefix.Success"))
+			Messenger.setSuccessPrefix(getString("Prefix.Success"));
+
+		if (isSetDefault("Prefix.Warn"))
+			Messenger.setWarnPrefix(getString("Prefix.Warn"));
 
 		localizationClassCalled = true;
 	}

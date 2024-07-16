@@ -2,6 +2,7 @@ package org.mineacademy.fo;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -26,6 +27,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import javax.annotation.Nullable;
 
@@ -69,7 +72,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions
@@ -247,13 +251,13 @@ public final class Common {
 	 * @param message
 	 * @param log
 	 */
-	public static void broadcastWithPerm(final String permission, @NonNull final TextComponent message, final boolean log) {
-		final String legacy = message.toLegacyText();
+	public static void broadcastWithPerm(final String permission, @NonNull final Component message, final boolean log) {
+		final String legacy = Remain.convertAdventureToLegacy(message);
 
 		if (!legacy.equals("none")) {
 			for (final Player online : Remain.getOnlinePlayers())
 				if (PlayerUtil.hasPerm(online, permission))
-					Remain.sendComponent(online, message);
+					Remain.toAudience(online).sendMessage(message);
 
 			if (log)
 				log(legacy);
@@ -393,6 +397,26 @@ public final class Common {
 		tellPrefix = "";
 		tell(sender, messages);
 		tellPrefix = oldPrefix;
+	}
+
+	/**
+	 * Shortcut for sending Adventure components to a sender.
+	 *
+	 * @param sender
+	 * @param component
+	 */
+	public static void tell(final Audience sender, final Component component) {
+		Remain.tell(sender, component, true);
+	}
+
+	/**
+	 * Shortcut for sending Adventure components to a sender.
+	 *
+	 * @param sender
+	 * @param component
+	 */
+	public static void tell(final CommandSender sender, final Component component) {
+		Remain.tell(sender, component, true);
 	}
 
 	/**
@@ -664,15 +688,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -1360,8 +1384,11 @@ public final class Common {
 			if (message.startsWith("[JSON]")) {
 				final String stripped = message.replaceFirst("\\[JSON\\]", "").trim();
 
-				if (!stripped.isEmpty())
-					log(Remain.toLegacyText(stripped, false));
+				if (!stripped.isEmpty()) {
+					final Component component = Remain.convertJsonToAdventure(stripped);
+
+					log(Remain.convertAdventureToLegacy(component));
+				}
 
 			} else
 				for (final String part : message.split("\n")) {
@@ -1864,7 +1891,10 @@ public final class Common {
 	 * @return
 	 */
 	public static String simplify(Object arg) {
-		if (arg instanceof Entity)
+		if (arg == null)
+			return "";
+
+		else if (arg instanceof Entity)
 			return Remain.getName((Entity) arg);
 
 		else if (arg instanceof CommandSender)
@@ -1890,13 +1920,6 @@ public final class Common {
 
 		else if (arg instanceof Enum)
 			return ((Enum<?>) arg).toString().toLowerCase();
-
-		try {
-			if (arg instanceof net.md_5.bungee.api.ChatColor)
-				return ((net.md_5.bungee.api.ChatColor) arg).getName();
-		} catch (final Exception e) {
-			// No MC compatible
-		}
 
 		return arg.toString();
 	}
@@ -2908,6 +2931,67 @@ public final class Common {
 
 		} catch (final InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Compress the given string into a byte array
+	 *
+	 * @param data
+	 * @return
+	 */
+	public static byte[] compress(String data) {
+		try {
+			final byte[] input = data.getBytes("UTF-8");
+			final Deflater deflater = new Deflater();
+
+			deflater.setInput(input);
+			deflater.finish();
+
+			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(input.length)) {
+				final byte[] buffer = new byte[1024];
+
+				while (!deflater.finished()) {
+					final int count = deflater.deflate(buffer);
+
+					outputStream.write(buffer, 0, count);
+				}
+
+				return outputStream.toByteArray();
+			}
+
+		} catch (final Exception ex) {
+			Common.throwError(ex, "Failed to compress data");
+
+			return new byte[0];
+		}
+	}
+
+	/**
+	 * Decompress the given byte array into a string
+	 *
+	 * @param data
+	 * @return
+	 */
+	public static String decompress(byte[] data) {
+		final Inflater inflater = new Inflater();
+		inflater.setInput(data);
+
+		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length)) {
+			final byte[] buffer = new byte[1024];
+
+			while (!inflater.finished()) {
+				final int count = inflater.inflate(buffer);
+
+				outputStream.write(buffer, 0, count);
+			}
+
+			return new String(outputStream.toByteArray(), "UTF-8");
+
+		} catch (final Exception ex) {
+			Common.throwError(ex, "Failed to decompress data");
+
+			return "";
 		}
 	}
 

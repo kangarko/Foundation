@@ -1,7 +1,6 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
-import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -21,12 +20,12 @@ final class RelocationHelper {
 	/**
 	 * me.lucko.jarrelocator.JarRelocator class name for reflections
 	 */
-	private static final String JAR_RELOCATOR_CLASS = replaceWithDots("me{}lucko{}jarrelocator{}JarRelocator");
+	private static final String JAR_RELOCATOR_CLASS = Util.replaceWithDots("me{}lucko{}jarrelocator{}JarRelocator");
 
 	/**
 	 * me.lucko.jarrelocator.Relocation class name for reflections
 	 */
-	private static final String RELOCATION_CLASS = replaceWithDots("me{}lucko{}jarrelocator{}Relocation");
+	private static final String RELOCATION_CLASS = Util.replaceWithDots("me{}lucko{}jarrelocator{}Relocation");
 
 	/**
 	 * Reflected constructor for creating new jar relocator instances

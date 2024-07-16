@@ -60,6 +60,7 @@
             <artifactId>snakeyaml</artifactId>
             <!-- DO NOT CHANGE VERSION - breaks 1.8.8 -->
             <version>1.33</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Only needed for NBT-API -->
@@ -67,7 +68,27 @@
             <groupId>com.mojang</groupId>
             <artifactId>datafixerupper</artifactId>
             <version>4.0.26</version>
+            <scope>provided</scope>
         </dependency>
+
+		<!-- Adventure -->
+		 <dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-api</artifactId>
+		    <version>4.17.0</version>
+		 </dependency>
+		<dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-text-serializer-plain</artifactId>
+		    <version>4.17.0</version>
+		    <scope>provided</scope>
+		</dependency>
+	 	<dependency>
+		    <groupId>net.kyori</groupId>
+		    <artifactId>adventure-platform-bukkit</artifactId>
+		    <version>4.3.3</version>
+		    <scope>provided</scope>
+		</dependency>
 
         <!-- The core Spigot-API -->
         <dependency>

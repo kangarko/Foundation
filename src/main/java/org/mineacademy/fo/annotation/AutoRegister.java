@@ -6,20 +6,30 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.bukkit.event.Listener;
+import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandGroup;
+import org.mineacademy.fo.event.SimpleListener;
+import org.mineacademy.fo.model.DiscordListener;
+import org.mineacademy.fo.model.PacketListener;
+import org.mineacademy.fo.model.SimpleExpansion;
+import org.mineacademy.fo.proxy.ProxyListener;
+import org.mineacademy.fo.settings.YamlConfig;
+
 /**
  * Place this annotation over any of the following classes to make Foundation
  * automatically register it when the plugin starts, and properly reload it.
  *
  * Supported classes:
- * - SimpleListener
- * - PacketListener
- * - BungeeListener
- * - DiscordListener
- * - SimpleCommand
- * - SimpleCommandGroup
- * - SimpleExpansion
- * - YamlConfig (we will load your config when the plugin starts and reload it properly)
- * - any class that "implements Listener"
+ * - {@link SimpleListener}
+ * - {@link PacketListener}
+ * - {@link ProxyListener}
+ * - {@link DiscordListener}
+ * - {@link SimpleCommand}
+ * - {@link SimpleCommandGroup}
+ * - {@link SimpleExpansion}
+ * - {@link YamlConfig} (we will load your config when the plugin starts and reload it properly)
+ * - any class that "implements {@link Listener}"
  *
  * In addition, the following classes will self-register automatically regardless
  * if you place this annotation on them or not:

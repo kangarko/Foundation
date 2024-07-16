@@ -95,7 +95,7 @@ final class FoundationPacketListener extends PacketListener {
 
 						for (int line = 0; line < lines.length; line++) {
 							final WrappedChatComponent component = lines[line];
-							final String signText = Remain.toLegacyText(component.getJson()).replace("§f", "");
+							final String signText = Remain.convertAdventureToLegacy(Remain.convertJsonToAdventure(component.getJson().replace("§f", "")));
 
 							sign.setLine(line, signText);
 						}

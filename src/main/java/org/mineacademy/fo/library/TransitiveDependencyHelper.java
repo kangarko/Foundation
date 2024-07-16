@@ -1,7 +1,6 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
-import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -27,12 +26,12 @@ final class TransitiveDependencyHelper {
 	/**
 	 * com.alessiodp.libby.maven.resolver.TransitiveDependencyCollector class name for reflections
 	 */
-	private static final String TRANSITIVE_DEPENDENCY_COLLECTOR_CLASS = replaceWithDots("com{}alessiodp{}libby{}maven{}resolver{}TransitiveDependencyCollector");
+	private static final String TRANSITIVE_DEPENDENCY_COLLECTOR_CLASS = Util.replaceWithDots("com{}alessiodp{}libby{}maven{}resolver{}TransitiveDependencyCollector");
 
 	/**
 	 * org.eclipse.aether.artifact.Artifact class name for reflections
 	 */
-	private static final String ARTIFACT_CLASS = replaceWithDots("org{}eclipse{}aether{}artifact{}Artifact");
+	private static final String ARTIFACT_CLASS = Util.replaceWithDots("org{}eclipse{}aether{}artifact{}Artifact");
 
 	/**
 	 * TransitiveDependencyCollector class instance, used in {@link #findTransitiveLibraries(Library)}
@@ -71,9 +70,7 @@ final class TransitiveDependencyHelper {
 				.groupId("com{}alessiodp{}libby{}maven{}resolver")
 				.artifactId("libby-maven-resolver")
 				.version("1.0.1")
-				.checksumFromBase64("EmsSUwjtqSeYTt8WEw7LPI/5Yz8bWSxf23XcdLEM7dk=")
-				.fallbackRepository(Repositories.MAVEN_CENTRAL)
-				.fallbackRepository("https://repo.alessiodp.com/releases")
+				.url("https://bitbucket.org/kangarko/libraries/raw/master/org/mineacademy/library/libby-maven-resolver/1.0.1/libby-maven-resolver-1.0.1.jar") // Copied here to ensure availability
 				.build()));
 
 		try {

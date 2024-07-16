@@ -25,7 +25,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.event.MenuCloseEvent;
 import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.EventHandledException;
@@ -69,6 +68,31 @@ public abstract class Menu {
 	// --------------------------------------------------------------------------------
 	// Static
 	// --------------------------------------------------------------------------------
+
+	/**
+	 * An internal metadata tag the player gets when he opens the menu.
+	 *
+	 * <p>
+	 * Used in {@link Menu#getMenu(Player)}
+	 */
+	public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
+
+	/**
+	 * An internal metadata tag the player gets when he opens another menu.
+	 *
+	 * <p>
+	 * Used in {@link Menu#getPreviousMenu(Player)}
+	 */
+	public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
+
+	/**
+	 * An internal metadata tag the player gets when he closes our menu so you can
+	 * reopen last closed menu manually.
+	 *
+	 * <p>
+	 * Used in {@link Menu#getLastClosedMenu(Player)}
+	 */
+	public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getNamed() + "_Last_Closed_Menu";
 
 	/**
 	 * The default sound when switching between menus. Set to null to disable
@@ -226,7 +250,7 @@ public abstract class Menu {
 	 * @return the menu, or null if none
 	 */
 	public static final Menu getMenu(final Player player) {
-		return getMenu0(player, FoConstants.NBT.TAG_MENU_CURRENT);
+		return getMenu0(player, TAG_MENU_CURRENT);
 	}
 
 	/**
@@ -236,7 +260,7 @@ public abstract class Menu {
 	 * @return the menu, or none
 	 */
 	public static final Menu getPreviousMenu(final Player player) {
-		return getMenu0(player, FoConstants.NBT.TAG_MENU_PREVIOUS);
+		return getMenu0(player, TAG_MENU_PREVIOUS);
 	}
 
 	/**
@@ -247,8 +271,8 @@ public abstract class Menu {
 	 */
 	@Nullable
 	public static final Menu getLastClosedMenu(final Player player) {
-		if (player.hasMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED)) {
-			final Menu menu = (Menu) player.getMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED).get(0).value();
+		if (player.hasMetadata(TAG_MENU_LAST_CLOSED)) {
+			final Menu menu = (Menu) player.getMetadata(TAG_MENU_LAST_CLOSED).get(0).value();
 
 			return menu;
 		}
@@ -501,7 +525,7 @@ public abstract class Menu {
 			final Menu previous = getMenu(player);
 
 			if (previous != null)
-				player.setMetadata(FoConstants.NBT.TAG_MENU_PREVIOUS, new FixedMetadataValue(SimplePlugin.getInstance(), previous));
+				player.setMetadata(TAG_MENU_PREVIOUS, new FixedMetadataValue(SimplePlugin.getInstance(), previous));
 		}
 
 		// Register current menu
@@ -515,7 +539,7 @@ public abstract class Menu {
 				return;
 			}
 
-			player.setMetadata(FoConstants.NBT.TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
+			player.setMetadata(TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
 
 			this.opened = true;
 			this.onPostDisplay(player);
@@ -1217,8 +1241,8 @@ public abstract class Menu {
 	 */
 	@Deprecated
 	public final void handleClose(final Inventory inventory) {
-		this.viewer.removeMetadata(FoConstants.NBT.TAG_MENU_CURRENT, SimplePlugin.getInstance());
-		this.viewer.setMetadata(FoConstants.NBT.TAG_MENU_LAST_CLOSED, new FixedMetadataValue(SimplePlugin.getInstance(), this));
+		this.viewer.removeMetadata(TAG_MENU_CURRENT, SimplePlugin.getInstance());
+		this.viewer.setMetadata(TAG_MENU_LAST_CLOSED, new FixedMetadataValue(SimplePlugin.getInstance(), this));
 		this.opened = false;
 
 		this.onMenuClose(this.viewer, inventory);

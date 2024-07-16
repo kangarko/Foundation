@@ -1,7 +1,6 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
-import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 /**
  * Represents a dependency to exclude during transitive dependency resolution for a library.
@@ -26,8 +25,8 @@ public final class ExcludedDependency {
 	 * @param artifactId Maven artifact ID
 	 */
 	public ExcludedDependency(String groupId, String artifactId) {
-		this.groupId = replaceWithDots(requireNonNull(groupId, "groupId"));
-		this.artifactId = replaceWithDots(requireNonNull(artifactId, "artifactId"));
+		this.groupId = Util.replaceWithDots(requireNonNull(groupId, "groupId"));
+		this.artifactId = Util.replaceWithDots(requireNonNull(artifactId, "artifactId"));
 	}
 
 	/**

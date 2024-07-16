@@ -1,10 +1,10 @@
-package org.mineacademy.fo.bungee;
+package org.mineacademy.fo.proxy;
 
 /**
- * Represents an action sent over BungeeCord containing
+ * Represents a plugin message type we send over proxy containing
  * a set of data. We recommend you create an enum that implements this.
  */
-public interface BungeeMessageType {
+public interface ProxyMessage {
 
 	/**
 	 * Stores all valid values in this action in the order of which they
@@ -22,19 +22,17 @@ public interface BungeeMessageType {
 	String name();
 
 	/**
-	 * Retrieve BungeeAction by its name
+	 * Retrieve a {@link ProxyMessage} by its name
 	 *
 	 * @param listener
 	 * @param name
 	 *
 	 * @return
 	 */
-	static BungeeMessageType getByName(BungeeListener listener, String name) {
-		final BungeeMessageType[] actions = listener.getActions();
-
-		for (final BungeeMessageType action : actions)
-			if (action.name().equals(name))
-				return action;
+	static ProxyMessage getByName(ProxyListener listener, String name) {
+		for (final ProxyMessage message : listener.getActions())
+			if (message.name().equals(name))
+				return message;
 
 		return null;
 	}

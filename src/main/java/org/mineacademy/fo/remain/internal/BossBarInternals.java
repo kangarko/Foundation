@@ -1,5 +1,7 @@
 package org.mineacademy.fo.remain.internal;
 
+import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
+
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -58,11 +60,19 @@ public final class BossBarInternals implements Listener {
 
 	// Singleton
 	private BossBarInternals() {
+		boolean protocolHack = true;
+
+		try {
+			getNMSClass("PacketPlayOutEntityTeleport", "N/A").getConstructor(int.class, int.class, int.class, int.class, byte.class, byte.class, boolean.class, boolean.class);
+
+		} catch (final Throwable t) {
+			protocolHack = false;
+		}
 
 		if (MinecraftVersion.olderThan(V.v1_6))
 			this.entityClass = null;
 
-		else if (Remain.isProtocol18Hack())
+		else if (protocolHack)
 			this.entityClass = NMSDragon_v1_8Hack.class;
 
 		else if (MinecraftVersion.equals(V.v1_6))
@@ -82,7 +92,7 @@ public final class BossBarInternals implements Listener {
 
 			Common.registerEvents(this);
 
-			if (Remain.isProtocol18Hack())
+			if (protocolHack)
 				Common.runTimer(5, () -> {
 					for (final UUID uuid : this.players.keySet()) {
 						final Player player = Remain.getPlayerByUUID(uuid);

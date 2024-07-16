@@ -137,6 +137,12 @@ public abstract class FileConfig {
 	 */
 	private boolean saving = false;
 
+	/**
+	 * @deprecated draft API
+	 */
+	@Deprecated
+	private boolean fastMode = false;
+
 	protected FileConfig() {
 	}
 
@@ -206,15 +212,22 @@ public abstract class FileConfig {
 	 */
 	public final <T> T get(@NonNull String path, Class<T> type, T def, Object... deserializeParams) {
 
-		path = this.buildPathPrefix(path);
-
-		// Copy defaults if not set and log about this change
-		this.copyDefault(path, type);
+		if (!this.fastMode)
+			path = this.buildPathPrefix(path);
 
 		Object raw = this.section.retrieve(path);
 
-		if (this.defaults != null && def == null)
-			Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.retrieve(path));
+		if (raw == null) {
+
+			// Copy defaults if not set and log about this change
+			this.copyDefault(path, type, false);
+
+			raw = this.section.retrieve(path);
+		}
+
+		if (!this.fastMode)
+			if (this.defaults != null && def == null)
+				Valid.checkNotNull(raw, "Failed to set '" + path + "' to " + type.getSimpleName() + " from default config's value: " + this.defaults.retrieve(path));
 
 		if (raw != null) {
 
@@ -226,8 +239,11 @@ public abstract class FileConfig {
 			if (type == Long.class && raw instanceof Integer)
 				raw = ((Integer) raw).longValue();
 
-			raw = SerializeUtil.deserialize(this.mode, type, raw, deserializeParams);
-			this.checkAssignable(path, raw, type);
+			if (!this.fastMode) {
+				raw = SerializeUtil.deserialize(this.mode, type, raw, deserializeParams);
+
+				this.checkAssignable(path, raw, type);
+			}
 
 			return (T) raw;
 		}
@@ -239,7 +255,14 @@ public abstract class FileConfig {
 	 * Attempts to copy a key at the given path from inbuilt JAR to the disk.
 	 */
 	private void copyDefault(final String path, final Class<?> type) {
-		if (this.defaults != null && !this.section.isStored(path)) {
+		this.copyDefault(path, type, this.section.isStored(path));
+	}
+
+	/*
+	 * Attempts to copy a key at the given path from inbuilt JAR to the disk.
+	 */
+	private void copyDefault(final String path, final Class<?> type, boolean stored) {
+		if (this.defaults != null && !stored) {
 			final Object object = this.defaults.retrieve(path);
 			Valid.checkNotNull(object, "Inbuilt config " + this.getFileName() + " lacks " + (object == null ? "key" : object.getClass().getSimpleName()) + " at \"" + path + "\". Is it outdated?");
 
@@ -1124,7 +1147,9 @@ public abstract class FileConfig {
 	 * @return
 	 */
 	public final boolean isSet(String path) {
-		path = this.buildPathPrefix(path);
+
+		if (!this.fastMode)
+			path = this.buildPathPrefix(path);
 
 		return this.section.isStored(path);
 	}
@@ -1573,6 +1598,24 @@ public abstract class FileConfig {
 	 */
 	public final boolean isEmpty() {
 		return this.section.isEmpty();
+	}
+
+	/**
+	 * @deprecated draft api
+	 * @return
+	 */
+	@Deprecated
+	public final boolean isFastMode() {
+		return fastMode;
+	}
+
+	/**
+	 * @deprecated draft api
+	 * @param fastMode
+	 */
+	@Deprecated
+	public final void setFastMode(boolean fastMode) {
+		this.fastMode = fastMode;
 	}
 
 	// ------------------------------------------------------------------------------------

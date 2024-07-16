@@ -27,14 +27,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.BungeeUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.annotation.AutoRegister;
-import org.mineacademy.fo.bungee.BungeeListener;
 import org.mineacademy.fo.command.RegionCommand;
 import org.mineacademy.fo.command.SimpleCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
@@ -43,6 +42,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.library.BukkitLibraryManager;
+import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
@@ -50,11 +50,11 @@ import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.metrics.Metrics;
 import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.FolderWatcher;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
+import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
@@ -65,7 +65,7 @@ import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
-import lombok.NonNull;
+import net.kyori.adventure.text.Component;
 
 /**
  * Represents a basic Java plugin using enhanced library functionality,
@@ -181,10 +181,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private SimpleCommandGroup mainCommand;
 
 	/**
-	 * A temporary bungee listener, see {@link #setBungeeCord(BungeeListener)}
-	 * set automatically by us.
+	 * The default proxy listener, used in {@link ProxyUtil} if no listener is provided there
 	 */
-	private BungeeListener bungeeListener;
+	private ProxyListener proxyListener;
 
 	// ----------------------------------------------------------------------------------------
 	// Main methods
@@ -193,10 +192,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	static {
 
 		if (MinecraftVersion.olderThan(V.v1_4) && !ReflectionUtil.isClassAvailable("org.bukkit.Sound")) {
-			Bukkit.getLogger().severe("Ancient MC version detected, please follow install steps here: https://mineacademy.org/oldmcsupport");
-			Bukkit.getLogger().severe("Please note that many features won't work and due to time constraints we can't provide support for such old Minecraft versions.");
+			Bukkit.getLogger().severe("Minecraft <1.4.7 detected, please follow install steps here: https://mineacademy.org/oldmcsupport");
+			Bukkit.getLogger().severe("Please note that many features won't work and we can't provide full coverage for historical Minecraft versions.");
 
-			throw new RuntimeException("Ancient MC detected, see above for installation steps.");
+			throw new RuntimeException("See above for installation instructions.");
 		}
 
 		// Add console filters early - no reload support
@@ -224,14 +223,47 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		data = instance.getDataFolder();
 
 		// Load libraries where Spigot does not do this automatically
-		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.api.ChatColor"))
-			this.loadLibrary("net.md-5", "bungeecord-chat", "1.16-R0.4");
-
 		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
 			this.loadLibrary("com.google.code.gson", "gson", "2.11.0");
 
+		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.chat.BaseComponentSerializer"))
+			this.loadLibrary("net.md-5", "bungeecord-api", "1.16-R0.1");
+
 		if (getJavaVersion() >= 11)
 			this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
+
+		final boolean hasAdventure = ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience");
+
+		if (MinecraftVersion.olderThan(V.v1_16)) {
+			this.loadLibrary("net.kyori", "adventure-api", "4.17.0");
+			this.loadLibrary("net.kyori", "adventure-platform-bukkit", "4.3.3");
+		}
+
+		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer"))
+			this.loadLibrary("net.kyori", "adventure-text-serializer-plain", "4.17.0");
+
+		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
+
+			// Pre-merge: 1.16-1.17
+			if (hasAdventure) {
+				String version = "4.2.0-SNAPSHOT";
+
+				try {
+					Component.class.getMethod("compact");
+
+				} catch (final ReflectiveOperationException ex) {
+					version = "4.1.0-SNAPSHOT";
+				}
+
+				this.getLibraryManager().loadLibrary(Library.builder()
+						.groupId("net.kyori")
+						.artifactId("adventure-text-minimessage")
+						.version(version)
+						.url("https://bitbucket.org/kangarko/libraries/raw/master/org/mineacademy/library/adventure-text-minimessage/" + version + "/adventure-text-minimessage-" + version + ".jar")
+						.build());
+
+			} else
+				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.10.0");
 
 		// Call parent
 		this.onPluginLoad();
@@ -270,9 +302,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			return;
 		}
 
-		// Load debug mode early
-		Debugger.detectDebugMode();
-
 		// Print startup logo early before onPluginPreStart
 		// Disable logging prefix if logo is set
 		if (this.getStartupLogo() != null) {
@@ -301,7 +330,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			// Call the main start method
 			// --------------------------------------------
 
-			this.registerInitBungee(BungeeListener.DEFAULT_CHANNEL);
+			this.registerDefaultProxyChannels(ProxyListener.DEFAULT_CHANNEL);
 
 			// Hide plugin name before console messages
 			final String oldLogPrefix = Common.getLogPrefix();
@@ -399,27 +428,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			version = version.split("\\-")[0];
 
 		return Integer.parseInt(version);
-	}
-
-	/**
-	 * Register a simple bungee class as a custom bungeecord listener.
-	 *
-	 * DO NOT use this if you only have that one field there with a getter, we already register it automatically,
-	 * this method is intended to be used if you have multiple fields there and want to register multiple channels.
-	 * Then you just call this method and parse the field into it from your onReloadablesStart method.
-	 */
-	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
-		/*final String channelName = bungee.getChannel();
-		final Messenger messenger = this.getServer().getMessenger();
-		
-		if (!messenger.isIncomingChannelRegistered(this, channelName))
-			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-		
-		if (!messenger.isOutgoingChannelRegistered(this, channelName))
-			messenger.registerOutgoingPluginChannel(this, channelName);*/
-
-		this.reloadables.registerEvents(bungee);
-
 	}
 
 	/**
@@ -558,6 +566,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 		try {
 			this.onPluginStop();
+
 		} catch (final Throwable t) {
 			Common.log("&cPlugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
@@ -599,6 +608,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 					t.printStackTrace();
 				}
+
+		Remain.closeAdventurePlatform();
 
 		Objects.requireNonNull(instance, "Instance of " + this.getDataFolder().getName() + " already nulled!");
 		instance = null;
@@ -660,13 +671,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		reloading = true;
 
 		try {
-			Debugger.detectDebugMode();
-
 			if (CompMetadata.isLegacy() && CompMetadata.ENABLE_LEGACY_FILE_STORAGE)
 				CompMetadata.MetadataFile.getInstance().save();
 
 			this.unregisterReloadables();
-			this.registerInitBungee(BungeeListener.DEFAULT_CHANNEL);
+			this.registerDefaultProxyChannels(ProxyListener.DEFAULT_CHANNEL);
 
 			// Load our dependency system
 			try {
@@ -727,12 +736,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		}
 	}
 
-	private void registerInitBungee(String channelName) {
+	private void registerDefaultProxyChannels(String channelName) {
 		final Messenger messenger = this.getServer().getMessenger();
 
 		// Always make the main channel available
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
-			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
+			messenger.registerIncomingPluginChannel(this, channelName, ProxyListener.ProxyListenerImpl.getInstance());
 
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);
@@ -743,7 +752,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		SimpleLocalization.resetLocalizationCall();
 
 		BlockVisualizer.stopAll();
-		FolderWatcher.stopThreads();
 
 		FileConfig.clearLoadedSections();
 
@@ -1069,32 +1077,31 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Returns the default or "main" bungee listener you use. This is checked from {@link BungeeUtil#sendPluginMessage(org.mineacademy.fo.bungee.BungeeMessageType, Object...)}
-	 * so that you won't have to pass in channel name each time and we use channel name from this listener instead.
+	 * Returns the "default" proxy listener you use. This is used in {@link ProxyUtil} when no channel is provided.
 	 *
-	 * @deprecated only returns the first found bungee listener, if you have multiple, do not use, order not guaranteed
+	 * @deprecated only returns the first listener, if you have multiple, do not use, order not guaranteed
 	 * @return
 	 */
 	@Deprecated
-	public final BungeeListener getBungeeCord() {
-		return this.bungeeListener;
+	public final ProxyListener getProxyListener() {
+		return this.proxyListener;
 	}
 
 	/**
-	 * Sets the first valid bungee listener
+	 * Sets a proxy listener to use in {@link ProxyUtil} when no listener is provided
 	 *
-	 * @deprecated INTERNAL USE ONLY, DO NOT USE! can only set one bungee listener, if you have multiple, order not guaranteed
-	 * @param bungeeListener
+	 * @deprecated INTERNAL USE ONLY
+	 * @param listener
 	 */
 	@Deprecated
-	public final void setBungeeCord(BungeeListener bungeeListener) {
-		this.bungeeListener = bungeeListener;
+	public final void setProxy(ProxyListener listener) {
+		this.proxyListener = listener;
 	}
 
 	/**
 	 * Loads a library jar into the classloader classpath. If the library jar
 	 * doesn't exist locally, it will be downloaded.
-	 * <p>
+	 *
 	 * If the provided library has any relocations, they will be applied to
 	 * create a relocated jar and the relocated jar will be loaded instead.
 	 *
@@ -1103,7 +1110,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param version
 	 */
 	public void loadLibrary(String groupId, String artifactId, String version) {
-		this.getLibraryManager().loadLibrary(groupId, artifactId, version);
+		this.getLibraryManager().loadLibrary(Library.builder().groupId(groupId).artifactId(artifactId).resolveTransitiveDependencies(true).version(version).build());
 	}
 
 	/**

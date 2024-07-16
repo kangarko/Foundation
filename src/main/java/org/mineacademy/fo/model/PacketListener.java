@@ -32,11 +32,15 @@ import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedServerPing;
+import com.google.gson.Gson;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 
 /**
  * Represents packet handling using ProtocolLib
@@ -317,8 +321,11 @@ public abstract class PacketListener {
 						this.jsonMessage = event.getPacket().getStrings().read(0);
 					}
 
-					if (this.jsonMessage != null)
-						return Remain.toLegacyText(this.jsonMessage, false);
+					if (this.jsonMessage != null) {
+						final Component adventureComp = Remain.convertJsonToAdventure(this.jsonMessage);
+
+						return Remain.convertAdventureToLegacy(adventureComp);
+					}
 
 					try {
 						final StructureModifier<Object> adventureModifier = event.getPacket().getModifier().withType(AdventureComponentConverter.getComponentClass());
@@ -383,7 +390,7 @@ public abstract class PacketListener {
 						}
 
 						if (secondField instanceof BaseComponent[]) {
-							this.jsonMessage = Remain.toJson((BaseComponent[]) secondField);
+							this.jsonMessage = toJson((BaseComponent[]) secondField);
 
 							this.isBaseComponent = true;
 						}
@@ -404,7 +411,9 @@ public abstract class PacketListener {
 
 					// Catch errors from other plugins and silence them
 					try {
-						legacyText = Remain.toLegacyText(this.jsonMessage, false);
+						final Component adventureComp = Remain.convertJsonToAdventure(this.jsonMessage);
+
+						legacyText = Remain.convertAdventureToLegacy(adventureComp);
 
 					} catch (final Throwable t) {
 						return "";
@@ -441,7 +450,7 @@ public abstract class PacketListener {
 			final PacketContainer packet = event.getPacket();
 
 			if (!this.editJson())
-				this.jsonMessage = Remain.toJson(message);
+				this.jsonMessage = Remain.convertAdventureToJson(Remain.convertLegacyToAdventure(message));
 
 			if (this.systemChat) {
 
@@ -465,13 +474,40 @@ public abstract class PacketListener {
 				}
 
 			} else if (this.isBaseComponent)
-				packet.getModifier().writeSafely(this.adventure ? 2 : 1, Remain.toComponent(this.jsonMessage));
+				packet.getModifier().writeSafely(this.adventure ? 2 : 1, toComponent(this.jsonMessage));
 
 			else if (MinecraftVersion.atLeast(V.v1_7))
 				packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(this.jsonMessage));
 
 			else
 				packet.getStrings().writeSafely(0, SerializedMap.of("text", this.jsonMessage.substring(1, this.jsonMessage.length() - 1)).toJson());
+		}
+
+		private String toJson(final BaseComponent... comps) {
+			String json;
+
+			try {
+				json = ComponentSerializer.toString(comps);
+
+			} catch (final Throwable t) {
+				json = new Gson().toJson(new TextComponent(comps).toLegacyText());
+			}
+
+			return json;
+		}
+
+		private BaseComponent[] toComponent(final String json) {
+			try {
+				return ComponentSerializer.parse(json);
+
+			} catch (final Throwable t) {
+				Common.throwError(t,
+						"Failed to call toComponent!",
+						"Json: " + json,
+						"Error: %error%");
+
+				return null;
+			}
 		}
 
 		/**

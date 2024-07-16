@@ -212,7 +212,7 @@ public final class CompMetadata {
 	public static String getMetadata(@NonNull final Entity entity, @NonNull final String key) {
 
 		// PENDING REMOVAL
-		if (Remain.hasScoreboardTags())
+		if (Remain.hasEntityGetScoreboardTags())
 			for (final String line : entity.getScoreboardTags()) {
 				final String value = getTag(line, key);
 

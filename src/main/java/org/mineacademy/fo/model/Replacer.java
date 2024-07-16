@@ -73,7 +73,6 @@ public final class Replacer {
 		if ("".equals(message))
 			return "";
 
-		message = replaceVariables(message, variables, Variables.VARIABLE_PATTERN.matcher(message));
 		message = replaceVariables(message, variables, Variables.BRACKET_VARIABLE_PATTERN.matcher(message));
 
 		return message;
@@ -101,12 +100,12 @@ public final class Replacer {
 			String value = null;
 
 			for (final Map.Entry<String, Object> entry : variables.entrySet()) {
-				String variableKey = entry.getKey();
+				String key = entry.getKey();
 
-				variableKey = variableKey.startsWith("{") ? variableKey.substring(1) : variableKey;
-				variableKey = variableKey.endsWith("}") ? variableKey.substring(0, variableKey.length() - 1) : variableKey;
+				key = key.startsWith("{") ? key.substring(1) : key;
+				key = key.endsWith("}") ? key.substring(0, key.length() - 1) : key;
 
-				if (variableKey.equals(variable))
+				if (key.equals(variable))
 					value = entry.getValue() == null ? "null" : entry.getValue().toString();
 			}
 

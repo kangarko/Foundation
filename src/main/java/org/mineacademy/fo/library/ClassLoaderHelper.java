@@ -1,7 +1,6 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
-import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.invoke.MethodHandle;
@@ -47,7 +46,7 @@ abstract class ClassLoaderHelper {
 	/**
 	 * net.bytebuddy.agent.ByteBuddyAgent class name for reflections
 	 */
-	private static final String BYTE_BUDDY_AGENT_CLASS = replaceWithDots("net{}bytebuddy{}agent{}ByteBuddyAgent");
+	private static final String BYTE_BUDDY_AGENT_CLASS = Util.replaceWithDots("net{}bytebuddy{}agent{}ByteBuddyAgent");
 
 	/**
 	 * java.lang.Module methods since we build against Java 8

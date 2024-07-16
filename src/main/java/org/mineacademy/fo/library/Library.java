@@ -1,10 +1,6 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
-import static org.mineacademy.fo.library.Util.craftPartialPath;
-import static org.mineacademy.fo.library.Util.craftPath;
-import static org.mineacademy.fo.library.Util.hexStringToByteArray;
-import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 import java.util.Base64;
 import java.util.Collection;
@@ -142,15 +138,15 @@ public class Library {
 			Collection<ExcludedDependency> excludedTransitiveDependencies) {
 
 		this.urls = urls != null ? Collections.unmodifiableList(new LinkedList<>(urls)) : Collections.emptyList();
-		this.groupId = replaceWithDots(requireNonNull(groupId, "groupId"));
-		this.artifactId = replaceWithDots(requireNonNull(artifactId, "artifactId"));
+		this.groupId = Util.replaceWithDots(requireNonNull(groupId, "groupId"));
+		this.artifactId = Util.replaceWithDots(requireNonNull(artifactId, "artifactId"));
 		this.version = requireNonNull(version, "version");
 		this.classifier = classifier;
 		this.checksum = checksum;
 		this.relocations = relocations != null ? Collections.unmodifiableList(new LinkedList<>(relocations)) : Collections.emptyList();
 
-		this.partialPath = craftPartialPath(this.artifactId, this.groupId, version);
-		this.path = craftPath(this.partialPath, this.artifactId, this.version, this.classifier);
+		this.partialPath = Util.craftPartialPath(this.artifactId, this.groupId, version);
+		this.path = Util.craftPath(this.partialPath, this.artifactId, this.version, this.classifier);
 
 		this.repositories = repositories != null ? Collections.unmodifiableList(new LinkedList<>(repositories)) : Collections.emptyList();
 		this.fallbackRepositories = fallbackRepositories != null ? Collections.unmodifiableList(new LinkedList<>(fallbackRepositories)) : Collections.emptyList();
@@ -560,7 +556,7 @@ public class Library {
 		 */
 
 		public Builder checksum(String checksum) {
-			return checksum != null ? this.checksum(hexStringToByteArray(checksum)) : this;
+			return checksum != null ? this.checksum(Util.hexStringToByteArray(checksum)) : this;
 		}
 
 		/**

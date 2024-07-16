@@ -1,7 +1,6 @@
 package org.mineacademy.fo.library;
 
 import static java.util.Objects.requireNonNull;
-import static org.mineacademy.fo.library.Util.replaceWithDots;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -47,8 +46,8 @@ public class Relocation {
 	 * @param excludes         classes and resources to exclude
 	 */
 	public Relocation(String pattern, String relocatedPattern, Collection<String> includes, Collection<String> excludes) {
-		this.pattern = replaceWithDots(requireNonNull(pattern, "pattern"));
-		this.relocatedPattern = replaceWithDots(requireNonNull(relocatedPattern, "relocatedPattern"));
+		this.pattern = Util.replaceWithDots(requireNonNull(pattern, "pattern"));
+		this.relocatedPattern = Util.replaceWithDots(requireNonNull(relocatedPattern, "relocatedPattern"));
 		this.includes = includes != null ? Collections.unmodifiableSet(includes.stream()
 				.map(Util::replaceWithDots)
 				.collect(Collectors.toSet())) : Collections.emptySet();
@@ -114,7 +113,7 @@ public class Relocation {
 		if (o == null || this.getClass() != o.getClass())
 			return false;
 
-		Relocation that = (Relocation) o;
+		final Relocation that = (Relocation) o;
 
 		if (!this.pattern.equals(that.pattern) || !this.relocatedPattern.equals(that.relocatedPattern) || !this.includes.equals(that.includes))
 			return false;

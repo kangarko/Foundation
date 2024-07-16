@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -81,6 +82,23 @@ public final class ChatImage {
 		for (int y = 0; y < this.lines.length; y++)
 			if (text.length > y) {
 				final String line = text[y];
+
+				this.lines[y] += " " + line;
+			}
+
+		return this;
+	}
+
+	/**
+	 * Appends the given text next to the image
+	 *
+	 * @param text
+	 * @return
+	 */
+	public ChatImage appendText(List<String> text) {
+		for (int y = 0; y < this.lines.length; y++)
+			if (text.size() > y) {
+				final String line = text.get(y);
 
 				this.lines[y] += " " + line;
 			}
