@@ -59,6 +59,12 @@ public final class NetworkUtil {
 	 * @return A JSONObject containing the response, or null if the request or parsing fails.
 	 */
 	public static JSONObject getJson(String endpoint, SerializedMap params, SerializedMap requestProperties) {
+
+		if (requestProperties == null)
+			requestProperties = new SerializedMap();
+
+		requestProperties.put("Content-Type", "application/json");
+
 		final String response = get(endpoint, params, requestProperties);
 
 		try {
@@ -122,6 +128,12 @@ public final class NetworkUtil {
 	 * @return A JSONObject containing the response, or null if the request or parsing fails.
 	 */
 	public static JSONObject postJson(String endpoint, SerializedMap params, SerializedMap requestProperties) {
+
+		if (requestProperties == null)
+			requestProperties = new SerializedMap();
+
+		requestProperties.put("Content-Type", "application/json");
+
 		final String response = post(endpoint, params, requestProperties);
 
 		try {
@@ -273,7 +285,6 @@ public final class NetworkUtil {
 			connection.setRequestMethod("POST");
 			connection.setDoOutput(true);
 
-			connection.setRequestProperty("Content-Type", "application/json");
 			connection.setRequestProperty("User-Agent", HTTP_USER_AGENT);
 
 			if (requestProperties != null)
