@@ -1543,7 +1543,7 @@ public abstract class FileConfig {
 			this.header = null;
 
 		else {
-			final String mainCommandLabel = Common.getOrEmpty(SimpleSettings.MAIN_COMMAND_ALIASES.first());
+			final String mainCommandLabel = SimpleSettings.MAIN_COMMAND_ALIASES.isEmpty() ? "" : SimpleSettings.MAIN_COMMAND_ALIASES.first();
 			final List<String> header = new ArrayList<>();
 
 			for (int i = 0; i < values.length; i++) {
