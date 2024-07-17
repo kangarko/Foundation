@@ -183,7 +183,7 @@ public final class ProxyUtil {
 						OutgoingMessage.writeCompressedString(out, ((SimpleComponent) data).serialize().toJson());
 
 					} else if (data instanceof SerializedMap) {
-						checkData(head, message, String.class);
+						checkData(head, message, SerializedMap.class);
 
 						OutgoingMessage.writeCompressedString(out, ((SerializedMap) data).toJson());
 

@@ -121,7 +121,7 @@ public final class IncomingMessage extends Message {
 	 * @return
 	 */
 	public SerializedMap readMap() {
-		this.moveHead(String.class);
+		this.moveHead(SerializedMap.class);
 
 		return SerializedMap.fromJson(this.readCompressedString());
 	}
