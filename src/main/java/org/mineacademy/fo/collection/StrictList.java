@@ -159,7 +159,9 @@ public final class StrictList<E> extends StrictCollection implements Iterable<E>
 	 */
 	@Nullable
 	public E first() {
-		return this.list.isEmpty() ? null : this.list.get(0);
+		Valid.checkBoolean(!this.list.isEmpty(), "Cannot get first element from an empty list!");
+
+		return this.list.get(0);
 	}
 
 	/**
