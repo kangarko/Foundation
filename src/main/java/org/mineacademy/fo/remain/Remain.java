@@ -901,7 +901,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static String convertAdventureToPlain(Component component) {
-		return PlainTextComponentSerializer.plainText().serialize(component);
+		return PlainTextComponentSerializer.plainText().serialize(component).trim();
 	}
 
 	/*
