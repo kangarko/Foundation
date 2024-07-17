@@ -48,6 +48,8 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 
 /**
  * A simple command used to replace all Bukkit/Spigot command functionality
@@ -585,6 +587,18 @@ public abstract class SimpleCommand extends Command {
 	protected final void checkUsage(final boolean value) throws CommandException {
 		if (!value)
 			this.returnInvalidArgs();
+	}
+
+	/**
+	 * @deprecated does not really uses components just replaces them to legacy
+	 *
+	 * @param value
+	 * @param messageIfNull
+	 * @throws CommandException
+	 */
+	@Deprecated
+	protected final void checkNotNull(final Object value, final Component messageIfNull) throws CommandException {
+		this.checkNotNull(value, Remain.convertAdventureToLegacy(messageIfNull));
 	}
 
 	/**
@@ -1181,47 +1195,57 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final String[] replacePlaceholders(final String[] messages) {
 		for (int i = 0; i < messages.length; i++)
-			messages[i] = this.replacePlaceholders(messages[i]).replace("{prefix}", Common.getTellPrefix());
+			messages[i] = this.replacePlaceholders(messages[i]);
 
 		return messages;
+	}
+
+	// TODO get rid of
+	protected String replacePlaceholders(String legacy) {
+		return Remain.convertAdventureToLegacy(replacePlaceholders(Remain.convertLegacyToAdventure(legacy)));
 	}
 
 	/**
 	 * Replaces placeholders in the message
 	 *
-	 * @param message
+	 * @param component
 	 * @return
 	 */
-	protected String replacePlaceholders(String message) {
-		// Replace basic labels
-		message = this.replaceBasicPlaceholders0(message);
+	protected Component replacePlaceholders(Component component) {
+		component = this.replaceBasicPlaceholders0(component);
 
 		// Replace {X} with arguments
 		for (int i = 0; i < this.args.length; i++)
-			message = message.replace("{" + i + "}", Common.getOrEmpty(this.args[i]));
+			component = component.replaceText(TextReplacementConfig
+					.builder()
+					.matchLiteral("{" + i + "}")
+					.replacement(Common.getOrEmpty(this.args[i]))
+					.build());
 
-		return message;
+		return component;
+	}
+
+	// TODO get rid of
+	private String replaceBasicPlaceholders0(String component) {
+		return Remain.convertAdventureToLegacy(this.replaceBasicPlaceholders0(Remain.convertLegacyToAdventure(component)));
 	}
 
 	/**
-	 * Internal method for replacing {label} and {sublabel}
+	 * Internal method for replacing label and sublabel variables
 	 *
-	 * @param message
+	 * @param component
 	 * @return
 	 */
-	private String replaceBasicPlaceholders0(String message) {
+	private Component replaceBasicPlaceholders0(Component component) {
 
-		// First, replace label and sublabel
-		message = message
-				.replace("{label}", Common.getOrDefault(this.label, this.label))
-				.replace("{current_label}", Common.getOrDefault(this.currentLabel, this.label))
-				.replace("{sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel())
-				.replace("{current_sublabel}", this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabel() : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel());
+		component = component.replaceText(b -> b.matchLiteral("{label}").replacement(this.label));
+		component = component.replaceText(b -> b.matchLiteral("{current_label}").replacement(Common.getOrDefault(this.currentLabel, this.label)));
+		component = component.replaceText(b -> b.matchLiteral("{sublabel}").replacement(this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel()));
+		component = component.replaceText(b -> b.matchLiteral("{current_sublabel}").replacement(this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabel() : this.args != null && this.args.length > 0 ? this.args[0] : super.getLabel()));
 
-		// Replace hard variables
-		message = Variables.replace(message, null);
+		component = Variables.replaceVariablesNew(component);
 
-		return message;
+		return component;
 	}
 
 	/**

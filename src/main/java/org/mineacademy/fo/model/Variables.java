@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -28,6 +30,9 @@ import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import lombok.NonNull;
+import net.kyori.adventure.text.Component;
+
 /**
  * A simple engine that replaces variables in a message.
  */
@@ -39,19 +44,9 @@ public final class Variables {
 	public static final Pattern MESSAGE_VARIABLE_PATTERN = Pattern.compile("[\\[]([^\\[\\]]+)[\\]]");
 
 	/**
-	 * The pattern to find simple %syntax% placeholders.
-	 */
-	//public static final Pattern VARIABLE_PATTERN = Pattern.compile("[%]([^%]+)[%]");
-
-	/**
 	 * The pattern to find simple {syntax} placeholders.
 	 */
 	public static final Pattern BRACKET_VARIABLE_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
-
-	/**
-	 * The pattern to find simple %syntax% placeholders starting with %rel_% (used for PlaceholderAPI)
-	 */
-	//public static final Pattern REL_VARIABLE_PATTERN = Pattern.compile("[%](rel_)([^%]+)[%]");
 
 	/**
 	 * The pattern to find simple {syntax} placeholders starting with {rel_} (used for PlaceholderAPI)
@@ -245,6 +240,25 @@ public final class Variables {
 		return message;
 	}
 
+	public static Component replaceVariablesNew(Component message) {
+		return replaceVariablesNew(message, null);
+	}
+
+	public static Component replaceVariablesNew(Component message, CommandSender sender) {
+		return replaceVariablesNew(message, sender, new HashMap<>());
+	}
+
+	public static Component replaceVariablesNew(Component message, CommandSender sender, Map<String, Object> replacements) {
+		return message.replaceText(b -> b.match(BRACKET_VARIABLE_PATTERN).replacement((result, input) -> {
+			final String variable = result.group();
+			final String value = replaceOneVariableNew(variable, sender, replacements);
+
+			System.out.println("Component replacing variable '" + variable + "'");
+
+			return Remain.convertLegacyToAdventure(value); // TODO add minimessage support
+		}));
+	}
+
 	/**
 	 * Draft API
 	 *
@@ -252,7 +266,7 @@ public final class Variables {
 	 * @param replacements
 	 * @return
 	 */
-	public static String replaceOneVariableNew(String variable, CommandSender sender, Map<String, Object> replacements) {
+	public static String replaceOneVariableNew(String variable, @Nullable CommandSender sender, @NonNull Map<String, Object> replacements) {
 		final Player player = sender instanceof Player ? (Player) sender : null;
 
 		boolean frontSpace = false;

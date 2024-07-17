@@ -400,26 +400,6 @@ public final class Common {
 	}
 
 	/**
-	 * Shortcut for sending Adventure components to a sender.
-	 *
-	 * @param sender
-	 * @param component
-	 */
-	public static void tell(final Audience sender, final Component component) {
-		Remain.tell(sender, component, true);
-	}
-
-	/**
-	 * Shortcut for sending Adventure components to a sender.
-	 *
-	 * @param sender
-	 * @param component
-	 */
-	public static void tell(final CommandSender sender, final Component component) {
-		Remain.tell(sender, component, true);
-	}
-
-	/**
 	 * Send the sender a bunch of messages, colors & are supported
 	 *
 	 * @param sender
@@ -543,6 +523,87 @@ public final class Common {
 			}
 	}
 
+	private static void tellAdventure(@NonNull final Audience sender, Component message) {
+		if (message == null)
+			return;
+
+		final String plainMessage = Remain.convertAdventureToPlain(message);
+
+		if (plainMessage.isEmpty())
+			return;
+
+		final boolean hasPrefix = plainMessage.contains("{prefix}");
+
+		// Replace player
+		message = message.replaceText(b -> b.matchLiteral("{player}").replacement(resolveSenderName(sender)));
+
+		// Replace colors
+		message = colorize(message);
+
+		// Send [JSON] prefixed messages as json component
+		if (plainMessage.startsWith("<actionbar>")) {
+
+			final String stripped = message.replace("<actionbar>", "");
+
+			if (!stripped.isEmpty())
+
+				if (sender instanceof Player)
+					Remain.sendActionBar((Player) sender, stripped);
+				else
+					tellJson(sender, stripped);
+
+		} else if (message.startsWith("<toast>")) {
+			final String stripped = message.replace("<toast>", "");
+
+			if (!stripped.isEmpty())
+				if (sender instanceof Player)
+					Remain.sendToast((Player) sender, stripped);
+				else
+					tellJson(sender, stripped);
+
+		} else if (message.startsWith("<title>")) {
+			final String stripped = message.replace("<title>", "");
+
+			if (!stripped.isEmpty()) {
+				final String[] split = stripped.split("\\|");
+				final String title = split[0];
+				final String subtitle = split.length > 1 ? Common.joinRange(1, split) : null;
+
+				if (sender instanceof Player)
+					Remain.sendTitle((Player) sender, title, subtitle);
+
+				else {
+					tellJson(sender, title);
+
+					if (subtitle != null)
+						tellJson(sender, subtitle);
+				}
+			}
+
+		} else if (message.startsWith("<bossbar>")) {
+			final String stripped = message.replace("<bossbar>", "");
+
+			if (!stripped.isEmpty())
+				if (sender instanceof Player)
+					// cannot provide time here so we show it for 10 seconds
+					Remain.sendBossbarTimed((Player) sender, stripped, 10);
+				else
+					tellJson(sender, stripped);
+
+		} else
+			for (final String part : message.split("\n")) {
+				final String prefix = !hasPrefix && !tellPrefix.isEmpty() ? tellPrefix + " " : "";
+				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
+
+				// Make player engaged in a server conversation still receive the message
+				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
+					((Conversable) sender).sendRawMessage(toSend);
+
+				else
+					sender.sendMessage(toSend);
+			}
+	}
+
 	/**
 	 * Return the sender's name if it's a player or discord sender, or simply {@link SimpleLocalization#CONSOLE_NAME} if it is a console
 	 *
@@ -551,6 +612,16 @@ public final class Common {
 	 */
 	public static String resolveSenderName(final CommandSender sender) {
 		return sender instanceof ConsoleCommandSender ? SimpleLocalization.CONSOLE_NAME : sender != null ? sender.getName() : "";
+	}
+
+	/**
+	 * Return the sender's name if it's a player or discord sender, or simply {@link SimpleLocalization#CONSOLE_NAME} if it is a console
+	 *
+	 * @param sender
+	 * @return
+	 */
+	public static String resolveSenderName(final Audience sender) {
+		return sender instanceof ConsoleCommandSender ? SimpleLocalization.CONSOLE_NAME : sender != null ? sender instanceof CommandSender ? ((CommandSender) sender).getName() : "" : "";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
