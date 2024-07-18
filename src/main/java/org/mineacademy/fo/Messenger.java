@@ -11,6 +11,7 @@ import org.mineacademy.fo.settings.SimpleSettings;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.kyori.adventure.text.Component;
 
 /**
  * Streamlines the process of sending themed messages to players
@@ -32,37 +33,37 @@ public class Messenger {
 	 * The prefix send while sending info message
 	 */
 	@Getter
-	private static String infoPrefix = "&8&l[&9&li&8&l]&7 ";
+	private static String infoPrefix = "&8[&9i&8]&7";
 
 	/**
 	 * The prefix send while sending success message
 	 */
 	@Getter
-	private static String successPrefix = "&8&l[&2&l\u2714&8&l]&7 ";
+	private static String successPrefix = "&8[&2\u2714&8]&7";
 
 	/**
 	 * The prefix send while sending warning message
 	 */
 	@Getter
-	private static String warnPrefix = "&8&l[&6&l!&8&l]&6 ";
+	private static String warnPrefix = "&8[&6!&8]&6";
 
 	/**
 	 * The prefix send while sending error message
 	 */
 	@Getter
-	private static String errorPrefix = "&8&l[&4&l\u2715&8&l]&c ";
+	private static String errorPrefix = "&8[&4\u2715&8]&c";
 
 	/**
 	 * The prefix send while sending questions
 	 */
 	@Getter
-	private static String questionPrefix = "&8&l[&a&l?&l&8]&7 ";
+	private static String questionPrefix = "&8[&a?&8]&7";
 
 	/**
 	 * The prefix send while sending announcements
 	 */
 	@Getter
-	private static String announcePrefix = "&8&l[&5&l!&l&8]&d ";
+	private static String announcePrefix = "&8[&5!&8]&d";
 
 	/**
 	 * Set the prefix for info messages
@@ -141,6 +142,16 @@ public class Messenger {
 	}
 
 	/**
+	 * Send a message prepended with the {@link #getInfoPrefix()}
+	 *
+	 * @param component
+	 */
+	public static void broadcastInfo(final Component component) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, infoPrefix, component);
+	}
+
+	/**
 	 * Send a message prepended with the {@link #getSuccessPrefix()}
 	 *
 	 * @param message
@@ -148,6 +159,16 @@ public class Messenger {
 	public static void broadcastSuccess(final String message) {
 		for (final Player online : Remain.getOnlinePlayers())
 			tell(online, successPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #getSuccessPrefix()}
+	 *
+	 * @param component
+	 */
+	public static void broadcastSuccess(final Component component) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, successPrefix, component);
 	}
 
 	/**
@@ -161,6 +182,16 @@ public class Messenger {
 	}
 
 	/**
+	 * Send a message prepended with the {@link #getWarnPrefix()}
+	 *
+	 * @param component
+	 */
+	public static void broadcastWarn(final Component component) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, warnPrefix, component);
+	}
+
+	/**
 	 * Send a message prepended with the {@link #getErrorPrefix()}
 	 *
 	 * @param message
@@ -168,6 +199,16 @@ public class Messenger {
 	public static void broadcastError(final String message) {
 		for (final Player online : Remain.getOnlinePlayers())
 			tell(online, errorPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #getErrorPrefix()}
+	 *
+	 * @param component
+	 */
+	public static void broadcastError(final Component component) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, errorPrefix, component);
 	}
 
 	/**
@@ -181,6 +222,16 @@ public class Messenger {
 	}
 
 	/**
+	 * Send a message prepended with the {@link #getQuestionPrefix()}
+	 *
+	 * @param component
+	 */
+	public static void broadcastQuestion(final Component component) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, questionPrefix, component);
+	}
+
+	/**
 	 * Send a message prepended with the {@link #getAnnouncePrefix()}
 	 *
 	 * @param message
@@ -188,6 +239,16 @@ public class Messenger {
 	public static void broadcastAnnounce(final String message) {
 		for (final Player online : Remain.getOnlinePlayers())
 			tell(online, announcePrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #getAnnouncePrefix()}
+	 *
+	 * @param component
+	 */
+	public static void broadcastAnnounce(final Component component) {
+		for (final Player online : Remain.getOnlinePlayers())
+			tell(online, announcePrefix, component);
 	}
 
 	/**
@@ -201,6 +262,16 @@ public class Messenger {
 	}
 
 	/**
+	 * Send a message prepended with the {@link #getInfoPrefix()}
+	 *
+	 * @param player
+	 * @param component
+	 */
+	public static void info(final CommandSender player, final Component component) {
+		tell(player, infoPrefix, component);
+	}
+
+	/**
 	 * Send a message prepended with the {@link #getSuccessPrefix()}
 	 *
 	 * @param player
@@ -208,6 +279,16 @@ public class Messenger {
 	 */
 	public static void success(final CommandSender player, final String message) {
 		tell(player, successPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #getSuccessPrefix()}
+	 *
+	 * @param player
+	 * @param component
+	 */
+	public static void success(final CommandSender player, final Component component) {
+		tell(player, successPrefix, component);
 	}
 
 	/**
@@ -221,14 +302,13 @@ public class Messenger {
 	}
 
 	/**
-	 * Send messages prepended with the {@link #getErrorPrefix()}
+	 * Send a message prepended with the {@link #getWarnPrefix()}
 	 *
 	 * @param player
-	 * @param messages
+	 * @param component
 	 */
-	public static void error(final CommandSender player, final String... messages) {
-		for (final String message : messages)
-			error(player, message);
+	public static void warn(final CommandSender player, final Component component) {
+		tell(player, warnPrefix, component);
 	}
 
 	/**
@@ -242,6 +322,16 @@ public class Messenger {
 	}
 
 	/**
+	 * Send a message prepended with the {@link #getErrorPrefix()}
+	 *
+	 * @param player
+	 * @param component
+	 */
+	public static void error(final CommandSender player, final Component component) {
+		tell(player, errorPrefix, component);
+	}
+
+	/**
 	 * Send a message prepended with the {@link #getQuestionPrefix()}
 	 *
 	 * @param player
@@ -249,6 +339,16 @@ public class Messenger {
 	 */
 	public static void question(final CommandSender player, final String message) {
 		tell(player, questionPrefix, message);
+	}
+
+	/**
+	 * Send a message prepended with the {@link #getQuestionPrefix()}
+	 *
+	 * @param player
+	 * @param component
+	 */
+	public static void question(final CommandSender player, final Component component) {
+		tell(player, questionPrefix, component);
 	}
 
 	/**
@@ -261,30 +361,56 @@ public class Messenger {
 		tell(player, announcePrefix, message);
 	}
 
+	/**
+	 * Send a message prepended with the {@link #getAnnouncePrefix()}
+	 *
+	 * @param player
+	 * @param component
+	 */
+	public static void announce(final CommandSender player, final Component component) {
+		tell(player, announcePrefix, component);
+	}
+
 	/*
 	 * Internal method to perform the sending
 	 */
-	private static void tell(final CommandSender player, final String prefix, String message) {
+	private static void tell(final CommandSender sender, final String prefix, String message) {
 
 		// Support localization being none or empty
-		if (message.isEmpty() || "none".equals(message))
+		if (message == null || message.isEmpty() || "none".equals(message))
 			return;
 
-		final String colorless = Common.stripColors(message);
-		boolean noPrefix = ChatUtil.isInteractive(colorless);
+		final String oldPrefix = Common.getTellPrefix();
 
-		// Special case: Send the prefix for actionbar
-		if (colorless.startsWith("<actionbar>"))
-			message = message.replace("<actionbar>", "<actionbar>" + prefix);
+		try {
+			Common.setTellPrefix(prefix);
 
-		if (colorless.startsWith("@noprefix")) {
-			message = message.replace("@noprefix", "");
+			Common.tell(Remain.toAudience(sender), Common.colorizeLegacy(message));
 
-			noPrefix = true;
+		} finally {
+			Common.setTellPrefix(oldPrefix);
 		}
+	}
 
-		// Only insert prefix if the message is sent through the normal chat
-		Common.tellNoPrefix(player, (noPrefix ? "" : prefix) + message);
+	/*
+	 * Internal method to perform the sending
+	 */
+	private static void tell(final CommandSender sender, final String prefix, Component component) {
+
+		// Support localization being none or empty
+		if (component == null)
+			return;
+
+		final String oldPrefix = Common.getTellPrefix();
+
+		try {
+			Common.setTellPrefix(prefix);
+
+			Common.tell(Remain.toAudience(sender), component);
+
+		} finally {
+			Common.setTellPrefix(oldPrefix);
+		}
 	}
 
 	/**

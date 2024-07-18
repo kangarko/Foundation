@@ -503,7 +503,7 @@ public abstract class SimpleCommandGroup {
 						final SimpleComponent line = SimpleComponent.of(plainMessage);
 
 						if (!desc.isEmpty() && atLeast17) {
-							final String command = Common.stripColors(plainMessage).substring(1);
+							final String command = Common.removeColors(plainMessage).substring(1);
 							final List<String> hover = new ArrayList<>();
 
 							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_DESCRIPTION.replace("{description}", desc));

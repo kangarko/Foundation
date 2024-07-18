@@ -34,10 +34,10 @@ class NMSDragon_v1_9 extends NMSDragon {
 
 	private BossBar getBar() {
 		if (this.barColor != null)
-			this.bar.setColor(BarColor.valueOf(this.barColor.toString()));
+			this.bar.setColor(BarColor.valueOf(this.barColor.toString().toUpperCase()));
 
-		if (this.barStyle != null)
-			this.bar.setStyle(BarStyle.valueOf(this.barStyle.toString()));
+		if (this.barOverlay != null)
+			this.bar.setStyle(BarStyle.valueOf(this.barOverlay.toString().toUpperCase().replace("NOTCHED", "SEGMENTED")));
 
 		return this.bar;
 	}

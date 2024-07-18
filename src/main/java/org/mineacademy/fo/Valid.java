@@ -1,6 +1,5 @@
 package org.mineacademy.fo;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -490,6 +489,18 @@ public final class Valid {
 
 	/**
 	 * Compare two lists. Two lists are considered equal if they are same length and all values are the same.
+	 * Strings are stripped of colors before comparation.
+	 *
+	 * @param first
+	 * @param second
+	 * @return
+	 */
+	public static boolean listEquals(final String[] first, final String[] second) {
+		return listEquals(Common.toList(first), Common.toList(second));
+	}
+
+	/**
+	 * Compare two lists. Two lists are considered equal if they are same length and all values are the same.
 	 * Exception: Strings are stripped of colors before comparation.
 	 *
 	 * @param first first list to compare
@@ -520,49 +531,8 @@ public final class Valid {
 				return false;
 
 			if (f != null && !f.equals(s))
-				if (!Common.stripColors(f.toString()).equalsIgnoreCase(Common.stripColors(s.toString())))
+				if (!Common.removeColors(f.toString()).equalsIgnoreCase(Common.removeColors(s.toString())))
 					return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Return true if two strings are equal regardless of their colors
-	 *
-	 * @param first
-	 * @param second
-	 * @return
-	 */
-	public static boolean colorlessEquals(final String first, final String second) {
-		return Common.stripColors(first).equalsIgnoreCase(Common.stripColors(second));
-	}
-
-	/**
-	 * Return true if two string lists are equal regardless of their colors
-	 *
-	 * @param first
-	 * @param second
-	 * @return
-	 */
-	public static boolean colorlessEquals(final List<String> first, final List<String> second) {
-		return colorlessEquals(Common.toArray(first), Common.toArray(second));
-	}
-
-	/**
-	 * Return true if two string arrays are equal regardless of their colors
-	 *
-	 * @param firstArray
-	 * @param secondArray
-	 * @return
-	 */
-	public static boolean colorlessEquals(final String[] firstArray, final String[] secondArray) {
-		for (int i = 0; i < firstArray.length; i++) {
-			final String first = Common.stripColors(firstArray[i]);
-			final String second = i < secondArray.length ? Common.stripColors(secondArray[i]) : "";
-
-			if (!first.equalsIgnoreCase(second))
-				return false;
 		}
 
 		return true;
@@ -574,7 +544,7 @@ public final class Valid {
 	 * @param values
 	 * @return
 	 */
-	public static boolean valuesEqual(final Collection<String> values) {
+	/*public static boolean valuesEqual(final Collection<String> values) {
 		final List<String> copy = new ArrayList<>(values);
 		String lastValue = null;
 
@@ -589,7 +559,7 @@ public final class Valid {
 		}
 
 		return true;
-	}
+	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Matching in lists
@@ -653,14 +623,14 @@ public final class Valid {
 	 *
 	 * A regular expression is compiled from that list element.
 	 *
-	 * @param element
-	 * @param list
+	 * @param message
+	 * @param patterns
 	 * @return
 	 */
-	public static boolean isInListRegex(final String element, final Iterable<String> list) {
+	public static boolean isInListRegex(final String message, final Iterable<String> patterns) {
 		try {
-			for (final String regex : list)
-				if (Common.regExMatch(regex, element))
+			for (final String pattern : patterns)
+				if (Common.compilePattern(pattern).matcher(message).find())
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)
@@ -674,14 +644,14 @@ public final class Valid {
 	 *
 	 * A regular expression is compiled from that list element.
 	 *
-	 * @param element
-	 * @param list
+	 * @param message
+	 * @param patterns
 	 * @return
 	 */
-	public static boolean isInListRegexFast(final String element, final Iterable<Pattern> list) {
+	public static boolean isInListRegexFast(final String message, final Iterable<Pattern> patterns) {
 		try {
-			for (final Pattern regex : list)
-				if (Common.regExMatch(regex, element))
+			for (final Pattern pattern : patterns)
+				if (pattern.matcher(message).find())
 					return true;
 
 		} catch (final ClassCastException ex) { // for example when YAML translates "yes" to "true" to boolean (!) (#wontfix)

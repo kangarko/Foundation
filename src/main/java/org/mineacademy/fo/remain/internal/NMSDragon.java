@@ -1,12 +1,11 @@
 package org.mineacademy.fo.remain.internal;
 
 import org.bukkit.Location;
-import org.mineacademy.fo.remain.CompBarColor;
-import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.bossbar.BossBar;
 
 /**
  * Represents the fake dragon entity
@@ -32,8 +31,8 @@ abstract class NMSDragon {
 	private String name;
 	private Object world;
 
-	protected CompBarColor barColor;
-	protected CompBarStyle barStyle;
+	protected BossBar.Color barColor;
+	protected BossBar.Overlay barOverlay;
 
 	NMSDragon(String name, Location loc, int percent) {
 		this.name = name;

@@ -281,7 +281,7 @@ public final class FileUtil {
 	 * @param message line, is split by \n
 	 */
 	public static void writeFormatted(String to, String prefix, String message) {
-		message = Common.stripColors(message).trim();
+		message = Common.removeColors(message);
 
 		if (!message.equalsIgnoreCase("none") && !message.isEmpty())
 			for (final String line : message.split("\n"))

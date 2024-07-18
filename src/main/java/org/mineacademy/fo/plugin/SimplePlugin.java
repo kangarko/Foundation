@@ -1035,7 +1035,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
+	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in the Common class?
 	 * <p>
 	 * May impose a slight performance penalty but increases catches.
 	 *
@@ -1046,7 +1046,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	}
 
 	/**
-	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in {@link Common#compilePattern(String)}?
+	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in the Common class?
 	 * <p>
 	 * May impose a slight performance penalty but useful for non-English servers.
 	 *

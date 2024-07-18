@@ -148,7 +148,7 @@ public final class BoxedMessage {
 	}
 
 	private void send(String message) {
-		if (Common.stripColors(message).startsWith("<center>"))
+		if (message.startsWith("<center>"))
 			message = ChatUtil.center(message.replaceFirst("\\<center\\>(\\s|)", ""));
 
 		if (this.recipients == null)

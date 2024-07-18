@@ -44,7 +44,7 @@ public final class Debugger {
 	public static void debug(String section, String... messages) {
 		if (isDebugged(section))
 			for (final String message : messages)
-				print("[" + section + "] " + message);
+				log("[" + section + "] " + message);
 	}
 
 	/**
@@ -235,13 +235,13 @@ public final class Debugger {
 	 */
 	public static void printValues(Object[] values) {
 		if (values != null) {
-			print(Common.consoleLine());
-			print("Enumeration of " + Common.plural(values.length, values.getClass().getSimpleName().toLowerCase().replace("[]", "")));
+			log(Common.consoleLine());
+			log("Enumeration of " + Common.plural(values.length, values.getClass().getSimpleName().toLowerCase().replace("[]", "")));
 
 			for (int i = 0; i < values.length; i++)
-				print("&8[" + i + "] &7" + values[i]);
+				log("&8[" + i + "] &7" + values[i]);
 		} else
-			print("Value are null");
+			log("Value are null");
 	}
 
 	/**
@@ -252,18 +252,18 @@ public final class Debugger {
 	public static void printStackTrace(String debugLogMessage) {
 		final StackTraceElement[] trace = new Exception().getStackTrace();
 
-		print("!----------------------------------------------------------------------------------------------------------!");
-		print(debugLogMessage);
-		print("!----------------------------------------------------------------------------------------------------------!");
+		log("!----------------------------------------------------------------------------------------------------------!");
+		log(debugLogMessage);
+		log("!----------------------------------------------------------------------------------------------------------!");
 
 		for (int i = 1; i < trace.length; i++) {
 			final String line = trace[i].toString();
 
 			if (canPrint(line))
-				print("\tat " + line);
+				log("\tat " + line);
 		}
 
-		print("--------------------------------------------------------------------------------------------------------end-");
+		log("--------------------------------------------------------------------------------------------------------end-");
 	}
 
 	/**
@@ -288,9 +288,9 @@ public final class Debugger {
 
 		if (throwable instanceof FoException && !causes.isEmpty())
 			// Do not print parent exception if we are only wrapping it, saves console spam
-			print(throwable.getMessage());
+			log(throwable.getMessage());
 		else {
-			print(throwable.toString());
+			log(throwable.toString());
 
 			printStackTraceElements(throwable);
 		}
@@ -298,7 +298,7 @@ public final class Debugger {
 		if (!causes.isEmpty()) {
 			final Throwable lastCause = causes.get(causes.size() - 1);
 
-			print(lastCause.toString());
+			log(lastCause.toString());
 			printStackTraceElements(lastCause);
 		}
 	}
@@ -308,7 +308,7 @@ public final class Debugger {
 			final String line = element.toString();
 
 			if (canPrint(line))
-				print("\tat " + line);
+				log("\tat " + line);
 		}
 	}
 
@@ -331,11 +331,7 @@ public final class Debugger {
 				!message.contains("java.util.concurrent.ThreadPoolExecutor");
 	}
 
-	// Print a simple console message
-	private static void print(String message) {
-		if (Bukkit.getConsoleSender() != null)
-			Bukkit.getConsoleSender().sendMessage(Common.colorize(message));
-		else
-			System.out.println(Common.stripColors(message)); // our instance may or may not be available yet to log
+	private static void log(String message) {
+		System.out.println(message);
 	}
 }

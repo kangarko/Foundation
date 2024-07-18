@@ -16,7 +16,6 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.exception.RegexTimeoutException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.Remain;
 
@@ -272,15 +271,6 @@ public abstract class PacketListener {
 
 				try {
 					parsedText = this.onMessage(parsedText);
-
-				} catch (final RegexTimeoutException ex) {
-					// Such errors mean the parsed message took too long to process.
-					// Only show such errors every 30 minutes to prevent console spam
-					Common.logTimed(1800, "&cWarning: &fPacket message '" + Common.limit(this.jsonMessage, 500)
-							+ "' (possibly longer) took too long time to edit received message and was ignored."
-							+ " This message only shows once per 30 minutes when that happens. For most cases, this can be ignored.");
-
-					return;
 
 				} catch (final EventHandledException ex) {
 					event.setCancelled(true);

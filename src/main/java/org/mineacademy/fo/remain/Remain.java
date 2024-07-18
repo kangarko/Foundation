@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,6 +74,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.Common;
@@ -92,6 +95,8 @@ import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleRunnable;
+import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -107,6 +112,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -117,6 +123,8 @@ import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.title.Title;
+import net.kyori.adventure.title.Title.Times;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
@@ -225,6 +233,16 @@ public final class Remain {
 	private static Constructor<?> subtitleConstructor;
 	private static Constructor<?> resetTitleConstructor;
 	private static Constructor<?> chatMessageConstructor;
+
+	/**
+	 * Fields related to Folia
+	 */
+	private static Object foliaScheduler;
+	private static Method runAtFixedRate;
+	private static Method runDelayed;
+	private static Method execute;
+	private static Method cancel;
+	private static Method cancelTasks;
 
 	// ----------------------------------------------------------------------------------------------------
 	// Flags
@@ -472,6 +490,15 @@ public final class Remain {
 				if (!isThermos)
 					Common.error(ex, "Unable to setup chat internals");
 			}
+
+		if (isFolia) {
+			foliaScheduler = ReflectionUtil.invoke("getGlobalRegionScheduler", org.bukkit.Bukkit.getServer());
+			runAtFixedRate = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class);
+			execute = ReflectionUtil.getMethod(foliaScheduler.getClass(), "run", Plugin.class, Consumer.class);
+			runDelayed = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class);
+			cancelTasks = ReflectionUtil.getMethod(foliaScheduler.getClass(), "cancelTasks", Plugin.class);
+			cancel = ReflectionUtil.getMethod(ReflectionUtil.lookupClass("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), "cancel");
+		}
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -902,6 +929,16 @@ public final class Remain {
 	 */
 	public static String convertAdventureToPlain(Component component) {
 		return PlainTextComponentSerializer.plainText().serialize(component).trim();
+	}
+
+	/**
+	 * Serializes the component into plain text
+	 *
+	 * @param component
+	 * @return
+	 */
+	public static Object convertAdventureToIChatBase(Component component) {
+		return Remain.convertJsonToIChatBase(Remain.convertAdventureToJson(component));
 	}
 
 	/*
@@ -1870,23 +1907,28 @@ public final class Remain {
 		}
 	}
 
+	public static void resetTitle(final CommandSender sender) {
+		resetTitle(toAudience(sender));
+	}
+
 	/**
 	 * Resets the title that is being displayed to the player (1.8+)
 	 *
-	 * @param player the player
+	 * @param audience the player
 	 */
-	public static void resetTitle(final Player player) {
-		if (hasExtendedPlayerTitleAPI)
-			player.resetTitle();
+	public static void resetTitle(final Audience audience) {
+		if (MinecraftVersion.atLeast(V.v1_16))
+			audience.resetTitle();
 
-		else if (resetTitleConstructor != null) {
+		else if (hasExtendedPlayerTitleAPI)
+			audience.resetTitle();
+
+		else if (resetTitleConstructor != null && audience instanceof Player) {
 			try {
-				final Object packet = resetTitleConstructor.newInstance(enumTitleReset, null);
-
-				Remain.sendPacket(player, packet);
+				Remain.sendPacket((Player) audience, resetTitleConstructor.newInstance(enumTitleReset, null));
 
 			} catch (final ReflectiveOperationException ex) {
-				throw new ReflectionException("Error resetting title to: " + player.getName());
+				throw new ReflectionException("Error resetting title to: " + audience);
 			}
 		}
 	}
@@ -1933,48 +1975,53 @@ public final class Remain {
 		});
 	}
 
+	public static void sendActionBar(final CommandSender player, final String text) {
+		sendActionBar(toAudience(player), Remain.convertLegacyToAdventure(Common.colorize(text)));
+	}
+
 	/**
 	 * Displays message above player's health and hunger bar. (1.8+) Text will be
 	 * colorized.
 	 *
-	 * @param player the player
+	 * @param audience the player
 	 * @param text   the text
 	 */
-	public static void sendActionBar(final Player player, final String text) {
+	public static void sendActionBar(final Audience audience, Component text) {
+
 		if (MinecraftVersion.olderThan(V.v1_7)) {
-			Common.tell(player, text);
+			audience.sendMessage(text);
 
 			return;
 		}
 
 		if (MinecraftVersion.equals(V.v1_7)) {
-			if (chatMessageConstructor != null)
+			if (chatMessageConstructor != null && audience instanceof Player)
 				try {
-					final Object message = Remain.convertLegacyToIChatBase(Common.colorize(text));
+					final Object iChatBaseComponent = Remain.convertAdventureToIChatBase(text);
 					final Object packet;
 					final byte type = 2;
 
 					if (MinecraftVersion.atLeast(V.v1_12)) {
 						final Class<?> chatMessageTypeEnum = ReflectionUtil.getNMSClass("ChatMessageType", "net.minecraft.network.chat.ChatMessageType");
 
-						packet = chatMessageConstructor.newInstance(message, chatMessageTypeEnum.getMethod("a", byte.class).invoke(null, type));
+						packet = chatMessageConstructor.newInstance(iChatBaseComponent, chatMessageTypeEnum.getMethod("a", byte.class).invoke(null, type));
 
 					} else
-						packet = chatMessageConstructor.newInstance(message, type);
+						packet = chatMessageConstructor.newInstance(iChatBaseComponent, type);
 
-					Remain.sendPacket(player, packet);
+					Remain.sendPacket((Player) audience, packet);
 
 				} catch (final ReflectiveOperationException ex) {
-					Common.error(ex, "Failed to send action bar to " + player.getName() + ", message: " + text);
+					Common.error(ex, "Failed to send action bar to " + ((Player) audience).getName() + ", message: " + text);
 				}
 
 			else
-				Common.tell(player, text);
+				audience.sendMessage(text);
 
 			return;
 		}
 
-		toAudience(player).sendActionBar(convertLegacyToAdventure(text));
+		audience.sendActionBar(text);
 	}
 
 	/**
@@ -2021,49 +2068,77 @@ public final class Remain {
 	/**
 	 * Send boss bar as percent
 	 *
-	 * @param player
+	 * @param audience
 	 * @param message
-	 * @param percent
+	 * @param progress
 	 */
-	public static void sendBossbarPercent(final Player player, final String message, final float percent) {
-		sendBossbarPercent(player, message, percent, null, null);
+	public static void sendBossbarPercent(final Audience audience, final Component message, final float progress) {
+		sendBossbarPercent(audience, message, progress, null, null);
 	}
 
 	/**
 	 * Send boss bar as percent
 	 *
-	 * @param player
+	 * @param audience
 	 * @param message
-	 * @param percent
+	 * @param progress
 	 * @param color
-	 * @param style
+	 * @param overlay
 	 */
-	public static void sendBossbarPercent(final Player player, final String message, final float percent, final CompBarColor color, final CompBarStyle style) {
-		BossBarInternals.getInstance().setMessage(player, message, percent, color, style);
+	public static void sendBossbarPercent(final Audience audience, final Component message, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
+		if (MinecraftVersion.atLeast(V.v1_9)) {
+			final BossBar bar = BossBar.bossBar(message, progress, Common.getOrDefault(color, BossBar.Color.WHITE), Common.getOrDefault(overlay, BossBar.Overlay.PROGRESS));
+
+			audience.showBossBar(bar);
+
+		} else if (audience instanceof Player)
+			BossBarInternals.getInstance().setMessage((Player) audience, Remain.convertAdventureToLegacy(message), progress, color, overlay);
+		else
+			audience.sendMessage(message);
+	}
+
+	@Deprecated
+	public static void sendBossbarTimed(final Player player, final String legacyMessage, final int seconds, final float progress) {
+		sendBossbarTimed(toAudience(player), Common.colorizeLegacy(legacyMessage), seconds, progress);
 	}
 
 	/**
 	 * Send boss bar only for limited time
 	 *
-	 * @param player
+	 * @param audience
 	 * @param message
 	 * @param seconds
 	 */
-	public static void sendBossbarTimed(final Player player, final String message, final int seconds) {
-		sendBossbarTimed(player, message, seconds, null, null);
+	public static void sendBossbarTimed(final Audience audience, final Component message, final int seconds, final float progress) {
+		sendBossbarTimed(audience, message, seconds, progress, null, null);
+	}
+
+	@Deprecated
+	public static void sendBossbarTimed(final Player player, final String legacyMessage, final int seconds, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
+		sendBossbarTimed(toAudience(player), Common.colorizeLegacy(legacyMessage), seconds, progress, color, overlay);
 	}
 
 	/**
 	 * Send boss bar only for limited time
 	 *
-	 * @param player
+	 * @param audience
 	 * @param message
 	 * @param seconds
+	 * @param progress
 	 * @param color
-	 * @param style
+	 * @param overlay
 	 */
-	public static void sendBossbarTimed(final Player player, final String message, final int seconds, final CompBarColor color, final CompBarStyle style) {
-		BossBarInternals.getInstance().setMessage(player, message, seconds, color, style);
+	public static void sendBossbarTimed(final Audience audience, final Component message, final int seconds, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
+		if (MinecraftVersion.atLeast(V.v1_9)) {
+			final BossBar bar = BossBar.bossBar(message, progress, Common.getOrDefault(color, BossBar.Color.WHITE), Common.getOrDefault(overlay, BossBar.Overlay.PROGRESS));
+
+			audience.showBossBar(bar);
+			Common.runLater(seconds * 20, () -> audience.hideBossBar(bar));
+
+		} else if (audience instanceof Player)
+			BossBarInternals.getInstance().setTimedMessage((Player) audience, Remain.convertAdventureToLegacy(message), seconds, progress, color, overlay);
+		else
+			audience.sendMessage(message);
 	}
 
 	/*
@@ -2160,56 +2235,57 @@ public final class Remain {
 		}
 	}
 
+	public static void sendTitle(final CommandSender sender, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
+		sendTitle(toAudience(sender), fadeIn, stay, fadeOut, Remain.convertLegacyToAdventure(title), Remain.convertLegacyToAdventure(subtitle));
+	}
+
 	/**
 	 * Sends a title to the player (1.8+) Texts will be colorized.
 	 *
-	 * @param player   the player
+	 * @param audience   the player
 	 * @param fadeIn   how long to fade in the title (in ticks)
 	 * @param stay     how long to make the title stay (in ticks)
 	 * @param fadeOut  how long to fade out (in ticks)
 	 * @param title    the title, will be colorized
 	 * @param subtitle the subtitle, will be colorized
 	 */
-	public static void sendTitle(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
-		if (MinecraftVersion.newerThan(V.v1_7)) {
-			if (hasExtendedPlayerTitleAPI)
-				player.sendTitle(Common.colorize(title), Common.colorize(subtitle), fadeIn, stay, fadeOut);
+	public static void sendTitle(final Audience audience, final int fadeIn, final int stay, final int fadeOut, final Component title, final Component subtitle) {
+		if (MinecraftVersion.atLeast(V.v1_16))
+			audience.showTitle(Title.title(title, subtitle, Times.times(Duration.ofMillis(fadeIn), Duration.ofMillis(stay), Duration.ofMillis(fadeOut))));
 
-			else if (titleConstructor != null)
-				try {
-					resetTitle(player);
+		else if (hasExtendedPlayerTitleAPI && audience instanceof Player)
+			((Player) audience).sendTitle(convertAdventureToLegacy(title), convertAdventureToLegacy(subtitle), fadeIn, stay, fadeOut);
 
-					if (titleTimesConstructor != null) {
-						final Object packet = titleTimesConstructor.newInstance(fadeIn, stay, fadeOut);
+		else if (MinecraftVersion.newerThan(V.v1_7) && titleConstructor != null && audience instanceof Player)
+			try {
+				resetTitle(audience);
 
-						Remain.sendPacket(player, packet);
-					}
+				if (titleTimesConstructor != null) {
+					final Object packet = titleTimesConstructor.newInstance(fadeIn, stay, fadeOut);
 
-					if (title != null) {
-						final Object chatTitle = Remain.convertLegacyToIChatBase(Common.colorize(title));
-						final Object packet = titleConstructor.newInstance(enumTitleTitle, chatTitle);
-
-						Remain.sendPacket(player, packet);
-					}
-
-					if (subtitle != null) {
-						final Object chatSubtitle = Remain.convertLegacyToIChatBase(Common.colorize(subtitle));
-						final Object packet = subtitleConstructor.newInstance(enumTitleSubtitle, chatSubtitle);
-
-						Remain.sendPacket(player, packet);
-					}
-				} catch (final ReflectiveOperationException ex) {
-					throw new ReflectionException(ex, "Error sending title to: " + player.getName() + ", title: " + title + ", subtitle: " + subtitle);
+					Remain.sendPacket((Player) audience, packet);
 				}
 
-			else {
-				Common.tell(player, title);
-				Common.tell(player, subtitle);
+				if (title != null) {
+					final Object chatTitle = Remain.convertAdventureToIChatBase(title);
+					final Object packet = titleConstructor.newInstance(enumTitleTitle, chatTitle);
+
+					Remain.sendPacket((Player) audience, packet);
+				}
+
+				if (subtitle != null) {
+					final Object chatSubtitle = Remain.convertAdventureToIChatBase(subtitle);
+					final Object packet = subtitleConstructor.newInstance(enumTitleSubtitle, chatSubtitle);
+
+					Remain.sendPacket((Player) audience, packet);
+				}
+			} catch (final ReflectiveOperationException ex) {
+				throw new ReflectionException(ex, "Error sending title to: " + audience + ", title: " + title + ", subtitle: " + subtitle);
 			}
 
-		} else {
-			Common.tell(player, title);
-			Common.tell(player, subtitle);
+		else {
+			audience.sendMessage(title);
+			audience.sendMessage(subtitle);
 		}
 	}
 
@@ -3271,6 +3347,194 @@ public final class Remain {
 				Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
 			}
 		}
+	}
+
+	/**
+	 * Attempts to cancel all tasks
+	 */
+	public static void cancelTasks() {
+		if (Remain.isFolia())
+			ReflectionUtil.invoke(cancelTasks, foliaScheduler, SimplePlugin.getInstance());
+		else
+			Bukkit.getScheduler().cancelTasks(SimplePlugin.getInstance());
+	}
+
+	/**
+	 * Runs the task even if the plugin is disabled for some reason.
+	 *
+	 * @param delayTicks
+	 * @param runnable
+	 * @return the task or null
+	 */
+	public static SimpleTask runLater(final int delayTicks, Runnable runnable) {
+		if (runIfDisabled(runnable))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle;
+
+			if (delayTicks == 0)
+				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
+			else
+				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
+
+		try {
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskLater(SimplePlugin.getInstance(), delayTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), runnable, delayTicks);
+
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
+
+			if (runnable instanceof SimpleRunnable)
+				((SimpleRunnable) runnable).setupTask(simpleTask);
+
+			return simpleTask;
+
+		} catch (final NoSuchMethodError err) {
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
+		}
+	}
+
+	/**
+	 * Runs the task async even if the plugin is disabled for some reason.
+	 *
+	 * @param delayTicks
+	 * @param runnable
+	 * @return the task or null
+	 */
+	public static SimpleTask runLaterAsync(final int delayTicks, Runnable runnable) {
+		if (runIfDisabled(runnable))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle;
+
+			if (delayTicks == 0)
+				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
+			else
+				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
+
+		try {
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskLaterAsynchronously(SimplePlugin.getInstance(), delayTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks);
+
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
+
+			if (runnable instanceof SimpleRunnable)
+				((SimpleRunnable) runnable).setupTask(simpleTask);
+
+			return simpleTask;
+
+		} catch (final NoSuchMethodError err) {
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
+		}
+	}
+
+	/**
+	 * Runs the task timer even if the plugin is disabled.
+	 *
+	 * @param delayTicks  the delay before first run
+	 * @param repeatTicks the delay between each run
+	 * @param runnable        the task
+	 * @return the bukkit task or null if error
+	 */
+	public static SimpleTask runTimer(final int delayTicks, final int repeatTicks, Runnable runnable) {
+		if (runIfDisabled(runnable))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
+
+		try {
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
+
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
+
+			if (runnable instanceof SimpleRunnable)
+				((SimpleRunnable) runnable).setupTask(simpleTask);
+
+			return simpleTask;
+
+		} catch (final NoSuchMethodError err) {
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
+		}
+	}
+
+	/**
+	 * Runs the task timer async even if the plugin is disabled.
+	 *
+	 * @param delayTicks
+	 * @param repeatTicks
+	 * @param runnable
+	 * @return
+	 */
+	public static SimpleTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable runnable) {
+		if (runIfDisabled(runnable))
+			return null;
+
+		if (Remain.isFolia()) {
+			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
+
+			return SimpleTask.fromFolia(cancel, taskHandle);
+		}
+
+		try {
+			BukkitTask task;
+
+			if (runnable instanceof BukkitRunnable)
+				task = ((BukkitRunnable) runnable).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks);
+
+			else
+				task = Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
+
+			final SimpleTask simplTask = SimpleTask.fromBukkit(task);
+
+			if (runnable instanceof SimpleRunnable)
+				((SimpleRunnable) runnable).setupTask(simplTask);
+
+			return simplTask;
+
+		} catch (final NoSuchMethodError err) {
+			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
+		}
+	}
+
+	// Check our plugin instance if it's enabled
+	// In case it is disabled, just runs the task and returns true
+	// Otherwise we return false and the task will be run correctly in Bukkit scheduler
+	// This is fail-safe to critical save-on-exit operations in case our plugin is improperly reloaded (PlugMan) or malfunctions
+	private static boolean runIfDisabled(final Runnable run) {
+		if (!SimplePlugin.getInstance().isEnabled()) {
+			run.run();
+
+			return true;
+		}
+
+		return false;
 	}
 
 	// ----------------------------------------------------------------------------------------------------

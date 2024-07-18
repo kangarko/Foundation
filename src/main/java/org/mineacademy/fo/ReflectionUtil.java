@@ -37,6 +37,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import net.kyori.adventure.bossbar.BossBar;
 
 /**
  * Utility class for various reflection methods
@@ -715,15 +716,15 @@ public final class ReflectionUtil {
 		// having these values in their default config. This prevents
 		// malfunction on plugin's first load, in case it is loaded on an older MC version.
 		{
-			if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + ""))
+			if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + "")) {
 				return (E) ChatColor.getByChar(name.charAt(1));
 
-			if (enumType == org.bukkit.block.Biome.class)
+			} else if (enumType == org.bukkit.block.Biome.class) {
 				if (MinecraftVersion.atLeast(V.v1_13))
 					if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
 						name = "SNOWY_TAIGA";
 
-			if (enumType == EntityType.class) {
+			} else if (enumType == EntityType.class) {
 				if (MinecraftVersion.atLeast(V.v1_16))
 					if (rawName.equals("PIG_ZOMBIE"))
 						name = "ZOMBIFIED_PIGLIN";
@@ -747,9 +748,8 @@ public final class ReflectionUtil {
 						name = "ZOMBIE";
 					else if (rawName.equals("ZOMBIE_VILLAGER"))
 						name = "ZOMBIE";
-			}
 
-			if (enumType == DamageCause.class) {
+			} else if (enumType == DamageCause.class) {
 				if (MinecraftVersion.olderThan(V.v1_13))
 					if (rawName.equals("DRYOUT"))
 						name = "CUSTOM";
@@ -772,7 +772,9 @@ public final class ReflectionUtil {
 					} catch (final Throwable t) {
 						name = "ENTITY_ATTACK";
 					}
-			}
+
+			} else if (enumType == BossBar.Overlay.class)
+				name = name.toUpperCase().replace("SEGMENTED", "NOTCHED").replace("SOLID", "PROGRESS");
 		}
 
 		final String oldName = name;
@@ -1164,16 +1166,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 

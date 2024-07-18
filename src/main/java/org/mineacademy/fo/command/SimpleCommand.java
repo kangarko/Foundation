@@ -418,8 +418,8 @@ public abstract class SimpleCommand extends Command {
 			}
 
 		} catch (final CommandException ex) {
-			if (ex.getMessages() != null)
-				this.dynamicTellError(ex.getMessages());
+			if (ex.getComponent() != null)
+				this.dynamicTellError(ex.getComponent());
 
 		} catch (final Throwable t) {
 			this.dynamicTellError(SimpleLocalization.Commands.ERROR.replace("{error}", t.toString()));
@@ -446,6 +446,17 @@ public abstract class SimpleCommand extends Command {
 				this.tellError(message);
 		else
 			this.tell(messages);
+	}
+
+	/*
+	 * If messenger is on, we send the message prefixed with Messenger.getErrorPrefix()
+	 * otherwise we just send a normal message
+	 */
+	private void dynamicTellError(final Component component) {
+		if (Messenger.ENABLED)
+			this.tellError(component);
+		else
+			this.tell(component);
 	}
 
 	/**
@@ -575,6 +586,18 @@ public abstract class SimpleCommand extends Command {
 	protected final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
 		if (!value)
 			this.returnTell((Messenger.ENABLED ? "" : "&c") + falseMessage);
+	}
+
+	/**
+	 * Checks if the given boolean is true
+	 *
+	 * @param value
+	 * @param falseMessage
+	 * @throws CommandException
+	 */
+	protected final void checkBoolean(final boolean value, final Component falseMessage) throws CommandException {
+		if (!value)
+			this.returnTell(Remain.convertLegacyToAdventure(Messenger.ENABLED ? "" : "&c").append(falseMessage));
 	}
 
 	/**
@@ -1079,6 +1102,31 @@ public abstract class SimpleCommand extends Command {
 	}
 
 	/**
+	 * Sends a multiline message to the player, avoiding prefix if 3 lines or more
+	 *
+	 * @param component
+	 */
+	protected final void tell(Component component) {
+
+		if (component == null)
+			return;
+
+		final String oldTellPrefix = Common.getTellPrefix();
+
+		if (this.tellPrefix != null)
+			Common.setTellPrefix(this.tellPrefix);
+
+		try {
+			component = this.replacePlaceholders(component);
+
+			Common.tell(Remain.toAudience(this.sender), component);
+
+		} finally {
+			Common.setTellPrefix(oldTellPrefix);
+		}
+	}
+
+	/**
 	 * Sends a no prefix message to the player
 	 *
 	 * @param message
@@ -1088,6 +1136,19 @@ public abstract class SimpleCommand extends Command {
 			message = this.replacePlaceholders(message);
 
 			Messenger.success(this.sender, message);
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
+	 * @param component
+	 */
+	protected final void tellSuccess(Component component) {
+		if (component != null) {
+			component = this.replacePlaceholders(component);
+
+			Messenger.success(this.sender, component);
 		}
 	}
 
@@ -1133,6 +1194,19 @@ public abstract class SimpleCommand extends Command {
 	/**
 	 * Sends a no prefix message to the player
 	 *
+	 * @param component
+	 */
+	protected final void tellError(Component component) {
+		if (component != null) {
+			component = this.replacePlaceholders(component);
+
+			Messenger.error(this.sender, component);
+		}
+	}
+
+	/**
+	 * Sends a no prefix message to the player
+	 *
 	 * @param message
 	 */
 	protected final void tellQuestion(String message) {
@@ -1161,6 +1235,16 @@ public abstract class SimpleCommand extends Command {
 	 */
 	protected final void returnTell(final Collection<String> messages) throws CommandException {
 		this.returnTell(messages.toArray(new String[messages.size()]));
+	}
+
+	/**
+	 * Sends a message to the player and throws a message error, preventing further execution
+	 *
+	 * @param component
+	 * @throws CommandException
+	 */
+	protected final void returnTell(final Component component) throws CommandException {
+		throw new CommandException(this.replacePlaceholders(component));
 	}
 
 	/**
@@ -1735,12 +1819,11 @@ public abstract class SimpleCommand extends Command {
 			runnable.run();
 
 		} catch (final CommandException ex) {
-			if (ex.getMessages() != null)
-				for (final String message : ex.getMessages())
-					if (Messenger.ENABLED)
-						Messenger.error(this.sender, message);
-					else
-						Common.tell(this.sender, message);
+			if (ex.getComponent() != null)
+				if (Messenger.ENABLED)
+					Messenger.error(this.sender, ex.getComponent());
+				else
+					Common.tell(Remain.toAudience(this.sender), ex.getComponent());
 
 		} catch (final Throwable t) {
 			final String errorMessage = SimpleLocalization.Commands.ERROR.replace("{error}", t.toString());

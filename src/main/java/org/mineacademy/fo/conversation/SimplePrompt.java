@@ -81,11 +81,11 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	@Override
 	public final String getPromptText(final ConversationContext context) {
 		String prompt = this.getPrompt(context);
-		final String promptColorless = Common.stripColors(prompt);
+		final String promptColorless = Common.removeColors(prompt);
 
 		if (Messenger.ENABLED
-				&& (this.getCustomPrefix() == null || !promptColorless.contains(Common.stripColors(this.getCustomPrefix())))
-				&& !promptColorless.contains(Common.stripColors(Messenger.getSuccessPrefix())))
+				&& (this.getCustomPrefix() == null || !promptColorless.contains(Common.removeColors(this.getCustomPrefix())))
+				&& !promptColorless.contains(Common.removeColors(Messenger.getSuccessPrefix())))
 			prompt = Messenger.getQuestionPrefix() + prompt;
 
 		return Variables.replace(prompt, this.getPlayer(context));
@@ -225,8 +225,8 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 				final String failPrompt = this.getFailedValidationText(context, input);
 
 				if (failPrompt != null) {
-					final String failPromptColorless = Common.stripColors(failPrompt);
-					final String prefixColorless = Common.stripColors(Messenger.getErrorPrefix());
+					final String failPromptColorless = Common.removeColors(failPrompt);
+					final String prefixColorless = Common.removeColors(Messenger.getErrorPrefix());
 
 					this.tellLaterNoPrefix(0, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPromptColorless.contains(prefixColorless) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
 				}

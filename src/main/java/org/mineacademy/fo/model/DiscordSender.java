@@ -123,7 +123,7 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public void sendMessage(String message) {
-		final String finalMessage = Common.stripColors(message);
+		final String finalMessage = Common.removeColors(message);
 
 		Common.runAsync(() -> {
 			final Message sentMessage = this.channel.sendMessage(finalMessage).complete();

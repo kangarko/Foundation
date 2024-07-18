@@ -253,9 +253,7 @@ public final class Variables {
 			final String variable = result.group();
 			final String value = replaceOneVariableNew(variable, sender, replacements);
 
-			System.out.println("Component replacing variable '" + variable + "'");
-
-			return Remain.convertLegacyToAdventure(value); // TODO add minimessage support
+			return value == null ? Component.empty() : Remain.convertLegacyToAdventure(value); // TODO add minimessage support
 		}));
 	}
 
@@ -464,7 +462,7 @@ public final class Variables {
 			String value = lookupVariable0(player, sender, variable);
 
 			if (value != null) {
-				final boolean emptyColorless = Common.stripColors(value).isEmpty();
+				final boolean emptyColorless = Common.removeColors(value).isEmpty();
 				value = value.isEmpty() ? "" : (frontSpace && !emptyColorless ? " " : "") + Common.colorize(value) + (backSpace && !emptyColorless ? " " : "");
 
 				message = message.replace(matcher.group(), value);

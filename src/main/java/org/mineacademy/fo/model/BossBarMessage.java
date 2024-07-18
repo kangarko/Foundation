@@ -1,13 +1,16 @@
 package org.mineacademy.fo.model;
 
-import org.bukkit.entity.Player;
+import java.util.function.Function;
+
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.remain.CompBarColor;
-import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 
 /**
  * Represents a simple boss bar message
@@ -18,12 +21,12 @@ public final class BossBarMessage implements ConfigSerializable {
 	/**
 	 * The bar color
 	 */
-	private final CompBarColor color;
+	private final BossBar.Color color;
 
 	/**
 	 * The bar style
 	 */
-	private final CompBarStyle style;
+	private final BossBar.Overlay overlay;
 
 	/**
 	 * Seconds to show this bar
@@ -31,19 +34,33 @@ public final class BossBarMessage implements ConfigSerializable {
 	private final int seconds;
 
 	/**
+	 * The percentage of this bar
+	 */
+	private final float progress;
+
+	/**
 	 * The message to show
 	 */
 	@Getter
-	private final String message;
+	private final Component message;
 
 	/**
 	 * Displays this boss bar to the given player
 	 *
-	 * @param player
-	 * @param message replace variables here
+	 * @param audience
 	 */
-	public void displayTo(Player player, String message) {
-		Remain.sendBossbarTimed(player, message, this.seconds, this.color, this.style);
+	public void displayTo(Audience audience) {
+		this.displayTo(audience, Function.identity());
+	}
+
+	/**
+	 * Displays this boss bar to the given player
+	 *
+	 * @param audience
+	 * @param editBeforeDisplay
+	 */
+	public void displayTo(Audience audience, Function<Component, Component> editBeforeDisplay) {
+		Remain.sendBossbarTimed(audience, editBeforeDisplay.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**
@@ -51,24 +68,25 @@ public final class BossBarMessage implements ConfigSerializable {
 	 */
 	@Override
 	public String toString() {
-		return this.color + " " + this.style + " " + this.seconds + " " + this.message;
+		return this.color + " " + this.overlay + " " + this.seconds + " " + this.message;
 	}
 
 	@Override
 	public SerializedMap serialize() {
 		return SerializedMap.ofArray(
 				"Color", this.color,
-				"Style", this.style,
+				"Style", this.overlay,
 				"Seconds", this.seconds,
 				"Message", this.message);
 	}
 
 	public static BossBarMessage deserialize(SerializedMap map) {
-		CompBarColor color = CompBarColor.valueOf(map.getString("Color"));
-		CompBarStyle style = CompBarStyle.valueOf(map.getString("Style"));
-		int seconds = map.getInteger("Seconds");
-		String message = map.getString("Message");
+		final BossBar.Color color = map.get("Color", BossBar.Color.class);
+		final BossBar.Overlay overlay = ReflectionUtil.lookupEnum(BossBar.Overlay.class, map.getString("Style"));
+		final int seconds = map.getInteger("Seconds");
+		final float progress = map.getFloat("Progress", 1F);
+		final Component message = map.get("Message", Component.class);
 
-		return new BossBarMessage(color, style, seconds, message);
+		return new BossBarMessage(color, overlay, seconds, progress, message);
 	}
 }

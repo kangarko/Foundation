@@ -23,11 +23,10 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.CompBarColor;
-import org.mineacademy.fo.remain.CompBarStyle;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
+import net.kyori.adventure.bossbar.BossBar;
 
 /**
  * The classes handling Boss Bar cross-server compatibility are based off of the
@@ -182,16 +181,16 @@ public final class BossBarInternals implements Listener {
 	 *                Due to limitations in Minecraft this message cannot be longer
 	 *                than 64 characters.<br>
 	 *                It will be cut to that size automatically.
-	 * @param percent The percentage of the health bar filled.<br>
+	 * @param progress The percentage of the health bar filled.<br>
 	 *                This value must be between 0F (inclusive) and 100F
 	 *                (inclusive).
 	 * @param color
-	 * @param style
+	 * @param overlay
 	 * @throws IllegalArgumentException If the percentage is not within valid
 	 *                                  bounds.
 	 */
-	public void setMessage(Player player, String message, float percent, CompBarColor color, CompBarStyle style) {
-		Valid.checkBoolean(0F <= percent && percent <= 100F, "Percent must be between 0F and 100F, but was: " + percent);
+	public void setMessage(Player player, String message, float progress, BossBar.Color color, BossBar.Overlay overlay) {
+		Valid.checkBoolean(0F <= progress && progress <= 1.0F, "Percent must be between 0F and 1.0F, but was: " + progress);
 
 		if (this.entityClass == null)
 			return;
@@ -204,13 +203,13 @@ public final class BossBarInternals implements Listener {
 		final NMSDragon dragon = this.getDragon(player, message);
 
 		dragon.setName(cleanMessage(message));
-		dragon.setHealthF(percent / 100f * dragon.getMaxHealth());
+		dragon.setHealthF(progress * dragon.getMaxHealth());
 
 		if (color != null)
 			dragon.barColor = color;
 
-		if (style != null)
-			dragon.barStyle = style;
+		if (overlay != null)
+			dragon.barOverlay = overlay;
 
 		this.cancelTimer(player);
 
@@ -234,10 +233,11 @@ public final class BossBarInternals implements Listener {
 	 * @param seconds The amount of seconds displayed by the timer.<br>
 	 *                Supports values above 1 (inclusive).
 	 * @param color
-	 * @param style
+	 * @param overlay
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
-	public void setMessage(final Player player, String message, final int seconds, final CompBarColor color, final CompBarStyle style) {
+	public void setTimedMessage(final Player player, String message, final int seconds, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
+		Valid.checkBoolean(0F <= progress && progress <= 1.0F, "Progress must be between 0F and 1.0F, but was: " + progress);
 		Valid.checkBoolean(seconds > 0, "Seconds must be > 1 ");
 
 		if (this.entityClass == null)
@@ -251,12 +251,12 @@ public final class BossBarInternals implements Listener {
 		final NMSDragon dragon = this.getDragon(player, message);
 
 		dragon.setName(cleanMessage(message));
-		dragon.setHealthF(dragon.getMaxHealth());
+		dragon.setHealthF(progress * dragon.getMaxHealth());
 
 		if (color != null)
 			dragon.barColor = color;
-		if (style != null)
-			dragon.barStyle = style;
+		if (overlay != null)
+			dragon.barOverlay = overlay;
 
 		final float dragonHealthMinus = dragon.getMaxHealth() / seconds;
 

@@ -111,7 +111,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @return
 	 */
 	public static ColoredTextSlider from(String text) {
-		Valid.checkBoolean(!Common.hasColors(text), "Text in a slider may not contain colors: " + text + ", instead, use primaryColor() and secondaryColor()");
+		Valid.checkBoolean(!Common.hasColorTags(text), "Text in a slider may not contain colors: " + text + ", instead, use primaryColor() and secondaryColor()");
 
 		return new ColoredTextSlider(text);
 	}

@@ -236,7 +236,7 @@ public final class JavaScriptExecutor {
 				final Object result = engine.eval(javascript);
 
 				if (result instanceof String) {
-					String resultString = Common.stripColors((String) result).trim().toLowerCase();
+					String resultString = ((String) result).trim().toLowerCase();
 
 					if (resultString.startsWith("\"") || resultString.startsWith("'"))
 						resultString = resultString.substring(1);

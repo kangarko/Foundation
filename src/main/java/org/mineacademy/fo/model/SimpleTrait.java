@@ -7,6 +7,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.EventHandledException;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -110,11 +111,11 @@ public abstract class SimpleTrait extends Trait {
 			this.onClick(player, clickType);
 
 		} catch (final EventHandledException ex) {
-			if (ex.getMessages() != null)
+			if (ex.getComponent() != null)
 				if (Messenger.ENABLED)
-					Messenger.error(player, ex.getMessages());
+					Messenger.error(player, ex.getComponent());
 				else
-					Common.tell(player, ex.getMessages());
+					Common.tell(Remain.toAudience(player), ex.getComponent());
 
 			if (ex.isCancelled())
 				event.setCancelled(true);

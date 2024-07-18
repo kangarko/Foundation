@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -16,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.mineacademy.fo.Common;
@@ -128,7 +130,7 @@ public final class ToolsListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onHeltItem(final PlayerItemHeldEvent event) {
+	public void onHeldItem(final PlayerItemHeldEvent event) {
 		final Player player = event.getPlayer();
 
 		final Tool current = Tool.getTool(player.getInventory().getItem(event.getNewSlot()));
@@ -151,6 +153,19 @@ public final class ToolsListener implements Listener {
 		// Player lost focus
 		else if (previous != null)
 			previous.onHotbarDefocused(player);
+	}
+
+	/**
+	 * Handles item drop for tools
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onItemDrop(final PlayerDropItemEvent event) {
+		final Item item = event.getItemDrop();
+
+		// Automatically remove dropped tools
+		if (Tool.getTool(item.getItemStack()) != null)
+			item.remove();
 	}
 
 	// -------------------------------------------------------------------------------------------

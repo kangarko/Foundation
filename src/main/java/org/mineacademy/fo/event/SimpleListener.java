@@ -21,9 +21,12 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
  * A simply way of allowing plugin to change the event listening priority
@@ -103,15 +106,13 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 			this.execute(this.eventClass.cast(event));
 
 		} catch (final EventHandledException ex) {
-			final String[] messages = ex.getMessages();
 			final boolean cancelled = ex.isCancelled();
 
-			if (messages != null && this.player != null)
-				for (final String message : messages)
-					if (Messenger.ENABLED)
-						Messenger.error(this.player, message);
-					else
-						Common.tell(this.player, "&c" + message);
+			if (ex.getComponent() != null && this.player != null)
+				if (Messenger.ENABLED)
+					Messenger.error(this.player, ex.getComponent());
+				else
+					Common.tell(Remain.toAudience(this.player), Component.text("").color(NamedTextColor.RED).append(ex.getComponent()));
 
 			if (cancelled && event instanceof Cancellable)
 				((Cancellable) event).setCancelled(true);

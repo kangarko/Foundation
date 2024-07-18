@@ -16,7 +16,8 @@ import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.remain.nbt.NBTItem;
+import org.mineacademy.fo.remain.nbt.NBT;
+import org.mineacademy.fo.remain.nbt.ReadableNBT;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -153,24 +154,24 @@ public final class ItemUtil {
 
 		// ItemMeta
 		{
-			final ItemMeta f = first.getItemMeta();
-			final ItemMeta s = second.getItemMeta();
+			final ItemMeta firstMeta = first.getItemMeta();
+			final ItemMeta secondMeta = second.getItemMeta();
 
-			if ((f == null && s != null) || (s == null && f != null))
+			if ((firstMeta == null && secondMeta != null) || (secondMeta == null && firstMeta != null))
 				return false;
 
-			if (f != null && s != null) {
-				final String fName = Common.stripColors(f.getDisplayName());
-				final String sName = Common.stripColors(s.getDisplayName());
+			if (firstMeta != null && secondMeta != null) {
+				final String fName = firstMeta.getDisplayName();
+				final String sName = secondMeta.getDisplayName();
 
-				if ((fName != null && !fName.equals(sName)) || !listMatch(f.getLore(), s.getLore()))
+				if ((fName != null && !fName.equals(sName)) || !listMatchPlain(firstMeta.getLore(), secondMeta.getLore()))
 					return false;
 			}
 		}
 
 		if (MinecraftVersion.atLeast(V.v1_7)) {
-			final NBTItem firstNbt = new NBTItem(first);
-			final NBTItem secondNbt = new NBTItem(second);
+			final ReadableNBT firstNbt = NBT.readNbt(first);
+			final ReadableNBT secondNbt = NBT.readNbt(second);
 
 			return matchNbt(SimplePlugin.getNamed(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getNamed() + "_Item", firstNbt, secondNbt);
 		}
@@ -178,7 +179,7 @@ public final class ItemUtil {
 		return true;
 	}
 
-	private static boolean listMatch(List<String> first, List<String> second) {
+	private static boolean listMatchPlain(List<String> first, List<String> second) {
 
 		if (first == null)
 			first = new ArrayList<>();
@@ -196,7 +197,7 @@ public final class ItemUtil {
 			final String firstString = first.get(i);
 			final String secondString = second.get(i);
 
-			if (!Common.stripColors(firstString).equals(Common.stripColors(secondString)))
+			if (!firstString.equals(secondString))
 				return false;
 		}
 
@@ -204,7 +205,7 @@ public final class ItemUtil {
 	}
 
 	// Compares the NBT string tag of two items
-	private static boolean matchNbt(String key, NBTItem firstNbt, NBTItem secondNbt) {
+	private static boolean matchNbt(String key, ReadableNBT firstNbt, ReadableNBT secondNbt) {
 		final boolean firstHas = firstNbt.hasTag(key);
 		final boolean secondHas = secondNbt.hasTag(key);
 

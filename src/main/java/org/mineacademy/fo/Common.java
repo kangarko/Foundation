@@ -1,12 +1,9 @@
 package org.mineacademy.fo;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,10 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -48,18 +43,14 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.StrictMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.exception.RegexTimeoutException;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Replacer;
-import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.SimpleTask;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
@@ -74,6 +65,8 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions
@@ -81,31 +74,15 @@ import net.kyori.adventure.text.Component;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Common {
 
-	// ------------------------------------------------------------------------------------------------------------
-	// Constants
-	// ------------------------------------------------------------------------------------------------------------
+	/**
+	 * Stores legacy colors
+	 */
+	private static final Map<String, String> LEGACY_COLOR_MAP = new HashMap<>();
 
 	/**
-	 * Pattern used to match colors with & or {@link CompChatColor#COLOR_CHAR}
+	 * The pattern for matching MiniMessage tags
 	 */
-	private static final Pattern COLOR_AND_DECORATION_REGEX = Pattern.compile("(&|" + COLOR_CHAR + ")[0-9a-fk-orA-FK-OR]");
-
-	/**
-	 * Pattern used to match colors with #HEX code for MC 1.16+
-	 *
-	 * Matches {#CCCCCC} or &#CCCCCC or #CCCCCC
-	 */
-	public static final Pattern HEX_COLOR_REGEX = Pattern.compile("(?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|)");
-
-	/**
-	 * Pattern used to match colors with #HEX code for MC 1.16+
-	 */
-	private static final Pattern RGB_X_COLOR_REGEX = Pattern.compile("(" + COLOR_CHAR + "x)(" + COLOR_CHAR + "[0-9a-fA-F]){6}");
-
-	/**
-	 * High performance regular expression matcher for colors, used in {@link #stripColors(String)}
-	 */
-	private static final Pattern ALL_IN_ONE = Pattern.compile("((&|" + COLOR_CHAR + ")[0-9a-fk-or])|(" + COLOR_CHAR + "x(" + COLOR_CHAR + "[0-9a-fA-F]){6})|((?<!\\\\)(\\{|&|)#((?:[0-9a-fA-F]{3}){2})(\\}|))");
+	private static final Pattern MINIMESSAGE_PATTERN = Pattern.compile("<[!?#]?[a-z0-9_-]*>");
 
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
@@ -120,8 +97,55 @@ public final class Common {
 	 */
 	private static final Map<String, Long> TIMED_LOG_CACHE = new HashMap<>();
 
+	static {
+		LEGACY_COLOR_MAP.put("&0", "<black>");
+		LEGACY_COLOR_MAP.put("&1", "<dark_blue>");
+		LEGACY_COLOR_MAP.put("&2", "<dark_green>");
+		LEGACY_COLOR_MAP.put("&3", "<dark_aqua>");
+		LEGACY_COLOR_MAP.put("&4", "<dark_red>");
+		LEGACY_COLOR_MAP.put("&5", "<dark_purple>");
+		LEGACY_COLOR_MAP.put("&6", "<gold>");
+		LEGACY_COLOR_MAP.put("&7", "<gray>");
+		LEGACY_COLOR_MAP.put("&8", "<dark_gray>");
+		LEGACY_COLOR_MAP.put("&9", "<blue>");
+		LEGACY_COLOR_MAP.put("&a", "<green>");
+		LEGACY_COLOR_MAP.put("&b", "<aqua>");
+		LEGACY_COLOR_MAP.put("&c", "<red>");
+		LEGACY_COLOR_MAP.put("&d", "<light_purple>");
+		LEGACY_COLOR_MAP.put("&e", "<yellow>");
+		LEGACY_COLOR_MAP.put("&f", "<white>");
+		LEGACY_COLOR_MAP.put("&n", "<u>");
+		LEGACY_COLOR_MAP.put("&m", "<st>");
+		LEGACY_COLOR_MAP.put("&k", "<obf>");
+		LEGACY_COLOR_MAP.put("&o", "<i>");
+		LEGACY_COLOR_MAP.put("&l", "<b>");
+		LEGACY_COLOR_MAP.put("&r", "<r>");
+		LEGACY_COLOR_MAP.put("§0", "<black>");
+		LEGACY_COLOR_MAP.put("§1", "<dark_blue>");
+		LEGACY_COLOR_MAP.put("§2", "<dark_green>");
+		LEGACY_COLOR_MAP.put("§3", "<dark_aqua>");
+		LEGACY_COLOR_MAP.put("§4", "<dark_red>");
+		LEGACY_COLOR_MAP.put("§5", "<dark_purple>");
+		LEGACY_COLOR_MAP.put("§6", "<gold>");
+		LEGACY_COLOR_MAP.put("§7", "<gray>");
+		LEGACY_COLOR_MAP.put("§8", "<dark_gray>");
+		LEGACY_COLOR_MAP.put("§9", "<blue>");
+		LEGACY_COLOR_MAP.put("§a", "<green>");
+		LEGACY_COLOR_MAP.put("§b", "<aqua>");
+		LEGACY_COLOR_MAP.put("§c", "<red>");
+		LEGACY_COLOR_MAP.put("§d", "<light_purple>");
+		LEGACY_COLOR_MAP.put("§e", "<yellow>");
+		LEGACY_COLOR_MAP.put("§f", "<white>");
+		LEGACY_COLOR_MAP.put("§n", "<u>");
+		LEGACY_COLOR_MAP.put("§m", "<st>");
+		LEGACY_COLOR_MAP.put("§k", "<obf>");
+		LEGACY_COLOR_MAP.put("§o", "<i>");
+		LEGACY_COLOR_MAP.put("§l", "<b>");
+		LEGACY_COLOR_MAP.put("§r", "<r>");
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
-	// Tell prefix
+	// Plugin prefixes
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -144,7 +168,7 @@ public final class Common {
 	 * @param prefix
 	 */
 	public static void setTellPrefix(final String prefix) {
-		tellPrefix = prefix == null ? "" : colorize(prefix);
+		tellPrefix = prefix == null ? "" : prefix;
 	}
 
 	/**
@@ -155,7 +179,7 @@ public final class Common {
 	 * @param prefix
 	 */
 	public static void setLogPrefix(final String prefix) {
-		logPrefix = prefix == null ? "" : colorize(prefix);
+		logPrefix = prefix == null ? "" : prefix;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -467,7 +491,7 @@ public final class Common {
 
 			if (!stripped.isEmpty())
 				if (sender instanceof Player)
-					Remain.sendActionBar((Player) sender, stripped);
+					Remain.sendActionBar(sender, stripped);
 				else
 					tellJson(sender, stripped);
 
@@ -505,14 +529,14 @@ public final class Common {
 			if (!stripped.isEmpty())
 				if (sender instanceof Player)
 					// cannot provide time here so we show it for 10 seconds
-					Remain.sendBossbarTimed((Player) sender, stripped, 10);
+					Remain.sendBossbarTimed((Player) sender, stripped, 10, 1F);
 				else
 					tellJson(sender, stripped);
 
 		} else
 			for (final String part : message.split("\n")) {
 				final String prefix = !hasPrefix && !tellPrefix.isEmpty() ? tellPrefix + " " : "";
-				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
+				final String toSend = colorize(part.startsWith("<center>") ? ChatUtil.center(prefix + part.replaceFirst("\\<center\\>(\\s|)", "")) : prefix + part);
 
 				// Make player engaged in a server conversation still receive the message
 				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
@@ -523,85 +547,81 @@ public final class Common {
 			}
 	}
 
-	private static void tellAdventure(@NonNull final Audience sender, Component message) {
+	/**
+	 * Sends a message to the audience. Supports {prefix} and {player} variable.
+	 * Supports \<actionbar\>, \<toast\>, \<title\>, \<bossbar\> and \<center\>.
+	 * Properly sends the message to the player if he is conversing with the server.
+	 *
+	 * @param audience
+	 * @param message
+	 */
+	public static void tell(@NonNull final Audience audience, Component message) {
 		if (message == null)
 			return;
 
 		final String plainMessage = Remain.convertAdventureToPlain(message);
 
-		if (plainMessage.isEmpty())
+		if (plainMessage.isEmpty() || "none".equals(plainMessage))
 			return;
 
 		final boolean hasPrefix = plainMessage.contains("{prefix}");
 
-		// Replace player
-		message = message.replaceText(b -> b.matchLiteral("{player}").replacement(resolveSenderName(sender)));
+		// Replace some variables
+		message = message.replaceText(b -> b.matchLiteral("{player}").replacement(Remain.convertLegacyToAdventure(resolveSenderName(audience))));
+		message = message.replaceText(b -> b.matchLiteral("{prefix}").replacement(Remain.convertLegacyToAdventure(SimpleSettings.PLUGIN_PREFIX)));
 
-		// Replace colors
-		message = colorize(message);
-
-		// Send [JSON] prefixed messages as json component
 		if (plainMessage.startsWith("<actionbar>")) {
-
-			final String stripped = message.replace("<actionbar>", "");
-
-			if (!stripped.isEmpty())
-
-				if (sender instanceof Player)
-					Remain.sendActionBar((Player) sender, stripped);
-				else
-					tellJson(sender, stripped);
-
-		} else if (message.startsWith("<toast>")) {
-			final String stripped = message.replace("<toast>", "");
+			final String stripped = plainMessage.replace("<actionbar>", "").trim();
 
 			if (!stripped.isEmpty())
-				if (sender instanceof Player)
-					Remain.sendToast((Player) sender, stripped);
-				else
-					tellJson(sender, stripped);
+				Remain.sendActionBar(audience, message.replaceText(b -> b.matchLiteral("<actionbar>").replacement("")));
 
-		} else if (message.startsWith("<title>")) {
-			final String stripped = message.replace("<title>", "");
+		} else if (plainMessage.startsWith("<toast>")) {
+			final String stripped = plainMessage.replace("<toast>", "").trim();
+
+			if (!stripped.isEmpty())
+				if (audience instanceof Player)
+					Remain.sendToast((Player) audience, stripped);
+				else
+					Remain.tell(audience, message.replaceText(b -> b.matchLiteral("<toast>").replacement("")));
+
+		} else if (plainMessage.startsWith("<title>")) {
+			final String stripped = Remain.convertAdventureToLegacy(message).replace("<title>", "").trim();
 
 			if (!stripped.isEmpty()) {
 				final String[] split = stripped.split("\\|");
 				final String title = split[0];
 				final String subtitle = split.length > 1 ? Common.joinRange(1, split) : null;
 
-				if (sender instanceof Player)
-					Remain.sendTitle((Player) sender, title, subtitle);
-
-				else {
-					tellJson(sender, title);
-
-					if (subtitle != null)
-						tellJson(sender, subtitle);
-				}
+				Remain.sendTitle(audience, 0, 60, 0, Remain.convertLegacyToAdventure(title), Remain.convertLegacyToAdventure(subtitle));
 			}
 
-		} else if (message.startsWith("<bossbar>")) {
-			final String stripped = message.replace("<bossbar>", "");
+		} else if (plainMessage.startsWith("<bossbar>")) {
+			final String stripped = plainMessage.replace("<bossbar>", "").trim();
 
 			if (!stripped.isEmpty())
-				if (sender instanceof Player)
-					// cannot provide time here so we show it for 10 seconds
-					Remain.sendBossbarTimed((Player) sender, stripped, 10);
+				Remain.sendBossbarTimed(audience, message.replaceText(b -> b.matchLiteral("<bossbar>").replacement("")), 10, 1F);
+
+		} else {
+			final String prefix = !hasPrefix && !tellPrefix.isEmpty() ? tellPrefix + " " : "";
+			String legacyMessage = prefix + Remain.convertAdventureToLegacy(message);
+
+			if (plainMessage.startsWith("<center>")) {
+				legacyMessage = ChatUtil.center(legacyMessage.replace("\\<center\\>(\\s|)", ""));
+
+				if (audience instanceof Conversable && ((Conversable) audience).isConversing())
+					((Conversable) audience).sendRawMessage(colorize(legacyMessage));
 				else
-					tellJson(sender, stripped);
+					audience.sendMessage(Remain.convertLegacyToAdventure(colorize(legacyMessage)));
 
-		} else
-			for (final String part : message.split("\n")) {
-				final String prefix = !hasPrefix && !tellPrefix.isEmpty() ? tellPrefix + " " : "";
-				final String toSend = part.startsWith("<center>") ? ChatUtil.center(prefix + part.replace("<center>", "")) : prefix + part;
-
-				// Make player engaged in a server conversation still receive the message
-				if (sender instanceof Conversable && ((Conversable) sender).isConversing())
-					((Conversable) sender).sendRawMessage(toSend);
+			} else {
+				if (audience instanceof Conversable && ((Conversable) audience).isConversing())
+					((Conversable) audience).sendRawMessage(Remain.convertAdventureToLegacy(message));
 
 				else
-					sender.sendMessage(toSend);
+					audience.sendMessage(Remain.convertLegacyToAdventure(colorize(legacyMessage)));
 			}
+		}
 	}
 
 	/**
@@ -674,191 +694,128 @@ public final class Common {
 	}
 
 	/**
-	 * Replace the & letter with the {@link CompChatColor#COLOR_CHAR} in the message.
-	 * <p>
-	 * Also replaces {prefix} with {@link #getTellPrefix()} and {server} with {@link SimpleLocalization#SERVER_PREFIX}
+	 * Replaces & color codes and MiniMessage tags in the message.
+	 * Also replaces {prefix}, {plugin_name} and {plugin_version} with their respective values.
 	 *
-	 * @param message the message to replace color codes with '&'
-	 * @return the colored message
+	 * @param message
+	 * @return
 	 */
 	public static String colorize(final String message) {
+		return Remain.convertAdventureToLegacy(colorizeLegacy(message));
+	}
+
+	/**
+	 * Replaces & color codes and MiniMessage tags in the message.
+	 * Also replaces {prefix}, {plugin_name} and {plugin_version} with their respective values.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static Component colorizeLegacy(String message) {
 		if (message == null || message.isEmpty())
-			return "";
+			return Component.empty();
 
-		String result = CompChatColor.translateColorCodes(message)
-				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : tellPrefix)
-				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
-				.replace("{plugin_name}", SimplePlugin.getNamed())
-				.replace("{plugin_version}", SimplePlugin.getVersion());
+		Component component = colorize0(message);
 
-		// Replace hex colors on 1.16+ or find the closest color for legacy versions
-		final Matcher match = HEX_COLOR_REGEX.matcher(result);
+		component = component.replaceText(TextReplacementConfig.builder().matchLiteral("{prefix}").replacement(colorize0(message.startsWith(tellPrefix) ? "" : tellPrefix)).build());
+		component = component.replaceText(TextReplacementConfig.builder().matchLiteral("{plugin_name}").replacement(SimplePlugin.getNamed()).build());
+		component = component.replaceText(TextReplacementConfig.builder().matchLiteral("{plugin_version}").replacement(SimplePlugin.getVersion()).build());
 
-		while (match.find()) {
-			final String matched = match.group();
-			final String colorCode = match.group(2);
-			String replacement = "";
+		return component;
+	}
 
-			try {
-				replacement = CompChatColor.of("#" + colorCode).toString();
+	/*
+	 * Replaces & color codes and MiniMessage tags in the message
+	 */
+	private static Component colorize0(String message) {
+		if (message == null || message.isEmpty())
+			return Component.empty();
 
-			} catch (final IllegalArgumentException ex) {
+		// First, replace legacy & color codes
+		final StringBuilder result = new StringBuilder();
+
+		for (int i = 0; i < message.length(); i++) {
+			if (i + 1 < message.length() && (message.charAt(i) == '&' || message.charAt(i) == '§')) {
+				final String code = message.substring(i, i + 2);
+
+				if (LEGACY_COLOR_MAP.containsKey(code)) {
+					result.append(LEGACY_COLOR_MAP.get(code));
+					i++;
+
+					continue;
+				}
+
+				if (i + 7 < message.length() && message.charAt(i + 1) == '#' && message.substring(i + 2, i + 8).matches("[0-9a-fA-F]{6}")) {
+					result.append("<#").append(message.substring(i + 2, i + 8)).append(">");
+					i += 7;
+
+					continue;
+				}
 			}
 
-			result = result.replaceAll(Pattern.quote(matched), replacement);
+			result.append(message.charAt(i));
 		}
 
-		if (result.contains("\\\\#"))
-			result = result.replace("\\\\#", "\\#");
+		message = result.toString();
+		message = escapeInvalidTags(message);
 
-		else if (result.contains("\\#"))
-			result = result.replace("\\#", "#");
+		try {
+			return MiniMessage.miniMessage().deserialize(message);
 
-		return result;
+		} catch (final Throwable t) {
+			Debugger.printStackTrace("Error parsing mini message tags in: " + message);
+
+			Remain.sneaky(t);
+			return null;
+		}
 	}
 
-	/**
-	 * Replaces the {@link ChatColor#COLOR_CHAR} colors with & letters
-	 *
-	 * @param messages
-	 * @return
+	/*
+	 * Escapes invalid minimessage tags in the message.
 	 */
-	public static String[] revertColorizing(final String[] messages) {
-		for (int i = 0; i < messages.length; i++)
-			messages[i] = revertColorizing(messages[i]);
+	private static String escapeInvalidTags(String input) {
+		final Matcher matcher = Pattern.compile("<[^>]*>").matcher(input);
+		final StringBuffer buffer = new StringBuffer();
 
-		return messages;
+		while (matcher.find()) {
+			String match = matcher.group(0);
+
+			if (!MINIMESSAGE_PATTERN.matcher(match).matches())
+				match = match.replace("<", "\\\\<").replace(">", "\\>");
+
+			matcher.appendReplacement(buffer, match);
+		}
+
+		matcher.appendTail(buffer);
+		return buffer.toString();
 	}
 
 	/**
-	 * Replaces the {@link ChatColor#COLOR_CHAR} colors with & letters
+	 * Remove all & and § colors as well as MiniMessage tags.
 	 *
 	 * @param message
 	 * @return
 	 */
-	public static String revertColorizing(final String message) {
-		return message.replaceAll("(?i)" + ChatColor.COLOR_CHAR + "([0-9a-fk-or])", "&$1");
-	}
-
-	/**
-	 * Remove all {@link ChatColor#COLOR_CHAR} as well as & letter colors from the message
-	 *
-	 * @param message
-	 * @return
-	 */
-	public static String stripColors(String message) {
+	public static String removeColors(String message) {
 		if (message == null || message.isEmpty())
 			return message;
 
-		// Replace & color codes
-		final Matcher matcher = ALL_IN_ONE.matcher(message);
+		final Component component = Common.colorizeLegacy(message);
 
-		while (matcher.find())
-			message = matcher.replaceAll("");
-
-		// Replace hex colors, both raw and parsed
-		/*if (Remain.hasHexColors()) {
-			matcher = HEX_COLOR_REGEX.matcher(message);
-		
-			while (matcher.find())
-				message = matcher.replaceAll("");
-		
-			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
-			while (matcher.find())
-				message = matcher.replaceAll("");
-		
-			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
-		}*/
-
-		return message;
+		return Remain.convertAdventureToPlain(component);
 	}
 
 	/**
-	 * Only remove the & colors from the message
+	 * Returns if the message contains & or § color codes, or MiniMessage tags.
 	 *
 	 * @param message
 	 * @return
 	 */
-	public static String stripColorsLetter(final String message) {
-		return message == null ? "" : message.replaceAll("&([0-9a-fk-orA-F-K-OR])", "");
-	}
+	public static boolean hasColorTags(final String message) {
+		final Component component = Common.colorizeLegacy(message);
+		final String legacy = Remain.convertAdventureToLegacy(component).toLowerCase();
 
-	/**
-	 * Returns if the message contains either {@link CompChatColor#COLOR_CHAR} or & letter colors
-	 *
-	 * @param message
-	 * @return
-	 */
-	public static boolean hasColors(final String message) {
-		return COLOR_AND_DECORATION_REGEX.matcher(message).find();
-	}
-
-	/**
-	 * Returns the last color, either & or {@link ChatColor#COLOR_CHAR} from the given message
-	 *
-	 * @param message or empty if none
-	 * @return
-	 */
-	public static String lastColor(final String message) {
-
-		// RGB colors
-		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_16)) {
-			final int c = message.lastIndexOf(ChatColor.COLOR_CHAR);
-			final Matcher match = RGB_X_COLOR_REGEX.matcher(message);
-
-			String lastColor = null;
-
-			while (match.find())
-				lastColor = match.group(0);
-
-			if (lastColor != null)
-				if (c == -1 || c < message.lastIndexOf(lastColor) + lastColor.length())
-					return lastColor;
-		}
-
-		final String andLetter = lastColorLetter(message);
-		final String colorChat = lastColorChar(message);
-
-		return !andLetter.isEmpty() ? andLetter : !colorChat.isEmpty() ? colorChat : "";
-	}
-
-	/**
-	 * Return last color & + the color letter from the message, or empty if not exist
-	 *
-	 * @param message
-	 * @return
-	 */
-	public static String lastColorLetter(final String message) {
-		return lastColor(message, '&');
-	}
-
-	/**
-	 * Return last {@link ChatColor#COLOR_CHAR} + the color letter from the message, or empty if not exist
-	 *
-	 * @param message
-	 * @return
-	 */
-	public static String lastColorChar(final String message) {
-		return lastColor(message, ChatColor.COLOR_CHAR);
-	}
-
-	private static String lastColor(final String msg, final char colorChar) {
-		final int c = msg.lastIndexOf(colorChar);
-
-		// Contains our character
-		if (c != -1) {
-
-			// Contains a character after color character
-			if (msg.length() > c + 1)
-				if (msg.substring(c + 1, c + 2).matches("([0-9a-fk-or])"))
-					return msg.substring(c, c + 2).trim();
-
-			// Search after colors before that invalid character
-			return lastColor(msg.substring(0, c), colorChar);
-		}
-
-		return "";
+		return Pattern.compile("§([0-9a-fk-or])").matcher(legacy).find();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1573,49 +1530,6 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Returns true if the given regex matches the given message
-	 *
-	 * @param regex
-	 * @param message
-	 * @return
-	 */
-	public static boolean regExMatch(final String regex, final String message) {
-		return regExMatch(compilePattern(regex), message);
-	}
-
-	/**
-	 * Returns true if the given pattern matches the given message
-	 *
-	 * @param regex
-	 * @param message
-	 * @return
-	 */
-	public static boolean regExMatch(final Pattern regex, final String message) {
-		return regExMatch(compileMatcher(regex, message));
-	}
-
-	/**
-	 * Returns true if the given matcher matches. We also evaluate
-	 * how long the evaluation took and stop it in case it takes too long,
-	 * see {@link SimplePlugin#getRegexTimeout()}
-	 *
-	 * @param matcher
-	 * @return
-	 */
-	public static boolean regExMatch(final Matcher matcher) {
-		Valid.checkNotNull(matcher, "Cannot call regExMatch on null matcher");
-
-		try {
-			return matcher.find();
-
-		} catch (final RegexTimeoutException ex) {
-			handleRegexTimeoutException(ex, matcher.pattern());
-
-			return false;
-		}
-	}
-
-	/**
 	 * Compiles a matches for the given pattern and message. Colors are stripped.
 	 * <p>
 	 * We also evaluate how long the evaluation took and stop it in case it takes too long,
@@ -1625,22 +1539,22 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
-
+	/*public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
+	
 		try {
 			final SimplePlugin instance = SimplePlugin.getInstance();
-
+	
 			String strippedMessage = instance.regexStripColors() ? stripColors(message) : message;
 			strippedMessage = instance.regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
-
+	
 			return pattern.matcher(TimedCharSequence.withSettingsLimit(strippedMessage));
-
+	
 		} catch (final RegexTimeoutException ex) {
 			handleRegexTimeoutException(ex, pattern);
-
+	
 			return null;
 		}
-	}
+	}*/
 
 	/**
 	 * Compiles a matcher for the given regex and message
@@ -1649,9 +1563,9 @@ public final class Common {
 	 * @param message
 	 * @return
 	 */
-	public static Matcher compileMatcher(final String regex, final String message) {
+	/*public static Matcher compileMatcher(final String regex, final String message) {
 		return compileMatcher(compilePattern(regex), message);
-	}
+	}*/
 
 	/**
 	 * Compiles a pattern from the given regex, stripping colors and making
@@ -1662,34 +1576,15 @@ public final class Common {
 	 */
 	public static Pattern compilePattern(String regex) {
 		final SimplePlugin instance = SimplePlugin.getInstance();
-		Pattern pattern = null;
 
-		regex = instance.regexStripColors() ? stripColors(regex) : regex;
+		regex = instance.regexStripColors() ? Common.removeColors(regex) : regex;
 		regex = instance.regexStripAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
 
-		try {
+		if (instance.regexCaseInsensitive())
+			return Pattern.compile(regex, instance.regexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
 
-			if (instance.regexCaseInsensitive())
-				pattern = Pattern.compile(regex, instance.regexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
-
-			else
-				pattern = instance.regexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
-
-		} catch (final PatternSyntaxException ex) {
-			throwError(ex,
-					"Your regular expression is malformed!",
-					"Expression: '" + regex + "'",
-					"",
-					"IF YOU CREATED IT YOURSELF, we unfortunately",
-					"can't provide support for custom expressions.",
-					"Use online services like regex101.com to put your",
-					"expression there (without '') and discover where",
-					"the syntax error lays and how to fix it.");
-
-			return null;
-		}
-
-		return pattern;
+		else
+			return instance.regexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
 	}
 
 	/**
@@ -1698,9 +1593,9 @@ public final class Common {
 	 * @param ex
 	 * @param pattern
 	 */
-	public static void handleRegexTimeoutException(RegexTimeoutException ex, Pattern pattern) {
+	/*public static void handleRegexTimeoutException(RegexTimeoutException ex, Pattern pattern) {
 		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
-
+	
 		Common.error(ex,
 				"A regular expression took too long to process, and was",
 				"stopped to prevent freezing your server.",
@@ -1719,7 +1614,7 @@ public final class Common {
 				"Put the expression without '' and the message there.",
 				"Ensure to turn flags 'insensitive' and 'unicode' " + (caseInsensitive ? "on" : "off"),
 				"on there when testing: https://i.imgur.com/PRR5Rfn.png");
-	}
+	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Joining strings and lists
@@ -2663,34 +2558,6 @@ public final class Common {
 	// Scheduling
 	// ------------------------------------------------------------------------------------------------------------
 
-	private static Object foliaScheduler;
-	private static Method runAtFixedRate;
-	private static Method runDelayed;
-	private static Method execute;
-	private static Method cancel;
-	private static Method cancelTasks;
-
-	static {
-		if (Remain.isFolia()) {
-			foliaScheduler = ReflectionUtil.invoke("getGlobalRegionScheduler", org.bukkit.Bukkit.getServer());
-			runAtFixedRate = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class);
-			execute = ReflectionUtil.getMethod(foliaScheduler.getClass(), "run", Plugin.class, Consumer.class);
-			runDelayed = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class);
-			cancelTasks = ReflectionUtil.getMethod(foliaScheduler.getClass(), "cancelTasks", Plugin.class);
-			cancel = ReflectionUtil.getMethod(ReflectionUtil.lookupClass("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), "cancel");
-		}
-	}
-
-	/**
-	 * Attempts to cancel all tasks
-	 */
-	public static void cancelTasks() {
-		if (Remain.isFolia())
-			ReflectionUtil.invoke(cancelTasks, foliaScheduler, SimplePlugin.getInstance());
-		else
-			Bukkit.getScheduler().cancelTasks(SimplePlugin.getInstance());
-	}
-
 	/**
 	 * Runs the task if the plugin is enabled correctly
 	 *
@@ -2709,39 +2576,7 @@ public final class Common {
 	 * @return the task or null
 	 */
 	public static SimpleTask runLater(final int delayTicks, Runnable runnable) {
-		if (runIfDisabled(runnable))
-			return null;
-
-		if (Remain.isFolia()) {
-			final Object taskHandle;
-
-			if (delayTicks == 0)
-				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
-			else
-				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
-
-			return SimpleTask.fromFolia(cancel, taskHandle);
-		}
-
-		try {
-			BukkitTask task;
-
-			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskLater(SimplePlugin.getInstance(), delayTicks);
-
-			else
-				task = Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), runnable, delayTicks);
-
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
-
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simpleTask);
-
-			return simpleTask;
-
-		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
-		}
+		return Remain.runLater(delayTicks, runnable);
 	}
 
 	/**
@@ -2764,39 +2599,7 @@ public final class Common {
 	 * @return the task or null
 	 */
 	public static SimpleTask runLaterAsync(final int delayTicks, Runnable runnable) {
-		if (runIfDisabled(runnable))
-			return null;
-
-		if (Remain.isFolia()) {
-			final Object taskHandle;
-
-			if (delayTicks == 0)
-				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
-			else
-				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
-
-			return SimpleTask.fromFolia(cancel, taskHandle);
-		}
-
-		try {
-			BukkitTask task;
-
-			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskLaterAsynchronously(SimplePlugin.getInstance(), delayTicks);
-
-			else
-				task = Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks);
-
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
-
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simpleTask);
-
-			return simpleTask;
-
-		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
-		}
+		return Remain.runLaterAsync(delayTicks, runnable);
 	}
 
 	/**
@@ -2819,34 +2622,7 @@ public final class Common {
 	 * @return the bukkit task or null if error
 	 */
 	public static SimpleTask runTimer(final int delayTicks, final int repeatTicks, Runnable runnable) {
-		if (runIfDisabled(runnable))
-			return null;
-
-		if (Remain.isFolia()) {
-			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
-
-			return SimpleTask.fromFolia(cancel, taskHandle);
-		}
-
-		try {
-			BukkitTask task;
-
-			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks);
-
-			else
-				task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
-
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
-
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simpleTask);
-
-			return simpleTask;
-
-		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
-		}
+		return Remain.runTimer(delayTicks, repeatTicks, runnable);
 	}
 
 	/**
@@ -2869,48 +2645,14 @@ public final class Common {
 	 * @return
 	 */
 	public static SimpleTask runTimerAsync(final int delayTicks, final int repeatTicks, Runnable runnable) {
-		if (runIfDisabled(runnable))
-			return null;
-
-		if (Remain.isFolia()) {
-			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
-
-			return SimpleTask.fromFolia(cancel, taskHandle);
-		}
-
-		try {
-			BukkitTask task;
-
-			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks);
-
-			else
-				task = Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
-
-			final SimpleTask simplTask = SimpleTask.fromBukkit(task);
-
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simplTask);
-
-			return simplTask;
-
-		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
-		}
+		return Remain.runTimerAsync(delayTicks, repeatTicks, runnable);
 	}
 
-	// Check our plugin instance if it's enabled
-	// In case it is disabled, just runs the task and returns true
-	// Otherwise we return false and the task will be run correctly in Bukkit scheduler
-	// This is fail-safe to critical save-on-exit operations in case our plugin is improperly reloaded (PlugMan) or malfunctions
-	private static boolean runIfDisabled(final Runnable run) {
-		if (!SimplePlugin.getInstance().isEnabled()) {
-			run.run();
-
-			return true;
-		}
-
-		return false;
+	/**
+	 * Attempts to cancel all tasks of this plugin
+	 */
+	public static void cancelTasks() {
+		Remain.cancelTasks();
 	}
 
 	/**

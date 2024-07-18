@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -1091,7 +1090,7 @@ public final class HookManager {
 
 		final String nick = nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
 
-		return stripColors ? Common.stripColors(Common.revertColorizing(nick).replace(ChatColor.COLOR_CHAR + "x", "")) : nick;
+		return stripColors ? Common.removeColors(nick) : nick;
 	}
 
 	/**
@@ -1829,7 +1828,7 @@ public final class HookManager {
 	 * @param message the message to send.
 	 */
 	public static void sendDiscordMessage(final CommandSender sender, final String channel, @NonNull final String message) {
-		if (isDiscordSRVLoaded() && !Common.stripColors(message).isEmpty())
+		if (isDiscordSRVLoaded())
 			discordSRVHook.sendMessage(sender, channel, message);
 	}
 
@@ -1840,7 +1839,7 @@ public final class HookManager {
 	 * @param message the message to send.
 	 */
 	public static void sendDiscordMessage(final String channel, @NonNull final String message) {
-		if (isDiscordSRVLoaded() && !Common.stripColors(message).isEmpty())
+		if (isDiscordSRVLoaded())
 			discordSRVHook.sendMessage(channel, message);
 	}
 }
@@ -2014,20 +2013,22 @@ class EssentialsHook {
 		final User user = this.getUser(uniqueId);
 
 		if (user != null) {
-			final boolean isEmpty = nick == null || Common.stripColors(nick).replace(" ", "").isEmpty();
+			final boolean isEmpty = nick == null || Common.removeColors(nick).replace(" ", "").isEmpty();
 
 			user.setNickname(isEmpty ? null : Common.colorize(nick));
 		}
 	}
 
-	String getNameFromNick(final String maybeNick) {
+	String getNameFromNick(String maybeNick) {
+		maybeNick = Common.removeColors(maybeNick).toLowerCase();
+
 		final UserMap users = this.ess.getUserMap();
 
 		if (users != null)
 			for (final UUID userId : users.getAllUniqueUsers()) {
 				final User user = users.getUser(userId);
 
-				if (user != null && user.getNickname() != null && Valid.colorlessEquals(user.getNickname(), maybeNick))
+				if (user != null && user.getNickname() != null && Common.removeColors(user.getNickname()).toLowerCase().equals(maybeNick))
 					return Common.getOrDefault(user.getName(), maybeNick);
 			}
 
@@ -2791,7 +2792,7 @@ final class PlaceholderAPIHook {
 					final String value = expansion.replacePlaceholders(player, identifier);
 
 					if (value != null) {
-						final boolean emptyColorless = Common.stripColors(value).isEmpty();
+						final boolean emptyColorless = Common.removeColors(value).isEmpty();
 
 						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? " " : "");
 					}
@@ -3003,7 +3004,7 @@ class WorldGuardHook {
 		final List<String> list = new ArrayList<>();
 
 		this.getApplicableRegions(location).forEach(region -> {
-			final String name = Common.stripColors(region.getId());
+			final String name = Common.removeColors(region.getId());
 
 			if (!name.startsWith("__"))
 				list.add(name);
@@ -3023,7 +3024,7 @@ class WorldGuardHook {
 						if (regObj == null)
 							continue;
 
-						if (Common.stripColors(((ProtectedRegion) regObj).getId()).equals(name)) {
+						if (Common.removeColors(((ProtectedRegion) regObj).getId()).equals(name)) {
 
 							final Class<?> clazz = regObj.getClass();
 							final Method getMax = clazz.getMethod("getMaximumPoint");
@@ -3053,7 +3054,7 @@ class WorldGuardHook {
 				}
 			else
 				for (final ProtectedRegion reg : ((com.sk89q.worldguard.protection.managers.RegionManager) rm).getRegions().values())
-					if (reg != null && reg.getId() != null && Common.stripColors(reg.getId()).equals(name)) {
+					if (reg != null && reg.getId() != null && Common.removeColors(reg.getId()).equals(name)) {
 						//if(reg instanceof com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion) {
 						// just going to pretend that everything is a cuboid..
 						final Location locMax;
@@ -3085,7 +3086,7 @@ class WorldGuardHook {
 						if (getId == null)
 							getId = regObj.getClass().getMethod("getId");
 
-						final String name = Common.stripColors(getId.invoke(regObj).toString());
+						final String name = Common.removeColors(getId.invoke(regObj).toString());
 
 						if (!name.startsWith("__"))
 							list.add(name);
@@ -3101,7 +3102,7 @@ class WorldGuardHook {
 							if (reg == null || reg.getId() == null)
 								return;
 
-							final String name = Common.stripColors(reg.getId());
+							final String name = Common.removeColors(reg.getId());
 
 							if (!name.startsWith("__"))
 								list.add(name);
@@ -3208,7 +3209,7 @@ final class FactionsMassive extends FactionsHook {
 
 	@Override
 	public Collection<String> getFactions() {
-		return Common.convert(com.massivecraft.factions.entity.FactionColl.get().getAll(), object -> Common.stripColors(object.getName()));
+		return Common.convert(com.massivecraft.factions.entity.FactionColl.get().getAll(), object -> Common.removeColors(object.getName()));
 	}
 
 	@Override
@@ -3546,7 +3547,7 @@ class CMIHook {
 		final TabListManager tabManager = CMI.getInstance().getTabListManager();
 
 		if (user != null) {
-			final boolean isEmpty = nick == null || Common.stripColors(nick).replace(" ", "").isEmpty();
+			final boolean isEmpty = nick == null || Common.removeColors(nick).replace(" ", "").isEmpty();
 
 			user.setNickName(isEmpty ? null : Common.colorize(nick), true);
 			user.updateDisplayName();
@@ -3557,8 +3558,10 @@ class CMIHook {
 	}
 
 	String getNameFromNick(String nick) {
+		nick = Common.removeColors(nick).toLowerCase();
+
 		for (final CMIUser user : CMI.getInstance().getPlayerManager().getAllUsers().values())
-			if (user != null && user.getNickName() != null && Valid.colorlessEquals(user.getNickName(), nick))
+			if (user != null && user.getNickName() != null && Common.removeColors(user.getNickName()).toLowerCase().equals(nick))
 				return Common.getOrDefault(user.getName(), nick);
 
 		return nick;
@@ -3615,7 +3618,12 @@ class DiscordSRVHook {
 		return this.sendMessage(null, channel, message);
 	}
 
-	boolean sendMessage(@Nullable CommandSender sender, final String channel, final String message) {
+	boolean sendMessage(@Nullable CommandSender sender, final String channel, String message) {
+		message = Common.removeColors(message);
+
+		if (message.replace(" ", "").isEmpty())
+			return false;
+
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// The channel is not configured in the config.yml of Discord,
@@ -3834,17 +3842,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-
+		
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-
+		
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-
+		
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-
+		
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3914,16 +3922,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}

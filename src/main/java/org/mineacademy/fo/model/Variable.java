@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +31,11 @@ public final class Variable extends YamlConfig {
 	 * Return the prototype file path for the given variable field name
 	 */
 	public static Function<String, String> PROTOTYPE_PATH = t -> NO_DEFAULT;
+
+	/**
+	 * The pattern for a valid variable key
+	 */
+	private static final Pattern VALID_KEY_PATTERN = Pattern.compile("^\\w+$");
 
 	/**
 	 * A list of all loaded variables
@@ -182,7 +188,7 @@ public final class Variable extends YamlConfig {
 		}
 
 		// Test for key validity
-		if (!Common.regExMatch("^\\w+$", this.key))
+		if (!VALID_KEY_PATTERN.matcher(this.key).matches())
 			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFileName() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
 	}
 

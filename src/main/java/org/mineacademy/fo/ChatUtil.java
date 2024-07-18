@@ -35,6 +35,11 @@ public final class ChatUtil {
 	public final static int VISIBLE_CHAT_LINES = 20;
 
 	/**
+	 * The pattern to match a domain
+	 */
+	private final static Pattern DOMAIN_PATTERN = Pattern.compile("(https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s]{2,}|www\\.[^\\s]+\\.[^\\s]{2,})");
+
+	/**
 	 * Centers a message automatically for padding {@link #CENTER_PX}
 	 *
 	 * @param message
@@ -385,11 +390,11 @@ public final class ChatUtil {
 	 *
 	 * @return how much percent of the message is big letters (from 0 to 100)
 	 */
-	public static double getCapsPercentage(final String message) {
+	public static double getCapsPercentagePlain(final String message) {
 		if (message.isEmpty())
 			return 0;
 
-		final String[] sentences = Common.stripColors(message).split(" ");
+		final String[] sentences = message.split(" ");
 		String messageToCheck = "";
 		double upperCount = 0;
 
@@ -412,11 +417,11 @@ public final class ChatUtil {
 	 *
 	 * @return how many big letters are in message
 	 */
-	public static int getCapsInRow(final String message, final List<String> ignored) {
+	public static int getCapsInRowPlain(final String message, final List<String> ignored) {
 		if (message.isEmpty())
 			return 0;
 
-		final int[] caps = splitCaps(Common.stripColors(message), ignored);
+		final int[] caps = splitCaps(message, ignored);
 
 		int sum = 0;
 		int sumTemp = 0;
@@ -439,11 +444,11 @@ public final class ChatUtil {
 	 *
 	 * @return how many big letters are in message
 	 */
-	public static int getCapsInRow(final String message, final Whiteblacklist list) {
+	public static int getCapsInRowPlain(final String message, final Whiteblacklist list) {
 		if (message.isEmpty())
 			return 0;
 
-		final int[] caps = splitCaps(Common.stripColors(message), list);
+		final int[] caps = splitCaps(message, list);
 
 		int sum = 0;
 		int sumTemp = 0;
@@ -470,8 +475,8 @@ public final class ChatUtil {
 		if (first.isEmpty() && second.isEmpty())
 			return 1D;
 
-		first = removeSimilarity(first);
-		second = removeSimilarity(second);
+		first = removeSimilarityPlain(first);
+		second = removeSimilarityPlain(second);
 
 		String longer = first, shorter = second;
 
@@ -492,15 +497,12 @@ public final class ChatUtil {
 	 * Remove any similarity traits of a message such as removing colors,
 	 * lowercasing it, removing diacritic
 	 */
-	private static String removeSimilarity(String message) {
+	private static String removeSimilarityPlain(String message) {
 
 		if (SimplePlugin.getInstance().similarityStripAccents())
 			message = replaceDiacritic(message);
 
-		message = Common.stripColors(message);
-		message = message.toLowerCase();
-
-		return message;
+		return message.toLowerCase();
 	}
 
 	/**
@@ -510,7 +512,7 @@ public final class ChatUtil {
 	 * @return
 	 */
 	public static boolean isDomain(final String message) {
-		return Common.regExMatch("(https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s]{2,}|www\\.[^\\s]+\\.[^\\s]{2,})", message);
+		return DOMAIN_PATTERN.matcher(message).find();
 	}
 
 	/**

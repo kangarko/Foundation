@@ -101,7 +101,7 @@ public final class Whiteblacklist {
 			this.patterns.clear();
 
 			if (compileAsPatterns)
-				for (String item : this.items)
+				for (final String item : this.items)
 					this.patterns.add(Common.compilePattern(item));
 		}
 
@@ -150,7 +150,7 @@ public final class Whiteblacklist {
 	}
 
 	/**
-	 * Return true if {@link Valid#isInListRegex(String, Iterable)} returns true
+	 * Return true if the item is in the regex list returns true
 	 * inverting it according to the {@link #isWhitelist()} flag
 	 *
 	 * @param item
