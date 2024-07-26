@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.ChatPaginator;
 import org.mineacademy.fo.Valid;
@@ -379,7 +378,7 @@ public final class ChatImage {
 				line += color != null ? color2[y].toString() + imgchar : TRANSPARENT_CHAR;
 			}
 
-			lines[y] = line + ChatColor.RESET;
+			lines[y] = line + CompChatColor.RESET;
 		}
 
 		return lines;

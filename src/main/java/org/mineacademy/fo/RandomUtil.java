@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.mineacademy.fo.remain.CompChatColor;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -138,10 +138,10 @@ public final class RandomUtil {
 	 *
 	 * @return
 	 */
-	public static ChatColor nextChatColor() {
+	public static CompChatColor nextChatColor() {
 		final char letter = CHAT_COLORS[nextInt(CHAT_COLORS.length)];
 
-		return ChatColor.getByChar(letter);
+		return CompChatColor.getByChar(letter);
 	}
 
 	/**
@@ -311,7 +311,7 @@ public final class RandomUtil {
 
 	public static double getYCords(int transform, double rectY) {
 		double offsetY;
-		double nextY = random.nextDouble();
+		final double nextY = random.nextDouble();
 		if (transform < 2) {
 			offsetY = nextY >= 0.5 ? -rectY : rectY;
 		} else {

@@ -12,9 +12,9 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.message.Message;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.CompChatColor;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -64,8 +64,10 @@ final class FoundationFilter {
 			return false;
 
 		// Replace & color codes
-		for (final ChatColor color : ChatColor.values()) {
-			message = message.replace("&" + color.getChar(), "");
+		for (final CompChatColor color : CompChatColor.values()) {
+			if (!color.isHex())
+				message = message.replace("&" + color.getCode(), "");
+
 			message = message.replace(color.toString(), "");
 		}
 
@@ -86,7 +88,7 @@ final class FoundationFilter {
 				|| message.contains("[DiscordSRV] [JDA] Login Successful!") || message.contains("[DiscordSRV] [JDA] Connected to WebSocket"))
 			return true;
 
-		boolean hasInstance = SimplePlugin.hasInstance();
+		final boolean hasInstance = SimplePlugin.hasInstance();
 
 		// Workaround for Spigot/Paper not removing [Not Secure] console misinformation
 		// The only thing that is insecure is Microsoft itself from it not being able to read your messages

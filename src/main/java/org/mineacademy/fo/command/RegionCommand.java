@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
@@ -20,6 +19,7 @@ import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.DiskRegion;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.VisualizedRegion;
 
@@ -108,7 +108,7 @@ public class RegionCommand extends SimpleSubCommand {
 								"&7Size: &2" + otherRegion.getBlocks().size() + " blocks"));
 			}
 
-			new ChatPaginator(ChatColor.DARK_RED)
+			new ChatPaginator(CompChatColor.DARK_RED)
 					.setFoundationHeader("Listing " + Common.plural(regions.size(), "Region"))
 					.setPages(components)
 					.send(this.sender);

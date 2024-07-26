@@ -63,7 +63,12 @@ public final class CompMetadata {
 	/**
 	 * The tag delimiter
 	 */
-	private final static String DELIMITER = "%-%";
+	private static final String DELIMITER = "%-%";
+
+	/**
+	 * Caches {@link NamespacedKey} for performance purposes
+	 */
+	private static Map<String, Object> namespacedCache = new HashMap<>();
 
 	// ----------------------------------------------------------------------------------------
 	// Setting metadata
@@ -342,8 +347,9 @@ public final class CompMetadata {
 	private static String getPersistentMetadata(final Object entity, final String key) {
 		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
+		final NamespacedKey namespacedKey = (NamespacedKey) getOrCacheKey(key);
 
-		return Common.getOrNull(data.get(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING));
+		return Common.getOrNull(data.get(namespacedKey, PersistentDataType.STRING));
 	}
 
 	/*
@@ -354,11 +360,16 @@ public final class CompMetadata {
 
 		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
 		final boolean remove = value == null || "".equals(value);
+		final NamespacedKey namespacedKey = (NamespacedKey) getOrCacheKey(key);
 
 		if (remove)
-			data.remove(new NamespacedKey(SimplePlugin.getInstance(), key));
+			data.remove(namespacedKey);
 		else
-			data.set(new NamespacedKey(SimplePlugin.getInstance(), key), PersistentDataType.STRING, value);
+			data.set(namespacedKey, PersistentDataType.STRING, value);
+	}
+
+	private static Object getOrCacheKey(String key) {
+		return namespacedCache.computeIfAbsent(key, k -> new NamespacedKey(SimplePlugin.getInstance(), key));
 	}
 
 	/**

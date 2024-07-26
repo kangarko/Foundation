@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -19,6 +18,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
@@ -49,7 +49,7 @@ public final class ChatPaginator {
 	/**
 	 * The color used in header and footer
 	 */
-	private final ChatColor themeColor;
+	private final CompChatColor themeColor;
 
 	/**
 	 * The header included on every page.
@@ -83,7 +83,7 @@ public final class ChatPaginator {
 	 *
 	 * @param themeColor
 	 */
-	public ChatPaginator(ChatColor themeColor) {
+	public ChatPaginator(CompChatColor themeColor) {
 		this(FOUNDATION_HEIGHT, themeColor);
 	}
 

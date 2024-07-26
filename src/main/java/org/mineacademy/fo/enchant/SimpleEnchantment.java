@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -603,11 +602,11 @@ public abstract class SimpleEnchantment implements Listener {
 			final List<String> colorlessOriginals = new ArrayList<>();
 
 			for (final String original : originalLore)
-				colorlessOriginals.add(ChatColor.stripColor(Common.colorize(original)));
+				colorlessOriginals.add(Common.removeColors(original));
 
 			// Place our enchants
 			for (final String customEnchant : customEnchants) {
-				final String colorlessEnchant = ChatColor.stripColor(Common.colorize(customEnchant));
+				final String colorlessEnchant = Common.removeColors(customEnchant);
 
 				if (!colorlessOriginals.contains(colorlessEnchant))
 					finalLore.add(customEnchant);

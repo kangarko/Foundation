@@ -2,10 +2,10 @@ package org.mineacademy.fo;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -28,7 +28,7 @@ public final class HealthBarUtil {
 	 * The default health bar colors
 	 */
 	@Setter
-	private static ChatColor remainingColor = ChatColor.DARK_RED, totalColor = ChatColor.GRAY, deadColor = ChatColor.BLACK;
+	private static CompChatColor remainingColor = CompChatColor.DARK_RED, totalColor = CompChatColor.GRAY, deadColor = CompChatColor.BLACK;
 
 	/**
 	 * Formats and displays the health bar as action bar.

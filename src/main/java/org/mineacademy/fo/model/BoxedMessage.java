@@ -3,11 +3,11 @@ package org.mineacademy.fo.model;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
@@ -32,7 +32,7 @@ public final class BoxedMessage {
 	/**
 	 * The color of the top and bottom line
 	 */
-	public static ChatColor LINE_COLOR = ChatColor.DARK_GRAY;
+	public static CompChatColor LINE_COLOR = CompChatColor.DARK_GRAY;
 
 	/**
 	 * All message recipients

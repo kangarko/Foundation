@@ -1023,7 +1023,7 @@ public final class Common {
 	 * @param delimiterColor
 	 * @return
 	 */
-	public static String fancyBar(final int min, final char minChar, final int max, final char maxChar, final ChatColor delimiterColor) {
+	public static String fancyBar(final int min, final char minChar, final int max, final char maxChar, final CompChatColor delimiterColor) {
 		String formatted = "";
 
 		for (int i = 0; i < min; i++)
@@ -1540,18 +1540,18 @@ public final class Common {
 	 * @return
 	 */
 	/*public static Matcher compileMatcher(@NonNull final Pattern pattern, final String message) {
-	
+
 		try {
 			final SimplePlugin instance = SimplePlugin.getInstance();
-	
+
 			String strippedMessage = instance.regexStripColors() ? stripColors(message) : message;
 			strippedMessage = instance.regexStripAccents() ? ChatUtil.replaceDiacritic(strippedMessage) : strippedMessage;
-	
+
 			return pattern.matcher(TimedCharSequence.withSettingsLimit(strippedMessage));
-	
+
 		} catch (final RegexTimeoutException ex) {
 			handleRegexTimeoutException(ex, pattern);
-	
+
 			return null;
 		}
 	}*/
@@ -1595,7 +1595,7 @@ public final class Common {
 	 */
 	/*public static void handleRegexTimeoutException(RegexTimeoutException ex, Pattern pattern) {
 		final boolean caseInsensitive = SimplePlugin.getInstance().regexCaseInsensitive();
-	
+
 		Common.error(ex,
 				"A regular expression took too long to process, and was",
 				"stopped to prevent freezing your server.",

@@ -10,7 +10,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
@@ -26,6 +25,7 @@ import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -366,7 +366,7 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected String getHeaderPrefix() {
-		return this.getTheme() + "" + ChatColor.BOLD;
+		return this.getTheme() + "" + CompChatColor.BOLD;
 	}
 
 	/**
@@ -374,8 +374,8 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @return
 	 */
-	protected ChatColor getTheme() {
-		return ChatColor.GOLD;
+	protected CompChatColor getTheme() {
+		return CompChatColor.GOLD;
 	}
 
 	/**
@@ -534,7 +534,7 @@ public abstract class SimpleCommandGroup {
 					}
 
 				if (!lines.isEmpty()) {
-					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), SimpleCommandGroup.this.getCommandsPerPage()), ChatColor.DARK_GRAY);
+					final ChatPaginator pages = new ChatPaginator(MathUtil.range(0, lines.size(), SimpleCommandGroup.this.getCommandsPerPage()), CompChatColor.DARK_GRAY);
 
 					if (SimpleCommandGroup.this.getHelpHeader() != null)
 						pages.setHeader(SimpleCommandGroup.this.getHelpHeader());

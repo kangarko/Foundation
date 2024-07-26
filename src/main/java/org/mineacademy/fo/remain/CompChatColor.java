@@ -32,6 +32,10 @@ public final class CompChatColor {
 	 * you need to dynamically convert colour codes from your custom format.
 	 */
 	public static final char COLOR_CHAR = '\u00A7';
+
+	/**
+	 * All legacy color codes
+	 */
 	public static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
 
 	/**
@@ -297,6 +301,15 @@ public final class CompChatColor {
 	}
 
 	/**
+	 * Checks if this code is a color code as opposed to a format code.
+	 *
+	 * @return whether this ChatColor is a color code
+	 */
+	public boolean isColor() {
+		return !this.isFormat() && this != RESET;
+	}
+
+	/**
 	 * Convert this color to Adventure text color or format
 	 *
 	 * @return
@@ -371,6 +384,67 @@ public final class CompChatColor {
 			return null;
 
 		throw new RuntimeException("Cannot convert " + this + " to a text format");
+	}
+
+	/**
+	 * Create colored wool from the given chat color
+	 *
+	 * @param color
+	 * @return
+	 */
+	public CompMaterial toWool() {
+		if (this == AQUA)
+			return CompMaterial.LIGHT_BLUE_WOOL;
+
+		if (this == GOLD)
+			return CompMaterial.BROWN_WOOL;
+
+		if (this == DARK_AQUA)
+			return CompMaterial.CYAN_WOOL;
+
+		if (this == DARK_BLUE)
+			return CompMaterial.BLUE_WOOL;
+
+		if (this == DARK_GRAY)
+			return CompMaterial.GRAY_WOOL;
+
+		if (this == DARK_GREEN)
+			return CompMaterial.GREEN_WOOL;
+
+		if (this == DARK_PURPLE)
+			return CompMaterial.PURPLE_WOOL;
+
+		if (this == DARK_RED)
+			return CompMaterial.RED_WOOL;
+
+		if (this == GOLD)
+			return CompMaterial.ORANGE_WOOL;
+
+		if (this == GRAY)
+			return CompMaterial.LIGHT_GRAY_WOOL;
+
+		if (this == GREEN)
+			return CompMaterial.LIME_WOOL;
+
+		if (this == LIGHT_PURPLE)
+			return CompMaterial.MAGENTA_WOOL;
+
+		if (this == LIGHT_PURPLE) // TODO
+			return CompMaterial.PINK_WOOL;
+
+		return CompMaterial.fromString(this.name.toUpperCase() + "_WOOL");
+	}
+
+	/**
+	 * Return a colored concrete (or wool if the current MC does not support it
+	 *
+	 * @param color
+	 * @return
+	 */
+	public CompMaterial toConcrete() {
+		final CompMaterial wool = this.toWool();
+
+		return CompMaterial.fromString(wool.toString().replace("_WOOL", MinecraftVersion.olderThan(V.v1_12) ? "_STAINED_GLASS" : "_CONCRETE"));
 	}
 
 	/**
@@ -545,6 +619,90 @@ public final class CompChatColor {
 			}
 
 		return new String(letters);
+	}
+
+	/**
+	 * Gets the ChatColors used at the end of the given input string.
+	 *
+	 * @param input Input string to retrieve the colors from.
+	 * @return Any remaining ChatColors to pass onto the next line.
+	 */
+	public static String getLastColors(String input) {
+		if (input == null)
+			return "";
+
+		String result = "";
+		final int length = input.length();
+
+		// Search backwards from the end as it is faster
+		for (int index = length - 1; index > -1; index--) {
+			final char section = input.charAt(index);
+
+			if (section == COLOR_CHAR && index < length - 1) {
+				final String hexColor = getHexColor(input, index);
+
+				if (hexColor != null) {
+					// We got a hex color
+					result = hexColor + result;
+
+					break;
+				}
+
+				// It is not a hex color, check normal color
+				final char c = input.charAt(index + 1);
+				final CompChatColor color = getByChar(c);
+
+				if (color != null) {
+					result = color.toString() + result;
+
+					// Once we find a color or reset we can stop searching
+					if (color.isColor() || color.equals(RESET))
+						break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/*
+	 * Get a hex color from the input string, copied from ChatColor class.
+	 *
+	 * @deprecated uses legacy hex color formatting
+	 */
+	private static String getHexColor(String input, int index) {
+		// Check for hex color with the format '§x§1§2§3§4§5§6'
+		// Our index is currently on the last '§' which means to have a potential hex color
+		// The index - 11 must be an 'x' and index - 12 must be a '§'
+		// But first check if the string is long enough
+		if (index < 12)
+			return null;
+
+		if (input.charAt(index - 11) != 'x' || input.charAt(index - 12) != COLOR_CHAR)
+			return null;
+
+		// We got a potential hex color
+		// Now check if every the chars switches between '§' and a hex number
+		// First check '§'
+		for (int i = index - 10; i <= index; i += 2)
+			if (input.charAt(i) != COLOR_CHAR)
+				return null;
+
+		for (int i = index - 9; i <= (index + 1); i += 2) {
+			final char toCheck = input.charAt(i);
+
+			if (toCheck < '0' || toCheck > 'f')
+				return null;
+
+			if (toCheck > '9' && toCheck < 'A')
+				return null;
+
+			if (toCheck > 'F' && toCheck < 'a')
+				return null;
+		}
+
+		// We got a hex color return it
+		return input.substring(index - 12, index + 2);
 	}
 
 	/**

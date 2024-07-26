@@ -1,7 +1,6 @@
 package org.mineacademy.fo.settings;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.Messenger;
@@ -12,6 +11,7 @@ import org.mineacademy.fo.command.ReloadCommand;
 import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.settings.FileConfig.AccusativeHelper;
 
 /**
@@ -208,12 +208,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The primary color shown in the ----- COMMAND ----- header
 		 */
-		public static ChatColor HEADER_COLOR = ChatColor.GOLD;
+		public static CompChatColor HEADER_COLOR = CompChatColor.GOLD;
 
 		/**
 		 * The secondary color shown in the ----- COMMAND ----- header such as in /chc ?
 		 */
-		public static ChatColor HEADER_SECONDARY_COLOR = ChatColor.RED;
+		public static CompChatColor HEADER_SECONDARY_COLOR = CompChatColor.RED;
 
 		/**
 		 * The format of the header
@@ -371,10 +371,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 				HEADER_NO_SUBCOMMANDS_PERMISSION = getString("Header_No_Subcommands_Permission");
 
 			if (isSetDefault("Header_Color"))
-				HEADER_COLOR = get("Header_Color", ChatColor.class);
+				HEADER_COLOR = get("Header_Color", CompChatColor.class);
 
 			if (isSetDefault("Header_Secondary_Color"))
-				HEADER_SECONDARY_COLOR = get("Header_Secondary_Color", ChatColor.class);
+				HEADER_SECONDARY_COLOR = get("Header_Secondary_Color", CompChatColor.class);
 
 			if (isSetDefault("Header_Format"))
 				HEADER_FORMAT = getString("Header_Format");

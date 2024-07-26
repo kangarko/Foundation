@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.bukkit.ChatColor;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.model.Whiteblacklist;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -93,7 +92,7 @@ public final class ChatUtil {
 
 		for (final char c : message.toCharArray())
 
-			if (c == '&' || c == ChatColor.COLOR_CHAR) {
+			if (c == '&' || c == CompChatColor.COLOR_CHAR) {
 				previousCode = true;
 
 				continue;
@@ -580,26 +579,26 @@ public final class ChatUtil {
 			final char letter = letters[i];
 
 			// Support color decoration and insert it manually after each character
-			if (letter == ChatColor.COLOR_CHAR && i + 1 < letters.length) {
+			if (letter == CompChatColor.COLOR_CHAR && i + 1 < letters.length) {
 				final char decoration = letters[i + 1];
 
 				if (decoration == 'k')
-					decorations.add(ChatColor.MAGIC.toString());
+					decorations.add(CompChatColor.MAGIC.toString());
 
 				else if (decoration == 'l')
-					decorations.add(ChatColor.BOLD.toString());
+					decorations.add(CompChatColor.BOLD.toString());
 
 				else if (decoration == 'm')
-					decorations.add(ChatColor.STRIKETHROUGH.toString());
+					decorations.add(CompChatColor.STRIKETHROUGH.toString());
 
 				else if (decoration == 'n')
-					decorations.add(ChatColor.UNDERLINE.toString());
+					decorations.add(CompChatColor.UNDERLINE.toString());
 
 				else if (decoration == 'o')
-					decorations.add(ChatColor.ITALIC.toString());
+					decorations.add(CompChatColor.ITALIC.toString());
 
 				else if (decoration == 'r')
-					decorations.add(ChatColor.RESET.toString());
+					decorations.add(CompChatColor.RESET.toString());
 
 				i++;
 				continue;

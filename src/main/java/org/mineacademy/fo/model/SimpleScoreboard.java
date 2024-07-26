@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -20,6 +19,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -68,12 +68,14 @@ public class SimpleScoreboard {
 	private final List<UUID> viewers = new ArrayList<>();
 
 	/**
-	 * The color theme for key: value pairs such as
-	 * <p>
-	 * Players: 12
-	 * Mode: playing
+	 * The color theme for key such as "Players" in "Players: 12"
 	 */
-	private final String[] theme = new String[2];
+	private CompChatColor primaryTheme;
+
+	/**
+	 * The color theme for value such as "12" in "Players: 12"
+	 */
+	private CompChatColor secondaryTheme;
 
 	/**
 	 * The title of this scoreboard
@@ -252,15 +254,30 @@ public class SimpleScoreboard {
 	 * <p>
 	 * To use simply put color codes
 	 *
-	 * @param primary
-	 * @param secondary
+	 * @param primaryTheme
+	 * @param secondaryTheme
 	 */
-	public final void setTheme(@NonNull final ChatColor primary, final ChatColor secondary) {
-		if (secondary != null) {
-			this.theme[0] = "&" + primary.getChar();
-			this.theme[1] = "&" + secondary.getChar();
-		} else
-			this.theme[0] = "&" + primary.getChar();
+	public final void setTheme(final CompChatColor primaryTheme, final CompChatColor secondaryTheme) {
+		this.primaryTheme = primaryTheme;
+		this.secondaryTheme = secondaryTheme;
+	}
+
+	/**
+	 * See {@link #setTheme(CompChatColor, CompChatColor)}
+	 *
+	 * @param primaryTheme
+	 */
+	public final void setPrimaryTheme(CompChatColor primaryTheme) {
+		this.primaryTheme = primaryTheme;
+	}
+
+	/**
+	 * See {@link #setTheme(CompChatColor, CompChatColor)}
+	 *
+	 * @param secondaryTheme
+	 */
+	public final void setSecondaryTheme(CompChatColor secondaryTheme) {
+		this.secondaryTheme = secondaryTheme;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -399,18 +416,14 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	private String replaceTheme(final String row) {
-		if (row.contains(":"))
-			if (this.theme.length == 1)
-				return this.theme[0] + row;
+		final CompChatColor primary = Common.getOrDefault(this.primaryTheme, CompChatColor.RESET);
+		final String[] split = row.split("\\:");
 
-			else if (this.theme[0] != null) {
-				final String[] split = row.split("\\:");
+		if (split.length > 1)
+			return primary + split[0] + ":" + Common.getOrDefault(this.secondaryTheme, CompChatColor.RESET) + split[1];
 
-				if (split.length > 1)
-					return this.theme[0] + split[0] + ":" + this.theme[1] + split[1];
-			}
-
-		return row;
+		else
+			return primary + row;
 	}
 
 	/**
@@ -524,7 +537,7 @@ public class SimpleScoreboard {
 
 		for (final int splitPoint : splitPoints) {
 			final String lastEntry = splitText.isEmpty() ? "" : splitText.get(splitText.size() - 1);
-			final String lastColor = ChatColor.getLastColors(lastEntry);
+			final String lastColor = CompChatColor.getLastColors(lastEntry);
 
 			final boolean addColor = !text.startsWith(COLOR_CHAR) && !lastColor.isEmpty() && !spaceMatcher.matcher(text).find();
 			final int realSplitPoint = Math.min(splitPoint - (addColor ? 2 : 0), text.length());

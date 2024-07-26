@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -3307,7 +3306,7 @@ public final class Remain {
 
 				if (MinecraftVersion.atLeast(V.v1_8)) {
 					final Constructor<?> chatMessageConst = getNMSClass("ChatMessage", "net.minecraft.network.chat.ChatMessage").getConstructor(String.class, Object[].class);
-					final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
+					final Object chatMessage = chatMessageConst.newInstance(CompChatColor.translateColorCodes(title), new Object[0]);
 
 					if (MinecraftVersion.newerThan(V.v1_13)) {
 						final int inventorySize = topInventory.getSize() / 9;
@@ -3337,7 +3336,7 @@ public final class Remain {
 					final Constructor<?> openWindow = ReflectionUtil.getConstructor(
 							getNMSClass(MinecraftVersion.atLeast(V.v1_7) ? "PacketPlayOutOpenWindow" : "Packet100OpenWindow", "N/A"), int.class, int.class, String.class, int.class, boolean.class);
 
-					packetOpenWindow = ReflectionUtil.instantiate(openWindow, windowId, 0, ChatColor.translateAlternateColorCodes('&', title), topInventory.getSize(), true);
+					packetOpenWindow = ReflectionUtil.instantiate(openWindow, windowId, 0, CompChatColor.translateColorCodes(title), topInventory.getSize(), true);
 				}
 
 				sendPacket(player, packetOpenWindow);

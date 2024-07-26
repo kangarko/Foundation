@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -26,6 +25,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -339,7 +339,7 @@ public final class Variables {
 		replacements.put("nation", player == null ? "" : HookManager.getNation(player));
 		replacements.put("faction", player == null ? "" : HookManager.getFaction(player));
 		replacements.put("world", player == null ? "" : HookManager.getWorldAlias(player.getWorld()));
-		replacements.put("health", player == null ? "" : formatHealth0(player) + ChatColor.RESET);
+		replacements.put("health", player == null ? "" : formatHealth0(player));
 		replacements.put("location", player == null ? "" : Common.shortLocation(player.getLocation()));
 		replacements.put("x", player == null ? "" : String.valueOf(player.getLocation().getBlockX()));
 		replacements.put("y", player == null ? "" : String.valueOf(player.getLocation().getBlockY()));
@@ -369,7 +369,7 @@ public final class Variables {
 			String value = javascriptKey.buildPlain(sender, replacements);
 
 			// And we remove the white prefix that is by default added in every component
-			if (value.startsWith(ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "f"))
+			if (value.startsWith(CompChatColor.COLOR_CHAR + "f" + CompChatColor.COLOR_CHAR + "f"))
 				value = value.substring(4);
 
 			replacements.put(variable, value);
@@ -429,7 +429,7 @@ public final class Variables {
 				String plain = variable.buildPlain(sender, replacements);
 
 				// And we remove the white prefix that is by default added in every component
-				if (plain.startsWith(ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "f"))
+				if (plain.startsWith(CompChatColor.COLOR_CHAR + "f" + CompChatColor.COLOR_CHAR + "f"))
 					plain = plain.substring(4);
 
 				message = message.replace(variableKey, plain);
@@ -519,7 +519,7 @@ public final class Variables {
 			case "world":
 				return player == null ? "" : HookManager.getWorldAlias(player.getWorld());
 			case "health":
-				return player == null ? "" : formatHealth0(player) + ChatColor.RESET;
+				return player == null ? "" : formatHealth0(player);
 			case "location":
 				return player == null ? "" : Common.shortLocation(player.getLocation());
 			case "x":
@@ -592,7 +592,7 @@ public final class Variables {
 	private static String formatHealth0(Player player) {
 		final int hp = Remain.getHealth(player);
 
-		return (hp > 10 ? ChatColor.DARK_GREEN : hp > 5 ? ChatColor.GOLD : ChatColor.RED) + "" + hp;
+		return (hp > 10 ? CompChatColor.DARK_GREEN : hp > 5 ? CompChatColor.GOLD : CompChatColor.RED) + "" + hp + CompChatColor.RESET;
 	}
 
 	/*
