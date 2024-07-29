@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.LogRecord;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +15,6 @@ import org.apache.logging.log4j.message.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.remain.CompChatColor;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -24,6 +24,11 @@ import lombok.Setter;
  * Represents the console filtering module
  */
 final class FoundationFilter {
+
+	/**
+	 * The pattern to remove legacy colors
+	 */
+	private static final Pattern LEGACY_COLORS_PATTERN = Pattern.compile("([&§])[0-9a-fk-orA-FK-OR]");
 
 	/**
 	 * The messages we should filter, plugin authors can customize this in {@link SimplePlugin}
@@ -64,12 +69,7 @@ final class FoundationFilter {
 			return false;
 
 		// Replace & color codes
-		for (final CompChatColor color : CompChatColor.values()) {
-			if (!color.isHex())
-				message = message.replace("&" + color.getCode(), "");
-
-			message = message.replace(color.toString(), "");
-		}
+		message = LEGACY_COLORS_PATTERN.matcher(message).replaceAll("");
 
 		// Log4j2 exploit
 		if (message.contains("${jndi:ldap:"))
