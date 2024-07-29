@@ -47,7 +47,7 @@ public final class ColoredTextSlider implements Slider<String> {
 
 	/**
 	 * Set the amount of letters of the text we apply
-	 * {@link #getSecondaryColor()} to.
+	 * {@link #getSecondaryPrefix()} to.
 	 *
 	 * @param width
 	 * @return

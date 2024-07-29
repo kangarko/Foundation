@@ -125,7 +125,7 @@ public final class ProxyUtil {
 				sender = findFirstPlayer();
 
 			if (sender == null) {
-				Common.warning("Cannot send message " + message + " on channel '" + channel + "' to proxy because this server has no players.");
+				Debugger.put("proxy", "Cannot send message " + message + " on channel '" + channel + "' to proxy because this server has no players.");
 
 				return;
 			}

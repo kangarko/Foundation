@@ -389,7 +389,6 @@ public final class CompChatColor {
 	/**
 	 * Create colored wool from the given chat color
 	 *
-	 * @param color
 	 * @return
 	 */
 	public CompMaterial toWool() {
@@ -438,7 +437,6 @@ public final class CompChatColor {
 	/**
 	 * Return a colored concrete (or wool if the current MC does not support it
 	 *
-	 * @param color
 	 * @return
 	 */
 	public CompMaterial toConcrete() {

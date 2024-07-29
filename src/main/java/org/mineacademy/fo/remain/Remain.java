@@ -1001,7 +1001,7 @@ public final class Remain {
 	}
 
 	/**
-	 * Creates a new adventure component from legacy text with {@link ChatColor#COLOR_CHAR} colors replaced
+	 * Creates a new adventure component from legacy text with {@link CompChatColor#COLOR_CHAR} colors replaced
 	 *
 	 * @param legacyText
 	 * @return
