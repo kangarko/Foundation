@@ -95,7 +95,7 @@ If you want to compile a dependency to your jar, install it normally through the
                      
                      ONLY ADD THE LIBRARIES HERE YOU WANT TO BE INCLUDED IN YOUR PLUGIN.JAR
                      -->
-                <include>com.kangarko.github:Foundation*</include>
+                <include>com.github.kangarko:Foundation*</include>
             </includes>
         </artifactSet>
         <relocations>
