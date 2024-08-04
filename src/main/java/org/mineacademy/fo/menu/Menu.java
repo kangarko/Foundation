@@ -161,6 +161,13 @@ public abstract class Menu {
 	private boolean opened = false;
 
 	/**
+	 * If you want to allow shift click on a menu item.
+	 * Default will this return false.
+	*/
+	@Getter
+	@Setter
+	private boolean allowShift = false;
+	/**
 	 * Special case button only registered if this menu is {@link MenuQuantitable}
 	 */
 	@Nullable
