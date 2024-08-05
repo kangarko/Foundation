@@ -161,6 +161,13 @@ public abstract class Menu {
 	private boolean opened = false;
 
 	/**
+	 * If you want to allow shift click on a menu item.
+	 * Default will this return false.
+	*/
+	@Getter
+	@Setter
+	private boolean allowShift = false;
+	/**
 	 * Special case button only registered if this menu is {@link MenuQuantitable}
 	 */
 	@Nullable
@@ -645,6 +652,19 @@ public abstract class Menu {
 	 * Called automatically when a menu is restarted. Called before getItemAt() and after registerButtons()
 	 */
 	public void onRestart() {
+	}
+
+	/**
+	 * If you want to allow shift click on a menu item.
+	 * Default will this return false. Compare to the
+	 * {@link #isAllowShift()} method you can with this
+	 * method only allow the click in specific slots.
+	 *
+	 * @param slot the slot player clicking on.
+	 * @return true if allow the click.
+	 */
+	public boolean isAllowShift(int slot) {
+			return false;
 	}
 
 	/**
