@@ -89,7 +89,7 @@ public final class MenuListener implements Listener {
 			final boolean allowed = menu.isActionAllowed(whereClicked, slot, slotItem, cursor, action);
 			final boolean clickAllowed = ((menu.isAllowShift() || menu.isAllowShift(slot))&& (event.getClick().isRightClick() || event.getClick().isLeftClick())) || action.toString().contains("PICKUP") || action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR");
 
-				if (clickAllowed || action == InventoryAction.CLONE_STACK) {
+			if (clickAllowed || action == InventoryAction.CLONE_STACK) {
 				if (whereClicked == MenuClickLocation.MENU && slotItem != null)
 					try {
 						Button button = menu.getButton(slot);
