@@ -37,7 +37,22 @@ public enum CompItemFlag {
 	/**
 	 * Setting to show/hide potion effects on this ItemStack
 	 */
-	HIDE_POTION_EFFECTS;
+	HIDE_POTION_EFFECTS,
+	
+	/**
+	 * Setting to show/hide dyes from colored leather armor
+	 */
+	HIDE_DYE,
+	
+	/**
+	 * Setting to show/hide armor trim from armor
+	 */
+	HIDE_ARMOR_TRIM,
+
+	/**
+	 * Setting to show/hide potion effects, book and firework information, map tooltips, patterns of banners
+	 */
+	HIDE_ADDITIONAL_TOOLTIP;
 
 	/**
 	 * Tries to apply this item flag to the given item, fails silently
