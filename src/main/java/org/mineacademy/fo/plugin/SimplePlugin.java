@@ -43,6 +43,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.library.BukkitLibraryManager;
+import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
@@ -411,10 +412,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
-		
+
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
 			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-		
+
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
@@ -1103,7 +1104,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param version
 	 */
 	public void loadLibrary(String groupId, String artifactId, String version) {
-		this.getLibraryManager().loadLibrary(groupId, artifactId, version);
+		this.getLibraryManager().loadLibrary(Library.builder().groupId(groupId).artifactId(artifactId).version(version).resolveTransitiveDependencies(true).build());
 	}
 
 	/**
