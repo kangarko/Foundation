@@ -1,0 +1,66 @@
+<!-- (c) All rights reserved. Do not share, copy, reproduce 
+	or sell any part of this library unless you have written permission from 
+	MineAcademy.org. All infringements will be prosecuted. If you are the personal 
+	owner of the MineAcademy.org End User License then you may use it for your 
+	own use in plugins but not for any other purpose. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.mineacademy</groupId>
+        <artifactId>foundation-parent</artifactId>
+        <version>7.0.0</version>
+    </parent>
+
+    <groupId>org.mineacademy</groupId>
+    <artifactId>foundation-velocity</artifactId>
+    <version>7.0.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.velocitypowered</groupId>
+            <artifactId>velocity-api</artifactId>
+            <version>3.3.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+		<dependency>
+			<groupId>org.mineacademy</groupId>
+			<artifactId>foundation-core</artifactId>
+			<version>7.0.0</version>
+		</dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
