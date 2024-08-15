@@ -42,9 +42,9 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 * Attempts to get the main command group, failing with an error if not defined
 	 */
 	private static SimpleCommandGroup getMainCommandGroup0() {
-		final SimpleCommandGroup main = Platform.getDefaultCommandGroup();
+		final SimpleCommandGroup main = Platform.getPlugin().getDefaultCommandGroup();
 
-		ValidCore.checkNotNull(main, Platform.getPluginName() + " does not define a main command group!"
+		ValidCore.checkNotNull(main, Platform.getPlugin().getName() + " does not define a main command group!"
 				+ " You need to put @AutoRegister over your class extending a SimpleCommandGroup that has a no args constructor to register it automatically");
 
 		return main;
@@ -66,7 +66,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 
 		// If the default perm was not changed, improve it
 		if (this.getRawPermission().equals(getDefaultPermission()))
-			if (Platform.getDefaultCommandGroup() != null && Platform.getDefaultCommandLabel().equals(this.getLabel()))
+			if (Platform.getPlugin().getDefaultCommandGroup() != null && Platform.getPlugin().getDefaultCommandGroup().getLabel().equals(this.getLabel()))
 				this.setPermission(this.getRawPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
 
 			else

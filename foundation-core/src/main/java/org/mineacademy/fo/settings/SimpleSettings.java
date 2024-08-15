@@ -128,7 +128,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * <p>
 	 * Prefix: "&8[&3ChatControl&8]&7 "
 	 */
-	public static Component PLUGIN_PREFIX = RemainCore.convertLegacyToAdventure("&7" + Platform.getPluginName() + " //");
+	public static Component PLUGIN_PREFIX = RemainCore.convertLegacyToAdventure("&7" + Platform.getPlugin().getName() + " //");
 
 	/**
 	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to -1 to disable.

@@ -177,7 +177,7 @@ public class SimpleDatabase {
 			this.connecting = true;
 
 			if (url.startsWith("jdbc:sqlite")) {
-				Platform.loadLibrary("org.xerial", "sqlite-jdbc", "3.46.0.0");
+				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.46.0.0");
 
 				Class.forName("org.sqlite.JDBC");
 
@@ -194,7 +194,7 @@ public class SimpleDatabase {
 			}
 
 			else if (connectUsingHikari) {
-				Platform.loadLibrary("com.zaxxer", "HikariCP", RemainCore.getJavaVersion() >= 11 ? "5.1.0" : "4.0.3");
+				Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", RemainCore.getJavaVersion() >= 11 ? "5.1.0" : "4.0.3");
 
 				final Object hikariConfig = ReflectionUtilCore.instantiate("com.zaxxer.hikari.HikariConfig");
 
@@ -245,12 +245,12 @@ public class SimpleDatabase {
 			 */
 			else {
 				if (url.startsWith("jdbc:mariadb://")) {
-					Platform.loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.4.0");
+					Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.4.0");
 
 					Class.forName("org.mariadb.jdbc.Driver");
 
 				} else if (url.startsWith("jdbc:mysql://")) {
-					Platform.loadLibrary("com.mysql", "mysql-connector-j", "9.0.0");
+					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.0.0");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
 
@@ -1196,7 +1196,7 @@ public class SimpleDatabase {
 			final String value = this.getString(columnLabel);
 
 			if (value == null || "".equals(value)) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1208,7 +1208,7 @@ public class SimpleDatabase {
 			final String value = this.getString(columnLabel);
 
 			if (value == null || "".equals(value)) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1216,7 +1216,7 @@ public class SimpleDatabase {
 			final String[] split = value.split(" ");
 
 			if (split.length != 3) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid location value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid location value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1235,7 +1235,7 @@ public class SimpleDatabase {
 				final T enumValue = ReflectionUtilCore.lookupEnumSilent(typeOf, value);
 
 				if (enumValue == null) {
-					CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid " + typeOf.getSimpleName() + " enum value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring. Valid values: " + CommonCore.join(typeOf.getEnumConstants(), ", "));
+					CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid " + typeOf.getSimpleName() + " enum value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring. Valid values: " + CommonCore.join(typeOf.getEnumConstants(), ", "));
 
 					throw new InvalidRowException();
 				}
@@ -1251,7 +1251,7 @@ public class SimpleDatabase {
 			final T enumValue = ReflectionUtilCore.lookupEnumSilent(typeOf, value);
 
 			if (enumValue == null) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid " + typeOf.getSimpleName() + " enum value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring. Valid values: " + CommonCore.join(typeOf.getEnumConstants(), ", "));
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid " + typeOf.getSimpleName() + " enum value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring. Valid values: " + CommonCore.join(typeOf.getEnumConstants(), ", "));
 
 				throw new InvalidRowException();
 			}
@@ -1270,7 +1270,7 @@ public class SimpleDatabase {
 				return Boolean.parseBoolean(value);
 
 			} catch (final Throwable t) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid boolean value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid boolean value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1287,7 +1287,7 @@ public class SimpleDatabase {
 				return Integer.parseInt(value);
 
 			} catch (final Throwable t) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid integer value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid integer value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1304,7 +1304,7 @@ public class SimpleDatabase {
 				return Long.parseLong(value);
 
 			} catch (final Throwable t) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid long value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid long value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1321,7 +1321,7 @@ public class SimpleDatabase {
 				return Double.parseDouble(value);
 
 			} catch (final Throwable t) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid double value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid double value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1337,7 +1337,7 @@ public class SimpleDatabase {
 				return UUID.fromString(value);
 
 			} catch (final Throwable ex) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid UUID value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid UUID value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1350,7 +1350,7 @@ public class SimpleDatabase {
 				return UUID.fromString(value);
 
 			} catch (final Throwable ex) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid UUID value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid UUID value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1366,7 +1366,7 @@ public class SimpleDatabase {
 				return SerializeUtilCore.deserialize(Mode.JSON, typeOf, value);
 
 			} catch (final Throwable ex) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1376,7 +1376,7 @@ public class SimpleDatabase {
 			final String value = this.getStringStrict(columnLabel);
 
 			if (value == null || "".equals(value)) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1385,7 +1385,7 @@ public class SimpleDatabase {
 				return SerializeUtilCore.deserialize(Mode.JSON, typeOf, value);
 
 			} catch (final Throwable ex) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}
@@ -1419,7 +1419,7 @@ public class SimpleDatabase {
 			final String rawTimestamp = delegate.getString(columnLabel);
 
 			if (rawTimestamp == null) {
-				CommonCore.warning(Platform.getPluginName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+				CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
 
 				throw new InvalidRowException();
 			}

@@ -32,12 +32,10 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.BukkitCommandImpl;
 import org.mineacademy.fo.command.SimpleCommand;
-import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.remain.internal.BossBarInternals;
@@ -80,11 +78,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public void disablePlugin() {
-		Bukkit.getPluginManager().disablePlugin(SimplePlugin.getInstance());
-	}
-
-	@Override
 	public void dispatchCommand(Audience sender, String command) {
 		if (sender instanceof Player)
 			((Player) sender).performCommand(command);
@@ -99,11 +92,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public ProxyListener getDefaultProxyListener() {
-		return SimplePlugin.getInstance().getDefaultProxyListener();
-	}
-
-	@Override
 	public List<Audience> getOnlinePlayers() {
 		final List<Audience> players = new ArrayList<>();
 
@@ -114,32 +102,12 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public File getPluginFile() {
-		return SimplePlugin.getSource();
-	}
-
-	@Override
 	public File getPluginFile(String pluginName) {
 		final Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
 		Valid.checkNotNull(plugin, "Plugin " + pluginName + " not found!");
 		Valid.checkBoolean(plugin instanceof JavaPlugin, "Plugin " + pluginName + " is not a JavaPlugin. Got: " + plugin.getClass());
 
 		return (File) ReflectionUtil.invoke(ReflectionUtil.getMethod(JavaPlugin.class, "getFile"), plugin);
-	}
-
-	@Override
-	public File getPluginFolder() {
-		return SimplePlugin.getData();
-	}
-
-	@Override
-	public String getPluginName() {
-		return SimplePlugin.getNamed();
-	}
-
-	@Override
-	public String getPluginVersion() {
-		return SimplePlugin.getVersion();
 	}
 
 	@Override
@@ -155,11 +123,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	@Override
 	public List<String> getServerPlugins() {
 		return Common.convert(Bukkit.getPluginManager().getPlugins(), Plugin::getName);
-	}
-
-	@Override
-	public ClassLoader getPluginClassLoader() {
-		return SimplePlugin.getInstance().getClass().getClassLoader();
 	}
 
 	@Override
@@ -185,11 +148,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	@Override
 	public boolean isOnline(Audience audience) {
 		return (audience instanceof Player && ((Player) audience).isOnline()) || audience instanceof ConsoleCommandSender;
-	}
-
-	@Override
-	public boolean isPluginEnabled() {
-		return SimplePlugin.getInstance().isEnabled();
 	}
 
 	/**
@@ -218,34 +176,9 @@ public class PlatformBukkit implements FoundationPlatform {
 			return false;
 
 		if (!found.isEnabled())
-			Common.runLaterAsync(0, () -> Valid.checkBoolean(found.isEnabled(), Platform.getPluginName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + Platform.getPluginName() + ", look for errors above and contact support of '" + name + "')"));
+			Common.runLaterAsync(0, () -> Valid.checkBoolean(found.isEnabled(), SimplePlugin.getNamed() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getNamed() + ", look for errors above and contact support of '" + name + "')"));
 
 		return true;
-	}
-
-	@Override
-	public boolean isRegexCaseInsensitive() {
-		return SimplePlugin.getInstance().regexCaseInsensitive();
-	}
-
-	@Override
-	public boolean isRegexStrippingAccents() {
-		return SimplePlugin.getInstance().regexStripAccents();
-	}
-
-	@Override
-	public boolean isRegexStrippingColors() {
-		return SimplePlugin.getInstance().regexStripColors();
-	}
-
-	@Override
-	public boolean isRegexUnicode() {
-		return SimplePlugin.getInstance().regexUnicode();
-	}
-
-	@Override
-	public boolean isSimilarityStrippingAccents() {
-		return SimplePlugin.getInstance().similarityStripAccents();
 	}
 
 	@Override
@@ -273,11 +206,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	@Override
 	public Task runTaskAsync(int delayTicks, Runnable runnable) {
 		return Common.runLaterAsync(delayTicks, runnable);
-	}
-
-	@Override
-	public SimpleCommandGroup getDefaultCommandGroup() {
-		return SimplePlugin.getInstance().getDefaultCommandGroup();
 	}
 
 	@Override
@@ -391,11 +319,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public String getDefaultCommandLabel() {
-		return SimplePlugin.getInstance().getDefaultCommandGroup() != null ? SimplePlugin.getInstance().getDefaultCommandGroup().getLabel() : null;
-	}
-
-	@Override
 	public boolean isConsole(Object audience) {
 		return audience instanceof ConsoleCommandSender;
 	}
@@ -411,12 +334,12 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public void loadLibrary(String groupId, String artifactId, String version) {
-		SimplePlugin.getInstance().loadLibrary(groupId, artifactId, version);
+	public boolean isPluginReloading() {
+		return SimplePlugin.isReloading();
 	}
 
 	@Override
-	public boolean isPluginReloading() {
-		return SimplePlugin.isReloading();
+	public FoundationPlugin getPlugin() {
+		return SimplePlugin.getInstance();
 	}
 }

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -45,7 +45,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 
 			final List<File> yamlFiles = new ArrayList<>();
 
-			this.collectYamlFiles(SimplePlugin.getData(), yamlFiles);
+			this.collectYamlFiles(Platform.getPlugin().getDataFolder(), yamlFiles);
 
 			for (final File file : yamlFiles)
 				try {
@@ -63,11 +63,11 @@ public final class ReloadCommand extends SimpleSubCommand {
 				return;
 			}
 
-			SimplePlugin.getInstance().reload();
+			Platform.getPlugin().reload();
 			this.tell(SimpleLocalization.Commands.RELOAD_SUCCESS);
 
 		} catch (final Throwable t) {
-			this.tell(SimpleLocalization.Commands.RELOAD_FAIL.replace("{error}", t.getMessage() != null ? t.getMessage() : "unknown"));
+			this.tell(SimpleLocalization.Commands.RELOAD_FAIL.replaceText(b -> b.matchLiteral("{error}").replacement(t.getMessage() != null ? t.getMessage() : "unknown")));
 
 			t.printStackTrace();
 		}

@@ -39,7 +39,7 @@ public final class JavaScriptExecutor {
 
 	// Load the engine
 	static {
-		Thread.currentThread().setContextClassLoader(Platform.getPluginClassLoader());
+		Thread.currentThread().setContextClassLoader(Platform.getPlugin().getPluginClassLoader());
 
 		ScriptEngineManager engineManager = new ScriptEngineManager();
 		ScriptEngine scriptEngine = engineManager.getEngineByName("Nashorn");

@@ -72,7 +72,7 @@ public abstract class RemainCore {
 	 */
 	public static String getServerName() {
 		if (!hasServerName())
-			throw new IllegalArgumentException("Please write a 'server-name' key to your server.properties according to https://mineacademy.org/server-properties or instruct developer of " + Platform.getPluginName() + " to call Remain#setServerName");
+			throw new IllegalArgumentException("Please instruct developer of " + Platform.getPlugin().getName() + " to call Remain#setServerName");
 
 		return serverName;
 	}

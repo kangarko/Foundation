@@ -126,7 +126,7 @@ public final class Debugger {
 
 		try {
 			final List<String> lines = new ArrayList<>();
-			final String header = Platform.getPluginName() + " " + Platform.getPluginVersion() + " encountered " + CommonCore.article(t.getClass().getSimpleName());
+			final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + CommonCore.article(t.getClass().getSimpleName());
 
 			// Write out header and server info
 			fill(lines,

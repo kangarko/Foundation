@@ -8,9 +8,7 @@ import java.util.UUID;
 
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommand;
-import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.proxy.ProxyListener;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -24,22 +22,20 @@ public final class Platform {
 
 	private static FoundationPlatform instance;
 
-	// ------------------------------------------------------------
-	// Instance
-	// ------------------------------------------------------------
-
 	public static boolean callEvent(Object event) {
 		return getInstance().callEvent(event);
+	}
+
+	public static void checkCommandUse(SimpleCommand command) {
+		getInstance().checkCommandUse(command);
 	}
 
 	public static void closeAdventurePlatform() {
 		getInstance().closeAdventurePlatform();
 	}
 
-	// ------------------------------------------------------------
-
-	public static void disablePlugin() {
-		getInstance().disablePlugin();
+	public static HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack) {
+		return getInstance().convertItemStackToHoverEvent(itemStack);
 	}
 
 	public static void dispatchCommand(Audience sender, String command) {
@@ -50,11 +46,7 @@ public final class Platform {
 		getInstance().dispatchConsoleCommand(command);
 	}
 
-	public static ProxyListener getDefaultProxyListener() {
-		return getInstance().getDefaultProxyListener();
-	}
-
-	public static FoundationPlatform getInstance() {
+	private static FoundationPlatform getInstance() {
 		ValidCore.checkNotNull(instance, "Foundation instance not set yet.");
 
 		return instance;
@@ -64,40 +56,20 @@ public final class Platform {
 		return getInstance().getOnlinePlayers();
 	}
 
-	public static File getPluginFile() {
-		return getInstance().getPluginFile();
-	}
-
 	public static File getPluginFile(String pluginName) {
 		return getInstance().getPluginFile(pluginName);
-	}
-
-	public static File getPluginFolder() {
-		return getInstance().getPluginFolder();
-	}
-
-	public static String getPluginName() {
-		return getInstance().getPluginName();
-	}
-
-	public static String getPluginVersion() {
-		return getInstance().getPluginVersion();
 	}
 
 	public static String getServerName() {
 		return getInstance().getServerName();
 	}
 
-	public static String getServerVersion() {
-		return getInstance().getServerVersion();
-	}
-
 	public static List<String> getServerPlugins() {
 		return getInstance().getServerPlugins();
 	}
 
-	public static ClassLoader getPluginClassLoader() {
-		return getInstance().getPluginClassLoader();
+	public static String getServerVersion() {
+		return getInstance().getServerVersion();
 	}
 
 	public static boolean hasHexColorSupport() {
@@ -108,6 +80,14 @@ public final class Platform {
 		return getInstance().hasPermission(audience, permission);
 	}
 
+	public static boolean isAsync() {
+		return getInstance().isAsync();
+	}
+
+	public static boolean isConsole(Object audience) {
+		return getInstance().isConsole(audience);
+	}
+
 	public static boolean isConversing(Audience audience) {
 		return getInstance().isConversing(audience);
 	}
@@ -116,48 +96,28 @@ public final class Platform {
 		return getInstance().isDiscord(audience);
 	}
 
-	public static boolean isConsole(Object audience) {
-		return getInstance().isConsole(audience);
-	}
-
 	public static boolean isOnline(Audience audience) {
 		return getInstance().isOnline(audience);
 	}
 
-	public static boolean isPluginEnabled() {
-		return getInstance().isPluginEnabled();
-	}
-
-	public static boolean isPluginReloading() {
-		return getInstance().isPluginReloading();
+	public static boolean isPlaceholderAPIHooked() {
+		return getInstance().isPlaceholderAPIHooked();
 	}
 
 	public static boolean isPluginEnabled(String name) {
 		return getInstance().isPluginEnabled(name);
 	}
 
-	public static boolean isRegexCaseInsensitive() {
-		return getInstance().isRegexCaseInsensitive();
-	}
-
-	public static boolean isRegexStrippingAccents() {
-		return getInstance().isRegexStrippingAccents();
-	}
-
-	public static boolean isRegexStrippingColors() {
-		return getInstance().isRegexStrippingColors();
-	}
-
-	public static boolean isRegexUnicode() {
-		return getInstance().isRegexUnicode();
-	}
-
-	public static boolean isSimilarityStrippingAccents() {
-		return getInstance().isSimilarityStrippingAccents();
+	public static boolean isPluginReloading() {
+		return getInstance().isPluginReloading();
 	}
 
 	public static void logToConsole(String message) {
 		getInstance().logToConsole(message);
+	}
+
+	public static void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
+		getInstance().registerCommand(command, unregisterOldCommand, unregisterOldAliases);
 	}
 
 	public static void registerEvents(Object listener) {
@@ -174,14 +134,6 @@ public final class Platform {
 
 	public static Task runTaskAsync(int delayTicks, Runnable runnable) {
 		return getInstance().runTaskAsync(delayTicks, runnable);
-	}
-
-	public static void tell(Object sender, Component component, boolean skipEmpty) {
-		getInstance().tell(sender, component, skipEmpty);
-	}
-
-	public static HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack) {
-		return getInstance().convertItemStackToHoverEvent(itemStack);
 	}
 
 	public static void sendActionBar(Audience audience, Component message) {
@@ -212,6 +164,10 @@ public final class Platform {
 		Platform.instance = instance;
 	}
 
+	public static void tell(Object sender, Component component, boolean skipEmpty) {
+		getInstance().tell(sender, component, skipEmpty);
+	}
+
 	public static Set<Audience> toAudience(Collection<Object> players, boolean addConsole) {
 		return getInstance().toAudience(players, addConsole);
 	}
@@ -220,35 +176,11 @@ public final class Platform {
 		return getInstance().toAudience(sender);
 	}
 
-	public static void checkCommandUse(SimpleCommand command) {
-		getInstance().checkCommandUse(command);
-	}
-
-	public static void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
-		getInstance().registerCommand(command, unregisterOldCommand, unregisterOldAliases);
-	}
-
 	public static void unregisterCommand(SimpleCommand command) {
 		getInstance().unregisterCommand(command);
 	}
 
-	public static boolean isPlaceholderAPIHooked() {
-		return getInstance().isPlaceholderAPIHooked();
-	}
-
-	public static String getDefaultCommandLabel() {
-		return getInstance().getDefaultCommandLabel();
-	}
-
-	public static SimpleCommandGroup getDefaultCommandGroup() {
-		return getInstance().getDefaultCommandGroup();
-	}
-
-	public static void loadLibrary(String groupId, String artifactId, String version) {
-		getInstance().loadLibrary(groupId, artifactId, version);
-	}
-
-	public static boolean isAsync() {
-		return getInstance().isAsync();
+	public static FoundationPlugin getPlugin() {
+		return getInstance().getPlugin();
 	}
 }

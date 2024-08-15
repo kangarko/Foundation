@@ -22,7 +22,6 @@ import org.mineacademy.fo.jsonsimple.JSONObject;
 import org.mineacademy.fo.jsonsimple.JSONParser;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.ConfigSection;
 
@@ -934,12 +933,12 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 
 				this.override(path, newCollection);
 
-				CommonCore.logNoPrefix("[" + Platform.getPluginName() + "] Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
+				CommonCore.log("Converted '" + path + "' from " + from.getSimpleName() + "[] to " + to.getSimpleName() + "[]");
 
 			} else if (from.isAssignableFrom(old.getClass())) {
 				this.override(path, converter.apply((O) old));
 
-				CommonCore.logNoPrefix("[" + Platform.getPluginName() + "] Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
+				CommonCore.log("Converted '" + path + "' from '" + from.getSimpleName() + "' to '" + to.getSimpleName() + "'");
 			}
 	}
 

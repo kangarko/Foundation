@@ -46,7 +46,7 @@ public class YamlConfig extends FileConfig {
 				.setMaxAliasesForCollections(Integer.MAX_VALUE)
 				.build();
 
-		this.yamlLoader = new Load(loadSettings, new YamlConstructor(loadSettings));
+		this.yamlLoader = new Load(loadSettings);
 
 		final DumpSettings dumpSettings = DumpSettings.builder()
 				.setDefaultFlowStyle(FlowStyle.BLOCK)
@@ -54,7 +54,7 @@ public class YamlConfig extends FileConfig {
 				.setWidth(4096) // Do not wrap long lines
 				.build();
 
-		this.yamlDumper = new Dump(dumpSettings, new YamlRepresenter(dumpSettings));
+		this.yamlDumper = new Dump(dumpSettings);
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class YamlConfig extends FileConfig {
 		}
 
 		// Special case, write using comments engine
-		YamlComments.writeComments(this.defaultsPath, this.file, this.getUncommentedSections());
+		YamlComments.writeComments(this.defaultsPath, this.file, this.getUncommentedSections(), this.yamlDumper);
 
 		return null;
 	}

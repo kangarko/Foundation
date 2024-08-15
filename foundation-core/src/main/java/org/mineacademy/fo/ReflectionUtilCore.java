@@ -1,5 +1,6 @@
 package org.mineacademy.fo;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -7,19 +8,26 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.ReflectionException;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.RemainCore;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import net.kyori.adventure.bossbar.BossBar;
 
 /**
@@ -708,6 +716,50 @@ public class ReflectionUtilCore {
 		}
 	}
 
+	/**
+	 * Get all classes in the java plugin
+	 *
+	 * @param <T>
+	 * @param pluginFile
+	 * @param extendingClass
+	 * @return
+	 */
+	@SneakyThrows
+	public static <T> TreeSet<Class<T>> getClasses(@NonNull File pluginFile, Class<T> extendingClass) {
+
+		final TreeSet<Class<T>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
+
+		try (final JarFile jarFile = new JarFile(pluginFile)) {
+			final Enumeration<JarEntry> entries = jarFile.entries();
+
+			while (entries.hasMoreElements()) {
+				String name = entries.nextElement().getName();
+
+				if (name.endsWith(".class")) {
+					name = name.replaceFirst("\\.class", "").replace("/", ".");
+
+					Class<?> clazz = null;
+
+					try {
+						clazz = Class.forName(name, false, Platform.getPlugin().getPluginClassLoader());
+
+						if (extendingClass == null || (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass))
+							classes.add((Class<T>) clazz);
+
+					} catch (final Throwable throwable) {
+
+						if (extendingClass != null && (clazz != null && extendingClass.isAssignableFrom(clazz)) && clazz != extendingClass)
+							CommonCore.log("Unable to load class '" + name + "' due to error: " + throwable);
+
+						continue;
+					}
+				}
+			}
+		}
+
+		return classes;
+	}
+
 	// ------------------------------------------------------------------------------------------
 	// Misc
 	// ------------------------------------------------------------------------------------------
@@ -743,7 +795,6 @@ public class ReflectionUtilCore {
 			this.clazz = clazz;
 		}
 
-		//private final Map<String, Collection<Method>> methodCache = new ConcurrentHashMap<>();
 		private final Map<Integer, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 		private final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
 		private final Collection<String> fieldGuard = ConcurrentHashMap.newKeySet();
@@ -815,26 +866,6 @@ public class ReflectionUtilCore {
 				this.constructorGuard.remove(hashCode);
 			}
 		}
-
-		/*public void cacheMethod(final Method method) {
-			methodCache.computeIfAbsent(method.getName(), unused -> ConcurrentHashMap.newKeySet()).add(method);
-		}*/
-
-		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
-			if (methodCache.containsKey(name)) {
-				final Collection<Method> methods = methodCache.get(name);
-		
-				for (final Method method : methods)
-					if (Arrays.equals(paramTypes, method.getParameterTypes()))
-						return method;
-			}
-		
-			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
-			cacheMethod(method);
-		
-			return method;
-		}*/
 
 		public void cacheField(final Field field) {
 			this.fieldCache.put(field.getName(), field);

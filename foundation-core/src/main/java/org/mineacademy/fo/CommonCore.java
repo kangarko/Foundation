@@ -133,7 +133,7 @@ public abstract class CommonCore {
 	 * The log prefix applied on log() methods, defaults to [PluginName]
 	 */
 	@Getter
-	private static String logPrefix = "[" + Platform.getPluginName() + "]";
+	private static String logPrefix = "[" + Platform.getPlugin().getName() + "]";
 
 	/**
 	 * Set the tell prefix applied for messages to players from tell() methods
@@ -388,14 +388,14 @@ public abstract class CommonCore {
 	/*public static List<String> colorize(final List<String> list) {
 		final List<String> copy = new ArrayList<>();
 		copy.addAll(list);
-	
+
 		for (int i = 0; i < copy.size(); i++) {
 			final String message = copy.get(i);
-	
+
 			if (message != null)
 				copy.set(i, colorize(message));
 		}
-	
+
 		return copy;
 	}*/
 
@@ -418,7 +418,7 @@ public abstract class CommonCore {
 	/*public static String[] colorizeArray(final String... messages) {
 		for (int i = 0; i < messages.length; i++)
 			messages[i] = colorize(messages[i]);
-	
+
 		return messages;
 	}*/
 
@@ -458,8 +458,8 @@ public abstract class CommonCore {
 	public static Component colorize(String message) {
 		return colorize0(message)
 				.replaceText(b -> b.matchLiteral("{prefix}").replacement(tellPrefix))
-				.replaceText(b -> b.matchLiteral("{plugin_name}").replacement(Platform.getPluginName()))
-				.replaceText(b -> b.matchLiteral("{plugin_version}").replacement(Platform.getPluginVersion()));
+				.replaceText(b -> b.matchLiteral("{plugin_name}").replacement(Platform.getPlugin().getName()))
+				.replaceText(b -> b.matchLiteral("{plugin_version}").replacement(Platform.getPlugin().getVersion()));
 	}
 
 	/*
@@ -1086,7 +1086,7 @@ public abstract class CommonCore {
 		}
 
 		if (disablePlugin)
-			Platform.disablePlugin();
+			Platform.getPlugin().disable();
 	}
 
 	/**
@@ -1166,14 +1166,14 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static Pattern compilePattern(String regex) {
-		regex = Platform.isRegexStrippingColors() ? CommonCore.removeColors(regex) : regex;
-		regex = Platform.isRegexStrippingAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
+		regex = Platform.getPlugin().isRegexStrippingColors() ? CommonCore.removeColors(regex) : regex;
+		regex = Platform.getPlugin().isRegexStrippingAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
 
-		if (Platform.isRegexCaseInsensitive())
-			return Pattern.compile(regex, Platform.isRegexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
+		if (Platform.getPlugin().isRegexCaseInsensitive())
+			return Pattern.compile(regex, Platform.getPlugin().isRegexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
 
 		else
-			return Platform.isRegexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
+			return Platform.getPlugin().isRegexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

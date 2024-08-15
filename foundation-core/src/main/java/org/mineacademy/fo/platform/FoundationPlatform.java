@@ -7,9 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.mineacademy.fo.command.SimpleCommand;
-import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.proxy.ProxyListener;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
@@ -20,71 +18,51 @@ public interface FoundationPlatform {
 
 	boolean callEvent(Object event);
 
+	void checkCommandUse(SimpleCommand command);
+
 	void closeAdventurePlatform();
 
-	void disablePlugin();
+	HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack);
 
 	void dispatchCommand(Audience sender, String command);
 
 	void dispatchConsoleCommand(String command);
 
-	ProxyListener getDefaultProxyListener();
-
-	SimpleCommandGroup getDefaultCommandGroup();
-
 	List<Audience> getOnlinePlayers();
 
-	File getPluginFile();
+	FoundationPlugin getPlugin();
 
 	File getPluginFile(String pluginName);
 
-	File getPluginFolder();
-
-	String getPluginName();
-
-	String getPluginVersion();
-
 	String getServerName();
-
-	String getServerVersion();
 
 	List<String> getServerPlugins();
 
-	ClassLoader getPluginClassLoader();
+	String getServerVersion();
 
 	boolean hasHexColorSupport();
 
 	boolean hasPermission(Audience audience, String permission);
 
+	boolean isAsync();
+
+	boolean isConsole(Object audience);
+
 	boolean isConversing(Audience audience);
 
 	boolean isDiscord(Object audience);
 
-	boolean isConsole(Object audience);
-
 	boolean isOnline(Audience audience);
-
-	boolean isPluginReloading();
-
-	boolean isPluginEnabled();
-
-	boolean isPluginEnabled(String name);
-
-	boolean isRegexCaseInsensitive();
-
-	boolean isRegexStrippingAccents();
-
-	boolean isRegexStrippingColors();
-
-	boolean isRegexUnicode();
-
-	boolean isSimilarityStrippingAccents();
 
 	boolean isPlaceholderAPIHooked();
 
-	String getDefaultCommandLabel();
+	boolean isPluginEnabled(String name);
+
+	boolean isPluginReloading();
 
 	void logToConsole(String message);
+
+	void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases);
 
 	void registerEvents(Object listener);
 
@@ -106,21 +84,11 @@ public interface FoundationPlatform {
 
 	void sendToast(Audience audience, Component message);
 
+	void tell(Object sender, Component component, boolean skipEmpty);
+
 	Set<Audience> toAudience(Collection<Object> players, boolean addConsole);
 
 	Audience toAudience(Object sender);
 
-	void tell(Object sender, Component component, boolean skipEmpty);
-
-	HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack);
-
-	void checkCommandUse(SimpleCommand command);
-
-	void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases);
-
 	void unregisterCommand(SimpleCommand command);
-
-	void loadLibrary(String groupId, String artifactId, String version);
-
-	boolean isAsync();
 }

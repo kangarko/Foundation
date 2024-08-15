@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.mineacademy.fo.CommonCore;
@@ -60,17 +59,9 @@ public abstract class FileConfig {
 	 */
 	public static final String NO_DEFAULT = null;
 
-	/**
-	 * Switches how you'd like to store the content of the settings file. Defaults to YAML.
-	 *
-	 * TODO Implement JSON settings storage
-	 */
-	final SerializeUtilCore.Mode mode = Mode.YAML;
-
 	/*
 	 * The file that is being used
 	 */
-
 	@Setter(value = AccessLevel.PROTECTED)
 	File file;
 
@@ -88,13 +79,11 @@ public abstract class FileConfig {
 	/*
 	 * Defaults path in your JAR file, if any
 	 */
-
 	String defaultsPath;
 
 	/**
 	 * Optional config header
 	 */
-
 	private String[] header;
 
 	/**
@@ -230,7 +219,7 @@ public abstract class FileConfig {
 				raw = ((Integer) raw).longValue();
 
 			if (!this.fastMode) {
-				raw = SerializeUtilCore.deserialize(this.mode, type, raw, deserializeParams);
+				raw = SerializeUtilCore.deserialize(Mode.YAML, type, raw, deserializeParams);
 
 				this.checkAssignable(path, raw, type);
 			}
@@ -343,7 +332,7 @@ public abstract class FileConfig {
 			return CommonCore.join((Object[]) object);
 
 		else if (object instanceof Boolean || object instanceof Integer || object instanceof Long || object instanceof Double || object instanceof Float)
-			return Objects.toString(object);
+			return String.valueOf(object);
 
 		else if (object instanceof Number)
 			return ((Number) object).toString();
@@ -815,7 +804,7 @@ public abstract class FileConfig {
 
 		if (objects != null)
 			for (Object object : objects) {
-				object = object != null ? SerializeUtilCore.deserialize(this.mode, type, object, deserializeParameters) : null;
+				object = object != null ? SerializeUtilCore.deserialize(Mode.YAML, type, object, deserializeParameters) : null;
 
 				if (object != null)
 					list.add((T) object);
@@ -897,11 +886,11 @@ public abstract class FileConfig {
 
 		if (savedKeys != null)
 			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path))) {
-				final Key key = SerializeUtilCore.deserialize(this.mode, keyType, entry.getKey());
+				final Key key = SerializeUtilCore.deserialize(Mode.YAML, keyType, entry.getKey());
 				final Value value;
 
 				/*if (LocationList.class.isAssignableFrom(valueType)) {
-					final List<?> list = SerializeUtilCore.deserialize(this.mode, List.class, entry.getValue());
+					final List<?> list = SerializeUtilCore.deserialize(Mode.YAML, List.class, entry.getValue());
 					final List<Location> copy = new ArrayList<>();
 
 					list.forEach(locationRaw -> copy.add(SerializeUtilCore.deserializeLocation(locationRaw)));
@@ -909,7 +898,7 @@ public abstract class FileConfig {
 					value = (Value) new LocationList(this, copy);
 
 				} else*/
-				value = SerializeUtilCore.deserialize(this.mode, valueType, entry.getValue(), valueDeserializeParams);
+				value = SerializeUtilCore.deserialize(Mode.YAML, valueType, entry.getValue(), valueDeserializeParams);
 
 				// Ensure the pair values are valid for the given paramenters
 				this.checkAssignable(path, key, keyType);
@@ -953,8 +942,8 @@ public abstract class FileConfig {
 		// Load key-value pairs from config to our map
 		if (exists)
 			for (final Map.Entry<String, Object> entry : SerializedMap.of(this.section.retrieve(path)).entrySet()) {
-				final Key key = SerializeUtilCore.deserialize(this.mode, keyType, entry.getKey());
-				final List<Value> value = SerializeUtilCore.deserialize(this.mode, List.class, entry.getValue(), setDeserializeParameters);
+				final Key key = SerializeUtilCore.deserialize(Mode.YAML, keyType, entry.getKey());
+				final List<Value> value = SerializeUtilCore.deserialize(Mode.YAML, List.class, entry.getValue(), setDeserializeParameters);
 
 				// Ensure the pair values are valid for the given parameters
 				this.checkAssignable(path, key, keyType);
@@ -1000,7 +989,7 @@ public abstract class FileConfig {
 	 */
 	public final void set(String path, Object value) {
 		path = this.buildPathPrefix(path);
-		value = SerializeUtilCore.serialize(this.mode, value);
+		value = SerializeUtilCore.serialize(Mode.YAML, value);
 
 		this.section.store(path, value);
 		this.shouldSave = true;
@@ -1417,7 +1406,7 @@ public abstract class FileConfig {
 			for (int i = 0; i < values.length; i++) {
 				final String line = CommonCore.getOrEmpty(values[i]);
 
-				for (final String subline : line.replace("{plugin}", Platform.getPluginName()).replace("{label}", mainCommandLabel).split("\n"))
+				for (final String subline : line.replace("{plugin}", Platform.getPlugin().getName()).replace("{label}", mainCommandLabel).split("\n"))
 					header.add(subline);
 			}
 

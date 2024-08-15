@@ -40,7 +40,7 @@ public final class OutgoingMessage extends Message {
 	 * @param action
 	 */
 	public OutgoingMessage(ProxyMessage action) {
-		this(Platform.getDefaultProxyListener(), action);
+		this(Platform.getPlugin().getDefaultProxyListener(), action);
 	}
 
 	/**

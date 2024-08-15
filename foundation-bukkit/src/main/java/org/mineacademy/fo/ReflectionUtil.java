@@ -5,14 +5,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import javax.annotation.Nullable;
 
@@ -26,7 +22,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.MissingEnumException;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.AccessLevel;
@@ -221,37 +216,7 @@ public final class ReflectionUtil extends ReflectionUtilCore {
 
 		final File pluginFile = (File) getFileMethod.invoke(plugin);
 
-		final TreeSet<Class<T>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
-
-		try (final JarFile jarFile = new JarFile(pluginFile)) {
-			final Enumeration<JarEntry> entries = jarFile.entries();
-
-			while (entries.hasMoreElements()) {
-				String name = entries.nextElement().getName();
-
-				if (name.endsWith(".class")) {
-					name = name.replaceFirst("\\.class", "").replace("/", ".");
-
-					Class<?> clazz = null;
-
-					try {
-						clazz = Class.forName(name, false, SimplePlugin.class.getClassLoader());
-
-						if (extendingClass == null || (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass))
-							classes.add((Class<T>) clazz);
-
-					} catch (final Throwable throwable) {
-
-						if (extendingClass != null && (clazz != null && extendingClass.isAssignableFrom(clazz)) && clazz != extendingClass)
-							CommonCore.log("Unable to load class '" + name + "' due to error: " + throwable);
-
-						continue;
-					}
-				}
-			}
-		}
-
-		return classes;
+		return ReflectionUtilCore.getClasses(pluginFile, extendingClass);
 	}
 
 	/**

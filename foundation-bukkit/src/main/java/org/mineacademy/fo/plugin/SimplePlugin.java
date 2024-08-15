@@ -51,6 +51,7 @@ import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleHologram;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyListenerImpl;
@@ -70,7 +71,7 @@ import net.kyori.adventure.text.Component;
  * Represents a basic Java plugin using enhanced library functionality,
  * implementing a listener for easy use
  */
-public abstract class SimplePlugin extends JavaPlugin implements Listener {
+public abstract class SimplePlugin extends JavaPlugin implements Listener, FoundationPlugin {
 
 	// ----------------------------------------------------------------------------------------
 	// Static
@@ -80,12 +81,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * The instance of this plugin
 	 */
 	private static SimplePlugin instance;
-
-	/**
-	 * Shortcut for getDescription().getVersion()
-	 */
-	@Getter
-	private static String version;
 
 	/**
 	 * Shortcut for getName()
@@ -196,7 +191,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		getInstance();
 
 		// Cache results for best performance
-		version = instance.getDescription().getVersion();
 		named = instance.getDataFolder().getName();
 		source = instance.getFile();
 		data = instance.getDataFolder();
@@ -595,6 +589,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	/**
 	 * Attempts to reload the plugin
 	 */
+	@Override
 	public final void reload() {
 		final String oldLogPrefix = Common.getLogPrefix();
 		Common.setLogPrefix("");
@@ -658,7 +653,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 				this.registerEvents(CompMetadata.MetadataFile.getInstance());
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Error reloading " + this.getDataFolder().getName() + " " + getVersion());
+			Common.throwError(t, "Error reloading " + this.getDataFolder().getName() + " " + this.getVersion());
 
 		} finally {
 			Common.setLogPrefix(oldLogPrefix);
@@ -808,6 +803,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
+	@Override
 	@Nullable
 	public SimpleCommandGroup getDefaultCommandGroup() {
 		return this.defaultCommandGroup;
@@ -829,6 +825,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return -1 by default, or the founded year
 	 */
+	@Override
 	public int getFoundedYear() {
 		return -1;
 	}
@@ -851,7 +848,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	public boolean regexStripColors() {
+	@Override
+	public boolean isRegexStrippingColors() {
 		return true;
 	}
 
@@ -862,7 +860,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	public boolean regexCaseInsensitive() {
+	@Override
+	public boolean isRegexCaseInsensitive() {
 		return true;
 	}
 
@@ -873,7 +872,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	public boolean regexUnicode() {
+	@Override
+	public boolean isRegexUnicode() {
 		return true;
 	}
 
@@ -883,7 +883,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return
 	 */
-	public boolean regexStripAccents() {
+	@Override
+	public boolean isRegexStrippingAccents() {
 		return true;
 	}
 
@@ -893,7 +894,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 *
 	 * @return defaults to true
 	 */
-	public boolean similarityStripAccents() {
+	@Override
+	public boolean isSimilarityStrippingAccents() {
 		return true;
 	}
 
@@ -903,6 +905,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @deprecated only returns the first listener, if you have multiple, do not use, order not guaranteed
 	 * @return
 	 */
+	@Override
 	@Deprecated
 	public final ProxyListener getDefaultProxyListener() {
 		return this.defaultProxyListener;
@@ -930,6 +933,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * @param artifactId
 	 * @param version
 	 */
+	@Override
 	public final void loadLibrary(String groupId, String artifactId, String version) {
 		this.getLibraryManager().loadLibrary(Library.builder().groupId(groupId).artifactId(artifactId).resolveTransitiveDependencies(true).version(version).build());
 	}
@@ -992,7 +996,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	 * Get the plugins jar file
 	 */
 	@Override
-	protected final File getFile() {
+	public final File getFile() {
 		return super.getFile();
 	}
 
@@ -1007,5 +1011,25 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Override
 	public final PluginCommand getCommand(final String name) {
 		return super.getCommand(name);
+	}
+
+	@Override
+	public final void disable() {
+		this.getServer().getPluginManager().disablePlugin(this);
+	}
+
+	@Override
+	public final String getVersion() {
+		return this.getDescription().getVersion();
+	}
+
+	@Override
+	public final ClassLoader getPluginClassLoader() {
+		return super.getClassLoader();
+	}
+
+	@Override
+	public final String getAuthors() {
+		return String.join(", ", this.getDescription().getAuthors());
 	}
 }

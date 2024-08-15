@@ -78,7 +78,7 @@ public final class LagCatcher {
 		final double lag = finishAndCalculate(section);
 
 		if (lag > thresholdMs && SimpleSettings.LAG_THRESHOLD_MILLIS != -1) {
-			message = "[" + Platform.getPluginName() + " " + Platform.getPluginVersion() + "] " + message
+			message = "[" + Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + "] " + message
 					.replace("{section}", section)
 					.replace("{time}", MathUtilCore.formatTwoDigits(lag));
 

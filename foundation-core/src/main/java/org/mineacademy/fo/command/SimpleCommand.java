@@ -25,6 +25,7 @@ import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 import lombok.Getter;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
  * A simple command used to replace all Bukkit/Spigot command functionality
@@ -47,7 +49,7 @@ public abstract class SimpleCommand {
 	/**
 	 * The default permission syntax, {pluginName}.command.{label}
 	 */
-	private static String defaultPermission = Platform.getPluginName().toLowerCase() + ".command.{label}";
+	private static String defaultPermission = Platform.getPlugin().getName().toLowerCase() + ".command.{label}";
 
 	/**
 	 * Return the default permission syntax
@@ -95,12 +97,12 @@ public abstract class SimpleCommand {
 	/**
 	 * The command usage
 	 */
-	private final Component usage = null;
+	private Component usage = null;
 
 	/**
 	 * The command description
 	 */
-	private final Component description = null;
+	private Component description = null;
 
 	/**
 	 * Has this command been already registered?
@@ -336,7 +338,7 @@ public abstract class SimpleCommand {
 	@Deprecated
 	public final boolean delegateExecute(final Audience sender, final String label, final String[] args) {
 
-		if (Platform.isPluginReloading() || !Platform.isPluginEnabled()) {
+		if (Platform.isPluginReloading() || !Platform.getPlugin().isEnabled()) {
 			CommonCore.tell(sender, SimpleLocalization.Commands.CANNOT_USE_WHILE_NULL.replaceText(b -> b.matchLiteral("{state}").replacement(Platform.isPluginReloading() ? SimpleLocalization.Commands.RELOADING : SimpleLocalization.Commands.DISABLED)));
 
 			return false;
@@ -368,21 +370,43 @@ public abstract class SimpleCommand {
 				final List<Component> messages = new ArrayList<>();
 
 				if (this.getDescription() != null) {
-					final Component descriptionLabel = SimpleLocalization.Commands.LABEL_DESCRIPTION;
+					Component descriptionLabel = SimpleLocalization.Commands.LABEL_DESCRIPTION;
+					final String descriptionPlain = RemainCore.convertAdventureToPlain(descriptionLabel);
 
-					messages.add(descriptionLabel.contains("{description}") ? descriptionLabel.replace("{description}", "&c" + this.getDescription()) : descriptionLabel + " &c" + this.getDescription());
+					Component description = this.getDescription();
+
+					if (description.color() == null)
+						description = description.color(NamedTextColor.RED);
+
+					if (!descriptionPlain.contains("{description}"))
+						descriptionLabel = descriptionLabel.append(description);
+					else
+						descriptionLabel = descriptionLabel.replaceText(TextReplacementConfig.builder().matchLiteral("{description}").replacement(description).build());
+
+					messages.add(descriptionLabel);
 				}
 
 				if (this.getMultilineUsageMessage() != null) {
 					messages.add(SimpleLocalization.Commands.LABEL_USAGE);
 
-					for (final String usage : this.getMultilineUsageMessage())
-						messages.add("&c" + usage);
+					for (Component usage : this.getMultilineUsageMessage()) {
+						if (usage.color() == null)
+							usage = usage.color(NamedTextColor.RED);
+
+						messages.add(usage);
+					}
 
 				} else if (this.getUsage() != null) {
-					final String usage = this.getUsage();
+					Component usage = this.getUsage();
+					final String usagePlain = RemainCore.convertAdventureToPlain(usage);
 
-					messages.add("&c" + (usage.startsWith("/") ? usage : "/{label} " + (this instanceof SimpleSubCommand ? "{sublabel} " : "") + usage));
+					if (usage.color() == null)
+						usage = usage.color(NamedTextColor.RED);
+
+					if (!usagePlain.startsWith("/"))
+						usage = Component.text("/{label} " + (this instanceof SimpleSubCommand ? "{sublabel} " : "")).append(usage);
+
+					messages.add(usage);
 
 				} else
 					throw new FoException("Either getUsage() or getMultilineUsageMessage() must be implemented for '/" + this.getLabel() + sublabel + "' command!");
@@ -1701,6 +1725,22 @@ public abstract class SimpleCommand {
 	 */
 	protected final void setAutoHandleHelp(final boolean autoHandleHelp) {
 		this.autoHandleHelp = autoHandleHelp;
+	}
+
+	protected final void setUsage(String usage) {
+		this.usage = CommonCore.colorize(usage);
+	}
+
+	protected final void setUsage(Component usage) {
+		this.usage = usage;
+	}
+
+	protected final void setDescription(Component description) {
+		this.description = description;
+	}
+
+	protected final void setDescription(String description) {
+		this.description = CommonCore.colorize(description);
 	}
 
 	// ----------------------------------------------------------------------

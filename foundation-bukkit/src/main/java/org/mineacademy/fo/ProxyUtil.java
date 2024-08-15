@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
@@ -42,7 +41,7 @@ public final class ProxyUtil {
 	@SafeVarargs
 	public static <T> void sendPluginMessage(ProxyMessage message, T... datas) {
 		final ProxyListener proxy = SimplePlugin.getInstance().getDefaultProxyListener();
-		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + Platform.getPluginName() + " does not have any class extending ProxyListener with @AutoMessage!");
+		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + SimplePlugin.getNamed() + " does not have any class extending ProxyListener with @AutoMessage!");
 
 		sendPluginMessage(proxy.getChannel(), message, datas);
 	}
@@ -61,7 +60,7 @@ public final class ProxyUtil {
 	@SafeVarargs
 	public static <T> void sendPluginMessageAs(@Nullable Player player, ProxyMessage message, T... datas) {
 		final ProxyListener proxy = SimplePlugin.getInstance().getDefaultProxyListener();
-		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + Platform.getPluginName() + " does not have any class extending ProxyListener with @AutoMessage");
+		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + SimplePlugin.getNamed() + " does not have any class extending ProxyListener with @AutoMessage");
 
 		sendPluginMessage(player, proxy.getChannel(), message, datas);
 	}

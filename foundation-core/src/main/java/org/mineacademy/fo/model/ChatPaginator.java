@@ -8,12 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.PermsCommand;
@@ -21,6 +18,7 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.settings.SimpleLocalization;
+import org.mineacademy.fo.settings.SimpleLocalization.Player;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -237,10 +235,10 @@ public final class ChatPaginator {
 	 * @param page
 	 */
 	public void send(Audience audience, int page) {
-		if (Bukkit.isPrimaryThread())
-			this.send0(audience, page);
+		if (Platform.isAsync())
+			Platform.runTask(0, () -> this.send0(audience, page));
 		else
-			Common.runLater(() -> this.send0(audience, page));
+			this.send0(audience, page);
 	}
 
 	private void send0(Audience audience, int page) {
@@ -276,6 +274,6 @@ public final class ChatPaginator {
 	}
 
 	public static String getPageNbtTag() {
-		return "FoPages_" + Platform.getPluginName();
+		return "FoPages_" + Platform.getPlugin().getName();
 	}
 }

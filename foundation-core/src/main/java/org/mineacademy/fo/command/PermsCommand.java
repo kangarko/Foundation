@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.annotation.Permission;
 import org.mineacademy.fo.command.annotation.PermissionGroup;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponentCore;
-import org.mineacademy.fo.plugin.SimplePlugin;
+import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.SimpleLocalization.Commands;
 
 import lombok.NonNull;
@@ -28,23 +27,6 @@ public final class PermsCommand extends SimpleSubCommand {
 	 */
 	private final Class<?> classToList;
 
-	/*
-	 * Special variables to replace in the annotation of each permission field in permissions class
-	 */
-	private final SerializedMap variables;
-
-	/**
-	 * Create a new "permisions|perms" subcommand using the given class
-	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class.
-	 *
-	 * We set the permission for this command to "{yourPluginName}.command.permissions".
-	 *
-	 * @param classToList
-	 */
-	public PermsCommand(@NonNull Class<?> classToList) {
-		this(classToList, new SerializedMap());
-	}
-
 	/**
 	 * Create a new "permisions|perms" subcommand using the given class
 	 * that automatically replaces {label} in the \@PermissionGroup annotation in that class
@@ -54,7 +36,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	 * @param permission
 	 */
 	public PermsCommand(@NonNull Class<?> classToList, String permission) {
-		this(classToList, new SerializedMap());
+		this(classToList);
 
 		this.setPermission(permission);
 	}
@@ -63,22 +45,14 @@ public final class PermsCommand extends SimpleSubCommand {
 	 * Create a new "permisions|perms" subcommand using the given class with
 	 * the given variables to replace in the \@PermissionGroup annotation in that class.
 	 *
-	 * We attempt to replace {label} with your main command alias. And we set the permission
-	 * for this command to "{yourPluginName}.command.permissions".
-	 *
 	 * @param classToList
-	 * @param variables
 	 */
-	public PermsCommand(@NonNull Class<?> classToList, SerializedMap variables) {
+	public PermsCommand(@NonNull Class<?> classToList) {
 		super("permissions|perms");
 
 		this.classToList = classToList;
-		this.variables = variables;
 
-		if (!this.variables.containsKey("label") && SimplePlugin.getInstance().getMainCommand() != null)
-			this.variables.put("label", SimplePlugin.getInstance().getMainCommand().getLabel());
-
-		this.setPermission(Platform.getPluginName().toLowerCase() + ".command.permissions");
+		this.setPermission(Platform.getPlugin().getName().toLowerCase() + ".command.permissions");
 		this.setDescription(Commands.PERMS_DESCRIPTION);
 		this.setUsage(Commands.PERMS_USAGE);
 
@@ -92,7 +66,7 @@ public final class PermsCommand extends SimpleSubCommand {
 		final String phrase = this.args.length > 0 ? this.joinArgs(0) : null;
 
 		new ChatPaginator(15)
-				.setFoundationHeader(Commands.PERMS_HEADER)
+				.setFoundationHeader(RemainCore.convertAdventureToLegacy(Commands.PERMS_HEADER))
 				.setPages(this.list(phrase))
 				.send(this.sender);
 	}
@@ -145,13 +119,17 @@ public final class PermsCommand extends SimpleSubCommand {
 
 			final Permission annotation = field.getAnnotation(Permission.class);
 
-			final String info = Replacer.replaceVariables(String.join("\n", CommonCore.split(annotation.value(), 50)), this.variables);
+			final String info = String.join("\n", CommonCore.split(annotation.value(), 50));
 			final boolean def = annotation.def();
 
 			if (info.contains("{") && info.contains("}"))
 				throw new FoException("Forgotten unreplaced variable in " + info + " for field " + field + " in " + clazz);
 
-			final String node = Replacer.replaceVariables((String) field.get(null), this.variables);
+			final String node = (String) field.get(null);
+
+			if (node.contains("{") && node.contains("}"))
+				throw new FoException("Forgotten unreplaced variable in " + node + " for field " + field + " in " + clazz);
+
 			final boolean has = this.sender == null ? false : this.hasPerm(node);
 
 			if (phrase == null || node.contains(phrase))
@@ -159,8 +137,8 @@ public final class PermsCommand extends SimpleSubCommand {
 						.of("  " + (has ? "&a" : "&7") + node + (def ? " " + Commands.PERMS_TRUE_BY_DEFAULT : ""))
 						.onClickOpenUrl("")
 						.onHover(Commands.PERMS_INFO + info,
-								Commands.PERMS_DEFAULT + (def ? Commands.PERMS_YES : Commands.PERMS_NO),
-								Commands.PERMS_APPLIED + (has ? Commands.PERMS_YES : Commands.PERMS_NO)));
+								RemainCore.convertAdventureToLegacy(Commands.PERMS_DEFAULT.append(def ? Commands.PERMS_YES : Commands.PERMS_NO)),
+								RemainCore.convertAdventureToLegacy(Commands.PERMS_APPLIED.append(has ? Commands.PERMS_YES : Commands.PERMS_NO))));
 		}
 
 		for (final Class<?> inner : clazz.getDeclaredClasses()) {

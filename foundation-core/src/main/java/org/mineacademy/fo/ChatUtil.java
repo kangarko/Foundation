@@ -496,7 +496,7 @@ public final class ChatUtil {
 	 */
 	private static String removeSimilarity(String message) {
 
-		if (Platform.isSimilarityStrippingAccents())
+		if (Platform.getPlugin().isSimilarityStrippingAccents())
 			message = replaceDiacritic(message);
 
 		return message.toLowerCase();

@@ -201,7 +201,7 @@ public abstract class YamlStaticConfig {
 		for (final Method method : clazz.getDeclaredMethods()) {
 
 			// After each invocation check if the invoication broke the plugin and ignore
-			if (!Platform.isPluginEnabled())
+			if (!Platform.getPlugin().isEnabled())
 				return;
 
 			final int mod = method.getModifiers();

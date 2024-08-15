@@ -111,7 +111,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File createIfNotExists(String path) {
-		final File datafolder = Platform.getPluginFolder();
+		final File datafolder = Platform.getPlugin().getDataFolder();
 		final int lastIndex = path.lastIndexOf('/');
 		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
 
@@ -131,7 +131,7 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File getFile(String path) {
-		return new File(Platform.getPluginFolder(), path);
+		return new File(Platform.getPlugin().getDataFolder(), path);
 	}
 
 	/**
@@ -147,7 +147,7 @@ public final class FileUtil {
 		if (extension.startsWith("."))
 			extension = extension.substring(1);
 
-		final File dataFolder = new File(Platform.getPluginFolder(), directory);
+		final File dataFolder = new File(Platform.getPlugin().getDataFolder(), directory);
 
 		if (!dataFolder.exists())
 			dataFolder.mkdirs();
@@ -361,7 +361,7 @@ public final class FileUtil {
 	 * @return the extracted file
 	 */
 	public static File extract(String from, String to) {
-		File file = new File(Platform.getPluginFolder(), to);
+		File file = new File(Platform.getPlugin().getDataFolder(), to);
 
 		final List<String> lines = getInternalFileContent(from);
 		ValidCore.checkNotNull(lines, "Inbuilt " + file.getAbsolutePath() + " not found! Did you reload?");
@@ -397,9 +397,9 @@ public final class FileUtil {
 	 * @return
 	 */
 	public static File extractRaw(String path) {
-		File file = new File(Platform.getPluginFolder(), path);
+		File file = new File(Platform.getPlugin().getDataFolder(), path);
 
-		try (JarFile jarFile = new JarFile(Platform.getPluginFile())) {
+		try (JarFile jarFile = new JarFile(Platform.getPlugin().getFile())) {
 
 			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
 				final JarEntry entry = it.nextElement();
@@ -441,8 +441,8 @@ public final class FileUtil {
 	 */
 	private static String replaceVariables(String line, String fileName) {
 		return line
-				.replace("{plugin_name}", Platform.getPluginName())
-				.replace("{plugin_name_lower}", Platform.getPluginName().toLowerCase())
+				.replace("{plugin_name}", Platform.getPlugin().getName())
+				.replace("{plugin_name_lower}", Platform.getPlugin().getName().toLowerCase())
 				.replace("{file}", fileName)
 				.replace("{file_lowercase}", fileName);
 	}
@@ -461,7 +461,7 @@ public final class FileUtil {
 		if (getFile(folder).exists())
 			return;
 
-		try (JarFile jarFile = new JarFile(Platform.getPluginFile())) {
+		try (JarFile jarFile = new JarFile(Platform.getPlugin().getFile())) {
 			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
 				final JarEntry jarEntry = it.nextElement();
 				final String entryName = jarEntry.getName();
@@ -484,7 +484,7 @@ public final class FileUtil {
 	 */
 	public static List<String> getInternalFileContent(@NonNull String path) {
 
-		try (JarFile jarFile = new JarFile(Platform.getPluginFile())) {
+		try (JarFile jarFile = new JarFile(Platform.getPlugin().getFile())) {
 
 			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
 				final JarEntry entry = it.nextElement();
@@ -530,7 +530,7 @@ public final class FileUtil {
 	 * @throws IOException
 	 */
 	public static void zip(String sourceDirectory, String to) throws IOException {
-		final File parent = Platform.getPluginFolder().getParentFile().getParentFile();
+		final File parent = Platform.getPlugin().getDataFolder().getParentFile().getParentFile();
 		final File toFile = new File(parent, to + ".zip");
 
 		if (toFile.exists())

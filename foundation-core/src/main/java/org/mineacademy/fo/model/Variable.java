@@ -118,7 +118,7 @@ public final class Variable extends YamlConfig {
 
 		this.setHeader(
 				"-------------------------------------------------------------------------------------------------",
-				Platform.getPluginName() + " supports dynamic, high performance JavaScript variables! They will",
+				Platform.getPlugin().getName() + " supports dynamic, high performance JavaScript variables! They will",
 				"automatically be used when calling Variables#replace for your messages.",
 				"",
 				"Because variables return a JavaScript value, you can sneak in code to play sounds or spawn",

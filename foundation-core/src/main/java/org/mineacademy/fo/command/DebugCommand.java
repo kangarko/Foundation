@@ -7,12 +7,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.plugin.SimplePlugin;
-import org.mineacademy.fo.remain.RemainCore;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.YamlConfig;
 
@@ -53,7 +51,7 @@ public final class DebugCommand extends SimpleSubCommand {
 		this.tell(SimpleLocalization.Commands.DEBUG_PREPARING);
 
 		final File debugFolder = FileUtil.getFile("debug");
-		final List<File> files = this.listFilesRecursively(SimplePlugin.getData(), new ArrayList<>());
+		final List<File> files = this.listFilesRecursively(Platform.getPlugin().getDataFolder(), new ArrayList<>());
 
 		// Clean up the old folder if exists
 		FileUtil.deleteRecursivelly(debugFolder);
@@ -67,7 +65,7 @@ public final class DebugCommand extends SimpleSubCommand {
 		// Zip the folder
 		this.zipAndRemoveFolder(debugFolder);
 
-		this.tell(SimpleLocalization.Commands.DEBUG_SUCCESS.replace("{amount}", String.valueOf(files.size())));
+		this.tell(SimpleLocalization.Commands.DEBUG_SUCCESS.replaceText(b -> b.matchLiteral("{amount}").replacement(String.valueOf(files.size()))));
 	}
 
 	/*
@@ -78,13 +76,12 @@ public final class DebugCommand extends SimpleSubCommand {
 		final List<String> lines = CommonCore.toList(CommonCore.consoleLine(),
 				" Debug log generated " + TimeUtil.getFormattedDate(),
 				CommonCore.consoleLine(),
-				"Plugin: " + SimplePlugin.getInstance().getDescription().getFullName(),
-				"Server Version: " + Bukkit.getVersion(),
+				"Plugin: " + Platform.getPlugin().getName(),
+				"Server Version: " + Platform.getServerVersion(),
 				"Java: " + System.getProperty("java.version") + " (" + System.getProperty("java.specification.vendor") + "/" + System.getProperty("java.vm.vendor") + ")",
 				"OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"),
-				"Online mode: " + Bukkit.getOnlineMode(),
 				"Players Online: " + Platform.getOnlinePlayers().size(),
-				"Plugins: " + CommonCore.join(Bukkit.getPluginManager().getPlugins(), ", ", plugin -> plugin.getDescription().getFullName()));
+				"Plugins: " + String.join(", ", Platform.getServerPlugins()));
 
 		lines.addAll(debugLines);
 		FileUtil.write("debug/general.txt", lines);
@@ -98,7 +95,7 @@ public final class DebugCommand extends SimpleSubCommand {
 		for (final File file : files)
 			try {
 				// Get the path in our folder
-				final String path = file.getPath().replace("\\", "/").replace("plugins/" + Platform.getPluginName(), "");
+				final String path = file.getPath().replace("\\", "/").replace("plugins/" + Platform.getPlugin().getName(), "");
 
 				// Create a copy file
 				final File copy = FileUtil.createIfNotExists("debug/" + path);
@@ -124,7 +121,7 @@ public final class DebugCommand extends SimpleSubCommand {
 			} catch (final Exception ex) {
 				ex.printStackTrace();
 
-				this.returnTell(SimpleLocalization.Commands.DEBUG_COPY_FAIL.replace("{file}", file.getName()));
+				this.returnTell(SimpleLocalization.Commands.DEBUG_COPY_FAIL.replaceText(b -> b.matchLiteral("{file}").replacement(file.getName())));
 			}
 	}
 

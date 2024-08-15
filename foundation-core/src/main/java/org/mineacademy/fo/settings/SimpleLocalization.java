@@ -47,7 +47,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		final String localePath = "localization/messages_" + SimpleSettings.LOCALE_PREFIX + ".yml";
 		final Object content = FileUtil.getInternalFileContent(localePath);
 
-		ValidCore.checkNotNull(content, Platform.getPluginName() + " does not support the localization: messages_" + SimpleSettings.LOCALE_PREFIX
+		ValidCore.checkNotNull(content, Platform.getPlugin().getName() + " does not support the localization: messages_" + SimpleSettings.LOCALE_PREFIX
 				+ ".yml (For custom locale, set the Locale to 'en' and edit your English file instead)");
 
 		this.loadConfiguration(localePath);
@@ -115,12 +115,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message at "No_Console" key shown when console is denied executing a command.
 		 */
-		public static String NO_CONSOLE = "&cYou may only use this command as a player";
+		public static Component NO_CONSOLE = CommonCore.colorize("&cYou may only use this command as a player");
 
 		/**
 		 * The message shown when console runs a command without specifying target player name
 		 */
-		public static String CONSOLE_MISSING_PLAYER_NAME = "When running from console, specify player name.";
+		public static Component CONSOLE_MISSING_PLAYER_NAME = CommonCore.colorize("When running from console, specify player name.");
 
 		/**
 		 * The message shown when there is a fatal error running this command
@@ -141,7 +141,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The authors label
 		 */
-		public static String LABEL_AUTHORS = "Made by";
+		public static Component LABEL_AUTHORS = CommonCore.colorize("Made by");
 
 		/**
 		 * The description label
@@ -151,43 +151,43 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The optional arguments label
 		 */
-		public static String LABEL_OPTIONAL_ARGS = "optional arguments";
+		public static Component LABEL_OPTIONAL_ARGS = CommonCore.colorize("optional arguments");
 
 		/**
 		 * The required arguments label
 		 */
-		public static String LABEL_REQUIRED_ARGS = "required arguments";
+		public static Component LABEL_REQUIRED_ARGS = CommonCore.colorize("required arguments");
 
 		/**
 		 * The usage label
 		 */
-		public static String LABEL_USAGE = "&c&lUsage:";
+		public static Component LABEL_USAGE = CommonCore.colorize("&c&lUsage:");
 
 		/**
 		 * The help for label
 		 */
-		public static String LABEL_HELP_FOR = "Help for /{label}";
+		public static Component LABEL_HELP_FOR = CommonCore.colorize("Help for /{label}");
 
 		/**
 		 * The label shown when building subcommands
 		 */
-		public static String LABEL_SUBCOMMAND_DESCRIPTION = " &f/{label} {sublabel} {usage+}{dash+}{description}";
+		public static Component LABEL_SUBCOMMAND_DESCRIPTION = CommonCore.colorize(" &f/{label} {sublabel} {usage+}{dash+}{description}");
 
 		/**
 		 * The keys below are shown as hover tooltip on /command help menu.
 		 */
-		public static String HELP_TOOLTIP_DESCRIPTION = "&7Description: &f{description}";
-		public static String HELP_TOOLTIP_PERMISSION = "&7Permission: &f{permission}";
-		public static String HELP_TOOLTIP_USAGE = "&7Usage: &f";
+		public static Component HELP_TOOLTIP_DESCRIPTION = CommonCore.colorize("&7Description: &f{description}");
+		public static Component HELP_TOOLTIP_PERMISSION = CommonCore.colorize("&7Permission: &f{permission}");
+		public static Component HELP_TOOLTIP_USAGE = CommonCore.colorize("&7Usage: &f");
 
 		/**
 		 * The keys below are used in the {@link ReloadCommand}
 		 */
-		public static String RELOAD_DESCRIPTION = "Reload the configuration.";
-		public static String RELOAD_STARTED = "Reloading plugin's data, please wait..";
-		public static String RELOAD_SUCCESS = "&6{plugin_name} {plugin_version} has been reloaded.";
-		public static String RELOAD_FILE_LOAD_ERROR = "&4Oups, &cthere was a problem loading files from your disk! See the console for more information. {plugin_name} has not been reloaded.";
-		public static String RELOAD_FAIL = "&4Oups, &creloading failed! See the console for more information. Error: {error}";
+		public static Component RELOAD_DESCRIPTION = CommonCore.colorize("Reload the configuration.");
+		public static Component RELOAD_STARTED = CommonCore.colorize("Reloading plugin's data, please wait..");
+		public static Component RELOAD_SUCCESS = CommonCore.colorize("&6{plugin_name} {plugin_version} has been reloaded.");
+		public static Component RELOAD_FILE_LOAD_ERROR = CommonCore.colorize("&4Oups, &cthere was a problem loading files from your disk! See the console for more information. {plugin_name} has not been reloaded.");
+		public static Component RELOAD_FAIL = CommonCore.colorize("&4Oups, &creloading failed! See the console for more information. Error: {error}");
 
 		/**
 		 * The message shown when there is a fatal error running this command
@@ -197,12 +197,12 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown when player has no permissions to view ANY subcommands in group command.
 		 */
-		public static String HEADER_NO_SUBCOMMANDS = "&cThere are no arguments for this command.";
+		public static Component HEADER_NO_SUBCOMMANDS = CommonCore.colorize("&cThere are no arguments for this command.");
 
 		/**
 		 * The message shown when player has no permissions to view ANY subcommands in group command.
 		 */
-		public static String HEADER_NO_SUBCOMMANDS_PERMISSION = "&cYou don't have permissions to view any subcommands.";
+		public static Component HEADER_NO_SUBCOMMANDS_PERMISSION = CommonCore.colorize("&cYou don't have permissions to view any subcommands.");
 
 		/**
 		 * The primary color shown in the ----- COMMAND ----- header
@@ -247,37 +247,37 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The message shown in SimpleCommand.findWorld()
 		 */
-		public static String CANNOT_AUTODETECT_WORLD = "Only living players can use ~ for their world!";
+		public static Component CANNOT_AUTODETECT_WORLD = CommonCore.colorize("Only living players can use ~ for their world!");
 
 		/**
 		 * The keys below are used in the {@link DebugCommand}
 		 */
-		public static String DEBUG_DESCRIPTION = "ZIP your settings for reporting bugs.";
-		public static String DEBUG_PREPARING = "&6Preparing debug log...";
-		public static String DEBUG_SUCCESS = "&2Successfuly copied {amount} file(s) to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via ufile.io and send it to us for review.";
-		public static String DEBUG_COPY_FAIL = "&cCopying files failed on file {file} and it was stopped. See console for more information.";
-		public static String DEBUG_ZIP_FAIL = "&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via ufile.io manually.";
+		public static Component DEBUG_DESCRIPTION = CommonCore.colorize("ZIP your settings for reporting bugs.");
+		public static Component DEBUG_PREPARING = CommonCore.colorize("&6Preparing debug log...");
+		public static Component DEBUG_SUCCESS = CommonCore.colorize("&2Successfuly copied {amount} file(s) to debug.zip. Your sensitive MySQL information has been removed from yml files. Please upload it via ufile.io and send it to us for review.");
+		public static Component DEBUG_COPY_FAIL = CommonCore.colorize("&cCopying files failed on file {file} and it was stopped. See console for more information.");
+		public static Component DEBUG_ZIP_FAIL = CommonCore.colorize("&cCreating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder and send it to us via ufile.io manually.");
 
 		/**
 		 * The keys below are used in the {@link PermsCommand}
 		 */
-		public static String PERMS_DESCRIPTION = "List all permissions the plugin has.";
-		public static String PERMS_USAGE = "[phrase]";
-		public static String PERMS_HEADER = "Listing All {plugin_name} Permissions";
-		public static String PERMS_MAIN = "Main";
-		public static String PERMS_PERMISSIONS = "Permissions:";
-		public static String PERMS_TRUE_BY_DEFAULT = "&7[true by default]";
-		public static String PERMS_INFO = "&7Info: &f";
-		public static String PERMS_DEFAULT = "&7Default? ";
-		public static String PERMS_APPLIED = "&7Do you have it? ";
-		public static String PERMS_YES = "&2yes";
-		public static String PERMS_NO = "&cno";
+		public static Component PERMS_DESCRIPTION = CommonCore.colorize("List all permissions the plugin has.");
+		public static Component PERMS_USAGE = CommonCore.colorize("[phrase]");
+		public static Component PERMS_HEADER = CommonCore.colorize("Listing All {plugin_name} Permissions");
+		public static Component PERMS_MAIN = CommonCore.colorize("Main");
+		public static Component PERMS_PERMISSIONS = CommonCore.colorize("Permissions:");
+		public static Component PERMS_TRUE_BY_DEFAULT = CommonCore.colorize("&7[true by default]");
+		public static Component PERMS_INFO = CommonCore.colorize("&7Info: &f");
+		public static Component PERMS_DEFAULT = CommonCore.colorize("&7Default? ");
+		public static Component PERMS_APPLIED = CommonCore.colorize("&7Do you have it? ");
+		public static Component PERMS_YES = CommonCore.colorize("&2yes");
+		public static Component PERMS_NO = CommonCore.colorize("&cno");
 
 		/**
 		 * The keys below are used in RegionTool
 		 */
-		public static String REGION_SET_PRIMARY = "Set the primary region point.";
-		public static String REGION_SET_SECONDARY = "Set the secondary region point.";
+		public static Component REGION_SET_PRIMARY = CommonCore.colorize("Set the primary region point.");
+		public static Component REGION_SET_SECONDARY = CommonCore.colorize("Set the secondary region point.");
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -286,10 +286,10 @@ public class SimpleLocalization extends YamlStaticConfig {
 			setPathPrefix("Commands");
 
 			if (isSetDefault("No_Console"))
-				NO_CONSOLE = getString("No_Console");
+				NO_CONSOLE = getComponent("No_Console");
 
 			if (isSetDefault("Console_Missing_Player_Name"))
-				CONSOLE_MISSING_PLAYER_NAME = getString("Console_Missing_Player_Name");
+				CONSOLE_MISSING_PLAYER_NAME = getComponent("Console_Missing_Player_Name");
 
 			if (isSetDefault("Cooldown_Wait"))
 				COOLDOWN_WAIT = getComponent("Cooldown_Wait");
@@ -316,58 +316,58 @@ public class SimpleLocalization extends YamlStaticConfig {
 				INVALID_WORLD = getComponent("Invalid_World");
 
 			if (isSetDefault("Label_Authors"))
-				LABEL_AUTHORS = getString("Label_Authors");
+				LABEL_AUTHORS = getComponent("Label_Authors");
 
 			if (isSetDefault("Label_Description"))
 				LABEL_DESCRIPTION = getComponent("Label_Description");
 
 			if (isSetDefault("Label_Optional_Args"))
-				LABEL_OPTIONAL_ARGS = getString("Label_Optional_Args");
+				LABEL_OPTIONAL_ARGS = getComponent("Label_Optional_Args");
 
 			if (isSetDefault("Label_Required_Args"))
-				LABEL_REQUIRED_ARGS = getString("Label_Required_Args");
+				LABEL_REQUIRED_ARGS = getComponent("Label_Required_Args");
 
 			if (isSetDefault("Label_Usage"))
-				LABEL_USAGE = getString("Label_Usage");
+				LABEL_USAGE = getComponent("Label_Usage");
 
 			if (isSetDefault("Label_Help_For"))
-				LABEL_HELP_FOR = getString("Label_Help_For");
+				LABEL_HELP_FOR = getComponent("Label_Help_For");
 
 			if (isSetDefault("Label_Subcommand_Description"))
-				LABEL_SUBCOMMAND_DESCRIPTION = getString("Label_Subcommand_Description");
+				LABEL_SUBCOMMAND_DESCRIPTION = getComponent("Label_Subcommand_Description");
 
 			if (isSetDefault("Help_Tooltip_Description"))
-				HELP_TOOLTIP_DESCRIPTION = getString("Help_Tooltip_Description");
+				HELP_TOOLTIP_DESCRIPTION = getComponent("Help_Tooltip_Description");
 
 			if (isSetDefault("Help_Tooltip_Permission"))
-				HELP_TOOLTIP_PERMISSION = getString("Help_Tooltip_Permission");
+				HELP_TOOLTIP_PERMISSION = getComponent("Help_Tooltip_Permission");
 
 			if (isSetDefault("Help_Tooltip_Usage"))
-				HELP_TOOLTIP_USAGE = getString("Help_Tooltip_Usage");
+				HELP_TOOLTIP_USAGE = getComponent("Help_Tooltip_Usage");
 
 			if (isSetDefault("Reload_Description"))
-				RELOAD_DESCRIPTION = getString("Reload_Description");
+				RELOAD_DESCRIPTION = getComponent("Reload_Description");
 
 			if (isSetDefault("Reload_Started"))
-				RELOAD_STARTED = getString("Reload_Started");
+				RELOAD_STARTED = getComponent("Reload_Started");
 
 			if (isSetDefault("Reload_Success"))
-				RELOAD_SUCCESS = getString("Reload_Success");
+				RELOAD_SUCCESS = getComponent("Reload_Success");
 
 			if (isSetDefault("Reload_File_Load_Error"))
-				RELOAD_FILE_LOAD_ERROR = getString("Reload_File_Load_Error");
+				RELOAD_FILE_LOAD_ERROR = getComponent("Reload_File_Load_Error");
 
 			if (isSetDefault("Reload_Fail"))
-				RELOAD_FAIL = getString("Reload_Fail");
+				RELOAD_FAIL = getComponent("Reload_Fail");
 
 			if (isSetDefault("Error"))
 				ERROR = getComponent("Error");
 
 			if (isSetDefault("Header_No_Subcommands"))
-				HEADER_NO_SUBCOMMANDS = getString("Header_No_Subcommands");
+				HEADER_NO_SUBCOMMANDS = getComponent("Header_No_Subcommands");
 
 			if (isSetDefault("Header_No_Subcommands_Permission"))
-				HEADER_NO_SUBCOMMANDS_PERMISSION = getString("Header_No_Subcommands_Permission");
+				HEADER_NO_SUBCOMMANDS_PERMISSION = getComponent("Header_No_Subcommands_Permission");
 
 			if (isSetDefault("Header_Color"))
 				HEADER_COLOR = get("Header_Color", CompChatColor.class);
@@ -397,61 +397,61 @@ public class SimpleLocalization extends YamlStaticConfig {
 				CANNOT_USE_WHILE_NULL = getComponent("Use_While_Null");
 
 			if (isSet("Cannot_Autodetect_World"))
-				CANNOT_AUTODETECT_WORLD = getString("Cannot_Autodetect_World");
+				CANNOT_AUTODETECT_WORLD = getComponent("Cannot_Autodetect_World");
 
 			if (isSetDefault("Debug_Description"))
-				DEBUG_DESCRIPTION = getString("Debug_Description");
+				DEBUG_DESCRIPTION = getComponent("Debug_Description");
 
 			if (isSetDefault("Debug_Preparing"))
-				DEBUG_PREPARING = getString("Debug_Preparing");
+				DEBUG_PREPARING = getComponent("Debug_Preparing");
 
 			if (isSetDefault("Debug_Success"))
-				DEBUG_SUCCESS = getString("Debug_Success");
+				DEBUG_SUCCESS = getComponent("Debug_Success");
 
 			if (isSetDefault("Debug_Copy_Fail"))
-				DEBUG_COPY_FAIL = getString("Debug_Copy_Fail");
+				DEBUG_COPY_FAIL = getComponent("Debug_Copy_Fail");
 
 			if (isSetDefault("Debug_Zip_Fail"))
-				DEBUG_ZIP_FAIL = getString("Debug_Zip_Fail");
+				DEBUG_ZIP_FAIL = getComponent("Debug_Zip_Fail");
 
 			if (isSetDefault("Perms_Description"))
-				PERMS_DESCRIPTION = getString("Perms_Description");
+				PERMS_DESCRIPTION = getComponent("Perms_Description");
 
 			if (isSetDefault("Perms_Usage"))
-				PERMS_USAGE = getString("Perms_Usage");
+				PERMS_USAGE = getComponent("Perms_Usage");
 
 			if (isSetDefault("Perms_Header"))
-				PERMS_HEADER = getString("Perms_Header");
+				PERMS_HEADER = getComponent("Perms_Header");
 
 			if (isSetDefault("Perms_Main"))
-				PERMS_MAIN = getString("Perms_Main");
+				PERMS_MAIN = getComponent("Perms_Main");
 
 			if (isSetDefault("Perms_Permissions"))
-				PERMS_PERMISSIONS = getString("Perms_Permissions");
+				PERMS_PERMISSIONS = getComponent("Perms_Permissions");
 
 			if (isSetDefault("Perms_True_By_Default"))
-				PERMS_TRUE_BY_DEFAULT = getString("Perms_True_By_Default");
+				PERMS_TRUE_BY_DEFAULT = getComponent("Perms_True_By_Default");
 
 			if (isSetDefault("Perms_Info"))
-				PERMS_INFO = getString("Perms_Info");
+				PERMS_INFO = getComponent("Perms_Info");
 
 			if (isSetDefault("Perms_Default"))
-				PERMS_DEFAULT = getString("Perms_Default");
+				PERMS_DEFAULT = getComponent("Perms_Default");
 
 			if (isSetDefault("Perms_Applied"))
-				PERMS_APPLIED = getString("Perms_Applied");
+				PERMS_APPLIED = getComponent("Perms_Applied");
 
 			if (isSetDefault("Perms_Yes"))
-				PERMS_YES = getString("Perms_Yes");
+				PERMS_YES = getComponent("Perms_Yes");
 
 			if (isSetDefault("Perms_No"))
-				PERMS_NO = getString("Perms_No");
+				PERMS_NO = getComponent("Perms_No");
 
 			if (isSetDefault("Region_Set_Primary"))
-				REGION_SET_PRIMARY = getString("Region_Set_Primary");
+				REGION_SET_PRIMARY = getComponent("Region_Set_Primary");
 
 			if (isSetDefault("Region_Set_Secondary"))
-				REGION_SET_SECONDARY = getString("Region_Set_Secondary");
+				REGION_SET_SECONDARY = getComponent("Region_Set_Secondary");
 		}
 	}
 

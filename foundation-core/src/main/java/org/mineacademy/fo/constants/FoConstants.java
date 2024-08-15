@@ -29,6 +29,6 @@ public final class FoConstants {
 		 *
 		 * We use this in the sign update packet listener to handle sign updating.
 		 */
-		public static final String METADATA_OPENED_SIGN = Platform.getPluginName() + "_OpenedSign";
+		public static final String METADATA_OPENED_SIGN = Platform.getPlugin().getName() + "_OpenedSign";
 	}
 }

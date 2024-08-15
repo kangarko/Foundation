@@ -2,7 +2,6 @@ package org.mineacademy.fo.model;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +10,6 @@ import org.mineacademy.fo.MessengerCore;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -42,11 +40,6 @@ public final class Variables {
 	 * The pattern to find simple {syntax} placeholders starting with {rel_} (used for PlaceholderAPI)
 	 */
 	public static final Pattern BRACKET_REL_VARIABLE_PATTERN = Pattern.compile("[({)](rel_)([^}]+)[(})]");
-
-	/**
-	 * Player - [Original Message - Translated Message]
-	 */
-	private static final Map<String, Map<String, String>> cache = ExpiringMap.builder().expiration(500, TimeUnit.MILLISECONDS).build();
 
 	/**
 	 * If we should replace JavaScript variables
@@ -181,7 +174,7 @@ public final class Variables {
 		replacements.put("date_month", TimeUtil.getFormattedDateMonth());
 		replacements.put("chat_line", CommonCore.chatLine());
 		replacements.put("chat_line_smooth", CommonCore.chatLineSmooth());
-		replacements.put("label", Platform.getDefaultCommandLabel() != null ? Platform.getDefaultCommandLabel() : SimpleLocalization.NONE);
+		replacements.put("label", Platform.getPlugin().getDefaultCommandGroup() != null ? Platform.getPlugin().getDefaultCommandGroup().getLabel() : SimpleLocalization.NONE);
 
 		replacements.put("sender_is_discord", Platform.isDiscord(audience) ? "true" : "false");
 		replacements.put("sender_is_console", Platform.isConsole(audience) ? "true" : "false");

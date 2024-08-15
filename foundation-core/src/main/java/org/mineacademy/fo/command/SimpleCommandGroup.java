@@ -8,9 +8,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtilCore;
 import org.mineacademy.fo.MessengerCore;
@@ -24,12 +21,16 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponentCore;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.Getter;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 
 /**
  * A command group contains a set of different subcommands
@@ -64,9 +65,8 @@ public abstract class SimpleCommandGroup {
 	 * The temporary sender that is currently about to see the command group, mostly used in
 	 * compiling info messages such as in {@link #getNoParamsHeader()}
 	 */
-	@Nullable
 	@Getter
-	protected CommandSender sender;
+	protected Audience sender;
 
 	/**
 	 * Create a new simple command group using {@link SimpleSettings#MAIN_COMMAND_ALIASES}
@@ -202,7 +202,7 @@ public abstract class SimpleCommandGroup {
 	 * @param parentClass
 	 */
 	protected final void registerSubcommand(final Class<? extends SimpleSubCommand> parentClass) {
-		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtilCore.getClasses(SimplePlugin.getInstance(), parentClass)) {
+		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtilCore.getClasses(Platform.getPlugin().getFile(), parentClass)) {
 			if (Modifier.isAbstract(clazz.getModifiers()))
 				continue;
 
@@ -265,17 +265,17 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected List<SimpleComponentCore> getNoParamsHeader() {
-		final int foundedYear = SimplePlugin.getInstance().getFoundedYear();
+		final int foundedYear = Platform.getPlugin().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
 		final List<String> messages = new ArrayList<>();
 
 		messages.add("&8" + CommonCore.chatLineSmooth());
-		messages.add(this.getHeaderPrefix() + "  " + Platform.getPluginName() + this.getTrademark() + " &7" + Platform.getPluginVersion());
+		messages.add(this.getHeaderPrefix() + "  " + Platform.getPlugin().getName() + this.getTrademark() + " &7" + Platform.getPlugin().getVersion());
 		messages.add(" ");
 
 		{
-			final String authors = String.join(", ", SimplePlugin.getInstance().getDescription().getAuthors());
+			final String authors = Platform.getPlugin().getAuthors();
 
 			if (!authors.isEmpty())
 				messages.add("   &7" + SimpleLocalization.Commands.LABEL_AUTHORS + " &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " + yearNow : "") : ""));
@@ -305,7 +305,7 @@ public abstract class SimpleCommandGroup {
 
 	// Return the TM symbol in case we have it for kangarko's plugins
 	private String getTrademark() {
-		return SimplePlugin.getInstance().getDescription().getAuthors().contains("kangarko") ? this.getHeaderPrefix() + "&8\u2122" : "";
+		return Platform.getPlugin().getAuthors().contains("kangarko") ? this.getHeaderPrefix() + "&8\u2122" : "";
 	}
 
 	/**
@@ -343,7 +343,7 @@ public abstract class SimpleCommandGroup {
 		return new String[] {
 				"&8",
 				"&8" + CommonCore.chatLineSmooth(),
-				this.getHeaderPrefix() + "  " + Platform.getPluginName() + this.getTrademark() + " &7" + Platform.getPluginVersion(),
+				this.getHeaderPrefix() + "  " + Platform.getPlugin().getName() + this.getTrademark() + " &7" + Platform.getPluginVersion(),
 				" ",
 				"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
 				this.getTheme() + "  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
@@ -443,7 +443,7 @@ public abstract class SimpleCommandGroup {
 					command.setSublabel(argument);
 
 					// Run the command
-					command.execute(this.sender, this.getCurrentLabel(), this.args.length == 1 ? new String[] {} : Arrays.copyOfRange(this.args, 1, this.args.length));
+					command.delegateExecute(this.sender, this.getCurrentLabel(), this.args.length == 1 ? new String[] {} : Arrays.copyOfRange(this.args, 1, this.args.length));
 
 				} finally {
 					// Restore old sublabel after the command has been run
@@ -464,7 +464,7 @@ public abstract class SimpleCommandGroup {
 		protected void tellSubcommandsHelp() {
 
 			// Building help can be heavy so do it off of the main thread
-			CommonCore.runAsync(() -> {
+			Platform.runTaskAsync(0, () -> {
 				if (SimpleCommandGroup.this.subcommands.isEmpty()) {
 					if (MessengerCore.ENABLED)
 						this.tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS);
@@ -504,7 +504,7 @@ public abstract class SimpleCommandGroup {
 
 						if (!desc.isEmpty() && atLeast17) {
 							final String command = CommonCore.removeColors(plainMessage).substring(1);
-							final List<String> hover = new ArrayList<>();
+							final List<Component> hover = new ArrayList<>();
 
 							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_DESCRIPTION.replace("{description}", desc));
 
@@ -518,7 +518,7 @@ public abstract class SimpleCommandGroup {
 									hover.add("&f" + this.replacePlaceholders(this.colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
 
 							} else
-								hover.add(this.replacePlaceholders(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage)));
+								hover.add(RemainCore.convertAdventureToLegacy(this.replacePlaceholders(CommonCore.colorize(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage)))));
 
 							final List<String> hoverShortened = new ArrayList<>();
 
@@ -545,7 +545,7 @@ public abstract class SimpleCommandGroup {
 					final int page = (this.args.length > 1 && ValidCore.isInteger(this.args[1]) ? Integer.parseInt(this.args[1]) : 1);
 
 					// Send the component on the main thread
-					CommonCore.runLater(() -> pages.send(this.sender, page));
+					Platform.runTask(0, () -> pages.send(this.sender, page));
 
 				} else if (MessengerCore.ENABLED)
 					this.tellError(SimpleLocalization.Commands.HEADER_NO_SUBCOMMANDS_PERMISSION);
@@ -595,7 +595,7 @@ public abstract class SimpleCommandGroup {
 				final SimpleSubCommand cmd = this.findSubcommand(this.args[0]);
 
 				if (cmd != null)
-					return cmd.tabComplete(this.sender, this.getLabel(), Arrays.copyOfRange(this.args, 1, this.args.length));
+					return cmd.delegateTabComplete(this.sender, this.getLabel(), Arrays.copyOfRange(this.args, 1, this.args.length));
 			}
 
 			return null;
@@ -608,7 +608,7 @@ public abstract class SimpleCommandGroup {
 		 * @param param
 		 * @return
 		 */
-		private List<String> tabCompleteSubcommands(final CommandSender sender, String param) {
+		private List<String> tabCompleteSubcommands(final Audience sender, String param) {
 			param = param.toLowerCase();
 
 			final List<String> tab = new ArrayList<>();
