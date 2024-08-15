@@ -13,7 +13,7 @@ import org.mineacademy.fo.settings.YamlConfig;
  * A simple predefined sub-command for quickly reloading the plugin
  * using /{label} reload|rl
  */
-public final class ReloadCommand extends SimpleSubCommand {
+public final class ReloadCommand extends SimpleSubCommandCore {
 
 	/**
 	 * Create a new reload sub-command with the given permission.
@@ -92,7 +92,7 @@ public final class ReloadCommand extends SimpleSubCommand {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.command.SimpleCommand#tabComplete()
+	 * @see org.mineacademy.fo.command.SimpleCommandCore#tabComplete()
 	 */
 	@Override
 	protected List<String> tabComplete() {

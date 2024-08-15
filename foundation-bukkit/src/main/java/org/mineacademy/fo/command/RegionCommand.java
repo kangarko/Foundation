@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
  * To use this, enable regions in {@link SimplePlugin#areRegionsEnabled()}
  * and register this subcommand manually in your class extending {@link SimpleCommandGroup}.
  */
-public class RegionCommand extends SimpleSubCommand {
+public class RegionCommand extends SimpleSubCommandCore {
 
 	public RegionCommand() {
 		super("region|rg");
@@ -47,7 +47,7 @@ public class RegionCommand extends SimpleSubCommand {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.command.SimpleCommand#getMultilineUsageMessage()
+	 * @see org.mineacademy.fo.command.SimpleCommandCore#getMultilineUsageMessage()
 	 */
 	@Override
 	protected String[] getMultilineUsageMessage() {
@@ -55,7 +55,7 @@ public class RegionCommand extends SimpleSubCommand {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.command.SimpleCommand#onCommand()
+	 * @see org.mineacademy.fo.command.SimpleCommandCore#onCommand()
 	 */
 	@Override
 	protected void onCommand() {

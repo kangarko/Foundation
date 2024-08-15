@@ -1,7 +1,7 @@
 package org.mineacademy.fo;
 
-import org.bukkit.Bukkit;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.platform.Platform;
 
 import lombok.Getter;
 
@@ -159,18 +159,14 @@ public final class MinecraftVersion {
 	 */
 	@Deprecated
 	public static String getServerVersion() {
-		return serverVersion.equals("craftbukkit") ? "" : serverVersion;
+		return serverVersion;
 	}
 
 	static {
-
-		// Find NMS package version
-		final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
-		final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
-		serverVersion = !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
+		serverVersion = Platform.getNMSVersion();
 
 		// Find the Bukkit version
-		final String bukkitVersion = Bukkit.getServer().getBukkitVersion(); // 1.20.6-R0.1-SNAPSHOT
+		final String bukkitVersion = Platform.getServerVersion(); // 1.20.6-R0.1-SNAPSHOT
 		final String versionString = bukkitVersion.split("\\-")[0]; // 1.20.6
 		final String[] versions = versionString.split("\\.");
 		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version: " + versionString + ", expected 2 or 3 parts separated by dots, got " + versions.length + " parts");

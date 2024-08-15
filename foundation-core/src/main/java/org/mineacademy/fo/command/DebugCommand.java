@@ -21,7 +21,7 @@ import lombok.Setter;
  * to your main command group to help collect debugging information
  * users can submit to you when they have problems.
  */
-public final class DebugCommand extends SimpleSubCommand {
+public final class DebugCommand extends SimpleSubCommandCore {
 
 	/**
 	 * Set the custom debug lines you would like to add to the debug file
@@ -160,7 +160,7 @@ public final class DebugCommand extends SimpleSubCommand {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.command.SimpleCommand#tabComplete()
+	 * @see org.mineacademy.fo.command.SimpleCommandCore#tabComplete()
 	 */
 	@Override
 	protected List<String> tabComplete() {

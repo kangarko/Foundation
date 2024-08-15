@@ -13,16 +13,13 @@ import org.mineacademy.fo.MathUtilCore;
 import org.mineacademy.fo.MessengerCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.RandomUtilCore;
 import org.mineacademy.fo.ReflectionUtilCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponentCore;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -42,12 +39,12 @@ public abstract class SimpleCommandGroup {
 	 * The list of sub-commands belonging to this command tree, for example
 	 * the /boss command has subcommands /boss region, /boss menu etc.
 	 */
-	private final StrictList<SimpleSubCommand> subcommands = new StrictList<>();
+	private final StrictList<SimpleSubCommandCore> subcommands = new StrictList<>();
 
 	/**
 	 * The registered main command, if any
 	 */
-	private SimpleCommand mainCommand;
+	private SimpleCommandCore mainCommand;
 
 	/**
 	 * The label to execute subcommands in this group, example: for ChatControl it's /chatcontrol
@@ -134,7 +131,7 @@ public abstract class SimpleCommandGroup {
 		this.registerSubcommands();
 
 		// Sort A-Z
-		Collections.sort(this.subcommands.getSource(), Comparator.comparing(SimpleSubCommand::getSublabel));
+		Collections.sort(this.subcommands.getSource(), Comparator.comparing(SimpleSubCommandCore::getSublabel));
 
 		// Check for collision
 		this.checkSubCommandAliasesCollision();
@@ -146,7 +143,7 @@ public abstract class SimpleCommandGroup {
 	private void checkSubCommandAliasesCollision() {
 		final List<String> aliases = new ArrayList<>();
 
-		for (final SimpleSubCommand subCommand : this.subcommands)
+		for (final SimpleSubCommandCore subCommand : this.subcommands)
 			for (final String alias : subCommand.getSublabels()) {
 				ValidCore.checkBoolean(!aliases.contains(alias), "Subcommand '/" + this.getLabel() + " " + subCommand.getSublabel() + "' has alias '" + alias + "' that is already in use by another subcommand!");
 
@@ -175,7 +172,7 @@ public abstract class SimpleCommandGroup {
 
 	/**
 	 * Extending method to register subcommands, call
-	 * {@link #registerSubcommand(SimpleSubCommand)} and {@link #registerHelpLine(String...)}
+	 * {@link #registerSubcommand(SimpleSubCommandCore)} and {@link #registerHelpLine(String...)}
 	 * there for your command group.
 	 */
 	protected abstract void registerSubcommands();
@@ -185,7 +182,7 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param command
 	 */
-	protected final void registerSubcommand(final SimpleSubCommand command) {
+	protected final void registerSubcommand(final SimpleSubCommandCore command) {
 		ValidCore.checkNotNull(this.mainCommand, "Cannot add subcommands when main command is missing! Call register()");
 
 		// Fixes reloading issue where all subcommands are cleared
@@ -201,26 +198,14 @@ public abstract class SimpleCommandGroup {
 	 *
 	 * @param parentClass
 	 */
-	protected final void registerSubcommand(final Class<? extends SimpleSubCommand> parentClass) {
-		for (final Class<? extends SimpleSubCommand> clazz : ReflectionUtilCore.getClasses(Platform.getPlugin().getFile(), parentClass)) {
+	protected final void registerSubcommand(final Class<? extends SimpleSubCommandCore> parentClass) {
+		for (final Class<? extends SimpleSubCommandCore> clazz : ReflectionUtilCore.getClasses(Platform.getPlugin().getFile(), parentClass)) {
 			if (Modifier.isAbstract(clazz.getModifiers()))
 				continue;
 
 			ValidCore.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Make child of " + parentClass.getSimpleName() + " class " + clazz.getSimpleName() + " final to auto register it!");
 			this.registerSubcommand(ReflectionUtilCore.instantiate(clazz));
 		}
-	}
-
-	/**
-	 * Registers a simple help message for this group, used in /{label} help|?
-	 * since we add help for all subcommands automatically
-	 *
-	 * @param menuHelp
-	 */
-	protected final void registerHelpLine(final String... menuHelp) {
-		ValidCore.checkNotNull(this.mainCommand, "Cannot add subcommands when main command is missing! Call register()");
-
-		this.subcommands.add(new FillerSubCommand(this, menuHelp));
 	}
 
 	// ----------------------------------------------------------------------
@@ -343,7 +328,7 @@ public abstract class SimpleCommandGroup {
 		return new String[] {
 				"&8",
 				"&8" + CommonCore.chatLineSmooth(),
-				this.getHeaderPrefix() + "  " + Platform.getPlugin().getName() + this.getTrademark() + " &7" + Platform.getPluginVersion(),
+				this.getHeaderPrefix() + "  " + Platform.getPlugin().getName() + this.getTrademark() + " &7" + Platform.getPlugin().getVersion(),
 				" ",
 				"&2  [] &f= " + SimpleLocalization.Commands.LABEL_OPTIONAL_ARGS,
 				this.getTheme() + "  <> &f= " + SimpleLocalization.Commands.LABEL_REQUIRED_ARGS,
@@ -355,7 +340,7 @@ public abstract class SimpleCommandGroup {
 	 * Return the subcommand description when listing all commands using the "help" or "?" subcommand
 	 * @return
 	 */
-	protected String getSubcommandDescription() {
+	protected Component getSubcommandDescription() {
 		return SimpleLocalization.Commands.LABEL_SUBCOMMAND_DESCRIPTION;
 	}
 
@@ -394,7 +379,7 @@ public abstract class SimpleCommandGroup {
 	/**
 	 * The main command handling this command group
 	 */
-	public final class MainCommand extends SimpleCommand {
+	public final class MainCommand extends SimpleCommandCore {
 
 		/**
 		 * Create new main command with the given label
@@ -432,7 +417,7 @@ public abstract class SimpleCommandGroup {
 			}
 
 			final String argument = this.args[0];
-			final SimpleSubCommand command = this.findSubcommand(argument);
+			final SimpleSubCommandCore command = this.findSubcommand(argument);
 
 			// Handle subcommands
 			if (command != null) {
@@ -479,21 +464,15 @@ public abstract class SimpleCommandGroup {
 				final boolean atLeast17 = MinecraftVersion.atLeast(V.v1_7);
 				final boolean atLeast13 = MinecraftVersion.atLeast(V.v1_13);
 
-				for (final SimpleSubCommand subcommand : SimpleCommandGroup.this.subcommands)
+				for (final SimpleSubCommandCore subcommand : SimpleCommandGroup.this.subcommands)
 					if (subcommand.showInHelp() && this.hasPerm(subcommand.getPermission())) {
 
 						// Simulate the sender to enable permission checks in getMultilineHelp for ex.
 						subcommand.sender = this.sender;
 
-						if (subcommand instanceof FillerSubCommand) {
-							this.tellNoPrefix(((FillerSubCommand) subcommand).getHelpMessages());
-
-							continue;
-						}
-
 						final String usage = this.colorizeUsage(subcommand.getUsage());
-						final String desc = CommonCore.getOrEmpty(subcommand.getDescription());
-						final String plainMessage = Replacer.replaceArray(SimpleCommandGroup.this.getSubcommandDescription(),
+						final String desc = RemainCore.convertAdventureToLegacy(subcommand.getDescription() == null ? Component.empty() : subcommand.getDescription());
+						final String plainMessage = Replacer.replaceArray(RemainCore.convertAdventureToLegacy(SimpleCommandGroup.this.getSubcommandDescription()),
 								"label", this.getLabel(),
 								"sublabel", (atLeast17 ? "&n" : "") + subcommand.getSublabel() + (atLeast17 ? "&r" : ""),
 								"usage", usage,
@@ -504,18 +483,18 @@ public abstract class SimpleCommandGroup {
 
 						if (!desc.isEmpty() && atLeast17) {
 							final String command = CommonCore.removeColors(plainMessage).substring(1);
-							final List<Component> hover = new ArrayList<>();
+							final List<String> hover = new ArrayList<>();
 
-							hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_DESCRIPTION.replace("{description}", desc));
+							hover.add(RemainCore.convertAdventureToLegacy(SimpleLocalization.Commands.HELP_TOOLTIP_DESCRIPTION).replace("{description}", desc));
 
 							if (subcommand.getPermission() != null)
-								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_PERMISSION.replace("{permission}", subcommand.getPermission()));
+								hover.add(RemainCore.convertAdventureToLegacy(SimpleLocalization.Commands.HELP_TOOLTIP_PERMISSION).replace("{permission}", subcommand.getPermission()));
 
 							if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
-								hover.add(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE);
+								hover.add(RemainCore.convertAdventureToLegacy(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE));
 
-								for (final String usageLine : subcommand.getMultilineUsageMessage())
-									hover.add("&f" + this.replacePlaceholders(this.colorizeUsage(usageLine.replace("{sublabel}", subcommand.getSublabel()))));
+								for (final Component usageLine : subcommand.getMultilineUsageMessage())
+									hover.add("&f" + RemainCore.convertAdventureToLegacy(this.replacePlaceholders(RemainCore.convertLegacyToAdventure(this.colorizeUsage(usageLine.replaceText(b -> b.matchLiteral("{sublabel}").replacement(subcommand.getSublabel())))))));
 
 							} else
 								hover.add(RemainCore.convertAdventureToLegacy(this.replacePlaceholders(CommonCore.colorize(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage)))));
@@ -560,8 +539,14 @@ public abstract class SimpleCommandGroup {
 		 * @param message
 		 * @return
 		 */
-		private String colorizeUsage(final String message) {
-			return message == null ? "" : message.replace("<", "&6<").replace(">", "&6>&f").replace("[", "&2[").replace("]", "&2]&f").replaceAll(" \\-([a-zA-Z])", " &3-$1");
+		private String colorizeUsage(final Component message) {
+			return message == null ? ""
+					: RemainCore.convertAdventureToLegacy(message)
+							.replace("<", "&6<")
+							.replace(">", "&6>&f")
+							.replace("[", "&2[")
+							.replace("]", "&2]&f")
+							.replaceAll(" \\-([a-zA-Z])", " &3-$1");
 		}
 
 		/**
@@ -570,15 +555,11 @@ public abstract class SimpleCommandGroup {
 		 * @param label
 		 * @return
 		 */
-		private SimpleSubCommand findSubcommand(final String label) {
-			for (final SimpleSubCommand command : SimpleCommandGroup.this.subcommands) {
-				if (command instanceof FillerSubCommand)
-					continue;
-
+		private SimpleSubCommandCore findSubcommand(final String label) {
+			for (final SimpleSubCommandCore command : SimpleCommandGroup.this.subcommands)
 				for (final String alias : command.getSublabels())
 					if (alias.equalsIgnoreCase(label))
 						return command;
-			}
 
 			return null;
 		}
@@ -592,7 +573,7 @@ public abstract class SimpleCommandGroup {
 				return this.tabCompleteSubcommands(this.sender, this.args[0]);
 
 			if (this.args.length > 1) {
-				final SimpleSubCommand cmd = this.findSubcommand(this.args[0]);
+				final SimpleSubCommandCore cmd = this.findSubcommand(this.args[0]);
 
 				if (cmd != null)
 					return cmd.delegateTabComplete(this.sender, this.getLabel(), Arrays.copyOfRange(this.args, 1, this.args.length));
@@ -613,8 +594,8 @@ public abstract class SimpleCommandGroup {
 
 			final List<String> tab = new ArrayList<>();
 
-			for (final SimpleSubCommand subcommand : SimpleCommandGroup.this.subcommands)
-				if (subcommand.showInHelp() && !(subcommand instanceof FillerSubCommand) && this.hasPerm(subcommand.getPermission()))
+			for (final SimpleSubCommandCore subcommand : SimpleCommandGroup.this.subcommands)
+				if (subcommand.showInHelp() && this.hasPerm(subcommand.getPermission()))
 					for (final String label : subcommand.getSublabels())
 						if (!label.trim().isEmpty() && label.startsWith(param))
 							tab.add(label);
@@ -622,29 +603,4 @@ public abstract class SimpleCommandGroup {
 			return tab;
 		}
 	}
-
-	// ----------------------------------------------------------------------
-	// Helper
-	// ----------------------------------------------------------------------
-
-	/**
-	 * A helper class for showing plain messages in /{label} help|?
-	 */
-	private final class FillerSubCommand extends SimpleSubCommand {
-
-		@Getter
-		private final String[] helpMessages;
-
-		private FillerSubCommand(final SimpleCommandGroup parent, final String... menuHelp) {
-			super(parent, "_" + RandomUtilCore.nextBetween(1, Short.MAX_VALUE));
-
-			this.helpMessages = menuHelp;
-		}
-
-		@Override
-		protected void onCommand() {
-			throw new FoException("Filler space command cannot be run!");
-		}
-	}
-
 }

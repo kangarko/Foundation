@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -24,6 +25,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.mineacademy.fo.ChatUtil;
@@ -34,7 +36,7 @@ import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.command.RegionCommand;
-import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
@@ -46,6 +48,7 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleHologram;
@@ -65,6 +68,7 @@ import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.BlockVisualizer;
 
 import lombok.Getter;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 
 /**
@@ -283,6 +287,32 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 				Common.log(this.getStartupLogo());
 
 			Variables.setCollector(new BukkitVariableCollector());
+
+			ChatPaginator.setCustomSender(new BiFunction<Audience, Integer, Boolean>() {
+
+				@Override
+				public Boolean apply(Audience audience, Integer page) {
+
+					if (audience instanceof Player) {
+						final Player player = (Player) audience;
+
+						// Remove old FoPages to prevent conflicts when two or more plugins use Foundation shaded
+						if (player.hasMetadata("FoPages")) {
+							final org.bukkit.plugin.Plugin owningPlugin = player.getMetadata("FoPages").get(0).getOwningPlugin();
+
+							player.removeMetadata("FoPages", owningPlugin);
+						}
+
+						player.setMetadata("FoPages", new FixedMetadataValue(SimplePlugin.getInstance(), SimplePlugin.this.getName()));
+						player.setMetadata(ChatPaginator.getPageNbtTag(), new FixedMetadataValue(SimplePlugin.getInstance(), this));
+
+						player.chat("/#flp " + page);
+						return true;
+					}
+
+					return false;
+				}
+			});
 
 			HookManager.loadDependencies();
 
@@ -738,8 +768,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 * @param command
 	 */
 	protected final void registerCommand(final Command command) {
-		if (command instanceof SimpleCommand)
-			((SimpleCommand) command).register();
+		if (command instanceof SimpleCommandCore)
+			((SimpleCommandCore) command).register();
 
 		else
 			Remain.registerCommand(command);

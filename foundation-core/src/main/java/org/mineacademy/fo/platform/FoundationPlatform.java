@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.model.Task;
 
 import net.kyori.adventure.audience.Audience;
@@ -18,7 +18,7 @@ public interface FoundationPlatform {
 
 	boolean callEvent(Object event);
 
-	void checkCommandUse(SimpleCommand command);
+	void checkCommandUse(SimpleCommandCore command);
 
 	void closeAdventurePlatform();
 
@@ -39,6 +39,8 @@ public interface FoundationPlatform {
 	List<String> getServerPlugins();
 
 	String getServerVersion();
+
+	String getNMSVersion();
 
 	boolean hasHexColorSupport();
 
@@ -62,7 +64,7 @@ public interface FoundationPlatform {
 
 	void logToConsole(String message);
 
-	void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases);
+	void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases);
 
 	void registerEvents(Object listener);
 
@@ -90,5 +92,5 @@ public interface FoundationPlatform {
 
 	Audience toAudience(Object sender);
 
-	void unregisterCommand(SimpleCommand command);
+	void unregisterCommand(SimpleCommandCore command);
 }

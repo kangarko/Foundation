@@ -13,7 +13,7 @@ import net.kyori.adventure.text.Component;
 /**
  * A simple subcommand belonging to a {@link SimpleCommandGroup}
  */
-public abstract class SimpleSubCommand extends SimpleCommand {
+public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 
 	/**
 	 * All registered sublabels this subcommand can have
@@ -34,7 +34,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 *
 	 * @param sublabel
 	 */
-	protected SimpleSubCommand(String sublabel) {
+	protected SimpleSubCommandCore(String sublabel) {
 		this(getMainCommandGroup0(), sublabel);
 	}
 
@@ -56,7 +56,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 	 * @param parent
 	 * @param sublabel
 	 */
-	protected SimpleSubCommand(SimpleCommandGroup parent, String sublabel) {
+	protected SimpleSubCommandCore(SimpleCommandGroup parent, String sublabel) {
 		super(parent.getLabel());
 
 		this.sublabels = sublabel.split("(\\||\\/)");
@@ -85,7 +85,7 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 
 	/**
 	 * Replace additional {sublabel} placeholder for this subcommand.
-	 * See {@link SimpleCommand#replacePlaceholders(String)}
+	 * See {@link SimpleCommandCore#replacePlaceholders(String)}
 	 */
 	@Override
 	protected Component replacePlaceholders(Component message) {
@@ -99,6 +99,6 @@ public abstract class SimpleSubCommand extends SimpleCommand {
 
 	@Override
 	public final boolean equals(Object obj) {
-		return obj instanceof SimpleSubCommand ? Arrays.equals(((SimpleSubCommand) obj).sublabels, this.sublabels) : false;
+		return obj instanceof SimpleSubCommandCore ? Arrays.equals(((SimpleSubCommandCore) obj).sublabels, this.sublabels) : false;
 	}
 }

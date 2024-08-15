@@ -13,7 +13,6 @@ import org.mineacademy.fo.MessengerCore;
 import org.mineacademy.fo.ReflectionUtilCore;
 import org.mineacademy.fo.TabUtil;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.command.SimpleCommandGroup.MainCommand;
 import org.mineacademy.fo.debug.LagCatcher;
@@ -39,7 +38,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * A simple command used to replace all Bukkit/Spigot command functionality
  * across any plugin that utilizes this.
  */
-public abstract class SimpleCommand {
+public abstract class SimpleCommandCore {
 
 	/**
 	 * Denotes an empty list used to disable tab-completion
@@ -192,7 +191,7 @@ public abstract class SimpleCommand {
 	 *
 	 * @param label
 	 */
-	protected SimpleCommand(final String label) {
+	protected SimpleCommandCore(final String label) {
 		this(parseLabel0(label), parseAliases0(label));
 	}
 
@@ -200,7 +199,7 @@ public abstract class SimpleCommand {
 	 * Create a new simple command from the list. The first
 	 * item in the list is the main label and the other ones are the aliases.
 	 */
-	protected SimpleCommand(final StrictList<String> labels) {
+	protected SimpleCommandCore(final List<String> labels) {
 		this(parseLabelList0(labels), labels.size() > 1 ? labels.subList(1, labels.size()) : null);
 	}
 
@@ -210,7 +209,7 @@ public abstract class SimpleCommand {
 	 * @param label
 	 * @param aliases
 	 */
-	protected SimpleCommand(final String label, final List<String> aliases) {
+	protected SimpleCommandCore(final String label, final List<String> aliases) {
 		Platform.checkCommandUse(this);
 
 		this.label = label;
@@ -244,7 +243,7 @@ public abstract class SimpleCommand {
 	/*
 	 * Return the first index from the list or thrown an error if list empty
 	 */
-	private static String parseLabelList0(final StrictList<String> labels) {
+	private static String parseLabelList0(final List<String> labels) {
 		ValidCore.checkBoolean(!labels.isEmpty(), "Command label must not be empty!");
 
 		return labels.get(0);
@@ -289,7 +288,7 @@ public abstract class SimpleCommand {
 	 *                             unregister /t from Towny, which is undesired.
 	 */
 	public final void register(final boolean unregisterOldCommand, final boolean unregisterOldAliases) {
-		ValidCore.checkBoolean(!(this instanceof SimpleSubCommand), "Sub commands cannot be registered!");
+		ValidCore.checkBoolean(!(this instanceof SimpleSubCommandCore), "Sub commands cannot be registered!");
 		ValidCore.checkBoolean(!this.registered, "The command /" + this.getLabel() + " has already been registered!");
 
 		if (this.canRegister()) {
@@ -305,7 +304,7 @@ public abstract class SimpleCommand {
 	 * Throws an error if the command is not registered.
 	 */
 	public final void unregister() {
-		ValidCore.checkBoolean(!(this instanceof SimpleSubCommand), "Sub commands cannot be unregistered!");
+		ValidCore.checkBoolean(!(this instanceof SimpleSubCommandCore), "Sub commands cannot be unregistered!");
 		ValidCore.checkBoolean(this.registered, "The command /" + this.getLabel() + " is not registered!");
 
 		Platform.unregisterCommand(this);
@@ -350,7 +349,7 @@ public abstract class SimpleCommand {
 		this.args = args;
 
 		// Optional sublabel if this is a sub command
-		final String sublabel = this instanceof SimpleSubCommand ? " " + ((SimpleSubCommand) this).getSublabel() : "";
+		final String sublabel = this instanceof SimpleSubCommandCore ? " " + ((SimpleSubCommandCore) this).getSublabel() : "";
 
 		// Catch "errors" that contain a message to send to the player
 		// Measure performance of all commands
@@ -404,7 +403,7 @@ public abstract class SimpleCommand {
 						usage = usage.color(NamedTextColor.RED);
 
 					if (!usagePlain.startsWith("/"))
-						usage = Component.text("/{label} " + (this instanceof SimpleSubCommand ? "{sublabel} " : "")).append(usage);
+						usage = Component.text("/{label} " + (this instanceof SimpleSubCommandCore ? "{sublabel} " : "")).append(usage);
 
 					messages.add(usage);
 
@@ -537,16 +536,6 @@ public abstract class SimpleCommand {
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Checks if the player is a console and throws an error if he is
-	 *
-	 * @throws CommandException
-	 */
-	/*protected final void checkConsole() throws CommandException {
-		if (!this.isPlayer())
-			throw new CommandException(SimpleLocalization.Commands.NO_CONSOLE);
-	}*/
-
-	/**
 	 * Checks if the current sender has the given permission
 	 *
 	 * @param perm
@@ -626,135 +615,6 @@ public abstract class SimpleCommand {
 	}
 
 	/**
-	 * Attempts to find the offline player by name or string UUID, sends an error message to sender if he did not play before
-	 * or runs the specified callback on successful retrieval.
-	 *
-	 * The offline player lookup is done async, the callback is synchronized.
-	 *
-	 * @param name or string UUID
-	 * @param syncCallback
-	 * @throws CommandException
-	 */
-	/*protected final void findOfflinePlayer(final String name, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
-		if (name.length() == 36 && name.charAt(8) == '-' && name.charAt(13) == '-' && name.charAt(18) == '-' && name.charAt(23) == '-') {
-			UUID uuid = null;
-
-			try {
-				uuid = UUID.fromString(name);
-
-			} catch (final IllegalArgumentException ex) {
-				this.returnTell("&cInvalid UUID '" + name + "'");
-			}
-
-			this.findOfflinePlayer(uuid, syncCallback);
-
-		} else
-			this.runAsync(() -> {
-				final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
-				this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.NOT_PLAYED_BEFORE.replace("{player}", name));
-
-				this.runLater(() -> syncCallback.accept(targetPlayer));
-			});
-	}*/
-
-	/**
-	 * Attempts to find the offline player by UUID, this will fire the callback
-	 *
-	 * @param uniqueId
-	 * @param syncCallback
-	 * @throws CommandException
-	 */
-	/*protected final void findOfflinePlayer(final UUID uniqueId, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
-		this.runAsync(() -> {
-			final OfflinePlayer targetPlayer = RemainCore.getOfflinePlayerByUUID(uniqueId);
-			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), SimpleLocalization.Player.INVALID_UUID.replace("{uuid}", uniqueId.toString()));
-
-			this.runLater(() -> syncCallback.accept(targetPlayer));
-		});
-	}*/
-
-	/**
-	 * Attempts to find a non-vanished online player, failing with the message
-	 * found at {@link SimpleLocalization.Player#NOT_ONLINE}
-	 *
-	 * @param name
-	 * @return
-	 * @throws CommandException
-	 */
-	/*protected final Player findPlayer(final String name) throws CommandException {
-		return this.findPlayer(name, SimpleLocalization.Player.NOT_ONLINE);
-	}*/
-
-	/**
-	 * Attempts to find a non-vanished online player, failing with a false message
-	 *
-	 * @param name
-	 * @param falseMessage
-	 * @return
-	 * @throws CommandException
-	 */
-	/*protected final Player findPlayer(final String name, final String falseMessage) throws CommandException {
-		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline() && !PlayerUtil.isVanished(player), falseMessage.replace("{player}", name));
-
-		return player;
-	}*/
-
-	/**
-	 * Return the player by the given args index, and, when the args are shorter, return the sender if sender is player.
-	 *
-	 * @param name
-	 * @return
-	 * @throws CommandException
-	 */
-	/*protected final Player findPlayerOrSelf(final int argsIndex) throws CommandException {
-		if (argsIndex >= this.args.length) {
-			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CONSOLE_MISSING_PLAYER_NAME);
-
-			return this.getPlayer();
-		}
-
-		final String name = this.args[argsIndex];
-		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE.replace("{player}", name));
-
-		return player;
-	}*/
-
-	/**
-	 * Return the player by the given name, and, when the name is null, return the sender if sender is player.
-	 *
-	 * @param name
-	 * @return
-	 * @throws CommandException
-	 */
-	/*protected final Player findPlayerOrSelf(final String name) throws CommandException {
-		if (name == null) {
-			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CONSOLE_MISSING_PLAYER_NAME);
-
-			return this.getPlayer();
-		}
-
-		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE.replace("{player}", name));
-
-		return player;
-	}*/
-
-	/**
-	 * A simple call to Bukkit.getPlayer(name) meant to be overriden
-	 * if you have a custom implementation of getting players by name.
-	 *
-	 * Example use: ChatControl can find players by their nicknames too
-	 *
-	 * @param name
-	 * @return
-	 */
-	/*protected Player findPlayerInternal(final String name) {
-		return Bukkit.getPlayer(name);
-	}*/
-
-	/**
 	 * Attempts to convert the given input (such as 1 hour) into
 	 * a {@link SimpleTime} object
 	 *
@@ -771,44 +631,6 @@ public abstract class SimpleCommand {
 			return null;
 		}
 	}
-
-	/**
-	 * Attempts to convert the given name into a bukkit world,
-	 * sending localized error message if such world does not exist.
-	 *
-	 * @param name
-	 * @return
-	 */
-	/*protected final World findWorld(final String name) {
-		if ("~".equals(name)) {
-			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CANNOT_AUTODETECT_WORLD);
-
-			return this.getPlayer().getWorld();
-		}
-
-		final World world = Bukkit.getWorld(name);
-
-		this.checkNotNull(world, SimpleLocalization.Commands.INVALID_WORLD.replace("{world}", name).replace("{available}", CommonCore.join(Bukkit.getWorlds())));
-		return world;
-	}*/
-
-	/**
-	 * Attempts to parse the given name into a CompMaterial, will work for both modern
-	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
-	 * <p>
-	 * You can use the {enum} or {item} variable to replace with the given name
-	 *
-	 * @param name
-	 * @param falseMessage
-	 * @return
-	 * @throws CommandException
-	 */
-	/*protected final CompMaterial findMaterial(final String name, final Component falseMessage) throws CommandException {
-		final CompMaterial found = CompMaterial.fromString(name);
-
-		this.checkNotNull(found, falseMessage.replace("{enum}", name).replace("{item}", name));
-		return found;
-	}*/
 
 	/**
 	 * Finds an enumeration of a certain type, if it fails it prints a false message to the player
@@ -1291,8 +1113,8 @@ public abstract class SimpleCommand {
 
 		component = component.replaceText(b -> b.matchLiteral("{label}").replacement(this.label));
 		component = component.replaceText(b -> b.matchLiteral("{current_label}").replacement(CommonCore.getOrDefault(this.currentLabel, this.label)));
-		component = component.replaceText(b -> b.matchLiteral("{sublabel}").replacement(this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : this.label));
-		component = component.replaceText(b -> b.matchLiteral("{current_sublabel}").replacement(this instanceof SimpleSubCommand ? ((SimpleSubCommand) this).getSublabel() : this.args != null && this.args.length > 0 ? this.args[0] : this.label));
+		component = component.replaceText(b -> b.matchLiteral("{sublabel}").replacement(this instanceof SimpleSubCommandCore ? ((SimpleSubCommandCore) this).getSublabels()[0] : this.args != null && this.args.length > 0 ? this.args[0] : this.label));
+		component = component.replaceText(b -> b.matchLiteral("{current_sublabel}").replacement(this instanceof SimpleSubCommandCore ? ((SimpleSubCommandCore) this).getSublabel() : this.args != null && this.args.length > 0 ? this.args[0] : this.label));
 
 		component = Variables.replace(component, this.sender);
 
@@ -1413,14 +1235,14 @@ public abstract class SimpleCommand {
 	/**
 	 * Override this method to support tab completing in your command.
 	 * <p>
-	 * You can then use "sender", "label" or "args" fields from {@link SimpleCommand}
+	 * You can then use "sender", "label" or "args" fields from {@link SimpleCommandCore}
 	 * class normally and return a list of tab completion suggestions.
 	 * <p>
 	 * We already check for {@link #getPermission()} and only call this method if the
 	 * sender has it.
 	 * <p>
 	 * TIP: Use {@link #completeLastWord(Iterable)} and {@link #getLastArg()} methods
-	 * in {@link SimpleCommand} for your convenience
+	 * in {@link SimpleCommandCore} for your convenience
 	 *
 	 * @return the list of suggestions to complete, or null to complete player names automatically
 	 */
@@ -1441,15 +1263,6 @@ public abstract class SimpleCommand {
 		// TODO this.isPlayer() ? CommonCore.getPlayerNames(false) : CommonCore.getPlayerNames()
 		return TabUtil.complete(this.getLastArg(), CommonCore.convert(Platform.getOnlinePlayers(), audience -> Platform.resolveSenderName(audience)));
 	}
-
-	/**
-	 * Convenience method for completing all world names
-	 *
-	 * @return
-	 */
-	/*protected List<String> completeLastWordWorldNames() {
-		return this.completeLastWord(CommonCore.getWorldNames());
-	}*/
 
 	/**
 	 * Convenience method for automatically completing the last word
@@ -1505,26 +1318,6 @@ public abstract class SimpleCommand {
 	// ----------------------------------------------------------------------
 	// Temporary variables and safety
 	// ----------------------------------------------------------------------
-
-	/**
-	 * Attempts to get the sender as player, only works if the sender is actually a player,
-	 * otherwise we return null
-	 *
-	 * @return
-	 */
-	// Add to SimpleBukkitCommand
-	/*protected final Player getPlayer() {
-		return this.isPlayer() ? (Player) this.getSender() : null;
-	}*/
-
-	/**
-	 * Return whether the sender is a living player
-	 *
-	 * @return
-	 */
-	/*protected final boolean isPlayer() {
-		return this.sender instanceof Player;
-	}*/
 
 	/**
 	 * Sets a custom prefix used in tell messages for this command.
@@ -1609,8 +1402,8 @@ public abstract class SimpleCommand {
 	 * By default we check if the player has the permission you set in setPermission.
 	 * <p>
 	 * If that is null, we check for the following:
-	 * {yourpluginname}.command.{label} for {@link SimpleCommand}
-	 * {yourpluginname}.command.{label}.{sublabel} for {@link SimpleSubCommand}
+	 * {yourpluginname}.command.{label} for {@link SimpleCommandCore}
+	 * {yourpluginname}.command.{label}.{sublabel} for {@link SimpleSubCommandCore}
 	 * <p>
 	 * We handle lacking permissions automatically and return with an no-permission message
 	 * when the player lacks it.
@@ -1821,7 +1614,7 @@ public abstract class SimpleCommand {
 
 	@Override
 	public boolean equals(final Object obj) {
-		return obj instanceof SimpleCommand ? ((SimpleCommand) obj).getLabel().equals(this.getLabel()) && ((SimpleCommand) obj).getAliases().equals(this.getAliases()) : false;
+		return obj instanceof SimpleCommandCore ? ((SimpleCommandCore) obj).getLabel().equals(this.getLabel()) && ((SimpleCommandCore) obj).getAliases().equals(this.getAliases()) : false;
 	}
 
 	@Override

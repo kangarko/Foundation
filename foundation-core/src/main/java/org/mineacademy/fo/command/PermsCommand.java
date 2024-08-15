@@ -20,7 +20,7 @@ import lombok.NonNull;
  * A simple predefined command for quickly listing all permissions
  * the plugin uses, given they are stored in a class.
  */
-public final class PermsCommand extends SimpleSubCommand {
+public final class PermsCommand extends SimpleSubCommandCore {
 
 	/*
 	 * Classes with permissions listed as fields
@@ -149,7 +149,7 @@ public final class PermsCommand extends SimpleSubCommand {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.command.SimpleCommand#tabComplete()
+	 * @see org.mineacademy.fo.command.SimpleCommandCore#tabComplete()
 	 */
 	@Override
 	protected List<String> tabComplete() {

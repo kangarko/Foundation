@@ -12,7 +12,7 @@ import org.mineacademy.fo.settings.SimpleLocalization;
  * into the chat to process it. Such as the Boss plugin asks to type a Boss
  * name the player wants to create.
  */
-public final class ConversationCommand extends SimpleSubCommand {
+public final class ConversationCommand extends SimpleSubCommandCore {
 
 	public ConversationCommand() {
 		super("conversation|conv");

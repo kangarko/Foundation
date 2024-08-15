@@ -130,13 +130,14 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * Keys below indicate an invalid action or input
 		 */
-		public static Component INVALID_ARGUMENT = CommonCore.colorize("<red>Invalid argument. Run <gold>/{label} ? <red>for help.");
+		public static Component INVALID_ARGUMENT = CommonCore.colorize("Invalid argument. Run <gold>/{label} ? <red>for help.");
 		public static Component INVALID_SUB_ARGUMENT = CommonCore.colorize("Invalid argument. Run '/{label} {0}' for help.");
 		public static Component INVALID_ARGUMENT_MULTILINE = CommonCore.colorize("Invalid argument. Usage:");
 		public static Component INVALID_TIME = CommonCore.colorize("Expected time such as '3 hours' or '15 minutes'. Got: '{input}'");
 		public static Component INVALID_NUMBER = CommonCore.colorize("The number must be a whole or a decimal number. Got: '{input}'");
 		public static Component INVALID_STRING = CommonCore.colorize("Invalid string. Got: '{input}'");
 		public static Component INVALID_WORLD = CommonCore.colorize("Invalid world '{world}'. Available: {available}");
+		public static Component INVALID_UUID = CommonCore.colorize("Invalid UUID '{uuid}'");
 
 		/**
 		 * The authors label
@@ -314,6 +315,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Invalid_World"))
 				INVALID_WORLD = getComponent("Invalid_World");
+
+			if (isSetDefault("Invalid_UUID"))
+				INVALID_UUID = getComponent("Invalid_UUID");
 
 			if (isSetDefault("Label_Authors"))
 				LABEL_AUTHORS = getComponent("Label_Authors");
@@ -513,17 +517,17 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * Message shown when the player is not online on this server
 		 */
-		public static String NOT_ONLINE = "&cPlayer {player} &cis not online on this server.";
+		public static Component NOT_ONLINE = CommonCore.colorize("&cPlayer {player} &cis not online on this server.");
 
 		/**
 		 * Message shown when Bukkit#getOfflinePlayer(String) returns that the player has not played before
 		 */
-		public static String NOT_PLAYED_BEFORE = "&cPlayer {player} &chas not played before or we could not locate his disk data.";
+		public static Component NOT_PLAYED_BEFORE = CommonCore.colorize("&cPlayer {player} &chas not played before or we could not locate his disk data.");
 
 		/**
 		 * Message shown the an offline player is returned null from a given UUID.
 		 */
-		public static String INVALID_UUID = "&cCould not find a player from UUID {uuid}.";
+		public static Component INVALID_UUID = CommonCore.colorize("&cCould not find a player from UUID {uuid}.");
 
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
@@ -532,13 +536,13 @@ public class SimpleLocalization extends YamlStaticConfig {
 			setPathPrefix("Player");
 
 			if (isSetDefault("Not_Online"))
-				NOT_ONLINE = getString("Not_Online");
+				NOT_ONLINE = getComponent("Not_Online");
 
 			if (isSetDefault("Not_Played_Before"))
-				NOT_PLAYED_BEFORE = getString("Not_Played_Before");
+				NOT_PLAYED_BEFORE = getComponent("Not_Played_Before");
 
 			if (isSetDefault("Invalid_UUID"))
-				INVALID_UUID = getString("Invalid_UUID");
+				INVALID_UUID = getComponent("Invalid_UUID");
 		}
 	}
 

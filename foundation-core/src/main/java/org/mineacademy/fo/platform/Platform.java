@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.model.Task;
 
 import lombok.AccessLevel;
@@ -26,7 +26,7 @@ public final class Platform {
 		return getInstance().callEvent(event);
 	}
 
-	public static void checkCommandUse(SimpleCommand command) {
+	public static void checkCommandUse(SimpleCommandCore command) {
 		getInstance().checkCommandUse(command);
 	}
 
@@ -116,7 +116,7 @@ public final class Platform {
 		getInstance().logToConsole(message);
 	}
 
-	public static void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
+	public static void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
 		getInstance().registerCommand(command, unregisterOldCommand, unregisterOldAliases);
 	}
 
@@ -176,11 +176,15 @@ public final class Platform {
 		return getInstance().toAudience(sender);
 	}
 
-	public static void unregisterCommand(SimpleCommand command) {
+	public static void unregisterCommand(SimpleCommandCore command) {
 		getInstance().unregisterCommand(command);
 	}
 
 	public static FoundationPlugin getPlugin() {
 		return getInstance().getPlugin();
+	}
+
+	public static String getNMSVersion() {
+		return getInstance().getNMSVersion();
 	}
 }

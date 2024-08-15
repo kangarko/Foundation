@@ -25,7 +25,7 @@ import org.mineacademy.fo.SerializeUtilCore.Mode;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.collection.StrictList;
-import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
@@ -724,7 +724,7 @@ public abstract class FileConfig {
 	 * This is a basic string list, however we enforce at least one value (the first -> the
 	 * main command label) and we remove the initial / from each item.
 	 *
-	 * Usable in {@link SimpleCommandGroup} or {@link SimpleCommand}
+	 * Usable in {@link SimpleCommandGroup} or {@link SimpleCommandCore}
 	 *
 	 * @param path
 	 * @return

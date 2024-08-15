@@ -19,9 +19,9 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.annotation.AutoRegister;
-import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
-import org.mineacademy.fo.command.SimpleSubCommand;
+import org.mineacademy.fo.command.SimpleSubCommandCore;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
@@ -112,7 +112,7 @@ final class AutoRegisterScanner {
 						|| PacketListener.class.isAssignableFrom(clazz)
 						|| DiscordListener.class.isAssignableFrom(clazz)) {
 
-					Valid.checkBoolean(!SimpleSubCommand.class.isAssignableFrom(clazz), "@AutoRegister cannot be used on sub command class: " + clazz + "! Rather write registerSubcommand(Class) in registerSubcommands()"
+					Valid.checkBoolean(!SimpleSubCommandCore.class.isAssignableFrom(clazz), "@AutoRegister cannot be used on sub command class: " + clazz + "! Rather write registerSubcommand(Class) in registerSubcommands()"
 							+ " method where Class is your own middle-men abstract class extending SimpleSubCommand that all of your subcommands extend.");
 
 					Valid.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Please make " + clazz + " final for it to be registered automatically (or via @AutoRegister)");
@@ -308,8 +308,8 @@ final class AutoRegisterScanner {
 			eventsRegistered = true;
 		}
 
-		else if (SimpleCommand.class.isAssignableFrom(clazz))
-			plugin.registerCommand((SimpleCommand) instance);
+		else if (SimpleCommandCore.class.isAssignableFrom(clazz))
+			plugin.registerCommand((SimpleCommandCore) instance);
 
 		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
 			final SimpleCommandGroup group = (SimpleCommandGroup) instance;

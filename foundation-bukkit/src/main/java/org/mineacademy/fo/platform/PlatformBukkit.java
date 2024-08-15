@@ -31,7 +31,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.BukkitCommandImpl;
-import org.mineacademy.fo.command.SimpleCommand;
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Task;
@@ -118,6 +118,14 @@ public class PlatformBukkit implements FoundationPlatform {
 	@Override
 	public String getServerVersion() {
 		return Bukkit.getVersion();
+	}
+
+	@Override
+	public String getNMSVersion() {
+		final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
+		final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
+
+		return !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
 	}
 
 	@Override
@@ -297,14 +305,14 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public void checkCommandUse(SimpleCommand command) {
+	public void checkCommandUse(SimpleCommandCore command) {
 		// Navigate developers on proper simple command class usage.
 		ValidCore.checkBoolean(!(command instanceof CommandExecutor), "Please do not write 'implements CommandExecutor' for /" + command + " command since it's already registered.");
 		ValidCore.checkBoolean(!(command instanceof TabCompleter), "Please do not write 'implements TabCompleter' for /" + command + " command, simply override the tabComplete() method");
 	}
 
 	@Override
-	public void registerCommand(SimpleCommand command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
+	public void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
 		final PluginCommand oldCommand = Bukkit.getPluginCommand(command.getLabel());
 
 		if (oldCommand != null && unregisterOldCommand)
@@ -314,7 +322,7 @@ public class PlatformBukkit implements FoundationPlatform {
 	}
 
 	@Override
-	public void unregisterCommand(SimpleCommand command) {
+	public void unregisterCommand(SimpleCommandCore command) {
 		Remain.unregisterCommand(command.getLabel());
 	}
 

@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.RemainCore;
 
 /**
  * Represents a Bukkit command
@@ -14,10 +15,10 @@ import org.mineacademy.fo.platform.Platform;
 @Deprecated
 public final class BukkitCommandImpl extends Command {
 
-	private final SimpleCommand delegate;
+	private final SimpleCommandCore delegate;
 
-	public BukkitCommandImpl(SimpleCommand delegate) {
-		super(delegate.getLabel(), delegate.getDescription(), delegate.getUsage(), delegate.getAliases());
+	public BukkitCommandImpl(SimpleCommandCore delegate) {
+		super(delegate.getLabel(), RemainCore.convertAdventureToLegacy(delegate.getDescription()), RemainCore.convertAdventureToLegacy(delegate.getUsage()), delegate.getAliases());
 
 		this.delegate = delegate;
 	}

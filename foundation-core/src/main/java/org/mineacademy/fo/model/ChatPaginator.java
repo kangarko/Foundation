@@ -7,21 +7,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
-import org.apache.logging.log4j.core.config.plugins.Plugin;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.PermsCommand;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.settings.SimpleLocalization;
-import org.mineacademy.fo.settings.SimpleLocalization.Player;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.kyori.adventure.audience.Audience;
 
 /**
@@ -40,6 +38,13 @@ public final class ChatPaginator {
 	 * It is 17 because our header is 3 lines wide.
 	 */
 	public static final int FOUNDATION_HEIGHT = 15;
+
+	/**
+	 * Set the custom sending mechanism. You will need to implement how the given audience
+	 * receives the given page and return true if sending was successful.
+	 */
+	@Setter
+	private static BiFunction<Audience, Integer, Boolean> customSender;
 
 	/**
 	 * How many lines per page? Maximum on screen is 20 minus header and footer.
@@ -241,24 +246,15 @@ public final class ChatPaginator {
 			this.send0(audience, page);
 	}
 
+	public interface Sender {
+		void send(Audience audience, int page);
+	}
+
 	private void send0(Audience audience, int page) {
-		if (audience instanceof Player) {
-			final Player player = (Player) audience;
+		if (customSender != null && customSender.apply(audience, page)) {
+			// Successful sending upstream
 
-			// Remove old FoPages to prevent conflicts when two or more plugins use Foundation shaded
-			if (player.hasMetadata("FoPages")) {
-				final Plugin owningPlugin = player.getMetadata("FoPages").get(0).getOwningPlugin();
-
-				player.removeMetadata("FoPages", owningPlugin);
-			}
-
-			player.setMetadata("FoPages", new FixedMetadataValue(SimplePlugin.getInstance(), Platform.getPluginName()));
-			player.setMetadata(getPageNbtTag(), new FixedMetadataValue(SimplePlugin.getInstance(), this));
-
-			player.chat("/#flp " + page);
-		}
-
-		else {
+		} else {
 			for (final SimpleComponentCore component : this.header)
 				component.send(audience);
 
