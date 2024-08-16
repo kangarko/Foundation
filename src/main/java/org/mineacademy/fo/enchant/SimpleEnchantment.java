@@ -78,6 +78,11 @@ public abstract class SimpleEnchantment implements Listener {
 	private static final Pattern VALID_NAMESPACE = Pattern.compile("[a-z0-9._-]+");
 
 	/**
+	 * default prefix for fake enchants' lore
+	 */
+	private static final String FO_ENCHANT_PREFIX = "&r&7";
+
+	/**
 	 * Registration of custom enchants by their namespaced key.
 	 */
 	private static final StrictSet<SimpleEnchantment> registeredEnchantments = new StrictSet<>();
@@ -567,6 +572,70 @@ public abstract class SimpleEnchantment implements Listener {
 	/**
 	 * Since Minecraft client cannot display custom enchantments we have to add lore manually.
 	 * <p>
+	 * This removes the fake enchant lore for the given item in case client tries to clone the item.
+	 *
+	 * @param item
+	 * @return the modified item or null if item was not edited (no enchants found)
+	 * @deprecated internal use only
+	 */
+	@Deprecated
+	public static ItemStack removeEnchantmentLores(ItemStack item) {
+		if (!item.hasItemMeta())
+			return null;
+
+		final ItemMeta meta = item.getItemMeta();
+
+		if (meta != null && meta.hasLore()) {
+			Map<Enchantment, Integer> enchants = item.getEnchantments();
+			if (enchants.isEmpty())
+				return null;
+
+			final List<String> lore = meta.getLore();
+			final List<String> newLore = new ArrayList<>(lore.size());
+			boolean foEnchanted = false;
+
+			final List<String> colorLess = new ArrayList<>();
+			try {
+				for (final Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+					final Enchantment enchantment = entry.getKey();
+					final SimpleEnchantment simpleEnchantment = fromBukkit(enchantment);
+
+					if (simpleEnchantment != null) {
+						final String loreLine = simpleEnchantment.getLore(entry.getValue());
+
+						if (loreLine != null && !loreLine.isEmpty())
+							colorLess.add(ChatColor.stripColor(Common.colorize(loreLine)));
+					}
+				}
+
+			} catch (final NullPointerException ex) {
+				// Some weird problem in third party plugin
+			}
+
+			for (final String line : lore) {
+				if (colorLess.contains(ChatColor.stripColor(Common.colorize(line)))) {
+					foEnchanted = true;
+				} else {
+					newLore.add(line);
+				}
+			}
+
+			if (!foEnchanted)
+				return null;
+
+			meta.setLore(newLore);
+			item.setItemMeta(meta);
+
+			return item;
+		}
+
+		return null;
+	}
+
+
+	/**
+	 * Since Minecraft client cannot display custom enchantments we have to add lore manually.
+	 * <p>
 	 * This adds the fake enchant lore for the given item in case it does not exist.
 	 *
 	 * @param item
@@ -587,7 +656,7 @@ public abstract class SimpleEnchantment implements Listener {
 					final String lore = simpleEnchantment.getLore(entry.getValue());
 
 					if (lore != null && !lore.isEmpty())
-						customEnchants.add(Common.colorize("&r&7" + lore));
+						customEnchants.add(Common.colorize(FO_ENCHANT_PREFIX + lore));
 				}
 			}
 
