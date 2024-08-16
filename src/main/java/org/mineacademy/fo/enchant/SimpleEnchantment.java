@@ -28,6 +28,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.projectiles.ProjectileSource;
 import org.mineacademy.fo.ChatUtil;
@@ -587,7 +588,8 @@ public abstract class SimpleEnchantment implements Listener {
 
 		if (meta != null && meta.hasLore()) {
 			Map<Enchantment, Integer> enchants = item.getEnchantments();
-			if (enchants.isEmpty())
+			Map<Enchantment, Integer> storedEnchants = meta instanceof EnchantmentStorageMeta ? ((EnchantmentStorageMeta) meta).getStoredEnchants() : null;
+			if (enchants.isEmpty() && storedEnchants == null && !storedEnchants.isEmpty())
 				return null;
 
 			final List<String> lore = meta.getLore();
@@ -599,6 +601,18 @@ public abstract class SimpleEnchantment implements Listener {
 				for (final Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
 					final Enchantment enchantment = entry.getKey();
 					final SimpleEnchantment simpleEnchantment = fromBukkit(enchantment);
+
+					if (simpleEnchantment != null) {
+						final String loreLine = simpleEnchantment.getLore(entry.getValue());
+
+						if (loreLine != null && !loreLine.isEmpty())
+							colorLess.add(ChatColor.stripColor(Common.colorize(loreLine)));
+					}
+				}
+
+				for (final Map.Entry<Enchantment, Integer> entry : storedEnchants.entrySet()) {
+					final Enchantment storedEnchantment = entry.getKey();
+					final SimpleEnchantment simpleEnchantment = fromBukkit(storedEnchantment);
 
 					if (simpleEnchantment != null) {
 						final String loreLine = simpleEnchantment.getLore(entry.getValue());
@@ -657,6 +671,23 @@ public abstract class SimpleEnchantment implements Listener {
 
 					if (lore != null && !lore.isEmpty())
 						customEnchants.add(Common.colorize(FO_ENCHANT_PREFIX + lore));
+				}
+			}
+
+			if (Remain.hasItemMeta() && item.hasItemMeta()) {
+				ItemMeta meta = item.getItemMeta();
+				if (meta instanceof EnchantmentStorageMeta) {
+					for (final Map.Entry<Enchantment, Integer> entry : ((EnchantmentStorageMeta) meta).getStoredEnchants().entrySet()) {
+						final Enchantment enchantment = entry.getKey();
+						final SimpleEnchantment simpleEnchantment = fromBukkit(enchantment);
+
+						if (simpleEnchantment != null) {
+							final String lore = simpleEnchantment.getLore(entry.getValue());
+
+							if (lore != null && !lore.isEmpty())
+								customEnchants.add(Common.colorize(FO_ENCHANT_PREFIX + lore));
+						}
+					}
 				}
 			}
 
