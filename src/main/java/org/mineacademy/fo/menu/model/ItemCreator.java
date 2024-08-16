@@ -795,8 +795,6 @@ public final class ItemCreator {
 		// From now on we have to re-set the item
 		//
 
-		// Apply custom enchantment lores
-		compiledItem = Common.getOrDefault(SimpleEnchantment.addEnchantmentLores(compiledItem), compiledItem);
 
 		// 1.7.10 hack to add glow, requires no enchants
 		if (this.glow && MinecraftVersion.equals(V.v1_7) && (this.enchants == null || this.enchants.isEmpty())) {
