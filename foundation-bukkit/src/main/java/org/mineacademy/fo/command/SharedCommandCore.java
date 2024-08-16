@@ -12,6 +12,8 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.model.Task;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
@@ -20,6 +22,56 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 
 public interface SharedCommandCore {
+
+	void checkBoolean(boolean flag, Component falseMessage);
+
+	/**
+	 * Checks if the player is a console and throws an error if he is
+	 *
+	 * @throws CommandException
+	 */
+	default void checkConsole() throws CommandException {
+		if (!this.isPlayer())
+			throw new CommandException(SimpleLocalization.Commands.NO_CONSOLE);
+	}
+
+	void checkNotNull(Object object, Component nullMessage);
+
+	<T> List<String> completeLastWord(final Iterable<T> suggestions);
+
+	default List<String> completeLastWordPlayerNames() {
+		return this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames();
+	}
+
+	/**
+	 * Convenience method for completing all world names
+	 *
+	 * @return
+	 */
+	default List<String> completeLastWordWorldNames() {
+		return this.completeLastWord(Common.getWorldNames());
+	}
+
+	/**
+	 * Attempts to parse the given name into a CompMaterial, will work for both modern
+	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
+	 * <p>
+	 * You can use the {enum} or {item} variable to replace with the given name
+	 *
+	 * @param name
+	 * @param falseMessage
+	 * @return
+	 * @throws CommandException
+	 */
+	default CompMaterial findMaterial(final String name, final Component falseMessage) throws CommandException {
+		final CompMaterial found = CompMaterial.fromString(name);
+
+		this.checkNotNull(found, falseMessage
+				.replaceText(b -> b.matchLiteral("{enum}").replacement(name))
+				.replaceText(b -> b.matchLiteral("{item}").replacement(name)));
+
+		return found;
+	}
 
 	/**
 	 * Attempts to find the offline player by name or string UUID, sends an error message to sender if he did not play before
@@ -74,7 +126,7 @@ public interface SharedCommandCore {
 
 	/**
 	 * Attempts to find a non-vanished online player, failing with the message
-	 * found at {@link SimpleLocalization.Player#NOT_ONLINE}
+	 * found at SimpleLocalization
 	 *
 	 * @param name
 	 * @return
@@ -101,6 +153,19 @@ public interface SharedCommandCore {
 	}
 
 	/**
+	 * A simple call to Bukkit.getPlayer(name) meant to be overriden
+	 * if you have a custom implementation of getting players by name.
+	 *
+	 * Example use: ChatControl can find players by their nicknames too
+	 *
+	 * @param name
+	 * @return
+	 */
+	default Player findPlayerInternal(final String name) {
+		return Bukkit.getPlayer(name);
+	}
+
+	/**
 	 * Return the player by the given args index, and, when the args are shorter, return the sender if sender is player.
 	 *
 	 * @param name
@@ -108,13 +173,13 @@ public interface SharedCommandCore {
 	 * @throws CommandException
 	 */
 	default Player findPlayerOrSelf(final int argsIndex) throws CommandException {
-		if (argsIndex >= this.args.length) {
+		if (argsIndex >= this.getArgs().length) {
 			this.checkBoolean(this.isPlayer(), SimpleLocalization.Commands.CONSOLE_MISSING_PLAYER_NAME);
 
 			return this.getPlayer();
 		}
 
-		final String name = this.args[argsIndex];
+		final String name = this.getArgs()[argsIndex];
 		final Player player = this.findPlayerInternal(name);
 		this.checkBoolean(player != null && player.isOnline(), SimpleLocalization.Player.NOT_ONLINE
 				.replaceText(b -> b.matchLiteral("{player}").replacement(name)));
@@ -144,19 +209,6 @@ public interface SharedCommandCore {
 	}
 
 	/**
-	 * A simple call to Bukkit.getPlayer(name) meant to be overriden
-	 * if you have a custom implementation of getting players by name.
-	 *
-	 * Example use: ChatControl can find players by their nicknames too
-	 *
-	 * @param name
-	 * @return
-	 */
-	default Player findPlayerInternal(final String name) {
-		return Bukkit.getPlayer(name);
-	}
-
-	/**
 	 * Attempts to convert the given name into a bukkit world,
 	 * sending localized error message if such world does not exist.
 	 *
@@ -179,49 +231,7 @@ public interface SharedCommandCore {
 		return world;
 	}
 
-	/**
-	 * Attempts to parse the given name into a CompMaterial, will work for both modern
-	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
-	 * <p>
-	 * You can use the {enum} or {item} variable to replace with the given name
-	 *
-	 * @param name
-	 * @param falseMessage
-	 * @return
-	 * @throws CommandException
-	 */
-	default CompMaterial findMaterial(final String name, final Component falseMessage) throws CommandException {
-		final CompMaterial found = CompMaterial.fromString(name);
-
-		this.checkNotNull(found, falseMessage
-				.replaceText(b -> b.matchLiteral("{enum}").replacement(name))
-				.replaceText(b -> b.matchLiteral("{item}").replacement(name)));
-
-		return found;
-	}
-
-	default List<String> completeLastWordPlayerNames() {
-		return this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames();
-	}
-
-	/**
-	 * Checks if the player is a console and throws an error if he is
-	 *
-	 * @throws CommandException
-	 */
-	default void checkConsole() throws CommandException {
-		if (!this.isPlayer())
-			throw new CommandException(SimpleLocalization.Commands.NO_CONSOLE);
-	}
-
-	/**
-	 * Convenience method for completing all world names
-	 *
-	 * @return
-	 */
-	default List<String> completeLastWordWorldNames() {
-		return this.completeLastWord(Common.getWorldNames());
-	}
+	String[] getArgs();
 
 	/**
 	 * Attempts to get the sender as player, only works if the sender is actually a player,
@@ -233,6 +243,12 @@ public interface SharedCommandCore {
 		return this.isPlayer() ? (Player) this.getSender() : null;
 	}
 
+	Audience getSender();
+
+	default String getSenderName() {
+		return Platform.resolveSenderName(this.getSender());
+	}
+
 	/**
 	 * Return whether the sender is a living player
 	 *
@@ -242,5 +258,9 @@ public interface SharedCommandCore {
 		return this.getSender() instanceof Player;
 	}
 
-	Audience getSender();
+	void returnTell(Component message);
+
+	Task runAsync(Runnable task);
+
+	Task runLater(Runnable task);
 }

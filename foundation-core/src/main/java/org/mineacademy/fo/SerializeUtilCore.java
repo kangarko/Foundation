@@ -36,7 +36,6 @@ import org.mineacademy.fo.settings.ConfigSection;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 
 /**
@@ -48,14 +47,7 @@ public abstract class SerializeUtilCore {
 	/**
 	 * A custom serializer extending the serialize method
 	 */
-	@Setter
-	private static Serializer customSerializer = null;
-
-	/**
-	 * A custom deserializer extending the deserialize method
-	 */
-	@Setter
-	private static Deserializer customDeserializer = null;
+	private static final List<Serializer> customSerializers = new ArrayList<>();
 
 	/**
 	 * Converts the given object into something you can safely save in file as a string
@@ -71,7 +63,7 @@ public abstract class SerializeUtilCore {
 		final boolean isJson = mode == Mode.JSON;
 		object = RemainCore.getRootOfSectionPathData(object);
 
-		if (customSerializer != null) {
+		for (final Serializer customSerializer : customSerializers) {
 			final Object result = customSerializer.serialize(mode, object);
 
 			if (result != null)
@@ -318,7 +310,7 @@ public abstract class SerializeUtilCore {
 
 		final boolean isJson = mode == Mode.JSON;
 
-		if (customDeserializer != null) {
+		for (final Serializer customDeserializer : customSerializers) {
 			final T result = customDeserializer.deserialize(mode, classOf, object, parameters);
 
 			if (result != null)
@@ -472,17 +464,20 @@ public abstract class SerializeUtilCore {
 	}
 
 	/**
+	 * Add a custom serializer to serialize objects into strings
+	 *
+	 * @param serializer
+	 */
+	public static void addCustomSerializer(Serializer serializer) {
+		customSerializers.add(serializer);
+	}
+
+	/**
 	 * A custom serializer for serializing objects into strings
 	 */
 	public interface Serializer {
 		Object serialize(Mode mode, Object object);
-	}
 
-	/**
-	 * A custom deserializer for deserializing objects from
-	 * strings back into objects.
-	 */
-	public interface Deserializer {
 		<T> T deserialize(Mode mode, final Class<T> classOf, Object object, final Object... parameters);
 	}
 

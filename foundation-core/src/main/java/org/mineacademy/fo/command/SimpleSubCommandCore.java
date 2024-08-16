@@ -65,12 +65,12 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 		this.sublabel = this.sublabels[0];
 
 		// If the default perm was not changed, improve it
-		if (this.getRawPermission().equals(getDefaultPermission()))
+		if (this.getPermission().equals(getDefaultPermission()))
 			if (Platform.getPlugin().getDefaultCommandGroup() != null && Platform.getPlugin().getDefaultCommandGroup().getLabel().equals(this.getLabel()))
-				this.setPermission(this.getRawPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
+				this.setPermission(this.getPermission().replace("{label}", "{sublabel}")); // simply replace label with sublabel
 
 			else
-				this.setPermission(this.getRawPermission() + ".{sublabel}"); // append the sublabel at the end since this is not our main command
+				this.setPermission(this.getPermission() + ".{sublabel}"); // append the sublabel at the end since this is not our main command
 	}
 
 	/**

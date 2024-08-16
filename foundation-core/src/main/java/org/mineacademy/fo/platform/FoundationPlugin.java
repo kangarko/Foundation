@@ -2,6 +2,7 @@ package org.mineacademy.fo.platform;
 
 import java.io.File;
 
+import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.proxy.ProxyListener;
 
@@ -25,6 +26,8 @@ public interface FoundationPlugin {
 
 	boolean isEnabled();
 
+	boolean isReloading();
+
 	boolean isRegexCaseInsensitive();
 
 	boolean isRegexStrippingAccents();
@@ -42,4 +45,14 @@ public interface FoundationPlugin {
 	int getFoundedYear();
 
 	String getAuthors();
+
+	void setDefaultCommandGroup(SimpleCommandGroup group);
+
+	void registerCommands(SimpleCommandGroup group);
+
+	void registerCommand(SimpleCommandCore instance);
+
+	void setDefaultProxyListener(ProxyListener instance);
+
+	Object getAdventure();
 }

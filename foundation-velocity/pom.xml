@@ -14,22 +14,7 @@
         <version>7.0.0</version>
     </parent>
 
-    <groupId>org.mineacademy</groupId>
     <artifactId>foundation-velocity</artifactId>
-    <version>7.0.0</version>
-    <packaging>jar</packaging>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
-    </properties>
-
-    <repositories>
-        <repository>
-            <id>papermc</id>
-            <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -42,25 +27,8 @@
 			<groupId>org.mineacademy</groupId>
 			<artifactId>foundation-core</artifactId>
 			<version>7.0.0</version>
+			<scope>compile</scope>
 		</dependency>
     </dependencies>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.1</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+      
 </project>

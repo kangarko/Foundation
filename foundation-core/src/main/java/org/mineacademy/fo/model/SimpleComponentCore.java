@@ -74,7 +74,7 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param lines
 	 * @return
 	 */
-	public SimpleComponentCore onHover(final Collection<String> lines) {
+	public <T extends SimpleComponentCore> T onHover(final Collection<String> lines) {
 		return this.onHover(String.join("\n", lines));
 	}
 
@@ -84,7 +84,7 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param lines
 	 * @return
 	 */
-	public SimpleComponentCore onHover(final String... lines) {
+	public <T extends SimpleComponentCore> T onHover(final String... lines) {
 		return this.onHover(String.join("\n", lines));
 	}
 
@@ -94,10 +94,32 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param hover
 	 * @return
 	 */
-	public SimpleComponentCore onHover(final String hover) {
+	public <T extends SimpleComponentCore> T onHover(final String hover) {
 		this.modifyLastComponent(component -> component.hoverEvent(CommonCore.colorize(hover)));
 
-		return this;
+		return (T) this;
+	}
+
+	/**
+	 * Add a hover event
+	 *
+	 * @param components
+	 * @return
+	 */
+	public <T extends SimpleComponentCore> T onHover(final Component... components) {
+		Component joined = Component.empty();
+
+		for (int i = 0; i < components.length; i++) {
+			joined = joined.append(components[i]);
+
+			if (i < components.length - 1)
+				joined = joined.append(Component.newline());
+		}
+
+		final Component finalComponent = joined;
+		this.modifyLastComponent(component -> component.hoverEvent(finalComponent));
+
+		return (T) this;
 	}
 
 	/**
@@ -106,10 +128,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param hover
 	 * @return
 	 */
-	public SimpleComponentCore onHover(final HoverEventSource<?> hover) {
+	public <T extends SimpleComponentCore> T onHover(final HoverEventSource<?> hover) {
 		this.modifyLastComponent(component -> component.hoverEvent(hover));
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -118,10 +140,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponentCore onClickRunCmd(final String text) {
+	public <T extends SimpleComponentCore> T onClickRunCmd(final String text) {
 		this.modifyLastComponent(component -> component.clickEvent(ClickEvent.runCommand(text)));
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -130,10 +152,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponentCore onClickSuggestCmd(final String text) {
+	public <T extends SimpleComponentCore> T onClickSuggestCmd(final String text) {
 		this.modifyLastComponent(component -> component.clickEvent(ClickEvent.suggestCommand(text)));
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -142,10 +164,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param url
 	 * @return
 	 */
-	public SimpleComponentCore onClickOpenUrl(final String url) {
+	public <T extends SimpleComponentCore> T onClickOpenUrl(final String url) {
 		this.modifyLastComponent(component -> component.clickEvent(ClickEvent.openUrl(url)));
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -154,10 +176,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param url
 	 * @return
 	 */
-	public SimpleComponentCore onClickCopyToClipboard(final String url) {
+	public <T extends SimpleComponentCore> T onClickCopyToClipboard(final String url) {
 		this.modifyLastComponent(component -> component.clickEvent(ClickEvent.copyToClipboard(url)));
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -166,10 +188,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param insertion
 	 * @return
 	 */
-	public SimpleComponentCore onClickInsert(final String insertion) {
+	public <T extends SimpleComponentCore> T onClickInsert(final String insertion) {
 		this.modifyLastComponent(component -> component.insertion(insertion));
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -178,10 +200,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param viewCondition
 	 * @return
 	 */
-	public SimpleComponentCore viewCondition(final String viewCondition) {
+	public <T extends SimpleComponentCore> T viewCondition(final String viewCondition) {
 		this.getLastComponent().setViewCondition(viewCondition);
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -190,10 +212,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param viewPermission
 	 * @return
 	 */
-	public SimpleComponentCore viewPermission(final String viewPermission) {
+	public <T extends SimpleComponentCore> T viewPermission(final String viewPermission) {
 		this.getLastComponent().setViewPermission(viewPermission);
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -203,11 +225,11 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponentCore replace(final String variable, final String value) {
+	public <T extends SimpleComponentCore> T replace(final String variable, final String value) {
 		for (final ConditionalComponent part : this.components)
 			part.setComponent(part.getComponent().replaceText(b -> b.matchLiteral(variable).replacement(value)));
 
-		return this;
+		return (T) this;
 	}
 
 	// --------------------------------------------------------------------
@@ -220,7 +242,7 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponentCore append(final String text) {
+	public <T extends SimpleComponentCore> T append(final String text) {
 		return this.append(text, true);
 	}
 
@@ -231,7 +253,7 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param colorize
 	 * @return
 	 */
-	public SimpleComponentCore append(final String text, final boolean colorize) {
+	public <T extends SimpleComponentCore> T append(final String text, final boolean colorize) {
 		return this.append(colorize ? CommonCore.colorize(text) : RemainCore.convertLegacyToAdventure(text));
 	}
 
@@ -241,11 +263,11 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponentCore append(final SimpleComponentCore component) {
+	public <T extends SimpleComponentCore> T append(final SimpleComponentCore component) {
 		for (final ConditionalComponent part : component.components)
 			this.components.add(part);
 
-		return this;
+		return (T) this;
 	}
 
 	/**
@@ -254,10 +276,10 @@ public class SimpleComponentCore implements ConfigSerializable {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponentCore append(final Component component) {
+	public <T extends SimpleComponentCore> T append(final Component component) {
 		this.components.add(ConditionalComponent.fromComponent(component));
 
-		return this;
+		return (T) this;
 	}
 
 	/**

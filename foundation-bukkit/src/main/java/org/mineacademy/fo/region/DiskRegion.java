@@ -119,6 +119,20 @@ public final class DiskRegion extends YamlConfig {
 	}
 
 	/**
+	 * Return the name of this region
+	 *
+	 * @param name
+	 */
+	public void setName(@NonNull String name) {
+		if (this.border != null)
+			this.border.setName(name);
+		else
+			this.border = new VisualizedRegion(name, null, null);
+
+		this.save();
+	}
+
+	/**
 	 * Return {@link Region#getPrimary()}
 	 *
 	 * @return
@@ -128,12 +142,40 @@ public final class DiskRegion extends YamlConfig {
 	}
 
 	/**
+	 * Set the primary location
+	 *
+	 * @param primary
+	 */
+	public void setPrimary(Location primary) {
+		if (this.border != null)
+			this.border.setPrimary(primary);
+		else
+			this.border = new VisualizedRegion("", primary, null);
+
+		this.save();
+	}
+
+	/**
 	 * Return {@link Region#getSecondary()}
 	 *
 	 * @return
 	 */
 	public Location getSecondary() {
 		return this.border != null ? this.border.getSecondary() : null;
+	}
+
+	/**
+	 * Set the secondary location
+	 *
+	 * @param secondary
+	 */
+	public void setSecondary(Location secondary) {
+		if (this.border != null)
+			this.border.setSecondary(secondary);
+		else
+			this.border = new VisualizedRegion("", null, secondary);
+
+		this.save();
 	}
 
 	/**

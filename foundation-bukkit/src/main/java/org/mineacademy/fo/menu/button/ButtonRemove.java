@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
-import org.mineacademy.fo.model.Replacer;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -75,7 +75,8 @@ public class ButtonRemove extends Button {
 				.of(CompMaterial.LAVA_BUCKET)
 				.name(title.replace("{name}", this.toRemoveName))
 
-				.lore(Replacer.replaceArray(lore,
+				.lore(Variables.replaceArray(lore,
+						null, // sender
 						"name", this.toRemoveName,
 						"type", this.toRemoveType))
 

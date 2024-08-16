@@ -85,16 +85,6 @@ public abstract class SimpleHologram {
 
 		registeredItems.add(this);
 
-		onReload();
-	}
-
-	/**
-	 * Restart ticking task on reload
-	 *
-	 * @deprecated internal use only, do not call
-	 */
-	@Deprecated
-	public static void onReload() {
 		if (tickingTask != null)
 			tickingTask.cancel();
 

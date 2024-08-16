@@ -84,8 +84,11 @@ final class FoundationFilter {
 			return true;
 
 		// Disable some annoying hikaripool or discordsrv messages
-		if (message.contains("HikariPool-1 - Starting...") || message.contains("HikariPool-1 - Start completed.")
-				|| message.contains("[DiscordSRV] [JDA] Login Successful!") || message.contains("[DiscordSRV] [JDA] Connected to WebSocket"))
+		if (message.contains("HikariPool-1 - Starting...")
+				|| message.contains("HikariPool-1 - Start completed.")
+				|| message.contains("[DiscordSRV] [JDA] Login Successful!")
+				|| message.contains("[DiscordSRV] [JDA] Connected to WebSocket"))
+
 			return true;
 
 		final boolean hasInstance = SimplePlugin.hasInstance();
@@ -114,13 +117,12 @@ final class FoundationFilter {
 				return true;
 
 			// Filter user-defined commands
-			if (SimplePlugin.hasInstance())
-				for (String filter : SimplePlugin.getInstance().getConsoleFilter()) {
-					filter = filter.toLowerCase();
+			for (String filter : SimplePlugin.getInstance().getConsoleFilter()) {
+				filter = filter.toLowerCase();
 
-					if (message.startsWith(filter) || message.contains(filter))
-						return true;
-				}
+				if (message.startsWith(filter) || message.contains(filter))
+					return true;
+			}
 		}
 
 		return false;

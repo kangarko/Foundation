@@ -1150,7 +1150,7 @@ public final class Remain extends RemainCore {
 
 		} catch (final NoSuchMethodError err) {
 			if (Bukkit.isPrimaryThread())
-				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + SimplePlugin.getNamed() + " plugin authors.");
+				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + SimplePlugin.getInstance().getName() + " plugin authors.");
 
 			final UUIDToNameConverter f = new UUIDToNameConverter(id);
 
@@ -1470,7 +1470,7 @@ public final class Remain extends RemainCore {
 	 * @return
 	 */
 	public static NamespacedKey newNamespaced() {
-		return new NamespacedKey(SimplePlugin.getInstance(), SimplePlugin.getNamed() + "_" + RandomUtil.nextString(16));
+		return new NamespacedKey(SimplePlugin.getInstance(), SimplePlugin.getInstance().getName() + "_" + RandomUtil.nextString(16));
 	}
 
 	/**
@@ -2721,12 +2721,12 @@ public final class Remain extends RemainCore {
 	/**
 	 * Attempts to cancel all tasks
 	 */
-	public static void cancelTasks() {
+	/*public static void cancelTasks() {
 		if (Remain.isFolia())
 			ReflectionUtil.invoke(cancelTasks, foliaScheduler, SimplePlugin.getInstance());
 		else
 			Bukkit.getScheduler().cancelTasks(SimplePlugin.getInstance());
-	}
+	}*/
 
 	/**
 	 * Runs the task even if the plugin is disabled for some reason.

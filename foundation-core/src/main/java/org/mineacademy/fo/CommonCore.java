@@ -1834,6 +1834,26 @@ public abstract class CommonCore {
 	}
 
 	/**
+	 * Shorthand method for converting a list of components into a message separed by "\n - "
+	 *
+	 * @param components
+	 * @return
+	 */
+	public static String joinComponents(Component... components) {
+		return String.join("\n - ", convert(components, RemainCore::convertAdventureToLegacy));
+	}
+
+	/**
+	 * Shorthand method for converting a list of components into a message separed by "\n - "
+	 *
+	 * @param components
+	 * @return
+	 */
+	public static String joinComponents(Iterable<Component> components) {
+		return String.join("\n - ", convert(components, RemainCore::convertAdventureToLegacy));
+	}
+
+	/**
 	 * Creates a new modifiable array list from array
 	 *
 	 * @param array
@@ -1966,6 +1986,39 @@ public abstract class CommonCore {
 		map.put(secondKey, secondValue);
 		map.put(thirdKey, thirdValue);
 		map.put(forthKey, forthValue);
+
+		return map;
+	}
+
+	/**
+	 * Create a map with multiple keys and values.
+	 * The keys and values must be in pairs and of the same type.
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param entries
+	 * @return
+	 */
+	@SafeVarargs
+	public static <K, V> Map<K, V> newHashMap(Object... entries) {
+		if (entries.length % 2 != 0)
+			throw new FoException("Entries must be in pairs: " + Arrays.toString(entries));
+
+		final Map<K, V> map = new HashMap<>();
+
+		final K firstKey = (K) entries[0];
+		final V firstValue = (V) entries[1];
+
+		for (int i = 0; i < entries.length; i += 2) {
+			final K key = (K) entries[i];
+			final V value = (V) entries[i + 1];
+
+			if (!firstKey.getClass().isInstance(key) || !firstValue.getClass().isInstance(value))
+				throw new FoException("All keys and values must be of the same type. Got " + key.getClass() + " and "
+						+ value.getClass() + " instead. Expected " + firstKey.getClass() + " and " + firstValue.getClass());
+
+			map.put(key, value);
+		}
 
 		return map;
 	}

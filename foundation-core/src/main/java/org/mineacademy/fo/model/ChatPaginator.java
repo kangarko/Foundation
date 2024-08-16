@@ -64,7 +64,7 @@ public final class ChatPaginator {
 	/**
 	 * The pages with their content.
 	 */
-	private final Map<Integer, List<SimpleComponentCore>> pages = new HashMap<>();
+	private final Map<Integer, List<? extends SimpleComponentCore>> pages = new HashMap<>();
 
 	/**
 	 * The footer included on every page.
@@ -139,7 +139,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setHeader(SimpleComponentCore... components) {
+	public <T extends SimpleComponentCore> ChatPaginator setHeader(T... components) {
 		Collections.addAll(this.header, components);
 
 		return this;
@@ -164,7 +164,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setPages(SimpleComponentCore... components) {
+	public <T extends SimpleComponentCore> ChatPaginator setPages(T... components) {
 		this.pages.clear();
 		this.pages.putAll(CommonCore.fillPages(this.linesPerPage, Arrays.asList(components)));
 
@@ -192,7 +192,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setPages(Collection<SimpleComponentCore> components) {
+	public <T extends SimpleComponentCore> ChatPaginator setPages(Collection<T> components) {
 		this.pages.clear();
 		this.pages.putAll(CommonCore.fillPages(this.linesPerPage, components));
 
@@ -205,7 +205,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setFooter(SimpleComponentCore... components) {
+	public <T extends SimpleComponentCore> ChatPaginator setFooter(T... components) {
 		Collections.addAll(this.footer, components);
 
 		return this;
@@ -260,7 +260,7 @@ public final class ChatPaginator {
 
 			int amount = 1;
 
-			for (final List<SimpleComponentCore> components : this.pages.values())
+			for (final List<? extends SimpleComponentCore> components : this.pages.values())
 				for (final SimpleComponentCore component : components)
 					component.replace("{count}", String.valueOf(amount++)).send(audience);
 

@@ -157,44 +157,44 @@ public final class HookManager {
 	 */
 	public static void loadDependencies() {
 
-		if (Platform.isPluginEnabled("AdvancedVanish"))
+		if (Platform.isPluginInstalled("AdvancedVanish"))
 			advancedVanishHook = new AdvancedVanishHook();
 
-		if (Platform.isPluginEnabled("AuthMe"))
+		if (Platform.isPluginInstalled("AuthMe"))
 			authMeHook = new AuthMeHook();
 
-		if (Platform.isPluginEnabled("BanManager"))
+		if (Platform.isPluginInstalled("BanManager"))
 			banManagerHook = new BanManagerHook();
 
-		if (Platform.isPluginEnabled("BentoBox"))
+		if (Platform.isPluginInstalled("BentoBox"))
 			bentoBoxHook = new BentoBoxHook();
 
-		if (Platform.isPluginEnabled("Boss"))
+		if (Platform.isPluginInstalled("Boss"))
 			bossHook = new BossHook();
 
-		if (Platform.isPluginEnabled("Citizens"))
+		if (Platform.isPluginInstalled("Citizens"))
 			citizensHook = new CitizensHook();
 
-		if (Platform.isPluginEnabled("CMI"))
+		if (Platform.isPluginInstalled("CMI"))
 			CMIHook = new CMIHook();
 
-		if (Platform.isPluginEnabled("DiscordSRV"))
+		if (Platform.isPluginInstalled("DiscordSRV"))
 			try {
 				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
 
 				discordSRVHook = new DiscordSRVHook();
 
 			} catch (final ClassNotFoundException ex) {
-				Common.error(ex, "&c" + SimplePlugin.getNamed() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
+				Common.error(ex, "&c" + SimplePlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 
-		if (Platform.isPluginEnabled("Essentials"))
+		if (Platform.isPluginInstalled("Essentials"))
 			essentialsHook = new EssentialsHook();
 
 		// Various kinds of Faction plugins.
 		final Plugin factions = Bukkit.getPluginManager().getPlugin("Factions");
 
-		if (Platform.isPluginEnabled("FactionsX") && factions == null)
+		if (Platform.isPluginInstalled("FactionsX") && factions == null)
 			Common.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
 
 		else if (factions != null) {
@@ -219,22 +219,22 @@ public final class HookManager {
 			}
 		}
 
-		if (Platform.isPluginEnabled("ItemsAdder"))
+		if (Platform.isPluginInstalled("ItemsAdder"))
 			itemsAdderHook = new ItemsAdderHook();
 
-		if (Platform.isPluginEnabled("Lands"))
+		if (Platform.isPluginInstalled("Lands"))
 			landsHook = new LandsHook();
 
-		if (Platform.isPluginEnabled("LiteBans"))
+		if (Platform.isPluginInstalled("LiteBans"))
 			liteBansHook = new LiteBansHook();
 
-		if (Platform.isPluginEnabled("Lockette"))
+		if (Platform.isPluginInstalled("Lockette"))
 			locketteProHook = new LocketteProHook();
 
-		if (Platform.isPluginEnabled("LWC"))
+		if (Platform.isPluginInstalled("LWC"))
 			lwcHook = new LWCHook();
 
-		if (Platform.isPluginEnabled("mcMMO")) {
+		if (Platform.isPluginInstalled("mcMMO")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("mcMMO").getDescription().getVersion();
 
 			if (ver.startsWith("2."))
@@ -243,22 +243,22 @@ public final class HookManager {
 				Common.warning("Could not hook into mcMMO. Version 2.x is required, you have " + ver);
 		}
 
-		if (Platform.isPluginEnabled("Multiverse-Core"))
+		if (Platform.isPluginInstalled("Multiverse-Core"))
 			multiverseHook = new MultiverseHook();
 
-		if (Platform.isPluginEnabled("MVdWPlaceholderAPI"))
+		if (Platform.isPluginInstalled("MVdWPlaceholderAPI"))
 			MVdWPlaceholderHook = new MVdWPlaceholderHook();
 
-		if (Platform.isPluginEnabled("MythicMobs"))
+		if (Platform.isPluginInstalled("MythicMobs"))
 			mythicMobsHook = new MythicMobsHook();
 
-		if (Platform.isPluginEnabled("Nicky"))
+		if (Platform.isPluginInstalled("Nicky"))
 			nickyHook = new NickyHook();
 
-		if (Platform.isPluginEnabled("PlaceholderAPI"))
+		if (Platform.isPluginInstalled("PlaceholderAPI"))
 			placeholderAPIHook = new PlaceholderAPIHook();
 
-		if (Platform.isPluginEnabled("PlotSquared")) {
+		if (Platform.isPluginInstalled("PlotSquared")) {
 			final String ver = Bukkit.getPluginManager().getPlugin("PlotSquared").getDescription().getVersion();
 
 			if (ver.startsWith("7.") || ver.startsWith("6.") || ver.startsWith("5.") || ver.startsWith("3."))
@@ -267,10 +267,10 @@ public final class HookManager {
 				Common.warning("Could not hook into PlotSquared. Version 3.x, 5.x or 6.x required, you have " + ver);
 		}
 
-		if (Platform.isPluginEnabled("PremiumVanish"))
+		if (Platform.isPluginInstalled("PremiumVanish"))
 			premiumVanishHook = new PremiumVanishHook();
 
-		if (Platform.isPluginEnabled("ProtocolLib")) {
+		if (Platform.isPluginInstalled("ProtocolLib")) {
 			// Also check if the library is loaded properly.
 			try {
 				protocolLibHook = new ProtocolLibHook();
@@ -285,47 +285,31 @@ public final class HookManager {
 			}
 		}
 
-		if (Platform.isPluginEnabled("Residence"))
+		if (Platform.isPluginInstalled("Residence"))
 			residenceHook = new ResidenceHook();
 
-		if (Platform.isPluginEnabled("Towny"))
+		if (Platform.isPluginInstalled("Towny"))
 			townyHook = new TownyHook();
 
-		if (Platform.isPluginEnabled("Vault"))
+		if (Platform.isPluginInstalled("Vault"))
 			vaultHook = new VaultHook();
 
-		if (Platform.isPluginEnabled("WorldEdit") || Platform.isPluginEnabled("FastAsyncWorldEdit"))
+		if (Platform.isPluginInstalled("WorldEdit") || Platform.isPluginInstalled("FastAsyncWorldEdit"))
 			worldeditHook = new WorldEditHook();
 
-		if (Platform.isPluginEnabled("WorldGuard"))
+		if (Platform.isPluginInstalled("WorldGuard"))
 			worldguardHook = new WorldGuardHook(worldeditHook);
 
 		// Dummy hooks.
 
-		if (Platform.isPluginEnabled("NBTAPI"))
+		if (Platform.isPluginInstalled("NBTAPI"))
 			nbtAPIDummyHook = true;
 
-		if (Platform.isPluginEnabled("Votifier"))
+		if (Platform.isPluginInstalled("Votifier"))
 			nuVotifierDummyHook = true;
 
-		if (Platform.isPluginEnabled("TownyChat"))
+		if (Platform.isPluginInstalled("TownyChat"))
 			townyChatDummyHook = true;
-	}
-
-	/**
-	 * Removes packet listeners from ProtocolLib for a plugin.
-	 *
-	 * @param plugin the plugin to use.
-	 *
-	 * @deprecated internal use only, please do not call.
-	 */
-	@Deprecated
-	public static void unloadDependencies(final Plugin plugin) {
-		if (isProtocolLibLoaded())
-			protocolLibHook.removePacketListeners(plugin);
-
-		if (isPlaceholderAPILoaded())
-			placeholderAPIHook.unregister();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -2726,7 +2710,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getIdentifier() {
-			return SimplePlugin.getNamed().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
+			return SimplePlugin.getInstance().getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
 		}
 
 		/**
@@ -3878,16 +3862,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-
+		
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-
+		
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-
+		
 				t.printStackTrace();
 			}
-
+		
 			return false;
 		}*/
 	}

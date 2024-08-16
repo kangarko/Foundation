@@ -1,6 +1,6 @@
 package org.mineacademy.fo.settings;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.mineacademy.fo.CommonCore;
@@ -12,10 +12,11 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.model.JavaScriptExecutor;
-import org.mineacademy.fo.model.SimpleComponentCore;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.remain.RemainCore;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 
 /**
  * Represents the new way of internalization, with the greatest
@@ -76,6 +77,8 @@ public final class Lang extends YamlConfig {
 		if (instance != null) {
 			instance.reload();
 			instance.save();
+
+			loadPrefixes();
 		}
 	}
 
@@ -88,22 +91,22 @@ public final class Lang extends YamlConfig {
 	public static void loadPrefixes() {
 		if (instance != null) {
 			if (instance.isSet("Prefix.Announce"))
-				MessengerCore.setAnnouncePrefix(Lang.ofComponent("Prefix.Announce"));
+				MessengerCore.setAnnouncePrefix(Lang.of("Prefix.Announce"));
 
 			if (instance.isSet("Prefix.Error"))
-				MessengerCore.setErrorPrefix(Lang.ofComponent("Prefix.Error"));
+				MessengerCore.setErrorPrefix(Lang.of("Prefix.Error"));
 
 			if (instance.isSet("Prefix.Info"))
-				MessengerCore.setInfoPrefix(Lang.ofComponent("Prefix.Info"));
+				MessengerCore.setInfoPrefix(Lang.of("Prefix.Info"));
 
 			if (instance.isSet("Prefix.Question"))
-				MessengerCore.setQuestionPrefix(Lang.ofComponent("Prefix.Question"));
+				MessengerCore.setQuestionPrefix(Lang.of("Prefix.Question"));
 
 			if (instance.isSet("Prefix.Success"))
-				MessengerCore.setSuccessPrefix(Lang.ofComponent("Prefix.Success"));
+				MessengerCore.setSuccessPrefix(Lang.of("Prefix.Success"));
 
 			if (instance.isSet("Prefix.Warn"))
-				MessengerCore.setWarnPrefix(Lang.ofComponent("Prefix.Warn"));
+				MessengerCore.setWarnPrefix(Lang.of("Prefix.Warn"));
 
 			instance.save();
 		}
@@ -132,9 +135,9 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static List<SimpleComponentCore> ofComponentList(String path, Object... variables) {
+	/*public static List<SimpleComponentCore> ofComponentList(String path, Object... variables) {
 		return CommonCore.convert(ofList(path, variables), SimpleComponentCore::of);
-	}
+	}*/
 
 	/**
 	 * Return a list from the localization file with {0} {1} etc. variables replaced.
@@ -143,9 +146,9 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static List<String> ofList(String path, Object... variables) {
+	/*public static List<String> ofList(String path, Object... variables) {
 		return Arrays.asList(ofArray(path, variables));
-	}
+	}*/
 
 	/**
 	 * Return an array from the localization file with {0} {1} etc. variables replaced.
@@ -154,20 +157,9 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String[] ofArray(String path, Object... variables) {
+	/*public static String[] ofArray(String path, Object... variables) {
 		return of(path, variables).split("\n");
-	}
-
-	/**
-	 * Return a component from the localization file with {0} {1} etc. variables replaced.
-	 *
-	 * @param path
-	 * @param variables
-	 * @return
-	 */
-	public static Component ofComponent(String path, Object... variables) {
-		return CommonCore.colorize(of(path, variables));
-	}
+	}*/
 
 	/**
 	 * Return the given key for the given amount automatically
@@ -190,7 +182,7 @@ public final class Lang extends YamlConfig {
 	 * @return
 	 */
 	public static String ofCaseNoAmount(long amount, String path) {
-		final String key = of(path);
+		final String key = RemainCore.convertAdventureToLegacy(of(path));
 		final String[] split = key.split(", ");
 
 		ValidCore.checkBoolean(split.length == 1 || split.length == 2, "Invalid syntax of key at '" + path + "', this key is a special one and "
@@ -215,7 +207,7 @@ public final class Lang extends YamlConfig {
 	 */
 	@Deprecated
 	public static String ofScript(String path, SerializedMap scriptVariables, Object... stringVariables) {
-		String script = of(path, stringVariables);
+		String script = RemainCore.convertAdventureToLegacy(of(path, stringVariables));
 		Object result;
 
 		// Our best guess is that the user has removed the script completely but forgot to put the entire message in '',
@@ -249,26 +241,64 @@ public final class Lang extends YamlConfig {
 	 * @param variables
 	 * @return
 	 */
-	public static String of(String path, Object... variables) {
+	public static String ofLegacy(String path, Object... variables) {
+		return RemainCore.convertAdventureToLegacy(of(path, variables));
+	}
+
+	/**
+	 * Return a key from the localization file with {0} {1} etc. variables replaced.
+	 *
+	 * @param path
+	 * @param variables
+	 * @return
+	 */
+	public static Component of(String path, Object... variables) {
 		checkInit();
 
-		String key = instance.getString(path);
+		Component component = instance.getComponent(path);
 
-		if (key == null)
+		if (component == null)
 			throw new FoException("Missing localization key '" + path + "' from " + instance.getFileName());
 
-		key = Variables.replace(key, null);
-		key = translate(key, variables);
+		component = Variables.replace(component, null);
+		component = translate(component, variables);
 
-		return key;
+		return component;
+	}
+
+	/**
+	 * Return an array from the localization file with {0} {1} etc. variables replaced.
+	 *
+	 * @param path
+	 * @param variables
+	 * @return
+	 */
+	public static Component[] ofArray(String path, Object... variables) {
+		checkInit();
+
+		if (!instance.isSet(path))
+			throw new FoException("Missing localization key '" + path + "' from " + instance.getFileName());
+
+		final List<Component> components = new ArrayList<>();
+
+		for (final String line : instance.getStringList(path)) {
+			Component component = CommonCore.colorize(line);
+
+			component = Variables.replace(component, null);
+			component = translate(component, variables);
+
+			components.add(component);
+		}
+
+		return components.toArray(new Component[components.size()]);
 	}
 
 	/*
 	 * Replace placeholders in the message
 	 */
 	// TODO knock to Variables for improved performance
-	private static String translate(String key, Object... variables) {
-		ValidCore.checkNotNull(key, "Cannot translate a null key with variables " + CommonCore.join(variables));
+	private static Component translate(Component component, Object... variables) {
+		ValidCore.checkNotNull(component, "Cannot translate a null key with variables " + CommonCore.join(variables));
 
 		if (variables != null)
 			for (int i = 0; i < variables.length; i++) {
@@ -284,10 +314,10 @@ public final class Lang extends YamlConfig {
 					variable = CommonCore.getOrDefaultStrict(SerializeUtilCore.serialize(Mode.YAML /* ĺocale is always .yml */, variable), SimpleLocalization.NONE);
 
 				ValidCore.checkNotNull(variable, "Failed to replace {" + i + "} as " + variable + " (raw = " + variables[i] + ")");
-				key = key.replace("{" + i + "}", variable.toString());
+				component = component.replaceText(TextReplacementConfig.builder().matchLiteral("{" + i + "}").replacement(CommonCore.colorize(variable.toString())).build());
 			}
 
-		return key;
+		return component;
 	}
 
 	/*

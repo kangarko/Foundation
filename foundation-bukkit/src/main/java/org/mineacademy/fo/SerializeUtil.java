@@ -10,7 +10,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -38,57 +37,58 @@ import lombok.NonNull;
 public final class SerializeUtil extends SerializeUtilCore {
 
 	static {
-		SerializeUtil.setCustomSerializer((mode, object) -> {
-			if (object instanceof ChatColor)
-				return ((ChatColor) object).name();
+		SerializeUtil.addCustomSerializer(new Serializer() {
 
-			else if (object instanceof net.md_5.bungee.api.ChatColor)
-				return ((net.md_5.bungee.api.ChatColor) object).name();
+			@Override
+			public Object serialize(Mode mode, Object object) {
+				if (object instanceof ChatColor)
+					return ((ChatColor) object).name();
 
-			else if (object instanceof Location)
-				return SerializeUtil.serializeLoc((Location) object);
+				else if (object instanceof net.md_5.bungee.api.ChatColor)
+					return ((net.md_5.bungee.api.ChatColor) object).name();
 
-			else if (object instanceof CommandSender)
-				return ((CommandSender) object).getName();
+				else if (object instanceof Location)
+					return SerializeUtil.serializeLoc((Location) object);
 
-			else if (object instanceof World)
-				return ((World) object).getName();
+				else if (object instanceof CommandSender)
+					return ((CommandSender) object).getName();
 
-			else if (object instanceof Entity)
-				return Remain.getName((Entity) object);
+				else if (object instanceof World)
+					return ((World) object).getName();
 
-			else if (object instanceof PotionEffectType)
-				return ((PotionEffectType) object).getName();
+				else if (object instanceof Entity)
+					return Remain.getName((Entity) object);
 
-			else if (object instanceof PotionEffect)
-				return SerializeUtil.serializePotionEffect((PotionEffect) object);
+				else if (object instanceof PotionEffectType)
+					return ((PotionEffectType) object).getName();
 
-			else if (object instanceof Enchantment)
-				return ((Enchantment) object).getName();
+				else if (object instanceof PotionEffect)
+					return SerializeUtil.serializePotionEffect((PotionEffect) object);
 
-			else if (object instanceof ItemCreator)
-				return SerializeUtilCore.serialize(mode, ((ItemCreator) object).make());
+				else if (object instanceof Enchantment)
+					return ((Enchantment) object).getName();
 
-			else if (object instanceof SimpleSound)
-				return ((SimpleSound) object).toString();
+				else if (object instanceof ItemCreator)
+					return SerializeUtilCore.serialize(mode, ((ItemCreator) object).make());
 
-			else if (object instanceof MemorySection)
-				return SerializeUtil.serialize(mode, Common.getMapFromSection(object));
+				else if (object instanceof SimpleSound)
+					return ((SimpleSound) object).toString();
 
-			else if (object instanceof ConfigurationSerializable) {
-				if (object instanceof ItemStack) {
-					return mode == SerializeUtil.Mode.JSON ? JsonItemStack.toJson((ItemStack) object) : object;
+				//else if (object instanceof MemorySection)
+				//	return SerializeUtil.serialize(mode, Common.getMapFromSection(object));
 
-				} else if (mode == SerializeUtil.Mode.JSON)
-					throw new FoException("Serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
+				else if (object instanceof ConfigurationSerializable) {
+					if (object instanceof ItemStack) {
+						return mode == SerializeUtil.Mode.JSON ? JsonItemStack.toJson((ItemStack) object) : object;
 
-				return object;
+					} else if (mode == SerializeUtil.Mode.JSON)
+						throw new FoException("Serializing " + object.getClass().getSimpleName() + " to JSON is not implemented! Please serialize it to string manually first!");
+
+					return object;
+				}
+
+				return null;
 			}
-
-			return null;
-		});
-
-		SerializeUtil.setCustomDeserializer(new Deserializer() {
 
 			@Override
 			public <T> T deserialize(Mode mode, Class<T> classOf, Object object, Object... parameters) {
@@ -143,11 +143,12 @@ public final class SerializeUtil extends SerializeUtilCore {
 					object = potion;
 				}
 
-				else if (Map.class.isAssignableFrom(classOf)) {
-					if (object instanceof MemorySection)
-						return (T) Common.getMapFromSection(object);
+				//else if (Map.class.isAssignableFrom(classOf)) {
+				//	if (object instanceof MemorySection)
+				//		return (T) Common.getMapFromSection(object);
+				//}
 
-				} else if (ConfigurationSerializable.class.isAssignableFrom(classOf) && object instanceof ConfigurationSerializable) {
+				else if (ConfigurationSerializable.class.isAssignableFrom(classOf) && object instanceof ConfigurationSerializable) {
 					if (mode == SerializeUtil.Mode.JSON)
 						throw new FoException("Deserializing JSON into " + classOf + " is not implemented, please do it manually");
 					else
@@ -175,12 +176,11 @@ public final class SerializeUtil extends SerializeUtilCore {
 
 	/**
 	 * Converts a {@link Location} into "world x y z yaw pitch" string
-	 * Decimals not supported, use {@link #deserializeLocationD(Object)} for them
 	 *
 	 * @param loc
 	 * @return
 	 */
-	private static String serializeLoc(final Location loc) {
+	public static String serializeLoc(final Location loc) {
 		return loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ() + (loc.getPitch() != 0F || loc.getYaw() != 0F ? " " + Math.round(loc.getYaw()) + " " + Math.round(loc.getPitch()) : "");
 	}
 
@@ -191,35 +191,34 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @param loc
 	 * @return
 	 */
-	private static String serializeLocD(final Location loc) {
+	/*private static String serializeLocD(final Location loc) {
 		return loc.getWorld().getName() + " " + loc.getX() + " " + loc.getY() + " " + loc.getZ() + (loc.getPitch() != 0F || loc.getYaw() != 0F ? " " + loc.getYaw() + " " + loc.getPitch() : "");
-	}
+	}*/
 
 	/**
 	 * Converts a string into location, see {@link #deserializeLocation(Object)} for how strings are saved
-	 * Decimals not supported, use {@link #deserializeLocationD(Object)} to use them
 	 *
-	 * @param raw
+	 * @param locationOrLine
 	 * @return
 	 */
-	private static Location deserializeLocation(Object raw) {
-		if (raw == null)
+	public static Location deserializeLocation(Object locationOrLine) {
+		if (locationOrLine == null)
 			return null;
 
-		if (raw instanceof Location)
-			return (Location) raw;
+		if (locationOrLine instanceof Location)
+			return (Location) locationOrLine;
 
-		raw = raw.toString().replace("\"", "");
+		locationOrLine = locationOrLine.toString().replace("\"", "");
 
-		final String[] parts = raw.toString().contains(", ") ? raw.toString().split(", ") : raw.toString().split(" ");
-		ValidCore.checkBoolean(parts.length == 4 || parts.length == 6, "Expected location (String) but got " + raw.getClass().getSimpleName() + ": " + raw);
+		final String[] parts = locationOrLine.toString().contains(", ") ? locationOrLine.toString().split(", ") : locationOrLine.toString().split(" ");
+		ValidCore.checkBoolean(parts.length == 4 || parts.length == 6, "Expected location (String) but got " + locationOrLine.getClass().getSimpleName() + ": " + locationOrLine);
 
 		final String world = parts[0];
 		final World bukkitWorld = Bukkit.getWorld(world);
 		if (bukkitWorld == null)
-			throw new InvalidWorldException("Location with invalid world '" + world + "': " + raw + " (Doesn't exist)", world);
+			throw new InvalidWorldException("Location with invalid world '" + world + "': " + locationOrLine + " (Doesn't exist)", world);
 
-		final int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]), z = Integer.parseInt(parts[3]);
+		final double x = Double.parseDouble(parts[1]), y = Double.parseDouble(parts[2]), z = Double.parseDouble(parts[3]);
 		final float yaw = Float.parseFloat(parts.length == 6 ? parts[4] : "0"), pitch = Float.parseFloat(parts.length == 6 ? parts[5] : "0");
 
 		return new Location(bukkitWorld, x, y, z, yaw, pitch);
@@ -232,7 +231,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @param raw
 	 * @return
 	 */
-	private static Location deserializeLocationD(Object raw) {
+	/*private static Location deserializeLocationD(Object raw) {
 		if (raw == null)
 			return null;
 
@@ -254,7 +253,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 		final float yaw = Float.parseFloat(parts.length == 6 ? parts[4] : "0"), pitch = Float.parseFloat(parts.length == 6 ? parts[5] : "0");
 
 		return new Location(bukkitWorld, x, y, z, yaw, pitch);
-	}
+	}*/
 
 	/**
 	 * Turn the potion effect into a saveable String

@@ -17,8 +17,8 @@ import org.mineacademy.fo.ReflectionUtilCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.StrictList;
 import org.mineacademy.fo.model.ChatPaginator;
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.model.SimpleComponentCore;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompChatColor;
 import org.mineacademy.fo.remain.RemainCore;
@@ -249,7 +249,7 @@ public abstract class SimpleCommandGroup {
 	 *               may be null
 	 * @return
 	 */
-	protected List<SimpleComponentCore> getNoParamsHeader() {
+	protected Component getNoParamsHeader() {
 		final int foundedYear = Platform.getPlugin().getFoundedYear();
 		final int yearNow = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -259,23 +259,28 @@ public abstract class SimpleCommandGroup {
 		messages.add(this.getHeaderPrefix() + "  " + Platform.getPlugin().getName() + this.getTrademark() + " &7" + Platform.getPlugin().getVersion());
 		messages.add(" ");
 
-		{
-			final String authors = Platform.getPlugin().getAuthors();
+		final String authors = Platform.getPlugin().getAuthors();
 
-			if (!authors.isEmpty())
-				messages.add("   &7" + SimpleLocalization.Commands.LABEL_AUTHORS + " &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " + yearNow : "") : ""));
-		}
+		if (!authors.isEmpty())
+			messages.add("   &7" + SimpleLocalization.Commands.LABEL_AUTHORS + " &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (yearNow != foundedYear ? " - " + yearNow : "") : ""));
 
-		{
-			final String credits = this.getCredits();
+		final String credits = this.getCredits();
 
-			if (credits != null && !credits.isEmpty())
-				messages.add("   " + credits);
-		}
+		if (credits != null && !credits.isEmpty())
+			messages.add("   " + credits);
 
 		messages.add("&8" + CommonCore.chatLineSmooth());
 
-		return CommonCore.convert(messages, SimpleComponentCore::of);
+		Component component = Component.empty();
+
+		for (int i = 0; i < messages.size(); i++) {
+			component = component.append(CommonCore.colorize(messages.get(i)));
+
+			if (i != messages.size() - 1)
+				component = component.append(Component.newline());
+		}
+
+		return component;
 	}
 
 	/**
@@ -472,12 +477,12 @@ public abstract class SimpleCommandGroup {
 
 						final String usage = this.colorizeUsage(subcommand.getUsage());
 						final String desc = RemainCore.convertAdventureToLegacy(subcommand.getDescription() == null ? Component.empty() : subcommand.getDescription());
-						final String plainMessage = Replacer.replaceArray(RemainCore.convertAdventureToLegacy(SimpleCommandGroup.this.getSubcommandDescription()),
+						final String plainMessage = RemainCore.convertAdventureToLegacy(Variables.replace(SimpleCommandGroup.this.getSubcommandDescription(), null, CommonCore.newHashMap(
 								"label", this.getLabel(),
 								"sublabel", (atLeast17 ? "&n" : "") + subcommand.getSublabel() + (atLeast17 ? "&r" : ""),
 								"usage", usage,
 								"description", !desc.isEmpty() && !atLeast17 ? desc : "",
-								"dash", !desc.isEmpty() && !atLeast17 ? "&e-" : "");
+								"dash", !desc.isEmpty() && !atLeast17 ? "&e-" : "")));
 
 						final SimpleComponentCore line = SimpleComponentCore.of(plainMessage);
 
@@ -490,11 +495,10 @@ public abstract class SimpleCommandGroup {
 							if (subcommand.getPermission() != null)
 								hover.add(RemainCore.convertAdventureToLegacy(SimpleLocalization.Commands.HELP_TOOLTIP_PERMISSION).replace("{permission}", subcommand.getPermission()));
 
-							if (subcommand.getMultilineUsageMessage() != null && subcommand.getMultilineUsageMessage().length > 0) {
+							if (subcommand.getMultilineUsage() != null) {
 								hover.add(RemainCore.convertAdventureToLegacy(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE));
 
-								for (final Component usageLine : subcommand.getMultilineUsageMessage())
-									hover.add("&f" + RemainCore.convertAdventureToLegacy(this.replacePlaceholders(RemainCore.convertLegacyToAdventure(this.colorizeUsage(usageLine.replaceText(b -> b.matchLiteral("{sublabel}").replacement(subcommand.getSublabel())))))));
+								hover.add("&f" + RemainCore.convertAdventureToLegacy(this.replacePlaceholders(RemainCore.convertLegacyToAdventure(this.colorizeUsage(subcommand.getMultilineUsage().replaceText(b -> b.matchLiteral("{sublabel}").replacement(subcommand.getSublabel())))))));
 
 							} else
 								hover.add(RemainCore.convertAdventureToLegacy(this.replacePlaceholders(CommonCore.colorize(SimpleLocalization.Commands.HELP_TOOLTIP_USAGE + (usage.isEmpty() ? command : usage)))));

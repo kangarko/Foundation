@@ -1,7 +1,5 @@
 package org.mineacademy.fo.visual;
 
-import java.util.HashSet;
-
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.FallingBlock;
@@ -16,18 +14,16 @@ import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /**
  * A utility class for displaying glowing block corners.
  */
-@UtilityClass
-public class BlockVisualizer {
+public final class BlockVisualizer {
 
 	/**
 	 * Stores a map of currently visualized blocks.
 	 */
-	private final StrictMap<Location, Object /*Old Minecraft compatibility.*/> visualizedBlocks = new StrictMap<>();
+	private static final StrictMap<Location, Object /*Old Minecraft compatibility.*/> visualizedBlocks = new StrictMap<>();
 
 	/**
 	 * Starts visualizing the block at the given location.
@@ -36,7 +32,7 @@ public class BlockVisualizer {
 	 * @param mask
 	 * @param blockName
 	 */
-	public void visualize(@NonNull final Block block, final CompMaterial mask, final String blockName) {
+	public static void visualize(@NonNull final Block block, final CompMaterial mask, final String blockName) {
 		Valid.checkBoolean(!isVisualized(block), "Block at " + block.getLocation() + " already visualized");
 		final Location location = block.getLocation();
 
@@ -52,7 +48,7 @@ public class BlockVisualizer {
 	/*
 	 * Spawns a customized falling block at the given location.
 	 */
-	private FallingBlock spawnFallingBlock(final Location location, final CompMaterial mask, final String blockName) {
+	private static FallingBlock spawnFallingBlock(final Location location, final CompMaterial mask, final String blockName) {
 		if (MinecraftVersion.olderThan(V.v1_9))
 			return null;
 
@@ -74,7 +70,7 @@ public class BlockVisualizer {
 	 *
 	 * @param block
 	 */
-	public void stopVisualizing(@NonNull final Block block) {
+	public static void stopVisualizing(@NonNull final Block block) {
 		Valid.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");
 
 		final Object fallingBlock = visualizedBlocks.remove(block.getLocation());
@@ -89,24 +85,12 @@ public class BlockVisualizer {
 	}
 
 	/**
-	 * Stop all blocks from being visualized.
-	 */
-	public void stopAll() {
-		for (final Location location : new HashSet<>(visualizedBlocks.keySet())) {
-			final Block block = location.getBlock();
-
-			if (isVisualized(block))
-				stopVisualizing(block);
-		}
-	}
-
-	/**
 	 * Return true if the given block is currently being visualized.
 	 *
 	 * @param block
 	 * @return
 	 */
-	public boolean isVisualized(@NonNull final Block block) {
+	public static boolean isVisualized(@NonNull final Block block) {
 		return visualizedBlocks.containsKey(block.getLocation());
 	}
 }

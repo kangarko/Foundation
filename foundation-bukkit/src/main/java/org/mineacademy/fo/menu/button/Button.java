@@ -20,7 +20,7 @@ import org.mineacademy.fo.conversation.SimpleStringPrompt;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.RangedValue;
-import org.mineacademy.fo.model.Replacer;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -268,7 +268,7 @@ public abstract class Button {
 				final ItemStack item = creator.glow(has).make();
 				final ItemMeta meta = item.getItemMeta();
 
-				meta.setLore(Replacer.replaceArray(meta.getLore(), "status", has ? "&aEnabled" : "&cDisabled"));
+				meta.setLore(Variables.replaceArray(meta.getLore(), null /* sender */, "status", has ? "&aEnabled" : "&cDisabled"));
 				item.setItemMeta(meta);
 
 				return item;
@@ -425,7 +425,7 @@ public abstract class Button {
 				final ItemStack itemstack = item.make();
 				final ItemMeta meta = itemstack.getItemMeta();
 
-				meta.setLore(Replacer.replaceArray(meta.getLore(), "current", getter != null ? getter.get().toString() : ""));
+				meta.setLore(Variables.replaceArray(meta.getLore(), null /* sender */, "current", getter != null ? getter.get().toString() : ""));
 				itemstack.setItemMeta(meta);
 
 				return itemstack;

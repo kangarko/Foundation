@@ -1,8 +1,10 @@
 package org.mineacademy.fo.model;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
@@ -32,7 +34,7 @@ public final class SimpleComponent extends SimpleComponentCore {
 	 * @param item
 	 * @return
 	 */
-	public SimpleComponentCore onHover(@NonNull final ItemStack item) {
+	public SimpleComponent onHover(@NonNull final ItemStack item) {
 		if (CompMaterial.isAir(item.getType()))
 			return this.onHover("Air");
 
@@ -51,6 +53,16 @@ public final class SimpleComponent extends SimpleComponentCore {
 		return this;
 	}
 
+	/**
+	 * Sends this component to the given senders
+	 *
+	 * @param senders
+	 */
+	public final void send(final CommandSender... senders) {
+		for (final CommandSender sender : senders)
+			this.send(Platform.toAudience(sender));
+	}
+
 	@Override
 	protected Component onBuild(Audience sender, Audience receiver, Component component) {
 		return HookManager.replaceRelationPlaceholders(sender, receiver, component);
@@ -66,7 +78,7 @@ public final class SimpleComponent extends SimpleComponentCore {
 	 *
 	 * @return
 	 */
-	public static SimpleComponentCore empty() {
+	public static SimpleComponent empty() {
 		return of(false, "");
 	}
 
@@ -77,7 +89,7 @@ public final class SimpleComponent extends SimpleComponentCore {
 	 * @param text
 	 * @return
 	 */
-	public static SimpleComponentCore of(final String text) {
+	public static SimpleComponent of(final String text) {
 		return of(true, text);
 	}
 

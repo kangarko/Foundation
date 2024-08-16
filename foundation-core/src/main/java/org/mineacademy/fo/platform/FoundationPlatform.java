@@ -58,9 +58,7 @@ public interface FoundationPlatform {
 
 	boolean isPlaceholderAPIHooked();
 
-	boolean isPluginEnabled(String name);
-
-	boolean isPluginReloading();
+	boolean isPluginInstalled(String name);
 
 	void logToConsole(String message);
 

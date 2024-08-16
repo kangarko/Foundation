@@ -6,8 +6,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MessengerCore;
 import org.mineacademy.fo.RandomUtilCore;
@@ -20,10 +22,12 @@ import org.mineacademy.fo.model.SimpleComponentCore;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompChatColor;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.VisualizedRegion;
 
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.Component;
 
 /**
  * The command to manage plugin's region system.
@@ -31,7 +35,7 @@ import lombok.RequiredArgsConstructor;
  * To use this, enable regions in {@link SimplePlugin#areRegionsEnabled()}
  * and register this subcommand manually in your class extending {@link SimpleCommandGroup}.
  */
-public class RegionCommand extends SimpleSubCommandCore {
+public class RegionCommand extends SimpleSubCommand {
 
 	public RegionCommand() {
 		super("region|rg");
@@ -50,7 +54,7 @@ public class RegionCommand extends SimpleSubCommandCore {
 	 * @see org.mineacademy.fo.command.SimpleCommandCore#getMultilineUsageMessage()
 	 */
 	@Override
-	protected String[] getMultilineUsageMessage() {
+	protected Component getMultilineUsage() {
 		return Param.generateUsages();
 	}
 
@@ -78,7 +82,7 @@ public class RegionCommand extends SimpleSubCommandCore {
 
 			for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
 
-				final String longestText = "&7Secondary: &2" + CommonCore.shortLocation(otherRegion.getSecondary());
+				final String longestText = "&7Secondary: &2" + Common.shortLocation(otherRegion.getSecondary());
 
 				components.add(SimpleComponentCore
 						.of(" ")
@@ -103,7 +107,7 @@ public class RegionCommand extends SimpleSubCommandCore {
 
 						.append("&7" + otherRegion.getName())
 						.onHover(ChatUtil.center("&fRegion Information", longestText.length() * 2 + longestText.length() / 3),
-								"&7Primary: &2" + CommonCore.shortLocation(otherRegion.getPrimary()),
+								"&7Primary: &2" + Common.shortLocation(otherRegion.getPrimary()),
 								longestText,
 								"&7Size: &2" + otherRegion.getBlocks().size() + " blocks"));
 			}
@@ -201,7 +205,7 @@ public class RegionCommand extends SimpleSubCommandCore {
 
 				for (final DiskRegion otherRegion : DiskRegion.getRegions())
 					if (otherRegion.getCenter().distance(playerLocation) < 100) {
-						otherRegion.visualize(this.getPlayer(), RandomUtilCore.nextColor());
+						otherRegion.visualize(this.getPlayer(), Color.fromRGB(RandomUtilCore.nextChatColor().getColor().getRGB()));
 
 						count++;
 					}
@@ -232,7 +236,7 @@ public class RegionCommand extends SimpleSubCommandCore {
 			this.getPlayer().performCommand(this.getLabel() + " " + this.getSublabel() + " " + Param.LIST);
 
 		SimpleComponentCore
-				.of(MessengerCore.getInfoPrefix() + message)
+				.of(MessengerCore.getInfoPrefix().append(CommonCore.colorize(message)))
 
 				.append(" Click here to open its menu.")
 				.onHover("&7Click to open region menu.")
@@ -354,10 +358,13 @@ public class RegionCommand extends SimpleSubCommandCore {
 		 *
 		 * @return
 		 */
-		public static String[] generateUsages() {
-			final List<String> messages = new ArrayList<>();
+		public static Component generateUsages() {
+			final Param[] params = Param.values();
+			Component component = Component.empty();
 
-			for (final Param param : Param.values()) {
+			for (int i = 0; i < params.length; i++) {
+				final Param param = params[i];
+
 				// Format usage. Replace [] with &2 and <> with &6
 				String usage = param.usage;
 
@@ -369,10 +376,13 @@ public class RegionCommand extends SimpleSubCommandCore {
 					usage = usage + " ";
 				}
 
-				messages.add("&c /{label} {sublabel} " + param.label + " " + usage + "&c- " + param.description);
+				component = component.append(RemainCore.convertLegacyToAdventure("&c /{label} {sublabel} " + param.label + " " + usage + "&c- " + param.description));
+
+				if (i < params.length - 1)
+					component = component.appendNewline();
 			}
 
-			return CommonCore.toArray(messages);
+			return component;
 		}
 
 		/**

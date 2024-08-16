@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.model.Task;
 
@@ -47,7 +46,9 @@ public final class Platform {
 	}
 
 	private static FoundationPlatform getInstance() {
-		ValidCore.checkNotNull(instance, "Foundation instance not set yet.");
+		// Do not throw FoException to prevent race condition
+		if (instance == null)
+			throw new NullPointerException("Foundation instance not set yet.");
 
 		return instance;
 	}
@@ -104,12 +105,8 @@ public final class Platform {
 		return getInstance().isPlaceholderAPIHooked();
 	}
 
-	public static boolean isPluginEnabled(String name) {
-		return getInstance().isPluginEnabled(name);
-	}
-
-	public static boolean isPluginReloading() {
-		return getInstance().isPluginReloading();
+	public static boolean isPluginInstalled(String name) {
+		return getInstance().isPluginInstalled(name);
 	}
 
 	public static void logToConsole(String message) {

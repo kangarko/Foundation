@@ -76,7 +76,7 @@ public abstract class Menu {
 	 * <p>
 	 * Used in {@link Menu#getMenu(Player)}
 	 */
-	public static final String TAG_MENU_CURRENT = SimplePlugin.getNamed() + "_Menu";
+	public static final String TAG_MENU_CURRENT = SimplePlugin.getInstance().getName() + "_Menu";
 
 	/**
 	 * An internal metadata tag the player gets when he opens another menu.
@@ -84,7 +84,7 @@ public abstract class Menu {
 	 * <p>
 	 * Used in {@link Menu#getPreviousMenu(Player)}
 	 */
-	public static final String TAG_MENU_PREVIOUS = SimplePlugin.getNamed() + "_Previous_Menu";
+	public static final String TAG_MENU_PREVIOUS = SimplePlugin.getInstance().getName() + "_Previous_Menu";
 
 	/**
 	 * An internal metadata tag the player gets when he closes our menu so you can
@@ -93,7 +93,7 @@ public abstract class Menu {
 	 * <p>
 	 * Used in {@link Menu#getLastClosedMenu(Player)}
 	 */
-	public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getNamed() + "_Last_Closed_Menu";
+	public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getInstance().getName() + "_Last_Closed_Menu";
 
 	/**
 	 * The default sound when switching between menus. Set to null to disable

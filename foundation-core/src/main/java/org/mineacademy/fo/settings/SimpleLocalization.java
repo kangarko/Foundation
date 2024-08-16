@@ -138,6 +138,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static Component INVALID_STRING = CommonCore.colorize("Invalid string. Got: '{input}'");
 		public static Component INVALID_WORLD = CommonCore.colorize("Invalid world '{world}'. Available: {available}");
 		public static Component INVALID_UUID = CommonCore.colorize("Invalid UUID '{uuid}'");
+		public static Component INVALID_ENUM = CommonCore.colorize("No such {type} '{value}'. Available: {available}");
 
 		/**
 		 * The authors label
@@ -319,6 +320,9 @@ public class SimpleLocalization extends YamlStaticConfig {
 			if (isSetDefault("Invalid_UUID"))
 				INVALID_UUID = getComponent("Invalid_UUID");
 
+			if (isSetDefault("Invalid_Enum"))
+				INVALID_ENUM = getComponent("Invalid_Enum");
+
 			if (isSetDefault("Label_Authors"))
 				LABEL_AUTHORS = getComponent("Label_Authors");
 
@@ -467,7 +471,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 		/**
 		 * The key used when the player wants to converse but he is not conversing.
 		 */
-		public static String CONVERSATION_NOT_CONVERSING = "&cYou must be conversing with the server!";
+		public static Component CONVERSATION_NOT_CONVERSING = CommonCore.colorize("You must be conversing with the server!");
 
 		/**
 		 * Called when console attempts to start conversing
@@ -493,7 +497,7 @@ public class SimpleLocalization extends YamlStaticConfig {
 			setPathPrefix("Conversation");
 
 			if (isSetDefault("Not_Conversing"))
-				CONVERSATION_NOT_CONVERSING = getString("Not_Conversing");
+				CONVERSATION_NOT_CONVERSING = getComponent("Not_Conversing");
 
 			if (isSetDefault("Requires_Player"))
 				CONVERSATION_REQUIRES_PLAYER = getString("Requires_Player");

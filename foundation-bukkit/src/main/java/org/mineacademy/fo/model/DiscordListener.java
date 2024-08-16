@@ -49,13 +49,6 @@ public abstract class DiscordListener implements Listener {
 	private static final StrictSet<DiscordListener> registeredListeners = new StrictSet<>();
 
 	/**
-	 * Cleans all registered listeners
-	 */
-	public static final void clearRegisteredListeners() {
-		registeredListeners.clear();
-	}
-
-	/**
 	 * Temporarily stores the latest received message
 	 */
 	private Message message;

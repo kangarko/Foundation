@@ -12,7 +12,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.bossbar.BossBar.Listener;
 
 /**
  * Represents a proxy listener using on which you can listen to receiving messages
@@ -21,7 +20,7 @@ import net.kyori.adventure.bossbar.BossBar.Listener;
  * This class is also a Listener for Bukkit events for your convenience
  */
 @Getter
-public abstract class ProxyListener implements Listener {
+public abstract class ProxyListener {
 
 	/**
 	 * The default channel

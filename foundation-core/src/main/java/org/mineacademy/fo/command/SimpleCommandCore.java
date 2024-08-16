@@ -19,7 +19,6 @@ import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidCommandArgException;
-import org.mineacademy.fo.model.SimpleComponentCore;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Variables;
@@ -337,8 +336,8 @@ public abstract class SimpleCommandCore {
 	@Deprecated
 	public final boolean delegateExecute(final Audience sender, final String label, final String[] args) {
 
-		if (Platform.isPluginReloading() || !Platform.getPlugin().isEnabled()) {
-			CommonCore.tell(sender, SimpleLocalization.Commands.CANNOT_USE_WHILE_NULL.replaceText(b -> b.matchLiteral("{state}").replacement(Platform.isPluginReloading() ? SimpleLocalization.Commands.RELOADING : SimpleLocalization.Commands.DISABLED)));
+		if (Platform.getPlugin().isReloading() || !Platform.getPlugin().isEnabled()) {
+			CommonCore.tell(sender, SimpleLocalization.Commands.CANNOT_USE_WHILE_NULL.replaceText(b -> b.matchLiteral("{state}").replacement(Platform.getPlugin().isReloading() ? SimpleLocalization.Commands.RELOADING : SimpleLocalization.Commands.DISABLED)));
 
 			return false;
 		}
@@ -385,15 +384,15 @@ public abstract class SimpleCommandCore {
 					messages.add(descriptionLabel);
 				}
 
-				if (this.getMultilineUsageMessage() != null) {
+				if (this.getMultilineUsage() != null) {
 					messages.add(SimpleLocalization.Commands.LABEL_USAGE);
 
-					for (Component usage : this.getMultilineUsageMessage()) {
-						if (usage.color() == null)
-							usage = usage.color(NamedTextColor.RED);
+					Component usage = this.getMultilineUsage();
 
-						messages.add(usage);
-					}
+					if (usage.color() == null)
+						usage = usage.color(NamedTextColor.RED);
+
+					messages.add(usage);
 
 				} else if (this.getUsage() != null) {
 					Component usage = this.getUsage();
@@ -423,14 +422,13 @@ public abstract class SimpleCommandCore {
 			this.onCommand();
 
 		} catch (final InvalidCommandArgException ex) {
-			if (this.getMultilineUsageMessage() == null) {
+			if (this.getMultilineUsage() == null) {
 				this.dynamicTellError(ex.getComponent() != null ? ex.getComponent() : SimpleLocalization.Commands.INVALID_SUB_ARGUMENT);
 
 			} else {
 				this.dynamicTellError(SimpleLocalization.Commands.INVALID_ARGUMENT_MULTILINE);
 
-				for (final Component line : this.getMultilineUsageMessage())
-					this.tellNoPrefix(line);
+				this.tellNoPrefix(this.getMultilineUsage());
 			}
 
 		} catch (final CommandException ex) {
@@ -516,11 +514,38 @@ public abstract class SimpleCommandCore {
 	protected abstract void onCommand();
 
 	/**
-	 * Get a custom multilined usagem message to be shown instead of the one line one
+	 * Get a custom multilined usage message to be shown instead of the one line one
+	 * This calls {@link #getMultilineUsageMessage()} for backwards compatibility
 	 *
 	 * @return the multiline custom usage message, or null
 	 */
-	protected Component[] getMultilineUsageMessage() {
+	protected Component getMultilineUsage() {
+		final String[] legacy = this.getMultilineUsageMessage();
+
+		if (legacy != null) {
+			Component component = Component.empty();
+
+			for (int i = 0; i < legacy.length; i++) {
+				component = component.append(Component.text(legacy[i]));
+
+				if (i < legacy.length - 1)
+					component = component.append(Component.newline());
+			}
+
+			return component;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get a custom usage message to be shown instead of the one line one
+	 *
+	 * @deprecated use {@link #getMultilineUsage()}
+	 * @return
+	 */
+	@Deprecated
+	protected String[] getMultilineUsageMessage() {
 		return null;
 	}
 
@@ -538,24 +563,35 @@ public abstract class SimpleCommandCore {
 	/**
 	 * Checks if the current sender has the given permission
 	 *
-	 * @param perm
+	 * @param permission
 	 * @throws CommandException
 	 */
-	public final void checkPerm(@NonNull final String perm) throws CommandException {
-		if (!this.hasPerm(perm))
-			throw new CommandException(this.getPermissionMessage().replaceText(b -> b.matchLiteral("{permission}").replacement(perm)));
+	public final void checkPerm(@NonNull final String permission) throws CommandException {
+		if (!this.hasPerm(permission))
+			throw new CommandException(this.getPermissionMessage().replaceText(b -> b.matchLiteral("{permission}").replacement(permission)));
 	}
 
 	/**
 	 * Checks if the given sender has the given permission
 	 *
 	 * @param sender
-	 * @param perm
+	 * @param permission
 	 * @throws CommandException
 	 */
-	public final void checkPerm(@NonNull final Audience sender, @NonNull final String perm) throws CommandException {
-		if (!this.hasPerm(sender, perm))
-			throw new CommandException(this.getPermissionMessage().replaceText(b -> b.matchLiteral("{permission}").replacement(perm)));
+	public final void checkPerm(@NonNull final Audience sender, @NonNull final String permission) throws CommandException {
+		if (!this.hasPerm(sender, permission))
+			throw new CommandException(this.getPermissionMessage().replaceText(b -> b.matchLiteral("{permission}").replacement(permission)));
+	}
+
+	/**
+	 * Checks if the given sender has the given permission
+	 *
+	 * @param minimumLength
+	 * @param falseMessage
+	 * @throws CommandException
+	 */
+	protected final void checkArgs(final int minimumLength, final String falseMessage) throws CommandException {
+		this.checkArgs(minimumLength, CommonCore.colorize(falseMessage));
 	}
 
 	/**
@@ -571,11 +607,22 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Convenience method for returning the command with the {@link SimpleLocalization.Commands#INVALID_ARGUMENT}
+	 * Convenience method for returning the command with the
 	 * message for player if the condition does not meet
 	 */
-	protected final void checkArgs(final boolean condition) {
+	/*public final void checkArgs(final boolean condition) {
 		this.checkBoolean(condition, SimpleLocalization.Commands.INVALID_ARGUMENT.replaceText(b -> b.matchLiteral("{label}").replacement(this.getLabel())));
+	}*/
+
+	/**
+	 * Checks if the given boolean is true
+	 *
+	 * @param value
+	 * @param falseMessage
+	 * @throws CommandException
+	 */
+	public final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
+		this.checkBoolean(value, CommonCore.colorize(falseMessage));
 	}
 
 	/**
@@ -585,7 +632,7 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @throws CommandException
 	 */
-	protected final void checkBoolean(final boolean value, final Component falseMessage) throws CommandException {
+	public final void checkBoolean(final boolean value, final Component falseMessage) throws CommandException {
 		if (!value)
 			this.returnTell(falseMessage);
 	}
@@ -597,9 +644,20 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @throws CommandException
 	 */
-	protected final void checkUsage(final boolean value) throws CommandException {
+	/*protected final void checkUsage(final boolean value) throws CommandException {
 		if (!value)
 			this.returnInvalidArgs();
+	}*/
+
+	/**
+	 * Checks if the given object is not null
+	 *
+	 * @param value
+	 * @param messageIfNull
+	 * @throws CommandException
+	 */
+	public final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
+		this.checkNotNull(value, CommonCore.colorize(messageIfNull));
 	}
 
 	/**
@@ -609,7 +667,7 @@ public abstract class SimpleCommandCore {
 	 * @param messageIfNull
 	 * @throws CommandException
 	 */
-	protected final void checkNotNull(final Object value, final Component messageIfNull) throws CommandException {
+	public final void checkNotNull(final Object value, final Component messageIfNull) throws CommandException {
 		if (value == null)
 			this.returnTell(messageIfNull);
 	}
@@ -639,12 +697,11 @@ public abstract class SimpleCommandCore {
 	 * @param <T>
 	 * @param enumType
 	 * @param enumValue
-	 * @param falseMessage
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final Component falseMessage) throws CommandException {
-		return this.findEnum(enumType, enumValue, null, falseMessage);
+	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue) throws CommandException {
+		return this.findEnum(enumType, enumValue, null);
 	}
 
 	/**
@@ -658,11 +715,11 @@ public abstract class SimpleCommandCore {
 	 * @param enumType
 	 * @param enumValue
 	 * @param condition
-	 * @param falseMessage
+
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition, final Component falseMessage) throws CommandException {
+	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition) throws CommandException {
 		T found = null;
 
 		try {
@@ -675,11 +732,48 @@ public abstract class SimpleCommandCore {
 			// Not found, pass through below to error out
 		}
 
-		this.checkNotNull(found, falseMessage
-				.replaceText(b -> b.matchLiteral("{enum}").replacement(enumValue))
-				.replaceText(b -> b.matchLiteral("{available}").replacement(CommonCore.join(enumType.getEnumConstants()))));
+		this.checkNotNull(found, SimpleLocalization.Commands.INVALID_ENUM
+				.replaceText(b -> b.matchLiteral("{type}").replacement(enumType.getSimpleName().replaceAll("([a-z])([A-Z]+)", "$1 $2").toLowerCase()))
+				.replaceText(b -> b.matchLiteral("{value}").replacement(enumValue))
+				.replaceText(b -> b.matchLiteral("{available}").replacement(CommonCore.join(enumType.getEnumConstants(), constant -> constant.name().toLowerCase()))));
 
 		return found;
+	}
+
+	/**
+	 * A convenience method for parsing a number at the given args index
+	 *
+	 * @param index
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findNumber(final int index, final String falseMessage) {
+		return this.findNumber(index, CommonCore.colorize(falseMessage));
+	}
+
+	/**
+	 * A convenience method for parsing a number at the given args index
+	 *
+	 * @param index
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findNumber(final int index, final Component falseMessage) {
+		return this.findNumber(Integer.class, index, falseMessage);
+	}
+
+	/**
+	 * A convenience method for parsing a number that is between two bounds
+	 * You can use {min} and {max} in the message to be automatically replaced
+	 *
+	 * @param index
+	 * @param min
+	 * @param max
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findNumber(final int index, final int min, final int max, final String falseMessage) {
+		return this.findNumber(index, min, max, CommonCore.colorize(falseMessage));
 	}
 
 	/**
@@ -696,31 +790,12 @@ public abstract class SimpleCommandCore {
 		return this.findNumber(Integer.class, index, min, max, falseMessage);
 	}
 
-	/**
-	 * A convenience method for parsing a number at the given args index
-	 *
-	 * @param index
-	 * @param falseMessage
-	 * @return
-	 */
-	protected final int findNumber(final int index, final Component falseMessage) {
-		return this.findNumber(Integer.class, index, falseMessage);
-	}
-
-	/**
+	/*
 	 * A convenience method for parsing any number type that is between two bounds
 	 * Number can be of any type, that supports method valueOf(String)
 	 * You can use {min} and {max} in the message to be automatically replaced
-	 *
-	 * @param <T>
-	 * @param numberType
-	 * @param index
-	 * @param min
-	 * @param max
-	 * @param falseMessage
-	 * @return
 	 */
-	protected final <T extends Number & Comparable<T>> T findNumber(final Class<T> numberType, final int index, final T min, final T max, Component falseMessage) {
+	private final <T extends Number & Comparable<T>> T findNumber(final Class<T> numberType, final int index, final T min, final T max, Component falseMessage) {
 		falseMessage = falseMessage
 				.replaceText(b -> b.matchLiteral("{min}").replacement(String.valueOf(min)))
 				.replaceText(b -> b.matchLiteral("{max}").replacement(String.valueOf(max)));
@@ -731,17 +806,11 @@ public abstract class SimpleCommandCore {
 		return number;
 	}
 
-	/**
+	/*
 	 * A convenience method for parsing any number type at the given args index
 	 * Number can be of any type, that supports method valueOf(String)
-	 *
-	 * @param <T>
-	 * @param numberType
-	 * @param index
-	 * @param falseMessage
-	 * @return
 	 */
-	protected final <T extends Number> T findNumber(final Class<T> numberType, final int index, final Component falseMessage) {
+	private final <T extends Number> T findNumber(final Class<T> numberType, final int index, final Component falseMessage) {
 		this.checkBoolean(index < this.args.length, falseMessage);
 
 		try {
@@ -769,6 +838,17 @@ public abstract class SimpleCommandCore {
 	 * @param invalidMessage
 	 * @return
 	 */
+	protected final boolean findBoolean(final int index, final String invalidMessage) {
+		return this.findBoolean(index, CommonCore.colorize(invalidMessage));
+	}
+
+	/**
+	 * A convenience method for parsing a boolean at the given args index
+	 *
+	 * @param index
+	 * @param invalidMessage
+	 * @return
+	 */
 	protected final boolean findBoolean(final int index, final Component invalidMessage) {
 		this.checkBoolean(index < this.args.length, invalidMessage);
 
@@ -778,7 +858,8 @@ public abstract class SimpleCommandCore {
 		else if (this.args[index].equalsIgnoreCase("false"))
 			return false;
 
-		throw new CommandException(this.replacePlaceholders(invalidMessage));
+		this.returnTell(invalidMessage);
+		return false;
 	}
 
 	// ----------------------------------------------------------------------
@@ -837,10 +918,10 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param components
 	 */
-	protected final void tell(final List<SimpleComponentCore> components) {
+	/*protected final void tell(final List<SimpleComponentCore> components) {
 		if (components != null)
 			this.tell(components.toArray(new SimpleComponentCore[components.size()]));
-	}
+	}*/
 
 	/**
 	 * Sends a interactive chat component to the sender, not replacing any special
@@ -849,11 +930,11 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param components
 	 */
-	protected final void tell(final SimpleComponentCore... components) {
+	/*protected final void tell(final SimpleComponentCore... components) {
 		if (components != null)
 			for (final SimpleComponentCore component : components)
 				component.send(this.sender);
-	}
+	}*/
 
 	/**
 	 * Send a list of messages to the player
@@ -875,7 +956,16 @@ public abstract class SimpleCommandCore {
 	}*/
 
 	/**
-	 * Sends a multiline message to the player without plugin's prefix.
+	 * Sends a message to the player without plugin's prefix.
+	 *
+	 * @param message
+	 */
+	protected final void tellNoPrefix(final String message) {
+		this.tellNoPrefix(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends a message to the player without plugin's prefix.
 	 *
 	 * @param messages
 	 */
@@ -895,30 +985,39 @@ public abstract class SimpleCommandCore {
 	 * @param messages
 	 */
 	/*protected final void tell(String... messages) {
-	
+
 		if (messages == null)
 			return;
-	
+
 		final String oldTellPrefix = CommonCore.getTellPrefix();
-	
+
 		if (this.tellPrefix != null)
 			CommonCore.setTellPrefix(this.tellPrefix);
-	
+
 		try {
 			messages = this.replacePlaceholders(messages);
-	
+
 			if (messages.length > 2)
 				CommonCore.tellNoPrefix(this.sender, messages);
 			else
 				CommonCore.tell(this.sender, messages);
-	
+
 		} finally {
 			CommonCore.setTellPrefix(oldTellPrefix);
 		}
 	}*/
 
 	/**
-	 * Sends a multiline message to the player, avoiding prefix if 3 lines or more
+	 * Sends a message to the player
+	 *
+	 * @param message
+	 */
+	protected final void tell(String message) {
+		this.tell(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends a message to the player
 	 *
 	 * @param component
 	 */
@@ -942,7 +1041,16 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Sends a no prefix message to the player
+	 * Sends a success message to the player
+	 *
+	 * @param component
+	 */
+	protected final void tellSuccess(String component) {
+		this.tellSuccess(CommonCore.colorize(component));
+	}
+
+	/**
+	 * Sends a success message to the player
 	 *
 	 * @param component
 	 */
@@ -955,7 +1063,16 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Sends a no prefix message to the player
+	 * Sends an info message to the player
+	 *
+	 * @param message
+	 */
+	protected final void tellInfo(String message) {
+		this.tellInfo(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends an info message to the player
 	 *
 	 * @param message
 	 */
@@ -968,7 +1085,16 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Sends a no prefix message to the player
+	 * Sends a warning message to the player
+	 *
+	 * @param message
+	 */
+	protected final void tellWarn(String message) {
+		this.tellWarn(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends a warning message to the player
 	 *
 	 * @param message
 	 */
@@ -981,7 +1107,16 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Sends a no prefix message to the player
+	 * Sends an error message to the player
+	 *
+	 * @param message
+	 */
+	protected final void tellError(String message) {
+		this.tellError(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends an error message to the player
 	 *
 	 * @param component
 	 */
@@ -994,7 +1129,16 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Sends a no prefix message to the player
+	 * Sends a question-prefixed message to the player
+	 *
+	 * @param message
+	 */
+	protected final void tellQuestion(String message) {
+		this.tellQuestion(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends a question-prefixed message to the player
 	 *
 	 * @param message
 	 */
@@ -1029,10 +1173,20 @@ public abstract class SimpleCommandCore {
 	/**
 	 * Sends a message to the player and throws a message error, preventing further execution
 	 *
+	 * @param message
+	 * @throws CommandException
+	 */
+	public final void returnTell(final String message) throws CommandException {
+		this.returnTell(CommonCore.colorize(message));
+	}
+
+	/**
+	 * Sends a message to the player and throws a message error, preventing further execution
+	 *
 	 * @param component
 	 * @throws CommandException
 	 */
-	protected final void returnTell(final Component component) throws CommandException {
+	public final void returnTell(final Component component) throws CommandException {
 		throw new CommandException(this.replacePlaceholders(component));
 	}
 
@@ -1042,7 +1196,7 @@ public abstract class SimpleCommandCore {
 	 * @param messages
 	 * @throws CommandException
 	 */
-	/*protected final void returnTell(final String... messages) throws CommandException {
+	/*public final void returnTell(final String... messages) throws CommandException {
 		throw new CommandException(this.replacePlaceholders(messages));
 	}*/
 
@@ -1051,7 +1205,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @throws InvalidCommandArgException
 	 */
-	protected final void returnUsage() throws InvalidCommandArgException {
+	public final void returnUsage() throws InvalidCommandArgException {
 		throw new InvalidCommandArgException();
 	}
 
@@ -1066,13 +1220,13 @@ public abstract class SimpleCommandCore {
 	 * @param messages
 	 * @return
 	 */
-	/*protected final String[] replacePlaceholders(final String[] messages) {
+	/*public final String[] replacePlaceholders(final String[] messages) {
 		for (int i = 0; i < messages.length; i++)
 			messages[i] = this.replacePlaceholders(messages[i]);
-	
+
 		return messages;
 	}
-	
+
 	// TODO get rid of
 	protected String replacePlaceholders(String legacy) {
 		return RemainCore.convertAdventureToLegacy(replacePlaceholders(RemainCore.convertLegacyToAdventure(legacy)));
@@ -1089,11 +1243,7 @@ public abstract class SimpleCommandCore {
 
 		// Replace {X} with arguments
 		for (int i = 0; i < this.args.length; i++)
-			component = component.replaceText(TextReplacementConfig
-					.builder()
-					.matchLiteral("{" + i + "}")
-					.replacement(CommonCore.getOrEmpty(this.args[i]))
-					.build());
+			component = component.replaceText(TextReplacementConfig.builder().matchLiteral("{" + i + "}").replacement(CommonCore.getOrEmpty(this.args[i])).build());
 
 		return component;
 	}
@@ -1129,12 +1279,12 @@ public abstract class SimpleCommandCore {
 	 * @param position
 	 * @param value
 	 */
-	protected final void setArg(final int position, final String value) {
+	/*protected final void setArg(final int position, final String value) {
 		if (this.args.length <= position)
 			this.args = Arrays.copyOf(this.args, position + 1);
 
 		this.args[position] = value;
-	}
+	}*/
 
 	/**
 	 * Convenience method for returning the last word in arguments
@@ -1258,9 +1408,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return
 	 */
-	// TODO add to SimpleBukkitCommand
-	protected List<String> completeLastWordPlayerNames() {
-		// TODO this.isPlayer() ? CommonCore.getPlayerNames(false) : CommonCore.getPlayerNames()
+	public List<String> completeLastWordPlayerNames() {
 		return TabUtil.complete(this.getLastArg(), CommonCore.convert(Platform.getOnlinePlayers(), audience -> Platform.resolveSenderName(audience)));
 	}
 
@@ -1274,7 +1422,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	@SafeVarargs
-	protected final <T> List<String> completeLastWord(final T... suggestions) {
+	public final <T> List<String> completeLastWord(final T... suggestions) {
 		return TabUtil.complete(this.getLastArg(), suggestions);
 	}
 
@@ -1287,7 +1435,7 @@ public abstract class SimpleCommandCore {
 	 * @param suggestions
 	 * @return
 	 */
-	protected final <T> List<String> completeLastWord(final Iterable<T> suggestions) {
+	public final <T> List<String> completeLastWord(final Iterable<T> suggestions) {
 		final List<T> list = new ArrayList<>();
 
 		for (final T suggestion : suggestions)
@@ -1367,7 +1515,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return
 	 */
-	public final Component getCooldownMessage() {
+	protected final Component getCooldownMessage() {
 		return cooldownMessage;
 	}
 
@@ -1415,17 +1563,6 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Get the permission without replacing variables
-	 *
-	 * @return
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	protected final String getRawPermission() {
-		return this.permission;
-	}
-
-	/**
 	 * Sets the permission required for this command to run. If you set the
 	 * permission to null we will not require any permission (unsafe).
 	 *
@@ -1440,7 +1577,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return
 	 */
-	protected final Audience getSender() {
+	public final Audience getSender() {
 		ValidCore.checkNotNull(this.sender, "Sender cannot be null");
 
 		return this.sender;
@@ -1470,14 +1607,6 @@ public abstract class SimpleCommandCore {
 	}
 
 	/**
-	 * Get the name of this command
-	 */
-	/*@Override
-	public final String getName() {
-		return super.getName();
-	}*/
-
-	/**
 	 * Get the usage message of this command
 	 */
 	public final Component getUsage() {
@@ -1490,14 +1619,6 @@ public abstract class SimpleCommandCore {
 	public final String getLabel() {
 		return this.label;
 	}
-
-	/**
-	 * Updates the label of this command
-	 */
-	/*public final void setLabel(final String label) {
-		this.label = label;
-		this.currentLabel = label;
-	}*/
 
 	/**
 	 * Get the label given when the command was created or last updated
@@ -1520,20 +1641,49 @@ public abstract class SimpleCommandCore {
 		this.autoHandleHelp = autoHandleHelp;
 	}
 
+	/**
+	 * Set the command usage
+	 *
+	 * @param usage
+	 */
 	protected final void setUsage(String usage) {
-		this.usage = CommonCore.colorize(usage);
+		this.setUsage(CommonCore.colorize(usage));
 	}
 
+	/**
+	 * Set the command usage
+	 *
+	 * @param usage
+	 */
 	protected final void setUsage(Component usage) {
 		this.usage = usage;
 	}
 
+	/**
+	 * Set the command label
+	 *
+	 * @param description
+	 */
+	protected final void setDescription(String description) {
+		this.setDescription(CommonCore.colorize(description));
+	}
+
+	/**
+	 * Set the command description
+	 *
+	 * @param description
+	 */
 	protected final void setDescription(Component description) {
 		this.description = description;
 	}
 
-	protected final void setDescription(String description) {
-		this.description = CommonCore.colorize(description);
+	/**
+	 * Get the command arguments
+	 *
+	 * @return
+	 */
+	public final String[] getArgs() {
+		return args;
 	}
 
 	// ----------------------------------------------------------------------
@@ -1547,7 +1697,7 @@ public abstract class SimpleCommandCore {
 	 * @param runnable
 	 * @return
 	 */
-	protected final Task runLater(final Runnable runnable) {
+	public final Task runLater(final Runnable runnable) {
 		return runLater(0, runnable);
 	}
 
@@ -1570,7 +1720,7 @@ public abstract class SimpleCommandCore {
 	 * @param runnable
 	 * @return
 	 */
-	protected final Task runAsync(final Runnable runnable) {
+	public final Task runAsync(final Runnable runnable) {
 		return this.runAsync(0, runnable);
 	}
 
@@ -1619,6 +1769,6 @@ public abstract class SimpleCommandCore {
 
 	@Override
 	public String toString() {
-		return "Command{label=/" + this.label + "}";
+		return "Command{/" + this.label + "}";
 	}
 }

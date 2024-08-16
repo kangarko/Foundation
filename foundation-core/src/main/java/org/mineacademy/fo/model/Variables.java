@@ -1,6 +1,8 @@
 package org.mineacademy.fo.model;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,6 +91,14 @@ public final class Variables {
 	// ------------------------------------------------------------------------------------------------------------
 	// Replacing
 	// ------------------------------------------------------------------------------------------------------------
+
+	public static List<String> replaceArray(List<String> list, Audience audience, Object... replacements) {
+		String joined = String.join("%FLPV%", list);
+
+		joined = replace(joined, audience, CommonCore.newHashMap(replacements));
+
+		return Arrays.asList(joined.split("%FLPV%"));
+	}
 
 	public static String replace(String message, Audience audience) {
 		return replace(message, audience, new HashMap<>());

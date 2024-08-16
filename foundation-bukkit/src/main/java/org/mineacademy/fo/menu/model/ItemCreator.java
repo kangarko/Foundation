@@ -39,6 +39,7 @@ import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import lombok.AccessLevel;
@@ -46,6 +47,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 
 /**
  * ItemCreator allows you to create highly customized {@link ItemStack}
@@ -280,6 +282,16 @@ public final class ItemCreator {
 	 */
 	public ItemCreator lore(String... lore) {
 		return this.lore(Arrays.asList(lore));
+	}
+
+	/**
+	 * Append the given lore to the end of existing item lore.
+	 *
+	 * @param lore
+	 * @return
+	 */
+	public ItemCreator lore(Component... lore) {
+		return this.lore(Common.convert(lore, RemainCore::convertAdventureToLegacy));
 	}
 
 	/**

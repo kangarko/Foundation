@@ -3,6 +3,7 @@ package org.mineacademy.fo.conversation;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
@@ -18,7 +19,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.collection.expiringmap.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.BoxedMessage;
-import org.mineacademy.fo.model.SimpleTask;
+import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -269,10 +270,11 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param message
 	 */
-	protected static final void tell(final Conversable conversable, final String message) {
-		Platform.sendConversingMessage(conversable, null); // TODO
+	protected static final void tell(final Conversable conversable, String message) {
+		if (conversable instanceof CommandSender)
+			message = Variables.replace(message, Platform.toAudience(conversable));
 
-		Common.tellConversing(conversable, Variables.replace(message, (Player) conversable));
+		Common.tell(conversable, message);
 	}
 
 	/**
@@ -282,8 +284,11 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param message
 	 */
-	protected static final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
-		Common.tellLaterConversing(delayTicks, conversable, Variables.replace(message, (Player) conversable));
+	protected static final void tellLater(final int delayTicks, final Conversable conversable, String message) {
+		if (conversable instanceof CommandSender)
+			message = Variables.replace(message, Platform.toAudience(conversable));
+
+		Common.tellLater(delayTicks, conversable, message);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -295,7 +300,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		protected Conversation conversation;
 
 		private final int timeoutSeconds;
-		private SimpleTask task = null;
+		private Task task = null;
 
 		/**
 		 */

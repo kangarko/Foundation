@@ -11,7 +11,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuQuantity;
-import org.mineacademy.fo.model.Replacer;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompMaterial;
 
 import lombok.NonNull;
@@ -180,7 +180,7 @@ public interface MenuQuantitable {
 	default ItemStack addLevelToItem(ItemStack item, String level) {
 
 		// Paint the item with the drop chance lore
-		final List<String> dropChanceLore = Replacer.replaceArray(Arrays.asList(
+		final List<String> dropChanceLore = Variables.replaceArray(Arrays.asList(
 
 				// Lore
 				"",
@@ -188,6 +188,8 @@ public interface MenuQuantitable {
 				"",
 				"   &8(Mouse click)",
 				"  &7&l< &4-{quantity}    &2+{quantity} &7&l>"),
+
+				null, // sender
 
 				// Variables
 				"level", level,

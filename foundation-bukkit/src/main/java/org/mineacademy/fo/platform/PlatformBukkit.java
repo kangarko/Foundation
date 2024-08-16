@@ -51,15 +51,6 @@ import net.kyori.adventure.text.event.HoverEventSource;
 
 public class PlatformBukkit implements FoundationPlatform {
 
-	/**
-	 * The Adventure platform
-	 */
-	private final BukkitAudiences adventure;
-
-	public PlatformBukkit(Plugin plugin) {
-		this.adventure = BukkitAudiences.create(plugin);
-	}
-
 	@Override
 	public boolean callEvent(final Object event) {
 		Valid.checkBoolean(event instanceof Event, "Object must be an instance of Bukkit Event, not " + event.getClass());
@@ -73,8 +64,10 @@ public class PlatformBukkit implements FoundationPlatform {
 	 */
 	@Override
 	public void closeAdventurePlatform() {
-		if (this.adventure != null)
-			this.adventure.close();
+		final BukkitAudiences adventure = (BukkitAudiences) this.getPlugin().getAdventure();
+
+		if (adventure != null)
+			adventure.close();
 	}
 
 	@Override
@@ -93,10 +86,11 @@ public class PlatformBukkit implements FoundationPlatform {
 
 	@Override
 	public List<Audience> getOnlinePlayers() {
+		final BukkitAudiences adventure = (BukkitAudiences) this.getPlugin().getAdventure();
 		final List<Audience> players = new ArrayList<>();
 
 		for (final Player player : Remain.getOnlinePlayers())
-			players.add(this.adventure.player(player));
+			players.add(adventure.player(player));
 
 		return players;
 	}
@@ -168,7 +162,7 @@ public class PlatformBukkit implements FoundationPlatform {
 	 * @return
 	 */
 	@Override
-	public boolean isPluginEnabled(String name) {
+	public boolean isPluginInstalled(String name) {
 		Plugin lookup = null;
 
 		for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins())
@@ -184,7 +178,8 @@ public class PlatformBukkit implements FoundationPlatform {
 			return false;
 
 		if (!found.isEnabled())
-			Common.runLaterAsync(0, () -> Valid.checkBoolean(found.isEnabled(), SimplePlugin.getNamed() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getNamed() + ", look for errors above and contact support of '" + name + "')"));
+			Common.runLaterAsync(0, () -> Valid.checkBoolean(found.isEnabled(),
+					SimplePlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')"));
 
 		return true;
 	}
@@ -280,26 +275,29 @@ public class PlatformBukkit implements FoundationPlatform {
 	@Override
 	public Set<Audience> toAudience(Collection<Object> players, boolean addConsole) {
 		final Set<Audience> audiences = new HashSet<>();
+		final BukkitAudiences adventure = (BukkitAudiences) this.getPlugin().getAdventure();
 
 		for (final Object player : players)
 			if (player instanceof Audience)
 				audiences.add((Audience) player);
 			else if (player instanceof CommandSender)
-				audiences.add(this.adventure.sender((CommandSender) player));
+				audiences.add(adventure.sender((CommandSender) player));
 
 		if (addConsole)
-			audiences.add(this.adventure.console());
+			audiences.add(adventure.console());
 
 		return audiences;
 	}
 
 	@Override
 	public Audience toAudience(Object sender) {
+		final BukkitAudiences adventure = (BukkitAudiences) this.getPlugin().getAdventure();
+
 		if (sender instanceof Audience)
 			return (Audience) sender;
 
 		if (sender instanceof CommandSender)
-			return this.adventure.sender((CommandSender) sender);
+			return adventure.sender((CommandSender) sender);
 
 		return null;
 	}
@@ -339,11 +337,6 @@ public class PlatformBukkit implements FoundationPlatform {
 	@Override
 	public boolean isAsync() {
 		return !Bukkit.isPrimaryThread();
-	}
-
-	@Override
-	public boolean isPluginReloading() {
-		return SimplePlugin.isReloading();
 	}
 
 	@Override

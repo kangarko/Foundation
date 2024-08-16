@@ -77,7 +77,7 @@ final class FoundationListener implements Listener {
 		}
 
 		// Prevent shading issue with multiple plugins having Foundation shaded
-		if (player.hasMetadata("FoPages") && !player.getMetadata("FoPages").get(0).asString().equals(SimplePlugin.getNamed()))
+		if (player.hasMetadata("FoPages") && !player.getMetadata("FoPages").get(0).asString().equals(SimplePlugin.getInstance().getName()))
 			return;
 
 		final String numberRaw = args[1];
@@ -94,7 +94,7 @@ final class FoundationListener implements Listener {
 		}
 
 		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata(nbtPageTag).get(0).value();
-		final Map<Integer, List<SimpleComponentCore>> pages = chatPages.getPages();
+		final Map<Integer, List<? extends SimpleComponentCore>> pages = chatPages.getPages();
 
 		// Remove empty lines
 		pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
@@ -115,7 +115,7 @@ final class FoundationListener implements Listener {
 			for (final SimpleComponentCore component : chatPages.getHeader())
 				component.send(audience);
 
-			final List<SimpleComponentCore> messagesOnPage = pages.get(page);
+			final List<? extends SimpleComponentCore> messagesOnPage = pages.get(page);
 			int count = 1;
 
 			for (final SimpleComponentCore comp : messagesOnPage)

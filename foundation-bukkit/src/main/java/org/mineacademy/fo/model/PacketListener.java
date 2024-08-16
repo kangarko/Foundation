@@ -249,7 +249,7 @@ public abstract class PacketListener {
 			}
 
 			// Ignore dummy instances and rare reload case
-			if (!this.player.isOnline() || SimplePlugin.isReloading())
+			if (!this.player.isOnline() || SimplePlugin.getInstance().isReloading())
 				return;
 
 			// Prevent deadlock

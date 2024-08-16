@@ -106,7 +106,7 @@ public final class ItemUtil extends ItemUtilCore {
 			final ReadableNBT firstNbt = NBT.readNbt(first);
 			final ReadableNBT secondNbt = NBT.readNbt(second);
 
-			return matchNbt(SimplePlugin.getNamed(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getNamed() + "_Item", firstNbt, secondNbt);
+			return matchNbt(SimplePlugin.getInstance().getName(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getInstance().getName() + "_Item", firstNbt, secondNbt);
 		}
 
 		return true;

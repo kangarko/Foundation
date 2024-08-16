@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.mineacademy.fo.model.Replacer;
 import org.mineacademy.fo.settings.SimpleLocalization.Cases;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -435,13 +434,13 @@ public final class TimeUtil {
 		for (int i = 0; i < months.length; i++)
 			time = time.replaceAll(months[i] + "\\b", fullNameMonths[i]);
 
-		time = Replacer.replaceArray(time,
-				"year", calendar.get(Calendar.YEAR),
-				"month", fullNameMonths[calendar.get(Calendar.MONTH)],
-				"day", calendar.get(Calendar.DAY_OF_MONTH),
-				"hour", calendar.get(Calendar.HOUR_OF_DAY),
-				"minute", calendar.get(Calendar.MINUTE),
-				"second", calendar.get(Calendar.SECOND));
+		time = time
+				.replace("{year}", calendar.get(Calendar.YEAR) + "")
+				.replace("{month}", fullNameMonths[calendar.get(Calendar.MONTH)])
+				.replace("{day}", calendar.get(Calendar.DAY_OF_MONTH) + "")
+				.replace("{hour}", calendar.get(Calendar.HOUR_OF_DAY) + "")
+				.replace("{minute}", calendar.get(Calendar.MINUTE) + "")
+				.replace("{second}", calendar.get(Calendar.SECOND) + "");
 
 		try {
 			final long timestamp = new SimpleDateFormat("dd MMM yyyy, HH:mm").parse(time).getTime();

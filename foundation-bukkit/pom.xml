@@ -14,42 +14,19 @@
         <version>7.0.0</version>
     </parent>
 
-    <groupId>org.mineacademy</groupId>
     <artifactId>foundation-bukkit</artifactId>
-    <version>7.0.0</version>
-    <packaging>jar</packaging>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
-    </properties>
-
-    <repositories>
-	    <repository>
-	        <id>spigot-repo</id>
-	        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-	    </repository>
-	    <repository>
-            <id>mineacademy-repo</id>
-            <url>https://bitbucket.org/kangarko/libraries/raw/master</url>
-        </repository>
-        <repository>
-            <id>minecraft-libraries</id>
-            <url>https://libraries.minecraft.net</url>
-        </repository>
-    </repositories>
 
     <dependencies>
 		<dependency>
            <groupId>org.spigotmc</groupId>
            <artifactId>spigot-api</artifactId>
            <version>1.21-R0.1-SNAPSHOT</version>
-           <scope>provided</scope>
     	</dependency>
 		<dependency>
 			<groupId>org.mineacademy</groupId>
 			<artifactId>foundation-core</artifactId>
 			<version>7.0.0</version>
+			<scope>compile</scope>
 		</dependency>
 		
 		<!-- Only needed for NBT-API -->
@@ -172,23 +149,5 @@
             <version>7.0.9</version>
         </dependency>
     </dependencies>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.1</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+   
 </project>

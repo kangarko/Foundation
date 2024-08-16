@@ -41,7 +41,7 @@ public final class ProxyUtil {
 	@SafeVarargs
 	public static <T> void sendPluginMessage(ProxyMessage message, T... datas) {
 		final ProxyListener proxy = SimplePlugin.getInstance().getDefaultProxyListener();
-		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + SimplePlugin.getNamed() + " does not have any class extending ProxyListener with @AutoMessage!");
+		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + SimplePlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage!");
 
 		sendPluginMessage(proxy.getChannel(), message, datas);
 	}
@@ -60,7 +60,7 @@ public final class ProxyUtil {
 	@SafeVarargs
 	public static <T> void sendPluginMessageAs(@Nullable Player player, ProxyMessage message, T... datas) {
 		final ProxyListener proxy = SimplePlugin.getInstance().getDefaultProxyListener();
-		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + SimplePlugin.getNamed() + " does not have any class extending ProxyListener with @AutoMessage");
+		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + SimplePlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage");
 
 		sendPluginMessage(player, proxy.getChannel(), message, datas);
 	}

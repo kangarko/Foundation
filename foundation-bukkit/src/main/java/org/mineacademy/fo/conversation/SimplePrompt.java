@@ -18,8 +18,6 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
-import net.kyori.adventure.audience.Audience;
-
 /**
  * Represents one question for the player during a server conversation
  */
@@ -92,7 +90,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 				&& !promptColorless.contains(Remain.convertAdventureToPlain(Messenger.getSuccessPrefix())))
 			prompt = Messenger.getQuestionPrefix() + prompt;
 
-		return Variables.replace(prompt, this.getPlayer(context));
+		return Variables.replace(prompt, Platform.toAudience(this.getPlayer(context)));
 	}
 
 	/**
@@ -130,10 +128,10 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param ctx
 	 * @return
 	 */
-	protected final Audience getPlayer(final ConversationContext ctx) {
+	protected final Player getPlayer(final ConversationContext ctx) {
 		Valid.checkBoolean(ctx.getForWhom() instanceof Player, "Conversable is not a player but: " + ctx.getForWhom());
 
-		return Platform.toAudience(ctx.getForWhom());
+		return (Player) ctx.getForWhom();
 	}
 
 	/**
@@ -166,9 +164,9 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	protected final void tell(final Conversable conversable, final String message) {
 		if (this.getCustomPrefix() != null)
-			Common.tellConversingNoPrefix(conversable, this.getCustomPrefix() + message);
+			Common.tellNoPrefix(conversable, this.getCustomPrefix() + message);
 		else
-			Common.tellConversing(conversable, message);
+			Common.tell(conversable, message);
 	}
 
 	/**
@@ -178,7 +176,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tellNoPrefix(final Conversable conversable, final String message) {
-		Common.tellConversingNoPrefix(conversable, message);
+		Common.tellNoPrefix(conversable, message);
 	}
 
 	/**
@@ -190,9 +188,9 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	protected final void tellLater(final int delayTicks, final Conversable conversable, final String message) {
 		if (this.getCustomPrefix() != null)
-			Common.tellLaterConversingNoPrefix(delayTicks, conversable, this.getCustomPrefix() + message);
+			Common.tellLaterNoPrefix(delayTicks, conversable, this.getCustomPrefix() + message);
 		else
-			Common.tellLaterConversing(delayTicks, conversable, message);
+			Common.tellLater(delayTicks, conversable, message);
 	}
 
 	/**
@@ -203,7 +201,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tellLaterNoPrefix(final int delayTicks, final Conversable conversable, final String message) {
-		Common.tellLaterConversingNoPrefix(delayTicks, conversable, message);
+		Common.tellLaterNoPrefix(delayTicks, conversable, message);
 	}
 
 	/**
@@ -232,7 +230,8 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 					final String failPromptColorless = Common.removeColors(failPrompt);
 					final String prefixColorless = Remain.convertAdventureToPlain(Messenger.getErrorPrefix());
 
-					this.tellLaterNoPrefix(0, context.getForWhom(), Variables.replace((Messenger.ENABLED && !failPromptColorless.contains(prefixColorless) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, this.getPlayer(context)));
+					this.tellLaterNoPrefix(0, context.getForWhom(),
+							Variables.replace((Messenger.ENABLED && !failPromptColorless.contains(prefixColorless) ? Messenger.getErrorPrefix() : "") + "&c" + failPrompt, Platform.toAudience(this.getPlayer(context))));
 				}
 
 				// Redisplay this prompt to the user to re-collect input

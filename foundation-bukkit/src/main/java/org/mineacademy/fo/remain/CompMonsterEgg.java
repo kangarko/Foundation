@@ -28,7 +28,7 @@ public final class CompMonsterEgg {
 	/**
 	 * Our universal tag we use to mark our eggs
 	 */
-	private static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
+	private static final String TAG = SimplePlugin.getInstance().getName() + "_NbtTag";
 
 	/**
 	 * Suppress errors when entity type cannot be detected from an item stack and

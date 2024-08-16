@@ -196,7 +196,7 @@ public final class CompMetadata {
 			String value = Common.getOrNull(nbt.getString(key));
 
 			if (value == null) {
-				final ReadableNBT compound = nbt.getCompound(SimplePlugin.getNamed() + "_NbtTag");
+				final ReadableNBT compound = nbt.getCompound(SimplePlugin.getInstance().getName() + "_NbtTag");
 
 				if (compound != null && compound.hasTag(key))
 					value = Common.getOrNull(compound.getString(key));
@@ -331,14 +331,14 @@ public final class CompMetadata {
 	private static String getTag(final String raw, final String key) {
 		final String[] parts = raw.split(DELIMITER);
 
-		return parts.length == 3 && parts[0].equals(SimplePlugin.getNamed()) && parts[1].equals(key) ? parts[2] : null;
+		return parts.length == 3 && parts[0].equals(SimplePlugin.getInstance().getName()) && parts[1].equals(key) ? parts[2] : null;
 	}
 
 	/*
 	 * Helper method to format a tag
 	 */
 	private static String formatTag(final String key, final String value) {
-		return SimplePlugin.getNamed() + DELIMITER + key + DELIMITER + value;
+		return SimplePlugin.getInstance().getName() + DELIMITER + key + DELIMITER + value;
 	}
 
 	/*

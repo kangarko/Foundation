@@ -1,6 +1,7 @@
 package org.mineacademy.fo.model;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.platform.Platform;
@@ -167,6 +168,17 @@ public final class BoxedMessage {
 	 *
 	 * @param messages
 	 */
+	public static void broadcast(String... messages) {
+		final List<Component> converted = CommonCore.convert(messages, CommonCore::colorize);
+
+		broadcast(null, converted.toArray(new Component[converted.size()]));
+	}
+
+	/**
+	 * Send this message to everyone
+	 *
+	 * @param messages
+	 */
 	public static void broadcast(Component... messages) {
 		broadcast(null, messages);
 	}
@@ -177,8 +189,32 @@ public final class BoxedMessage {
 	 * @param sender
 	 * @param messages
 	 */
+	public static void broadcast(Audience sender, String... messages) {
+		final List<Component> converted = CommonCore.convert(messages, CommonCore::colorize);
+
+		broadcast(sender, converted.toArray(new Component[converted.size()]));
+	}
+
+	/**
+	 * Sends this message to the all players as the sender
+	 *
+	 * @param sender
+	 * @param messages
+	 */
 	public static void broadcast(Audience sender, Component... messages) {
 		new BoxedMessage(null, sender, messages).launch();
+	}
+
+	/**
+	 * Sends the message to the recipient
+	 *
+	 * @param recipient
+	 * @param messages
+	 */
+	public static void tell(Audience recipient, String... messages) {
+		final List<Component> converted = CommonCore.convert(messages, CommonCore::colorize);
+
+		tell(recipient, converted.toArray(new Component[converted.size()]));
 	}
 
 	/**

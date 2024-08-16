@@ -207,6 +207,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 
 import org.mineacademy.fo.ValidCore;
 
@@ -269,7 +270,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 	private final AtomicLong expirationNanos;
 	private int maxSize;
 	private final AtomicReference<ExpirationPolicy> expirationPolicy;
-	private final EntryLoader<? super K, ? extends V> entryLoader;
+	private final Function<? super K, ? extends V> entryLoader;
 	private final ExpiringEntryLoader<? super K, ? extends V> expiringEntryLoader;
 	private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 	private final Lock readLock = this.readWriteLock.readLock();
@@ -342,7 +343,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		private boolean variableExpiration;
 		private long duration = 60;
 		private int maxSize = Integer.MAX_VALUE;
-		private EntryLoader<K, V> entryLoader;
+		private Function<K, V> entryLoader;
 		private ExpiringEntryLoader<K, V> expiringEntryLoader;
 
 		/**
@@ -403,9 +404,9 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 *
 		 * @return
 		 */
-		public <K1 extends K, V1 extends V> Builder<K1, V1> entryLoader(@NonNull EntryLoader<? super K1, ? super V1> loader) {
+		public <K1 extends K, V1 extends V> Builder<K1, V1> entryLoader(@NonNull Function<? super K1, ? super V1> loader) {
 			this.assertNoLoaderSet();
-			this.entryLoader = (EntryLoader<K, V>) loader;
+			this.entryLoader = (Function<K, V>) loader;
 			return (Builder<K1, V1>) this;
 		}
 
@@ -419,7 +420,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * @param loader to set
 		 * @return
 		 * @throws NullPointerException  if {@code loader} is null
-		 * @throws IllegalStateException if an {@link #entryLoader(EntryLoader)
+		 * @throws IllegalStateException if an {@link #entryLoader(Function)
 		 *                               EntryLoader} is set
 		 */
 		public <K1 extends K, V1 extends V> Builder<K1, V1> expiringEntryLoader(@NonNull ExpiringEntryLoader<? super K1, ? super V1> loader) {
@@ -1008,7 +1009,7 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 				return entry.getValue();
 
 			if (this.entryLoader != null) {
-				final V value = this.entryLoader.load(key);
+				final V value = this.entryLoader.apply(key);
 				this.put(key, value);
 				return value;
 			} else {
