@@ -72,13 +72,13 @@ final class FoundationPacketListener extends PacketListener {
 					int size = itemStacks.size();
 					for (int j = 0; j < size; j++) {
 
-						ItemStack itemStack = itemStacks.get(j);
-						if (itemStack != null && !itemStack.getType().isAir()) {
-							itemStack = SimpleEnchantment.addEnchantmentLores(itemStack);
-							if (itemStack == null)
+						ItemStack item = itemStacks.get(j);
+						if (item != null && !item.getType().isAir()) {
+							item = SimpleEnchantment.addEnchantmentLores(item);
+							if (item == null)
 								continue;
 
-							itemStacks.set(j, itemStack);
+							itemStacks.set(j, item);
 							changed = true;
 						}
 					}
@@ -96,13 +96,13 @@ final class FoundationPacketListener extends PacketListener {
 					boolean changed = false;
 
 					for (int j = 0; j < itemStacks.length; j++) {
-						ItemStack itemStack = itemStacks[j];
-						if (itemStack != null && !CompMaterial.isAir(itemStack.getType())) {
-							itemStack = SimpleEnchantment.addEnchantmentLores(itemStack);
-							if (itemStack == null)
+						ItemStack item = itemStacks[j];
+						if (item != null && !CompMaterial.isAir(item.getType())) {
+							item = SimpleEnchantment.addEnchantmentLores(item);
+							if (item == null)
 								continue;
 
-							itemStacks[j] = itemStack;
+							itemStacks[j] = item;
 							changed = true;
 						}
 					}
