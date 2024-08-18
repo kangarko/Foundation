@@ -589,7 +589,7 @@ public abstract class SimpleEnchantment implements Listener {
 		if (meta != null && meta.hasLore()) {
 			Map<Enchantment, Integer> enchants = item.getEnchantments();
 			Map<Enchantment, Integer> storedEnchants = meta instanceof EnchantmentStorageMeta ? ((EnchantmentStorageMeta) meta).getStoredEnchants() : null;
-			if (enchants.isEmpty() && storedEnchants == null && !storedEnchants.isEmpty())
+			if (enchants.isEmpty() && (storedEnchants == null || storedEnchants.isEmpty()))
 				return null;
 
 			final List<String> lore = meta.getLore();
