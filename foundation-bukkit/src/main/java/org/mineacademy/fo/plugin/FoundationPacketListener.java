@@ -12,6 +12,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.PacketListener;
+import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
@@ -54,7 +55,7 @@ final class FoundationPacketListener extends PacketListener {
 			final PacketContainer packet = event.getPacket();
 			final ItemStack item = packet.getItemModifier().readSafely(0);
 
-			if (item != null && !CompMaterial.isAir(item.getType())) {
+			if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
 				final ItemStack newItem = SimpleEnchantment.removeEnchantmentLores(item);
 
 				if (newItem != null)
@@ -67,7 +68,7 @@ final class FoundationPacketListener extends PacketListener {
 			final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
 			ItemStack item = itemModifier.read(0);
 
-			if (item != null && !CompMaterial.isAir(item.getType())) {
+			if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
 				item = SimpleEnchantment.addEnchantmentLores(item);
 
 				// Write the item
@@ -89,7 +90,7 @@ final class FoundationPacketListener extends PacketListener {
 					for (int j = 0; j < size; j++) {
 
 						ItemStack item = itemStacks.get(j);
-						if (item != null && !CompMaterial.isAir(item.getType())) {
+						if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
 							item = SimpleEnchantment.addEnchantmentLores(item);
 							if (item == null)
 								continue;
@@ -113,7 +114,7 @@ final class FoundationPacketListener extends PacketListener {
 
 					for (int j = 0; j < itemStacks.length; j++) {
 						ItemStack item = itemStacks[j];
-						if (item != null && !CompMaterial.isAir(item.getType())) {
+						if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
 							item = SimpleEnchantment.addEnchantmentLores(item);
 							if (item == null)
 								continue;
@@ -131,10 +132,11 @@ final class FoundationPacketListener extends PacketListener {
 		this.addSendingListener(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, event -> {
 			PacketContainer packet = event.getPacket();
 			List<MerchantRecipe> ls = packet.getMerchantRecipeLists().read(0);
+			boolean changed = false;
 			for (int i = 0; i < ls.size(); i++) {
 				MerchantRecipe recipe = ls.get(i);
 				ItemStack item = recipe.getResult();
-				if (!CompMaterial.isAir(item.getType())) {
+				if (!CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
 					item = SimpleEnchantment.addEnchantmentLores(item);
 					if (item == null) {
 						continue;
@@ -143,9 +145,11 @@ final class FoundationPacketListener extends PacketListener {
 					MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
 					newRecipe.setIngredients(recipe.getIngredients());
 					ls.set(i, newRecipe);
+					changed = true;
 				}
 			}
-			packet.getMerchantRecipeLists().write(0, ls);
+			if (changed)
+				packet.getMerchantRecipeLists().write(0, ls);
 		});
 
 		// "Fix" a Folia bug preventing Conversation API from working properly
