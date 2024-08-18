@@ -497,8 +497,10 @@ public abstract class CommonCore {
 		message = result.toString();
 		message = escapeInvalidTags(message);
 
+		Component mini;
+
 		try {
-			return MiniMessage.miniMessage().deserialize(message);
+			mini = MiniMessage.miniMessage().deserialize(message);
 
 		} catch (final Throwable t) {
 			Debugger.printStackTrace("Error parsing mini message tags in: " + message);
@@ -506,6 +508,18 @@ public abstract class CommonCore {
 			RemainCore.sneaky(t);
 			return null;
 		}
+
+		// if message ends with color code from the above map, add an empty component at the end with the same color
+		if (!message.endsWith(" "))
+			for (final String value : LEGACY_COLOR_MAP.values()) {
+				if (message.endsWith(value)) {
+					mini = mini.append(Component.text(" ").color(MiniMessage.miniMessage().deserialize(value).color()));
+
+					break;
+				}
+			}
+
+		return mini;
 	}
 
 	/*
