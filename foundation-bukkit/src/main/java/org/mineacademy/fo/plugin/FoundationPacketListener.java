@@ -45,6 +45,23 @@ final class FoundationPacketListener extends PacketListener {
 	@Override
 	public void onRegister() {
 
+		// To ensure, the client isn't trying to create an item with our fake enchantment lore
+		// Because that would cause duplicate entries if the enchantment is upgraded/remove
+		// Ex:
+		//   BlackNova II (fake lore)
+		//   BlackNova I  (actual lore of the item)
+		this.addReceivingListener(PacketType.Play.Client.SET_CREATIVE_SLOT, event -> {
+			final PacketContainer packet = event.getPacket();
+			final ItemStack item = packet.getItemModifier().readSafely(0);
+
+			if (item != null && !CompMaterial.isAir(item.getType())) {
+				final ItemStack newItem = SimpleEnchantment.removeEnchantmentLores(item);
+
+				if (newItem != null)
+					packet.getItemModifier().write(0, newItem);
+			}
+		});
+
 		// Auto placement of our lore when items are custom enchanted
 		this.addSendingListener(PacketType.Play.Server.SET_SLOT, event -> {
 			final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
@@ -71,13 +88,13 @@ final class FoundationPacketListener extends PacketListener {
 					int size = itemStacks.size();
 					for (int j = 0; j < size; j++) {
 
-						ItemStack itemStack = itemStacks.get(j);
-						if (itemStack != null && !CompMaterial.isAir(itemStack.getType())) {
-							itemStack = SimpleEnchantment.addEnchantmentLores(itemStack);
-							if (itemStack == null)
+						ItemStack item = itemStacks.get(j);
+						if (item != null && !CompMaterial.isAir(item.getType())) {
+							item = SimpleEnchantment.addEnchantmentLores(item);
+							if (item == null)
 								continue;
 
-							itemStacks.set(j, itemStack);
+							itemStacks.set(j, item);
 							changed = true;
 						}
 					}
@@ -95,13 +112,13 @@ final class FoundationPacketListener extends PacketListener {
 					boolean changed = false;
 
 					for (int j = 0; j < itemStacks.length; j++) {
-						ItemStack itemStack = itemStacks[j];
-						if (itemStack != null && !CompMaterial.isAir(itemStack.getType())) {
-							itemStack = SimpleEnchantment.addEnchantmentLores(itemStack);
-							if (itemStack == null)
+						ItemStack item = itemStacks[j];
+						if (item != null && !CompMaterial.isAir(item.getType())) {
+							item = SimpleEnchantment.addEnchantmentLores(item);
+							if (item == null)
 								continue;
 
-							itemStacks[j] = itemStack;
+							itemStacks[j] = item;
 							changed = true;
 						}
 					}
