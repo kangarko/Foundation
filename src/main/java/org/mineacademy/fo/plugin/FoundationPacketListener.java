@@ -1,11 +1,13 @@
 package org.mineacademy.fo.plugin;
 
+import com.comphenix.protocol.events.PacketContainer;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.metadata.MetadataValue;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
@@ -22,6 +24,9 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Listens to and intercepts packets using Foundation inbuilt features
@@ -41,6 +46,23 @@ final class FoundationPacketListener extends PacketListener {
 	@Override
 	public void onRegister() {
 
+		// To ensure, the client isn't trying to create an item with our fake enchantment lore
+		// Because that would cause duplicate entries if the enchantment is upgraded/remove
+		// Ex:
+		//   BlackNova II (fake lore)
+		//   BlackNova I  (actual lore of the item)
+		this.addReceivingListener(PacketType.Play.Client.SET_CREATIVE_SLOT, event -> {
+			final PacketContainer packet = event.getPacket();
+			final ItemStack item = packet.getItemModifier().readSafely(0);
+
+			if (item != null && !CompMaterial.isAir(item.getType())) {
+				final ItemStack newItem = SimpleEnchantment.removeEnchantmentLores(item);
+
+				if (newItem != null)
+					packet.getItemModifier().write(0, newItem);
+			}
+		});
+
 		// Auto placement of our lore when items are custom enchanted
 		this.addSendingListener(PacketType.Play.Server.SET_SLOT, event -> {
 			final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
@@ -53,6 +75,78 @@ final class FoundationPacketListener extends PacketListener {
 				if (item != null)
 					itemModifier.write(0, item);
 			}
+		});
+
+		this.addSendingListener(PacketType.Play.Server.WINDOW_ITEMS, event -> {
+			final PacketContainer packet = event.getPacket();
+
+			// for older versions, this is not needed because I believe they use an array
+			final StructureModifier<List<ItemStack>> itemListModifier = packet.getItemListModifier();
+			for (int i = 0; i < itemListModifier.size(); i++) {
+				List<ItemStack> itemStacks = itemListModifier.read(i);
+				if (itemStacks != null) {
+					boolean changed = false;
+					int size = itemStacks.size();
+					for (int j = 0; j < size; j++) {
+
+						ItemStack item = itemStacks.get(j);
+						if (item != null && !item.getType().isAir()) {
+							item = SimpleEnchantment.addEnchantmentLores(item);
+							if (item == null)
+								continue;
+
+							itemStacks.set(j, item);
+							changed = true;
+						}
+					}
+					if (changed)
+						itemListModifier.write(i, itemStacks);
+				}
+			}
+
+			// Not needed for 1.13+ since they changed it to a list according to someone on the spigot forum
+			// Though, why not
+			final StructureModifier<ItemStack[]> itemArrayModifier = packet.getItemArrayModifier();
+			for (int i = 0; i < itemArrayModifier.size(); i++) {
+				ItemStack[] itemStacks = itemArrayModifier.read(i);
+				if (itemStacks != null) {
+					boolean changed = false;
+
+					for (int j = 0; j < itemStacks.length; j++) {
+						ItemStack item = itemStacks[j];
+						if (item != null && !CompMaterial.isAir(item.getType())) {
+							item = SimpleEnchantment.addEnchantmentLores(item);
+							if (item == null)
+								continue;
+
+							itemStacks[j] = item;
+							changed = true;
+						}
+					}
+					if (changed)
+						itemArrayModifier.write(i, itemStacks);
+				}
+			}
+		});
+
+		this.addSendingListener(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, event -> {
+			PacketContainer packet = event.getPacket();
+			List<MerchantRecipe> ls = packet.getMerchantRecipeLists().read(0);
+			for (int i = 0; i < ls.size(); i++) {
+				MerchantRecipe recipe = ls.get(i);
+				ItemStack item = recipe.getResult();
+				if (!CompMaterial.isAir(item.getType())) {
+					item = SimpleEnchantment.addEnchantmentLores(item);
+					if (item == null) {
+						continue;
+					}
+
+					MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
+					newRecipe.setIngredients(recipe.getIngredients());
+					ls.set(i, newRecipe);
+				}
+			}
+			packet.getMerchantRecipeLists().write(0, ls);
 		});
 
 		// "Fix" a Folia bug preventing Conversation API from working properly
