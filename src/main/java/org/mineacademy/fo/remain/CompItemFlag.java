@@ -72,4 +72,26 @@ public enum CompItemFlag {
 			// Unsupported MC version
 		}
 	}
+
+	/**
+	 * Checks if the given item has this item flag
+	 * Fails silently and returns false
+	 * @param item
+	 * @return true if the item has this flag
+	 */
+	public final boolean has(ItemStack item) {
+		try {
+			final ItemMeta meta = item.getItemMeta();
+			if (meta == null)
+				return false;
+
+			final ItemFlag bukkitFlag = ItemFlag.valueOf(this.toString());
+
+			return meta.hasItemFlag(bukkitFlag);
+
+		} catch (final Throwable t) {
+			// Unsupported MC version
+			return false;
+		}
+	}
 }
