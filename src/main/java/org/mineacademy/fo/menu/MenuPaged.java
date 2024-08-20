@@ -31,7 +31,7 @@ import lombok.val;
  *
  * @param <T> the item that each page consists of
  */
-public abstract class MenuPagged<T> extends Menu {
+public abstract class MenuPaged<T> extends Menu {
 
 	/**
 	 * The active page button material, used in buttons to previous/next pages
@@ -97,7 +97,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *
 	 * @param items
 	 */
-	protected MenuPagged(@NonNull final T... items) {
+	protected MenuPaged(@NonNull final T... items) {
 		this(null, null, null, Arrays.asList(items), false);
 	}
 
@@ -106,7 +106,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *
 	 * @param items the pages
 	 */
-	protected MenuPagged(final Iterable<T> items) {
+	protected MenuPaged(final Iterable<T> items) {
 		this(null, null, null, items, false);
 	}
 
@@ -116,7 +116,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param parent the parent menu
 	 * @param items  the pages the pages
 	 */
-	protected MenuPagged(final Menu parent, @NonNull final T... items) {
+	protected MenuPaged(final Menu parent, @NonNull final T... items) {
 		this(null, parent, null, Arrays.asList(items), false);
 	}
 
@@ -126,7 +126,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param parent the parent menu
 	 * @param items  the pages the pages
 	 */
-	protected MenuPagged(final Menu parent, final Iterable<T> items) {
+	protected MenuPaged(final Menu parent, final Iterable<T> items) {
 		this(null, parent, null, items, false);
 	}
 
@@ -136,7 +136,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param slots  the slots where the items should be placed on a page
 	 * @param items  the pages the pages
 	 */
-	protected MenuPagged(final List<Integer> slots, final Iterable<T> items) {
+	protected MenuPaged(final List<Integer> slots, final Iterable<T> items) {
 		this(null, null, slots, items, false);
 	}
 
@@ -147,7 +147,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param slots  the slots where the items should be placed on a page
 	 * @param items  the pages the pages
 	 */
-	protected MenuPagged(final Menu parent, final List<Integer> slots, final Iterable<T> items) {
+	protected MenuPaged(final Menu parent, final List<Integer> slots, final Iterable<T> items) {
 		this(null, parent, slots, items, false);
 	}
 
@@ -158,7 +158,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items  the pages
 	 * @param returnMakesNewInstance
 	 */
-	protected MenuPagged(final Menu parent, final Iterable<T> items, final boolean returnMakesNewInstance) {
+	protected MenuPaged(final Menu parent, final Iterable<T> items, final boolean returnMakesNewInstance) {
 		this(null, parent, null, items, returnMakesNewInstance);
 	}
 
@@ -170,7 +170,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items  the pages
 	 * @param returnMakesNewInstance
 	 */
-	protected MenuPagged(final Menu parent, final List<Integer> slots, final Iterable<T> items, final boolean returnMakesNewInstance) {
+	protected MenuPaged(final Menu parent, final List<Integer> slots, final Iterable<T> items, final boolean returnMakesNewInstance) {
 		this(null, parent, slots, items, returnMakesNewInstance);
 	}
 
@@ -181,7 +181,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                 1 row there)
 	 * @param items    the pages
 	 */
-	protected MenuPagged(final int pageSize, @NonNull final T... items) {
+	protected MenuPaged(final int pageSize, @NonNull final T... items) {
 		this(pageSize, null, null, Arrays.asList(items), false);
 	}
 
@@ -192,7 +192,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                 1 row there)
 	 * @param items    the pages
 	 */
-	protected MenuPagged(final int pageSize, final Iterable<T> items) {
+	protected MenuPaged(final int pageSize, final Iterable<T> items) {
 		this(pageSize, null, null, items, false);
 	}
 
@@ -203,7 +203,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 *                 1 row there)
 	 * @param items    the pages
 	 */
-	protected MenuPagged(final int pageSize, final List<Integer> slots, final Iterable<T> items) {
+	protected MenuPaged(final int pageSize, final List<Integer> slots, final Iterable<T> items) {
 		this(pageSize, null, slots, items, false);
 	}
 
@@ -215,7 +215,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param parent   the parent menu
 	 * @param items    the pages the pages
 	 */
-	protected MenuPagged(final int pageSize, final Menu parent, @NonNull T... items) {
+	protected MenuPaged(final int pageSize, final Menu parent, @NonNull T... items) {
 		this(pageSize, parent, null, Arrays.asList(items), false);
 	}
 
@@ -227,7 +227,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param parent   the parent menu
 	 * @param items    the pages the pages
 	 */
-	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> items) {
+	protected MenuPaged(final int pageSize, final Menu parent, final Iterable<T> items) {
 		this(pageSize, parent, null, items, false);
 	}
 
@@ -239,7 +239,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items
 	 * @param returnMakesNewInstance
 	 */
-	protected MenuPagged(final int pageSize, final Menu parent, final Iterable<T> items, final boolean returnMakesNewInstance) {
+	protected MenuPaged(final int pageSize, final Menu parent, final Iterable<T> items, final boolean returnMakesNewInstance) {
 		this(pageSize, parent, null, items, returnMakesNewInstance);
 	}
 
@@ -253,7 +253,7 @@ public abstract class MenuPagged<T> extends Menu {
 	 * @param items                  the pages the pages
 	 * @param returnMakesNewInstance should we re-instatiate the parent menu when returning to it?
 	 */
-	private MenuPagged(final Integer pageSize, final Menu parent, final List<Integer> slots, final Iterable<T> items, final boolean returnMakesNewInstance) {
+	private MenuPaged(final Integer pageSize, final Menu parent, final List<Integer> slots, final Iterable<T> items, final boolean returnMakesNewInstance) {
 		super(parent, returnMakesNewInstance);
 
 		this.slots = slots != null ? slots : new ArrayList<>();
@@ -347,7 +347,7 @@ public abstract class MenuPagged<T> extends Menu {
 				final int previousPage = getCurrentPage() - 1;
 
 				return ItemCreator
-						.of(this.canGo ? MenuPagged.getActivePageButton() : MenuPagged.getInactivePageButton())
+						.of(this.canGo ? MenuPaged.getActivePageButton() : MenuPaged.getInactivePageButton())
 						.name(previousPage == 0 ? SimpleLocalization.Menu.PAGE_FIRST : SimpleLocalization.Menu.PAGE_PREVIOUS.replace("{page}", String.valueOf(previousPage)))
 						.make();
 			}
@@ -375,7 +375,7 @@ public abstract class MenuPagged<T> extends Menu {
 				final boolean lastPage = getCurrentPage() == getPages().size();
 
 				return ItemCreator
-						.of(this.canGo ? MenuPagged.getActivePageButton() : MenuPagged.getInactivePageButton())
+						.of(this.canGo ? MenuPaged.getActivePageButton() : MenuPaged.getInactivePageButton())
 						.name(lastPage ? SimpleLocalization.Menu.PAGE_LAST : SimpleLocalization.Menu.PAGE_NEXT.replace("{page}", String.valueOf(getCurrentPage() + 1)))
 						.make();
 			}
