@@ -1,6 +1,7 @@
 package org.mineacademy.fo.plugin;
 
-import com.comphenix.protocol.events.PacketContainer;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -18,6 +19,7 @@ import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 
 import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
@@ -25,9 +27,6 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Listens to and intercepts packets using Foundation inbuilt features
@@ -84,10 +83,10 @@ final class FoundationPacketListener extends PacketListener {
 			// for older versions, this is not needed because I believe they use an array
 			final StructureModifier<List<ItemStack>> itemListModifier = packet.getItemListModifier();
 			for (int i = 0; i < itemListModifier.size(); i++) {
-				List<ItemStack> itemStacks = itemListModifier.read(i);
+				final List<ItemStack> itemStacks = itemListModifier.read(i);
 				if (itemStacks != null) {
 					boolean changed = false;
-					int size = itemStacks.size();
+					final int size = itemStacks.size();
 					for (int j = 0; j < size; j++) {
 
 						ItemStack item = itemStacks.get(j);
@@ -109,7 +108,7 @@ final class FoundationPacketListener extends PacketListener {
 			// Though, why not
 			final StructureModifier<ItemStack[]> itemArrayModifier = packet.getItemArrayModifier();
 			for (int i = 0; i < itemArrayModifier.size(); i++) {
-				ItemStack[] itemStacks = itemArrayModifier.read(i);
+				final ItemStack[] itemStacks = itemArrayModifier.read(i);
 				if (itemStacks != null) {
 					boolean changed = false;
 
@@ -131,11 +130,11 @@ final class FoundationPacketListener extends PacketListener {
 		});
 
 		this.addSendingListener(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, event -> {
-			PacketContainer packet = event.getPacket();
-			List<MerchantRecipe> ls = packet.getMerchantRecipeLists().read(0);
+			final PacketContainer packet = event.getPacket();
+			final List<MerchantRecipe> ls = packet.getMerchantRecipeLists().read(0);
 			boolean foEnchanted = false;
 			for (int i = 0; i < ls.size(); i++) {
-				MerchantRecipe recipe = ls.get(i);
+				final MerchantRecipe recipe = ls.get(i);
 				ItemStack item = recipe.getResult();
 				if (!CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
 					item = SimpleEnchantment.addEnchantmentLores(item);
@@ -143,7 +142,7 @@ final class FoundationPacketListener extends PacketListener {
 						continue;
 					}
 
-					MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
+					final MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
 					newRecipe.setIngredients(recipe.getIngredients());
 					ls.set(i, newRecipe);
 					foEnchanted = true;
