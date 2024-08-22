@@ -42,9 +42,6 @@ import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.library.BukkitLibraryManager;
-import org.mineacademy.fo.library.Library;
-import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
 import org.mineacademy.fo.menu.tool.Tool;
@@ -160,11 +157,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	private final Reloadables reloadables = new Reloadables();
 
 	/**
-	 * The library manager
-	 */
-	private LibraryManager libraryManager;
-
-	/**
 	 * An internal flag to indicate whether we are calling the {@link #onReloadablesStart()}
 	 * block. We register things using {@link #reloadables} during this block
 	 */
@@ -225,14 +217,27 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 		data = instance.getDataFolder();
 
 		// Load libraries where Spigot does not do this automatically
-		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.api.ChatColor"))
-			this.loadLibrary("net.md-5", "bungeecord-chat", "1.16-R0.4");
+		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.api.ChatColor") || !ReflectionUtil.isClassAvailable("com.google.gson.Gson")) {
+			this.getLogger().severe("Fatal: The required Gson and BungeeCord chat libraries are missing.");
+			this.getLogger().severe("Please download BungeeChatAPI and install it as a plugin from:");
+			this.getLogger().severe("https://bitbucket.org/kangarko/bungeechatapi/downloads/");
+			this.getLogger().severe("");
+			this.getLogger().severe("The plugin is now disabled.");
 
-		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
-			this.loadLibrary("com.google.code.gson", "gson", "2.11.0");
+			this.getServer().getPluginManager().disablePlugin(this);
+			throw new FoException("Missing libraries, see above for instructions.");
+		}
 
-		if (getJavaVersion() >= 11)
-			this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
+		if (!ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine")) {
+			this.getLogger().severe("Fatal: The required nashorn library is missing.");
+			this.getLogger().severe("Please download NashornPlus and install it as a plugin from:");
+			this.getLogger().severe("https://bitbucket.org/kangarko/nashornplus/downloads/");
+			this.getLogger().severe("");
+			this.getLogger().severe("The plugin is now disabled.");
+
+			this.getServer().getPluginManager().disablePlugin(this);
+			throw new FoException("Missing libraries, see above for instructions.");
+		}
 
 		// Call parent
 		this.onPluginLoad();
@@ -412,10 +417,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
-
+		
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
 			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-
+		
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
@@ -1090,33 +1095,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	@Deprecated
 	public final void setBungeeCord(BungeeListener bungeeListener) {
 		this.bungeeListener = bungeeListener;
-	}
-
-	/**
-	 * Loads a library jar into the classloader classpath. If the library jar
-	 * doesn't exist locally, it will be downloaded.
-	 * <p>
-	 * If the provided library has any relocations, they will be applied to
-	 * create a relocated jar and the relocated jar will be loaded instead.
-	 *
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 */
-	public void loadLibrary(String groupId, String artifactId, String version) {
-		this.getLibraryManager().loadLibrary(Library.builder().groupId(groupId).artifactId(artifactId).version(version).resolveTransitiveDependencies(true).build());
-	}
-
-	/**
-	 * Get the Libby library manager
-	 *
-	 * @return
-	 */
-	public final LibraryManager getLibraryManager() {
-		if (this.libraryManager == null)
-			this.libraryManager = new BukkitLibraryManager(this);
-
-		return this.libraryManager;
 	}
 
 	/**
