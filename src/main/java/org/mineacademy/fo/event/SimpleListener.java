@@ -20,6 +20,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
@@ -107,11 +108,14 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 			final boolean cancelled = ex.isCancelled();
 
 			if (messages != null && this.player != null)
-				for (final String message : messages)
+				for (String message : messages) {
+					message = Variables.replace(message, this.player);
+
 					if (Messenger.ENABLED)
 						Messenger.error(this.player, message);
 					else
 						Common.tell(this.player, "&c" + message);
+				}
 
 			if (cancelled && event instanceof Cancellable)
 				((Cancellable) event).setCancelled(true);
