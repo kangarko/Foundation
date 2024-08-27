@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.metadata.MetadataValue;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.constants.FoConstants;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.PacketListener;
@@ -80,7 +82,7 @@ final class FoundationPacketListener extends PacketListener {
 		this.addSendingListener(PacketType.Play.Server.WINDOW_ITEMS, event -> {
 			final PacketContainer packet = event.getPacket();
 
-			// for older versions, this is not needed because I believe they use an array
+			// for older versions, this is not needed because they use an array
 			final StructureModifier<List<ItemStack>> itemListModifier = packet.getItemListModifier();
 			for (int i = 0; i < itemListModifier.size(); i++) {
 				final List<ItemStack> itemStacks = itemListModifier.read(i);
@@ -104,8 +106,7 @@ final class FoundationPacketListener extends PacketListener {
 				}
 			}
 
-			// Not needed for 1.13+ since they changed it to a list according to someone on the spigot forum
-			// Though, why not
+			// Not needed for 1.13+ since they changed it to a list
 			final StructureModifier<ItemStack[]> itemArrayModifier = packet.getItemArrayModifier();
 			for (int i = 0; i < itemArrayModifier.size(); i++) {
 				final ItemStack[] itemStacks = itemArrayModifier.read(i);
@@ -129,28 +130,34 @@ final class FoundationPacketListener extends PacketListener {
 			}
 		});
 
-		this.addSendingListener(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, event -> {
-			final PacketContainer packet = event.getPacket();
-			final List<MerchantRecipe> ls = packet.getMerchantRecipeLists().read(0);
-			boolean foEnchanted = false;
-			for (int i = 0; i < ls.size(); i++) {
-				final MerchantRecipe recipe = ls.get(i);
-				ItemStack item = recipe.getResult();
-				if (!CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
-					item = SimpleEnchantment.addEnchantmentLores(item);
-					if (item == null) {
-						continue;
-					}
+		if (MinecraftVersion.newerThan(V.v1_8))
+			this.addSendingListener(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, event -> {
+				final PacketContainer packet = event.getPacket();
+				final List<MerchantRecipe> merchantRecipes = packet.getMerchantRecipeLists().read(0);
+				boolean foEnchanted = false;
 
-					final MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
-					newRecipe.setIngredients(recipe.getIngredients());
-					ls.set(i, newRecipe);
-					foEnchanted = true;
+				for (int recipeIndex = 0; recipeIndex < merchantRecipes.size(); recipeIndex++) {
+					final MerchantRecipe recipe = merchantRecipes.get(recipeIndex);
+					ItemStack item = recipe.getResult();
+
+					if (!CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
+						item = SimpleEnchantment.addEnchantmentLores(item);
+
+						if (item == null) {
+							continue;
+						}
+
+						final MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
+
+						newRecipe.setIngredients(recipe.getIngredients());
+						merchantRecipes.set(recipeIndex, newRecipe);
+
+						foEnchanted = true;
+					}
 				}
-			}
-			if (foEnchanted)
-				packet.getMerchantRecipeLists().write(0, ls);
-		});
+				if (foEnchanted)
+					packet.getMerchantRecipeLists().write(0, merchantRecipes);
+			});
 
 		// "Fix" a Folia bug preventing Conversation API from working properly
 		if (Remain.isFolia())

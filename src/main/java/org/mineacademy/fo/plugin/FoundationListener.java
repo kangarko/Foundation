@@ -21,6 +21,7 @@ import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -33,6 +34,11 @@ import org.mineacademy.fo.settings.SimpleLocalization;
  * Listens for some events we handle for you automatically
  */
 final class FoundationListener implements Listener {
+
+	FoundationListener() {
+		if (ReflectionUtil.isClassAvailable("org.bukkit.event.inventory.PrepareAnvilEvent"))
+			Common.registerEvents(new CompAnvilEvent());
+	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onQuit(PlayerQuitEvent event) {
@@ -193,6 +199,9 @@ final class FoundationListener implements Listener {
 			}
 		}
 	}
+}
+
+class CompAnvilEvent implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onAnvilPrepareItem(PrepareAnvilEvent event) {
