@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -21,13 +20,11 @@ import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.SpigotUpdater;
-import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.settings.SimpleLocalization;
 
 /**
@@ -36,8 +33,6 @@ import org.mineacademy.fo.settings.SimpleLocalization;
 final class FoundationListener implements Listener {
 
 	FoundationListener() {
-		if (ReflectionUtil.isClassAvailable("org.bukkit.event.inventory.PrepareAnvilEvent"))
-			Common.registerEvents(new CompAnvilEvent());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -198,19 +193,5 @@ final class FoundationListener implements Listener {
 				player.setMetadata("vanished", new FixedMetadataValue(plugin, true));
 			}
 		}
-	}
-}
-
-class CompAnvilEvent implements Listener {
-
-	@EventHandler(priority = EventPriority.HIGH)
-	public void onAnvilPrepareItem(PrepareAnvilEvent event) {
-		// A Weird visual bug where the anvil displays none
-		// tested on 1.20.4 -> If you:
-		// 1. Put an undamaged item with custom enchantment
-		// 2. Put another item with a custom enchantment By using a shift click (Or swapping items by picking it up)
-		// the anvil output flashes then empties
-		if (HookManager.isProtocolLibLoaded() && event.getResult() != null && !CompMaterial.isAir(event.getResult().getType()))
-			Common.runLater(() -> ((Player) event.getViewers().get(0)).updateInventory());
 	}
 }
