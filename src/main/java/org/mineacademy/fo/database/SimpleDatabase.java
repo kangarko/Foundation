@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtil.Mode;
@@ -201,13 +203,15 @@ public class SimpleDatabase {
 			else if (connectUsingHikari) {
 
 				if (!ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig"))
-					throw new FoException("Hikari driver is not available. Alert plugin author to add com.zaxxer:HikariCP onto the plugin's library in plugin.yml");
+					throw new FoException("Hikari driver is not available. " + (MinecraftVersion.olderThan(V.v1_16) && Remain.getJavaVersion() >= 9
+							? "Download LibraryHelper plugin: https://mineacademy.org/libraryhelper to use Hikari."
+							: "Alert plugin author to add com.zaxxer:HikariCP onto the plugin's library in plugin.yml"));
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
 				if (url.startsWith("jdbc:mysql://")) {
 
-					if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+					if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver") && !ReflectionUtil.isClassAvailable("com.mysql.jdbc.Driver"))
 						throw new FoException("MySQL driver is not available. Alert plugin author to add com.mysql:mysql-connector-j onto the plugin's library in plugin.yml");
 
 					try {
@@ -268,15 +272,15 @@ public class SimpleDatabase {
 
 				} else if (url.startsWith("jdbc:mysql://")) {
 
-					if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver"))
+					if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver") && !ReflectionUtil.isClassAvailable("com.mysql.jdbc.Driver"))
 						throw new FoException("MySQL driver is not available. Alert plugin author to add com.mysql:mysql-connector-j onto the plugin's library in plugin.yml");
 
-					Class.forName("com.mysql.cj.jdbc.Driver");
+					try {
+						Class.forName("com.mysql.cj.jdbc.Driver");
 
-				} else {
-					Common.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your Java version. You can safely ignore this warning");
-
-					Class.forName("com.mysql.jdbc.Driver");
+					} catch (final ClassNotFoundException ex) {
+						Class.forName("com.mysql.jdbc.Driver");
+					}
 				}
 
 				this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
