@@ -380,6 +380,7 @@ public final class Variables {
 				return MinecraftVersion.getFullVersion();
 			case "nms_version":
 				return MinecraftVersion.getServerVersion();
+			case "timestamp":
 			case "date":
 				return TimeUtil.getFormattedDate();
 			case "date_short":

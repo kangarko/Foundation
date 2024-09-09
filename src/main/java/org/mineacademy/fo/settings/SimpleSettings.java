@@ -102,7 +102,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
-	 * The {timestamp} and {date}, {date_short} and {date_month} formats.
+	 * The {date}, {date_short} and {date_month} formats.
 	 */
 	public static DateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 	public static DateFormat DATE_FORMAT_SHORT = new SimpleDateFormat("dd.MM.yyyy HH:mm");
