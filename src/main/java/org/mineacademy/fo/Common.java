@@ -1220,13 +1220,19 @@ public final class Common {
 
 		checkBlockedCommands(playerSender, command);
 
-		final String finalCommand = command.replace("{player}", resolveSenderName(playerSender));
+		final String finalCommand = colorize(command.replace("{player}", resolveSenderName(playerSender)));
 
 		if (Bukkit.isPrimaryThread())
-			playerSender.performCommand(colorize(finalCommand));
+			playerSender.performCommand(finalCommand);
+
+		else if (Remain.isFolia())
+			playerSender.getScheduler().run(SimplePlugin.getInstance(), task -> {
+				playerSender.performCommand(finalCommand);
+			}, () -> {
+			});
 
 		else
-			runLater(() -> playerSender.performCommand(colorize(finalCommand)));
+			runLater(() -> playerSender.performCommand(finalCommand));
 	}
 
 	/*
