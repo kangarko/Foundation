@@ -8,7 +8,7 @@ Make Minecraft plugins faster, save boilerplate code to focus on putting your id
 
 Some features include:
 
-- Folia, Bukkit/Spigot/Paper support (1.2.5 - 1.20.x) - automatic version wrappers (i.e. call one method to send title/animation packets on all Minecraft versions)
+- Folia, Bukkit/Spigot/Paper support (1.2.5 - 1.21.x) - automatic version wrappers (i.e. call one method to send title/animation packets on all Minecraft versions)
 - GUI menu APIs
 - Advanced commands without using plugin.yml
 - Auto-updating configuration with comments support
