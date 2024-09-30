@@ -24,7 +24,7 @@ public class RegionMenu extends Menu {
 	private RegionMenu(@NonNull DiskRegion region) {
 		super(SelectRegionMenu.create(), true);
 
-		final String regionName = region.getName();
+		final String regionName = region.getFileName();
 
 		this.setTitle("Region " + regionName);
 		this.setSize(9 * 4);

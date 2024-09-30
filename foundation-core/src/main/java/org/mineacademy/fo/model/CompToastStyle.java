@@ -29,7 +29,7 @@ public enum CompToastStyle {
 			if (style.key.equalsIgnoreCase(key))
 				return style;
 
-		throw new IllegalArgumentException("No such CompToastStyle '" + key + "'. Available: " + CommonCore.join(values()));
+		throw new IllegalArgumentException("No such CompToastStyle " + key + " Available: " + CommonCore.join(values()));
 	}
 
 	@Override

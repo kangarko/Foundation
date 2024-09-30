@@ -14,8 +14,8 @@ import java.util.function.BiConsumer;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtilCore;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -534,6 +534,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * Return {@link IsInList} implementation, of a list that is always
 	 * returning true, if the given key equals to ["*"]
 	 *
+	 * @param <T>
 	 * @param path
 	 * @param type
 	 * @return

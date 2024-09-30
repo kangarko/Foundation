@@ -144,6 +144,7 @@ public final class IsInList<T> implements Iterable<T> {
 	/**
 	 * Create a new matching list from the given list
 	 *
+	 * @param <T>
 	 * @param list
 	 * @return
 	 */
@@ -163,6 +164,7 @@ public final class IsInList<T> implements Iterable<T> {
 	/**
 	 * Create a new matching list that is always true
 	 *
+	 * @param <T>
 	 * @return
 	 */
 	public static <T> IsInList<T> fromStar() {

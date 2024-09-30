@@ -32,7 +32,7 @@ public class CreateRegionPrompt extends CreatePrompt<DiskRegion> {
 	protected String findByName(String name) {
 		final DiskRegion region = DiskRegion.findRegion(name);
 
-		return region != null ? region.getName() : null;
+		return region != null ? region.getFileName() : null;
 	}
 
 	@Override

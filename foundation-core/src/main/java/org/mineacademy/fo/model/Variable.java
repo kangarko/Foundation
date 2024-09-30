@@ -130,7 +130,7 @@ public final class Variable extends YamlConfig {
 				"https://github.com/kangarko/ChatControl-Red/wiki/JavaScript-Variables",
 				CommonCore.configLine());
 
-		this.load(prototypePath, "variables/" + file + ".yml");
+		this.loadAndExtract(prototypePath, "variables/" + file + ".yml");
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -494,7 +494,7 @@ public final class Variable extends YamlConfig {
 				if (mode.key.equalsIgnoreCase(key))
 					return mode;
 
-			throw new IllegalArgumentException("No such item type: " + key + ". Available: " + CommonCore.join(values()));
+			throw new IllegalArgumentException("No such variable type: " + key + " Available: " + CommonCore.join(values()));
 		}
 
 		/**

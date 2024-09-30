@@ -483,14 +483,13 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Returns the List saved with a given key.
-	 *
+	 * @param <T>
 	 * @param comp
 	 * @param key
 	 * @param type
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalid type
 	 */
-
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
@@ -571,7 +570,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Uses Gson to load back a {@link Serializable} object from the Compound
-	 *
+	 * @param <T>
 	 * @param comp
 	 * @param key
 	 * @param type

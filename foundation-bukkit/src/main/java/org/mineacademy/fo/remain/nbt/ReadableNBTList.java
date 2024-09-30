@@ -84,6 +84,7 @@ public interface ReadableNBTList<T> extends Iterable<T> {
 	 * Returns an array containing all of the elements in this list in proper
 	 * sequence (from first to last element).
 	 * 
+	 * @param <E>
 	 * @param a The array into which the elements of the list are to be stored, if
 	 *          it is big enough; otherwise, a new array of the same runtime type is
 	 *          allocated for this purpose.
