@@ -1,7 +1,6 @@
 package org.mineacademy.fo.settings;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ import java.util.function.Function;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtilCore;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;
@@ -107,8 +106,8 @@ public class YamlConfig extends FileConfig {
 	private Set<String> uncommentedSections = Collections.emptySet();
 
 	/**
-	 * Create a YamlConfig instance. To load it, call {@link #load(String)}
-	 * or {@link #load(String, String)}.
+	 * Create a YamlConfig instance. To load it, call {@link #loadAndExtract(String)}
+	 * or {@link #loadAndExtract(String, String)}.
 	 */
 	public YamlConfig() {
 		final LoadSettings loadSettings = LoadSettings.builder()
@@ -528,10 +527,27 @@ public class YamlConfig extends FileConfig {
 		this.footer = value;
 	}
 
+	/**
+	 * Return a list of sections which won't inherit comments from the {@link #getDefaults()}
+	 * configuration. 
+	 * 
+	 * @see #setUncommentedSections(Collection)
+	 * 
+	 * @return
+	 */
 	public final Set<String> getUncommentedSections() {
 		return uncommentedSections;
 	}
 
+	/**
+	 * Return a list of sections which won't inherit comments from the {@link #getDefaults()}
+	 * configuration. 
+	 * 
+	 * This is useful when you let the use set a map inside the config and you want to 
+	 * support custom user comments in that map.
+	 * 
+	 * @param uncommentedSections
+	 */
 	public final void setUncommentedSections(Collection<String> uncommentedSections) {
 		this.uncommentedSections = new HashSet<>(uncommentedSections);
 	}
@@ -544,10 +560,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static YamlConfig fromInternalPath(@NonNull String path) {
 		final YamlConfig config = new YamlConfig();
-		final List<String> content = FileUtil.readLinesFromInternalPath(path);
-		ValidCore.checkNotNull(content, "Inbuilt " + path + " not found! Did you reload?");
-
-		config.loadFromString(String.join("\n", content));
+		config.load(path);
 
 		return config;
 	}
@@ -573,17 +586,14 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static YamlConfig fromReader(@NonNull Reader reader) {
 		final YamlConfig config = new YamlConfig();
-
-		try {
-			config.load(reader);
-
-		} catch (final IOException e) {
-			CommonCore.throwError(e, "Failed to load configuration from reader");
-		}
+		config.load(reader);
 
 		return config;
 	}
 
+	/**
+	 * A helper class to convert yaml sections into Java objects.
+	 */
 	public static class YamlConstructor extends StandardConstructor {
 
 		public YamlConstructor(LoadSettings loadSettings) {
@@ -612,6 +622,9 @@ public class YamlConfig extends FileConfig {
 		}
 	}
 
+	/**
+	 * A helper class to convert Java objects into yaml sections.
+	 */
 	public static class YamlRepresenter extends StandardRepresenter {
 
 		public YamlRepresenter(DumpSettings settings) {

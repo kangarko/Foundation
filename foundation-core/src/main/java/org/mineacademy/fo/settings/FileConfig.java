@@ -42,15 +42,7 @@ import lombok.NonNull;
 public abstract class FileConfig extends ConfigSection {
 
 	/**
-	 * The data file "data.db" (uses YAML) for saving various data.
-	 *
-	 * @deprecated the .db extension is misleading since it is used for databases
-	 */
-	@Deprecated
-	//public static final String DATA_DB = "data.db";
-
-	/**
-	 * A null, used for convenience in {@link #load(String, String)} where the "to" is null.
+	 * A null, used for convenience in {@link #loadAndExtract(String, String)} where the "to" is null.
 	 */
 	public static final String NO_DEFAULT = null;
 
@@ -88,8 +80,8 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param internalPath
 	 */
-	public final void load(String internalPath) {
-		this.load(internalPath, internalPath);
+	public final void loadAndExtract(String internalPath) {
+		this.loadAndExtract(internalPath, internalPath);
 	}
 
 	/**
@@ -102,7 +94,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param from
 	 * @param to
 	 */
-	public final void load(String from, String to) {
+	public final void loadAndExtract(String from, String to) {
 		if (from != null) {
 			final List<String> defaultContent = FileUtil.readLinesFromInternalPath(from);
 			ValidCore.checkNotNull(defaultContent, "Inbuilt " + from + " not found! Did you reload?");
@@ -132,21 +124,43 @@ public abstract class FileConfig extends ConfigSection {
 			this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
 		} catch (final Exception ex) {
-			CommonCore.error(ex, "Cannot load " + file);
+			CommonCore.error(ex, "Cannot load config from file " + file);
+		}
+	}
+
+	/**
+	 * Loads this {@link FileConfig} from the specified location in your JAR.
+	 * 
+	 * NB: You cannot then use {@link #save()} until you set a file for this
+	 * configuration, see {@link #setFile(File)}.
+	 *
+	 * @param internalPath
+	 */
+	public final void load(@NonNull String internalPath) {
+
+		try {
+			final List<String> content = FileUtil.readLinesFromInternalPath(internalPath);
+			ValidCore.checkNotNull(content, "Inbuilt " + internalPath + " not found! Did you reload?");
+
+			this.loadFromString(String.join("\n", content));
+
+		} catch (final Exception ex) {
+			CommonCore.error(ex, "Cannot load config from JAR path " + internalPath);
 		}
 	}
 
 	/**
 	 * Loads this configuration from the specified reader.
+	 * 
+	 * NB: You cannot then use {@link #save()} until you set a file for this
+	 * configuration, see {@link #setFile(File)}.
 	 *
 	 * @param reader
-	 * @throws IOException
 	 */
-	public final void load(Reader reader) throws IOException {
-		final BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
+	public final void load(Reader reader) {
 		final StringBuilder builder = new StringBuilder();
 
-		try {
+		try (BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader)) {
 			String line;
 
 			while ((line = input.readLine()) != null) {
@@ -154,8 +168,8 @@ public abstract class FileConfig extends ConfigSection {
 				builder.append('\n');
 			}
 
-		} finally {
-			input.close();
+		} catch (final IOException ex) {
+			CommonCore.throwError(ex, "Failed to load configuration from reader");
 		}
 
 		this.loadFromString(builder.toString());
@@ -163,6 +177,9 @@ public abstract class FileConfig extends ConfigSection {
 
 	/**
 	 * Loads this {@link FileConfig} from the specified string content.
+	 * 
+	 * NB: You cannot then use {@link #save()} until you set a file for this
+	 * configuration, see {@link #setFile(File)}.
 	 *
 	 * @param contents
 	 */
@@ -288,8 +305,18 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param value
 	 */
 	public final void set(String path, Object value) {
-		path = this.buildPathPrefix(path);
+		this.setAbsolute(this.buildPathPrefix(path), value);
+	}
 
+	/**
+	 * Sets the specified key=value pair. The value is serialized, see {@link SerializeUtilCore}.
+	 *
+	 * @see SerializeUtilCore#serialize(Language, Object)
+	 *
+	 * @param path
+	 * @param value
+	 */
+	public final void setAbsolute(String path, Object value) {
 		this.store(path, value);
 	}
 
@@ -327,11 +354,36 @@ public abstract class FileConfig extends ConfigSection {
 	// Retrieving data - main
 	// ------------------------------------------------------------------------------------------------------------
 
+	/**
+	 * Return an object from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public final Object getObject(String path) {
 		return this.get(path, Object.class);
 	}
 
-	public final <T> T get(String path, Class<T> clazz) {
+	/**
+	 * Return an object of the given type from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * We use {@link SerializeUtilCore} to turn the object into the given type,
+	 * see {@link SerializeUtilCore#deserialize(Language, Class, Object, Object...)}.
+	 * 
+	 * @param <T>
+	 * @param path
+	 * @param typeOf
+	 * @return
+	 */
+	public final <T> T get(String path, Class<T> typeOf) {
 		path = this.buildPathPrefix(path);
 
 		final Object object = this.retrieve(path);
@@ -340,7 +392,7 @@ public abstract class FileConfig extends ConfigSection {
 
 			// Copy over from defaults if set
 			if (this.hasDefaults()) {
-				final T defValue = this.defaults.get(path, clazz);
+				final T defValue = this.defaults.get(path, typeOf);
 
 				CommonCore.log("&7Updating " + this.getFile().getName() + " at &b'&f" + path + "&b' &7-> " + "&b'&f" + defValue.toString().replace("\n", ", ") + "&b'");
 
@@ -351,67 +403,191 @@ public abstract class FileConfig extends ConfigSection {
 			return null;
 		}
 
-		if (clazz.isInstance(object))
-			return clazz.cast(object);
+		if (typeOf.isInstance(object))
+			return typeOf.cast(object);
 
-		return SerializeUtilCore.deserialize(Language.YAML, clazz, object);
+		return SerializeUtilCore.deserialize(Language.YAML, typeOf, object);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Retrieving data - primitives
 	// ------------------------------------------------------------------------------------------------------------
 
+	/**
+	 * Return a boolean from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public final Boolean getBoolean(String path) {
 		return this.getBoolean(path, null);
 	}
 
+	/**
+	 * Return a boolean from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
+	 * 
+	 * @param path
+	 * @param def 
+	 * 
+	 * @return
+	 */
 	public final Boolean getBoolean(String path, Boolean def) {
 		final Boolean val = this.get(path, Boolean.class);
 
 		return val != null ? val : def;
 	}
 
+	/**
+	 * Return a double from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * @param path
+	 * 
+	 * @return
+	 */
 	public final Double getDouble(String path) {
 		return this.getDouble(path, null);
 	}
 
+	/**
+	 * Return a double from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
+	 * 
+	 * @param path
+	 * @param def 
+	 * 
+	 * @return
+	 */
 	public final Double getDouble(String path, Double def) {
 		final Double val = this.get(path, Double.class);
 
 		return val != null ? val : def;
 	}
 
+	/**
+	 * Return an integer from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * @param path
+	 * 
+	 * @return
+	 */
 	public final Integer getInteger(String path) {
 		return this.getInteger(path, null);
 	}
 
+	/**
+	 * Return an integer from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
+	 * 
+	 * @param path
+	 * @param def 
+	 * 
+	 * @return
+	 */
 	public final Integer getInteger(String path, Integer def) {
 		final Integer val = this.get(path, Integer.class);
 
 		return val != null ? val : def;
 	}
 
+	/**
+	 * Return a long from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * @param path
+	 * 
+	 * @return
+	 */
 	public final Long getLong(String path) {
 		return this.getLong(path, null);
 	}
 
+	/**
+	 * Return a long from the config path.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
+	 * 
+	 * @param path
+	 * @param def 
+	 * 
+	 * @return
+	 */
 	public final Long getLong(String path, Long def) {
 		final Long val = this.get(path, Long.class);
 
 		return val != null ? val : def;
 	}
 
+	/**
+	 * Return a string from the config path.
+	 * 
+	 * This will work even if the key is a list that only has one value, or a number or boolean.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * @param path
+	 * 
+	 * @return
+	 */
 	public final String getString(String path) {
 		return this.getString(path, null);
 	}
 
 	/**
-	 * Return a String value from the key at the given path, or supply with default
-	 *
+	 * Return a string from the config path.
+	 * 
 	 * This will work even if the key is a list that only has one value, or a number or boolean.
-	 *
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
+	 * 
 	 * @param path
-	 * @param def
+	 * @param def 
+	 * 
 	 * @return
 	 */
 	public final String getString(String path, String def) {
@@ -443,10 +619,14 @@ public abstract class FileConfig extends ConfigSection {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return an tuple from the key at the given path
+	 * Return an tuple from the key at the given path.
 	 *
-	 * This is stored as a map that has two sub-keys, one for the first value, second for the latter
-	 *
+	 * This is stored as a map that has two sub-keys, one for the first value, second for the latter.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
 	 * @param <K>
 	 * @param <V>
 	 * @param key
@@ -459,9 +639,16 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return an tuple from the key at the given path, or supply with default
+	 * Return an tuple from the key at the given path.
 	 *
-	 * This is stored as a map that has two sub-keys, one for the first value, second for the latter
+	 * This is stored as a map that has two sub-keys, one for the first value, second for the latter.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
 	 *
 	 * @param <K>
 	 * @param <V>
@@ -478,6 +665,14 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
+	 * Return a string which can be formatted for singular and plural numbers such as 1 "apple", 2 "apples".
+	 *
+	 * This is stored as a comma-separated string, i.e. "apple, apples" or "jablko, jablka, jablk" for 
+	 * superior languages which support that.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
 	 *
 	 * @param path
 	 * @return
@@ -487,9 +682,20 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
+	 * Return a string which can be formatted for singular and plural numbers such as 1 "apple", 2 "apples".
+	 *
+	 * This is stored as a comma-separated string, i.e. "apple, apples" or "jablko, jablka, jablk" for 
+	 * superior languages which support that.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
 	 *
 	 * @param path
-	 * @param def
+	 * @param def 
 	 * @return
 	 */
 	public final CaseNumberFormat getCaseNumberFormat(String path, String def) {
@@ -498,10 +704,34 @@ public abstract class FileConfig extends ConfigSection {
 		return raw == null ? null : CaseNumberFormat.fromString(raw);
 	}
 
+	/**
+	 * Return a timezone. This is stored as a String such as "Europe/Berlin". 
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 *
+	 * @param path
+	 * @return
+	 */
 	public final ZoneId getTimezone(String path) {
 		return this.getTimezone(path, null);
 	}
 
+	/**
+	 * Return a timezone. This is stored as a String such as "Europe/Berlin". 
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
+	 *
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final ZoneId getTimezone(String path, ZoneId def) {
 		final String raw = this.getString(path);
 
@@ -514,9 +744,15 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a {@link SimpleComponent} value from the key at the given path.
-	 *
+	 * Return a SimpleComponent from the config path. 
+	 * Supports MiniMessage tags and legacy & colors.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
 	 * @param path
+	 * 
 	 * @return
 	 */
 	public final SimpleComponent getComponent(final String path) {
@@ -524,8 +760,15 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a {@link SimpleComponent} value from the key at the given path
-	 * or supply with default if path is not set.
+	 * Return a SimpleComponent from the config path. 
+	 * Supports MiniMessage tags and legacy & colors.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
 	 *
 	 * @param path
 	 * @param def
@@ -538,7 +781,11 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a time from the key at the given path
+	 * Return time from the config path. This is stored as string such as "5 seconds".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
 	 *
 	 * @param path
 	 * @return
@@ -548,7 +795,14 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a time from the key at the given path, or supply with default
+	 * Return time from the config path. This is stored as string such as "5 seconds".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
 	 *
 	 * @param path
 	 * @param def
@@ -561,9 +815,11 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a double percentage from the key at the given path
-	 *
-	 * This is stored as a string such as 85%
+	 * Return time from the config path. This is stored as string such as "85%".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
 	 *
 	 * @param path
 	 * @return
@@ -573,9 +829,14 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a double percentage from the key at the given path, or supply with default
-	 *
-	 * This is stored as a string such as 85%
+	 * Return time from the config path. This is stored as string such as "85%".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * If the config and default config return the object as null,
+	 * the "def" value is returned.
 	 *
 	 * @param path
 	 * @param def
@@ -602,39 +863,47 @@ public abstract class FileConfig extends ConfigSection {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return a set of the given type from the key at the given path
-	 *
-	 * @param <T>
-	 * @param key
-	 * @param type
-	 * @param deserializeParameters
-	 * @return
-	 */
-	public final <T> Set<T> getSet(final String key, final Class<T> type, final Object... deserializeParameters) {
-		final List<T> list = this.getList(key, type);
-
-		return list == null ? new HashSet<>() : new HashSet<>(list);
-	}
-
-	/**
 	 * Return a special {@link IsInList} list from the key at the given path
 	 *
 	 * It is a list used to check if a value is in it, it can contain ["*"] to match all.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * Each list element is deserialized into the type, see {@link SerializeUtilCore#deserialize(Language, Class, Object, Object...)}
+	 *
+	 * This returns an empty list instead of null if the key is missing.
 	 *
 	 * @param <T>
 	 * @param path
-	 * @param type
+	 * @param typeOf
 	 * @return
 	 */
-	public final <T> IsInList<T> getIsInList(String path, Class<T> type) {
+	public final <T> IsInList<T> getIsInList(String path, Class<T> typeOf) {
 		final List<String> stringList = this.getStringList(path);
 
 		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
 			return IsInList.fromStar();
 
-		return IsInList.fromList(this.getList(path, type));
+		return IsInList.fromList(this.getList(path, typeOf));
 	}
 
+	/**
+	 * Return a list of Strings used for comamnds. Throws an error if the 
+	 * list is not set or is empty.
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * We remove the leading slash from each element if it is set.
+	 * 
+	 * This returns an empty list instead of null if the key is missing.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public final List<String> getCommandList(final String path) {
 		final List<String> list = this.getStringList(path);
 		ValidCore.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + this.getFile() + ") for this will be used as your main command!");
@@ -649,24 +918,47 @@ public abstract class FileConfig extends ConfigSection {
 		return list;
 	}
 
+	/**
+	 * Return a list of Strings. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * This returns an empty list instead of null if the key is missing.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public final List<String> getStringList(String path) {
 		final List<?> list = this.getList(path);
 
 		if (list == null)
-			return new ArrayList<>(0);
+			return new ArrayList<>();
 
 		final List<String> result = new ArrayList<>();
 
 		for (final Object object : list)
-			if ((object instanceof String) || (ValidCore.isPrimitiveWrapper(object)))
-				result.add(String.valueOf(object));
+			result.add(String.valueOf(object));
 
 		return result;
 	}
 
 	/**
-	 * Return a list of tuples with the given key-value
+	 * Return a list of tuples of the given type from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * Each list element is deserialized into the type, see {@link SerializeUtilCore#deserialize(Language, Class, Object, Object...)}
 	 *
+	 * This returns an empty list instead of null if the key is missing.
+	 * 
 	 * @param <K>
 	 * @param <V>
 	 * @param path
@@ -692,7 +984,16 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a list of maps\<string, object\> list from the key at the given path
+	 *
+	 * Return a {@literal List<Map<String, Object>>}from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 *
+	 * This returns an empty list instead of null if the key is missing.
 	 *
 	 * @param path
 	 * @return
@@ -702,7 +1003,17 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a list of a map of the given types from the key at the given path
+	 * Return a list of the given map type from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * Each list element is deserialized into the type, see {@link SerializeUtilCore#deserialize(Language, Class, Object, Object...)}
+	 *
+	 * This returns an empty map instead of null if the key is missing.
 	 *
 	 * @param <Key>
 	 * @param <Value>
@@ -736,39 +1047,103 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a list of the given type from the key at the given path
+	 * Return a set of the given type from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * Each list element is deserialized into the type, see {@link SerializeUtilCore#deserialize(Language, Class, Object, Object...)}
+	 *
+	 * This returns an empty set instead of null if the key is missing.
 	 *
 	 * @param <T>
-	 * @param path
-	 * @param type
+	 * @param key
+	 * @param typeOf
 	 * @param deserializeParameters
 	 * @return
 	 */
-	public final <T> List<T> getList(final String path, final Class<T> type, final Object... deserializeParameters) {
+	public final <T> Set<T> getSet(final String key, final Class<T> typeOf, final Object... deserializeParameters) {
+		final List<T> list = this.getList(key, typeOf);
+
+		return list == null ? new HashSet<>() : new HashSet<>(list);
+	}
+
+	/**
+	 * Return a list of the given type from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * Each list element is deserialized into the type, see {@link SerializeUtilCore#deserialize(Language, Class, Object, Object...)}
+	 *
+	 * This returns an empty list instead of null if the key is missing.
+	 *
+	 * @param <T>
+	 * @param path
+	 * @param typeOf
+	 * @param deserializeParameters
+	 * @return
+	 */
+	public final <T> List<T> getList(final String path, final Class<T> typeOf, final Object... deserializeParameters) {
 		final List<T> list = new ArrayList<>();
 		final List<Object> objects = this.getList(path);
 
-		if (type == Map.class && deserializeParameters != null & deserializeParameters.length > 0 && deserializeParameters[0] != String.class)
+		if (typeOf == Map.class && deserializeParameters != null & deserializeParameters.length > 0 && deserializeParameters[0] != String.class)
 			throw new FoException("getList('" + path + "') that returns Map must have String.class as key, not " + deserializeParameters[0]);
 
 		if (objects != null)
 			for (Object object : objects) {
-				object = object != null ? SerializeUtilCore.deserialize(Language.YAML, type, object, deserializeParameters) : null;
+				object = object != null ? SerializeUtilCore.deserialize(Language.YAML, typeOf, object, deserializeParameters) : null;
 
 				if (object != null)
 					list.add((T) object);
 
-				else if (!type.isPrimitive() && type != String.class)
+				else if (!typeOf.isPrimitive() && typeOf != String.class)
 					list.add(null);
 			}
 
 		return list;
 	}
 
+	/**
+	 * Return a list of objects. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * This returns an empty list instead of null if the key is missing.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	public final List<Object> getList(String path) {
 		return this.getList(path, null);
 	}
 
+	/**
+	 * Return a list of the given type from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * This returns an empty list instead of null if the key is missing.
+	 * 
+	 * @param path
+	 * @param def
+	 * @return
+	 */
 	public final List<Object> getList(final String path, List<Object> def) {
 		Object obj = this.getObject(path);
 
@@ -790,7 +1165,15 @@ public abstract class FileConfig extends ConfigSection {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return a map\<string, object\> from the key at the given path
+	 * Return a {@literal Map<String, Object>} from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * This returns an empty map instead of null if the key is missing.
 	 *
 	 * @param path
 	 * @return
@@ -802,7 +1185,15 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Return a map of the given key and value types from the key at the given path
+	 * Return a map of the given type from the config path. This is stored as a YAML list
+	 * but we also support a singleton which is stored as a normal value or a multiline value
+	 * string using "|-".
+	 * 
+	 * If the object is null, and default configuration is set, we automatically 
+	 * copy it from defaults to this config's map (we do not save it to file yet, 
+	 * you need to call save() for this) and return the default.
+	 * 
+	 * This returns an empty map instead of null if the key is missing.
 	 *
 	 * @param <Key>
 	 * @param <Value>
@@ -835,7 +1226,8 @@ public abstract class FileConfig extends ConfigSection {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Set the path prefix for this configuration
+	 * Get the path prefix for this configuration, used to prepend the path
+	 * argument in all getX() methods.
 	 *
 	 * @return
 	 */
@@ -844,7 +1236,8 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Set the path prefix for this configuration
+	 * Set the path prefix for this configuration, used to prepend the path
+	 * argument in all getX() methods.
 	 *
 	 * @param pathPrefix
 	 */
@@ -853,7 +1246,7 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/*
-	 * Helper method to add path prefix
+	 * Helper method to append path prefix to the given path.
 	 */
 	private final String buildPathPrefix(@NonNull final String path) {
 		final String prefixed = this.pathPrefix != null ? this.pathPrefix + (!path.isEmpty() ? "." + path : "") : path;
@@ -878,26 +1271,22 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
-	 * Gets the source configuration for this configuration.
-	 * <p>
-	 * If no configuration source was set, but default values were added, then
-	 * a {@link ConfigSection} will be returned. If no source was set
-	 * and no defaults were set, then this method will return null.
+	 * Gets the default configuration for this configuration.
+	 * 
+	 * Set automatically in {@link #loadAndExtract(String)} methods.
 	 *
-	 * @return Configuration source for default values, or null if none exist.
+	 * @return
 	 */
 	public final FileConfig getDefaults() {
 		return this.defaults;
 	}
 
 	/**
-	 * Sets the source of all default values for this configuration.
-	 * <p>
-	 * If a previous source was set, or previous default values were defined,
-	 * then they will not be copied to the new source.
+	 * Gets the default configuration for this configuration.
+	 * 
+	 * Set automatically in {@link #loadAndExtract(String)} methods.
 	 *
-	 * @param defaults New source of default values for this configuration.
-	 * @throws IllegalArgumentException Thrown if defaults is null or this.
+	 * @param defaults 
 	 */
 	public final void setDefaults(@NonNull FileConfig defaults) {
 		this.defaults = defaults;
@@ -908,7 +1297,7 @@ public abstract class FileConfig extends ConfigSection {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Get the file this configuration is stored in.
+	 * Get the file this configuration is stored in, or null if not set.
 	 *
 	 * @return
 	 */
@@ -916,16 +1305,21 @@ public abstract class FileConfig extends ConfigSection {
 		return file;
 	}
 
-	protected final void setFile(File file) {
+	/**
+	 * Set the file this configuration is stored in, or null if not set.
+	 * 
+	 * @param file
+	 */
+	public final void setFile(File file) {
 		this.file = file;
 	}
 
 	/**
-	 * Return the file name without the extension
+	 * Return the file name without the extension.
 	 *
 	 * @return
 	 */
-	public String getName() {
+	public final String getFileName() {
 		ValidCore.checkNotNull(this.file, "Cannot call FileConfig#getName() before loading the file!");
 
 		final String fileName = this.file.getName();
@@ -940,6 +1334,9 @@ public abstract class FileConfig extends ConfigSection {
 		return null;
 	}
 
+	/*
+	 * FileConfig has no parent section.
+	 */
 	@Override
 	final ConfigSection getParent() {
 		return null;
@@ -991,6 +1388,6 @@ public abstract class FileConfig extends ConfigSection {
 
 	@Override
 	public String toString() {
-		return "FileConfiguration{file=" + file + "}";
+		return "FileConfiguration{file=" + this.file + "}";
 	}
 }
