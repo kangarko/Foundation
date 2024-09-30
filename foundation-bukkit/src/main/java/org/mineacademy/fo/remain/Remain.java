@@ -312,6 +312,15 @@ public final class Remain {
 	private static String nmsVersion = "";
 
 	static {
+
+		// Initialize safeguard prefix first
+		{
+			final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
+			final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
+
+			nmsVersion = !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
+		}
+
 		CompParticle.CRIT.getClass();
 
 		isPaper = ReflectionUtil.isClassAvailable("co.aikar.timings.Timing");
@@ -469,13 +478,6 @@ public final class Remain {
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to setup Folia scheduler");
 			}
-		}
-
-		{
-			final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
-			final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
-
-			nmsVersion = !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
 		}
 	}
 
@@ -3070,12 +3072,12 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static Class<?> getNMSClass(final String name) {
-		String version = Remain.getNmsVersion();
+		String safeguardPrefix = Remain.getNmsVersion();
 
-		if (!version.isEmpty())
-			version += ".";
+		if (!safeguardPrefix.isEmpty())
+			safeguardPrefix += ".";
 
-		return ReflectionUtil.lookupClass(NMS + "." + version + name);
+		return ReflectionUtil.lookupClass(NMS + "." + safeguardPrefix + name);
 	}
 
 	/**
@@ -3107,7 +3109,8 @@ public final class Remain {
 
 	/**
 	 * Makes a new instance of the given NMS class with arguments.
-	 *
+	 * 
+	 * @param <T> 
 	 * @param nmsPath
 	 * @param params
 	 * @return
