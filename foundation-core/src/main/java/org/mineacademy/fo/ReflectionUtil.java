@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.ReflectionException;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -53,43 +55,44 @@ public final class ReflectionUtil {
 	private static LegacyEnumNameTranslator legacyEnumNameTranslator;
 
 	/**
-	 * The org.bukkit.Keyed class
+	 * The org.bukkit.Keyed class.
 	 */
 	private static Class<?> orgBukkitKeyed = null;
 
 	/**
-	 * Reflection utilizes a simple cache for fastest performance
+	 * Cache reflection lookup for performance purposes.
 	 */
 	private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 	private static final Map<Class<?>, ReflectionData<?>> reflectionDataCache = new ConcurrentHashMap<>();
 	private static final Collection<String> classNameGuard = ConcurrentHashMap.newKeySet();
+	private static final Map<Class<?>, Method> enumClassCache = new HashMap<>();
 
 	/**
 	 * Maps primitive <code>Class</code>es to their corresponding wrapper <code>Class</code>.
 	 */
-	private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
+	private static final Map<Class<?>, Class<?>> primitiveToWrapperMap = new HashMap<>();
 
 	/**
 	 * Maps wrapper <code>Class</code>es to their corresponding primitive types.
 	 */
-	private static final Map<Class<?>, Class<?>> wrapperPrimitiveMap = new HashMap<>();
+	private static final Map<Class<?>, Class<?>> wrapperToPrimitiveMap = new HashMap<>();
 
 	static {
-		primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
-		primitiveWrapperMap.put(Byte.TYPE, Byte.class);
-		primitiveWrapperMap.put(Character.TYPE, Character.class);
-		primitiveWrapperMap.put(Short.TYPE, Short.class);
-		primitiveWrapperMap.put(Integer.TYPE, Integer.class);
-		primitiveWrapperMap.put(Long.TYPE, Long.class);
-		primitiveWrapperMap.put(Double.TYPE, Double.class);
-		primitiveWrapperMap.put(Float.TYPE, Float.class);
-		primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
+		primitiveToWrapperMap.put(Boolean.TYPE, Boolean.class);
+		primitiveToWrapperMap.put(Byte.TYPE, Byte.class);
+		primitiveToWrapperMap.put(Character.TYPE, Character.class);
+		primitiveToWrapperMap.put(Short.TYPE, Short.class);
+		primitiveToWrapperMap.put(Integer.TYPE, Integer.class);
+		primitiveToWrapperMap.put(Long.TYPE, Long.class);
+		primitiveToWrapperMap.put(Double.TYPE, Double.class);
+		primitiveToWrapperMap.put(Float.TYPE, Float.class);
+		primitiveToWrapperMap.put(Void.TYPE, Void.TYPE);
 
-		for (final Class<?> primitiveClass : primitiveWrapperMap.keySet()) {
-			final Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
+		for (final Class<?> primitiveClass : primitiveToWrapperMap.keySet()) {
+			final Class<?> wrapperClass = primitiveToWrapperMap.get(primitiveClass);
 
 			if (!primitiveClass.equals(wrapperClass))
-				wrapperPrimitiveMap.put(wrapperClass, primitiveClass);
+				wrapperToPrimitiveMap.put(wrapperClass, primitiveClass);
 		}
 
 		try {
@@ -127,6 +130,7 @@ public final class ReflectionUtil {
 	/**
 	 * Return a constructor for the given class.
 	 *
+	 * @param <T>
 	 * @param clazz
 	 * @param params
 	 * @return
@@ -157,6 +161,7 @@ public final class ReflectionUtil {
 	/**
 	 * Get the field content.
 	 *
+	 * @param <T>
 	 * @param instance
 	 * @param field
 	 * @return
@@ -407,6 +412,7 @@ public final class ReflectionUtil {
 	/**
 	 * Makes a new instance of a class.
 	 *
+	 * @param <T>
 	 * @param clazz
 	 * @return
 	 */
@@ -429,6 +435,7 @@ public final class ReflectionUtil {
 	/**
 	 * Makes a new instance of a class with arguments.
 	 *
+	 * @param <T>
 	 * @param clazz
 	 * @param params
 	 * @return
@@ -552,13 +559,15 @@ public final class ReflectionUtil {
 	 * instead of throwing an error. This is to prevent default configs containing
 	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
-	 * @param enumType
+	 * @param <E> the class, ideally Enum or OldEnum as we will try invoking valueOf,
+	 *           fromName, fromKey and fromString methods on it
+	 * @param typeOf
 	 * @param name
 	 *
 	 * @return the enum or error with exceptions, see above
 	 */
-	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, final String name) {
-		return lookupEnum(enumType, name, enumType.getSimpleName() + " value '" + name + "' is not found! Available: {available}");
+	public static <E> E lookupEnum(final Class<E> typeOf, final String name) {
+		return lookupEnum(typeOf, name, typeOf.getSimpleName() + " value '" + name + "' is not found! Available: {available}");
 	}
 
 	/**
@@ -572,52 +581,34 @@ public final class ReflectionUtil {
 	 * instead of throwing an error. This is to prevent default configs containing
 	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
-	 * @param enumType
+	 * @param <E> the class, ideally Enum or OldEnum as we will try invoking valueOf,
+	 *           fromName, fromKey and fromString methods on it
+	 * @param typeOf
 	 * @param name
-	 * @param errMessage
+	 * @param errorMessage
 	 *
+	 * @throws MissingEnumException if the enum is not found and is not inside {@link #addLegacyEnumType(Class, Map)}
 	 * @return the enum or error with exceptions, see above
 	 */
-	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, String name, final String errMessage) {
-		ValidCore.checkNotNull(enumType, "Type missing for " + name);
-		ValidCore.checkNotNull(name, "Name missing for " + enumType);
+	public static <E> E lookupEnum(final Class<E> typeOf, String name, final String errorMessage) {
+		name = name.toUpperCase().replace(" ", "_");
 
-		final String rawName = name.toUpperCase().replace(" ", "_");
-		final String oldName = name;
-
-		E result = lookupEnumSilent(enumType, name);
-
-		// Try making the enum uppercased
-		if (result == null) {
-			name = name.toUpperCase();
-
-			result = lookupEnumSilent(enumType, name);
-		}
-
-		// Try replacing spaces with underscores
-		if (result == null) {
-			name = name.replace(" ", "_");
-
-			result = lookupEnumSilent(enumType, name);
-		}
-
-		// Try crunching all underscores (were spaces) all together
-		if (result == null)
-			result = lookupEnumSilent(enumType, name.replace("_", ""));
+		final E result = lookupEnumSilent(typeOf, name);
 
 		if (result == null) {
 
-			// Return null for legacy types
-			final Map<String, V> legacyMap = legacyEnumTypes.get(enumType);
+			// Return null for legacy types instead of throwing an exception.
+			final Map<String, V> legacyMap = legacyEnumTypes.get(typeOf);
 
 			if (legacyMap != null) {
-				final V since = legacyMap.get(rawName);
+				final V since = legacyMap.get(name);
 
 				if (since != null && MinecraftVersion.olderThan(since))
 					return null;
 			}
 
-			throw new MissingEnumException(oldName, errMessage.replace("{available}", CommonCore.join(enumType.getEnumConstants())));
+			final String available = typeOf.isEnum() ? CommonCore.join(typeOf.getEnumConstants()) : Lang.plain("unknown");
+			throw new MissingEnumException(name, errorMessage.replace("{available}", available));
 		}
 
 		return result;
@@ -626,55 +617,72 @@ public final class ReflectionUtil {
 	/**
 	 * Wrapper for Enum.valueOf without throwing an exception.
 	 *
-	 * @param enumType
+	 * @param <E> the class, ideally Enum or OldEnum as we will try invoking valueOf,
+	 *           fromName, fromKey and fromString methods on it
+	 * @param typeOf
 	 * @param name
 	 * @return the enum, or null if not exists
 	 */
-	public static <E extends Enum<E>> E lookupEnumSilent(Class<E> enumType, String name) {
+	public static <E> E lookupEnumSilent(@NonNull Class<E> typeOf, @NonNull String name) {
+		name = name.toUpperCase().replace(" ", "_");
+
 		try {
-
-			// Some compatibility workaround for ChatControl, Boss, CoreArena and other plugins
-			// having these values in their default config. This prevents
-			// malfunction on plugin's first load, in case it is loaded on an older MC version.
+			// Some compatibility workaround for plugins having these values in their default config
+			// to prevents malfunction on plugin's first load when loaded on older Minecraft version.
 			if (legacyEnumNameTranslator != null)
-				name = legacyEnumNameTranslator.translateName(enumType, name);
+				name = legacyEnumNameTranslator.translateName(typeOf, name);
 
-			// Since we obfuscate our plugins, enum names are changed.
-			// Therefore we look up a special fromKey method in some of our enums
-			boolean hasKey = false;
-			Method method = null;
+			Method method = enumClassCache.get(typeOf);
 
-			try {
-				method = enumType.getDeclaredMethod("fromKey", String.class);
-
-				if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
-					hasKey = true;
-
-			} catch (final Throwable t) {
-			}
-
-			// Only invoke fromName from non-Bukkit API since this gives unexpected results
-			if (method == null && !enumType.getName().contains("org.bukkit"))
+			if (method == null)
 				try {
-					method = enumType.getDeclaredMethod("fromName", String.class);
+					final Method fromKey = typeOf.getDeclaredMethod("fromKey", String.class);
 
-					if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
-						hasKey = true;
+					if (Modifier.isPublic(fromKey.getModifiers()) && Modifier.isStatic(fromKey.getModifiers()))
+						method = fromKey;
 
-				} catch (final Throwable t) {
+				} catch (final NoSuchMethodException t) {
 				}
 
-			if (hasKey)
-				return (E) method.invoke(null, name);
+			if (method == null)
+				try {
+					final Method valueOf = typeOf.getDeclaredMethod("valueOf", String.class);
 
-			// Resort to enum name
-			return Enum.valueOf(enumType, name);
+					if (Modifier.isPublic(valueOf.getModifiers()) && Modifier.isStatic(valueOf.getModifiers()))
+						method = valueOf;
 
-		} catch (final IllegalArgumentException ex) {
+				} catch (final NoSuchMethodException t) {
+				}
+
+			// Only invoke fromName from non-Bukkit API since this gives unexpected results.
+			if (method == null && !typeOf.getName().contains("org.bukkit"))
+				try {
+					final Method fromName = typeOf.getDeclaredMethod("fromName", String.class);
+
+					if (Modifier.isPublic(fromName.getModifiers()) && Modifier.isStatic(fromName.getModifiers()))
+						method = fromName;
+
+				} catch (final NoSuchMethodException t) {
+				}
+
+			if (method != null)
+				try {
+					final E value = (E) method.invoke(null, name);
+
+					// Cache after method invocation to ensure it went right.
+					enumClassCache.put(typeOf, method);
+
+					if (value != null)
+						return value;
+
+				} catch (final IllegalArgumentException ex) {
+					return null;
+				}
+
 			return null;
 
-		} catch (final ReflectiveOperationException ex) {
-			return null;
+		} catch (IllegalAccessException | InvocationTargetException ex) {
+			throw new FoException(ex, "Error invocating enum finding method for " + typeOf.getSimpleName() + " from string " + name);
 		}
 	}
 
@@ -684,8 +692,8 @@ public final class ReflectionUtil {
 	 * @param instance the instance's class to check
 	 * @return {@code true} if the class is an enum or implements the `Keyed` interface, {@code false} otherwise
 	 */
-	public static boolean isEnumOrKeyed(Object instance) {
-		return isEnumOrKeyed(instance.getClass());
+	public static boolean isEnumLike(Object instance) {
+		return isEnumLike(instance.getClass());
 	}
 
 	/**
@@ -694,7 +702,7 @@ public final class ReflectionUtil {
 	 * @param clazz the class to check
 	 * @return {@code true} if the class is an enum or implements the `Keyed` interface, {@code false} otherwise
 	 */
-	public static boolean isEnumOrKeyed(Class<?> clazz) {
+	public static boolean isEnumLike(Class<?> clazz) {
 		return clazz.isEnum() || (orgBukkitKeyed != null && orgBukkitKeyed.isAssignableFrom(clazz));
 	}
 
@@ -763,7 +771,7 @@ public final class ReflectionUtil {
 	 * @author Apache Commons ClassUtils
 	 */
 	public static Class<?> wrapperToPrimitive(Class<?> cls) {
-		return wrapperPrimitiveMap.get(cls);
+		return wrapperToPrimitiveMap.get(cls);
 	}
 
 	// ------------------------------------------------------------------------------------------
@@ -778,12 +786,13 @@ public final class ReflectionUtil {
 		/**
 		 * Return the translated legacy name for the given enum type and name.
 		 *
-		 * @param <E>
+		 * @param <E> the class, ideally Enum or OldEnum as we will try invoking valueOf,
+		 *           fromName, fromKey and fromString methods on it
 		 * @param enumType the class of the enum
 		 * @param name the string enum name
 		 * @return
 		 */
-		<E extends Enum<E>> String translateName(Class<E> enumType, String name);
+		<E> String translateName(Class<E> enumType, String name);
 	}
 
 	/**

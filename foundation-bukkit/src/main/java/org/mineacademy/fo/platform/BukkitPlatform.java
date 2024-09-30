@@ -110,64 +110,64 @@ final class BukkitPlatform extends FoundationPlatform {
 		ReflectionUtil.setLegacyEnumNameTranslator(new LegacyEnumNameTranslator() {
 
 			@Override
-			public <E extends Enum<E>> String translateName(Class<E> enumType, String name) {
-				final String rawName = name.toUpperCase().replace(" ", "_");
-
+			public <E> String translateName(Class<E> enumType, String name) {
 				if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + "")) {
 					name = ChatColor.getByChar(name.charAt(1)).name();
 
 				} else if (enumType == Biome.class) {
 					if (MinecraftVersion.atLeast(V.v1_13))
-						if (rawName.equalsIgnoreCase("ICE_MOUNTAINS"))
+						if (name.equals("ICE_MOUNTAINS"))
 							name = "SNOWY_TAIGA";
 
 				} else if (enumType == EntityType.class) {
 					if (MinecraftVersion.atLeast(V.v1_16))
-						if (rawName.equals("PIG_ZOMBIE"))
+						if (name.equals("PIG_ZOMBIE"))
 							name = "ZOMBIFIED_PIGLIN";
 
 					if (MinecraftVersion.atLeast(V.v1_14))
-						if (rawName.equals("TIPPED_ARROW"))
+						if (name.equals("TIPPED_ARROW"))
 							name = "ARROW";
 
 					if (MinecraftVersion.olderThan(V.v1_16))
-						if (rawName.equals("ZOMBIFIED_PIGLIN"))
+						if (name.equals("ZOMBIFIED_PIGLIN"))
 							name = "PIG_ZOMBIE";
 
 					if (MinecraftVersion.olderThan(V.v1_9))
-						if (rawName.equals("TRIDENT"))
+						if (name.equals("TRIDENT"))
 							name = "ARROW";
-						else if (rawName.equals("DRAGON_FIREBALL"))
+
+						else if (name.equals("DRAGON_FIREBALL"))
 							name = "FIREBALL";
 
 					if (MinecraftVersion.olderThan(V.v1_13))
-						if (rawName.equals("DROWNED"))
+						if (name.equals("DROWNED"))
 							name = "ZOMBIE";
-						else if (rawName.equals("ZOMBIE_VILLAGER"))
+
+						else if (name.equals("ZOMBIE_VILLAGER"))
 							name = "ZOMBIE";
 
 					if ((MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5) || MinecraftVersion.newerThan(V.v1_20))
-						if (rawName.equals("SNOWMAN"))
+						if (name.equals("SNOWMAN"))
 							name = "SNOW_GOLEM";
 
 				} else if (enumType == DamageCause.class) {
 					if (MinecraftVersion.olderThan(V.v1_13))
-						if (rawName.equals("DRYOUT"))
+						if (name.equals("DRYOUT"))
 							name = "CUSTOM";
 
 					if (MinecraftVersion.olderThan(V.v1_11))
-						if (rawName.equals("ENTITY_SWEEP_ATTACK"))
+						if (name.equals("ENTITY_SWEEP_ATTACK"))
 							name = "ENTITY_ATTACK";
-						else if (rawName.equals("CRAMMING"))
+						else if (name.equals("CRAMMING"))
 							name = "CUSTOM";
 
 					if (MinecraftVersion.olderThan(V.v1_9))
-						if (rawName.equals("FLY_INTO_WALL"))
+						if (name.equals("FLY_INTO_WALL"))
 							name = "SUFFOCATION";
-						else if (rawName.equals("HOT_FLOOR"))
+						else if (name.equals("HOT_FLOOR"))
 							name = "LAVA";
 
-					if (rawName.equals("DRAGON_BREATH"))
+					if (name.equals("DRAGON_BREATH"))
 						try {
 							DamageCause.valueOf("DRAGON_BREATH");
 						} catch (final Throwable t) {
