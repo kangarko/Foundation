@@ -756,7 +756,7 @@ public abstract class CommonCore {
 						for (final Object iterable : (Iterable<?>) element) {
 							final String parsedValue = SerializeUtilCore.serialize(Language.YAML, iterable).toString();
 
-							toComplete.add(ReflectionUtil.isEnumOrKeyed(iterable) ? parsedValue.toLowerCase() : parsedValue);
+							toComplete.add(ReflectionUtil.isEnumLike(iterable) ? parsedValue.toLowerCase() : parsedValue);
 						}
 
 					else if (element.getClass().isArray())
@@ -764,7 +764,7 @@ public abstract class CommonCore {
 							final Object iterable = Array.get(element, i);
 							final String parsedValue = SerializeUtilCore.serialize(Language.YAML, iterable).toString();
 
-							toComplete.add(ReflectionUtil.isEnumOrKeyed(iterable) ? parsedValue.toLowerCase() : parsedValue);
+							toComplete.add(ReflectionUtil.isEnumLike(iterable) ? parsedValue.toLowerCase() : parsedValue);
 						}
 
 					// Trick: Automatically parse enum constants
@@ -773,7 +773,7 @@ public abstract class CommonCore {
 							toComplete.add(iterable.toString().toLowerCase());
 
 					else {
-						final boolean lowercase = ReflectionUtil.isEnumOrKeyed(element);
+						final boolean lowercase = ReflectionUtil.isEnumLike(element);
 						final String parsedValue = SerializeUtilCore.serialize(Language.YAML, element).toString();
 
 						if (!"".equals(parsedValue))
@@ -1036,7 +1036,9 @@ public abstract class CommonCore {
 
 	/**
 	 * Convert the list having one data type into another.
-	 *
+	 * 
+	 * @param <Old> 
+	 * @param <New> 
 	 * @param list
 	 * @param converter
 	 * @return the new list
@@ -1093,6 +1095,8 @@ public abstract class CommonCore {
 	/**
 	 * Convert the set having one data type into another.
 	 *
+	 * @param <Old> 
+	 * @param <New> 
 	 * @param list
 	 * @param converter
 	 * @return the new list
@@ -1360,7 +1364,8 @@ public abstract class CommonCore {
 
 	/**
 	 * Create a new modifiable array list from array.
-	 *
+	 * 
+	 * @param <T> 
 	 * @param array
 	 * @return
 	 */
@@ -1416,6 +1421,7 @@ public abstract class CommonCore {
 	 * The keys and values must be in pairs and of the same type.
 	 *
 	 * @param <K>
+	 * @param <V>
 	 * @param entries
 	 * @return
 	 */

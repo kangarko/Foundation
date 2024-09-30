@@ -133,5 +133,6 @@
 	"prefix-success": "<gray><dark_gray>[<bold><dark_green>✔<dark_gray></bold>]<gray>",
 	"prefix-warn": "<gold><dark_gray>[<bold><gold>!<dark_gray></bold>]<gray>",
 	"tool-error": "<red>Oups! There was a problem with this tool! Please contact the administrator to review the console for details.",
-	"top": "Top"
+	"top": "Top",
+	"unknown": "Unknown"
 }
