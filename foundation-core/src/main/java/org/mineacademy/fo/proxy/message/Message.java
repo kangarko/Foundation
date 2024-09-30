@@ -69,6 +69,7 @@ abstract class Message {
 	/**
 	 * Get the message.
 	 *
+	 * @param <T>
 	 * @return
 	 */
 	public final <T extends ProxyMessage> T getMessage() {

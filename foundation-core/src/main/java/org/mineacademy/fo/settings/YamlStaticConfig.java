@@ -235,22 +235,22 @@ public abstract class YamlStaticConfig {
 	}
 
 	/**
-	 * @see YamlConfig#load(String)
+	 * @see YamlConfig#loadAndExtract(String)
 	 *
 	 * @param internalPath
 	 */
 	protected final void loadConfiguration(String internalPath) {
-		TEMPORARY_INSTANCE.load(internalPath, internalPath);
+		TEMPORARY_INSTANCE.loadAndExtract(internalPath, internalPath);
 	}
 
 	/**
-	 * @see YamlConfig#load(String, String)
+	 * @see YamlConfig#loadAndExtract(String, String)
 	 *
 	 * @param from
 	 * @param to
 	 */
 	protected final void loadConfiguration(String from, String to) {
-		TEMPORARY_INSTANCE.load(from, to);
+		TEMPORARY_INSTANCE.loadAndExtract(from, to);
 	}
 
 	// -----------------------------------------------------------------------------------------------------

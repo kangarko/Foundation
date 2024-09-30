@@ -131,23 +131,23 @@ public class RegionCommand extends SimpleSubCommand {
 
 						.appendMini("&8[&4X&8]")
 						.onHover("Click to remove permanently.")
-						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.REMOVE + " " + otherRegion.getName() + " -list")
+						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.REMOVE + " " + otherRegion.getFileName() + " -list")
 
 						.appendPlain(" ")
 
 						.appendMini("&8[&2?&8]")
 						.onHover("Click to visualize.")
-						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.VIEW + " " + otherRegion.getName() + " -list")
+						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.VIEW + " " + otherRegion.getFileName() + " -list")
 
 						.appendPlain(" ")
 
 						.appendMini("&8[&3>&8]")
 						.onHover("Click to teleport to the center.")
-						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.TELEPORT + " " + otherRegion.getName() + " -list")
+						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.TELEPORT + " " + otherRegion.getFileName() + " -list")
 
 						.appendPlain(" ")
 
-						.appendMini("&7" + otherRegion.getName())
+						.appendMini("&7" + otherRegion.getFileName())
 						.onHover(ChatUtil.center("&fRegion Information", longestText.length() * 2 + longestText.length() / 3),
 								"&7Primary: &2" + SerializeUtil.serializeLoc(otherRegion.getPrimary()),
 								longestText,
@@ -270,7 +270,7 @@ public class RegionCommand extends SimpleSubCommand {
 		Messenger.info(this.audience, SimpleComponent.fromMini(message)
 				.appendPlain(" Click here to open its menu.")
 				.onHover("&7Click to open region menu.")
-				.onClickRunCmd("/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " region menu " + region.getName()));
+				.onClickRunCmd("/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " region menu " + region.getFileName()));
 	}
 
 	@Override

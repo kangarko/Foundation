@@ -22,7 +22,7 @@ import lombok.NonNull;
 /**
  * A special class that can store loaded {@link YamlConfig} files
  * <p>
- * DOES NOT INVOKE {@link YamlConfig#load(String, String)}
+ * DOES NOT INVOKE {@link YamlConfig#loadAndExtract(String, String)}
  * for you, you must invoke it by yourself as you otherwise normally would!
  *
  * @param <T>
@@ -258,7 +258,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param item
 	 */
 	public void removeItem(@NonNull final T item) {
-		this.removeItemByName(item.getName());
+		this.removeItemByName(item.getFileName());
 	}
 
 	/**

@@ -12,8 +12,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
 
 /**
@@ -543,7 +543,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Uses Gson to retrieve a stored Object Deprecated to clarify that it's
 	 * probably missused. Preferably do the serializing yourself.
-	 *
+	 * @param <T>
 	 * @param key
 	 * @param type Class of the Object
 	 * @return The created Object or null if empty

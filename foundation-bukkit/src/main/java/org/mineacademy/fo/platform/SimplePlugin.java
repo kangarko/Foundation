@@ -540,7 +540,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 					region.save();
 
 				} catch (final Throwable t) {
-					Common.error(t, "Error saving region " + region.getName() + "...");
+					Common.error(t, "Error saving region " + region.getFileName() + "...");
 				}
 
 		Objects.requireNonNull(instance, "Instance of " + this.getDataFolder().getName() + " already nulled!");

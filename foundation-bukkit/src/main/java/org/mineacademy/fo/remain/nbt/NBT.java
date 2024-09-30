@@ -76,6 +76,7 @@ public class NBT {
 	 * It takes an ItemStack, and a function that takes a ReadableNBT and returns a
 	 * generic type T. It then returns the result of the function applied to a new
 	 * NBTItem
+	 * @param <T> 
 	 *
 	 * @param item   The itemstack you want to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
@@ -108,6 +109,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadableNBT and returns a
 	 * generic type T, and returns the result of the function
 	 *
+	 * @param <T> 
 	 * @param entity The entity to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value.
 	 * @return The NBTEntity class is being returned.
@@ -139,6 +141,7 @@ public class NBT {
 	 * value of type T. It then returns the value of the function applied to a new
 	 * NBTTileEntity created from the block state
 	 *
+	 * @param <T> 
 	 * @param blockState The block state of the block you want to get the NBT from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
 	 *                   type T.
@@ -170,7 +173,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadableNBT and returns a
 	 * generic type T, and returns the result of the function, applied to the
 	 * entities persistent data container
-	 *
+	 * @param <T> 
 	 * @param entity The entity to get the data from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
 	 *               T.
@@ -187,7 +190,7 @@ public class NBT {
 	 * It takes a block entity and a function that takes a ReadableNBT and returns
 	 * a generic type T, and returns the result of the function, applied to the
 	 * block entities persistent data container
-	 *
+	 * @param <T> 
 	 * @param blockState The block state of the block you want to get the data from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
 	 *                   type T.
@@ -203,7 +206,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack, applies a function to its NBT, and returns the result
 	 * of the function
-	 *
+	 * @param <T> 
 	 * @param item     The item you want to modify
 	 * @param function The function that will be applied to the item.
 	 * @return The return value of the function.
@@ -236,6 +239,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadWriteNBT and returns a
 	 * generic type T. It then returns the result of the function
 	 *
+	 * @param <T> 
 	 * @param entity   The entity to modify
 	 * @param function The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -272,7 +276,7 @@ public class NBT {
 	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
 	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
 	 * This method is quiet expensive, so don't overuse it.
-	 *
+	 * @param <T> 
 	 * @param item     The item you want to modify the components of
 	 * @param function The consumer that will be used to modify the components.
 	 * @return The return type is the same as the return type of the function.
@@ -306,7 +310,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadWriteNBT from the entities
 	 * persistent data and returns a generic type T. It then returns the result of
 	 * the function
-	 *
+	 * @param <T> 
 	 * @param entity   The entity to modify the data of.
 	 * @param function The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -332,7 +336,7 @@ public class NBT {
 	/**
 	 * It takes a block state and a function that takes a ReadWriteNBT and returns a
 	 * generic type T. It then returns the result of the function
-	 *
+	 * @param <T> 
 	 * @param blockState The blockstate you want to modify
 	 * @param function   The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -369,7 +373,7 @@ public class NBT {
 	 * It takes a block state and a function that takes a ReadWriteNBT of the block
 	 * entities persistent data and returns a generic type T. It then returns the
 	 * result of the function
-	 *
+	 * @param <T> 
 	 * @param blockState The block state of the block you want to modify.
 	 * @param function   The function that will be called to modify the NBT data.
 	 * @return The return type is the same as the return type of the function.
@@ -493,7 +497,8 @@ public class NBT {
 	/**
 	 * It takes an ItemStack, applies a function to its NBT wrapped in a proxy, and
 	 * returns the result of the function
-	 *
+	 * @param <T> 
+	 * @param <X>
 	 * @param item     The item you want to
 	 * @param wrapper  The target Proxy class
 	 * @param function The function that will be applied to the item.
@@ -511,7 +516,7 @@ public class NBT {
 
 	/**
 	 * It takes an ItemStack, applies a function to its NBT wrapped in a proxy.
-	 *
+	 * @param <X> 
 	 * @param item     The item you want to modify
 	 * @param wrapper  The target Proxy class
 	 * @param consumer The consumer that will be used to modify the NBT.
@@ -525,7 +530,7 @@ public class NBT {
 
 	/**
 	 * It takes an entity and a function to modify the entity via the proxy
-	 *
+	 * @param <X> 
 	 * @param entity   The entity to modify
 	 * @param wrapper  The target Proxy class
 	 * @param consumer The consumer that will be called with the proxy.
@@ -540,7 +545,8 @@ public class NBT {
 
 	/**
 	 * It takes an entity and a function to modify the entity via the proxy
-	 *
+	 * @param <T> 
+	 * @param <X>
 	 * @param entity   The entity to modify
 	 * @param wrapper  The target Proxy class
 	 * @param function The Function that will be called with the proxy.
@@ -557,7 +563,7 @@ public class NBT {
 
 	/**
 	 * It takes an block entity and a function to modify the entity via the proxy
-	 *
+	 * @param <X> 
 	 * @param blockState The blockstate you want to modify
 	 * @param wrapper    The target Proxy class
 	 * @param consumer   The Consumer that will be called.
@@ -572,7 +578,8 @@ public class NBT {
 
 	/**
 	 * It takes an block entity and a function to modify the entity via the proxy
-	 *
+	 * @param <T> 
+	 * @param <X> 
 	 * @param blockState The blockstate you want to modify
 	 * @param wrapper    The target Proxy class
 	 * @param function   The function that will be called.

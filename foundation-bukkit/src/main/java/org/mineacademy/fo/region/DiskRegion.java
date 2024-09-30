@@ -84,7 +84,7 @@ public final class DiskRegion extends YamlConfig {
 				"or stop your server and remove this file.",
 				Common.configLine() + "\n");
 
-		this.load(NO_DEFAULT, "regions/" + name + ".yml");
+		this.loadAndExtract(NO_DEFAULT, "regions/" + name + ".yml");
 	}
 
 	/**
@@ -252,12 +252,12 @@ public final class DiskRegion extends YamlConfig {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof DiskRegion && ((DiskRegion) obj).border != null && this.getName().equals(((DiskRegion) obj).getName());
+		return obj instanceof DiskRegion && ((DiskRegion) obj).border != null && this.getFileName().equals(((DiskRegion) obj).getFileName());
 	}
 
 	@Override
 	public String toString() {
-		return "DiskRegion{name=" + getName() + ", primary=" + SerializeUtil.serializeLoc(getPrimary()) + ", secondary=" + SerializeUtil.serializeLoc(getSecondary()) + "}";
+		return "DiskRegion{name=" + getFileName() + ", primary=" + SerializeUtil.serializeLoc(getPrimary()) + ", secondary=" + SerializeUtil.serializeLoc(getSecondary()) + "}";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -360,7 +360,7 @@ public final class DiskRegion extends YamlConfig {
 
 		for (final DiskRegion region : getRegions())
 			if (region.border != null && region.border.isWhole() && region.border.isWithin(location))
-				foundRegions.add(region.getName());
+				foundRegions.add(region.getFileName());
 
 		return foundRegions;
 	}
