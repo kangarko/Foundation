@@ -18,8 +18,8 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtilCore;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -484,7 +484,7 @@ public class SimpleDatabase {
 	 * @param sql
 	 */
 	protected final void update(String sql) {
-		if (!this.connecting)
+		if (!this.connecting && Platform.getPlugin().isEnabled())
 			ValidCore.checkBoolean(Platform.isAsync(), "Updating database must be done async! Call: " + sql);
 
 		synchronized (this.connection) {
@@ -684,7 +684,8 @@ public class SimpleDatabase {
 	 * @return
 	 */
 	protected final ResultSet query(String sql) {
-		ValidCore.checkBoolean(Platform.isAsync(), "Sending database query must be called async, command: " + sql);
+		if (Platform.getPlugin().isEnabled())
+			ValidCore.checkBoolean(Platform.isAsync(), "Sending database query must be called async, command: " + sql);
 
 		synchronized (this.connection) {
 			this.checkEstablished();
