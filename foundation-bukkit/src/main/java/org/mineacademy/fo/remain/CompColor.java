@@ -406,16 +406,6 @@ public final class CompColor {
 		return values.toArray(new CompColor[values.size()]);
 	}
 
-	/**
-	 * See {@link #fromName(String)}
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static CompColor valueOf(String name) {
-		return fromName(name);
-	}
-
 	@Override
 	public String toString() {
 		return this.name;
