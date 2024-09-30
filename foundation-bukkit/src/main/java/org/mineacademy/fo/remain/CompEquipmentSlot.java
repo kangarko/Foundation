@@ -15,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 import lombok.Getter;
@@ -233,7 +232,7 @@ public enum CompEquipmentSlot {
 			if (slot.key.equals(key) || slot.bukkitName.equals(key))
 				return slot;
 
-		throw new FoException("No such equipment slot from key: " + key);
+		throw new IllegalArgumentException("No such comp equipment slot: " + key + " Available: " + values());
 	}
 
 	/**
