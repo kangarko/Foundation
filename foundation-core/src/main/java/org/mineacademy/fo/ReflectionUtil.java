@@ -675,8 +675,11 @@ public final class ReflectionUtil {
 					if (value != null)
 						return value;
 
-				} catch (final IllegalArgumentException ex) {
-					return null;
+				} catch (final InvocationTargetException ex) {
+					if (ex.getCause() instanceof IllegalArgumentException)
+						return null;
+
+					throw ex;
 				}
 
 			return null;
