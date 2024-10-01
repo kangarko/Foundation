@@ -291,7 +291,7 @@ public abstract class FileConfig extends ConfigSection {
 		// Remove old key
 		this.set(fromRel, null);
 
-		CommonCore.log("&7Update " + this.getFile().getName() + ". Move &b'&f" + this.buildPathPrefix(fromRel) + "&b' &7to " + "&b'&f" + toAbs + "&b'" + "&r");
+		CommonCore.log("&7Updating " + this.getFile().getName() + ". Moving &b'&f" + this.buildPathPrefix(fromRel) + "&b' &7to " + "&b'&f" + toAbs + "&b'" + "&r");
 	}
 
 	/**
