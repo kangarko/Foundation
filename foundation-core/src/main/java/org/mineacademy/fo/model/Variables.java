@@ -41,7 +41,6 @@ public final class Variables {
 	/**
 	 * The pattern to find simple {syntax} placeholders starting with {rel_} (used for PlaceholderAPI)
 	 */
-	// TODO re-add support for relative placeholders
 	public static final Pattern BRACKET_REL_VARIABLE_PATTERN = Pattern.compile("[({)](rel_)([^}]+)[(})]");
 
 	/**
@@ -179,10 +178,9 @@ public final class Variables {
 
 			SimpleComponent value;
 
-			if (variableCache.containsKey(variable)) {
+			if (variableCache.containsKey(variable))
 				value = variableCache.get(variable);
-
-			} else {
+			else {
 				value = replaceVariable(variable, audience, replacements);
 
 				if (value != null)
