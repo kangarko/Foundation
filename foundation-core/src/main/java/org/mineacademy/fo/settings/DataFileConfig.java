@@ -68,10 +68,12 @@ public final class DataFileConfig extends YamlConfig {
 			instance = new DataFileConfig();
 
 			final File legacyFile = FileUtil.getFile("data.db");
-			final File newFile = FileUtil.createIfNotExists(FILE_NAME);
+			final File newFile = FileUtil.getFile(FILE_NAME);
 
 			if (legacyFile.exists())
 				legacyFile.renameTo(newFile);
+
+			FileUtil.createIfNotExists(newFile);
 
 			instance.load(newFile);
 		}
