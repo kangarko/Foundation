@@ -28,8 +28,6 @@ public class SimpleSettings extends YamlStaticConfig {
 		this.loadConfiguration(this.getSettingsFileName());
 	}
 
-	// TODO Get rid of data.db being used multiple times per plugin
-
 	/**
 	 * Get the file name for these settings, by default settings.yml
 	 *

@@ -433,7 +433,7 @@ public final class Remain {
 		if (MinecraftVersion.olderThan(V.v1_16))
 			chatSerializer = Remain.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
 
-		if (MinecraftVersion.olderThan(V.v1_13)) {
+		if (MinecraftVersion.olderThan(V.v1_13))
 			try {
 				final Class<?> chatBaseComponent = Remain.getNMSClass("IChatBaseComponent", "N/A");
 
@@ -466,9 +466,8 @@ public final class Remain {
 				if (!isThermos)
 					Common.error(t, "Unable to setup chat internals");
 			}
-		}
 
-		if (isFolia) {
+		if (isFolia)
 			try {
 				foliaScheduler = ReflectionUtil.invoke("getGlobalRegionScheduler", org.bukkit.Bukkit.getServer());
 				runAtFixedRate = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class);
@@ -478,7 +477,6 @@ public final class Remain {
 			} catch (final Throwable t) {
 				Common.error(t, "Failed to setup Folia scheduler");
 			}
-		}
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -1511,8 +1509,6 @@ public final class Remain {
 		return false;
 	}
 
-	// TODO compile on 1.8.8 and fix incompatibiltiies
-
 	/**
 	 * Creates new plugin command from given label
 	 *
@@ -1623,10 +1619,9 @@ public final class Remain {
 
 		final Sign sign = (Sign) state;
 
-		if (hasPlayerOpenSignMethod) {
+		if (hasPlayerOpenSignMethod)
 			player.openSign(sign);
-
-		} else {
+		else {
 			final Class<?> chatComponentClass = Remain.getNMSClass("IChatBaseComponent");
 			final Class<?> blockPositionClass = Remain.getNMSClass("BlockPosition");
 
@@ -3109,8 +3104,8 @@ public final class Remain {
 
 	/**
 	 * Makes a new instance of the given NMS class with arguments.
-	 * 
-	 * @param <T> 
+	 *
+	 * @param <T>
 	 * @param nmsPath
 	 * @param params
 	 * @return
@@ -3462,9 +3457,9 @@ final class AdvancementAccessor {
 
 		final JsonObject icon = new JsonObject();
 
-		if (MinecraftVersion.atLeast(V.v1_21) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5)) {
+		if (MinecraftVersion.atLeast(V.v1_21) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5))
 			icon.addProperty("id", this.icon);
-		} else
+		else
 			icon.addProperty("item", this.icon);
 
 		final JsonObject display = new JsonObject();
@@ -3556,7 +3551,7 @@ final class PotionSetter {
 		}
 
 		// For some reason this does not get added so we have to add it manually on top of the lore
-		if (MinecraftVersion.olderThan(V.v1_9)) {
+		if (MinecraftVersion.olderThan(V.v1_9))
 			if (item.getData().getData() == 0) {
 				final List<String> lore = new ArrayList<>();
 				final String potionLine = CompChatColor.translateColorCodes("<gray>" + ChatUtil.capitalizeFully(type.getName()) + " (" + TimeUtil.formatTimeColon(durationTicks / 20) + ")");
@@ -3573,7 +3568,6 @@ final class PotionSetter {
 				meta.setDisplayName(CompChatColor.translateColorCodes("<reset>Potion Of " + ChatUtil.capitalizeFully(type.getName())));
 				meta.setLore(lore);
 			}
-		}
 
 		//meta.setMainEffect(type);
 		meta.addCustomEffect(new PotionEffect(type, durationTicks > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) durationTicks, level - 1), true);

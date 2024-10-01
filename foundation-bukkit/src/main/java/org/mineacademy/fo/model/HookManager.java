@@ -256,7 +256,7 @@ public final class HookManager {
 		if (Platform.isPluginInstalled("PremiumVanish"))
 			premiumVanishHook = new PremiumVanishHook();
 
-		if (Platform.isPluginInstalled("ProtocolLib")) {
+		if (Platform.isPluginInstalled("ProtocolLib"))
 			// Also check if the library is loaded properly.
 			try {
 				protocolLibHook = new ProtocolLibHook();
@@ -268,7 +268,6 @@ public final class HookManager {
 
 				Common.error(t, "You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
 			}
-		}
 
 		if (Platform.isPluginInstalled("Residence"))
 			residenceHook = new ResidenceHook();
@@ -2820,10 +2819,8 @@ class PremiumVanishHook {
 			if (!this.isVanished(player))
 				ReflectionUtil.invokeStatic(this.hidePlayer, player, true, false);
 
-		} else {
-			if (this.isVanished(player))
-				ReflectionUtil.invokeStatic(this.showPlayer, player, true);
-		}
+		} else if (this.isVanished(player))
+			ReflectionUtil.invokeStatic(this.showPlayer, player, true);
 	}
 }
 
@@ -3615,7 +3612,7 @@ class BentoBoxHook {
 		} else {
 			final UUID uniqueId = player.getUniqueId();
 
-			for (final World world : Bukkit.getWorlds()) {
+			for (final World world : Bukkit.getWorlds())
 				try {
 					final Island island = manager.getIsland(world, uniqueId);
 
@@ -3624,7 +3621,6 @@ class BentoBoxHook {
 
 				} catch (final Throwable t) {
 				}
-			}
 		}
 
 		return new HashSet<>();
@@ -3873,12 +3869,11 @@ class ItemsAdderHook {
 			}
 		}
 
-		if (player == null) {
+		if (player == null)
 			if (replaceFontImagesAdventureNoPlayer != null)
 				return ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component.toAdventure());
 			else
 				return ReflectionUtil.invokeStatic(this.replaceFontImagesNoPlayer, component.toLegacy());
-		}
 
 		if (replaceFontImagesAdventure != null)
 			return SimpleComponent.fromAdventure(ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component.toAdventure()));
