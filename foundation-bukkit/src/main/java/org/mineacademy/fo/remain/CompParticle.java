@@ -40,6 +40,9 @@ public enum CompParticle {
 	SPELL("spell", "SPELL", "EFFECT"),
 	SPELL_INSTANT("instantSpell", "SPELL_INSTANT", "INSTANT_EFFECT"),
 	SPELL_MOB("mobSpell", "SPELL_MOB", "ENTITY_EFFECT"),
+	/**
+	 * @deprecated removed somewhere in 1.19
+	 */
 	SPELL_MOB_AMBIENT("mobSpellAmbient", "SPELL_MOB_AMBIENT", "AMBIENT_ENTITY_EFFECT"),
 	SPELL_WITCH("witchMagic", "SPELL_WITCH", "WITCH"),
 	DRIP_WATER("dripWater", "DRIP_WATER", "DRIPPING_WATER"),
