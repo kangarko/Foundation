@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
@@ -429,6 +429,16 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	public SimpleComponent appendNewLine() {
 		return this.appendPlain("\n");
+	}
+
+	/**
+	 * Append a new component.
+	 *
+	 * @param newComponent
+	 * @return
+	 */
+	public SimpleComponent append(Component newComponent) {
+		return this.append(SimpleComponent.fromAdventure(newComponent));
 	}
 
 	/**
