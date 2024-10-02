@@ -1,137 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.mineacademy</groupId>
-    <artifactId>foundation-parent</artifactId>
-    <version>7.0.0</version>
-    <packaging>pom</packaging>
-    
-    <modules>
-        <module>foundation-bukkit</module>
-        <module>foundation-velocity</module>
-        <module>foundation-bungee</module>
-        <module>foundation-core</module>
-    </modules>
+	<groupId>org.mineacademy</groupId>
+	<artifactId>foundation-parent</artifactId>
+	<version>7.0.0</version>
+	<packaging>pom</packaging>
 
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-	    <repository>
-	        <id>spigot-repo</id>
-	        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-	    </repository>
+	<modules>
+		<module>foundation-bukkit</module>
+		<module>foundation-velocity</module>
+		<module>foundation-bungee</module>
+		<module>foundation-core</module>
+	</modules>
+
+	<repositories>
 		<repository>
-            <id>papermc</id>
-            <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>  
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
 		<repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>	    
-	    <repository>
-            <id>mineacademy-repo</id>
-            <url>https://bitbucket.org/kangarko/libraries/raw/master</url>
-        </repository>
-        <repository>
-            <id>minecraft-libraries</id>
-            <url>https://libraries.minecraft.net</url>
-        </repository>
-    </repositories>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>papermc</id>
+			<url>https://repo.papermc.io/repository/maven-public/</url>
+		</repository>
+		<repository>
+			<id>bungeecord-repo</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+		<repository>
+			<id>mineacademy-repo</id>
+			<url>https://bitbucket.org/kangarko/libraries/raw/master</url>
+		</repository>
+		<repository>
+			<id>minecraft-libraries</id>
+			<url>https://libraries.minecraft.net</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
-        </dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.34</version>
+		</dependency>
 
-        <!-- This is NOT used anywhere in Foundation, only here to prevent compile 
+		<!-- This is NOT used anywhere in Foundation, only here to prevent
+		compile 
 			errors from missing the log4j dependency that is shipped in the server jar -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.24.0</version>
-            <scope>provided</scope>
-        </dependency>
-        
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.24.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Error reporting -->
+		<dependency>
+			<groupId>io.sentry</groupId>
+			<artifactId>sentry</artifactId>
+			<version>8.0.0-alpha.4</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Adventure -->
-		 <dependency>
-		    <groupId>net.kyori</groupId>
-		    <artifactId>adventure-api</artifactId>
-		    <version>4.17.0</version>
-		    <scope>provided</scope>
-		 </dependency>
-		 <dependency>
-		    <groupId>net.kyori</groupId>
-		    <artifactId>adventure-text-minimessage</artifactId>
-		    <version>4.17.0</version>
-		    <scope>provided</scope>
+		<dependency>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-api</artifactId>
+			<version>4.17.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>net.kyori</groupId>
-		    <artifactId>adventure-text-serializer-plain</artifactId>
-		    <version>4.17.0</version>
-		    <scope>provided</scope>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-text-minimessage</artifactId>
+			<version>4.17.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>net.kyori</groupId>
-		    <artifactId>adventure-text-serializer-gson</artifactId>
-		    <version>4.17.0</version>
-		    <scope>provided</scope>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-text-serializer-plain</artifactId>
+			<version>4.17.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>net.kyori</groupId>
-		    <artifactId>adventure-text-serializer-legacy</artifactId>
-		    <version>4.17.0</version>
-		    <scope>provided</scope>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-text-serializer-gson</artifactId>
+			<version>4.17.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>net.kyori</groupId>
-		    <artifactId>adventure-text-serializer-bungeecord</artifactId>
-		    <version>4.3.4</version>
-		    <scope>provided</scope>
-		</dependency>		
-		
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-text-serializer-legacy</artifactId>
+			<version>4.17.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-text-serializer-bungeecord</artifactId>
+			<version>4.3.4</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- We have our own config implementation updated to YAML 1.2 -->
 		<dependency>
-		    <groupId>org.snakeyaml</groupId>
-		    <artifactId>snakeyaml-engine</artifactId>
-		    <version>2.8</version>
-		    <scope>provided</scope>
+			<groupId>org.snakeyaml</groupId>
+			<artifactId>snakeyaml-engine</artifactId>
+			<version>2.8</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.11.0</version>
-		    <scope>provided</scope>
+			<scope>provided</scope>
 		</dependency>
-    </dependencies>
+	</dependencies>
 
-    <properties>
-    	<author>kangarko</author>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.showWarnings>false</maven.compiler.showWarnings>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+	<properties>
+		<author>kangarko</author>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.showWarnings>false</maven.compiler.showWarnings>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
 	<build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-            </plugin>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.4.2</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.13.0</version>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -153,7 +162,7 @@
 					</artifactSet>
 				</configuration>
 			</plugin>
-        </plugins>
-    </build>
+		</plugins>
+	</build>
 
 </project>

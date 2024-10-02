@@ -24,7 +24,6 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.ReflectionException;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -607,7 +606,7 @@ public final class ReflectionUtil {
 					return null;
 			}
 
-			final String available = typeOf.isEnum() ? CommonCore.join(typeOf.getEnumConstants()) : Lang.plain("unknown");
+			final String available = typeOf.isEnum() ? CommonCore.join(typeOf.getEnumConstants()) : "N/A";
 			throw new MissingEnumException(name, errorMessage.replace("{available}", available));
 		}
 

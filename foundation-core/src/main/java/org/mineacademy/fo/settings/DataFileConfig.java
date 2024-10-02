@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * Holds the "main" data yaml file config suitable for storing
- * varius plugin data such as player caches. 
- * 
+ * varius plugin data such as player caches.
+ *
  * This class is synchronized where as the YamlConfig is not.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -42,10 +42,10 @@ public final class DataFileConfig extends YamlConfig {
 	}
 
 	/**
-	 * Return the data config file instance, creating a new file if 
+	 * Return the data config file instance, creating a new file if
 	 * it does not exist, and sets the given path prefix for
 	 * any future get() or set() calls.
-	 * 
+	 *
 	 * @param pathPrefix
 	 * @return
 	 */
@@ -58,9 +58,9 @@ public final class DataFileConfig extends YamlConfig {
 	}
 
 	/**
-	 * Return the data config file instance, creating a new file if 
+	 * Return the data config file instance, creating a new file if
 	 * it does not exist.
-	 * 
+	 *
 	 * @return
 	 */
 	public static DataFileConfig getInstance() {
@@ -73,7 +73,7 @@ public final class DataFileConfig extends YamlConfig {
 			if (legacyFile.exists())
 				legacyFile.renameTo(newFile);
 
-			FileUtil.createIfNotExists(newFile);
+			FileUtil.createIfNotExists(FILE_NAME);
 
 			instance.load(newFile);
 		}

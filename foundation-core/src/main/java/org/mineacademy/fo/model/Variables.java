@@ -313,7 +313,7 @@ public final class Variables {
 		}
 
 		if ("prefix_plugin".equals(variable))
-			replacedValue = SimpleSettings.PLUGIN_PREFIX;
+			replacedValue = SimpleSettings.PREFIX;
 
 		else if ("prefix_info".equals(variable))
 			replacedValue = Messenger.getInfoPrefix();

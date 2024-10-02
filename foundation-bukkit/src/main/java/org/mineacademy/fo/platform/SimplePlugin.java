@@ -37,6 +37,7 @@ import org.mineacademy.fo.menu.MenuListener;
 import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
+import org.mineacademy.fo.model.BStatsMetrics;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.PacketListener;
@@ -406,6 +407,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 				this.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
+
+			if (this.getBStatsPluginId() != -1)
+				new BStatsMetrics(this, this.getBStatsPluginId());
 
 		} catch (final Throwable t) {
 			this.displayError(t);
@@ -875,6 +879,26 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	public boolean areRegionsEnabled() {
 		return false;
+	}
+
+	/**
+	 * Returns the Sentry DSN to use for error tracking or null if Sentry is disabled.
+	 *
+	 * @return
+	 */
+	@Override
+	public String getSentryDsn() {
+		return null;
+	}
+
+	/**
+	 * Return the bStats plugin id, if not -1, we automatically start reporting
+	 * your plugin to bStats.
+	 *
+	 * @return
+	 */
+	public int getBStatsPluginId() {
+		return -1;
 	}
 
 	// ----------------------------------------------------------------------------------------

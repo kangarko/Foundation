@@ -23,6 +23,7 @@ import java.util.zip.Inflater;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.HandledException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.ConfigStringSerializable;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -411,15 +412,20 @@ public abstract class CommonCore {
 	 * @param messages
 	 */
 	public static final void error(@NonNull Throwable throwable, String... messages) {
+		if (throwable instanceof HandledException)
+			return;
 
 		if (throwable instanceof InvocationTargetException && throwable.getCause() != null)
 			throwable = throwable.getCause();
 
+		if (throwable instanceof HandledException)
+			return;
+
 		if (!(throwable instanceof FoException))
 			Debugger.saveError(throwable, messages);
 
-		Debugger.printStackTrace(throwable);
 		logFramed(replaceErrorVariable(throwable, messages));
+		Debugger.printStackTrace(throwable);
 	}
 
 	/**
@@ -450,7 +456,9 @@ public abstract class CommonCore {
 			logFramed(false, replaceErrorVariable(throwable, messages));
 
 		Debugger.saveError(throwable, messages);
-		sneaky(throwable);
+
+		throwable.printStackTrace();
+		throw new HandledException();
 	}
 
 	/*
@@ -831,13 +839,13 @@ public abstract class CommonCore {
 			return array[0];
 
 		if (array.length == 2)
-			return array[0] + " " + Lang.plain("and") + " " + array[1];
+			return array[0] + " " + Lang.plain("part-and") + " " + array[1];
 
 		final StringBuilder out = new StringBuilder();
 
 		for (int i = 0; i < array.length; i++) {
 			if (i == array.length - 1)
-				out.append(" " + Lang.plain("and") + " ").append(array[i]);
+				out.append(" " + Lang.plain("part-and") + " ").append(array[i]);
 			else
 				out.append(i == 0 ? "" : ", ").append(array[i]);
 		}
@@ -1036,9 +1044,9 @@ public abstract class CommonCore {
 
 	/**
 	 * Convert the list having one data type into another.
-	 * 
-	 * @param <Old> 
-	 * @param <New> 
+	 *
+	 * @param <Old>
+	 * @param <New>
 	 * @param list
 	 * @param converter
 	 * @return the new list
@@ -1084,19 +1092,23 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static final <Old, New> New[] convertArray(final Old[] oldArray, final TypeConverter<Old, New> converter) {
-		final New[] newArray = (New[]) Array.newInstance(oldArray.getClass().getComponentType(), oldArray.length);
+		final List<New> newList = new ArrayList<>(oldArray.length);
 
-		for (int i = 0; i < oldArray.length; i++)
-			newArray[i] = converter.convert(oldArray[i]);
+		for (final Old oldItem : oldArray)
+			newList.add(converter.convert(oldItem));
 
-		return newArray;
+		if (newList.isEmpty())
+			return (New[]) new Object[0]; // This handles the empty array case
+
+		final New[] newArray = (New[]) Array.newInstance(newList.get(0).getClass(), newList.size());
+		return newList.toArray(newArray);
 	}
 
 	/**
 	 * Convert the set having one data type into another.
 	 *
-	 * @param <Old> 
-	 * @param <New> 
+	 * @param <Old>
+	 * @param <New>
 	 * @param list
 	 * @param converter
 	 * @return the new list
@@ -1364,8 +1376,8 @@ public abstract class CommonCore {
 
 	/**
 	 * Create a new modifiable array list from array.
-	 * 
-	 * @param <T> 
+	 *
+	 * @param <T>
 	 * @param array
 	 * @return
 	 */

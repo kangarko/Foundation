@@ -114,27 +114,15 @@ public final class FileUtil {
 
 		final File destination = new File(datafolder, path);
 
-		createIfNotExists(destination);
-
-		return destination;
-	}
-
-	/**
-	 * Checks if the file exists and creates a new one if it does not.
-	 *
-	 * @param file
-	 * @return the file itself
-	 */
-	public static File createIfNotExists(File file) {
-		if (!file.exists())
+		if (!destination.exists())
 			try {
-				file.createNewFile();
+				destination.createNewFile();
 
 			} catch (final Throwable t) {
-				CommonCore.throwError(t, "Could not create new file '" + file + "' due to " + t);
+				CommonCore.throwError(t, "Could not create new file '" + destination + "' due to " + t);
 			}
 
-		return file;
+		return destination;
 	}
 
 	/**
@@ -335,13 +323,13 @@ public final class FileUtil {
 	}
 
 	/**
-	 * Write lines to a file, creating the file if not exist appending lines at the end.
+	 * Write lines to a file that exists, appending lines at the end.
 	 *
 	 * @param to
 	 * @param lines
 	 */
 	public static void write(File to, String... lines) {
-		write(createIfNotExists(to), Arrays.asList(lines), StandardOpenOption.APPEND);
+		write(to, Arrays.asList(lines));
 	}
 
 	/**
@@ -363,11 +351,10 @@ public final class FileUtil {
 	 * @param options
 	 */
 	public static void write(File to, Collection<String> lines, StandardOpenOption... options) {
+		ValidCore.checkBoolean(to.exists(), "Cannot write to non-existing file: " + to);
+
 		try {
 			final Path path = Paths.get(to.toURI());
-
-			if (!to.exists())
-				createIfNotExists(to);
 
 			Files.write(path, lines, StandardCharsets.UTF_8, options);
 

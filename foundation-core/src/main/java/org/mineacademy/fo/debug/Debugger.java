@@ -11,6 +11,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import io.sentry.Sentry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -77,63 +78,74 @@ public final class Debugger {
 	 * <p>File is written to the server's base directory.</p>
 	 */
 	public static void saveError(Throwable throwable, String... messages) {
-		final String systemInfo = "Running " + Platform.getPlatformName() + " " + Platform.getPlatformVersion() + " and Java " + System.getProperty("java.version");
 
-		try {
-			final List<String> lines = new ArrayList<>();
-			final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + throwable.getClass().getSimpleName();
+		// Log to sentry if enabled.
+		if (Platform.getPlugin().getSentryDsn() != null && SimpleSettings.SENTRY) {
+			final Throwable finalThrowable = throwable;
 
-			// Write out header and server info
-			fill(lines,
-					"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
-					header,
-					systemInfo,
-					"Plugins: " + CommonCore.join(Platform.getServerPlugins()),
-					"----------------------------------------------------------------------------------------------");
+			Platform.runTaskAsync(() -> Sentry.captureException(finalThrowable));
+		}
 
-			// Write additional data
-			if (messages != null && !String.join("", messages).isEmpty()) {
-				fill(lines, "\nMore Information: ");
-				fill(lines, messages);
-			}
+		// Else, only log locally.
+		else {
+			final String systemInfo = "Running " + Platform.getPlatformName() + " " + Platform.getPlatformVersion() + " and Java " + System.getProperty("java.version");
 
-			// Write the stack trace
-			do {
-				// Write the error header
-				fill(lines, throwable == null ? "Unknown error" : throwable.getClass().getSimpleName() + " " + CommonCore.getOrDefault(throwable.getMessage(), "(Unknown cause)"));
+			try {
+				final List<String> lines = new ArrayList<>();
+				final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + throwable.getClass().getSimpleName();
 
-				int count = 0;
+				// Write out header and server info
+				fill(lines,
+						"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+						header,
+						systemInfo,
+						"Plugins: " + CommonCore.join(Platform.getServerPlugins()),
+						"----------------------------------------------------------------------------------------------");
 
-				for (final StackTraceElement el : throwable.getStackTrace()) {
-					count++;
-
-					final String trace = el.toString();
-
-					if (trace.contains("sun.reflect"))
-						continue;
-
-					if (count > 6 && trace.startsWith("net.minecraft.server"))
-						break;
-
-					fill(lines, "\t at " + el.toString());
+				// Write additional data
+				if (messages != null && !String.join("", messages).isEmpty()) {
+					fill(lines, "\nMore Information: ");
+					fill(lines, messages);
 				}
-			} while ((throwable = throwable.getCause()) != null);
 
-			fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
+				// Write the stack trace
+				do {
+					// Write the error header
+					fill(lines, throwable == null ? "Unknown error" : throwable.getClass().getSimpleName() + " " + CommonCore.getOrDefault(throwable.getMessage(), "(Unknown cause)"));
 
-			// Log to the console
-			CommonCore.log(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
+					int count = 0;
 
-			// Finally, save the error file
-			FileUtil.write("error.log", lines);
+					for (final StackTraceElement el : throwable.getStackTrace()) {
+						count++;
 
-		} catch (final Throwable secondError) {
+						final String trace = el.toString();
 
-			// Use system in case CommonCore#log threw the error
-			log("Got error when saving another error! Saving error:" + secondError);
-			log("Original error that is not saved:");
+						if (trace.contains("sun.reflect"))
+							continue;
 
-			throwable.printStackTrace();
+						if (count > 6 && trace.startsWith("net.minecraft.server"))
+							break;
+
+						fill(lines, "\t at " + el.toString());
+					}
+				} while ((throwable = throwable.getCause()) != null);
+
+				fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
+
+				// Log to the console
+				CommonCore.log(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
+
+				// Finally, save the error file
+				FileUtil.write("error.log", lines);
+
+			} catch (final Throwable secondError) {
+
+				// Use system in case CommonCore#log threw the error
+				log("Got error when saving another error! Saving error:" + secondError);
+				log("Original error that is not saved:");
+
+				throwable.printStackTrace();
+			}
 		}
 	}
 

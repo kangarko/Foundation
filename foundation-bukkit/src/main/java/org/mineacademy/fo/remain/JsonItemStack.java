@@ -80,7 +80,7 @@ public class JsonItemStack {
 		json.addProperty("type", item.getType().name());
 
 		if (item.getDurability() > 0)
-			json.addProperty("data", item.getDurability());
+			json.addProperty("durability", item.getDurability());
 
 		if (item.getAmount() != 1)
 			json.addProperty("amount", item.getAmount());
@@ -362,13 +362,13 @@ public class JsonItemStack {
 		ValidCore.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
 
 		final String type = itemJson.get("type").getAsString();
-		final Integer data = itemJson.has("data") ? itemJson.get("data").getAsInt() : null;
+		final Integer durability = itemJson.has("durability") ? itemJson.get("durability").getAsInt() : null;
 		final Integer amount = itemJson.has("amount") ? itemJson.get("amount").getAsInt() : null;
 
 		final ItemStack item = new ItemStack(CompMaterial.fromString(type).getMaterial());
 
-		if (data != null)
-			item.setDurability(data.shortValue());
+		if (durability != null)
+			item.setDurability(durability.shortValue());
 
 		if (amount != null)
 			item.setAmount(amount);
