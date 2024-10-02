@@ -16,6 +16,7 @@ import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
 
+import io.sentry.Sentry;
 import net.kyori.adventure.text.event.HoverEventSource;
 
 /**
@@ -24,6 +25,33 @@ import net.kyori.adventure.text.event.HoverEventSource;
 public abstract class FoundationPlatform {
 
 	private String customServerName;
+
+	public FoundationPlatform() {
+		final FoundationPlugin plugin = this.getPlugin();
+
+		if (plugin.getSentryDsn() != null) {
+			plugin.loadLibrary("io.sentry", "sentry", "8.0.0-alpha.4");
+
+			Sentry.init(options -> {
+				options.setDsn(plugin.getSentryDsn());
+				options.setTracesSampleRate(1.0);
+
+				// Add plugin name and version to Sentry context
+				options.setBeforeSend((event, hint) -> {
+					event.setRelease(plugin.getVersion());
+					event.setServerName(null);
+					event.setDist(Platform.getPlatformVersion());
+					event.setTag("plugin_name", plugin.getName());
+					event.setTag("plugin_version", plugin.getVersion());
+					event.setTag("server_version", Platform.getPlatformVersion());
+					event.setTag("server_distro", Platform.getPlatformName());
+					//event.setUser(new User()); // anonymize IP address
+
+					return event;
+				});
+			});
+		}
+	}
 
 	public abstract boolean callEvent(Object event);
 

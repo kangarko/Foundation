@@ -43,12 +43,14 @@ public class SimpleSettings extends YamlStaticConfig {
 	// --------------------------------------------------------------------
 
 	/**
-	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
-	 * those that are specified in this settings are logged into the console, otherwise no message is shown.
+	 * What commands should trigger the your main plugin command (separated by a comma ,)?
 	 * <p>
-	 * Typically this is left empty: Debug: []
+	 * Typical values for ChatControl:
+	 * <p>
+	 * Command_Aliases: [chatcontrol, chc, cc]
+	 * <p>
 	 */
-	public static List<String> DEBUG_SECTIONS = new ArrayList<>();
+	public static List<String> MAIN_COMMAND_ALIASES = new ArrayList<>();
 
 	/**
 	 * The plugin prefix in front of chat/console messages.
@@ -57,7 +59,15 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * <p>
 	 * Prefix: "&8[&3ChatControl&8]&7 "
 	 */
-	public static SimpleComponent PLUGIN_PREFIX = SimpleComponent.fromMini("&7" + Platform.getPlugin().getName() + " //");
+	public static SimpleComponent PREFIX = SimpleComponent.fromMini("&7" + Platform.getPlugin().getName() + " //");
+
+	/**
+	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
+	 * those that are specified in this settings are logged into the console, otherwise no message is shown.
+	 * <p>
+	 * Typically this is left empty: Debug: []
+	 */
+	public static List<String> DEBUG_SECTIONS = new ArrayList<>();
 
 	/**
 	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to -1 to disable.
@@ -69,24 +79,6 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static Integer LAG_THRESHOLD_MILLIS = 100;
 
 	/**
-	 * When processing regular expressions, limit executing to the specified time.
-	 * This prevents server freeze/crash on malformed regex (loops).
-	 * <p>
-	 * Regex_Timeout_Milis: 100
-	 */
-	public static Integer REGEX_TIMEOUT = 100;
-
-	/**
-	 * What commands should trigger the your main plugin command (separated by a comma ,)?
-	 * <p>
-	 * Typical values for ChatControl:
-	 * <p>
-	 * Command_Aliases: [chatcontrol, chc, cc]
-	 * <p>
-	 */
-	public static List<String> MAIN_COMMAND_ALIASES = new ArrayList<>();
-
-	/**
 	 * The localization language tag.
 	 *
 	 * Typically: Locale: en_US
@@ -94,13 +86,26 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static String LOCALE = "en_US";
 
 	/**
+	 * Report errors to Sentry.io?
+	 *
+	 * Defaults to true.
+	 */
+	public static Boolean SENTRY = true;
+
+	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
 		setPathPrefix(null);
 
+		if (isSetDefault("Command_Aliases"))
+			MAIN_COMMAND_ALIASES = getCommandList("Command_Aliases");
+
 		if (isSetDefault("Prefix"))
-			PLUGIN_PREFIX = getComponent("Prefix");
+			PREFIX = getComponent("Prefix");
+
+		if (isSetDefault("Debug"))
+			DEBUG_SECTIONS = getStringList("Debug");
 
 		if (isSetDefault("Log_Lag_Over_Milis")) {
 			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
@@ -109,12 +114,6 @@ public class SimpleSettings extends YamlStaticConfig {
 			if (LAG_THRESHOLD_MILLIS == 0)
 				CommonCore.log("&eLog_Lag_Over_Milis is 0, all performance is logged. Set to -1 to disable.");
 		}
-
-		if (isSetDefault("Debug"))
-			DEBUG_SECTIONS = getStringList("Debug");
-
-		if (isSetDefault("Regex_Timeout_Milis"))
-			REGEX_TIMEOUT = getInteger("Regex_Timeout_Milis");
 
 		if (isSetDefault("Locale")) {
 			LOCALE = getString("Locale");
@@ -131,7 +130,7 @@ public class SimpleSettings extends YamlStaticConfig {
 			}
 		}
 
-		if (isSetDefault("Command_Aliases"))
-			MAIN_COMMAND_ALIASES = getCommandList("Command_Aliases");
+		if (isSetDefault("Sentry"))
+			SENTRY = getBoolean("Sentry");
 	}
 }

@@ -86,6 +86,13 @@ public interface FoundationPlugin {
 	ClassLoader getPluginClassLoader();
 
 	/**
+	 * Return the Sentry DSN for this plugin used for error reporting.
+	 *
+	 * @return
+	 */
+	String getSentryDsn();
+
+	/**
 	 * Return the plugin's version.
 	 *
 	 * @return

@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
@@ -73,13 +72,13 @@ public abstract class FoundationPlayer {
 	public abstract boolean isDiscord();
 
 	/**
-	 * Returns the player's name, or the "console-name" lang key if the player is a console.
+	 * Returns the player's name, or the "part-console" lang key if the player is a console.
 	 *
 	 * @see Lang
 	 * @return
 	 */
 	public final String getName() {
-		return this.isConsole() ? Lang.legacy("console-name") : this.getSenderName0();
+		return this.isConsole() ? Lang.legacy("part-console") : this.getSenderName0();
 	}
 
 	/**
@@ -305,8 +304,8 @@ public abstract class FoundationPlayer {
 	public final void sendMessage(SimpleComponent component) {
 		final String plainMessage = component.toPlain(this);
 
-		if (plainMessage.isEmpty())
-			Debugger.printStackTrace("Sending empty message to player. Message: " + component.toAdventureJson(this));
+		//if (plainMessage.isEmpty())
+		//	Debugger.printStackTrace("Sending empty message to player. Message: " + component.toAdventureJson(this));
 
 		if (plainMessage.startsWith("<actionbar>")) {
 			this.sendActionBar(component.replaceLiteral("<actionbar>", ""));

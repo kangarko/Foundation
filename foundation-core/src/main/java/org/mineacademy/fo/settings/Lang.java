@@ -464,11 +464,12 @@ public final class Lang {
 		 * Implementation of the file dump.
 		 */
 		private static File dumpToFile0(boolean createFileIfNotExists) {
-			final File localFile = FileUtil.getFile("lang/" + SimpleSettings.LOCALE + ".json");
+			final String path = "lang/" + SimpleSettings.LOCALE + ".json";
+			final File localFile = FileUtil.getFile(path);
 
 			if (!localFile.exists()) {
 				if (createFileIfNotExists)
-					FileUtil.createIfNotExists(localFile);
+					FileUtil.createIfNotExists(path);
 				else
 					return localFile;
 			}
