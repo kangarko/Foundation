@@ -155,6 +155,12 @@ public final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
+	public void removeBossBar() {
+		if (this.isPlayer)
+			NMSBossBar.getInstance().removeBar(this.player);
+	}
+
+	@Override
 	public void sendTablist(SimpleComponent header, SimpleComponent footer) {
 		if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
 			try {

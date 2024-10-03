@@ -230,6 +230,11 @@ public abstract class FoundationPlayer {
 	public abstract void sendBossbarTimed(SimpleComponent message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay);
 
 	/**
+	 * Removes the bossbar from the player.
+	 */
+	public abstract void removeBossBar();
+
+	/**
 	 * Sends a toast to the player if supported by the platform.
 	 *
 	 * Legacy and MiniMessage tags will be replaced.
