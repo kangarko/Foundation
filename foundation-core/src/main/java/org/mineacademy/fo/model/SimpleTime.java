@@ -113,7 +113,7 @@ public final class SimpleTime implements ConfigStringSerializable {
 	 * <pre>{@code
 	 * long lastExecution = System.currentTimeMillis() - 5000L;
 	 * String waitTime = getFormattedRemainingWaitTime(lastExecution);
-	 * System.out.println("Remaining wait time: " + waitTime);
+	 * print "Remaining wait time: " + waitTime
 	 * }</pre>
 	 *
 	 * <p>For example, if the time limit is 10 seconds and the last execution was 5 seconds ago,

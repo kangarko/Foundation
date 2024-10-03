@@ -74,10 +74,6 @@ public final class DumpLocaleCommand extends SimpleSubCommandCore {
 	 */
 	@Override
 	protected List<String> tabComplete() {
-
-		if (args.length == 1)
-			return completeLastWord("en_US");
-
 		return NO_COMPLETE;
 	}
 }

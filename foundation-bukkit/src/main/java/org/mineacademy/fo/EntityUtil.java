@@ -142,7 +142,6 @@ public final class EntityUtil {
 	 * @param entity
 	 */
 	public static void removeVehiclesAndPassengers(Entity entity) {
-
 		Entity vehicle = entity.getVehicle();
 
 		while (vehicle != null) {

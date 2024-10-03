@@ -60,6 +60,7 @@ public final class ReloadCommand extends SimpleSubCommandCore {
 	 * Set the properties for this command
 	 */
 	private void setProperties() {
+		this.setMaxArguments(0);
 		this.setDescription(Lang.component("command-reload-description"));
 	}
 
