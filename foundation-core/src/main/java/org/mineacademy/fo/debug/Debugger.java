@@ -8,6 +8,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -80,8 +81,32 @@ public final class Debugger {
 	public static void saveError(Throwable throwable, String... messages) {
 
 		// Log to sentry if enabled.
-		if (Platform.getPlugin().getSentryDsn() != null && SimpleSettings.SENTRY) {
+		final FoundationPlugin plugin = Platform.getPlugin();
+
+		if (plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;
+
+			plugin.loadLibrary("io.sentry", "sentry", "8.0.0-alpha.4");
+
+			// Need to address the bug where a globally included sentry has the DSN of the first plugin
+			Sentry.init(options -> {
+				options.setDsn(plugin.getSentryDsn());
+				options.setTracesSampleRate(0.0);
+
+				// Add plugin name and version to Sentry context
+				options.setBeforeSend((event, hint) -> {
+					event.setRelease(plugin.getVersion());
+					event.setServerName(null);
+					event.setDist(Platform.getPlatformVersion());
+					event.setTag("plugin_name", plugin.getName());
+					event.setTag("plugin_version", plugin.getVersion());
+					event.setTag("server_version", Platform.getPlatformVersion());
+					event.setTag("server_distro", Platform.getPlatformName());
+					//event.setUser(new User()); // anonymize IP address
+
+					return event;
+				});
+			});
 
 			Platform.runTaskAsync(() -> Sentry.captureException(finalThrowable));
 		}
