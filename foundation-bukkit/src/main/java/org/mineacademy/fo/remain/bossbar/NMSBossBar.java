@@ -349,11 +349,13 @@ public final class NMSBossBar implements Listener {
 		final float pitch = loc.getPitch();
 
 		if (pitch >= 55)
-			loc.add(0, -3, 0);
+			loc.add(0, -10, 0);
+
 		else if (pitch <= -55)
-			loc.add(0, 3, 0);
+			loc.add(0, 200, 0);
+
 		else
-			loc = loc.getBlock().getRelative(getDirection(loc), Bukkit.getViewDistance() * 8).getLocation();
+			loc = loc.getBlock().getRelative(getDirection(loc), Bukkit.getViewDistance() * 4).getLocation();
 
 		loc.subtract(0, 10, 0);
 

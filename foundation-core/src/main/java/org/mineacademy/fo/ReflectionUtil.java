@@ -643,16 +643,6 @@ public final class ReflectionUtil {
 				} catch (final NoSuchMethodException t) {
 				}
 
-			if (method == null)
-				try {
-					final Method valueOf = typeOf.getDeclaredMethod("valueOf", String.class);
-
-					if (Modifier.isPublic(valueOf.getModifiers()) && Modifier.isStatic(valueOf.getModifiers()))
-						method = valueOf;
-
-				} catch (final NoSuchMethodException t) {
-				}
-
 			// Only invoke fromName from non-Bukkit API since this gives unexpected results.
 			if (method == null && !typeOf.getName().contains("org.bukkit"))
 				try {
@@ -664,8 +654,20 @@ public final class ReflectionUtil {
 				} catch (final NoSuchMethodException t) {
 				}
 
+			if (method == null)
+				try {
+					final Method valueOf = typeOf.getDeclaredMethod("valueOf", String.class);
+
+					if (Modifier.isPublic(valueOf.getModifiers()) && Modifier.isStatic(valueOf.getModifiers()))
+						method = valueOf;
+
+				} catch (final NoSuchMethodException t) {
+				}
+
 			if (method != null)
 				try {
+					method.setAccessible(true);
+
 					final E value = (E) method.invoke(null, name);
 
 					// Cache after method invocation to ensure it went right.

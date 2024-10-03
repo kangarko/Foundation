@@ -93,9 +93,6 @@ public final class PermsCommand extends SimpleSubCommandCore {
 	private void setProperties() {
 		this.setDescription(Lang.component("command-perms-description"));
 		this.setUsage(Lang.component("command-perms-usage"));
-
-		// Invoke to check for errors early
-		this.list();
 	}
 
 	@Override
@@ -106,13 +103,6 @@ public final class PermsCommand extends SimpleSubCommandCore {
 				.setFoundationHeader(Lang.legacy("command-perms-header"))
 				.setPages(this.list(phrase))
 				.send(this.audience);
-	}
-
-	/*
-	 * Iterate through all classes and superclasses in the given classes and fill their permissions
-	 */
-	private List<SimpleComponent> list() {
-		return this.list(null);
 	}
 
 	/*
@@ -145,9 +135,7 @@ public final class PermsCommand extends SimpleSubCommandCore {
 		if (!messages.isEmpty() && !clazz.isAnnotationPresent(PermissionGroup.class))
 			throw new FoException("Please place @PermissionGroup over " + clazz);
 
-		messages.add(SimpleComponent
-				.fromMini("&7- ").append(messages.isEmpty() ? Lang.component("command-perms-main") : SimpleComponent.fromPlain(group.value()))
-				.onClickOpenUrl(""));
+		final List<SimpleComponent> subsectionMessages = new ArrayList<>();
 
 		for (final Field field : clazz.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(Permission.class))
@@ -178,7 +166,7 @@ public final class PermsCommand extends SimpleSubCommandCore {
 			final boolean has = this.audience == null ? false : this.hasPerm(node.replaceAll("\\.\\{.*?\\}", ""));
 
 			if (phrase == null || node.contains(phrase)) {
-				messages.add(SimpleComponent
+				subsectionMessages.add(SimpleComponent
 						.fromMini("  " + (has ? "&a" : "&7") + node + (def ? " " + Lang.legacy("command-perms-true-by-default") : ""))
 						.onClickOpenUrl("")
 						.onClickSuggestCmd(node)
@@ -187,6 +175,14 @@ public final class PermsCommand extends SimpleSubCommandCore {
 								"default", def ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"),
 								"state", has ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"))));
 			}
+		}
+
+		if (!subsectionMessages.isEmpty()) {
+			messages.add(SimpleComponent
+					.fromMini("&7- ").append(messages.isEmpty() ? Lang.component("command-perms-main") : SimpleComponent.fromPlain(group.value()))
+					.onClickOpenUrl(""));
+
+			messages.addAll(subsectionMessages);
 		}
 
 		for (final Class<?> inner : clazz.getDeclaredClasses()) {

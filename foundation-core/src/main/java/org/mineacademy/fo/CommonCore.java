@@ -755,7 +755,7 @@ public abstract class CommonCore {
 	 */
 	@SafeVarargs
 	public static <T> List<String> tabComplete(String partialName, T... elements) {
-		final List<String> toComplete = new ArrayList<>();
+		final Collection<String> toComplete = new HashSet<>();
 
 		if (elements != null)
 			for (final T element : elements)
@@ -797,9 +797,13 @@ public abstract class CommonCore {
 				iterator.remove();
 		}
 
-		Collections.sort(toComplete);
+		// Prevents duplicates
+		final List<String> sorted = new ArrayList<>();
+		sorted.addAll(toComplete);
 
-		return toComplete;
+		Collections.sort(sorted);
+
+		return sorted;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1198,6 +1202,39 @@ public abstract class CommonCore {
 					copy.add(key);
 
 		return copy;
+	}
+
+	/**
+	 * Remove null or empty values from a list and return a new list.
+	 *
+	 * <p>This method filters the provided list and creates a new one without:
+	 * <ul>
+	 * <li> Null values
+	 * <li> Empty strings (if the elements are strings)
+	 * </ul>
+	 *
+	 * <p>Other types of objects are simply added to the new list if they are not null.
+	 *
+	 * <ul>
+	 * <li> For example, calling {@code removeNullAndEmpty([null, "", "text"])} will return a list with only "text".
+	 * </ul>
+	 *
+	 * @param <T> the type of items in the list
+	 * @param list the list from which null or empty values will be removed
+	 * @return a new list without null or empty values
+	 */
+	public static final <T> T[] removeNullAndEmpty(final T[] list) {
+		final List<T> copy = new ArrayList<>();
+
+		for (final T key : list)
+			if (key != null)
+				if (key instanceof String) {
+					if (!((String) key).isEmpty())
+						copy.add(key);
+				} else
+					copy.add(key);
+
+		return copy.toArray(list);
 	}
 
 	/**

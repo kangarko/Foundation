@@ -75,6 +75,7 @@ public final class DebugCommand extends SimpleSubCommandCore {
 	 * Set the properties for this command
 	 */
 	private void setProperties() {
+		this.setMaxArguments(0);
 		this.setDescription("ZIP your settings for reporting bugs.");
 	}
 
