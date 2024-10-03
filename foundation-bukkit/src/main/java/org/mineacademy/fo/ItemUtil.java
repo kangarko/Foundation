@@ -33,9 +33,26 @@ public final class ItemUtil {
 	 *
 	 * @param first
 	 * @param second
+	 *
 	 * @return true if items are similar (see above)
 	 */
 	public static boolean isSimilar(ItemStack first, ItemStack second) {
+		return isSimilar(first, second, false);
+	}
+
+	/**
+	 * Compares two items. Returns true if they are similar.
+	 * <p>
+	 * Two items are similar if both are not null and if their type, data, name and lore equals.
+	 * The damage, quantity, item flags enchants and other properties are ignored.
+	 *
+	 * @param first
+	 * @param second
+	 * @param nbtOnly
+	 *
+	 * @return true if items are similar (see above)
+	 */
+	public static boolean isSimilar(ItemStack first, ItemStack second, boolean nbtOnly) {
 		if (first == null || second == null)
 			return false;
 
@@ -58,7 +75,7 @@ public final class ItemUtil {
 			return false;
 
 		// ItemMeta
-		{
+		if (!nbtOnly) {
 			final ItemMeta firstMeta = first.getItemMeta();
 			final ItemMeta secondMeta = second.getItemMeta();
 

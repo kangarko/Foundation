@@ -53,9 +53,9 @@ public abstract class Tool {
 	 * @return the corresponding tool, or null
 	 */
 	public static Tool getTool(ItemStack item) {
-		for (final Tool t : tools)
-			if (t.isTool(item))
-				return t;
+		for (final Tool tool : tools)
+			if (tool.isTool(item))
+				return tool;
 
 		return null;
 	}
@@ -83,8 +83,8 @@ public abstract class Tool {
 
 			try {
 				Thread.sleep(3);
-			} catch (final InterruptedException e) {
-				e.printStackTrace();
+			} catch (final InterruptedException ex) {
+				ex.printStackTrace();
 			}
 
 			// Sync to main thread
@@ -105,7 +105,7 @@ public abstract class Tool {
 	 * @return true if this tool is the given itemstack
 	 */
 	public final boolean isTool(final ItemStack item) {
-		return ItemUtil.isSimilar(this.getItem(), item);
+		return ItemUtil.isSimilar(this.getItem(), item, this.compareByNbt());
 	}
 
 	/**
@@ -194,6 +194,16 @@ public abstract class Tool {
 	 * default
 	 */
 	protected boolean autoCancel() {
+		return false;
+	}
+
+	/**
+	 * If true we ignore all matching except type and
+	 * compare by NBT tags only.
+	 *
+	 * @return
+	 */
+	public boolean compareByNbt() {
 		return false;
 	}
 
