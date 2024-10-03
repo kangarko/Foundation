@@ -50,6 +50,7 @@ import org.mineacademy.fo.proxy.message.OutgoingMessage;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import net.kyori.adventure.text.Component;
 
@@ -406,6 +407,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 				discord.registerHook();
 
 				this.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
+			}
+
+			// Move the legacy localization folder to unused
+			{
+				final File localizationFolder = new File(this.getDataFolder(), "localization");
+
+				if (localizationFolder.exists()) {
+					Common.warning("The localization/ folder is now unused, run '" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " dumplocale' to download the new locale format. Moving to unused/ ...");
+
+					final File unusedFolder = new File(this.getDataFolder(), "unused");
+
+					if (!unusedFolder.exists())
+						unusedFolder.mkdirs();
+
+					localizationFolder.renameTo(new File(unusedFolder, "localization"));
+				}
 			}
 
 			if (this.getBStatsPluginId() != -1)
