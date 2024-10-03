@@ -6,12 +6,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.RegionMenu;
@@ -179,6 +177,9 @@ public class RegionCommand extends SimpleSubCommand {
 
 			DiskRegion.createRegion(regionName, createdRegion);
 
+			if (this.getPlayer().isConversing())
+				this.getPlayer().acceptConversationInput("exit");
+
 			this.tellSuccess("Region '&2" + regionName + "&7' has been created.");
 			return;
 
@@ -237,7 +238,7 @@ public class RegionCommand extends SimpleSubCommand {
 
 				for (final DiskRegion otherRegion : DiskRegion.getRegions())
 					if (otherRegion.getCenter().distance(playerLocation) < 100) {
-						otherRegion.visualize(this.getPlayer(), Color.fromRGB(RandomUtil.nextChatColor().getColor().getRGB()));
+						otherRegion.visualize(this.getPlayer());
 
 						count++;
 					}
