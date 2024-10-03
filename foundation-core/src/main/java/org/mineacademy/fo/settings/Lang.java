@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
@@ -479,12 +480,10 @@ public final class Lang {
 			if (localJson == null)
 				localJson = new JsonObject();
 
-			CommonCore.log("Updating localization file " + localFile);
-
 			// First, remove local keys that no longer exist in our dictionary
 			for (final String key : localJson.keySet())
 				if (!instance.dictionary.has(key)) {
-					CommonCore.log("Removing unused key '" + key + "'");
+					CommonCore.log("Removing unused key '" + key + "' from locale file " + localFile);
 
 					localJson.remove(key);
 				}
@@ -492,12 +491,16 @@ public final class Lang {
 			// Then, add new keys to the local file
 			for (final String key : instance.dictionary.keySet())
 				if (!localJson.has(key)) {
-					CommonCore.log("Adding new key '" + key + "'");
+					CommonCore.log("Adding new key '" + key + "' from locale file " + localFile);
 
 					localJson.add(key, instance.dictionary.get(key));
 				}
 
-			FileUtil.write(localFile, Arrays.asList(CommonCore.GSON_PRETTY.toJson(localJson)), StandardOpenOption.TRUNCATE_EXISTING);
+			// Trick to sort keys.
+			final String unsortedDump = CommonCore.GSON_PRETTY.toJson(localJson);
+			final Map<String, Object> map = CommonCore.GSON.fromJson(unsortedDump, TreeMap.class);
+
+			FileUtil.write(localFile, Arrays.asList(CommonCore.GSON_PRETTY.toJson(map)), StandardOpenOption.TRUNCATE_EXISTING);
 
 			return localFile;
 		}
@@ -518,6 +521,9 @@ public final class Lang {
 
 			List<String> content;
 			final JsonObject dictionary = new JsonObject();
+
+			// Set early to make dumpLocale work to update old files
+			instance.dictionary = dictionary;
 
 			// Foundation locale
 			{
@@ -622,8 +628,6 @@ public final class Lang {
 			instance.legacyArrayCache = legacyArrayCache;
 			instance.componentCache = componentCache;
 			instance.componentArrayCache = componentArrayCache;
-
-			instance.dictionary = dictionary;
 		}
 
 		/*
