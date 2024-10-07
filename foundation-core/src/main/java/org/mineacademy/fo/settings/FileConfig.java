@@ -100,14 +100,14 @@ public abstract class FileConfig extends ConfigSection {
 			ValidCore.checkNotNull(defaultContent, "Inbuilt " + from + " not found! Did you reload?");
 
 			// Load main
-			this.load(FileUtil.extract(defaultContent, to));
+			this.loadFromFile(FileUtil.extract(defaultContent, to));
 
 			// Load defaults
 			this.defaults = new YamlConfig();
 			this.defaults.loadFromString(String.join("\n", defaultContent));
 
 		} else
-			this.load(FileUtil.createIfNotExists(to));
+			this.loadFromFile(FileUtil.createIfNotExists(to));
 	}
 
 	/**
@@ -115,13 +115,13 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param file File to load from.
 	 */
-	public final void load(@NonNull File file) {
+	public final void loadFromFile(@NonNull File file) {
 		this.file = file;
 
 		try {
 			final FileInputStream stream = new FileInputStream(file);
 
-			this.load(new InputStreamReader(stream, StandardCharsets.UTF_8));
+			this.loadFromReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
 		} catch (final Exception ex) {
 			CommonCore.error(ex, "Cannot load config from file " + file);
@@ -136,7 +136,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param internalPath
 	 */
-	public final void load(@NonNull String internalPath) {
+	public final void loadFromInternal(@NonNull String internalPath) {
 
 		try {
 			final List<String> content = FileUtil.readLinesFromInternalPath(internalPath);
@@ -157,7 +157,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param reader
 	 */
-	public final void load(Reader reader) {
+	public final void loadFromReader(Reader reader) {
 		final StringBuilder builder = new StringBuilder();
 
 		try (BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader)) {

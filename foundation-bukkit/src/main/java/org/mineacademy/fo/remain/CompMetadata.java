@@ -455,7 +455,7 @@ public final class CompMetadata {
 				final File file = FileUtil.getFile("metadata.yml");
 
 				if (file.exists())
-					this.load(file);
+					this.loadFromFile(file);
 
 				else
 					this.setFile(file);
@@ -538,7 +538,7 @@ public final class CompMetadata {
 			Platform.runTask(4, () -> {
 				for (final Iterator<UUID> iterator = this.entityMetadata.keySet().iterator(); iterator.hasNext();) {
 					final UUID uniqueId = iterator.next();
-					final Entity entity = Remain.getEntity(uniqueId);
+					final Entity entity = Remain.getLoadedEntity(uniqueId);
 
 					if (entity == null) {
 						if (Remain.getOfflinePlayerByUUID(uniqueId).hasPlayedBefore())

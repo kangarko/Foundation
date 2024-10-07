@@ -75,7 +75,7 @@ public final class DataFileConfig extends YamlConfig {
 
 			FileUtil.createIfNotExists(FILE_NAME);
 
-			instance.load(newFile);
+			instance.loadFromFile(newFile);
 		}
 
 		synchronized (instance) {

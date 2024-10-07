@@ -560,7 +560,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static YamlConfig fromInternalPath(@NonNull String path) {
 		final YamlConfig config = new YamlConfig();
-		config.load(path);
+		config.loadFromInternal(path);
 
 		return config;
 	}
@@ -573,7 +573,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static YamlConfig fromFile(@NonNull File file) {
 		final YamlConfig config = new YamlConfig();
-		config.load(file);
+		config.loadFromFile(file);
 
 		return config;
 	}
@@ -586,7 +586,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static YamlConfig fromReader(@NonNull Reader reader) {
 		final YamlConfig config = new YamlConfig();
-		config.load(reader);
+		config.loadFromReader(reader);
 
 		return config;
 	}
