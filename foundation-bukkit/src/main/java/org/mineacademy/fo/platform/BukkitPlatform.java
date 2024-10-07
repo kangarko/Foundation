@@ -514,9 +514,13 @@ final class BukkitPlatform extends FoundationPlatform {
 		if (found == null)
 			return false;
 
+		// Warn if the plugin is still disabled after server has finished loading.
 		if (!found.isEnabled())
-			this.runTaskAsync(0, () -> Valid.checkBoolean(found.isEnabled(),
-					SimplePlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')"));
+			this.runTaskAsync(0, () -> {
+				if (!found.isEnabled())
+					Common.warning(SimplePlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO "
+							+ SimplePlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
+			});
 
 		return true;
 	}
