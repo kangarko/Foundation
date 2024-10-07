@@ -102,7 +102,13 @@ public final class Debugger {
 					event.setTag("plugin_version", plugin.getVersion());
 					event.setTag("server_version", Platform.getPlatformVersion());
 					event.setTag("server_distro", Platform.getPlatformName());
-					//event.setUser(new User()); // anonymize IP address
+
+					if ("%%__BUILTBYBIT__%%".equals("true")) {
+						event.setTag("bbb_user_id", "%%__USER__%%");
+						event.setTag("bbb_user_name", "%%__USERNAME__%%");
+						event.setTag("bbb_user_name", "%%__USERNAME__%%");
+						event.setTag("bbb_nonce", "%%__NONCE__%%");
+					}
 
 					return event;
 				});
