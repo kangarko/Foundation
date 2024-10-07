@@ -257,11 +257,13 @@ public final class HookManager {
 			premiumVanishHook = new PremiumVanishHook();
 
 		if (Platform.isPluginInstalled("ProtocolLib"))
+
 			// Also check if the library is loaded properly.
 			try {
-				protocolLibHook = new ProtocolLibHook();
-
 				Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
+				Class.forName("com.comphenix.protocol.ProtocolLibrary");
+
+				protocolLibHook = new ProtocolLibHook();
 
 			} catch (final Throwable t) {
 				protocolLibHook = null;
