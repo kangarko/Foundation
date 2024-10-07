@@ -480,8 +480,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	protected final void displayError(Throwable throwable) {
 		Debugger.printStackTrace(throwable);
 
-		final boolean privateDistro = this.getServer().getBukkitVersion().contains("1.8.8-R0.2");
-
 		Common.log(
 				"&4    ___                  _ ",
 				"&4   / _ \\  ___  _ __  ___| |",
@@ -491,7 +489,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 				"&4             |_|          ",
 				"&4!-----------------------------------------------------!",
 				" &cError loading " + this.getDescription().getName() + " v" + this.getDescription().getVersion() + ", plugin is disabled!",
-				privateDistro ? null : " &cRunning on " + Bukkit.getBukkitVersion() + " & Java " + System.getProperty("java.version"),
+				" &cRunning on " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " & Java " + System.getProperty("java.version"),
 				"&4!-----------------------------------------------------!");
 
 		if (throwable instanceof InvalidConfigurationException) {
