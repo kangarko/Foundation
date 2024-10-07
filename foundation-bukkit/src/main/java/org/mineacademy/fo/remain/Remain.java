@@ -903,7 +903,7 @@ public final class Remain {
 	 * @param uuid
 	 * @return
 	 */
-	public static Entity getEntity(final UUID uuid) {
+	public static Entity getLoadedEntity(final UUID uuid) {
 		Valid.checkSync("Remain#getEntity must be called on the main thread");
 
 		for (final World world : Bukkit.getWorlds())
@@ -2793,10 +2793,12 @@ public final class Remain {
 	 * Runs the task even if the plugin is disabled for some reason.
 	 *
 	 * @param delayTicks
-	 * @param runnable
+	 * @param timer
 	 * @return the task or null
 	 */
-	public static Task runTask(final int delayTicks, Runnable runnable) {
+	public static Task runTask(final int delayTicks, Runnable timer) {
+		final Runnable runnable = wrapRunnable(timer);
+
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2836,10 +2838,12 @@ public final class Remain {
 	 * Runs the task async even if the plugin is disabled for some reason.
 	 *
 	 * @param delayTicks
-	 * @param runnable
+	 * @param timer
 	 * @return the task or null
 	 */
-	public static Task runTaskAsync(final int delayTicks, Runnable runnable) {
+	public static Task runTaskAsync(final int delayTicks, Runnable timer) {
+		final Runnable runnable = wrapRunnable(timer);
+
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2880,10 +2884,12 @@ public final class Remain {
 	 *
 	 * @param delayTicks  the delay before first run
 	 * @param repeatTicks the delay between each run
-	 * @param runnable        the task
+	 * @param timer        the task
 	 * @return the bukkit task or null if error
 	 */
-	public static Task runTaskTimer(final int delayTicks, final int repeatTicks, Runnable runnable) {
+	public static Task runTaskTimer(final int delayTicks, final int repeatTicks, Runnable timer) {
+		final Runnable runnable = wrapRunnable(timer);
+
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2919,10 +2925,12 @@ public final class Remain {
 	 *
 	 * @param delayTicks
 	 * @param repeatTicks
-	 * @param runnable
+	 * @param timer
 	 * @return
 	 */
-	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, Runnable runnable) {
+	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, Runnable timer) {
+		final Runnable runnable = wrapRunnable(timer);
+
 		if (runIfDisabled(runnable))
 			return null;
 
@@ -2951,6 +2959,24 @@ public final class Remain {
 		} catch (final NoSuchMethodError err) {
 			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
 		}
+	}
+
+	/*
+	 * Wraps the runnable to catch any exceptions and log them.
+	 */
+	private static Runnable wrapRunnable(Runnable original) {
+		return new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					original.run();
+
+				} catch (final Throwable t) {
+					throw new FoException(t, "Exception in executing task, see below for cause");
+				}
+			}
+		};
 	}
 
 	private static boolean runIfDisabled(final Runnable run) {
