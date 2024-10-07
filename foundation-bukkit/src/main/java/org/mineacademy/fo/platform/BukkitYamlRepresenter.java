@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.nodes.Node;
@@ -37,8 +38,13 @@ class BukkitYamlRepresenter extends YamlConfig.YamlRepresenter {
 			final ConfigurationSerializable serializable = (ConfigurationSerializable) data;
 			final Map<String, Object> values = new LinkedHashMap<>();
 
-			values.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY, ConfigurationSerialization.getAlias(serializable.getClass()));
-			values.putAll(serializable.serialize());
+			try {
+				values.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY, ConfigurationSerialization.getAlias(serializable.getClass()));
+				values.putAll(serializable.serialize());
+
+			} catch (final Throwable ex) {
+				throw new FoException(ex, "Error serializing Bukkit's " + serializable.getClass().getSimpleName() + " from data " + data);
+			}
 
 			return super.representData(values);
 		}
