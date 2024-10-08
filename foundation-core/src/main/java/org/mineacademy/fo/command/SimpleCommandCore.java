@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -799,7 +800,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final boolean findBoolean(final int index, final SimpleComponent invalidMessage) {
-		this.checkBoolean(index < this.args.length, invalidMessage);
+		this.checkUsage(index < this.args.length);
 
 		if (this.args[index].equalsIgnoreCase("true"))
 			return true;
@@ -809,6 +810,51 @@ public abstract class SimpleCommandCore {
 
 		this.returnTell(invalidMessage);
 		return false;
+	}
+
+	/**
+	 * A convenience method for parsing a UUID at the given args index.
+	 *
+	 * Throws invalid with the default command-invalid-uuid lang message.
+	 *
+	 * @param index
+	 * @return
+	 */
+	protected final UUID findUUID(final int index) {
+		return this.findUUID(index, Lang.component("command-invalid-uuid"));
+	}
+
+	/**
+	 * A convenience method for parsing a UUID at the given args index.
+	 *
+	 * @param index
+	 * @param invalidMessage
+	 * @return
+	 */
+	protected final UUID findUUID(final int index, final String invalidMessage) {
+		return this.findUUID(index, SimpleComponent.fromMini(invalidMessage));
+	}
+
+	/**
+	 * A convenience method for parsing a UUID at the given args index.
+	 *
+	 * @param index
+	 * @param invalidMessage
+	 * @return
+	 */
+	protected final UUID findUUID(final int index, final SimpleComponent invalidMessage) {
+		this.checkUsage(index < this.args.length);
+
+		UUID uuid = null;
+
+		try {
+			uuid = UUID.fromString(this.args[index]);
+
+		} catch (final IllegalArgumentException ex) {
+			this.returnTell(invalidMessage.replaceBracket("uuid", this.args[index]));
+		}
+
+		return uuid;
 	}
 
 	// ----------------------------------------------------------------------
