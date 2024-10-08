@@ -3226,7 +3226,16 @@ public final class Remain {
 			final Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
 			putMethod.invoke(propertyMap, "textures", propertyInstance);
 
-			return fakeProfileInstance;
+			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1) {
+				// For Minecraft 1.21.1 and later, create a ResolvableProfile
+				Class<?> resolvableProfileClass = ReflectionUtil.lookupClass("net.minecraft.world.item.component.ResolvableProfile");
+				Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
+
+				return fakeResolvableProfileInstance;
+			} else {
+				// For 1.21 and older versions, return the GameProfile instance
+				return fakeProfileInstance;
+			}
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.throwError(ex);
