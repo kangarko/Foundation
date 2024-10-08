@@ -1,8 +1,13 @@
 package org.mineacademy.fo.menu.model;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Base64;
+import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.block.Block;
@@ -16,13 +21,9 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.Remain;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Base64;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * A library for the Bukkit API to create player skulls
@@ -59,6 +60,7 @@ public class SkullCreator {
 	 *
 	 * @param name The Player's name.
 	 * @return The head of the Player.
+	 *
 	 */
 	public static ItemStack itemFromName(final String name) {
 		return itemWithName(createSkull(), name);
@@ -269,7 +271,7 @@ public class SkullCreator {
 			Object propertyMap = getProperties.invoke(fakeProfileInstance);
 
 			Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
-			putMethod.invoke(propertyMap, "textures", propertyInstance);
+			putMethod.invoke(propertyMap,"textures", propertyInstance);
 
 			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1) {
 				// For Minecraft 1.21.1 and later, create a ResolvableProfile
