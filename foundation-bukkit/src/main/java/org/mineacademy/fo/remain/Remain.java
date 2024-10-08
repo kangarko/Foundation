@@ -2810,7 +2810,12 @@ public final class Remain {
 			else
 				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
 
-			return SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 
 		try {
@@ -2824,13 +2829,18 @@ public final class Remain {
 
 			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
 
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simpleTask);
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(simpleTask);
 
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
+			final SimpleTask simpleTask = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(simpleTask);
+
+			return simpleTask;
 		}
 	}
 
@@ -2855,7 +2865,12 @@ public final class Remain {
 			else
 				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
 
-			return SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 
 		try {
@@ -2869,13 +2884,18 @@ public final class Remain {
 
 			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
 
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simpleTask);
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(simpleTask);
 
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
+			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 	}
 
@@ -2896,7 +2916,12 @@ public final class Remain {
 		if (Remain.isFolia()) {
 			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
 
-			return SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 
 		try {
@@ -2910,13 +2935,18 @@ public final class Remain {
 
 			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
 
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simpleTask);
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(simpleTask);
 
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
+			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 	}
 
@@ -2937,7 +2967,12 @@ public final class Remain {
 		if (Remain.isFolia()) {
 			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
 
-			return SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 
 		try {
@@ -2951,13 +2986,18 @@ public final class Remain {
 
 			final SimpleTask simplTask = SimpleTask.fromBukkit(task);
 
-			if (runnable instanceof SimpleRunnable)
-				((SimpleRunnable) runnable).setupTask(simplTask);
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(simplTask);
 
 			return simplTask;
 
 		} catch (final NoSuchMethodError err) {
-			return SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
+			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
+
+			if (timer instanceof SimpleRunnable)
+				((SimpleRunnable) timer).setupTask(task);
+
+			return task;
 		}
 	}
 
@@ -3232,10 +3272,10 @@ public final class Remain {
 				final Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
 
 				return fakeResolvableProfileInstance;
-			} else {
+			} else
+
 				// For 1.21 and older versions, return the GameProfile instance
 				return fakeProfileInstance;
-			}
 
 		} catch (final ReflectiveOperationException ex) {
 			Common.throwError(ex);
