@@ -394,7 +394,7 @@ public abstract class FileConfig extends ConfigSection {
 			if (this.hasDefaults()) {
 				final T defValue = this.defaults.get(path, typeOf);
 
-				CommonCore.log("&7Updating " + this.getFile().getName() + " at &b'&f" + path + "&b' &7-> " + "&b'&f" + defValue.toString().replace("\n", ", ") + "&b'");
+				CommonCore.log("&7Updating " + this.getFile().getName() + " at &b'&f" + path + "&b' &7-> " + (defValue != null ? "&b'&f" + defValue.toString().replace("\n", ", ") + "&b'" : "&ckey removed"));
 
 				this.store(path, defValue);
 				return defValue;
