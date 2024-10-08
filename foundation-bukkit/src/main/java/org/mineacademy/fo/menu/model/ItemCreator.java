@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -443,7 +444,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofSkull()
+	 * @see #ofPlayerSkull()
 	 *
 	 * @param skullOwner
 	 * @return
@@ -457,7 +458,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofSkull()
+	 * @see #ofPlayerSkull()
 	 *
 	 * @param skullUrl
 	 * @return
@@ -471,7 +472,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofSkull()
+	 * @see #ofPlayerSkull()
 	 *
 	 * @param skullBase64
 	 * @return
@@ -485,7 +486,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofSkull()
+	 * @see #ofPlayerSkull()
 	 *
 	 * @param skullUid
 	 * @return
@@ -718,14 +719,34 @@ public final class ItemCreator {
 			final SkullMeta skullMeta = (SkullMeta) compiledMeta;
 
 			if (this.skullOwner != null)
-				skullMeta.setOwner(this.skullOwner);
+				try {
+					skullMeta.setPlayerProfile(Bukkit.createProfile(this.skullOwner));
+
+				} catch (final Throwable ex) {
+					try {
+						skullMeta.setOwnerProfile(Bukkit.createPlayerProfile(this.skullOwner));
+
+					} catch (final Throwable ex2) {
+						skullMeta.setOwner(this.skullOwner);
+					}
+				}
 
 			if (this.skullUid != null) {
 				try {
-					skullMeta.setOwningPlayer(Remain.getOfflinePlayerByUUID(this.skullUid));
+					skullMeta.setPlayerProfile(Bukkit.createProfile(this.skullUid));
 
-				} catch (final Throwable t) {
-					skullMeta.setOwner(Remain.getOfflinePlayerByUUID(this.skullUid).getName());
+				} catch (final Throwable ex) {
+					try {
+						skullMeta.setOwnerProfile(Bukkit.createPlayerProfile(this.skullUid));
+
+					} catch (final Throwable ex2) {
+						try {
+							skullMeta.setOwningPlayer(Remain.getOfflinePlayerByUUID(this.skullUid));
+
+						} catch (final Throwable t) {
+							skullMeta.setOwner(Remain.getOfflinePlayerByUUID(this.skullUid).getName());
+						}
+					}
 				}
 			}
 
@@ -734,7 +755,6 @@ public final class ItemCreator {
 
 			if (this.skullBase64 != null)
 				compiledMeta = Remain.setSkullMetaBase64(skullMeta, this.skullBase64);
-
 		}
 
 		if (compiledMeta instanceof BookMeta) {
@@ -1042,7 +1062,7 @@ public final class ItemCreator {
 	 *
 	 * @return
 	 */
-	public static ItemCreator ofSkull() {
+	public static ItemCreator ofPlayerSkull() {
 		try {
 			return of(new ItemStack(Material.valueOf("PLAYER_HEAD")));
 
