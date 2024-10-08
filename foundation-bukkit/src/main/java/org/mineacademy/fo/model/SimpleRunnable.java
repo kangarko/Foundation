@@ -11,7 +11,7 @@ public abstract class SimpleRunnable implements Runnable {
 	private Task task;
 
 	public final synchronized void cancel() throws IllegalStateException {
-		checkScheduled();
+		this.checkScheduled();
 
 		task.cancel();
 	}
