@@ -125,10 +125,10 @@
   "player-not-online": "<red>Player {player} is not online on this server.",
   "player-not-played-before": "<red>Player {player} has not played before or we could not locate his disk data.",
   "prefix-announce": "<light_purple><dark_gray>[<bold><dark_purple>!<dark_gray></bold>]<gray>",
-  "prefix-error": "<red><dark_gray>[<bold><dark_red>✕<dark_gray></bold>]<red>",
-  "prefix-info": "<gray><dark_gray>[<bold><blue>i<dark_gray></bold>]<gray>",
-  "prefix-question": "<gray><dark_gray>[<bold><green>?<dark_gray></bold>]<gray>",
-  "prefix-success": "<gray><dark_gray>[<bold><dark_green>✔<dark_gray></bold>]<gray>",
-  "prefix-warn": "<gold><dark_gray>[<bold><gold>!<dark_gray></bold>]<gray>",
+  "prefix-error": "<red><dark_gray>[<bold><dark_red>✕</bold><reset><dark_gray>]<red>",
+  "prefix-info": "<gray><dark_gray>[<bold><blue>i</bold><reset><dark_gray>]<gray>",
+  "prefix-question": "<gray><dark_gray>[<bold><green>?</bold><reset><dark_gray>]<gray>",
+  "prefix-success": "<gray><dark_gray>[<bold><dark_green>✔</bold><reset><dark_gray>]<gray>",
+  "prefix-warn": "<gold><dark_gray>[<bold><gold>!</bold><reset><dark_gray>]<gray>",
   "tool-error": "<red>Oups! There was a problem with this tool! Please contact the administrator to review the console for details."
 }
