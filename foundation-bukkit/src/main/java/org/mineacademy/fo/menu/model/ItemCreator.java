@@ -298,8 +298,9 @@ public final class ItemCreator {
 	 */
 	public ItemCreator lore(String... lore) {
 		for (final String line : lore)
-			for (final String subpart : line.split("\n"))
-				this.lores.add(subpart);
+			if (line != null)
+				for (final String subpart : line.split("\n"))
+					this.lores.add(subpart);
 
 		return this;
 	}
