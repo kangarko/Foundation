@@ -3228,8 +3228,8 @@ public final class Remain {
 
 			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1) {
 				// For Minecraft 1.21.1 and later, create a ResolvableProfile
-				Class<?> resolvableProfileClass = ReflectionUtil.lookupClass("net.minecraft.world.item.component.ResolvableProfile");
-				Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
+				final Class<?> resolvableProfileClass = ReflectionUtil.lookupClass("net.minecraft.world.item.component.ResolvableProfile");
+				final Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
 
 				return fakeResolvableProfileInstance;
 			} else {
