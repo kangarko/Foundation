@@ -1869,6 +1869,20 @@ public final class Remain {
 	}
 
 	/**
+	 * Send a "toast" notification. This is an advancement notification that cannot be
+	 * modified on its first screen. It imposes a slight performance penalty.
+	 *
+	 * You can pick the first screen from precreated Minecraft screens here.
+	 *
+	 * @param receiver
+	 * @param message
+	 * @param toastStyle
+	 */
+	public static void sendToast(Player receiver, String message, CompToastStyle toastStyle) {
+		sendToast(receiver, message, CompMaterial.BOOK, toastStyle);
+	}
+
+	/**
 	 * Send a "toast" notification. This is an advancement notification that cannot
 	 * be modified that much. It imposes a slight performance penalty.
 	 *
@@ -1885,29 +1899,13 @@ public final class Remain {
 			final String colorized = CompChatColor.translateColorCodes(message);
 
 			if (!colorized.isEmpty()) {
-				Valid.checkSync("Toasts may only be sent from the main thread");
-
 				if (hasAdvancements)
-					new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver);
+					Platform.runTask(() -> new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver));
 
 				else
 					receiver.sendMessage(colorized);
 			}
 		}
-	}
-
-	/**
-	 * Send a "toast" notification. This is an advancement notification that cannot be
-	 * modified on its first screen. It imposes a slight performance penalty.
-	 *
-	 * You can pick the first screen from precreated Minecraft screens here.
-	 *
-	 * @param receiver
-	 * @param message
-	 * @param toastStyle
-	 */
-	public static void sendToast(Player receiver, String message, CompToastStyle toastStyle) {
-		sendToast(receiver, message, CompMaterial.BOOK, toastStyle);
 	}
 
 	/**

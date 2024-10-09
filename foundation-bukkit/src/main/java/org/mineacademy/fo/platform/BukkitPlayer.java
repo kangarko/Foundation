@@ -18,6 +18,7 @@ import org.mineacademy.fo.remain.bossbar.NMSBossBar;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
 import net.kyori.adventure.text.Component;
@@ -83,6 +84,14 @@ public final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void sendActionBar(SimpleComponent message) {
+
+		// Native is fastest
+		if (Remain.isCommandSenderAudience()) {
+			this.commandSender.sendActionBar(message);
+
+			return;
+		}
+
 		if (!this.isPlayer || MinecraftVersion.olderThan(V.v1_8))
 			this.commandSender.sendMessage(message.toLegacy());
 
@@ -97,6 +106,14 @@ public final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void sendBossbarPercent(SimpleComponent message, float progress, Color color, Overlay overlay) {
+
+		// Native is fastest
+		if (Remain.isCommandSenderAudience()) {
+			this.commandSender.showBossBar(BossBar.bossBar(message, progress, color, overlay));
+
+			return;
+		}
+
 		if (this.isPlayer) {
 			NMSBossBar.getInstance().sendMessage(this.player, message.toLegacy(), progress, color, overlay);
 
@@ -106,6 +123,17 @@ public final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void sendBossbarTimed(SimpleComponent message, int secondsToShow, float progress, Color color, Overlay overlay) {
+
+		// Native is fastest
+		if (Remain.isCommandSenderAudience()) {
+			final BossBar bar = BossBar.bossBar(message, progress, color, overlay);
+
+			this.commandSender.showBossBar(bar);
+			Platform.runTask(secondsToShow * 20, () -> this.commandSender.hideBossBar(bar));
+
+			return;
+		}
+
 		if (this.isPlayer) {
 			NMSBossBar.getInstance().sendTimedMessage(this.player, message.toLegacy(), secondsToShow, progress, color, overlay);
 
