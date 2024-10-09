@@ -414,7 +414,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 				final File localizationFolder = new File(this.getDataFolder(), "localization");
 
 				if (localizationFolder.exists()) {
-					Common.warning("The localization/ folder is now unused, run '" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " dumplocale' to download the new locale format. Moving to unused/ ...");
+					Common.warning("The localization/ folder is now unused, run '/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " dumplocale' to download the new locale format. Moving to unused/ ...");
 
 					final File unusedFolder = new File(this.getDataFolder(), "unused");
 
