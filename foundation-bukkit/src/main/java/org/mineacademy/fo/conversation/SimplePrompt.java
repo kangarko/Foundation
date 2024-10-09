@@ -215,7 +215,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			else {
 				final String failPrompt = this.getFailedValidationText(context, input);
 
-				if (failPrompt != null)
+				if (failPrompt != null && !failPrompt.isEmpty() && !failPrompt.equals("none"))
 					Common.tellLater(0, player, Variables.replace(Messenger.getErrorPrefix().appendMini(" " + failPrompt), Platform.toPlayer(player)));
 
 				// Redisplay this prompt to the user to re-collect input
