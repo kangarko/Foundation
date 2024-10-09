@@ -481,20 +481,26 @@ public final class Lang {
 				localJson = new JsonObject();
 
 			// First, remove local keys that no longer exist in our dictionary
-			for (final String key : localJson.keySet())
+			for (final Map.Entry<String, JsonElement> entry : localJson.entrySet()) {
+				final String key = entry.getKey();
+
 				if (!instance.dictionary.has(key)) {
 					CommonCore.log("Removing unused key '" + key + "' from locale file " + localFile);
 
 					localJson.remove(key);
 				}
+			}
 
 			// Then, add new keys to the local file
-			for (final String key : instance.dictionary.keySet())
+			for (final Map.Entry<String, JsonElement> entry : instance.dictionary.entrySet()) {
+				final String key = entry.getKey();
+
 				if (!localJson.has(key)) {
 					CommonCore.log("Adding new key '" + key + "' from locale file " + localFile);
 
 					localJson.add(key, instance.dictionary.get(key));
 				}
+			}
 
 			// Trick to sort keys.
 			final String unsortedDump = CommonCore.GSON_PRETTY.toJson(localJson);
@@ -580,7 +586,8 @@ public final class Lang {
 			final Map<String, SimpleComponent> componentCache = new HashMap<>();
 			final Map<String, SimpleComponent[]> componentArrayCache = new HashMap<>();
 
-			for (final String key : dictionary.keySet()) {
+			for (final Map.Entry<String, JsonElement> entry : dictionary.entrySet()) {
+				final String key = entry.getKey();
 				final JsonElement value = dictionary.get(key);
 
 				if (value.isJsonPrimitive()) {
@@ -638,8 +645,11 @@ public final class Lang {
 			if (content != null && !content.isEmpty()) {
 				final JsonObject json = CommonCore.GSON.fromJson(String.join("\n", content), JsonObject.class);
 
-				for (final String key : json.keySet())
+				for (final Map.Entry<String, JsonElement> entry : json.entrySet()) {
+					final String key = entry.getKey();
+
 					dictionary.add(key, json.get(key));
+				}
 			}
 		}
 	}
