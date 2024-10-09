@@ -138,7 +138,7 @@ public final class Variables {
 	 * To add custom variables, see {@link #addExpansion(SimpleExpansion)}
 	 *
 	 * @param message
-	 * @param audience
+	 * @param audience can be null
 	 * @return
 	 */
 	public static String replace(String message, FoundationPlayer audience) {
@@ -159,7 +159,7 @@ public final class Variables {
 	 * To add custom variables, see {@link #addExpansion(SimpleExpansion)}
 	 *
 	 * @param message
-	 * @param audience
+	 * @param audience can be null
 	 * @param replacements
 	 * @return
 	 */

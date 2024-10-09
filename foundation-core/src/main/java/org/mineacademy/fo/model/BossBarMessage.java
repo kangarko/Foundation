@@ -1,5 +1,7 @@
 package org.mineacademy.fo.model;
 
+import java.util.function.Function;
+
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.collection.SerializedMap;
@@ -48,6 +50,16 @@ public final class BossBarMessage implements ConfigSerializable {
 	 */
 	public void displayTo(FoundationPlayer audience) {
 		audience.sendBossbarTimed(this.message, this.seconds, this.progress, this.color, this.overlay);
+	}
+
+	/**
+	 * Displays this boss bar to the given player.
+	 *
+	 * @param audience
+	 * @param messageEditor to replace variables in the message
+	 */
+	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> messageEditor) {
+		audience.sendBossbarTimed(messageEditor.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**
