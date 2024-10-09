@@ -1896,7 +1896,7 @@ public final class Remain {
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
-			final String colorized = CompChatColor.translateColorCodes(message);
+			final String colorized = CompChatColor.translateColorCodes(message.replace("|", "\n"));
 
 			if (!colorized.isEmpty()) {
 				if (hasAdvancements)
