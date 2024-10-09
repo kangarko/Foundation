@@ -750,6 +750,20 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	/**
 	 * Create a new component from the given message.
 	 *
+	 * Replaces & and § color codes.
+	 *
+	 * @param legacyText
+	 * @return
+	 */
+	public static SimpleComponent fromAmpersand(@NonNull String legacyText) {
+		legacyText = legacyText.replaceAll("(?i)&([0-9A-FK-OR])", "§$1");
+
+		return fromSection(legacyText);
+	}
+
+	/**
+	 * Create a new component from the given message.
+	 *
 	 * Replaces § color codes.
 	 *
 	 * @param legacyText
