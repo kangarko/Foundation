@@ -748,7 +748,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	@Override
 	public final void loadLibrary(String groupId, String artifactId, String version) {
-		this.getLibraryManager().loadLibrary(Library.builder().groupId(groupId).artifactId(artifactId).resolveTransitiveDependencies(true).version(version).build());
+		this.getLibraryManager().loadLibrary(Library
+				.builder()
+				.groupId(groupId)
+				.artifactId(artifactId)
+				.resolveTransitiveDependencies(true)
+				.version(version)
+				.build());
 	}
 
 	/**
