@@ -49,6 +49,7 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import lombok.AccessLevel;
@@ -340,8 +341,9 @@ public final class PlayerUtil {
 				if (json.has("stats")) {
 					final JsonObject stats = json.getAsJsonObject("stats");
 
-					for (final String section : stats.keySet()) {
-						final JsonObject sectionMap = stats.getAsJsonObject(section);
+					for (final Map.Entry<String, JsonElement> entry : stats.entrySet()) {
+						final String key = entry.getKey();
+						final JsonObject sectionMap = stats.getAsJsonObject(key);
 
 						if (sectionMap != null && sectionMap.has(statisticName))
 							return sectionMap.get(statisticName).getAsLong();

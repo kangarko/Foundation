@@ -27,6 +27,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -141,16 +142,16 @@ public abstract class SerializeUtilCore {
 						jsonList.add(JsonNull.INSTANCE);
 
 					if (element instanceof Boolean)
-						jsonList.add((Boolean) element);
+						jsonList.add(new JsonPrimitive((Boolean) element));
 
 					else if (element instanceof Character)
-						jsonList.add((Character) element);
+						jsonList.add(new JsonPrimitive((Character) element));
 
 					else if (element instanceof Number)
-						jsonList.add((Number) element);
+						jsonList.add(new JsonPrimitive((Number) element));
 
 					else if (element instanceof String)
-						jsonList.add((String) element);
+						jsonList.add(new JsonPrimitive((String) element));
 
 					else
 						jsonList.add(CommonCore.GSON.toJsonTree(serialize(Language.JSON, element)));

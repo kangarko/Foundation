@@ -95,7 +95,7 @@ public class JsonItemStack {
 			if (meta.hasLore()) {
 				final JsonArray lore = new JsonArray();
 
-				meta.getLore().forEach(line -> lore.add(line));
+				meta.getLore().forEach(line -> lore.add(new JsonPrimitive(line)));
 				metaJson.add("lore", lore);
 			}
 
@@ -103,7 +103,7 @@ public class JsonItemStack {
 				final JsonArray enchants = new JsonArray();
 
 				meta.getEnchants().forEach((enchantment, integer) -> {
-					enchants.add(enchantment.getName() + ":" + integer);
+					enchants.add(new JsonPrimitive(enchantment.getName() + ":" + integer));
 				});
 
 				metaJson.add("enchants", enchants);
@@ -113,7 +113,7 @@ public class JsonItemStack {
 				if (!meta.getItemFlags().isEmpty()) {
 					final JsonArray flags = new JsonArray();
 
-					meta.getItemFlags().stream().map(ItemFlag::name).forEach(flag -> flags.add(flag));
+					meta.getItemFlags().stream().map(ItemFlag::name).forEach(flag -> flags.add(new JsonPrimitive(flag)));
 					metaJson.add("flags", flags);
 				}
 			} catch (final NoSuchMethodError err) {
@@ -174,7 +174,7 @@ public class JsonItemStack {
 					if (bmeta.hasPages()) {
 						final JsonArray pages = new JsonArray();
 
-						bmeta.getPages().forEach(str -> pages.add(str));
+						bmeta.getPages().forEach(str -> pages.add(new JsonPrimitive(str)));
 						extraMeta.add("pages", pages);
 					}
 
@@ -238,14 +238,14 @@ public class JsonItemStack {
 
 					if (!effect.getColors().isEmpty()) {
 						final JsonArray colors = new JsonArray();
-						effect.getColors().forEach(color -> colors.add(Integer.toHexString(color.asRGB())));
+						effect.getColors().forEach(color -> colors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
 						extraMeta.add("colors", colors);
 					}
 
 					if (!effect.getFadeColors().isEmpty()) {
 						final JsonArray fadeColors = new JsonArray();
 
-						effect.getFadeColors().forEach(color -> fadeColors.add(Integer.toHexString(color.asRGB())));
+						effect.getFadeColors().forEach(color -> fadeColors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
 						extraMeta.add("fade-colors", fadeColors);
 					}
 
@@ -274,14 +274,14 @@ public class JsonItemStack {
 
 						if (!effect.getColors().isEmpty()) {
 							final JsonArray colors = new JsonArray();
-							effect.getColors().forEach(color -> colors.add(Integer.toHexString(color.asRGB())));
+							effect.getColors().forEach(color -> colors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
 							jsonObject.add("colors", colors);
 						}
 
 						if (!effect.getFadeColors().isEmpty()) {
 							final JsonArray fadeColors = new JsonArray();
 
-							effect.getFadeColors().forEach(color -> fadeColors.add(Integer.toHexString(color.asRGB())));
+							effect.getFadeColors().forEach(color -> fadeColors.add(new JsonPrimitive(Integer.toHexString(color.asRGB()))));
 							jsonObject.add("fade-colors", fadeColors);
 						}
 
@@ -481,7 +481,7 @@ public class JsonItemStack {
 						}
 					}
 
-					if (!patterns.isEmpty())
+					if (patterns.size() != 0)
 						bmeta.setPatterns(bukkitPatterns);
 				}
 
