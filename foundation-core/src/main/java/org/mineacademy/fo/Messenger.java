@@ -597,6 +597,9 @@ public final class Messenger {
 	 * Send a message to the player with the given prefix.
 	 */
 	private static void tell(final FoundationPlayer audience, final SimpleComponent prefix, @NonNull SimpleComponent component) {
-		audience.sendMessage(prefix.appendPlain(" ").append(component));
+		final String plain = component.toPlain();
+
+		if (!plain.isEmpty() && !plain.equals("none"))
+			audience.sendMessage(prefix.appendPlain(" ").append(component));
 	}
 }

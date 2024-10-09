@@ -332,15 +332,13 @@ public abstract class FoundationPlayer {
 		} else if (plainMessage.startsWith("<bossbar>")) {
 			this.sendBossbarTimed(component.replaceLiteral("<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
 
-		} else {
-			if (plainMessage.startsWith("<center>")) {
-				final String centeredLegacyMessage = ChatUtil.center(component.toLegacy(this).replaceAll("\\<center\\>(\\s|)", ""));
+		} else if (plainMessage.startsWith("<center>")) {
+			final String centeredLegacyMessage = ChatUtil.center(component.toLegacy(this).replaceAll("\\<center\\>(\\s|)", ""));
 
-				this.sendLegacyMessage(centeredLegacyMessage);
+			this.sendLegacyMessage(centeredLegacyMessage);
 
-			} else
-				this.sendRawMessage(component.toAdventure(this));
-		}
+		} else if (!plainMessage.equals("none"))
+			this.sendRawMessage(component.toAdventure(this));
 	}
 
 	/**
