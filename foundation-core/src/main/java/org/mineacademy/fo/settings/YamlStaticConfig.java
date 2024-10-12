@@ -275,7 +275,7 @@ public abstract class YamlStaticConfig {
 	 * @param path
 	 * @return
 	 */
-	protected static final boolean getBoolean(final String path) {
+	protected static final Boolean getBoolean(final String path) {
 		return TEMPORARY_INSTANCE.getBoolean(path);
 	}
 
@@ -314,7 +314,7 @@ public abstract class YamlStaticConfig {
 	 * @param path
 	 * @return
 	 */
-	protected static final double getDouble(final String path) {
+	protected static final Double getDouble(final String path) {
 		return TEMPORARY_INSTANCE.getDouble(path);
 	}
 
@@ -324,7 +324,7 @@ public abstract class YamlStaticConfig {
 	 * @param path
 	 * @return
 	 */
-	protected static final int getInteger(final String path) {
+	protected static final Integer getInteger(final String path) {
 		return TEMPORARY_INSTANCE.getInteger(path);
 	}
 
