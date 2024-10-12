@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
 import org.mineacademy.fo.proxy.message.IncomingMessage;
@@ -58,12 +57,16 @@ final class FoundationPluginMessageListener implements PluginMessageListener {
 					final String actionName = input.readUTF();
 
 					final ProxyMessage message = ProxyMessage.getByName(listener, actionName);
-					ValidCore.checkNotNull(message, "Unknown plugin action '" + actionName + "'. IF YOU UPDATED THE PLUGIN BY RELOADING, stop your entire network, update all servers and start again.");
 
-					final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, input, stream);
+					if (message == null) {
+						new NullPointerException("Unknown plugin action '" + actionName + "'. IF YOU UPDATED THE PLUGIN BY RELOADING, stop your entire network, update all servers and start again.").printStackTrace();
 
-					listener.setData(data);
-					listener.onMessageReceived(Platform.toPlayer(player), incomingMessage);
+					} else {
+						final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, input, stream);
+
+						listener.setData(data);
+						listener.onMessageReceived(Platform.toPlayer(player), incomingMessage);
+					}
 
 					break;
 				}

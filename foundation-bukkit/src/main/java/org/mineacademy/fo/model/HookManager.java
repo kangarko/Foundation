@@ -268,7 +268,7 @@ public final class HookManager {
 			} catch (final Throwable t) {
 				protocolLibHook = null;
 
-				Common.error(t, "You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
+				Common.warning("You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
 			}
 
 		if (Platform.isPluginInstalled("Residence"))

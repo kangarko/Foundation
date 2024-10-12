@@ -3002,7 +3002,7 @@ public final class Remain {
 	/*
 	 * Wraps the runnable to catch any exceptions and log them.
 	 */
-	private static Runnable wrapRunnable(Runnable original) {
+	private static Runnable wrapRunnable(@NonNull Runnable original) {
 		return new Runnable() {
 
 			@Override
@@ -3011,13 +3011,15 @@ public final class Remain {
 					original.run();
 
 				} catch (final Throwable t) {
-					throw new FoException(t, "Exception in executing task, see below for cause");
+					t.printStackTrace();
+
+					throw new FoException(t, "Exception in executing task, see above for cause");
 				}
 			}
 		};
 	}
 
-	private static boolean runIfDisabled(final Runnable run) {
+	private static boolean runIfDisabled(@NonNull Runnable run) {
 		if (!SimplePlugin.getInstance().isEnabled()) {
 			run.run();
 
