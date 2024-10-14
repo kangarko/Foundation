@@ -3,9 +3,10 @@ package org.mineacademy.fo.region;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -42,7 +43,15 @@ public final class DiskRegion extends YamlConfig {
 	/**
 	 * All loaded disk regions
 	 */
-	private static final ConfigItems<DiskRegion> loadedRegions = ConfigItems.fromFolder("regions", DiskRegion.class);
+	private static final ConfigItems<DiskRegion> loadedRegions = ConfigItems.fromFolder("regions", DiskRegion.class, new Function<List<DiskRegion>, List<DiskRegion>>() {
+
+		@Override
+		public List<DiskRegion> apply(List<DiskRegion> list) {
+			Collections.sort(list, Comparator.comparing(DiskRegion::getFileName, String.CASE_INSENSITIVE_ORDER));
+
+			return list;
+		}
+	});
 
 	/**
 	 * The way for us to get the created region for a player, which is typically used in PlayerCache
@@ -377,7 +386,7 @@ public final class DiskRegion extends YamlConfig {
 	 * @return
 	 * @see ConfigItems#getItemNames()
 	 */
-	public static Set<String> getRegionNames() {
+	public static List<String> getRegionNames() {
 		return loadedRegions.getItemNames();
 	}
 }
