@@ -41,6 +41,8 @@ import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
+import com.google.common.collect.MultimapBuilder;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -770,6 +772,14 @@ public final class ItemCreator {
 				if (!this.flags.contains(f))
 					this.flags.add(f);
 
+		if (this.hideTags || this.flags.contains(CompItemFlag.HIDE_ATTRIBUTES))
+			try {
+				((ItemMeta) compiledMeta).setAttributeModifiers(MultimapBuilder.hashKeys().hashSetValues().build());
+
+			} catch (final Throwable t) {
+				// ignore
+			}
+
 		for (final CompItemFlag flag : this.flags)
 			try {
 				((ItemMeta) compiledMeta).addItemFlags(ItemFlag.valueOf(flag.toString()));
@@ -794,7 +804,6 @@ public final class ItemCreator {
 		//
 		// From now on we have to re-set the item
 		//
-
 
 		// 1.7.10 hack to add glow, requires no enchants
 		if (this.glow && MinecraftVersion.equals(V.v1_7) && (this.enchants == null || this.enchants.isEmpty())) {
