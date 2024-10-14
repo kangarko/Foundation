@@ -43,6 +43,8 @@ public class CreateRegionPrompt extends CreatePrompt<DiskRegion> {
 	@Override
 	protected void onCreateFinish(Player player, DiskRegion createdItem) {
 		RegionMenu.showTo(player, createdItem);
+
+		Messenger.success(player, "Region &e" + createdItem.getFileName() + " &7has been created.");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
