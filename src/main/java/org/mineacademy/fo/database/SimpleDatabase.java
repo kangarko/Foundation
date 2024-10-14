@@ -21,9 +21,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -180,11 +179,13 @@ public class SimpleDatabase {
 	public final void connect(final String url, final String user, final String password, final String table) {
 		try {
 			this.connecting = true;
+			final boolean librariesWontWork = Remain.getJavaVersion() >= 15 && MinecraftVersion.olderThan(V.v1_16);
+			final String prefixMessage = librariesWontWork ? "" : " You might need to use Java 8 or update your Minecraft to 1.16 or higher because using legacy Minecraft with new Java is limited.";
 
 			if (url.startsWith("jdbc:sqlite")) {
 
 				if (!ReflectionUtil.isClassAvailable("org.sqlite.JDBC"))
-					throw new FoException("SQLite driver is not available. Alert plugin author to add org.xerial:sqlite-jdbc onto the plugin's library in plugin.yml");
+					throw new FoException("SQLite driver is not available. Alert plugin author to add org.xerial:sqlite-jdbc onto the plugin's library in plugin.yml" + prefixMessage);
 
 				Class.forName("org.sqlite.JDBC");
 
@@ -205,14 +206,14 @@ public class SimpleDatabase {
 				if (!ReflectionUtil.isClassAvailable("com.zaxxer.hikari.HikariConfig"))
 					throw new FoException("Hikari driver is not available. " + (MinecraftVersion.olderThan(V.v1_16) && Remain.getJavaVersion() >= 9
 							? "Download LibraryHelper plugin: https://mineacademy.org/libraryhelper to use Hikari."
-							: "Alert plugin author to add com.zaxxer:HikariCP onto the plugin's library in plugin.yml"));
+							: "Alert plugin author to add com.zaxxer:HikariCP onto the plugin's library in plugin.yml" + prefixMessage));
 
 				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
 
 				if (url.startsWith("jdbc:mysql://")) {
 
 					if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver") && !ReflectionUtil.isClassAvailable("com.mysql.jdbc.Driver"))
-						throw new FoException("MySQL driver is not available. Alert plugin author to add com.mysql:mysql-connector-j onto the plugin's library in plugin.yml");
+						throw new FoException("MySQL driver is not available. Alert plugin author to add com.mysql:mysql-connector-j onto the plugin's library in plugin.yml" + prefixMessage);
 
 					try {
 						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
@@ -222,10 +223,11 @@ public class SimpleDatabase {
 						// Fall back to legacy driver
 						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
 					}
+
 				} else if (url.startsWith("jdbc:mariadb://")) {
 
 					if (!ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
-						throw new FoException("MariaDB driver is not available. Alert plugin author to add org.mariadb.jdbc:mariadb-java-client onto the plugin's library in plugin.yml");
+						throw new FoException("MariaDB driver is not available. Alert plugin author to add org.mariadb.jdbc:mariadb-java-client onto the plugin's library in plugin.yml" + prefixMessage);
 
 					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
 
@@ -266,14 +268,14 @@ public class SimpleDatabase {
 				if (url.startsWith("jdbc:mariadb://")) {
 
 					if (!ReflectionUtil.isClassAvailable("org.mariadb.jdbc.Driver"))
-						throw new FoException("MariaDB driver is not available. Alert plugin author to add org.mariadb.jdbc:mariadb-java-client onto the plugin's library in plugin.yml");
+						throw new FoException("MariaDB driver is not available. Alert plugin author to add org.mariadb.jdbc:mariadb-java-client onto the plugin's library in plugin.yml" + prefixMessage);
 
 					Class.forName("org.mariadb.jdbc.Driver");
 
 				} else if (url.startsWith("jdbc:mysql://")) {
 
 					if (!ReflectionUtil.isClassAvailable("com.mysql.cj.jdbc.Driver") && !ReflectionUtil.isClassAvailable("com.mysql.jdbc.Driver"))
-						throw new FoException("MySQL driver is not available. Alert plugin author to add com.mysql:mysql-connector-j onto the plugin's library in plugin.yml");
+						throw new FoException("MySQL driver is not available. Alert plugin author to add com.mysql:mysql-connector-j onto the plugin's library in plugin.yml" + prefixMessage);
 
 					try {
 						Class.forName("com.mysql.cj.jdbc.Driver");
