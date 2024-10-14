@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -433,7 +432,7 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	public static Variable findVariable(@NonNull final String name, final Type type) {
-		final Variable variable = loadedVariables.findItemStrict(name);
+		final Variable variable = loadedVariables.findItem(name);
 
 		return variable != null && variable.getType() == type ? variable : null;
 	}
@@ -452,7 +451,7 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static Set<String> getVariableNames() {
+	public static List<String> getVariableNames() {
 		return loadedVariables.getItemNames();
 	}
 
