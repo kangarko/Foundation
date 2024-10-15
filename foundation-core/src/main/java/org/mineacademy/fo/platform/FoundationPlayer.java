@@ -309,9 +309,6 @@ public abstract class FoundationPlayer {
 	public final void sendMessage(SimpleComponent component) {
 		final String plainMessage = component.toPlain(this);
 
-		//if (plainMessage.isEmpty())
-		//	Debugger.printStackTrace("Sending empty message to player. Message: " + component.toAdventureJson(this));
-
 		if (plainMessage.startsWith("<actionbar>")) {
 			this.sendActionBar(component.replaceLiteral("<actionbar>", ""));
 
