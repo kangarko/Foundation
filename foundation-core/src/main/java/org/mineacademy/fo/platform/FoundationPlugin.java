@@ -29,6 +29,22 @@ public interface FoundationPlugin {
 	String getAuthors();
 
 	/**
+	 * Used for plugin update notifications, return -1 if unset otherwise
+	 * return your BuiltByBit.com plugin ID (get it from the URL of your Overview page)
+	 *
+	 * @return
+	 */
+	int getBuiltByBitId();
+
+	/**
+	 * Override this from {@link #getBuiltByBitId()} to work.
+	 * See <a href="https://builtbybit.com/account/api">https://builtbybit.com/account/api</a> for more information.
+	 *
+	 * @return
+	 */
+	String getBuiltByBitSharedToken();
+
+	/**
 	 * Return the data folder of this plugin.
 	 *
 	 * @return
