@@ -8,6 +8,7 @@ import java.util.List;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.UnrecognizedRuleOperatorException;
 
 /**
  * An engine that reads rule set from a file such as in ChatControl.
@@ -160,6 +161,9 @@ public abstract class RuleSetReader<T extends Rule> {
 					if (rule != null)
 						try {
 							rule.onOperatorParse(line.split(" "));
+
+						} catch (final UnrecognizedRuleOperatorException ex) {
+							ex.printStackTrace();
 
 						} catch (final Throwable t) {
 							CommonCore.throwError(t,
