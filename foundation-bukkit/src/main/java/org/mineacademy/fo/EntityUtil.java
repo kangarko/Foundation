@@ -114,12 +114,15 @@ public final class EntityUtil {
 
 	/**
 	 * Attempts to spawn the entity for 1 tick at y=0 coordinate and then remove it
-	 * as means to getting its default health in Minecraft
+	 * as means to getting its default health in Minecraft.
+	 *
+	 * Must be on the main thread.
 	 *
 	 * @param type
 	 * @return
 	 */
 	public static double getDefaultHealth(EntityType type) {
+		Valid.checkSync("Cannot use getDefaultHealth async!");
 
 		if (type == EntityType.PLAYER)
 			return 20;
