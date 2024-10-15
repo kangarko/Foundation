@@ -90,6 +90,10 @@ public final class Debugger {
 
 			// Need to address the bug where a globally included sentry has the DSN of the first plugin
 			Sentry.init(options -> {
+
+				// Prevent exceptions from other plugins from being caught
+				options.setEnableUncaughtExceptionHandler(false);
+
 				options.setDsn(plugin.getSentryDsn());
 				options.setTracesSampleRate(0.0);
 
