@@ -22,9 +22,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
  * An implementation of {@link FoundationPlayer} for Bukkit.
@@ -166,20 +164,7 @@ public final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		BaseComponent[] baseComponent = null;
-
-		// Different hover event key in legacy. We can't use Adventure converter because it is broken here,
-		// so we manually change this on a best effort basis.
-		if (MinecraftVersion.olderThan(V.v1_16)) {
-			String json = GsonComponentSerializer.gson().serialize(component);
-
-			json = json.replace("\"action\":\"show_text\",\"contents\"", "\"action\":\"show_text\",\"value\"");
-			baseComponent = Remain.convertJsonToBungee(json);
-
-		} else
-			baseComponent = Remain.convertAdventureToBungee(component);
-
-		this.player.spigot().sendMessage(baseComponent);
+		this.player.spigot().sendMessage(Remain.convertAdventureToBungee(component));
 	}
 
 	@Override
