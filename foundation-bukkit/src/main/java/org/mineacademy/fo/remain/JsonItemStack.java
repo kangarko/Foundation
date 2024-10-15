@@ -320,9 +320,13 @@ public class JsonItemStack {
 					final Method getBaseColor = ReflectionUtil.getMethod(bannerMeta.getClass(), "getBaseColor");
 
 					if (getBaseColor != null) {
-						final String baseColorName = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta)).name();
+						final DyeColor baseColor = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta));
 
-						extraMeta.addProperty("base-color", baseColorName);
+						if (baseColor != null) {
+							final String baseColorName = baseColor.name();
+
+							extraMeta.addProperty("base-color", baseColorName);
+						}
 					}
 
 					if (bannerMeta.numberOfPatterns() > 0) {
