@@ -137,7 +137,6 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param internalPath
 	 */
 	public final void loadFromInternal(@NonNull String internalPath) {
-
 		try {
 			final List<String> content = FileUtil.readLinesFromInternalPath(internalPath);
 			ValidCore.checkNotNull(content, "Inbuilt " + internalPath + " not found! Did you reload?");
