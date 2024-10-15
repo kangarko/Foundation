@@ -2,14 +2,18 @@ package org.mineacademy.fo.remain;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
@@ -22,9 +26,34 @@ import org.mineacademy.fo.ReflectionUtil;
 public final class CompEnchantment {
 
 	/*
-	 * Store all items by name
+	 * A helper to convert enchant to string.
 	 */
-	private static final Map<String, Enchantment> byName = new HashMap<>();
+	private static final Function<Enchantment, String> TO_STRING = type -> {
+		if (Remain.hasNamespacedKey())
+			return type.getKey().getKey().replace("minecraft:", "");
+		else
+			return type.getName();
+	};
+
+	/**
+	 * Store all items by name.
+	 */
+	private static final Map<String, Enchantment> byName = new TreeMap<>(Comparator.comparing(name -> name, String.CASE_INSENSITIVE_ORDER));
+
+	/**
+	 * Store all item names.
+	 */
+	private static final Set<String> names = new TreeSet<>(Comparator.comparing(name -> name, String.CASE_INSENSITIVE_ORDER));
+
+	/**
+	 * Store all items by type.
+	 */
+	private static final Set<Enchantment> byType = new TreeSet<>(Comparator.comparing(TO_STRING, String.CASE_INSENSITIVE_ORDER));
+
+	/**
+	 * Holds the formatted name for each potion i.e. "Mining Fatigue" for SLOW_DIGGING etc.
+	 */
+	private static final Map<Enchantment, String> loreName = new TreeMap<>(Comparator.comparing(TO_STRING, String.CASE_INSENSITIVE_ORDER));
 
 	/**
 	 * Provides protection against environmental damage
@@ -242,45 +271,56 @@ public final class CompEnchantment {
 	public static final Enchantment SWIFT_SNEAK = find(-1, "SWIFT_SNEAK", "swift_sneak");
 
 	/**
-	 * Get the enchantment by name
+	 * Get the potion by name
 	 *
 	 * @param name
 	 * @return
 	 */
 	@Nullable
 	public static Enchantment getByName(String name) {
-		return byName.get(name.toUpperCase());
+		return byName.get(name.replace("minecraft:", "").toUpperCase());
 	}
 
 	/**
-	 * Return all available enchantments
+	 * Return all available potion effect types
 	 *
 	 * @return
 	 */
 	public static Collection<Enchantment> getEnchantments() {
-		return byName.values();
+		return byType;
 	}
 
 	/**
-	 * Return all available enchantment names
+	 * Return the name as it appears on the item lore
+	 *
+	 * @param type
+	 * @return
+	 */
+	@Nullable
+	public static String getLoreName(Enchantment type) {
+		return loreName.get(type);
+	}
+
+	/**
+	 * Return all available potion effect types
 	 *
 	 * @return
 	 */
 	public static Collection<String> getEnchantmentNames() {
-		return Common.convertList(getEnchantments(), ench -> ench.getName());
+		return names;
 	}
 
 	/*
 	 * Find the enchantment by ID or name, returns null if unsupported by server
 	 */
-	private static Enchantment find(int id, String oldName, String modernName) {
-		Enchantment enchantment;
+	private static Enchantment find(int id, String legacyName, String modernName) {
+		Enchantment enchantment = null;
 
 		try {
 			enchantment = Enchantment.getByKey(NamespacedKey.minecraft(modernName));
 
 		} catch (final NoClassDefFoundError | NoSuchMethodError ex) {
-			enchantment = Enchantment.getByName(oldName);
+			enchantment = Enchantment.getByName(legacyName);
 
 			if (enchantment == null && MinecraftVersion.olderThan(V.v1_13)) {
 				final Method getById = ReflectionUtil.getMethod(Enchantment.class, "getById", int.class);
@@ -290,11 +330,41 @@ public final class CompEnchantment {
 		}
 
 		if (enchantment != null) {
-			byName.put(oldName, enchantment);
+			if (Remain.hasNamespacedKey())
+				byName.put(enchantment.getKey().getKey().toUpperCase(), enchantment);
+
 			byName.put(modernName.toUpperCase(), enchantment);
-			byName.put(enchantment.getName(), enchantment);
+
+			if (legacyName != null)
+				byName.put(legacyName, enchantment);
+
+			names.add(modernName.toUpperCase());
+
+			byType.add(enchantment);
+			loreName.put(enchantment, ChatUtil.capitalizeFully(modernName));
 		}
 
 		return enchantment;
+	}
+
+	static {
+		for (final Enchantment enchantment : Enchantment.values()) {
+			if (Remain.hasNamespacedKey()) {
+				final String value = enchantment.getKey().getKey().toUpperCase();
+
+				byName.put(value, enchantment);
+				names.add(value);
+				loreName.put(enchantment, ChatUtil.capitalizeFully(value));
+
+			} else {
+				final String name = enchantment.getName().toUpperCase();
+
+				byName.put(name, enchantment);
+				names.add(name);
+				loreName.put(enchantment, ChatUtil.capitalizeFully(name));
+			}
+
+			byType.add(enchantment);
+		}
 	}
 }

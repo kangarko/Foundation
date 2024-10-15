@@ -113,7 +113,6 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Remain {
@@ -303,6 +302,11 @@ public final class Remain {
 	private static boolean hasPlayerOpenSignMethod = true;
 
 	/**
+	 * Return true if the {@link NamespacedKey} class is available.
+	 */
+	private static boolean hasNamespacedKey = false;
+
+	/**
 	 * The safeguard NMS prefix used in Bukkit 1.4 to 1.20.4.
 	 *
 	 * @deprecated internal use only and no longer needed on Minecraft 1.20.5 and greater
@@ -428,6 +432,14 @@ public final class Remain {
 			Player.class.getMethod("openSign", org.bukkit.block.Sign.class);
 		} catch (final Throwable ex) {
 			hasPlayerOpenSignMethod = false;
+		}
+
+		try {
+			Class.forName("org.bukkit.NamespacedKey");
+			hasNamespacedKey = true;
+
+		} catch (final Throwable t) {
+			hasNamespacedKey = false;
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_16))
@@ -811,23 +823,15 @@ public final class Remain {
 	}
 
 	/**
-	 * Converts the given json to a BungeeCord component
-	 *
-	 * @param json
-	 * @return
-	 */
-	public static BaseComponent[] convertJsonToBungee(String json) {
-		return ComponentSerializer.parse(json);
-	}
-
-	/**
 	 * Converts the given Adventure component to a BungeeCord component
 	 *
 	 * @param component
 	 * @return
 	 */
 	public static BaseComponent[] convertAdventureToBungee(ComponentLike component) {
-		return BungeeComponentSerializer.get().serialize(component.asComponent());
+		final BungeeComponentSerializer serializer = MinecraftVersion.atLeast(V.v1_16) ? BungeeComponentSerializer.get() : BungeeComponentSerializer.legacy();
+
+		return serializer.serialize(component.asComponent());
 	}
 
 	/**
@@ -3446,6 +3450,15 @@ public final class Remain {
 	 */
 	public static boolean hasPlayerOpenSignMethod() {
 		return hasPlayerOpenSignMethod;
+	}
+
+	/**
+	 * Return true if the {@link NamespacedKey} class is available.
+	 *
+	 * @return
+	 */
+	public static boolean hasNamespacedKey() {
+		return hasNamespacedKey;
 	}
 
 	/**

@@ -219,7 +219,7 @@ final class BukkitPlatform extends FoundationPlatform {
 					ValidCore.checkBoolean(parts.length == 3, "Expected PotionEffect (String) but got " + object.getClass().getSimpleName() + ": " + object);
 
 					final String typeRaw = parts[0];
-					final PotionEffectType type = PotionEffectType.getByName(typeRaw);
+					final PotionEffectType type = CompPotionEffectType.getByName(typeRaw);
 
 					final int duration = Integer.parseInt(parts[1]);
 					final int amplifier = Integer.parseInt(parts[2]);
