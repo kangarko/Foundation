@@ -17,12 +17,14 @@ import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.Messenger;
+import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.settings.Lang;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
  * Listens for some events we handle for you automatically
@@ -168,6 +170,14 @@ final class FoundationListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onJoin(PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
+		final FoundationPlayer audience = Platform.toPlayer(player);
+
+		// Delay to make visible
+		Platform.runTask(2, () -> {
+			if (player.hasPermission(Platform.getPlugin().getName().toLowerCase() + ".update.notify") && SimpleSettings.NOTIFY_NEW_VERSIONS && BuiltByBitUpdateCheck.isNewVersionAvailable())
+				for (final SimpleComponent component : BuiltByBitUpdateCheck.getUpdateMessage())
+					audience.sendMessage(component);
+		});
 
 		// Workaround for Essentials and CMI bug where they report "vanished" metadata when
 		// the /vanish command is run, but forgot to do so after reload, despite player still
