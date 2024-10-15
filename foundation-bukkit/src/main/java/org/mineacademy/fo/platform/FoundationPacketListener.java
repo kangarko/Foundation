@@ -171,7 +171,9 @@ final class FoundationPacketListener extends PacketListener {
 				final Player player = event.getPlayer();
 
 				if (player.isConversing()) {
-					player.acceptConversationInput(message);
+
+					// Ensure to run sync since packets are async
+					Platform.runTask(() -> player.acceptConversationInput(message));
 
 					event.setCancelled(true);
 				}
