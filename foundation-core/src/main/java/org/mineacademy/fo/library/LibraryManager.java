@@ -35,7 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.NetworkUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -274,7 +274,7 @@ public abstract class LibraryManager {
 
 			connection.setConnectTimeout(5000);
 			connection.setReadTimeout(5000);
-			connection.setRequestProperty("User-Agent", FileUtil.getRemoteUserAgent());
+			connection.setRequestProperty("User-Agent", NetworkUtil.getRemoteUserAgent());
 
 			try (InputStream in = connection.getInputStream()) {
 				return this.getURLFromMetadata(in, library);
@@ -387,7 +387,7 @@ public abstract class LibraryManager {
 
 			connection.setConnectTimeout(5000);
 			connection.setReadTimeout(5000);
-			connection.setRequestProperty("User-Agent", FileUtil.getRemoteUserAgent());
+			connection.setRequestProperty("User-Agent", NetworkUtil.getRemoteUserAgent());
 
 			try (InputStream in = connection.getInputStream()) {
 				int len;

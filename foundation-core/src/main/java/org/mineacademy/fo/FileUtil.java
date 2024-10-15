@@ -34,23 +34,14 @@ import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.platform.Platform;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * Utility class for managing files.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FileUtil {
-
-	/**
-	 * The user agent to use when connecting to remote URLs. Helps with domains blocking Java connections.
-	 */
-	@Getter
-	@Setter
-	private static String remoteUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 
 	/**
 	 * Extract the file name (without extension) from the given file.
@@ -172,9 +163,9 @@ public final class FileUtil {
 	 * <li> For example, calling {@code readLinesFromUrl("http://example.com")} will return the lines from the page's response.
 	 * </ul>
 	 *
-	 * By default the user agent pretents to be Chrome, you can set or remove it in {@link #setRemoteUserAgent(String)}.
+	 * By default the user agent pretents to be Chrome, you can set or remove it in {@link NetworkUtil#setRemoteUserAgent(String)}.
 	 *
-	 * @see #setRemoteUserAgent(String)
+	 * @see NetworkUtil#setRemoteUserAgent(String)
 	 *
 	 * @param url the URL to connect and read lines from
 	 * @return a list of strings, where each string is a line from the URL response
@@ -185,8 +176,8 @@ public final class FileUtil {
 		final List<String> lines = new ArrayList<>();
 		final URLConnection connection = new URL(url + "?token=" + System.currentTimeMillis()).openConnection();
 
-		if (remoteUserAgent != null)
-			connection.setRequestProperty("User-Agent", remoteUserAgent);
+		if (NetworkUtil.getRemoteUserAgent() != null)
+			connection.setRequestProperty("User-Agent", NetworkUtil.getRemoteUserAgent());
 
 		connection.setConnectTimeout(5000);
 		connection.setReadTimeout(5000);

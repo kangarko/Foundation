@@ -86,6 +86,13 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static String LOCALE = "en_US";
 
 	/**
+	 * Notify updates to ops on join and the console?
+	 *
+	 * Defaults to true.
+	 */
+	public static Boolean NOTIFY_NEW_VERSIONS = true;
+
+	/**
 	 * Report errors to Sentry.io?
 	 *
 	 * Defaults to true.
@@ -129,6 +136,9 @@ public class SimpleSettings extends YamlStaticConfig {
 				set("Locale", "en_US");
 			}
 		}
+
+		if (isSetDefault("Notify_New_Versions"))
+			NOTIFY_NEW_VERSIONS = getBoolean("Notify_New_Versions");
 
 		if (isSetDefault("Sentry"))
 			SENTRY = getBoolean("Sentry");

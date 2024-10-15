@@ -38,6 +38,7 @@ import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.model.BStatsMetrics;
+import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.PacketListener;
@@ -119,6 +120,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	private ProxyListener defaultProxyListener;
 
+	/*
+	 * false = error has occurred early in loading pipeline so we skip onDisable since there is no data
+	 */
+	private boolean loadingFailed = false;
+
 	// ----------------------------------------------------------------------------------------
 	// Main methods
 	// ----------------------------------------------------------------------------------------
@@ -137,7 +143,15 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 		BukkitPlatform.inject();
 
-		this.onPluginLoad();
+		try {
+			this.onPluginLoad();
+
+		} catch (final Throwable t) {
+			this.loadingFailed = true;
+			this.setEnabled(false);
+
+			throw t;
+		}
 	}
 
 	/*
@@ -220,6 +234,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 	@Override
 	public final void onEnable() {
+		if (this.loadingFailed)
+			return;
 
 		// Check if Foundation is correctly moved
 		this.checkShading();
@@ -428,6 +444,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 			if (this.getBStatsPluginId() != -1)
 				new BStatsMetrics(this, this.getBStatsPluginId());
 
+			if (SimpleSettings.NOTIFY_NEW_VERSIONS)
+				Platform.runTaskAsync(new BuiltByBitUpdateCheck());
+
 		} catch (final Throwable t) {
 			this.displayError(t);
 		}
@@ -523,6 +542,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 	@Override
 	public final void onDisable() {
+		if (this.loadingFailed)
+			return;
 
 		try {
 			this.onPluginStop();
@@ -920,6 +941,22 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	public int getBStatsPluginId() {
 		return -1;
+	}
+
+	/**
+	 * @see FoundationPlugin#getBuiltByBitId()
+	 */
+	@Override
+	public int getBuiltByBitId() {
+		return -1;
+	}
+
+	/**
+	 * @see FoundationPlugin#getBuiltByBitSharedToken()
+	 */
+	@Override
+	public String getBuiltByBitSharedToken() {
+		return null;
 	}
 
 	// ----------------------------------------------------------------------------------------
