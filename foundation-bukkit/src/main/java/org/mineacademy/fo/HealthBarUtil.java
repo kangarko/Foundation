@@ -6,6 +6,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.mineacademy.fo.model.CompChatColor;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.Remain;
 
@@ -60,18 +61,15 @@ public final class HealthBarUtil {
 	 *
 	 * @param displayTo
 	 * @param displayAbout
-	 * @param damagedEntityName
+	 * @param component
 	 * @param damage
 	 */
-	public static void display(final Player displayTo, final LivingEntity displayAbout, @Nullable final String damagedEntityName, final double damage) {
-
+	public static void display(final Player displayTo, final LivingEntity displayAbout, @Nullable final SimpleComponent component, final double damage) {
 		final int maxHealth = Remain.getMaxHealth(displayAbout);
 		final int health = Remain.getHealth(displayAbout);
 
-		final String name = Common.getOrEmpty(damagedEntityName);
-		final String formatted = (name.isEmpty() ? ChatUtil.capitalizeFully(displayAbout.getType()) : name) + " - " + getHealthMessage(health, maxHealth, (int) damage);
-
-		Platform.toPlayer(displayTo).sendActionBar(formatted);
+		Platform.toPlayer(displayTo).sendActionBar((component.isEmpty() ? SimpleComponent.fromPlain(ChatUtil.capitalizeFully(displayAbout.getType())) : component)
+				.appendMini(" - " + getHealthMessage(health, maxHealth, (int) damage)));
 	}
 
 	/*
