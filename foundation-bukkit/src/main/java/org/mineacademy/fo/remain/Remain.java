@@ -2007,7 +2007,12 @@ public final class Remain {
 			entity.setCustomNameVisible(visible);
 
 			if (name != null)
-				entity.setCustomName(CompChatColor.translateColorCodes(name));
+				try {
+					entity.customName(SimpleComponent.fromMini(name).toAdventure());
+
+				} catch (final NoSuchMethodError err) {
+					entity.setCustomName(CompChatColor.translateColorCodes(name));
+				}
 
 		} catch (final NoSuchMethodError er) {
 			final NBTEntity nbt = new NBTEntity(entity);
