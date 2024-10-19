@@ -64,7 +64,7 @@
 		<dependency>
 			<groupId>io.sentry</groupId>
 			<artifactId>sentry</artifactId>
-			<version>8.0.0-alpha.4</version>
+			<version>8.0.0-beta.1</version>
 			<scope>provided</scope>
 		</dependency>
 

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlugin;
@@ -86,39 +87,43 @@ public final class Debugger {
 		if (plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;
 
-			plugin.loadLibrary("io.sentry", "sentry", "8.0.0-alpha.4");
+			if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
+				plugin.loadLibrary("io.sentry", "sentry", "8.0.0-beta.1");
 
-			// Need to address the bug where a globally included sentry has the DSN of the first plugin
-			Sentry.init(options -> {
+			Platform.runTaskAsync(() -> {
 
-				// Prevent exceptions from other plugins from being caught
-				options.setEnableUncaughtExceptionHandler(false);
+				// Need to address the bug where a globally included sentry has the DSN of the first plugin
+				Sentry.init(options -> {
 
-				options.setDsn(plugin.getSentryDsn());
-				options.setTracesSampleRate(0.0);
+					// Prevent exceptions from other plugins from being caught
+					options.setEnableUncaughtExceptionHandler(false);
 
-				// Add plugin name and version to Sentry context
-				options.setBeforeSend((event, hint) -> {
-					event.setRelease(plugin.getVersion());
-					event.setServerName(null);
-					event.setDist(Platform.getPlatformVersion());
-					event.setTag("plugin_name", plugin.getName());
-					event.setTag("plugin_version", plugin.getVersion());
-					event.setTag("server_version", Platform.getPlatformVersion());
-					event.setTag("server_distro", Platform.getPlatformName());
+					options.setDsn(plugin.getSentryDsn());
+					options.setTracesSampleRate(0.0);
 
-					if ("%%__BUILTBYBIT__%%".equals("true")) {
-						event.setTag("bbb_user_id", "%%__USER__%%");
-						event.setTag("bbb_user_name", "%%__USERNAME__%%");
-						event.setTag("bbb_user_name", "%%__USERNAME__%%");
-						event.setTag("bbb_nonce", "%%__NONCE__%%");
-					}
+					// Add plugin name and version to Sentry context
+					options.setBeforeSend((event, hint) -> {
+						event.setRelease(plugin.getVersion());
+						event.setServerName(null);
+						event.setDist(Platform.getPlatformVersion());
+						event.setTag("plugin_name", plugin.getName());
+						event.setTag("plugin_version", plugin.getVersion());
+						event.setTag("server_version", Platform.getPlatformVersion());
+						event.setTag("server_distro", Platform.getPlatformName());
 
-					return event;
+						if ("%%__BUILTBYBIT__%%".equals("true")) {
+							event.setTag("bbb_user_id", "%%__USER__%%");
+							event.setTag("bbb_user_name", "%%__USERNAME__%%");
+							event.setTag("bbb_user_name", "%%__USERNAME__%%");
+							event.setTag("bbb_nonce", "%%__NONCE__%%");
+						}
+
+						return event;
+					});
 				});
-			});
 
-			Platform.runTaskAsync(() -> Sentry.captureException(finalThrowable));
+				Sentry.captureException(finalThrowable);
+			});
 		}
 
 		// Else, only log locally.
