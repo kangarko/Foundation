@@ -21,6 +21,7 @@ import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
@@ -31,6 +32,7 @@ import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.constructor.ConstructScalar;
 import org.snakeyaml.engine.v2.constructor.StandardConstructor;
+import org.snakeyaml.engine.v2.exceptions.ParserException;
 import org.snakeyaml.engine.v2.nodes.AnchorNode;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
@@ -156,7 +158,14 @@ public class YamlConfig extends FileConfig {
 	public final void loadFromString(@NonNull String contents) {
 
 		MappingNode node;
-		final Node rawNode = this.composer.composeString(contents).orElse(null);
+		Node rawNode;
+
+		try {
+			rawNode = this.composer.composeString(contents).orElse(null);
+
+		} catch (final ParserException ex) {
+			throw new YamlSyntaxError(ex, this.getFile());
+		}
 
 		try {
 			node = (MappingNode) rawNode;
@@ -529,10 +538,10 @@ public class YamlConfig extends FileConfig {
 
 	/**
 	 * Return a list of sections which won't inherit comments from the {@link #getDefaults()}
-	 * configuration. 
-	 * 
+	 * configuration.
+	 *
 	 * @see #setUncommentedSections(Collection)
-	 * 
+	 *
 	 * @return
 	 */
 	public final Set<String> getUncommentedSections() {
@@ -541,11 +550,11 @@ public class YamlConfig extends FileConfig {
 
 	/**
 	 * Return a list of sections which won't inherit comments from the {@link #getDefaults()}
-	 * configuration. 
-	 * 
-	 * This is useful when you let the use set a map inside the config and you want to 
+	 * configuration.
+	 *
+	 * This is useful when you let the use set a map inside the config and you want to
 	 * support custom user comments in that map.
-	 * 
+	 *
 	 * @param uncommentedSections
 	 */
 	public final void setUncommentedSections(Collection<String> uncommentedSections) {

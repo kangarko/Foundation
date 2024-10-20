@@ -69,7 +69,7 @@
   "command-region-set-secondary": "Set the secondary region point.",
   "command-reload-description": "Reload the configuration.",
   "command-reload-fail": "<dark_red>Oups, <red>reloading failed! See the console for more information. Error: {error}",
-  "command-reload-file-load-error": "<dark_red>Oups, <red>there was a problem loading files from your disk! See the console for more information. Boss has not been reloaded.",
+  "command-reload-file-load-error": "<dark_red>Oups, <red>there was a problem loading files for {plugin_name} ({files})! See the console for details. Not reloading.",
   "command-reload-started": "Reloading plugin's data, please wait..",
   "command-reload-success": "{plugin_name} {plugin_version} has been reloaded.",
   "command-requires-console": "You may only use this command from the console.",

@@ -68,9 +68,7 @@ public final class ReloadCommand extends SimpleSubCommandCore {
 	protected void onCommand() {
 		try {
 			this.tellInfo(Lang.component("command-reload-started"));
-
-			// Syntax check YML files before loading
-			boolean syntaxParsed = true;
+			final List<String> erroredFiles = new ArrayList<>();
 
 			final List<File> yamlFiles = new ArrayList<>();
 
@@ -83,20 +81,18 @@ public final class ReloadCommand extends SimpleSubCommandCore {
 				} catch (final Throwable t) {
 					t.printStackTrace();
 
-					syntaxParsed = false;
+					erroredFiles.add(file.getName());
 				}
 
-			if (!syntaxParsed) {
-				this.tellError(Lang.component("command-reload-file-load-error"));
+			if (!erroredFiles.isEmpty()) {
+				this.tellError(Lang.componentVars("command-reload-file-load-error", "files", String.join(", ", erroredFiles)));
 
 				return;
 			}
 
 			Platform.getPlugin().reload();
 
-			this.tellSuccess(Lang.componentVars("command-reload-success",
-					"plugin_name", Platform.getPlugin().getName(),
-					"plugin_version", Platform.getPlugin().getVersion()));
+			this.tellSuccess(Lang.componentVars("command-reload-success"));
 
 		} catch (final Throwable t) {
 			this.tellError(Lang.componentVars("command-reload-fail", "error", t.getMessage() != null ? t.getMessage() : "unknown"));
