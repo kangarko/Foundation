@@ -1108,6 +1108,8 @@ public abstract class SimpleCommandCore {
 	 */
 	protected SimpleComponent replacePlaceholders(SimpleComponent component) {
 		component = component
+				.replaceBracket("plugin_name", Platform.getPlugin().getName())
+				.replaceBracket("plugin_version", Platform.getPlugin().getVersion())
 				.replaceBracket("label", this.label)
 				.replaceBracket("player", this.audience.getName());
 
