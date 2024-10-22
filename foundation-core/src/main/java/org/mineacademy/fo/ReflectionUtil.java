@@ -624,7 +624,19 @@ public final class ReflectionUtil {
 	 */
 	public static <E> E lookupEnumSilent(@NonNull Class<E> typeOf, @NonNull String name) {
 		name = name.toUpperCase().replace(" ", "_");
+		E found = lookupEnumSilent0(typeOf, name);
 
+		// Attempt to add or remove plural s
+		if (found == null)
+			if (name.endsWith("S"))
+				found = lookupEnumSilent0(typeOf, name.substring(0, name.length() - 1));
+			else
+				found = lookupEnumSilent0(typeOf, name + "S");
+
+		return found;
+	}
+
+	private static <E> E lookupEnumSilent0(@NonNull Class<E> typeOf, @NonNull String name) {
 		try {
 			// Some compatibility workaround for plugins having these values in their default config
 			// to prevents malfunction on plugin's first load when loaded on older Minecraft version.

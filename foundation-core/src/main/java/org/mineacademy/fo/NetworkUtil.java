@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -162,6 +163,7 @@ public final class NetworkUtil {
 	 * @return A string containing the response, or an empty string if the request fails.
 	 */
 	public static String get(@NonNull String endpoint, @NonNull Map<String, String> params, @NonNull Map<String, String> requestProperties) {
+		final String rawEndpoint = endpoint;
 
 		// Bust cache
 		params.put("t", String.valueOf(System.currentTimeMillis()));
@@ -196,6 +198,9 @@ public final class NetworkUtil {
 
 				return responseBuilder.toString();
 			}
+
+		} catch (final UnknownHostException ex) {
+			throw new IllegalStateException("Error issuing a 'get' request to '" + rawEndpoint + "', network is unreachable", ex);
 
 		} catch (final Exception ex) {
 			CommonCore.throwError(ex,

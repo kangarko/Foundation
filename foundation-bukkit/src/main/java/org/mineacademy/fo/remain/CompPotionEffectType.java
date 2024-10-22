@@ -23,10 +23,12 @@ public final class CompPotionEffectType {
 	 * A helper to convert potion to string.
 	 */
 	private static final Function<PotionEffectType, String> TO_STRING = type -> {
-		if (Remain.hasNamespacedKey())
+		try {
 			return type.getKey().getKey().replace("minecraft:", "");
-		else
+
+		} catch (final NoSuchMethodError err) {
 			return type.getName();
+		}
 	};
 
 	/**
@@ -316,8 +318,10 @@ public final class CompPotionEffectType {
 		}
 
 		if (type != null) {
-			if (Remain.hasNamespacedKey())
+			try {
 				byName.put(type.getKey().getKey().toUpperCase(), type);
+			} catch (final NoSuchMethodError err) {
+			}
 
 			byName.put(modernName, type);
 
@@ -338,20 +342,18 @@ public final class CompPotionEffectType {
 			if (type == null)
 				continue; // wtf 1.8.8
 
-			if (Remain.hasNamespacedKey()) {
-				final String value = type.getKey().getKey().toUpperCase();
+			String name;
 
-				byName.put(value, type);
-				names.add(value);
-				loreName.put(type, ChatUtil.capitalizeFully(value));
+			try {
+				name = type.getKey().getKey().toUpperCase();
 
-			} else {
-				final String name = type.getName().toUpperCase();
-
-				byName.put(name, type);
-				names.add(name);
-				loreName.put(type, ChatUtil.capitalizeFully(name));
+			} catch (final NoSuchMethodError err) {
+				name = type.getName().toUpperCase();
 			}
+
+			byName.put(name, type);
+			names.add(name);
+			loreName.put(type, ChatUtil.capitalizeFully(name));
 
 			byType.add(type);
 		}

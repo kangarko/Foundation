@@ -134,7 +134,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @return
 	 */
 	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Function<String, Class<P>> prototypeCreator, Function<List<P>, List<P>> listComparator) {
-		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeCreator, false, listComparator);
+		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("rule") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeCreator, false, listComparator);
 	}
 
 	/**
@@ -207,6 +207,8 @@ public final class ConfigItems<T extends YamlConfig> {
 
 		// Clear old items
 		this.loadedItemsMap.clear();
+		this.items.clear();
+		this.itemNames.clear();
 
 		if (this.singleFile) {
 			final File file = FileUtil.extract(this.folder);
@@ -305,7 +307,6 @@ public final class ConfigItems<T extends YamlConfig> {
 
 			// Register
 			this.loadedItemsMap.put(name, item);
-
 			this.items.add(item);
 			this.itemNames.add(name);
 
@@ -347,6 +348,8 @@ public final class ConfigItems<T extends YamlConfig> {
 			item.getFile().delete();
 
 		this.loadedItemsMap.remove(name);
+		this.items.remove(item);
+		this.itemNames.remove(name);
 	}
 
 	/**

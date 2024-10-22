@@ -264,7 +264,7 @@ public final class Messenger {
 	 * The message is converted into a component with legacy and MiniMessage tags supported.
 	 *
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
-	 * 
+	 *
 	 * @param <T>
 	 * @param sender
 	 * @param message
@@ -389,7 +389,7 @@ public final class Messenger {
 	 * Send a message prepended with the {@link #getQuestionPrefix()} prefix.
 	 *
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
-	 * 
+	 *
 	 * @param <T>
 	 * @param sender
 	 * @param component
