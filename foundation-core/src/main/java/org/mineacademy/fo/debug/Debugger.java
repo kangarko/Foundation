@@ -84,6 +84,14 @@ public final class Debugger {
 		// Log to sentry if enabled.
 		final FoundationPlugin plugin = Platform.getPlugin();
 
+		// Ignore PlugMan errors
+		for (final StackTraceElement element : throwable.getStackTrace()) {
+			if (element.getClassName().contains(".plugman."))
+				CommonCore.warning("Please do not use PlugMan to interact with " + Platform.getPlugin().getName() + " because it causes issues. Restart your server or use the inbuilt reload command instead.");
+
+			return;
+		}
+
 		if (plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;
 
