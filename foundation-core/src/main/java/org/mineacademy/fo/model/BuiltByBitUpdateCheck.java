@@ -1,6 +1,8 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.NetworkUtil;
@@ -11,6 +13,7 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import lombok.Getter;
@@ -43,9 +46,16 @@ public final class BuiltByBitUpdateCheck implements Runnable {
 		final FoundationPlugin plugin = Platform.getPlugin();
 
 		if (plugin.getBuiltByBitSharedToken() != null && plugin.getBuiltByBitId() != -1) {
-			final JsonObject json = NetworkUtil.getJson("https://api.builtbybit.com/v1/resources/" + plugin.getBuiltByBitId() + "/versions/latest",
-					new HashMap<>(),
-					CommonCore.newHashMap("Authorization", "Shared " + plugin.getBuiltByBitSharedToken()));
+			JsonObject json;
+
+			try {
+				json = NetworkUtil.getJson("https://api.builtbybit.com/v1/resources/" + plugin.getBuiltByBitId() + "/versions/latest", new HashMap<>(), CommonCore.newHashMap("Authorization", "Shared " + plugin.getBuiltByBitSharedToken()));
+
+			} catch (final Throwable t) {
+				CommonCore.log("Error checking for plugin update. Got: " + t.getMessage());
+
+				return;
+			}
 
 			if (json.has("result")) {
 				if (json.get("result").getAsString().equals("success") && json.has("data")) {
@@ -79,17 +89,25 @@ public final class BuiltByBitUpdateCheck implements Runnable {
 	public static SimpleComponent[] getUpdateMessage() {
 		ValidCore.checkBoolean(newVersionAvailable, "Cannot call getUpdateMessage() when no new version is available!");
 
-		final SimpleComponent[] compo = Lang.componentArrayVars("plugin-update-new-version",
-				"plugin", Platform.getPlugin().getName(),
-				"version", Platform.getPlugin().getVersion(),
-				"new_version", newVersionString,
-				"release_date", TimeUtil.getFormattedDateShort(newVersionReleaseDate),
-				"url", "https://builtbybit.com/resources/" + Platform.getPlugin().getBuiltByBitId() + "/updates");
+		final List<SimpleComponent> components = new ArrayList<>();
 
-		for (final SimpleComponent line : compo) // TODO not clickable
-			System.out.println(line.toMini());
+		// Need to be loaded manually to replace {url} in mini click tag
+		for (final JsonElement element : Lang.dictionary().getAsJsonArray("plugin-update-notification")) {
+			String line = element.getAsString();
 
-		return compo;
+			line = line.replace("{plugin}", Platform.getPlugin().getName());
+			line = line.replace("{plugin_name}", Platform.getPlugin().getName());
+			line = line.replace("{version}", Platform.getPlugin().getVersion());
+			line = line.replace("{plugin_version}", Platform.getPlugin().getVersion());
+			line = line.replace("{new_version}", newVersionString);
+			line = line.replace("{release_date}", TimeUtil.getFormattedDateShort(newVersionReleaseDate));
+			line = line.replace("{url}", "https://builtbybit.com/resources/" + Platform.getPlugin().getBuiltByBitId() + "/updates");
+
+			components.add(SimpleComponent.fromMini(line));
+		}
+
+		// trick to replace {url} in click minimessage tag
+		return components.toArray(new SimpleComponent[components.size()]);
 	}
 
 	/*
