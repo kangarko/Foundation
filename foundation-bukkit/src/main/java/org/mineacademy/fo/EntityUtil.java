@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -175,6 +176,9 @@ public final class EntityUtil {
 	public static boolean isAggressive(Entity entity) {
 		if (entity instanceof Ghast || entity instanceof Slime)
 			return true;
+
+		if (entity.getType().toString().equals("BEE"))
+			return ((Bee) entity).getAnger() > 0;
 
 		if (entity instanceof Wolf && ((Wolf) entity).isAngry())
 			return true;
