@@ -124,9 +124,9 @@
   "player-invalid-uuid": "<red>Could not find a player from UUID {uuid}.",
   "player-not-online": "<red>Player {player} is not online on this server.",
   "player-not-played-before": "<red>Player {player} has not played before or we could not locate his disk data.",
-  "plugin-update-new-version": [
-    "<#ffdc7b>There is a new version of {plugin} available!",
-    "<#ffdc7b>Yours: {version} New: {new_version} Released: {release_date}",
+  "plugin-update-notification": [
+    "<#ffdc7b>There is a new version of {plugin_name} available!",
+    "<#ffdc7b>Yours: {plugin_version} New: {new_version} Released: {release_date}",
     "<#ffdc7b>Link: <click:open_url:'{url}'>{url}</click>"
   ],
   "prefix-announce": "<light_purple><dark_gray>[<bold><dark_purple>!<dark_gray></bold>]<gray>",

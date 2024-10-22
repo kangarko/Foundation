@@ -148,6 +148,15 @@ public final class Lang {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
+	 * Return the entire dictionary with all keys, unchanged, as a JsonObject.
+	 *
+	 * @return
+	 */
+	public static JsonObject dictionary() {
+		return instance.dictionary;
+	}
+
+	/**
 	 * Return if the given key exists in the language file.
 	 *
 	 * @see Storage#load()
