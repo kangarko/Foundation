@@ -321,7 +321,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		 * Starts an inactivity timer.
 		 */
 		private void startTimer() {
-			this.task = Platform.runTask(this.timeoutSeconds * 20, (Runnable) () -> {
+			this.task = Platform.runTask(this.timeoutSeconds * 60, (Runnable) () -> {
 				if (this.conversation.getState() == Conversation.ConversationState.UNSTARTED)
 					this.startTimer();
 
