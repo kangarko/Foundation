@@ -29,10 +29,12 @@ public final class CompEnchantment {
 	 * A helper to convert enchant to string.
 	 */
 	private static final Function<Enchantment, String> TO_STRING = type -> {
-		if (Remain.hasNamespacedKey())
+		try {
 			return type.getKey().getKey().replace("minecraft:", "");
-		else
+
+		} catch (final NoSuchMethodError err) {
 			return type.getName();
+		}
 	};
 
 	/**
@@ -330,8 +332,10 @@ public final class CompEnchantment {
 		}
 
 		if (enchantment != null) {
-			if (Remain.hasNamespacedKey())
+			try {
 				byName.put(enchantment.getKey().getKey().toUpperCase(), enchantment);
+			} catch (final NoSuchMethodError err) {
+			}
 
 			byName.put(modernName.toUpperCase(), enchantment);
 
@@ -349,20 +353,18 @@ public final class CompEnchantment {
 
 	static {
 		for (final Enchantment enchantment : Enchantment.values()) {
-			if (Remain.hasNamespacedKey()) {
-				final String value = enchantment.getKey().getKey().toUpperCase();
+			String name;
 
-				byName.put(value, enchantment);
-				names.add(value);
-				loreName.put(enchantment, ChatUtil.capitalizeFully(value));
+			try {
+				name = enchantment.getKey().getKey().toUpperCase();
 
-			} else {
-				final String name = enchantment.getName().toUpperCase();
-
-				byName.put(name, enchantment);
-				names.add(name);
-				loreName.put(enchantment, ChatUtil.capitalizeFully(name));
+			} catch (final NoSuchMethodError err) {
+				name = enchantment.getName().toUpperCase();
 			}
+
+			byName.put(name, enchantment);
+			names.add(name);
+			loreName.put(enchantment, ChatUtil.capitalizeFully(name));
 
 			byType.add(enchantment);
 		}

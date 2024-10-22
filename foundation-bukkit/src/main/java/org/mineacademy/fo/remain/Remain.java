@@ -302,11 +302,6 @@ public final class Remain {
 	private static boolean hasPlayerOpenSignMethod = true;
 
 	/**
-	 * Return true if the {@link NamespacedKey} class is available.
-	 */
-	private static boolean hasNamespacedKey = false;
-
-	/**
 	 * The safeguard NMS prefix used in Bukkit 1.4 to 1.20.4.
 	 *
 	 * @deprecated internal use only and no longer needed on Minecraft 1.20.5 and greater
@@ -432,14 +427,6 @@ public final class Remain {
 			Player.class.getMethod("openSign", org.bukkit.block.Sign.class);
 		} catch (final Throwable ex) {
 			hasPlayerOpenSignMethod = false;
-		}
-
-		try {
-			Class.forName("org.bukkit.NamespacedKey");
-			hasNamespacedKey = true;
-
-		} catch (final Throwable t) {
-			hasNamespacedKey = false;
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_16))
@@ -3455,15 +3442,6 @@ public final class Remain {
 	 */
 	public static boolean hasPlayerOpenSignMethod() {
 		return hasPlayerOpenSignMethod;
-	}
-
-	/**
-	 * Return true if the {@link NamespacedKey} class is available.
-	 *
-	 * @return
-	 */
-	public static boolean hasNamespacedKey() {
-		return hasNamespacedKey;
 	}
 
 	/**
