@@ -133,8 +133,12 @@ public class ButtonRemove extends Button {
 		 */
 		@Override
 		public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
-			player.closeInventory();
 			ButtonRemove.this.removeAction.run();
+
+			if (ButtonRemove.this.parentMenu.getParent() != null)
+				ButtonRemove.this.parentMenu.getParent().newInstance().displayTo(player);
+			else
+				player.closeInventory();
 
 			Messenger.success(player, Lang.componentVars("menu-item-deleted", "item", (!ButtonRemove.this.toRemoveType.isEmpty() ? ButtonRemove.this.toRemoveType + " " : "") + ButtonRemove.this.toRemoveName));
 		}
