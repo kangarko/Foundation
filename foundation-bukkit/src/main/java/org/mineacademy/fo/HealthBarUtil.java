@@ -68,7 +68,7 @@ public final class HealthBarUtil {
 		final int maxHealth = Remain.getMaxHealth(displayAbout);
 		final int health = Remain.getHealth(displayAbout);
 
-		Platform.toPlayer(displayTo).sendActionBar((component.isEmpty() ? SimpleComponent.fromPlain(ChatUtil.capitalizeFully(displayAbout.getType())) : component)
+		Platform.toPlayer(displayTo).sendActionBar((component == null || component.isEmpty() ? SimpleComponent.fromPlain(ChatUtil.capitalizeFully(displayAbout.getType())) : component)
 				.appendMini(" - " + getHealthMessage(health, maxHealth, (int) damage)));
 	}
 
