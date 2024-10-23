@@ -590,11 +590,11 @@ public final class Common {
 		if (message == null || message.isEmpty())
 			return "";
 
-		String result = CompChatColor.translateColorCodes(message)
+		String result = CompChatColor.translateColorCodes(message
 				.replace("{prefix}", message.startsWith(tellPrefix) ? "" : tellPrefix)
 				.replace("{server}", SimpleLocalization.SERVER_PREFIX)
 				.replace("{plugin_name}", SimplePlugin.getNamed())
-				.replace("{plugin_version}", SimplePlugin.getVersion());
+				.replace("{plugin_version}", SimplePlugin.getVersion()));
 
 		// Replace hex colors on 1.16+ or find the closest color for legacy versions
 		final Matcher match = HEX_COLOR_REGEX.matcher(result);
