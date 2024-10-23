@@ -120,17 +120,17 @@ final class BukkitPlatform extends FoundationPlatform {
 							name = "SNOWY_TAIGA";
 
 				} else if (enumType == EntityType.class) {
-					if (MinecraftVersion.atLeast(V.v1_16))
+					if (MinecraftVersion.atLeast(V.v1_16)) {
 						if (name.equals("PIG_ZOMBIE"))
 							name = "ZOMBIFIED_PIGLIN";
+					} else {
+						if (name.equals("ZOMBIFIED_PIGLIN"))
+							name = "PIG_ZOMBIE";
+					}
 
 					if (MinecraftVersion.atLeast(V.v1_14))
 						if (name.equals("TIPPED_ARROW"))
 							name = "ARROW";
-
-					if (MinecraftVersion.olderThan(V.v1_16))
-						if (name.equals("ZOMBIFIED_PIGLIN"))
-							name = "PIG_ZOMBIE";
 
 					if (MinecraftVersion.olderThan(V.v1_9))
 						if (name.equals("TRIDENT"))
@@ -146,9 +146,30 @@ final class BukkitPlatform extends FoundationPlatform {
 						else if (name.equals("ZOMBIE_VILLAGER"))
 							name = "ZOMBIE";
 
-					if ((MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5) || MinecraftVersion.newerThan(V.v1_20))
+					if ((MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5) || MinecraftVersion.newerThan(V.v1_20)) {
 						if (name.equals("SNOWMAN"))
 							name = "SNOW_GOLEM";
+						else if (name.equals("LIGHTNING"))
+							name = "LIGHTNING_BOLT";
+						else if (name.equals("PRIMED_TNT"))
+							name = "TNT";
+						else if (name.equals("FIREWORK"))
+							name = "FIREWORK_ROCKET";
+						else if (name.equals("ENDER_CRYSTAL"))
+							name = "END_CRYSTAL";
+
+					} else {
+						if (name.equals("SNOW_GOLEM"))
+							name = "SNOWMAN";
+						else if (name.equals("LIGHTNING_BOLT"))
+							name = "LIGHTNING";
+						else if (name.equals("TNT"))
+							name = "PRIMED_TNT";
+						else if (name.equals("FIREWORK_ROCKET"))
+							name = "FIREWORK";
+						else if (name.equals("END_CRYSTAL"))
+							name = "ENDER_CRYSTAL";
+					}
 
 				} else if (enumType == DamageCause.class) {
 					if (MinecraftVersion.olderThan(V.v1_13))
