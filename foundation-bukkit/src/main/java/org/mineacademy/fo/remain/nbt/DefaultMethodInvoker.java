@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-class DefaultMethodInvoker {
+final class DefaultMethodInvoker {
 
 	private static Method invokeDefaultMethod;
 
@@ -24,7 +24,6 @@ class DefaultMethodInvoker {
 	/**
 	 * Using reflections to access reflections, since some are still on java 8.
 	 *
-	 * @param srcInt
 	 * @param target
 	 * @param method
 	 * @param args

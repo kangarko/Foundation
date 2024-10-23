@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 
 /**
  * This class caches method reflections, keeps track of method name changes
@@ -15,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
-
 enum ReflectionMethod {
 
 	COMPOUND_SET_FLOAT(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, float.class },
@@ -131,6 +131,7 @@ enum ReflectionMethod {
 	COMPOUND_GET_KEYS(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] {}, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "c"), new Since(MinecraftVersion.MC1_13_R1, "getKeys"),
 			new Since(MinecraftVersion.MC1_18_R1, "getAllKeys()")),
+	// FIXME ?!?
 	LISTCOMPOUND_GET_KEYS(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] {}, MinecraftVersion.MC1_7_R4,
 			new Since(MinecraftVersion.MC1_7_R4, "c"), new Since(MinecraftVersion.MC1_13_R1, "getKeys"),
 			new Since(MinecraftVersion.MC1_18_R1, "getAllKeys()")),
@@ -365,7 +366,8 @@ enum ReflectionMethod {
 				this.methodName = this.targetVersion.name;
 
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this); // This gets loaded before the logger is loaded
+				Common.error(ex, "[NBTAPI] Unable to find method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName())
+						+ "' Args: " + Arrays.toString(args) + " Enum: " + this + ". Plugin will continue to function, but some features will be limited.");
 			}
 		}
 	}

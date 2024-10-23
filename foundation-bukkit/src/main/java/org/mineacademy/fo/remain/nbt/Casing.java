@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.function.UnaryOperator;
 
-public enum Casing {
+enum Casing {
 	camelCase(s -> {
 		if (s.length() < 2)
 			return s.toLowerCase();

@@ -21,7 +21,9 @@ final class DataFixerUtil {
 	public static final int VERSION1_20_4 = 3700;
 	public static final int VERSION1_20_5 = 3837;
 	public static final int VERSION1_21 = 3953;
+	public static final int VERSION1_21_2 = 4080;
 
+	
 	public static Object fixUpRawItemData(Object nbt, int fromVersion, int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		final DataFixer dataFixer = (DataFixer) ReflectionMethod.GET_DATAFIXER.run(null);
