@@ -234,6 +234,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 			throw new FoException("Missing libraries, see above for instructions.");
 		}
 
+		try {
+			Player.class.getMethod("spigot");
+
+		} catch (NoSuchMethodException | SecurityException ex) {
+			throw new FoException("CraftBukkt is unsupported! Please use Spigot or Paper to run " + this.getName());
+		}
+
 		// Call parent
 		this.onPluginLoad();
 	}
@@ -490,10 +497,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 	protected final void registerBungeeCord(@NonNull BungeeListener bungee) {
 		/*final String channelName = bungee.getChannel();
 		final Messenger messenger = this.getServer().getMessenger();
-		
+
 		if (!messenger.isIncomingChannelRegistered(this, channelName))
 			messenger.registerIncomingPluginChannel(this, channelName, BungeeListener.BungeeListenerImpl.getInstance());
-		
+
 		if (!messenger.isOutgoingChannelRegistered(this, channelName))
 			messenger.registerOutgoingPluginChannel(this, channelName);*/
 
