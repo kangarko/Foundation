@@ -171,6 +171,16 @@ final class BukkitPlatform extends FoundationPlatform {
 							name = "ENDER_CRYSTAL";
 					}
 
+						else if (name.equals("LIGHTNING"))
+							name = "LIGHTNING_BOLT";
+					} else {
+						if (name.equals("SNOW_GOLEM"))
+							name = "SNOWMAN";
+
+						else if (name.equals("LIGHTNING_BOLT"))
+							name = "LIGHTNING";
+					}
+
 				} else if (enumType == DamageCause.class) {
 					if (MinecraftVersion.olderThan(V.v1_13))
 						if (name.equals("DRYOUT"))
