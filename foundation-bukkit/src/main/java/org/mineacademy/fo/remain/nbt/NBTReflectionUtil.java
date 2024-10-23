@@ -17,7 +17,8 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mineacademy.fo.Common;
+
+import com.google.gson.Gson;
 
 /**
  * Utility class for translating NBTApi calls to reflections into NMS code All
@@ -145,7 +146,9 @@ public class NBTReflectionUtil {
 	 */
 	public static void writeApiNBT(NBTCompound comp, OutputStream stream) {
 		try {
-			final Object workingtag = comp.getResolvedObject();
+			Object workingtag = comp.getResolvedObject();
+			if (workingtag == null)
+				workingtag = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
 			ReflectionMethod.NBTFILE_WRITE.run(null, workingtag, stream);
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while writing NBT!", e);
@@ -241,7 +244,7 @@ public class NBTReflectionUtil {
 	 * @param meta ItemMeta from which tags should be retrieved
 	 * @return Map containing unhandled (custom) NBT tags
 	 */
-
+	
 	@Deprecated
 	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
 		try {
@@ -483,13 +486,14 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Returns the List saved with a given key.
-	 * @param <T>
+	 *
 	 * @param comp
 	 * @param key
 	 * @param type
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalid type
 	 */
+	
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
@@ -560,9 +564,10 @@ public class NBTReflectionUtil {
 	 */
 	public static void setObject(NBTCompound comp, String key, Object value) {
 		try {
-			final String json = Common.GSON.toJson(value);
+			final String json = gson.toJson(value);
 
 			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
+
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
 		}
@@ -570,7 +575,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Uses Gson to load back a {@link Serializable} object from the Compound
-	 * @param <T>
+	 *
 	 * @param comp
 	 * @param key
 	 * @param type
@@ -578,11 +583,32 @@ public class NBTReflectionUtil {
 	 */
 	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
 		final String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
+
 		if (json == null)
 			return null;
 
-		final T obj = Common.GSON.fromJson(json, type);
-		return type.cast(obj);
+		return deserializeJson(json, type);
+	}
+
+	private static Gson gson = new Gson();
+
+	/**
+	 * Creates an Object of the given type using the Json String
+	 *
+	 * @param json
+	 * @param type
+	 * @return Object that got created, or null if the json is null
+	 */
+	public static <T> T deserializeJson(String json, Class<T> type) {
+		try {
+			if (json == null)
+				return null;
+
+			final T obj = gson.fromJson(json, type);
+			return type.cast(obj);
+		} catch (final Exception ex) {
+			throw new NbtApiException("Error while converting json to " + type.getName(), ex);
+		}
 	}
 
 	/**
@@ -608,7 +634,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
-
+	
 	public static Set<String> getKeys(NBTCompound comp) {
 		final Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)

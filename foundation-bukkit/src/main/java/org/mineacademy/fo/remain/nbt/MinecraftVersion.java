@@ -13,9 +13,7 @@ import org.bukkit.Bukkit;
  * @author tr7zw
  *
  */
-
 enum MinecraftVersion {
-
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
 	MC1_8_R3(183),
@@ -41,7 +39,8 @@ enum MinecraftVersion {
 	MC1_20_R2(1202, true),
 	MC1_20_R3(1203, true),
 	MC1_20_R4(1204, true),
-	MC1_21_R1(1211, true);
+	MC1_21_R1(1211, true),
+	MC1_21_R2(1212, true);
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
@@ -62,6 +61,7 @@ enum MinecraftVersion {
 			this.put("1.20.6", MC1_20_R4);
 			this.put("1.21", MC1_21_R1);
 			this.put("1.21.1", MC1_21_R1);
+			this.put("1.21.2", MC1_21_R2);
 		}
 	};
 
@@ -134,6 +134,7 @@ enum MinecraftVersion {
 	public static MinecraftVersion getVersion() {
 		if (version != null)
 			return version;
+
 		try {
 			final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
@@ -142,6 +143,7 @@ enum MinecraftVersion {
 		} catch (final Exception ex) {
 			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0], MinecraftVersion.UNKNOWN);
 		}
+
 		return version;
 	}
 
@@ -178,6 +180,7 @@ enum MinecraftVersion {
 			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
 
 			isFoliaPresent = true;
+
 		} catch (final Exception ex) {
 			isFoliaPresent = false;
 		}

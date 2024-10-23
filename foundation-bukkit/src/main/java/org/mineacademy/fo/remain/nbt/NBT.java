@@ -1,5 +1,8 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -8,7 +11,7 @@ import javax.annotation.Nullable;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.Common;
 
 /**
  * General utility class for a clean and simple nbt access.
@@ -55,7 +58,10 @@ public class NBT {
 			return true;
 		} catch (final Exception ex) {
 			NbtApiException.confirmedBroken = true;
-			CommonCore.error(ex, "[NBTAPI] Error during the selfcheck!");
+			Common.warning("[NBTAPI] Error during loading, some plugin features will not be available!");
+
+			ex.printStackTrace();
+
 			return false;
 		}
 	}
@@ -76,7 +82,6 @@ public class NBT {
 	 * It takes an ItemStack, and a function that takes a ReadableNBT and returns a
 	 * generic type T. It then returns the result of the function applied to a new
 	 * NBTItem
-	 * @param <T> 
 	 *
 	 * @param item   The itemstack you want to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
@@ -97,7 +102,6 @@ public class NBT {
 	 * Consumer on the NBT of the item
 	 *
 	 * @param item The itemstack you want to get the NBT from
-	 * @param getter
 	 */
 	public static void get(ItemStack item, Consumer<ReadableItemNBT> getter) {
 		final NBTItem nbt = new NBTItem(item, false, true, false);
@@ -109,7 +113,6 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadableNBT and returns a
 	 * generic type T, and returns the result of the function
 	 *
-	 * @param <T> 
 	 * @param entity The entity to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value.
 	 * @return The NBTEntity class is being returned.
@@ -128,7 +131,6 @@ public class NBT {
 	 * Consumer on the NBT of the Entity
 	 *
 	 * @param entity The entity to get the NBT from
-	 * @param getter
 	 */
 	public static void get(Entity entity, Consumer<ReadableNBT> getter) {
 		final NBTEntity nbt = new NBTEntity(entity, true);
@@ -141,7 +143,6 @@ public class NBT {
 	 * value of type T. It then returns the value of the function applied to a new
 	 * NBTTileEntity created from the block state
 	 *
-	 * @param <T> 
 	 * @param blockState The block state of the block you want to get the NBT from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
 	 *                   type T.
@@ -161,7 +162,6 @@ public class NBT {
 	 * Consumer on the NBT of the BlockEntity
 	 *
 	 * @param blockState The block state of the block you want to get the NBT from.
-	 * @param getter
 	 */
 	public static void get(BlockState blockState, Consumer<ReadableNBT> getter) {
 		final NBTTileEntity nbt = new NBTTileEntity(blockState, true);
@@ -173,7 +173,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadableNBT and returns a
 	 * generic type T, and returns the result of the function, applied to the
 	 * entities persistent data container
-	 * @param <T> 
+	 *
 	 * @param entity The entity to get the data from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
 	 *               T.
@@ -187,10 +187,10 @@ public class NBT {
 	}
 
 	/**
-	 * It takes a block entity and a function that takes a ReadableNBT and returns
-	 * a generic type T, and returns the result of the function, applied to the
-	 * block entities persistent data container
-	 * @param <T> 
+	 * It takes a block entity and a function that takes a ReadableNBT and returns a
+	 * generic type T, and returns the result of the function, applied to the block
+	 * entities persistent data container
+	 *
 	 * @param blockState The block state of the block you want to get the data from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
 	 *                   type T.
@@ -206,7 +206,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack, applies a function to its NBT, and returns the result
 	 * of the function
-	 * @param <T> 
+	 *
 	 * @param item     The item you want to modify
 	 * @param function The function that will be applied to the item.
 	 * @return The return value of the function.
@@ -239,7 +239,6 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadWriteNBT and returns a
 	 * generic type T. It then returns the result of the function
 	 *
-	 * @param <T> 
 	 * @param entity   The entity to modify
 	 * @param function The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -258,7 +257,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
 	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
-	 * This method is quiet expensive, so don't overuse it.
+	 * This method is quite expensive, so don't overuse it.
 	 *
 	 * @param item     The item you want to modify the components of
 	 * @param consumer The consumer that will be used to modify the components.
@@ -275,8 +274,8 @@ public class NBT {
 	/**
 	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
 	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
-	 * This method is quiet expensive, so don't overuse it.
-	 * @param <T> 
+	 * This method is quite expensive, so don't overuse it.
+	 *
 	 * @param item     The item you want to modify the components of
 	 * @param function The consumer that will be used to modify the components.
 	 * @return The return type is the same as the return type of the function.
@@ -289,6 +288,37 @@ public class NBT {
 		final ItemStack tmp = NBT.itemStackFromNBT(nbti);
 		item.setItemMeta(tmp.getItemMeta());
 		return ret;
+	}
+
+	/**
+	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
+	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
+	 * This method is quite expensive, try to cache the results/use it smartly.
+	 *
+	 * @param item     The item you want to read the components of
+	 * @param consumer The consumer that will be used to read the components.
+	 */
+	public static void getComponents(ItemStack item, Consumer<ReadableNBT> consumer) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
+			throw new NbtApiException("This method only works for 1.20.5+!");
+		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
+		consumer.accept(nbti.getOrCreateCompound("components"));
+	}
+
+	/**
+	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
+	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
+	 * This method is quite expensive, try to cache the results/use it smartly.
+	 *
+	 * @param item     The item you want to read the components of
+	 * @param function The consumer that will be used to read the components.
+	 * @return The return type is the same as the return type of the function.
+	 */
+	public static <T> T getComponents(ItemStack item, Function<ReadableNBT, T> function) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
+			throw new NbtApiException("This method only works for 1.20.5+!");
+		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
+		return function.apply(nbti.getOrCreateCompound("components"));
 	}
 
 	/**
@@ -310,7 +340,7 @@ public class NBT {
 	 * It takes an entity and a function that takes a ReadWriteNBT from the entities
 	 * persistent data and returns a generic type T. It then returns the result of
 	 * the function
-	 * @param <T> 
+	 *
 	 * @param entity   The entity to modify the data of.
 	 * @param function The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -336,7 +366,7 @@ public class NBT {
 	/**
 	 * It takes a block state and a function that takes a ReadWriteNBT and returns a
 	 * generic type T. It then returns the result of the function
-	 * @param <T> 
+	 *
 	 * @param blockState The blockstate you want to modify
 	 * @param function   The function that will be called.
 	 * @return The return type is the same as the return type of the function.
@@ -373,7 +403,7 @@ public class NBT {
 	 * It takes a block state and a function that takes a ReadWriteNBT of the block
 	 * entities persistent data and returns a generic type T. It then returns the
 	 * result of the function
-	 * @param <T> 
+	 *
 	 * @param blockState The block state of the block you want to modify.
 	 * @param function   The function that will be called to modify the NBT data.
 	 * @return The return type is the same as the return type of the function.
@@ -452,10 +482,68 @@ public class NBT {
 	 * It takes a nbt json string, and returns a ReadWriteNBT object
 	 *
 	 * @param nbtString The NBT string to parse.
-	 * @return A new NBTContainer object.
+	 * @return A new ReadWriteNBT object.
 	 */
 	public static ReadWriteNBT parseNBT(String nbtString) {
 		return new NBTContainer(nbtString);
+	}
+
+	/**
+	 * Reads in an NBT stream and returns a ReadWriteNBT object
+	 *
+	 * @param stream The NBT stream to read.
+	 * @return A new ReadWriteNBT object.
+	 */
+	public static ReadWriteNBT readNBT(InputStream stream) {
+		return new NBTContainer(stream);
+	}
+
+	/**
+	 * Helper method for other developers using NMS. Allows to wrap any
+	 * net.minecraft.nbt.CompoundTag to a NBTAPI ReadWriteNBT object.
+	 *
+	 * @param nmsNbtTag Needs to be a valid net.minecraft.nbt.CompoundTag
+	 * @return A new ReadWriteNBT object.
+	 */
+	public static ReadWriteNBT wrapNMSTag(Object nmsNbtTag) {
+		return new NBTContainer(nmsNbtTag);
+	}
+
+	/**
+	 * Creates a NBTFileHandle that uses @param file to store its data. If this file
+	 * exists, the data will be loaded, otherwise a new file gets created.
+	 *
+	 * @param file
+	 * @throws IOException
+	 */
+	public static NBTFileHandle getFileHandle(File file) throws IOException {
+		return new NBTFile(file);
+	}
+
+	/**
+	 * Reads NBT data from the provided file.
+	 * <p>
+	 * Returns an empty tag if the file does not exist.
+	 *
+	 * @param file file to read
+	 * @return ReadWriteNBT of the files data
+	 * @throws IOException exception
+	 */
+	public static ReadWriteNBT readFile(File file) throws IOException {
+		return NBTFile.readFrom(file);
+	}
+
+	/**
+	 * Saves NBT data to the provided file.
+	 * <p>
+	 * Will fully override the file if it already exists.
+	 *
+	 * @param file file
+	 * @param nbt  NBT data
+	 * @throws IOException exception
+	 */
+	public static void writeFile(File file, ReadWriteNBT nbt) throws IOException {
+		NBTFile.saveTo(file, (NBTCompound) nbt);
 	}
 
 	/**
@@ -497,8 +585,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack, applies a function to its NBT wrapped in a proxy, and
 	 * returns the result of the function
-	 * @param <T> 
-	 * @param <X>
+	 *
 	 * @param item     The item you want to
 	 * @param wrapper  The target Proxy class
 	 * @param function The function that will be applied to the item.
@@ -516,7 +603,7 @@ public class NBT {
 
 	/**
 	 * It takes an ItemStack, applies a function to its NBT wrapped in a proxy.
-	 * @param <X> 
+	 *
 	 * @param item     The item you want to modify
 	 * @param wrapper  The target Proxy class
 	 * @param consumer The consumer that will be used to modify the NBT.
@@ -530,7 +617,7 @@ public class NBT {
 
 	/**
 	 * It takes an entity and a function to modify the entity via the proxy
-	 * @param <X> 
+	 *
 	 * @param entity   The entity to modify
 	 * @param wrapper  The target Proxy class
 	 * @param consumer The consumer that will be called with the proxy.
@@ -545,8 +632,7 @@ public class NBT {
 
 	/**
 	 * It takes an entity and a function to modify the entity via the proxy
-	 * @param <T> 
-	 * @param <X>
+	 *
 	 * @param entity   The entity to modify
 	 * @param wrapper  The target Proxy class
 	 * @param function The Function that will be called with the proxy.
@@ -563,7 +649,7 @@ public class NBT {
 
 	/**
 	 * It takes an block entity and a function to modify the entity via the proxy
-	 * @param <X> 
+	 *
 	 * @param blockState The blockstate you want to modify
 	 * @param wrapper    The target Proxy class
 	 * @param consumer   The Consumer that will be called.
@@ -578,8 +664,7 @@ public class NBT {
 
 	/**
 	 * It takes an block entity and a function to modify the entity via the proxy
-	 * @param <T> 
-	 * @param <X> 
+	 *
 	 * @param blockState The blockstate you want to modify
 	 * @param wrapper    The target Proxy class
 	 * @param function   The function that will be called.

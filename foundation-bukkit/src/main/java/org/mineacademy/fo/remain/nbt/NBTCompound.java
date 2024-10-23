@@ -13,8 +13,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
+import org.mineacademy.fo.Valid;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -453,7 +453,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void setLongArray(String key, long[] value) {
-		ValidCore.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "NBTCompount#setLongArray() is only available in 1.16+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "NBTCompound#setLongArray requires Minecraft 1.16+");
 
 		try {
 			this.writeLock.lock();
@@ -474,7 +474,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public long[] getLongArray(String key) {
-		ValidCore.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "NBTCompount#getLongArray() is only available in 1.16+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "NBTCompound#getLongArray requires Minecraft 1.16+");
 
 		try {
 			this.readLock.lock();
@@ -543,7 +543,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Uses Gson to retrieve a stored Object Deprecated to clarify that it's
 	 * probably missused. Preferably do the serializing yourself.
-	 * @param <T>
+	 *
 	 * @param key
 	 * @param type Class of the Object
 	 * @return The created Object or null if empty
@@ -1093,6 +1093,8 @@ public class NBTCompound implements ReadWriteNBT {
 			return this.getIndexedValue(tag, segment, (Class<T>) defaultValue.getClass());
 	}
 
+	// FIXME: before I'm even done writing this method, this sucks. Needs refactoring at some point
+
 	private <T> T getIndexedValue(NBTCompound comp, PathSegment segment, Class<T> type) {
 		if (type == String.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
@@ -1311,6 +1313,16 @@ public class NBTCompound implements ReadWriteNBT {
 		} finally {
 			this.writeLock.unlock();
 		}
+	}
+
+	@Override
+	public <T> T get(String key, NBTHandler<T> handler) {
+		return handler.get(this, key);
+	}
+
+	@Override
+	public <T> void set(String key, T value, NBTHandler<T> handler) {
+		handler.set(this, key, value);
 	}
 
 	@Override

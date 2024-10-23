@@ -398,6 +398,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
 		}
 	}
 
+	
 	@Override
 	public <E> E[] toArray(E[] a) {
 		this.validateClosed();

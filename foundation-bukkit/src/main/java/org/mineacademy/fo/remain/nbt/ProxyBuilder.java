@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import org.mineacademy.fo.remain.nbt.NBTTarget.Type;
 
-public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
+public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 
 	private static final Map<Method, Function<Arguments, Object>> METHOD_CACHE = new ConcurrentHashMap<>();
 
@@ -170,7 +170,7 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 		else if (value.getClass().isEnum())
 			nbt.setEnum(key, (Enum<?>) value);
 		else {
-
+			
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(value.getClass());
 			if (handler != null)
 				handler.set(nbt, key, value);

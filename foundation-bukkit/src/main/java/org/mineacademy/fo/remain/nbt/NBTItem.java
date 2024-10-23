@@ -137,6 +137,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 		return this.closed;
 	}
 
+	
 	@Override
 	protected void setCompound(Object compound) {
 		if (this.isReadOnly())
@@ -305,7 +306,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	@Override
 	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler) {
 		this.finalizeChanges();
-
+		
 		final T meta = (T) this.bukkitItem.getItemMeta();
 		handler.accept(new NBTContainer(this.getResolvedObject()).setReadOnly(true), meta);
 		this.bukkitItem.setItemMeta(meta);

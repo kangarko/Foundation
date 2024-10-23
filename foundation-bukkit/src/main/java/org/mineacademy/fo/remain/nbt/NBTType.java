@@ -43,7 +43,6 @@ public enum NBTType {
 		for (final NBTType t : values())
 			if (t.getId() == id)
 				return t;
-
 		return NBTType.NBTTagEnd;
 	}
 

@@ -48,7 +48,8 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 		}
 	}
 
-	public NBTCompound addCompound(ReadWriteNBT comp) {
+	@Override
+	public ReadWriteNBT addCompound(ReadableNBT comp) {
 		if (comp instanceof NBTCompound)
 			return this.addCompound((NBTCompound) comp);
 		return null;
