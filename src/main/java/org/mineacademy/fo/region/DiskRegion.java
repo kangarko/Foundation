@@ -219,6 +219,7 @@ public final class DiskRegion extends YamlConfig {
 	 * Return the region the player is currently creating
 	 *
 	 * @param player
+	 * @return
 	 */
 	public static VisualizedRegion getCreatedRegion(Player player) {
 		Valid.checkNotNull(regionGetter, "Please call DiskRegion#setRegionGetter before getting the region for player!");
