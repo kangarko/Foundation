@@ -297,10 +297,7 @@ public final class Remain {
 			Class.forName("net.md_5.bungee.chat.ComponentSerializer");
 
 		} catch (final Throwable ex) {
-			throw new FoException("&cYour server &f" + Bukkit.getVersion().replace("-SNAPSHOT", "") + "&c doesn't\n" +
-					" &cinclude &elibraries required&c for " + SimplePlugin.getNamed() + " to\n" +
-					" &crun. Install BungeeChatAPI from:\n" +
-					" &fhttps://mineacademy.org/plugins#misc");
+			throw new FoException("Your server " + Bukkit.getName() + " lacks libraries required for " + SimplePlugin.getNamed() + " to run. Install BungeeChatAPI from: https://mineacademy.org/plugins#misc");
 		}
 
 		try {
