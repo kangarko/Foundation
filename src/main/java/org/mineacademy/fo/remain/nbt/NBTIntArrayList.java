@@ -33,10 +33,10 @@ public class NBTIntArrayList extends NBTList<int[]> {
 	@Override
 	public int[] get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
-			ReflectionMethod.COMPOUND_SET.run(tmpContainer.getCompound(), "tmp", obj);
-			final int[] val = tmpContainer.getIntArray("tmp");
-			tmpContainer.removeKey("tmp");
+			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
+			ReflectionMethod.COMPOUND_SET.run(this.tmpContainer.getCompound(), "tmp", obj);
+			final int[] val = this.tmpContainer.getIntArray("tmp");
+			this.tmpContainer.removeKey("tmp");
 			return val;
 		} catch (final NumberFormatException nf) {
 			return null;

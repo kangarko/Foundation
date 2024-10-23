@@ -9,7 +9,6 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
 enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
@@ -93,35 +92,37 @@ enum ClassWrapper {
 	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
 			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()))
+		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
 			return;
-		enabled = true;
+		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
+			return;
+		this.enabled = true;
 		try {
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1) && mojangName != null)
 				// check for Mojmapped enviroment
 				try {
-					clazz = Class.forName(mojangName);
+					this.clazz = Class.forName(mojangName);
 					return;
 				} catch (final ClassNotFoundException ex) {
 					// ignored, not mojang mapped
 				}
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && mojangMap != null)
-				clazz = Class.forName(mojangMap + "." + clazzName);
+				this.clazz = Class.forName(mojangMap + "." + clazzName);
 			else if (packageId == PackageWrapper.NONE)
-				clazz = Class.forName(clazzName);
+				this.clazz = Class.forName(clazzName);
 			else if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4
 					&& Forge1710Mappings.getClassMappings().get(this.name()) != null)
-				clazz = Class.forName(clazzName = Forge1710Mappings.getClassMappings().get(this.name()));
+				this.clazz = Class.forName(clazzName = Forge1710Mappings.getClassMappings().get(this.name()));
 			else if (packageId == PackageWrapper.CRAFTBUKKIT)
 				// this also works for un-remapped Paper 1.20+
-				clazz = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + "." + clazzName);
+				this.clazz = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + "." + clazzName);
 			else {
 				// fallback for old versions pre mojmap and in the nms package
 				final String version = MinecraftVersion.getVersion().getPackageName();
-				clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
+				this.clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
+			Common.error(ex, "[NBTAPI] Error while trying to resolve class '" + clazzName + "'! Plugin will continue to function but some features will be limited.");
 		}
 	}
 
@@ -129,21 +130,21 @@ enum ClassWrapper {
 	 * @return The wrapped class
 	 */
 	public Class<?> getClazz() {
-		return clazz;
+		return this.clazz;
 	}
 
 	/**
 	 * @return Is this class available in this Version
 	 */
 	public boolean isEnabled() {
-		return enabled;
+		return this.enabled;
 	}
 
 	/**
 	 * @return Package+Class name used by Mojang
 	 */
 	public String getMojangName() {
-		return mojangName;
+		return this.mojangName;
 	}
 
 }

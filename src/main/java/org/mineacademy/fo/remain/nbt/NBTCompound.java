@@ -12,7 +12,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
+import org.mineacademy.fo.Valid;
 
 /**
  * Base class representing NMS Compounds. For a standalone implementation check
@@ -24,8 +26,8 @@ import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
 public class NBTCompound implements ReadWriteNBT {
 
 	private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-	private final Lock readLock = readWriteLock.readLock();
-	private final Lock writeLock = readWriteLock.writeLock();
+	private final Lock readLock = this.readWriteLock.readLock();
+	private final Lock writeLock = this.readWriteLock.writeLock();
 
 	private final String compundName;
 	private final NBTCompound parent;
@@ -43,52 +45,52 @@ public class NBTCompound implements ReadWriteNBT {
 	}
 
 	protected Lock getReadLock() {
-		return readLock;
+		return this.readLock;
 	}
 
 	protected Lock getWriteLock() {
-		return writeLock;
+		return this.writeLock;
 	}
 
 	protected void saveCompound() {
-		if (parent != null)
-			parent.saveCompound();
+		if (this.parent != null)
+			this.parent.saveCompound();
 	}
 
 	protected void setResolvedObject(Object object) {
-		if (isClosed())
+		if (this.isClosed())
 			throw new NbtApiException("Tried using closed NBT data!");
-		if (readOnly)
+		if (this.readOnly)
 			this.readOnlyCache = object;
 	}
 
 	protected void setClosed() {
-		if (parent != null)
-			parent.setClosed();
+		if (this.parent != null)
+			this.parent.setClosed();
 	}
 
 	protected boolean isClosed() {
-		if (parent != null)
-			return parent.isClosed();
+		if (this.parent != null)
+			return this.parent.isClosed();
 		return false;
 	}
 
 	protected boolean isReadOnly() {
-		return readOnly;
+		return this.readOnly;
 	}
 
 	protected Object getResolvedObject() {
-		if (isClosed())
+		if (this.isClosed())
 			throw new NbtApiException("Tried using closed NBT data!");
-		if (readOnlyCache != null)
-			return readOnlyCache;
-		final Object rootnbttag = getCompound();
+		if (this.readOnlyCache != null)
+			return this.readOnlyCache;
+		final Object rootnbttag = this.getCompound();
 		if (rootnbttag == null)
 			return null;
 		if (!NBTReflectionUtil.valideCompound(this))
 			throw new NbtApiException("The Compound wasn't able to be linked back to the root!");
 		final Object workingtag = NBTReflectionUtil.getToCompount(rootnbttag, this);
-		if (readOnly)
+		if (this.readOnly)
 			this.readOnlyCache = workingtag;
 		return workingtag;
 	}
@@ -97,25 +99,25 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @return The Compound name
 	 */
 	public String getName() {
-		return compundName;
+		return this.compundName;
 	}
 
 	/**
 	 * @return The NMS Compound behind this Object
 	 */
 	public Object getCompound() {
-		return parent.getCompound();
+		return this.parent.getCompound();
 	}
 
 	protected void setCompound(Object compound) {
-		parent.setCompound(compound);
+		this.parent.setCompound(compound);
 	}
 
 	/**
 	 * @return The parent Compound
 	 */
 	public NBTCompound getParent() {
-		return parent;
+		return this.parent;
 	}
 
 	/**
@@ -128,18 +130,18 @@ public class NBTCompound implements ReadWriteNBT {
 		if (comp == null)
 			return;
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.mergeOtherNBTCompound(this, comp);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
 	@Override
 	public void mergeCompound(ReadableNBT comp) {
 		if (comp instanceof NBTCompound)
-			mergeCompound((NBTCompound) comp);
+			this.mergeCompound((NBTCompound) comp);
 		else
 			throw new NbtApiException("Unknown NBT object: " + comp);
 	}
@@ -153,11 +155,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setString(String key, String value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_STRING, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -170,10 +172,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public String getString(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (String) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_STRING, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -186,11 +188,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setInteger(String key, Integer value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_INT, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -203,10 +205,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Integer getInteger(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Integer) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_INT, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -219,11 +221,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setDouble(String key, Double value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_DOUBLE, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -236,10 +238,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Double getDouble(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Double) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_DOUBLE, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -252,11 +254,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setByte(String key, Byte value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_BYTE, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -269,10 +271,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Byte getByte(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Byte) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_BYTE, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -285,11 +287,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setShort(String key, Short value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_SHORT, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -302,10 +304,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Short getShort(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Short) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_SHORT, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -318,11 +320,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setLong(String key, Long value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONG, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -335,10 +337,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Long getLong(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Long) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_LONG, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -351,11 +353,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setFloat(String key, Float value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_FLOAT, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -368,10 +370,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Float getFloat(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Float) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_FLOAT, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -384,11 +386,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setByteArray(String key, byte[] value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_BYTEARRAY, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -401,10 +403,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public byte[] getByteArray(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (byte[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_BYTEARRAY, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -417,11 +419,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setIntArray(String key, int[] value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_INTARRAY, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -434,10 +436,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public int[] getIntArray(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (int[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_INTARRAY, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -451,13 +453,14 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void setLongArray(String key, long[] value) {
-		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R1);
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "NBTCompound#setLongArray requires Minecraft 1.16+");
+
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONGARRAY, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -471,12 +474,13 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public long[] getLongArray(String key) {
-		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R1);
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "NBTCompound#getLongArray requires Minecraft 1.16+");
+
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (long[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_LONGARRAY, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -489,17 +493,17 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setBoolean(String key, Boolean value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_BOOLEAN, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
 	protected void set(String key, Object val) {
 		NBTReflectionUtil.set(this, key, val);
-		saveCompound();
+		this.saveCompound();
 	}
 
 	/**
@@ -511,10 +515,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Boolean getBoolean(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return (Boolean) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_BOOLEAN, key);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -528,11 +532,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Deprecated
 	public void setObject(String key, Object value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.setObject(this, key, value);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -547,10 +551,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Deprecated
 	public <T> T getObject(String key, Class<T> type) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return NBTReflectionUtil.getObject(this, key, type);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -563,11 +567,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setItemStack(String key, ItemStack item) {
 		try {
-			writeLock.lock();
-			removeKey(key);
-			addCompound(key).mergeCompound(NBTItem.convertItemtoNBT(item));
+			this.writeLock.lock();
+			this.removeKey(key);
+			this.addCompound(key).mergeCompound(NBTItem.convertItemtoNBT(item));
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -580,13 +584,13 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public ItemStack getItemStack(String key) {
 		try {
-			readLock.lock();
-			final NBTCompound comp = getCompound(key);
+			this.readLock.lock();
+			final NBTCompound comp = this.getCompound(key);
 			if (comp == null)
 				return null; // NBTReflectionUtil#convertNBTCompoundtoNMSItem doesn't accept null
 			return NBTItem.convertNBTtoItem(comp);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -599,11 +603,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setItemStackArray(String key, ItemStack[] items) {
 		try {
-			writeLock.lock();
-			removeKey(key);
-			addCompound(key).mergeCompound(NBTItem.convertItemArraytoNBT(items));
+			this.writeLock.lock();
+			this.removeKey(key);
+			this.addCompound(key).mergeCompound(NBTItem.convertItemArraytoNBT(items));
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -618,13 +622,13 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public ItemStack[] getItemStackArray(String key) {
 		try {
-			readLock.lock();
-			final NBTCompound comp = getCompound(key);
+			this.readLock.lock();
+			final NBTCompound comp = this.getCompound(key);
 			if (comp == null)
 				return null; // NBTReflectionUtil#convertNBTCompoundtoNMSItem doesn't accept null
 			return NBTItem.convertNBTtoItemArray(comp);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -637,14 +641,14 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void setUUID(String key, UUID value) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1))
 				NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_UUID, key, value);
 			else
-				setString(key, value.toString());
-			saveCompound();
+				this.setString(key, value.toString());
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -657,20 +661,20 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public UUID getUUID(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1)
-					&& getType(key) == NBTType.NBTTagIntArray)
+					&& this.getType(key) == NBTType.NBTTagIntArray)
 				return (UUID) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_UUID, key);
-			else if (getType(key) == NBTType.NBTTagString)
+			else if (this.getType(key) == NBTType.NBTTagString)
 				try {
-					return UUID.fromString(getString(key));
+					return UUID.fromString(this.getString(key));
 				} catch (final IllegalArgumentException ex) {
 					return null;
 				}
 			else
 				return null;
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -683,7 +687,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Deprecated
 	public Boolean hasKey(String key) {
-		return hasTag(key);
+		return this.hasTag(key);
 	}
 
 	/**
@@ -695,13 +699,13 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public boolean hasTag(String key) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			final Boolean b = (Boolean) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_HAS_KEY, key);
 			if (b == null)
 				return false;
 			return b;
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -711,11 +715,11 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public void removeKey(String key) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.remove(this, key);
-			saveCompound();
+			this.saveCompound();
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -725,10 +729,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public Set<String> getKeys() {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			return new HashSet<>(NBTReflectionUtil.getKeys(this));
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -740,17 +744,17 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	public NBTCompound addCompound(String name) {
 		try {
-			writeLock.lock();
-			if (getType(name) == NBTType.NBTTagCompound)
-				return getCompound(name);
+			this.writeLock.lock();
+			if (this.getType(name) == NBTType.NBTTagCompound)
+				return this.getCompound(name);
 			NBTReflectionUtil.addNBTTagCompound(this, name);
-			final NBTCompound comp = getCompound(name);
+			final NBTCompound comp = this.getCompound(name);
 			if (comp == null)
 				throw new NbtApiException("Error while adding Compound, got null!");
-			saveCompound();
+			this.saveCompound();
 			return comp;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -761,15 +765,15 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTCompound getCompound(String name) {
 		try {
-			readLock.lock();
-			if (getType(name) != NBTType.NBTTagCompound)
+			this.readLock.lock();
+			if (this.getType(name) != NBTType.NBTTagCompound)
 				return null;
-			final NBTCompound next = new NBTCompound(this, name, readOnly);
+			final NBTCompound next = new NBTCompound(this, name, this.readOnly);
 			if (NBTReflectionUtil.valideCompound(next))
 				return next;
 			return null;
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -781,7 +785,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public NBTCompound getOrCreateCompound(String name) {
-		return addCompound(name);
+		return this.addCompound(name);
 	}
 
 	/**
@@ -791,12 +795,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<String> getStringList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<String> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagString, String.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -807,12 +811,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<Integer> getIntegerList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<Integer> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagInt, Integer.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -823,12 +827,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<int[]> getIntArrayList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<int[]> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagIntArray, int[].class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -839,12 +843,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<UUID> getUUIDList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<UUID> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagIntArray, UUID.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -855,12 +859,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<Float> getFloatList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<Float> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagFloat, Float.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -871,12 +875,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<Double> getDoubleList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<Double> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagDouble, Double.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -887,12 +891,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTList<Long> getLongList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTList<Long> list = NBTReflectionUtil.getList(this, name, NBTType.NBTTagLong, Long.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -905,12 +909,12 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTType getListType(String name) {
 		try {
-			readLock.lock();
-			if (getType(name) != NBTType.NBTTagList)
+			this.readLock.lock();
+			if (this.getType(name) != NBTType.NBTTagList)
 				return null;
 			return NBTReflectionUtil.getListType(this, name);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -921,13 +925,13 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTCompoundList getCompoundList(String name) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			final NBTCompoundList list = (NBTCompoundList) (Object) NBTReflectionUtil.getList(this, name,
 					NBTType.NBTTagCompound, NBTListCompound.class);
-			saveCompound();
+			this.saveCompound();
 			return list;
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -948,39 +952,39 @@ public class NBTCompound implements ReadWriteNBT {
 	public <T> T getOrDefault(String key, T defaultValue) {
 		if (defaultValue == null)
 			throw new NullPointerException("Default type in getOrDefault can't be null!");
-		if (!hasTag(key))
+		if (!this.hasTag(key))
 			return defaultValue;
 
 		final Class<?> clazz = defaultValue.getClass();
 		if (clazz == Boolean.class || clazz == boolean.class)
-			return (T) getBoolean(key);
+			return (T) this.getBoolean(key);
 		if (clazz == Byte.class || clazz == byte.class)
-			return (T) getByte(key);
+			return (T) this.getByte(key);
 		if (clazz == Short.class || clazz == short.class)
-			return (T) getShort(key);
+			return (T) this.getShort(key);
 		if (clazz == Integer.class || clazz == int.class)
-			return (T) getInteger(key);
+			return (T) this.getInteger(key);
 		if (clazz == Long.class || clazz == long.class)
-			return (T) getLong(key);
+			return (T) this.getLong(key);
 		if (clazz == Float.class || clazz == float.class)
-			return (T) getFloat(key);
+			return (T) this.getFloat(key);
 		if (clazz == Double.class || clazz == double.class)
-			return (T) getDouble(key);
+			return (T) this.getDouble(key);
 		if (clazz == byte[].class)
-			return (T) getByteArray(key);
+			return (T) this.getByteArray(key);
 		if (clazz == int[].class)
-			return (T) getIntArray(key);
+			return (T) this.getIntArray(key);
 		if (clazz == long[].class)
-			return (T) getLongArray(key);
+			return (T) this.getLongArray(key);
 		if (clazz == String.class)
-			return (T) getString(key);
+			return (T) this.getString(key);
 		if (clazz == UUID.class) {
-			final UUID uuid = getUUID(key);
+			final UUID uuid = this.getUUID(key);
 			return uuid == null ? defaultValue : (T) uuid;
 		}
 		if (clazz.isEnum()) {
 			@SuppressWarnings("rawtypes")
-			final Object obj = getEnum(key, (Class) defaultValue.getClass());
+			final Object obj = this.getEnum(key, (Class) defaultValue.getClass());
 			return obj == null ? defaultValue : (T) obj;
 		}
 
@@ -1004,35 +1008,35 @@ public class NBTCompound implements ReadWriteNBT {
 	public <T> T getOrNull(String key, Class<?> type) {
 		if (type == null)
 			throw new NullPointerException("Default type in getOrNull can't be null!");
-		if (!hasTag(key))
+		if (!this.hasTag(key))
 			return null;
 
 		if (type == Boolean.class || type == boolean.class)
-			return (T) getBoolean(key);
+			return (T) this.getBoolean(key);
 		if (type == Byte.class || type == byte.class)
-			return (T) getByte(key);
+			return (T) this.getByte(key);
 		if (type == Short.class || type == short.class)
-			return (T) getShort(key);
+			return (T) this.getShort(key);
 		if (type == Integer.class || type == int.class)
-			return (T) getInteger(key);
+			return (T) this.getInteger(key);
 		if (type == Long.class || type == long.class)
-			return (T) getLong(key);
+			return (T) this.getLong(key);
 		if (type == Float.class || type == float.class)
-			return (T) getFloat(key);
+			return (T) this.getFloat(key);
 		if (type == Double.class || type == double.class)
-			return (T) getDouble(key);
+			return (T) this.getDouble(key);
 		if (type == byte[].class)
-			return (T) getByteArray(key);
+			return (T) this.getByteArray(key);
 		if (type == int[].class)
-			return (T) getIntArray(key);
+			return (T) this.getIntArray(key);
 		if (type == long[].class)
-			return (T) getLongArray(key);
+			return (T) this.getLongArray(key);
 		if (type == String.class)
-			return (T) getString(key);
+			return (T) this.getString(key);
 		if (type == UUID.class)
-			return (T) getUUID(key);
+			return (T) this.getUUID(key);
 		if (type.isEnum())
-			return (T) getEnum(key, (Class) type);
+			return (T) this.getEnum(key, (Class) type);
 
 		throw new NbtApiException("Unsupported type for getOrNull: " + type.getName());
 	}
@@ -1060,7 +1064,7 @@ public class NBTCompound implements ReadWriteNBT {
 		if (!segment.hasIndex())
 			return tag.getOrNull(segment.getPath(), type);
 		else
-			return getIndexedValue(tag, segment, (Class<T>) type);
+			return this.getIndexedValue(tag, segment, (Class<T>) type);
 	}
 
 	@Override
@@ -1086,7 +1090,7 @@ public class NBTCompound implements ReadWriteNBT {
 		if (!segment.hasIndex())
 			return tag.getOrDefault(segment.getPath(), defaultValue);
 		else
-			return getIndexedValue(tag, segment, (Class<T>) defaultValue.getClass());
+			return this.getIndexedValue(tag, segment, (Class<T>) defaultValue.getClass());
 	}
 
 	// FIXME: before I'm even done writing this method, this sucks. Needs refactoring at some point
@@ -1249,10 +1253,10 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public <E extends Enum<?>> void setEnum(String key, E value) {
 		if (value == null) {
-			removeKey(key);
+			this.removeKey(key);
 			return;
 		}
-		setString(key, value.name());
+		this.setString(key, value.name());
 	}
 
 	/**
@@ -1268,7 +1272,7 @@ public class NBTCompound implements ReadWriteNBT {
 	public <E extends Enum<E>> E getEnum(String key, Class<E> type) {
 		if (key == null || type == null)
 			return null;
-		final String name = getString(key);
+		final String name = this.getString(key);
 		if (name == null)
 			return null;
 		try {
@@ -1285,7 +1289,7 @@ public class NBTCompound implements ReadWriteNBT {
 	@Override
 	public NBTType getType(String name) {
 		try {
-			readLock.lock();
+			this.readLock.lock();
 			if (MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4) {
 				final Object nbtbase = NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET, name);
 				if (nbtbase == null)
@@ -1297,17 +1301,17 @@ public class NBTCompound implements ReadWriteNBT {
 				return null;
 			return NBTType.valueOf((byte) o);
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
 	@Override
 	public void writeCompound(OutputStream stream) {
 		try {
-			writeLock.lock();
+			this.writeLock.lock();
 			NBTReflectionUtil.writeApiNBT(this, stream);
 		} finally {
-			writeLock.unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -1327,7 +1331,7 @@ public class NBTCompound implements ReadWriteNBT {
 		 * StringBuilder result = new StringBuilder(); for (String key : getKeys()) {
 		 * result.append(toString(key)); } return result.toString();
 		 */
-		return asNBTString();
+		return this.asNBTString();
 	}
 
 	/**
@@ -1344,7 +1348,7 @@ public class NBTCompound implements ReadWriteNBT {
 		 * return this.getCompound(key).toString(); } else { return result + "-" + key +
 		 * ": " + getContent(key) + System.lineSeparator(); }
 		 */
-		return asNBTString();
+		return this.asNBTString();
 	}
 
 	/**
@@ -1352,8 +1356,8 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void clearNBT() {
-		for (final String key : getKeys())
-			removeKey(key);
+		for (final String key : this.getKeys())
+			this.removeKey(key);
 	}
 
 	/**
@@ -1364,8 +1368,8 @@ public class NBTCompound implements ReadWriteNBT {
 	@Deprecated
 	public String asNBTString() {
 		try {
-			readLock.lock();
-			final Object comp = getResolvedObject();
+			this.readLock.lock();
+			final Object comp = this.getResolvedObject();
 			if (comp == null)
 				return "{}";
 			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
@@ -1373,13 +1377,13 @@ public class NBTCompound implements ReadWriteNBT {
 			else
 				return comp.toString();
 		} finally {
-			readLock.unlock();
+			this.readLock.unlock();
 		}
 	}
 
 	@Override
 	public int hashCode() {
-		return toString().hashCode();
+		return this.toString().hashCode();
 	}
 
 	/**
@@ -1393,8 +1397,8 @@ public class NBTCompound implements ReadWriteNBT {
 			return false;
 		if (obj instanceof NBTCompound) {
 			final NBTCompound other = (NBTCompound) obj;
-			if (getKeys().equals(other.getKeys())) {
-				for (final String key : getKeys())
+			if (this.getKeys().equals(other.getKeys())) {
+				for (final String key : this.getKeys())
 					if (!isEqual(this, other, key))
 						return false;
 				return true;

@@ -164,7 +164,7 @@ public interface ReadableNBT {
 	 * @return whether the key is set and has the specified type
 	 */
 	default boolean hasTag(String key, NBTType type) {
-		return hasTag(key) && getType(key) == type;
+		return this.hasTag(key) && this.getType(key) == type;
 	}
 
 	/**
@@ -342,10 +342,10 @@ public interface ReadableNBT {
 	 */
 	void writeCompound(OutputStream stream);
 
-	@Override
 	/**
 	 * @return The NBT as printable NBT-Json.
 	 */
+	@Override
 	String toString();
 
 }

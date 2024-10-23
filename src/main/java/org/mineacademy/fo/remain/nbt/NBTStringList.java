@@ -18,7 +18,7 @@ public class NBTStringList extends NBTList<String> {
 	@Override
 	public String get(int index) {
 		try {
-			return (String) ReflectionMethod.LIST_GET_STRING.run(listObject, index);
+			return (String) ReflectionMethod.LIST_GET_STRING.run(this.listObject, index);
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
 		}

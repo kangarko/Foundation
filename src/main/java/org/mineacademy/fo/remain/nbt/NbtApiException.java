@@ -1,7 +1,5 @@
 package org.mineacademy.fo.remain.nbt;
 
-import org.mineacademy.fo.exception.FoException;
-
 /**
  * A generic {@link RuntimeException} that can be thrown by most methods in the
  * NBTAPI.
@@ -9,12 +7,18 @@ import org.mineacademy.fo.exception.FoException;
  * @author tr7zw
  *
  */
-public class NbtApiException extends FoException {
+public class NbtApiException extends RuntimeException {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = -993309714559452334L;
+	/**
+	 * Keep track of the plugin selfcheck. Null = not
+	 * checked(silentquickstart/shaded) true = selfcheck failed false = everything
+	 * should be fine, but apparently wasn't?
+	 */
+	public static Boolean confirmedBroken = null;
 
 	/**
 	 *
@@ -28,20 +32,27 @@ public class NbtApiException extends FoException {
 	 * @param cause
 	 */
 	public NbtApiException(String message, Throwable cause) {
-		super(message, cause);
+		super(generateMessage(message), cause);
 	}
 
 	/**
 	 * @param message
 	 */
 	public NbtApiException(String message) {
-		super(message);
+		super(generateMessage(message));
 	}
 
 	/**
 	 * @param cause
 	 */
 	public NbtApiException(Throwable cause) {
-		super(cause == null ? null : cause.toString(), cause);
+		super(generateMessage(cause == null ? null : cause.toString()), cause);
+	}
+
+	private static String generateMessage(String message) {
+		if (message == null)
+			return null;
+
+		return message;
 	}
 }
