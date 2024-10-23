@@ -724,26 +724,34 @@ public final class ReflectionUtil {
 						name = "SNOWY_TAIGA";
 
 			if (enumType == EntityType.class) {
-
-				if (rawName.equals("LIGHTNING"))
-					try {
-						EntityType.valueOf("LIGHTNING");
-
-					} catch (final IllegalArgumentException ex) {
+				if ((MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5) || MinecraftVersion.newerThan(V.v1_20)) {
+					if (rawName.equals("LIGHTNING"))
 						name = "LIGHTNING_BOLT";
-					}
+					else if (rawName.equals("PRIMED_TNT"))
+						name = "TNT";
+					else if (rawName.equals("FIREWORK"))
+						name = "FIREWORK_ROCKET";
+					else if (rawName.equals("ENDER_CRYSTAL"))
+						name = "END_CRYSTAL";
 
-				if (rawName.equals("LIGHTNING_BOLT"))
-					try {
-						EntityType.valueOf("LIGHTNING_BOLT");
-
-					} catch (final IllegalArgumentException ex) {
+				} else {
+					if (rawName.equals("LIGHTNING_BOLT"))
 						name = "LIGHTNING";
-					}
+					else if (rawName.equals("TNT"))
+						name = "PRIMED_TNT";
+					else if (rawName.equals("FIREWORK_ROCKET"))
+						name = "FIREWORK";
+					else if (rawName.equals("END_CRYSTAL"))
+						name = "ENDER_CRYSTAL";
+				}
 
-				if (MinecraftVersion.atLeast(V.v1_16))
+				if (MinecraftVersion.atLeast(V.v1_16)) {
 					if (rawName.equals("PIG_ZOMBIE"))
 						name = "ZOMBIFIED_PIGLIN";
+				} else {
+					if (rawName.equals("ZOMBIFIED_PIGLIN"))
+						name = "PIG_ZOMBIE";
+				}
 
 				if (MinecraftVersion.atLeast(V.v1_14))
 					if (rawName.equals("TIPPED_ARROW"))
