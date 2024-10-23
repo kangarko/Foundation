@@ -102,6 +102,7 @@ public class NBT {
 	 * Consumer on the NBT of the item
 	 *
 	 * @param item The itemstack you want to get the NBT from
+	 * @param getter
 	 */
 	public static void get(ItemStack item, Consumer<ReadableItemNBT> getter) {
 		final NBTItem nbt = new NBTItem(item, false, true, false);
@@ -131,6 +132,7 @@ public class NBT {
 	 * Consumer on the NBT of the Entity
 	 *
 	 * @param entity The entity to get the NBT from
+	 * @param getter
 	 */
 	public static void get(Entity entity, Consumer<ReadableNBT> getter) {
 		final NBTEntity nbt = new NBTEntity(entity, true);
@@ -162,6 +164,7 @@ public class NBT {
 	 * Consumer on the NBT of the BlockEntity
 	 *
 	 * @param blockState The block state of the block you want to get the NBT from.
+	 * @param getter
 	 */
 	public static void get(BlockState blockState, Consumer<ReadableNBT> getter) {
 		final NBTTileEntity nbt = new NBTTileEntity(blockState, true);
@@ -514,6 +517,7 @@ public class NBT {
 	 * exists, the data will be loaded, otherwise a new file gets created.
 	 *
 	 * @param file
+	 * @return
 	 * @throws IOException
 	 */
 	public static NBTFileHandle getFileHandle(File file) throws IOException {
