@@ -23,7 +23,7 @@ public enum NBTType {
 	NBTTagLongArray(12);
 
 	NBTType(int i) {
-		id = i;
+		this.id = i;
 	}
 
 	private final int id;
@@ -32,7 +32,7 @@ public enum NBTType {
 	 * @return Id used by Minecraft internally
 	 */
 	public int getId() {
-		return id;
+		return this.id;
 	}
 
 	/**

@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import org.mineacademy.fo.remain.nbt.NBTTarget.Type;
 
-public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
+public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 
 	private static final Map<Method, Function<Arguments, Object>> METHOD_CACHE = new ConcurrentHashMap<>();
 
@@ -32,7 +32,7 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 	}
 
 	public T build() {
-		final T inst = (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { target }, this);
+		final T inst = (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { this.target }, this);
 		inst.init();
 		return inst;
 	}
@@ -40,7 +40,7 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		METHOD_CACHE.computeIfAbsent(method, m -> ProxyBuilder.createFunction((NBTProxy) proxy, m));
-		return METHOD_CACHE.get(method).apply(new Arguments(target, (NBTProxy) proxy, readOnly, nbt, args));
+		return METHOD_CACHE.get(method).apply(new Arguments(this.target, (NBTProxy) proxy, this.readOnly, this.nbt, args));
 	}
 
 	private static class Arguments {
@@ -170,7 +170,7 @@ public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 		else if (value.getClass().isEnum())
 			nbt.setEnum(key, (Enum<?>) value);
 		else {
-
+			
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(value.getClass());
 			if (handler != null)
 				handler.set(nbt, key, value);

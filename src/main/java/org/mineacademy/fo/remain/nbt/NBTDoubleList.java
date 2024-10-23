@@ -30,7 +30,7 @@ public class NBTDoubleList extends NBTList<Double> {
 	@Override
 	public Double get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Double.valueOf(obj.toString());
 		} catch (final NumberFormatException nf) {
 			return 0d;

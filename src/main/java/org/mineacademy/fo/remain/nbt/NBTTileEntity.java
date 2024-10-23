@@ -2,6 +2,8 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 /**
  * NBT class to access vanilla tags from TileEntities. TileEntities don't
@@ -30,14 +32,14 @@ public class NBTTileEntity extends NBTCompound {
 		this.tile = tile;
 		this.readonly = readonly;
 		if (readonly)
-			this.compound = getCompound();
+			this.compound = this.getCompound();
 		else
 			this.compound = null;
 	}
 
 	/**
 	 * Deprecated: Please use the NBT class
-	 * 
+	 *
 	 * @param tile BlockState from any TileEntity
 	 */
 	@Deprecated
@@ -57,49 +59,50 @@ public class NBTTileEntity extends NBTCompound {
 
 	@Override
 	protected boolean isClosed() {
-		return closed;
+		return this.closed;
 	}
 
 	@Override
 	protected boolean isReadOnly() {
-		return readonly;
+		return this.readonly;
 	}
 
 	@Override
 	public Object getCompound() {
 		// this runs before async check, since it's just a copy
-		if (readonly && compound != null)
-			return compound;
+		if (this.readonly && this.compound != null)
+			return this.compound;
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("BlockEntity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getTileEntityNBTTagCompound(tile);
+		return NBTReflectionUtil.getTileEntityNBTTagCompound(this.tile);
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		if (readonly)
+		if (this.readonly)
 			throw new NbtApiException("Tried setting data in read only mode!");
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("BlockEntity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, compound);
+		NBTReflectionUtil.setTileEntityNBTTagCompound(this.tile, compound);
 	}
 
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 * 
+	 *
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		CheckUtil.assertAvailable(MinecraftVersion.MC1_14_R1);
-		if (hasTag("PublicBukkitValues"))
-			return getCompound("PublicBukkitValues");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTTileEntity#getPersistentDataContainer requires Minecraft 1.14+");
+
+		if (this.hasTag("PublicBukkitValues"))
+			return this.getCompound("PublicBukkitValues");
 		else {
 			final NBTContainer container = new NBTContainer();
 			container.addCompound("PublicBukkitValues").setString("__nbtapi",
 					"Marker to make the PersistentDataContainer have content");
-			mergeCompound(container);
-			return getCompound("PublicBukkitValues");
+			this.mergeCompound(container);
+			return this.getCompound("PublicBukkitValues");
 		}
 	}
 

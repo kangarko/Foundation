@@ -30,7 +30,7 @@ public class NBTIntegerList extends NBTList<Integer> {
 	@Override
 	public Integer get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Integer.valueOf(obj.toString());
 		} catch (final NumberFormatException nf) {
 			return 0;

@@ -12,6 +12,15 @@ public interface ReadWriteNBTCompoundList extends ReadableNBTList<ReadWriteNBT> 
 	ReadWriteNBT addCompound();
 
 	/**
+	 * Adds a copy of the Compound to the end of the List and returns it. When null
+	 * is given, a new Compound will be created
+	 * 
+	 * @param comp
+	 * @return
+	 */
+	ReadWriteNBT addCompound(ReadableNBT comp);
+
+	/**
 	 * Removes the element at the specified position in this list
 	 * 
 	 * @param i The index of the element to remove.

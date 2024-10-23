@@ -1,5 +1,8 @@
 package org.mineacademy.fo.remain.nbt;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -8,6 +11,7 @@ import javax.annotation.Nullable;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 
 /**
  * General utility class for a clean and simple nbt access.
@@ -15,10 +19,51 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
+
 public class NBT {
 
 	private NBT() {
 		// No instances of NBT. Utility class
+	}
+
+	/**
+	 * Utility method for shaded versions to preload and check the API during
+	 * onEnable. This method does not throw an exception and instead logs them. Will
+	 * return false if something fundamentally is wrong and the NBTAPI is in a non
+	 * functioning state. The shading plugin then needs to handle this. Note:
+	 * Calling this method during onLoad will cause an failure, so please wait till
+	 * onEnable.
+	 *
+	 * @return true if everything went fine
+	 */
+	public static boolean preloadApi() {
+		try {
+			// boiled down version of the plugin selfcheck without tests
+			if (MinecraftVersion.getVersion() == MinecraftVersion.UNKNOWN) {
+				NbtApiException.confirmedBroken = true;
+				return false;
+			}
+			for (final ClassWrapper c : ClassWrapper.values())
+				if (c.isEnabled() && c.getClazz() == null) {
+					NbtApiException.confirmedBroken = true;
+					return false;
+				}
+			for (final ReflectionMethod method : ReflectionMethod.values())
+				if (method.isCompatible() && !method.isLoaded()) {
+					NbtApiException.confirmedBroken = true;
+					return false;
+				}
+			// not settings NbtApiException.confirmedBroken = false, as no actual tests were done.
+			// This just means the version was found, and all reflections seem to work.
+			return true;
+		} catch (final Exception ex) {
+			NbtApiException.confirmedBroken = true;
+			Common.warning("[NBTAPI] Error during loading, some plugin features will not be available!");
+
+			ex.printStackTrace();
+
+			return false;
+		}
 	}
 
 	/**
@@ -142,9 +187,9 @@ public class NBT {
 	}
 
 	/**
-	 * It takes a block entity and a function that takes a ReadableNBT and returns
-	 * a generic type T, and returns the result of the function, applied to the
-	 * block entities persistent data container
+	 * It takes a block entity and a function that takes a ReadableNBT and returns a
+	 * generic type T, and returns the result of the function, applied to the block
+	 * entities persistent data container
 	 *
 	 * @param blockState The block state of the block you want to get the data from.
 	 * @param getter     A function that takes a ReadableNBT and returns a value of
@@ -212,7 +257,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
 	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
-	 * This method is quiet expensive, so don't overuse it.
+	 * This method is quite expensive, so don't overuse it.
 	 *
 	 * @param item     The item you want to modify the components of
 	 * @param consumer The consumer that will be used to modify the components.
@@ -229,7 +274,7 @@ public class NBT {
 	/**
 	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
 	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
-	 * This method is quiet expensive, so don't overuse it.
+	 * This method is quite expensive, so don't overuse it.
 	 *
 	 * @param item     The item you want to modify the components of
 	 * @param function The consumer that will be used to modify the components.
@@ -243,6 +288,37 @@ public class NBT {
 		final ItemStack tmp = NBT.itemStackFromNBT(nbti);
 		item.setItemMeta(tmp.getItemMeta());
 		return ret;
+	}
+
+	/**
+	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
+	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
+	 * This method is quite expensive, try to cache the results/use it smartly.
+	 *
+	 * @param item     The item you want to read the components of
+	 * @param consumer The consumer that will be used to read the components.
+	 */
+	public static void getComponents(ItemStack item, Consumer<ReadableNBT> consumer) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
+			throw new NbtApiException("This method only works for 1.20.5+!");
+		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
+		consumer.accept(nbti.getOrCreateCompound("components"));
+	}
+
+	/**
+	 * It takes an ItemStack and a Consumer&lt;ReadWriteNBT&gt;, and then applies
+	 * the Consumer to the ItemStacks Components as NBT. This is for 1.20.5+ only.
+	 * This method is quite expensive, try to cache the results/use it smartly.
+	 *
+	 * @param item     The item you want to read the components of
+	 * @param function The consumer that will be used to read the components.
+	 * @return The return type is the same as the return type of the function.
+	 */
+	public static <T> T getComponents(ItemStack item, Function<ReadableNBT, T> function) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
+			throw new NbtApiException("This method only works for 1.20.5+!");
+		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
+		return function.apply(nbti.getOrCreateCompound("components"));
 	}
 
 	/**
@@ -406,10 +482,68 @@ public class NBT {
 	 * It takes a nbt json string, and returns a ReadWriteNBT object
 	 *
 	 * @param nbtString The NBT string to parse.
-	 * @return A new NBTContainer object.
+	 * @return A new ReadWriteNBT object.
 	 */
 	public static ReadWriteNBT parseNBT(String nbtString) {
 		return new NBTContainer(nbtString);
+	}
+
+	/**
+	 * Reads in an NBT stream and returns a ReadWriteNBT object
+	 *
+	 * @param stream The NBT stream to read.
+	 * @return A new ReadWriteNBT object.
+	 */
+	public static ReadWriteNBT readNBT(InputStream stream) {
+		return new NBTContainer(stream);
+	}
+
+	/**
+	 * Helper method for other developers using NMS. Allows to wrap any
+	 * net.minecraft.nbt.CompoundTag to a NBTAPI ReadWriteNBT object.
+	 *
+	 * @param nmsNbtTag Needs to be a valid net.minecraft.nbt.CompoundTag
+	 * @return A new ReadWriteNBT object.
+	 */
+	public static ReadWriteNBT wrapNMSTag(Object nmsNbtTag) {
+		return new NBTContainer(nmsNbtTag);
+	}
+
+	/**
+	 * Creates a NBTFileHandle that uses @param file to store its data. If this file
+	 * exists, the data will be loaded, otherwise a new file gets created.
+	 *
+	 * @param file
+	 * @throws IOException
+	 */
+	public static NBTFileHandle getFileHandle(File file) throws IOException {
+		return new NBTFile(file);
+	}
+
+	/**
+	 * Reads NBT data from the provided file.
+	 * <p>
+	 * Returns an empty tag if the file does not exist.
+	 *
+	 * @param file file to read
+	 * @return ReadWriteNBT of the files data
+	 * @throws IOException exception
+	 */
+	public static ReadWriteNBT readFile(File file) throws IOException {
+		return NBTFile.readFrom(file);
+	}
+
+	/**
+	 * Saves NBT data to the provided file.
+	 * <p>
+	 * Will fully override the file if it already exists.
+	 *
+	 * @param file file
+	 * @param nbt  NBT data
+	 * @throws IOException exception
+	 */
+	public static void writeFile(File file, ReadWriteNBT nbt) throws IOException {
+		NBTFile.saveTo(file, (NBTCompound) nbt);
 	}
 
 	/**

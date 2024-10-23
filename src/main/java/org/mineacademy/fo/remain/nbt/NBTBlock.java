@@ -24,12 +24,12 @@ public class NBTBlock {
 		this.block = block;
 		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3))
 			throw new NbtApiException("NBTBlock is only working for 1.16.4+!");
-		nbtChunk = new NBTChunk(block.getChunk());
+		this.nbtChunk = new NBTChunk(block.getChunk());
 	}
 
 	public NBTCompound getData() {
-		return nbtChunk.getPersistentDataContainer().getOrCreateCompound("blocks")
-				.getOrCreateCompound(block.getX() + "_" + block.getY() + "_" + block.getZ());
+		return this.nbtChunk.getPersistentDataContainer().getOrCreateCompound("blocks")
+				.getOrCreateCompound(this.block.getX() + "_" + this.block.getY() + "_" + this.block.getZ());
 	}
 
 }

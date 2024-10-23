@@ -18,16 +18,19 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Creates an empty, standalone NBTCompound
 	 */
+	@Deprecated
 	public NBTContainer() {
 		super(null, null);
-		nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
+		this.nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 	}
 
 	/**
 	 * Takes in any NMS Compound to wrap it
 	 * 
 	 * @param nbt
+	 * @deprecated Use NBT.wrapNMSTag
 	 */
+	@Deprecated
 	public NBTContainer(Object nbt) {
 		super(null, null);
 		if (nbt == null)
@@ -41,7 +44,9 @@ public class NBTContainer extends NBTCompound {
 	 * Reads in a NBT InputStream
 	 * 
 	 * @param inputsteam
+	 * @deprecated Use NBT.readNBT
 	 */
+	@Deprecated
 	public NBTContainer(InputStream inputsteam) {
 		super(null, null);
 		this.nbt = NBTReflectionUtil.readNBT(inputsteam);
@@ -52,13 +57,15 @@ public class NBTContainer extends NBTCompound {
 	 * {@link NbtApiException} in case something goes wrong.
 	 * 
 	 * @param nbtString
+	 * @deprecated Use NBT.parseNBT
 	 */
+	@Deprecated
 	public NBTContainer(String nbtString) {
 		super(null, null);
 		if (nbtString == null)
 			throw new NullPointerException("The String can't be null!");
 		try {
-			nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
+			this.nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
 		} catch (final Exception ex) {
 			throw new NbtApiException("Unable to parse Malformed Json!", ex);
 		}
@@ -66,12 +73,12 @@ public class NBTContainer extends NBTCompound {
 
 	@Override
 	public Object getCompound() {
-		return nbt;
+		return this.nbt;
 	}
 
 	@Override
 	public void setCompound(Object tag) {
-		nbt = tag;
+		this.nbt = tag;
 	}
 
 	@Override
@@ -81,12 +88,12 @@ public class NBTContainer extends NBTCompound {
 
 	@Override
 	protected boolean isClosed() {
-		return closed;
+		return this.closed;
 	}
 
 	@Override
 	protected boolean isReadOnly() {
-		return readOnly;
+		return this.readOnly;
 	}
 
 	protected NBTContainer setReadOnly(boolean readOnly) {
