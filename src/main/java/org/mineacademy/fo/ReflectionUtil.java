@@ -724,6 +724,23 @@ public final class ReflectionUtil {
 						name = "SNOWY_TAIGA";
 
 			if (enumType == EntityType.class) {
+
+				if (rawName.equals("LIGHTNING"))
+					try {
+						EntityType.valueOf("LIGHTNING");
+
+					} catch (final IllegalArgumentException ex) {
+						name = "LIGHTNING_BOLT";
+					}
+
+				if (rawName.equals("LIGHTNING_BOLT"))
+					try {
+						EntityType.valueOf("LIGHTNING_BOLT");
+
+					} catch (final IllegalArgumentException ex) {
+						name = "LIGHTNING";
+					}
+
 				if (MinecraftVersion.atLeast(V.v1_16))
 					if (rawName.equals("PIG_ZOMBIE"))
 						name = "ZOMBIFIED_PIGLIN";
@@ -1164,16 +1181,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 
