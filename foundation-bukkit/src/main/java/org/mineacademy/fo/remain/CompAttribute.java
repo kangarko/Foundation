@@ -114,8 +114,15 @@ public enum CompAttribute {
 
 	/**
 	 * Strength with which a horse will jump.
+	 *
+	 * @deprecated on modern MC versions, this is {@link #GENERIC_JUMP_STRENGTH}
 	 */
 	HORSE_JUMP_STRENGTH("horse.jumpStrength"),
+
+	/**
+	 * Strength with which an Entity will jump.
+	 */
+	GENERIC_JUMP_STRENGTH("generic.jump_strength"),
 
 	/**
 	 * How long an entity remains burning after ingition.
@@ -141,6 +148,11 @@ public enum CompAttribute {
 	 * Movement speed through water.
 	 */
 	GENERIC_WATER_MOVEMENT_EFFICIENCY("generic.water_movement_efficiency"),
+
+	/**
+	 * Range at which mobs will be tempted by items.
+	 */
+	GENERIC_TEMPT_RANGE("tempt_range"),
 
 	/**
 	 * The block reach distance of a Player.
