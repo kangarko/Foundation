@@ -320,8 +320,6 @@ public final class Remain {
 			nmsVersion = !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
 		}
 
-		CompParticle.CRIT.getClass();
-
 		isPaper = ReflectionUtil.isClassAvailable("co.aikar.timings.Timing");
 		isFolia = ReflectionUtil.isClassAvailable("io.papermc.paper.threadedregions.RegionizedServer");
 		isThermos = ReflectionUtil.isClassAvailable("thermos.ThermosRemapper");
