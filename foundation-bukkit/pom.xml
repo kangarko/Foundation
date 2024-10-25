@@ -21,9 +21,19 @@
 			<id>papermc</id>
 			<url>https://repo.papermc.io/repository/maven-public/</url>
 		</repository>
+		<repository>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
+		<!--<dependency>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
+			<version>1.8.8-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>-->
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
@@ -92,7 +102,7 @@
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>MassiveCore</artifactId>
 			<version>3.3.3</version>
-			<scope>provided</scope>			
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
