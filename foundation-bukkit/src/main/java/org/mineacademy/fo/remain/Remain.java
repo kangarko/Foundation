@@ -451,7 +451,8 @@ public final class Remain {
 					enumSubtitle = enumAction.getField("SUBTITLE").get(null);
 					enumReset = enumAction.getField("RESET").get(null);
 
-					tabConstructor = Remain.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A").getConstructor(chatBaseComponent);
+					final Class<?> tablistClass = Remain.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A");
+					tabConstructor = MinecraftVersion.equals(V.v1_12) ? tablistClass.getConstructor() : tablistClass.getConstructor(chatBaseComponent);
 
 					titleTimesConstructor = titlePacket.getConstructor(int.class, int.class, int.class);
 					titleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
@@ -2323,14 +2324,24 @@ public final class Remain {
 				return;
 
 			final Object headerIChatBase = convertLegacyToIChatBase(header.toLegacy());
-			final Object packet = tabConstructor.newInstance(headerIChatBase);
+			final Object packet;
+
+			if (MinecraftVersion.equals(V.v1_12)) {
+				packet = tabConstructor.newInstance();
+
+				final Field fieldHeader = packet.getClass().getDeclaredField("a");
+				fieldHeader.setAccessible(true);
+				fieldHeader.set(packet, headerIChatBase);
+
+			} else
+				packet = tabConstructor.newInstance(headerIChatBase);
 
 			if (footer != null) {
 				final Object footerIChatBase = convertLegacyToIChatBase(footer.toLegacy());
 
-				final Field f = packet.getClass().getDeclaredField("b"); // setFooter
-				f.setAccessible(true);
-				f.set(packet, footerIChatBase);
+				final Field fieldFooter = packet.getClass().getDeclaredField("b"); // footer
+				fieldFooter.setAccessible(true);
+				fieldFooter.set(packet, footerIChatBase);
 			}
 
 			Remain.sendPacket(player, packet);
