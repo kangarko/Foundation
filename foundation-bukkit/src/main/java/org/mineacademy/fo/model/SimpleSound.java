@@ -161,7 +161,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 */
 	public static SimpleSound fromString(String line) {
 		if ("none".equals(line))
-			return new SimpleSound(CompSound.CLICK.getSound(), 0.0F, 1.0F, false, false);
+			return new SimpleSound(CompSound.UI_BUTTON_CLICK.getSound(), 0.0F, 1.0F, false, false);
 
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
 		final CompSound compSound = CompSound.fromName(values[0]);
