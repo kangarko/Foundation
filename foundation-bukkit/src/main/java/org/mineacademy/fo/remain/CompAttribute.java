@@ -24,31 +24,14 @@ import lombok.RequiredArgsConstructor;
 public enum CompAttribute {
 
 	/**
-	 * Maximum health of an Entity.
+	 * Armor bonus of an Entity.
 	 */
-	GENERIC_MAX_HEALTH("generic.maxHealth", "maxHealth"),
+	GENERIC_ARMOR("generic.armor"),
 
 	/**
-	 * Range at which an Entity will follow others.
+	 * Armor durability bonus of an Entity.
 	 */
-	GENERIC_FOLLOW_RANGE("generic.followRange", "FOLLOW_RANGE"),
-
-	/**
-	 * Resistance of an Entity to knockback.
-	 */
-	GENERIC_KNOCKBACK_RESISTANCE("generic.knockbackResistance", "c"),
-
-	/**
-	 * Movement speed of an Entity.
-	 * <p>
-	 * For default values see https://minecraft.wiki/w/Attribute
-	 */
-	GENERIC_MOVEMENT_SPEED("generic.movementSpeed", "MOVEMENT_SPEED"),
-
-	/**
-	 * Flying speed of an Entity.
-	 */
-	GENERIC_FLYING_SPEED("generic.flyingSpeed"),
+	GENERIC_ARMOR_TOUGHNESS("generic.armorToughness"),
 
 	/**
 	 * Attack damage of an Entity.
@@ -68,19 +51,44 @@ public enum CompAttribute {
 	GENERIC_ATTACK_SPEED("generic.attackSpeed"),
 
 	/**
-	 * Armor bonus of an Entity.
+	 * How long an entity remains burning after ingition.
 	 */
-	GENERIC_ARMOR("generic.armor"),
+	GENERIC_BURNING_TIME("generic.burning_time"),
 
 	/**
-	 * Armor durability bonus of an Entity.
+	 * Resistance to knockback from explosions.
 	 */
-	GENERIC_ARMOR_TOUGHNESS("generic.armorToughness"),
+	GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE("generic.explosion_knockback_resistance"),
 
 	/**
 	 * The fall damage multiplier of an Entity.
 	 */
 	GENERIC_FALL_DAMAGE_MULTIPLIER("generic.fall_damage_multiplier"),
+
+	/**
+	 * Flying speed of an Entity.
+	 */
+	GENERIC_FLYING_SPEED("generic.flyingSpeed"),
+
+	/**
+	 * Range at which an Entity will follow others.
+	 */
+	GENERIC_FOLLOW_RANGE("generic.followRange", "FOLLOW_RANGE"),
+
+	/**
+	 * The gravity applied to an Entity.
+	 */
+	GENERIC_GRAVITY("generic.gravity"),
+
+	/**
+	 * Strength with which an Entity will jump.
+	 */
+	GENERIC_JUMP_STRENGTH("generic.jump_strength"),
+
+	/**
+	 * Resistance of an Entity to knockback.
+	 */
+	GENERIC_KNOCKBACK_RESISTANCE("generic.knockbackResistance", "c"),
 
 	/**
 	 * Luck bonus of an Entity.
@@ -91,6 +99,28 @@ public enum CompAttribute {
 	 * Maximum absorption of an Entity.
 	 */
 	GENERIC_MAX_ABSORPTION("generic.max_absorption"),
+
+	/**
+	 * Maximum health of an Entity.
+	 */
+	GENERIC_MAX_HEALTH("generic.maxHealth", "maxHealth"),
+
+	/**
+	 * Movement speed through difficult terrain.
+	 */
+	GENERIC_MOVEMENT_EFFICIENCY("generic.movement_efficiency"),
+
+	/**
+	 * Movement speed of an Entity.
+	 * <p>
+	 * For default values see https://minecraft.wiki/w/Attribute
+	 */
+	GENERIC_MOVEMENT_SPEED("generic.movementSpeed", "MOVEMENT_SPEED"),
+
+	/**
+	 * Oxygen use underwater.
+	 */
+	GENERIC_OXYGEN_BONUS("generic.oxygen_bonus"),
 
 	/**
 	 * The distance which an Entity can fall without damage.
@@ -108,9 +138,14 @@ public enum CompAttribute {
 	GENERIC_STEP_HEIGHT("generic.step_height"),
 
 	/**
-	 * The gravity applied to an Entity.
+	 * Range at which mobs will be tempted by items.
 	 */
-	GENERIC_GRAVITY("generic.gravity"),
+	GENERIC_TEMPT_RANGE("tempt_range"),
+
+	/**
+	 * Movement speed through water.
+	 */
+	GENERIC_WATER_MOVEMENT_EFFICIENCY("generic.water_movement_efficiency"),
 
 	/**
 	 * Strength with which a horse will jump.
@@ -120,39 +155,9 @@ public enum CompAttribute {
 	HORSE_JUMP_STRENGTH("horse.jumpStrength"),
 
 	/**
-	 * Strength with which an Entity will jump.
+	 * Block break speed of a Player.
 	 */
-	GENERIC_JUMP_STRENGTH("generic.jump_strength"),
-
-	/**
-	 * How long an entity remains burning after ingition.
-	 */
-	GENERIC_BURNING_TIME("generic.burning_time"),
-
-	/**
-	 * Resistance to knockback from explosions.
-	 */
-	GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE("generic.explosion_knockback_resistance"),
-
-	/**
-	 * Movement speed through difficult terrain.
-	 */
-	GENERIC_MOVEMENT_EFFICIENCY("generic.movement_efficiency"),
-
-	/**
-	 * Oxygen use underwater.
-	 */
-	GENERIC_OXYGEN_BONUS("generic.oxygen_bonus"),
-
-	/**
-	 * Movement speed through water.
-	 */
-	GENERIC_WATER_MOVEMENT_EFFICIENCY("generic.water_movement_efficiency"),
-
-	/**
-	 * Range at which mobs will be tempted by items.
-	 */
-	GENERIC_TEMPT_RANGE("tempt_range"),
+	PLAYER_BLOCK_BREAK_SPEED("player.block_break_speed"),
 
 	/**
 	 * The block reach distance of a Player.
@@ -163,11 +168,6 @@ public enum CompAttribute {
 	 * The entity reach distance of a Player.
 	 */
 	PLAYER_ENTITY_INTERACTION_RANGE("player.entity_interaction_range"),
-
-	/**
-	 * Block break speed of a Player.
-	 */
-	PLAYER_BLOCK_BREAK_SPEED("player.block_break_speed"),
 
 	/**
 	 * Mining speed for correct tools.
