@@ -57,14 +57,6 @@ public abstract class CommonCore {
 	 * The Google Json instance with pretty printing
 	 */
 	public final static Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-
-	/**
-	 * Caches a chat-wide dark gray and strikethrough line for performance.
-	 *
-	 * @see #tellBoxed(FoundationPlayer, SimpleComponent...)
-	 */
-	private static final SimpleComponent CHAT_LINE_DARK_GRAY = SimpleComponent.fromMini("<dark_gray>" + CommonCore.chatLineSmooth());
-
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
 	 * in a restricted region, we will not spam their chat with "You cannot break this block here" 120x times,
@@ -194,7 +186,7 @@ public abstract class CommonCore {
 		final int length = messages.length;
 
 		Platform.runTask(2, () -> {
-			audience.sendMessage(CHAT_LINE_DARK_GRAY);
+			audience.sendMessage(SimpleComponent.fromMini("<dark_gray>" + CommonCore.chatLineSmooth()));
 
 			for (int i = 0; i < (length == 1 ? 2 : length == 2 || length == 3 || length == 4 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
@@ -205,7 +197,7 @@ public abstract class CommonCore {
 			for (int i = 0; i < (length == 1 || length == 2 ? 2 : length == 3 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
 
-			audience.sendMessage(CHAT_LINE_DARK_GRAY);
+			audience.sendMessage(SimpleComponent.fromMini("<dark_gray>" + CommonCore.chatLineSmooth()));
 		});
 	}
 
