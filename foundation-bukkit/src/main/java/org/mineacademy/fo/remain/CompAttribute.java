@@ -12,246 +12,272 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Wrapper for {@link Attribute}
  * <p>
  * See https://minecraft.wiki/w/Attribute for more information
  */
-@RequiredArgsConstructor
 public enum CompAttribute {
 
 	/**
 	 * Armor bonus of an Entity.
 	 */
-	GENERIC_ARMOR("generic.armor"),
+	ARMOR("ARMOR", "GENERIC_ARMOR"),
 
 	/**
 	 * Armor durability bonus of an Entity.
 	 */
-	GENERIC_ARMOR_TOUGHNESS("generic.armorToughness"),
+	ARMOR_TOUGHNESS("ARMOR_TOUGHNESS", "GENERIC_ARMOR_TOUGHNESS"),
 
 	/**
 	 * Attack damage of an Entity.
 	 * <p>
 	 * This attribute is not found on passive mobs and golems.
 	 */
-	GENERIC_ATTACK_DAMAGE("generic.attackDamage", "ATTACK_DAMAGE"),
+	ATTACK_DAMAGE("ATTACK_DAMAGE", "GENERIC_ATTACK_DAMAGE") {
+		@Override
+		public String getNmsName() {
+			return "ATTACK_DAMAGE";
+		}
+	},
 
 	/**
 	 * Attack knockback of an Entity.
 	 */
-	GENERIC_ATTACK_KNOCKBACK("generic.attack_knockback"),
+	ATTACK_KNOCKBACK("ATTACK_KNOCKBACK", "GENERIC_ATTACK_KNOCKBACK"),
 
 	/**
 	 * Attack speed of an Entity.
 	 */
-	GENERIC_ATTACK_SPEED("generic.attackSpeed"),
+	ATTACK_SPEED("ATTACK_SPEED", "GENERIC_ATTACK_SPEED"),
+
+	/**
+	 * Block break speed of a Player.
+	 */
+	BLOCK_BREAK_SPEED("BLOCK_BREAK_SPEED", "PLAYER_BLOCK_BREAK_SPEED"),
+
+	/**
+	 * The block reach distance of a Player.
+	 */
+	BLOCK_INTERACTION_RANGE("BLOCK_INTERACTION_RANGE", "PLAYER_BLOCK_INTERACTION_RANGE"),
 
 	/**
 	 * How long an entity remains burning after ingition.
 	 */
-	GENERIC_BURNING_TIME("generic.burning_time"),
+	BURNING_TIME("BURNING_TIME", "GENERIC_BURNING_TIME"),
+
+	/**
+	 * The entity reach distance of a Player.
+	 */
+	ENTITY_INTERACTION_RANGE("ENTITY_INTERACTION_RANGE", "PLAYER_ENTITY_INTERACTION_RANGE"),
 
 	/**
 	 * Resistance to knockback from explosions.
 	 */
-	GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE("generic.explosion_knockback_resistance"),
+	EXPLOSION_KNOCKBACK_RESISTANCE("EXPLOSION_KNOCKBACK_RESISTANCE", "GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE"),
 
 	/**
 	 * The fall damage multiplier of an Entity.
 	 */
-	GENERIC_FALL_DAMAGE_MULTIPLIER("generic.fall_damage_multiplier"),
+	FALL_DAMAGE_MULTIPLIER("FALL_DAMAGE_MULTIPLIER", "GENERIC_FALL_DAMAGE_MULTIPLIER"),
 
 	/**
 	 * Flying speed of an Entity.
 	 */
-	GENERIC_FLYING_SPEED("generic.flyingSpeed"),
+	FLYING_SPEED("FLYING_SPEED", "GENERIC_FLYING_SPEED"),
 
 	/**
 	 * Range at which an Entity will follow others.
 	 */
-	GENERIC_FOLLOW_RANGE("generic.followRange", "FOLLOW_RANGE"),
+	FOLLOW_RANGE("FOLLOW_RANGE", "GENERIC_FOLLOW_RANGE") {
+		@Override
+		public String getNmsName() {
+			return "FOLLOW_RANGE";
+		}
+	},
 
 	/**
 	 * The gravity applied to an Entity.
 	 */
-	GENERIC_GRAVITY("generic.gravity"),
+	GRAVITY("GRAVITY", "GENERIC_GRAVITY"),
 
 	/**
 	 * Strength with which an Entity will jump.
 	 */
-	GENERIC_JUMP_STRENGTH("generic.jump_strength"),
+	JUMP_STRENGTH("JUMP_STRENGTH", "GENERIC_JUMP_STRENGTH", "HORSE_JUMP_STRENGTH"),
 
 	/**
 	 * Resistance of an Entity to knockback.
 	 */
-	GENERIC_KNOCKBACK_RESISTANCE("generic.knockbackResistance", "c"),
+	KNOCKBACK_RESISTANCE("KNOCKBACK_RESISTANCE", "GENERIC_KNOCKBACK_RESISTANCE") {
+		@Override
+		public String getNmsName() {
+			return "c";
+		}
+	},
 
 	/**
 	 * Luck bonus of an Entity.
 	 */
-	GENERIC_LUCK("generic.luck"),
+	LUCK("LUCK", "GENERIC_LUCK"),
 
 	/**
 	 * Maximum absorption of an Entity.
 	 */
-	GENERIC_MAX_ABSORPTION("generic.max_absorption"),
+	MAX_ABSORPTION("MAX_ABSORPTION", "GENERIC_MAX_ABSORPTION"),
 
 	/**
 	 * Maximum health of an Entity.
 	 */
-	GENERIC_MAX_HEALTH("generic.maxHealth", "maxHealth"),
+	MAX_HEALTH("MAX_HEALTH", "GENERIC_MAX_HEALTH") {
+		@Override
+		public String getNmsName() {
+			return "maxHealth";
+		}
+	},
+
+	/**
+	 * Mining speed for correct tools.
+	 */
+	MINING_EFFICIENCY("MINING_EFFICIENCY", "PLAYER_MINING_EFFICIENCY"),
 
 	/**
 	 * Movement speed through difficult terrain.
 	 */
-	GENERIC_MOVEMENT_EFFICIENCY("generic.movement_efficiency"),
+	MOVEMENT_EFFICIENCY("MOVEMENT_EFFICIENCY", "GENERIC_MOVEMENT_EFFICIENCY"),
 
 	/**
 	 * Movement speed of an Entity.
 	 * <p>
 	 * For default values see https://minecraft.wiki/w/Attribute
 	 */
-	GENERIC_MOVEMENT_SPEED("generic.movementSpeed", "MOVEMENT_SPEED"),
+	MOVEMENT_SPEED("MOVEMENT_SPEED", "GENERIC_MOVEMENT_SPEED") {
+		@Override
+		public String getNmsName() {
+			return "MOVEMENT_SPEED";
+		}
+	},
 
 	/**
 	 * Oxygen use underwater.
 	 */
-	GENERIC_OXYGEN_BONUS("generic.oxygen_bonus"),
+	OXYGEN_BONUS("OXYGEN_BONUS", "GENERIC_OXYGEN_BONUS"),
 
 	/**
 	 * The distance which an Entity can fall without damage.
 	 */
-	GENERIC_SAFE_FALL_DISTANCE("generic.safe_fall_distance"),
+	SAFE_FALL_DISTANCE("SAFE_FALL_DISTANCE", "GENERIC_SAFE_FALL_DISTANCE"),
 
 	/**
 	 * The relative scale of an Entity.
 	 */
-	GENERIC_SCALE("generic.scale"),
-
-	/**
-	 * The height which an Entity can walk over.
-	 */
-	GENERIC_STEP_HEIGHT("generic.step_height"),
-
-	/**
-	 * Range at which mobs will be tempted by items.
-	 */
-	GENERIC_TEMPT_RANGE("tempt_range"),
-
-	/**
-	 * Movement speed through water.
-	 */
-	GENERIC_WATER_MOVEMENT_EFFICIENCY("generic.water_movement_efficiency"),
-
-	/**
-	 * Strength with which a horse will jump.
-	 *
-	 * @deprecated on modern MC versions, this is {@link #GENERIC_JUMP_STRENGTH}
-	 */
-	HORSE_JUMP_STRENGTH("horse.jumpStrength"),
-
-	/**
-	 * Block break speed of a Player.
-	 */
-	PLAYER_BLOCK_BREAK_SPEED("player.block_break_speed"),
-
-	/**
-	 * The block reach distance of a Player.
-	 */
-	PLAYER_BLOCK_INTERACTION_RANGE("player.block_interaction_range"),
-
-	/**
-	 * The entity reach distance of a Player.
-	 */
-	PLAYER_ENTITY_INTERACTION_RANGE("player.entity_interaction_range"),
-
-	/**
-	 * Mining speed for correct tools.
-	 */
-	PLAYER_MINING_EFFICIENCY("player.mining_efficiency"),
+	SCALE("SCALE", "GENERIC_SCALE"),
 
 	/**
 	 * Sneaking speed.
 	 */
-	PLAYER_SNEAKING_SPEED("player.sneaking_speed"),
-
-	/**
-	 * Underwater mining speed.
-	 */
-	PLAYER_SUBMERGED_MINING_SPEED("player.submerged_mining_speed"),
-
-	/**
-	 * Sweeping damage.
-	 */
-	PLAYER_SWEEPING_DAMAGE_RATIO("player.sweeping_damage_ratio"),
+	SNEAKING_SPEED("SNEAKING_SPEED", "PLAYER_SNEAKING_SPEED"),
 
 	/**
 	 * Chance of a Zombie to spawn reinforcements.
 	 */
-	ZOMBIE_SPAWN_REINFORCEMENTS("zombie.spawnReinforcements");
+	SPAWN_REINFORCEMENTS("SPAWN_REINFORCEMENTS", "ZOMBIE_SPAWN_REINFORCEMENTS"),
 
 	/**
-	 * The internal name
+	 * The height which an Entity can walk over.
 	 */
-	@Getter
-	private final String minecraftName;
+	STEP_HEIGHT("STEP_HEIGHT", "GENERIC_STEP_HEIGHT"),
 
 	/**
-	 * Used for MC 1.8.9 compatibility. Returns the field name in GenericAttributes
-	 * class for that MC version, or null if not existing.
+	 * Underwater mining speed.
 	 */
-	private String genericFieldName;
+	SUBMERGED_MINING_SPEED("SUBMERGED_MINING_SPEED", "PLAYER_SUBMERGED_MINING_SPEED"),
 
 	/**
-	 * Construct a new Attribute.
+	 * Sweeping damage.
+	 */
+	SWEEPING_DAMAGE_RATIO("SWEEPING_DAMAGE_RATIO", "PLAYER_SWEEPING_DAMAGE_RATIO"),
+
+	/**
+	 * Range at which mobs will be tempted by items.
+	 */
+	TEMPT_RANGE("TEMPT_RANGE", "GENERIC_TEMPT_RANGE"),
+
+	/**
+	 * Movement speed through water.
+	 */
+	WATER_MOVEMENT_EFFICIENCY("WATER_MOVEMENT_EFFICIENCY", "GENERIC_WATER_MOVEMENT_EFFICIENCY");
+
+	/**
+	 * Returns true if the attribute is supported by the server.
+	 */
+	private static final boolean hasAttributeClass = MinecraftVersion.atLeast(V.v1_9);
+
+	/**
+	 * The cached Bukkit attribute, if any
+	 */
+	private Object bukkitAttribute;
+
+	/**
+	 * Create a new attribute
 	 *
-	 * @param name              the generic name
-	 * @param genericFieldName see {@link #genericFieldName}
+	 * @param names
 	 */
-	CompAttribute(final String name, final String genericFieldName) {
-		this.minecraftName = name;
-		this.genericFieldName = genericFieldName;
+	CompAttribute(String... names) {
+		if (MinecraftVersion.atLeast(V.v1_9))
+			for (final String name : names)
+				try {
+					this.bukkitAttribute = Attribute.valueOf(name);
+
+					break;
+
+				} catch (final IllegalArgumentException ex) {
+					// Ignore
+				}
 	}
 
 	/**
-	 * Get if this attribute existed in MC 1.8.9
+	 * Get the 1.8.9 NMS name or null if not existing on that version
 	 *
-	 * @return true if this attribute existed in MC 1.8.9
+	 * @return
 	 */
-	public final boolean hasLegacy() {
-		return this.genericFieldName != null;
+	public String getNmsName() {
+		return null;
 	}
 
 	/**
 	 * Finds the attribute of an entity
 	 *
 	 * @param entity
-	 * @return the attribute, or null if not supported by the server
+	 * @return the attribute, or null if not supported by the server or not applicable for the entity
 	 */
-	public final Double get(final LivingEntity entity) {
-		try {
-			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(this.toString()));
+	public final Double get(@NonNull final LivingEntity entity) {
 
-			return instance != null ? instance.getValue() : null;
+		// Minecraft 1.8.8+
+		if (hasAttributeClass) {
 
-		} catch (IllegalArgumentException | NoSuchMethodError | NoClassDefFoundError ex) {
+			// Too modern attribute
+			if (this.bukkitAttribute != null) {
+				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+
+				return instance != null ? instance.getValue() : null;
+			}
+
+		} else if (this.getNmsName() != null)
 			try {
-				return this.hasLegacy() ? this.getLegacy(entity) : null;
+				return (double) ReflectionUtil.invoke("getValue", this.getLegacyAttributeInstance(entity));
 
 			} catch (final NullPointerException exx) {
 				return null;
 
 			} catch (final Throwable t) {
-				if (MinecraftVersion.equals(V.v1_8))
-					t.printStackTrace();
-
-				return null;
+				throw new FoException("Error retrieving attribute " + this + " for " + entity);
 			}
-		}
+
+		return null;
+
 	}
 
 	/**
@@ -260,65 +286,67 @@ public enum CompAttribute {
 	 * @param entity
 	 * @param value
 	 */
-	public final void set(final LivingEntity entity, final double value) {
-		Valid.checkNotNull(entity, "Entity cannot be null");
-		Valid.checkNotNull(entity, "Attribute cannot be null");
+	public final void set(@NonNull final LivingEntity entity, final double value) {
 
-		try {
-			final AttributeInstance instance = entity.getAttribute(Attribute.valueOf(this.toString()));
+		// Minecraft 1.8.8+
+		if (hasAttributeClass) {
+			if (this.bukkitAttribute != null) {
+				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+				Valid.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
 
-			instance.setBaseValue(value);
+				instance.setBaseValue(value);
+			}
 
-		} catch (NullPointerException | NoSuchMethodError | NoClassDefFoundError ex) {
-
-			if (this == GENERIC_MAX_HEALTH)
+		} else {
+			if (this == MAX_HEALTH)
 				entity.setMaxHealth(value);
 
-			else
-				try {
-					if (this.hasLegacy())
-						this.setLegacy(entity, value);
+			else if (this.getNmsName() != null) {
+				final Object instance = this.getLegacyAttributeInstance(entity);
+				Valid.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
 
-				} catch (final Throwable t) {
-					if (MinecraftVersion.equals(V.v1_8))
-						t.printStackTrace();
-
-					if (t instanceof NullPointerException)
-						throw new FoException("Attribute " + this + " cannot be set for " + entity);
-				}
+				ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
+			}
 		}
 	}
 
-	// MC 1.8.9
-	private double getLegacy(final Entity entity) {
-		return (double) ReflectionUtil.invoke("getValue", this.getLegacyAttributeInstance(entity));
+	/**
+	 * Return true if this attribute can be applied to the given entity
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public final boolean canApply(@NonNull final LivingEntity entity) {
+		if (hasAttributeClass) {
+			if (this.bukkitAttribute != null) {
+				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+
+				return instance != null;
+			}
+
+		} else {
+			if (this == MAX_HEALTH)
+				return true;
+
+			else if (this.getNmsName() != null) {
+				final Object instance = this.getLegacyAttributeInstance(entity);
+
+				return instance != null;
+			}
+		}
+
+		return false;
 	}
 
-	// MC 1.8.9
-	private void setLegacy(final Entity entity, final double value) {
-		final Object instance = this.getLegacyAttributeInstance(entity);
-
-		ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
-	}
-
-	// MC 1.8.9
 	private Object getLegacyAttributeInstance(final Entity entity) {
 		final Object nmsEntity = ReflectionUtil.invoke("getHandle", entity);
-
 		final Class<?> genericAttribute = Remain.getNMSClass("GenericAttributes", "net.minecraft.world.entity.ai.attributes.GenericAttributes");
-		Object iAttribute;
 
-		try {
-			iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.genericFieldName);
-		} catch (final Throwable t) {
-			iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.minecraftName);
-		}
+		final Object iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.getNmsName());
 
 		final Class<?> nmsLiving = Remain.getNMSClass("EntityLiving", "N/A");
 		final Method method = ReflectionUtil.getMethod(nmsLiving, "getAttributeInstance", Remain.getNMSClass("IAttribute", "N/A"));
 
-		final Object ret = ReflectionUtil.invoke(method, nmsEntity, iAttribute);
-
-		return ret;
+		return ReflectionUtil.invoke(method, nmsEntity, iAttribute);
 	}
 }
