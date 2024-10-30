@@ -1414,15 +1414,15 @@ public final class Remain {
 	/**
 	 * See {@link #isInteractEventPrimaryHand(PlayerInteractEvent)}
 	 *
-	 * @param e
+	 * @param event
 	 * @return
 	 */
-	public static boolean isInteractEventPrimaryHand(final PlayerInteractEntityEvent e) {
+	public static boolean isInteractEventPrimaryHand(final PlayerInteractEntityEvent event) {
 		if (MinecraftVersion.olderThan(V.v1_9))
 			return true;
 
 		try {
-			return e.getHand() != null && e.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
+			return event.getHand() != null && event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND;
 
 		} catch (final NoSuchMethodError err) {
 			return true; // Older MC, always true since there was no off-hand
