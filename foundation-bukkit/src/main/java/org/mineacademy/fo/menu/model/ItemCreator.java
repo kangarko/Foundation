@@ -31,7 +31,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.CompChatColor;
@@ -705,7 +704,7 @@ public final class ItemCreator {
 		if (this.damage != -1) {
 
 			try {
-				ReflectionUtil.invoke("setDurability", compiledItem, (short) this.damage);
+				compiledItem.setDurability((short) this.damage);
 			} catch (final Throwable t) {
 			}
 
