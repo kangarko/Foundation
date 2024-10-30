@@ -18,6 +18,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.projectiles.ProjectileSource;
@@ -91,6 +92,37 @@ public final class ToolsListener implements Listener {
 
 				Common.tell(player, Lang.component("tool-error"));
 				Common.error(t, "Failed to handle " + event.getAction() + " using tool: " + tool.getClass());
+			}
+	}
+
+	/**
+	 * Fired when right clicking an entity.
+	 *
+	 * @param event
+	 */
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onToolEntityInteract(PlayerInteractEntityEvent event) {
+		if (!Remain.isInteractEventPrimaryHand(event))
+			return;
+
+		final Player player = event.getPlayer();
+		final Tool tool = Tool.getTool(player.getItemInHand());
+
+		if (tool != null)
+			try {
+				if (event.isCancelled() && tool.ignoreCancelled())
+					return;
+
+				tool.onEntityRightClick(event);
+
+				if (tool.autoCancel())
+					event.setCancelled(true);
+
+			} catch (final Throwable t) {
+				event.setCancelled(true);
+
+				Common.tell(player, Lang.component("tool-error"));
+				Common.error(t, "Failed to handle right clicking on entity " + event.getRightClicked().getType() + " using tool: " + tool.getClass());
 			}
 	}
 
