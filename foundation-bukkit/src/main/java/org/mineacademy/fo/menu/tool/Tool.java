@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ItemUtil;
@@ -147,6 +148,14 @@ public abstract class Tool {
 	 * @param event the event
 	 */
 	protected void onBlockClick(PlayerInteractEvent event) {
+	}
+
+	/**
+	 * Called automatically when the tool is clicked on an entity
+	 *
+	 * @param event the event
+	 */
+	protected void onEntityRightClick(PlayerInteractEntityEvent event) {
 	}
 
 	/**
