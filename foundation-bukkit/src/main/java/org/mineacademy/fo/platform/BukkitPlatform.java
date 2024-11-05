@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandExecutor;
@@ -60,6 +63,7 @@ import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompEnchantment;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompPotionEffectType;
+import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.remain.JsonItemStack;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -103,6 +107,14 @@ final class BukkitPlatform extends FoundationPlatform {
 
 			else if (arg instanceof net.md_5.bungee.api.ChatColor)
 				return ((net.md_5.bungee.api.ChatColor) arg).name().toLowerCase();
+
+			try {
+				if (arg instanceof Keyed)
+					return ((Keyed) arg).getKey().toString();
+
+			} catch (final NoClassDefFoundError ex) {
+				// Ignore
+			}
 
 			return arg.toString();
 		});
@@ -350,6 +362,18 @@ final class BukkitPlatform extends FoundationPlatform {
 					return (T) new Vector(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
 				}
 
+				else if (classOf == Biome.class)
+					return (T) ReflectionUtil.lookupEnum(Biome.class, object.toString());
+
+				else if (classOf == Sound.class) {
+					final CompSound compSound = CompSound.fromName(object.toString());
+					Valid.checkNotNull(compSound, "No such sound: " + object + ", see https://mineacademy.org/sounds for valid values.");
+
+					return (T) compSound.getSound();
+
+				} else if (classOf == Art.class)
+					return (T) ReflectionUtil.lookupEnum(Art.class, object.toString());
+
 				else if (ConfigurationSerializable.class.isAssignableFrom(classOf))
 					return (T) object; // Already unpacked in BukkitYamlConstructor
 
@@ -395,6 +419,15 @@ final class BukkitPlatform extends FoundationPlatform {
 
 					return MathUtil.formatOneDigit(vec.getX()) + " " + MathUtil.formatOneDigit(vec.getY()) + " " + MathUtil.formatOneDigit(vec.getZ());
 				}
+
+				else if (object instanceof Biome)
+					return object.toString();
+
+				else if (object instanceof Sound)
+					return object.toString();
+
+				else if (object instanceof Art)
+					return object.toString();
 
 				else if (object instanceof ConfigurationSerializable)
 					return object; // will pack in BukkitYamlRepresenter
