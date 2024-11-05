@@ -305,7 +305,7 @@ public final class ReflectionUtil {
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, final String methodName, Class<?>... args) {
+	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, Class<?>... args) {
 		final Class<?> originalClass = clazz;
 
 		while (!clazz.equals(Object.class))
