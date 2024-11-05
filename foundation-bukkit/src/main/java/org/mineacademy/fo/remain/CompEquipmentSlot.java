@@ -14,12 +14,14 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import net.citizensnpcs.api.trait.trait.Equipment.EquipmentSlot;
 
 /**
  * Represents EquipmentSlot
@@ -221,7 +223,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-			
+
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}
@@ -237,6 +239,16 @@ public enum CompEquipmentSlot {
 		Valid.checkNotNull(this.bukkitName, "CompEquipmentSlot." + name() + " does not have a Bukkit counterpart!");
 
 		return this.bukkitName;
+	}
+
+	/**
+	 * Return the Bukkit equipment slot of this equipment
+	 * or throw an error if not found
+	 *
+	 * @return
+	 */
+	public EquipmentSlot toBukkit() {
+		return ReflectionUtil.lookupEnum(EquipmentSlot.class, this.getBukkitName());
 	}
 
 	/**

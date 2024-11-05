@@ -214,7 +214,7 @@ final class BukkitPlatform extends FoundationPlatform {
 					final CompMaterial material = CompMaterial.fromString(name);
 
 					if (material != null)
-						name = enumType == CompMaterial.class ? material.name() : material.getMaterial().name();
+						name = enumType == CompMaterial.class ? material.name() : ReflectionUtil.getEnumName(material.getMaterial());
 				}
 
 				return name;
@@ -321,7 +321,7 @@ final class BukkitPlatform extends FoundationPlatform {
 								if (itemFlags != null)
 									for (final String flag : itemFlags)
 										try {
-											itemMeta.addItemFlags(ItemFlag.valueOf(flag));
+											itemMeta.addItemFlags(ReflectionUtil.lookupEnum(ItemFlag.class, flag));
 										} catch (final Exception ex) {
 											// Likely not MC compatible, ignore
 										}

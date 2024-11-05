@@ -77,7 +77,7 @@ public class JsonItemStack {
 
 		final JsonObject json = new JsonObject();
 
-		json.addProperty("type", item.getType().name());
+		json.addProperty("type", ReflectionUtil.getEnumName(item.getType()));
 
 		if (item.getDurability() > 0)
 			json.addProperty("durability", item.getDurability());
@@ -230,7 +230,7 @@ public class JsonItemStack {
 					final FireworkEffect effect = femeta.getEffect();
 					final JsonObject extraMeta = new JsonObject();
 
-					extraMeta.addProperty("type", effect.getType().name());
+					extraMeta.addProperty("type", ReflectionUtil.getEnumName(effect.getType()));
 					if (effect.hasFlicker())
 						extraMeta.addProperty("flicker", true);
 					if (effect.hasTrail())
@@ -264,7 +264,7 @@ public class JsonItemStack {
 					fmeta.getEffects().forEach(effect -> {
 						final JsonObject jsonObject = new JsonObject();
 
-						jsonObject.addProperty("type", effect.getType().name());
+						jsonObject.addProperty("type", ReflectionUtil.getEnumName(effect.getType()));
 
 						if (effect.hasFlicker())
 							jsonObject.addProperty("flicker", true);
@@ -323,7 +323,7 @@ public class JsonItemStack {
 						final DyeColor baseColor = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta));
 
 						if (baseColor != null) {
-							final String baseColorName = baseColor.name();
+							final String baseColorName = ReflectionUtil.getEnumName(baseColor);
 
 							extraMeta.addProperty("base-color", baseColorName);
 						}
@@ -333,7 +333,7 @@ public class JsonItemStack {
 						final JsonArray patterns = new JsonArray();
 						bannerMeta.getPatterns()
 								.stream()
-								.map(pattern -> pattern.getColor().name() + ":" + pattern.getPattern().getIdentifier())
+								.map(pattern -> ReflectionUtil.getEnumName(pattern.getColor()) + ":" + pattern.getPattern().getIdentifier())
 								.forEach(str -> patterns.add(new JsonPrimitive(str)));
 						extraMeta.add("patterns", patterns);
 					}
@@ -450,8 +450,8 @@ public class JsonItemStack {
 
 				if (baseColor != null)
 					try {
-						final Optional<DyeColor> color = Arrays.stream(DyeColor.values())
-								.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(baseColor))
+						final Optional<DyeColor> color = Arrays.stream(ReflectionUtil.getEnumValues(DyeColor.class))
+								.filter(dyeColor -> ReflectionUtil.getEnumName(dyeColor).equalsIgnoreCase(baseColor))
 								.findFirst();
 
 						if (color.isPresent()) {
@@ -474,8 +474,8 @@ public class JsonItemStack {
 
 						if (pattern.contains(":")) {
 							final String[] splitPattern = pattern.split(":");
-							final Optional<DyeColor> color = Arrays.stream(DyeColor.values())
-									.filter(dyeColor -> dyeColor.name().equalsIgnoreCase(splitPattern[0]))
+							final Optional<DyeColor> color = Arrays.stream(ReflectionUtil.getEnumValues(DyeColor.class))
+									.filter(dyeColor -> ReflectionUtil.getEnumName(dyeColor).equalsIgnoreCase(splitPattern[0]))
 									.findFirst();
 
 							final PatternType patternType = PatternType.getByIdentifier(splitPattern[1]);
@@ -567,7 +567,7 @@ public class JsonItemStack {
 					}
 				else {
 					final JsonObject basePotion = extraJson.has("base-effect") ? extraJson.get("base-effect").getAsJsonObject() : null;
-					final PotionType potionType = basePotion.has("type") ? PotionType.valueOf(basePotion.get("type").getAsString()) : null;
+					final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnum(PotionType.class, basePotion.get("type").getAsString()) : null;
 					final boolean isExtended = basePotion.has("isExtended") ? basePotion.get("isExtended").getAsBoolean() : false;
 					final boolean isUpgraded = basePotion.has("isUpgraded") ? basePotion.get("isUpgraded").getAsBoolean() : false;
 
@@ -596,7 +596,7 @@ public class JsonItemStack {
 
 				if (effectTypeName != null) {
 					final FireworkEffectMeta femeta = (FireworkEffectMeta) meta;
-					final FireworkEffect.Type effectType = FireworkEffect.Type.valueOf(effectTypeName);
+					final FireworkEffect.Type effectType = ReflectionUtil.lookupEnum(FireworkEffect.Type.class, effectTypeName);
 
 					if (effectType != null) {
 						final List<Color> colors = new ArrayList<>();
@@ -649,7 +649,7 @@ public class JsonItemStack {
 
 						if (effectTypeElement != null) {
 
-							final FireworkEffect.Type effectType = FireworkEffect.Type.valueOf(effectTypeElement);
+							final FireworkEffect.Type effectType = ReflectionUtil.lookupEnum(FireworkEffect.Type.class, effectTypeElement);
 
 							if (effectType != null) {
 								final List<Color> colors = new ArrayList<>();

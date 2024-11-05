@@ -100,17 +100,12 @@ public final class CompMonsterEgg {
 
 	private static EntityType getTypeFromMaterial(final ItemStack item) {
 		final String name = item.getType().toString().replace("_SPAWN_EGG", "");
-		EntityType type = null;
+		EntityType type = ReflectionUtil.lookupEnumSilent(EntityType.class, name);
 
-		try {
-
-			// Try to translate directly
-			type = EntityType.valueOf(name);
-
-		} catch (final IllegalArgumentException ex) {
+		if (type == null) {
 
 			// Special cases e.g. zombie_pigman is pig_zombie
-			for (final EntityType all : EntityType.values())
+			for (final EntityType all : ReflectionUtil.getEnumValues(EntityType.class))
 				if (all.getName() != null && all.getName().equalsIgnoreCase(name))
 					type = all;
 		}
@@ -145,7 +140,7 @@ public final class CompMonsterEgg {
 		final NBTItem nbt = new NBTItem(item);
 		final String type = nbt.hasKey(TAG) ? nbt.getCompound(TAG).getString("entity") : null;
 
-		return type != null && !type.isEmpty() ? EntityType.valueOf(type) : null;
+		return type != null && !type.isEmpty() ? ReflectionUtil.lookupEnum(EntityType.class, type) : null;
 	}
 
 	private static EntityType getTypeByNbt(@NonNull final ItemStack item) {

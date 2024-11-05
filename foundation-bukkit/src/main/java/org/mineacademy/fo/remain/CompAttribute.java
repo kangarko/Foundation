@@ -229,7 +229,7 @@ public enum CompAttribute {
 		if (MinecraftVersion.atLeast(V.v1_9))
 			for (final String name : names)
 				try {
-					this.bukkitAttribute = Attribute.valueOf(name);
+					this.bukkitAttribute = ReflectionUtil.lookupEnum(Attribute.class, name);
 
 					break;
 

@@ -662,7 +662,7 @@ public abstract class SimpleCommandCore {
 	 * if your function returns false for such
 	 *
 	 * @param <T>
-	 * @param enumType
+	 * @param enumType either enum or enumlike interface class
 	 * @param enumValue
 	 * @param condition
 	 * @param falseMessage
@@ -670,7 +670,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition, final SimpleComponent falseMessage) throws CommandException {
+	protected final <T> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition, final SimpleComponent falseMessage) throws CommandException {
 		T found = null;
 
 		try {
@@ -687,7 +687,7 @@ public abstract class SimpleCommandCore {
 		this.checkNotNull(found, falseMessage
 				.replaceBracket("type", enumType.getSimpleName().replaceAll("([a-z])([A-Z]+)", "$1 $2").toLowerCase())
 				.replaceBracket("value", enumValue)
-				.replaceBracket("available", CommonCore.join(enumType.getEnumConstants(), constant -> constant.name().toLowerCase())));
+				.replaceBracket("available", CommonCore.join(ReflectionUtil.getEnumValues(enumType), constant -> ReflectionUtil.getEnumName(constant).toLowerCase())));
 
 		return found;
 	}

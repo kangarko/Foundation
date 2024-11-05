@@ -31,6 +31,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.CompChatColor;
@@ -615,7 +616,7 @@ public final class ItemCreator {
 		Object compiledMeta = this.meta != null ? this.meta.clone() : compiledItem.getItemMeta();
 
 		// Override with given material
-		if (this.material != null) {
+		if (this.item != null && this.material != null) {
 			compiledItem.setType(this.material.getMaterial());
 
 			if (MinecraftVersion.olderThan(V.v1_13))
@@ -643,7 +644,7 @@ public final class ItemCreator {
 					final String suffix = "_" + material;
 
 					if (compiledItem.getType().toString().endsWith(suffix)) {
-						compiledItem.setType(Material.valueOf(dye + suffix));
+						compiledItem.setType(ReflectionUtil.lookupEnum(Material.class, dye + suffix));
 
 						break color;
 					}
@@ -687,14 +688,11 @@ public final class ItemCreator {
 				else if ("ZOMBIE_PIGMAN".equals(entityRaw))
 					entityRaw = "PIG_ZOMBIE";
 
-				try {
-					entity = EntityType.valueOf(entityRaw);
+				entity = ReflectionUtil.lookupEnumSilent(EntityType.class, entityRaw);
 
-				} catch (final Throwable t) {
-
-					// Probably version incompatible
+				// Probably version incompatible
+				if (entity == null)
 					Common.log("The following item could not be transformed into " + entityRaw + " egg, item: " + compiledItem);
-				}
 			}
 
 			if (entity != null)
@@ -844,7 +842,7 @@ public final class ItemCreator {
 
 		for (final CompItemFlag flag : this.flags)
 			try {
-				((ItemMeta) compiledMeta).addItemFlags(ItemFlag.valueOf(flag.toString()));
+				((ItemMeta) compiledMeta).addItemFlags(ReflectionUtil.lookupEnum(ItemFlag.class, flag.toString()));
 			} catch (final Throwable t) {
 			}
 
@@ -1064,10 +1062,10 @@ public final class ItemCreator {
 	 */
 	public static ItemCreator ofPlayerSkull() {
 		try {
-			return of(new ItemStack(Material.valueOf("PLAYER_HEAD")));
+			return of(new ItemStack(ReflectionUtil.lookupEnum(Material.class, "PLAYER_HEAD")));
 
 		} catch (final IllegalArgumentException e) {
-			return of(new ItemStack(Material.valueOf("SKULL_ITEM"), 1, (byte) 3));
+			return of(new ItemStack(ReflectionUtil.lookupEnum(Material.class, "SKULL_ITEM"), 1, (byte) 3));
 		}
 	}
 }

@@ -723,6 +723,27 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Get the enum's name, works for enum and interface classes.
+	 *
+	 * @param enumOrKeyed
+	 * @return
+	 */
+	public static String getEnumName(Object enumOrKeyed) {
+		return enumOrKeyed instanceof Enum ? ((Enum<?>) enumOrKeyed).name() : invoke("name", enumOrKeyed);
+	}
+
+	/**
+	 * Get the enum's constants, works for enum and interface classes.
+	 *
+	 * @param <T>
+	 * @param enumOrKeyed
+	 * @return
+	 */
+	public static <T> T[] getEnumValues(Class<T> enumOrKeyed) {
+		return enumOrKeyed.isEnum() ? enumOrKeyed.getEnumConstants() : invokeStatic(enumOrKeyed, "values");
+	}
+
+	/**
 	 * Get all classes in the plugin file.
 	 *
 	 * @param <T>
