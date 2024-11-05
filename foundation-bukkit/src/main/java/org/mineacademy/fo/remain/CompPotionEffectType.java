@@ -338,7 +338,7 @@ public final class CompPotionEffectType {
 	}
 
 	static {
-		for (final PotionEffectType type : PotionEffectType.values()) {
+		for (final PotionEffectType type : ReflectionUtil.getEnumValues(PotionEffectType.class)) {
 			if (type == null)
 				continue; // wtf 1.8.8
 

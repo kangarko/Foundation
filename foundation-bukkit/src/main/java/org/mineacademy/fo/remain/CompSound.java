@@ -16,8 +16,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.Platform;
@@ -1858,7 +1857,7 @@ public enum CompSound {
 	 * @return
 	 */
 	public Sound getSound() {
-		return Common.getOrDefault(this.sound, getFallback());
+		return Common.getOrDefault(this.sound, CompSound.ENTITY_PLAYER_LEVELUP.sound);
 	}
 
 	/**
@@ -1885,7 +1884,7 @@ public enum CompSound {
 	 * @return a matched sound.
 	 */
 	public static CompSound fromSound(@NonNull Sound sound) {
-		return Data.NAMES.get(sound.name());
+		return Data.NAMES.get(ReflectionUtil.getEnumName(sound));
 	}
 
 	/**
@@ -1997,15 +1996,6 @@ public enum CompSound {
 			}
 		}.runTaskTimerAsynchronously(SimplePlugin.getInstance(), 0, delay);
 	}
-
-	/**
-	 * Returns the level up sound for compatibility
-	 *
-	 * @return the level up sound
-	 */
-	public static final Sound getFallback() {
-		return Sound.valueOf(MinecraftVersion.atLeast(V.v1_9) ? "ENTITY_PLAYER_LEVELUP" : "LEVEL_UP");
-	}
 }
 
 /**
@@ -2017,7 +2007,7 @@ class Data {
 	static final Map<String, CompSound> NAMES = new HashMap<>();
 
 	static {
-		for (final Sound sound : Sound.values())
-			BUKKIT_NAMES.put(sound.name(), sound);
+		for (final Sound sound : ReflectionUtil.getEnumValues(Sound.class))
+			BUKKIT_NAMES.put(ReflectionUtil.getEnumName(sound), sound);
 	}
 }

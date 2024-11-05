@@ -1294,7 +1294,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Statistic getPlayTimeStatisticName() {
-		return Statistic.valueOf(MinecraftVersion.olderThan(V.v1_13) ? "PLAY_ONE_TICK" : "PLAY_ONE_MINUTE");
+		return ReflectionUtil.lookupEnum(Statistic.class, MinecraftVersion.olderThan(V.v1_13) ? "PLAY_ONE_TICK" : "PLAY_ONE_MINUTE");
 	}
 
 	/**
@@ -1921,7 +1921,7 @@ public final class Remain {
 		else {
 			initialBlock = initialBlock.getRelative(facing);
 
-			final Material bedMaterial = Material.valueOf("BED_BLOCK");
+			final Material bedMaterial = ReflectionUtil.lookupEnum(Material.class, "BED_BLOCK");
 			final Block bedFootBlock = initialBlock.getRelative(facing.getOppositeFace());
 
 			final BlockState bedFootState = bedFootBlock.getState();
@@ -2185,7 +2185,7 @@ public final class Remain {
 	 * @param data
 	 */
 	public static void setTypeAndData(final Block block, final Material material, final byte data) {
-		setTypeAndData(block, CompMaterial.fromLegacy(material.name(), data));
+		setTypeAndData(block, CompMaterial.fromLegacy(ReflectionUtil.getEnumName(material), data));
 	}
 
 	/**
@@ -2551,7 +2551,7 @@ public final class Remain {
 			key = Key.key(material.getKey().getNamespace(), material.getKey().getKey());
 
 		else
-			key = Key.key(material.name().toLowerCase());
+			key = Key.key(ReflectionUtil.getEnumName(material).toLowerCase());
 
 		return HoverEvent.showItem(key, item.getAmount(), binaryTagHolder);
 
