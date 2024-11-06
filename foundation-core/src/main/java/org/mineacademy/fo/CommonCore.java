@@ -37,7 +37,6 @@ import com.google.gson.GsonBuilder;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions.
@@ -78,8 +77,7 @@ public abstract class CommonCore {
 	 *
 	 * @see #simplify(Object)
 	 */
-	@Setter
-	private static Function<Object, String> simplifier = t -> t.toString();
+	private static List<Function<Object, String>> simplifiers = new ArrayList<>();
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Broadcasting
@@ -608,40 +606,56 @@ public abstract class CommonCore {
 	 * <li> For a ConfigStringSerializable, return its serialized string.
 	 * </ul>
 	 *
-	 * You can set a custom simplifier by calling {@link #setSimplifier(Function)} which
+	 * You can set a custom simplifier by calling {@link #addSimplifier(Function)} which
 	 * will be used for all unknown object types.
 	 *
-	 * @see #setSimplifier(Function)
+	 * @see #addSimplifier(Function)
 	 *
-	 * @param arg the object to simplify
+	 * @param object the object to simplify
 	 * @return the simplified string representation of the object
 	 */
-	public static final String simplify(Object arg) {
-		if (arg == null)
+	public static final String simplify(Object object) {
+		if (object == null)
 			return "";
 
-		else if (arg instanceof String)
-			return (String) arg;
+		else if (object instanceof String)
+			return (String) object;
 
-		else if (arg.getClass() == double.class || arg.getClass() == float.class)
-			return MathUtil.formatTwoDigits((double) arg);
+		else if (object.getClass() == double.class || object.getClass() == float.class)
+			return MathUtil.formatTwoDigits((double) object);
 
-		else if (arg instanceof Collection)
-			return CommonCore.join((Collection<?>) arg, ", ", CommonCore::simplify);
+		else if (object instanceof Collection)
+			return CommonCore.join((Collection<?>) object, ", ", CommonCore::simplify);
 
-		else if (arg instanceof CompChatColor)
-			return ((CompChatColor) arg).getName();
+		else if (object instanceof CompChatColor)
+			return ((CompChatColor) object).getName();
 
-		else if (arg instanceof Enum)
-			return ((Enum<?>) arg).toString().toLowerCase();
+		else if (object instanceof Enum)
+			return ((Enum<?>) object).toString().toLowerCase();
 
-		else if (arg instanceof FoundationPlayer)
-			return ((FoundationPlayer) arg).getName();
+		else if (object instanceof FoundationPlayer)
+			return ((FoundationPlayer) object).getName();
 
-		else if (arg instanceof ConfigStringSerializable)
-			return ((ConfigStringSerializable) arg).serialize();
+		else if (object instanceof ConfigStringSerializable)
+			return ((ConfigStringSerializable) object).serialize();
 
-		return simplifier.apply(arg);
+		for (final Function<Object, String> simplifier : simplifiers) {
+			final String result = simplifier.apply(object);
+
+			if (result != null)
+				return result;
+		}
+
+		return object.toString();
+	}
+
+	/**
+	 * Add a simplifier function that converts objects into their string representation.
+	 *
+	 * @param simplifier
+	 */
+	public static void addSimplifier(Function<Object, String> simplifier) {
+		simplifiers.add(simplifier);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -764,7 +778,7 @@ public abstract class CommonCore {
 				if (element != null)
 					if (element instanceof Iterable)
 						for (final Object iterable : (Iterable<?>) element) {
-							final String parsedValue = SerializeUtilCore.serialize(Language.YAML, iterable).toString();
+							final String parsedValue = CommonCore.simplify(iterable);
 
 							toComplete.add(ReflectionUtil.isEnumLike(iterable) ? parsedValue.toLowerCase() : parsedValue);
 						}
@@ -772,7 +786,7 @@ public abstract class CommonCore {
 					else if (element.getClass().isArray())
 						for (int i = 0; i < Array.getLength(element); i++) {
 							final Object iterable = Array.get(element, i);
-							final String parsedValue = SerializeUtilCore.serialize(Language.YAML, iterable).toString();
+							final String parsedValue = CommonCore.simplify(iterable);
 
 							toComplete.add(ReflectionUtil.isEnumLike(iterable) ? parsedValue.toLowerCase() : parsedValue);
 						}
@@ -784,7 +798,7 @@ public abstract class CommonCore {
 
 					else {
 						final boolean lowercase = ReflectionUtil.isEnumLike(element);
-						final String parsedValue = SerializeUtilCore.serialize(Language.YAML, element).toString();
+						final String parsedValue = CommonCore.simplify(element);
 
 						if (!"".equals(parsedValue))
 							toComplete.add(lowercase ? parsedValue.toLowerCase() : parsedValue);

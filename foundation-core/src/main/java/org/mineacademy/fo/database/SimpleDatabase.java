@@ -9,7 +9,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,6 +33,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -253,6 +256,17 @@ public class SimpleDatabase {
 			}
 
 			this.lastCredentials = new LastCredentials(url, user, password, table);
+
+			// Create tables automatically
+			for (final Table createdTable : Table.values()) {
+				final TableCreator creator = TableCreator.of(createdTable.getName());
+
+				createdTable.onTableCreate(creator);
+
+				this.createTable(creator);
+			}
+
+			// Call delegate
 			this.onConnected();
 
 		} catch (final Exception ex) {
@@ -327,6 +341,77 @@ public class SimpleDatabase {
 		} catch (final SQLException e) {
 			CommonCore.error(e, "Error closing database connection!");
 		}
+	}
+
+	// --------------------------------------------------------------------
+	// Working with table-row paradigm.
+	// --------------------------------------------------------------------
+
+	/**
+	 * Get the row by id in the given table
+	 *
+	 * @param <T>
+	 * @param table
+	 * @param id
+	 * @return
+	 */
+	public final <T extends Row> T getRow(Table table, int id) {
+		final List<T> list = new ArrayList<>();
+
+		this.select(table.getName(), CommonCore.newHashMap("Id", id), resultSet -> list.add(table.createRow(resultSet)));
+
+		if (!list.isEmpty()) {
+			ValidCore.checkBoolean(list.size() == 1, "Found more than one row with id " + id + " in table " + table.getName() + ": " + list);
+
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get all rows in the given table
+	 *
+	 * @param <T>
+	 * @param table
+	 * @return
+	 */
+	public final <T extends Row> List<T> getRows(Table table) {
+		final List<T> entries = new ArrayList<>();
+
+		this.selectAll(table.getName(), resultSet -> entries.add(table.createRow(resultSet)));
+
+		Collections.reverse(entries);
+
+		return entries;
+	}
+
+	/**
+	 * Add a map of data to the queue for the given table
+	 *
+	 * @param row
+	 */
+	public final void addToQueue(final Row row) {
+		RowQueueWriter.getInstance().addToQueue(row);
+	}
+
+	/**
+	 * Remove a row from the given table
+	 *
+	 * @param row
+	 */
+	public final void removeRow(Row row) {
+		this.removeRow(row.getTable(), row.getId());
+	}
+
+	/**
+	 * Remove a row from the given table
+	 *
+	 * @param table
+	 * @param id
+	 */
+	public final void removeRow(Table table, int id) {
+		this.update("DELETE FROM " + table.getName() + " WHERE Id = " + id);
 	}
 
 	// --------------------------------------------------------------------
@@ -452,7 +537,7 @@ public class SimpleDatabase {
 				try {
 					final String columns = CommonCore.join(map.keySet());
 					final String values = CommonCore.join(map.values(), ", ", this::parseValue);
-					final String duplicateUpdate = CommonCore.join(map.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
+					final String duplicateUpdate = CommonCore.join(map.entrySet(), ", ", entry -> entry.getKey() + " = VALUES (" + entry.getKey() + ")");
 
 					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
 					Debugger.debug("mysql", "Inserting batch SQL: " + sql);
@@ -947,9 +1032,51 @@ public class SimpleDatabase {
 		return this.isSQLite;
 	}
 
-	// --------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
 	// Classes
-	// --------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * A specialized task to make I/O operations off of the main thread
+	 */
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class RowQueueWriter implements Runnable {
+
+		private static final RowQueueWriter instance = new RowQueueWriter();
+
+		/**
+		 * Sync database write operations.
+		 */
+		private final Map<Table, List<SerializedMap>> queue = new HashMap<>();
+
+		@Override
+		public void run() {
+			synchronized (instance) {
+				for (final Iterator<Map.Entry<Table, List<SerializedMap>>> it = this.queue.entrySet().iterator(); it.hasNext();) {
+					final Map.Entry<Table, List<SerializedMap>> entry = it.next();
+
+					final Table table = entry.getKey();
+					final List<SerializedMap> maps = entry.getValue();
+
+					table.getDatabase().insertBatch(table.getName(), maps);
+				}
+
+				this.queue.clear();
+			}
+		}
+
+		private void addToQueue(final Row row) {
+			synchronized (instance) {
+				this.queue.computeIfAbsent(row.getTable(), key -> new ArrayList<>()).add(row.toMap());
+			}
+		}
+
+		public static RowQueueWriter getInstance() {
+			synchronized (instance) {
+				return instance;
+			}
+		}
+	}
 
 	/**
 	 * Helps to create new database tables preventing SQL syntax errors

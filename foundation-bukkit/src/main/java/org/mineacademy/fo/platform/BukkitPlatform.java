@@ -89,34 +89,52 @@ final class BukkitPlatform extends FoundationPlatform {
 		// Initialize platform-specific variables
 		Variables.setCollector(new BukkitVariableCollector());
 
-		Common.setSimplifier(arg -> {
-			if (arg instanceof Entity)
-				return Remain.getEntityName((Entity) arg);
+		Common.addSimplifier(object -> {
+			if (object instanceof Entity)
+				return Remain.getEntityName((Entity) object);
 
-			else if (arg instanceof CommandSender)
-				return ((CommandSender) arg).getName();
+			else if (object instanceof CommandSender)
+				return ((CommandSender) object).getName();
 
-			else if (arg instanceof World)
-				return ((World) arg).getName();
+			else if (object instanceof World)
+				return ((World) object).getName();
 
-			else if (arg instanceof Location)
-				return SerializeUtil.serializeLoc((Location) arg);
+			else if (object instanceof PotionEffect)
+				return Common.simplify(((PotionEffect) object).getType());
 
-			else if (arg instanceof ChatColor)
-				return ((ChatColor) arg).name().toLowerCase();
+			else if (object instanceof PotionEffectType)
+				return ((PotionEffectType) object).getName();
 
-			else if (arg instanceof net.md_5.bungee.api.ChatColor)
-				return ((net.md_5.bungee.api.ChatColor) arg).name().toLowerCase();
+			else if (object instanceof Enchantment)
+				return ((PotionEffectType) object).getName();
+
+			else if (object instanceof ItemStack)
+				return Common.simplify(((ItemStack) object).getType());
+
+			else if (object instanceof Location)
+				return SerializeUtil.serializeLoc((Location) object);
+
+			else if (object instanceof Vector) {
+				final Vector vec = (Vector) object;
+
+				return MathUtil.formatTwoDigits(vec.getX()) + " " + MathUtil.formatTwoDigits(vec.getY()) + " " + MathUtil.formatTwoDigits(vec.getZ());
+			}
+
+			else if (object instanceof ChatColor)
+				return ((ChatColor) object).name().toLowerCase();
+
+			else if (object instanceof net.md_5.bungee.api.ChatColor)
+				return ((net.md_5.bungee.api.ChatColor) object).name().toLowerCase();
 
 			try {
-				if (arg instanceof Keyed)
-					return ((Keyed) arg).getKey().toString();
+				if (object instanceof Keyed)
+					return ((Keyed) object).getKey().toString();
 
 			} catch (final NoClassDefFoundError ex) {
 				// Ignore
 			}
 
-			return arg.toString();
+			return null;
 		});
 
 		ReflectionUtil.setLegacyEnumNameTranslator(new LegacyEnumNameTranslator() {
