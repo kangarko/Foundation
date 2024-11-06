@@ -3,6 +3,7 @@ package org.mineacademy.fo.platform;
 import java.net.InetSocketAddress;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -13,6 +14,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.remain.bossbar.NMSBossBar;
 
@@ -67,6 +69,14 @@ public final class BukkitPlayer extends FoundationPlayer {
 	@Override
 	public boolean isPlayer() {
 		return this.isPlayer;
+	}
+
+	@Override
+	public SimpleLocation getBukkitLocation() {
+		Valid.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
+		final Location location = this.player.getLocation();
+
+		return new SimpleLocation(location.getWorld().getName(), location.getX(), location.getY(), location.getZ());
 	}
 
 	@Override

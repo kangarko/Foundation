@@ -1388,6 +1388,17 @@ public final class HookManager {
 	}
 
 	/**
+	 * Returns the player's primary permission group using Vault, or an empty
+	 * string if they don't have one.
+	 *
+	 * @param player the player to check.
+	 * @return
+	 */
+	public static String getPlayerPrimaryGroup(final OfflinePlayer player) {
+		return isVaultLoaded() ? vaultHook.getPrimaryGroup(player) : "";
+	}
+
+	/**
 	 * Returns true if Vault was able to find a suitable chat plugin to hook
 	 * into.
 	 *
@@ -2369,6 +2380,15 @@ class VaultHook {
 	String getPrimaryGroup(final Player player) {
 		try {
 			return this.permissions != null ? this.permissions.getPrimaryGroup(player) : "";
+
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed.
+		}
+	}
+
+	String getPrimaryGroup(final OfflinePlayer player) {
+		try {
+			return this.permissions != null ? this.permissions.getPrimaryGroup((String) null, player) : "";
 
 		} catch (final UnsupportedOperationException t) {
 			return ""; // No supported plugin installed.

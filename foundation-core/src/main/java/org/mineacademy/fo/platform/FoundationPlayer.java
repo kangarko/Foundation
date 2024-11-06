@@ -9,6 +9,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.settings.Lang;
 
@@ -89,6 +90,19 @@ public abstract class FoundationPlayer {
 	 * @return
 	 */
 	public abstract <T> T getPlayer();
+
+	/**
+	 * Returns the player's location if called on Bukkit and the player is not a console
+	 * or returns null if not applicable.
+	 *
+	 * Throws exception if called on Bukkit and the sender is console:
+	 * @see #isPlayer()
+	 *
+	 * @return
+	 */
+	public SimpleLocation getBukkitLocation() {
+		return null;
+	}
 
 	/*
 	 * Implementation of getName() for players.

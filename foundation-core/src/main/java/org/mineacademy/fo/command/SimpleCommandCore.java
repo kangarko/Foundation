@@ -4,10 +4,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.CommonCore;
@@ -27,6 +30,7 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +41,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
  * across any plugin that utilizes this.
  */
 public abstract class SimpleCommandCore {
+
+	/**
+	 * The pattern to match a command argument inside the args, such as "server:survival hello world".
+	 */
+	private static final Pattern COLON_ARGUMENT_PATTERN = Pattern.compile("(\\w+):(\\w+)");
 
 	/**
 	 * The pattern to match a command argument, see {@link #colorizeUsage(SimpleComponent)}.
@@ -591,7 +600,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue) throws CommandException {
+	protected final <T> T findEnum(final Class<T> enumType, final String enumValue) throws CommandException {
 		return this.findEnum(enumType, enumValue, null, Lang.component("command-invalid-type"));
 	}
 
@@ -611,7 +620,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final SimpleComponent falseMessage) throws CommandException {
+	protected final <T> T findEnum(final Class<T> enumType, final String enumValue, final SimpleComponent falseMessage) throws CommandException {
 		return this.findEnum(enumType, enumValue, null, falseMessage);
 	}
 
@@ -631,7 +640,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final String falseMessage) throws CommandException {
+	protected final <T> T findEnum(final Class<T> enumType, final String enumValue, final String falseMessage) throws CommandException {
 		return this.findEnum(enumType, enumValue, null, SimpleComponent.fromMini(falseMessage));
 	}
 
@@ -650,7 +659,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 * @throws CommandException
 	 */
-	protected final <T extends Enum<T>> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition) throws CommandException {
+	protected final <T> T findEnum(final Class<T> enumType, final String enumValue, final Function<T, Boolean> condition) throws CommandException {
 		return this.findEnum(enumType, enumValue, condition, Lang.component("command-invalid-type"));
 	}
 
@@ -1582,6 +1591,10 @@ public abstract class SimpleCommandCore {
 		this.description = description == null || description.isEmpty() ? null : description;
 	}
 
+	// ----------------------------------------------------------------------
+	// Argument parsing
+	// ----------------------------------------------------------------------
+
 	/**
 	 * Get the command arguments.
 	 *
@@ -1589,6 +1602,31 @@ public abstract class SimpleCommandCore {
 	 */
 	public final String[] getArgs() {
 		return args;
+	}
+
+	/**
+	 * Parse the arguments from the given input.
+	 * Example: /announce chat server:survival Hello this is a test!
+	 *
+	 * @param input
+	 * @return
+	 */
+	protected final ParsedArguments parseArguments(String input) {
+		final Map<String, String> args = new HashMap<>();
+		final Matcher matcher = COLON_ARGUMENT_PATTERN.matcher(input);
+
+		String cleanedMessage = input;
+
+		while (matcher.find()) {
+			final String key = matcher.group(1);
+			final String value = matcher.group(2);
+
+			args.put(key, value);
+
+			cleanedMessage = cleanedMessage.replace(matcher.group(), "").trim();
+		}
+
+		return new ParsedArguments(args, cleanedMessage);
 	}
 
 	// ----------------------------------------------------------------------
@@ -1669,6 +1707,10 @@ public abstract class SimpleCommandCore {
 		return "Command{/" + this.label + "}";
 	}
 
+	// ----------------------------------------------------------------------
+	// Classes
+	// ----------------------------------------------------------------------
+
 	/**
 	 * Thrown when a command has invalid argument
 	 */
@@ -1677,5 +1719,51 @@ public abstract class SimpleCommandCore {
 	private final class InvalidCommandArgException extends CommandException {
 		private static final long serialVersionUID = 1L;
 		private final String invalidArgument;
+	}
+
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	public static class ParsedArguments {
+
+		/**
+		 * The parsed arguments
+		 */
+		private final Map<String, String> args;
+
+		/**
+		 * The cleaned message
+		 */
+		@Getter
+		private final String message;
+
+		/**
+		 * Get the argument value
+		 *
+		 * @param key
+		 * @return
+		 */
+		public String get(final String key) {
+			return this.args.get(key);
+		}
+
+		/**
+		 * Get the argument value or the default value
+		 *
+		 * @param key
+		 * @param def
+		 * @return
+		 */
+		public String get(final String key, final String def) {
+			return this.args.getOrDefault(key, def);
+		}
+
+		/**
+		 * Check if the argument exists
+		 *
+		 * @param key
+		 * @return
+		 */
+		public boolean has(final String key) {
+			return this.args.containsKey(key);
+		}
 	}
 }

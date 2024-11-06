@@ -1,6 +1,8 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -25,10 +27,12 @@ import org.mineacademy.fo.command.RegionCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
+import org.mineacademy.fo.database.SimpleDatabase;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.library.BukkitLibraryManager;
 import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
@@ -142,6 +146,25 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 		this.loadLibraries();
 
 		BukkitPlatform.inject();
+
+		// Dynamically load filters
+		for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
+			try {
+				final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
+				Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
+				Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
+
+				final Filter filter = ReflectionUtil.instantiate(constructor);
+
+				Filter.register(filter.getIdentifier(), filter);
+
+			} catch (final Exception ex) {
+				Common.error(ex,
+						"Failed to load filter: " + filterClass,
+						"Check that it has a public no args constructor!");
+
+				continue;
+			}
 
 		try {
 			this.onPluginLoad();
@@ -443,6 +466,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 					localizationFolder.renameTo(new File(unusedFolder, "localization"));
 				}
 			}
+
+			Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
 
 			if (this.getBStatsPluginId() != -1)
 				new BStatsMetrics(this, this.getBStatsPluginId());
