@@ -6,13 +6,11 @@ import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.platform.Platform;
 
-import lombok.Getter;
 import lombok.ToString;
 
 /**
  * Represents a row in the database
  */
-@Getter
 @ToString
 public abstract class Row {
 
@@ -37,6 +35,12 @@ public abstract class Row {
 		this.server = resultSet.getStringStrict("Server");
 	}
 
+	protected Row(int id, long date, String server) {
+		this.id = id;
+		this.date = date;
+		this.server = server;
+	}
+
 	protected Row() {
 		this.id = 0;
 		this.date = System.currentTimeMillis();
@@ -56,6 +60,33 @@ public abstract class Row {
 		this.onMapCreate(map);
 
 		return map;
+	}
+
+	/**
+	 * Get the unique ID of this row
+	 *
+	 * @return
+	 */
+	public final int getId() {
+		return id;
+	}
+
+	/**
+	 * Get the date this row was created
+	 *
+	 * @return
+	 */
+	public final long getDate() {
+		return date;
+	}
+
+	/**
+	 * Get the server this row was created in
+	 *
+	 * @return
+	 */
+	public final String getServer() {
+		return server;
 	}
 
 	/**

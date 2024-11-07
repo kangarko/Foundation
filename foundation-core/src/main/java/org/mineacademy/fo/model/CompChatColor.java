@@ -44,6 +44,16 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	public static final Map<String, String> MINI_TO_LEGACY = new HashMap<>();
 
 	/**
+	 * MiniMessages tags to text color.
+	 */
+	public static final Map<String, TextColor> MINI_TO_COLOR = new HashMap<>();
+
+	/**
+	 * MiniMessages tags to text decoration.
+	 */
+	public static final Map<String, TextDecoration> MINI_TO_DECORATION = new HashMap<>();
+
+	/**
 	 * Stores legacy colors.
 	 */
 	public static final Map<String, String> LEGACY_TO_MINI = new HashMap<>();
@@ -491,6 +501,37 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		throw new IllegalArgumentException("Could not parse CompChatColor " + string);
 	}
 
+	/**
+	 * Return the parsed chat color from the given text color.
+	 *
+	 * @param color
+	 * @return
+	 */
+	public static CompChatColor fromTextColor(TextColor color) {
+		return fromString(color.asHexString());
+	}
+
+	/**
+	 * Return the parsed chat color from the given text decoration.
+	 *
+	 * @param decoration
+	 * @return
+	 */
+	public static CompChatColor fromTextDecoration(TextDecoration decoration) {
+		if (decoration == TextDecoration.BOLD)
+			return BOLD;
+		else if (decoration == TextDecoration.STRIKETHROUGH)
+			return STRIKETHROUGH;
+		else if (decoration == TextDecoration.UNDERLINED)
+			return UNDERLINE;
+		else if (decoration == TextDecoration.ITALIC)
+			return ITALIC;
+		else if (decoration == TextDecoration.OBFUSCATED)
+			return MAGIC;
+		else
+			throw new IllegalArgumentException("Unknown decoration: " + decoration);
+	}
+
 	/*
 	 * Parse the given HEX into a Java Color object
 	 */
@@ -840,6 +881,36 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		MINI_TO_LEGACY.put("<r>", "§r");
 		MINI_TO_LEGACY.put("<reset>", "§r");
 
+		MINI_TO_COLOR.put("<black>", NamedTextColor.BLACK);
+		MINI_TO_COLOR.put("<dark_blue>", NamedTextColor.DARK_BLUE);
+		MINI_TO_COLOR.put("<dark_green>", NamedTextColor.DARK_GREEN);
+		MINI_TO_COLOR.put("<dark_aqua>", NamedTextColor.DARK_AQUA);
+		MINI_TO_COLOR.put("<dark_red>", NamedTextColor.DARK_RED);
+		MINI_TO_COLOR.put("<dark_purple>", NamedTextColor.DARK_PURPLE);
+		MINI_TO_COLOR.put("<gold>", NamedTextColor.GOLD);
+		MINI_TO_COLOR.put("<gray>", NamedTextColor.GRAY);
+		MINI_TO_COLOR.put("<dark_gray>", NamedTextColor.DARK_GRAY);
+		MINI_TO_COLOR.put("<blue>", NamedTextColor.BLUE);
+		MINI_TO_COLOR.put("<green>", NamedTextColor.GREEN);
+		MINI_TO_COLOR.put("<aqua>", NamedTextColor.AQUA);
+		MINI_TO_COLOR.put("<red>", NamedTextColor.RED);
+		MINI_TO_COLOR.put("<light_purple>", NamedTextColor.LIGHT_PURPLE);
+		MINI_TO_COLOR.put("<yellow>", NamedTextColor.YELLOW);
+		MINI_TO_COLOR.put("<white>", NamedTextColor.WHITE);
+
+		MINI_TO_DECORATION.put("<u>", TextDecoration.UNDERLINED);
+		MINI_TO_DECORATION.put("<underlined>", TextDecoration.UNDERLINED);
+		MINI_TO_DECORATION.put("<st>", TextDecoration.STRIKETHROUGH);
+		MINI_TO_DECORATION.put("<strikethrough>", TextDecoration.STRIKETHROUGH);
+		MINI_TO_DECORATION.put("<obf>", TextDecoration.OBFUSCATED);
+		MINI_TO_DECORATION.put("<obfuscated>", TextDecoration.OBFUSCATED);
+		MINI_TO_DECORATION.put("<i>", TextDecoration.ITALIC);
+		MINI_TO_DECORATION.put("<italic>", TextDecoration.ITALIC);
+		MINI_TO_DECORATION.put("<b>", TextDecoration.BOLD);
+		MINI_TO_DECORATION.put("<bold>", TextDecoration.BOLD);
+		MINI_TO_DECORATION.put("<r>", null);
+		MINI_TO_DECORATION.put("<reset>", null);
+
 		LEGACY_TO_MINI.put("&0", "<black>");
 		LEGACY_TO_MINI.put("&1", "<dark_blue>");
 		LEGACY_TO_MINI.put("&2", "<dark_green>");
@@ -850,32 +921,6 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		LEGACY_TO_MINI.put("&7", "<gray>");
 		LEGACY_TO_MINI.put("&8", "<dark_gray>");
 		LEGACY_TO_MINI.put("&9", "<blue>");
-		LEGACY_TO_MINI.put("&a", "<green>");
-		LEGACY_TO_MINI.put("&b", "<aqua>");
-		LEGACY_TO_MINI.put("&c", "<red>");
-		LEGACY_TO_MINI.put("&d", "<light_purple>");
-		LEGACY_TO_MINI.put("&e", "<yellow>");
-		LEGACY_TO_MINI.put("&f", "<white>");
-		LEGACY_TO_MINI.put("&n", "<u>");
-		LEGACY_TO_MINI.put("&m", "<st>");
-		LEGACY_TO_MINI.put("&k", "<obf>");
-		LEGACY_TO_MINI.put("&o", "<i>");
-		LEGACY_TO_MINI.put("&l", "<b>");
-		LEGACY_TO_MINI.put("&r", "<reset>");
-
-		LEGACY_TO_MINI.put("&A", "<green>");
-		LEGACY_TO_MINI.put("&B", "<aqua>");
-		LEGACY_TO_MINI.put("&C", "<red>");
-		LEGACY_TO_MINI.put("&D", "<light_purple>");
-		LEGACY_TO_MINI.put("&E", "<yellow>");
-		LEGACY_TO_MINI.put("&F", "<white>");
-		LEGACY_TO_MINI.put("&N", "<u>");
-		LEGACY_TO_MINI.put("&M", "<st>");
-		LEGACY_TO_MINI.put("&K", "<obf>");
-		LEGACY_TO_MINI.put("&O", "<i>");
-		LEGACY_TO_MINI.put("&L", "<b>");
-		LEGACY_TO_MINI.put("&R", "<reset>");
-
 		LEGACY_TO_MINI.put("§0", "<black>");
 		LEGACY_TO_MINI.put("§1", "<dark_blue>");
 		LEGACY_TO_MINI.put("§2", "<dark_green>");
@@ -886,25 +931,52 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		LEGACY_TO_MINI.put("§7", "<gray>");
 		LEGACY_TO_MINI.put("§8", "<dark_gray>");
 		LEGACY_TO_MINI.put("§9", "<blue>");
+
+		LEGACY_TO_MINI.put("&a", "<green>");
+		LEGACY_TO_MINI.put("&b", "<aqua>");
+		LEGACY_TO_MINI.put("&c", "<red>");
+		LEGACY_TO_MINI.put("&d", "<light_purple>");
+		LEGACY_TO_MINI.put("&e", "<yellow>");
+		LEGACY_TO_MINI.put("&f", "<white>");
+		LEGACY_TO_MINI.put("&A", "<green>");
+		LEGACY_TO_MINI.put("&B", "<aqua>");
+		LEGACY_TO_MINI.put("&C", "<red>");
+		LEGACY_TO_MINI.put("&D", "<light_purple>");
+		LEGACY_TO_MINI.put("&E", "<yellow>");
+		LEGACY_TO_MINI.put("&F", "<white>");
+
 		LEGACY_TO_MINI.put("§a", "<green>");
 		LEGACY_TO_MINI.put("§b", "<aqua>");
 		LEGACY_TO_MINI.put("§c", "<red>");
 		LEGACY_TO_MINI.put("§d", "<light_purple>");
 		LEGACY_TO_MINI.put("§e", "<yellow>");
 		LEGACY_TO_MINI.put("§f", "<white>");
-		LEGACY_TO_MINI.put("§n", "<u>");
-		LEGACY_TO_MINI.put("§m", "<st>");
-		LEGACY_TO_MINI.put("§k", "<obf>");
-		LEGACY_TO_MINI.put("§o", "<i>");
-		LEGACY_TO_MINI.put("§l", "<b>");
-		LEGACY_TO_MINI.put("§r", "<reset>");
-
 		LEGACY_TO_MINI.put("§A", "<green>");
 		LEGACY_TO_MINI.put("§B", "<aqua>");
 		LEGACY_TO_MINI.put("§C", "<red>");
 		LEGACY_TO_MINI.put("§D", "<light_purple>");
 		LEGACY_TO_MINI.put("§E", "<yellow>");
 		LEGACY_TO_MINI.put("§F", "<white>");
+
+		LEGACY_TO_MINI.put("&n", "<u>");
+		LEGACY_TO_MINI.put("&m", "<st>");
+		LEGACY_TO_MINI.put("&k", "<obf>");
+		LEGACY_TO_MINI.put("&o", "<i>");
+		LEGACY_TO_MINI.put("&l", "<b>");
+		LEGACY_TO_MINI.put("&r", "<reset>");
+		LEGACY_TO_MINI.put("&N", "<u>");
+		LEGACY_TO_MINI.put("&M", "<st>");
+		LEGACY_TO_MINI.put("&K", "<obf>");
+		LEGACY_TO_MINI.put("&O", "<i>");
+		LEGACY_TO_MINI.put("&L", "<b>");
+		LEGACY_TO_MINI.put("&R", "<reset>");
+
+		LEGACY_TO_MINI.put("§n", "<u>");
+		LEGACY_TO_MINI.put("§m", "<st>");
+		LEGACY_TO_MINI.put("§k", "<obf>");
+		LEGACY_TO_MINI.put("§o", "<i>");
+		LEGACY_TO_MINI.put("§l", "<b>");
+		LEGACY_TO_MINI.put("§r", "<reset>");
 		LEGACY_TO_MINI.put("§N", "<u>");
 		LEGACY_TO_MINI.put("§M", "<st>");
 		LEGACY_TO_MINI.put("§K", "<obf>");

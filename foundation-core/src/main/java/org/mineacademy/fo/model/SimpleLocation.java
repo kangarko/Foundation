@@ -59,4 +59,13 @@ public final class SimpleLocation {
 				Math.pow(other.getY() - this.y, 2) +
 				Math.pow(other.getZ() - this.z, 2));
 	}
+
+	/**
+	 * Get the location formatted as "world x y z"
+	 *
+	 * @return
+	 */
+	public String getFormatted() {
+		return this.worldName + " " + this.x + " " + this.y + " " + this.z;
+	}
 }

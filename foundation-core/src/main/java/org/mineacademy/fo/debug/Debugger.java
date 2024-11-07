@@ -9,6 +9,7 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.HandledException;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -271,6 +272,9 @@ public final class Debugger {
 	 */
 	public static void printStackTrace(@NonNull Throwable throwable) {
 
+		if (throwable instanceof HandledException)
+			return;
+
 		// Load all causes
 		final List<Throwable> causes = new ArrayList<>();
 
@@ -285,6 +289,7 @@ public final class Debugger {
 		if (throwable instanceof FoException && !causes.isEmpty())
 			// Do not print parent exception if we are only wrapping it, saves console spam
 			log(throwable.getMessage());
+
 		else {
 			log(throwable.toString());
 
@@ -315,20 +320,23 @@ public final class Debugger {
 	 * Returns whether a line is suitable for printing as an error line.
 	 * We ignore stuff from NMS and other spam as this is not needed.
 	 *
-	 * @param message
+	 * @param stackTraceLine
 	 * @return
 	 */
-	private static boolean canPrint(String message) {
-		return !message.contains("net.minecraft") &&
-				!message.contains("org.bukkit.craftbukkit") &&
-				!message.contains("org.github.paperspigot.ServerScheduler") &&
-				!message.contains("nashorn") &&
-				!message.contains("javax.script") &&
-				!message.contains("org.yaml.snakeyaml") &&
-				!message.contains("sun.reflect") &&
-				!message.contains("sun.misc") &&
-				!message.contains("java.lang.Thread.run") &&
-				!message.contains("java.util.concurrent.ThreadPoolExecutor");
+	private static boolean canPrint(String stackTraceLine) {
+		return !stackTraceLine.startsWith("net.minecraft") &&
+				!stackTraceLine.startsWith("org.bukkit.") &&
+				!stackTraceLine.startsWith("org.github.paperspigot.") &&
+				!stackTraceLine.startsWith("java.") &&
+				!stackTraceLine.startsWith("javax.script") &&
+				!stackTraceLine.startsWith("nashorn") &&
+				!stackTraceLine.startsWith("org.yaml.snakeyaml") &&
+				!stackTraceLine.startsWith("sun.reflect") &&
+				!stackTraceLine.startsWith("sun.misc");
+
+		//!stackTraceLine.contains("org.bukkit.craftbukkit") &&
+		//!stackTraceLine.contains("java.lang.Thread.run") &&
+		//!stackTraceLine.contains("java.util.concurrent.ThreadPoolExecutor");
 	}
 
 	/*
