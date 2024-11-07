@@ -443,6 +443,9 @@ public abstract class CommonCore {
 		if (throwable instanceof FoException)
 			throw (FoException) throwable;
 
+		if (throwable instanceof HandledException)
+			throw (HandledException) throwable;
+
 		Throwable cause = throwable;
 
 		while (cause.getCause() != null)
@@ -456,9 +459,9 @@ public abstract class CommonCore {
 			logFramed(false, replaceErrorVariable(throwable, messages));
 
 		Debugger.saveError(throwable, messages);
+		Debugger.printStackTrace(throwable);
 
-		throwable.printStackTrace();
-		throw new HandledException();
+		throw new HandledException(throwable);
 	}
 
 	/*

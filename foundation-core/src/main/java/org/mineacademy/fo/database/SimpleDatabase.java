@@ -102,7 +102,7 @@ public class SimpleDatabase {
 	 * @param password
 	 */
 	public final void connect(final String host, final int port, final String database, final String user, final String password) {
-		this.connect(host, port, database, user, password, null);
+		this.connect(host, port, database, user, password);
 	}
 
 	/**
@@ -113,25 +113,10 @@ public class SimpleDatabase {
 	 * @param database
 	 * @param user
 	 * @param password
-	 * @param table
-	 */
-	public final void connect(final String host, final int port, final String database, final String user, final String password, final String table) {
-		this.connect(host, port, database, user, password, table, true);
-	}
-
-	/**
-	 * Attempts to establish a new database connection. You can then use {table} in SQL to replace with your table name.
-	 *
-	 * @param host
-	 * @param port
-	 * @param database
-	 * @param user
-	 * @param password
-	 * @param table
 	 * @param autoReconnect
 	 */
-	public final void connect(final String host, final int port, final String database, final String user, final String password, final String table, final boolean autoReconnect) {
-		this.connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=" + autoReconnect, user, password, table);
+	public final void connect(final String host, final int port, final String database, final String user, final String password, final boolean autoReconnect) {
+		this.connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=" + autoReconnect, user, password);
 	}
 
 	/**
@@ -146,30 +131,18 @@ public class SimpleDatabase {
 	}
 
 	/**
-	 * Connects to the database.
+	 * Connects to the database. You can then use {table} in SQL to replace with your table name.
 	 *
 	 * @param url
 	 * @param user
 	 * @param password
 	 */
 	public final void connect(final String url, final String user, final String password) {
-		this.connect(url, user, password, null);
-	}
-
-	/**
-	 * Connects to the database. You can then use {table} in SQL to replace with your table name.
-	 *
-	 * @param url
-	 * @param user
-	 * @param password
-	 * @param table
-	 */
-	public final void connect(final String url, final String user, final String password, final String table) {
 		try {
 			this.connecting = true;
 
 			if (url.startsWith("jdbc:sqlite")) {
-				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.46.0.0");
+				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.47.0.0");
 
 				Class.forName("org.sqlite.JDBC");
 
@@ -185,80 +158,81 @@ public class SimpleDatabase {
 				this.isSQLite = true;
 			}
 
-			else if (connectUsingHikari) {
-				Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", CommonCore.getJavaVersion() >= 11 ? "5.1.0" : "4.0.3");
-
-				final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
-
-				if (url.startsWith("jdbc:mysql://"))
-					try {
-						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
-
-					} catch (final Throwable t) {
-
-						// Fall back to legacy driver
-						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
-					}
-				else if (url.startsWith("jdbc:mariadb://"))
-					ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
-
-				else
-					throw new FoException("Unknown database driver, expected jdbc:mysql or jdbc:mariadb, got: " + url);
-
-				ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
-
-				if (user != null)
-					ReflectionUtil.invoke("setUsername", hikariConfig, user);
-
-				if (password != null)
-					ReflectionUtil.invoke("setPassword", hikariConfig, password);
-
-				final Constructor<?> dataSourceConst = ReflectionUtil.getConstructor("com.zaxxer.hikari.HikariDataSource", hikariConfig.getClass());
-				final Object hikariSource = ReflectionUtil.instantiate(dataSourceConst, hikariConfig);
-
-				this.hikariDataSource = hikariSource;
-
-				final Method getConnection = hikariSource.getClass().getDeclaredMethod("getConnection");
-
-				try {
-					this.connection = ReflectionUtil.invoke(getConnection, hikariSource);
-
-				} catch (final Throwable t) {
-					CommonCore.warning("Could not get HikariCP connection, please report this with the information below to github.com/kangarko/foundation");
-					CommonCore.warning("Method: " + getConnection);
-					CommonCore.warning("Arguments: " + CommonCore.join(getConnection.getParameters()));
-
-					t.printStackTrace();
-				}
-			}
-
 			/*
 			 * Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL).
 			 */
 			else {
 				if (url.startsWith("jdbc:mariadb://")) {
-					Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.4.0");
+					Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.5.0");
 
 					Class.forName("org.mariadb.jdbc.Driver");
 
 				} else if (url.startsWith("jdbc:mysql://")) {
-					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.0.0");
+					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.1.0");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
 
 				} else {
 					CommonCore.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your Java version. You can safely ignore this warning");
+					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-java", "8.0.33");
 
 					Class.forName("com.mysql.jdbc.Driver");
+				}
+
+				if (connectUsingHikari) {
+					Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", CommonCore.getJavaVersion() >= 11 ? "6.0.0" : "4.0.3");
+
+					final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
+
+					if (url.startsWith("jdbc:mysql://"))
+						try {
+							ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
+
+						} catch (final Throwable t) {
+
+							// Fall back to legacy driver
+							ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
+						}
+					else if (url.startsWith("jdbc:mariadb://"))
+						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
+
+					else
+						throw new FoException("Unknown database driver, expected jdbc:mysql or jdbc:mariadb, got: " + url);
+
+					ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
+
+					if (user != null)
+						ReflectionUtil.invoke("setUsername", hikariConfig, user);
+
+					if (password != null)
+						ReflectionUtil.invoke("setPassword", hikariConfig, password);
+
+					final Constructor<?> dataSourceConst = ReflectionUtil.getConstructor("com.zaxxer.hikari.HikariDataSource", hikariConfig.getClass());
+					final Object hikariSource = ReflectionUtil.instantiate(dataSourceConst, hikariConfig);
+
+					this.hikariDataSource = hikariSource;
+
+					final Method getConnection = hikariSource.getClass().getDeclaredMethod("getConnection");
+
+					try {
+						this.connection = ReflectionUtil.invoke(getConnection, hikariSource);
+
+					} catch (final Throwable t) {
+						CommonCore.warning("Could not get HikariCP connection, please report this with the information below to github.com/kangarko/foundation");
+						CommonCore.warning("Method: " + getConnection);
+						CommonCore.warning("Arguments: " + CommonCore.join(getConnection.getParameters()));
+
+						t.printStackTrace();
+					}
 				}
 
 				this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
 			}
 
-			this.lastCredentials = new LastCredentials(url, user, password, table);
+			this.lastCredentials = new LastCredentials(url, user, password);
 
 			// Create tables automatically
-			for (final Table createdTable : Table.values()) {
+			for (final Table createdTable : this.getTables()) {
 				final TableCreator creator = TableCreator.of(createdTable.getName());
 
 				createdTable.onTableCreate(creator);
@@ -299,7 +273,7 @@ public class SimpleDatabase {
 	 */
 	protected final void connectUsingLastCredentials() {
 		if (this.lastCredentials != null)
-			this.connect(this.lastCredentials.url, this.lastCredentials.user, this.lastCredentials.password, this.lastCredentials.table);
+			this.connect(this.lastCredentials.url, this.lastCredentials.user, this.lastCredentials.password);
 	}
 
 	/**
@@ -387,6 +361,23 @@ public class SimpleDatabase {
 	}
 
 	/**
+	 * Get selected rows in the given table
+	 *
+	 * @param <T>
+	 * @param table
+	 * @param where
+	 * @return
+	 */
+	public <T extends Row> List<T> getRowsWhere(Table table, String where) {
+		final List<T> entries = new ArrayList<>();
+		this.select(table.getName(), where, resultSet -> entries.add((T) table.createRow(resultSet)));
+
+		Collections.reverse(entries);
+
+		return entries;
+	}
+
+	/**
 	 * Add a map of data to the queue for the given table
 	 *
 	 * @param row
@@ -412,6 +403,15 @@ public class SimpleDatabase {
 	 */
 	public final void removeRow(Table table, int id) {
 		this.update("DELETE FROM " + table.getName() + " WHERE Id = " + id);
+	}
+
+	/**
+	 * Override to return a list of tables.
+	 *
+	 * @return
+	 */
+	public Table[] getTables() {
+		return new Table[0];
 	}
 
 	// --------------------------------------------------------------------
@@ -969,17 +969,6 @@ public class SimpleDatabase {
 	}
 
 	/**
-	 * Return the table from last connection, throwing an error if never connected.
-	 *
-	 * @return
-	 */
-	protected final String getTable() {
-		this.checkEstablished();
-
-		return CommonCore.getOrEmpty(this.lastCredentials.table);
-	}
-
-	/**
 	 * Checks if the connect() function was called.
 	 */
 	private final void checkEstablished() {
@@ -1020,7 +1009,7 @@ public class SimpleDatabase {
 		for (final Entry<String, String> entry : this.sqlVariables.entrySet())
 			sql = sql.replace("{" + entry.getKey() + "}", entry.getValue());
 
-		return sql.replace("{table}", this.getTable());
+		return sql;
 	}
 
 	/**
@@ -1246,10 +1235,5 @@ public class SimpleDatabase {
 		 * The password for the database.
 		 */
 		private final String password;
-
-		/**
-		 * The table. Never used in this class, only stored for your convenience.
-		 */
-		private final String table;
 	}
 }
