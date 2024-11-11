@@ -38,9 +38,9 @@ public interface ReadWriteItemNBT extends ReadWriteNBT, ReadableItemNBT {
 	 *
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 *
 	 * @param type
 	 * @param <T>
+	 *
 	 * @param handler
 	 */
 	<T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler);
