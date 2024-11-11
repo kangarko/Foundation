@@ -645,9 +645,7 @@ public final class ItemCreator {
 			EntityType entity = null;
 
 			if (MinecraftVersion.olderThan(V.v1_13)) { // Try to find it if already exists
-				CompMonsterEgg.acceptUnsafeEggs = true;
 				final EntityType pre = CompMonsterEgg.getEntity(compiledItem);
-				CompMonsterEgg.acceptUnsafeEggs = false;
 
 				if (pre != null && pre != EntityType.UNKNOWN)
 					entity = pre;

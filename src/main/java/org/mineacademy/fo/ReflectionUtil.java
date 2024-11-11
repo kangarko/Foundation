@@ -684,7 +684,7 @@ public final class ReflectionUtil {
 	 * @return the enum or error with exceptions, see above
 	 */
 	@Nullable
-	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, final String name) {
+	public static <E> E lookupEnum(final Class<E> enumType, final String name) {
 		return lookupEnum(enumType, name, enumType.getSimpleName() + " value '" + name + "' is not found on Minecraft " + MinecraftVersion.getFullVersion() + "! Available: {available}");
 	}
 
@@ -705,7 +705,7 @@ public final class ReflectionUtil {
 	 *
 	 * @return the enum or error with exceptions, see above
 	 */
-	public static <E extends Enum<E>> E lookupEnum(final Class<E> enumType, String name, final String errMessage) {
+	public static <E> E lookupEnum(final Class<E> enumType, String name, final String errMessage) {
 		Valid.checkNotNull(enumType, "Type missing for " + name);
 		Valid.checkNotNull(name, "Name missing for " + enumType);
 
@@ -843,18 +843,18 @@ public final class ReflectionUtil {
 	/**
 	 * Wrapper for Enum.valueOf without throwing an exception
 	 *
-	 * @param enumType
+	 * @param enumClass
 	 * @param name
 	 * @return the enum, or null if not exists
 	 */
-	public static <E extends Enum<E>> E lookupEnumSilent(final Class<E> enumType, final String name) {
+	public static <E> E lookupEnumSilent(final Class<E> enumClass, final String name) {
 		try {
 
-			if (enumType == CompMaterial.class || enumType == Material.class) {
+			if (enumClass == CompMaterial.class || enumClass == Material.class) {
 				final CompMaterial material = CompMaterial.fromString(name);
 
 				if (material != null)
-					return enumType == CompMaterial.class ? (E) material : (E) material.getMaterial();
+					return enumClass == CompMaterial.class ? (E) material : (E) material.getMaterial();
 			}
 
 			// Since we obfuscate our plugins, enum names are changed.
@@ -863,7 +863,7 @@ public final class ReflectionUtil {
 			Method method = null;
 
 			try {
-				method = enumType.getDeclaredMethod("fromKey", String.class);
+				method = enumClass.getDeclaredMethod("fromKey", String.class);
 
 				if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
 					hasKey = true;
@@ -872,9 +872,9 @@ public final class ReflectionUtil {
 			}
 
 			// Only invoke fromName from non-Bukkit API since this gives unexpected results
-			if (method == null && !enumType.getName().contains("org.bukkit"))
+			if (method == null && !enumClass.getName().contains("org.bukkit"))
 				try {
-					method = enumType.getDeclaredMethod("fromName", String.class);
+					method = enumClass.getDeclaredMethod("fromName", String.class);
 
 					if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
 						hasKey = true;
@@ -886,7 +886,7 @@ public final class ReflectionUtil {
 				return (E) method.invoke(null, name);
 
 			// Resort to enum name
-			return Enum.valueOf(enumType, name);
+			return ReflectionUtil.invokeStatic(enumClass, "valueOf", name);
 
 		} catch (final IllegalArgumentException ex) {
 			return null;
@@ -894,6 +894,27 @@ public final class ReflectionUtil {
 		} catch (final ReflectiveOperationException ex) {
 			return null;
 		}
+	}
+
+	/**
+	 * Get the enum's name, works for enum and interface classes.
+	 *
+	 * @param enumOrKeyed
+	 * @return
+	 */
+	public static String getEnumName(Object enumOrKeyed) {
+		return enumOrKeyed instanceof Enum ? ((Enum<?>) enumOrKeyed).name() : invoke("name", enumOrKeyed);
+	}
+
+	/**
+	 * Get the enum's constants, works for enum and interface classes.
+	 *
+	 * @param <T>
+	 * @param enumOrKeyed
+	 * @return
+	 */
+	public static <T> T[] getEnumValues(Class<T> enumOrKeyed) {
+		return enumOrKeyed.isEnum() ? enumOrKeyed.getEnumConstants() : invokeStatic(enumOrKeyed, "values");
 	}
 
 	/**

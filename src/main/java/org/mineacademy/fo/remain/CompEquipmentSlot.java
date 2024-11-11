@@ -14,12 +14,14 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import net.citizensnpcs.api.trait.trait.Equipment.EquipmentSlot;
 
 /**
  * Represents EquipmentSlot
@@ -38,6 +40,11 @@ public enum CompEquipmentSlot {
 	FEET("FEET", "BOOTS");
 
 	/**
+	 * Requires the entity to be a {@link Horse}
+	 */
+	//BODY("BODY", null);
+
+	/**
 	 * The localizable key
 	 */
 	@Getter
@@ -46,7 +53,6 @@ public enum CompEquipmentSlot {
 	/**
 	 * The alternative Bukkit name.
 	 */
-	@Getter
 	private final String bukkitName;
 
 	/**
@@ -142,7 +148,7 @@ public enum CompEquipmentSlot {
 	 * @param item
 	 * @param dropChance
 	 */
-	public void applyTo(LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
+	public void applyTo(@NonNull LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
 		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
 		Valid.checkNotNull(equipment);
 
@@ -152,9 +158,7 @@ public enum CompEquipmentSlot {
 			item = new ItemStack(Material.AIR);
 
 		switch (this) {
-
 			case HAND:
-
 				if (entity instanceof Enderman) {
 					final Enderman enderman = (Enderman) entity;
 
@@ -216,7 +220,35 @@ public enum CompEquipmentSlot {
 					equipment.setBootsDropChance(dropChance.floatValue());
 
 				break;
+
+			/*case BODY:
+				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
+
+				((Horse) entity).getInventory().setArmor(item);
+				break;*/
 		}
+	}
+
+	/**
+	 * Return the Bukkit name of this equipment
+	 * or throw an error if not found
+	 *
+	 * @return
+	 */
+	public String getBukkitName() {
+		Valid.checkNotNull(this.bukkitName, "CompEquipmentSlot." + name() + " does not have a Bukkit counterpart!");
+
+		return this.bukkitName;
+	}
+
+	/**
+	 * Return the Bukkit equipment slot of this equipment
+	 * or throw an error if not found
+	 *
+	 * @return
+	 */
+	public EquipmentSlot toBukkit() {
+		return ReflectionUtil.lookupEnum(EquipmentSlot.class, this.getBukkitName());
 	}
 
 	/**
@@ -233,7 +265,7 @@ public enum CompEquipmentSlot {
 			if (slot.key.equals(key) || slot.bukkitName.equals(key))
 				return slot;
 
-		throw new FoException("No such equipment slot from key: " + key);
+		throw new IllegalArgumentException("No such comp equipment slot: " + key + " Available: " + values());
 	}
 
 	/**

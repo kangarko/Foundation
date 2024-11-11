@@ -78,7 +78,7 @@ public final class SimpleSound {
 	public SimpleSound(@NonNull String line) {
 
 		if ("none".equals(line)) {
-			this.sound = CompSound.CLICK.getSound();
+			this.sound = CompSound.UI_BUTTON_CLICK.getSound();
 			this.volume = 0.0F;
 			this.enabled = false;
 

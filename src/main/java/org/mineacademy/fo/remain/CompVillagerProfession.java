@@ -1,6 +1,9 @@
 package org.mineacademy.fo.remain;
 
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.Villager.Profession;
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -109,9 +112,10 @@ public enum CompVillagerProfession {
 	 */
 	public Villager.Profession toBukkit() {
 		try {
-			return Villager.Profession.valueOf(this.name());
-		} catch (Throwable t) {
-			return Villager.Profession.valueOf(this.legacyName);
+			return ReflectionUtil.lookupEnum(Villager.Profession.class, this.name());
+
+		} catch (final MissingEnumException t) {
+			return ReflectionUtil.lookupEnum(Villager.Profession.class, this.legacyName);
 		}
 	}
 
@@ -122,5 +126,19 @@ public enum CompVillagerProfession {
 	 */
 	public void apply(Villager villager) {
 		villager.setProfession(this.toBukkit());
+	}
+
+	/**
+	 * Converts the name into the profession
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static Profession convertNameToBukkit(String name) {
+		for (final CompVillagerProfession profession : values())
+			if (profession.name().equalsIgnoreCase(name) || profession.getLegacyName().equalsIgnoreCase(name))
+				return profession.toBukkit();
+
+		return ReflectionUtil.lookupEnum(Villager.Profession.class, name);
 	}
 }

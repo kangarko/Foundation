@@ -119,7 +119,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		if (conversing instanceof Player) {
 			final Player player = (Player) conversing;
 
-			(event.gracefulExit() ? CompSound.SUCCESSFUL_HIT : CompSound.NOTE_BASS).play(player, 1F, 1F);
+			(event.gracefulExit() ? CompSound.ENTITY_ARROW_HIT_PLAYER : CompSound.BLOCK_NOTE_BLOCK_BASS).play(player, 1F, 1F);
 
 			if (this.menuToReturnTo != null && this.reopenMenu()) {
 				final Menu newMenu = this.menuToReturnTo.newInstance();

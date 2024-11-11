@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.mineacademy.fo.Common;
@@ -15,7 +14,7 @@ import org.mineacademy.fo.exception.FoException;
 import lombok.Getter;
 
 /**
- * A utility class enabling you to convert between {@link DyeColor} and {@link ChatColor} with ease
+ * A utility class enabling you to convert between {@link DyeColor} and {@link CompChatColor} with ease
  */
 public final class CompColor {
 
@@ -77,10 +76,10 @@ public final class CompColor {
 	/**
 	 * The brown color
 	 * <p>
-	 * NB: This color does not have a {@link ChatColor} alternative,
+	 * NB: This color does not have a {@link CompChatColor} alternative,
 	 * so we give you GOLD chat color instead
 	 */
-	public static final CompColor BROWN = new CompColor("BROWN", DyeColor.BROWN, ChatColor.GOLD);
+	public static final CompColor BROWN = new CompColor("BROWN", DyeColor.BROWN, CompChatColor.GOLD);
 
 	/**
 	 * The dark red color, called red for dyecolor
@@ -115,10 +114,10 @@ public final class CompColor {
 	/**
 	 * The pink color
 	 * <p>
-	 * NB: This color does not have a {@link ChatColor} alternative,
+	 * NB: This color does not have a {@link CompChatColor} alternative,
 	 * so we give you LIGHT_PURPLE chat color instead
 	 */
-	public static final CompColor PINK = new CompColor("PINK", DyeColor.PINK, ChatColor.LIGHT_PURPLE);
+	public static final CompColor PINK = new CompColor("PINK", DyeColor.PINK, CompChatColor.LIGHT_PURPLE);
 
 	/**
 	 * The toString representation
@@ -133,10 +132,10 @@ public final class CompColor {
 	private final DyeColor dye;
 
 	/**
-	 * The {@link ChatColor} representation
+	 * The {@link CompChatColor} representation
 	 */
 	@Getter
-	private final ChatColor chatColor;
+	private final CompChatColor chatColor;
 
 	/**
 	 * The legacy dye/chat color name, or null if none
@@ -158,14 +157,14 @@ public final class CompColor {
 		this(name, dye, null);
 	}
 
-	private CompColor(final String name, final DyeColor dye, final ChatColor chatColor) {
+	private CompColor(final String name, final DyeColor dye, final CompChatColor chatColor) {
 		this(name, dye, chatColor, null);
 	}
 
-	private CompColor(final String name, final DyeColor dye, final ChatColor chatColor, final String legacyName) {
+	private CompColor(final String name, final DyeColor dye, final CompChatColor chatColor, final String legacyName) {
 		this.name = name;
 		this.dye = dye;
-		this.chatColor = chatColor == null ? name != null ? ChatColor.valueOf(name) : ChatColor.WHITE : chatColor;
+		this.chatColor = chatColor == null ? name != null ? CompChatColor.of(name) : CompChatColor.WHITE : chatColor;
 		this.legacyName = Common.getOrEmpty(legacyName);
 
 		values.add(this);
@@ -276,23 +275,9 @@ public final class CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static CompColor fromChatColor(final ChatColor color) {
-		for (final CompColor comp : values())
-			if (comp.chatColor == color || comp.legacyName.equals(color.toString()))
-				return comp;
-
-		throw new IllegalArgumentException("Could not get CompColor from ChatColor." + color.name());
-	}
-
-	/**
-	 * Returns a {@link CompColor} from the given chat color
-	 *
-	 * @param color
-	 * @return
-	 */
 	public static CompColor fromChatColor(final CompChatColor color) {
 		for (final CompColor comp : values())
-			if (comp.chatColor.name().equalsIgnoreCase(color.getName()) || comp.legacyName.equalsIgnoreCase(color.toString()))
+			if (comp.chatColor == color || comp.legacyName.equalsIgnoreCase(color.toString()))
 				return comp;
 
 		throw new FoException("Could not get CompColor from ChatColor." + color.getName());
@@ -308,8 +293,8 @@ public final class CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static DyeColor toDye(final ChatColor color) {
-		final CompColor c = fromName(color.name());
+	public static DyeColor toDye(final CompChatColor color) {
+		final CompColor c = fromName(color.getName());
 
 		return c != null ? c.getDye() : DyeColor.WHITE;
 	}
@@ -320,12 +305,12 @@ public final class CompColor {
 	 * @param dye
 	 * @return
 	 */
-	public static ChatColor toColor(final DyeColor dye) {
-		for (final CompColor c : CompColor.values())
-			if (c.getDye() == dye)
-				return c.getChatColor();
+	public static CompChatColor toColor(final DyeColor dye) {
+		for (final CompColor color : CompColor.values())
+			if (color.getDye() == dye)
+				return color.getChatColor();
 
-		return ChatColor.WHITE;
+		return CompChatColor.WHITE;
 	}
 
 	/**
@@ -334,7 +319,7 @@ public final class CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static CompMaterial toConcrete(final ChatColor color) {
+	public static CompMaterial toConcrete(final CompChatColor color) {
 		final CompMaterial wool = toWool(color);
 
 		return CompMaterial.fromString(wool.toString().replace("_WOOL", MinecraftVersion.olderThan(V.v1_12) ? "_STAINED_GLASS" : "_CONCRETE"));
@@ -346,7 +331,7 @@ public final class CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static CompMaterial toWool(final ChatColor color) {
+	public static CompMaterial toWool(final CompChatColor color) {
 		final CompColor comp = fromChatColor(color);
 
 		if (comp == AQUA)
@@ -408,25 +393,6 @@ public final class CompColor {
 	}
 
 	// ----------------------------------------------------------------------------------------------------
-	// Utils
-	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Get a list of all chat colors (only colors, NO formats like bold, reset etc.)
-	 *
-	 * @return
-	 */
-	public static List<ChatColor> getChatColors() {
-		final List<ChatColor> list = new ArrayList<>();
-
-		for (final ChatColor color : ChatColor.values())
-			if (color.isColor() && !color.isFormat())
-				list.add(color);
-
-		return list;
-	}
-
-	// ----------------------------------------------------------------------------------------------------
 	// Leftovers from when this class was an enum
 	// ----------------------------------------------------------------------------------------------------
 
@@ -437,16 +403,6 @@ public final class CompColor {
 	 */
 	public static CompColor[] values() {
 		return values.toArray(new CompColor[values.size()]);
-	}
-
-	/**
-	 * See {@link #fromName(String)}
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static CompColor valueOf(String name) {
-		return fromName(name);
 	}
 
 	@Override

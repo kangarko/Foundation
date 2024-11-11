@@ -1,10 +1,8 @@
 package org.mineacademy.fo.remain;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -13,7 +11,6 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
@@ -28,13 +25,7 @@ public final class CompMonsterEgg {
 	/**
 	 * Our universal tag we use to mark our eggs
 	 */
-	private static final String TAG = SimplePlugin.getNamed() + "_NbtTag";
-
-	/**
-	 * Suppress errors when entity type cannot be detected from an item stack and
-	 * return unknown entity or otherwise.
-	 */
-	public static boolean acceptUnsafeEggs = false;
+	private static final String TAG = SimplePlugin.getInstance().getName() + "_NbtTag";
 
 	// Prevent new instance, always call static methods
 	private CompMonsterEgg() {
@@ -57,9 +48,13 @@ public final class CompMonsterEgg {
 	 * @param count
 	 * @return the finished egg
 	 */
-	public static ItemStack makeEgg(final EntityType type, final int count) {
-		Valid.checkNotNull(type, "Entity type cannot be null!");
-		ItemStack itemStack = new ItemStack(CompMaterial.makeMonsterEgg(type).getMaterial(), count);
+	public static ItemStack makeEgg(@NonNull EntityType type, final int count) {
+		CompMaterial material = CompEntityType.getSpawnEgg(type);
+
+		if (material == null && MinecraftVersion.atLeast(V.v1_13))
+			material = CompMaterial.SHEEP_SPAWN_EGG;
+
+		ItemStack itemStack = new ItemStack(material != null ? material.getMaterial() : Material.valueOf("MONSTER_EGG"), count);
 
 		// For older MC
 		if (itemStack.getType().toString().equals("MONSTER_EGG"))
@@ -72,57 +67,31 @@ public final class CompMonsterEgg {
 	 * Detect an {@link EntityType} from an {@link ItemStack}
 	 *
 	 * @param item
-	 * @return the entity type, or unknown or error if not found, see
-	 * {@link #acceptUnsafeEggs}
+	 * @return the entity type, or unknown or error if not found
 	 */
 	public static EntityType getEntity(@NonNull final ItemStack item) {
 		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 		EntityType type = null;
 
 		if (MinecraftVersion.atLeast(V.v1_13))
-			type = getTypeFromMaterial(item);
+			type = CompEntityType.fromSpawnEggMaterial(CompMaterial.fromItem(item));
 
-		else if (Remain.hasItemMeta() && Remain.hasSpawnEggMeta())
+		if (type == null && Remain.hasSpawnEggMeta())
 			type = getTypeByMeta(item);
 
-		else
+		if (type == null && MinecraftVersion.olderThan(V.v1_13))
 			type = getTypeByData(item);
 
 		if (type == null)
 			type = getTypeByNbt(item);
 
-		if (type == null && acceptUnsafeEggs)
-			type = EntityType.UNKNOWN;
-
-		Valid.checkNotNull(type, "Could not detect monster type from " + item + ")");
-		return type;
-	}
-
-	private static EntityType getTypeFromMaterial(final ItemStack item) {
-		final String name = item.getType().toString().replace("_SPAWN_EGG", "");
-		EntityType type = null;
-
-		try {
-
-			// Try to translate directly
-			type = EntityType.valueOf(name);
-
-		} catch (final IllegalArgumentException ex) {
-
-			// Special cases e.g. zombie_pigman is pig_zombie
-			for (final EntityType all : EntityType.values())
-				if (all.getName() != null && all.getName().equalsIgnoreCase(name))
-					type = all;
-		}
-
-		Valid.checkNotNull(type, "Unable to find EntityType from Material." + item.getType());
-		return type;
+		return type != null ? type : CompEntityType.UNKNOWN;
 	}
 
 	private static EntityType getTypeByMeta(final ItemStack item) {
-		final ItemMeta m = item.getItemMeta();
+		final ItemMeta meta = item.getItemMeta();
 
-		return item.hasItemMeta() && m instanceof SpawnEggMeta ? ((SpawnEggMeta) m).getSpawnedType() : null;
+		return item.hasItemMeta() && meta instanceof SpawnEggMeta ? ((SpawnEggMeta) meta).getSpawnedType() : null;
 	}
 
 	private static EntityType getTypeByData(final ItemStack item) {
@@ -130,10 +99,10 @@ public final class CompMonsterEgg {
 
 		if (type == null) {
 			if (item.getDurability() != 0)
-				type = DataMap.getEntity(item.getDurability());
+				type = EntityType.fromId(item.getDurability());
 
 			if (type == null && item.getData().getData() != 0)
-				type = DataMap.getEntity(item.getData().getData());
+				type = EntityType.fromId(item.getData().getData());
 		}
 
 		return type;
@@ -145,18 +114,16 @@ public final class CompMonsterEgg {
 		final NBTItem nbt = new NBTItem(item);
 		final String type = nbt.hasKey(TAG) ? nbt.getCompound(TAG).getString("entity") : null;
 
-		return type != null && !type.isEmpty() ? EntityType.valueOf(type) : null;
+		return type != null && !type.isEmpty() ? CompEntityType.fromName(type) : null;
 	}
 
 	private static EntityType getTypeByNbt(@NonNull final ItemStack item) {
 		try {
-			final Class<?> NMSItemStackClass = ReflectionUtil.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
-			final Class<?> craftItemStackClass = ReflectionUtil.getOBCClass("inventory.CraftItemStack");
-			final Method asNMSCopyMethod = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class);
-			final Object stack = asNMSCopyMethod.invoke(null, item);
-			final Object tagCompound = NMSItemStackClass.getMethod("getTag").invoke(stack);
+			final Class<?> classNMSItemstack = ReflectionUtil.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
+			final Object stack = Remain.asNMSCopy(item);
+			final Object tagCompound = classNMSItemstack.getMethod("getTag").invoke(stack);
 
-			if (tagCompound == null && acceptUnsafeEggs)
+			if (tagCompound == null)
 				return null;
 
 			Valid.checkNotNull(tagCompound, "Spawn egg lacks tag compound: " + item);
@@ -170,10 +137,8 @@ public final class CompMonsterEgg {
 			if (MinecraftVersion.atLeast(V.v1_11) && idString.startsWith("minecraft:"))
 				idString = idString.split("minecraft:")[1];
 
-			final EntityType type = EntityType.fromName(idString);
-			//Valid.requireNonNull(type, "Unable to parse mob egg from string: " + idString);
+			return CompEntityType.fromName(idString);
 
-			return type;
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -184,21 +149,21 @@ public final class CompMonsterEgg {
 	/**
 	 * Insert metadata to an existing monster itemstack.
 	 *
+	 * If the entity type does not have a monster egg, it's set to sheep spawn egg.
+	 *
 	 * @param item
 	 * @param type
 	 * @return the itemstack
 	 */
-	public static ItemStack setEntity(ItemStack item, final EntityType type) {
-		Valid.checkNotNull(item, "Item == null");
-		Valid.checkBoolean(type.isSpawnable(), "EntityType." + type + " cannot be spawned and set into a monster egg!");
+	public static ItemStack setEntity(@NonNull ItemStack item, final EntityType type) {
+		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 
 		if (MinecraftVersion.atLeast(V.v1_13)) {
-			item.setType(CompMaterial.makeMonsterEgg(type).getMaterial());
+			final CompMaterial material = CompEntityType.getSpawnEgg(type);
+			item.setType(material == null ? CompMaterial.SHEEP_SPAWN_EGG.getMaterial() : material.getMaterial());
 
 			return item;
 		}
-
-		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 
 		if (Remain.hasSpawnEggMeta())
 			item = setTypeByMeta(item, type);
@@ -210,28 +175,23 @@ public final class CompMonsterEgg {
 	}
 
 	private static ItemStack setTypeByMeta(final ItemStack item, final EntityType type) {
-		final SpawnEggMeta m = (SpawnEggMeta) item.getItemMeta();
+		final SpawnEggMeta meta = (SpawnEggMeta) item.getItemMeta();
 
-		m.setSpawnedType(type);
-		item.setItemMeta(m);
+		meta.setSpawnedType(type);
+		item.setItemMeta(meta);
 
 		return item;
 	}
 
 	private static ItemStack setTypeByData(final ItemStack item, final EntityType type) {
-		final Number data = DataMap.getData(type);
+		final Integer id = CompEntityType.getId(type);
 
-		if (data.intValue() != -1) {
+		if (id != null) {
+			item.setDurability(id.shortValue());
+			item.getData().setData(id.byteValue());
+		}
 
-			item.setDurability(data.shortValue());
-			item.getData().setData(data.byteValue());
-
-			return writeEntity0(item, type);
-
-		} else if (!acceptUnsafeEggs)
-			throw new FoException("Could not set monster egg to " + type);
-
-		return item;
+		return writeEntity0(item, type);
 	}
 
 	private static ItemStack writeEntity0(final ItemStack item, final EntityType type) {
@@ -243,127 +203,5 @@ public final class CompMonsterEgg {
 
 		tag.setString("entity", type.toString());
 		return nbt.getItem();
-	}
-}
-
-/**
- * Wrapper for mapping entity ID to its respective type
- */
-final class DataMap {
-
-	private static final Map<Integer, String> map = new HashMap<>();
-
-	static EntityType getEntity(final int data) {
-		final String name = map.get(data);
-
-		return name != null ? ReflectionUtil.lookupEnumSilent(EntityType.class, name.toUpperCase()) : null;
-	}
-
-	static int getData(final EntityType type) {
-		final Integer data = getKeyFromValue(type.toString());
-
-		return data != null ? data : -1;
-	}
-
-	private static Integer getKeyFromValue(final String value) {
-		for (final Entry<Integer, String> e : map.entrySet())
-			if (e.getValue().equals(value))
-				return e.getKey();
-
-		return null;
-	}
-
-	static {
-		map.put(1, "DROPPED_ITEM");
-		map.put(2, "EXPERIENCE_ORB");
-		map.put(3, "AREA_EFFECT_CLOUD");
-		map.put(4, "ELDER_GUARDIAN");
-		map.put(5, "WITHER_SKELETON");
-		map.put(6, "STRAY");
-		map.put(7, "EGG");
-		map.put(8, "LEASH_HITCH");
-		map.put(9, "PAINTING");
-		map.put(10, "ARROW");
-		map.put(11, "SNOWBALL");
-		map.put(12, "FIREBALL");
-		map.put(13, "SMALL_FIREBALL");
-		map.put(14, "ENDER_PEARL");
-		map.put(15, "ENDER_SIGNAL");
-		map.put(16, "SPLASH_POTION");
-		map.put(17, "THROWN_EXP_BOTTLE");
-		map.put(18, "ITEM_FRAME");
-		map.put(19, "WITHER_SKULL");
-		map.put(20, "PRIMED_TNT");
-		map.put(21, "FALLING_BLOCK");
-		map.put(22, "FIREWORK");
-		map.put(23, "HUSK");
-		map.put(24, "SPECTRAL_ARROW");
-		map.put(25, "SHULKER_BULLET");
-		map.put(26, "DRAGON_FIREBALL");
-		map.put(27, "ZOMBIE_VILLAGER");
-		map.put(28, "SKELETON_HORSE");
-		map.put(29, "ZOMBIE_HORSE");
-		map.put(30, "ARMOR_STAND");
-		map.put(31, "DONKEY");
-		map.put(32, "MULE");
-		map.put(33, "EVOKER_FANGS");
-		map.put(34, "EVOKER");
-		map.put(35, "VEX");
-		map.put(36, "VINDICATOR");
-		map.put(37, "ILLUSIONER");
-		map.put(40, "MINECART_COMMAND");
-		map.put(41, "BOAT");
-		map.put(42, "MINECART");
-		map.put(43, "MINECART_CHEST");
-		map.put(44, "MINECART_FURNACE");
-		map.put(45, "MINECART_TNT");
-		map.put(46, "MINECART_HOPPER");
-		map.put(47, "MINECART_MOB_SPAWNER");
-		map.put(50, "CREEPER");
-		map.put(51, "SKELETON");
-		map.put(52, "SPIDER");
-		map.put(53, "GIANT");
-		map.put(54, "ZOMBIE");
-		map.put(55, "SLIME");
-		map.put(56, "GHAST");
-		map.put(57, "PIG_ZOMBIE");
-		map.put(58, "ENDERMAN");
-		map.put(59, "CAVE_SPIDER");
-		map.put(60, "SILVERFISH");
-		map.put(61, "BLAZE");
-		map.put(62, "MAGMA_CUBE");
-		map.put(63, "ENDER_DRAGON");
-		map.put(64, "WITHER");
-		map.put(65, "BAT");
-		map.put(66, "WITCH");
-		map.put(67, "ENDERMITE");
-		map.put(68, "GUARDIAN");
-		map.put(69, "SHULKER");
-		map.put(90, "PIG");
-		map.put(91, "SHEEP");
-		map.put(92, "COW");
-		map.put(93, "CHICKEN");
-		map.put(94, "SQUID");
-		map.put(95, "WOLF");
-		map.put(96, "MUSHROOM_COW");
-		map.put(97, "SNOWMAN");
-		map.put(98, "OCELOT");
-		map.put(99, "IRON_GOLEM");
-		map.put(100, "HORSE");
-		map.put(101, "RABBIT");
-		map.put(102, "POLAR_BEAR");
-		map.put(103, "LLAMA");
-		map.put(104, "LLAMA_SPIT");
-		map.put(105, "PARROT");
-		map.put(120, "VILLAGER");
-		//map.put(200, "ENDER_CRYSTAL");
-		//map.put(-1, "LINGERING_POTION");
-		//map.put(-1, "FISHING_HOOK");
-		//map.put(-1, "LIGHTNING");
-		//map.put(-1, "WEATHER");
-		//map.put(-1, "PLAYER");
-		//map.put(-1, "COMPLEX_PART");
-		//map.put(-1, "TIPPED_ARROW");
-		//map.put(-1, "UNKNOWN");
 	}
 }

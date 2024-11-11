@@ -1,14 +1,17 @@
 package org.mineacademy.fo.remain;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.potion.PotionEffectType;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.ItemUtil;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.ReflectionUtil;
 
 /**
@@ -17,14 +20,36 @@ import org.mineacademy.fo.ReflectionUtil;
 public final class CompPotionEffectType {
 
 	/*
-	 * Store all items by name
+	 * A helper to convert potion to string.
 	 */
-	private static final Map<String, PotionEffectType> byName = new HashMap<>();
+	private static final Function<PotionEffectType, String> TO_STRING = type -> {
+		try {
+			return type.getKey().getKey().replace("minecraft:", "");
 
-	/*
+		} catch (final NoSuchMethodError err) {
+			return type.getName();
+		}
+	};
+
+	/**
+	 * Store all items by name.
+	 */
+	private static final Map<String, PotionEffectType> byName = new TreeMap<>(Comparator.comparing(name -> name, String.CASE_INSENSITIVE_ORDER));
+
+	/**
+	 * Store all item names.
+	 */
+	private static final Set<String> names = new TreeSet<>(Comparator.comparing(name -> name, String.CASE_INSENSITIVE_ORDER));
+
+	/**
+	 * Store all items by type.
+	 */
+	private static final Set<PotionEffectType> byType = new TreeSet<>(Comparator.comparing(TO_STRING, String.CASE_INSENSITIVE_ORDER));
+
+	/**
 	 * Holds the formatted name for each potion i.e. "Mining Fatigue" for SLOW_DIGGING etc.
 	 */
-	private static final Map<PotionEffectType, String> loreName = new HashMap<>();
+	private static final Map<PotionEffectType, String> loreName = new TreeMap<>(Comparator.comparing(TO_STRING, String.CASE_INSENSITIVE_ORDER));
 
 	/**
 	 * Increases movement speed.
@@ -197,6 +222,36 @@ public final class CompPotionEffectType {
 	public static final PotionEffectType DARKNESS = find("DARKNESS", "DARKNESS");
 
 	/**
+	 * Causes trial spawners to become ominous.
+	 */
+	public static final PotionEffectType TRIAL_OMEN = find("TRIAL_OMEN");
+
+	/**
+	 * Triggers a raid when a player enters a village.
+	 */
+	public static final PotionEffectType RAID_OMEN = find("RAID_OMEN");
+
+	/**
+	 * Emits a wind burst upon death.
+	 */
+	public static final PotionEffectType WIND_CHARGED = find("WIND_CHARGED");
+
+	/**
+	 * Creates cobwebs upon death.
+	 */
+	public static final PotionEffectType WEAVING = find("WEAVING");
+
+	/**
+	 * Causes slimes to spawn upon death.
+	 */
+	public static final PotionEffectType OOZING = find("OOZING");
+
+	/**
+	 * Chance of spawning silverfish when hurt.
+	 */
+	public static final PotionEffectType INFESTED = find("INFESTED");
+
+	/**
 	 * Get the potion by name
 	 *
 	 * @param name
@@ -204,7 +259,7 @@ public final class CompPotionEffectType {
 	 */
 	@Nullable
 	public static PotionEffectType getByName(String name) {
-		return byName.get(name.toUpperCase());
+		return byName.get(name.replace("minecraft:", "").toUpperCase());
 	}
 
 	/**
@@ -213,7 +268,7 @@ public final class CompPotionEffectType {
 	 * @return
 	 */
 	public static Collection<PotionEffectType> getPotions() {
-		return byName.values();
+		return byType;
 	}
 
 	/**
@@ -233,7 +288,14 @@ public final class CompPotionEffectType {
 	 * @return
 	 */
 	public static Collection<String> getPotionNames() {
-		return Common.convert(getPotions(), ench -> ench.getName());
+		return names;
+	}
+
+	/*
+	 * Get the potion effect type by its name
+	 */
+	private static PotionEffectType find(String modernName) {
+		return find(null, modernName);
 	}
 
 	/*
@@ -246,22 +308,54 @@ public final class CompPotionEffectType {
 			type = ReflectionUtil.getStaticFieldContent(PotionEffectType.class, modernName);
 
 		} catch (final Throwable t) {
-			try {
-				type = ReflectionUtil.getStaticFieldContent(PotionEffectType.class, legacyName);
 
-			} catch (final Throwable tt) {
-			}
+			if (legacyName != null)
+				try {
+					type = ReflectionUtil.getStaticFieldContent(PotionEffectType.class, legacyName);
+
+				} catch (final Throwable tt) {
+				}
 		}
 
 		if (type != null) {
-			byName.put(legacyName, type);
-			byName.put(modernName, type);
-			byName.put(type.getName(), type);
+			try {
+				byName.put(type.getKey().getKey().toUpperCase(), type);
+			} catch (final NoSuchMethodError err) {
+			}
 
-			loreName.put(type, ItemUtil.bountifyCapitalized(modernName));
+			byName.put(modernName, type);
+
+			if (legacyName != null)
+				byName.put(legacyName, type);
+
+			names.add(modernName);
+
+			byType.add(type);
+			loreName.put(type, ChatUtil.capitalizeFully(modernName));
 		}
 
 		return type;
 	}
 
+	static {
+		for (final PotionEffectType type : ReflectionUtil.getEnumValues(PotionEffectType.class)) {
+			if (type == null)
+				continue; // wtf 1.8.8
+
+			String name;
+
+			try {
+				name = type.getKey().getKey().toUpperCase();
+
+			} catch (final NoSuchMethodError err) {
+				name = type.getName().toUpperCase();
+			}
+
+			byName.put(name, type);
+			names.add(name);
+			loreName.put(type, ChatUtil.capitalizeFully(name));
+
+			byType.add(type);
+		}
+	}
 }

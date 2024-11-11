@@ -129,7 +129,7 @@ public enum CompProperty {
 				nbtEntity.setInteger("NoGravity", has ? 0 : 1);
 		}
 
-		if (Remain.hasItemMeta() && instance instanceof ItemMeta)
+		if (instance instanceof ItemMeta)
 			if (this == UNBREAKABLE)
 				try {
 					final boolean has = Boolean.parseBoolean(key.toString());

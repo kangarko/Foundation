@@ -417,8 +417,8 @@ public final class PlayerUtil {
 			cleanInventoryAndFood(player);
 
 			try {
-				CompAttribute.GENERIC_MAX_HEALTH.set(player, 20);
-				CompAttribute.GENERIC_ATTACK_SPEED.set(player, 4.0);
+				CompAttribute.MAX_HEALTH.set(player, 20);
+				CompAttribute.ATTACK_SPEED.set(player, 4.0);
 
 			} catch (final Throwable t) {
 				try {
@@ -441,7 +441,7 @@ public final class PlayerUtil {
 				// Try attribute way
 
 				try {
-					final double maxHealthAttr = CompAttribute.GENERIC_MAX_HEALTH.get(player);
+					final double maxHealthAttr = CompAttribute.MAX_HEALTH.get(player);
 
 					player.setHealth(maxHealthAttr);
 

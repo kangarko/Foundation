@@ -65,6 +65,8 @@ import org.mineacademy.fo.settings.ConfigSection;
 import org.mineacademy.fo.settings.SimpleLocalization;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import com.google.gson.Gson;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -80,6 +82,11 @@ public final class Common {
 	// ------------------------------------------------------------------------------------------------------------
 	// Constants
 	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * The default GSON instance.
+	 */
+	public static final Gson GSON = new Gson();
 
 	/**
 	 * Pattern used to match colors with & or {@link CompChatColor#COLOR_CHAR}
@@ -664,15 +671,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-		
+
 			while (matcher.find())
 				message = matcher.replaceAll("");
-		
+
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 

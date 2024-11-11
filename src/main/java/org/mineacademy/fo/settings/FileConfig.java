@@ -314,7 +314,7 @@ public abstract class FileConfig {
 			return Objects.toString(object);
 
 		else if (object instanceof Number)
-			return ((Number) object).toString();
+			return object.toString();
 
 		else if (object instanceof String)
 			return (String) object;
@@ -1182,7 +1182,7 @@ public abstract class FileConfig {
 	/*
 	 * Helper to load configuration from a file
 	 */
-	final void load(@NonNull File file) {
+	public final void load(@NonNull File file) {
 		try {
 			Valid.checkBoolean(!this.loading, "Called load(" + file + ") on already being loaded configuration!");
 			this.loading = true;
