@@ -10,7 +10,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -705,45 +704,6 @@ public abstract class FileConfig extends ConfigSection {
 		final String raw = this.getString(path, def);
 
 		return raw == null ? null : CaseNumberFormat.fromString(raw);
-	}
-
-	/**
-	 * Return a timezone. This is stored as a String such as "Europe/Berlin".
-	 *
-	 * If the object is null, and default configuration is set, we automatically
-	 * copy it from defaults to this config's map (we do not save it to file yet,
-	 * you need to call save() for this) and return the default.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public final ZoneId getTimezone(String path) {
-		return this.getTimezone(path, null);
-	}
-
-	/**
-	 * Return a timezone. This is stored as a String such as "Europe/Berlin".
-	 *
-	 * If the object is null, and default configuration is set, we automatically
-	 * copy it from defaults to this config's map (we do not save it to file yet,
-	 * you need to call save() for this) and return the default.
-	 *
-	 * If the config and default config return the object as null,
-	 * the "def" value is returned.
-	 *
-	 * @param path
-	 * @param def
-	 * @return
-	 */
-	public final ZoneId getTimezone(String path, ZoneId def) {
-		final String raw = this.getString(path);
-
-		try {
-			return raw != null && !"".equals(raw) ? java.time.ZoneId.of(raw) : def;
-
-		} catch (final Throwable t) {
-			throw new IllegalArgumentException("Path '" + this.buildPathPrefix(path) + "' in " + this.getFile() + " contains invalid timezone '" + raw + "'! Valid syntax: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids");
-		}
 	}
 
 	/**

@@ -2,7 +2,6 @@ package org.mineacademy.fo.filter;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
@@ -18,7 +17,7 @@ import lombok.Setter;
 public final class FilterWorld extends Filter {
 
 	@Setter
-	private static Supplier<List<String>> networkWorldsSupplier;
+	private static Supplier<Set<String>> networkWorldsSupplier;
 
 	private final Set<String> worlds = new HashSet<>();
 
@@ -42,7 +41,7 @@ public final class FilterWorld extends Filter {
 	public Collection<String> tabComplete(FoundationPlayer audience) {
 		final Set<String> worldNames = new TreeSet<>();
 
-		ValidCore.checkNotNull(networkWorldsSupplier != null, "Call FilterWorld#setNetworkWorldsSupplier using the world filter.");
+		ValidCore.checkNotNull(networkWorldsSupplier, "Call FilterWorld#setNetworkWorldsSupplier using the world filter.");
 		worldNames.addAll(networkWorldsSupplier.get());
 
 		return worldNames;

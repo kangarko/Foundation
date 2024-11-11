@@ -84,6 +84,7 @@ import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
@@ -1168,10 +1169,10 @@ public final class Remain {
 	 *
 	 * @param stat
 	 * @param mat
-	 * @param en
+	 * @param entityType
 	 * @return
 	 */
-	public static String getNMSStatisticName(final Statistic stat, final Material mat, final EntityType en) {
+	public static String getNMSStatisticName(final Statistic stat, final Material mat, final EntityType entityType) {
 		final Class<?> craftStatistic = Remain.getOBCClass("CraftStatistic");
 		Object nmsStatistic = null;
 
@@ -1180,7 +1181,7 @@ public final class Remain {
 				nmsStatistic = craftStatistic.getMethod("getNMSStatistic", stat.getClass()).invoke(null, stat);
 
 			else if (stat.getType() == Statistic.Type.ENTITY)
-				nmsStatistic = craftStatistic.getMethod("getEntityStatistic", stat.getClass(), en.getClass()).invoke(null, stat, en);
+				nmsStatistic = craftStatistic.getMethod("getEntityStatistic", stat.getClass(), entityType.getClass()).invoke(null, stat, entityType);
 
 			else
 				nmsStatistic = craftStatistic.getMethod("getMaterialStatistic", stat.getClass(), mat.getClass()).invoke(null, stat, mat);
@@ -3016,9 +3017,8 @@ public final class Remain {
 					original.run();
 
 				} catch (final Throwable t) {
-					t.printStackTrace();
-
-					throw new FoException(t, "Exception in executing task, see above for cause");
+					Debugger.printStackTrace(t);
+					Debugger.saveError(t, "Failed to execute task");
 				}
 			}
 		};

@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.Creature;
@@ -33,6 +34,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -125,13 +127,34 @@ public final class EntityUtil {
 	public static double getDefaultHealth(EntityType type) {
 		Valid.checkSync("Cannot use getDefaultHealth async!");
 
-		if (type == EntityType.PLAYER)
+		if (type == CompEntityType.PLAYER)
 			return 20;
 
-		final Location location = Bukkit.getWorlds().get(0).getSpawnLocation();
+		World world = Bukkit.getWorlds().get(0);
+
+		try {
+			if (!type.requiredFeatures().isEmpty()) {
+				boolean found = false;
+
+				for (final World other : Bukkit.getWorlds())
+					if (type.isEnabledByFeature(other)) {
+						world = other;
+
+						found = true;
+						break;
+					}
+
+				if (!found)
+					throw new FoException("Lacking experimental databack! Cannot find a world that supports entity type '" + type + "'. This is NOT A BUG IN OUR PLUGIN. You need to install the datapack for " + type.requiredFeatures() + " or delete the entity");
+			}
+		} catch (final NoSuchMethodError err) {
+			// Ignore
+		}
+
+		final Location location = world.getSpawnLocation();
 		location.setY(0);
 
-		final Entity entity = location.getWorld().spawnEntity(location, type);
+		final Entity entity = world.spawnEntity(location, type);
 		Valid.checkBoolean(entity instanceof LivingEntity, "Cannot use getDefaultHealth for non-living entity: " + type);
 
 		final double health = Remain.getHealth((LivingEntity) entity);

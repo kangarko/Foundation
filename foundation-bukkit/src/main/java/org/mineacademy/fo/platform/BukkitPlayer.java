@@ -76,7 +76,7 @@ public final class BukkitPlayer extends FoundationPlayer {
 		Valid.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
 		final Location location = this.player.getLocation();
 
-		return new SimpleLocation(location.getWorld().getName(), location.getX(), location.getY(), location.getZ());
+		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
 	}
 
 	@Override

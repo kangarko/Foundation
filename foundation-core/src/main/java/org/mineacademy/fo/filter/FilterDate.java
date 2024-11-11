@@ -3,19 +3,22 @@ package org.mineacademy.fo.filter;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.temporal.TemporalAdjusters;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.database.Row;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.platform.FoundationPlayer;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 public final class FilterDate extends Filter {
 
-	private long millisecondsBack;
+	private long from;
+	private long to;
 
 	public FilterDate() {
 		super("date");
@@ -29,14 +32,14 @@ public final class FilterDate extends Filter {
 	@Override
 	public String[] getUsages() {
 		return new String[] {
-				"date:<today/yesterday/week/lweek/month/l(ast)month/year/lyear> - Show results from the given time period.",
+				"date:<today/yesterday/thisweek/lastweek/thismonth/lastmonth/thisyear/lastyear> - Show results from the given time period.",
 				"date:<30m/h/d/w/mo/y> - Show results from 30 minutes/hours/days/weeks/months/years ago.",
 		};
 	}
 
 	@Override
 	public Collection<String> tabComplete(FoundationPlayer audience) {
-		return Arrays.asList("today", "yesterday", "week", "lweek", "month", "lmonth", "year", "lyear", "tweek", "thisweek", "tmonth", "thismonth", "tyear", "thisyear", "30m", "1h", "1d", "1w", "1mo", "1y");
+		return Arrays.asList("today", "yesterday", "thisweek", "lastweek", "thismonth", "lastmonth", "thisyear", "lastyear", "30m", "1h", "1d", "1w", "1mo", "1y");
 	}
 
 	@Override
@@ -44,36 +47,49 @@ public final class FilterDate extends Filter {
 		value = value.toLowerCase();
 
 		final long now = System.currentTimeMillis();
-		final long millisecondsBack;
-		final ZoneId zone = ZoneId.systemDefault();
+		final ZoneId zone = SimpleSettings.TIMEZONE;
+		final LocalDate localDate = TimeUtil.getCurrentDate();
 
-		if ("today".equals(value))
-			millisecondsBack = now - LocalDate.now().atStartOfDay(zone).toInstant().toEpochMilli();
+		ZonedDateTime start = null, end = null;
 
-		else if ("yesterday".equals(value))
-			millisecondsBack = now - LocalDate.now().minusDays(1).atStartOfDay(zone).toInstant().toEpochMilli();
+		if ("today".equals(value)) {
+			start = localDate.atStartOfDay(zone);
+			end = start.plusDays(1).minusSeconds(1);
 
-		else if ("lastweek".equals(value) || "lweek".equals(value))
-			millisecondsBack = now - LocalDate.now().minusWeeks(1).atStartOfDay(zone).toInstant().toEpochMilli();
+		} else if ("yesterday".equals(value)) {
+			start = localDate.minusDays(1).atStartOfDay(zone);
+			end = start.plusDays(1).minusSeconds(1);
 
-		else if ("lastmonth".equals(value) || "lmonth".equals(value))
-			millisecondsBack = now - LocalDate.now().minusMonths(1).atStartOfDay(zone).toInstant().toEpochMilli();
+		} else if ("lastweek".equals(value)) {
+			start = localDate.minusWeeks(1).with(DayOfWeek.MONDAY).atStartOfDay(zone);
+			end = start.plusWeeks(1).minusSeconds(1);
 
-		else if ("lastyear".equals(value) || "lyear".equals(value))
-			millisecondsBack = now - LocalDate.now().minusYears(1).atStartOfDay(zone).toInstant().toEpochMilli();
+		} else if ("lastmonth".equals(value)) {
+			start = localDate.minusMonths(1).withDayOfMonth(1).atStartOfDay(zone);
+			end = localDate.withDayOfMonth(1).atStartOfDay(zone).minusSeconds(1);
 
-		else if ("tweek".equals(value) || "thisweek".equals(value))
-			millisecondsBack = now - LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay(zone).toInstant().toEpochMilli();
+		} else if ("lastyear".equals(value)) {
+			start = localDate.minusYears(1).withDayOfYear(1).atStartOfDay(zone);
+			end = localDate.withDayOfYear(1).atStartOfDay(zone).minusSeconds(1);
 
-		else if ("tmonth".equals(value) || "thismonth".equals(value))
-			millisecondsBack = now - LocalDate.now().withDayOfMonth(1).atStartOfDay(zone).toInstant().toEpochMilli();
+		} else if ("thisweek".equals(value)) {
+			start = localDate.with(DayOfWeek.MONDAY).atStartOfDay(zone);
+			end = start.plusWeeks(1).minusSeconds(1);
 
-		else if ("tyear".equals(value) || "thisyear".equals(value))
-			millisecondsBack = now - LocalDate.now().withDayOfYear(1).atStartOfDay(zone).toInstant().toEpochMilli();
+		} else if ("thismonth".equals(value)) {
+			start = localDate.withDayOfMonth(1).atStartOfDay(zone);
+			end = localDate.plusMonths(1).withDayOfMonth(1).atStartOfDay(zone).minusSeconds(1);
 
-		else
+		} else if ("thisyear".equals(value)) {
+			start = localDate.withDayOfYear(1).atStartOfDay(zone);
+			end = localDate.plusYears(1).withDayOfYear(1).atStartOfDay(zone).minusSeconds(1);
+
+		} else
 			try {
-				millisecondsBack = TimeUtil.toMilliseconds(value);
+				this.from = now - TimeUtil.toMilliseconds(value);
+				this.to = now;
+
+				return true;
 
 			} catch (final Exception ex) {
 				Messenger.error(audience, ex.getMessage());
@@ -81,13 +97,19 @@ public final class FilterDate extends Filter {
 				return false;
 			}
 
-		this.millisecondsBack = millisecondsBack;
+		ValidCore.checkNotNull(start, "Unable to parse date from " + value);
+		ValidCore.checkNotNull(end, "Unable to parse date from " + value);
+
+		this.from = start.toInstant().toEpochMilli();
+		this.to = end.toInstant().toEpochMilli();
 
 		return true;
 	}
 
 	@Override
 	public boolean canDisplay(Row row) {
-		return row.getDate() >= System.currentTimeMillis() - this.millisecondsBack;
+		final long date = row.getDate();
+
+		return date >= this.from && date <= this.to;
 	}
 }

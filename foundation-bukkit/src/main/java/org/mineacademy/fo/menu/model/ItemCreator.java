@@ -37,6 +37,7 @@ import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompEnchantment;
+import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -662,15 +663,12 @@ public final class ItemCreator {
 
 		// Fix monster eggs
 		if (compiledItem.getType().toString().endsWith("SPAWN_EGG") || compiledItem.getType().toString().equals("MONSTER_EGG")) {
-
 			EntityType entity = null;
 
 			if (MinecraftVersion.olderThan(V.v1_13)) { // Try to find it if already exists
-				CompMonsterEgg.acceptUnsafeEggs = true;
 				final EntityType pre = CompMonsterEgg.getEntity(compiledItem);
-				CompMonsterEgg.acceptUnsafeEggs = false;
 
-				if (pre != null && pre != EntityType.UNKNOWN)
+				if (pre != null && pre != CompEntityType.UNKNOWN)
 					entity = pre;
 			}
 
@@ -682,13 +680,7 @@ public final class ItemCreator {
 				if (entityRaw.equals("MONSTER_EGG") && this.material != null && this.material.toString().endsWith("SPAWN_EGG"))
 					entityRaw = this.material.toString().replace("_SPAWN_EGG", "");
 
-				if ("MOOSHROOM".equals(entityRaw))
-					entityRaw = "MUSHROOM_COW";
-
-				else if ("ZOMBIE_PIGMAN".equals(entityRaw))
-					entityRaw = "PIG_ZOMBIE";
-
-				entity = ReflectionUtil.lookupEnumSilent(EntityType.class, entityRaw);
+				entity = CompEntityType.fromName(entityRaw);
 
 				// Probably version incompatible
 				if (entity == null)

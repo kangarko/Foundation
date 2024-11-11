@@ -19,17 +19,17 @@ public final class SimpleLocation {
 	/**
 	 * The x coordinate.
 	 */
-	private final double x;
+	private final int x;
 
 	/**
 	 * The y coordinate.
 	 */
-	private final double y;
+	private final int y;
 
 	/**
 	 * The z coordinate.
 	 */
-	private final double z;
+	private final int z;
 
 	/**
 	 * Create a new simple location.
@@ -39,7 +39,7 @@ public final class SimpleLocation {
 	 * @param y
 	 * @param z
 	 */
-	public SimpleLocation(@NonNull String worldName, double x, double y, double z) {
+	public SimpleLocation(@NonNull String worldName, int x, int y, int z) {
 		this.worldName = worldName;
 		this.x = x;
 		this.y = y;
