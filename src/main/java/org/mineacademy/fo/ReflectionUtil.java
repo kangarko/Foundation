@@ -382,6 +382,13 @@ public final class ReflectionUtil {
 				return method;
 			}
 
+		for (final Method method : clazz.getDeclaredMethods())
+			if (method.getName().equals(methodName) && method.getParameterCount() == 0) {
+				method.setAccessible(true);
+
+				return method;
+			}
+
 		return null;
 	}
 
@@ -417,13 +424,16 @@ public final class ReflectionUtil {
 	 * Invoke a static method
 	 *
 	 * @param <T>
-	 * @param cl
+	 * @param clazz
 	 * @param methodName
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invokeStatic(final Class<?> cl, final String methodName, final Object... params) {
-		return invokeStatic(getMethod(cl, methodName), params);
+	public static <T> T invokeStatic(@NonNull final Class<?> clazz, final String methodName, final Object... params) {
+		final Method method = getMethod(clazz, methodName);
+		Valid.checkNotNull(method, "Method " + clazz + "." + methodName + "(" + Common.join(params) + ") not found!");
+
+		return invokeStatic(method, params);
 	}
 
 	/**
@@ -847,6 +857,7 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return the enum, or null if not exists
 	 */
+	@SuppressWarnings("rawtypes")
 	public static <E> E lookupEnumSilent(final Class<E> enumClass, final String name) {
 		try {
 
@@ -885,7 +896,9 @@ public final class ReflectionUtil {
 			if (hasKey)
 				return (E) method.invoke(null, name);
 
-			// Resort to enum name
+			if (enumClass.isEnum())
+				return (E) Enum.valueOf((Class<Enum>) enumClass, name);
+
 			return ReflectionUtil.invokeStatic(enumClass, "valueOf", name);
 
 		} catch (final IllegalArgumentException ex) {
