@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -462,15 +461,5 @@ public abstract class YamlStaticConfig {
 	 */
 	protected static final SimpleTime getTime(final String path) {
 		return TEMPORARY_INSTANCE.getTime(path);
-	}
-
-	/**
-	 * @see YamlConfig#getTimezone(String)
-	 *
-	 * @param path
-	 * @return
-	 */
-	protected static final ZoneId getTimezone(final String path) {
-		return TEMPORARY_INSTANCE.getTimezone(path);
 	}
 }

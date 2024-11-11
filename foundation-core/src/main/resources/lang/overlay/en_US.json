@@ -22,6 +22,7 @@
   "command-debug-success": "Copied {amount} file(s) to debug.zip. Database logins were removed for privacy but please double-check. Upload the file via ufile.io.",
   "command-debug-zip-fail": "Creating a ZIP of your files failed, see console for more information. Please ZIP debug/ folder, remove database logins and send it to us via ufile.io manually.",
   "command-error": "<dark_red>Oups! <red>The command failed :( Check the console and report the error.",
+  "command-error-tab-complete": "<dark_red>Oups! <red>The command tab-completion failed :( Check the console and report the error.",
   "command-header-center-letter": "-",
   "command-header-center-padding": "130",
   "command-header-no-subcommands": "<red>There are no arguments for this command.",

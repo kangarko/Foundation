@@ -38,7 +38,7 @@ public final class FilterLocation extends Filter {
 			final SimpleLocation location = audience.getBukkitLocation();
 
 			if (location != null)
-				return Arrays.asList(location.getWorldName() + "," + (int) location.getX() + "," + (int) location.getY() + "," + (int) location.getZ() + ",10", "here,10");
+				return Arrays.asList(location.getWorldName() + "," + location.getX() + "," + location.getY() + "," + location.getZ() + ",10", "here,10");
 		}
 
 		return null;
@@ -139,7 +139,7 @@ public final class FilterLocation extends Filter {
 		this.location = new SimpleLocation(worldName, x, y, z);
 
 		try {
-			this.radius = Integer.parseInt(split[3 - offset]);
+			this.radius = Integer.parseInt(split[4 - offset]);
 
 		} catch (final NumberFormatException e) {
 			Messenger.error(audience, "Invalid radius, it must be a whole number. Got: '" + split[4 - offset] + "'");

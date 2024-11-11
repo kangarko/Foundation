@@ -3,15 +3,19 @@ package org.mineacademy.fo.command;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
@@ -21,10 +25,13 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.ExpiringMap;
+import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.model.Task;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
@@ -43,9 +50,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 public abstract class SimpleCommandCore {
 
 	/**
-	 * The pattern to match a command argument inside the args, such as "server:survival hello world".
+	 * The pattern to match a command argument inside the args, such as "server:survival from:09-05-2024-11:11 hello world".
 	 */
-	private static final Pattern COLON_ARGUMENT_PATTERN = Pattern.compile("(\\w+):(\\w+)");
+	private static final Pattern COLON_ARGUMENT_PATTERN = Pattern.compile("(\\w+):([a-zA-Z0-9,_\\-\\/*\\\"+]+)");
 
 	/**
 	 * The pattern to match a command argument, see {@link #colorizeUsage(SimpleComponent)}.
@@ -696,9 +703,52 @@ public abstract class SimpleCommandCore {
 		this.checkNotNull(found, falseMessage
 				.replaceBracket("type", enumType.getSimpleName().replaceAll("([a-z])([A-Z]+)", "$1 $2").toLowerCase())
 				.replaceBracket("value", enumValue)
-				.replaceBracket("available", CommonCore.join(ReflectionUtil.getEnumValues(enumType), constant -> ReflectionUtil.getEnumName(constant).toLowerCase())));
+				.replaceBracket("available", CommonCore.join(Arrays.asList(ReflectionUtil.getEnumValues(enumType))
+						.stream()
+						.filter(listConst -> condition == null || condition.apply(listConst))
+						.collect(Collectors.toList()),
+						constant -> ReflectionUtil.getEnumName(constant).toLowerCase())));
 
 		return found;
+	}
+
+	/**
+	 * Checks the non-null value, if null, prints the false message from "command-invalid-type"
+	 *
+	 * Example:
+	 * 	language key: "No such {type}: {value}, available: {available}"
+	 * 	code: checkNoSuchType(bossObject, "boss", "Warrior", Boss.getBosses());
+	 *
+	 * @param nonNullValue
+	 * @param type
+	 * @param value
+	 * @param available
+	 *
+	 * @throws CommandException
+	 */
+	public final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Collection<?> available) throws CommandException {
+		this.checkNoSuchType(nonNullValue, type, value, available.toArray());
+	}
+
+	/**
+	 * Checks the non-null value, if null, prints the false message from "command-invalid-type"
+	 *
+	 * Example:
+	 * 	language key: "No such {type}: {value}, available: {available}"
+	 * 	code: checkNoSuchType(bossObject, "boss", "Warrior", Boss.getBosses());
+	 *
+	 * @param nonNullValue
+	 * @param type
+	 * @param value
+	 * @param available
+	 *
+	 * @throws CommandException
+	 */
+	public final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Object[] available) throws CommandException {
+		this.checkNotNull(nonNullValue, Lang.componentVars("command-invalid-type",
+				"type", type,
+				"value", value,
+				"available", CommonCore.join(available, constant -> CommonCore.simplify(constant).toLowerCase())));
 	}
 
 	/**
@@ -1200,10 +1250,17 @@ public abstract class SimpleCommandCore {
 		this.audience = audience;
 		this.args = args;
 
-		if (this.hasPerm(this.getPermission())) {
-			final List<String> suggestions = this.tabComplete();
+		try {
+			if (this.hasPerm(this.getPermission())) {
+				final List<String> suggestions = this.tabComplete();
 
-			return suggestions == null ? NO_COMPLETE : suggestions;
+				return suggestions == null ? NO_COMPLETE : suggestions;
+			}
+
+		} catch (final Throwable t) {
+			this.audience.sendMessage(Lang.component("command-error-tab-complete"));
+
+			CommonCore.error(t, "Error tab completing /" + label + " " + Arrays.asList(args));
 		}
 
 		return NO_COMPLETE;
@@ -1629,6 +1686,39 @@ public abstract class SimpleCommandCore {
 		return new ParsedArguments(args, cleanedMessage);
 	}
 
+	/**
+	 * Parses the given arguments into a map of key-value pairs which are
+	 * further parsed into a {@link Filter}.
+	 *
+	 * @param table
+	 * @param line
+	 *
+	 * @return a tuple where key is the message without the filters and value is the list of filters
+	 */
+	protected final Tuple<String, List<Filter>> parseFilters(Table table, String line) {
+		final ParsedArguments parsed = this.parseArguments(line);
+		final List<Filter> filters = new ArrayList<>();
+
+		for (final Map.Entry<String, String> entry : parsed) {
+			final String key = entry.getKey();
+			final String value = entry.getValue();
+
+			final Filter filter = Filter.getByName(key);
+
+			this.checkNoSuchType(filter, "filter", key, Filter.getFilters().stream()
+					.filter(filtered -> filtered.isApplicable(table))
+					.map(Filter::getIdentifier)
+					.collect(Collectors.toList()));
+
+			this.checkBoolean(filter.isApplicable(table), "Filter '" + key + "' is not applicable for " + table.getKey() + ".");
+			this.checkBoolean(filter.validate(this.getAudience(), value), "");
+
+			filters.add(filter);
+		}
+
+		return new Tuple<>(parsed.getMessage(), filters);
+	}
+
 	// ----------------------------------------------------------------------
 	// Scheduling
 	// ----------------------------------------------------------------------
@@ -1722,7 +1812,7 @@ public abstract class SimpleCommandCore {
 	}
 
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ParsedArguments {
+	public static class ParsedArguments implements Iterable<Map.Entry<String, String>> {
 
 		/**
 		 * The parsed arguments
@@ -1764,6 +1854,11 @@ public abstract class SimpleCommandCore {
 		 */
 		public boolean has(final String key) {
 			return this.args.containsKey(key);
+		}
+
+		@Override
+		public Iterator<Entry<String, String>> iterator() {
+			return this.args.entrySet().iterator();
 		}
 	}
 }

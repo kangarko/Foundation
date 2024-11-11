@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +57,7 @@ public abstract class CommonCore {
 	 * The Google Json instance with pretty printing
 	 */
 	public final static Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
 	 * in a restricted region, we will not spam their chat with "You cannot break this block here" 120x times,
@@ -244,14 +246,14 @@ public abstract class CommonCore {
 		if (!TIMED_TELL_CACHE.containsKey(message)) {
 			audience.sendMessage(message);
 
-			TIMED_TELL_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_TELL_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 			return;
 		}
 
-		if (TimeUtil.currentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
+		if (TimeUtil.getCurrentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
 			audience.sendMessage(message);
 
-			TIMED_TELL_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_TELL_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 		}
 	}
 
@@ -298,13 +300,13 @@ public abstract class CommonCore {
 	public static final void logTimed(final int delaySeconds, final String message) {
 		if (!TIMED_LOG_CACHE.containsKey(message)) {
 			log(message);
-			TIMED_LOG_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_LOG_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 			return;
 		}
 
-		if (TimeUtil.currentTimeSeconds() - TIMED_LOG_CACHE.get(message) > delaySeconds) {
+		if (TimeUtil.getCurrentTimeSeconds() - TIMED_LOG_CACHE.get(message) > delaySeconds) {
 			log(message);
-			TIMED_LOG_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_LOG_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 		}
 	}
 
@@ -453,7 +455,7 @@ public abstract class CommonCore {
 
 		// Delegate to only print out the relevant stuff
 		if (cause instanceof FoException)
-			throw (FoException) throwable;
+			throw (FoException) cause;
 
 		if (messages != null)
 			logFramed(false, replaceErrorVariable(throwable, messages));
@@ -648,6 +650,17 @@ public abstract class CommonCore {
 			if (result != null)
 				return result;
 		}
+
+		Method nameMethod = ReflectionUtil.getMethod(object.getClass(), "name");
+
+		if (nameMethod == null)
+			nameMethod = ReflectionUtil.getMethod(object.getClass(), "getName");
+
+		if (nameMethod == null)
+			nameMethod = ReflectionUtil.getMethod(object.getClass(), "getKey");
+
+		if (nameMethod != null)
+			return ReflectionUtil.invoke(nameMethod, object);
 
 		return object.toString();
 	}

@@ -26,8 +26,8 @@ public final class FilterFrom extends Filter {
 	@Override
 	public String[] getUsages() {
 		return new String[] {
-				"from:<dd-mm-yyyy>-<hh:mm> or from:<dd-mm-yyyy> - Show results for the given date range. The date range can also be a unix timestamp.",
-				"from:<hh:mm> to:<hh:mm> - Show results for the given time range today.",
+				"from:<dd-mm-yyyy>_<hh-mm> or from:<dd-mm-yyyy> - Show results for the given date range. The date range can also be a unix timestamp.",
+				"from:<hh-mm> to:<hh-mm> - Show results for the given time range today.",
 		};
 	}
 
@@ -36,9 +36,9 @@ public final class FilterFrom extends Filter {
 		final Date now = new Date();
 
 		return Arrays.asList(
-				new SimpleDateFormat("dd-MM-yyyy-HH:mm").format(now),
+				new SimpleDateFormat("dd-MM-yyyy_HH-mm").format(now),
 				new SimpleDateFormat("dd-MM-yyyy").format(now),
-				new SimpleDateFormat("HH:mm").format(now));
+				new SimpleDateFormat("HH-mm").format(now));
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public final class FilterFrom extends Filter {
 		final Date parsed = parseDate(value);
 
 		if (parsed == null) {
-			Messenger.error(audience, "Invalid date format. Please use dd-MM-yyyy, dd-MM-yyyy-HH:mm or HH:mm");
+			Messenger.error(audience, "Invalid date format. Please use dd-MM-yyyy, dd-MM-yyyy_HH-mm or HH-mm");
 
 			return false;
 		}

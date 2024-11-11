@@ -326,9 +326,9 @@ public final class SimpleResultSet {
 		}
 
 		return new int[] {
-				Integer.parseInt(split[0]),
-				Integer.parseInt(split[1]),
-				Integer.parseInt(split[2])
+				(int) Double.parseDouble(split[0]), // convert decimals
+				(int) Double.parseDouble(split[1]),
+				(int) Double.parseDouble(split[2])
 		};
 	}
 

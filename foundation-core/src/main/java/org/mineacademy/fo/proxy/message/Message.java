@@ -43,15 +43,15 @@ abstract class Message {
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).
 	 *
-	 * @param requiredType
+	 * @param givenType
 	 */
-	protected final void moveHead(Class<?> requiredType) {
+	protected final void moveHead(Class<?> givenType) {
 		ValidCore.checkNotNull(this.message, "Action not set!");
 
 		final Class<?>[] content = this.message.getContent();
 		final Class<?> clazz = content[this.head];
 
-		ValidCore.checkBoolean(requiredType.isAssignableFrom(clazz), "Expected " + requiredType.getSimpleName() + " at position " + head + " but got " + clazz.getSimpleName() + " for " + this.getMessage().name());
+		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Got " + givenType.getSimpleName() + " at position " + this.head + " but expected " + clazz.getSimpleName() + " for " + this.getMessage().name());
 		ValidCore.checkBoolean(head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;

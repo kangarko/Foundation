@@ -507,9 +507,9 @@ public class Region implements ConfigSerializable {
 	public final SerializedMap serialize() {
 		final SerializedMap map = new SerializedMap();
 
-		map.putIfExist("Name", this.name);
-		map.putIfExist("Primary", this.primary);
-		map.putIfExist("Secondary", this.secondary);
+		map.putIfExists("Name", this.name);
+		map.putIfExists("Primary", this.primary);
+		map.putIfExists("Secondary", this.secondary);
 
 		return map;
 	}

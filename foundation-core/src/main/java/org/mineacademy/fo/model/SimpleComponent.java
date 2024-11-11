@@ -846,8 +846,8 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			final SerializedMap map = new SerializedMap();
 
 			map.put("Component", MiniMessage.miniMessage().serialize(this.component));
-			map.putIf("Permission", this.viewPermission);
-			map.putIf("Condition", this.viewCondition);
+			map.putIfExists("Permission", this.viewPermission);
+			map.putIfExists("Condition", this.viewCondition);
 
 			return map;
 		}

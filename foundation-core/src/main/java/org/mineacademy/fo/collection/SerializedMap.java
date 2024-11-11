@@ -170,7 +170,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param key
 	 * @param value
 	 */
-	public void putIfExist(final String key, final Object value) {
+	public void putIfExists(final String key, final Object value) {
 		if (value != null)
 			this.put(key, value);
 	}
@@ -183,11 +183,9 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param key
 	 * @param value
 	 */
-	public void putIf(final String key, final Map<?, ?> value) {
+	public void putIfNotEmpty(final String key, final Map<?, ?> value) {
 		if (value != null && !value.isEmpty())
 			this.put(key, value);
-		else
-			this.map.put(key, null);
 	}
 
 	/**
@@ -198,41 +196,9 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param key
 	 * @param value
 	 */
-	public void putIf(final String key, final Collection<?> value) {
+	public void putIfNotEmpty(final String key, final Collection<?> value) {
 		if (value != null && !value.isEmpty())
 			this.put(key, value);
-		else
-			this.map.put(key, null);
-	}
-
-	/**
-	 * Puts the boolean into map if true
-	 *
-	 * This will put a NULL value into the map if the value is null
-	 *
-	 * @param key
-	 * @param value
-	 */
-	public void putIf(final String key, final boolean value) {
-		if (value)
-			this.put(key, value);
-		else
-			this.map.put(key, null);
-	}
-
-	/**
-	 * Puts the value into map if not null
-	 *
-	 * This will put a NULL value into the map if the value is null
-	 *
-	 * @param key
-	 * @param value
-	 */
-	public void putIf(final String key, final Object value) {
-		if (value != null)
-			this.put(key, value);
-		else
-			this.map.put(key, null);
 	}
 
 	/**

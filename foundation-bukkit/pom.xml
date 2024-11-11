@@ -73,7 +73,6 @@
 			<version>9.6.5.0</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- TODO replace by JDA -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>DiscordSRV</artifactId>

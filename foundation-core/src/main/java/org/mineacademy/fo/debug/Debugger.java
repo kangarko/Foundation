@@ -86,12 +86,12 @@ public final class Debugger {
 		final FoundationPlugin plugin = Platform.getPlugin();
 
 		// Ignore PlugMan errors
-		for (final StackTraceElement element : throwable.getStackTrace()) {
-			if (element.getClassName().contains(".plugman."))
+		for (final StackTraceElement element : throwable.getStackTrace())
+			if (element.getClassName().contains(".plugman.") || element.getClassName().contains(".plugmanx.")) {
 				CommonCore.warning("Please do not use PlugMan to interact with " + Platform.getPlugin().getName() + " because it causes issues. Restart your server or use the inbuilt reload command instead.");
 
-			return;
-		}
+				return;
+			}
 
 		if (plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;

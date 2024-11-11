@@ -2,7 +2,6 @@ package org.mineacademy.fo.filter;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
@@ -18,7 +17,7 @@ import lombok.Setter;
 public final class FilterServer extends Filter {
 
 	@Setter
-	private static Supplier<List<String>> networkServersSupplier;
+	private static Supplier<Set<String>> networkServersSupplier;
 
 	private final Set<String> servers = new HashSet<>();
 
@@ -44,7 +43,7 @@ public final class FilterServer extends Filter {
 
 		serverNames.add(Platform.getCustomServerName());
 
-		ValidCore.checkNotNull(networkServersSupplier != null, "Call FilterServer#setNetworkServersSupplier before using the server filter.");
+		ValidCore.checkNotNull(networkServersSupplier, "Call FilterServer#setNetworkServersSupplier before using the server filter.");
 		serverNames.addAll(networkServersSupplier.get());
 
 		return serverNames;

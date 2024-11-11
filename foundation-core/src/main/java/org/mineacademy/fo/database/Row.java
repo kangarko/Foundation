@@ -22,7 +22,7 @@ public abstract class Row {
 	/**
 	 * The timestamp this row was created
 	 */
-	private final long date;
+	private final long date; // TODO move to RowDated
 
 	/**
 	 * The server this row was created in
@@ -35,7 +35,7 @@ public abstract class Row {
 		this.server = resultSet.getStringStrict("Server");
 	}
 
-	protected Row(int id, long date, String server) {
+	protected Row(int id, long date, String server) { // TODO delete in favor of manual loading
 		this.id = id;
 		this.date = date;
 		this.server = server;

@@ -52,10 +52,12 @@ public class SimpleDatabase {
 
 	/**
 	 * Should we use the more modern HikariCP connector (if available)?
+	 *
+	 * Defaults to false.
 	 */
 	@Getter
 	@Setter
-	private static boolean connectUsingHikari = true;
+	private static boolean connectUsingHikari = false;
 
 	/**
 	 * The established connection, or null if none.

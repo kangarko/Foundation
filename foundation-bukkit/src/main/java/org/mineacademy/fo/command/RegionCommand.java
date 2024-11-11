@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.exception.FoException;
@@ -103,11 +102,11 @@ public class RegionCommand extends SimpleSubCommand {
 	 */
 	@Override
 	protected void onCommand() {
-
 		final String regionName = this.args.length > 1 ? this.args[1] : null;
 		final DiskRegion region = regionName != null ? DiskRegion.findRegion(regionName) : null;
 		final Param param = Param.find(this.args[0]);
-		this.checkNotNull(param, "No such param '{0}'. Available: " + CommonCore.join(Param.values()));
+
+		this.checkNoSuchType(param, "param", "{0}", Param.values());
 
 		//
 		// Commands without a region.

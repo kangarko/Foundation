@@ -61,6 +61,7 @@ import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompEnchantment;
+import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompPotionEffectType;
 import org.mineacademy.fo.remain.CompSound;
@@ -103,10 +104,10 @@ final class BukkitPlatform extends FoundationPlatform {
 				return Common.simplify(((PotionEffect) object).getType());
 
 			else if (object instanceof PotionEffectType)
-				return ((PotionEffectType) object).getName();
+				return ((PotionEffectType) object).getName().toLowerCase();
 
 			else if (object instanceof Enchantment)
-				return ((PotionEffectType) object).getName();
+				return ((Enchantment) object).getName().toLowerCase();
 
 			else if (object instanceof ItemStack)
 				return Common.simplify(((ItemStack) object).getType());
@@ -149,57 +150,10 @@ final class BukkitPlatform extends FoundationPlatform {
 						if (name.equals("ICE_MOUNTAINS"))
 							name = "SNOWY_TAIGA";
 
-				} else if (enumType == EntityType.class) {
-					if (MinecraftVersion.atLeast(V.v1_16)) {
-						if (name.equals("PIG_ZOMBIE"))
-							name = "ZOMBIFIED_PIGLIN";
-					} else {
-						if (name.equals("ZOMBIFIED_PIGLIN"))
-							name = "PIG_ZOMBIE";
-					}
+				} else if (enumType == EntityType.class || enumType == CompEntityType.class) {
+					final EntityType comp = CompEntityType.fromName(name);
 
-					if (MinecraftVersion.atLeast(V.v1_14))
-						if (name.equals("TIPPED_ARROW"))
-							name = "ARROW";
-
-					if (MinecraftVersion.olderThan(V.v1_9))
-						if (name.equals("TRIDENT"))
-							name = "ARROW";
-
-						else if (name.equals("DRAGON_FIREBALL"))
-							name = "FIREBALL";
-
-					if (MinecraftVersion.olderThan(V.v1_13))
-						if (name.equals("DROWNED"))
-							name = "ZOMBIE";
-
-						else if (name.equals("ZOMBIE_VILLAGER"))
-							name = "ZOMBIE";
-
-					if ((MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5) || MinecraftVersion.newerThan(V.v1_20)) {
-						if (name.equals("SNOWMAN"))
-							name = "SNOW_GOLEM";
-						else if (name.equals("LIGHTNING"))
-							name = "LIGHTNING_BOLT";
-						else if (name.equals("PRIMED_TNT"))
-							name = "TNT";
-						else if (name.equals("FIREWORK"))
-							name = "FIREWORK_ROCKET";
-						else if (name.equals("ENDER_CRYSTAL"))
-							name = "END_CRYSTAL";
-
-					} else {
-						if (name.equals("SNOW_GOLEM"))
-							name = "SNOWMAN";
-						else if (name.equals("LIGHTNING_BOLT"))
-							name = "LIGHTNING";
-						else if (name.equals("TNT"))
-							name = "PRIMED_TNT";
-						else if (name.equals("FIREWORK_ROCKET"))
-							name = "FIREWORK";
-						else if (name.equals("END_CRYSTAL"))
-							name = "ENDER_CRYSTAL";
-					}
+					name = comp != null ? comp.name() : name;
 
 				} else if (enumType == DamageCause.class) {
 					if (MinecraftVersion.olderThan(V.v1_13))
@@ -392,7 +346,13 @@ final class BukkitPlatform extends FoundationPlatform {
 				} else if (classOf == Art.class)
 					return (T) ReflectionUtil.lookupEnum(Art.class, object.toString());
 
-				else if (ConfigurationSerializable.class.isAssignableFrom(classOf))
+				else if (classOf == EntityType.class) {
+					final EntityType compType = CompEntityType.fromName(object.toString());
+					Valid.checkNotNull(compType, "Cannot deserialize entity type from " + object + " as it is not available in this server version.");
+
+					return (T) compType;
+
+				} else if (ConfigurationSerializable.class.isAssignableFrom(classOf))
 					return (T) object; // Already unpacked in BukkitYamlConstructor
 
 				return null;

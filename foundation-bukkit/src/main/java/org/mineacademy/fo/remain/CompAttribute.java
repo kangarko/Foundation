@@ -11,6 +11,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.MissingEnumException;
 
 import lombok.NonNull;
 
@@ -233,7 +234,7 @@ public enum CompAttribute {
 
 					break;
 
-				} catch (final IllegalArgumentException ex) {
+				} catch (final MissingEnumException | IllegalArgumentException ex) {
 					// Ignore
 				}
 	}

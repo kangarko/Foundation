@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.database.Row;
@@ -22,11 +21,6 @@ import lombok.Getter;
  */
 @Getter
 public abstract class Filter {
-
-	/**
-	 * The matcher for filters in command, i.e. identifier:value
-	 */
-	public static final Pattern FILTER_PATTERN = Pattern.compile("[a-zA-Z]+:[a-zA-Z0-9,_\\-:\\/*\"+]+");
 
 	/**
 	 * The registered filters
@@ -146,11 +140,11 @@ public abstract class Filter {
 		if (value.matches("\\d{2}-\\d{2}-\\d{4}"))
 			dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
-		else if (value.matches("\\d{2}-\\d{2}-\\d{4}-\\d{2}:\\d{2}"))
-			dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH:mm");
+		else if (value.matches("\\d{2}-\\d{2}-\\d{4}_\\d{2}-\\d{2}"))
+			dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH-mm");
 
-		else if (value.matches("\\d{2}:\\d{2}"))
-			dateFormat = new SimpleDateFormat("HH:mm");
+		else if (value.matches("\\d{2}-\\d{2}"))
+			dateFormat = new SimpleDateFormat("HH-mm");
 
 		else
 			return null;
