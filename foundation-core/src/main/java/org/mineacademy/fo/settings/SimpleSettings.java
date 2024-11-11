@@ -1,5 +1,6 @@
 package org.mineacademy.fo.settings;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,6 +101,11 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static Boolean SENTRY = true;
 
 	/**
+	 * The timezone used for time converting operations.
+	 */
+	public static ZoneId TIMEZONE = ZoneId.systemDefault();
+
+	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
@@ -142,5 +148,17 @@ public class SimpleSettings extends YamlStaticConfig {
 
 		if (isSetDefault("Sentry"))
 			SENTRY = getBoolean("Sentry");
+
+		if (isSetDefault("Timezone")) {
+			final String raw = getString("Timezone");
+
+			if (raw != null && !"".equals(raw))
+				try {
+					TIMEZONE = java.time.ZoneId.of(raw);
+
+				} catch (final Throwable t) {
+					throw new IllegalArgumentException("No such time-zone in 'Timezone' key in " + getFileName() + ": '" + raw + "'! Available: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids");
+				}
+		}
 	}
 }
