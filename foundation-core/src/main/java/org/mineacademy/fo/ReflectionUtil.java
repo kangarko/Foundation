@@ -336,7 +336,8 @@ public final class ReflectionUtil {
 	 */
 	public static <T> T invokeStatic(@NonNull final Class<?> clazz, @NonNull final String methodName, final Object... params) {
 		final Method method = getMethod(clazz, methodName);
-		ValidCore.checkNotNull(method, "Static method " + methodName + " does not exist in class " + clazz.getSimpleName());
+		if (method == null)
+			throw new ReflectionException("Static method " + methodName + " does not exist in class " + clazz.getSimpleName());
 
 		return invokeStatic(method, params);
 	}
@@ -351,7 +352,8 @@ public final class ReflectionUtil {
 	 */
 	public static <T> T invokeStatic(@NonNull final Method method, final Object... params) {
 		try {
-			ValidCore.checkBoolean(Modifier.isStatic(method.getModifiers()), "Method " + method.getName() + " must be static to be invoked through invokeStatic with params: " + CommonCore.join(params));
+			if (!Modifier.isStatic(method.getModifiers()))
+				throw new ReflectionException("Method " + method.getName() + " must be static to be invoked through invokeStatic with params: " + CommonCore.join(params));
 
 			return (T) method.invoke(null, params);
 
@@ -372,7 +374,9 @@ public final class ReflectionUtil {
 	public static <T> T invoke(@NonNull final String methodName, @NonNull final Object instance, final Object... params) {
 		final List<Class<?>> args = CommonCore.convertArrayToList(params, Object::getClass);
 		final Method method = getMethod(instance.getClass(), methodName, args.toArray(new Class<?>[args.size()]));
-		ValidCore.checkNotNull(method, "No such method " + instance.getClass() + "." + methodName + "(" + CommonCore.join(params) + ")");
+
+		if (method == null)
+			throw new ReflectionException("No such method " + instance.getClass() + "." + methodName + "(" + CommonCore.join(params) + ")");
 
 		return invoke(method, instance, params);
 	}
@@ -387,7 +391,8 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
-		ValidCore.checkNotNull(method, "Cannot invoke a null method for " + (instance == null ? "static" : instance.getClass().getSimpleName() + "") + " instance '" + instance + "' " + " with params " + CommonCore.join(params));
+		if (method == null)
+			throw new ReflectionException("Cannot invoke a null method for " + (instance == null ? "static" : instance.getClass().getSimpleName() + "") + " instance '" + instance + "' " + " with params " + CommonCore.join(params));
 
 		try {
 			return (T) method.invoke(instance, params);
@@ -446,7 +451,9 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Object param : params) {
-				ValidCore.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
+				if (param == null)
+					throw new ReflectionException("Argument cannot be null when instatiating " + clazz);
+
 				final Class<?> paramClass = param.getClass();
 
 				classes.add(paramClass.isPrimitive() ? wrapperToPrimitive(paramClass) : paramClass);
@@ -856,7 +863,8 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Class<?> param : constructor.getParameterTypes()) {
-				ValidCore.checkNotNull(param, "Argument cannot be null when instatiating " + this.clazz);
+				if (param == null)
+					throw new ReflectionException("Argument cannot be null when instatiating " + this.clazz);
 
 				classes.add(param);
 			}
