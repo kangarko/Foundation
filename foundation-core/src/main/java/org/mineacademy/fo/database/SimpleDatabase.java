@@ -1,7 +1,5 @@
 package org.mineacademy.fo.database;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -36,7 +34,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 /**
  * Represents a simple MySQL database.
@@ -49,15 +46,6 @@ import lombok.Setter;
  * To use this class you must know the MySQL command syntax!
  */
 public class SimpleDatabase {
-
-	/**
-	 * Should we use the more modern HikariCP connector (if available)?
-	 *
-	 * Defaults to false.
-	 */
-	@Getter
-	@Setter
-	private static boolean connectUsingHikari = false;
 
 	/**
 	 * The established connection, or null if none.
@@ -74,11 +62,6 @@ public class SimpleDatabase {
 	 * The last credentials from the connect function, or null if never called.
 	 */
 	private LastCredentials lastCredentials;
-
-	/**
-	 * Private indicator that we are connecting to database right now.
-	 */
-	private boolean connecting = false;
 
 	/*
 	 * Optional Hikari data source.
@@ -141,95 +124,40 @@ public class SimpleDatabase {
 	 */
 	public final void connect(final String url, final String user, final String password) {
 		try {
-			this.connecting = true;
-
 			if (url.startsWith("jdbc:sqlite")) {
 				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.47.0.0");
 
 				Class.forName("org.sqlite.JDBC");
 
-				final String urlHeadless = url.replace("jdbc:sqlite://", "");
+				final String headlessUrl = url.replace("jdbc:sqlite://", "");
 
-				if (urlHeadless.split("\\.").length == 2 && !urlHeadless.contains("\\") && !urlHeadless.contains("/")) {
-					final String path = FileUtil.getFile(urlHeadless).getPath();
+				if (headlessUrl.split("\\.").length == 2 && !headlessUrl.contains("\\") && !headlessUrl.contains("/")) {
+					final String path = FileUtil.getFile(headlessUrl).getPath();
 
 					this.connection = DriverManager.getConnection("jdbc:sqlite:" + path);
+
 				} else
 					this.connection = DriverManager.getConnection(url);
 
 				this.isSQLite = true;
 			}
 
-			/*
-			 * Check for JDBC Drivers (MariaDB, MySQL or Legacy MySQL).
-			 */
-			else {
-				if (url.startsWith("jdbc:mariadb://")) {
-					Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.5.0");
-
-					Class.forName("org.mariadb.jdbc.Driver");
-
-				} else if (url.startsWith("jdbc:mysql://")) {
+			else if (url.startsWith("jdbc:mysql://")) {
+				try {
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.1.0");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
+				} catch (final Throwable t) {
+					CommonCore.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. You can ignore this but if you encounter issues, update Java.");
 
-				} else {
-					CommonCore.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. If you encounter issues, consider updating your Java version. You can safely ignore this warning");
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-java", "8.0.33");
-
 					Class.forName("com.mysql.jdbc.Driver");
 				}
 
-				if (connectUsingHikari) {
-					Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", CommonCore.getJavaVersion() >= 11 ? "6.0.0" : "4.0.3");
+			} else
+				throw new FoException("Unknown database driver '" + url + "'. Only SQLite and MySQL (which supports MariaDB automatically) are supported at this time.");
 
-					final Object hikariConfig = ReflectionUtil.instantiate("com.zaxxer.hikari.HikariConfig");
-
-					if (url.startsWith("jdbc:mysql://"))
-						try {
-							ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.cj.jdbc.Driver");
-
-						} catch (final Throwable t) {
-
-							// Fall back to legacy driver
-							ReflectionUtil.invoke("setDriverClassName", hikariConfig, "com.mysql.jdbc.Driver");
-						}
-					else if (url.startsWith("jdbc:mariadb://"))
-						ReflectionUtil.invoke("setDriverClassName", hikariConfig, "org.mariadb.jdbc.Driver");
-
-					else
-						throw new FoException("Unknown database driver, expected jdbc:mysql or jdbc:mariadb, got: " + url);
-
-					ReflectionUtil.invoke("setJdbcUrl", hikariConfig, url);
-
-					if (user != null)
-						ReflectionUtil.invoke("setUsername", hikariConfig, user);
-
-					if (password != null)
-						ReflectionUtil.invoke("setPassword", hikariConfig, password);
-
-					final Constructor<?> dataSourceConst = ReflectionUtil.getConstructor("com.zaxxer.hikari.HikariDataSource", hikariConfig.getClass());
-					final Object hikariSource = ReflectionUtil.instantiate(dataSourceConst, hikariConfig);
-
-					this.hikariDataSource = hikariSource;
-
-					final Method getConnection = hikariSource.getClass().getDeclaredMethod("getConnection");
-
-					try {
-						this.connection = ReflectionUtil.invoke(getConnection, hikariSource);
-
-					} catch (final Throwable t) {
-						CommonCore.warning("Could not get HikariCP connection, please report this with the information below to github.com/kangarko/foundation");
-						CommonCore.warning("Method: " + getConnection);
-						CommonCore.warning("Arguments: " + CommonCore.join(getConnection.getParameters()));
-
-						t.printStackTrace();
-					}
-				}
-
-				this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
-			}
+			this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
 
 			this.lastCredentials = new LastCredentials(url, user, password);
 
@@ -246,36 +174,11 @@ public class SimpleDatabase {
 			this.onConnected();
 
 		} catch (final Exception ex) {
-			if (CommonCore.getOrEmpty(ex.getMessage()).contains("No suitable driver found"))
-				CommonCore.logFramed(
-						"Failed to look up database driver! If you had database disabled,",
-						"then enable it and reload - this is expected.",
-						"",
-						"You have have access to your server machine, try installing",
-						"https://mariadb.com/downloads/connectors/connectors-data-access/",
-						"",
-						"If this problem persists after a restart, please contact",
-						"your hosting provider with the error message below.");
-			else
-				CommonCore.logFramed(
-						"Failed to connect to database",
-						"URL: " + url,
-						"Error: " + ex.getMessage());
-
-			CommonCore.sneaky(ex);
-
-		} finally {
-			this.connecting = false;
+			CommonCore.throwError(ex,
+					"Failed to connect to database",
+					"URL: " + url,
+					"Error: " + ex.getMessage());
 		}
-	}
-
-	/**
-	 * Attempts to connect using last known credentials. Fails gracefully if those are not provided,
-	 * i.e. connect function was never called.
-	 */
-	protected final void connectUsingLastCredentials() {
-		if (this.lastCredentials != null)
-			this.connect(this.lastCredentials.url, this.lastCredentials.user, this.lastCredentials.password);
 	}
 
 	/**
@@ -289,21 +192,6 @@ public class SimpleDatabase {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Attempts to close the result set if not.
-	 *
-	 * @param resultSet
-	 */
-	public final void close(final ResultSet resultSet) {
-		try {
-			if (!resultSet.isClosed())
-				resultSet.close();
-
-		} catch (final SQLException e) {
-			CommonCore.error(e, "Error closing database result set!");
-		}
-	}
-
-	/**
 	 * Attempts to close the connection, if not null.
 	 */
 	public final void close() {
@@ -314,8 +202,8 @@ public class SimpleDatabase {
 			if (this.hikariDataSource != null)
 				ReflectionUtil.invoke("close", this.hikariDataSource);
 
-		} catch (final SQLException e) {
-			CommonCore.error(e, "Error closing database connection!");
+		} catch (final SQLException ex) {
+			CommonCore.error(ex, "Error closing database connection!");
 		}
 	}
 
@@ -469,10 +357,8 @@ public class SimpleDatabase {
 				this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
 
 			} catch (final Throwable t) {
-				if (t.toString().contains("Unknown collation")) {
-					CommonCore.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
-					CommonCore.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable database connection or update your driver to fix this.");
-				}
+				if (t.toString().contains("Unknown collation"))
+					CommonCore.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. This is now required for storing emojis and non-engliish characters.");
 
 				else
 					throw t;
@@ -535,23 +421,20 @@ public class SimpleDatabase {
 		synchronized (this.connection) {
 			final List<String> sqls = new ArrayList<>();
 
-			for (final SerializedMap map : maps)
-				try {
-					final String columns = CommonCore.join(map.keySet());
-					final String values = CommonCore.join(map.values(), ", ", this::parseValue);
-					final String duplicateUpdate = CommonCore.join(map.entrySet(), ", ", entry -> entry.getKey() + " = VALUES (" + entry.getKey() + ")");
+			for (final SerializedMap map : maps) {
+				final String columns = CommonCore.join(map.keySet());
+				final String values = CommonCore.join(map.values(), ", ", this::parseValue);
+				final String duplicateUpdate = CommonCore.join(map.entrySet(), ", ", entry -> entry.getKey() + " = VALUES (" + entry.getKey() + ")");
 
-					final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
-					Debugger.debug("mysql", "Inserting batch SQL: " + sql);
+				final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
+				Debugger.debug("mysql", "Inserting batch SQL: " + sql);
 
-					sqls.add(sql);
-
-				} catch (final Throwable t) {
-					CommonCore.error(t, "Error inserting batch map: " + map);
-				}
+				sqls.add(sql);
+			}
 
 			this.batchUpdate(sqls);
 		}
+
 	}
 
 	/*
@@ -571,14 +454,8 @@ public class SimpleDatabase {
 	 * @param sql
 	 */
 	protected final void update(String sql) {
-		if (!this.connecting && Platform.getPlugin().isEnabled())
-			ValidCore.checkBoolean(Platform.isAsync(), "Updating database must be done async! Call: " + sql);
-
 		synchronized (this.connection) {
-			this.checkEstablished();
-
-			if (!this.isConnected())
-				this.connectUsingLastCredentials();
+			this.ensureConnected();
 
 			sql = this.replaceVariables(sql);
 			ValidCore.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
@@ -588,8 +465,8 @@ public class SimpleDatabase {
 			try (Statement statement = this.connection.createStatement()) {
 				statement.executeUpdate(sql);
 
-			} catch (final SQLException e) {
-				this.handleError(e, "Error on updating database with: " + sql);
+			} catch (final SQLException ex) {
+				CommonCore.error(ex, "Error on updating database with: " + sql);
 			}
 		}
 	}
@@ -617,9 +494,6 @@ public class SimpleDatabase {
 	 */
 	protected final void select(final String table, final String where, final ResultReader consumer) {
 		synchronized (this.connection) {
-			if (!this.isLoaded())
-				return;
-
 			final String tableName = this.replaceVariables(table);
 
 			try (ResultSet resultSet = this.query("SELECT * FROM " + table + (where == null ? "" : " WHERE " + where))) {
@@ -637,8 +511,8 @@ public class SimpleDatabase {
 						break;
 					}
 
-			} catch (final Throwable t) {
-				CommonCore.error(t, "Error selecting rows from table " + table + " where " + (where == null ? "all" : where));
+			} catch (final SQLException ex) {
+				CommonCore.error(ex, "Error selecting rows from table " + table + " where " + (where == null ? "all" : where));
 			}
 		}
 	}
@@ -660,9 +534,6 @@ public class SimpleDatabase {
 	 */
 	protected final void select(final String table, final Map<String, Object> where, final ResultReader consumer) {
 		synchronized (this.connection) {
-			if (!this.isLoaded())
-				return;
-
 			final String tableName = this.replaceVariables(table);
 
 			try (ResultSet resultSet = this.query("SELECT * FROM " + table + " " + buildWhere(where))) {
@@ -771,14 +642,8 @@ public class SimpleDatabase {
 	 * @return
 	 */
 	protected final ResultSet query(String sql) {
-		if (Platform.getPlugin().isEnabled())
-			ValidCore.checkBoolean(Platform.isAsync(), "Sending database query must be called async, command: " + sql);
-
 		synchronized (this.connection) {
-			this.checkEstablished();
-
-			if (!this.isConnected())
-				this.connectUsingLastCredentials();
+			this.ensureConnected();
 
 			sql = this.replaceVariables(sql);
 
@@ -791,7 +656,7 @@ public class SimpleDatabase {
 				return resultSet;
 
 			} catch (final SQLException ex) {
-				this.handleError(ex, "Error on querying database with: " + sql);
+				CommonCore.error(ex, "Error querying database with: " + sql);
 			}
 
 			return null;
@@ -808,10 +673,7 @@ public class SimpleDatabase {
 			return;
 
 		synchronized (this.connection) {
-			this.checkEstablished();
-
-			if (!this.isConnected())
-				this.connectUsingLastCredentials();
+			this.ensureConnected();
 
 			try (Statement batchStatement = this.getConnection().createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
 				final int processedCount = sqls.size();
@@ -872,10 +734,7 @@ public class SimpleDatabase {
 	 */
 	protected final java.sql.PreparedStatement prepareStatement(String sql) throws SQLException {
 		synchronized (this.connection) {
-			this.checkEstablished();
-
-			if (!this.isConnected())
-				this.connectUsingLastCredentials();
+			this.ensureConnected();
 
 			sql = this.replaceVariables(sql);
 
@@ -898,10 +757,7 @@ public class SimpleDatabase {
 	 */
 	protected final java.sql.PreparedStatement prepareStatement(String sql, final int type, final int concurrency) throws SQLException {
 		synchronized (this.connection) {
-			this.checkEstablished();
-
-			if (!this.isConnected())
-				this.connectUsingLastCredentials();
+			this.ensureConnected();
 
 			sql = this.replaceVariables(sql);
 
@@ -910,72 +766,34 @@ public class SimpleDatabase {
 		}
 	}
 
-	/**
-	 * Is the connection established, open and valid?
-	 *
-	 * Performs a blocking ping request to the database.
-	 *
-	 * @return whether the connection driver was set
+	/*
+	 * If not connected, attempt to connect using the last credentials
 	 */
-	protected final boolean isConnected() {
-		if (!this.isLoaded())
-			return false;
+	private final void ensureConnected() {
+		ValidCore.checkBoolean(this.isLoaded(), "Connection was never established, did you call connect() on " + this + "? Use isLoaded() to check.");
+		ValidCore.checkNotNull(this.lastCredentials, "Last credentials are null, did you call connect() on " + this + "?");
 
 		try {
 			if (!this.connection.isValid(0))
-				return false;
+				return;
+
 		} catch (SQLException | AbstractMethodError err) {
 			// Pass through silently
 		}
 
 		try {
-			return !this.connection.isClosed();
+			if (!this.connection.isClosed())
+				return;
 
 		} catch (final SQLException ex) {
-			return false;
-		}
-	}
-
-	/*
-	 * Checks if there's a collation-related error and prints warning message for the user to
-	 * update his database.
-	 */
-	private void handleError(final Throwable t, final String fallbackMessage) {
-		if (t.toString().contains("Unknown collation")) {
-			CommonCore.log("You need to update your database provider driver. We switched to support unicode using 4 bits length because the previous system only supported 3 bits.");
-			CommonCore.log("Some characters such as smiley or Chinese are stored in 4 bits so they would crash the 3-bit database leading to more problems. Most hosting providers have now widely adopted the utf8mb4_unicode_520_ci encoding you seem lacking. Disable database connection or update your driver to fix this.");
 		}
 
-		else if (t.toString().contains("Incorrect string value")) {
-			CommonCore.log("Attempted to save unicode letters (e.g. coors) to your database with invalid encoding, see https://stackoverflow.com/a/10959780 and adjust it. MariaDB may cause issues, use MySQL 8.0 for best results.");
-
-			t.printStackTrace();
-
-		} else
-			CommonCore.throwError(t, fallbackMessage);
+		this.connect(this.lastCredentials.getUrl(), this.lastCredentials.getUser(), this.lastCredentials.getPassword());
 	}
 
 	// --------------------------------------------------------------------
 	// Non-blocking checking
 	// --------------------------------------------------------------------
-
-	/**
-	 * Return if the developer called {@link #addVariable(String, String)} early enough
-	 * to be registered.
-	 *
-	 * @param key
-	 * @return
-	 */
-	final boolean hasVariable(final String key) {
-		return this.sqlVariables.containsKey(key);
-	}
-
-	/**
-	 * Checks if the connect() function was called.
-	 */
-	private final void checkEstablished() {
-		ValidCore.checkBoolean(this.isLoaded(), "Connection was never established, did you call connect() on " + this + "? Use isLoaded() to check.");
-	}
 
 	/**
 	 * Return true if the connect function was called so that the driver was loaded.
@@ -1001,26 +819,14 @@ public class SimpleDatabase {
 		this.sqlVariables.put(name, value);
 	}
 
-	/**
+	/*
 	 * Replace the {table} and {@link #sqlVariables} in the sql query
-	 *
-	 * @param sql
-	 * @return
 	 */
-	protected final String replaceVariables(String sql) {
+	private String replaceVariables(String sql) {
 		for (final Entry<String, String> entry : this.sqlVariables.entrySet())
 			sql = sql.replace("{" + entry.getKey() + "}", entry.getValue());
 
 		return sql;
-	}
-
-	/**
-	 * Return if the database is SQLite
-	 *
-	 * @return
-	 */
-	protected final boolean isSQLite() {
-		return this.isSQLite;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1031,8 +837,11 @@ public class SimpleDatabase {
 	 * A specialized task to make I/O operations off of the main thread
 	 */
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class RowQueueWriter implements Runnable {
+	public static final class RowQueueWriter implements Runnable {
 
+		/**
+		 * The singleton instance
+		 */
 		private static final RowQueueWriter instance = new RowQueueWriter();
 
 		/**
@@ -1056,12 +865,18 @@ public class SimpleDatabase {
 			}
 		}
 
+		/*
+		 * Adds a row to the queue.
+		 */
 		private void addToQueue(final Row row) {
 			synchronized (instance) {
 				this.queue.computeIfAbsent(row.getTable(), key -> new ArrayList<>()).add(row.toMap());
 			}
 		}
 
+		/*
+		 * Get the singleton instance
+		 */
 		public static RowQueueWriter getInstance() {
 			synchronized (instance) {
 				return instance;
@@ -1167,39 +982,6 @@ public class SimpleDatabase {
 		}
 	}
 
-	/*
-	 * Internal helper to create table rows.
-	 */
-	@Data
-	@Builder
-	private final static class TableRow {
-
-		/**
-		 * The table row name.
-		 */
-		private final String name;
-
-		/**
-		 * The data type.
-		 */
-		private final String dataType;
-
-		/**
-		 * Is this row NOT NULL?
-		 */
-		private final Boolean notNull;
-
-		/**
-		 * Does this row have a default value?
-		 */
-		private final String defaultValue;
-
-		/**
-		 * Is this row NOT NULL AUTO_INCREMENT?
-		 */
-		private final Boolean autoIncrement;
-	}
-
 	/**
 	 * A helper class to read results set - we cannot use a simple Consumer since it does not
 	 * catch exceptions automatically.
@@ -1214,28 +996,62 @@ public class SimpleDatabase {
 		 */
 		void accept(SimpleResultSet set) throws SQLException;
 	}
+}
+
+/*
+ * Internal helper to create table rows.
+ */
+@Data
+@Builder
+final class TableRow {
 
 	/**
-	 * Stores last known credentials from the connect() functions
+	 * The table row name.
 	 */
-	@RequiredArgsConstructor
-	private final class LastCredentials {
+	private final String name;
 
-		/**
-		 * The connecting URL, for example:
-		 * <p>
-		 * jdbc:mysql://host:port/database
-		 */
-		private final String url;
+	/**
+	 * The data type.
+	 */
+	private final String dataType;
 
-		/**
-		 * The user name for the database.
-		 */
-		private final String user;
+	/**
+	 * Is this row NOT NULL?
+	 */
+	private final Boolean notNull;
 
-		/**
-		 * The password for the database.
-		 */
-		private final String password;
-	}
+	/**
+	 * Does this row have a default value?
+	 */
+	private final String defaultValue;
+
+	/**
+	 * Is this row NOT NULL AUTO_INCREMENT?
+	 */
+	private final Boolean autoIncrement;
+}
+
+/**
+ * Stores last known credentials from the connect() functions
+ */
+@Getter
+@RequiredArgsConstructor
+final class LastCredentials {
+
+	/**
+	 * The connecting URL, for example:
+	 * <p>
+	 * jdbc:mysql://host:port/database
+	 */
+	private final String url;
+
+	/**
+	 * The user name for the database.
+	 */
+	private final String user;
+
+	/**
+	 * The password for the database.
+	 */
+	private final String password;
 }
