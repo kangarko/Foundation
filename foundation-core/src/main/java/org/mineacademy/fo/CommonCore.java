@@ -22,6 +22,7 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.database.Row;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
@@ -486,6 +487,30 @@ public abstract class CommonCore {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
+	// GSON
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Convert the given json into list
+	 *
+	 * @param json
+	 * @return
+	 */
+	public static List<String> convertJsonToList(String json) {
+		return GSON.fromJson(json, List.class);
+	}
+
+	/**
+	 * Return the given list as JSON
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static String convertListToJson(final Collection<String> list) {
+		return GSON.toJson(list);
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
 	// Aesthetics
 	// ------------------------------------------------------------------------------------------------------------
 
@@ -643,6 +668,9 @@ public abstract class CommonCore {
 
 		else if (object instanceof ConfigStringSerializable)
 			return ((ConfigStringSerializable) object).serialize();
+
+		else if (object instanceof Row)
+			throw new FoException("Cannot simplify a Row object, got: " + object);
 
 		for (final Function<Object, String> simplifier : simplifiers) {
 			final String result = simplifier.apply(object);
