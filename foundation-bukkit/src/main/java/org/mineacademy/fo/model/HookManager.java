@@ -2872,7 +2872,7 @@ class LWCHook {
 			final Object ownerUid = ReflectionUtil.invoke("getOwner", protection);
 
 			if (ownerUid != null) {
-				final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(UUID.fromString(ownerUid.toString()));
+				final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUniqueId(UUID.fromString(ownerUid.toString()));
 
 				if (offlinePlayer != null)
 					return offlinePlayer.getName();
@@ -3795,11 +3795,21 @@ class LandsHook {
 class LiteBansHook {
 
 	private final Set<String> mutedPlayerUids = new HashSet<>();
-	private final Object instance;
-	private final Method methodPrepareStatement;
+	private Object instance;
+	private Method methodPrepareStatement;
 
 	LiteBansHook() {
-		final Class<?> classDatabase = ReflectionUtil.lookupClass("litebans.api.Database");
+
+		final Class<?> classDatabase;
+
+		try {
+			classDatabase = Class.forName("litebans.api.Database");
+
+		} catch (final ClassNotFoundException ex) {
+			Common.log("LiteBans API not found, skipping integration.");
+
+			return;
+		}
 
 		this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
 		this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
@@ -3811,6 +3821,9 @@ class LiteBansHook {
 
 			@Override
 			public void run() {
+				if (methodPrepareStatement == null)
+					return;
+
 				mutedPlayerUids.clear();
 
 				try (PreparedStatement statement = ReflectionUtil.invoke(methodPrepareStatement, instance, "SELECT * FROM {mutes}")) {
