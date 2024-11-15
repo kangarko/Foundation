@@ -1,7 +1,9 @@
 package org.mineacademy.fo.debug;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +11,6 @@ import java.util.Set;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
 import org.mineacademy.fo.platform.FoundationPlugin;
@@ -157,10 +158,11 @@ public final class Debugger {
 			try {
 				final List<String> lines = new ArrayList<>();
 				final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + throwable.getClass().getSimpleName();
+				final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 				// Write out header and server info
 				fill(lines,
-						"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+						"------------------------------------[ " + date.format(new Date()) + " ]-----------------------------------",
 						header,
 						systemInfo,
 						"Plugins: " + CommonCore.join(Platform.getServerPlugins()),
@@ -205,10 +207,17 @@ public final class Debugger {
 			} catch (final Throwable secondError) {
 
 				// Use system in case CommonCore#log threw the error
-				log("Got error when saving another error! Saving error:" + secondError);
+				log(CommonCore.configLine());
+				log("Got error when saving another error!");
 				log("Original error that is not saved:");
-
+				log(CommonCore.configLine());
 				throwable.printStackTrace();
+
+				log(CommonCore.configLine());
+				log("New error:");
+				log(CommonCore.configLine());
+				secondError.printStackTrace();
+				log(CommonCore.configLine());
 			}
 		}
 	}
