@@ -272,8 +272,8 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param key
 	 * @return
 	 */
-	public UUID getUUID(final String key) {
-		return this.getUUID(key, null);
+	public UUID getUniqueId(final String key) {
+		return this.getUniqueId(key, null);
 	}
 
 	/**
@@ -283,7 +283,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param def
 	 * @return
 	 */
-	public UUID getUUID(final String key, final UUID def) {
+	public UUID getUniqueId(final String key, final UUID def) {
 		return this.get(key, UUID.class, def);
 	}
 

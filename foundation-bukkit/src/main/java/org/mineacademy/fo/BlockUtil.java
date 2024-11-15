@@ -823,10 +823,10 @@ public final class BlockUtil {
 		state.setRawData((byte) 0x1);
 
 		try {
-			state.setOwningPlayer(Remain.getOfflinePlayerByUUID(id));
+			state.setOwningPlayer(Remain.getOfflinePlayerByUniqueId(id));
 
 		} catch (final Throwable t) {
-			state.setOwner(Remain.getOfflinePlayerByUUID(id).getName());
+			state.setOwner(Remain.getOfflinePlayerByUniqueId(id).getName());
 		}
 
 		state.update(false, false);

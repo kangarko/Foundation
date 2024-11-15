@@ -146,7 +146,7 @@ public interface SharedBukkitCommandCore {
 	 */
 	default void findOfflinePlayer(final UUID uniqueId, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
 		this.runTaskAsync(() -> {
-			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUUID(uniqueId);
+			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUniqueId(uniqueId);
 			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), Lang.componentVars("player-invalid-uuid", "uuid", uniqueId.toString()));
 
 			this.runTask(() -> syncCallback.accept(targetPlayer));

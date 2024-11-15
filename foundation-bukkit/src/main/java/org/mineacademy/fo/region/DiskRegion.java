@@ -266,7 +266,7 @@ public final class DiskRegion extends YamlConfig {
 
 	@Override
 	public String toString() {
-		return "DiskRegion{name=" + getFileName() + ", primary=" + SerializeUtil.serializeLoc(getPrimary()) + ", secondary=" + SerializeUtil.serializeLoc(getSecondary()) + "}";
+		return "DiskRegion{name=" + getFileName() + ", primary=" + SerializeUtil.serializeLocation(getPrimary()) + ", secondary=" + SerializeUtil.serializeLocation(getSecondary()) + "}";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
