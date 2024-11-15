@@ -44,7 +44,7 @@
   "command-invalid-type": "No such {type} '{value}'. Available: {available}",
   "command-invalid-uuid": "Invalid UUID '{uuid}'",
   "command-invalid-world": "Invalid world '{world}'. Available: {available}",
-  "command-label-authors": "<gray>Made by",
+  "command-label-authors": "Made by",
   "command-label-description": "<red>Description: {description}",
   "command-label-help-for": "Help for /{label}",
   "command-label-optional-args": "optional arguments",
@@ -130,7 +130,7 @@
     "<#ffdc7b>Yours: {plugin_version} New: {new_version} Released: {release_date}",
     "<#ffdc7b>Link: <click:open_url:'{url}'>{url}</click>"
   ],
-  "prefix-announce": "<light_purple><dark_gray>[<bold><dark_purple>!<dark_gray></bold>]<gray>",
+  "prefix-announce": "<light_purple><dark_gray>[<bold><dark_purple>!<reset><dark_gray>]<gray>",
   "prefix-error": "<red><dark_gray>[<bold><dark_red>✕</bold><reset><dark_gray>]<red>",
   "prefix-info": "<gray><dark_gray>[<bold><blue>i</bold><reset><dark_gray>]<gray>",
   "prefix-question": "<gray><dark_gray>[<bold><green>?</bold><reset><dark_gray>]<gray>",
