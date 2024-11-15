@@ -1,9 +1,13 @@
 package org.mineacademy.fo.database;
 
+import java.lang.reflect.Constructor;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.database.SimpleDatabase.TableCreator;
+import org.mineacademy.fo.exception.ReflectionException;
 
 /**
  * Represents a table in the database.
@@ -74,5 +78,18 @@ public interface Table {
 	 * @return
 	 * @throws SQLException
 	 */
-	<T extends Row> T createRow(SimpleResultSet resultSet) throws SQLException;
+	default <T extends Row> T createRow(SimpleResultSet resultSet) throws SQLException {
+		Constructor<?> constructor;
+
+		try {
+			constructor = ReflectionUtil.getConstructor(this.getRowClass(), SimpleResultSet.class);
+
+		} catch (final ReflectionException ex) {
+			constructor = null;
+		}
+
+		ValidCore.checkNotNull(constructor, "Row class " + this.getRowClass() + " must have a constructor with SimpleResultSet parameter");
+
+		return (T) ReflectionUtil.instantiate(constructor, resultSet);
+	}
 }

@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.database.Row;
+import org.mineacademy.fo.database.RowDate;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.platform.FoundationPlayer;
 
@@ -20,7 +21,7 @@ public final class FilterFrom extends Filter {
 
 	@Override
 	public boolean isApplicable(Table table) {
-		return true;
+		return RowDate.class.isAssignableFrom(table.getRowClass());
 	}
 
 	@Override
@@ -57,6 +58,6 @@ public final class FilterFrom extends Filter {
 
 	@Override
 	public boolean canDisplay(Row row) {
-		return row.getDate() >= this.startDate;
+		return ((RowDate) row).getDate() >= this.startDate;
 	}
 }

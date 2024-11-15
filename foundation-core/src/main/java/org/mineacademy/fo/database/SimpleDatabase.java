@@ -2,9 +2,11 @@ package org.mineacademy.fo.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,11 +14,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.ValidCore;
@@ -24,7 +25,6 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidRowException;
-import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.platform.Platform;
 
 import lombok.AccessLevel;
@@ -48,25 +48,20 @@ import lombok.RequiredArgsConstructor;
 public class SimpleDatabase {
 
 	/**
+	 * Map of variables you can use with the {} syntax in SQL.
+	 */
+	private final Map<String, String> sqlVariables = new HashMap<>();
+
+	/**
 	 * The established connection, or null if none.
 	 */
 	@Getter(value = AccessLevel.PROTECTED)
 	private Connection connection;
 
 	/**
-	 * Map of variables you can use with the {} syntax in SQL.
-	 */
-	private final Map<String, String> sqlVariables = new HashMap<>();
-
-	/**
 	 * The last credentials from the connect function, or null if never called.
 	 */
 	private LastCredentials lastCredentials;
-
-	/*
-	 * Optional Hikari data source.
-	 */
-	private Object hikariDataSource;
 
 	/*
 	 * Is this a SQLite connection?
@@ -78,7 +73,16 @@ public class SimpleDatabase {
 	// --------------------------------------------------------------------
 
 	/**
-	 * Attempts to establish a new database connection.
+	 * Return true if the connect function was called so that the driver was loaded.
+	 *
+	 * @return
+	 */
+	public final boolean isConnected() {
+		return this.connection != null;
+	}
+
+	/**
+	 * Attempts to establish a new MySQL database connection.
 	 *
 	 * @param host
 	 * @param port
@@ -87,21 +91,7 @@ public class SimpleDatabase {
 	 * @param password
 	 */
 	public final void connect(final String host, final int port, final String database, final String user, final String password) {
-		this.connect(host, port, database, user, password);
-	}
-
-	/**
-	 * Attempts to establish a new database connection. You can then use {table} in SQL to replace with your table name.
-	 *
-	 * @param host
-	 * @param port
-	 * @param database
-	 * @param user
-	 * @param password
-	 * @param autoReconnect
-	 */
-	public final void connect(final String host, final int port, final String database, final String user, final String password, final boolean autoReconnect) {
-		this.connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=" + autoReconnect, user, password);
+		this.connect("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&autoReconnect=true", user, password);
 	}
 
 	/**
@@ -147,6 +137,7 @@ public class SimpleDatabase {
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.1.0");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
+
 				} catch (final Throwable t) {
 					CommonCore.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. You can ignore this but if you encounter issues, update Java.");
 
@@ -159,24 +150,42 @@ public class SimpleDatabase {
 
 			this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
 
-			this.lastCredentials = new LastCredentials(url, user, password);
+			String databaseName = url.substring(url.lastIndexOf("/") + 1);
+			databaseName = databaseName.contains("?") ? databaseName.substring(0, databaseName.indexOf("?")) : databaseName;
+
+			this.lastCredentials = new LastCredentials(url, databaseName, user, password);
 
 			// Create tables automatically
 			for (final Table createdTable : this.getTables()) {
 				final TableCreator creator = TableCreator.of(createdTable.getName());
 
-				createdTable.onTableCreate(creator);
+				try {
+					createdTable.onTableCreate(creator);
 
-				this.createTable(creator);
+					this.createTable(creator);
+
+				} catch (final Exception ex) {
+					CommonCore.error(ex, "Error creating table " + createdTable.getName() + ", aborting.");
+
+					return;
+				}
 			}
 
-			// Call delegate
-			this.onConnected();
+			try {
+				this.onConnected();
+
+			} catch (final Exception ex) {
+				CommonCore.error(ex, "Error after connecting to database, shutting down the plugin for safety.");
+				Platform.getPlugin().disable();
+
+				return;
+			}
 
 		} catch (final Exception ex) {
 			CommonCore.throwError(ex,
-					"Failed to connect to database",
+					"Failed to connect to a database",
 					"URL: " + url,
+					"User: " + user,
 					"Error: " + ex.getMessage());
 		}
 	}
@@ -187,28 +196,43 @@ public class SimpleDatabase {
 	protected void onConnected() {
 	}
 
-	// --------------------------------------------------------------------
-	// Disconnecting
-	// --------------------------------------------------------------------
-
 	/**
 	 * Attempts to close the connection, if not null.
 	 */
-	public final void close() {
+	public final void disconnect() {
 		try {
 			if (this.connection != null)
 				this.connection.close();
-
-			if (this.hikariDataSource != null)
-				ReflectionUtil.invoke("close", this.hikariDataSource);
 
 		} catch (final SQLException ex) {
 			CommonCore.error(ex, "Error closing database connection!");
 		}
 	}
 
+	/*
+	 * Checks if we connected to the database
+	 */
+	private final void ensureConnected() {
+		ValidCore.checkBoolean(this.isConnected(), "Connection was never established, did you call connect() on " + this + "? Use isLoaded() to check.");
+	}
+
+	/*
+	 * If connection is closed, attempt to connect using the last credentials
+	 */
+	private final void reconnectIfClosed() {
+		ValidCore.checkNotNull(this.lastCredentials, "Last credentials are null, did you call connect() on " + this + "?");
+
+		try {
+			if (!this.connection.isValid(0) || this.connection.isClosed())
+				this.connect(this.lastCredentials.getUrl(), this.lastCredentials.getUser(), this.lastCredentials.getPassword());
+
+		} catch (final SQLException | AbstractMethodError ex) {
+			CommonCore.error(ex, "Failed to reconnect to the database");
+		}
+	}
+
 	// --------------------------------------------------------------------
-	// Working with table-row paradigm.
+	// Working with the new Table OOP model.
 	// --------------------------------------------------------------------
 
 	/**
@@ -222,7 +246,7 @@ public class SimpleDatabase {
 	public final <T extends Row> T getRow(Table table, int id) {
 		final List<T> list = new ArrayList<>();
 
-		this.select(table.getName(), CommonCore.newHashMap("Id", id), resultSet -> list.add(table.createRow(resultSet)));
+		this.select(table, Where.builder().equals("Id", id), resultSet -> list.add(table.createRow(resultSet)));
 
 		if (!list.isEmpty()) {
 			ValidCore.checkBoolean(list.size() == 1, "Found more than one row with id " + id + " in table " + table.getName() + ": " + list);
@@ -243,7 +267,7 @@ public class SimpleDatabase {
 	public final <T extends Row> List<T> getRows(Table table) {
 		final List<T> entries = new ArrayList<>();
 
-		this.selectAll(table.getName(), resultSet -> entries.add(table.createRow(resultSet)));
+		this.selectAll(table, resultSet -> entries.add(table.createRow(resultSet)));
 
 		Collections.reverse(entries);
 
@@ -258,9 +282,25 @@ public class SimpleDatabase {
 	 * @param where
 	 * @return
 	 */
-	public <T extends Row> List<T> getRowsWhere(Table table, String where) {
+	public <T extends Row> T getRowWhere(Table table, Where where) {
+		final List<T> rows = this.getRowsWhere(table, where);
+		ValidCore.checkBoolean(rows.size() <= 1, "Found more than one row in " + table.getName() + " where " + where + ": " + rows);
+
+		return rows.isEmpty() ? null : rows.get(0);
+	}
+
+	/**
+	 * Get selected rows in the given table
+	 *
+	 * @param <T>
+	 * @param table
+	 * @param where
+	 * @return
+	 */
+	public <T extends Row> List<T> getRowsWhere(Table table, Where where) {
 		final List<T> entries = new ArrayList<>();
-		this.select(table.getName(), where, resultSet -> entries.add((T) table.createRow(resultSet)));
+
+		this.select(table, where, resultSet -> entries.add((T) table.createRow(resultSet)));
 
 		Collections.reverse(entries);
 
@@ -279,24 +319,17 @@ public class SimpleDatabase {
 	/**
 	 * Remove a row from the given table
 	 *
+	 * @param table
 	 * @param row
 	 */
-	public final void removeRow(Row row) {
-		this.removeRow(row.getTable(), row.getId());
-	}
-
-	/**
-	 * Remove a row from the given table
-	 *
-	 * @param table
-	 * @param id
-	 */
-	public final void removeRow(Table table, int id) {
-		this.update("DELETE FROM " + table.getName() + " WHERE Id = " + id);
+	public final void deleteRow(Table table, Row row) {
+		this.delete(table, Where.builder().equals("Id", row.getId()));
 	}
 
 	/**
 	 * Override to return a list of tables.
+	 *
+	 * Defaults to an empty array.
 	 *
 	 * @return
 	 */
@@ -314,101 +347,96 @@ public class SimpleDatabase {
 	 * @param creator
 	 */
 	protected final void createTable(final TableCreator creator) {
-		synchronized (this.connection) {
-			String columns = "";
+		String columns = "";
 
-			for (final TableRow column : creator.getColumns()) {
-				String dataType = column.getDataType().toLowerCase();
+		for (final TableRow column : creator.getColumns()) {
+			String dataType = column.getDataType().toLowerCase();
 
-				if (this.isSQLite) {
-					if (dataType.equals("datetime") || dataType.equals("longtext"))
-						dataType = "text";
+			if (this.isSQLite) {
+				if (dataType.equals("datetime") || dataType.equals("longtext"))
+					dataType = "text";
 
-					else if (dataType.startsWith("varchar"))
-						dataType = "text";
+				else if (dataType.startsWith("varchar"))
+					dataType = "text";
 
-					else if (dataType.startsWith("bigint"))
-						dataType = "integer";
+				else if (dataType.startsWith("bigint"))
+					dataType = "integer";
 
-					else if (creator.getPrimaryColumn() != null && creator.getPrimaryColumn().equals(column.getName()))
-						dataType = "INTEGER PRIMARY KEY";
-				}
-
-				columns += (columns.isEmpty() ? "" : ", ") + "`" + column.getName() + "` " + dataType;
-
-				if (column.getAutoIncrement() != null && column.getAutoIncrement())
-					if (this.isSQLite)
-						columns += " AUTOINCREMENT";
-
-					else
-						columns += " NOT NULL AUTO_INCREMENT";
-
-				else if (column.getNotNull() != null && column.getNotNull())
-					columns += " NOT NULL";
-
-				if (column.getDefaultValue() != null)
-					columns += " DEFAULT " + column.getDefaultValue();
+				else if (creator.getPrimaryColumn() != null && creator.getPrimaryColumn().equals(column.getName()))
+					dataType = "INTEGER PRIMARY KEY";
 			}
 
-			if (creator.getPrimaryColumn() != null && !this.isSQLite)
-				columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
+			columns += (columns.isEmpty() ? "" : ", ") + "`" + column.getName() + "` " + dataType;
 
-			try {
-				this.update("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
-
-			} catch (final Throwable t) {
-				if (t.toString().contains("Unknown collation"))
-					CommonCore.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. This is now required for storing emojis and non-engliish characters.");
+			if (column.getAutoIncrement() != null && column.getAutoIncrement())
+				if (this.isSQLite)
+					columns += " AUTOINCREMENT";
 
 				else
-					throw t;
-			}
+					columns += " NOT NULL AUTO_INCREMENT";
+
+			else if (column.getNotNull() != null && column.getNotNull())
+				columns += " NOT NULL";
+
+			if (column.getDefaultValue() != null)
+				columns += " DEFAULT " + column.getDefaultValue();
+		}
+
+		if (creator.getPrimaryColumn() != null && !this.isSQLite)
+			columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
+
+		try {
+			this.updateUnsafe("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
+
+		} catch (final Throwable t) {
+			if (t.toString().contains("Unknown collation"))
+				CommonCore.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. This is now required for storing emojis and non-engliish characters.");
+
+			else
+				throw t;
 		}
 	}
 
 	/**
-	 * Insert the given column-values pairs into the {@link #getTable()}.
-	 *
-	 * @param columsAndValues
-	 */
-	protected final void insert(@NonNull final SerializedMap columsAndValues) {
-		this.insert("{table}", columsAndValues);
-	}
-
-	/**
-	 * Insert the given serializable object as its column-value pairs into the given table.
-	 *
-	 * @param <T>
-	 * @param table
-	 * @param serializableObject
-	 */
-	protected final <T extends ConfigSerializable> void insert(final String table, @NonNull final T serializableObject) {
-		this.insert(table, serializableObject.serialize());
-	}
-
-	/**
-	 * Insert the given column-values pairs into the given table.
+	 * Inserts the given map into the database table.
 	 *
 	 * @param table
 	 * @param columnsAndValues
 	 */
-	protected final void insert(final String table, @NonNull final SerializedMap columnsAndValues) {
-		synchronized (this.connection) {
-			final String columns = CommonCore.join(columnsAndValues.keySet());
-			final String values = CommonCore.join(columnsAndValues.values(), ", ", value -> value == null || value.equals("NULL") ? "NULL" : (value instanceof Number ? String.valueOf(value) : "'" + value + "'"));
-			final String duplicateUpdate = CommonCore.join(columnsAndValues.entrySet(), ", ", entry -> entry.getKey() + "=VALUES(" + entry.getKey() + ")");
+	protected final void insert(final Table table, @NonNull final SerializedMap columnsAndValues) {
+		final String tableName = this.replaceVariables(table.getName());
 
-			this.update("INSERT INTO " + this.replaceVariables(table) + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";"));
+		// Building column names and placeholders for values (?)
+		final String columns = String.join(",", columnsAndValues.keySet());
+		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
+
+		// Prepare the duplicate update clause for MySQL
+		final String duplicateUpdate = columnsAndValues.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
+
+		final StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
+
+		if (!this.isSQLite)
+			sql.append(" ON DUPLICATE KEY UPDATE ").append(duplicateUpdate);
+
+		// Execute the query using PreparedStatement
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+			int index = 1;
+
+			for (final Object value : columnsAndValues.values()) {
+				if (value == null || value.equals("NULL"))
+					preparedStatement.setNull(index++, java.sql.Types.NULL);
+				else
+					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value)); // TODO test this
+			}
+
+			preparedStatement.executeUpdate();
+
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error inserting into database",
+					"Table: " + tableName,
+					"Query: " + sql);
 		}
-	}
-
-	/**
-	 * Insert the batch map into {@link #getTable()}.
-	 *
-	 * @param maps
-	 */
-	protected final void insertBatch(@NonNull final List<SerializedMap> maps) {
-		this.insertBatch("{table}", maps);
 	}
 
 	/**
@@ -417,7 +445,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param maps
 	 */
-	protected final void insertBatch(final String table, @NonNull final List<SerializedMap> maps) {
+	protected final void insertBatch(final Table table, @NonNull final List<SerializedMap> maps) {
 		synchronized (this.connection) {
 			final List<String> sqls = new ArrayList<>();
 
@@ -426,7 +454,7 @@ public class SimpleDatabase {
 				final String values = CommonCore.join(map.values(), ", ", this::parseValue);
 				final String duplicateUpdate = CommonCore.join(map.entrySet(), ", ", entry -> entry.getKey() + " = VALUES (" + entry.getKey() + ")");
 
-				final String sql = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
+				final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
 				Debugger.debug("mysql", "Inserting batch SQL: " + sql);
 
 				sqls.add(sql);
@@ -434,7 +462,52 @@ public class SimpleDatabase {
 
 			this.batchUpdate(sqls);
 		}
+	}
 
+	/**
+	 * Executes a massive batch update.
+	 *
+	 * @param sqls
+	 */
+	protected final void batchUpdate(@NonNull final List<String> sqls) {
+		this.ensureConnected();
+
+		if (sqls.isEmpty())
+			return;
+
+		synchronized (this.connection) {
+			this.reconnectIfClosed();
+
+			try {
+				try (Statement batchStatement = this.connection.createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
+					final int processedCount = sqls.size();
+
+					for (final String sql : sqls)
+						batchStatement.addBatch(this.replaceVariables(sql));
+
+					if (processedCount > 10_000)
+						CommonCore.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
+								+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
+
+					// Prevent automatically sending db instructions
+					this.connection.setAutoCommit(false);
+
+					// Execute
+					batchStatement.executeBatch();
+
+					// This will block the thread
+					this.connection.commit();
+
+				} finally {
+					this.connection.setAutoCommit(true);
+				}
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error executing a batch update",
+						"SQLs (" + sqls.size() + "): " + sqls);
+			}
+		}
 	}
 
 	/*
@@ -443,7 +516,277 @@ public class SimpleDatabase {
 	private final String parseValue(final Object value) {
 		final Object serialized = SerializeUtilCore.serialize(Language.JSON, value);
 
-		return value == null || value.equals("NULL") ? "NULL" : "'" + serialized.toString() + "'";
+		return value == null || value.equals("NULL") ? "NULL" : serialized instanceof Number ? String.valueOf(serialized) : serialized instanceof Boolean ? ((boolean) serialized) ? "1" : "0" : "'" + serialized.toString() + "'";
+	}
+
+	/**
+	 * Lists all rows in the given table.
+	 *
+	 * @param table
+	 * @param consumer
+	 */
+	protected final void selectAll(final Table table, final ResultReader consumer) {
+		this.select(table, null, consumer);
+	}
+
+	/**
+	 * Selects all rows from the given table according to the where map clauses.
+	 *
+	 * @param table
+	 * @param whereMap
+	 * @param consumer
+	 */
+	protected final void select(final Table table, final Where where, final ResultReader consumer) {
+		final StringBuilder sql = new StringBuilder("SELECT * FROM ").append(table.getName());
+
+		if (where != null && !where.getConditions().isEmpty())
+			sql.append(" WHERE ").append(where.buildSql());
+
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+			if (where != null && !where.getValues().isEmpty()) {
+				int index = 1;
+
+				for (final Object value : where.getValues())
+					preparedStatement.setObject(index++, value);
+			}
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next())
+					try {
+						consumer.accept(SimpleResultSet.wrap(table, resultSet));
+
+					} catch (final InvalidRowException ex) {
+						// Pardoned
+
+					} catch (final Throwable throwable) {
+						CommonCore.error(throwable, "Error selecting a row from table " + table.getName() + " where " + sql);
+					}
+			}
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error selecting database rows",
+					"Table: " + table.getName(),
+					"Query: " + sql);
+		}
+	}
+
+	/**
+	 * Select columns from the given table.
+	 *
+	 * @param table
+	 * @param columns
+	 * @param consumer
+	 */
+	protected final void selectColumns(Table table, List<String> columns, final ResultReader consumer) {
+		this.selectColumns(table, columns, null, consumer);
+	}
+
+	/**
+	 * Select columns from the given table.
+	 *
+	 * @param table
+	 * @param columns
+	 * @param where
+	 * @param consumer
+	 */
+	protected final void selectColumns(Table table, List<String> columns, Where where, final ResultReader consumer) {
+		final String tableName = table.getName();
+		final StringBuilder sql = new StringBuilder("SELECT ");
+
+		sql.append(String.join(", ", columns)).append(" FROM ").append(tableName);
+
+		if (where != null && !where.getConditions().isEmpty())
+			sql.append(" WHERE ").append(where.buildSql());
+
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+			if (where != null && !where.getValues().isEmpty()) {
+				int index = 1;
+
+				for (final Object value : where.getValues())
+					preparedStatement.setObject(index++, value);
+			}
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next())
+					consumer.accept(SimpleResultSet.wrap(table, resultSet));
+			}
+
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error selecting database columns",
+					"Table: " + tableName,
+					"Query: " + sql);
+		}
+	}
+
+	/**
+	 * Returns the amount of rows from the given table per the conditions,
+	 *
+	 * Example conditions: SerializedMap.ofArray("Status", "PENDING")
+	 * This example will return all rows where column Status equals PENDING.
+	 *
+	 * @param table
+	 * @param conditions
+	 * @return
+	 */
+	protected final int count(Table table, final SerializedMap conditions) {
+		final String tableName = this.replaceVariables(table.getName());
+
+		final StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(*) FROM ").append(tableName);
+
+		if (!conditions.isEmpty()) {
+			queryBuilder.append(" WHERE ");
+			queryBuilder.append(String.join(" AND ", conditions.entrySet().stream().map(entry -> entry.getKey() + " = ?").collect(Collectors.toList())));
+		}
+
+		final String sql = queryBuilder.toString();
+
+		try (PreparedStatement statement = this.prepareStatement(sql)) {
+			int index = 1;
+
+			for (final Map.Entry<String, Object> entry : conditions.entrySet())
+				statement.setObject(index++, entry.getValue());
+
+			try (ResultSet resultSet = statement.executeQuery()) {
+				if (resultSet.next())
+					return resultSet.getInt(1);
+			}
+
+		} catch (final SQLException ex) {
+			CommonCore.throwError(ex,
+					"Error counting database rows",
+					"Table: " + tableName,
+					"Query: " + sql);
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Delete rows from the given table based on the where conditions.
+	 *
+	 * @param table The database table to delete from.
+	 * @param where The where conditions.
+	 */
+	protected final void delete(Table table, Where where) {
+		ValidCore.checkBoolean(where != null && !where.getConditions().isEmpty(), "The where conditions cannot be empty for a delete operation!");
+		final String sql = "DELETE FROM " + table.getName() + " WHERE " + where.buildSql();
+
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+			int index = 1;
+
+			for (final Object value : where.getValues())
+				preparedStatement.setObject(index++, value);
+
+			preparedStatement.executeUpdate();
+
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error deleting database rows",
+					"Table: " + table.getName(),
+					"Query: " + sql);
+		}
+	}
+
+	/**
+	 * Deletes rows from the given table where the 'Date' column is less than the provided timestamp.
+	 *
+	 * @param table The table from which to delete rows.
+	 * @param timestamp The timestamp limit. Rows with 'Date' earlier than this will be deleted.
+	 */
+	protected final void deleteOlderThan(Table table, @NonNull Timestamp timestamp) {
+		final String sql = "DELETE FROM " + table.getName() + " WHERE Date < ?";
+
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+			preparedStatement.setTimestamp(1, timestamp);
+			preparedStatement.executeUpdate();
+
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error deleting database rows",
+					"Table: " + table.getName(),
+					"Query: " + sql);
+		}
+	}
+
+	/*
+	 * Creates a new prepared statement for the given sql query.
+	 */
+	protected final PreparedStatement prepareStatement(final String sql) {
+		this.ensureConnected();
+
+		synchronized (this.connection) {
+			this.reconnectIfClosed();
+
+			try {
+				return this.connection.prepareStatement(sql);
+
+			} catch (final SQLException ex) {
+				CommonCore.throwError(ex,
+						"Error preparing a statement",
+						"Query: " + sql);
+
+				return null;
+			}
+		}
+	}
+
+	/**
+	 * Check if a specific column exists in a MySQL or SQLite database.
+	 *
+	 * @param tableName
+	 * @param column
+	 * @return
+	 * @throws SQLException
+	 */
+	protected final boolean doesColumnExist(Table table, String column) throws SQLException {
+		final String tableName = table.getName();
+
+		if (this.isSQLite) {
+			final String sql = "PRAGMA table_info(" + tableName + ");";
+
+			try (PreparedStatement statement = this.prepareStatement(sql);
+					ResultSet resultSet = statement.executeQuery()) {
+
+				while (resultSet.next()) {
+					final String columnName = resultSet.getString("name");
+
+					// Compare with the expected column name
+					if (columnName.equalsIgnoreCase(column))
+						return true;
+				}
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error checking if SQLite database column exists",
+						"Table: " + tableName,
+						"Column: " + column,
+						"Query: " + sql);
+			}
+
+		} else {
+			final String sql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?";
+
+			try (PreparedStatement statement = this.prepareStatement(sql)) {
+				statement.setString(1, this.lastCredentials.getDatabaseName());
+				statement.setString(2, tableName);
+				statement.setString(3, column);
+
+				try (ResultSet resultSet = statement.executeQuery()) {
+					if (resultSet.next())
+						return resultSet.getInt(1) > 0;
+				}
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error checking if MySQL database column exists",
+						"Table: " + tableName,
+						"Column: " + column,
+						"Query: " + sql);
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -452,10 +795,13 @@ public class SimpleDatabase {
 	 * Make sure you called connect() first otherwise an error will be thrown.
 	 *
 	 * @param sql
+	 *
+	 * @deprecated Unchecked sql query, prone to SQL injections. You need to perform the validation yourself.
 	 */
-	protected final void update(String sql) {
+	@Deprecated
+	protected final void updateUnsafe(String sql) {
 		synchronized (this.connection) {
-			this.ensureConnected();
+			this.reconnectIfClosed();
 
 			sql = this.replaceVariables(sql);
 			ValidCore.checkBoolean(!sql.contains("{table}"), "Table not set! Either use connect() method that specifies it or call addVariable(table, 'yourtablename') in your constructor!");
@@ -466,170 +812,10 @@ public class SimpleDatabase {
 				statement.executeUpdate(sql);
 
 			} catch (final SQLException ex) {
-				CommonCore.error(ex, "Error on updating database with: " + sql);
-			}
-		}
-	}
-
-	/**
-	 * Lists all rows in the given table.
-	 *
-	 * @param table
-	 * @param consumer
-	 */
-	protected final void selectAll(final String table, final ResultReader consumer) {
-		this.select(table, (String) null, consumer);
-	}
-
-	/**
-	 * Lists all rows in the given table matching the given where clauses. Example use:
-	 *
-	 * select(table, "PlayerUid = " + player.getUniqueId(), resultSet);
-	 *
-	 * Do not forget to close the connection when done in your consumer.
-	 *
-	 * @param table
-	 * @param where
-	 * @param consumer
-	 */
-	protected final void select(final String table, final String where, final ResultReader consumer) {
-		synchronized (this.connection) {
-			final String tableName = this.replaceVariables(table);
-
-			try (ResultSet resultSet = this.query("SELECT * FROM " + table + (where == null ? "" : " WHERE " + where))) {
-				while (resultSet.next())
-					try {
-						consumer.accept(new SimpleResultSet(tableName, resultSet));
-
-					} catch (final InvalidRowException ex) {
-						// Pardoned
-
-					} catch (final Throwable t) {
-						CommonCore.log("Error reading a row from table " + tableName + " where " + (where == null ? "all" : where) + ", aborting...");
-
-						t.printStackTrace();
-						break;
-					}
-
-			} catch (final SQLException ex) {
-				CommonCore.error(ex, "Error selecting rows from table " + table + " where " + (where == null ? "all" : where));
-			}
-		}
-	}
-
-	/**
-	 * Lists all rows in the given table matching the given where clauses. Example use:
-	 *
-	 * Map<String, Object> conditions = new LinkedHashMap<>();
-	 *
-	 * conditions.put("name", "John");
-	 * conditions.put("age", 30);
-	 * conditions.put("city", "%New York%");
-	 *
-	 * Do not forget to close the connection when done in your consumer.
-	 *
-	 * @param table
-	 * @param where
-	 * @param consumer
-	 */
-	protected final void select(final String table, final Map<String, Object> where, final ResultReader consumer) {
-		synchronized (this.connection) {
-			final String tableName = this.replaceVariables(table);
-
-			try (ResultSet resultSet = this.query("SELECT * FROM " + table + " " + buildWhere(where))) {
-				while (resultSet.next())
-					try {
-						consumer.accept(new SimpleResultSet(tableName, resultSet));
-
-					} catch (final InvalidRowException ex) {
-						// Pardoned
-
-					} catch (final Throwable t) {
-						CommonCore.log("Error reading a row from table " + tableName + " where " + (where == null ? "all" : where) + ", aborting...");
-
-						t.printStackTrace();
-						break;
-					}
-
-			} catch (final Throwable t) {
-				CommonCore.error(t, "Error selecting rows from table " + table + " where " + (where == null ? "all" : where));
-			}
-		}
-	}
-
-	/*
-	 * Builds a WHERE clause from the given conditions.
-	 */
-	private static String buildWhere(Map<String, Object> conditions) {
-		if (conditions == null || conditions.isEmpty())
-			return "";
-
-		final List<String> clauses = new ArrayList<>();
-
-		conditions.forEach((key, value) -> {
-			String clause;
-
-			if (value instanceof String)
-				clause = String.format("%s = '%s'", key, value);
-
-			else
-				clause = String.format("%s = %s", key, value);
-
-			clauses.add(clause);
-		});
-
-		return "WHERE " + String.join(" AND ", clauses);
-	}
-
-	/**
-	 * Returns the amount of rows from the given table per the key-value conditions.
-	 *
-	 * Example conditions: count("MyTable", "Player", "kangarko, "Status", "PENDING")
-	 * This example will return all rows where column Player is equal to kangarko and Status column equals PENDING.
-	 *
-	 * @param table
-	 * @param array
-	 * @return
-	 */
-	protected final int count(final String table, final Object... array) {
-		return this.count(table, SerializedMap.ofArray(array));
-	}
-
-	/**
-	 * Returns the amount of rows from the given table per the conditions,
-	 *
-	 * Example conditions: SerializedMap.ofArray("Player", "kangarko, "Status", "PENDING")
-	 * This example will return all rows where column Player is equal to kangarko and Status column equals PENDING.
-	 *
-	 * @param table
-	 * @param conditions
-	 * @return
-	 */
-	protected final int count(final String table, final SerializedMap conditions) {
-		synchronized (this.connection) {
-			// Convert conditions into SQL syntax
-			final Collection<String> conditionsList = CommonCore.convertList(conditions.entrySet(), entry -> entry.getKey() + " = '" + SerializeUtilCore.serialize(Language.JSON, entry.getValue()) + "'");
-
-			// Run the query
-			final String sql = "SELECT * FROM " + table + (conditionsList.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditionsList)) + ";";
-
-			try (ResultSet resultSet = this.query(sql)) {
-				int count = 0;
-
-				while (resultSet.next())
-					count++;
-
-				return count;
-
-			} catch (final SQLException ex) {
-				CommonCore.throwError(ex,
-						"Unable to count rows!",
-						"Table: " + this.replaceVariables(table),
-						"Conditions: " + conditions,
+				CommonCore.error(ex,
+						"Error updating database",
 						"Query: " + sql);
 			}
-
-			return 0;
 		}
 	}
 
@@ -640,10 +826,15 @@ public class SimpleDatabase {
 	 *
 	 * @param sql
 	 * @return
+	 *
+	 * @deprecated Unchecked sql query, prone to SQL injections. You need to perform the validation yourself.
 	 */
-	protected final ResultSet query(String sql) {
+	@Deprecated
+	protected final ResultSet queryUnsafe(String sql) {
+		this.ensureConnected();
+
 		synchronized (this.connection) {
-			this.ensureConnected();
+			this.reconnectIfClosed();
 
 			sql = this.replaceVariables(sql);
 
@@ -656,157 +847,27 @@ public class SimpleDatabase {
 				return resultSet;
 
 			} catch (final SQLException ex) {
-				CommonCore.error(ex, "Error querying database with: " + sql);
+				CommonCore.error(ex,
+						"Error querying database",
+						"Query: " + sql);
 			}
 
 			return null;
 		}
 	}
 
-	/**
-	 * Executes a massive batch update.
-	 *
-	 * @param sqls
-	 */
-	protected final void batchUpdate(@NonNull final List<String> sqls) {
-		if (sqls.isEmpty())
-			return;
-
-		synchronized (this.connection) {
-			this.ensureConnected();
-
-			try (Statement batchStatement = this.getConnection().createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
-				final int processedCount = sqls.size();
-
-				for (final String sql : sqls)
-					batchStatement.addBatch(this.replaceVariables(sql));
-
-				if (processedCount > 10_000)
-					CommonCore.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
-							+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
-
-				// Prevent automatically sending db instructions
-				this.getConnection().setAutoCommit(false);
-
-				try {
-					// Execute
-					batchStatement.executeBatch();
-
-					// This will block the thread
-					this.getConnection().commit();
-
-				} catch (final Throwable t) {
-					final List<String> errorMessage = new ArrayList<>();
-
-					errorMessage.add("Error executing a batch update with " + sqls.size() + " SQLs:");
-
-					for (final String sql : sqls)
-						errorMessage.add(sql);
-
-					CommonCore.error(t, CommonCore.toArray(errorMessage));
-
-					// Cancel the task but handle the error upstream
-					throw t;
-				}
-
-			} catch (final Throwable t) {
-				t.printStackTrace();
-
-			} finally {
-				try {
-					this.getConnection().setAutoCommit(true);
-
-				} catch (final SQLException ex) {
-					ex.printStackTrace();
-				}
-			}
-		}
-	}
-
-	/**
-	 * Attempts to return a prepared statement.
-	 * <p>
-	 * Make sure you called connect() first otherwise an error will be thrown.
-	 *
-	 * @param sql
-	 * @return
-	 * @throws SQLException
-	 */
-	protected final java.sql.PreparedStatement prepareStatement(String sql) throws SQLException {
-		synchronized (this.connection) {
-			this.ensureConnected();
-
-			sql = this.replaceVariables(sql);
-
-			Debugger.debug("mysql", "Preparing statement: " + sql);
-			return this.connection.prepareStatement(sql);
-		}
-	}
-
-	/**
-	 * Attempts to return a prepared statement.
-	 * <p>
-	 * Make sure you called connect() first otherwise an error will be thrown.
-	 *
-	 * @param sql
-	 * @param type
-	 * @param concurrency
-	 *
-	 * @return
-	 * @throws SQLException
-	 */
-	protected final java.sql.PreparedStatement prepareStatement(String sql, final int type, final int concurrency) throws SQLException {
-		synchronized (this.connection) {
-			this.ensureConnected();
-
-			sql = this.replaceVariables(sql);
-
-			Debugger.debug("mysql", "Preparing statement: " + sql);
-			return this.connection.prepareStatement(sql, type, concurrency);
-		}
-	}
-
-	/*
-	 * If not connected, attempt to connect using the last credentials
-	 */
-	private final void ensureConnected() {
-		ValidCore.checkBoolean(this.isLoaded(), "Connection was never established, did you call connect() on " + this + "? Use isLoaded() to check.");
-		ValidCore.checkNotNull(this.lastCredentials, "Last credentials are null, did you call connect() on " + this + "?");
-
-		try {
-			if (!this.connection.isValid(0))
-				return;
-
-		} catch (SQLException | AbstractMethodError err) {
-			// Pass through silently
-		}
-
-		try {
-			if (!this.connection.isClosed())
-				return;
-
-		} catch (final SQLException ex) {
-		}
-
-		this.connect(this.lastCredentials.getUrl(), this.lastCredentials.getUser(), this.lastCredentials.getPassword());
-	}
-
-	// --------------------------------------------------------------------
-	// Non-blocking checking
-	// --------------------------------------------------------------------
-
-	/**
-	 * Return true if the connect function was called so that the driver was loaded.
-	 *
-	 * @return
-	 */
-	public final boolean isLoaded() {
-		return this.connection != null;
-	}
-
 	// --------------------------------------------------------------------
 	// Variables
 	// --------------------------------------------------------------------
+
+	/**
+	 * Returns true if the database is SQLite.
+	 *
+	 * @return
+	 */
+	protected final boolean isSQLite() {
+		return this.isSQLite;
+	}
 
 	/**
 	 * Adds a new variable you can then use in your queries.
@@ -823,10 +884,17 @@ public class SimpleDatabase {
 	 * Replace the {table} and {@link #sqlVariables} in the sql query
 	 */
 	private String replaceVariables(String sql) {
-		for (final Entry<String, String> entry : this.sqlVariables.entrySet())
-			sql = sql.replace("{" + entry.getKey() + "}", entry.getValue());
+		final StringBuilder builder = new StringBuilder(sql);
 
-		return sql;
+		this.sqlVariables.forEach((key, value) -> {
+			final String varPattern = "{" + key + "}";
+			int index;
+
+			while ((index = builder.indexOf(varPattern)) != -1)
+				builder.replace(index, index + varPattern.length(), value);
+		});
+
+		return builder.toString();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -858,7 +926,7 @@ public class SimpleDatabase {
 					final Table table = entry.getKey();
 					final List<SerializedMap> maps = entry.getValue();
 
-					table.getDatabase().insertBatch(table.getName(), maps);
+					table.getDatabase().insertBatch(table, maps);
 				}
 
 				this.queue.clear();
@@ -881,6 +949,225 @@ public class SimpleDatabase {
 			synchronized (instance) {
 				return instance;
 			}
+		}
+	}
+
+	/**
+	 * Represents a where clause builder for SQL queries.
+	 */
+	@Getter
+	@NoArgsConstructor(access = AccessLevel.PRIVATE)
+	public static final class Where {
+
+		/**
+		 * The conditions
+		 */
+		private final List<String> conditions = new ArrayList<>();
+
+		/**
+		 * The values
+		 */
+		private final List<Object> values = new ArrayList<>();
+
+		/**
+		 * EQUALS condition
+		 *
+		 * @param column
+		 * @param value
+		 * @return
+		 */
+		public Where equals(String column, String value) {
+			this.conditions.add(column + " = ?");
+			this.values.add(value);
+
+			return this;
+		}
+
+		/**
+		 * EQUALS condition
+		 *
+		 * @param column
+		 * @param value
+		 * @return
+		 */
+		public Where equals(String column, Number value) {
+			this.conditions.add(column + " = ?");
+			this.values.add(value);
+
+			return this;
+		}
+
+		/**
+		 * LIKE condition, e.g. WHERE column LIKE '%pattern%'
+		 *
+		 * @param column
+		 * @param pattern
+		 * @return
+		 */
+		public Where like(String column, String pattern) {
+			this.conditions.add(column + " LIKE ?");
+			this.values.add(pattern);
+
+			return this;
+		}
+
+		/**
+		 * Greater Than condition
+		 *
+		 * @param column
+		 * @param value
+		 * @return
+		 */
+		public Where greaterThan(String column, Number value) {
+			this.conditions.add(column + " > ?");
+			this.values.add(value);
+			return this;
+		}
+
+		/**
+		 * Less Than condition
+		 *
+		 * @param column
+		 * @param value
+		 * @return
+		 */
+		public Where lessThan(String column, Number value) {
+			this.conditions.add(column + " < ?");
+			this.values.add(value);
+
+			return this;
+		}
+
+		/**
+		 * IN condition, e.g. WHERE column IN (value1, value2, value3)
+		 *
+		 * @param column
+		 * @param values
+		 * @return
+		 */
+		public Where in(String column, @NonNull Collection<?> values) {
+			if (values.isEmpty())
+				return this;
+
+			if (values.stream().anyMatch(v -> !(v instanceof String) && !(v instanceof Number)))
+				throw new FoException("Where in() values must be either a string or a number, got " + values);
+
+			final String inClause = String.join(",", values.stream().map(v -> "?").toArray(String[]::new));
+			this.conditions.add(column + " IN (" + inClause + ")");
+			this.values.addAll(values);
+
+			return this;
+		}
+
+		/**
+		 * NOT IN condition, e.g. WHERE column NOT IN (value1, value2, value3)
+		 *
+		 * @param column
+		 * @param values
+		 * @return
+		 */
+		public Where notIn(String column, @NonNull Collection<?> values) {
+			if (values.isEmpty())
+				return this;
+
+			if (values.stream().anyMatch(v -> !(v instanceof String) && !(v instanceof Number)))
+				throw new FoException("Where in() values must be either a string or a number, got " + values);
+
+			final String notInClause = String.join(",", values.stream().map(v -> "?").toArray(String[]::new));
+			this.conditions.add(column + " NOT IN (" + notInClause + ")");
+			this.values.addAll(values);
+
+			return this;
+		}
+
+		/**
+		 * IS NULL condition
+		 *
+		 * @param column
+		 * @return
+		 */
+		public Where isNull(String column) {
+			this.conditions.add(column + " IS NULL");
+
+			return this;
+		}
+
+		/**
+		 * IS NOT NULL condition
+		 *
+		 * @param column
+		 * @return
+		 */
+		public Where isNotNull(String column) {
+			this.conditions.add(column + " IS NOT NULL");
+
+			return this;
+		}
+
+		/**
+		 * BETWEEN condition, e.g. WHERE column BETWEEN val1 AND val2
+		 *
+		 * @param column
+		 * @param lowerValue
+		 * @param upperValue
+		 * @return
+		 */
+		public Where between(String column, Number lowerValue, Number upperValue) {
+			this.conditions.add(column + " BETWEEN ? AND ?");
+			this.values.add(lowerValue);
+			this.values.add(upperValue);
+
+			return this;
+		}
+
+		/**
+		 * OR condition, e.g. WHERE (expression1 OR expression2)
+		 *
+		 * @param anotherClause
+		 * @return
+		 */
+		public Where or(Where anotherClause) {
+			if (!anotherClause.getConditions().isEmpty()) {
+				this.conditions.add("(" + String.join(" OR ", anotherClause.getConditions()) + ")");
+
+				this.values.addAll(anotherClause.getValues());
+			}
+
+			return this;
+		}
+
+		/**
+		 * AND condition (used to join two Where clauses)
+		 *
+		 * @param anotherClause
+		 * @return
+		 */
+		public Where and(Where anotherClause) {
+			if (!anotherClause.getConditions().isEmpty()) {
+				this.conditions.add("(" + String.join(" AND ", anotherClause.getConditions()) + ")");
+
+				this.values.addAll(anotherClause.getValues());
+			}
+
+			return this;
+		}
+
+		/**
+		 * Build SQL from the conditions
+		 *
+		 * @return
+		 */
+		public String buildSql() {
+			return String.join(" AND ", this.conditions);
+		}
+
+		/**
+		 * Create a new Where clause
+		 *
+		 * @return
+		 */
+		public static Where builder() {
+			return new Where();
 		}
 	}
 
@@ -1044,6 +1331,11 @@ final class LastCredentials {
 	 * jdbc:mysql://host:port/database
 	 */
 	private final String url;
+
+	/**
+	 * The user name for the database.
+	 */
+	private final String databaseName;
 
 	/**
 	 * The user name for the database.

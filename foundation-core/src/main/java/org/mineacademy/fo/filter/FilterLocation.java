@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.database.Row;
-import org.mineacademy.fo.database.RowLocation;
+import org.mineacademy.fo.database.RowLocationDate;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.platform.FoundationPlayer;
@@ -21,7 +21,7 @@ public final class FilterLocation extends Filter {
 
 	@Override
 	public boolean isApplicable(Table table) {
-		return RowLocation.class.isAssignableFrom(table.getRowClass());
+		return RowLocationDate.class.isAssignableFrom(table.getRowClass());
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public final class FilterLocation extends Filter {
 
 	@Override
 	public boolean canDisplay(Row row) {
-		final RowLocation rowLocation = (RowLocation) row;
+		final RowLocationDate rowLocation = (RowLocationDate) row;
 
 		if (this.location.getWorldName().equalsIgnoreCase(rowLocation.getLocation().getWorldName()))
 			return this.location.distance(rowLocation.getLocation()) <= this.radius;
