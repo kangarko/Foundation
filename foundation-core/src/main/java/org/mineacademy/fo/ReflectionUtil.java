@@ -20,7 +20,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.ReflectionException;
 import org.mineacademy.fo.platform.Platform;
@@ -153,7 +152,7 @@ public final class ReflectionUtil {
 			return constructor;
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Could not get constructor of " + clazz + " with parameters " + CommonCore.join(params));
+			throw new ReflectionException(ex, "Could not get constructor of " + clazz + " with parameters " + CommonCore.join(params));
 		}
 	}
 
@@ -293,7 +292,7 @@ public final class ReflectionUtil {
 			field.set(null, fieldValue);
 
 		} catch (final Throwable t) {
-			throw new FoException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
+			throw new ReflectionException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
 		}
 	}
 
@@ -494,7 +493,7 @@ public final class ReflectionUtil {
 			return constructor.newInstance(params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Could not make new instance of " + constructor + " with params: " + CommonCore.join(params));
+			throw new ReflectionException(ex, "Could not make new instance of " + constructor + " with params: " + CommonCore.join(params));
 		}
 	}
 
@@ -707,7 +706,7 @@ public final class ReflectionUtil {
 			return null;
 
 		} catch (IllegalAccessException | InvocationTargetException ex) {
-			throw new FoException(ex, "Error invocating enum finding method for " + typeOf.getSimpleName() + " from string " + name);
+			throw new ReflectionException(ex, "Error invocating enum finding method for " + typeOf.getSimpleName() + " from string " + name);
 		}
 	}
 
