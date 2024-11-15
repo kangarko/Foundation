@@ -27,6 +27,7 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
@@ -1502,6 +1503,9 @@ public abstract class SimpleCommandCore {
 	 * @param permission
 	 */
 	protected final void setPermission(final String permission) {
+		if (permission != null && permission.contains("{") && permission.contains("}"))
+			throw new FoException("Permission cannot contain variables: " + permission);
+
 		this.permission = permission;
 	}
 
