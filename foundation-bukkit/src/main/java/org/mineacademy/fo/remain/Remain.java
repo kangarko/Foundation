@@ -1203,24 +1203,25 @@ public final class Remain {
 	/**
 	 * Tries to find offline player by uuid
 	 *
-	 * @param id
+	 * @param uniqueId
 	 * @return
 	 */
-	public static OfflinePlayer getOfflinePlayerByUUID(final UUID id) {
+	public static OfflinePlayer getOfflinePlayerByUniqueId(final UUID uniqueId) {
 		try {
-			return Bukkit.getOfflinePlayer(id);
+			return Bukkit.getOfflinePlayer(uniqueId);
 
 		} catch (final NoSuchMethodError err) {
 			if (Bukkit.isPrimaryThread())
 				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + SimplePlugin.getInstance().getName() + " plugin authors.");
 
-			final UUIDToNameConverter f = new UUIDToNameConverter(id);
-
 			try {
-				final String name = f.call();
+				final String name = new UUIDToNameConverter(uniqueId).call();
 
 				return Bukkit.getOfflinePlayer(name);
+
 			} catch (final Throwable t) {
+				Common.error(t, "Failed to get offline player by UUID: " + uniqueId);
+
 				return null;
 			}
 		}
@@ -3009,6 +3010,8 @@ public final class Remain {
 	 * Wraps the runnable to catch any exceptions and log them.
 	 */
 	private static Runnable wrapRunnable(@NonNull Runnable original) {
+		final StackTraceElement[] outerElements = new Throwable().getStackTrace();
+
 		return new Runnable() {
 
 			@Override
@@ -3016,12 +3019,28 @@ public final class Remain {
 				try {
 					original.run();
 
-				} catch (final Throwable t) {
-					Debugger.printStackTrace(t);
-					Debugger.saveError(t, "Failed to execute task");
+				} catch (final Throwable throwable) {
+					logCombinedError(throwable, outerElements);
 				}
 			}
 		};
+	}
+
+	/*
+	 * Combines the stack traces of two throwables and logs them.
+	 */
+	private static void logCombinedError(Throwable throwable, StackTraceElement[] outerTrace) {
+		final StackTraceElement[] innerTrace = throwable.getStackTrace();
+
+		final StackTraceElement[] combinedTrace = new StackTraceElement[outerTrace.length + innerTrace.length];
+
+		System.arraycopy(innerTrace, 0, combinedTrace, 0, innerTrace.length);
+		System.arraycopy(outerTrace, 0, combinedTrace, innerTrace.length, outerTrace.length);
+
+		throwable.setStackTrace(combinedTrace);
+
+		Debugger.printStackTrace(throwable);
+		Debugger.saveError(throwable);
 	}
 
 	private static boolean runIfDisabled(@NonNull Runnable run) {
