@@ -16,6 +16,7 @@ import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
 
+import lombok.NonNull;
 import net.kyori.adventure.text.event.HoverEventSource;
 
 /**
@@ -155,7 +156,7 @@ public abstract class FoundationPlatform {
 
 	public abstract void sendPluginMessage(UUID senderUid, String channel, byte[] array);
 
-	public final void setCustomServerName(String serverName) {
+	public final void setCustomServerName(@NonNull String serverName) {
 		this.customServerName = serverName;
 	}
 
