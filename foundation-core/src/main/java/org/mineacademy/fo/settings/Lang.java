@@ -295,6 +295,37 @@ public final class Lang {
 	}
 
 	/**
+	 * Return component list from the given path in the language file.
+	 *
+	 * Throws an error if the key is missing.
+	 *
+	 * @param path
+	 * @return
+	 */
+	public static List<SimpleComponent> componentList(String path) {
+		return Arrays.asList(componentArray(path));
+	}
+
+	/**
+	 * Return component list from the given path in the language file.
+	 *
+	 * Throws an error if the key is missing.
+	 *
+	 * Variables are supported, where key must be a string and value either a string or
+	 * SimpleComponent, or a list of either.
+	 *
+	 * Example: componentArrayVars("my-locale-path", "arena", arena.getName()) translates {arena}
+	 * key from the locale path.
+	 *
+	 * @param path
+	 * @param replacements
+	 * @return
+	 */
+	public static List<SimpleComponent> componentListVars(String path, Object... replacements) {
+		return Arrays.asList(componentArrayVars(path, replacements));
+	}
+
+	/**
 	 * Return component array from the given path in the language file.
 	 *
 	 * Throws an error if the key is missing.
