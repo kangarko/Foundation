@@ -130,8 +130,11 @@ public final class ProxyUtil {
 
 			final OutgoingMessage out = new OutgoingMessage(message);
 
-			for (final T data : dataArray)
+			for (final T data : dataArray) {
+				ValidCore.checkNotNull(data, "Found null object when sending proxy " + message + " on channel " + channel);
+
 				out.write(data, data.getClass());
+			}
 
 			out.send(sender.getUniqueId());
 		}
