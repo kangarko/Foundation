@@ -2,9 +2,8 @@ package org.mineacademy.fo.database;
 
 import java.sql.SQLException;
 
-import org.mineacademy.fo.TimeUtil;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.platform.Platform;
 
 import lombok.ToString;
 
@@ -17,34 +16,23 @@ public abstract class Row {
 	/**
 	 * The unique ID of this row
 	 */
-	private final int id;
+	private final Integer id;
 
 	/**
-	 * The timestamp this row was created
+	 * Create a new row
 	 */
-	private final long date; // TODO move to RowDated
+	protected Row() {
+		this.id = null;
+	}
 
 	/**
-	 * The server this row was created in
+	 * Create a new row
+	 *
+	 * @param resultSet
+	 * @throws SQLException
 	 */
-	private final String server;
-
 	protected Row(SimpleResultSet resultSet) throws SQLException {
 		this.id = resultSet.getIntStrict("Id");
-		this.date = resultSet.getTimestampStrict("Date");
-		this.server = resultSet.getStringStrict("Server");
-	}
-
-	protected Row(int id, long date, String server) { // TODO delete in favor of manual loading
-		this.id = id;
-		this.date = date;
-		this.server = server;
-	}
-
-	protected Row() {
-		this.id = 0;
-		this.date = System.currentTimeMillis();
-		this.server = Platform.getCustomServerName();
 	}
 
 	/**
@@ -52,15 +40,7 @@ public abstract class Row {
 	 *
 	 * @return
 	 */
-	public final SerializedMap toMap() {
-		final SerializedMap map = SerializedMap.ofArray(
-				"Date", TimeUtil.toSQLTimestamp(this.date),
-				"Server", this.server);
-
-		this.onMapCreate(map);
-
-		return map;
-	}
+	public abstract SerializedMap toMap();
 
 	/**
 	 * Get the unique ID of this row
@@ -68,33 +48,10 @@ public abstract class Row {
 	 * @return
 	 */
 	public final int getId() {
+		ValidCore.checkNotNull(id, "ID not set for " + this);
+
 		return id;
 	}
-
-	/**
-	 * Get the date this row was created
-	 *
-	 * @return
-	 */
-	public final long getDate() {
-		return date;
-	}
-
-	/**
-	 * Get the server this row was created in
-	 *
-	 * @return
-	 */
-	public final String getServer() {
-		return server;
-	}
-
-	/**
-	 * Called when creating the map.
-	 *
-	 * @param map
-	 */
-	protected abstract void onMapCreate(SerializedMap map);
 
 	/**
 	 * Get the table this row belongs to.
@@ -104,9 +61,23 @@ public abstract class Row {
 	public abstract Table getTable();
 
 	/**
-	 * Save this row to the database.
+	 * Save this row to the database by adding it to the queue.
 	 */
 	public final void save() {
 		this.getTable().getDatabase().addToQueue(this);
+	}
+
+	/**
+	 * Save this row to the database immediately.
+	 */
+	public final void saveNow() {
+		this.getTable().getDatabase().insert(this.getTable(), this.toMap());
+	}
+
+	/**
+	 * Delete this row from the database
+	 */
+	public final void delete() {
+		this.getTable().getDatabase().deleteRow(this.getTable(), this);
 	}
 }

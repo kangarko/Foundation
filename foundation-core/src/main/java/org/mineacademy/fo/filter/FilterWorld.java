@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.database.Row;
-import org.mineacademy.fo.database.RowLocation;
+import org.mineacademy.fo.database.RowLocationDate;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.platform.FoundationPlayer;
 
@@ -27,7 +27,7 @@ public final class FilterWorld extends Filter {
 
 	@Override
 	public boolean isApplicable(Table table) {
-		return RowLocation.class.isAssignableFrom(table.getRowClass());
+		return RowLocationDate.class.isAssignableFrom(table.getRowClass());
 	}
 
 	@Override
@@ -59,6 +59,6 @@ public final class FilterWorld extends Filter {
 
 	@Override
 	public boolean canDisplay(Row row) {
-		return this.worlds.contains(((RowLocation) row).getLocation().getWorldName());
+		return this.worlds.contains(((RowLocationDate) row).getLocation().getWorldName());
 	}
 }

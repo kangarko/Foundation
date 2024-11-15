@@ -11,6 +11,7 @@ import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.database.Row;
+import org.mineacademy.fo.database.RowDate;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -26,7 +27,7 @@ public final class FilterDate extends Filter {
 
 	@Override
 	public boolean isApplicable(Table table) {
-		return true;
+		return RowDate.class.isAssignableFrom(table.getRowClass());
 	}
 
 	@Override
@@ -108,7 +109,7 @@ public final class FilterDate extends Filter {
 
 	@Override
 	public boolean canDisplay(Row row) {
-		final long date = row.getDate();
+		final long date = ((RowDate) row).getDate();
 
 		return date >= this.from && date <= this.to;
 	}
