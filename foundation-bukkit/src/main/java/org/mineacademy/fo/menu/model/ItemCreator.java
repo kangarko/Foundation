@@ -731,10 +731,10 @@ public final class ItemCreator {
 
 					} catch (final Throwable ex2) {
 						try {
-							skullMeta.setOwningPlayer(Remain.getOfflinePlayerByUUID(this.skullUid));
+							skullMeta.setOwningPlayer(Remain.getOfflinePlayerByUniqueId(this.skullUid));
 
 						} catch (final Throwable t) {
-							skullMeta.setOwner(Remain.getOfflinePlayerByUUID(this.skullUid).getName());
+							skullMeta.setOwner(Remain.getOfflinePlayerByUniqueId(this.skullUid).getName());
 						}
 					}
 				}

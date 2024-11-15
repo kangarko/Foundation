@@ -64,7 +64,7 @@ final class BukkitVariableCollector implements Variables.Collector {
 			return SimpleComponent.fromSection(player == null ? "" : formatHealth(player));
 
 		else if ("location".equals(variable))
-			return SimpleComponent.fromPlain(player == null ? "" : SerializeUtil.serializeLoc(player.getLocation()));
+			return SimpleComponent.fromPlain(player == null ? "" : SerializeUtil.serializeLocation(player.getLocation()));
 
 		else if ("x".equals(variable))
 			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockX()));

@@ -113,7 +113,7 @@ final class BukkitPlatform extends FoundationPlatform {
 				return Common.simplify(((ItemStack) object).getType());
 
 			else if (object instanceof Location)
-				return SerializeUtil.serializeLoc((Location) object);
+				return SerializeUtil.serializeLocation((Location) object);
 
 			else if (object instanceof Vector) {
 				final Vector vec = (Vector) object;
@@ -364,7 +364,7 @@ final class BukkitPlatform extends FoundationPlatform {
 					return ((World) object).getName();
 
 				else if (object instanceof Location)
-					return SerializeUtil.serializeLoc((Location) object);
+					return SerializeUtil.serializeLocation((Location) object);
 
 				else if (object instanceof PotionEffectType)
 					return ((PotionEffectType) object).getName();

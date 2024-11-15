@@ -302,7 +302,7 @@ public abstract class SimpleHologram {
 	 */
 	@Override
 	public String toString() {
-		return "ArmorStandItem{spawnLocation=" + SerializeUtil.serializeLoc(this.lastTeleportLocation) + ", spawned=" + this.isSpawned() + "}";
+		return "ArmorStandItem{spawnLocation=" + SerializeUtil.serializeLocation(this.lastTeleportLocation) + ", spawned=" + this.isSpawned() + "}";
 	}
 
 	/**

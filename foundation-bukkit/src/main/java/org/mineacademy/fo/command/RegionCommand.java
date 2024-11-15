@@ -121,7 +121,7 @@ public class RegionCommand extends SimpleSubCommand {
 
 			for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
 
-				final String longestText = "&7Secondary: &2" + SerializeUtil.serializeLoc(otherRegion.getSecondary());
+				final String longestText = "&7Secondary: &2" + SerializeUtil.serializeLocation(otherRegion.getSecondary());
 
 				components.add(SimpleComponent
 						.fromPlain(" ")
@@ -146,7 +146,7 @@ public class RegionCommand extends SimpleSubCommand {
 
 						.appendMini("&7" + otherRegion.getFileName())
 						.onHover(ChatUtil.center("&fRegion Information", longestText.length() * 2 + longestText.length() / 3),
-								"&7Primary: &2" + SerializeUtil.serializeLoc(otherRegion.getPrimary()),
+								"&7Primary: &2" + SerializeUtil.serializeLocation(otherRegion.getPrimary()),
 								longestText,
 								"&7Size: &2" + otherRegion.getBlocks().size() + " blocks"));
 			}

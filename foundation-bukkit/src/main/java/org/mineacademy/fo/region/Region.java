@@ -489,7 +489,7 @@ public class Region implements ConfigSerializable {
 
 	@Override
 	public final String toString() {
-		return this.getClass().getSimpleName() + "{name=" + this.name + ",location=" + SerializeUtil.serializeLoc(this.primary) + " - " + SerializeUtil.serializeLoc(this.secondary) + "}";
+		return this.getClass().getSimpleName() + "{name=" + this.name + ",location=" + SerializeUtil.serializeLocation(this.primary) + " - " + SerializeUtil.serializeLocation(this.secondary) + "}";
 	}
 
 	@Override

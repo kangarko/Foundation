@@ -541,7 +541,7 @@ public final class CompMetadata {
 					final Entity entity = Remain.getLoadedEntity(uniqueId);
 
 					if (entity == null) {
-						if (Remain.getOfflinePlayerByUUID(uniqueId).hasPlayedBefore())
+						if (Remain.getOfflinePlayerByUniqueId(uniqueId).hasPlayedBefore())
 							continue;
 
 						iterator.remove();
