@@ -29,21 +29,53 @@ import lombok.Setter;
 public class ButtonRemove extends Button {
 
 	/**
+	 * The remove menu title
+	 */
+	@Getter
+	@Setter
+	private static String menuTitle = SimpleLocalization.Menu.MENU_REMOVE_TITLE;
+
+	/**
+	 * The remove button material
+	 */
+	@Getter
+	@Setter
+	private static CompMaterial material = CompMaterial.LAVA_BUCKET;
+
+	/**
 	 * The remove button item name
 	 */
 	@Getter
 	@Setter
-	private static String title = "&4&lRemove {name}";
+	private static String title = SimpleLocalization.Menu.BUTTON_REMOVE_TITLE;
 
 	/**
 	 * The remove button item lore
 	 */
 	@Getter
 	@Setter
-	private static List<String> lore = Arrays.asList(
-			"&r",
-			"&7The selected {type} will",
-			"&7be removed permanently.");
+	private static List<String> lore = Arrays.asList(SimpleLocalization.Menu.BUTTON_REMOVE_LORE);
+
+	/**
+	 * The remove button material
+	 */
+	@Getter
+	@Setter
+	private static CompMaterial removeConfirmMaterial = CompMaterial.RED_WOOL;
+
+	/**
+	 * The remove button item name
+	 */
+	@Getter
+	@Setter
+	private static String removeConfirmTitle = SimpleLocalization.Menu.BUTTON_REMOVE_CONFIRM_TITLE;
+
+	/**
+	 * The remove button item lore
+	 */
+	@Getter
+	@Setter
+	private static List<String> removeConfirmLore = Arrays.asList(SimpleLocalization.Menu.BUTTON_REMOVE_CONFIRM_LORE);
 
 	/**
 	 * The parent menu
@@ -72,7 +104,7 @@ public class ButtonRemove extends Button {
 	public ItemStack getItem() {
 		return ItemCreator
 
-				.of(CompMaterial.LAVA_BUCKET)
+				.of(material)
 				.name(title.replace("{name}", this.toRemoveName))
 
 				.lore(Replacer.replaceArray(lore,
@@ -91,21 +123,15 @@ public class ButtonRemove extends Button {
 	public ItemStack getRemoveConfirmItem() {
 		return ItemCreator
 
-				.ofWool(CompColor.RED)
-				.name("&6&lRemove " + this.toRemoveName)
+				.of(removeConfirmMaterial)
+				.name(removeConfirmTitle.replace("{name}", this.toRemoveName))
 
-				.lore(Arrays.asList(
-						"&r",
-						"&7Confirm that this " + this.toRemoveType + " will",
-						"&7be removed permanently.",
-						"&cCannot be undone."))
+				.lore(Replacer.replaceArray(removeConfirmLore,
+						"name", this.toRemoveName,
+						"type", this.toRemoveType))
 
 				.flags(CompItemFlag.HIDE_ATTRIBUTES)
 				.make();
-	}
-
-	public String getMenuTitle() {
-		return "&0Confirm removal";
 	}
 
 	/**
@@ -167,7 +193,7 @@ public class ButtonRemove extends Button {
 			this.returnButton = new ButtonReturnBack(parentMenu);
 
 			this.setSize(9 * 3);
-			this.setTitle(ButtonRemove.this.getMenuTitle());
+			this.setTitle(menuTitle);
 		}
 
 		/**

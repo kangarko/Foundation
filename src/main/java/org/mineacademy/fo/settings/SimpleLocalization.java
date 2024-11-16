@@ -627,6 +627,14 @@ public class SimpleLocalization extends YamlStaticConfig {
 		public static String BUTTON_RETURN_TITLE = "&4&lReturn";
 		public static String[] BUTTON_RETURN_LORE = { "", "Return back." };
 
+		public static String MENU_REMOVE_TITLE = "&0Confirm removal";
+
+		public static String BUTTON_REMOVE_TITLE = "&4&lRemove {name}";
+		public static String[] BUTTON_REMOVE_LORE = { "&r", "&7The selected {type} will",  "&7be removed permanently."};
+
+		public static String BUTTON_REMOVE_CONFIRM_TITLE = "&6&lRemove {name}";
+		public static String[] BUTTON_REMOVE_CONFIRM_LORE = { "&r", "&7Confirm that this {type} will",  "&7be removed permanently.", "&cCannot be undone."};
+
 		/**
 		 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 		 */
@@ -665,6 +673,21 @@ public class SimpleLocalization extends YamlStaticConfig {
 
 			if (isSetDefault("Button_Return_Lore"))
 				BUTTON_RETURN_LORE = Common.toArray(getStringList("Button_Return_Lore"));
+
+			if (isSetDefault("Menu_Remove_Title"))
+				MENU_REMOVE_TITLE = getString("Menu_Remove_Title");
+
+			if (isSetDefault("Button_Remove_Title"))
+				BUTTON_REMOVE_TITLE = getString("Button_Remove_Title");
+
+			if (isSetDefault("Button_Remove_Lore"))
+				BUTTON_REMOVE_LORE = Common.toArray(getStringList("Button_Remove_Lore"));
+
+			if (isSetDefault("Button_Remove_Confirm_Title"))
+				BUTTON_REMOVE_CONFIRM_TITLE = getString("Button_Remove_Confirm_Title");
+
+			if (isSetDefault("Button_Remove_Confirm_Lore"))
+				BUTTON_REMOVE_CONFIRM_LORE = Common.toArray(getStringList("Button_Remove_Confirm_Lore"));
 		}
 	}
 
