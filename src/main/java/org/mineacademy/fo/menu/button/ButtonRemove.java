@@ -57,21 +57,21 @@ public class ButtonRemove extends Button {
 	private static List<String> lore = Arrays.asList(SimpleLocalization.Menu.BUTTON_REMOVE_LORE);
 
 	/**
-	 * The remove button material
+	 * The remove confirm button material
 	 */
 	@Getter
 	@Setter
 	private static CompMaterial removeConfirmMaterial = CompMaterial.RED_WOOL;
 
 	/**
-	 * The remove button item name
+	 * The remove confirm button item name
 	 */
 	@Getter
 	@Setter
 	private static String removeConfirmTitle = SimpleLocalization.Menu.BUTTON_REMOVE_CONFIRM_TITLE;
 
 	/**
-	 * The remove button item lore
+	 * The remove confirm button item lore
 	 */
 	@Getter
 	@Setter
