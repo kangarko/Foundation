@@ -11,6 +11,7 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -21,7 +22,6 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.citizensnpcs.api.trait.trait.Equipment.EquipmentSlot;
 
 /**
  * Represents EquipmentSlot
@@ -223,7 +223,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-
+			
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}
