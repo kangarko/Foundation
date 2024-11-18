@@ -136,12 +136,11 @@ public final class DebugCommand extends SimpleSubCommandCore {
 					final YamlConfig config = YamlConfig.fromFile(file);
 					final YamlConfig copyConfig = YamlConfig.fromFile(copy);
 
-					for (String key : config.getKeys(true)) {
+					for (final String key : config.getKeys(true)) {
+						final String lowercasedKey = key.toLowerCase();
 						final Object value = config.getObject(key);
 
-						key = key.toLowerCase();
-
-						if (!key.contains("mysql") && !key.contains("database") && !key.contains("password"))
+						if (!lowercasedKey.contains("mysql") && !lowercasedKey.contains("database") && !lowercasedKey.contains("password"))
 							copyConfig.set(key, value);
 					}
 
