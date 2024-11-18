@@ -127,7 +127,7 @@ public abstract class FileConfig extends ConfigSection {
 			throw err;
 
 		} catch (final Exception ex) {
-			CommonCore.error(ex, "Cannot load config from file " + file);
+			CommonCore.throwError(ex, "Cannot load config from file " + file);
 		}
 	}
 
@@ -147,7 +147,7 @@ public abstract class FileConfig extends ConfigSection {
 			this.loadFromString(String.join("\n", content));
 
 		} catch (final Exception ex) {
-			CommonCore.error(ex, "Cannot load config from JAR path " + internalPath);
+			CommonCore.throwError(ex, "Cannot load config from JAR path " + internalPath);
 		}
 	}
 
@@ -221,7 +221,7 @@ public abstract class FileConfig extends ConfigSection {
 			}
 
 		} catch (final IOException ex) {
-			CommonCore.error(ex, "Error saving " + this.file);
+			CommonCore.throwError(ex, "Error saving " + this.file);
 		}
 	}
 
