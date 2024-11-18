@@ -6,9 +6,6 @@ import java.util.UUID;
 
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.command.DebugCommand;
-import org.mineacademy.fo.command.DumpLocaleCommand;
-import org.mineacademy.fo.command.ReloadCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.model.CompChatColor;
@@ -120,13 +117,7 @@ public abstract class FoundationPlatform {
 	public abstract void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases);
 
 	@Deprecated
-	public final void registerDefaultSubcommands(SimpleCommandGroup group) {
-		group.registerSubcommand(new DebugCommand());
-		group.registerSubcommand(new DumpLocaleCommand());
-		group.registerSubcommand(new ReloadCommand());
-
-		this.registerDefaultSubcommands0(group);
-	}
+	public abstract void registerDefaultPlatformSubcommands(SimpleCommandGroup group);
 
 	public abstract void registerEvents(Object listener);
 
@@ -165,6 +156,4 @@ public abstract class FoundationPlatform {
 	public abstract void unregisterCommand(SimpleCommandCore command);
 
 	protected abstract void dispatchConsoleCommand0(String command);
-
-	protected abstract void registerDefaultSubcommands0(SimpleCommandGroup group);
 }

@@ -211,8 +211,8 @@ public final class Platform {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	public static void registerDefaultSubcommands(SimpleCommandGroup group) {
-		getPlatform().registerDefaultSubcommands(group);
+	public static void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
+		getPlatform().registerDefaultPlatformSubcommands(group);
 	}
 
 	/**
