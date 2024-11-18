@@ -488,6 +488,11 @@ public final class CompMetadata {
 				this.set("Initialized", null);
 		}
 
+		@Override
+		protected boolean skipSaveIfNoFile() {
+			return true;
+		}
+
 		@EventHandler
 		public void onEntityDeath(final EntityDeathEvent event) {
 			final Entity entity = event.getEntity();
