@@ -204,7 +204,11 @@ public abstract class SimpleCommandGroup {
 	 * For platform specific implementations this might register more commands such as RegionCommand on Bukkit, etc.
 	 */
 	public final void registerDefaultSubcommands() {
-		Platform.registerDefaultSubcommands(this);
+		this.registerSubcommand(new DebugCommand());
+		this.registerSubcommand(new DumpLocaleCommand());
+		this.registerSubcommand(new ReloadCommand());
+
+		Platform.registerDefaultPlatformSubcommands(this);
 	}
 
 	// ----------------------------------------------------------------------

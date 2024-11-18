@@ -640,7 +640,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	protected void registerDefaultSubcommands0(SimpleCommandGroup group) {
+	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
 		group.registerSubcommand(new ConversationCommand());
 
 		if (SimplePlugin.getInstance().areRegionsEnabled())
