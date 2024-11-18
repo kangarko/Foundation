@@ -824,15 +824,36 @@ public final class Remain {
 	/**
 	 * Return the biome at the given location
 	 *
-	 * @param loc
+	 * @param block
 	 * @return
 	 */
-	public static Biome getBiome(Location loc) {
+	public static Biome getBiome(Block block) {
 		try {
-			return loc.getWorld().getBiome(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+			final Method getBiome = ReflectionUtil.getMethod(Block.class, "getBiome");
+
+			return ReflectionUtil.invoke(getBiome, block);
 
 		} catch (final NoSuchMethodError err) {
-			return loc.getWorld().getBiome(loc.getBlockX(), loc.getBlockZ());
+			return getBiome(block.getLocation());
+		}
+	}
+
+	/**
+	 * Return the biome at the given location
+	 *
+	 * @param location
+	 * @return
+	 */
+	public static Biome getBiome(Location location) {
+		try {
+			final Method getBiome = ReflectionUtil.getMethod(World.class, "getBiome", int.class, int.class, int.class);
+
+			return ReflectionUtil.invoke(getBiome, location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+
+		} catch (final NoSuchMethodError err) {
+			final Method getBiome = ReflectionUtil.getMethod(World.class, "getBiome", int.class, int.class);
+
+			return ReflectionUtil.invoke(getBiome, location.getWorld(), location.getBlockX(), location.getBlockZ());
 		}
 	}
 
