@@ -223,7 +223,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-			
+
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}
