@@ -794,7 +794,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Object convertLegacyToIChatBase(String legacy) {
-		return convertJsonToIChatBase("{\"text\":\"" + legacy + "\"}");
+		return convertJsonToIChatBase("{\"text\":\"" + legacy.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}");
 	}
 
 	/**
