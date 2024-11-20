@@ -14,6 +14,7 @@ import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents an incoming plugin message.
@@ -65,7 +66,7 @@ public final class IncomingMessage extends Message {
 	 * @param input
 	 * @param stream
 	 */
-	public IncomingMessage(ProxyListener listener, UUID senderUid, String serverName, ProxyMessage type, byte[] data, DataInput input, ByteArrayInputStream stream) {
+	public IncomingMessage(@NonNull ProxyListener listener, @NonNull UUID senderUid, @NonNull String serverName, @NonNull ProxyMessage type, @NonNull byte[] data, @NonNull DataInput input, @NonNull ByteArrayInputStream stream) {
 		super(listener, type);
 
 		this.data = data;

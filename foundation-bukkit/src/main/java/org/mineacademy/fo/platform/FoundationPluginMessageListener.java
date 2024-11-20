@@ -65,7 +65,7 @@ final class FoundationPluginMessageListener implements PluginMessageListener {
 						final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, input, stream);
 
 						listener.setData(data);
-						listener.onMessageReceived(Platform.toPlayer(player), incomingMessage);
+						listener.onMessageReceived(incomingMessage);
 					}
 
 					break;
