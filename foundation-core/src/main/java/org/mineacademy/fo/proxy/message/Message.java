@@ -16,6 +16,14 @@ import lombok.RequiredArgsConstructor;
 abstract class Message {
 
 	/**
+	 * Whether to compress strings when sending or reading messages
+	 *
+	 * @deprecated will be removed once chatcontrol 11 is out
+	 */
+	@Deprecated
+	public static boolean COMPRESS_STRINGS = true;
+
+	/**
 	 * Represents the largest size that an individual plugin message may be.
 	 */
 	public static final int MAX_MESSAGE_SIZE = 1048576;

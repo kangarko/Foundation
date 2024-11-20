@@ -40,9 +40,11 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
  * An adaption of {@link Component} that allows for easier creation of chat
@@ -604,6 +606,17 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	@Override
 	public Component asComponent() {
 		return this.toAdventure();
+	}
+
+	/**
+	 * Convert into BungeeCord component.
+	 *
+	 * @return
+	 */
+	public BaseComponent[] toBungee() {
+		final BungeeComponentSerializer serializer = MinecraftVersion.atLeast(V.v1_16) ? BungeeComponentSerializer.get() : BungeeComponentSerializer.legacy();
+
+		return serializer.serialize(this.toAdventure());
 	}
 
 	/**
