@@ -110,7 +110,7 @@ public final class Debugger {
 			if (!reportedExceptions.contains(key)) {
 
 				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
-					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-beta.1");
+					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-beta.2");
 
 				Platform.runTaskAsync(() -> {
 

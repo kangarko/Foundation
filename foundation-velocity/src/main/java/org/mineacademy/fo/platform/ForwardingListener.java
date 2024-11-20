@@ -80,7 +80,7 @@ final class ForwardingListener {
 						final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, in, stream);
 
 						listener.setData(data);
-						listener.onMessageReceived(null, incomingMessage);
+						listener.onMessageReceived(incomingMessage);
 					}
 
 					handled = true;
