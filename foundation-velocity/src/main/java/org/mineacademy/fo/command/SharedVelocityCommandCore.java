@@ -8,7 +8,7 @@ import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.FoundationPlayer;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 
 import com.velocitypowered.api.command.CommandSource;
@@ -78,7 +78,7 @@ public interface SharedVelocityCommandCore {
 	 * @return
 	 */
 	default Player findPlayerInternal(final String name) {
-		return SimplePlugin.getServer().getPlayer(name).orElse(null);
+		return Remain.getPlayer(name, false);
 	}
 
 	/**
