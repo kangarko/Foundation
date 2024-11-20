@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
@@ -33,9 +34,9 @@ import net.md_5.bungee.api.ChatMessageType;
 @Getter
 final class BukkitPlayer extends FoundationPlayer {
 
-	private final CommandSender sender;
 	private final boolean isPlayer;
 	private final Player player;
+	private final CommandSender sender;
 
 	public BukkitPlayer(@NonNull CommandSender sender) {
 		this.sender = sender;
@@ -57,6 +58,15 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
+	public String getCurrentServerName() {
+		if (!Platform.hasCustomServerName())
+			Common.logTimed(60, "Called FoundationPlayer#getCurrentServerName() on Bukkit without server name set! Either put Server_Name key"
+					+ " to settings.yml to set the server name in Platform#setCustomServerName() manually. This is a bug! Returning empty...");
+
+		return Platform.hasCustomServerName() ? Platform.getCustomServerName() : "";
+	}
+
+	@Override
 	protected String getSenderName0() {
 		return this.sender.getName();
 	}
@@ -66,6 +76,11 @@ final class BukkitPlayer extends FoundationPlayer {
 		Valid.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
 
 		return this.player.getUniqueId();
+	}
+
+	@Override
+	public boolean hasHexColorSupport() {
+		return MinecraftVersion.atLeast(V.v1_16);
 	}
 
 	@Override
@@ -99,6 +114,17 @@ final class BukkitPlayer extends FoundationPlayer {
 	@Override
 	public boolean isPlayer() {
 		return this.isPlayer;
+	}
+
+	@Override
+	public void kick(SimpleComponent reason) {
+		Valid.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
+
+		if (Bukkit.isPrimaryThread())
+			this.player.kickPlayer(reason.toLegacy());
+
+		else
+			Platform.runTask(() -> this.player.kickPlayer(reason.toLegacy()));
 	}
 
 	@Override
@@ -141,7 +167,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 		else
 			try {
-				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, message.toBungee());
+				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, message.toBungee(MinecraftVersion.atLeast(V.v1_16)));
 
 			} catch (final NoSuchMethodError err) {
 				Remain.sendActionBarLegacyPacket(this.player, message);
@@ -221,7 +247,7 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		this.player.spigot().sendMessage(SimpleComponent.fromAdventure(component).toBungee());
+		this.player.spigot().sendMessage(SimpleComponent.fromAdventure(component).toBungee(MinecraftVersion.atLeast(V.v1_16)));
 	}
 
 	@Override

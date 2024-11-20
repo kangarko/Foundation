@@ -41,14 +41,4 @@ public final class VelocityCommandImpl implements com.velocitypowered.api.comman
 	public List<String> suggest(Invocation invocation) {
 		return delegate.delegateTabComplete(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());
 	}
-
-	/**
-	 * Delegates permission check to the Foundation
-	 */
-	@Override
-	public boolean hasPermission(Invocation invocation) {
-		final String permission = this.delegate.getPermission();
-
-		return permission == null || invocation.source().hasPermission(permission);
-	}
 }

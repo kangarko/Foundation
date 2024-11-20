@@ -106,7 +106,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- BungeeCord -->
+		<!-- BungeeCord Chat API -->
 		<dependency>
 			<groupId>net.md-5</groupId>
 			<artifactId>bungeecord-chat</artifactId>

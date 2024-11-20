@@ -626,7 +626,7 @@ public final class ReflectionUtil {
 			if (legacyMap != null) {
 				final V since = legacyMap.get(name);
 
-				if (since != null && MinecraftVersion.olderThan(since))
+				if (since != null && MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(since))
 					return null;
 			}
 

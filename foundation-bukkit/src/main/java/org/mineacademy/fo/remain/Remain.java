@@ -2124,7 +2124,7 @@ public final class Remain {
 
 			for (final SimpleComponent component : pages)
 				try {
-					spigotPages.add(component.toBungee());
+					spigotPages.add(component.toBungee(MinecraftVersion.atLeast(V.v1_16)));
 
 				} catch (final Throwable t) {
 					Common.error(t, "Failed to turn simple component into bungee component: " + component);

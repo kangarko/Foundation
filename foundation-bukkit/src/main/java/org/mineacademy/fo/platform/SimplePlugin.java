@@ -22,6 +22,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.RegionSubCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
@@ -142,32 +143,33 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 	@Override
 	public final void onLoad() {
-		getInstance();
-
-		this.loadLibraries();
-
-		BukkitPlatform.inject();
-
-		// Dynamically load filters
-		for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
-			try {
-				final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
-				Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
-				Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
-
-				final Filter filter = ReflectionUtil.instantiate(constructor);
-
-				Filter.register(filter.getIdentifier(), filter);
-
-			} catch (final Exception ex) {
-				Common.error(ex,
-						"Failed to load filter: " + filterClass,
-						"Check that it has a public no args constructor!");
-
-				continue;
-			}
-
 		try {
+			getInstance();
+
+			this.setVersion();
+			this.loadLibraries();
+
+			BukkitPlatform.inject();
+
+			// Dynamically load filters
+			for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
+				try {
+					final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
+					Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
+					Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
+
+					final Filter filter = ReflectionUtil.instantiate(constructor);
+
+					Filter.register(filter.getIdentifier(), filter);
+
+				} catch (final Exception ex) {
+					Common.error(ex,
+							"Failed to load filter: " + filterClass,
+							"Check that it has a public no args constructor!");
+
+					continue;
+				}
+
 			this.onPluginLoad();
 
 		} catch (final Throwable t) {
@@ -176,6 +178,23 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 			throw t;
 		}
+	}
+
+	/*
+	 * Set the game version based on the Bukkit version.
+	 */
+	private void setVersion() {
+		final String bukkitVersion = Bukkit.getBukkitVersion(); // 1.22.1-R0.1-SNAPSHOT
+		final String versionString = bukkitVersion.split("\\-")[0]; // 1.22.1
+		final String[] versions = versionString.split("\\.");
+		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version '" + bukkitVersion + "', expected '-' and a version number");
+
+		final int version = Integer.parseInt(versions[1]); // 20
+
+		final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
+		final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
+
+		MinecraftVersion.setVersion(current, subversion);
 	}
 
 	/*
@@ -485,160 +504,160 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 		for (final CompAttribute comp : CompAttribute.values())
 			try {
 				CompAttribute.valueOf(comp.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				if (comp.getNmsName() != null)
 					Common.log("Invalid CompAttribute " + comp.name());
 			}
-	
+
 		for (final CompColor comp : CompColor.values())
 			try {
 				if (comp.getDye() == null)
 					throw new IllegalArgumentException();
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompColor " + comp.getName());
 			}
-	
+
 		for (final CompItemFlag comp : CompItemFlag.values())
 			try {
 				ItemFlag.valueOf(comp.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompItemFlag " + comp);
 			}
-	
+
 		for (final CompMaterial comp : CompMaterial.values())
 			try {
 				if (comp.toItem() == null)
 					throw new IllegalArgumentException();
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompMaterial " + comp);
 			}
-	
+
 		for (final CompParticle comp : CompParticle.values())
 			try {
 				Particle.valueOf(comp.name());
-	
+
 			} catch (final NoClassDefFoundError err) {
 				// Skip
-	
+
 			} catch (final IllegalArgumentException ex) {
 				if (!comp.isRemoved())
 					Common.log("Invalid CompParticle " + comp);
 			}
-	
+
 		if (MinecraftVersion.atLeast(V.v1_21))
 			for (final CompSound comp : CompSound.values())
 				try {
 					Sound.valueOf(comp.name());
-	
+
 				} catch (final IllegalArgumentException ex) {
 					Common.log("Invalid CompSound " + comp.name());
 				}
-	
+
 		for (final CompVillagerProfession comp : CompVillagerProfession.values())
 			try {
 				comp.toBukkit();
-	
+
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-	
+
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerProfession " + comp);
 			}
-	
+
 		for (final CompVillagerType comp : CompVillagerType.values())
 			try {
 				comp.toBukkit();
-	
+
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-	
+
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
 	}
-	
+
 	private void scanModernEnumsForUpdates() {
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
-	
+
 		for (final DyeColor bukkit : DyeColor.values())
 			try {
 				CompColor.fromDye(bukkit);
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompColor for Bukkit's " + bukkit.name());
 			}
-	
+
 		for (final Enchantment bukkit : Enchantment.values())
 			try {
 				if (CompEnchantment.getByName(bukkit.getKey().toString()) == null)
 					throw new IllegalArgumentException();
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompEnchantment for Bukkit's " + bukkit);
 			}
-	
+
 		for (final ItemFlag bukkit : ItemFlag.values())
 			try {
 				CompItemFlag.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompItemFlag for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Material bukkit : Material.values())
 			try {
 				CompMaterial.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompMaterial for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Particle bukkit : Particle.values())
 			try {
 				CompParticle.fromName(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompParticle for Bukkit's " + bukkit);
 			}
-	
+
 		for (final PotionEffectType bukkit : PotionEffectType.values())
 			try {
 				CompPotionEffectType.getByName(bukkit.getKey().toString());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompPotionEffectType for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Sound bukkit : Sound.values())
 			try {
 				CompSound.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompSound for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Villager.Profession bukkit : Villager.Profession.values())
 			try {
 				CompVillagerProfession.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerProfession for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Villager.Type bukkit : Villager.Type.values())
 			try {
 				CompVillagerType.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerType for Bukkit's " + bukkit);
 			}

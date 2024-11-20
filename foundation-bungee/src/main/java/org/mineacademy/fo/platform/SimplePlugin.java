@@ -10,6 +10,8 @@ import java.util.Set;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
@@ -19,6 +21,7 @@ import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.database.SimpleDatabase;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
 import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.library.BungeeLibraryManager;
@@ -30,6 +33,7 @@ import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -121,59 +125,71 @@ public abstract class SimplePlugin extends Plugin implements FoundationPlugin {
 		FoundationFilter.inject();
 	}
 
+	private BungeeAudiences adventure;
+
+	public BungeeAudiences adventure() {
+		Valid.checkNotNull(this.adventure, "Adventure audience provider not initialized yet");
+
+		return this.adventure;
+	}
+
 	@Override
 	public final void onLoad() {
 		instance = this;
 
-		this.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.8");
-
-		if (!ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
-			this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience"))
-			this.loadLibrary("net.kyori", "adventure-api", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-plain", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-legacy", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-gson", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
-			this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
-
-		BungeePlatform.inject();
-
-		// Dynamically load filters
-		for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
-			try {
-				final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
-				Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
-				Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
-
-				final Filter filter = ReflectionUtil.instantiate(constructor);
-
-				Filter.register(filter.getIdentifier(), filter);
-
-			} catch (final Exception ex) {
-				Common.error(ex,
-						"Failed to load filter: " + filterClass,
-						"Check that it has a public no args constructor!");
-
-				continue;
-			}
-
-		// Call delegate
 		try {
+			this.setVersion();
+
+			this.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.8");
+
+			if (CommonCore.getJavaVersion() >= 15 && !ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
+				this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience"))
+				this.loadLibrary("net.kyori", "adventure-api", "4.17.0");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer"))
+				this.loadLibrary("net.kyori", "adventure-text-serializer-plain", "4.17.0");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer"))
+				this.loadLibrary("net.kyori", "adventure-text-serializer-legacy", "4.17.0");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer"))
+				this.loadLibrary("net.kyori", "adventure-text-serializer-gson", "4.17.0");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
+				this.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
+				this.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
+				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
+
+			this.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.3.4");
+
+			BungeePlatform.inject();
+
+			// Dynamically load filters
+			for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
+				try {
+					final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
+					Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
+					Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
+
+					final Filter filter = ReflectionUtil.instantiate(constructor);
+
+					Filter.register(filter.getIdentifier(), filter);
+
+				} catch (final Exception ex) {
+					Common.error(ex,
+							"Failed to load filter: " + filterClass,
+							"Check that it has a public no args constructor!");
+
+					continue;
+				}
+
+			// Call delegate
 			this.onPluginLoad();
 
 		} catch (final Throwable t) {
@@ -187,10 +203,38 @@ public abstract class SimplePlugin extends Plugin implements FoundationPlugin {
 		}
 	}
 
+	/*
+	 * Set the version of the server we are running on.
+	 */
+	private void setVersion() {
+		String bungeeVersion = SimplePlugin.getServer().getVersion();
+
+		if (bungeeVersion.startsWith("git:")) {
+			final String[] split = bungeeVersion.split("\\:");
+
+			Valid.checkBoolean(split.length > 1, "Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
+			bungeeVersion = split[2];
+		} else
+			throw new FoException("Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
+
+		final String versionString = bungeeVersion.split("\\-")[0]; // 1.22.1
+		final String[] versions = versionString.split("\\.");
+		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bungee version '" + bungeeVersion + "', expected '-' and a version number");
+
+		final int version = Integer.parseInt(versions[1]); // 20
+
+		final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
+		final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
+
+		MinecraftVersion.setVersion(current, subversion);
+	}
+
 	@Override
 	public final void onEnable() {
 		if (this.loadingFailed)
 			return;
+
+		this.adventure = BungeeAudiences.create(this);
 
 		try {
 			if (this.getStartupLogo() != null)
@@ -288,6 +332,12 @@ public abstract class SimplePlugin extends Plugin implements FoundationPlugin {
 	public final void onDisable() {
 		if (this.loadingFailed)
 			return;
+
+		if (this.adventure != null) {
+			this.adventure.close();
+
+			this.adventure = null;
+		}
 
 		try {
 			this.onPluginStop();

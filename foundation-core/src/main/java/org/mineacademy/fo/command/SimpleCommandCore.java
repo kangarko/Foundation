@@ -527,6 +527,8 @@ public abstract class SimpleCommandCore {
 	 * @param minimumVersion
 	 */
 	protected final void checkServerVersion(V minimumVersion) {
+		ValidCore.checkBoolean(MinecraftVersion.hasVersion(), "Cannot check server version on this platform!");
+
 		this.checkBoolean(MinecraftVersion.atLeast(minimumVersion), Lang.componentVars("command-incompatible", "version", minimumVersion.toString()));
 	}
 

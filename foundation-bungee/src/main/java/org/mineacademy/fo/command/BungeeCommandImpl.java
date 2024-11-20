@@ -25,11 +25,9 @@ public final class BungeeCommandImpl extends net.md_5.bungee.api.plugin.Command 
 	 * @param delegate
 	 */
 	public BungeeCommandImpl(SimpleCommandCore delegate) {
-		super(delegate.getLabel(), delegate.getPermission(), Common.toArray(delegate.getAliases()));
+		super(delegate.getLabel(), null /* we check for perm in the delegate so it's null here */, Common.toArray(delegate.getAliases()));
 
 		this.delegate = delegate;
-
-		super.setPermissionMessage(delegate.getPermissionMessage().toLegacy());
 	}
 
 	/**
@@ -37,7 +35,7 @@ public final class BungeeCommandImpl extends net.md_5.bungee.api.plugin.Command 
 	 */
 	@Override
 	public void execute(CommandSender sender, String[] args) {
-		delegate.delegateExecute(Platform.toPlayer(sender), args[0], this.parseArgs(args));
+		delegate.delegateExecute(Platform.toPlayer(sender), delegate.getLabel(), args);
 	}
 
 	/**
@@ -45,28 +43,6 @@ public final class BungeeCommandImpl extends net.md_5.bungee.api.plugin.Command 
 	 */
 	@Override
 	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
-		return delegate.delegateTabComplete(Platform.toPlayer(sender), args[0], this.parseArgs(args));
-	}
-
-	/**
-	 * Delegates permission check to the Foundation.
-	 */
-	@Override
-	public boolean hasPermission(CommandSender sender) {
-		final String permission = this.delegate.getPermission();
-
-		return permission == null || sender.hasPermission(permission);
-	}
-
-	/*
-	 * Helper method to parse the arguments.
-	 */
-	private String[] parseArgs(String[] args) {
-		final String[] actualArgs = args.length > 1 ? new String[args.length - 1] : new String[0];
-
-		if (args.length > 1)
-			System.arraycopy(args, 1, actualArgs, 0, args.length - 1);
-
-		return actualArgs;
+		return delegate.delegateTabComplete(Platform.toPlayer(sender), delegate.getLabel(), args);
 	}
 }

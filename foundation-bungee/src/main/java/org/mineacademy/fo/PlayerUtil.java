@@ -2,8 +2,6 @@ package org.mineacademy.fo;
 
 import java.util.function.Function;
 
-import org.mineacademy.fo.model.SimpleComponent;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,16 +18,6 @@ public final class PlayerUtil {
 	 */
 	@Setter
 	private static Function<ProxiedPlayer, Boolean> isVanished = player -> false;
-
-	/**
-	 * Kick the player from the server with the given reason.
-	 *
-	 * @param player
-	 * @param reason
-	 */
-	public static void kick(ProxiedPlayer player, String reason) {
-		player.disconnect(SimpleComponent.fromMini(reason).toLegacy());
-	}
 
 	/**
 	 * Checks if the player is vanished.
