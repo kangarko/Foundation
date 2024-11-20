@@ -106,6 +106,14 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- BungeeCord -->
+		<dependency>
+			<groupId>net.md-5</groupId>
+			<artifactId>bungeecord-chat</artifactId>
+			<version>1.20-R0.2</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- We have our own config implementation updated to YAML 1.2 -->
 		<dependency>
 			<groupId>org.snakeyaml</groupId>

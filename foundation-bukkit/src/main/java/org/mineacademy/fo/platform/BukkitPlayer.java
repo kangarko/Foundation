@@ -141,7 +141,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 		else
 			try {
-				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, Remain.convertAdventureToBungee(message.toAdventure()));
+				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, message.toBungee());
 
 			} catch (final NoSuchMethodError err) {
 				Remain.sendActionBarLegacyPacket(this.player, message);
@@ -221,7 +221,7 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		this.player.spigot().sendMessage(Remain.convertAdventureToBungee(component));
+		this.player.spigot().sendMessage(SimpleComponent.fromAdventure(component).toBungee());
 	}
 
 	@Override

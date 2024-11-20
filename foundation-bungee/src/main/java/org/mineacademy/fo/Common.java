@@ -1,25 +1,35 @@
 package org.mineacademy.fo;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Common extends CommonCore {
 
 	/**
+	 * The UUID of the console
+	 */
+	public static final UUID CONSOLE_UID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+	/**
 	 * Sends a message to the player
 	 *
-	 * @param sender
+	 * @param player
 	 * @param messages
 	 */
-	public static void tell(@NonNull CommandSender sender, String... messages) {
-		final FoundationPlayer audience = Platform.toPlayer(sender);
+	public static void tell(@NonNull ProxiedPlayer player, String... messages) {
+		final FoundationPlayer audience = Platform.toPlayer(player);
 
 		for (final String message : messages)
 			audience.sendMessage(SimpleComponent.fromMini(message));
@@ -30,10 +40,34 @@ public final class Common extends CommonCore {
 	 * Supports \<actionbar\>, \<toast\>, \<title\>, \<bossbar\> and \<center\>.
 	 * Properly sends the message to the player if he is conversing with the server.
 	 *
-	 * @param sender
+	 * @param player
 	 * @param message
 	 */
-	public static void tell(@NonNull final CommandSender sender, SimpleComponent message) {
-		Platform.toPlayer(sender).sendMessage(message);
+	public static void tell(@NonNull final ProxiedPlayer player, SimpleComponent message) {
+		Platform.toPlayer(player).sendMessage(message);
+	}
+
+	/**
+	 * Convenience method for getting a list of player names
+	 *
+	 * @param ignoreVanished
+	 * @return
+	 */
+	public static List<String> getPlayerNames(boolean ignoreVanished) {
+		final List<String> found = new ArrayList<>();
+
+		for (final ProxiedPlayer online : Remain.getOnlinePlayers(ignoreVanished))
+			found.add(online.getName());
+
+		return found;
+	}
+
+	/**
+	 * Convenience method for getting a list of server names
+	 *
+	 * @return
+	 */
+	public static List<String> getServerNames() {
+		return new ArrayList<>(convertList(Remain.getServers(), server -> server.getName()));
 	}
 }

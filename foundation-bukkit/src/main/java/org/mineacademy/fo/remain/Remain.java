@@ -107,10 +107,8 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
-import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -805,18 +803,6 @@ public final class Remain {
 		final Method fromJson = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
 		return ReflectionUtil.invoke(fromJson, null, json);
-	}
-
-	/**
-	 * Converts the given Adventure component to a BungeeCord component
-	 *
-	 * @param component
-	 * @return
-	 */
-	public static BaseComponent[] convertAdventureToBungee(ComponentLike component) {
-		final BungeeComponentSerializer serializer = MinecraftVersion.atLeast(V.v1_16) ? BungeeComponentSerializer.get() : BungeeComponentSerializer.legacy();
-
-		return serializer.serialize(component.asComponent());
 	}
 
 	/**
@@ -2138,7 +2124,7 @@ public final class Remain {
 
 			for (final SimpleComponent component : pages)
 				try {
-					spigotPages.add(Remain.convertAdventureToBungee(component));
+					spigotPages.add(component.toBungee());
 
 				} catch (final Throwable t) {
 					Common.error(t, "Failed to turn simple component into bungee component: " + component);

@@ -4,7 +4,7 @@ import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Valid extends ValidCore {
@@ -13,13 +13,13 @@ public final class Valid extends ValidCore {
 	 * Check if the player has the given permission, if false we send him a no permissions
 	 * message and return false, otherwise no message is sent and we return true
 	 *
-	 * @param sender
+	 * @param player
 	 * @param permission
 	 * @return
 	 */
-	public static boolean checkPermission(final CommandSender sender, final String permission) {
-		if (!sender.hasPermission(permission)) {
-			Common.tell(sender, Lang.componentVars("no-permission", "permission", permission));
+	public static boolean checkPermission(final ProxiedPlayer player, final String permission) {
+		if (!player.hasPermission(permission)) {
+			Common.tell(player, Lang.componentVars("no-permission", "permission", permission));
 
 			return false;
 		}
