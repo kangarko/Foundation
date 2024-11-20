@@ -38,9 +38,7 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.menu.Menu;
-import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.SimplePlugin;
@@ -97,7 +95,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param message
 	 */
-	public static void kick(final Player player, final String... message) {
+	/*public static void kick(final Player player, final String... message) {
 		final String reason = CompChatColor.translateColorCodes(String.join("\n", message));
 
 		if (Bukkit.isPrimaryThread())
@@ -105,32 +103,7 @@ public final class PlayerUtil {
 
 		else
 			Platform.runTask(() -> player.kickPlayer(reason));
-	}
-
-	/**
-	 * Kicks the player on the main thread with a component.
-	 *
-	 * This method can safely be called from an async thread.
-	 *
-	 * @param player
-	 * @param component
-	 */
-	public static void kick(final Player player, final SimpleComponent component) {
-		if (Bukkit.isPrimaryThread())
-			kickComponent(player, component);
-
-		else
-			Platform.runTask(() -> kickComponent(player, component));
-	}
-
-	private static void kickComponent(Player player, SimpleComponent component) {
-		try {
-			player.kick(component.toAdventure());
-
-		} catch (final NoSuchMethodError err) {
-			player.kickPlayer(component.toLegacy());
-		}
-	}
+	}*/
 
 	/**
 	 * Converts where the player is looking into a block face.

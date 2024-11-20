@@ -114,7 +114,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		for (int i = 0; i < components.length; i++) {
 			String component = components[i].toLegacy();
 
-			if (MinecraftVersion.olderThan(V.v1_13) && component.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && component.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 				component = String.join("\n", CommonCore.split(component, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
 			joined = joined.append(SimpleComponent.fromSection(component));
@@ -139,7 +139,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		for (int i = 0; i < messages.length; i++) {
 			String message = messages[i];
 
-			if (MinecraftVersion.olderThan(V.v1_13) && message.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && message.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 				message = String.join("\n", CommonCore.split(message, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
 			joined = joined.append(SimpleComponent.fromMini("<gray>" + message));
@@ -246,7 +246,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	public SimpleComponent color(TextColor color) {
 
 		// No RGB support in older versions
-		if (color instanceof CompChatColor && MinecraftVersion.olderThan(V.v1_16))
+		if (color instanceof CompChatColor && MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16))
 			color = NamedTextColor.nearestTo(color);
 
 		final TextColor finalColor = color;
@@ -580,20 +580,23 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	/**
 	 * Returns the JSON representation of the component.
 	 *
+	 * @param legacy
 	 * @return
 	 */
-	public String toAdventureJson() {
-		return this.toAdventureJson(null);
+	public String toAdventureJson(boolean legacy) {
+		return this.toAdventureJson(null, legacy);
 	}
 
 	/**
 	 * Returns the JSON representation of the component for the given receiver.
 	 *
 	 * @param receiver
+	 * @param legacy
+	 *
 	 * @return
 	 */
-	public String toAdventureJson(FoundationPlayer receiver) {
-		return GsonComponentSerializer.gson().serialize(this.toAdventure(receiver));
+	public String toAdventureJson(FoundationPlayer receiver, boolean legacy) {
+		return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 	}
 
 	/**
@@ -611,12 +614,11 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	/**
 	 * Convert into BungeeCord component.
 	 *
+	 * @param legacy
 	 * @return
 	 */
-	public BaseComponent[] toBungee() {
-		final BungeeComponentSerializer serializer = MinecraftVersion.atLeast(V.v1_16) ? BungeeComponentSerializer.get() : BungeeComponentSerializer.legacy();
-
-		return serializer.serialize(this.toAdventure());
+	public BaseComponent[] toBungee(boolean legacy) {
+		return (legacy ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(this.toAdventure());
 	}
 
 	/**
@@ -637,11 +639,8 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	public Component toAdventure(FoundationPlayer receiver) {
 		final List<Component> children = new ArrayList<>();
 
-		for (final ConditionalComponent part : this.subcomponents) {
-			final Component adventure = part.build(receiver);
-
-			children.add(adventure);
-		}
+		for (final ConditionalComponent part : this.subcomponents)
+			children.add(part.build(receiver));
 
 		return Component.textOfChildren(children.toArray(new Component[children.size()]));
 	}
@@ -740,7 +739,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		Component mini;
 
 		try {
-			mini = MiniMessage.miniMessage().deserialize(message);
+			mini = MiniMessage.miniMessage().deserialize(message.replace("\\n", "\n"));
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
@@ -784,6 +783,30 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * Create a new component from adventure component.
 	 *
 	 * @param component
+	 * @param legacy
+	 *
+	 * @return
+	 */
+	public static SimpleComponent fromBungee(@NonNull BaseComponent[] component, boolean legacy) {
+		return fromAdventure((legacy ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).deserialize(component));
+	}
+
+	/**
+	 * Create a new component from JSON.
+	 *
+	 * @param json
+	 * @param legacy
+	 *
+	 * @return
+	 */
+	public static SimpleComponent fromAdventureJson(@NonNull String json, boolean legacy) {
+		return fromAdventure((legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).deserialize(json));
+	}
+
+	/**
+	 * Create a new component from adventure component.
+	 *
+	 * @param component
 	 * @return
 	 */
 	public static SimpleComponent fromAdventure(@NonNull Component component) {
@@ -798,16 +821,6 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	public static SimpleComponent fromPlain(@NonNull String plainText) {
 		return new SimpleComponent(ConditionalComponent.fromPlain(plainText), Style.empty());
-	}
-
-	/**
-	 * Create a new component from JSON.
-	 *
-	 * @param json
-	 * @return
-	 */
-	public static SimpleComponent fromAdventureJson(@NonNull String json) {
-		return new SimpleComponent(ConditionalComponent.fromJson(json), Style.empty());
 	}
 
 	/**
@@ -924,16 +937,6 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		}
 
 		/**
-		 * Create a new conditional component from JSON.
-		 *
-		 * @param text
-		 * @return
-		 */
-		static ConditionalComponent fromJson(String json) {
-			return new ConditionalComponent(GsonComponentSerializer.gson().deserialize(json));
-		}
-
-		/**
 		 * Create a new conditional component from adventure component.
 		 *
 		 * @param component
@@ -959,7 +962,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	@Getter
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	private static final class LastMessageStyleParser {
+	public static final class LastMessageStyleParser {
 
 		/**
 		 * The pattern for RGB color codes.

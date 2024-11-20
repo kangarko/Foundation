@@ -394,7 +394,7 @@ public abstract class CommonCore {
 				final String stripped = message.replaceFirst("\\[JSON\\]", "").trim();
 
 				if (!stripped.isEmpty())
-					log(SimpleComponent.fromAdventureJson(stripped).toLegacy());
+					log(SimpleComponent.fromAdventureJson(stripped, false).toLegacy());
 
 			} else
 				for (final String part : message.split("\n"))

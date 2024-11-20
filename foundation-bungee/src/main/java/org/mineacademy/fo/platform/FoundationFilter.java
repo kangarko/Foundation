@@ -16,6 +16,8 @@ import org.apache.logging.log4j.message.Message;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.plugin.Plugin;
 
 /**
  * Represents the console filtering module
@@ -41,8 +43,21 @@ final class FoundationFilter {
 		// Set filter for System out
 		System.setOut(new FilterSystem());
 
+		// Set filter for Bukkit
+		final FilterLegacy filter = new FilterLegacy();
+
+		for (final Plugin plugin : ProxyServer.getInstance().getPluginManager().getPlugins())
+			plugin.getLogger().setFilter(filter);
+
+		ProxyServer.getInstance().getLogger().setFilter(filter);
+
 		// Set Log4j filter
-		FilterLog4j.inject();
+		try {
+			FilterLog4j.inject();
+
+		} catch (final Error err) {
+			// Not available
+		}
 	}
 
 	/*

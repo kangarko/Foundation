@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.mineacademy.fo.Valid;
@@ -12,8 +13,10 @@ import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleLocation;
 
 import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,10 +34,10 @@ import net.kyori.adventure.title.Title.Times;
 @Getter
 final class VelocityPlayer extends FoundationPlayer {
 
-	private final List<BossBar> viewedBossBars = new ArrayList<>();
-	private final CommandSource sender;
 	private final boolean isPlayer;
 	private final Player player;
+	private final CommandSource sender;
+	private final List<BossBar> viewedBossBars = new ArrayList<>();
 
 	public VelocityPlayer(@NonNull CommandSource sender) {
 		this.sender = sender;
@@ -53,6 +56,18 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
+	public String getCurrentServerName() {
+		if (this.isPlayer) {
+			final Optional<ServerConnection> server = this.player.getCurrentServer();
+
+			if (server.isPresent())
+				return server.get().getServerInfo().getName();
+		}
+
+		return "";
+	}
+
+	@Override
 	protected String getSenderName0() {
 		return this.isPlayer ? this.player.getUsername() : "Console";
 	}
@@ -62,6 +77,11 @@ final class VelocityPlayer extends FoundationPlayer {
 		Valid.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
 
 		return this.player.getUniqueId();
+	}
+
+	@Override
+	public boolean hasHexColorSupport() {
+		return !this.isPlayer || this.player.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_16);
 	}
 
 	@Override
@@ -91,6 +111,13 @@ final class VelocityPlayer extends FoundationPlayer {
 	@Override
 	public boolean isPlayer() {
 		return this.isPlayer;
+	}
+
+	@Override
+	public void kick(SimpleComponent reason) {
+		Valid.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
+
+		this.player.disconnect(reason.toAdventure());
 	}
 
 	@Override

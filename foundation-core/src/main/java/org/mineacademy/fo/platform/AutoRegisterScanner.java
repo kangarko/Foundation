@@ -98,10 +98,16 @@ final class AutoRegisterScanner {
 				final Class<? extends Annotation> eventHandlerClass = ReflectionUtil.lookupClassSilently("org.bukkit.event.EventHandler");
 				final Class<?> listenerClass = ReflectionUtil.lookupClassSilently("org.bukkit.event.Listener");
 
-				if (eventHandlerClass != null && listenerClass != null)
-					for (final Method method : clazz.getMethods())
-						if (method.isAnnotationPresent(eventHandlerClass))
-							ValidCore.checkBoolean(listenerClass.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
+				if (eventHandlerClass != null && listenerClass != null) {
+					try {
+						for (final Method method : clazz.getMethods())
+							if (method.isAnnotationPresent(eventHandlerClass))
+								ValidCore.checkBoolean(listenerClass.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
+
+					} catch (final Error err) {
+						// Ignore, such as Citizens api will throw that when not present
+					}
+				}
 
 				// Handled above
 				if (YamlStaticConfig.class.isAssignableFrom(clazz))

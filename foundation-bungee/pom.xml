@@ -21,6 +21,13 @@
 			<groupId>net.md-5</groupId>
 			<artifactId>bungeecord-api</artifactId>
 			<version>1.21-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-platform-bungeecord</artifactId>
+			<version>4.3.4</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy</groupId>

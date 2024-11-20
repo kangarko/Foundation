@@ -3,7 +3,6 @@ package org.mineacademy.fo.platform;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +15,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
@@ -99,37 +99,37 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	/**
 	 * The proxy server
 	 */
-	private final ProxyServer proxy;
+	private ProxyServer proxy;
 
 	/**
 	 * The proxy logger
 	 */
-	private final Logger logger;
+	private Logger logger;
 
 	/**
 	 * The path data
 	 */
-	private final File dataFolder;
+	private File dataFolder;
 
 	/**
 	 * Shortcut for getFile()
 	 */
-	private final File file;
+	private File file;
 
 	/**
 	 * The plugin version
 	 */
-	private final String version;
+	private String version;
 
 	/**
 	 * The plugin name
 	 */
-	private final String name;
+	private String name;
 
 	/**
 	 * The plugin authors
 	 */
-	private final List<String> authors;
+	private List<String> authors;
 
 	/**
 	 * The library manager used to load third party libraries.
@@ -175,81 +175,80 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	public SimplePlugin(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
 		instance = this;
 
-		VelocityPlatform.inject();
-
 		try {
+
+			// Unsupported so default to the latest version
+			MinecraftVersion.setVersion(Common.last(MinecraftVersion.V.values()), -1);
+
+			VelocityPlatform.inject();
+
 			this.file = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 
-		} catch (final URISyntaxException ex) {
-			throw new RuntimeException(ex);
-		}
+			// Hacky due to Velocity lacking simpler implementation
+			final Plugin annotation = this.getClass().getDeclaredAnnotation(Plugin.class);
 
-		// Hacky due to Velocity lacking simpler implementation
-		final Plugin annotation = this.getClass().getDeclaredAnnotation(Plugin.class);
+			if (annotation != null) {
+				this.version = annotation.version();
+				this.name = annotation.name();
+				this.authors = Arrays.asList(annotation.authors());
 
-		if (annotation != null) {
-			this.version = annotation.version();
-			this.name = annotation.name();
-			this.authors = Arrays.asList(annotation.authors());
+			} else {
 
-		} else {
+				// If annotation isn't used, try to load from velocity-plugin.json directly. You can place this file to your src/main/resources and use variables in it.
+				final List<String> lines = FileUtil.readLinesFromInternalPath("velocity-plugin.json");
+				Valid.checkBoolean(lines != null, "Either place @Plugin annotation over your main class or write velocity-plugin.json to your resources folder!");
 
-			// If annotation isn't used, try to load from velocity-plugin.json directly. You can place this file to your src/main/resources and use variables in it.
-			final List<String> lines = FileUtil.readLinesFromInternalPath("velocity-plugin.json");
-			Valid.checkBoolean(lines != null, "Either place @Plugin annotation over your main class or write velocity-plugin.json to your resources folder!");
+				final JsonObject json = Common.GSON.fromJson(String.join("", lines), JsonObject.class);
 
-			final JsonObject json = Common.GSON.fromJson(String.join("", lines), JsonObject.class);
+				this.version = json.get("version").getAsString();
+				this.name = json.get("name").getAsString();
+				this.authors = new ArrayList<>();
 
-			this.version = json.get("version").getAsString();
-			this.name = json.get("name").getAsString();
-			this.authors = new ArrayList<>();
+				if (json.has("authors")) {
+					final JsonElement authors = json.get("authors");
 
-			if (json.has("authors")) {
-				final JsonElement authors = json.get("authors");
-
-				if (authors.isJsonArray())
-					for (final JsonElement author : authors.getAsJsonArray())
-						this.authors.add(author.getAsString());
-				else
-					this.authors.addAll(Arrays.asList(authors.getAsString()));
-			}
-		}
-
-		Valid.checkBoolean(this.version != null && !this.version.contains("${project.version}"), "Invalid plugin version: " + this.version);
-		Valid.checkBoolean(this.name != null && !this.name.contains("${project.name}"), "Invalid plugin name: " + this.name);
-
-		this.proxy = proxy;
-		this.logger = logger;
-		this.dataFolder = new File(dataDirectory.toFile().getParentFile(), this.name); // Another hack to prevent lowercase folders
-
-		// Dynamically load filters
-		for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
-			try {
-				final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
-				Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
-				Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
-
-				final Filter filter = ReflectionUtil.instantiate(constructor);
-
-				Filter.register(filter.getIdentifier(), filter);
-
-			} catch (final Exception ex) {
-				Common.error(ex,
-						"Failed to load filter: " + filterClass,
-						"Check that it has a public no args constructor!");
-
-				continue;
+					if (authors.isJsonArray())
+						for (final JsonElement author : authors.getAsJsonArray())
+							this.authors.add(author.getAsString());
+					else
+						this.authors.addAll(Arrays.asList(authors.getAsString()));
+				}
 			}
 
-		// Call delegate
-		try {
+			Valid.checkBoolean(this.version != null && !this.version.contains("${project.version}"), "Invalid plugin version: " + this.version);
+			Valid.checkBoolean(this.name != null && !this.name.contains("${project.name}"), "Invalid plugin name: " + this.name);
+
+			this.proxy = proxy;
+			this.logger = logger;
+			this.dataFolder = new File(dataDirectory.toFile().getParentFile(), this.name); // Another hack to prevent lowercase folders
+
+			// Dynamically load filters
+			for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
+				try {
+					final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
+					Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
+					Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
+
+					final Filter filter = ReflectionUtil.instantiate(constructor);
+
+					Filter.register(filter.getIdentifier(), filter);
+
+				} catch (final Exception ex) {
+					Common.error(ex,
+							"Failed to load filter: " + filterClass,
+							"Check that it has a public no args constructor!");
+
+					continue;
+				}
+
+			// Call delegate
 			this.onPluginLoad();
 
 		} catch (final Throwable t) {
 			this.loadingFailed = true;
 			this.enabled = false;
 
-			throw t;
+			t.printStackTrace();
 
 		} finally {
 			this.initializing = false;

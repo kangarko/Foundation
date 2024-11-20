@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 
 import org.mineacademy.fo.GeoAPI;
 import org.mineacademy.fo.GeoAPI.GeoResponse;
-import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Variables;
 
@@ -21,7 +20,7 @@ final class VelocityVariableCollector implements Variables.Collector {
 		final Player player = audience != null && audience.isPlayer() ? ((VelocityPlayer) audience).getPlayer() : null;
 
 		if ("server_version".equals(variable))
-			return SimpleComponent.fromPlain(MinecraftVersion.getFullVersion());
+			return SimpleComponent.fromPlain(Platform.getPlatformVersion());
 
 		else if ("player".equals(variable) || "player_name".equals(variable))
 			return SimpleComponent.fromPlain(audience == null ? "" : audience.getName());

@@ -206,7 +206,7 @@ final class FoundationPacketListener extends PacketListener {
 
 						for (int line = 0; line < lines.length; line++) {
 							final WrappedChatComponent component = lines[line];
-							final String signText = SimpleComponent.fromAdventureJson(component.getJson().replace("§f", "")).toLegacy();
+							final String signText = SimpleComponent.fromAdventureJson(component.getJson().replace("§f", ""), MinecraftVersion.atLeast(V.v1_16)).toLegacy();
 
 							sign.setLine(line, signText);
 						}
