@@ -1,5 +1,6 @@
 package org.mineacademy.fo.library;
 
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 
@@ -33,7 +34,7 @@ public class VelocityLibraryManager extends LibraryManager {
 	 * @param plugin        the plugin to manage
 	 */
 	public VelocityLibraryManager(Object plugin, Path dataDirectory, PluginManager pluginManager) {
-		super(dataDirectory);
+		super(new File(dataDirectory.toFile().getParentFile().getParentFile(), "libraries").toPath());
 
 		this.pluginManager = pluginManager;
 		this.plugin = plugin;
