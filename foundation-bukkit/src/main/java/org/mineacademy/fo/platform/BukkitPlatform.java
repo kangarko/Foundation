@@ -52,8 +52,8 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.BukkitCommandImpl;
-import org.mineacademy.fo.command.ConversationCommand;
-import org.mineacademy.fo.command.RegionCommand;
+import org.mineacademy.fo.command.ConversationSubCommand;
+import org.mineacademy.fo.command.RegionSubCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.FoException;
@@ -80,6 +80,10 @@ import net.kyori.adventure.text.event.HoverEventSource;
  * An implementation of {@link FoundationPlatform} for Bukkit.
  */
 final class BukkitPlatform extends FoundationPlatform {
+
+	public static void inject() {
+		Platform.setInstance(new BukkitPlatform());
+	}
 
 	private BukkitPlatform() {
 
@@ -482,6 +486,14 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
+	protected void dispatchConsoleCommand0(String command) {
+		if (Bukkit.isPrimaryThread())
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+		else
+			Platform.runTask(0, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+	}
+
+	@Override
 	public List<FoundationPlayer> getOnlinePlayers() {
 		final List<FoundationPlayer> players = new ArrayList<>();
 
@@ -578,6 +590,14 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
+	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
+		group.registerSubcommand(new ConversationSubCommand());
+
+		if (SimplePlugin.getInstance().areRegionsEnabled())
+			group.registerSubcommand(new RegionSubCommand());
+	}
+
+	@Override
 	public void registerEvents(final Object listener) {
 		Valid.checkBoolean(listener instanceof Listener, "Listener must extend Bukkit's Listener, not " + listener.getClass());
 
@@ -629,25 +649,5 @@ final class BukkitPlatform extends FoundationPlatform {
 	@Override
 	public void unregisterCommand(SimpleCommandCore command) {
 		Remain.unregisterCommand(command.getLabel());
-	}
-
-	@Override
-	protected void dispatchConsoleCommand0(String command) {
-		if (Bukkit.isPrimaryThread())
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-		else
-			Platform.runTask(0, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
-	}
-
-	@Override
-	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
-		group.registerSubcommand(new ConversationCommand());
-
-		if (SimplePlugin.getInstance().areRegionsEnabled())
-			group.registerSubcommand(new RegionCommand());
-	}
-
-	public static void inject() {
-		Platform.setInstance(new BukkitPlatform());
 	}
 }

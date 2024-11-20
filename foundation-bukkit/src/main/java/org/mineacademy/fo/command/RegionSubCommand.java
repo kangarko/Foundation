@@ -32,13 +32,13 @@ import lombok.RequiredArgsConstructor;
  * and register this subcommand manually in your class extending {@link SimpleCommandGroup}
  * or by calling {@link SimpleCommandGroup#registerDefaultSubcommands()}.
  */
-public class RegionCommand extends SimpleSubCommand {
+public class RegionSubCommand extends SimpleSubCommand {
 
 	/**
 	 * Create a new sub-command with the "region" and "rg" aliases registered in your
 	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
 	 */
-	public RegionCommand() {
+	public RegionSubCommand() {
 		this("region|rg");
 	}
 
@@ -48,7 +48,7 @@ public class RegionCommand extends SimpleSubCommand {
 	 *
 	 * @param label
 	 */
-	public RegionCommand(String label) {
+	public RegionSubCommand(String label) {
 		super(label);
 
 		this.setProperties();
@@ -59,7 +59,7 @@ public class RegionCommand extends SimpleSubCommand {
 	 *
 	 * @param group
 	 */
-	public RegionCommand(SimpleCommandGroup group) {
+	public RegionSubCommand(SimpleCommandGroup group) {
 		this(group, "region|rg");
 	}
 
@@ -69,7 +69,7 @@ public class RegionCommand extends SimpleSubCommand {
 	 * @param group
 	 * @param label
 	 */
-	public RegionCommand(SimpleCommandGroup group, String label) {
+	public RegionSubCommand(SimpleCommandGroup group, String label) {
 		super(group, label);
 
 		this.setProperties();
@@ -387,7 +387,7 @@ public class RegionCommand extends SimpleSubCommand {
 		 * @param command
 		 * @return
 		 */
-		public static SimpleComponent[] generateUsages(RegionCommand command) {
+		public static SimpleComponent[] generateUsages(RegionSubCommand command) {
 			final Param[] params = Param.values();
 			final List<SimpleComponent> components = new ArrayList<>();
 

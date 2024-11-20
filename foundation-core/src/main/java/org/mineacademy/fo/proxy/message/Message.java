@@ -75,4 +75,9 @@ abstract class Message {
 	public final <T extends ProxyMessage> T getMessage() {
 		return (T) message;
 	}
+
+	@Override
+	public String toString() {
+		return this.message.name();
+	}
 }

@@ -12,7 +12,6 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.Platform;
@@ -24,7 +23,7 @@ import org.mineacademy.fo.proxy.ProxyMessage;
  * String is the server name and the second String is the
  * {@link ProxyMessage} by its name *written automatically*.
  */
-public final class OutgoingMessage extends Message {
+public class OutgoingMessage extends Message {
 
 	/**
 	 * The pending queue to write the message.
@@ -34,10 +33,10 @@ public final class OutgoingMessage extends Message {
 	/**
 	 * Create a new outgoing message, see header of this class.
 	 *
-	 * @param action
+	 * @param message
 	 */
-	public OutgoingMessage(ProxyMessage action) {
-		this(getDefaultListener(), action);
+	public OutgoingMessage(ProxyMessage message) {
+		this(getDefaultListener(), message);
 	}
 
 	/*
@@ -54,10 +53,10 @@ public final class OutgoingMessage extends Message {
 	 * Create a new outgoing message, see header of this class
 	 *
 	 * @param listener
-	 * @param action
+	 * @param message
 	 */
-	public OutgoingMessage(ProxyListener listener, ProxyMessage action) {
-		super(listener, action);
+	public OutgoingMessage(ProxyListener listener, ProxyMessage message) {
+		super(listener, message);
 	}
 
 	/**
@@ -174,35 +173,17 @@ public final class OutgoingMessage extends Message {
 	}
 
 	/**
-	 * Sends this outgoing message into proxy in the following format:
-	 *
-	 * You need an implementation in proxy to handle it, otherwise nothing will happen.
-	 *
-	 * <ul>
-	 *   <li><b>Channel</b>: The identifier for the communication channel through
-	 *       which the message is sent.</li>
-	 *   <li><b>Sender UUID</b>: The unique identifier of the player or entity
-	 *       that originates the message.</li>
-	 *   <li><b>Server Name</b>: The name of the server sending the message, as
-	 *       defined by the platform. Please call {@link Platform#setCustomServerName(String)} first.</li>
-	 *   <li><b>Message Content</b>: A string representation of the proxy message
-	 *       that describes its type or action.</li>
-	 *	 <li><b>Data Array</b>: Byte array of data set in this class.</li>
-	 * </ul>
-	 * </code></pre>
+	 * Compiles a byte array of the message from the given sender.
 	 *
 	 * @param senderUid
+	 * @param serverName
+	 * @return
 	 */
-	public void send(UUID senderUid) {
+	public byte[] toByteArray(UUID senderUid, String serverName) {
 		final String channel = this.getChannel();
 		final ProxyMessage message = this.getMessage();
 		final Object[] dataArray = this.queue.toArray();
-
-		ValidCore.checkBoolean(dataArray.length == message.getContent().length,
-				"Proxy message " + message + " on channel " + channel + " has invalid data lenght! Expected: " + message.getContent().length + ". Got: " + dataArray.length);
-
-		if (!message.name().equals("PLAYERS_CLUSTER_DATA") && Debugger.isDebugged("proxy"))
-			Debugger.debug("proxy", "Sending proxy message " + message + " on channel " + channel + " with data: " + CommonCore.join(dataArray, t -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtilCore.Language.YAML, t), "").toString()));
+		ValidCore.checkBoolean(dataArray.length == message.getContent().length, "Proxy message " + message + " on channel " + channel + " has invalid data lenght! Expected: " + message.getContent().length + ". Got: " + dataArray.length);
 
 		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		final DataOutputStream out = new DataOutputStream(byteArrayOutputStream);
@@ -210,11 +191,11 @@ public final class OutgoingMessage extends Message {
 		try {
 			out.writeUTF(channel);
 			out.writeUTF(senderUid.toString());
-			out.writeUTF(Platform.getCustomServerName());
+			out.writeUTF(serverName);
 			out.writeUTF(message.toString());
 
 		} catch (final IOException ex) {
-			CommonCore.error(ex,
+			CommonCore.throwError(ex,
 					"Error writing header in proxy plugin message!",
 					"Message: " + message,
 					"Channel: " + channel,
@@ -258,7 +239,7 @@ public final class OutgoingMessage extends Message {
 					throw new IllegalArgumentException("Unknown data type to write as plugin message: " + data.getClass());
 
 			} catch (final Throwable t) {
-				CommonCore.error(t,
+				CommonCore.throwError(t,
 						"Error writing data in proxy plugin message!",
 						"Message: " + message,
 						"Channel: " + channel,
@@ -266,10 +247,36 @@ public final class OutgoingMessage extends Message {
 						"Error: {error}",
 						"All data: " + CommonCore.join(dataArray, data2 -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtilCore.Language.YAML, data2), "").toString()));
 
-				return;
+				return null;
 			}
 
-		final byte[] byteArray = byteArrayOutputStream.toByteArray();
+		return byteArrayOutputStream.toByteArray();
+	}
+
+	/**
+	 * Sends this outgoing message into proxy in the following format:
+	 *
+	 * You need an implementation in proxy to handle it, otherwise nothing will happen.
+	 *
+	 * <ul>
+	 *   <li><b>Channel</b>: The identifier for the communication channel through
+	 *       which the message is sent.</li>
+	 *   <li><b>Sender UUID</b>: The unique identifier of the player or entity
+	 *       that originates the message.</li>
+	 *   <li><b>Server Name</b>: The name of the server sending the message, as
+	 *       defined by the platform. Please call {@link Platform#setCustomServerName(String)} first.</li>
+	 *   <li><b>Message Content</b>: A string representation of the proxy message
+	 *       that describes its type or action.</li>
+	 *	 <li><b>Data Array</b>: Byte array of data set in this class.</li>
+	 * </ul>
+	 * </code></pre>
+	 *
+	 * @param senderUid
+	 */
+	public void send(UUID senderUid) {
+		final String channel = this.getChannel();
+		final ProxyMessage message = this.getMessage();
+		final byte[] byteArray = this.toByteArray(senderUid, Platform.getCustomServerName());
 
 		if (byteArray.length >= MAX_MESSAGE_SIZE) {
 			CommonCore.log("Outgoing proxy message '" + message + "' was oversized, not sending. Max length: " + MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
@@ -315,7 +322,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @return
 	 */
-	protected String getChannel() {
+	public String getChannel() {
 		ValidCore.checkNotNull(this.getListener(), "Listener cannot be null for " + this);
 
 		return this.getListener().getChannel();

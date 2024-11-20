@@ -22,7 +22,7 @@ import lombok.Setter;
  * to your main command group to help collect debugging information
  * users can submit to you when they have problems.
  */
-public final class DebugCommand extends SimpleSubCommandCore {
+public final class DebugSubCommand extends SimpleSubCommandCore {
 
 	/**
 	 * Set the custom debug lines you would like to add to the debug file
@@ -34,7 +34,7 @@ public final class DebugCommand extends SimpleSubCommandCore {
 	 * Create a new sub-command with the "debug" label registered in your
 	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
 	 */
-	public DebugCommand() {
+	public DebugSubCommand() {
 		this("debug");
 	}
 
@@ -44,7 +44,7 @@ public final class DebugCommand extends SimpleSubCommandCore {
 	 *
 	 * @param label
 	 */
-	public DebugCommand(String label) {
+	public DebugSubCommand(String label) {
 		super(label);
 
 		this.setProperties();
@@ -55,7 +55,7 @@ public final class DebugCommand extends SimpleSubCommandCore {
 	 *
 	 * @param group
 	 */
-	public DebugCommand(SimpleCommandGroup group) {
+	public DebugSubCommand(SimpleCommandGroup group) {
 		this(group, "debug");
 	}
 
@@ -65,7 +65,7 @@ public final class DebugCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param label
 	 */
-	public DebugCommand(SimpleCommandGroup group, String label) {
+	public DebugSubCommand(SimpleCommandGroup group, String label) {
 		super(group, label);
 
 		this.setProperties();

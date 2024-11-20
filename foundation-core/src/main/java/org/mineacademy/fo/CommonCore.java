@@ -1729,6 +1729,62 @@ public abstract class CommonCore {
 		}
 	}
 
+	/**
+	 * Wraps the runnable to catch any exceptions and log them.
+	 *
+	 * @param original
+	 * @return
+	 */
+	public static Runnable wrapRunnableInExceptionCatcher(@NonNull Runnable original) {
+		final StackTraceElement[] outerElements = new Throwable().getStackTrace();
+
+		return new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					original.run();
+
+				} catch (final Throwable throwable) {
+					logCombinedError(throwable, outerElements);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Run the given runnable if the plugin is disabled.
+	 *
+	 * @param run
+	 * @return
+	 */
+	public static boolean runIfDisabled(@NonNull Runnable run) {
+		if (!Platform.getPlugin().isEnabled()) {
+			run.run();
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/*
+	 * Combines the stack traces of two throwables and logs them.
+	 */
+	private static void logCombinedError(Throwable throwable, StackTraceElement[] outerTrace) {
+		final StackTraceElement[] innerTrace = throwable.getStackTrace();
+
+		final StackTraceElement[] combinedTrace = new StackTraceElement[outerTrace.length + innerTrace.length];
+
+		System.arraycopy(innerTrace, 0, combinedTrace, 0, innerTrace.length);
+		System.arraycopy(outerTrace, 0, combinedTrace, innerTrace.length, outerTrace.length);
+
+		throwable.setStackTrace(combinedTrace);
+
+		Debugger.printStackTrace(throwable);
+		Debugger.saveError(throwable);
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Classes
 	// ------------------------------------------------------------------------------------------------------------

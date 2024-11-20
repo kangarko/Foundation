@@ -15,7 +15,6 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.platform.BukkitPlayer;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -262,8 +261,8 @@ public interface SharedBukkitCommandCore {
 	 *
 	 * @return
 	 */
-	default CommandSender getCommandSender() {
-		return ((BukkitPlayer) this.getAudience()).getCommandSender();
+	default CommandSender getSender() {
+		return this.getAudience().getSender();
 	}
 
 	/**
@@ -273,7 +272,7 @@ public interface SharedBukkitCommandCore {
 	 * @return
 	 */
 	default Player getPlayer() {
-		return this.isPlayer() ? ((BukkitPlayer) this.getAudience()).getPlayer() : null;
+		return this.isPlayer() ? this.getAudience().getPlayer() : null;
 	}
 
 	/**

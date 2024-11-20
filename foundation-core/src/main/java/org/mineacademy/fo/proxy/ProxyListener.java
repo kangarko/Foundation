@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.FoundationPlayer;
@@ -85,10 +86,10 @@ public abstract class ProxyListener {
 	 * Called automatically when you receive a plugin message from proxy,
 	 * see https://spigotmc.org/wiki/bukkit-bungee-plugin-messaging-channel
 	 *
-	 * @param audience
+	 * @param audience can be null
 	 * @param message
 	 */
-	public abstract void onMessageReceived(FoundationPlayer audience, IncomingMessage message);
+	public abstract void onMessageReceived(@Nullable FoundationPlayer audience, IncomingMessage message);
 
 	/**
 	 * @deprecated internal use only
@@ -118,7 +119,7 @@ public abstract class ProxyListener {
 	 *
 	 * @return
 	 */
-	public static final Set<ProxyListener> getRegisteredlisteners() {
+	public static final Set<ProxyListener> getRegisteredListeners() {
 		return Collections.unmodifiableSet(registeredListeners);
 	}
 }

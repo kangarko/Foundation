@@ -21,7 +21,7 @@ import lombok.NonNull;
  * A simple predefined command for quickly listing all permissions
  * the plugin uses, given they are stored in a class.
  */
-public final class PermsCommand extends SimpleSubCommandCore {
+public final class PermsSubCommand extends SimpleSubCommandCore {
 
 	/**
 	 * Classes with permissions listed as fields
@@ -37,7 +37,7 @@ public final class PermsCommand extends SimpleSubCommandCore {
 	 *
 	 * @param classToList
 	 */
-	public PermsCommand(Class<?> classToList) {
+	public PermsSubCommand(Class<?> classToList) {
 		this("permissions|perms", classToList);
 	}
 
@@ -49,7 +49,7 @@ public final class PermsCommand extends SimpleSubCommandCore {
 	 * @param label
 	 * @param classToList
 	 */
-	private PermsCommand(String label, @NonNull Class<?> classToList) {
+	private PermsSubCommand(String label, @NonNull Class<?> classToList) {
 		super(label);
 
 		this.classToList = classToList;
@@ -65,7 +65,7 @@ public final class PermsCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param classToList
 	 */
-	public PermsCommand(SimpleCommandGroup group, Class<?> classToList) {
+	public PermsSubCommand(SimpleCommandGroup group, Class<?> classToList) {
 		this(group, "permissions|perms", classToList);
 	}
 
@@ -79,7 +79,7 @@ public final class PermsCommand extends SimpleSubCommandCore {
 	 * @param classToList
 	 * @param variableReplacer
 	 */
-	private PermsCommand(SimpleCommandGroup group, String label, @NonNull Class<?> classToList) {
+	private PermsSubCommand(SimpleCommandGroup group, String label, @NonNull Class<?> classToList) {
 		super(group, label);
 
 		this.classToList = classToList;

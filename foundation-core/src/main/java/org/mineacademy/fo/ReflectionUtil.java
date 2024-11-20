@@ -519,6 +519,22 @@ public final class ReflectionUtil {
 	}
 
 	/**
+	 * Wrapper for Class.forName, does not throw exception, returns null instead.
+	 *
+	 * @param <T>
+	 * @param path
+	 * @return
+	 */
+	public static <T> Class<T> lookupClassSilently(final String path) {
+		try {
+			return lookupClass(path);
+
+		} catch (final ReflectionException ex) {
+			return null;
+		}
+	}
+
+	/**
 	 * Wrapper for Class.forName.
 	 *
 	 * @param <T>
